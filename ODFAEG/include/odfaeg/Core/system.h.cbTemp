@@ -1,0 +1,51 @@
+#ifndef OBJECT
+#define OBJECT
+#include "signal.h"
+#include "erreur.h"
+#include <map>
+namespace sfgl {
+class System {
+private :
+     static std::map<std::string, Signal*> signals;
+public :
+     template <typename S, typename... A> static void connect (const std::string &key, S slot, A... args) {
+         Signal *sign = new SignalWithoutReturn<S, A...> (slot, args...);
+         std::map<std::string, Signal*>::iterator it = signals.find(key);
+         if (it != signals.end())
+            throw Erreur (20, "This id is already used!", 0);
+         else
+            signals.insert(std::make_pair(key, sign));
+     }
+     template <typename R, typename S, typename... A> static void connectWithR (const std::string &key, S slot, A... args) {
+         Signal *sign = new SignalWithReturn<R, A...> (slot, args...);
+         std::map<std::string, Signal*>::iterator it = signals.find(key);
+         if (it != signals.end())
+            throw Erreur (20, "This id is already used!", 0);
+         else
+            signals.insert(std::make_pair(key, sign));
+     }
+     template <typename S, typename... A> static void emit (const std::string &key, A... args) {
+         std::map<std::string, Signal*>::iterator it = signals.find(key);
+         if (it == signals.end())
+            throw Erreur (21, "This id does'nt exist!", 0);
+         else {
+            SignalWithoutReturn<S, A...>& sig = dynamic_cast<SignalWithoutReturn<S, A...>&> (*it->second);
+            sig.changeParams (args...);
+            sig();
+        }
+     }
+     template <typename R, typename S, typename... A> static R emitWithR (const std::string &key, A... args) {
+         std::map<std::string, Signal*>::iterator it = signals.find(key);
+         if (it == signals.end())
+            throw Erreur (21, "This id does'nt exist!", 0);
+         else {
+            SignalWithoutReturn<R, S, A...>& sig = dynamic_cast<SignalWithReturn<R, S, A...>&> (*it->second);
+            sig.changeParams (args...);
+            sig();
+            return sig.getReturn();
+        }
+     }
+};
+std::map<std::string, Signal*> System::signals = std::map<std::string, Signal*> ();
+}
+#endif // OBJECT

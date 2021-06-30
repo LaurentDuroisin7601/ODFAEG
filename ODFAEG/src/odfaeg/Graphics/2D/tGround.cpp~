@@ -1,0 +1,66 @@
+#include "../../../../include/odfaeg/Graphics/2D/tGround.h"
+
+namespace odfaeg {
+    namespace g2d {
+using namespace sf;
+TileGround::TileGround (Vec2f pos) : Entity (pos, Vec2f (0, 0), Vec2f (0, 0), 0, "E_GROUND") {
+
+}
+void TileGround::addTile (Tile *tile) {
+    addChild(tile);
+    tile->setParent(this);
+    tiles.push_back(tile);
+    //recomputeSize();
+}
+void TileGround::recomputeSize() {
+    if (tiles.size() > 0) {
+        int minX = tiles[0]->getPosition().x;
+        int minY = tiles[0]->getPosition().y;
+        int maxX = tiles[0]->getPosition().x + tiles[0]->getSize().x;
+        int maxY = tiles[0]->getPosition().y + tiles[0]->getSize().y;
+        for (unsigned int i = 1; i < tiles.size(); i++) {
+            if (tiles[i]->getPosition().x < minX)
+                minX = tiles[i]->getPosition().x;
+            if (tiles[i]->getPosition().y < minY)
+                minY = tiles[i]->getPosition().y;
+            if (tiles[i]->getPosition().x + tiles[i]->getSize().x > maxX)
+                maxX = tiles[i]->getPosition().x + tiles[i]->getSize().x;
+            if (tiles[i]->getPosition().y > maxY)
+                maxY = tiles[i]->getPosition().y + tiles[i]->getSize().y;
+        }
+        setSize(Vec2f(maxX * 2 - minX * 2, maxY * 2 - minY * 2));
+
+        setScale(Vec2f(2, 2));
+    }
+}
+std::vector<Tile*> TileGround::getTiles () {
+    return tiles;
+}
+void TileGround::removeTile (Tile *tile) {
+    std::vector<Tile*>::iterator it;
+    for (it = tiles.begin(); it != tiles.end();) {
+        if (*it == tile) {
+            (*it)->setParent(nullptr);
+            removeChild(*it);
+            it = tiles.erase(it);
+        } else
+            it++;
+    }
+}
+
+
+bool TileGround::operator== (Entity &other) {
+    if (other.getType() != "E_GROUND")
+        return false;
+    TileGround &tGround = static_cast<TileGround&> (other);
+    for (unsigned int i = 0; i < tiles.size(); i++) {
+        if (*tiles[i] != *tGround.tiles[i])
+            return false;
+    }
+    return getPosition().x == tGround.getPosition().x
+            && getPosition().y == tGround.getPosition().y
+            && getSize().x == tGround.getSize().x
+            && getSize().y == tGround.getSize().y;
+}
+}
+}

@@ -1,0 +1,12 @@
+#Dir
+Demo_Example/
+obj/
+Tcp/
+old/
+xxx/
+bin/
+old/
+*.wdat
+_out/
+lib2/
+Windows_Debug/
