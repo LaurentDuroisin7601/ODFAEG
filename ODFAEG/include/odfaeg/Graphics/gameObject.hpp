@@ -164,9 +164,9 @@ namespace odfaeg {
             */
             template <typename Archive>
             void vtserialize(Archive & ar) {
-                if (!alreadySerialized) {
+                //if (!alreadySerialized) {
                     Entity::vtserialize(ar);
-                    alreadySerialized = true;
+                    //alreadySerialized = true;
                     //std::cout<<"entity"<<std::endl;
                     ar(parent);
                     //std::cout<<"parent : "<<parent<<std::endl;
@@ -195,9 +195,9 @@ namespace odfaeg {
 
                     ar(children);
                     //std::cout<<"children"<<std::endl;
-                } else {
+                /*} else {
                     alreadySerialized = false;
-                }
+                }*/
                     //std::cout<<"children"<<std::endl;
                 //std::cout<<"entity id : "<<getId()<<std::endl<<"Transform matrix : "<<getTransform().getMatrix()<<std::endl;
             }
