@@ -324,6 +324,7 @@ namespace odfaeg {
         bool Scene::addEntity(Entity *entity) {
             if (entity->isAnimated()) {
                 if (entity->getCurrentFrame() != nullptr) {
+                    //std::cout<<"position of current frame : "<<entity->getCurrentFrame()->getPosition()<<std::endl;
                     addEntity(entity->getCurrentFrame());
                 }
             } else {

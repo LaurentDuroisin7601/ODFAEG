@@ -244,7 +244,7 @@ namespace odfaeg {
             nbCasesPerRow = (cellWidth > 0) ? math::Math::abs(minX) + maxX + 1 : 1;
             nbCasesPerCol = (cellHeight > 0) ? math::Math::abs(minY) + maxY + 1 : 1;
             int nbCasesPerDepth = (cellDepth > 0) ? math::Math::abs(minZ) + maxZ + 1 : 1;
-            //std::cout<<"nbCasesPerRow : "<<nbCasesPerRow<<std::endl<<"nbCasesPerCol : "<<nbCasesPerCol<<std::endl;
+            //std::cout<<"nbCasesPerRow : "<<nbCasesPerRow<<std::endl<<"nbCasesPerCol : "<<nbCasesPerCol<<"nb cases per depth"<<nbCasesPerDepth<<std::endl;
             unsigned int newSize = nbCasesPerCol * nbCasesPerRow * nbCasesPerDepth;
             //std::cout<<"min z : "<<minZ<<std::endl;
             int indice = (math::Math::abs(minX) + coordsCaseP.x)

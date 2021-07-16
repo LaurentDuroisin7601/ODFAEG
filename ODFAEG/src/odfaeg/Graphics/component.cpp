@@ -4,10 +4,11 @@ namespace odfaeg {
     namespace graphic {
         //int Component::nbComponents = 0;
         Component::Component(RenderWindow& window, math::Vec3f position, math::Vec3f size, math::Vec3f origin, unsigned int priority)
-        : Transformable(position, size, origin),
+        : Drawable(), Transformable(position, size, origin),
         listener(),
         priority(priority),
         window(window) {
+            //std::cout<<"create component"<<std::endl;
             activateEventContext = true;
             visible = true;
             id = -1;

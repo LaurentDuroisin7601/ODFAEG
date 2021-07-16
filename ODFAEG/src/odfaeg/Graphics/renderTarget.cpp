@@ -908,11 +908,13 @@ namespace odfaeg {
                 glCheck(glGenVertexArrays(1, &vaoID));
                 m_vao = static_cast<unsigned int>(vaoID);
             }
+            #ifdef ODFAEG_DEBUG
             if (m_versionMajor >= 4) {
                 std::cout<<"load Debug functions"<<std::endl;
                 OpenGL::LoadDebugFunctions();
                 OpenGL::InitialiseDebugFunctions();
             }
+            #endif
             // Setup the default and current views
             m_defaultView = View (static_cast<float>(getSize().x), static_cast<float>(getSize().y), -static_cast<float>(getSize().y) - 200, static_cast<float>(getSize().y)+200);
             m_defaultView.reset(physic::BoundingBox(0, 0, -static_cast<float>(getSize().y) - 200,static_cast<float>(getSize().x), static_cast<float>(getSize().y),static_cast<float>(getSize().y)+200));

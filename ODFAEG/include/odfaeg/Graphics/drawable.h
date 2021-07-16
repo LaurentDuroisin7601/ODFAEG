@@ -36,6 +36,7 @@ namespace odfaeg {
         class ODFAEG_GRAPHICS_API Drawable
         {
         public :
+
             virtual ~Drawable() {}
         protected :
 

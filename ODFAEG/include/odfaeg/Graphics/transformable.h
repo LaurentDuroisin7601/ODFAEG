@@ -389,6 +389,7 @@ namespace odfaeg {
                 m_position = position;
                 /*if (name == "WALL")
                     std::cout<<"constructor size : "<<localBounds.getSize()<<std::endl;*/
+                //std::cout<<"create transform"<<std::endl;
                 m_size = size;
                 m_center = math::Vec3f (m_position.x + origin.x, m_position.y + origin.y, m_position.z + origin.z);
                 m_origin = origin;

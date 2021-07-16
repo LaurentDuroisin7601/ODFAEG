@@ -14,7 +14,6 @@ namespace odfaeg {
             interpLevels = 1;
             interpPerc = 0;
             interpolatedFrame = std::make_unique<Mesh>(math::Vec3f(0, 0, 0), math::Vec3f(0, 0, 0), "E_MESH");
-            interpolatedFrame->setParent(this);
         }
         Anim::Anim (float fr, math::Vec3f position, math::Vec3f size, Entity *parent) : AnimatedEntity (position, size, size * 0.5f, "E_ANIMATION", "", parent) {
             this->fr = fr;
@@ -28,21 +27,6 @@ namespace odfaeg {
             interpLevels = 1;
             interpPerc = 0;
             interpolatedFrame = std::make_unique<Mesh>(position, size, "E_MESH");
-            interpolatedFrame->setParent(this);
-        }
-        Entity* Anim::clone() {
-            Anim* anim = new Anim();
-            GameObject::copy(anim);
-            anim->fr = fr;
-            anim->currentFrameIndex = currentFrameIndex;
-            anim->currentFrame = currentFrame;
-            anim->previousFrame = previousFrame;
-            anim->nextFrame = nextFrame;
-            anim->loop = loop;
-            anim->interpLevels = interpLevels;
-            anim->interpPerc = interpPerc;
-            anim->interpolatedFrame.reset(interpolatedFrame->clone());
-            return anim;
         }
         bool Anim::isCurrentFrameChanged() {
             return currentFrameChanged;
@@ -91,12 +75,10 @@ namespace odfaeg {
             if (getChildren().size() > 1 && !running) {
                 running = true;
                 this->loop = loop;
-                setCurrentFrame(0);
             }
         }
-        void Anim::stop () {
+        void Anim::stop (){
             if (running) {
-                setCurrentFrame(0);
                 running = false;
             }
         }
@@ -121,8 +103,6 @@ namespace odfaeg {
                     if (currentFrameIndex >= getChildren().size()) {
                         currentFrameIndex = 0;
                         if (!loop) {
-                            currentFrameIndex = getChildren().size() - 1;
-                            setCurrentFrame(currentFrameIndex);
                             running = false;
                         }
                     }
@@ -145,8 +125,8 @@ namespace odfaeg {
             }
             if (currentFrame->isLeaf()) {
                 for (unsigned int i = 0; i < currentFrame->getFaces().size(); i++) {
-                    VertexArray va = currentFrame->getFace(i)->getVertexArray();
-                    Face face (va,currentFrame->getFace(i)->getMaterial(), currentFrame->getTransform());
+                    VertexArray va = currentFrame->getFaces()[i].getVertexArray();
+                    Face face (va,currentFrame->getFaces()[i].getMaterial(), currentFrame->getTransform());
                     interpolatedFrame->addFace(face);
                 }
                 interpolatedFrame->setType(currentFrame->getType());
@@ -167,15 +147,12 @@ namespace odfaeg {
             if (currentFrame->getFaces().size() == interpolatedFrame->getFaces().size()) {
                 for (unsigned int i = 0; i < currentFrame->getFaces().size(); i++) {
                     VertexArray& iva = interpolatedFrame->getFace(i)->getVertexArray();
-                    VertexArray va = currentFrame->getFace(i)->getVertexArray();
+                    VertexArray va = currentFrame->getFaces()[i].getVertexArray();
                     for (unsigned int n = 0; n < va.getVertexCount(); n++) {
                         iva[n] = va[n];
                     }
-                    /*if(scene != nullptr) {
-                        scene->updateVertices(iva);
-                    }*/
-                    interpolatedFrame->getFaces()[i].setMaterial(currentFrame->getFace(i)->getMaterial());
-                    interpolatedFrame->getFaces()[i].setTransformMatrix(currentFrame->getFace(i)->getTransformMatrix());
+                    interpolatedFrame->getFaces()[i].setMaterial(currentFrame->getFaces()[i].getMaterial());
+                    interpolatedFrame->getFaces()[i].setTransformMatrix(currentFrame->getFaces()[i].getTransformMatrix());
                 }
                 interpolatedFrame->setPosition(currentFrame->getPosition());
                 interpolatedFrame->setSize(currentFrame->getSize());
@@ -205,8 +182,7 @@ namespace odfaeg {
                             }
                             interpolatedFrame->getFace(i)->setMaterial(currentFrame->getFace(i)->getMaterial());
                             interpolatedFrame->getFace(i)->setTransformMatrix(currentFrame->getFace(i)->getTransformMatrix());
-                            /*if (scene != nullptr)
-                                scene->updateVertices(iva);*/
+
                         }
                     }
                 }
@@ -219,7 +195,18 @@ namespace odfaeg {
             clock.restart();
         }
         bool Anim::operator== (Entity &other) {
-            return GameObject::operator==(other);
+
+            if (other.getType() != "E_ANIMATION")
+                return false;
+            Anim &a = static_cast<Anim&> (other);
+            if (getPosition().x != a.getPosition().x || getPosition().y != a.getPosition().y
+                || getSize().x != a.getSize().x || getSize().y != a.getSize().y)
+                return false;
+            for (unsigned int i = 0; i < getChildren().size(); i++) {
+                if (!(*getChildren()[i] == *a.getChildren()[i]))
+                    return false;
+            }
+            return true;
         }
 
         float Anim::getFrameRate () {
@@ -235,9 +222,22 @@ namespace odfaeg {
             GameObject::onMove(t);
             interpolatedFrame->move(t);
         }
+        Entity* Anim::clone() {
+            Anim* anim = new Anim();
+            GameObject::copy(anim);
+            anim->fr = fr;
+            anim->currentFrameIndex = currentFrameIndex;
+            anim->currentFrame = currentFrame;
+            anim->previousFrame = previousFrame;
+            anim->nextFrame = nextFrame;
+            anim->loop = loop;
+            anim->interpLevels = interpLevels;
+            anim->interpPerc = interpPerc;
+            anim->interpolatedFrame.reset(interpolatedFrame->clone());
+            return anim;
+        }
         Anim::~Anim () {
 
         }
     }
 }
-
