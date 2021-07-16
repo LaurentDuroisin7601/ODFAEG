@@ -108,7 +108,7 @@ namespace odfaeg {
                     template <typename Archive>
                     void vtserialize(Archive & ar) {
                         Model::vtserialize(ar);
-                        std::cout<<"wall type : "<<type<<std::endl;
+                        //std::cout<<"wall type : "<<type<<std::endl;
                         ar(type);
                     }
                     Entity* clone();
