@@ -1,11 +1,93 @@
 #include <SFML/OpenGL.hpp>
 #include "../../../include/odfaeg/Graphics/renderWindow.h"
+#ifndef VULKAN
 #include "glCheck.h"
-//#include "GlDebug.hpp"
+#endif
+
 
 namespace odfaeg {
     namespace graphic {
         using namespace sf;
+        #ifdef VULKAN
+        ////////////////////////////////////////////////////////////
+        RenderWindow::RenderWindow() : RenderTarget(getVkSettup())
+        {
+            // Nothing to do
+        }
+        ////////////////////////////////////////////////////////////
+        RenderWindow::RenderWindow(VideoMode mode, const String& title, Uint32 style, const window::ContextSettings& settings) : RenderTarget(getVkSettup())
+        {
+            // Don't call the base class constructor because it contains virtual function calls
+            create(mode, title, style, settings);
+        }
+         ////////////////////////////////////////////////////////////
+        RenderWindow::RenderWindow(WindowHandle handle, const window::ContextSettings& settings) : RenderTarget(getVkSettup())
+        {
+            // Don't call the base class constructor because it contains virtual function calls
+            create(handle, settings);
+        }
+        void RenderWindow::cleanup() {
+            for (auto framebuffer : swapChainFramebuffers) {
+                vkDestroyFramebuffer(vkSettup.getDevice(), framebuffer, nullptr);
+            }
+        }
+        ////////////////////////////////////////////////////////////
+        RenderWindow::~RenderWindow()
+        {
+            cleanup();
+            RenderTarget::cleanup();
+            vkSettup.cleanup();
+        }
+        ////////////////////////////////////////////////////////////
+        Vector2u RenderWindow::getSize() const
+        {
+            return Window::getSize();
+        }
+        ////////////////////////////////////////////////////////////
+        void RenderWindow::onCreate()
+        {
+            // Just initialize the render target part
+            RenderTarget::initialize();
+            createRenderPass();
+            createFramebuffers();
+        }
+
+
+        ////////////////////////////////////////////////////////////
+        void RenderWindow::onResize()
+        {
+            // Update the current view (recompute the viewport, which is stored in relative coordinates)
+            setView(getView());
+            vkSettup.recreateSwapchain();
+            cleanup();
+            vkDestroyRenderPass(vkSettup.getDevice(), renderPass, nullptr);
+            createRenderPass();
+            createFramebuffers();
+        }
+        void RenderWindow::createFramebuffers() {
+            std::vector<VkImageView>& swapChainImageViews = vkSettup.getSwapChainImageViews();
+            swapChainFramebuffers.resize(swapChainImageViews.size());
+
+            for (size_t i = 0; i < swapChainImageViews.size(); i++) {
+                VkImageView attachments[] = {
+                    swapChainImageViews[i]
+                };
+
+                VkFramebufferCreateInfo framebufferInfo{};
+                framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+                framebufferInfo.renderPass = renderPass;
+                framebufferInfo.attachmentCount = 1;
+                framebufferInfo.pAttachments = attachments;
+                framebufferInfo.width = vkSettup.getSwapchainExtends().width;
+                framebufferInfo.height = vkSettup.getSwapchainExtends().height;
+                framebufferInfo.layers = 1;
+
+                if (vkCreateFramebuffer(vkSettup.getDevice(), &framebufferInfo, nullptr, &swapChainFramebuffers[i]) != VK_SUCCESS) {
+                    throw core::Erreur(0, "failed to create framebuffer!", 1);
+                }
+            }
+        }
+        #else
         ////////////////////////////////////////////////////////////
         RenderWindow::RenderWindow()
         {
@@ -40,7 +122,6 @@ namespace odfaeg {
         ////////////////////////////////////////////////////////////
         bool RenderWindow::activate(bool active)
         {
-
             return setActive(active);
         }
 
@@ -90,6 +171,7 @@ namespace odfaeg {
             // Update the current view (recompute the viewport, which is stored in relative coordinates)
             setView(getView());
         }
+        #endif // VULKAN
     }
 
 } // namespace sf

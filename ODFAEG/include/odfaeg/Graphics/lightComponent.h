@@ -1,16 +1,18 @@
 #ifndef ODFAEG_LIGHT_COMPONENT
 #define ODFAEG_LIGHT_COMPONENT
-
-//#include <GL/glew.h>
-#include <SFML/OpenGL.hpp>
+#include <GL/glew.h>
 #include "component.h"
+#ifndef VULKAN
+
 #include "glCheck.h"
+
+#endif
 namespace odfaeg {
     namespace graphic {
         class LightComponent : public Component {
             public :
             LightComponent(RenderWindow& window, math::Vec3f position, math::Vec3f size, math::Vec3f origin, unsigned int priority = 0, LightComponent* parent = nullptr) :
-                Component (window, position, size, origin, priority), parent(parent) {
+                Component (window, position, size, origin, priority), parent(parent), enableScissorTest(true) {
             }
             void setParent(LightComponent* parent) {
                 this->parent = parent;
@@ -44,6 +46,9 @@ namespace odfaeg {
                     }
                     setSize(math::Vec3f(nsx, nsy, 0.f));
                     setPosition(math::Vec3f(npx, npy, getPosition().z));
+                    /*if (getName() == "LFILE") {
+                        std::cout<<"set position : "<<this<<std::endl;
+                    }*/
                     if (getSize().x > psx)
                         setSize(math::Vec3f(psx, getSize().y, 0));
                     if (getSize().y > psy)
@@ -58,21 +63,29 @@ namespace odfaeg {
             void draw(RenderTarget& target, RenderStates states) {
                 //states.transform = getTransform();
                 getWindow().setActive(true);
-                if (getWindow().getName() == "WAPPLICATIONNEW") {
-                    GLboolean* params =  new GLboolean[1];
-                    glGetBooleanv(GL_SCISSOR_TEST, params);
-                    if (params[0] == GL_TRUE)
-                       std::cout<<getWindow().getName()<<" true"<<std::endl;
-                    else
-                       std::cout<<getWindow().getName()<<" false"<<std::endl;
-                }
+
                 onDraw(target, states);
+                /*if (getName() == "TAB_PANE") {
+                    GLint values[4];
+                    glCheck(glGetIntegerv(GL_SCISSOR_BOX, values));
+                    GLboolean sctest;
+                    glGetBooleanv(GL_SCISSOR_TEST, &sctest);
+                    std::cout<<"scissor test activated ? "<<(int) sctest<<std::endl;
+                    for (unsigned int i = 0; i < 4; i++)
+                        std::cout<<"value : "<<values[i]<<std::endl;
+                }*/
                 std::multimap<int, LightComponent*, std::greater<int>> sortedChildren;
                 for (unsigned int i = 0; i < children.size(); i++) {
+                    /*if (children[i]->getName() == "LFILE") {
+                        std::cout<<"set position : "<<children[i]->getPosition()<<std::endl;
+                    }*/
                     sortedChildren.insert(std::make_pair(children[i]->getPriority(), children[i].get()));
                 }
                 std::multimap<int, LightComponent*, std::greater<int>>::iterator it;
                 for (it = sortedChildren.begin(); it != sortedChildren.end(); it++) {
+                    /*if (it->second->getName() == "LFILE") {
+                        std::cout<<"position : "<<it->second<<std::endl;
+                    }*/
                     if (it->second->isVisible()
                         && it->second->getPosition().x + it->second->getSize().x >= getPosition().x
                         && it->second->getPosition().y + it->second->getSize().y >= getPosition().y
@@ -82,12 +95,18 @@ namespace odfaeg {
                         it->second->draw(target, states);
                     }
                 }
+                /*if (enableScissorTest) {
+                    glCheck(glScissor(getPosition().x, getWindow().getSize().y - (getPosition().y + getSize().y), getSize().x, getSize().y));
+                }*/
                 drawOn(target, states);
+                /*if (getParent() == nullptr)
+                    glCheck(glDisable(GL_SCISSOR_TEST));*/
             }
             virtual void onDraw(RenderTarget &target, RenderStates states) {}
             virtual void drawOn(RenderTarget &target, RenderStates states) {}
             virtual void onSizeRecomputed() {}
             virtual void addChild(LightComponent* child) {
+                //child->setScissorTestEnabled(enableScissorTest);
                 std::unique_ptr<LightComponent> ptr;
                 ptr.reset(child);
                 children.push_back(std::move(ptr));
@@ -105,23 +124,27 @@ namespace odfaeg {
                 }
             }
             virtual void pushEvent(window::IEvent event, RenderWindow &rw) {
-                getListener().pushEvent(event);
-                if (event.type == odfaeg::window::IEvent::WINDOW_EVENT && event.window.type == odfaeg::window::IEvent::WINDOW_EVENT_RESIZED) {
-                    if (isRelPosition()) {
-                        setAutoResized(true);
+                if (isEventContextActivated()) {
+                    getListener().pushEvent(event);
+                    if (event.type == odfaeg::window::IEvent::WINDOW_EVENT && event.window.type == odfaeg::window::IEvent::WINDOW_EVENT_RESIZED) {
+                        if (isRelPosition()) {
+                            setAutoResized(true);
+                        }
                     }
+                    onEventPushed(event, rw);
                 }
-                onEventPushed(event, rw);
                 for (unsigned int i = 0; i < children.size(); i++) {
                     children[i]->pushEvent(event, rw);
                 }
             }
             virtual void processEvents() {
                 if (isEventContextActivated()) {
+                    /*if (getName() == "TEXCOORDY")
+                        std::cout<<"process pmaterial event"<<std::endl;*/
                     getListener().processEvents();
-                    for (unsigned int i = 0; i < children.size(); i++) {
-                        children[i]->processEvents();
-                    }
+                }
+                for (unsigned int i = 0; i < children.size(); i++) {
+                    children[i]->processEvents();
                 }
             }
             virtual void removeAll() {
@@ -141,7 +164,23 @@ namespace odfaeg {
                 return found;
             }
             virtual ~LightComponent() {}
+            void setScissorTestEnabled(bool scissor) {
+                enableScissorTest = scissor;
+                /*for (unsigned int i = 0; i < children.size(); i++) {
+                    children[i]->setScissorTestEnabled(scissor);
+                }*/
+
+            }
+            void onEventContextActivated(bool activate) {
+                for (unsigned int i = 0; i < children.size(); i++) {
+                    children[i]->setEventContextActivated(activate);
+                }
+            }
+            unsigned int getComponentType() const {
+                return 1;
+            }
             private :
+            bool enableScissorTest;
             LightComponent* parent;
             std::vector<std::unique_ptr<LightComponent>> children;
         };

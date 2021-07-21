@@ -16,7 +16,7 @@ namespace odfaeg {
                 KEY_EVENT_PRESSED, KEY_EVENT_RELEASED
             };
             enum MouseEventID {
-                BUTTON_EVENT_PRESSED, BUTTON_EVENT_RELEASED
+                BUTTON_EVENT_PRESSED, BUTTON_EVENT_RELEASED, MOUSE_WHEEL_MOVED
             };
             struct WindowEvent {
                 unsigned int type;

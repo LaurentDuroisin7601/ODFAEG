@@ -1078,7 +1078,7 @@ namespace odfaeg {
             m_bKeyInit = true;
         }
         void AES_ENC::generateKey(unsigned int size) {
-            mpz_t k;
+            /*mpz_t k;
             gmp_randstate_t state;
             gmp_randinit_default(state);
             mpz_init(k);
@@ -1169,7 +1169,7 @@ namespace odfaeg {
                         sm_U3[(tt >>  8) & 0xFF] ^
                         sm_U4[tt & 0xFF];
                 }
-            m_bKeyInit = true;
+            m_bKeyInit = true;*/
         }
         //Convenience method to encrypt exactly one block of plaintext, assuming
         //Rijndael's default block size (128-bit).

@@ -1,9 +1,9 @@
 #ifndef BSP_TREE
 #define BSP_TREE
 #include "cellMap.h"
-#include "../../math/computer.h"
-#include "plane.h"
-#include "../../Physics/boundingPolyhedron.h"
+#include "../Math/computer.h"
+#include "../Math/plane.h"
+#include "../Physics/boundingPolyhedron.h"
 namespace odfaeg {
 template <typename E>
 class BspTree {

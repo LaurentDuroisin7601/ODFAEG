@@ -31,7 +31,7 @@ namespace odfaeg {
             * \brief add a 2D animation to the updater.
             * \param g2d::Anim : the 2D animation to add.
             */
-            void addAnim (Anim *anim) {
+            void addAnim (Entity *anim) {
                 anims.push_back(anim);
             }
             /**
@@ -42,18 +42,21 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < anims.size(); i++) {
                     if (anims[i]->isRunning() &&
                         anims[i]->getElapsedTime().asSeconds() > anims[i]->getFrameRate()) {
-                        anims[i]->computeNextFrame(scene);
+                        anims[i]->computeNextFrame();
                         if (anims[i]->isCurrentFrameChanged() /*&& graphic::World::containsVisibleParentEntity(anims[i]->getRootEntity())*/) {
-                            graphic::World::changeVisibleEntity(anims[i]->getPreviousFrame(), anims[i]->getCurrentFrame());
+                            //graphic::World::changeVisibleEntity(anims[i]->getPreviousFrame(), anims[i]->getCurrentFrame());
                         }
                         anims[i]->setCurrentFrameChanged(false);
                         anims[i]->resetClock();
                     }
                 }
             }
+            std::vector<Entity*> getAnims() {
+                return anims;
+            }
         private :
             /** < the animations of the updater. */
-            std::vector<Anim*> anims;
+            std::vector<Entity*> anims;
             EntityManager* scene;
         };
     }

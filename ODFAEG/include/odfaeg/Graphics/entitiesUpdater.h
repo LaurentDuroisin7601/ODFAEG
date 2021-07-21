@@ -1,7 +1,7 @@
 #ifndef ODFAEG_ENTITIES_UPDATER_HPP
 #define ODFAEG_ENTITIES_UPDATER_HPP
 #include "../Core/entitySystem.h"
-#include "../Graphics/world.h"
+#include "../Graphics/application.h"
 #include "export.hpp"
 /**
 *\namespace odfaeg
@@ -26,7 +26,8 @@ namespace odfaeg {
             * \brief update all the entities which are in the current view.
             */
             void onUpdate () {
-                graphic::World::checkVisibleEntities();
+                //std::cout<<"update"<<std::endl;
+                core::Application::app->getWorld()->checkVisibleEntities();
             }
         private :
 

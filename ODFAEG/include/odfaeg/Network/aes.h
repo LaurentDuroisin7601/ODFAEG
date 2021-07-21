@@ -14,7 +14,6 @@
 #include "../Math/bigInt.hpp"
 #include <map>
 #include <memory>
-#include <gmpxx.h>
 #include <exception>
 #include <cstring>
 /**
@@ -32,7 +31,7 @@ namespace odfaeg {
           * \date 1/02/2014
           *
           */
-        class ODFAEG_NETWORK_API AES_ENC {
+        class ODFAEG_API_EXPORT AES_ENC {
         public:
             //Operation Modes
             //The Electronic Code Book (ECB), Cipher Block Chaining (CBC) and Cipher Feedback Block (CFB) modes
@@ -106,10 +105,10 @@ namespace odfaeg {
                 delete[] aesPass;
                 EVP_CIPHER_CTX_free(d_ctx);
                 EVP_CIPHER_CTX_free(e_ctx);
-                delete e_ctx;
-                delete d_ctx;
-            }
+                /*delete e_ctx;
+                delete d_ctx;*/
             //Expand a user-supplied key material into a session key.
+            }
             // key        - The 128/192/256-bit user-key to use.
             // chain      - initial chain block for CBC and CFB modes.
             // keylength  - 16, 24 or 32 bytes

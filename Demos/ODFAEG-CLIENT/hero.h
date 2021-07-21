@@ -7,22 +7,7 @@
 namespace sorrok {
     class Hero : public Caracter {
     public :
-        struct Novice {
-
-        };
-        struct Warrior {
-
-        };
-        struct Magician {
-
-        };
-        struct Thief {
-
-        };
-        enum class Job {
-            Novice, Warrior, Magician, Thief
-        };
-        Hero() : Caracter("E_HERO", "", "", "", 0), job(Job::Novice) {}
+        Hero() : Caracter("E_HERO", "", "", "", 0) {}
         Hero(std::string factionName, std::string name, std::string sex, std::string currentMapName, std::string hairColor,
         std::string eyesColor, std::string skinColor, std::string faceType, std::string classs, int level);
         void setIsMovingFromKeyboard(bool b);
@@ -35,6 +20,7 @@ namespace sorrok {
         void up (int xp);
         int getCurrentXp ();
         int getXpReqForNextLevel ();
+        std::vector<Skill> getSkills();
         template <typename Archive>
         void vtserialize(Archive& ar) {
             Caracter::vtserialize(ar);
@@ -49,15 +35,13 @@ namespace sorrok {
             ar(skills);
         }
         void addItem (Item item);
-        bool containsQuest(Quest* quest);
-        void addQuest(Quest* quest);
-        void removeQuest (Quest* quest);
-        std::vector<Quest*> getDiary();
+        bool containsQuest(std::string name);
+        void addQuest(Quest quest);
+        void removeQuest (Quest quest);
+        Quest* getQuest(std::string name);
+        std::vector<Quest> getDiary();
         std::map<Item::Type, std::vector<Item>>& getInventory();
-        Job getJobType();
-        odfaeg::core::Variant<Hero::Novice, Hero::Warrior, Hero::Magician, Hero::Thief> getJobVariant();
         void addSkill (Skill skill);
-        std::vector<Skill> getSkills();
         ~Hero();
     private :
         std::string factionName, sex, hairColor, eyesColor, skinColor, faceType;
@@ -65,8 +49,7 @@ namespace sorrok {
         int xp, xpReqForNextLevel;
         std::map<Item::Type, std::vector<Item>> inventory;
         std::vector<Skill> skills;
-        std::vector<Quest*> diary;
-        Job job;
+        std::vector<Quest> diary;
     };
 }
 #endif // HERO_HPP

@@ -5,12 +5,12 @@
 // *** END ***
 #ifndef MY_APPLI
 #define MY_APPLI
-#include "odfaeg/Core/application.h"
+#include "odfaeg/Graphics/application.h"
 #include "odfaeg/Graphics/convexShape.h"
 #include "odfaeg/Graphics/rectangleShape.h"
 #include "odfaeg/Graphics/circleShape.h"
 #include "odfaeg/Graphics/tile.h"
-#include "odfaeg/Core/world.h"
+#include "odfaeg/Graphics/world.h"
 #include "odfaeg/Graphics/map.h"
 #include "odfaeg/Graphics/perPixelLinkedListRenderComponent.hpp"
 #include "odfaeg/Graphics/2D/decor.h"
@@ -19,7 +19,6 @@
 #include "odfaeg/Graphics/2D/ponctualLight.h"
 #include "odfaeg/Graphics/2D/wall.h"
 #include "odfaeg/Graphics/tGround.h"
-#include "odfaeg/Core/actionMap.h"
 #include "odfaeg/Graphics/entitiesUpdater.h"
 #include "odfaeg/Graphics/animationUpdater.h"
 #include "odfaeg/Graphics/particleSystemUpdater.hpp"
@@ -27,7 +26,7 @@
 #include "monster.h"
 #include "odfaeg/Network/network.h"
 #include "odfaeg/Graphics/sprite.h"
-#include "odfaeg/Graphics/zSortingRenderComponent.hpp"
+
 #include "odfaeg/Graphics/shadowRenderComponent.hpp"
 #include "odfaeg/Graphics/lightRenderComponent.hpp"
 #include "odfaeg/Graphics/GUI/label.hpp"
@@ -44,6 +43,7 @@
 #include <unordered_map>
 #include "gameAction.hpp"
 #include "itemAction.hpp"
+#include "skillAction.hpp"
 #include "pnj.hpp"
 #include "skill.hpp"
 namespace sorrok {
@@ -76,7 +76,7 @@ namespace sorrok {
         odfaeg::graphic::gui::ProgressBar* hpBar, *xpBar, *manaBar;
         odfaeg::graphic::gui::Panel* pItems, *pInventory, *pQuestList, *pQuestNames, *pQuestProgress, *pRewards, *pSkills;
         bool isClientAuthentified;
-        std::vector<std::pair<odfaeg::graphic::Sprite*, std::vector<Item>>> cristals;
+        std::map<int, std::pair<odfaeg::graphic::Sprite*, std::vector<Item>>> cristals;
         std::pair<odfaeg::graphic::Sprite*, std::vector<Item>> selectedCristal;
         Quest* selectedQuest;
         Pnj* selectedPnj;
@@ -86,7 +86,7 @@ namespace sorrok {
         std::vector<odfaeg::physic::ParticleSystem*> particles2;
         std::map<std::string, sf::Time> doubleClicks;
         odfaeg::physic::UniversalEmitter emitter, emitter2;
-        std::vector<std::pair<odfaeg::core::Variant<Hero::Novice, Hero::Warrior, Hero::Magician, Hero::Thief>, std::pair<odfaeg::core::Variant<Item, Skill>, Hero*>>> gameActions;
+        std::vector<std::pair<odfaeg::core::Variant<Item, Skill>, Hero*>> gameActions;
         std::vector<std::pair<std::pair<Caracter*, odfaeg::graphic::Text>, std::pair<sf::Time, sf::Time>>> tmpTexts;
         std::vector<odfaeg::graphic::Entity*> monsters;
         std::array<odfaeg::core::Variant<Item, Skill>*, 9> shorcuts;
@@ -124,6 +124,7 @@ namespace sorrok {
         void onIconPressed(odfaeg::graphic::gui::Icon* icon);
         void retractFromInventory(Item& item);
         void onF1Pressed();
+        ~MyAppli();
     };
 }
 #endif // MY_APPLI

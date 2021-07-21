@@ -1,80 +1,81 @@
 #include "../../../include/odfaeg/Graphics/entity.h"
+#include "../../../include/odfaeg/Graphics/application.h"
 namespace odfaeg {
     namespace graphic {
+        //Initialization of static variables.
         int Entity::nbEntities = 0;
         int Entity::nbEntitiesTypes = 0;
-        std::map<int, std::string>* Entity::types = initTypes();
-        Entity::Entity (math::Vec3f position, math::Vec3f size, math::Vec3f origin, std::string sType, Entity *parent) :
-            Transformable (position, size, origin), Drawable(), entityState("Entity State", nullptr) {
-            this->parent = parent;
-            types = initTypes();
-            int iType = getIntOfType(sType);
-            if (iType == -1) {
-                type = std::pair<int, std::string> (nbEntitiesTypes, sType);
-                types->insert(type);
-                nbEntitiesTypes++;
+        std::map<int, std::string> Entity::types = std::map<int, std::string>();
+        //Construct an entity with the given position, size, origin, type and name.
+        Entity::Entity (math::Vec3f position, math::Vec3f size, math::Vec3f origin, std::string sType, std::string name) :
+            Transformable (position, size, origin, name), Drawable(), entityState("Entity State", nullptr) {
+            /*If this is an ODFAEG Application and if we call functions from a shared lib (like ODFAEGCreator), we prefer to avoid to use
+            static variables which leads to problems because they haven't the expected values when there are used in an executable and in a shared lib.
+            So global variables are stored as member variables of the application class which contains everything.
+            But if this is a simple application which just draw things on a render window like SFML applications, we can use static variables rather than
+            having a factory class to store global variables as member variables in this case.*/
+            if (core::Application::app != nullptr) {
+                id = core::Application::app->getUniqueId()-1;
+                type = core::Application::app->updateTypes(sType);
             } else {
-                std::map<int, std::string>::iterator it = types->find(iType);
-                type = *it;
+                id = nbEntities;
+                int iType = getIntOfType(sType);
+                if (iType == -1) {
+                    type = std::pair<int, std::string> (nbEntitiesTypes, sType);
+                    types.insert(type);
+                    nbEntitiesTypes++;
+                } else {
+                    std::map<int, std::string>::iterator it = types.find(iType);
+                    type = *it;
+                }
+                nbEntities++;
             }
-            id = nbEntities;
             getTransform().setEntityId(id);
-            nbEntities++;
-            alreadySerialized = false;
-            collisionVolume = nullptr;
-            shadowOrigin = math::Vec3f (0, 0, 0);
-            shadowCenter = math::Vec3f (0, 0, 0);
-            shadowScale = math::Vec3f(1.f, 1.f, 1.f);
-            shadowRotationAngle = 0;
-            shadowRotationAxis = math::Vec3f::zAxis;
-            boneIndex = 0;
         }
-        std::string Entity::getRootType() {
-            if (parent != nullptr) {
-                return parent->getRootType();
+        //Setup the static variables when reading entities from an input stream.
+        void Entity::onLoad() {
+            if (core::Application::app != nullptr) {
+                type = core::Application::app->updateTypes(getType());
+            } else {
+                int iType = getIntOfType(getType());
+                if (iType == -1) {
+                    type = std::pair<int, std::string> (nbEntitiesTypes, getType());
+                    types.insert(type);
+                    nbEntitiesTypes++;
+                }
+                nbEntities++;
             }
-            return getType();
         }
-        int Entity::getRootTypeInt() {
-            if (parent != nullptr) {
-                return parent->getTypeInt();
-            }
-            return getTypeInt();
-        }
-        Entity* Entity::getRootEntity() {
-            if (parent == nullptr)
-                return this;
-            return parent->getRootEntity();
-        }
+        //Return the number of entities created.
         int Entity::getNbEntities () {
             return nbEntities;
         }
-        void Entity::draw (RenderTarget& target, RenderStates states) {
-            states.transform = getTransform();
-            onDraw(target, states);
-            for (unsigned int i = 0; i < children.size(); i++) {
-                children[i]->draw(target, states);
-            }
-        }
+        //Change the type of the entity and updates global variables.
         void Entity::setType(std::string sType) {
-            int iType = getIntOfType(sType);
-            if (iType == -1) {
-                type = std::pair<int, std::string> (nbEntitiesTypes, sType);
-                types->insert(type);
-                nbEntitiesTypes++;
+            if (core::Application::app != nullptr) {
+                type = core::Application::app->updateTypes(sType);
             } else {
-                std::map<int, std::string>::iterator it = types->find(iType);
-                type = *it;
+                int iType = getIntOfType(sType);
+                if (iType == -1) {
+                    type = std::pair<int, std::string> (nbEntitiesTypes, sType);
+                    types.insert(type);
+                    nbEntitiesTypes++;
+                } else {
+                    std::map<int, std::string>::iterator it = types.find(iType);
+                    type = *it;
+                }
             }
         }
+        //Get the type of the entity.
         std::string Entity::getType () const {
             return type.second;
         }
+        //We may want to change ids of the entities when we remove ones.
         void Entity::setId (int id) {
             this->id = id;
             onIDUpdated(id);
         }
-        int& Entity::getId () {
+        int Entity::getId () {
 
             return id;
         }
@@ -84,168 +85,256 @@ namespace odfaeg {
         int Entity::getIntOfType(std::string sType) {
 
             std::map<int, std::string>::iterator it;
-            for (it = types->begin(); it != types->end(); ++it) {
+            for (it = types.begin(); it != types.end(); ++it) {
                 if (it->second == sType)
                     return it->first;
             }
             return -1;
         }
         std::string Entity::getTypeOfInt (int type) {
-            std::map<int, std::string>::iterator it = types->find(type);
+            std::map<int, std::string>::iterator it = types.find(type);
             return it->second;
         }
-        Entity* Entity::getChild(unsigned int n) {
-            if (n >= 0 && n < children.size())
-                return children[n].get();
-            return nullptr;
+        int Entity::getNbEntitiesTypes () {
+            return nbEntitiesTypes;
         }
-        void Entity::addChild (Entity* child) {
-            std::vector<math::Vec3f> vecs;
-            std::unique_ptr<Entity> ptr;
-            ptr.reset(child);
-            children.push_back(std::move(ptr));
-            for (unsigned int i = 0; i < children.size(); i++) {
-                vecs.push_back(children[i]->getPosition());
-                vecs.push_back(children[i]->getPosition() + children[i]->getSize());
-            }
-            std::array<std::array<float, 2>, 3> minsMaxs;
-            minsMaxs = math::Computer::getExtends(vecs);
-            math::Vec3f pos((int) minsMaxs[0][0], (int) minsMaxs[1][0], (int) minsMaxs[2][0]);
-            math::Vec3f size((int) minsMaxs[0][1] - (int) minsMaxs[0][0], (int) minsMaxs[1][1] - (int) minsMaxs[1][0], (int) minsMaxs[2][1] - (int) minsMaxs[2][0]);
-            setLocalBounds(physic::BoundingBox(pos.x, pos.y, pos.z, size.x, size.y, size.z));
-            vecs.clear();
+        void Entity::setSelected(bool selected) {
+            this->selected = selected;
         }
-        void Entity::removeChild (Entity *child) {
-            std::vector<std::unique_ptr<Entity>>::iterator it;
-            for (it = children.begin(); it != children.end();) {
-                if (it->get() == child) {
-                    delete it->release();
-                    it = children.erase(it);
-                } else
-                    it++;
-            }
+        bool Entity::isSelected() {
+            return selected;
         }
-        void Entity::updateTransform() {
+        //Copy entities variables to another entity when cloning, so, we don't need to copy them on each clone method redefinition of derived classes.
+        void Entity::copy(Entity* entity) {
+            entity->m_position = m_position;
+            entity->m_size = m_size;
+            entity->m_scale = m_scale;
+            entity->m_origin = m_origin;
+            entity->m_rotation = m_rotation;
+            entity->m_center = m_center;
+            entity->localBounds = localBounds;
+            entity->globalBounds = globalBounds;
+            entity->tm = tm;
+            entity->name = name;
+            entity->type = type;
+            entity->entityState = entityState;
+        }
+        //Do nothing by default.
+        void Entity::setExternalObjectName(std::string externalObjectName) {
 
-            getTransform().update();
-            for (unsigned int i = 0; i < children.size(); i++) {
-                children[i]->updateTransform();
-            }
-            /*if (!(RenderTarget::getMajorVersion() >= 3 && RenderTarget::getMinorVersion() >= 3)) {
-                for (unsigned int i = 0; i < faces.size(); i++) {
-                    VertexArray& va = faces[i]->getVertexArray();
-                    va.transform(getTransform());
-                }
-            }*/
         }
-        //Return the children of the entities.
-        std::vector<Entity*> Entity::getChildren() const {
-            std::vector<Entity*> childs;
-            for (unsigned int i = 0; i < children.size(); i++)
-                childs.push_back(children[i].get());
-            return childs;
+        //Return empty string by default.
+        std::string Entity::getExternalObjectName() {
+            return "";
         }
+        //Do nothing by default.
+        void Entity::setExternal(bool external) {
 
-        //Return the number of entity's children.
-        unsigned int Entity::getNbChildren () {
-            return children.size();
         }
-        void Entity::setParent(Entity *parent) {
-            this->parent = parent;
+        //Return false by default.
+        bool Entity::isExternal() {
+            return false;
+        }
+        //Do nothing by default.
+        void Entity::setLayer(float layer) {
+
+        }
+        //Returns 0 by default.
+        float Entity::getLayer() {
+            return 0;
+        }
+        //Do nothing by default.
+        void Entity::setDrawMode(DrawMode dm) {
+
+        }
+        //Return normal by default.
+        Entity::DrawMode Entity::getDrawMode() {
+            return NORMAL;
+        }
+        //Return the type of this entity by default.
+        std::string Entity::getRootType() {
+            return type.second;
+        }
+        //Return the integer value of the type of this entity by default.
+        int Entity::getRootTypeInt() {
+            return getTypeInt();
+        }
+        //Return this by default.
+        Entity* Entity::getRootEntity() {
+            return this;
         }
         Entity* Entity::getParent() const {
-            return parent;
-        }
-
-        void Entity::onMove(math::Vec3f &t) {
-            //updateTransform();
-            for (unsigned int i = 0; i < children.size(); i++) {
-                children[i]->move(t);
-            }
-
-
-        }
-        void Entity::onScale(math::Vec3f &s) {
-            //updateTransform();
-            for (unsigned int i = 0; i < children.size(); i++) {
-                children[i]->scale(s);
-            }
-
-        }
-        void Entity::onRotate(float angle) {
-            //updateTransform();
-            for (unsigned int i = 0; i < children.size(); i++) {
-                children[i]->rotate(angle);
-            }
-        }
-        void Entity::addFace (Face* face) {
-            std::unique_ptr<Face> ptr;
-            ptr.reset(face);
-            faces.push_back(std::move(ptr));
-        }
-        std::vector<Face*> Entity::getFaces() const {
-            std::vector<Face*> fcs;
-            for (unsigned int i = 0; i < faces.size(); i++) {
-                fcs.push_back(faces[i].get());
-            }
-            return fcs;
-        }
-        unsigned int Entity::getNbFaces() {
-            return faces.size();
-        }
-        Face* Entity::getFace(unsigned int n) {
-            if (n >= 0 && n < faces.size())
-                return faces[n].get();
             return nullptr;
         }
-         void Entity::setShadowCenter(math::Vec3f shadowCenter) {
-                this->shadowCenter = shadowCenter;
-                for (unsigned int i = 0; i < children.size(); i++) {
-                    children[i]->setShadowCenter(shadowCenter);
-                }
-            }
-            math::Vec3f Entity::getShadowCenter() {
-                return shadowCenter;
-            }
-            void Entity::setShadowScale(math::Vec3f shadowScale) {
-                this->shadowScale = shadowScale;
-                for (unsigned int i = 0; i < children.size(); i++) {
-                    children[i]->setShadowScale(shadowScale);
-                }
-            }
-            math::Vec3f Entity::getShadowScale() {
-                return shadowScale;
-            }
-            void Entity::setShadowRotation(float angle, math::Vec3f axis) {
-                this->shadowRotationAngle = angle;
-                this->shadowRotationAxis = axis;
-                for (unsigned int i = 0; i < children.size(); i++) {
-                    children[i]->setShadowRotation(angle, axis);
-                }
-            }
-            math::Vec3f Entity::getShadowRotationAxis() {
-                return shadowRotationAxis;
-            }
-            float Entity::getShadowRotationAngle() {
-                return shadowRotationAngle;
-            }
-            void Entity::setShadowOrigin(math::Vec3f origin) {
-                shadowOrigin = origin;
-                for (unsigned int i = 0; i < children.size(); i++) {
-                    children[i]->setShadowOrigin(origin);
-                }
-            }
-            math::Vec3f Entity::getShadowOrigin() {
-                return shadowOrigin;
-            }
-            int Entity::getNbEntityTypes () {
-                return nbEntitiesTypes;
-            }
-            void Entity::setBoneIndex(unsigned int boneIndex) {
-                this->boneIndex = boneIndex;
-            }
-            unsigned int Entity::getBoneIndex() {
-                return boneIndex;
-            }
+        //Set the parent's entity of the entity.
+        /** \fn void setParent(Entity* parent)
+        *   \brief set the parent of the entity.
+        *   \param the parent of the entity.
+        */
+        void Entity::setParent (Entity *parent) {
+        }
+        //Add a children to the entity.
+        /** \fn void addChild(Entity* child)
+        *   \brief add a child to the entity.
+        *   \param Entity* the entity to add.
+        */
+        void Entity::addChild (Entity *child) {
+        }
+        //Remove a children to the entity.
+        /** \fn void removeChild(Entity* child)
+        *   \brief remove a child from the entity.
+        */
+        void Entity::removeChild (Entity *child) {
+        }
+        //Return the children of the entities.
+        /** \fn std::vector<Entity*> getChildren() const;
+        *   \brief get the list of the children of the entities.
+        *   \return std::vector<Entity*> get the entities.
+        */
+        std::vector<Entity*> Entity::getChildren() const {
+            return std::vector<Entity*>();
+        }
+        //Return the number of entity's children.
+        /** \fn  unsigned int getNbChildren ();
+        *   \brief get the number of children of the entity.
+        *   \return the number of children of the entity.
+        */
+        unsigned int Entity::getNbChildren () {
+            return 0;
+        }
+        Entity* Entity::getChild(unsigned int n) {
+            return nullptr;
+        }
+        /** \fn void setCollisionVolumme (BoundingVolume* volume)
+        *   \brief set the collision volume to the entity.
+        *   \param BoundingVolume* volume : the collision volume to set.
+        */
+        void Entity::setCollisionVolume (physic::BoundingVolume* volume) {
+        }
+        /** \fn BoundingVolume* getCollisionVolumme ()
+        *   \brief get the collision volume of the entity.
+        *   \return the collision volume of the entity.
+        */
+        physic::BoundingVolume* Entity::getCollisionVolume () {
+            return nullptr;
+        }
+        /** \fn void addFace(Face* face)
+        *   \brief add a face to the entity.
+        */
+        void Entity::addFace(Face face) {
+        }
+        /** \fn std::vector<Face*> getFaces()
+        *   \brief get the faces of the entity.
+        *   \return std::vector<Face*> the faces of the entity.
+        */
+        void Entity::updateTransform() {
+            getTransform().update();
+        }
+        void Entity::getCombinedTransform(TransformMatrix& tm) {
+
+        }
+         /**
+          *\fn setShadowCenter(math::Vec3f shadowCenter)
+          *\brief adjust the center of the generated shadow.
+          *\param math::Vec3f shadowCenter : the center of the shadow.
+        */
+        void Entity::setShadowCenter(math::Vec3f shadowCenter) {
+
+        }
+        /**
+          *\fn getShadowCenter()
+          *\brief get the center of the shadow.
+          *\return math::Vec3f : the center of the shadow.
+        */
+        math::Vec3f Entity::getShadowCenter() {
+            return math::Vec3f(0,0,0);
+        }
+        void Entity::setShadowScale(math::Vec3f shadowScale) {
+        }
+        void Entity::setShadowRotation(float angle, math::Vec3f axis) {
+        }
+        math::Vec3f Entity::getShadowRotationAxis() {
+            return math::Vec3f(0,0,0);
+        }
+        float Entity::getShadowRotationAngle() {
+            return 0;
+        }
+        math::Vec3f Entity::getShadowScale() {
+            return math::Vec3f(0,0,0);
+        }
+        void Entity::setShadowOrigin(math::Vec3f origin) {
+        }
+        math::Vec3f Entity::getShadowOrigin() {
+            return math::Vec3f(0,0,0);
+        }
+        void Entity::setBoneIndex (unsigned int boneIndex) {
+        }
+        unsigned int Entity::getBoneIndex() {
+            return 0;
+        }
+        void Entity::setBoneAnimationIndex(unsigned int index) {
+        }
+        unsigned int Entity::getBoneAnimationIndex() {
+            return 0;
+        }
+        void Entity::detachChildren() {
+        }
+        Entity* Entity::getCurrentFrame() const {
+            return nullptr;
+        }
+        sf::Color Entity::getColor() {
+            return sf::Color::Transparent;
+        }
+        void Entity::onFrameChanged() {
+        }
+        void Entity::changeVerticesHeights(float h1, float h2, float h3, float h4) {
+        }
+        float Entity::getHeight(math::Vec2f point) {
+            return 0;
+        }
+        void Entity::reset() {
+        }
+        bool Entity::operator==(Entity& other) {
+            return m_position == other.getPosition() && m_size == other.getSize() && type == other.type;
+        }
+        bool Entity::operator!=(Entity& other) {
+            return !(*this == other);
+        }
+        int Entity::getIntensity() {
+            return 0;
+        }
+        int Entity::getWallType() {
+            return -1;
+        }
+        bool Entity::isRunning() {
+            return false;
+        }
+        sf::Time Entity::getElapsedTime() {
+            return sf::Time::Zero;
+        }
+        float Entity::getFrameRate() {
+            return -1;
+        }
+        void Entity::computeNextFrame() {
+        }
+        bool Entity::isCurrentFrameChanged() {
+            return false;
+        }
+        void Entity::setCurrentFrameChanged(bool currentFrameChanged) {
+        }
+        void Entity::resetClock() {
+        }
+        void Entity::setCurrentFrame(int index) {
+        }
+        void Entity::play(bool loop) {
+        }
+        void Entity::stop() {
+        }
+        void Entity::update(sf::Time dt) {
+        }
+        void Entity::update() {
+        }
+        void Entity::addFrame(Entity* frame) {
+        }
     }
 }

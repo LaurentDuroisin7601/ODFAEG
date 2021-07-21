@@ -1,3 +1,5 @@
-#include "bspTree.h"
+/*
+#include "odfaeg/Graphics/bspTree.h"
 namespace odfaeg {
 }
+*/

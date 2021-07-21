@@ -15,13 +15,13 @@ namespace odfaeg {
         * \date 1/02/2014
         * \brief represent a sets of several tiles.
         */
-        class BigTile : public Entity, public Selectable {
+        class BigTile : public GameObject, public Selectable {
         public :
             /**
             * \fn BigTile()
             * \brief constructor.
             */
-            BigTile() : Entity (math::Vec3f(0, 0, 0), math::Vec3f (0, 0, 0), math::Vec3f (0, 0, 0), "E_BIGTILE") {}
+            BigTile() : GameObject (math::Vec3f(0, 0, 0), math::Vec3f (0, 0, 0), math::Vec3f (0, 0, 0), "E_BIGTILE") {}
             /**
             * \fn BigTile(math::Vec3f pos)
             * \brief constructor.
@@ -33,13 +33,14 @@ namespace odfaeg {
             * \brief compare two entities.
             * \param entity : the other entity.
             */
+            Entity* clone();
             bool operator== (Entity &entity);
             /**
             * \fn void addTile (Tile *tile);
             * \brief add a tile.
             * \param tile : the tile to add.
             */
-            void addTile (Tile *tile, math::Vec2f tilePos=math::Vec2f(0, 0), float* height=nullptr);
+            void addTile (Entity *tile, math::Vec2f tilePos=math::Vec2f(0, 0), float* height=nullptr);
             /**
             * \fn bool isAnimated() const
             * \brief redefinition of the method from the base class Entity.
@@ -95,7 +96,7 @@ namespace odfaeg {
             */
             template <typename Archive>
             void vtserialize(Archive & ar) {
-                Entity::vtserialize(ar);
+                GameObject::vtserialize(ar);
             }
         private :
             /** \fn
@@ -104,6 +105,7 @@ namespace odfaeg {
             void recomputeSize();
             math::Vec2f tileSize;
             int nbTilesPerRow;
+            std::vector<Tile*> m_tiles;
         };
     }
 }

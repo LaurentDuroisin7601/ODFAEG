@@ -1,6 +1,6 @@
 #include "../../../include/odfaeg/Graphics/renderComponentManager.h"
 #include "../../../include/odfaeg/Graphics/GUI/menu.hpp"
-#include "../../../include/odfaeg/Core/command.h"
+#include "../../../include/odfaeg/Window/command.h"
 namespace odfaeg {
     namespace graphic {
         RenderComponentManager::RenderComponentManager(RenderWindow& window) {
@@ -13,6 +13,14 @@ namespace odfaeg {
             std::unique_ptr<Component> ptr;
             ptr.reset(component);
             components.insert(std::make_pair(component->getPriority(), std::move(ptr)));
+        }
+        void RenderComponentManager::setEventContextActivated(bool activated, RenderWindow& window) {
+            std::multimap<int, std::unique_ptr<Component>, std::greater<int>>::iterator it;
+            for (it = components.begin();it != components.end(); it++) {
+                if (&it->second->getWindow() == &window && it->second->getComponentType() == 1) {
+                    it->second->setEventContextActivated(activated);
+                }
+            }
         }
         bool RenderComponentManager::removeComponent(unsigned int layer) {
             std::multimap<int, std::unique_ptr<Component>, std::greater<int>>::iterator it;
@@ -35,7 +43,7 @@ namespace odfaeg {
         void RenderComponentManager::drawRenderComponents() {
             std::multimap<int, std::unique_ptr<Component>, std::greater<int>>::reverse_iterator it;
             for (it = components.rbegin(); it != components.rend(); it++) {
-                if (dynamic_cast<HeavyComponent*>(it->second.get()) != nullptr && it->second->isVisible()) {
+                if (it->second->getComponentType() == 0 && it->second->isVisible()) {
                     for (unsigned int i = 0; i < windows.size(); i++) {
                         if (windows[i] == &it->second->getWindow()) {
                             windows[i]->clearDepth();
@@ -48,7 +56,7 @@ namespace odfaeg {
         void RenderComponentManager::drawGuiComponents() {
             std::multimap<int, std::unique_ptr<Component>, std::greater<int>>::iterator it;
             for (it = components.begin(); it != components.end(); it++) {
-                if (dynamic_cast<LightComponent*>(it->second.get()) != nullptr && it->second->isVisible()) {
+                if (it->second->getComponentType() == 1 && it->second->isVisible()) {
                     for (unsigned int i = 0; i < windows.size(); i++) {
                         if (windows[i] == &it->second->getWindow()) {
                             windows[i]->clearDepth();
@@ -63,20 +71,20 @@ namespace odfaeg {
                 }
             }
         }
-        HeavyComponent* RenderComponentManager::getRenderComponent(unsigned int layer) {
+        Component* RenderComponentManager::getRenderComponent(unsigned int layer) {
             std::multimap<int, std::unique_ptr<Component>, std::greater<int>>::reverse_iterator it;
             for (it = components.rbegin(); it != components.rend(); it++) {
-               if (dynamic_cast<HeavyComponent*>(it->second.get()) != nullptr && it->second->getPriority() == layer) {
-                   return dynamic_cast<HeavyComponent*>(it->second.get());
+               if (it->second->getComponentType() ==  0 && it->second->getPriority() == layer) {
+                   return it->second.get();
                }
             }
             return nullptr;
         }
-        LightComponent* RenderComponentManager::getGuiComponent(unsigned int layer) {
+        Component* RenderComponentManager::getGuiComponent(unsigned int layer) {
             std::multimap<int, std::unique_ptr<Component>, std::greater<int>>::iterator it;
             for (it = components.begin(); it != components.end(); it++) {
-               if (dynamic_cast<LightComponent*>(it->second.get()) != nullptr && it->second->getPriority() == layer) {
-                   return dynamic_cast<LightComponent*>(it->second.get());
+               if (it->second->getComponentType() && it->second->getPriority() == layer) {
+                   return it->second.get();
                }
             }
             return nullptr;
@@ -100,6 +108,23 @@ namespace odfaeg {
                i++;
            }
         }
+        std::vector<Component*> RenderComponentManager::getComponents() {
+            std::multimap<int, std::unique_ptr<Component>, std::greater<int>>::iterator it;
+            std::vector<Component*> cpnts;
+            for (it = components.begin(); it != components.end(); it++) {
+                cpnts.push_back(it->second.get());
+            }
+            return cpnts;
+        }
+        std::vector<Component*> RenderComponentManager::getRenderComponents() {
+            std::multimap<int, std::unique_ptr<Component>, std::greater<int>>::iterator it;
+            std::vector<Component*> cpnts;
+            for (it = components.begin(); it != components.end(); it++) {
+                if (it->second->getComponentType() == 0)
+                    cpnts.push_back(it->second.get());
+            }
+            return cpnts;
+        }
         void RenderComponentManager::clearComponents() {
             std::multimap<int, std::unique_ptr<Component>, std::greater<int>>::iterator it;
             for (it = components.begin(); it != components.end(); it++) {
@@ -111,12 +136,14 @@ namespace odfaeg {
         void RenderComponentManager::updateComponents() {
            std::multimap<int, std::unique_ptr<Component>, std::greater<int>>::iterator it;
            for (it = components.begin(); it != components.end(); it++) {
-               if (it->second->isEventContextActivated()) {
+               if (it->second->isEventContextActivated() && it->second->isVisible()) {
+                   if (it->second->getName() == "PMATERIAL")
+                       std::cout<<"process event material"<<std::endl;
                    it->second->processEvents();
                    it->second->recomputeSize();
                }
            }
-           core::Command::clearEventsStack();
+           //core::Command::clearEventsStack();
         }
         RenderComponentManager::~RenderComponentManager() {
            /*std::multimap<int, Component*, std::greater<int>>::iterator it;

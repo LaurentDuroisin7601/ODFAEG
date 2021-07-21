@@ -25,7 +25,7 @@ namespace odfaeg {
                 * \param bp : the volume of the cell.
                 * \param coords : the coords of the cell.
                 */
-                CellMap (physic::BoundingPolyhedron* bp, math::Vec2f coords);
+                CellMap (physic::BoundingPolyhedron* bp, math::Vec3f coords);
                 /**
                 * \fn BoundingPolyhedron* getCellVolume ();
                 * \return the volume of the cell.
@@ -70,6 +70,7 @@ namespace odfaeg {
                 * \param entity : the entity to remove.
                 */
                 bool removeEntity (Entity * entity);
+                bool deleteEntity (Entity * entity);
                 /**
                 * \fn void setStateChanged (bool b);
                 * \brief set if the state of the cells have been changed. (This happens when the cell become passable or not passable)
@@ -106,12 +107,12 @@ namespace odfaeg {
                 * \brief get the coordinates of the cells. (Usefull to store the cell into the vector of a grid)
                 * \return the coordinates of the cell.
                 */
-                math::Vec2f getCoords ();
+                math::Vec3f getCoords ();
                 /** \fn Vec3f& getCenter ();
                 *   \brief get the center of the cell.
                 *   \return the center of the cell.
                 */
-                math::Vec2f getCenter ();
+                math::Vec3f getCenter ();
                 /**
                 * \fn bool isTraveled ();
                 * \brief test is the cell has already been visited or not. (Used for the pathfinding algorithm)
@@ -130,7 +131,6 @@ namespace odfaeg {
                 */
                 bool removeEntity (std::string type);
                 bool deleteEntity (std::string type);
-                ~CellMap();
             private :
                 std::vector<std::unique_ptr<Entity>> entityInside; /**> the entities which are inside the cell.*/
                 physic::BoundingPolyhedron* cellVolume; /**> the volume of the cell.*/

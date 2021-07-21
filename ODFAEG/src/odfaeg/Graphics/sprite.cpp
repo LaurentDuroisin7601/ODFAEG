@@ -137,5 +137,8 @@ namespace odfaeg {
             m_vertices[2].texCoords = Vector2f(right, bottom);
             m_vertices[3].texCoords = Vector2f(right, top);
         }
+        VertexArray Sprite::getVertexArray() {
+            return m_vertices;
+        }
     }
 }

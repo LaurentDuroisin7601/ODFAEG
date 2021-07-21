@@ -46,7 +46,7 @@ namespace odfaeg {
             return m_context && m_context->setActive(true);
         }
         const ContextSettings& Context::getSettings() const {
-            ContextSettings empty(0, 0, 0, 0, 0);
+            static ContextSettings empty(0, 0, 0, 0, 0);
             return m_context ? m_context->getSettings() : empty;
         }
         ////////////////////////////////////////////////////////////

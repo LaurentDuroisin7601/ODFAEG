@@ -88,8 +88,8 @@ namespace odfaeg {
             bool intersects(math::Ray& ray, bool segment, CollisionResultSet::Info& info) {
                 return onIntersects(*this, ray, segment, info);
             }
-            bool intersectsWhere(math::Ray& ray, math::Vec3f& near, math::Vec3f& far, CollisionResultSet::Info& info) {
-                return onIntersects(*this, ray, near, far, info);
+            bool intersectsWhere(math::Ray& ray, math::Vec3f& _near, math::Vec3f& _far, CollisionResultSet::Info& info) {
+                return onIntersects(*this, ray, _near, _far, info);
             }
             virtual math::Vec3f getPosition() = 0;
             virtual math::Vec3f getSize() = 0;
@@ -105,6 +105,18 @@ namespace odfaeg {
             }
             std::string getName() {
                 return name;
+            }
+            virtual bool operator==(BoundingVolume& other) {
+                if (getChildren().size() != other.getChildren().size())
+                    return false;
+                for (unsigned int i = 0; i < getChildren().size(); i++) {
+                    if (getChildren()[i] != other.getChildren()[i])
+                        return false;
+                }
+                return getCenter() == other.getCenter() && getSize() == other.getSize();
+            }
+            virtual bool operator!=(BoundingVolume& other) {
+                return !(*this == other);
             }
             virtual ~BoundingVolume() {}
             protected :

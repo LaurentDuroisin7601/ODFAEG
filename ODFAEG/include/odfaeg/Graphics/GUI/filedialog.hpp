@@ -9,8 +9,12 @@
 #include "label.hpp"
 #include "button.hpp"
 #include <dirent.h>
-#include <unistd.h>
+#if defined (ODFAEG_SYSTEM_WINDOWS)
+#include <io.h>
+#endif
 #include <sys/types.h>
+#include <sys/stat.h>
+#include <limits.h>
 namespace odfaeg {
     namespace graphic {
         namespace gui {
@@ -29,9 +33,9 @@ namespace odfaeg {
                 private :
                     RenderWindow rw;
                     const Font* font;
-                    Panel pTop, pBottom, pDirectories, pFiles;
-                    Label lTop;
-                    Button bChoose, bCancel;
+                    Panel *pTop, *pBottom, *pDirectories, *pFiles;
+                    Label *lTop;
+                    Button *bChoose, *bCancel;
                     std::string appliDir;
                     std::string pathChosen;
             };

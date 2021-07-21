@@ -14,7 +14,6 @@
 #include "export.hpp"
 #include <random>
 #include <ctime>
-#include "bigInt.hpp"
 /**
   *\namespace odfaeg
   * the namespace of the Opensource Development Framework Adapted for Every Games.
@@ -22,6 +21,7 @@
 namespace odfaeg {
     namespace math {
         class Vec3f;
+        class BigInt;
         /**
           * \file math.h
           * \class Math
@@ -43,7 +43,7 @@ namespace odfaeg {
           * TWO_THIRD is the value of two divided by 3.
           * EPSILON is a very little value used to avoid to have overflow problems with floatting numbers.
           */
-        class ODFAEG_MATH_API Math {
+        class ODFAEG_API_EXPORT Math {
             public:
             static void initSeed();
             /**

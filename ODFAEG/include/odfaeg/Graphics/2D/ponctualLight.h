@@ -26,7 +26,7 @@ namespace odfaeg {
                 * \fn PonctualLight()
                 * \brief constructor.
                 */
-                PonctualLight() : EntityLight(math::Vec3f(0, 0, 0),sf::Color(0, 0, 0, 0),0, 0, 0, 0,"E_PONCTUAL_LIGHT",nullptr) {
+                PonctualLight() : EntityLight(math::Vec3f(0, 0, 0),sf::Color(0, 0, 0, 0),0, 0, 0, 0,"E_PONCTUAL_LIGHT","",nullptr) {
                 }
                 /**
                 * \fn PonctualLight(math::Vec3f center, float radius1, float radius2, float radius3, float intensity, sf::Color color, int quality, Entity *parent = nullptr);
@@ -41,13 +41,14 @@ namespace odfaeg {
                 * \fn void initTriangles ();
                 * \brief init the triangles of the light.
                 */
+                Entity* clone();
                 void initTriangles ();
                 /**
                 * \fn int& getLightId()
                 * \brief get the id of the light.
                 * \return the id of the light.
                 */
-                int& getLightId() {
+                int getLightId() {
                     return Entity::getId();
                 }
                 /**
@@ -116,11 +117,6 @@ namespace odfaeg {
                 */
                 bool operator== (Entity &other);
                 /**
-                * \fn void update();
-                * \brief update the light.
-                */
-                void update();
-                /**
                 * \fn void vtserialize(Archive & ar)
                 * \brief serialize the light.
                 * \param ar : the archive.
@@ -133,6 +129,9 @@ namespace odfaeg {
                     ar(intensity);
                     ar(quality);
                     ar(triangles);
+                }
+                float getRadius() {
+                    return bigRadius;
                 }
                 /**
                  *\fn virtual ~PonctualLight ();

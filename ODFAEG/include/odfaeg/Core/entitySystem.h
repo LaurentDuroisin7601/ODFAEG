@@ -28,11 +28,19 @@ namespace odfaeg {
             void update () {
                 onUpdate();
             }
+            void setName(std::string name) {
+                this->name = name;
+            }
+            std::string getName() {
+                return name;
+            }
             /**
             *\fn void onUpdate()
             *\brief function to refefines to updates the entities.
             */
             virtual void onUpdate() = 0;
+        private:
+            std::string name;
         };
     }
 }

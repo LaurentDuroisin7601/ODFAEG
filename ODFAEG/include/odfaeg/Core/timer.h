@@ -40,9 +40,16 @@ namespace odfaeg {
             *   \brief the function to redefine when updating the scene.
             */
             virtual void onUpdate() = 0;
+            void setName(std::string name) {
+                this->name = name;
+            }
+            std::string getName() {
+                return name;
+            }
         private :
             sf::Clock clock; /**> A clock use to measure the time elapsed since the last update*/
             sf::Time interval; /**> The time interval between two updates.*/
+            std::string name;
         };
     }
 }

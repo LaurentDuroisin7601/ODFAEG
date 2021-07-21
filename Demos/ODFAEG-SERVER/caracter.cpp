@@ -39,6 +39,8 @@ namespace sorrok {
         manaMax = 100;
         mana = 100;
     }
+    Entity* Caracter::clone() {
+    }
     float Caracter::getRegenManaSpeed() {
         return regenManaSpeed;
     }

@@ -32,14 +32,19 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "texture.h"
-#include "renderTarget.h"
 #include "../../../include/odfaeg/Window/context.hpp"
 #include "../../../include/odfaeg/Window/iGlResource.hpp"
+#include "texture.h"
+#include "renderTarget.h"
+#ifndef VULKAN
+
+
+#endif
 class RenderTextureImpl;
 namespace odfaeg {
     namespace graphic {
-
+        #ifdef VULKAN
+        #else
         namespace priv {
             class RenderTextureImpl;
         }
@@ -88,7 +93,7 @@ namespace odfaeg {
             /// \return True if creation has been successful
             ///
             ////////////////////////////////////////////////////////////
-            bool create(unsigned int width, unsigned int height, window::ContextSettings = window::ContextSettings(),  unsigned int precision = 0x8058,unsigned int format = 0x1908, unsigned int type = 0x1401, bool useSeparateContext = true);
+            bool create(unsigned int width, unsigned int height, window::ContextSettings = window::ContextSettings(), unsigned int textureType = 0x0DE1, bool useSeparateContext = true, unsigned int precision = 0x8058,unsigned int format = 0x1908, unsigned int type = 0x1401);
             ////////////////////////////////////////////////////////////
             /// \brief Enable or disable texture smoothing
             ///
@@ -191,6 +196,12 @@ namespace odfaeg {
             const Texture& getTexture() const;
             const window::ContextSettings& getSettings() const;
             void bind();
+            void setLinkedListIds(unsigned int atomicBuffer, unsigned int linkedListBuffer, unsigned int headPtrTex, unsigned int clearBuf);
+            unsigned int getAtomicBuffer();
+            unsigned int getLinkedListBuffer();
+            unsigned int getHeadPtrTex();
+            unsigned int getClearBuff();
+            void selectCubemapFace(int face);
         private :
             bool activate(bool active);
             ////////////////////////////////////////////////////////////
@@ -199,7 +210,10 @@ namespace odfaeg {
             priv::RenderTextureImpl* m_impl;    ///< Platform/hardware specific implementation
             Texture                  m_texture; ///< Target texture to draw on
             window::Context*         m_context; ///< Need to use a separating opengl context otherwise it doesn't work because opengl resource are messed up.
+            window::ContextSettings  m_settings;
+            unsigned int m_atomicBuffer, m_linkedListBuffer, m_headPtrTex, m_clearBuff;
         };
+        #endif
     }
 
 } // namespace sf

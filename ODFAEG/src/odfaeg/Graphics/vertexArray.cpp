@@ -156,12 +156,7 @@ namespace odfaeg {
         m_primitiveType(type),
         m_entity(entity)
         {
-            vboVertexBuffer = 0;
-            vboNormalBuffer = 0;
-            vboIndexBuffer = 0;
-            needToUpdateVBOBuffer = true;
-            loop = true;
-            nbVerticesPerFace = 4;
+
         }
         void VertexArray::setEntity(Entity* entity) {
             m_entity = entity;
@@ -177,8 +172,7 @@ namespace odfaeg {
         void VertexArray::addIndex(unsigned int index) {
             m_indexes.push_back(index);
             //std::cout<<"va index : "<<index<<"size : "<<m_indexes.size()<<std::endl;
-            if (!needToUpdateVBOBuffer)
-                needToUpdateVBOBuffer = true;
+
         }
         std::vector<unsigned int> VertexArray::getBaseIndexes() {
             return m_baseIndexes;
@@ -187,40 +181,115 @@ namespace odfaeg {
             return m_indexes;
         }
         void VertexArray::computeNormals() {
-            int size = 0;
-            if (m_primitiveType == sf::PrimitiveType::Quads)
+            unsigned int size = 0;
+            if (m_primitiveType == sf::PrimitiveType::Quads) {
                 size = m_vertices.size() / 4;
-            else
+            } else if (m_primitiveType == sf::PrimitiveType::Triangles) {
                 size = m_vertices.size() / 3;
-            for (int i = 0; i < size; i++) {
+            } else if (m_primitiveType == sf::PrimitiveType::TriangleStrip || m_primitiveType == sf::PrimitiveType::TriangleFan) {
+                size = m_vertices.size() - 2;
+            }
+            for (unsigned int i = 0; i < size; i++) {
                 if (m_primitiveType == sf::PrimitiveType::Quads) {
-                    Vector3f v1 = m_vertices[i*4+1].position - m_vertices[i*4].position;
-                    Vector3f v2 = m_vertices[i*4+2].position - m_vertices[i*4+1].position;
-                    math::Vec3f v1f (v1.x, v1.y, v1.z);
-                    math::Vec3f v2f (v2.x, v2.y, v2.z);
-                    math::Vec3f n = v1f.cross(v2f).normalize();
-                    m_normals.push_back(Vector3f(n.x, n.y, n.z));
+                    for (unsigned int n = 0; n < 4; n++) {
+                        math::Vec3f v1 (m_vertices[i*4+n].position.x, m_vertices[i*4+n].position.y, m_vertices[i*4+n].position.z);
+                        math::Vec3f v2;
+                        math::Vec3f v3;
+                        if (n == 0) {
+                            v2 = math::Vec3f (m_vertices[i*4+3].position.x, m_vertices[i*4+3].position.y, m_vertices[i*4+3].position.z);
+                        } else {
+                            v2 = math::Vec3f (m_vertices[i*4+n-1].position.x, m_vertices[i*4+n-1].position.y, m_vertices[i*4+n-1].position.z);
+                        }
+                        if (n == 3) {
+                            v3 = math::Vec3f (m_vertices[i*4].position.x, m_vertices[i*4].position.y, m_vertices[i*4].position.z);
+                        } else {
+                            v3 = math::Vec3f (m_vertices[i*4+n+1].position.x, m_vertices[i*4+n+1].position.y, m_vertices[i*4+n+1].position.z);
+                        }
+                        math::Vec3f dir1 = v2 - v1;
+                        math::Vec3f dir2 = v3 - v1;
+                        math::Vec3f normal = dir1.cross(dir2).normalize();
+                        m_normals.push_back(Vector3f(normal.x, normal.y, normal.z));
+                    }
                 } else if (m_primitiveType == sf::PrimitiveType::Triangles) {
-                    Vector3f v1 = m_vertices[i*3+1].position - m_vertices[i*3].position;
-                    Vector3f v2 = m_vertices[i*3+2].position - m_vertices[i*3+1].position;
-                    math::Vec3f v1f (v1.x, v1.y, v1.z);
-                    math::Vec3f v2f (v2.x, v2.y, v2.z);
-                    math::Vec3f n = v1f.cross(v2f).normalize();
-                    m_normals.push_back(Vector3f(n.x, n.y, n.z));
-                } else if (m_primitiveType == sf::PrimitiveType::TrianglesStrip) {
-                    Vector3f v1 = m_vertices[i*1+1].position - m_vertices[i*1].position;
-                    Vector3f v2 = m_vertices[i*1+2].position - m_vertices[i*1+1].position;
-                    math::Vec3f v1f (v1.x, v1.y, v1.z);
-                    math::Vec3f v2f (v2.x, v2.y, v2.z);
-                    math::Vec3f n = v1f.cross(v2f).normalize();
-                    m_normals.push_back(Vector3f(n.x, n.y, n.z));
-                } else if (m_primitiveType == sf::PrimitiveType::TrianglesFan) {
-                    Vector3f v1 = m_vertices[i+1].position - m_vertices[0].position;
-                    Vector3f v2 = m_vertices[i+2].position - m_vertices[1].position;
-                    math::Vec3f v1f (v1.x, v1.y, v1.z);
-                    math::Vec3f v2f (v2.x, v2.y, v2.z);
-                    math::Vec3f n = v1f.cross(v2f).normalize();
-                    m_normals.push_back(Vector3f(n.x, n.y, n.z));
+                    for (unsigned int n = 0; n < 3; n++) {
+                        math::Vec3f v1 (m_vertices[i*3+n].position.x, m_vertices[i*3+n].position.y, m_vertices[i*3+n].position.z);
+                        math::Vec3f v2;
+                        math::Vec3f v3;
+                        if (n == 0) {
+                            v2 = math::Vec3f (m_vertices[i*3+2].position.x, m_vertices[i*3+2].position.y, m_vertices[i*3+2].position.z);
+                        } else {
+                            v2 = math::Vec3f (m_vertices[i*3+n-1].position.x, m_vertices[i*3+n-1].position.y, m_vertices[i*3+n-1].position.z);
+                        }
+                        if (n == 2) {
+                            v3 = math::Vec3f (m_vertices[i*3].position.x, m_vertices[i*3].position.y, m_vertices[i*3].position.z);
+                        } else {
+                            v3 = math::Vec3f (m_vertices[i*3+n+1].position.x, m_vertices[i*3+n+1].position.y, m_vertices[i*3+n+1].position.z);
+                        }
+                        math::Vec3f dir1 = v2 - v1;
+                        math::Vec3f dir2 = v3 - v1;
+                        math::Vec3f normal = dir1.cross(dir2).normalize();
+                        m_normals.push_back(Vector3f(normal.x, normal.y, normal.z));
+                    }
+                } else if (m_primitiveType == sf::PrimitiveType::TriangleStrip) {
+                    if (i == 0) {
+                        for (unsigned int n = 0; n < 3; n++) {
+                            math::Vec3f v1 (m_vertices[n].position.x, m_vertices[n].position.y, m_vertices[n].position.z);
+                            math::Vec3f v2;
+                            math::Vec3f v3;
+                            if (n == 0) {
+                                v2 = math::Vec3f (m_vertices[2].position.x, m_vertices[2].position.y, m_vertices[2].position.z);
+                            } else {
+                                v2 = math::Vec3f (m_vertices[n-1].position.x, m_vertices[n-1].position.y, m_vertices[n-1].position.z);
+                            }
+                            if (n == 2) {
+                                v3 = math::Vec3f (m_vertices[0].position.x, m_vertices[0].position.y, m_vertices[0].position.z);
+                            } else {
+                                v3 = math::Vec3f (m_vertices[n+1].position.x, m_vertices[n+1].position.y, m_vertices[n+1].position.z);
+                            }
+                            math::Vec3f dir1 = v2 - v1;
+                            math::Vec3f dir2 = v3 - v1;
+                            math::Vec3f normal = dir1.cross(dir2).normalize();
+                            m_normals.push_back(Vector3f(normal.x, normal.y, normal.z));
+                        }
+                    } else {
+                        math::Vec3f v1 (m_vertices[i+2].position.x, m_vertices[i+2].position.y, m_vertices[i+2].position.z);
+                        math::Vec3f v2 (m_vertices[i+1].position.x, m_vertices[i+1].position.y, m_vertices[i+1].position.z);
+                        math::Vec3f v3 (m_vertices[i].position.x, m_vertices[i].position.y, m_vertices[i].position.z);
+                        math::Vec3f dir1 = v2 - v1;
+                        math::Vec3f dir2 = v3 - v1;
+                        math::Vec3f normal = dir1.cross(dir2).normalize();
+                        m_normals.push_back(Vector3f(normal.x, normal.y, normal.z));
+                    }
+                } else if (m_primitiveType == sf::TriangleFan) {
+                    if (i == 0) {
+                        for (unsigned int n = 0; n < 3; n++) {
+                            math::Vec3f v1 (m_vertices[n].position.x, m_vertices[n].position.y, m_vertices[n].position.z);
+                            math::Vec3f v2;
+                            math::Vec3f v3;
+                            if (n == 0) {
+                                v2 = math::Vec3f (m_vertices[2].position.x, m_vertices[2].position.y, m_vertices[2].position.z);
+                            } else {
+                                v2 = math::Vec3f (m_vertices[n-1].position.x, m_vertices[n-1].position.y, m_vertices[n-1].position.z);
+                            }
+                            if (n == 2) {
+                                v3 = math::Vec3f (m_vertices[0].position.x, m_vertices[0].position.y, m_vertices[0].position.z);
+                            } else {
+                                v3 = math::Vec3f (m_vertices[n+1].position.x, m_vertices[n+1].position.y, m_vertices[n+1].position.z);
+                            }
+                            math::Vec3f dir1 = v2 - v1;
+                            math::Vec3f dir2 = v3 - v1;
+                            math::Vec3f normal = dir1.cross(dir2).normalize();
+                            m_normals.push_back(Vector3f(normal.x, normal.y, normal.z));
+                        }
+                    } else {
+                        math::Vec3f v1 (m_vertices[i+2].position.x, m_vertices[i+2].position.y, m_vertices[i+2].position.z);
+                        math::Vec3f v2 (m_vertices[i+1].position.x, m_vertices[i+1].position.y, m_vertices[i+1].position.z);
+                        math::Vec3f v3 (m_vertices[0].position.x, m_vertices[0].position.y, m_vertices[0].position.z);
+                        math::Vec3f dir1 = v2 - v1;
+                        math::Vec3f dir2 = v3 - v1;
+                        math::Vec3f normal = dir1.cross(dir2).normalize();
+                        m_normals.push_back(Vector3f(normal.x, normal.y, normal.z));
+                    }
                 }
             }
         }
@@ -321,37 +390,7 @@ namespace odfaeg {
         void VertexArray::draw(RenderTarget& target, RenderStates states)
         {
             if (!m_vertices.empty()) {
-
-                /*if (GLEW_ARB_vertex_buffer_object) {
-                    if (needToUpdateVBOBuffer) {
-                        if (vboVertexBuffer == 0) {
-                            GLuint vbo;
-                            glCheck(glGenBuffers(1, &vbo));
-                            vboVertexBuffer = static_cast<unsigned int>(vbo);
-                        }
-                        if (oldVerticesSize != m_vertices.size()) {
-                            glCheck(glBindBuffer(GL_ARRAY_BUFFER, vboVertexBuffer));
-                            glCheck(glBufferData(GL_ARRAY_BUFFER, m_vertices.size() * sizeof(Vertex), &m_vertices[0], GL_STREAM_DRAW));
-                            glCheck(glBindBuffer(GL_ARRAY_BUFFER, 0));
-                        } else {
-                            GLvoid *pos_vbo = nullptr;
-                            glCheck(glBindBuffer(GL_ARRAY_BUFFER, vboVertexBuffer));
-                            pos_vbo = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-                            if (pos_vbo != nullptr) {
-                                memcpy(pos_vbo,&m_vertices[0],  m_vertices.size() * sizeof(Vertex));
-                                glCheck(glUnmapBuffer(GL_ARRAY_BUFFER));
-                                pos_vbo = nullptr;
-                            }
-                            glCheck(glBindBuffer(GL_ARRAY_BUFFER, 0));
-                        }
-                        needToUpdateVBOBuffer = false;
-                    }
-                    states.vboVertexID = vboVertexBuffer;
-                    target.draw(&m_vertices[0], m_vertices.size(), m_primitiveType, states);
-                } else {*/
-                    target.draw(&m_vertices[0], m_vertices.size(), m_primitiveType, states);
-                //}
-                oldVerticesSize = m_vertices.size();
+                target.draw(&m_vertices[0], m_vertices.size(), m_primitiveType, states);
             }
         }
         ////////////////////////////////////////////////////////////
@@ -363,8 +402,8 @@ namespace odfaeg {
                 float top    = m_vertices[0].position.y;
                 float right  = m_vertices[0].position.x;
                 float bottom = m_vertices[0].position.y;
-                float near = m_vertices[0].position.z;
-                float far = m_vertices[0].position.z;
+                float nearest = m_vertices[0].position.z;
+                float farest = m_vertices[0].position.z;
 
                 for (std::size_t i = 1; i < m_vertices.size(); ++i)
                 {
@@ -384,23 +423,20 @@ namespace odfaeg {
 
                     //Update the near and the far.
 
-                    if (position.z < far)
-                        far = position.z;
-                    else if (position.z > near)
-                        near = position.z;
+                    if (position.z < farest)
+                        farest = position.z;
+                    else if (position.z > nearest)
+                        nearest = position.z;
 
                 }
 
-                return physic::BoundingBox(left, top, near, right - left, bottom - top, far - near);
+                return physic::BoundingBox(left, top, nearest, right - left, bottom - top, farest - nearest);
             }
             else
             {
                 // Array is empty
                 return physic::BoundingBox();
             }
-        }
-        void VertexArray::updateVBOBuffer() {
-            needToUpdateVBOBuffer = true;
         }
         void VertexArray::remove (unsigned int index) {
             std::vector<Vertex>::iterator it = m_vertices.begin();
@@ -421,18 +457,7 @@ namespace odfaeg {
             }
         }
         VertexArray::~VertexArray() {
-            if (VBO::isAvailable() && vboVertexBuffer != 0) {
-                GLuint vbo = static_cast<GLuint>(vboVertexBuffer);
-                glCheck(glDeleteBuffers(1, &vbo));
-            }
-            if (VBO::isAvailable() && vboNormalBuffer != 0) {
-                GLuint vbo = static_cast<GLuint>(vboNormalBuffer);
-                glCheck(glDeleteBuffers(1, &vbo));
-            }
-            if (VBO::isAvailable() && vboIndexBuffer != 0) {
-                GLuint vbo = static_cast<GLuint>(vboIndexBuffer);
-                glCheck(glDeleteBuffers(1, &vbo));
-            }
+
         }
     }
 } // namespace sf3

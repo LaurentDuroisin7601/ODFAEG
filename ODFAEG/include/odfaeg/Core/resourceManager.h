@@ -43,10 +43,25 @@ namespace odfaeg
         class ResourceManager : public ResourceManagerBase
         {
             public:
+                /**
+                *  \fn ResourceManager()
+                *  \brief constructor, initialize variables.
+                */
                 ResourceManager() {
                     nbResources = 0;
                 }
+                /**
+                *  \fn void make_resource(R* resource)
+                *  \brief add the resource to the resource manager.
+                *  \param R* the resource to add.
+                */
                 void make_resource(R* resource);
+                /**
+                *  \fn void make_resource(R* resource)
+                *  \brief add the resource to the resource manager.
+                *  \param R* the resource to add.
+                *  \param I the alias pointing to the resource.
+                */
                 void make_resource(R* resource, const I& alias);
                 /** \fn  fromFile(const std::string& path)
                 *   \brief load a resource from a file.
@@ -187,7 +202,36 @@ namespace odfaeg
                 *   \param R* resource : the resource.
                 */
                 void                      deleteResource(R* resource);
+                /** \fn void deleteAll();
+                *   \brief delete all resources.
+                */
                 void deleteAll();
+                /** \fn std::unique_ptr<ResourceManagerBase> clone()
+                *   \brief clone the resource manager.
+                *   \return the cloned resource manager.
+                */
+                virtual std::unique_ptr<ResourceManagerBase> clone();
+                /** \fn ResourceManager(const ResourceManager& rm)
+                *   \brief copy constructor
+                *   \param const ResourceManager& the resource manager to copy.
+                */
+                ResourceManager(const ResourceManager& rm) {
+                    mResourceMap = rm.mResourceMap;
+                    mAliasMap = rm.mAliasMap;
+                    nbResources = rm.nbResources;
+                }
+                /** \fn ResourceManager& operator=(const ResourceManager& rm)
+                *   \brief operation affector.
+                *   \param const ResourceManager& the resource manager to copy.
+                *   \return the resource manager to affect.
+                */
+                ResourceManager& operator=(const ResourceManager& rm) {
+                    mResourceMap = rm.mResourceMap;
+                    mAliasMap = rm.mAliasMap;
+                    nbResources = rm.nbResources;
+                    return *this;
+                }
+                private :
                 /**
                 * \file ResourceManager.h
                 * \class Resource
@@ -196,26 +240,12 @@ namespace odfaeg
                 * \version 1.0
                 * \date 1/02/2014
                 */
-                virtual std::unique_ptr<ResourceManagerBase> clone();
-                ~ResourceManager();
-                ResourceManager(const ResourceManager& rm) {
-                    mResourceMap = rm.mResourceMap;
-                    mAliasMap = rm.mAliasMap;
-                    nbResources = rm.nbResources;
-                }
-                ResourceManager& operator=(const ResourceManager& rm) {
-                    mResourceMap = rm.mResourceMap;
-                    mAliasMap = rm.mAliasMap;
-                    nbResources = rm.nbResources;
-                    return *this;
-                }
-                private :
                 struct Resource {
                     public :
 
                     /**
                     *\fn constructor.
-                    *\param cosnt std::string path : the path of the resource.
+                    *\param const std::string path : the path of the resource.
                     *\param R* resource : the pointer to the resource.
                     */
                     Resource (const std::string path, std::unique_ptr<R>&& resource, int nbResources) :
@@ -225,11 +255,20 @@ namespace odfaeg
                     {
 
                     }
+                    /**
+                    *\fn copy constructor.
+                    *\param const Resource: the resource to copy.
+                    */
                     Resource (const Resource& other) {
                         path = other.path;
                         resource.reset(const_cast<Resource&>(other).resource.release());
                         id = other.id;
                     }
+                    /**
+                    *\fn Resource& operator= (const Resource& other)
+                    *\param const Resource: the resource to copy.
+                    *\return Resource& the resource to affect.
+                    */
                     Resource& operator= (const Resource& other) {
                         path = other.path;
                         resource.reset(const_cast<Resource&>(other).resource.release());
@@ -250,6 +289,10 @@ namespace odfaeg
                     std::string getPath() const {
                         return path;
                     }
+                    /**
+                    *\fn unsigned int& getId();
+                    *\return the resource's id.
+                    */
                     const unsigned int& getId() const {
                         return id;
                     }
@@ -630,10 +673,6 @@ namespace odfaeg
             }
             mResourceMap.clear();
             mAliasMap.clear();
-        }
-        template <typename R, typename I>
-        ResourceManager<R, I>::~ResourceManager () {
-            //deleteAll();
         }
         template <typename R, typename I>
         std::unique_ptr<ResourceManagerBase> ResourceManager<R, I>::clone() {

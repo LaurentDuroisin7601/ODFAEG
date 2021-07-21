@@ -25,11 +25,20 @@ namespace odfaeg {
                 core::Action a4 (core::Action::TEXT_ENTERED);
                 core::Command cmd5(a4, core::FastDelegate<bool>(&TextArea::hasFocus, this), core::FastDelegate<void>(&TextArea::onTextEntered, this, 'a'));
                 getListener().connect("CTEXTENTERED", cmd5);
-                currentIndex = tmp_text.length();
+                core::Action a5(core::Action::MOUSE_MOVED_);
+                core::Action a6(core::Action::MOUSE_BUTTON_HELD_DOWN, window::IMouse::Left);
+                core::Action a7 = a5 && a6;
+                core::Command cmd6(a7, core::FastDelegate<bool>(&TextArea::isMouseInTextArea, this), core::FastDelegate<void>(&TextArea::setCursorPos2, this));
+                getListener().connect("CMOUSEMOVED", cmd6);
+                core::Action a8(core::Action::MOUSE_BUTTON_RELEASED, window::IMouse::Left);
+                core::Command cmd7(a8, core::FastDelegate<bool>(&TextArea::isMouseInTextArea, this), core::FastDelegate<void>(&TextArea::setSelectedText, this));
+                getListener().connect("CSELECTTEXT", cmd7);
+                currentIndex = currentIndex2 = tmp_text.getSize();
                 sf::Vector2f pos = text.findCharacterPos(currentIndex);
                 cursorPos = math::Vec3f(pos.x, pos.y, 0);
                 //setSize(text.getSize());
                 haveFocus = textChanged = false;
+                scrollX = scrollY = 0;
             }
             void TextArea::onEventPushed(window::IEvent event, RenderWindow& window) {
                 if (&window == &getWindow()) {
@@ -42,13 +51,43 @@ namespace odfaeg {
             void TextArea::setCursorPos() {
                 math::Vec2f mousePos = math::Vec2f(window::IMouse::getPosition(getWindow()).x, window::IMouse::getPosition(getWindow()).y);
                 bool found = false;
-                for (unsigned int i = 0; i <= tmp_text.length() && !found; i++) {
+                for (unsigned int i = 0; i < tmp_text.getSize() && !found; i++) {
                     sf::Vector2f pos = text.findCharacterPos(i);
                     if (pos.x > mousePos.x && pos.y > mousePos.y - text.getCharacterSize()) {
                         cursorPos = math::Vec3f(pos.x, pos.y, 0);
                         currentIndex = i;
                         found = true;
                     }
+                }
+                if (!found) {
+                    currentIndex = tmp_text.getSize();
+                    sf::Vector2f pos = text.findCharacterPos(currentIndex);
+                    cursorPos = math::Vec3f(pos.x, pos.y, 0);
+                }
+                text.setSelected(currentIndex, currentIndex);
+            }
+            void TextArea::setCursorPos2() {
+                math::Vec2f mousePos = math::Vec2f(window::IMouse::getPosition(getWindow()).x, window::IMouse::getPosition(getWindow()).y);
+                bool found = false;
+                for (unsigned int i = 0; i < tmp_text.getSize() && !found; i++) {
+                    sf::Vector2f pos = text.findCharacterPos(i);
+                    if (pos.x > mousePos.x && pos.y > mousePos.y - text.getCharacterSize()) {
+                        cursorPos = math::Vec3f(pos.x, pos.y, 0);
+                        currentIndex2 = i;
+                        found = true;
+                    }
+                }
+                if (currentIndex2 > currentIndex) {
+                    //std::cout<<"set selected text : "<<currentIndex<<","<<currentIndex2<<std::endl;
+                    text.setSelected(currentIndex, currentIndex2);
+                }
+            }
+            std::string TextArea::getSelectedText() {
+                return selected_text.toAnsiString();
+            }
+            void TextArea::setSelectedText() {
+                if (currentIndex2 > currentIndex) {
+                    selected_text = tmp_text.substring(currentIndex, currentIndex2 - currentIndex);
                 }
             }
             void TextArea::gaignedFocus() {
@@ -69,25 +108,46 @@ namespace odfaeg {
             }
             void TextArea::setTextSize(unsigned int size) {
                 text.setCharacterSize(size);
-                setSize(text.getSize());
             }
             void TextArea::setTextColor(sf::Color color) {
                 text.setColor(color);
             }
             std::string TextArea::getText() {
-                return tmp_text;
+                return tmp_text.toAnsiString();
+            }
+            math::Vec3f TextArea::getTextSize() {
+                return text.getGlobalBounds().getSize();
             }
             void TextArea::onDraw(RenderTarget& target, RenderStates states) {
                 VertexArray va(sf::Lines);
                 va.append(Vertex(sf::Vector3f(cursorPos.x, cursorPos.y, 0), sf::Color::Black));
                 va.append(Vertex(sf::Vector3f(cursorPos.x, cursorPos.y + text.getCharacterSize(), 0), sf::Color::Black));
                 rect.setPosition(getPosition());
-                text.setPosition(getPosition());
+                text.setPosition(math::Vec3f(getPosition().x + scrollX, getPosition().y + scrollY, 0));
                 rect.setSize(getSize());
-                //text.setSize(getSize());
+
                 target.draw(rect);
+                #ifndef VULKAN
+                GLboolean sctest;
+                glCheck(glGetBooleanv(GL_SCISSOR_TEST, &sctest));
+                GLint values[4];
+                glCheck(glGetIntegerv(GL_SCISSOR_BOX, values));
+                glCheck(glEnable(GL_SCISSOR_TEST));
+                glCheck(glScissor(getPosition().x, getWindow().getSize().y - (getPosition().y + getSize().y), getSize().x, getSize().y));
+                #endif
                 target.draw(text);
-                target.draw(va);
+                //Il faut restaurer les paramètres d'avant si un scissor test a été défini avant de dessiner la TextArea.
+                if (sctest == false) {
+                    #ifndef VULKAN
+                    glCheck(glDisable(GL_SCISSOR_TEST));
+                    #endif
+                } else {
+                    #ifndef VULKAN
+                    glCheck(glScissor(values[0], values[1], values[2], values[3]));
+                    #endif
+                }
+                if(haveFocus)
+                    target.draw(va);
             }
             bool TextArea::isMouseInTextArea() {
                 physic::BoundingBox bb = getGlobalBounds();
@@ -112,23 +172,32 @@ namespace odfaeg {
                 }
             }
             void TextArea::onTextEntered(char caracter) {
-                if (tmp_text.length() > 0 && caracter == 8) {
+                if (getName() == "TANAME") {
+                    getListener().name = "TANAMELISTENER";
+                }
+                if (tmp_text.getSize() > 0 && currentIndex-1 >= 0 && caracter == 8) {
                     currentIndex--;
                     tmp_text.erase(currentIndex, 1);
                 }
                 else if (caracter != 8) {
-                    tmp_text.insert(currentIndex, 1, caracter);
+                    if (caracter == 13) {
+                        tmp_text.insert(currentIndex, "\n");
+                    } else {
+                        tmp_text.insert(currentIndex, sf::String(caracter));
+                    }
                     currentIndex++;
                 }
                 setText(tmp_text);
                 sf::Vector2f pos = text.findCharacterPos(currentIndex);
                 cursorPos = math::Vec3f(pos.x, pos.y, 0);
+                if (text.getGlobalBounds().getSize().x > getSize().x) {
+                    scrollX = getSize().x - text.getGlobalBounds().getSize().x;
+                }
             }
             void TextArea::setText(std::string text) {
                 tmp_text = text;
-                this->text.setString(tmp_text);
+                this->text.setString(text);
                 textChanged = true;
-                //setSize(this->text.getSize());
             }
             bool TextArea::isTextChanged() {
                 bool b = textChanged;

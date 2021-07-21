@@ -1,35 +1,31 @@
 #ifndef SORROK_SKILL_HPP
 #define SORROK_SKILL_HPP
 #include <string>
+#include "odfaeg/Core/fastDelegate.h"
 namespace sorrok {
     class Skill {
         public :
         enum Type {
             LAST_HEAL
         };
-        enum Stat {
-            NONE, HP
-        };
         Skill();
-        Skill(std::string name, unsigned int damage, std::string target, unsigned int manaCost);
+        Skill(std::string name, unsigned int manaCost, std::string requiredClass);
+        void setSkillBehaviour(odfaeg::core::FastDelegate<void>* skillBehaviour);
+        void applySkillBehaviour();
         std::string getName();
-        unsigned int getDamage();
-        std::string getTarget();
-        void setStat(Stat stat);
-        Stat getStat();
         unsigned int getManaCost();
         template <typename Archive>
         void serialize (Archive &ar) {
             ar(name);
-            ar(target);
-            ar(damage);
-            ar(stat);
             ar(manaCost);
+            ar(requiredClass);
         }
+        ~Skill();
+        std::string getRequiredClass();
         private :
-        std::string name, target;
-        unsigned int damage, manaCost;
-        Stat stat;
+        std::string name, requiredClass;
+        unsigned int manaCost;
+        odfaeg::core::FastDelegate<void>* skillBehaviour;
     };
 }
 #endif

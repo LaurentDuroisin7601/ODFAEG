@@ -12,7 +12,8 @@ endmacro()
 # set a default build type if none was provided
 # this has to be done before the project() instruction!
 ODFAEG_set_option(CMAKE_BUILD_TYPE Release STRING "Choose the type of build (Debug or Release)")
-set(CMAKE_CXX_FLAGS "-std=c++14 ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_STANDARD 20)
+
 add_definitions(-DGLEW_STATIC)
 # project name
 project(ODFAEG)
@@ -25,13 +26,11 @@ set(VERSION_MAJOR 1)
 set(VERSION_MINOR 0)
 set(VERSION_PATCH 0)
 #enable c++11 option and some optimisations options for size and speed.
-#set(CMAKE_CXX_FLAGS "--std=c++11")
+set(CMAKE_CXX_FLAGS "-std=c++17")
 
 
 # add the ODFAEG header path
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/Core/boost)
-
 # add an option for choosing the build type (shared or static)
 ODFAEG_set_option(BUILD_SHARED_LIBS TRUE BOOL "TRUE to build ODFAEG as shared libraries, FALSE to build it as static libraries")
 
@@ -229,4 +228,3 @@ elseif(MACOSX)
     install(DIRECTORY extlibs/libs-osx/Frameworks/freetype.framework DESTINATION ${CMAKE_INSTALL_FRAMEWORK_PREFIX})
     
 endif()
-

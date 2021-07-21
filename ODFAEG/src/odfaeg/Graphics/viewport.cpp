@@ -63,21 +63,21 @@ namespace odfaeg {
         }
         math::Matrix4f ViewportMatrix::getMatrix() {
             if (viewportUpdated) {
-                viewport.m11 = size.x * 0.5f;
+                viewport.m11 = std::abs(size.x) * 0.5f;
                 viewport.m12 = 0.f;
                 viewport.m13 = 0.f;
-                viewport.m14 = size.x * 0.5f + position.x;
+                viewport.m14 = std::abs(size.x) * 0.5f + position.x;
                 viewport.m21 = 0.f;
-                viewport.m22 = size.y * 0.5f;
+                viewport.m22 = std::abs(size.y) * 0.5f;
                 viewport.m23 = 0.f;
-                viewport.m24 = size.y * 0.5f + position.y;
+                viewport.m24 = std::abs(size.y) * 0.5f + position.y;
                 viewport.m31 = 0.f;
                 viewport.m32 = 0.f;
-                viewport.m33 = size.z * 0.5f;
-                viewport.m34 = size.z * 0.5f + position.z;
-                viewport.m41 = 0.f;
-                viewport.m42 = 0.f;
-                viewport.m43 = 0.f;
+                viewport.m33 = std::abs(size.z) * 0.5f;
+                viewport.m34 = std::abs(size.z) * 0.5f + position.z;
+                viewport.m41 = std::min(position.x, size.x);
+                viewport.m42 = std::min(position.y, size.y);
+                viewport.m43 = std::min(position.y, size.z);
                 viewport.m44 = 1.f;
                 viewportUpdated = false;
             }

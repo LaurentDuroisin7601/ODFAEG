@@ -44,6 +44,9 @@ namespace odfaeg {
             void addInstancedRenderingInfos(unsigned int numIndexes, unsigned int baseVertex, unsigned int baseIndice);
             void addIndex(unsigned int index);
             std::vector<unsigned int> getIndexes();
+            std::vector<math::Vec3f> getLocals() {
+                return m_locals;
+            }
             ////////////////////////////////////////////////////////////
             /// \brief Construct the vertex array with a type and an initial number of vertices
             ///
@@ -155,21 +158,24 @@ namespace odfaeg {
             sf::PrimitiveType getPrimitiveType() const;
             physic::BoundingBox getBounds();
             bool operator== (const VertexArray &other) const;
-            void updateVBOBuffer();
             void transform(TransformMatrix tm);
             template <typename Archive>
             void serialize (Archive & ar) {
                 ar(m_indexes);
+                //std::cout<<"indexes : "<<std::endl;
                 ar(m_vertices);
+                //std::cout<<"vertices : "<<std::endl;
                 ar(m_primitiveType);
+                //std::cout<<"primitive type : "<<m_primitiveType<<std::endl;
                 ar(m_locals);
+                //std::cout<<"locals : "<<std::endl;
                 ar(m_entity);
+                //std::cout<<"entity : "<<m_entity<<std::endl;
                 if (ar.isInputArchive())
                     onLoad();
             }
             void onLoad() {
                 computeNormals();
-                updateVBOBuffer();
             }
             bool isLoop();
             ~VertexArray();

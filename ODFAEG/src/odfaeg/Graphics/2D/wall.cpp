@@ -3,23 +3,31 @@ namespace odfaeg {
     namespace graphic {
         namespace g2d {
 
-            Wall::Wall (Tile *tile, Light *light) : Model (tile->getPosition(),tile->getSize(), tile->getOrigin(), "E_WALL")  {
+            Wall::Wall (Tile *tile, Type type, Light *light) : Model (tile->getPosition(),tile->getSize(), tile->getOrigin(), "E_WALL")  {
                 addChild(tile);
                 tile->setParent(this);
                 float sy = light->getHeight() / (light->getHeight() * 0.75f);
-                shadowScale = math::Vec3f(1.f, sy, 1.f);
-                setShadowScale(shadowScale);
+                setShadowScale(math::Vec3f(1.f, sy, 1.f));
+                int c = getSize().y * sy;
+                setShadowCenter(math::Vec3f(0, 0, -c));
+                this->type = type;
+            }
+            int Wall::getWallType() {
+                return type;
+            }
+            Entity* Wall::clone() {
+                Wall* w = new Wall();
+                GameObject::copy(w);
+                w->type = type;
+                return w;
             }
             bool Wall::isLeaf() const {
                 return false;
             }
-            void Wall::onMove(math::Vec3f& t) {
-                Entity::onMove(t);
-            }
             bool Wall::operator== (Entity &other) {
-                if (other.getType() != "E_WALL")
+                if (!GameObject::operator==(other))
                     return false;
-                return true;
+                return type == other.getWallType();
             }
             bool Wall::selectable () const {
                 return true;

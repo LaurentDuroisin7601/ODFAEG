@@ -4,8 +4,11 @@
 #include "contextSettings.hpp"
 #include "../../../include/odfaeg/config.hpp"
 #if defined(ODFAEG_SYSTEM_LINUX)
-#include "../../../include/odfaeg/Window/glxContext.hpp"
+#include "../../../include/odfaeg/Window/Linux/glxContext.hpp"
 typedef odfaeg::window::GlxContext ContextImplType;
+#elif defined(ODFAEG_SYSTEM_WINDOWS)
+#include "../../../include/odfaeg/Window/Windows/wglContext.hpp"
+typedef odfaeg::window::WglContext ContextImplType;
 #endif
 #include <vector>
 #include <string>
@@ -24,7 +27,7 @@ namespace odfaeg {
                 static int evaluateFormat(unsigned int bitsPerPixel, const ContextSettings& settings, int colorBits, int depthBits, int stencilBits, int antialiasing, bool accelerated, bool sRgb);
                 static bool isExtensionAvalaible(const char* name);
                 void create(IContext* shared);
-                void create(sf::WindowHandle handle, const ContextSettings& settings, IContext* shared = nullptr);
+                void create(sf::WindowHandle handle, const ContextSettings& settings, IContext* shared = nullptr, unsigned int bitsPerPixel = 32);
                 void create(const ContextSettings& settings, unsigned int width, unsigned int height, IContext* shared = nullptr);
                 bool setActive(bool active);
                 const ContextSettings& getSettings() const;
@@ -32,9 +35,9 @@ namespace odfaeg {
                 sf::Uint64 getActiveContextId();
                 void cleanupUnsharedResources();
                 void setVerticalSyncEnabled(bool enabled);
-                static void registerContextDestroyCallback(ContextDestroyCallback contextDestoyCallback, void* arg);
+                /*static void registerContextDestroyCallback(ContextDestroyCallback contextDestoyCallback, void* arg);
                 static void acquireTransientContext();
-                static void releaseTransientContext();
+                static void releaseTransientContext();*/
                 void checkSettings(const ContextSettings& settings);
                 ~ContextImpl();
             private :
@@ -51,7 +54,7 @@ namespace odfaeg {
                 // track TransientContext usage
                 // This per-thread variable tracks if and how a transient
                 // context is currently being used on the current thread
-                struct TransientContext : private sf::NonCopyable
+                /*struct TransientContext : private sf::NonCopyable
                 {
                     ////////////////////////////////////////////////////////////
                     /// \brief Constructor
@@ -98,7 +101,7 @@ namespace odfaeg {
                 };
                 static sf::ThreadLocalPtr<TransientContext> transientContext;
                 typedef std::set<std::pair<ContextDestroyCallback, void*> > ContextDestroyCallbacks;
-                static ContextDestroyCallbacks contextDestroyCallbacks;
+                static ContextDestroyCallbacks contextDestroyCallbacks;*/
                 static sf::Uint64 id;
                 const sf::Uint64 m_id; ///< Unique number that identifies the context
         };

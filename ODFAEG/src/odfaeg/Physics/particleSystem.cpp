@@ -28,6 +28,7 @@
 
 #include "../../../include/odfaeg/Graphics/renderWindow.h"
 #include "../../../include/odfaeg/Graphics/texture.h"
+#include "../../../include/odfaeg/Math/transformMatrix.h"
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -61,9 +62,20 @@ namespace odfaeg
 
         // ---------------------------------------------------------------------------------------------------------------------------
 
+        ParticleSystem::ParticleSystem() : graphic::GameObject(math::Vec3f(0, 0, 0), math::Vec3f(0, 0, 0), math::Vec3f(0, 0, 0), "E_PARTICLES"), mParticles()
+        , mAffectors()
+        , mEmitters()
+        , mTexture(nullptr)
+        , mTextureRects()
+        , mVertices(sf::Quads)
+        , mNeedsVertexUpdate(true)
+        , mQuads()
+        , mNeedsQuadUpdate(true),
+          scene(nullptr){
 
+        }
         ParticleSystem::ParticleSystem(math::Vec3f position, math::Vec3f size, graphic::EntityManager* scene)
-        : graphic::Entity(position, size, size*0.5f, "E_PARTICLES"), mParticles()
+        : graphic::GameObject(position, size, size*0.5f, "E_PARTICLES"), mParticles()
         , mAffectors()
         , mEmitters()
         , mTexture(nullptr)
@@ -75,8 +87,19 @@ namespace odfaeg
           scene(scene)
         {
             graphic::Material material;
-            graphic::Face* face = new graphic::Face(mVertices, material, getTransform());
+            material.addTexture(nullptr);
+            graphic::Face face (mVertices, material, getTransform());
             addFace(face);
+        }
+        graphic::Entity* ParticleSystem::clone() {
+            ParticleSystem* ps = new ParticleSystem(getPosition(), getSize());
+            GameObject::copy(ps);
+            ps->mAffectors = mAffectors;
+            ps->mEmitters = mEmitters;
+            ps->mTexture = mTexture;
+            ps->mTextureRects = mTextureRects;
+            ps->mVertices = mVertices;
+            return ps;
         }
         void ParticleSystem::setScene(graphic::EntityManager* scene) {
             this->scene = scene;
@@ -84,7 +107,8 @@ namespace odfaeg
         void ParticleSystem::setTexture(const graphic::Texture& texture)
         {
             mTexture = &texture;
-            getFaces()[0]->getMaterial().addTexture(mTexture, sf::IntRect(0, 0, 0, 0));
+            getFaces()[0].getMaterial().clearTextures();
+            getFaces()[0].getMaterial().addTexture(mTexture);
             mNeedsQuadUpdate = true;
         }
 
@@ -204,21 +228,9 @@ namespace odfaeg
                 computeVertices();
                 mNeedsVertexUpdate = false;
             }
-            BoundingBox view = target.getView().getViewVolume();
-            int x = view.getPosition().x;
-            int y = view.getPosition().y;
-            int z = view.getCenter().z;
-            int endX = view.getWidth();
-            int endY = view.getHeight();
-            int endZ = view.getDepth();
-            BoundingBox bx (x, y, z, endX, endY, endZ);
-            BoundingBox bx2 = mVertices.getBounds();
-            CollisionResultSet::Info info;
-            if (bx.intersects(bx2, info)) {
-                // Draw the vertex array with our texture
-                states.texture = mTexture;
-                target.draw(mVertices, states);
-            }
+            // Draw the vertex array with our texture
+            states.texture = mTexture;
+            target.draw(mVertices, states);
         }
 
         void ParticleSystem::emitParticle(const Particle& particle)
@@ -251,8 +263,8 @@ namespace odfaeg
         {
 
             // Clear vertex array (keeps memory allocated)
-            if (scene != nullptr)
-                scene->removeVertices(mVertices);
+            /*if (scene != nullptr)
+                scene->removeVertices(mVertices);*/
             mVertices.clear();
             mVertices.setEntity(const_cast<ParticleSystem*>(this));
             // Fill vertex array
@@ -278,11 +290,11 @@ namespace odfaeg
                     vertex.color = it->color;
                     mVertices.append(vertex);
                 }
-                getFaces()[0]->setVertexArray(mVertices);
+                const_cast<ParticleSystem*>(this)->getFace(0)->setVertexArray(mVertices);
                 tm.reset3D();
             }
-            if (scene != nullptr)
-                scene->addVertices(mVertices, const_cast<ParticleSystem*>(this)->getTransform().getTransformId());
+            /*if (scene != nullptr)
+                scene->addVertices(mVertices, const_cast<ParticleSystem*>(this)->getTransform().getTransformId());*/
         }
 
         void ParticleSystem::computeQuads() const

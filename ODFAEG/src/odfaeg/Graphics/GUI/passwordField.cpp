@@ -15,7 +15,7 @@ namespace odfaeg {
                 rect = RectangleShape(size);
                 /*rect.setOutlineThickness(5.f);
                 rect.setOutlineColor(sf::Color::Black);*/
-                core::Action a2 (core::Action::MOUSE_MOVED);
+                core::Action a2 (core::Action::MOUSE_BUTTON_PRESSED_ONCE, window::IMouse::Left);
                 core::Command cmd2(a2, core::FastDelegate<bool>(&PasswordField::isMouseInTextArea, this), core::FastDelegate<void>(&PasswordField::gaignedFocus, this));
                 core::Command cmd3(a2, core::FastDelegate<bool>(&PasswordField::isMouseOutTextArea, this), core::FastDelegate<void>(&PasswordField::lostFocus, this));
                 getListener().connect("CGFOCUS"+t, cmd2);

@@ -2,7 +2,7 @@
 #include "../../../../include/odfaeg/Graphics/2D/directionnalLight.h"
 #include "../../../../include/odfaeg/Math/ray.h"
 #include "../../../../include/odfaeg/Math/computer.h"
-#include "../../../../include/odfaeg/Graphics/transformMatrix.h"
+#include "../../../../include/odfaeg/Math/transformMatrix.h"
 #include "../../../../include/odfaeg/Physics/boundingPolyhedron.h"
 namespace odfaeg {
     namespace graphic {
@@ -13,7 +13,7 @@ namespace odfaeg {
             using namespace sf;
             //Crée une lumière avec sa position, sa direction, sa hauteur, son rayon, son intensité et son typpe.
             DirectionnalLight::DirectionnalLight (math::Vec3f center, math::Vec3f dir, int height, float r1, float r2, float r3, float intensity, Color color, int quality, Entity *parent) :
-                EntityLight (center, color, r1, r2, r3, height, "E_DIRECTIONNAL_LIGHT", parent) {
+                EntityLight (center, color, r1, r2, r3, height, "E_DIRECTIONNAL_LIGHT", "", parent) {
 
                 this->quality = quality;
                 this->dir = dir;
@@ -373,10 +373,10 @@ namespace odfaeg {
                 }
                 coneTris.clear();
                 math::Vec3f center = getLightCenter();
-                math::Vec3f centerCone = center - dir * (getHeight() * 0.5f);
+                math::Vec3f centerCone = center - dir * (Light::getHeight() * 0.5f);
                 math::Vec3f origCone = center - dir * center;
                 TransformMatrix tm;
-                tm.setRotation(90);
+                tm.setRotation(math::Vec3f(0, 0, 1), 90);
                 math::Vec3f ortho = tm.transform(dir);
                 math::Vec3f ext1 (center.x - ortho.x * getSize().x * 0.5f, center.y - ortho.y * getSize().y * 0.5f, center.z);
                 math::Vec3f ext2 (center.x + ortho.x * getSize().x * 0.5f, center.y + ortho.y * getSize().y * 0.5f, center.z);
@@ -384,8 +384,8 @@ namespace odfaeg {
                 math::Vec3f d2 = ext2 - origCone;
                 d1 = d1.normalize();
                 d2 = d2.normalize();
-                math::Vec3f extCenter1 = ext1 - d1 * (getHeight() * 0.5f);
-                math::Vec3f extCenter2 = ext2 - d2 * (getHeight() * 0.5f);
+                math::Vec3f extCenter1 = ext1 - d1 * (Light::getHeight() * 0.5f);
+                math::Vec3f extCenter2 = ext2 - d2 * (Light::getHeight() * 0.5f);
                 VertexArray* s1 = new VertexArray (Triangles);
                 Color color1(color.r, color.g, color.b, intensity / 20);
                 Color color2 (color.r, color.g, color.b, 0);
@@ -431,15 +431,10 @@ namespace odfaeg {
                 position = math::Vec3f (store[0][0], store[1][0], store[2][0]);
             }
             bool DirectionnalLight::operator== (Entity &other) {
-                   if (other.getType() != "E_DIRECTIONNAL_LIGHT")
+                   if (!GameObject::operator==(other))
                        return false;
-                   DirectionnalLight &light = static_cast<DirectionnalLight&> (other);
-                   return getPosition() == light.getPosition() &&
-                       getLightCenter() == light.getLightCenter() &&
-                       color == light.getColor() &&
-                       intensity == light.getIntensity() &&
-                       getHeight() == light.getHeight() &&
-                       getSize() == light.getSize();
+                   return color == other.getColor() &&
+                          intensity == other.getIntensity();
             }
             vector<VertexArray*> DirectionnalLight::getConeTris () {
                 return coneTris;

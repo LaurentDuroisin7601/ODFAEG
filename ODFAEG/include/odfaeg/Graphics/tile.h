@@ -6,7 +6,7 @@
 #include "../Math/maths.h"
 #include "../Math/computer.h"
 #include <vector>
-#include "entity.h"
+#include "gameObject.hpp"
 #include "selectable.h"
 /**
   *\namespace odfaeg
@@ -24,7 +24,7 @@ namespace odfaeg {
           * \date 1/02/2014
           * Represent a 2D tile.
           */
-        class ODFAEG_GRAPHICS_API Tile : public Entity, public Selectable {
+        class ODFAEG_GRAPHICS_API Tile : public GameObject, public Selectable {
             public :
                 /**
                 * \fn Tile();
@@ -41,14 +41,7 @@ namespace odfaeg {
                 * \param parent : the parent entity of the tile. (nullptr by default)
                 */
                 Tile (const Texture *image, math::Vec3f position, math::Vec3f size, sf::IntRect subRect, sf::Color color = sf::Color::White, Entity* parent = nullptr);
-                /**
-                * \fn Tile (const Tile& tile);
-                * \brief copy constructor.
-                * \param tile : the tile to copy.
-                */
-                Tile (const Tile& tile);
-                Tile& operator= (Tile& tile);
-                Tile* clone();
+                Entity* clone();
                 void changeVerticesHeights (float h1, float h2, float h3, float h4);
                 /**
                 * \fn void setParentType (std::string parentType);
@@ -69,7 +62,7 @@ namespace odfaeg {
                 * \param tile : the other tile.
                 * \return if the two tiles are different.
                 */
-                bool operator!= (Tile &tile);
+                bool operator!= (Entity &tile);
                 /**
                 * \fn void onDraw (RenderTarget &target, RenderStates states) const;
                 * \brief draw the tile on the given render target with the given render states.
@@ -138,9 +131,11 @@ namespace odfaeg {
                 */
                 template <typename Archive>
                 void vtserialize(Archive & ar) {
-                    Entity::vtserialize(ar);
+                    GameObject::vtserialize(ar);
                 }
                 sf::Color getColor();
+                sf::IntRect getTexCoords();
+                void setTexRect(sf::IntRect rect);
         };
     }
 }

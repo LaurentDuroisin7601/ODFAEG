@@ -25,11 +25,11 @@ namespace odfaeg {
             * \fn void onUpdate ()
             * \brief update all the entities which are in the current view.
             */
-            void addParticleSystem(physic::ParticleSystem* ps) {
+            void addParticleSystem(Entity* ps) {
                 particleSystems.push_back(ps);
             }
-            void removeParticleSystem (physic::ParticleSystem* ps) {
-                std::vector<physic::ParticleSystem*>::iterator it;
+            void removeParticleSystem (Entity* ps) {
+                std::vector<Entity*>::iterator it;
                 for (it = particleSystems.begin(); it != particleSystems.end();) {
                     if (*it == ps) {
                         it = particleSystems.erase(it);
@@ -38,14 +38,20 @@ namespace odfaeg {
                     }
                 }
             }
+            std::vector<Entity*> getParticleSystems() {
+                return particleSystems;
+            }
             void onUpdate () {
                 for (unsigned int i = 0; i < particleSystems.size(); i++) {
+                    //std::cout<<"update particle"<<std::endl;
                     particleSystems[i]->update();
+                    if (odfaeg::core::Application::app != nullptr)
+                        particleSystems[i]->update(odfaeg::core::Application::app->getClock("LoopTime").getElapsedTime());
                 }
-                World::changeVisibleEntity(nullptr, nullptr);
+                //World::changeVisibleEntity(nullptr, nullptr);
             }
         private :
-            std::vector<physic::ParticleSystem*> particleSystems;
+            std::vector<Entity*> particleSystems;
         };
     }
 }

@@ -8,7 +8,9 @@ namespace odfaeg {
         class HeavyComponent : public Component {
             public :
             HeavyComponent(RenderWindow& window, math::Vec3f position, math::Vec3f size, math::Vec3f origin) :
-                Component(window, position, size, origin, position.z) {}
+                Component(window, position, size, origin, position.z) {
+                    //std::cout<<"create heavy component"<<std::endl;
+                }
             void recomputeSize() {
                 float sx, sy, npx, npy, nsx, nsy;
                 sx = getSize().x;
@@ -28,12 +30,16 @@ namespace odfaeg {
             virtual std::vector<Entity*> getEntities() = 0;
             virtual std::string getExpression() = 0;
             virtual void setExpression(std::string expression) = 0;
-            virtual void changeVisibleEntities(Entity* toRemove, Entity* toAdd, EntityManager* em) = 0;
-            virtual void updateParticleSystems() = 0;
             virtual void drawNextFrame() = 0;
             virtual void draw(Drawable& drawable, RenderStates states) = 0;
             virtual void setView(View view) = 0;
             virtual View& getView() = 0;
+            virtual void loadTextureIndexes() = 0;
+            unsigned int getComponentType() const;
+            static void addSharedRenderTexture (RenderTexture* rt);
+            static bool containsSharedRenderTexture (RenderTexture* rt);
+            private :
+                static std::vector<RenderTexture*> sharedRenderTextures;
         };
     }
 }

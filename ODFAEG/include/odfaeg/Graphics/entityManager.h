@@ -3,9 +3,8 @@
 #include "../Core/utilities.h"
 #include "../Physics/boundingBox.h"
 #include "entity.h"
-#include "animatedEntity.h"
 #include "baseChangementMatrix.h"
-#include "tile.h"
+#include "2D/wall.h"
 #include "cellMap.h"
 /**
   *\namespace odfaeg
@@ -21,22 +20,16 @@ namespace odfaeg {
           * \date 1/02/2014
           * \brief Abstract class of every 2D entity managers.
           */
-        class ODFAEG_GRAPHICS_API EntityManager {
+        class ODFAEG_GRAPHICS_API SceneManager {
         public :
-            /**
-            * \fn EntityManager(std::string name)
-            * \brief constructor.
-            * \param name : the name of the entity manager.
-            */
-            EntityManager(std::string name) : name(name), nbSceneVertices(0), nbTransforms(0) {
-
-            }
             /**
             * \fn std::vector<Entity*> getEntities(std::string expression)
             * \brief virtual function to redefine to get the entities in the world, depending on the given expression.
             * \param an expression which determine which entities types to get.
             */
             virtual std::vector<Entity*> getEntities(std::string expression) = 0;
+            virtual std::vector<Entity*> getRootEntities(std::string expression) = 0;
+            virtual std::vector<Entity*> getChildrenEntities(std::string expression) = 0;
             /**
             * \fn void checkVisibleEntities()
             * \brief virtual function to redefine to check visible entities.
@@ -66,7 +59,7 @@ namespace odfaeg {
             * \param std::vector<Tile*> tWalls : the tiles of the walls to generate.
             * \param BoundingZone& zone : the zone of the area where to generate the map.
             */
-            virtual void generate_map(std::vector<Tile*> tGrounds, std::vector<Tile*> tWalls, math::Vec2f tileSize, physic::BoundingBox& zone, bool terrain3D) = 0;
+            virtual void generate_map(std::vector<Tile*> tGrounds, std::vector<g2d::Wall*> tWalls, math::Vec2f tileSize, physic::BoundingBox& zone, bool terrain3D) = 0;
             /**
             * \fn void moveEntity(Entity* entity, float x, float y, float z)
             * \brief virtual method to redefine to move an entity to the world.
@@ -81,80 +74,7 @@ namespace odfaeg {
             * \brief virtual function to redefine to add an entity into the manager.
             * \param Entity* entity : the entity to add.
             */
-            void addVertices(VertexArray& va, unsigned int transformId) {
-                for (unsigned int j = 0; j < va.getVertexCount(); j++) {
-                    sceneVertices.append(va[j]);
-                    sceneVertices.addIndex(nbSceneVertices);
-                    va.addIndex(nbSceneVertices);
-                    sceneVertices.addTransformId(transformId, nbSceneVertices);
-                    nbSceneVertices++;
-                    //std::cout<<"add indexes"<<std::endl;
-                }
-                allVertices.push_back(&va);
-                //std::cout<<"indexes : "<<allVertices.back()->m_indexes.size()<<std::endl;
-            }
-            void updateVertices(VertexArray& va) {
-                sceneVertices.update(va);
-            }
-            void removeVertices(VertexArray& va) {
-                if (va.getVertexCount() > 0)  {
-                    unsigned int first = va.m_indexes[0];
-                    for (unsigned int i = 0; i < allVertices.size(); i++) {
-                        for (unsigned int j = 0; j < allVertices[i]->getVertexCount(); j++) {
-                            if (j < allVertices[i]->m_indexes.size() && allVertices[i]->m_indexes[j] > first) {
-                                allVertices[i]->m_indexes[j] -= va.getVertexCount();
-                            }
-                        }
-                    }
-                    sceneVertices.remove(va);
-                }
-                nbSceneVertices -= va.getVertexCount();
-            }
-            virtual bool addEntity(Entity *entity) {
-                transformMatrices.push_back(&entity->getTransform());
-                for (unsigned int i = 0; i < entity->getNbFaces(); i++) {
-                    //entity->getFace(i)->getVertexArray().transform(entity->getTransform());
-                    addVertices(entity->getFace(i)->getVertexArray(), nbTransforms);
-                    /*if (entity->getRootType() == "E_BIGTILE") {
-                        for(unsigned int j = 0; j < entity->getNbFaces(); j++) {
-                            for (unsigned int k = 0; k < entity->getFace(j)->getVertexArray().getVertexCount(); k++) {
-                                std::cout<<"index : "<<entity->entity->getFace(j)->getVertexArray().m_index[k]<<std::endl;
-                            }
-                        }
-                    }*/
-                }
-                /*std::cout<<"type : "<<entity->getType()<<std::endl;
-                for (unsigned int i = 0; i < entity->getNbFaces(); i++) {
-                    VertexArray& va =  entity->getFace(i)->getVertexArray();
-                    for (unsigned int j = 0; j < va.getVertexCount(); j++) {
-                        std::cout<<"added index : *"<<va.m_indexes[j]<<std::endl;
-                    }
-                }*/
-
-                entity->getTransform().setTransformId(nbTransforms);
-                nbTransforms++;
-            }
-            virtual bool containsVisibleEntity(Entity* ae) = 0;
-            /**
-            * \fn bool containsAnimatedVisibleEntity(AnimatedEntity *ae)
-            * \brief virtual function to redefine to check if the entity manager contains an animated entity.
-            * \return true if the entity manager contains the animated entity.
-            */
-            virtual bool containsVisibleParentEntity(Entity *ae) = 0;
-            /**
-            * \fn Entity& getShadowTile()
-            * \brief virtual method to redefine to get the shadow tile.
-            * \return Entity& the shadow tile.
-            */
-            virtual void generateStencilBuffer(std::string expression, int n, va_list args) = 0;
-            virtual Entity& getShadowTile(std::string expression, int n, va_list args) = 0;
-            /**
-            * \fn Entity& getLightTile()
-            * \brief virtual method to redefine to get the light tile.
-            * \return Entity& the light tile.
-            */
-            virtual Entity& getLightTile(std::string expression, int n, va_list args) = 0;
-            virtual Entity& getRefractionTile(std::string expression, int n, va_list args) = 0;
+            virtual bool addEntity(Entity *entity) = 0;
             /**
             * \fn void drawOnComponents(std::string expression, int layer, sf::BlendMode mode)
             * \brief virtual method to redefine to draw the visibles entities to a component.
@@ -183,7 +103,7 @@ namespace odfaeg {
             *   \param Entity* entity : the entity.
             *   \param Vec3f finalPos : the destination.
             */
-            virtual std::vector<math::Vec2f> getPath(Entity* entity, math::Vec2f finalPos) = 0;
+            virtual std::vector<math::Vec3f> getPath(Entity* entity, math::Vec3f finalPos) = 0;
             /**
             *   \fn CellMap<Entity>* getGridCellAt(Vec3f pos)
             *   \brief virtual method to redefine to get a cell at the given position containing the entities.
@@ -195,29 +115,14 @@ namespace odfaeg {
             *   \brief virtual method to redefine to get all the cells containing the entities.
             *   \return std::vector<CellMap<Entity>*> all the cells containing the entities.
             */
+            virtual math::Vec3f getCoordinatesAt(math::Vec3f point) = 0;
             virtual std::vector<CellMap*> getCasesMap() = 0;
-            virtual void changeVisibleEntity(Entity* toRemove, Entity* toAdd) = 0;
-            virtual void removeAnimatedVisibleEntity(Entity* toRemove, std::vector<Entity*>& entities, View& view, bool& removed) = 0;
-            virtual void insertAnimatedVisibleEntity (Entity* toAdd, std::vector<Entity*>& entities, View& view) = 0;
             virtual bool removeEntity(Entity* entity) = 0;
             virtual bool deleteEntity(Entity* entity) = 0;
             virtual Entity* getEntity(int id) = 0;
-            virtual void updateParticles() = 0;
-            std::string getName() {
-                return name;
-            }
-            std::vector<TransformMatrix*> getTransforms() {
-                return transformMatrices;
-            }
-            VertexBuffer& getSceneVertices() {
-                return sceneVertices;
-            }
-            private :
-            std::string name;
-            VertexBuffer sceneVertices;
-            std::vector<VertexArray*> allVertices;
-            std::vector<TransformMatrix*> transformMatrices;
-            unsigned int nbSceneVertices, nbTransforms;
+            virtual Entity* getEntity(std::string name) = 0;
+            virtual std::string getName() = 0;
+            virtual void setName(std::string name) = 0;
         };
     }
 }

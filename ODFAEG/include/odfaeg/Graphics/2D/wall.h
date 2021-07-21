@@ -5,7 +5,7 @@
 #include "../../Math/matrix2.h"
 #include "../light.h"
 #include "../model.h"
-#include "../../Graphics/world.h"
+#include "../tile.h"
 #include "../selectable.h"
 #include <vector>
 /**
@@ -26,12 +26,15 @@ namespace odfaeg {
               */
             class ODFAEG_GRAPHICS_API Wall : public Selectable, public Model {
                 public :
+                    enum Type {
+                        TOP_LEFT, TOP_RIGHT, BOTTOM_RIGHT, BOTTOM_LEFT, TOP_BOTTOM, RIGHT_LEFT, T_TOP, T_RIGHT, T_LEFT, T_BOTTOM, X, NB_WALL_TYPES
+                    };
                     /**
                     * \fn  Wall()
                     * \brief constructor.
                     */
-                    Wall() : Model(math::Vec3f(0, 0, 0),math::Vec3f(1, 1, 1),math::Vec3f(0.5f, 0.5f, 0.5f), "E_WALL") {
-
+                    Wall() : Model(math::Vec3f(0, 0, 0),math::Vec3f(1, 1, 0),math::Vec3f(0.5f, 0.5f, 0), "E_WALL", "WALL") {
+                        type = TOP_LEFT;
                     }
                     /**
                     * \fn Wall (int imageId, int height, Tile *tile, Light *light, Shadow::SHADOW_TYPE shadowType);
@@ -42,7 +45,7 @@ namespace odfaeg {
                     * \param light : the light used to generate the shadow.
                     * \param sahdowType : the type of the shadow to generate.
                     */
-                    Wall (Tile *tile, Light *light);
+                    Wall (Tile *tile, Type type, Light *light);
                     void createShadow(Light& light);
                     /**
                     * \fn bool isLeaf() const;
@@ -60,7 +63,6 @@ namespace odfaeg {
                     * \brief redefinition of the method of the base class Entity.
                     * \param t : the translation.
                     */
-                    void onMove(math::Vec3f &t);
                     /**
                     * \fn int getEntityId ();
                     * \brief get the id of the entity.
@@ -85,23 +87,6 @@ namespace odfaeg {
                     * \param other : compare if an entity is equal to another.
                     */
                     bool operator== (Entity &other);
-                    /**
-                    * \fn  void setShadowCenter (math::Vec3f shadCenter);
-                    * \brief set the center of the shadow.
-                    * \param shadCenter : the center of the shadow.
-                    */
-                    void setShadowCenter (math::Vec3f shadCenter);
-                    /**
-                    * \fn math::Vec3f getShadowCenter();
-                    * \brief get the center of the shadow.
-                    * \return the center of the shadow.
-                    */
-                    math::Vec3f getShadowCenter();
-                    /**
-                    * \fn bool selectable() const;
-                    * \brief redefinition of the method of the base class Entity.
-                    * \return if the entity is selectable.
-                    */
                     bool selectable () const;
                     /**
                     * \fn bool isLight() const;
@@ -123,7 +108,11 @@ namespace odfaeg {
                     template <typename Archive>
                     void vtserialize(Archive & ar) {
                         Model::vtserialize(ar);
+                        //std::cout<<"wall type : "<<type<<std::endl;
+                        ar(type);
                     }
+                    Entity* clone();
+                    Type type;
             };
         }
     }

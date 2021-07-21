@@ -30,7 +30,7 @@ namespace odfaeg {
                 rw.setPosition(sf::Vector2i(position.x, position.y));
                 option = UNDEFINED;
                 text.setFont(*font);
-                text.setString(t);
+                text.setString(t.toAnsiString());
                 text.setColor(sf::Color::Black);
                 text.setPosition(math::Vec3f(10, 10, position.z));
                 text.setSize(size);
@@ -78,7 +78,7 @@ namespace odfaeg {
                 option = NO_OPTION;
             }
             void OptionPane::setText(std::string t) {
-                text.setString(sf::String(t.c_str()));
+                text.setString(t);
             }
             void OptionPane::onEventPushed (window::IEvent event, RenderWindow& window) {
                 if (event.type == window::IEvent::WINDOW_EVENT && event.window.type == window::IEvent::WINDOW_EVENT_CLOSED) {

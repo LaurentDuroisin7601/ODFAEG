@@ -28,7 +28,7 @@ namespace sorrok {
         baseAnimIndex = WALKING;
     }
     void Caracter::onMove(Vec3f& t) {
-        Entity::onMove(t);
+        GameObject::onMove(t);
         if (getCollisionVolume() != nullptr) {
             getCollisionVolume()->move(Vec3f(t.x, t.y, 0));
         }
@@ -105,13 +105,13 @@ namespace sorrok {
     bool Caracter::operator== (Entity &other) {
         if (getType() != other.getType())
             return false;
-            Caracter& caracter = static_cast<Caracter&>(other);
-            if (anims.size() != caracter.anims.size())
+        Caracter& caracter = static_cast<Caracter&>(other);
+        if (anims.size() != caracter.anims.size())
+            return false;
+        for (unsigned int i = 0; i < anims.size(); i++) {
+            if (anims[i] != caracter.anims[i])
                 return false;
-            for (unsigned int i = 0; i < anims.size(); i++) {
-                if (anims[i] != caracter.anims[i])
-                    return false;
-            }
+        }
         return true;
     }
     bool Caracter::isInFightingMode() {
@@ -127,9 +127,9 @@ namespace sorrok {
         return clockAtkSpeed.getElapsedTime();
     }
     void Caracter::setDir (Vec2f dir) {
-        anims[baseAnimIndex + currentAnimIndex]->stop();
         float angleRadians = dir.getAngleBetween(Vec2f::yAxis);
         int angle = Math::toDegrees(angleRadians);
+        unsigned int previousAnimIndex = currentAnimIndex;
         //Sud
         if (angle >= -10 && angle <= 10)
             currentAnimIndex = 4;
@@ -155,23 +155,26 @@ namespace sorrok {
         else
             currentAnimIndex = 1;
         this->dir = dir;
-        if (moving) {
+        if (moving && previousAnimIndex != currentAnimIndex) {
+            anims[baseAnimIndex + previousAnimIndex]->stop();
             anims[baseAnimIndex + currentAnimIndex]->play(true);
+            BoneAnimation::setBoneAnimationIndex(baseAnimIndex + currentAnimIndex);
         }
-        BoneAnimation::setBoneIndex(baseAnimIndex + currentAnimIndex);
+
     }
     Vec2f Caracter::getDir () {
         return dir;
     }
-
+    Entity* Caracter::clone() {
+    }
     void Caracter::setMoving (bool b) {
         if (moving != b) {
             this->moving = b;
             if (moving) {
-                std::cout<<"play"<<std::endl;
+                std::cout<<"play moving"<<std::endl;
                 baseAnimIndex = WALKING;
                 anims[baseAnimIndex + currentAnimIndex]->play(true);
-                BoneAnimation::setBoneIndex(baseAnimIndex + currentAnimIndex);
+                BoneAnimation::setBoneAnimationIndex(baseAnimIndex + currentAnimIndex);
             } else {
                 anims[baseAnimIndex + currentAnimIndex]->stop();
                 anims[baseAnimIndex + currentAnimIndex]->setCurrentFrame(0);

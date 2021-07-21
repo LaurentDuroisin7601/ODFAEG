@@ -32,7 +32,7 @@
 
 #include <functional>
 #include <type_traits>
-#include "../Graphics/transformMatrix.h"
+#include "transformMatrix.h"
 
 
 namespace odfaeg

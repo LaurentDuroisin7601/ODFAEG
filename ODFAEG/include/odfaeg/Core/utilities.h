@@ -5,9 +5,14 @@
 #include <vector>
 #include <sstream>
 #include <SFML/Config.hpp>
+#include "../config.hpp"
 #include <dirent.h>
-#include <unistd.h>
+#ifndef ODFAEG_SYSTEM_LINUX
+#include <io.h>
+#include <direct.h>
+#endif
 #include <sys/types.h>
+#include <sys/stat.h>
 /**
  *\namespace odfaeg
  * the namespace of the Opensource Development Framework Adapted for Every Games.
@@ -64,6 +69,8 @@ namespace odfaeg {
         std::string getCurrentPath();
         void findFiles (const std::string keyword, std::vector<std::string>& files,std::string startDir = "/");
         bool is_number(const std::string& s);
+        int findString(const std::string & strHaystack, const std::string & strNeedle);
+        void memmv(void* src, void* dst, size_t size);
     }
 }
 #endif

@@ -2,6 +2,7 @@
 #include "../../../include/odfaeg/Window/windowImpl.hpp"
 #include <SFML/System/Mutex.hpp>
 #include <SFML/System/Lock.hpp>
+#include <SFML/OpenGL.hpp>
 #include <iostream>
 #include <cassert>
 #if defined(ODFAEG_SYSTEM_WINDOWS)
@@ -61,9 +62,9 @@ namespace odfaeg {
         sf::Uint64 ContextImpl::id = 1;
         sf::Mutex ContextImpl::mutex;
         sf::ThreadLocalPtr<ContextImpl> ContextImpl::current_ContextImpl(nullptr);
-        sf::ThreadLocalPtr<ContextImpl::TransientContext> ContextImpl::transientContext(nullptr);
+        //sf::ThreadLocalPtr<ContextImpl::TransientContext> ContextImpl::transientContext(nullptr);
         IContext* ContextImpl::sharedContext = nullptr;
-        std::set<std::pair<ContextDestroyCallback, void*>> ContextImpl::contextDestroyCallbacks = std::set<std::pair<ContextDestroyCallback, void*>>();
+        //std::set<std::pair<ContextDestroyCallback, void*>> ContextImpl::contextDestroyCallbacks = std::set<std::pair<ContextDestroyCallback, void*>>();
         // Helper to parse OpenGL version strings
         bool ContextImpl::parseVersionString(const char* version, const char* prefix, unsigned int &major, unsigned int &minor)
         {
@@ -217,14 +218,12 @@ namespace odfaeg {
             initialize(settings);
             checkSettings(settings);
         }
-        void ContextImpl::create(sf::WindowHandle handle,const ContextSettings& settings, IContext* shared) {
-            std::cout<<"create context impl"<<std::endl;
+        void ContextImpl::create(sf::WindowHandle handle,const ContextSettings& settings, IContext* shared, unsigned int bitsPerPixel) {
             sharedContext->setActive(true);
-            ContextImplType::create(handle, settings, (shared == nullptr) ? sharedContext : shared);
+            ContextImplType::create(handle, settings, (shared == nullptr) ? sharedContext : shared, bitsPerPixel);
             sharedContext->setActive(false);
             initialize(settings);
             //checkSettings(settings);*/
-            std::cout<<"context impl created"<<std::endl;
         }
         bool ContextImpl::setActive(bool active) {
             if (active) {
@@ -312,7 +311,7 @@ namespace odfaeg {
             return false;
         }
         ////////////////////////////////////////////////////////////
-        void ContextImpl::acquireTransientContext()
+       /* void ContextImpl::acquireTransientContext()
         {
             // Protect from concurrent access
             Lock lock(mutex);
@@ -346,7 +345,7 @@ namespace odfaeg {
                 delete transientContext;
                 transientContext = NULL;
             }
-        }
+        }*/
         ////////////////////////////////////////////////////////////
         Uint64 ContextImpl::getActiveContextId()
         {
@@ -354,7 +353,7 @@ namespace odfaeg {
         }
 
         ////////////////////////////////////////////////////////////
-        void ContextImpl::registerContextDestroyCallback(ContextDestroyCallback callback, void* arg)
+        /*void ContextImpl::registerContextDestroyCallback(ContextDestroyCallback callback, void* arg)
         {
             contextDestroyCallbacks.insert(std::make_pair(callback, arg));
         }
@@ -378,7 +377,7 @@ namespace odfaeg {
             // Make the originally active context active again
             if (contextToRestore)
                 contextToRestore->setActive(true);
-        }
+        }*/
         ////////////////////////////////////////////////////////////
         void ContextImpl::initialize(const ContextSettings& requestedSettings)
         {
@@ -567,7 +566,7 @@ namespace odfaeg {
             }
         }
         ContextImpl::~ContextImpl() {
-            cleanupUnsharedResources();
+            //cleanupUnsharedResources();
             /*nbContexts--;
             if (nbContexts == 0) {
                 sharedContext->setActive(false);

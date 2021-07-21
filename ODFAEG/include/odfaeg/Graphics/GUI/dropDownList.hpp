@@ -24,9 +24,11 @@ namespace odfaeg {
                     void onEventPushed(window::IEvent event, RenderWindow& window);
                     void recomputePos();
                     bool isDroppedDown();
+                    bool isNotDroppedDown();
                     bool isValueChanged();
                     void processEvents();
                     std::string getSelectedItem();
+                    void removeAllItems();
                     ~DropDownList();
                 private :
                     math::Vec3f selectedItemPos;

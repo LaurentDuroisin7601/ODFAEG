@@ -28,6 +28,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "../../../include/odfaeg/config.hpp"
+#ifndef VULKAN
 #include <SFML/System/NonCopyable.hpp>
 #include "../../../include/odfaeg/Window/contextSettings.hpp"
 namespace odfaeg
@@ -70,13 +72,14 @@ namespace odfaeg
                 virtual void updateTexture(unsigned int textureId) = 0;
                 virtual unsigned int getFramebufferId() = 0;
                 virtual void bind() = 0;
+                virtual void selectCubemapFace(int face, int textureID) = 0;
             };
         }
 
     } // namespace priv
 
 } // namespace sf
-
+#endif
 
 
 #endif // SFML_RENDERTEXTUREIMPL_HPP

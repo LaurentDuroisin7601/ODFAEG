@@ -1,10 +1,9 @@
 #include "../../../include/odfaeg/Graphics/billBoard.h"
 namespace odfaeg {
     namespace graphic {
-        BillBoard::BillBoard(View view, Drawable& drawable)
-        : Entity (math::Vec3f(0, 0, 0), math::Vec3f(view.getSize().x, view.getSize().y, 0), math::Vec3f(view.getSize().x * 0.5f, view.getSize().y * 0.5f, 0), "E_BILLBOARD"),
+        BillBoard::BillBoard(View view, Entity& entity) :
         view(view),
-        drawable(drawable)
+        entity(entity)
         {
 
         }
@@ -13,17 +12,14 @@ namespace odfaeg {
         }
         void BillBoard::setView(View view) {
             this->view = view;
-        }
-        void BillBoard::draw(RenderTarget& target, RenderStates states) {
-            math::Vec3f forward = view.getPosition() - getCenter();
+            math::Vec3f forward = view.getPosition() - entity.getCenter();
             forward = forward.normalize();
             float angle = math::Math::toDegrees(forward.getAngleBetween(view.getForward(), view.getUp()));
             math::Vec3f left = forward.cross(view.getUp()).normalize();
             math::Vec3f axis = left.cross(forward);
+            TransformMatrix &tm = entity.getTransform();
             tm.setRotation(axis, angle);
             tm.update();
-            states.transform.combine(tm.getMatrix());
-            target.draw(drawable, states);
         }
     }
 }

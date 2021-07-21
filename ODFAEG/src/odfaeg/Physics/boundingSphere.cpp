@@ -3,7 +3,7 @@
 #include "../../../include/odfaeg/Physics/boundingBox.h"
 #include "../../../include/odfaeg/Physics/orientedBoundingBox.h"
 #include "../../../include/odfaeg/Physics/boundingPolyhedron.h"
-#include "../../../include/odfaeg/Graphics/transformMatrix.h"
+#include "../../../include/odfaeg/Math/transformMatrix.h"
 using namespace std;
 namespace odfaeg {
     namespace physic {
@@ -48,20 +48,20 @@ namespace odfaeg {
 
         bool BoundingSphere::intersects (OrientedBoundingBox &obx, CollisionResultSet::Info& info) {
              math::Ray ray(obx.getCenter(), center);
-             math::Vec3f near, far;
-             if (!obx.intersectsWhere(ray, near, far, info)) {
+             math::Vec3f _near, _far;
+             if (!obx.intersectsWhere(ray, _near, _far, info)) {
                 return false;
              }
-             math::Vec3f d = far - obx.getCenter();
+             math::Vec3f d = _far - obx.getCenter();
              return (center.computeDistSquared(obx.getCenter()) - radius * radius - d.magnSquared()) <= 0;
         }
         bool BoundingSphere::intersects (BoundingPolyhedron &bp, CollisionResultSet::Info& info) {
              math::Ray ray(bp.getCenter(), center);
-             math::Vec3f near, far;
-             if (!bp.intersectsWhere(ray, near, far, info)) {
+             math::Vec3f _near, _far;
+             if (!bp.intersectsWhere(ray, _near, _far, info)) {
                 return false;
              }
-             math::Vec3f d = far - bp.getCenter();
+             math::Vec3f d = _far - bp.getCenter();
              return (center.computeDistSquared(bp.getCenter()) - radius * radius - d.magnSquared()) <= 0;
         }
         bool BoundingSphere::intersects (math::Ray &ray, bool segment, CollisionResultSet::Info& info) {
@@ -79,10 +79,10 @@ namespace odfaeg {
                 if(d2.magnSquared() > radius * radius) {
                     return false;
                 } else {
-                    math::Vec3f near, far;
-                    intersectsWhere(ray, near, far, info);
-                    math::Vec3f v1 = near - ray.getOrig();
-                    math::Vec3f v2 = far - ray.getOrig();
+                    math::Vec3f _near, _far;
+                    intersectsWhere(ray, _near, _far, info);
+                    math::Vec3f v1 = _near - ray.getOrig();
+                    math::Vec3f v2 = _far - ray.getOrig();
                     math::Vec3f d = ray.getExt() - ray.getOrig();
                     float i1 = v1.magnSquared() / d.magnSquared();
                     float i2 = v2.magnSquared() / d.magnSquared();
@@ -92,7 +92,7 @@ namespace odfaeg {
                 }
             }
         }
-        bool BoundingSphere::intersectsWhere (math::Ray& r, math::Vec3f& near, math::Vec3f &far, CollisionResultSet::Info& info) {
+        bool BoundingSphere::intersectsWhere (math::Ray& r, math::Vec3f& _near, math::Vec3f &_far, CollisionResultSet::Info& info) {
             math::Vec3f p = r.getOrig();
             math::Vec3f d = r.getDir().normalize();
             math::Vec3f c = center;
@@ -105,15 +105,15 @@ namespace odfaeg {
                 if (vpc.magnSquared() > radius * radius) {
                     return false; // there is no intersection
                 } else if (vpc.magnSquared() == radius * radius) {
-                    near = far = p;
+                    _near = _far = p;
                     return true;
                 } else {
                     // occurs when p is inside the sphere
                     math::Vec3f pc = p + d * vpc.projOnAxis(d);
                     float dist = math::Math::sqrt(radius * radius - pc.computeDistSquared(c));
                     float di1 = dist - pc.computeDist(p);
-                    near = p;
-                    far = p + d * di1;
+                    _near = p;
+                    _far = p + d * di1;
                     return true;
                 }
             } else {
@@ -128,14 +128,14 @@ namespace odfaeg {
                     float di1, di2;
                     if(vpc.magnSquared() > radius * radius) {
                         di1 = pc.computeDist(p) - dist;
-                        near = p + d * di1;
+                        _near = p + d * di1;
                         di2 = pc.computeDist(p) + dist;
-                        far = p + d * di2;
+                        _far = p + d * di2;
                     } else {
                         // origin is inside the sphere
                         di1 = pc.computeDist(p) + dist;
-                        near = p;
-                        far = p + d * di1;
+                        _near = p;
+                        _far = p + d * di1;
                     }
                     return true;
                 }

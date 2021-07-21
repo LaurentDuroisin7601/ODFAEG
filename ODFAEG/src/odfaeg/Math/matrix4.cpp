@@ -1,4 +1,5 @@
 #include "../../../include/odfaeg/Math/matrix4.h"
+#include <array>
 /*Classe créant une matrice 4*4.*/
 namespace odfaeg {
     namespace math {
@@ -6,6 +7,24 @@ namespace odfaeg {
         Matrix4f::Matrix4f () {
             m11 = m22 = m33 = m44 = 1;
             m12 = m13 = m14 = m21 = m23 = m24 = m41 = m42 = m43 = 0;
+        }
+        Matrix4f::Matrix4f (Matrix3f matrix3f) {
+            m11 = matrix3f.m11;
+            m12 = matrix3f.m12;
+            m13 = matrix3f.m13;
+            m14 = 0;
+            m21 = matrix3f.m21;
+            m22 = matrix3f.m22;
+            m23 = matrix3f.m23;
+            m24 = 0;
+            m31 = matrix3f.m31;
+            m32 = matrix3f.m32;
+            m33 = matrix3f.m33;
+            m34 = 0;
+            m41 = 0;
+            m42 = 0;
+            m43 = 0;
+            m44 = 1;
         }
         //Créer une matrice 4*4.
         Matrix4f::Matrix4f (float m11, float m12, float m13, float m14, float m21, float m22, float m23, float m24,
@@ -164,7 +183,7 @@ namespace odfaeg {
             * (m21 * det24 - m22 * det14 + m24 * det12) - m14
             * (m21 * det23 - m22 * det13 + m23 * det12);
         }
-        Matrix4f Matrix4f::inverse () throw (std::exception&) {
+        Matrix4f Matrix4f::inverse () {
             Matrix4f store;
             float fa1 = m11 * m22 - m12 * m21;
             float fa2 = m11 * m23 - m13 * m21;

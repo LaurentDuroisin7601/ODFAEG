@@ -46,6 +46,17 @@ namespace odfaeg {
                 * \brief set the identity matrix
                 */
                 void identity ();
+                template <typename Archive>
+                void serialize(Archive & ar) {
+                    //std::cout<<"m11 : "<<m11<<std::endl;
+                    ar(m11);
+                    //std::cout<<"m12 : "<<m12<<std::endl;
+                    ar(m12);
+                    //std::cout<<"m21 : "<<m21<<std::endl;
+                    ar(m21);
+                    //std::cout<<"m22 : "<<m22<<std::endl;
+                    ar(m22);
+                }
                 /**
                 * \fn set (float m11, float m12, float m21, float m22)
                 * \brief set the matrix with the given elements.
@@ -95,7 +106,7 @@ namespace odfaeg {
                 * \brief return the inverse of the matrix, throw an exception if the matrix isn't inversible.
                 * \return the inversed matrix.
                 */
-                Matrix2f inverse () throw (std::exception&);
+                Matrix2f inverse ();
                 /**
                 * \fn float getDet() const
                 * \brief return the value of the determiant of the matrix.

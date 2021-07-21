@@ -67,6 +67,7 @@ namespace sorrok {
         if (getCollisionVolume() != nullptr) {
             getCollisionVolume()->move(Vec3f(t.x, t.y, 0));
         }
+        changeAttribute("position"+conversionIntString(getId()), Application::app->getClock("TimeClock").getElapsedTime().asMicroseconds());
     }
     float Caracter::getRegenHpSpeed () {
         return regenHpSpeed;
@@ -137,26 +138,23 @@ namespace sorrok {
             if (attacking) {
                 changeAttribute("isAttacking"+conversionIntString(getId()), Application::app->getClock("TimeClock").getElapsedTime().asMicroseconds());
                 anims[baseAnimIndex + currentAnimIndex]->stop();
-                anims[baseAnimIndex + currentAnimIndex]->setCurrentFrame(0);
+                //anims[baseAnimIndex + currentAnimIndex]->setCurrentFrame(0);
                 baseAnimIndex = ATTACKING;
                 BoneAnimation::setBoneIndex(baseAnimIndex + currentAnimIndex);
-                //World::update();
+                anims[baseAnimIndex + currentAnimIndex]->setCurrentFrame(0);
             } else {
                 changeAttribute("isAttacking"+conversionIntString(getId()), Application::app->getClock("TimeClock").getElapsedTime().asMicroseconds());
                 anims[baseAnimIndex + currentAnimIndex]->stop();
-                anims[baseAnimIndex + currentAnimIndex]->setCurrentFrame(0);
+                //anims[baseAnimIndex + currentAnimIndex]->setCurrentFrame(0);
                 damages.clear();
             }
         }
     }
     void Caracter::setAlive(bool b) {
         if (alive == true && b == false) {
-            if(getType() == "E_HERO") {
-                std::cout<<"hero death"<<std::endl;
-            }
             changeAttribute("isAlive"+conversionIntString(getId()),Application::app->getClock("TimeClock").getElapsedTime().asMicroseconds());
             anims[baseAnimIndex + currentAnimIndex]->stop();
-            anims[baseAnimIndex + currentAnimIndex]->setCurrentFrame(0);
+            //anims[baseAnimIndex + currentAnimIndex]->setCurrentFrame(0);
             baseAnimIndex = TIPPING_OVER;
             anims[baseAnimIndex + currentAnimIndex]->play(false);
             BoneAnimation::setBoneIndex(baseAnimIndex + currentAnimIndex);
@@ -166,19 +164,15 @@ namespace sorrok {
             restartRespawn();
             //World::update();
         } else if (alive == false && b == true) {
-            if(getType() == "E_HERO") {
-                std::cout<<"hero alive"<<std::endl;
-            }
             changeAttribute("isAlive"+conversionIntString(getId()),Application::app->getClock("TimeClock").getElapsedTime().asMicroseconds());
             baseAnimIndex = WALKING;
             BoneAnimation::setBoneIndex(baseAnimIndex + currentAnimIndex);
             setLife(getMaxLife());
-            if(getType() == "E_HERO") {
-                std::cout<<"hero live"<<getLife()<<std::endl;
-            }
             //World::update();
         }
         alive = b;
+    }
+    Entity* Caracter::clone() {
     }
     bool Caracter::isAlive () {
         return alive;
@@ -233,7 +227,7 @@ namespace sorrok {
         return clockAtkSpeed.getElapsedTime();
     }
     void Caracter::setDir (Vec2f dir) {
-        anims[baseAnimIndex + currentAnimIndex]->stop();
+        unsigned int previousAnimIndex = baseAnimIndex + currentAnimIndex;
         float angleRadians = dir.getAngleBetween(Vec2f::yAxis);
         int angle = Math::toDegrees(angleRadians);
         //Sud
@@ -261,12 +255,14 @@ namespace sorrok {
         else
             currentAnimIndex = 1;
         this->dir = dir;
-        if (moving)
-            anims[baseAnimIndex + currentAnimIndex]->play(true);
-        else
-            anims[baseAnimIndex + currentAnimIndex]->play(false);
-        baseAnimIndex + currentAnimIndex;
-        BoneAnimation::setBoneIndex(baseAnimIndex+currentAnimIndex);
+        if (previousAnimIndex != baseAnimIndex + currentAnimIndex) {
+            anims[baseAnimIndex + currentAnimIndex]->stop();
+            if (moving)
+                anims[baseAnimIndex + currentAnimIndex]->play(true);
+            else
+                anims[baseAnimIndex + currentAnimIndex]->play(false);
+            BoneAnimation::setBoneIndex(baseAnimIndex+currentAnimIndex);
+        }
         //World::update();
     }
     Vec2f Caracter::getDir () {
@@ -284,10 +280,10 @@ namespace sorrok {
                 }
             }
             this->moving = b;
-            if (moving) {
+            if (moving ) {
                 changeAttribute("isMoving"+conversionIntString(getId()),Application::app->getClock("TimeClock").getElapsedTime().asMicroseconds());
                 anims[baseAnimIndex + currentAnimIndex]->stop();
-                anims[baseAnimIndex + currentAnimIndex]->setCurrentFrame(0);
+                //anims[baseAnimIndex + currentAnimIndex]->setCurrentFrame(0);
                 baseAnimIndex = WALKING;
                 anims[baseAnimIndex + currentAnimIndex]->play(true);
                 BoneAnimation::setBoneIndex(baseAnimIndex + currentAnimIndex);
@@ -295,7 +291,7 @@ namespace sorrok {
             } else {
                 changeAttribute("isMoving"+conversionIntString(getId()),Application::app->getClock("TimeClock").getElapsedTime().asMicroseconds());
                 anims[baseAnimIndex + currentAnimIndex]->stop();
-                anims[baseAnimIndex + currentAnimIndex]->setCurrentFrame(0);
+                //anims[baseAnimIndex + currentAnimIndex]->setCurrentFrame(0);
             }
         }
     }
@@ -340,7 +336,7 @@ namespace sorrok {
         target.draw(*getCurrentFrame(), states);
     }
     Entity* Caracter::getCurrentFrame() const {
-        return anims[baseAnimIndex + currentAnimIndex]->getCurrentFrame();
+        return anims[baseAnimIndex + currentAnimIndex];
     }
     sf::Clock& Caracter::getClkTransfertTime() {
         return clockTransfertTime;

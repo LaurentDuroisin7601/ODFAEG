@@ -4,8 +4,8 @@ namespace odfaeg {
     namespace math {
         using namespace std;
         using namespace sf;
-        const Vec2f Vec2f::xAxis (1, 0);
-        const Vec2f Vec2f::yAxis (0, 1);
+        const Vec2f Vec2f::xAxis = Vec2f (1, 0);
+        const Vec2f Vec2f::yAxis = Vec2f (0, 1);
         ostream& operator<< (ostream &out, const Vec2f &vec2) {
             out<<"x : "<<vec2.x<<" y : "<<vec2.y<<endl;
             return out;

@@ -119,22 +119,7 @@ namespace odfaeg {
                 *  \brief return the first edge of the oriented bounding box.
                 *  \return the first edge of the oriented bounding box.
                 */
-                math::Vec3f getSize();
-                math::Vec3f getBX();
-                /**\fn math::Vec3f getBY()
-                *  \brief return the second edge of the oriented bounding box.
-                *  \return the second edge of the oriented bounding box.
-                */
-                math::Vec3f getBY();
-                /**\fn math::Vec3f getBZ()
-                *  \brief return the thirst edge of the oriented bounding box.
-                *  \return the thirst edge of the oriented bounding box.
-                */
-                math::Vec3f getBZ();
-                /**\fn math::Vec3f getPosition()
-                *  \brief return the position of the oriented bounding box
-                *  \return the position of the oriented bounding box.
-                */
+                math::Vec3f getSize();                
                 math::Vec3f getPosition();
                 /**\fn math::Vec3f getCenter()
                 *  \brief return the center of the oriented bounding box
@@ -162,14 +147,14 @@ namespace odfaeg {
                     *this = other;
                     return *this;
                 }
-                bool onIntersects(BaseInterface &interface, CollisionResultSet::Info& info) {
-                    return interface.intersects(*this, info);
+                bool onIntersects(BaseInterface &_interface, CollisionResultSet::Info& info) {
+                    return _interface.intersects(*this, info);
                 }
-                bool onIntersects(BaseInterface &interface, math::Ray& ray, bool segment, CollisionResultSet::Info& info) {
-                    return interface.intersects(ray, segment, info);
+                bool onIntersects(BaseInterface &_interface, math::Ray& ray, bool segment, CollisionResultSet::Info& info) {
+                    return _interface.intersects(ray, segment, info);
                 }
-                bool onIntersects(BaseInterface& interface, math::Ray& ray, math::Vec3f &near, math::Vec3f& far, CollisionResultSet::Info& info) {
-                    return interface.intersectsWhere(ray, near, far, info);
+                bool onIntersects(BaseInterface& _interface, math::Ray& ray, math::Vec3f &_near, math::Vec3f& _far, CollisionResultSet::Info& info) {
+                    return _interface.intersectsWhere(ray, _near, _far, info);
                 }
                 std::unique_ptr<BoundingVolume> clone() {
                     return std::make_unique<OrientedBoundingBox>(*this);

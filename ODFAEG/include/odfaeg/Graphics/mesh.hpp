@@ -1,9 +1,9 @@
 #ifndef ODFAEG_MESH_HPP
 #define ODFAEG_MESH_HPP
-#include "entity.h"
+#include "gameObject.hpp"
 namespace odfaeg {
     namespace graphic {
-        class Mesh : public Entity {
+        class Mesh : public GameObject {
             public :
             Mesh();
             Mesh(math::Vec3f position, math::Vec3f size, std::string type);
@@ -15,9 +15,10 @@ namespace odfaeg {
             bool isShadow() const;
             bool isLeaf() const;
             void onDraw(RenderTarget& target, RenderStates states);
+            Entity* clone();
             template <typename Archive>
             void vtserialize(Archive& ar) {
-                Entity::vtserialize(ar);
+                GameObject::vtserialize(ar);
             }
         };
     }

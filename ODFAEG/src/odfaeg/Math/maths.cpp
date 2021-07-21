@@ -1,5 +1,6 @@
 #include "../../../include/odfaeg/Math/maths.h"
 #include "../../../include/odfaeg/Math/vec4.h"
+#include "../../../include/odfaeg/Math/bigInt.hpp"
 /*Fonctions élémentaires.*/
 //Donne l'arc cosinus d'une valeur.
 

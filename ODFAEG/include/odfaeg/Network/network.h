@@ -24,7 +24,7 @@ namespace odfaeg {
           * messages can also have tags, which identify the messages if we need to wait until a message is received by example.
           * we can also set up a timeout when waiting after messages.
           */
-        class ODFAEG_NETWORK_API Network {
+        class ODFAEG_API_EXPORT Network {
             public :
                 /**
                 * \fn bool startCli (int portTCP, int portUDP, sf::IpAddress, bool useThread = false, bool useSecuredConnexion = true)

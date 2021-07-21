@@ -10,7 +10,7 @@ namespace odfaeg {
             ContextImpl::cleanupResource();
         }
         ////////////////////////////////////////////////////////////
-        void GLResource::registerContextDestroyCallback(ContextDestroyCallback callback, void* arg)
+        /*void GLResource::registerContextDestroyCallback(ContextDestroyCallback callback, void* arg)
         {
             ContextImpl::registerContextDestroyCallback(callback, arg);
         }
@@ -25,7 +25,7 @@ namespace odfaeg {
         GLResource::TransientContextLock::~TransientContextLock()
         {
             ContextImpl::releaseTransientContext();
-        }
+        }*/
     }
 }
 

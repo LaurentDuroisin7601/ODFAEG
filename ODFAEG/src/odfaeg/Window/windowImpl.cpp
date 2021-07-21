@@ -1,5 +1,6 @@
-#include "../../../include/odfaeg/Window/windowImpl.hpp"
 #include <SFML/Window/WindowStyle.hpp>
+#include "../../../include/odfaeg/Window/windowImpl.hpp"
+
 using namespace sf;
 namespace
 {
@@ -9,6 +10,7 @@ namespace odfaeg {
     namespace window {
         WindowImpl::WindowImpl()
         {
+            m_frameTimeLimit = sf::Time::Zero;
         }
         ////////////////////////////////////////////////////////////
         void WindowImpl::create(VideoMode mode, const String& title, Uint32 style, const ContextSettings& settings)
@@ -48,10 +50,10 @@ namespace odfaeg {
                 if ((style & Style::Close) || (style & Style::Resize))
                     style |= Style::Titlebar;
             #endif
-            // Recreate the WindowImpl implementation
+            // Recreate the WindowImpl implementation*/
             WindowImplType::create(mode, title, style, settings);
-std::cout<<"create context"<<std::endl;
-            m_context.create(getSystemHandle(), settings);
+            m_context.create(getSystemHandle(), settings, nullptr, mode.bitsPerPixel);
+            initialize();
         }
         ////////////////////////////////////////////////////////////
         void WindowImpl::create(WindowHandle handle, const ContextSettings& settings)
@@ -60,6 +62,7 @@ std::cout<<"create context"<<std::endl;
             WindowImplType::destroy();
             WindowImplType::create(handle, settings);
             m_context.create(handle, settings);
+            initialize();
         }
         ////////////////////////////////////////////////////////////
         void WindowImpl::close()
@@ -82,6 +85,7 @@ std::cout<<"create context"<<std::endl;
         ////////////////////////////////////////////////////////////
         bool WindowImpl::waitEvent(IEvent& event) {
             //For later.
+            return false;
         }
         ////////////////////////////////////////////////////////////
         bool WindowImpl::filterEvent(const IEvent& event)
@@ -172,7 +176,7 @@ std::cout<<"create context"<<std::endl;
         ////////////////////////////////////////////////////////////
         bool WindowImpl::hasFocus() const
         {
-            WindowImplType::hasFocus();
+            return WindowImplType::hasFocus();
         }
         ////////////////////////////////////////////////////////////
         WindowHandle WindowImpl::getSystemHandle() const
@@ -186,6 +190,7 @@ std::cout<<"create context"<<std::endl;
             return m_context.setActive(active);
         }
         void WindowImpl::setVerticalSyncEnabled(bool enabled) {
+            std::cout<<"set vertical sync enable : "<<enabled<<std::endl;
             m_context.setVerticalSyncEnabled(enabled);
         }
         void WindowImpl::display() {
@@ -193,6 +198,7 @@ std::cout<<"create context"<<std::endl;
             // Limit the framerate if needed
             if (m_frameTimeLimit != sf::Time::Zero)
             {
+                std::cout<<"limit the frame rate"<<std::endl;
                 sleep(m_frameTimeLimit - m_clock.getElapsedTime());
                 m_clock.restart();
             }
@@ -222,7 +228,6 @@ std::cout<<"create context"<<std::endl;
         const ContextSettings& WindowImpl::getSettings() const {
             return m_context.getSettings();
         }
-        ////////////////////////////////////////////////////////////
         WindowImpl::~WindowImpl()
         {
             close();

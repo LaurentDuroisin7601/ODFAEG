@@ -48,6 +48,9 @@ namespace odfaeg {
         bool Vertex::operator== (const Vertex& other) const {
             return position == other.position && color == other.color && texCoords == other.texCoords;
         }
+        bool Vertex::operator!= (const Vertex& other) const {
+            return !(*this == other);
+        }
     }
 } // namespace sf
 

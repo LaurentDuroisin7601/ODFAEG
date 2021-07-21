@@ -44,32 +44,18 @@ namespace odfaeg
 
 
         ////////////////////////////////////////////////////////////
+        void RectangleShape::onResize(math::Vec3f& scale)
+        {
+           m_size = getSize();
+           getTransform().setScale(math::Vec3f(1, 1, 1));
+           update();
+        }
+        ////////////////////////////////////////////////////////////
         void RectangleShape::onScale(math::Vec3f& scale)
         {
-           if(m_size.x == 0) {
-             m_size.x = getSize().x;
-             update();
-           }
-           if (m_size.y == 0) {
-             m_size.y = getSize().y;
-             update();
-           }
-           if (m_size.z == 0) {
-             m_size.z = getSize().z;
-             update();
-           }
-           if (scale.x == 0) {
-            m_size.x = 0;
-            update();
-           }
-           if (scale.y == 0) {
-            m_size.y = 0;
-            update();
-           }
-           if (scale.z == 0) {
-            m_size.z = 0;
-            update();
-           }
+           m_size = getSize();
+           getTransform().setScale(math::Vec3f(1, 1, 1));
+           update();
         }
 
         ////////////////////////////////////////////////////////////

@@ -10,6 +10,7 @@ namespace odfaeg {
                 text.setCharacterSize(charSize);
                 rect = RectangleShape (size);
                 background = sf::Color::Black;
+                text.setColor(sf::Color::Black);
                 rect.setFillColor(background);
                 mousePos = math::Vec3f(0, 0, 0);
             }
@@ -42,7 +43,7 @@ namespace odfaeg {
             void Label::setText(std::string t) {
                 text.setString(t);
             }
-            std::string Label::getText() {
+            sf::String Label::getText() {
                 return text.getString();
             }
             bool Label::isMouseInside() {

@@ -3,7 +3,7 @@
 #include "../../../include/odfaeg/Physics/boundingEllipsoid.h"
 #include "../../../include/odfaeg/Physics/boundingBox.h"
 #include "../../../include/odfaeg/Physics/orientedBoundingBox.h"
-#include "../../../include/odfaeg/Graphics/transformMatrix.h"
+#include "../../../include/odfaeg/Math/transformMatrix.h"
 namespace odfaeg {
     namespace physic {
         BoundingPolyhedron::BoundingPolyhedron() {
@@ -218,9 +218,10 @@ namespace odfaeg {
         }
         void BoundingPolyhedron::computeVectors () {
             math::Vec3f sum(0, 0, 0);
-            for (unsigned int i = 0; i < points.size(); i++)
-                sum += points[i];
-            center = sum / points.size();
+            std::vector<math::Vec3f> vertices = getPoints();
+            for (unsigned int i = 0; i < vertices.size(); i++)
+                sum += vertices[i];
+            center = sum / vertices.size();
             faceNormals.clear();
             edgeNormals.clear();
             faceBissectors.clear();
@@ -271,7 +272,18 @@ namespace odfaeg {
             return edgeBissectors;
         }
         std::vector<math::Vec3f> BoundingPolyhedron::getPoints() {
-            return points;
+            std::vector<math::Vec3f> vertices;
+            for (unsigned int i = 0; i < points.size(); i++) {
+                bool contains = false;
+                for (unsigned int j = 0; j < vertices.size() && !contains; j++) {
+                    if (points[i] == vertices[j])
+                        contains = true;
+                }
+                if (!contains) {
+                    vertices.push_back(points[i]);
+                }
+            }
+            return vertices;
         }
         BoundingPolyhedron::~BoundingPolyhedron () {
             faceNormals.clear();
@@ -310,12 +322,9 @@ namespace odfaeg {
             graphic::TransformMatrix tm;
             tm.setTranslation(v);
             tm.setOrigin(center);
-            for (unsigned int i = 0; i < faceBissectors.size(); i++)
-                faceBissectors[i] = tm.transform(faceBissectors[i]);
-            for (unsigned int i = 0; i < edgeBissectors.size(); i++)
-                edgeBissectors[i] = tm.transform(edgeBissectors[i]);
             for (unsigned int i = 0; i < points.size(); i++)
                 points[i] = tm.transform(points[i]);
+            computeVectors();
             std::array<std::array<float, 2>, 3> store = math::Computer::getExtends(points);
             size = math::Vec3f(store[0][1] - store[0][0], store[1][1] - store[1][0], store[2][1] - store[2][0]);
         }
@@ -323,16 +332,9 @@ namespace odfaeg {
             graphic::TransformMatrix tm;
             tm.setScale(s);
             tm.setOrigin(center);
-            for (unsigned int i = 0; i < faceNormals.size(); i++)
-                faceNormals[i] = tm.transform(faceNormals[i]);
-            for (unsigned int i = 0; i < edgeNormals.size(); i++)
-                edgeNormals[i] = tm.transform(faceNormals[i]);
-            for (unsigned int i = 0; i < faceBissectors.size(); i++)
-                faceBissectors[i] = tm.transform(faceBissectors[i]);
-            for (unsigned int i = 0; i < edgeBissectors.size(); i++)
-                edgeBissectors[i] = tm.transform(edgeBissectors[i]);
             for (unsigned int i = 0; i < points.size(); i++)
                 points[i] = tm.transform(points[i]);
+            computeVectors();
             std::array<std::array<float, 2>, 3> store = math::Computer::getExtends(points);
             size = math::Vec3f(store[0][1] - store[0][0], store[1][1] - store[1][0], store[2][1] - store[2][0]);
         }
@@ -340,16 +342,9 @@ namespace odfaeg {
             graphic::TransformMatrix tm;
             tm.setRotation(axis, angle);
             tm.setOrigin(center);
-            for (unsigned int i = 0; i < faceNormals.size(); i++)
-                faceNormals[i] = tm.transform(faceNormals[i]);
-            for (unsigned int i = 0; i < edgeNormals.size(); i++)
-                edgeNormals[i] = tm.transform(faceNormals[i]);
-            for (unsigned int i = 0; i < faceBissectors.size(); i++)
-                faceBissectors[i] = tm.transform(faceBissectors[i]);
-            for (unsigned int i = 0; i < edgeBissectors.size(); i++)
-                edgeBissectors[i] = tm.transform(edgeBissectors[i]);
             for (unsigned int i = 0; i < points.size(); i++)
                 points[i] = tm.transform(points[i]);
+            computeVectors();
             std::array<std::array<float, 2>, 3> store = math::Computer::getExtends(points);
             size = math::Vec3f(store[0][1] - store[0][0], store[1][1] - store[1][0], store[2][1] - store[2][0]);
         }

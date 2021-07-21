@@ -26,7 +26,7 @@ namespace odfaeg {
              struct TextureInfo {
                 private :
                 const Texture* texture; /**> A texture used by the material.*/
-                sf::IntRect rect; /**> The coordinates of the texture.*/
+                sf::IntRect texRect;
                 std::string texId; /**> An identifier to the texture of the material. */
                 public :
                 /**
@@ -38,12 +38,14 @@ namespace odfaeg {
                 * \fn TextureInfo(const Texture* texture, sf::IntRect rect, std::string texId="")
                 * \brief constructor
                 */
-                TextureInfo (const Texture* texture, sf::IntRect rect, std::string texId="");
+                TextureInfo (const Texture* texture, sf::IntRect texRect = sf::IntRect(0, 0, 0, 0), std::string texId="");
                 /**
                 * \fn void setTexId(std::string texId)
                 * \brief set the texture id.
                 * \param texId : the texId.
                 */
+                void setTexRect(sf::IntRect texRect);
+                sf::IntRect getTexRect();
                 void setTexId(std::string texId);
                 /**
                 * \fn std::string getTexId() const
@@ -71,41 +73,27 @@ namespace odfaeg {
                 * \return the texture.
                 */
                 const Texture* getTexture() const;
-                /**
-                * \fn sf::IntRect getTexRect() const
-                * \brief return the texture coordinates.
-                * \return the textures coordinates.
-                */
-                sf::IntRect getTexRect() const;
-                /**
-                * \fn void serialize(Archive &ar)
-                * \brief serialize the textures information in a texture infos.
-                * \param ar : the archive.
-                */
                 template <typename Archive>
                 void serialize(Archive &ar) {
-                    ar(rect.left);
-                    ar(rect.top);
-                    ar(rect.width);
-                    ar(rect.height);
+                    //std::cout<<"mat rect height : "<<rect.height<<std::endl;
+                    ar(texRect.left);
+                    ar(texRect.top);
+                    ar(texRect.width);
+                    ar(texRect.height);
                     ar(texId);
+                    //std::cout<<"mat tex id : "<<texId<<std::endl;
                 }
             };
-            std::vector<TextureInfo*> texInfos; /**> The informations about the textures. */
-            sf::Color color; /**> the color of the material. */
-            float specularIntensity, specularPower, refractionFactor;
-            static float maxSpecularIntensity, maxSpecularPower;
-            static unsigned int nbMaterials;
-            unsigned int id;
-            const Texture* bumpTexture;
-            static std::vector<Material*> materials;
-            static std::vector<Material*> sameMaterials;
             public :
+            enum Type {
+                AIR, WATER, ICE, GLASS, DIAMOND
+            };
             /**
             * \fn Material()
             * \brief constructor.
             */
             Material();
+            Material (const Material& material);
             unsigned int getId();
             static unsigned int getNbMaterials();
             /**
@@ -120,14 +108,8 @@ namespace odfaeg {
             * \param texture : the texture.
             * \param text : the texture coordinates.
             */
-            void addTexture (const Texture* texture, sf::IntRect rect);
-            /**
-            * \fn sf::IntRect getTexRect(int texUnit = 0) const {
-            * \brief get the texture coordinates of a texture. (the first texture by default)
-            * \param the number of the texture.
-            * \return the coordinates of the textures.
-            */
-            sf::IntRect getTexRect(int texUnit = 0) const;
+            void addTexture (const Texture* texture, sf::IntRect texRect = sf::IntRect(0, 0, 0, 0));
+            void setTexRect(sf::IntRect texRect, int texUnit = 0);
             /**
             * \fn void clearTextures()
             * \brief clear every texture.
@@ -140,6 +122,7 @@ namespace odfaeg {
             * \return a pointer to the texture.
             */
             const Texture* getTexture(int texUnit = 0);
+            sf::IntRect getTexRect(int texUnit = 0);
             /**
             * \fn std::string getTexId(int texUnit = 0)
             * \brief get the texture id of the given unit. (the first texture by default)
@@ -162,12 +145,6 @@ namespace odfaeg {
             */
             bool useSameTextures (const Material& material);
             /**
-            * \fn  bool hasSameColor (const Material& material)
-            * \brief test of two material have the same color.
-            * \param material : the other material.
-            */
-            bool hasSameColor (const Material& material);
-            /**
             * \fn bool operator== (const Material& material)
             * \brief test of two material are equal.
             * \param material : the other material.
@@ -186,10 +163,6 @@ namespace odfaeg {
             * \brief write the material into the given archive.
             * \param ar : the archive.
             */
-            static float getMaxSpecularIntensity();
-            static float getMaxSpecularPower();
-            static void setMaxSpecularIntensity(float maxSpecularIntensity);
-            static void setMaxSpecularPower(float maxSpecularPower);
             float getSpecularIntensity();
             float getSpecularPower();
             void setSpecularIntensity(float specularIntensity);
@@ -198,27 +171,47 @@ namespace odfaeg {
             const Texture* getBumpTexture();
             void setRefractionFactor(float refractionFactor);
             float getRefractionFactor();
+            void setReflectable(bool reflectable);
+            void setRefractable(bool refractable);
+            bool isReflectable();
+            bool isRefractable();
+
             void updateIds();
-            bool contains(Material material);
+            bool contains(Material& material);
             void countNbMaterials();
+            Material& operator=(const Material& material);
             template <typename Archive>
             void serialize(Archive & ar) {
                 ar(texInfos);
-                ar(color.r);
-                ar(color.g);
-                ar(color.b);
-                ar(color.a);
+                //std::cout<<"color a : "<<color.a<<std::endl;
                 ar(specularIntensity);
+                //std::cout<<"specular intensity "<<specularIntensity<<std::endl;
                 ar(specularPower);
+                //std::cout<<"specular power : "<<specularPower<<std::endl;
+                ar(reflectable);
+                ar(refractable);
+                ar(refractionFactor);
                 if (ar.isInputArchive()) {
                     onLoad();
                 }
             }
             void onLoad() {
-                maxSpecularIntensity = (specularIntensity > maxSpecularIntensity) ? specularIntensity : maxSpecularIntensity;
-                maxSpecularPower = (specularPower > maxSpecularPower) ? specularPower : maxSpecularPower;
+                /*maxSpecularIntensity = (specularIntensity > maxSpecularIntensity) ? specularIntensity : maxSpecularIntensity;
+                maxSpecularPower = (specularPower > maxSpecularPower) ? specularPower : maxSpecularPower;*/
             }
+            void setType(Type type);
+            Type getType();
             ~Material();
+            private :
+            std::vector<TextureInfo*> texInfos; /**> The informations about the textures. */
+            float specularIntensity, specularPower, refractionFactor;
+            static unsigned int nbMaterials;
+            unsigned int id;
+            const Texture* bumpTexture;
+            static std::vector<Material*> materials;
+            static std::vector<Material*> sameMaterials;
+            bool reflectable, refractable;
+            Type type;
         };
         /**
           * \file face.h
@@ -270,7 +263,7 @@ namespace odfaeg {
             * \return the material.
             */
             Material& getMaterial();
-            void setMaterial(Material material);
+            void setMaterial(Material& material);
             void setTransformMatrix(TransformMatrix& tm);
             /**
             * \fn VertexArray& getVertexArray()
@@ -298,10 +291,29 @@ namespace odfaeg {
             */
             template <typename Archive>
             void serialize (Archive & ar) {
+                /*for (unsigned int j= 0; j< m_vertices.getVertexCount(); j++) {
+                    std::cout<<m_vertices[j].position.x<<","<<m_vertices[j].position.y<<","<<m_vertices[j].position.z<<std::endl;
+                }
+                std::cout<<"prim type : "<<m_vertices.getPrimitiveType()<<std::endl;
+                std::vector<math::Vec3f> locals = m_vertices.getLocals();
+                std::cout<<"locals : ";
+                for (unsigned int l = 0; l < locals.size(); l++) {
+                    std::cout<<locals[l]<<std::endl;
+                }
+                std::cout<<"indexes : "<<std::endl;
+                std::vector<unsigned int> indexes = m_vertices.getIndexes();
+                for (unsigned int j = 0; j < indexes.size(); j++) {
+                    std::cout<<"index  : "<<indexes[j]<<std::endl;
+                } */
                 ar(m_vertices);
+                //std::cout<<"vertices"<<std::endl;
                 ar(m_material);
+                //std::cout<<"material"<<std::endl;
                 ar(transform);
+                //std::cout<<"transform"<<std::endl;
             }
+            bool operator== (Face& other);
+            bool operator!= (Face& other);
         private :
             VertexArray m_vertices; /**> the vertices.*/
             Material m_material; /**> the material.*/
@@ -333,7 +345,7 @@ namespace odfaeg {
             *
             */
             void addVertexArray(VertexArray& va, TransformMatrix& tm);
-            void addVertexShadowArray(VertexArray va, TransformMatrix tm, ViewMatrix viewMatrix, TransformMatrix shadowProjMatrix);
+            void addVertexShadowArray(VertexArray& va, TransformMatrix& tm, ViewMatrix& viewMatrix, TransformMatrix shadowProjMatrix);
             void sortVertexArrays(View& view);
             /**
             * \fn std::vector<VertexArray*> getVertexArrays()
@@ -354,6 +366,7 @@ namespace odfaeg {
             * \return the transforms.
             */
             std::vector<TransformMatrix*> getTransforms();
+            std::vector<TransformMatrix> getShadowProjMatrix();
             /** \fn Material& getMaterial()
             * \brief get the material of the instance.
             * \return the material.
@@ -383,6 +396,7 @@ namespace odfaeg {
             Material* material; /**> the material of the instance.*/
             std::vector<VertexArray*> m_vertexArrays; /**> the vertex arrays of the instance.*/
             std::vector<TransformMatrix*> m_transforms; /**> the transformations of the instance.*/
+            std::vector<TransformMatrix> m_shadowProjMatrix;
             sf::PrimitiveType primType; /**>The primitive type of the instance.*/
             unsigned int numInstances; /**>The number of instances.*/
             VertexArray vertices;

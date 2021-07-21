@@ -35,7 +35,9 @@
 #include "../Core/archive.h"
 #include "../Math/matrix4.h"
 #include <SFML/Graphics/Image.hpp>
+#ifndef VULKAN
 #include "../../../include/odfaeg/Window/iGlResource.hpp"
+#endif
 namespace sf {
     class InputStream;
     class Image;
@@ -49,13 +51,29 @@ namespace odfaeg
     namespace graphic {
         class RenderTarget;
         class RenderTexture;
-
-
+        #ifdef VULKAN
+        class Texture {
+            public :
+            bool loadFromImage(const sf::Image& image, const sf::IntRect& area = sf::IntRect());
+            bool create(unsigned int width, unsigned int height);
+            sf::Vector2u getSize() const;
+            void update(const sf::Uint8* pixels, unsigned int width, unsigned int height, unsigned int x, unsigned int y);
+            void setSmooth(bool smooth);
+            void update(const Texture& texture);
+            void swap(Texture& texture);
+            static unsigned int getMaximumSize();
+        private :
+            friend class Text;
+            friend class RenderTexture;
+            friend class RenderTarget;
+            sf::Uint64 m_cacheId;
+        };
+        #else
         ////////////////////////////////////////////////////////////
         /// \brief Image living on the graphics card that can be used for drawing
         ///
         ////////////////////////////////////////////////////////////
-        class ODFAEG_GRAPHICS_API Texture : window::IGLResource
+        class ODFAEG_API_EXPORT Texture : window::IGLResource
         {
         public :
 
@@ -70,7 +88,6 @@ namespace odfaeg
             };
 
         public :
-
             ////////////////////////////////////////////////////////////
             /// \brief Default constructor
             ///
@@ -104,6 +121,8 @@ namespace odfaeg
             ///
             ////////////////////////////////////////////////////////////
             bool create(unsigned int width, unsigned int height, unsigned int precision = 0x8058, unsigned int format = 0x1908, unsigned int type = 0x1401);
+            bool createCubeMap (unsigned int width, unsigned int height);
+            bool createCubeMap(unsigned int width, unsigned int height, std::vector<sf::Image> images);
             void clear();
             ////////////////////////////////////////////////////////////
             /// \brief Load the texture from a file on disk
@@ -462,6 +481,7 @@ namespace odfaeg
             ///
             ////////////////////////////////////////////////////////////
             static void bind(const Texture* texture, CoordinateType coordinateType = Normalized);
+            static std::vector<Texture*> getAllTextures();
 
             ////////////////////////////////////////////////////////////
             /// \brief Get the maximum texture size allowed
@@ -496,13 +516,24 @@ namespace odfaeg
                     onLoad(vPixels);
                 }
             }
+            void setNativeHandle(unsigned int handle, unsigned int width, unsigned int height);
             math::Matrix4f getTextureMatrix() const;
             const sf::Image& getImage() const;
             void onLoad(std::vector<sf::Uint8>& pixels);
             void onSave(std::vector<sf::Uint8>& pixels);
             unsigned int getNativeHandle() const;
-        private :
+            bool isCubemap();
+            void setName(std::string name);
+            void update(const Texture& texture);
+            void update(const Texture& texture, unsigned int x, unsigned int y);
+            void swap(Texture& texture);
+            uint64_t getTextureHandle();
+            void makeTextureResident(uint64_t handle_texture);
+            bool isTextureResident();
+            unsigned int getId() const;
 
+        private :
+            friend class Text;
             friend class RenderTexture;
             friend class RenderTarget;
 
@@ -533,8 +564,14 @@ namespace odfaeg
             bool         m_isRepeated;    ///< Is the texture in repeat mode?
             mutable bool m_pixelsFlipped; ///< To work around the inconsistency in Y orientation
             sf::Uint64       m_cacheId;       ///< Unique number that identifies the texture to the render target's cache
-
+            bool m_isCubeMap;
+            std::string m_name;
+            bool textureResident;
+            unsigned int id;
+            static std::vector<Texture*> allTextures;
+            static unsigned int nbTextures;
         };
+        #endif
     }
 } // namespace sf
 #endif // SFML_TEXTURE_HPP

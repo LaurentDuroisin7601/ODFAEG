@@ -7,7 +7,7 @@ namespace sorrok {
         status = NEW;
         pnjToVisit = "";
     }
-    Quest::Quest(std::string name, std::string task) : name(name), task(task) {
+    Quest::Quest(std::string name, std::string task, bool repeat) : name(name), task(task), repeat(repeat) {
         xp = 0;
         status = NEW;
         pnjToVisit = "";
@@ -61,5 +61,8 @@ namespace sorrok {
     }
     Quest::Status Quest::getStatus() {
         return status;
+    }
+    bool Quest::isRepeat() {
+        return repeat;
     }
 }

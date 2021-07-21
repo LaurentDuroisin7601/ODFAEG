@@ -6,6 +6,7 @@
 #include "../text.h"
 #include "../font.h"
 #include "focusListener.hpp"
+#include "panel.hpp"
 namespace odfaeg {
     namespace graphic {
         namespace gui {
@@ -25,14 +26,19 @@ namespace odfaeg {
                 void onTextEntered(char caracter);
                 void onUpdate(RenderWindow* window, window::IEvent& event);
                 std::string getText();
+                std::string getSelectedText();
                 void setText(std::string text);
                 void setCursorPos();
+                void setCursorPos2();
+                void setSelectedText();
                 bool hasFocus();
                 bool isTextChanged();
                 void onEventPushed(window::IEvent event, RenderWindow& window);
+                math::Vec3f getTextSize();
             private :
-                int currentIndex;
-                std::string tmp_text, id_text;
+                int scrollX, scrollY;
+                int currentIndex, currentIndex2;
+                sf::String tmp_text, selected_text;
                 math::Vec3f size;
                 Text text;
                 RectangleShape rect;

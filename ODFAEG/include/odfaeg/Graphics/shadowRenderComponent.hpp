@@ -1,5 +1,6 @@
 #ifndef ODFAEG_SHADOW_RENDER_COMPONENT_HPP
 #define ODFAEG_SHADOW_RENDER_COMPONENT_HPP
+#include "GL/glew.h"
 #include "renderWindow.h"
 #include "renderTexture.h"
 #include "sprite.h"
@@ -15,6 +16,8 @@
   */
 namespace odfaeg {
     namespace graphic {
+        #ifdef VULKAN
+        #else
         /**
           * \file OITRenderComponent.h
           * \class OITRenderComponent
@@ -25,8 +28,17 @@ namespace odfaeg {
           */
         class ODFAEG_GRAPHICS_API ShadowRenderComponent : public HeavyComponent {
             public :
+                struct uint64_to_uint128 {
+                    uint64_t handle;
+                    uint64_t padding;
+                };
+                struct Samplers {
+                    uint64_to_uint128 tex[200];
+                };
                 ShadowRenderComponent (RenderWindow& window, int layer, std::string expression,window::ContextSettings settings = window::ContextSettings(0, 0, 4, 3, 0));
+                void loadTextureIndexes();
                 void drawNextFrame();
+                void onVisibilityChanged(bool visible);
                 std::vector<Entity*> getEntities();
                 void draw(RenderTarget& target, RenderStates states);
                 void draw(Drawable& drawable, RenderStates states) {
@@ -44,25 +56,28 @@ namespace odfaeg {
                 void setView(View view);
                 bool loadEntitiesOnComponent(std::vector<Entity*> vEntities);
                 void clear();
-                void changeVisibleEntities(Entity* toRemove, Entity* toAdd, EntityManager* em);
-                void updateParticleSystems();
+                ~ShadowRenderComponent();
             private :
-                Batcher batcher, shadowBatcher; /**> A group of faces using the same materials and primitive type.*/
-                std::vector<Instance> m_instances; /**> Instances to draw. (Instanced rendering.) */
-                std::vector<Instance> m_shadow_instances;
+                Batcher batcher, shadowBatcher, normalBatcher, normalShadowBatcher; /**> A group of faces using the same materials and primitive type.*/
+                std::vector<Instance> m_instances, m_normals; /**> Instances to draw. (Instanced rendering.) */
+                std::vector<Instance> m_shadow_instances, m_shadow_normals;
                 std::vector<Entity*> visibleEntities; /**> Entities loaded*/
                 RenderTexture stencilBuffer; /**> the stencil buffer.*/
                 RenderTexture shadowMap; /**> the shadow map.*/
-                Sprite stencilBufferTile, shadowTile; /**> the stencil and shadow map buffer.*/
-                Shader buildShadowMapShader; /**> the shader to generate the stencil buffer.*/
-                Shader perPixShadowShader; /**> the shader to generate the shadow map.*/
+                RenderTexture depthBuffer;
+                Sprite stencilBufferTile, shadowTile, depthBufferTile; /**> the stencil and shadow map buffer.*/
+                Shader buildShadowMapShader, buildShadowMapNormalShader; /**> the shader to generate the stencil buffer.*/
+                Shader perPixShadowShader, perPixShadowShaderNormal; /**> the shader to generate the shadow map.*/
+                Shader depthGenShader, depthGenNormalShader;
                 View view; /**> the view of the component.*/
                 std::string expression;
                 bool update;
-                unsigned int vboWorldMatrices;
-                VertexBuffer vb;
-                std::vector<float> matrices;
+                unsigned int vboWorldMatrices, vboShadowProjMatrices, ubo;
+                VertexBuffer vb, vb2;
+                std::array<VertexBuffer ,Batcher::nbPrimitiveTypes> vbBindlessTex;
+                std::vector<float> matrices, matrices2;
          };
+         #endif
     }
 }
 #endif

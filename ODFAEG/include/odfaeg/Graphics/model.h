@@ -1,6 +1,6 @@
 #ifndef ODFAEG_MODEL_2D_HPP
 #define ODFAEG_MODEL_2D_HPP
-#include "entity.h"
+#include "gameObject.hpp"
 /**
   *\namespace odfaeg
   * the namespace of the Opensource Development Framework Adapted for Every Games.
@@ -16,7 +16,7 @@ namespace odfaeg {
 * \brief represent a 2D model, with a shadow and some other information to generate the shadows,
 * and to check the intersections between the shadows and the lights.
 */
-class ODFAEG_GRAPHICS_API Model : public Entity {
+class ODFAEG_GRAPHICS_API Model : public GameObject {
 protected :
     /**
     * \fn Model (math::Vec3f position, math::Vec3f size, math::Vec3f origin, std::string type = "E_MODEL", Entity *parent = nullptr)
@@ -26,7 +26,7 @@ protected :
     * \param the type of the model. (E_MODEL by default)
     * \param the parent entity of the model. (null by default)
     */
-    Model (math::Vec3f position, math::Vec3f size, math::Vec3f origin, std::string type = "E_MODEL", Entity *parent = nullptr);
+    Model (math::Vec3f position, math::Vec3f size, math::Vec3f origin, std::string type = "E_MODEL", std::string name = "", Entity *parent = nullptr);
 public :
     /**
     * \fn bool isModel() const;
@@ -48,7 +48,7 @@ public :
     bool isLeaf() const;
     template <typename Archive>
     void vtserialize(Archive & ar) {
-        Entity::vtserialize(ar);
+        GameObject::vtserialize(ar);
     }
 };
 }

@@ -2,18 +2,17 @@
 #define CUBE
 #include <SFML/Graphics/Color.hpp>
 #include "../vertexArray.h"
-#include "../entity.h"
+#include "../gameObject.hpp"
 namespace odfaeg {
     namespace graphic {
         namespace g3d {
-            class ODFAEG_GRAPHICS_API Cube : public Entity {
+            class ODFAEG_GRAPHICS_API Cube : public GameObject {
             public :
                 Cube (math::Vec3f position, float w, float h, float d, sf::Color color);
                 bool operator== (Entity& other) {
-                    if (other.getType() != "E_CUBE")
+                    if (!GameObject::operator==(other))
                         return false;
-                    Cube &cube = static_cast<Cube&>(other);
-                    return m_color == cube.m_color;
+                    return m_color == other.getColor();
                 }
                 bool isAnimated() const {
                     return false;
@@ -33,7 +32,10 @@ namespace odfaeg {
                 bool isLeaf() const {
                     return true;
                 }
-                void onDraw(RenderTarget &target, RenderStates states) const;
+                void onDraw(RenderTarget &target, RenderStates states);
+                void setTexCoords (int face, sf::IntRect texRect);
+                Entity* clone();
+                sf::Color getColor();
             private:
                 sf::Color m_color;
             };

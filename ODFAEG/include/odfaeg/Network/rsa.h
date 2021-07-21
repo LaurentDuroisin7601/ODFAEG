@@ -19,7 +19,7 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 #include "export.hpp"
-#include <gmpxx.h>
+//#include <gmpxx.h>
 /**
   *\namespace odfaeg
   * the namespace of the Opensource Development Framework Adapted for Every Games.
@@ -37,12 +37,12 @@ namespace odfaeg {
           */
             public :
                 Rsa();
-                const char* encryptWithPbKey(const char* data, std::size_t dataSize, std::size_t& newSize);
+                /*const char* encryptWithPbKey(const char* data, std::size_t dataSize, std::size_t& newSize);
                 const char* decryptWithPrKey(const char* data, std::size_t dataSize, std::size_t& newSize);
                 const char* encryptWithPrKey(const char* data, std::size_t dataSize, std::size_t& newSize);
                 const char* decryptWithPbKey(const char* data, std::size_t dataSize, std::size_t& newSize);
                 std::string getCertificate();
-                void setCertificate(std::string certificate);
+                void setCertificate(std::string certificate);*/
                 /**
                 * \fn unsigned char* decryptWithPrKey (const unsigned char* encData, int dataSize, int* newSize)
                 * \brief decrypt a message with the private key.
@@ -92,7 +92,7 @@ namespace odfaeg {
                 ~Rsa();
             private :
                 static const int BLOC_SIZE = 100;
-                void generateKeys(unsigned int size);
+                //void generateKeys(unsigned int size);
                 /**
                 * \fn RSA* generateKeys (int size)
                 * \brief generate keys with the given size.
@@ -128,7 +128,7 @@ namespace odfaeg {
                 RSA* keypair; /**> the keys.*/
                 X509 *x; /**> the certificate.*/
                 EVP_PKEY* evp_pkey; /**The envelop*/
-                mpz_t e, d, n;
+                //mpz_t e, d, n;
         };
     }
 }

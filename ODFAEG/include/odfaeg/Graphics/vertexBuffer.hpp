@@ -10,9 +10,12 @@
 #include <SFML/Graphics/Rect.hpp>
 #include "drawable.h"
 #include <vector>
-#include "../../../include/odfaeg/Window/iGlResource.hpp"
+#include "../config.hpp"
 #include "../Physics/boundingBox.h"
+#ifndef VULKAN
+#include "../../../include/odfaeg/Window/iGlResource.hpp"
 #include "vbo.h"
+#endif
 #include "vertexArray.h"
 /**
   *\namespace odfaeg
@@ -20,7 +23,8 @@
   */
 namespace odfaeg {
     namespace graphic {
-
+        #ifdef VULKAN
+        #else
         ////////////////////////////////////////////////////////////
         /// \brief Define a set of one or more 2D primitives
         ///
@@ -132,7 +136,7 @@ namespace odfaeg {
             /// \param vertex Vertex to add
             ///
             ////////////////////////////////////////////////////////////
-            void append(const Vertex& vertex);
+            void append(const Vertex& vertex, unsigned int textureIndex = 0);
             ////////////////////////////////////////////////////////////
             /// \brief Set the type of primitives to draw
             ///
@@ -182,6 +186,7 @@ namespace odfaeg {
             ///
             ////////////////////////////////////////////////////////////
             void draw(RenderTarget& target, RenderStates states);
+            void computeNormals();
             ~VertexBuffer();
         private :
 
@@ -197,11 +202,13 @@ namespace odfaeg {
             unsigned int oldVerticesSize, oldIndexesSize;
             bool needToUpdateVertexBuffer, needToUpdateIndexBuffer;
             public :
-            unsigned int vboVertexBuffer,vboNormalBuffer, vboIndexBuffer;
+            unsigned int vboVertexBuffer,vboNormalBuffer, vboIndexBuffer, vboTextureIndexesBuffer;
             std::vector<unsigned int> m_numIndexes;
             std::vector<unsigned int> m_baseVertices;
             std::vector<unsigned int> m_baseIndexes;
             std::vector<unsigned int> m_indexes;
+            //For bindless texturing.
+            std::vector<unsigned int> m_texturesIndexes;
             std::vector<float> m_vPosX, m_vPosY, m_vPosZ, m_vPosW;
             std::vector<unsigned char> m_vcRed, m_vcBlue, m_vcGreen, m_vcAlpha;
             std::vector<unsigned int> m_ctX, m_ctY;
@@ -209,6 +216,7 @@ namespace odfaeg {
             bool loop;
             Entity* m_entity;
         };
+        #endif
     }
 } // namespace sf
 

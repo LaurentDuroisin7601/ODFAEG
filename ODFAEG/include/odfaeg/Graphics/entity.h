@@ -27,8 +27,11 @@ namespace odfaeg {
           *  Entities can have 0, 1 or more children and 0 or one parent.
           *  Each entity of the framework inherits from this class.
           */
-        class ODFAEG_GRAPHICS_API Entity : public Transformable, public Drawable, public core::Registered<Entity> {
+        class ODFAEG_API_EXPORT Entity : public Transformable, public Drawable, public core::Registered<Entity> {
             public :
+                enum DrawMode {
+                    NORMAL, INSTANCED, BASE_INSTANCED
+                };
                 /** \fn Entity(math::Vec3f position, math::Vec3f size, math::Vec3f origin, std::string type, Entity* parent)
                  * \brief constructor.
                  * \param position : the position of the top left corner of the entity
@@ -39,7 +42,7 @@ namespace odfaeg {
                  * \param the type should describe the kind of the entity.
                  * \param parent : the parent of the entity, the value is null if the entity doesn't have a parent.
                  */
-                Entity (math::Vec3f position, math::Vec3f size, math::Vec3f origin, std::string type, Entity* parent = nullptr);
+                Entity (math::Vec3f position, math::Vec3f size, math::Vec3f origin, std::string type, std::string name = "");
                 //Get the number of entities created with the application.
                 /**
                 *  \fn int getNbEntities ()
@@ -47,6 +50,7 @@ namespace odfaeg {
                 *  \return the number of entities which exist.
                 */
                 static int getNbEntities ();
+                static int getNbEntitiesTypes();
                 //Get teh type of the entity.
                 /**
                 *  \fn std::string getType() const;
@@ -54,7 +58,7 @@ namespace odfaeg {
                 *  \return the type/group name of the entity.
                 */
                 std::string getType() const;
-                Entity* getRootEntity();
+                virtual Entity* getRootEntity();
                 //Get the type's id of the entity.
                 /**
                 *  \fn int getTypeInt()
@@ -84,32 +88,30 @@ namespace odfaeg {
                 *  \brief get the radius of the entity.
                 *  \return int the radius of the entity.
                 */
-                //Get the radius of the entity.
-                int getRadius ();
                 /** \fn std::string getRootType.
                 *   \param get the type of the root entity of the scene graph.
                 */
-                std::string getRootType();
-                int getRootTypeInt();
-                unsigned int getNbFaces();
-                Face* getFace(unsigned int n);
+                virtual std::string getRootType();
+                virtual int getRootTypeInt();
+                virtual unsigned int getNbFaces() = 0;
+                virtual Face* getFace(unsigned int n) = 0;
                 //Init the map who is a correspondance between a type of an entity and the id of it's type.
                 /** \fn std::string std::map<int, std::string>
                 *   \param get the list of the id's and associated type's names.
                 */
-                static std::map<int, std::string>* initTypes () {
+                /*static std::map<int, std::string>* initTypes () {
                     if (types == nullptr) {
                         static std::map<int, std::string> *t = new std::map<int, std::string> ();
                         return t;
                     }
                     return types;
-                }
+                }*/
                 //Return the id of the entity.
                 /** \fn int getId()
                 *   \brief get the id of the entity.
                 *   \return the id of the entity.
                 */
-                int& getId();
+                int getId();
                 //Set an id to the entity.
                  /** \fn void setId(int id)
                 *   \brief set the id of the entity.
@@ -123,71 +125,55 @@ namespace odfaeg {
                 *   \brief abstract method to redefine to compare two entities.
                 *   \return if two entities are equals.
                 */
-                virtual bool operator== (Entity& other) = 0;
+                virtual bool operator== (Entity& other);
+                virtual bool operator!= (Entity& other);
+                void copy (Entity* entity);
                 /** \fn
                 *   \brief draw (RenderTarger& target, RenderStates states)
                 *   \param RenderTarget target : the rendertarget onwhich to draw the entity.
                 *   \param RenderStates states : the states used to render the entities.
                 */
-                void draw (RenderTarget& target, RenderStates states);
-                /** \fn
-                *   \brief void onDraw (RenderTarger& target, RenderStates states)
-                *   \param RenderTarget target : the rendertarget onwhich to draw the entities.
-                *   \param RenderStates states : the states used to render the entities.
-                */
-                virtual void onDraw(RenderTarget &target, RenderStates states) {}
-                virtual void onFrameChanged(EntityManager* scene) {}
                 /** \fn void onMove (math::Vec3f& t)
                 *   \brief virtual method which can be redefined if we need to do something when the entity is moving.
                 *   \param math::Vec3f t : the translation of the entity.
                 */
-                virtual void onMove(math::Vec3f &t);
-                /** \fn void onScale (math::Vec3f& s)
-                *   \brief virtual method which can be redefined if we need to do something when the entity is rescaling.
-                *   \param math::Vec3f& s : the scale of the entity.
-                */
-                virtual void onScale(math::Vec3f &s);
-                /** \fn void onRotate (float angle)
-                *   \brief virtual method which can be redefined if we need to do something when the entity is rotating.
-                *   \param math::Vec3f& s : the rotation angle of the entity.
-                */
-                virtual void onRotate(float angle);
                 //Return the parent of the entity.
                 /** \fn Entity* getParent()
                 *   \brief Entity* getParent() const;
                 *   \return the parent of the entity.
                 */
-                Entity* getParent() const;
+                virtual Entity* getParent() const;
                 //Set the parent's entity of the entity.
                 /** \fn void setParent(Entity* parent)
                 *   \brief set the parent of the entity.
                 *   \param the parent of the entity.
                 */
-                void setParent (Entity *parent);
+                virtual void setParent (Entity *parent);
                 //Add a children to the entity.
                 /** \fn void addChild(Entity* child)
                 *   \brief add a child to the entity.
                 *   \param Entity* the entity to add.
                 */
-                void addChild (Entity *child);
+                virtual void addChild (Entity *child);
                 //Remove a children to the entity.
                 /** \fn void removeChild(Entity* child)
                 *   \brief remove a child from the entity.
                 */
-                void removeChild (Entity *child);
+                virtual void removeChild (Entity *child);
+                virtual sf::Color getColor();
                 //Return the children of the entities.
                 /** \fn std::vector<Entity*> getChildren() const;
                 *   \brief get the list of the children of the entities.
                 *   \return std::vector<Entity*> get the entities.
                 */
-                std::vector<Entity*> getChildren() const;
+                virtual std::vector<Entity*> getChildren() const;
                 //Return the number of entity's children.
                 /** \fn  unsigned int getNbChildren ();
                 *   \brief get the number of children of the entity.
                 *   \return the number of children of the entity.
                 */
-                unsigned int getNbChildren ();
-                Entity* getChild(unsigned int n);
+                virtual unsigned int getNbChildren ();
+                virtual Entity* getChild(unsigned int n);
                 //Determine if the entity is animated.
                 /** \fn  bool isAnimated ();
                 *   \brief virtual method to redefine if an entity is animated.
@@ -246,7 +232,7 @@ namespace odfaeg {
                 *   \param std::string name : the name of the attribute of the entity.
                 *   \return StateParameter& : the attribute of the entity.
                 */
-                const core::StateParameter& getAttribute (const std::string name) throw (core::Erreur) {
+                const core::StateParameter& getAttribute (const std::string name) {
                        return entityState.getParameter(name);
                 }
                 /** \fn void changeAttribute (const std::string name)
@@ -285,112 +271,111 @@ namespace odfaeg {
                 *   \brief set the collision volume to the entity.
                 *   \param BoundingVolume* volume : the collision volume to set.
                 */
-                void setCollisionVolume (physic::BoundingVolume* volume) {
-                    collisionVolume.reset(volume);
-                }
+                virtual void setCollisionVolume (physic::BoundingVolume* volume);
                 /** \fn BoundingVolume* getCollisionVolumme ()
                 *   \brief get the collision volume of the entity.
                 *   \return the collision volume of the entity.
                 */
-                physic::BoundingVolume* getCollisionVolume () {
-                   return collisionVolume.get();
-                }
+                virtual physic::BoundingVolume* getCollisionVolume ();
                 /** \fn void addFace(Face* face)
                 *   \brief add a face to the entity.
                 */
-                void addFace(Face* face);
+                virtual void addFace(Face face);
                 /** \fn std::vector<Face*> getFaces()
                 *   \brief get the faces of the entity.
                 *   \return std::vector<Face*> the faces of the entity.
                 */
-                std::vector<Face*> getFaces() const;
+                virtual std::vector<Face>& getFaces() = 0;
                 static int getNbEntityTypes();
                 /** \fn void vtserialize(Archive & ar)
                 *   \brief serialize the entity into an archive.
                 *   \param Archive : the archive onwhich to serialize the entities.
                 */
-                void updateTransform();
+                virtual void updateTransform();
+                //void setTypeInt(int iType);
                 template <typename Archive>
                 void vtserialize(Archive & ar) {
+                    //std::cout<<"already serialized : "<<alreadySerialized<<std::endl;
                     Transformable::serialize(ar);
-                    ar(parent);
                     ar(id);
-                    ar(faces);
                     ar(type.first);
+                    //std::cout<<"type first : "<<type.first<<std::endl;
                     ar(type.second);
-                    ar(collisionVolume);
-                    ar(shadowCenter);
-                    ar(shadowScale);
-                    ar(shadowOrigin);
-                    ar(shadowRotationAngle);
-                    ar(shadowRotationAxis);
-                    ar(boneIndex);
+                    //std::cout<<"entity id : "<<getId()<<std::endl<<"Transform matrix : "<<getTransform().getMatrix()<<std::endl;
                     if (ar.isInputArchive())
                         onLoad();
-                    alreadySerialized = true;
-                    ar(children);
-                    //std::cout<<"entity id : "<<getId()<<std::endl<<"Transform matrix : "<<getTransform().getMatrix()<<std::endl;
                 }
                 /** \fn void onLoad()
                 *   \brief load the entities.
                 */
-                void onLoad() {
-                    types = initTypes();
-                    int iType = getIntOfType(getType());
-                    if (iType == -1) {
-                        type = std::pair<int, std::string> (nbEntitiesTypes, getType());
-                        types->insert(type);
-                        nbEntitiesTypes++;
-                    }
-                    nbEntities++;
-                }
-                Entity* getRoot() {
-                    if (parent != nullptr)
-                        return parent->getRoot();
-                    return this;
-                }
-                void getCombinedTransform(TransformMatrix& tm) {
-                    if (parent != nullptr)
-                        parent->getCombinedTransform(tm);
-                    tm.combine(getTransform().getMatrix());
-                }
+                void onLoad();
+                virtual void getCombinedTransform(TransformMatrix& tm);
                  /**
                   *\fn setShadowCenter(math::Vec3f shadowCenter)
                   *\brief adjust the center of the generated shadow.
                   *\param math::Vec3f shadowCenter : the center of the shadow.
                 */
-                void setShadowCenter(math::Vec3f shadowCenter);
+                virtual void setShadowCenter(math::Vec3f shadowCenter);
                 /**
                   *\fn getShadowCenter()
                   *\brief get the center of the shadow.
                   *\return math::Vec3f : the center of the shadow.
                 */
-                math::Vec3f getShadowCenter();
-                void setShadowScale(math::Vec3f shadowScale);
-                void setShadowRotation(float angle, math::Vec3f axis = math::Vec3f::zAxis);
-                math::Vec3f getShadowRotationAxis();
-                float getShadowRotationAngle();
-                math::Vec3f getShadowScale();
-                void setShadowOrigin(math::Vec3f origin);
-                math::Vec3f getShadowOrigin();
+                virtual math::Vec3f getShadowCenter();
+                virtual void setShadowScale(math::Vec3f shadowScale);
+                virtual void setShadowRotation(float angle, math::Vec3f axis = math::Vec3f::zAxis);
+                virtual math::Vec3f getShadowRotationAxis();
+                virtual float getShadowRotationAngle();
+                virtual math::Vec3f getShadowScale();
+                virtual void setShadowOrigin(math::Vec3f origin);
+                virtual math::Vec3f getShadowOrigin();
                 virtual void setBoneIndex (unsigned int boneIndex);
                 virtual unsigned int getBoneIndex();
-            protected :
-                math::Vec3f shadowCenter, shadowScale, shadowRotationAxis, shadowOrigin; /**> The center of the shadow of the entity.*/
-                float shadowRotationAngle;
-                std::vector<std::unique_ptr<Face>> faces; /**> the faces of the entity.*/
-                static std::map<int, std::string> *types; /** A list of the type's id and name's of the entities. */
+                virtual void setBoneAnimationIndex(unsigned int index);
+                virtual unsigned int getBoneAnimationIndex();
+                virtual DrawMode getDrawMode();
+                virtual void setDrawMode (DrawMode);
+                virtual void setLayer(float layer);
+                virtual void changeVerticesHeights(float h1, float h2, float h3, float h4);
+                virtual float getHeight(math::Vec2f point);
+                virtual float getLayer();
+                virtual Entity* clone() = 0;
+                virtual void setExternal(bool external);
+                virtual bool isExternal();
+                virtual void setExternalObjectName(std::string externalObjectName);
+                virtual std::string getExternalObjectName();
+                virtual void detachChildren();
+                virtual Entity* getCurrentFrame() const;
+
+                void setSelected(bool selected);
+                bool isSelected();
+                virtual int getIntensity();
+                virtual void onFrameChanged();
+                virtual void reset();
+                virtual void draw(RenderTarget& target, RenderStates states) = 0;
+                virtual int getWallType();
+                virtual void addFrame(Entity* frame);
+                virtual bool isRunning();
+                virtual sf::Time getElapsedTime();
+                virtual float getFrameRate();
+                virtual void computeNextFrame();
+                virtual bool isCurrentFrameChanged();
+                virtual void setCurrentFrameChanged(bool currentFrameChanged);
+                virtual void setCurrentFrame(int index);
+                virtual void resetClock();
+                virtual void play(bool loop);
+                virtual void stop();
+                virtual void update(sf::Time dt);
+                virtual void update();
+            private :
+                static std::map<int, std::string> types; /** A list of the type's id and name's of the entities. */
                 std::pair<int, std::string> type; /** The type's id and the type's name of the entity.*/
-                std::vector<std::unique_ptr<Entity>> children; /** the children of the entities. */
-                Entity* parent; /** the parent of the entity. */
                 int id; /** the id of the entity.*/
+                bool selected;
                 static int nbEntities, nbEntitiesTypes; /** the number of entities and the number of entities types.*/
                 core::State entityState; /** the states of the entity.*/
-                std::unique_ptr<physic::BoundingVolume> collisionVolume; /** the collision volume of the entity*/
                 Entity(const Entity& entity) = delete; /**> an entity if not copiable.*/
                 Entity& operator=(const Entity& entity) = delete; /**> an entity is not affectable*/
-                bool alreadySerialized;
-                unsigned int boneIndex;
         };
     }
 }

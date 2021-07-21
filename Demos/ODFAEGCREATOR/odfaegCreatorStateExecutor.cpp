@@ -1,5 +1,6 @@
 #include "odfaegCreatorStateExecutor.hpp"
 #include "application.hpp"
+
 using namespace odfaeg::core;
 using namespace odfaeg::math;
 using namespace odfaeg::graphic;
@@ -14,25 +15,25 @@ bool ODFAEGCreatorStateExecutor::doState(State& state) {
         ia(id);
         Shape* shape;
         ia(shape);
-        app->addShape(shape);
+        //app->addShape(shape);
     }
     if (state.getName() == "SCHANGEXPOS") {
         float newXPos = state.getParameter("NEWVALUE").getValue<float>();
         Transformable* shape = state.getParameter("OBJECT").getValue<Transformable*>();
         shape->setPosition(Vec3f(newXPos,shape->getPosition().y, shape->getPosition().z));
-        app->updateScriptPos(shape);
+        //app->updateScriptPos(shape);
     }
     if (state.getName() == "SCHANGEYPOS") {
         float newYPos = state.getParameter("NEWVALUE").getValue<float>();
         Transformable* shape = state.getParameter("OBJECT").getValue<Transformable*>();
         shape->setPosition(Vec3f(shape->getPosition().x, newYPos, shape->getPosition().z));
-        app->updateScriptPos(shape);
+        //app->updateScriptPos(shape);
     }
     if (state.getName() == "SCHANGEZPOS") {
         float newZPos = state.getParameter("NEWVALUE").getValue<float>();
         Transformable* shape = state.getParameter("OBJECT").getValue<Transformable*>();
         shape->setPosition(Vec3f(shape->getPosition().x, shape->getPosition().y, newZPos));
-        app->updateScriptPos(shape);
+        //app->updateScriptPos(shape);
     }
     if (state.getName() == "SCHANGERCOLOR") {
         unsigned int color = state.getParameter("NEWVALUE").getValue<unsigned int>();
@@ -97,6 +98,7 @@ bool ODFAEGCreatorStateExecutor::doState(State& state) {
             static_cast<Shape*>(shape)->setTextureRect(sf::IntRect(static_cast<Shape*>(shape)->getTextureRect().left,static_cast<Shape*>(shape)->getTextureRect().top,static_cast<Shape*>(shape)->getTextureRect().width,texCoordH));
         }
     }
+    return true;
 }
 bool ODFAEGCreatorStateExecutor::undoState(State& state) {
     if (state.getName() == "ADDREMOVESHAPE") {
@@ -111,19 +113,19 @@ bool ODFAEGCreatorStateExecutor::undoState(State& state) {
         float newXPos = state.getParameter("OLDVALUE").getValue<float>();
         Transformable* shape = state.getParameter("OBJECT").getValue<Transformable*>();
         shape->setPosition(Vec3f(newXPos,shape->getPosition().y, shape->getPosition().z));
-        app->updateScriptPos(shape);
+        //app->updateScriptPos(shape);
     }
     if (state.getName() == "SCHANGEYPOS") {
         float newYPos = state.getParameter("OLDVALUE").getValue<float>();
         Transformable* shape = state.getParameter("OBJECT").getValue<Transformable*>();
         shape->setPosition(Vec3f(shape->getPosition().x, newYPos, shape->getPosition().z));
-        app->updateScriptPos(shape);
+        //app->updateScriptPos(shape);
     }
     if (state.getName() == "SCHANGEZPOS") {
         float newZPos = state.getParameter("OLDVALUE").getValue<float>();
         Transformable* shape = state.getParameter("OBJECT").getValue<Transformable*>();
         shape->setPosition(Vec3f(shape->getPosition().x, shape->getPosition().y, newZPos));
-        app->updateScriptPos(shape);
+        //app->updateScriptPos(shape);
     }
     if (state.getName() == "SCHANGERCOLOR") {
         unsigned int color = state.getParameter("OLDVALUE").getValue<unsigned int>();
@@ -188,4 +190,5 @@ bool ODFAEGCreatorStateExecutor::undoState(State& state) {
             static_cast<Shape*>(shape)->setTextureRect(sf::IntRect(static_cast<Shape*>(shape)->getTextureRect().left,static_cast<Shape*>(shape)->getTextureRect().top,static_cast<Shape*>(shape)->getTextureRect().width,texCoordH));
         }
     }
+    return true;
 }

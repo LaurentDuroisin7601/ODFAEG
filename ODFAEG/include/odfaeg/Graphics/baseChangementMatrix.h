@@ -1,7 +1,7 @@
 #ifndef ODFAEG_BASE_CHANGEMENT_MATRIX
 #define ODFAEG_BASE_CHANGEMENT_MATRIX
-#include "../Math/matrix2.h"
-#include "../Math/vec2f.h"
+#include "../Math/matrix4.h"
+#include "../Math/vec4.h"
 #include "export.hpp"
 /**
   *\namespace odfaeg
@@ -20,6 +20,7 @@ namespace odfaeg {
           */
         class ODFAEG_GRAPHICS_API BaseChangementMatrix {
         public :
+            BaseChangementMatrix();
             /** \fn void set2DIsoMatrix();
             *   \brief set the 2D isometric base changement matrix.
             */
@@ -30,22 +31,34 @@ namespace odfaeg {
             *  \param v : the given point.
             *  \return the coordinates of the point in the new landmark.
             */
-            math::Vec2f changeOfBase(math::Vec2f v);
+            math::Vec3f changeOfBase(math::Vec3f v);
             /**
             *  \fn Vec3f unchangeOfBase(Vec3f v);
             *  \brief convert the given point of the landmark into the original landmark.
             *  \param v : the given point of the landmark.
             *  \return the coordinates of the point in the original landmark.
             */
-            math::Vec2f unchangeOfBase(math::Vec2f v);
+            math::Vec3f unchangeOfBase(math::Vec3f v);
             /** \fn Matrix4f getMatrix()
             *   \brief get the base changement matrix.
             *    \return the base changement matrix.
             */
-            math::Matrix2f getMatrix();
+            math::Matrix4f getMatrix();
+            bool isIso2DMatrix();
+            template <typename Archive>
+            void serialize(Archive &ar) {
+                //std::cout<<"read matrix 2f"<<std::endl;
+                ar(matrix4f);
+                //std::cout<<"read inv matrix 2f"<<std::endl;
+                ar(invMatrix4f);
+                //std::cout<<"is 2D iso matrix"<<std::endl;
+                ar(iso2DMatrix);
+                //std::cout<<"end read"<<std::endl;
+            }
         private :
-            math::Matrix2f matrix2f; /** > the base changement matrix.*/
-            math::Matrix2f invMatrix2f; /**> the inverse of the base changement matrix.*/
+            math::Matrix4f matrix4f; /** > the base changement matrix.*/
+            math::Matrix4f invMatrix4f; /**> the inverse of the base changement matrix.*/
+            bool iso2DMatrix;
         };
     }
 }

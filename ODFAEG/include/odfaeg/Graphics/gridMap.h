@@ -38,13 +38,13 @@ namespace odfaeg {
             * \param Vec3f finalPos : the destination.
             * \return the points of the curve of the path.
             */
-            std::vector<math::Vec2f> getPath (Entity* entity, math::Vec2f finalPos);
+            std::vector<math::Vec3f> getPath (Entity* entity, math::Vec3f finalPos);
             /**
             * \fn  CellMap<Entity>* getGridCellAtFromCoords(Vec3f coords)
             * \brief get the cell at a given position.
             * \param Vec3f coords : the coordinates of the cell.
             */
-            CellMap* getGridCellAtFromCoords(math::Vec2f coords);
+            CellMap* getGridCellAtFromCoords(math::Vec3f coords);
             /**
             * \fn GridMap(int cellWith, int cellHeight, int nbLayers)
             * \brief constructor.
@@ -52,7 +52,7 @@ namespace odfaeg {
             * \param cellHeight : the height of the cells.
             * \param nbLayers : the depth of the cells.
             */
-            GridMap (int cellWidth, int cellHeight);
+            GridMap (int cellWidth, int cellHeight, int cellDepth);
             /** \fn  ~GridMap ();
             *   \brief destructor.
             */
@@ -71,6 +71,7 @@ namespace odfaeg {
             * \return the entity.
             */
             Entity* getEntity (int id);
+            Entity* getEntity (std::string name);
             /**
             * \fn void replaceEntity (Entity* entity)
             * \brief replace an entity in the grid.
@@ -130,7 +131,7 @@ namespace odfaeg {
             * \param entity : the entity.
             * \param Vec3f pos : the given position.
             */
-            bool  containsEntity (Entity *entity, math::Vec2f pos);
+            bool  containsEntity (Entity *entity, math::Vec3f pos);
             /**
             * \fn std::vector<Entity*> getEntitiesInBox(BoundingBox bx)
             * \brief get the entities which are in the given bounding box.
@@ -144,32 +145,32 @@ namespace odfaeg {
             * \param point : the point.
             * \return the cell.
             */
-            CellMap* getGridCellAt (math::Vec2f point);
+            CellMap* getGridCellAt (math::Vec3f point);
             /**
             * \fn Vec3f getCoordinatesAt (Vec3f &point);
             * \brief get the cell's coordinates at the given pos.
             * \param point : the position.
             * \return Vec3f the coordinates.
             */
-            math::Vec2f getCoordinatesAt (math::Vec2f &point);
+            math::Vec3f getCoordinatesAt (math::Vec3f &point);
             /**
             * \fn void createCellMap(Vec3f &point);
             * \brief create a cell a the given position.
             * \param point : the position.
             */
-            void createCellMap(math::Vec2f &point);
+            void createCellMap(math::Vec3f &point);
             /**
             * \fn Vec3f getMins ()
             * \brief return the minimums of the grid.
             * \return the minimums of the grid.
             */
-            math::Vec2f getMins ();
+            math::Vec3f getMins ();
             /**
             * \fn Vec3f getSize ();
             * \brief return the size of the grid.
             * \return Vec3f the size.
             */
-            math::Vec2f getSize ();
+            math::Vec3f getSize ();
             /**
             * \fn int getNbCasesPerRow ();
             * \brief return the number of cases per row.
@@ -218,6 +219,9 @@ namespace odfaeg {
             int getOffsetY() {
                 return offsetY;
             }
+            int getOffsetZ() {
+                return offsetZ;
+            }
             private:
             BaseChangementMatrix bm; /**> the base changement matrix.*/
             /**
@@ -232,10 +236,11 @@ namespace odfaeg {
             */
             void removeCellMap (CellMap *cell);
             std::vector<CellMap*> casesMap; /**> the cells of the grid.*/
-            int nbCasesPerRow, /**> the number of cases per row, the number of cases per columns*/
-            minX, minY, maxX, maxY, /**> the mins and maxs of the grid.*/
-            cellWidth, cellHeight, /**> the dimentions of the cells of the grid.*/
-            offsetX, offsetY; /**> the offsets of the cells of the grid.*/
+            std::vector<CellMap*> debugMap;
+            int nbCasesPerRow, nbCasesPerCol, /**> the number of cases per row, the number of cases per columns*/
+            minX, minY, minZ, maxX, maxY, maxZ, /**> the mins and maxs of the grid.*/
+            cellWidth, cellHeight, cellDepth, /**> the dimentions of the cells of the grid.*/
+            offsetX, offsetY, offsetZ; /**> the offsets of the cells of the grid.*/
         };
     }
 }

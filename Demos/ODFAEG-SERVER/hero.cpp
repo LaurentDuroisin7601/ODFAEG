@@ -15,6 +15,20 @@ namespace sorrok {
         moveFromKeyboard = false;
         this->user = user;
     }
+    void Hero::addItem(Item item) {
+        std::map<Item::Type, std::vector<Item>>::iterator it;
+        it = inventory.find(item.getType());
+        if (it != inventory.end()) {
+            it->second.push_back(item);
+        } else {
+            std::vector<Item> items;
+            items.push_back(item);
+            inventory.insert(std::make_pair(item.getType(), items));
+        }
+    }
+    std::map<Item::Type, std::vector<Item>>& Hero::getInventory() {
+        return inventory;
+    }
     void Hero::addQuest(Quest quest) {
         diary.push_back(quest);
     }
@@ -49,6 +63,9 @@ namespace sorrok {
     }
     void Hero::addSkill(Skill skill) {
         skills.push_back(skill);
+    }
+    std::vector<Skill> Hero::getSkills() {
+        return skills;
     }
     Hero::~Hero() {
     }

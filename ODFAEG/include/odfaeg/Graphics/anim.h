@@ -29,6 +29,25 @@ namespace odfaeg {
           * Note : in the next version of ODFAEG, a new class Frame'll be available, and'll contains informations about individual frames with
           * the entities to display for each frames.
           */
+          /**
+          * \file anim.h
+          * \class Anim
+          * \brief Represent an animation which multiple frames.
+          * \author Duroisin.L
+          * \version 1.0
+          * \date 1/02/2014
+          * Set up an animation, by adding different frames to animations.
+          * Keep a pointer to the current frame to be displayed.
+          * So each frames can be displayed one after one which the given framerate.
+          * The frame must be an entity so it must inherits from the Entity class and a frame can be any type of entity that you want.
+          *  Animations can also have parent's animations because animations are also entities.
+          *  It's very usefull for bone's animations.
+          * (By exemple, if you move the frame of the parent animation, the frame of the bone animation is also moved!
+          *   Bone's animations are just child's animations!)
+          *  The animations are updated by the AnimationUpdater class.
+          * Note : in the next version of ODFAEG, a new class Frame'll be available, and'll contains informations about individual frames with
+          * the entities to display for each frames.
+          */
         class ODFAEG_GRAPHICS_API Anim : public AnimatedEntity {
             public :
                 /** \fn default constructor
@@ -95,7 +114,7 @@ namespace odfaeg {
                 /** \fn nextImage()
                 *   \brief set the next frame of the animation.
                 */
-                void computeNextFrame(EntityManager* scene=nullptr);
+                void computeNextFrame();
                 /** \fn isRunning()
                 *   \return true if the animation is currently playing.
                 */
@@ -104,7 +123,7 @@ namespace odfaeg {
                 *   \brief change the index of the current frame of the animation.
                 *   \param the current index of the animation.
                 */
-                void setCurrentFrame(int index, EntityManager* scene=nullptr);
+                void setCurrentFrame(int index);
                 /** \fn getCurrentTileIndex()
                 *   \brief get the index of the current frame.
                 *   \return the index of the current frame.
@@ -126,7 +145,7 @@ namespace odfaeg {
                 *   \param RenderStates states : the states to render the frame with. (blendMode, shaders, etc...)
                 */
                 void onDraw (RenderTarget &target, RenderStates states);
-                void onFrameChanged(EntityManager* scene);
+                void onFrameChanged();
                 /** \fn bool operator==(Entity& other)
                 *   \brief compare two animations.
                 *   \param Entity& other : the other entity.
@@ -160,7 +179,7 @@ namespace odfaeg {
                 */
                 template <typename Archive>
                 void vtserialize(Archive & ar) {
-                    Entity::vtserialize(ar);
+                    AnimatedEntity::vtserialize(ar);
                     ar(fr);
                     ar(currentFrame);
                     ar(previousFrame);
@@ -170,6 +189,7 @@ namespace odfaeg {
                     ar(currentFrameChanged);
                     ar(interpolatedFrame);
                 }
+                Entity* clone();
                 void onMove(math::Vec3f& t);
                 /**
                 *  \fn ~Anim()
@@ -177,9 +197,9 @@ namespace odfaeg {
                 */
                 virtual ~Anim();
             private :
-                void interpolate(Entity* currentFrame, Entity* nextFrame, EntityManager* scene);
+                void interpolate(Entity* currentFrame, Entity* nextFrame);
                 void createFirstInterpolatedFrame(Entity* currentFrame);
-                void changeInterpolatedFrame(Entity* currentFrame, EntityManager* scene);
+                void changeInterpolatedFrame(Entity* currentFrame);
                 /** \fn recomputeSize()
                 *   \brief recompute the size of an animation.
                 */

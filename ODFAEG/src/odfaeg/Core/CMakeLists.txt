@@ -9,22 +9,15 @@ set(SRC
 	${INCROOT}/erreur.h
 	${INCROOT}/export.hpp
 	${SRCROOT}/erreur.cpp	
-	${INCROOT}/resourceManager.h	
-	${INCROOT}/application.h
-	${SRCROOT}/application.cpp
+	${INCROOT}/resourceManager.h		
 	${INCROOT}/any.h
 	${INCROOT}/resourceCache.h
 	${INCROOT}/utilities.h
 	${SRCROOT}/utilities.cpp	
-	${INCROOT}/action.h
-	${INCROOT}/command.h
-	${INCROOT}/command.tpp
-	${SRCROOT}/command.cpp
 	${INCROOT}/factory.h
 	${INCROOT}/factory.cpp
 	${INCROOT}/entitySystem.h
-	${INCROOT}/timer.h	
-	${INCROOT}/listener.h	
+	${INCROOT}/timer.h		
 	${INCROOT}/state.h
 	${SRCROOT}/state.cpp
 	${INCROOT}/stateGroup.h
@@ -33,14 +26,22 @@ set(SRC
 	${SRCROOT}/stateStack.cpp
 	${INCROOT}/stateParameter.h
 	${INCROOT}/stateParameterBase.h
-	${INCROOT}/stateExecutor.h
-	${SRCROOT}/actions.cpp	
+	${INCROOT}/stateExecutor.h		
 	${INCROOT}/archive.h	
 	${INCROOT}/time.h
 	${SRCROOT}/time.cpp
 	${INCROOT}/clock.h
 	${SRCROOT}/clock.cpp
 	${INCROOT}/variant.h
+	${INCROOT}/class.hpp
+	${SRCROOT}/class.cpp
+	${INCROOT}/constructor.hpp
+	${SRCROOT}/constructor.cpp
+	${INCROOT}/memberFunction.hpp
+	${SRCROOT}/memberFunction.cpp
+	${INCROOT}/runtimeCompiler.hpp
+	${SRCROOT}/runtimeCompiler.cpp
+	${INCROOT}/fastDelegate.h	
 	)	
 
 include_directories(${CMAKE_INCLUDE_PATH})

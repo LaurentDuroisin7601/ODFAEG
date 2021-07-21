@@ -36,6 +36,9 @@ namespace sorrok {
             ar(skills);
         }
         void addSkill(Skill skill);
+        std::vector<Skill> getSkills();
+        void addItem(Item item);
+        std::map<Item::Type, std::vector<Item>>& getInventory();
         ~Hero();
     private :
         std::string factionName, sex, hairColor, eyesColor, skinColor, faceType;
@@ -44,6 +47,7 @@ namespace sorrok {
         odfaeg::network::User* user;
         std::vector<Quest> diary;
         std::vector<Skill> skills;
+        std::map<Item::Type, std::vector<Item>> inventory;
     };
 }
 #endif // HERO_HPP

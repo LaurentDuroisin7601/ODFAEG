@@ -22,8 +22,8 @@ namespace odfaeg {
                 bool isPassable ();
                 void setPassable (bool passable);
                 bool operator== (const CellMap &cell) const;
-                Vec2f getCoords ();
-                Vec2f& getCenter ();
+                Vec3f getCoords ();
+                Vec3f& getCenter ();
                 bool isTraveled ();
                 void setTraveled (bool traveled);
                 ~CellMap();
@@ -31,7 +31,7 @@ namespace odfaeg {
                 std::vector<std::vector<Entity*> > entityInside;
                 BoundingPolygon *poly;
                 bool passable, stateChanged, traveled;
-                Vec2f coords, center;
+                Vec3f coords, center;
         };
     }
 }

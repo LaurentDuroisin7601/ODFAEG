@@ -4,6 +4,7 @@ namespace odfaeg {
     namespace math {
         using namespace std;
         using namespace sf;
+
         const Vec3f Vec3f::xAxis(1.f, 0.f, 0.f);
         const Vec3f Vec3f::yAxis(0.f, 1.f, 0.f);
         const Vec3f Vec3f::zAxis(0.f, 0.f, 1.f);
@@ -154,7 +155,9 @@ namespace odfaeg {
         bool Vec3f::operator== (const Vec3f &other) {
             return x==other.x && y==other.y && z==other.z;
         }
-
+        bool Vec3f::operator != (const Vec3f& other) {
+            return !(*this == other);
+        }
         float Vec3f::computeDist (const Vec3f &other) {
             return Math::sqrt(Math::power(x - other.x, 2) + Math::power(y - other.y, 2) + Math::power(z - other.z, 2));
         }

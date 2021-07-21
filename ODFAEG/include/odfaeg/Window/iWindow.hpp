@@ -7,6 +7,7 @@
 #include <SFML/Window/Cursor.hpp>
 #include <SFML/Window/WindowHandle.hpp>
 #include <SFML/System/Vector2.hpp>
+#include "vkSettup.hpp"
 namespace odfaeg {
     namespace window {
         class IWindow {
@@ -16,7 +17,7 @@ namespace odfaeg {
             virtual bool isOpen() const = 0;
             virtual bool pollEvent(IEvent& event) = 0;
             virtual bool waitEvent(IEvent& event) = 0;
-            virtual bool filterEvent(const IEvent& event) = 0;
+            virtual bool filterEvent(const IEvent& event) { return true; }
             virtual void close() = 0;
             virtual void setVisible(bool visible) = 0;
             virtual sf::Vector2i getPosition() const = 0;
@@ -186,10 +187,13 @@ namespace odfaeg {
             ////////////////////////////////////////////////////////////
             virtual sf::WindowHandle getSystemHandle() const = 0;
             virtual void destroy() = 0;
-            virtual bool setActive(bool active=true) {}
+            virtual bool setActive(bool active=true) { return false; }
             virtual void setVerticalSyncEnabled(bool enabled) {}
             virtual void display() {}
-            virtual const ContextSettings& getSettings() const {}
+            virtual const ContextSettings& getSettings() const { return ContextSettings(0, 0, 0, 0, 0); }
+            #ifdef VULKAN
+            virtual VkSettup& getVkSettup() = 0;
+            #endif
         };
     }
 }

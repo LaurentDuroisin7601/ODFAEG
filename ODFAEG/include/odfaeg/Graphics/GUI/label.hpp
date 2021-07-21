@@ -19,7 +19,7 @@ namespace odfaeg {
                 sf::Color getForegroundColor();
                 void onEventPushed(window::IEvent event, RenderWindow& window);
                 void setText(std::string text);
-                std::string getText();
+                sf::String getText();
                 bool isMouseInside();
                 void onUpdate(RenderWindow* window, window::IEvent& event);
                 void setBorderColor(sf::Color color);

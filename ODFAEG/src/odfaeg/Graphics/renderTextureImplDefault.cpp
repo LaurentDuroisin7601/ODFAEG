@@ -26,6 +26,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "renderTextureImplDefault.h"
+#ifndef VULKAN
 #include "glCheck.h"
 #include "textureSaver.h"
 #include <SFML/System/Err.hpp>
@@ -72,10 +73,12 @@ namespace odfaeg {
             unsigned int RenderTextureImplDefault::getFramebufferId() {
                 return 0;
             }
+            void RenderTextureImplDefault::selectCubemapFace (int face, int textureID) {
+            }
             void RenderTextureImplDefault::bind() {
             }
         }
     } // namespace priv
 
 } // namespace sf
-
+#endif

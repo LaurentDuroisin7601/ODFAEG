@@ -37,6 +37,7 @@ namespace odfaeg {
             */
             void addComponent(graphic::Component* component);
             void addWindow(RenderWindow& window);
+            void setEventContextActivated(bool activated, RenderWindow& window);
             bool removeComponent(unsigned int layer);
             /**
             * \fn RenderWindow& getWindow()
@@ -79,9 +80,11 @@ namespace odfaeg {
             * \param layer : the number of the layer.
             * \return the render component.
             */
-            HeavyComponent* getRenderComponent(unsigned int layer);
-            LightComponent* getGuiComponent(unsigned int layer);
+            Component* getRenderComponent(unsigned int layer);
+            Component* getGuiComponent(unsigned int layer);
             Component* getComponent(unsigned int layer);
+            std::vector<Component*> getComponents();
+            std::vector<Component*> getRenderComponents();
             /**
             * \fn ~RenderComponentManager();
             * \brief destructor.

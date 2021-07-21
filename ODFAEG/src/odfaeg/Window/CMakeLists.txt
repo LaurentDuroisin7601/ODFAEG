@@ -1,25 +1,20 @@
 include(${PROJECT_SOURCE_DIR}/cmake/Macros.cmake)
 
+
 set(INCROOT ${PROJECT_SOURCE_DIR}/include/odfaeg/Window)
 set(SRCROOT ${PROJECT_SOURCE_DIR}/src/odfaeg/Window)
 
 set(SRC_WINDOW
-	${INCROOT}/sdlWindow.hpp
-	${SRCROOT}/sdlWindow.cpp
-	${INCROOT}/x11Window.hpp
-	${SRCROOT}/x11Window.cpp
-	${INCROOT}/glxContext.hpp
-	${SRCROOT}/glxContext.cpp
+	${INCROOT}/action.h	
+	${SRCROOT}/actions.cpp
+	${INCROOT}/command.h
+	${SRCROOT}/command.cpp
+	${INCROOT}/listener.h
+	${SRCROOT}/listener.cpp
 	${INCROOT}/contextImpl.hpp
 	${SRCROOT}/contextImpl.cpp	
 	${INCROOT}/contextSettings.hpp
 	${SRCROOT}/contextSettings.cpp
-	${INCROOT}/display.hpp
-	${SRCROOT}/display.cpp
-	${INCROOT}/x11Keyboard.hpp
-	${SRCROOT}/x11Keyboard.cpp
-	${INCROOT}/x11Mouse.hpp
-	${SRCROOT}/x11Mouse.cpp
 	${INCROOT}/iKeyboard.hpp
 	${SRCROOT}/iKeyboard.cpp
 	${INCROOT}/iMouse.hpp
@@ -38,24 +33,50 @@ set(SRC_WINDOW
 	${SRCROOT}/context.cpp	
 	${INCROOT}/iGlResource.hpp
 	${INCROOT}/glResource.hpp
-	${SRCROOT}/glResource.cpp
-	${SRCROOT}/glxExtensions.hpp
-	${SRCROOT}/glxExtensions.cpp	
-	${INCROOT}/sfmlWindowImpl.hpp
-	${SRCROOT}/sfmlWindowImpl.cpp
-	${INCROOT}/sfmlKeyboard.hpp
-	${SRCROOT}/sfmlKeyboard.cpp
-	${INCROOT}/sfmlMouse.hpp
-	${SRCROOT}/sfmlMouse.cpp
-	${INCROOT}/sfmlContextImpl.hpp
-	${SRCROOT}/sfmlContextImpl.cpp
+	${SRCROOT}/glResource.cpp	
+	${INCROOT}/SFML/sfmlWindowImpl.hpp
+	${SRCROOT}/SFML/sfmlWindowImpl.cpp
+	${INCROOT}/SFML/sfmlKeyboard.hpp
+	${SRCROOT}/SFML/sfmlKeyboard.cpp
+	${INCROOT}/SFML/sfmlMouse.hpp
+	${SRCROOT}/SFML/sfmlMouse.cpp
+	${INCROOT}/SFML/sfmlContextImpl.hpp
+	${SRCROOT}/SFML/sfmlContextImpl.cpp
 )
-
+if (UNIX)
+set(PLATEFORM_SRC
+${INCROOT}/Linux/x11Window.hpp
+${SRCROOT}/Linux/x11Window.cpp
+${INCROOT}/Linux/glxContext.hpp
+${SRCROOT}/Linux/glxContext.cpp	
+${INCROOT}/Linux/display.hpp
+${SRCROOT}/Linux/display.cpp
+${INCROOT}/Linux/x11Keyboard.hpp
+${SRCROOT}/Linux/x11Keyboard.cpp
+${INCROOT}/Linux/x11Mouse.hpp
+${SRCROOT}/Linux/x11Mouse.cpp
+${SRCROOT}/Linux/glxExtensions.hpp
+${SRCROOT}/Linux/glxExtensions.cpp	
+)
+elseif(WIN32)
+set(PLATEFORM_SRC
+${INCROOT}/Windows/w32Window.hpp
+${SRCROOT}/windows/w32Window.cpp
+${INCROOT}/Windows/wglContext.hpp
+${SRCROOT}/Windows/wglContext.cpp	
+${INCROOT}/Windows/wglExtensions.hpp
+${SRCROOT}/Windows/wglExtensions.cpp
+${SRCROOT}/Windows/win32Keyboard.cpp
+${INCROOT}/Window/w32Keyboard.hpp
+${INCROOT}/Windows/win32Mouse.hpp
+${SRCROOT}/Windows/win32Mouse.cpp
+)
+endif()
 include_directories(${CMAKE_INCLUDE_PATH} ${FREETYPE_INCLUDE_DIRS})
 link_directories(${CMAKE_LIBRARY_PATH})
 
 sfgl_add_library(odfaeg-window
-                 SOURCES ${SRC_WINDOW} 
+                 SOURCES ${SRC_WINDOW} ${PLATEFORM_SRC}
 				 DEPENDS odfaeg-core odfaeg-math)
 target_link_libraries (odfaeg-window ${SFML_LIBRARIES})
 

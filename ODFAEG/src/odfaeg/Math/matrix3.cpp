@@ -1,4 +1,5 @@
 #include "../../../include/odfaeg/Math/matrix3.h"
+#include "../../../include/odfaeg/Math/matrix4.h"
 //Matrice 3*3 de flottants.
 namespace odfaeg {
     namespace math {
@@ -6,6 +7,17 @@ namespace odfaeg {
         Matrix3f::Matrix3f  () {
             m11 = m22 = m33 = 1;
             m12 = m13 = m21 = m23 = m31 = m32 = 0;
+        }
+        Matrix3f::Matrix3f  (Matrix4f matrix4f) {
+            m11 = matrix4f.m11;
+            m12 = matrix4f.m12;
+            m13 = matrix4f.m13;
+            m21 = matrix4f.m21;
+            m22 = matrix4f.m22;
+            m23 = matrix4f.m23;
+            m31 = matrix4f.m31;
+            m32 = matrix4f.m32;
+            m33 = matrix4f.m33;
         }
         //Créer une matrice avec les valeurs.
         Matrix3f::Matrix3f (float m11, float m12, float m13, float m21, float m22, float m23, float m31, float m32, float m33) {
@@ -152,7 +164,7 @@ namespace odfaeg {
             return fDet;
         }
         //Inverse une matrice.
-        Matrix3f Matrix3f::inverse () throw (std::exception&) {
+        Matrix3f Matrix3f::inverse () {
             Matrix3f store (m11, m12, m13, m21, m22, m23, m31, m32, m33);
             float det = getDet();
             if (Math::abs(det) < 0.f)

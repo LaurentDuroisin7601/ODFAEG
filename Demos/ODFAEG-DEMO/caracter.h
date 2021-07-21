@@ -25,6 +25,7 @@ namespace sorrok {
         bool selectable() const {
             return false;
         }
+        Entity* clone();
         bool operator== (Entity& other);
         void addAnimation (odfaeg::graphic::Anim *anim);
         odfaeg::graphic::Tile& getCurrentTile();
@@ -82,7 +83,7 @@ namespace sorrok {
 
         template <typename Archive>
         void vtserialize(Archive & ar) {
-            Entity::vtserialize(ar);
+            GameObject::vtserialize(ar);
             ar(name);
             ar(classs);
             ar(level);

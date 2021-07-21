@@ -20,6 +20,7 @@ namespace sorrok {
         bool isLeaf() const {
             return true;
         }
+        Entity* clone();
         bool operator== (Entity& other);
         void addAnimation (odfaeg::graphic::Anim *anim);
         odfaeg::graphic::Tile& getCurrentTile();

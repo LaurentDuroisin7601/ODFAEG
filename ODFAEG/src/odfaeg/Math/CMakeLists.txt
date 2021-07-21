@@ -4,6 +4,8 @@ include(${PROJECT_SOURCE_DIR}/cmake/Macros.cmake)
 set(INCROOT ${PROJECT_SOURCE_DIR}/include/odfaeg/Math)
 set(SRCROOT ${PROJECT_SOURCE_DIR}/src/odfaeg/Math)
 set(SRC
+	${INCROOT}/transformMatrix.h
+	${SRCROOT}/transformMatrix.cpp
 	${INCROOT}/export.hpp
 	${INCROOT}/computer.h
 	${SRCROOT}/computer.cpp

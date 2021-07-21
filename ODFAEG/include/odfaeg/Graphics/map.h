@@ -26,7 +26,7 @@ namespace odfaeg {
 * \date 1/02/2014
 * \brief a map used to generate and to get and to draw the entities of the scene.
 */
-class ODFAEG_GRAPHICS_API Map : public EntityManager {
+class ODFAEG_GRAPHICS_API Scene : public SceneManager {
 
     public :
         /** \fn Map(RenderComponentManager* frcm, std::string name, int cellWidth, int cellHeight, int cellDepth);
@@ -37,10 +37,9 @@ class ODFAEG_GRAPHICS_API Map : public EntityManager {
         *   \param cellHeight : the height of the cells.
         *   \param cellDepth : the depth of the cells.
         */
-        enum Walls {
-            TOP_LEFT, TOP_RIGHT, BOTTOM_RIGHT, BOTTOM_LEFT, TOP_BOTTOM, RIGHT_LEFT, T_TOP, T_RIGHT, T_LEFT, T_BOTTOM, X
-        };
-        Map(RenderComponentManager* frcm, std::string name, int cellWidth, int cellHeight, int cellDepth);
+
+        Scene();
+        Scene(RenderComponentManager* frcm, std::string name, int cellWidth, int cellHeight, int cellDepth);
         GridMap *gridMap; /**> The grid used to store the entities.*/
         /**
         * \fn int getId()
@@ -159,19 +158,89 @@ class ODFAEG_GRAPHICS_API Map : public EntityManager {
         * \brief check the entities which are visible. (Which are in the field of view of the camera)
         */
         void checkVisibleEntities();
-        bool containsMovableVisibleEntity(AnimatedEntity *ae);
         /**
         * \fn  Entity* getEntity(int id);
         * \brief get an entity from its id.
         * \return entity : the entity.
         */
         Entity* getEntity(int id);
+        Entity* getEntity(std::string name);
         /**
         * \fn  std::vector<CellMap<Entity>*> getCasesMap();
         * \brief get every cells of the grid.
         * \return the cells of the grid.
         */
         std::vector<CellMap*> getCasesMap();
+        template <typename Archive>
+        void serialize(Archive& ar) {
+            if (!ar.isInputArchive()) {
+                ar(name);
+                ar(cellWidth);
+                ar(cellHeight);
+                ar(cellDepth);
+                BaseChangementMatrix bcm = getBaseChangementMatrix();
+                ar(bcm);
+                std::vector<Entity*> entities = getRootEntities("*");
+                std::vector<Entity*> internalEntities;
+                for (unsigned int i = 0; i < entities.size(); i++) {
+                    if (!entities[i]->isExternal()) {
+                        internalEntities.push_back(entities[i]);
+                    }
+                }
+                ar(internalEntities);
+                std::vector<CellMap*> cells = getCasesMap();
+                unsigned int nb = 0;
+                for (unsigned int i = 0; i < cells.size(); i++) {
+                    if (cells[i] != nullptr) {
+                            nb++;
+                    }
+                }
+                ar(nb);
+                for (unsigned int i = 0; i < cells.size(); i++) {
+                    if (cells[i] != nullptr) {
+                        math::Vec3f center = cells[i]->getCenter();
+                        bool isPassable = cells[i]->isPassable();
+                        ar(center);
+                        ar(isPassable);
+                    }
+                }
+            } else {
+                ar(name);
+                ar(cellWidth);
+                ar(cellHeight);
+                ar(cellDepth);
+                gridMap = new GridMap(cellWidth, cellHeight, cellDepth);
+                BaseChangementMatrix bcm;
+                //std::cout<<"read bcm"<<std::endl;
+                ar(bcm);
+                //std::cout<<"bcm read"<<std::endl;
+                setBaseChangementMatrix(bcm);
+                std::vector<Entity*> entities;
+                //std::cout<<"read entities"<<std::endl;
+                ar(entities);
+                //std::cout<<"size : "<<entities.size()<<std::endl;
+                for (unsigned int i = 0; i < entities.size(); i++) {
+                    //std::cout<<"add entity"<<std::endl;
+                    addEntity(entities[i]);
+                }
+                unsigned int size;
+                ar(size);
+                //std::cout<<"cases maps : "<<std::endl;
+                for (unsigned int i = 0; i < size; i++) {
+                    math::Vec3f center;
+                    ar(center);
+                    //std::cout<<"center : "<<center<<std::endl;
+                    bool isPassable;
+                    ar(isPassable);
+                    //std::cout<<"passable : "<<isPassable<<std::endl;
+                    CellMap* cell = getGridCellAt(center);
+                    if (cell != nullptr) {
+                        cell->setPassable(isPassable);
+                    }
+                }
+            }
+        }
+        void setRenderComponentManager(RenderComponentManager* rcm);
         /**
         * \fn std::vector<Entity*> getEntities(std::string type)
         * \brief get the entities of the given types.
@@ -179,6 +248,8 @@ class ODFAEG_GRAPHICS_API Map : public EntityManager {
         * \return the entities.
         */
         std::vector<Entity*> getEntities(std::string type);
+        std::vector<Entity*> getRootEntities(std::string type);
+        std::vector<Entity*> getChildrenEntities(std::string type);
         /**
         * \fn std::vector<Entity*> getVisibleEntities(std::string type)
         * \brief get the visible entities of the given types.
@@ -216,13 +287,6 @@ class ODFAEG_GRAPHICS_API Map : public EntityManager {
         */
         std::vector<CellMap*> getCasesInBox (physic::BoundingBox bx);
         /**
-        * \fn bool containsVisibleEntity(Entity* entity);
-        * \brief check if the map contains the following visible entity.
-        * \param the entity.
-        * \return if the map contains the entity.
-        */
-        bool containsVisibleEntity(Entity* entity);
-        /**
         * \fn bool collide (Entity *entity)
         * \brief check if an entity collide with another one.
         * \param Entity* entity : the entity.
@@ -231,13 +295,13 @@ class ODFAEG_GRAPHICS_API Map : public EntityManager {
         bool collide(Entity *entity);
         bool collide(Entity* entity, math::Vec3f position);
         bool collide(Entity* entity, math::Ray ray);
-        void generate_labyrinthe(std::vector<Tile*> tGround, std::vector<Tile*> walls, math::Vec2f tileSize, physic::BoundingBox &box, bool terrain3D);
+        void generate_labyrinthe(std::vector<Tile*> tGround, std::vector<g2d::Wall*> walls, math::Vec2f tileSize, physic::BoundingBox &box, bool terrain3D);
         /** \fn generate_map(std::vector<Tile*> tGround, std::vector<Tile*> walls, BoundingBox &box)
         *   \brief generate a map in the given zone, which the given tiles for the ground and the given tiles for the walls.
         *   \param std::vector<Tile*> tGround : the tiles used for the ground.
         *   \param std::vector<Tile*> walls : the tiles used for the walls. (The walls are placed to the edges of the map)
         */
-        void generate_map(std::vector<Tile*> tGround, std::vector<Tile*> walls, math::Vec2f tileSize, physic::BoundingBox &box, bool terrain3D);
+        void generate_map(std::vector<Tile*> tGround, std::vector<g2d::Wall*> walls, math::Vec2f tileSize, physic::BoundingBox &box, bool terrain3D);
         /**
         *   \fn void getChildren (Entity *entity, std::vector<Entity*> &entities, std::string type);
         *   \brief get the children of a kind of types from an entity.
@@ -246,41 +310,6 @@ class ODFAEG_GRAPHICS_API Map : public EntityManager {
         *   \param type : the types.
         */
         void getChildren (Entity *entity, std::vector<Entity*> &entities, std::string type);
-        /**
-        * \fn void insertVisibleEntity(Entity *entity);
-        * \brief insert a visible entity into the entity manager.
-        * \param entity : the visible entity to insert.
-        */
-        void insertVisibleEntity(Entity *entity, physic::BoundingBox& bx);
-        /**
-        * \fn void removeVisibleEntity(Entity *entity);
-        * \brief remove a visible entity from the entity manager.
-        * \param entity : the visible entity to remove.
-        */
-        void removeAnimatedVisibleEntity(Entity *entity, std::vector<Entity*>& entities, View& view, bool& removed);
-        /**
-        * \fn Tile& getShadowTile();
-        * \brief get the shadow tile. (The tile where all the shadows are drawn)
-        * \return the shadow tile.
-        */
-        void generateStencilBuffer(std::string expression, int n, va_list args);
-        Entity& getShadowTile(std::string expression, int n, va_list args);
-        /**
-        * \fn Tile& getLightTile();
-        * \brief get the light tile. (The tile where all the lights are drawn)
-        * \param n : the number of the layers.
-        * \param the layer of the components which have entities which intersects with the light. (dereffered shading)
-        * \return the light tile.
-        */
-        Entity& getLightTile(std::string expression, int n, va_list args);
-        /**
-        * \fn void drawOnComponents(std::string expression, int layer, sf::BlendMode mode = sf::BlendMode::BlendAlpha);
-        * \brief draw the entities on a component.
-        * \param expression : the types of entities to draw.
-        * \param layer : the layer of the component on which to draw the entities.
-        * \param mode: the blend mode.
-        */
-        Entity& getRefractionTile (std::string expression, int n, va_list args);
         void drawOnComponents(std::string expression, int layer, sf::BlendMode mode = sf::BlendAlpha);
         /**
         * \fn void drawOnComponents(Drawable& drawable, int layer, RenderStates states = RenderStates::Default);
@@ -300,17 +329,11 @@ class ODFAEG_GRAPHICS_API Map : public EntityManager {
         * \brief get the path between an entity and a position.
         * \return the path between an entity and a position.
         */
-        std::vector<math::Vec2f> getPath(Entity* entity, math::Vec2f finalPos);
+        std::vector<math::Vec3f> getPath(Entity* entity, math::Vec3f finalPos);
         void setBaseChangementMatrix(BaseChangementMatrix bm);
-        void updateParticles();
+        int getCellWidth();
+        int getCellHeight();
     private :
-        /**
-        * \fn void insertAnimatedVisibleEntity(Entity* ae, std::vector<Entity*>& visibleEntities);
-        * \brief insert an animated visible entity into the vector of the visible entities.
-        * \param ae : the animated visible entity.
-        * \param std::vector<Entity*>& visibleEntities the visible entities.
-        */
-        void insertAnimatedVisibleEntity(Entity* ae, std::vector<Entity*>& visibleEntities, View& view);
         /**
         * \fn void increaseComptImg (const void* resource);
         * \brief increase the counter for the given resource.
@@ -329,33 +352,15 @@ class ODFAEG_GRAPHICS_API Map : public EntityManager {
         * \param resource : the resource.
         */
         void removeComptImg (const void* resource);
-        /**
-        * \fn bool containsVisibleParentEntity(Entity* entity);
-        * \brief check if the entity have the same parent of an entity which is in the visible entity list.
-        *  it avoids to add the children entities of a same parent more than once.
-        * \param the entity.
-        * \return if the entity have the same parent of an entity which is in the visible entity list.
-        */
-        bool containsVisibleParentEntity(Entity* entity);
-        void changeVisibleEntity(Entity* toRemove, Entity* toAdd);
         std::string name; /**> the name of the map.*/
         int id, version; /**> the version of the map.*/
-        Map (const Map &other); /**> A map is not copiable.*/
-        Map operator= (const Map &other); /**> A map is not affectable.*/
+        Scene (const Scene &other); /**> A map is not copiable.*/
+        Scene operator= (const Scene &other); /**> A map is not affectable.*/
         std::map<const void*, int> compImages; /**> Store a pointer to a resource and how many times his resource is used on the map.*/
-        std::map<std::string, std::vector<Entity*>> vEntitiesByType;
         std::vector<std::vector<Entity*>> visibleEntities;
-        typedef std::map <std::string, std::vector<Entity*>>::iterator VEntitiesByType; /**> A typedef to the iterator of the map which contains the visible entities.*/
-        std::vector<Entity*> visibleParentEntities; /**> The parent entities of the visible entities.*/
-        std::vector<Entity*> lights, shadows; /**> The lights and the shadows.*/
         RenderComponentManager* frcm; /**> The component manager.*/
-        std::unique_ptr<RenderTexture> shadowMap, lightMap, stencilBuffer, normalMap, backDepthBuffer, refractionMap; /**> The shadow map, the light map and the normal map.*/
-        Texture textShadow, textLight; /**> The texture of the shadows and the lights.*/
-        std::unique_ptr<Tile> shadowTile, lightTile, stencilBufferTile, normalMapTile, refractionTile; /**> The shadow, light and normal map tiles.*/
-        std::unique_ptr<Shader> perPixLightingShader, perPixShadowShader, perPixShadowShader2, buildShadowMapShader,
-        buildNormalMapShader, depthBufferGenShader, buildRefractionMapShader; /**> The shaders used to generate the lightmap and the final normal map.*/
-        bool updateComponents;
         float diagSize;
+        int cellWidth, cellHeight, cellDepth;
 };
 }
 }

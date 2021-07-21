@@ -7,7 +7,7 @@ namespace odfaeg {
                 {
                     text.setFont(*font);
                     text.setCharacterSize(15);
-                    text.setString(sf::String(t.c_str()));
+                    text.setString(t);
                     text.setColor(sf::Color::Black);
                     rect = RectangleShape(getSize());
                     rect.setOutlineThickness(1);
@@ -48,6 +48,9 @@ namespace odfaeg {
                 }
                 std::string MenuItem::getText() {
                     return text.getString();
+                }
+                void MenuItem::setText(std::string t) {
+                    text.setString(t);
                 }
                 void MenuItem::onEventPushed(window::IEvent event, RenderWindow& window) {
                     if (&window == &getWindow())

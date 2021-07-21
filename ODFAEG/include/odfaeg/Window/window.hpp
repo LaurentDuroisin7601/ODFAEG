@@ -256,6 +256,9 @@ namespace odfaeg {
             sf::WindowHandle getSystemHandle() const;
             void setVerticalSyncEnabled(bool enabled);
             IWindow* getImpl() const;
+            #ifdef VULKAN
+            VkSettup& getVkSettup();
+            #endif
             ~Window ();
         protected :
             virtual void onCreate();

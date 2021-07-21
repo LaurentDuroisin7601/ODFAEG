@@ -43,7 +43,7 @@ namespace odfaeg {
         /// \brief Base class for textured shapes with outline
         ///
         ////////////////////////////////////////////////////////////
-        class ODFAEG_GRAPHICS_API Shape : public Drawable, public Transformable, public core::Registered<Shape>
+        class ODFAEG_API_EXPORT Shape : public Drawable, public Transformable, public core::Registered<Shape>
         {
         public :
 
@@ -211,36 +211,8 @@ namespace odfaeg {
             ////////////////////////////////////////////////////////////
             virtual sf::Vector3f getPoint(unsigned int index) const = 0;
 
-            ////////////////////////////////////////////////////////////
-            /// \brief Get the local bounding rectangle of the entity
-            ///
-            /// The returned rectangle is in local coordinates, which means
-            /// that it ignores the transformations (translation, rotation,
-            /// scale, ...) that are applied to the entity.
-            /// In other words, this function returns the bounds of the
-            /// entity in the entity's coordinate system.
-            ///
-            /// \return Local bounding rectangle of the entity
-            ///
-            ////////////////////////////////////////////////////////////
-            physic::BoundingBox getLocalBounds() const;
-
-            ////////////////////////////////////////////////////////////
-            /// \brief Get the global bounding rectangle of the entity
-            ///
-            /// The returned rectangle is in global coordinates, which means
-            /// that it takes in account the transformations (translation,
-            /// rotation, scale, ...) that are applied to the entity.
-            /// In other words, this function returns the bounds of the
-            /// sprite in the global 2D world's coordinate system.
-            ///
-            /// \return Global bounding rectangle of the entity
-            ///
-            ////////////////////////////////////////////////////////////
-            physic::BoundingBox getGlobalBounds();
             template <typename Archive>
             void vtserialize(Archive& ar) {
-                Drawable::serialize(ar);
                 Transformable::serialize(ar);
                 ar(m_textureRect.left);
                 ar(m_textureRect.top);
@@ -260,7 +232,9 @@ namespace odfaeg {
                 ar(m_insideBounds);
                 ar(m_bounds);
             }
-
+            const unsigned int& getId();
+            physic::BoundingBox getLocalBounds() const;
+            physic::BoundingBox& getGlobalBounds();
         protected :
 
             ////////////////////////////////////////////////////////////
@@ -312,7 +286,6 @@ namespace odfaeg {
             ///
             ////////////////////////////////////////////////////////////
             void updateOutlineColors();
-
             ////////////////////////////////////////////////////////////
             // Member data
             ////////////////////////////////////////////////////////////
@@ -324,7 +297,9 @@ namespace odfaeg {
             VertexArray    m_vertices;         ///< Vertex array containing the fill geometry
             VertexArray    m_outlineVertices;  ///< Vertex array containing the outline geometry
             physic::BoundingBox           m_insideBounds;     ///< Bounding rectangle of the inside (fill)
-            physic::BoundingBox           m_bounds;           ///< Bounding rectangle of the whole shape (outline + fill)
+            physic::BoundingBox           m_bounds, m_globalBounds;           ///< Bounding rectangle of the whole shape (outline + fill)
+            unsigned int id;
+            static unsigned int nbShapes;
         };
     }
 

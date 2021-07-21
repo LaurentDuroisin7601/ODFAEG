@@ -4,15 +4,13 @@ set(INCROOT ${PROJECT_SOURCE_DIR}/include/odfaeg/Graphics)
 set(SRCROOT ${PROJECT_SOURCE_DIR}/src/odfaeg/Graphics)
 
 set(SRC_GRAPHICS
-	${INCROOT}/zSortingRenderComponent.hpp
-	${SRCROOT}/zSortingRenderComponent.cpp
+	${INCROOT}/application.h
+	${SRCROOT}/application.cpp	
 	${INCROOT}/lightRenderComponent.hpp
 	${SRCROOT}/lightRenderComponent.cpp
 	${INCROOT}/baseChangementMatrix.h
-	${SRCROOT}/baseChangementMatrix.cpp
-	${INCROOT}/transformMatrix.h	
-	${INCROOT}/export.hpp
-	${SRCROOT}/transformMatrix.cpp
+	${SRCROOT}/baseChangementMatrix.cpp		
+	${INCROOT}/export.hpp	
 	${INCROOT}/viewMatrix.h
 	${SRCROOT}/viewMatrix.cpp
 	${INCROOT}/projMatrix.h
@@ -83,11 +81,13 @@ set(SRC_GRAPHICS
 	${SRCROOT}/GlDebug.cpp
 	${SRCROOT}/animation.cpp	
 	${INCROOT}/tile.h
-	${SRCROOT}/tile.cpp
-	${INCROOT}/oitRenderComponent.h
-	${SRCROOT}/oitRenderComponent.cpp
+	${SRCROOT}/tile.cpp	
 	${INCROOT}/shadowRenderComponent.hpp
 	${SRCROOT}/shadowRenderCompoenent.cpp
+	${INCROOT}/reflectRefractRenderComponent.hpp
+	${SRCROOT}/reflectRefractRenderComponent.cpp
+	${INCROOT}/raytracingRenderComponent.hpp
+	${SRCROOT}/raytracingRenderComponent.cpp
 	${INCROOT}/animatedEntity.h	
 	${INCROOT}/model.h
 	${SRCROOT}/model.cpp
@@ -102,8 +102,6 @@ set(SRC_GRAPHICS
 	${SRCROOT}/tGround.cpp
 	${INCROOT}/billBoard.h
 	${SRCROOT}/billBoard.cpp	
-	${INCROOT}/sdlRenderWindow.hpp
-	${SRCROOT}/sdlRenderWindow.cpp	
 	${INCROOT}/world.h
 	${SRCROOT}/world.cpp
 	${INCROOT}/glExtensions.hpp
@@ -116,11 +114,16 @@ set(SRC_GRAPHICS
 	${SRCROOT}/boneAnimation.cpp
 	${INCROOT}/lightComponent.h
 	${INCROOT}/heavyComponent.h
-	${INCROOT}/entityManager.h
-	${INCROOT}/depthPeelingRenderComponent.hpp
-	${SRCROOT}/depthPeelingRendercomponent.cpp
+	${SRCROOT}/heavyComponent.cpp
+	${INCROOT}/entityManager.h	
 	${INCROOT}/perPixelLinkedListRenderComponent.hpp
 	${SRCROOT}/perPixelLinkedListRenderComponent.cpp
+	${INCROOT}/gameObject.hpp
+	${SRCROOT}/gameObject.cpp
+	${INCROOT}/boneAnimation.hpp
+	${SRCROOT}/boneAnimation.cpp
+	${INCROOT}/animatedEntity.h
+	${SRCROOT}/animatedEntity.cpp
 	)
 source_group ("graphics" FILES ${SRC_GRAPHICS})
 	
@@ -178,7 +181,9 @@ set(SRC_GUI
 	${INCROOT}/GUI/passwordField.hpp
 	${SRCROOT}/GUI/passwordField.cpp
 	${INCROOT}/GUI/progressBar.hpp
-	${SRCROOT}/GUI/progressBar.cpp)
+	${SRCROOT}/GUI/progressBar.cpp
+	${INCROOT}/GUI/checkBox.hpp
+	${SRCROOT}/GUI/checkBox.cpp)
 source_group ("gui" FILES ${SRC_GUI})
 find_package (SFML 2 REQUIRED)
 find_package(Freetype REQUIRED)

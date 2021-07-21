@@ -8,11 +8,11 @@ namespace odfaeg {
         Rsa::Rsa() {
             x = X509_new();
             evp_pkey = EVP_PKEY_new();
-            mpz_init(e);
+            /*mpz_init(e);
             mpz_init(d);
-            mpz_init(n);
+            mpz_init(n);*/
             keypair = ssl_generateKeys(2048);
-            generateKeys(2048);
+            //generateKeys(2048);
         }
         int Rsa::ossl_getCertificate (unsigned char** out) {
             return i2d_X509(x, out);
@@ -25,7 +25,7 @@ namespace odfaeg {
             evp_pkey = X509_get_pubkey(x);
             keypair = EVP_PKEY_get1_RSA(evp_pkey);
         }
-        void Rsa::setCertificate(string certificate) {
+        /*void Rsa::setCertificate(string certificate) {
             vector<string> pbKeyParts = core::split(certificate, "-");
             mpz_set_str(e, pbKeyParts[0].c_str(), 10);
             mpz_set_str(n, pbKeyParts[1].c_str(), 10);
@@ -76,7 +76,7 @@ namespace odfaeg {
                 } while (mpz_cmp(gcd1, un) == 0 && mpz_cmp(gcd2, un));
                 mpz_invert(d, e, f);
             } while (mpz_cmp(d, zero) == 0);
-        }
+        }*/
         RSA* Rsa::ssl_generateKeys (int size) {
             Rsa::size = size;
 
@@ -120,7 +120,7 @@ namespace odfaeg {
             X509_sign(x,evp_pkey,EVP_sha1());
             return key_pair;
         }
-        const char* Rsa::encryptWithPbKey(const char* data, std::size_t dataSize, std::size_t& newSize) {
+        /*const char* Rsa::encryptWithPbKey(const char* data, std::size_t dataSize, std::size_t& newSize) {
             newSize = BLOC_SIZE * dataSize;
             char* crypted = new char[newSize+1];
             unsigned int p = 0;
@@ -227,7 +227,7 @@ namespace odfaeg {
                 decrypted[i] = ascii;
             }
             return decrypted;
-        }
+        }*/
         unsigned char* Rsa::ossl_encryptWithPrKey (const unsigned char *data, int dataSize, int& newSize) {
             unsigned char* encData = new unsigned char[RSA_size(keypair)];
             newSize = RSA_private_encrypt(dataSize, data, encData, keypair, RSA_PKCS1_PADDING);

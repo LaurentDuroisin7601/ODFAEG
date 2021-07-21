@@ -19,7 +19,7 @@ namespace odfaeg {
           *
           */
         class SrkClient;
-        class ODFAEG_NETWORK_API EncryptedPacket : public sf::Packet {
+        class ODFAEG_API_EXPORT EncryptedPacket : public sf::Packet {
             public :
                 static Rsa& getRsa();
                 static int getCertificate(unsigned char** out);

@@ -15,12 +15,9 @@ namespace odfaeg {
                             getChildren()[i]->clear();
                     }
                     void drawOn(RenderTarget& target, RenderStates states);
-                    /*void onDraw(RenderTarget& target, RenderStates states) {
-                        std::cout<<getChildren().size()<<std::endl;
-                        for (unsigned int i = 0; i < getChildren().size(); i++) {
-                            std::cout<<getChildren()[i]->getPosition()<<getChildren()[i]->getSize()<<std::endl;
-                        }
-                    }*/
+                    void onDraw(RenderTarget& target, RenderStates states);
+                    std::string getSelectedTab();
+
                 private :
                     bool isOnXScroll();
                     void moveXItems();
@@ -28,6 +25,7 @@ namespace odfaeg {
                     bool scrollX;
                     int mouseDeltaX, oldMouseX, maxSizeX;
                     odfaeg::graphic::RectangleShape vertScrollBar;
+                    Label* selectedTab;
             };
         }
     }

@@ -14,35 +14,43 @@ namespace sorrok {
         getView().setScale(1, -1, 1);
         sf::Clock clock1;
         addClock(clock1, "RequestTime");
+        //std::cout<<"add clock"<<std::endl;
         sf::Clock clock2;
         addClock(clock2, "FPS");
+        //std::cout<<"add clock 2"<<std::endl;
         fps = 0;
         hero = nullptr;
         selectedPnj = nullptr;
         selectedQuest = nullptr;
         received = false;
+        //std::cout<<"set client message"<<std::endl;
         Network::setCertifiateClientMess("SORROKCLIENT");
+        //std::cout<<"client message set"<<std::endl;
         isClientAuthentified = false;
+        //std::cout<<"create ps"<<std::endl;
         ps = new ParticleSystem(Vec3f(0, 0, 150),Vec3f(100, 100, 0));
+        //std::cout<<"ps created"<<std::endl;
         doubleClicks.insert(std::make_pair("useItem", getClock("TimeClock").getElapsedTime()));
         doubleClicks.insert(std::make_pair("useSkill", getClock("TimeClock").getElapsedTime()));
+        //std::cout<<"appli created"<<std::endl;
     }
     void MyAppli::onF1Pressed() {
-        if (shorcuts[0] != nullptr)
-            gameActions.push_back(std::make_pair(static_cast<Hero*>(hero)->getJobVariant(), std::make_pair(*shorcuts[0], static_cast<Hero*>(hero))));
+        if (shorcuts[0] != nullptr) {
+            gameActions.push_back(std::make_pair(*shorcuts[0], static_cast<Hero*>(hero)));
+        }
     }
     void MyAppli::onIconMoved(Icon* icon) {
-        std::cout<<"move icon"<<std::endl;
+        //std::cout<<"move icon"<<std::endl;
         floatingIcon->setPosition(Vec3f(IMouse::getPosition(getRenderWindow()).x, IMouse::getPosition(getRenderWindow()).y, 0));
 
     }
     void MyAppli::onIconPressed(Icon* icon) {
-        std::cout<<"icon pressed"<<std::endl;
+        //std::cout<<"icon pressed"<<std::endl;
         floatingIcon->getSprite().setTexture(*icon->getSprite().getTexture());
         floatingIcon->setVisible(true);
     }
     void MyAppli::onIconMouseButtonReleased(Icon* icon) {
-        std::cout<<"release icon"<<std::endl;
+        //std::cout<<"release icon"<<std::endl;
         unsigned int distMin = std::numeric_limits<unsigned int>::max();
         int id = -1;
         for (unsigned int i = 0; i < 9; i++) {
@@ -57,7 +65,10 @@ namespace sorrok {
             shorcutsButtons[id]->setIcon(floatingIcon->getSprite().getTexture());
             for (unsigned int i = 0; i < static_cast<Hero*>(hero)->getSkills().size(); i++) {
                 if (icon->getName() == static_cast<Hero*>(hero)->getSkills()[i].getName()) {
-                    shorcuts[id] = new Variant<Item, Skill>(static_cast<Hero*>(hero)->getSkills()[i]);
+                    Skill skill = static_cast<Hero*>(hero)->getSkills()[i];
+                    SkillAction skillAction;
+                    skill.setSkillBehaviour(new FastDelegate<void>(&SkillAction::launchLastHeal, skillAction, static_cast<Hero*>(hero), skill));
+                    shorcuts[id] = new Variant<Item, Skill>(skill);
                 }
             }
         }
@@ -74,7 +85,9 @@ namespace sorrok {
                     skill = static_cast<Hero*>(hero)->getSkills()[i];
                 }
             }
-            gameActions.push_back(std::make_pair(static_cast<Hero*>(hero)->getJobVariant(), std::make_pair(skill, static_cast<Hero*>(hero))));
+            SkillAction skillAction;
+            skill.setSkillBehaviour(new FastDelegate<void>(&SkillAction::launchLastHeal, skillAction, static_cast<Hero*>(hero), skill));
+            gameActions.push_back(std::make_pair(skill, static_cast<Hero*>(hero)));
         } else {
             it->second = getClock("TimeClock").getElapsedTime();
         }
@@ -85,7 +98,7 @@ namespace sorrok {
             TextureManager<> &tm = cache.resourceManager<Texture, std::string>("TextureManager");
             ps->setTexture(*tm.getResourceByAlias("HEAL_PARTICLE"));
             for (unsigned int i = 0; i < 10; i++) {
-                ps->addTextureRect(sf::IntRect(i*10, 558, 10, 10));
+                ps->addTextureRect(sf::IntRect(i*10, 148, 10, 10));
             }
             emitter.setEmissionRate(30);
             emitter.setParticleLifetime(Distributions::uniform(sf::seconds(5), sf::seconds(7)));
@@ -97,7 +110,7 @@ namespace sorrok {
             ps->addEmitter(refEmitter(emitter));
             psu->addParticleSystem(ps);
             particles.insert(std::make_pair(ps, std::make_pair(Application::getClock("TimeClock").getElapsedTime(), sf::seconds(1))));
-            World::addEntity(ps);
+            getWorld()->addEntity(ps);
         }
     }
     void MyAppli::onShowSkillPressed () {
@@ -110,7 +123,7 @@ namespace sorrok {
             icon->setName(static_cast<Hero*>(hero)->getSkills()[i].getName());
             Action aSkillButtonPressed(Action::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
             Action aSkillButtonHeldDown(Action::MOUSE_BUTTON_HELD_DOWN, IMouse::Left);
-            Action aSkillMouseMoved(Action::MOUSE_MOVED);
+            Action aSkillMouseMoved(Action::MOUSE_MOVED_);
             Action aSkillCombined = aSkillButtonHeldDown && aSkillMouseMoved;
             Command cmd (aSkillCombined, FastDelegate<void>(&MyAppli::onIconMoved, this, icon));
             icon->getListener().connect("IconMoved", cmd);
@@ -127,15 +140,18 @@ namespace sorrok {
             lSkill->getListener().connect("SkillSelected", cmdSkillSelected);
             pSkills->addChild(lSkill);
             lSkill->setParent(pSkills);
+
         }
         wSkills->setVisible(true);
+        getRenderComponentManager().setEventContextActivated(true, *wSkills);
         setEventContextActivated(false);
+        getRenderComponentManager().setEventContextActivated(false, getRenderWindow());
     }
     void MyAppli::onLabDiaryQuestName(Label* label)  {
         Quest* quest;
         for (unsigned int i = 0; i < static_cast<Hero*>(hero)->getDiary().size(); i++) {
-            if (label->getText() == static_cast<Hero*>(hero)->getDiary()[i]->getName()) {
-                quest = static_cast<Hero*>(hero)->getDiary()[i];
+            if (label->getText() == static_cast<Hero*>(hero)->getDiary()[i].getName()) {
+                quest = &static_cast<Hero*>(hero)->getDiary()[i];
             }
         }
         FontManager<Fonts>& fm = cache.resourceManager<Font, Fonts>("FontManager");
@@ -161,7 +177,7 @@ namespace sorrok {
         pQuestNames->removeAll();
         pQuestProgress->removeAll();
         for(unsigned int i = 0; i < static_cast<Hero*>(hero)->getDiary().size(); i++) {
-            Label* label = new Label(*wDiary, Vec3f(0, 100*i, 0), Vec3f(300, 100, 0),fm.getResourceByAlias(Fonts::Serif),static_cast<Hero*>(hero)->getDiary()[i]->getName(), 15);
+            Label* label = new Label(*wDiary, Vec3f(0, 100*i, 0), Vec3f(300, 100, 0),fm.getResourceByAlias(Fonts::Serif),static_cast<Hero*>(hero)->getDiary()[i].getName(), 15);
             pQuestNames->addChild(label);
             label->setParent(pQuestNames);
             Action aLabDiaryQuestName (Action::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
@@ -169,14 +185,20 @@ namespace sorrok {
             label->getListener().connect("LabDiaryQuestName", cmdLabDiaryQuestName);
         }
         wDiary->setVisible(true);
+        getRenderComponentManager().setEventContextActivated(true, *wDiary);
         setEventContextActivated(false);
+        getRenderComponentManager().setEventContextActivated(false, getRenderWindow());
     }
     void MyAppli::onLabQuestClicked(Label* label) {
         label->setEventContextActivated(false);
         wDisplayQuests->setVisible(false);
-        for (unsigned int i = 0; i < selectedPnj->getQuests().size(); i++) {
-            if (selectedPnj->getQuests()[i].getName() == label->getText()) {
-                selectedQuest = &selectedPnj->getQuests()[i];
+        if (static_cast<Hero*>(hero)->containsQuest(label->getText().toAnsiString())) {
+            selectedQuest = static_cast<Hero*>(hero)->getQuest(label->getText());
+        } else {
+            for (unsigned int i = 0; i < selectedPnj->getQuests().size(); i++) {
+                if (selectedPnj->getQuests()[i].getName() == label->getText()) {
+                    selectedQuest = &selectedPnj->getQuests()[i];
+                }
             }
         }
         lQuestName->setText(selectedQuest->getName());
@@ -204,9 +226,10 @@ namespace sorrok {
         if (selectedQuest->getStatus() == Quest::NEW) {
             std::cout<<"new"<<std::endl;
             bAccept->setText("Accept");
-        } else if (selectedQuest->getStatus() == Quest::IN_PROGRESS || selectedQuest->getStatus() == Quest::COMPLETE && selectedQuest->getPnjToVisit() != selectedPnj->getName())  {
+        } else if (selectedQuest->getStatus() == Quest::IN_PROGRESS)  {
+            std::cout<<"in progress"<<std::endl;
             bAccept->setText("Continue");
-        } else if (selectedQuest->getStatus() == Quest::COMPLETE && selectedQuest->getPnjToVisit() == selectedPnj->getName()) {
+        } else if (selectedQuest->getStatus() == Quest::COMPLETE) {
             std::cout<<"finished"<<std::endl;
             bAccept->setText("Get rewards");
         }
@@ -256,13 +279,20 @@ namespace sorrok {
                     }
                 }
             }
-            gameActions.push_back(std::make_pair(static_cast<Hero*>(hero)->getJobVariant(), std::make_pair(item, static_cast<Hero*>(hero))));
+            if (item.getType() == Item::HP_POTION) {
+                ItemAction ia;
+                item.setItemBehaviour(new FastDelegate<void>(&ItemAction::useHpPotion,ia,static_cast<Hero*>(hero),item));
+            }
+            gameActions.push_back(std::make_pair(item, static_cast<Hero*>(hero)));
         } else {
             it->second = getClock("TimeClock").getElapsedTime();
         }
     }
     void MyAppli::showInventory() {
         wInventory->setVisible(true);
+        getRenderComponentManager().setEventContextActivated(true, *wInventory);
+        setEventContextActivated(false);
+        getRenderComponentManager().setEventContextActivated(false, getRenderWindow());
         std::map<Item::Type, std::vector<Item>>& items = static_cast<Hero*>(hero)->getInventory();
         TextureManager<Item::Type> &tm2 = cache.resourceManager<Texture, Item::Type>("TextureManager2");
         FontManager<Fonts> &fm = cache.resourceManager<Font, Fonts>("FontManager");
@@ -302,6 +332,13 @@ namespace sorrok {
             if (it->getName() == label->getText()) {
                 static_cast<Hero*>(hero)->addItem(*it);
                 it = selectedCristal.second.erase(it);
+                SymEncPacket packet;
+                std::ostringstream oss;
+                OTextArchive oa(oss);
+                oa(*it);
+                std::string response= "DROPITEM*"+conversionIntString(hero->getId())+"*"+oss.str();
+                packet<<response;
+                Network::sendTcpPacket(packet);
             } else {
                 it++;
             }
@@ -317,6 +354,7 @@ namespace sorrok {
                 Action a (Action::EVENT_TYPE::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
                 Command cmd (a, FastDelegate<bool>(&Label::isMouseInside, itemName), FastDelegate<void>(&MyAppli::dropItems, this, itemName));
                 itemName->getListener().connect("PICKUPITEM", cmd);
+                itemName->getListener().setRemoveListener(true);
                 itemName->setParent(pItems);
                 table.addElement(itemName,i, 1);
                 Sprite sprite (*tm2.getResourceByAlias(Item::HP_POTION),pItems->getPosition(),Vec3f(50, 50, 0), sf::IntRect(0, 0, 50, 50));
@@ -327,36 +365,39 @@ namespace sorrok {
                 pItems->addChild(icon);
             }
         } else {
-            std::vector<std::pair<Sprite*, std::vector<Item>>>::iterator it;
+            std::map<int, std::pair<Sprite*, std::vector<Item>>>::iterator it;
             for (it = cristals.begin(); it != cristals.end();) {
-                if (it->first == selectedCristal.first) {
-                    delete it->first;
+                if (it->second.first == selectedCristal.first) {
+                    delete it->second.first;
+                    //std::cout<<"erase it"<<std::endl;
                     it = cristals.erase(it);
+                    //std::cout<<"it erased"<<std::endl;
                 } else {
                     it++;
                 }
             }
         }
+        //std::cout<<"items droped"<<std::endl;
     }
     void MyAppli::pickUpItems (IKeyboard::Key key) {
         if (key != IKeyboard::Key::Unknown && key == IKeyboard::Key::A) {
-            std::vector<std::pair<Sprite*, std::vector<Item>>>::iterator it, itf;
+            std::map<int, std::pair<Sprite*, std::vector<Item>>>::iterator it, itf;
             std::vector<Item> itemsToDisplay;
             if (cristals.size() > 0) {
                 itf = cristals.begin();
-                float minDist = itf->first->getPosition().computeDist(hero->getPosition());
+                float minDist = itf->second.first->getPosition().computeDist(hero->getPosition());
                 if (minDist < 100) {
-                    itemsToDisplay = itf->second;
-                    selectedCristal = *itf;
+                    itemsToDisplay = itf->second.second;
+                    selectedCristal = itf->second;
                 }
                 itf++;
                 for (it = itf; it != cristals.end(); it++) {
-                    float dist = it->first->getPosition().computeDist(hero->getPosition());
+                    float dist = it->second.first->getPosition().computeDist(hero->getPosition());
                     if (dist < 100
                         && dist < minDist) {
-                        itemsToDisplay = it->second;
+                        itemsToDisplay = it->second.second;
                         minDist = dist;
-                        selectedCristal = *it;
+                        selectedCristal = it->second;
                     }
                 }
                 wPickupItems->setPosition(sf::Vector2i(selectedCristal.first->getPosition().x, selectedCristal.first->getPosition().y));
@@ -380,6 +421,9 @@ namespace sorrok {
                     pItems->addChild(icon);
                 }
                 wPickupItems->setVisible(true);
+                getRenderComponentManager().setEventContextActivated(true, *wPickupItems);
+                setEventContextActivated(false);
+                getRenderComponentManager().setEventContextActivated(false, getRenderWindow());
             }
         }
     }
@@ -398,7 +442,7 @@ namespace sorrok {
     }
     void MyAppli::keyHeldDown (IKeyboard::Key key) {
         //BoundingRectangle rect (pos.x, pos.y, getView().getSize().x, getView().getSize().y);
-        if (actualKey != IKeyboard::Key::Unknown && key == IKeyboard::Key::Z) {
+        if (actualKey != IKeyboard::Key::Unknown && key == IKeyboard::Key::Up) {
             if (!hero->isMoving()) {
                 //if (actualKey != previousKey) {
                     Vec2f dir(0, -1);
@@ -412,7 +456,7 @@ namespace sorrok {
                 //}
 
             }
-        } else if (actualKey != IKeyboard::Key::Unknown && key == IKeyboard::Key::Q) {
+        } else if (actualKey != IKeyboard::Key::Unknown && key == IKeyboard::Key::Left) {
             if (!hero->isMoving()) {
                 //if (actualKey != previousKey) {
                     Vec2f dir(-1, 0);
@@ -425,7 +469,7 @@ namespace sorrok {
                     Network::sendTcpPacket(packet);
                 //}
             }
-        } else if (actualKey != IKeyboard::Key::Unknown && actualKey == IKeyboard::Key::S) {
+        } else if (actualKey != IKeyboard::Key::Unknown && actualKey == IKeyboard::Key::Down) {
             if (!hero->isMoving()) {
                 //if (actualKey != previousKey) {
                     Vec2f dir(0, 1);
@@ -438,7 +482,7 @@ namespace sorrok {
                     Network::sendTcpPacket(packet);
                 //}
             }
-        } else if (actualKey != IKeyboard::Key::Unknown && key == IKeyboard::Key::D) {
+        } else if (actualKey != IKeyboard::Key::Unknown && key == IKeyboard::Key::Right) {
             if (!hero->isMoving()) {
                 //if (actualKey != previousKey) {
                     Vec2f dir(1, 0);
@@ -480,6 +524,7 @@ namespace sorrok {
         return false;
     }
     void MyAppli::onLoad() {
+        //std::cout<<"load"<<std::endl;
         TextureManager<> tm;
         tm.fromFileWithAlias("tilesets/herbe.png", "GRASS");
         tm.fromFileWithAlias("tilesets/murs.png", "WALLS");
@@ -495,17 +540,21 @@ namespace sorrok {
         TextureManager<Skill::Type> tm3;
         tm3.fromFileWithAlias("tilesets/lastheal-icon.png", Skill::LAST_HEAL);
         FontManager<Fonts> fm;
-        fm.fromFileWithAlias("fonts/FreeSerif.ttf", Serif);
+        fm.fromFileWithAlias("fonts/Arial.ttf", Serif);
         cache.addResourceManager(fm, "FontManager");
         cache.addResourceManager(tm, "TextureManager");
         cache.addResourceManager(tm2, "TextureManager2");
         cache.addResourceManager(tm3, "TextureManager3");
+        //std::cout<<"resources loaded"<<std::endl;
         //shader.loadFromFile("Shaders/SimpleVertexShader.vertexshader", "Shaders/SimpleFragmentShader.fragmentshader");
     }
     void MyAppli::onInit () {
+
         setEventContextActivated(false);
         FontManager<Fonts>& fm = cache.resourceManager<Font, Fonts>("FontManager");
+        //std::cout<<"init"<<std::endl;
         Network::startCli(10'000, 10'001,sf::IpAddress::LocalHost);
+        //std::cout<<"client connected"<<std::endl;
         TextureManager<> &tm = cache.resourceManager<Texture, std::string>("TextureManager");
         Vec2f pos (getView().getPosition().x - getView().getSize().x * 0.5f, getView().getPosition().y - getView().getSize().y * 0.5f);
         BoundingBox bx (pos.x, pos.y, 0, getView().getSize().x, getView().getSize().y, 0);
@@ -513,15 +562,17 @@ namespace sorrok {
         BaseChangementMatrix bcm;
         bcm.set2DIsoMatrix();
         theMap->setBaseChangementMatrix(bcm);
-        World::addEntityManager(theMap);
-        World::setCurrentEntityManager("Map test");
+        getWorld()->addEntityManager(theMap);
+        getWorld()->setCurrentEntityManager("Map test");
         eu = new EntitiesUpdater();
-        World::addWorker(eu);
+        eu->setName("Entity system updater");
+        getWorld()->addWorker(eu);
         au = new AnimUpdater();
         au->setInterval(sf::seconds(0.01f));
-        World::addTimer(au);
+        getWorld()->addTimer(au);
         psu = new ParticleSystemUpdater();
-        World::addWorker(psu);
+        psu->setName("Particle system updater");
+        getWorld()->addWorker(psu);
         tiles.push_back(new Tile(tm.getResourceByAlias("GRASS"), Vec3f(0, 0, 0), Vec3f(120, 60, 0),sf::IntRect(0, 0, 100, 50)));
         walls.push_back(new Tile(tm.getResourceByAlias("WALLS"), Vec3f(0, 0, 0), Vec3f(100, 100, 0), sf::IntRect(100, 0, 100, 100)));
         walls.push_back(new Tile(tm.getResourceByAlias("WALLS"), Vec3f(0, 0, 0), Vec3f(100, 100, 0), sf::IntRect(100, 100, 100, 100)));
@@ -542,9 +593,9 @@ namespace sorrok {
         //caracter->setCenter(Vec3f(getView().getPosition().x, getView().getPosition().y, 300));
 
         PerPixelLinkedListRenderComponent *frc1 = new PerPixelLinkedListRenderComponent(getRenderWindow(),0, "",ContextSettings(0, 0, 0, 4, 6));
-        ShadowRenderComponent *frc2 = new ShadowRenderComponent(getRenderWindow(),1, "");
+        ShadowRenderComponent *frc2 = new ShadowRenderComponent(getRenderWindow(),1, "",ContextSettings(0, 0, 0, 4, 6));
         PerPixelLinkedListRenderComponent* frc3 = new PerPixelLinkedListRenderComponent(getRenderWindow(),2,"", ContextSettings(0, 0, 0, 4, 6));
-        LightRenderComponent* frc4 = new LightRenderComponent(getRenderWindow(),3,"");
+        LightRenderComponent* frc4 = new LightRenderComponent(getRenderWindow(),3,"",ContextSettings(0, 0, 0, 4, 6));
         /*View view = getView();
         frc1->setView(view);*/
         /*frc2->setView(view);
@@ -563,13 +614,13 @@ namespace sorrok {
         getRenderComponentManager().addComponent(frc3);
         getRenderComponentManager().addComponent(frc4);
         //getView().move(d.x * 0.5f, d.y * 0.5f, 0);
-        //World::computeIntersectionsWithWalls();
-        //World::update();
-        //World::computeIntersectionsWithWalls();
-        Action a1 (Action::EVENT_TYPE::KEY_HELD_DOWN, IKeyboard::Key::Z);
-        Action a2 (Action::EVENT_TYPE::KEY_HELD_DOWN, IKeyboard::Key::Q);
-        Action a3 (Action::EVENT_TYPE::KEY_HELD_DOWN, IKeyboard::Key::S);
-        Action a4 (Action::EVENT_TYPE::KEY_HELD_DOWN, IKeyboard::Key::D);
+        //getWorld()->computeIntersectionsWithWalls();
+        //getWorld()->update();
+        //getWorld()->computeIntersectionsWithWalls();
+        Action a1 (Action::EVENT_TYPE::KEY_HELD_DOWN, IKeyboard::Key::Up);
+        Action a2 (Action::EVENT_TYPE::KEY_HELD_DOWN, IKeyboard::Key::Left);
+        Action a3 (Action::EVENT_TYPE::KEY_HELD_DOWN, IKeyboard::Key::Down);
+        Action a4 (Action::EVENT_TYPE::KEY_HELD_DOWN, IKeyboard::Key::Right);
         Action a5 (Action::EVENT_TYPE::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
         Action a6 (Action::EVENT_TYPE::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Right);
         Action combined  = a1 || a2 || a3 || a4;
@@ -604,20 +655,22 @@ namespace sorrok {
         getRenderComponentManager().addComponent(label);
         button = new gui::Button(Vec3f(0, 200, 0), Vec3f(400, 100, 0), fm.getResourceByAlias(Fonts::Serif),"Respawn", 15, *wResuHero);
         getRenderComponentManager().addComponent(button);
-        button->setEventContextActivated(false);
         button->addActionListener(this);
         wResuHero->setVisible(false);
         wResuHero->setPosition(sf::Vector2i(500, 400));
+        getRenderComponentManager().setEventContextActivated(false, *wResuHero);
         wPickupItems = new RenderWindow(sf::VideoMode(100, 200), "PickupItems", sf::Style::Close, ContextSettings(0, 0, 4, 3, 0));
         addWindow(wPickupItems);
         wPickupItems->setVisible(false);
-        World::update();
+        getRenderComponentManager().setEventContextActivated(false, *wPickupItems);
+        getWorld()->update();
         addWindow(wResuHero);
         pItems = new Panel(*wPickupItems,Vec3f(0, 0, 0),Vec3f(100, 200, 0));
         getRenderComponentManager().addComponent(pItems);
         wInventory = new RenderWindow(sf::VideoMode(500, 300), "Inventory", sf::Style::Close, ContextSettings(0, 0, 4, 3, 0));
         addWindow(wInventory);
         wInventory->setVisible(false);
+        getRenderComponentManager().setEventContextActivated(false, *wInventory);
         pInventory = new Panel(*wInventory, Vec3f(0, 0, 0), Vec3f(500, 300, 0));
         getRenderComponentManager().addComponent(pInventory);
         //sf::sleep(sf::seconds(1.f));
@@ -645,6 +698,7 @@ namespace sorrok {
         pQuestList = new Panel(*wDisplayQuests,Vec3f(0, 0, 0),Vec3f(400, 300, 0));
         getRenderComponentManager().addComponent(pQuestList);
         wDisplayQuests->setVisible(false);
+        getRenderComponentManager().setEventContextActivated(false, *wDisplayQuests);
 
         wDisplayQuest = new RenderWindow(sf::VideoMode(400, 600), "Quest details", sf::Style::Default, ContextSettings(0, 0, 4, 3, 0));
         addWindow(wDisplayQuest);
@@ -655,15 +709,14 @@ namespace sorrok {
         bAccept = new Button(Vec3f(0, 500, 0), Vec3f(200, 100, 0),fm.getResourceByAlias(Fonts::Serif), "Accept", 15, *wDisplayQuest);
         getRenderComponentManager().addComponent(bAccept);
         bAccept->addActionListener(this);
-        bAccept->setEventContextActivated(false);
         bDeny = new Button(Vec3f(200, 500, 0), Vec3f(200, 100, 0),fm.getResourceByAlias(Fonts::Serif), "Give up", 15, *wDisplayQuest);
         getRenderComponentManager().addComponent(bDeny);
         pRewards = new Panel(*wDisplayQuest, Vec3f(0, 400, 0), Vec3f(400, 100, 0));
         getRenderComponentManager().addComponent(pRewards);
         bDeny->addActionListener(this);
         bDeny->setName("DENY");
-        bDeny->setEventContextActivated(false);
         wDisplayQuest->setVisible(false);
+        getRenderComponentManager().setEventContextActivated(false, *wDisplayQuest);
 
         wDiary = new RenderWindow(sf::VideoMode(600, 600), "Diary", sf::Style::Default, ContextSettings(0, 0, 4, 3, 0));
         addWindow(wDiary);
@@ -673,15 +726,16 @@ namespace sorrok {
         getRenderComponentManager().addComponent(pQuestProgress);
         bGiveUp = new Button(Vec3f(0, 500, 0), Vec3f(600, 100, 0),fm.getResourceByAlias(Fonts::Serif),"Give up",15,*wDiary);
         bGiveUp->addActionListener(this);
-        bGiveUp->setEventContextActivated(false);
         getRenderComponentManager().addComponent(bGiveUp);
         wDiary->setVisible(false);
+        getRenderComponentManager().setEventContextActivated(false, *wDiary);
 
         wSkills = new RenderWindow(sf::VideoMode(400, 600), "Skills", sf::Style::Default, ContextSettings(0, 0, 4, 3, 0));
         addWindow(wSkills);
         pSkills = new Panel (*wSkills, Vec3f(0, 0, 0), Vec3f(400, 600, 0));
         getRenderComponentManager().addComponent(pSkills);
         wSkills->setVisible(false);
+        getRenderComponentManager().setEventContextActivated(false, *wSkills);
         TextureManager<Skill::Type>& tm3 = cache.resourceManager<Texture,Skill::Type>("TextureManager3");
         Sprite sprite (*tm3.getResourceByAlias(Skill::LAST_HEAL),Vec3f(0, 0, 0),Vec3f(50, 50, 0), sf::IntRect(0, 0, 50, 50));
         floatingIcon = new Icon(getRenderWindow(), Vec3f(0, 0, -1), Vec3f(50, 50, 0), sprite);
@@ -702,33 +756,32 @@ namespace sorrok {
         emitter2.setParticleTextureIndex(Distributions::uniformui(0, 9));
         emitter2.setParticleScale(Distributions::rect(Vec3f(2.1f, 2.1f, 1.f), Vec3f(2.f, 2.f, 1.f)));
         //emitter.setParticleColor(Distributions::color(Vec3f(0, 0, 0, 255), Vec3f(0, 0, 0, 255)));
-       /* sf::Vector3f acceleration(0, -1, 0);
-        ForceAffector affector(acceleration);
-        billboard->getParticleSystem().addAffector(affector);*/
+
         ps->addEmitter(refEmitter(emitter2));
         psu->addParticleSystem(ps);
-        World::addEntity(ps);
+        getWorld()->addEntity(ps);
         setEventContextActivated(false);
+        getRenderComponentManager().setEventContextActivated(false, getRenderWindow());
     }
     void MyAppli::onRender(RenderComponentManager *cm) {
         // draw everything here...
         if (isClientAuthentified) {
-            World::drawOnComponents("E_BIGTILE", 0);
-            World::drawOnComponents("E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_MONSTER+E_PNJ", 1);
-            World::drawOnComponents("E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_MONSTER+E_PNJ+E_PARTICLES", 2);
-            World::drawOnComponents("E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_MONSTER+E_PNJ+E_PONCTUAL_LIGHT", 3);
+            getWorld()->drawOnComponents("E_BIGTILE", 0);
+            getWorld()->drawOnComponents("E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_MONSTER+E_PNJ", 1);
+            getWorld()->drawOnComponents("E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_MONSTER+E_PNJ+E_PARTICLES", 2);
+            getWorld()->drawOnComponents("E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_MONSTER+E_PNJ+E_PONCTUAL_LIGHT", 3);
         } else {
-            World::drawOnComponents("", 0);
-            World::drawOnComponents("", 1);
-            World::drawOnComponents("", 2);
-            World::drawOnComponents("", 3);
+            getWorld()->drawOnComponents("", 0);
+            getWorld()->drawOnComponents("", 1);
+            getWorld()->drawOnComponents("", 2);
+            getWorld()->drawOnComponents("", 3);
         }
     }
     void MyAppli::onDisplay(RenderWindow* window) {
         if (window == &getRenderWindow()) {
-            std::vector<std::pair<Sprite*, std::vector<Item>>>::iterator it;
+            std::map<int, std::pair<Sprite*, std::vector<Item>>>::iterator it;
             for (it = cristals.begin(); it != cristals.end(); it++) {
-                Sprite sprite = *it->first;
+                Sprite sprite = *(it->second.first);
                 window->draw(sprite);
             }
             std::vector<std::pair<std::pair<Caracter*, Text>, std::pair<sf::Time, sf::Time>>>::iterator it2;
@@ -739,7 +792,10 @@ namespace sorrok {
                 if (it2->second.second <= sf::seconds(0)) {
                     it2 = tmpTexts.erase(it2);
                 } else {
-                    it2->first.second.setPosition(Vec3f(it2->first.first->getPosition().x, it2->first.first->getPosition().y-10, 0));
+                    if (it2->first.second.getColor() == sf::Color::Red || it2->first.second.getColor() == sf::Color::Green)
+                        it2->first.second.setPosition(Vec3f(it2->first.first->getPosition().x, it2->first.first->getPosition().y-10, 0));
+                    else
+                        it2->first.second.setPosition(Vec3f(it2->first.first->getPosition().x, it2->first.first->getPosition().y-20, 0));
                     window->draw(it2->first.second);
                     it2++;
                 }
@@ -755,24 +811,36 @@ namespace sorrok {
         if (event.type == IEvent::WINDOW_EVENT && event.window.type == IEvent::WINDOW_EVENT_CLOSED && window == wPickupItems) {
             pItems->removeAll();
             wPickupItems->setVisible(false);
+            getRenderComponentManager().setEventContextActivated(false, *wPickupItems);
+            setEventContextActivated(true);
+            getRenderComponentManager().setEventContextActivated(true, getRenderWindow());
         }
         if (event.type == IEvent::WINDOW_EVENT && event.window.type == IEvent::WINDOW_EVENT_CLOSED && window == wInventory) {
             pInventory->removeAll();
             wInventory->setVisible(false);
+            getRenderComponentManager().setEventContextActivated(false, *wInventory);
+            setEventContextActivated(true);
+            getRenderComponentManager().setEventContextActivated(true, getRenderWindow());
         }
         if (event.type == IEvent::WINDOW_EVENT && event.window.type == IEvent::WINDOW_EVENT_CLOSED && window == wDisplayQuests) {
             wDisplayQuests->setVisible(false);
+            getRenderComponentManager().setEventContextActivated(false, *wDisplayQuests);
             setEventContextActivated(true);
+            getRenderComponentManager().setEventContextActivated(true, getRenderWindow());
         }
         if (event.type == IEvent::WINDOW_EVENT && event.window.type == IEvent::WINDOW_EVENT_CLOSED && window == wDiary) {
             wDiary->setVisible(false);
+            getRenderComponentManager().setEventContextActivated(false, *wDiary);
             setEventContextActivated(true);
+            getRenderComponentManager().setEventContextActivated(true, getRenderWindow());
         }
         if (event.type == IEvent::WINDOW_EVENT && event.window.type == IEvent::WINDOW_EVENT_CLOSED && window == wSkills) {
             wSkills->setVisible(false);
-            for (unsigned int i = 0; i < pSkills->getChildren().size(); i++)
-                pSkills->getChildren()[i]->setEventContextActivated(false);
+            /*for (unsigned int i = 0; i < pSkills->getChildren().size(); i++)
+                pSkills->getChildren()[i]->setEventContextActivated(false);*/
+            getRenderComponentManager().setEventContextActivated(false, *wSkills);
             setEventContextActivated(true);
+            getRenderComponentManager().setEventContextActivated(true, getRenderWindow());
         }
         if (event.type == IEvent::KEYBOARD_EVENT && event.keyboard.type == IEvent::KEY_EVENT_PRESSED && window == &getRenderWindow()) {
             previousKey = actualKey;
@@ -784,8 +852,6 @@ namespace sorrok {
             && hero != nullptr && hero->isMovingFromKeyboard() && window == &getRenderWindow()) {
             previousKey = static_cast<IKeyboard::Key>(event.keyboard.code);
             actualKey = IKeyboard::Key::Unknown;
-            /*hero->setMoving(false);
-            hero->setIsMovingFromKeyboard(false);*/
             sf::Int64 cli_time = Application::getTimeClk().getElapsedTime().asMicroseconds();
             std::string message = "STOPCARMOVE*"+conversionIntString(hero->getId())+"*"+conversionLongString(cli_time);
             SymEncPacket packet;
@@ -799,7 +865,7 @@ namespace sorrok {
         }
     }
     void MyAppli::onExec () {
-        if (getClock("RequestTime").getElapsedTime().asSeconds() >= timeBtwnTwoReq.asSeconds()) {
+        if (getClock("RequestTime").getElapsedTime().asSeconds() >= timeBtwnTwoReq.asSeconds() && isClientAuthentified) {
             std::string request = "GETCARPOS";
             sf::Packet packet;
             packet<<request;
@@ -807,56 +873,61 @@ namespace sorrok {
             getClock("RequestTime").restart();
         }
         std::string response;
-        /*if (Network::getResponse("MOVEFROMKEYBOARD", response)) {
-            std::cout<<"move from kb"<<std::endl;
-            hero->setIsMovingFromKeyboard(true);
-            hero->setMoving(true);
-            if (hero->isAttacking())
-                hero->setAttacking(false);
-            hero->setFightingMode(false);
-            std::string request = "GETCARPOS";
-            sf::Packet packet;
-            packet<<request;
-            Network::sendUdpPacket(packet);
-            getClock("RequestTime").restart();
-        }*/
         if (Network::getResponse("ADDLIFE", response)) {
             std::vector<std::string> infos = split(response, "*");
             int id = conversionStringInt(infos[0]);
             float amount = conversionStringFloat(infos[1]);
-            Caracter* caracter = static_cast<Caracter*>(World::getEntity(id));
+            Caracter* caracter = static_cast<Caracter*>(getWorld()->getEntity(id));
             caracter->setLife(caracter->getLife() + amount);
         }
         if (Network::getResponse("RETRACTMANA", response)) {
             std::vector<std::string> infos = split(response, "*");
             int id = conversionStringInt(infos[0]);
             float amount = conversionStringFloat(infos[1]);
-            Caracter* caracter = static_cast<Caracter*>(World::getEntity(id));
+            Caracter* caracter = static_cast<Caracter*>(getWorld()->getEntity(id));
             caracter->setMana(caracter->getMana() - amount);
         }
         if (Network::getResponse("SHOWQUEST", response)) {
-            Pnj* pnj = static_cast<Pnj*>(World::getEntity(conversionStringInt(response)));
+            Pnj* pnj = static_cast<Pnj*>(getWorld()->getEntity(conversionStringInt(response)));
             selectedPnj = pnj;
             std::vector<Quest> quests = pnj->getQuests();
+            std::vector<Quest> diary = static_cast<Hero*>(hero)->getDiary();
             pQuestList->removeAll();
             FontManager<Fonts>& fm = cache.resourceManager<Font, Fonts>("FontManager");
             for (unsigned int i = 0; i < quests.size(); i++) {
-                Label* label = new Label(*wDisplayQuests,Vec3f(0, i * 100, 0),Vec3f(400, 100, 0),fm.getResourceByAlias(Fonts::Serif), quests[i].getName(), 15);
-                pQuestList->addChild(label);
-                label->setParent(pQuestList);
-                Action aLabClicked(Action::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
-                Command cmdLabClicked(aLabClicked, FastDelegate<bool>(&Label::isMouseInside, label), FastDelegate<void>(&MyAppli::onLabQuestClicked, this, label));
-                label->getListener().connect("ALABCLICKED", cmdLabClicked);
+                if (static_cast<Hero*>(hero)->containsQuest(quests[i].getName())) {
+                    Quest* quest = static_cast<Hero*>(hero)->getQuest(quests[i].getName());
+                    if (quest != nullptr && quest->getStatus() != Quest::FINISHED) {
+                        Label* label = new Label(*wDisplayQuests,Vec3f(0, i * 100, 0),Vec3f(400, 100, 0),fm.getResourceByAlias(Fonts::Serif), quests[i].getName(), 15);
+                        pQuestList->addChild(label);
+                        label->setParent(pQuestList);
+                        Action aLabClicked(Action::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
+                        Command cmdLabClicked(aLabClicked, FastDelegate<bool>(&Label::isMouseInside, label), FastDelegate<void>(&MyAppli::onLabQuestClicked, this, label));
+                        label->getListener().connect("ALABCLICKED", cmdLabClicked);
+                    }
+                } else {
+                    Label* label = new Label(*wDisplayQuests,Vec3f(0, i * 100, 0),Vec3f(400, 100, 0),fm.getResourceByAlias(Fonts::Serif), quests[i].getName(), 15);
+                    pQuestList->addChild(label);
+                    label->setParent(pQuestList);
+                    Action aLabClicked(Action::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
+                    Command cmdLabClicked(aLabClicked, FastDelegate<bool>(&Label::isMouseInside, label), FastDelegate<void>(&MyAppli::onLabQuestClicked, this, label));
+                    label->getListener().connect("ALABCLICKED", cmdLabClicked);
+                }
             }
             wDisplayQuests->setVisible(true);
+            getRenderComponentManager().setEventContextActivated(true, *wDisplayQuests);
             setEventContextActivated(false);
+            getRenderComponentManager().setEventContextActivated(false, getRenderWindow());
         }
-        if (Network::getResponse("NEWPATH", response)) {
+        if (Network::getResponse("NEWPATH", response) && isClientAuthentified) {
             std::vector<std::string> infos = split(response, "*");
             std::vector<Vec2f> path;
             int size = conversionStringInt(infos[0]);
             int id = conversionStringInt(infos[1]);
-            Caracter* caracter = static_cast<Caracter*>(World::getEntity(id));
+            Caracter* caracter = static_cast<Caracter*>(getWorld()->getEntity(id));
+            /*if (caracter->getType() == "E_HERO") {
+                std::cout<<"move from path"<<std::endl;
+            }*/
             if (static_cast<Hero*>(caracter) && static_cast<Hero*>(caracter)->isMovingFromKeyboard()) {
                 caracter->setIsMovingFromKeyboard(false);
             }
@@ -872,21 +943,23 @@ namespace sorrok {
             for (int i = 0; i < size; i++) {
                 path.push_back(Vec2f(conversionStringFloat(infos[i*2+6]), conversionStringFloat(infos[i*2+7])));
             }
-            Vec2f d = newPos - actualPos;
-            if (id == hero->getId()) {
-                for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
-                    if (getRenderComponentManager().getRenderComponent(i) != nullptr) {
-                        View view = getRenderComponentManager().getRenderComponent(i)->getView();
-                        view.move(d.x, d.y, d.y);
-                        getRenderComponentManager().getRenderComponent(i)->setView(view);
+            if (elapsedTime > 0) {
+                Vec2f d = newPos - actualPos;
+                if (id == hero->getId()) {
+                    for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
+                        if (getRenderComponentManager().getRenderComponent(i) != nullptr) {
+                            View view = getRenderComponentManager().getRenderComponent(i)->getView();
+                            view.move(d.x, d.y, d.y);
+                            getRenderComponentManager().getRenderComponent(i)->setView(view);
+                        }
                     }
+                    getView().move (d.x, d.y, d.y);
                 }
-                getView().move (d.x, d.y, d.y);
+                Vec2f dir = d.normalize();
+                if (dir != caracter->getDir())
+                    caracter->setDir(dir);
+                getWorld()->moveEntity(caracter, d.x, d.y, d.y);
             }
-            Vec2f dir = d.normalize();
-            if (dir != caracter->getDir())
-                caracter->setDir(dir);
-            World::moveEntity(caracter, d.x, d.y, d.y);
             caracter->setPath(path);
             caracter->setMoving(true);
             caracter->interpolation.first = caracter->getCenter();
@@ -899,12 +972,10 @@ namespace sorrok {
             getClock("RequestTime").restart();
         }
         if (Network::getResponse("NEWPOS", response)) {
-
             std::vector<std::string> infos = split(response, "*");
             int id = conversionStringInt(infos[0]);
             ping = conversionStringLong(infos[1]);
-            Caracter* caracter = static_cast<Caracter*>(World::getEntity(id));
-
+            Caracter* caracter = static_cast<Caracter*>(getWorld()->getEntity(id));
             Vec3f actualPos = Vec3f(caracter->getCenter().x, caracter->getCenter().y, 0);
             Vec3f newPos (conversionStringFloat(infos[2]), conversionStringFloat(infos[3]), conversionStringFloat(infos[4]));
 
@@ -915,23 +986,18 @@ namespace sorrok {
             bool isAttacking = conversionStringInt(infos[8]);
             bool isAlive = conversionStringInt(infos[9]);
             int life = conversionStringInt(infos[10]);
-            if (last_cli_time > caracter->getAttribute("isMoving"+conversionIntString(id)).getValue<sf::Int64>()) {
+            if (elapsedTime > 0 && last_cli_time > caracter->getAttribute("isMoving"+conversionIntString(id)).getValue<sf::Int64>()) {
                 caracter->setMoving(isMoving);
             }
-            if (last_cli_time > caracter->getAttribute("isInFightingMode"+conversionIntString(id)).getValue<sf::Int64>()) {
+            if (elapsedTime > 0 && last_cli_time > caracter->getAttribute("isInFightingMode"+conversionIntString(id)).getValue<sf::Int64>()) {
                 caracter->setFightingMode(isInFightingMode);
             }
-            if(last_cli_time > caracter->getAttribute("isAttacking"+conversionIntString(id)).getValue<sf::Int64>()) {
+            if (elapsedTime > 0 && last_cli_time > caracter->getAttribute("isAttacking"+conversionIntString(id)).getValue<sf::Int64>()) {
                 caracter->setAttacking(isAttacking);
             }
-            if (last_cli_time > caracter->getAttribute("isAlive"+conversionIntString(id)).getValue<sf::Int64>()) {
+            if (elapsedTime > 0 && last_cli_time > caracter->getAttribute("isAlive"+conversionIntString(id)).getValue<sf::Int64>()) {
                 caracter->setAlive(isAlive);
             }
-            /*if (last_cli_time > caracter->getAttribute("life"+conversionIntString(id)).getValue<sf::Int64>()) {
-                if (!caracter->isMonster())
-                    std::cout<<"set live from server : "<<life<<std::endl;
-                caracter->setLife(life);
-            }*/
             if (!caracter->isMoving() && static_cast<Hero*>(caracter)->isMovingFromKeyboard()) {
                 static_cast<Hero*>(caracter)->setIsMovingFromKeyboard(false);
             }
@@ -940,21 +1006,23 @@ namespace sorrok {
             } else if (caracter->isMoving()) {
                 newPos = Computer::getPosOnPathFromTime(newPos, caracter->getPath(),elapsedTime, caracter->getSpeed());
             }
-            Vec3f d = newPos - actualPos;
+            if (elapsedTime > 0 && last_cli_time > caracter->getAttribute("position"+conversionIntString(id)).getValue<sf::Int64>()) {
+                Vec3f d = newPos - actualPos;
 
-            if (id == hero->getId()) {
-                for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
-                    if (getRenderComponentManager().getRenderComponent(i) != nullptr) {
-                        View view = getRenderComponentManager().getRenderComponent(i)->getView();
-                        view.move(d.x, d.y, d.y);
-                        getRenderComponentManager().getRenderComponent(i)->setView(view);
+                if (id == hero->getId()) {
+                    for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
+                        if (getRenderComponentManager().getRenderComponent(i) != nullptr) {
+                            View view = getRenderComponentManager().getRenderComponent(i)->getView();
+                            view.move(d.x, d.y, d.y);
+                            getRenderComponentManager().getRenderComponent(i)->setView(view);
+                        }
                     }
+                    getView().move (d.x, d.y, d.y);
                 }
-                getView().move (d.x, d.y, d.y);
+                getWorld()->moveEntity(caracter, d.x, d.y, d.y);
+                //getWorld()->update();
             }
-            World::moveEntity(caracter, d.x, d.y, d.y);
-            //World::update();
-            caracter->interpolation.first = Vec3f(caracter->getCenter().x, caracter->getCenter().y, caracter->getCenter().z);
+            caracter->interpolation.first = caracter->getCenter();
             if (caracter->isMoving()) {
                 if (caracter->isMovingFromKeyboard()) {
                     caracter->interpolation.second = caracter->interpolation.first + Vec3f(caracter->getDir().x,caracter->getDir().y,0)  * caracter->getSpeed() * (ping + timeBtwnTwoReq.asMicroseconds());
@@ -968,7 +1036,9 @@ namespace sorrok {
        }
        if (Network::getResponse("DEATH", response)) {
            int id = conversionStringInt(response);
-           Caracter* caracter = static_cast<Caracter*>(World::getEntity(id));
+           Caracter* caracter = static_cast<Caracter*>(getWorld()->getEntity(id));
+           std::cout<<caracter->getType()<<" is death"<<std::endl;
+           caracter->setLife(0);
            caracter->setAttacking(false);
            caracter->setFightingMode(false);
            caracter->setAlive(false);
@@ -976,35 +1046,46 @@ namespace sorrok {
                 static_cast<Hero*>(caracter->getFocusedCaracter())->up(static_cast<Monster*>(caracter)->getXp());
                 Hero* hero = static_cast<Hero*>(caracter->getFocusedCaracter());
                 for (unsigned int i = 0; i < hero->getDiary().size(); i++) {
-                    hero->getDiary()[i]->addMonsterToKillProgress(caracter->getName());
+                    hero->getDiary()[i].addMonsterToKillProgress(caracter->getName());
                 }
            }
        }
        if (Network::getResponse("ENTERINFIGHTINGMODE", response)) {
             int id = conversionStringInt(response);
-            Entity* entity = World::getEntity(id);
+            Entity* entity = getWorld()->getEntity(id);
             if (static_cast<Caracter*> (entity))
                 static_cast<Caracter*> (entity)->setFightingMode(true);
        }
        if (Network::getResponse("LEAVEINFIGHTINGMODE", response)) {
             int id = conversionStringInt(response);
-            Entity* entity = World::getEntity(id);
+            Entity* entity = getWorld()->getEntity(id);
             if (static_cast<Caracter*> (entity))
                 static_cast<Caracter*> (entity)->setFightingMode(false);
        }
        if (Network::getResponse("SETATTACKING", response)) {
-            int id = conversionStringInt(response);
-            Entity* entity = World::getEntity(id);
+            //std::cout<<"response : "<<response<<std::endl;
+            std::vector<std::string> parts = split(response, "*");
+            //std::cout<<"size : "<<parts.size()<<std::endl;
+            int id = conversionStringInt(parts[0]);
+            Entity* entity = getWorld()->getEntity(id);
+            int idFocused = conversionStringInt(parts[1]);
+            std::cout<<"ids : "<<parts[0]<<std::endl<<parts[1]<<std::endl;
+            Entity* focused = getWorld()->getEntity(idFocused);
             if (static_cast<Caracter*> (entity)) {
                 static_cast<Caracter*> (entity)->setAttacking(true);
+                static_cast<Caracter*> (entity)->setFocusedCaracter(static_cast<Caracter*>(focused));
                 static_cast<Caracter*> (entity)->restartAttackSpeed();
+                Vec2f dir = Vec2f(static_cast<Caracter*> (entity)->getFocusedCaracter()->getCenter().x, static_cast<Caracter*> (entity)->getFocusedCaracter()->getCenter().y) - Vec2f(static_cast<Caracter*> (entity)->getCenter().x, static_cast<Caracter*> (entity)->getCenter().y);
+                dir = dir.normalize();
+                if (static_cast<Caracter*> (entity)->getDir() != dir)
+                    static_cast<Caracter*> (entity)->setDir(dir);
             }
        }
        if (Network::getResponse("ALIVE", response)) {
             std::vector<std::string> infos = split(response, "*");
             int id = conversionStringInt(infos[0]);
             Vec3f center(conversionStringFloat(infos[1]), conversionStringFloat(infos[2]), conversionStringFloat(infos[2]));
-            Caracter* caracter = static_cast<Caracter*>(World::getEntity(id));
+            Caracter* caracter = static_cast<Caracter*>(getWorld()->getEntity(id));
             if (caracter->getType() == "E_HERO") {
                 wResuHero->setVisible(false);
                 button->setEventContextActivated(false);
@@ -1018,7 +1099,7 @@ namespace sorrok {
             caracter->restartRegenHP();
        }
        if (Network::getResponse("ATTACK", response)) {
-            Caracter* monster = static_cast<Caracter*>(World::getEntity(conversionStringInt(response)));
+            Caracter* monster = static_cast<Caracter*>(getWorld()->getEntity(conversionStringInt(response)));
             hero->setFocusedCaracter(monster);
             hero->setFightingMode(true);
             hero->setAttacking(false);
@@ -1026,9 +1107,10 @@ namespace sorrok {
         }
         if (Network::getResponse("IDOK", response)) {
             isClientAuthentified = true;
+            setEventContextActivated(true);
+            getRenderComponentManager().setEventContextActivated(true, getRenderWindow());
             wIdentification->setVisible(false);
-            idButton->setEventContextActivated(false);
-            invButton->setEventContextActivated(false);
+            getRenderComponentManager().setEventContextActivated(false, *wIdentification);
             int heroId = conversionStringInt(response);
             SymEncPacket packet;
             packet<<"GETMAPINFOS";
@@ -1040,7 +1122,7 @@ namespace sorrok {
             ia(entities);
             TextureManager<> &tm = cache.resourceManager<Texture, std::string>("TextureManager");
             for (unsigned int i = 0; i < entities.size(); i++) {
-                World::addEntity(entities[i]);
+                getWorld()->addEntity(entities[i]);
                 if (entities[i]->getType() == "E_BIGTILE") {
                     for (unsigned int j = 0; j < entities[i]->getChildren().size(); j++) {
                         std::string texId =  entities[i]->getChildren()[j]->getFaces()[0]->getMaterial().getTexId();
@@ -1056,7 +1138,7 @@ namespace sorrok {
                     entities[i]->getChildren()[0]->getFaces()[0]->getMaterial().clearTextures();
                     entities[i]->getChildren()[0]->getFaces()[0]->getMaterial().addTexture(tm.getResourceByAlias(texId), texRect);
                     entities[i]->getChildren()[0]->getFaces()[0]->getMaterial().setTexId(texId);
-                    World::getGridCellAt(Vec3f(entities[i]->getCenter().x, entities[i]->getCenter().y, 0))->setPassable(false);
+                    getWorld()->getGridCellAt(Vec3f(entities[i]->getCenter().x, entities[i]->getCenter().y, 0))->setPassable(false);
                 } else if (entities[i]->getType() == "E_DECOR") {
                     std::string texId =  entities[i]->getChildren()[0]->getFaces()[0]->getMaterial().getTexId();
                     sf::IntRect texRect = entities[i]->getChildren()[0]->getFaces()[0]->getMaterial().getTexRect();
@@ -1193,7 +1275,7 @@ namespace sorrok {
                     shorcutsButtons[i] = new Button(Vec3f(i * 50, 540, 0),Vec3f(45, 45, 0), fm.getResourceByAlias(Fonts::Serif), "F"+conversionIntString(i+1), 10,getRenderWindow());
                     getRenderComponentManager().addComponent(shorcutsButtons[i]);
                 }
-                World::addEntity(player);
+                getWorld()->addEntity(player);
             }
             //Network::sendTcpPacket(packet);
             response = Network::waitForLastResponse("MONSTERSINFOS", sf::seconds(5.f));
@@ -1285,7 +1367,7 @@ namespace sorrok {
                 fcHpBar->setVisible(false);
                 monster->setXpHpBar(nullptr, fcHpBar, nullptr);
                 getRenderComponentManager().addComponent(fcHpBar);
-                World::addEntity(monster);
+                getWorld()->addEntity(monster);
             }
             response = Network::waitForLastResponse("PNJINFOS");
             iss.str("");
@@ -1323,7 +1405,7 @@ namespace sorrok {
                     pnj->addAnimation(animation);
                     au->addAnim(animation);
                 }
-                World::addEntity(pnj);
+                getWorld()->addEntity(pnj);
             }
 
             //monster->setXpHpBar(nullptr, fcHpBar);
@@ -1333,30 +1415,93 @@ namespace sorrok {
             getClock("RequestTime").restart();
             Network::sendTcpPacket(packet);
             received = false;
-            World::update();
+            getWorld()->update();
             setEventContextActivated(true);
        }
        if (Network::getResponse("ITEMS", response)) {
-            std::istringstream iss(response);
+            std::vector<std::string> parts = split(response,"*");
+            int spotID = conversionStringInt(parts[0]);
+            std::istringstream iss(parts[1]);
             ITextArchive ita(iss);
             std::vector<Item> items;
             ita(items);
             if (items.size() > 0) {
-                cristals.clear();
                 TextureManager<> &tm = cache.resourceManager<Texture, std::string>("TextureManager");
                 Sprite* cristal = new Sprite(*tm.getResourceByAlias("CRISTAL"),hero->getFocusedCaracter()->getPosition(),Vec3f(50, 100, 0),sf::IntRect(0, 0, 50, 100));
-                cristals.push_back(std::make_pair(cristal, items));
+                cristals.insert(std::make_pair(spotID, std::make_pair(cristal, items)));
             }
        }
-      /* if (getClock("LoopTime").getElapsedTime().asMilliseconds() < 100)
-            sf::sleep(sf::milliseconds(100 - getClock("LoopTime").getElapsedTime().asMilliseconds()));*/
-
-       std::vector<Entity*> caracters = World::getEntities("E_MONSTER+E_HERO");
+       if (Network::getResponse("REMOVEITEM", response)) {
+           std::map<int, std::pair<Sprite*, std::vector<Item>>>::iterator it;
+           int spotID = conversionStringInt(response);
+           for (it = cristals.begin(); it != cristals.end();) {
+               if (spotID == it->first) {
+                    it = cristals.erase(it);
+               } else {
+                   it++;
+               }
+           }
+       }
+       if (Network::getResponse("TAKE_DMG", response)) {
+            std::vector<std::string> parts = split(response, "*");
+            int id = conversionStringInt(parts[0]);
+            int dmg = conversionStringInt(parts[1]);
+            Caracter* caracter = static_cast<Caracter*>(getWorld()->getEntity(id));
+            caracter->getFocusedCaracter()->attackFocusedCaracter(dmg);
+            FontManager<Fonts>& fm = cache.resourceManager<Font, Fonts>("FontManager");
+            Text text;
+            text.setFont(*fm.getResourceByAlias(Fonts::Serif));
+            text.setString("-"+conversionIntString(dmg));
+            text.setColor(sf::Color::Red);
+            text.setCharacterSize(10);
+            text.setPosition(Vec3f(caracter->getPosition().x,caracter->getPosition().y-10, 0));
+            text.setSize(Vec3f(10, 10, 0));
+            tmpTexts.push_back(std::make_pair(std::make_pair(caracter, text), std::make_pair(Application::getTimeClk().getElapsedTime(), sf::seconds(0.5))));
+       }
+       if (Network::getResponse("RGN_LIFE", response) && isClientAuthentified) {
+            std::vector<std::string> parts = split(response, "*");
+            int id = conversionStringInt(parts[0]);
+            int rgn = conversionStringInt(parts[1]);
+            Caracter* caracter = static_cast<Caracter*>(getWorld()->getEntity(id));
+            if (caracter->getLife() + rgn >= caracter->getMaxLife()) {
+                caracter->setLife(caracter->getMaxLife());
+            } else {
+                caracter->setLife(caracter->getLife() + rgn);
+            }
+            FontManager<Fonts>& fm = cache.resourceManager<Font, Fonts>("FontManager");
+            Text text;
+            text.setFont(*fm.getResourceByAlias(Fonts::Serif));
+            text.setString("+"+conversionIntString(rgn));
+            text.setColor(sf::Color::Green);
+            text.setCharacterSize(10);
+            text.setPosition(Vec3f(caracter->getPosition().x,caracter->getPosition().y-10, 0));
+            text.setSize(Vec3f(10, 10, 0));
+            tmpTexts.push_back(std::make_pair(std::make_pair(caracter, text), std::make_pair(Application::getTimeClk().getElapsedTime(), sf::seconds(0.5))));
+       }
+       if (Network::getResponse("RGN_MANA", response) && isClientAuthentified) {
+            std::vector<std::string> parts = split(response, "*");
+            int id = conversionStringInt(parts[0]);
+            int rgn = conversionStringInt(parts[1]);
+            Caracter* caracter = static_cast<Caracter*>(getWorld()->getEntity(id));
+            if (caracter->getMana() + rgn >= caracter->getManaMax()) {
+                caracter->setMana(caracter->getManaMax());
+            } else {
+                caracter->setMana(caracter->getMana() + rgn);
+            }
+            FontManager<Fonts>& fm = cache.resourceManager<Font, Fonts>("FontManager");
+            Text text;
+            text.setFont(*fm.getResourceByAlias(Fonts::Serif));
+            text.setString("+"+conversionIntString(rgn));
+            text.setColor(sf::Color::Blue);
+            text.setCharacterSize(10);
+            text.setPosition(Vec3f(caracter->getPosition().x,caracter->getPosition().y-20, 0));
+            text.setSize(Vec3f(10, 10, 0));
+            tmpTexts.push_back(std::make_pair(std::make_pair(caracter, text), std::make_pair(Application::getTimeClk().getElapsedTime(), sf::seconds(0.5))));
+       }
+       std::vector<Entity*> caracters = getWorld()->getEntities("E_MONSTER+E_HERO");
        for (unsigned int i = 0; i < caracters.size(); i++) {
             Caracter* caracter = static_cast<Caracter*>(caracters[i]);
-            /*if (caracter->getType() == "E_HERO") {
-                std::cout<<"hero life : "<<caracter->getLife()<<std::endl;
-            }*/
+
             if (caracter->isAlive()) {
                 if (caracter->isMoving()) {
                     if (dynamic_cast<Hero*>(caracter) && dynamic_cast<Hero*>(caracter)->isMovingFromKeyboard()) {
@@ -1364,7 +1509,7 @@ namespace sorrok {
                         sf::Int64 elapsedTime = caracter->getClkTransfertTime().getElapsedTime().asMicroseconds();
                         Vec3f newPos = caracter->interpolation.first + (caracter->interpolation.second - caracter->interpolation.first) * ((float) elapsedTime / (float) (ping + timeBtwnTwoReq.asMicroseconds()));
                         Ray ray(actualPos, newPos);
-                        if (World::collide(caracter, ray)) {
+                        if (getWorld()->collide(caracter, ray)) {
                             newPos = actualPos;
                         }
                         for (unsigned int j = 0; j < getRenderComponentManager().getNbComponents(); j++) {
@@ -1376,24 +1521,27 @@ namespace sorrok {
                             }
                         }
                         Vec3f d = newPos - actualPos;
-                        World::moveEntity(caracter, d.x, d.y, d.y);
+                        getWorld()->moveEntity(caracter, d.x, d.y, d.y);
                         getView().move(d.x, d.y, d.y);
-                        World::update();
+                        getWorld()->update();
                     } else {
                         Vec2f actualPos = Vec2f(caracter->getCenter().x, caracter->getCenter().y);
                         sf::Int64 elapsedTime = caracter->getClkTransfertTime().getElapsedTime().asMicroseconds();
+
                         Vec2f newPos = Computer::getPosOnPathFromTime(caracter->interpolation.first, caracter->getPath(),elapsedTime,caracter->getSpeed());
+                        /*if (caracter->getType() == "E_HERO")
+                            std::cout<<"move : "<<actualPos<<caracter->getPath()[0]<<std::endl;*/
                         Vec3f d = newPos - actualPos;
                         Vec2f dir = d.normalize();
                         if (caracter->getFocusedCaracter() != nullptr && caracter->isInFightingMode() &&
                             Vec2f(caracter->getCenter().x, caracter->getCenter().y).computeDist(Vec2f(caracter->getFocusedCaracter()->getCenter().x, caracter->getFocusedCaracter()->getCenter().y)) <= caracter->getRange()) {
-                            int delta = caracter->getRange() - Vec2f(caracter->getCenter().x, caracter->getCenter().y).computeDist(Vec2f(caracter->getFocusedCaracter()->getCenter().x, caracter->getFocusedCaracter()->getCenter().y));
+                            /*int delta = caracter->getRange() - Vec2f(caracter->getCenter().x, caracter->getCenter().y).computeDist(Vec2f(caracter->getFocusedCaracter()->getCenter().x, caracter->getFocusedCaracter()->getCenter().y));
                             newPos -= dir * delta;
-                            d = newPos - actualPos;
+                            d = newPos - actualPos;*/
                             caracter->setMoving(false);
                         }
                         if (caracter->isMoving() &&
-                            caracter->getPath().size() > 1 &&
+                            caracter->getPath().size() > 0 &&
                             newPos.computeDist(caracter->getPath()[caracter->getPath().size() - 1]) <= PATH_ERROR_MARGIN) {
                             caracter->setMoving(false);
                             newPos = caracter->getPath()[caracter->getPath().size() - 1];
@@ -1412,11 +1560,13 @@ namespace sorrok {
                             }
                             getView().move(d.x, d.y, d.y);
                         }
-                        World::moveEntity(caracter, d.x, d.y, d.y);
-                        World::update();
+                        getWorld()->moveEntity(caracter, d.x, d.y, d.y);
+                        //getWorld()->update("Entity system updater");
                     }
+                    /*if (caracter->getType() == "E_HERO")
+                        std::cout<<"caracter position : "<<caracter->getCenter()<<std::endl;*/
                 }
-                if (caracter->isInFightingMode()
+                /*if (caracter->isInFightingMode()
                 && caracter->getFocusedCaracter() != nullptr
                 && Vec2f(caracter->getCenter().x, caracter->getCenter().y).computeDist(Vec2f(caracter->getFocusedCaracter()->getCenter().x,caracter->getFocusedCaracter()->getCenter().y)) <= caracter->getRange()) {
                     if (dynamic_cast<Monster*>(caracter->getFocusedCaracter())
@@ -1428,6 +1578,7 @@ namespace sorrok {
                     dir = dir.normalize();
                     if (caracter->getDir() != dir)
                         caracter->setDir(dir);
+                    caracter->setAttacking(true);
                     if (caracter->getDamages().empty()) {
                         //std::cout<<"wait for receiving damages"<<std::endl;
                         std::vector<int> damages;
@@ -1440,15 +1591,18 @@ namespace sorrok {
                             }
                             caracter->setDamages(damages);
                             sf::Int64 time = Application::getTimeClk().getElapsedTime().asMicroseconds() - conversionStringLong(infos[nb+1]);
+                            if (time < 0) {
+                                time = 0;
+                            }
                             caracter->setDmgTransferTime(time);
                             if (conversionStringLong(infos[nb+1]) > caracter->getAttribute("life"+conversionIntString(caracter->getId())).getValue<sf::Int64>())
                                 caracter->setLife(conversionStringInt(infos[nb+2]));
                         }
                     }
                     sf::Int64 time = caracter->getDmgTransferTime();
-                    if (!caracter->getDamages().empty() && caracter->getTimeOfLastAttack().asSeconds() >= caracter->getAttackSpeed() - time / 1e+6) {
+                    if (!caracter->getDamages().empty() && caracter->getTimeOfLastAttack().asSeconds() >= caracter->getAttackSpeed() - time / 1e+6f) {
                         if (time  > 0) {
-                            time -= caracter->getAttackSpeed() * 1e+6;
+                            time -= caracter->getAttackSpeed() * 1e+6f;
                             if (time < 0)
                                 time = 0;
                             caracter->setDmgTransferTime(time);
@@ -1490,15 +1644,18 @@ namespace sorrok {
                             }
                             caracter->setRegen(regen);
                             sf::Int64 time = Application::getTimeClk().getElapsedTime().asMicroseconds() - conversionStringLong(infos[nb+1]);
+                            if (time < 0) {
+                                time = 0;
+                            }
                             caracter->setRgnTransferTime(time);
                             if (conversionStringLong(infos[nb+1]) > caracter->getAttribute("life"+conversionIntString(caracter->getId())).getValue<sf::Int64>())
                                 caracter->setLife(conversionStringInt(infos[nb+2]));
                         }
                     }
                     sf::Int64 time = caracter->getRgnTransferTime();
-                    if (!caracter->getRegen().empty() && caracter->getTimeOfLastHpRegen().asSeconds() >= caracter->getRegenHpSpeed() - time / 1e+6) {
+                    if (!caracter->getRegen().empty() && caracter->getTimeOfLastHpRegen().asSeconds() >= caracter->getRegenHpSpeed() - time / 1e+6f) {
                         if (time > 0) {
-                            time -= caracter->getRegenHpSpeed() * 1e+6;
+                            time -= caracter->getRegenHpSpeed() * 1e+6f;
                             if (time < 0)
                                 time = 0;
                             caracter->setRgnTransferTime(time);
@@ -1534,15 +1691,18 @@ namespace sorrok {
                             }
                             caracter->setManaRegen(regen);
                             sf::Int64 time = Application::getTimeClk().getElapsedTime().asMicroseconds() - conversionStringLong(infos[nb+1]);
+                            if (time < 0) {
+                                time = 0;
+                            }
                             caracter->setRgnManaTransferTime(time);
                             if (conversionStringLong(infos[nb+1]) > caracter->getAttribute("mana"+conversionIntString(caracter->getId())).getValue<sf::Int64>())
                                 caracter->setMana(conversionStringInt(infos[nb+2]));
                         }
                     }
                     sf::Int64 time2 = caracter->getRgnManaTransferTime();
-                    if (!caracter->getManaRegen().empty() && caracter->getTimeOfLastManaRegen().asSeconds() >= caracter->getRegenManaSpeed() - time2 / 1e+6) {
+                    if (!caracter->getManaRegen().empty() && caracter->getTimeOfLastManaRegen().asSeconds() >= caracter->getRegenManaSpeed() - time2 / 1e+6f) {
                         if (time2 > 0) {
-                            time2 -= caracter->getRegenManaSpeed() * 1e+6;
+                            time2 -= caracter->getRegenManaSpeed() * 1e+6f;
                             if (time2 < 0)
                                 time2 = 0;
                             caracter->setRgnManaTransferTime(time2);
@@ -1563,12 +1723,10 @@ namespace sorrok {
                         if (caracter->getMana() + rgn >= caracter->getManaMax()) {
                             caracter->setMana(caracter->getManaMax());
                         } else {
-                            if (caracter->getType() == "E_HERO")
-                                std::cout<<"set mana"<<std::endl;
                             caracter->setMana(caracter->getMana() + rgn);
                         }
                     }
-                }
+                }*/
             } else {
                 if (caracter == hero) {
                     setEventContextActivated(false);
@@ -1586,10 +1744,9 @@ namespace sorrok {
         }
         while(!gameActions.empty()) {
             std::cout<<"game action!"<<std::endl;
-            apply_nary_visitor(GameAction(), gameActions.back().first, gameActions.back().second.first, gameActions.back().second.second);
+            GameAction ga;
+            apply_visitor(ga, gameActions.back().first, gameActions.back().second);
             gameActions.pop_back();
-            /*delete itemActions.back();
-            itemActions.pop_back();*/
         }
         std::map<ParticleSystem*, std::pair<sf::Time, sf::Time>>::iterator it;
         for (it = particles.begin(); it != particles.end(); ) {
@@ -1598,22 +1755,23 @@ namespace sorrok {
             it->second.second -= elapsedTime;
             if (it->second.second <= sf::seconds(0)) {
                 psu->removeParticleSystem(it->first);
-                World::deleteEntity(it->first);
+                getWorld()->deleteEntity(it->first);
                 it = particles.erase(it);
+                //std::cout<<"it erased"<<std::endl;
             } else
                 it++;
         }
-        ps->update(getClock("LoopTime").getElapsedTime());
+        /*ps->update(getClock("LoopTime").getElapsedTime());
         for (it = particles.begin(); it != particles.end(); it++) {
             it->first->update(getClock("LoopTime").getElapsedTime());
         }
         for (unsigned int i=0; i < particles2.size(); i++) {
             particles2[i]->update(getClock("LoopTime").getElapsedTime());
-        }
-        World::update();
+        }*/
+        getWorld()->update("*");
         fps++;
         if (getClock("FPS").getElapsedTime().asSeconds() >= 1.f) {
-            std::cout<<"fps : "<<fps<<std::endl;
+            //std::cout<<"fps : "<<fps<<std::endl;
             getClock("FPS").restart();
             fps = 0;
         }
@@ -1622,32 +1780,32 @@ namespace sorrok {
         //std::cout<<"text : "<<item->getText()<<std::endl;
         if (item->getText() == "Accept") {
             selectedQuest->setStatus(Quest::IN_PROGRESS);
-            if (!static_cast<Hero*>(hero)->containsQuest(selectedQuest)) {
-                static_cast<Hero*>(hero)->addQuest(selectedQuest);
+            if (!static_cast<Hero*>(hero)->containsQuest(selectedQuest->getName())) {
+                static_cast<Hero*>(hero)->addQuest(*selectedQuest);
             }
             wDisplayQuest->setVisible(false);
-            setEventContextActivated(true);
             std::string request = "ACCEPT*"+conversionIntString(selectedPnj->getId())+"*"+selectedQuest->getName()+"*"+conversionIntString(hero->getId());
             SymEncPacket packet;
             packet<<request;
             Network::sendTcpPacket(packet);
-            bAccept->setEventContextActivated(false);
-            bDeny->setEventContextActivated(false);
+            getRenderComponentManager().setEventContextActivated(false, *wDisplayQuest);
+            setEventContextActivated(true);
+            getRenderComponentManager().setEventContextActivated(true, getRenderWindow());
         }
         if (item->getText() == "Give up") {
-            if (static_cast<Hero*>(hero)->containsQuest(selectedQuest)) {
-                static_cast<Hero*>(hero)->removeQuest(selectedQuest);
-                selectedQuest->setStatus(Quest::NEW);
-                selectedQuest->reset();
+            if (static_cast<Hero*>(hero)->containsQuest(selectedQuest->getName())) {
+                static_cast<Hero*>(hero)->removeQuest(*selectedQuest);
             }
-            bAccept->setEventContextActivated(false);
-            bDeny->setEventContextActivated(false);
             wDisplayQuest->setVisible(false);
+            getRenderComponentManager().setEventContextActivated(false, *wDisplayQuest);
             setEventContextActivated(true);
+            getRenderComponentManager().setEventContextActivated(true, getRenderWindow());
         }
         if (item->getText() == "Continue") {
             wDisplayQuest->setVisible(false);
+            getRenderComponentManager().setEventContextActivated(false, *wDisplayQuest);
             setEventContextActivated(true);
+            getRenderComponentManager().setEventContextActivated(true, getRenderWindow());
         }
         if (item->getText() == "Get rewards") {
             static_cast<Hero*>(hero)->up(selectedQuest->getXp());
@@ -1658,16 +1816,26 @@ namespace sorrok {
                     static_cast<Hero*>(hero)->addItem(it->second);
                 }
             }
-            selectedQuest->setStatus(Quest::NEW);
-            selectedQuest->reset();
+            if (selectedQuest->isRepeat()) {
+                if (static_cast<Hero*>(hero)->containsQuest(selectedQuest->getName())) {
+                    static_cast<Hero*>(hero)->removeQuest(*selectedQuest);
+                }
+            } else {
+                selectedQuest->setStatus(Quest::FINISHED);
+            }
             wDisplayQuest->setVisible(false);
+            getRenderComponentManager().setEventContextActivated(false, *wDisplayQuest);
             setEventContextActivated(true);
+            getRenderComponentManager().setEventContextActivated(true, getRenderWindow());
         }
         if (item->getText() == "Respawn") {
             SymEncPacket packet;
             std::string message = "ALIVE*"+conversionIntString(hero->getId());
             packet<<message;
             Network::sendTcpPacket(packet);
+            getRenderComponentManager().setEventContextActivated(false, *wResuHero);
+            setEventContextActivated(true);
+            getRenderComponentManager().setEventContextActivated(true, getRenderWindow());
         }
         if (item->getText() == "Invite") {
             std::cout<<"client authentified"<<std::endl;
@@ -1688,5 +1856,8 @@ namespace sorrok {
             packet<<"CONNECT*"+pseudo+"*"+pswd;
             Network::sendTcpPacket(packet);
         }
+    }
+    MyAppli::~MyAppli() {
+
     }
 }

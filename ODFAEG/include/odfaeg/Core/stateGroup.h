@@ -17,7 +17,7 @@ namespace odfaeg {
         * \version 1.0
         * \date 1/02/2014
         */
-        class ODFAEG_CORE_API StateGroup
+        class ODFAEG_API_EXPORT StateGroup
         {
             public:
                 /**\fn StateGroup(std::string name)

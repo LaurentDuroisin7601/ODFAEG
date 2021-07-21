@@ -2,6 +2,7 @@
 #define MATRIX4
 #include "vec4.h"
 #include "../../../include/odfaeg/Core/erreur.h"
+#include "matrix3.h"
 /**
   *\namespace odfaeg
   * the namespace of the Opensource Development Framework Adapted for Every Games.
@@ -20,11 +21,12 @@ namespace odfaeg {
           * Manage a 3D matrix who is used to perform 3D transformations and projections.
           */
         class ODFAEG_MATH_API Matrix4f  {
+            friend class Matrix3f;
             public :
-            float m11, m12, m13, m14; /** < the elements of the first row matrix.*/
-            float m21, m22, m23, m24; /** < the elements of the second row matrix.*/
-            float m31, m32, m33, m34; /** < the elements of the thirst row matrix.*/
-            float m41, m42, m43, m44; /** < the elements of the fourth row matrix.*/
+            float m11, m12, m13, m14, /** < the elements of the first row matrix.*/
+                  m21, m22, m23, m24, /** < the elements of the second row matrix.*/
+                  m31, m32, m33, m34, /** < the elements of the thirst row matrix.*/
+                  m41, m42, m43, m44; /** < the elements of the fourth row matrix.*/
             /**
               * \fn Matrix4f()
               * \brief constructor. (Construct the identity matrix)
@@ -52,6 +54,7 @@ namespace odfaeg {
             */
             Matrix4f (float m11, float m12, float m13, float m14, float m21, float m22, float m23, float m24,
             float m31, float m32, float m33, float m34, float m41, float m42, float m43, float m44);
+            Matrix4f (Matrix3f matrix3f);
             /**
             * \fn setM4f (float, float, float, float, float, float, float, float, float, float, float, float, float, float, float, float, flaot)
             * \brief  constructor.(Construct a matrix with the given elements)
@@ -124,7 +127,7 @@ namespace odfaeg {
             * \brief return the inverse of the matrix, throw an exception if the matrix isn't inversible.
             * \return the inversed matrix.
             */
-            Matrix4f inverse () throw (std::exception&);
+            Matrix4f inverse ();
             /**
             * \fn float getDet() const
             * \brief return the value of the determiant of the matrix.

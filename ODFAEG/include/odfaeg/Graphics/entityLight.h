@@ -1,6 +1,6 @@
 #ifndef ODFAEG_ENTITY_LIGHT_HPP
 #define ODFAEG_ENTITY_LIGHT_HPP
-#include "entity.h"
+#include "gameObject.hpp"
 #include "light.h"
 /**
   *\namespace odfaeg
@@ -18,7 +18,7 @@ namespace odfaeg {
           * \brief Abstract class which can represent any type of lights (except ambient lights.)
           *  Each entity of the framework inherits from this class.
           */
-        class ODFAEG_GRAPHICS_API EntityLight : public Light, public Entity {
+        class ODFAEG_GRAPHICS_API EntityLight : public Light, public GameObject {
             public :
             /**
             * \fn EntityLight (math::Vec3f center, sf::Color color, float radius1, float radius2, float radius3, int height, std::string type, Entity* parent)
@@ -29,8 +29,11 @@ namespace odfaeg {
             * \param float radius2 : the major radius of the light.
             *  create an entity light with the given center, height, color, etc...
             */
-            EntityLight (math::Vec3f center, sf::Color color, float radius1, float radius2, float radius3, int height, std::string type, Entity* parent)
-            : Light (center, height, color), Entity (math::Vec3f(center.x, center.y, center.z), math::Vec3f(radius1 * 2, radius2 * 2, radius3 * 2), math::Vec3f (radius1, radius2, radius3), type, parent) {
+            EntityLight (math::Vec3f center, sf::Color color, float radius1, float radius2, float radius3, int height, std::string type, std::string name = "",Entity* parent=nullptr)
+            : Light (center, height, color), GameObject (math::Vec3f(center.x, center.y, center.z), math::Vec3f(radius1 * 2, radius2 * 2, radius3 * 2), math::Vec3f (radius1, radius2, radius3), type, name, parent) {
+            }
+            sf::Color getColor() {
+                return color;
             }
             /**
             * \fn isLeaf() const
@@ -87,7 +90,7 @@ namespace odfaeg {
             */
             template <typename Archive>
             void vtserialize(Archive & ar) {
-                Entity::vtserialize(ar);
+                GameObject::vtserialize(ar);
                 Light::vtserialize(ar);
             }
         };

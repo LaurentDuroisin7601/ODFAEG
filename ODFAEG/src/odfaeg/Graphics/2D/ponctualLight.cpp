@@ -1,6 +1,6 @@
 #include "../../../../include/odfaeg/Graphics/2D/ponctualLight.h"
 
-#include "../../../../include/odfaeg/Graphics/transformMatrix.h"
+#include "../../../../include/odfaeg/Math/transformMatrix.h"
 #include "../../../../include/odfaeg/Physics/boundingPolyhedron.h"
 namespace odfaeg {
     namespace graphic {
@@ -11,7 +11,7 @@ namespace odfaeg {
             using namespace sf;
             //Crée une lumière avec sa position, son intensité et son type.
             PonctualLight::PonctualLight (math::Vec3f center, float r1, float r2, float r3, float intensity, Color color, int quality, Entity *parent) :
-                EntityLight (center, color, r1, r2, r3, height, "E_PONCTUAL_LIGHT", parent) {
+                EntityLight (center, color, r1, r2, r3, height, "E_PONCTUAL_LIGHT", "", parent) {
                 this->littleRadius = r1;
                 this->bigRadius = r2;
                 this->quality = quality;
@@ -23,7 +23,16 @@ namespace odfaeg {
                 this->intensity = intensity;
                 initTriangles ();
             }
-
+            Entity* PonctualLight::clone() {
+                PonctualLight* pl = new PonctualLight();
+                GameObject::copy(pl);
+                pl->intensity = intensity;
+                pl->color = color;
+                pl->height = height;
+                pl->triangles = triangles;
+                pl->quality = quality;
+                return pl;
+            }
             //On initialise les triangles lumineux pour former une élipse.
             void PonctualLight::initTriangles () {
 
@@ -56,7 +65,7 @@ namespace odfaeg {
                 /*triangle->EnableFill(true);
                 triangle->EnableOutline(false);*/
                 Material material;
-                Face* face = new Face(*triangle,material,getTransform());
+                Face face (*triangle,material,getTransform());
                 addFace(face);
                 triangles.push_back(triangle);
             }
@@ -75,16 +84,10 @@ namespace odfaeg {
             }
 
             bool PonctualLight::operator== (Entity &other) {
-                   if (other.getType() != "E_PONCTUAL_LIGHT")
+                   if (!GameObject::operator==(other))
                        return false;
-                   PonctualLight &light = static_cast<PonctualLight&> (other);
-                   return getPosition() == light.getPosition() &&
-                       getLightCenter() == light.getLightCenter() &&
-                       color == light.getColor() &&
-                       intensity == light.getIntensity() &&
-                       height == light.getHeight() &&
-                       getSize() == light.getSize();
-
+                   return color == other.getColor() &&
+                       intensity == other.getIntensity();
             }
 
             int PonctualLight::compAlphaFromPoint (math::Vec3f &point) {

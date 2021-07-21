@@ -8,11 +8,11 @@
 namespace sorrok {
     class Quest {
         enum Status {
-            NEW, IN_PROGRESS, COMPLETE
+            NEW, IN_PROGRESS, COMPLETE, FINISHED
         };
         public :
             Quest();
-            Quest (std::string name, std::string task);
+            Quest (std::string name, std::string task, bool repeat);
             std::string getName();
             std::string getTask();
             void addItemToCollect(std::string, unsigned int nb);
@@ -29,6 +29,7 @@ namespace sorrok {
             int getXp();
             void setStatus (Status status);
             Status getStatus();
+            bool isRepeat();
             template <typename Archive>
             void serialize (Archive &ar) {
                 ar(name);
@@ -38,6 +39,7 @@ namespace sorrok {
                 ar(pnjToVisit);
                 ar(rewards);
                 ar(status);
+                ar(repeat);
             }
         private :
             std::string name, pnjToVisit;
@@ -47,7 +49,7 @@ namespace sorrok {
             int xp;
             std::map<unsigned int, Item> rewards;
             Status status;
-
+            bool repeat;
     };
 }
 #endif

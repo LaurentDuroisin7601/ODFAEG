@@ -1,9 +1,0 @@
-/** \fn void setParams(O* object, A... args)
-*   \brief change params of a command.
-*   \param O* object : the object of the actionmap's member function to call the function on.
-*   \param A... args : the arguments of the actionmap's member function to pass when the function is called.
-*/
-template<typename O, typename ...A> void ActionMap::setParams(O* object, A... args) {
-    delegate->setParams(object, args...);
-}
-

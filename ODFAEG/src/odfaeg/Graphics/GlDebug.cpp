@@ -97,7 +97,7 @@ namespace odfaeg {
                 ,	eGL_DEBUG_SEVERITY_LOW		= 0x9148
                 }	eGL_DEBUG_SEVERITY;
             }
-
+            //bool OpenGL::functionsInitialized = false;
         //*************************************************************************************************
 
         typedef void (CALLBACK * PFNGLDEBUGPROC)( uint32_t source, uint32_t type, uint32_t id, uint32_t severity, int length, const char * message, void * userParam );
@@ -105,46 +105,57 @@ namespace odfaeg {
         typedef void (CALLBACK * PFNGLDEBUGMESSAGECALLBACK)( PFNGLDEBUGPROC callback, void * userParam );
         typedef void (CALLBACK * PFNGLDEBUGMESSAGECALLBACKAMD)( PFNGLDEBUGAMDPROC callback, void * userParam );
 
+
         PFNGLDEBUGMESSAGECALLBACK glDebugMessageCallback = NULL;
         PFNGLDEBUGMESSAGECALLBACKAMD glDebugMessageCallbackAMD = NULL;
 
         void OpenGL::LoadDebugFunctions()
         {
-            std::string l_strExtensions = (char const *)glGetString( GL_EXTENSIONS );
+            //if (!OpenGL::functionsInitialized) {
+                //std::cout<<"load debug functions!"<<std::endl;
+                std::string l_strExtensions = (char const *)glGetString( GL_EXTENSIONS );
 
-            if( l_strExtensions.find( gl_api::ARB_debug_output ) != std::string::npos )
-            {
-                if( !gl_api::GetFunction( "glDebugMessageCallback", glDebugMessageCallback ) )
+                if( l_strExtensions.find( gl_api::ARB_debug_output ) != std::string::npos )
                 {
-                    if( !gl_api::GetFunction( "glDebugMessageCallbackARB", glDebugMessageCallback ) )
+                    std::cout<<"load debug functions"<<std::endl;
+                    if( !gl_api::GetFunction( "glDebugMessageCallback", glDebugMessageCallback ) )
                     {
-                        std::cout << "Unable to retrieve function glDebugMessageCallback" << std::endl;
+                        if( !gl_api::GetFunction( "glDebugMessageCallbackARB", glDebugMessageCallback ) )
+                        {
+                            std::cout << "Unable to retrieve function glDebugMessageCallback" << std::endl;
+                        }
                     }
                 }
-            }
-            else if( l_strExtensions.find( gl_api::AMDX_debug_output ) != std::string::npos )
-            {
-                if( !gl_api::GetFunction( "glDebugMessageCallbackAMD", glDebugMessageCallbackAMD ) )
+                else if( l_strExtensions.find( gl_api::AMDX_debug_output ) != std::string::npos )
                 {
-                    std::cout << "Unable to retrieve function glDebugMessageCallbackAMD" << std::endl;
+                    if( !gl_api::GetFunction( "glDebugMessageCallbackAMD", glDebugMessageCallbackAMD ) )
+                    {
+                        std::cout << "Unable to retrieve function glDebugMessageCallbackAMD" << std::endl;
+                    }
                 }
-            }
+            //}
         }
 
         void OpenGL::InitialiseDebugFunctions()
         {
-            if( glDebugMessageCallback )
-            {
-                glDebugMessageCallback( PFNGLDEBUGPROC( &CallbackDebugLog ), NULL );
-                glEnable( gl_api::iGL_DEBUG_OUTPUT_SYNCHRONOUS );
-            }
-            else if( glDebugMessageCallbackAMD )
-            {
-                 glDebugMessageCallbackAMD( PFNGLDEBUGAMDPROC( &CallbackDebugLogAMD ), NULL );
-                 glEnable(gl_api::iGL_DEBUG_OUTPUT);
-                 glEnable(gl_api::iGL_DEBUG_OUTPUT_SYNCHRONOUS);
+            //if (!OpenGL::functionsInitialized) {
+                //std::cout<<"initialize debug functions!"<<std::endl;
+                if( glDebugMessageCallback )
+                {
+                    std::cout<<"init debug functions"<<std::endl;
+                    glDebugMessageCallback( PFNGLDEBUGPROC( &CallbackDebugLog ), NULL );
+                    glEnable( gl_api::iGL_DEBUG_OUTPUT_SYNCHRONOUS );
+                }
+                else if( glDebugMessageCallbackAMD )
+                {
+                    //std::cout<<"init debug functions AMD"<<std::endl;
+                     glDebugMessageCallbackAMD( PFNGLDEBUGAMDPROC( &CallbackDebugLogAMD ), NULL );
+                     glEnable(gl_api::iGL_DEBUG_OUTPUT);
+                     glEnable(gl_api::iGL_DEBUG_OUTPUT_SYNCHRONOUS);
 
-            }
+                }
+            //}
+            //OpenGL::functionsInitialized = true;
         }
 
         void OpenGL::CallbackDebugLog( uint32_t source, uint32_t type, uint32_t id, uint32_t severity, int length, const char * message, void * userParam  )

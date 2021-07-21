@@ -49,14 +49,14 @@ namespace odfaeg {
             *  \return the point of the polyhedron at the given index.
             */
             math::Vec3f getPoint (unsigned int index);
-            bool onIntersects (BaseInterface& interface, CollisionResultSet::Info& info) {
-                return interface.intersects(*this, info);
+            bool onIntersects (BaseInterface& _interface, CollisionResultSet::Info& info) {
+                return _interface.intersects(*this, info);
             }
-            bool onIntersects (BaseInterface& interface, math::Ray& ray, bool segment, CollisionResultSet::Info& info) {
-                return interface.intersects(ray, segment, info);
+            bool onIntersects (BaseInterface& _interface, math::Ray& ray, bool segment, CollisionResultSet::Info& info) {
+                return _interface.intersects(ray, segment, info);
             }
-            bool onIntersects (BaseInterface& interface, math::Ray& ray, math::Vec3f& near, math::Vec3f& far, CollisionResultSet::Info& info) {
-                return interface.intersectsWhere(ray, near, far, info);
+            bool onIntersects (BaseInterface& _interface, math::Ray& ray, math::Vec3f& _near, math::Vec3f& _far, CollisionResultSet::Info& info) {
+                return _interface.intersectsWhere(ray, _near, _far, info);
             }
             std::unique_ptr<BoundingVolume> clone() {
                 return std::make_unique<BoundingPolyhedron>(*this);

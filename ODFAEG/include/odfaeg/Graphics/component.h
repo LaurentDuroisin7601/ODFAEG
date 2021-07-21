@@ -1,24 +1,14 @@
 #ifndef ODFAEG_COMPONENT_HPP
 #include "drawable.h"
 #include "transformable.h"
-#include "../Core/listener.h"
+#include "../Window/listener.h"
 #include "renderWindow.h"
 namespace odfaeg {
     namespace graphic {
         class Component : public Drawable, public Transformable {
         public :
-            Component(RenderWindow& window, math::Vec3f position, math::Vec3f size, math::Vec3f origin, unsigned int priority=0)
-            : Transformable(position, size, origin),
-            listener(),
-            priority(priority),
-            window(window) {
-                activateEventContext = true;
-                visible = true;
-                id = nbComponents;
-                nbComponents++;
-                autoResize = false;
-                relPosition = false;
-            }
+            Component(RenderWindow& window, math::Vec3f position, math::Vec3f size, math::Vec3f origin, unsigned int priority=0);
+
             /** \fn set the relative position relative to the top-left of the parent's component.
             * if the component haven't any parent, the parent is the window.
             * \param x : the relative position for x axis : 1 = 100%, 0 = 0%.
@@ -85,6 +75,9 @@ namespace odfaeg {
             unsigned int getPriority() {
                 return priority;
             }
+            void setPriority(unsigned int priority) {
+                this->priority = priority;
+            }
             virtual void onVisibilityChanged(bool visible);
             virtual void onEventContextActivated(bool activate);
             virtual void processEvents();
@@ -94,13 +87,21 @@ namespace odfaeg {
             void setAutoResized(bool autoResize) {
                 this->autoResize = autoResize;
             }
+            virtual unsigned int getComponentType() const = 0;
+            virtual View& getView();
+            virtual std::string getExpression();
+            virtual void setExpression(std::string expression);
+            virtual bool loadEntitiesOnComponent(std::vector<Entity*> entities);
+            virtual void setView(View view);
+            virtual void draw(Drawable& drawable, RenderStates states);
+            virtual void loadTextureIndexes();
         private :
             RenderWindow& window;
             core::Listener listener;
             bool activateEventContext;
             bool visible;
             int id;
-            static int nbComponents;
+            //static int nbComponents;
             unsigned int priority;
             float relPosX, relPosY, relSizeX, relSizeY;
             bool autoResize, relPosition;

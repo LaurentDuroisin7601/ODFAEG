@@ -10,6 +10,7 @@
   */
 namespace odfaeg {
     namespace math {
+        class Matrix4f;
         /**
           * \file matrix3.h
           * \class Matrix3f
@@ -21,6 +22,7 @@ namespace odfaeg {
           * Manage a 3D matrix who is used to perform 2D transformations.
           */
         class ODFAEG_MATH_API Matrix3f {
+            friend class Matrix4f;
             public :
                 float m11, m12, m13; /** < the elements of the first row matrix.*/
                 float m21, m22, m23; /** < the elements of the second row matrix.*/
@@ -44,6 +46,7 @@ namespace odfaeg {
                 * \param m33 the thirst element of the thirst row of the matrix.
                 */
                 Matrix3f(float m11, float m12, float m13, float m21, float m22, float m23, float m31, float m32, float m33);
+                Matrix3f(Matrix4f matrix4f);
                 /**
                 * \fn zero()
                 * \brief set the null matrix.
@@ -123,7 +126,7 @@ namespace odfaeg {
                 * \brief return the inverse of the matrix, throw an exception if the matrix isn't inversible.
                 * \return the inversed matrix.
                 */
-                Matrix3f inverse () throw (std::exception&);
+                Matrix3f inverse ();
                 /**
                 * \fn float getDet() const
                 * \brief return the value of the determiant of the matrix.

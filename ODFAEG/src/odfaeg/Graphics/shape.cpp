@@ -37,7 +37,7 @@ namespace
     // Compute the normal of a segment
     sf::Vector3f computeNormal(const sf::Vector3f& p1, const sf::Vector3f& p2)
     {
-        sf::Vector3f normal(p2.x - p1.x, p1.y - p2.y, 0);
+        sf::Vector3f normal(p1.y - p2.y, p2.x - p1.x, 0);
         float length = odfaeg::math::Math::sqrt(normal.x * normal.x + normal.y * normal.y);
         if (length != 0.f)
             normal /= length;
@@ -55,12 +55,15 @@ namespace
 namespace odfaeg
 {
     namespace graphic {
+        unsigned int Shape::nbShapes = 0;
         ////////////////////////////////////////////////////////////
         Shape::~Shape()
         {
         }
 
-
+        const unsigned int& Shape::getId() {
+            return id;
+        }
         ////////////////////////////////////////////////////////////
         void Shape::setTexture(const Texture* texture, bool resetRect)
         {
@@ -154,6 +157,8 @@ namespace odfaeg
         m_insideBounds    (),
         m_bounds          ()
         {
+            id = nbShapes;
+            nbShapes++;
         }
 
 
@@ -199,9 +204,7 @@ namespace odfaeg
         ////////////////////////////////////////////////////////////
         void Shape::draw(RenderTarget& target, RenderStates states)
         {
-            states.transform.combine(getTransform().getMatrix());
-            /*for (unsigned int i = 0; i < m_vertices.getVertexCount(); i++)
-                std::cout<<"transformed shape : "<<states.transform.transform(math::Vec3f(m_vertices[i].position.x, m_vertices[i].position.y, 0));*/
+            states.transform = getTransform();
             // Render the inside
             states.texture = m_texture;
             target.draw(m_vertices, states);
@@ -287,6 +290,13 @@ namespace odfaeg
         {
             for (unsigned int i = 0; i < m_outlineVertices.getVertexCount(); ++i)
                 m_outlineVertices[i].color = m_outlineColor;
+        }
+        physic::BoundingBox Shape::getLocalBounds() const {
+            return m_bounds;
+        }
+        physic::BoundingBox& Shape::getGlobalBounds() {
+            m_globalBounds = m_bounds.transform(getTransform());
+            return m_globalBounds;
         }
     }
 } // namespace sf

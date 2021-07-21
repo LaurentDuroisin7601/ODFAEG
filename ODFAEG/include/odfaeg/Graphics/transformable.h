@@ -1,7 +1,7 @@
 #ifndef ODFAEG_TRANSFORMABLE_HPP
 #define ODFAEG_TRANSFORMABLE_HPP
 
-#include "transformMatrix.h"
+#include "../Math/transformMatrix.h"
 #include "../Physics/boundingBox.h"
 /**
   *\namespace odfaeg
@@ -19,7 +19,7 @@ namespace odfaeg {
           *
           * each object inherits from this class.
           */
-        class ODFAEG_GRAPHICS_API Transformable {
+        class Transformable {
         public :
             /**
             * \fn BoundingBox getLocalBounds() const
@@ -32,7 +32,7 @@ namespace odfaeg {
             std::string getName() {
                 return name;
             }
-            physic::BoundingBox getLocalBounds() const {
+            virtual physic::BoundingBox getLocalBounds() const {
                 return localBounds;
             }
             /**
@@ -59,7 +59,12 @@ namespace odfaeg {
             */
             //Set the position of the entity, the position is always the top left corner of the entity.
             void setPosition(math::Vec3f position) {
+                //std::cout<<"positions : "<<position<<m_position<<std::endl;
                 math::Vec3f t = position - m_position;
+                /*if (getName() == "LFILE") {
+                    std::cout<<"set position : "<<position<<m_position<<t<<std::endl;
+                    std::cout<<position.x-m_position.x<<std::endl;
+                }*/
                 move(t);
             }
             /**
@@ -68,8 +73,6 @@ namespace odfaeg {
             * \return the size of the transformable object.
             */
             math::Vec3f getSize() const {
-                if (name == "RXPBAR")
-                    std::cout<<"transformable size : "<<m_size<<std::endl;
                 return m_size;
             }
             /**
@@ -86,6 +89,7 @@ namespace odfaeg {
             * \param angle : the rotation angle.
             */
             void setRotation (float angle, math::Vec3f axis = math::Vec3f(0, 0, 1)) {
+                tm.setEntityId(1);
                 m_rotation = angle;
                 tm.setRotation(axis, angle);
                 recomputeBounds();
@@ -114,8 +118,13 @@ namespace odfaeg {
                     || getGlobalBounds().getSize() != globalBounds.getSize())
                     std::cout<<"different"<<std::endl;*/
                 //physic::BoundingBox bounds = getGlobalBounds();
-                m_size = globalBounds.getSize();
+                m_size = localBounds.getSize() * m_scale;
                 m_position = globalBounds.getPosition();
+                if (name == "WALL") {
+                    std::cout<<"set scale new size : "<<localBounds.getSize()<<m_scale<<m_size<<std::endl;
+                }
+                /*m_center = m_position + m_origin;
+                tm.setTranslation(m_center);*/
                 onScale(scale);
             }
             /**
@@ -142,6 +151,9 @@ namespace odfaeg {
             void move (math::Vec3f t) {
                 m_center += t;
                 m_position += t;
+                /*if (getName() == "LFILE") {
+                    std::cout<<"position : "<<m_position<<"t : "<<t<<std::endl;
+                }*/
                 tm.setTranslation(m_center);
                 recomputeBounds();
                 onMove(t);
@@ -152,10 +164,15 @@ namespace odfaeg {
             * \param Vec3f : the origin.
             */
             void setOrigin(math::Vec3f origin) {
+               if (name == "WALL") {
+                    std::cout<<"origin : "<<origin<<"position : "<<m_position<<" center : "<<m_position + m_origin<<std::endl;
+               }
                m_origin = origin;
                tm.setOrigin(origin);
                m_center = m_position + m_origin;
                tm.setTranslation(m_center);
+               recomputeBounds();
+               onOriginChanged(origin);
             }
             /**
             * \fn Vec3f getScale() const
@@ -194,9 +211,7 @@ namespace odfaeg {
             * \brief set the size of the transformable object.
             * \param size : the size of the transformable object.
             */
-            void setSize (math::Vec3f size) {
-                if (name == "RXPBAR")
-                        std::cout<<"old size : "<<m_size.x<<" new size : "<<size.x<<std::endl;
+            virtual void setSize (math::Vec3f size) {
                 math::Vec3f scale;
                 if (m_size.x == 0 && size.x == 0) {
                     scale.x = 0;
@@ -211,6 +226,9 @@ namespace odfaeg {
                 if (m_size.y == 0 && size.y == 0) {
                     scale.y = 0;
                 } else if (m_size.y == 0) {
+                    /*if (name == "WALL") {
+                        std::cout<<"change local bounds! "<<std::endl;
+                    }*/
                     scale.y = 1;
                     m_size.y = size.y;
                     localBounds.setSize(localBounds.getWidth(), m_size.y, localBounds.getDepth());
@@ -226,7 +244,19 @@ namespace odfaeg {
                 } else {
                     scale.z = size.z / localBounds.getDepth();
                 }
-                setScale(scale);
+                if (name == "top_left") {
+                    std::cout<<"local bounds : "<<localBounds.getPosition()<<localBounds.getSize()<<std::endl;
+                    std::cout<<"old size : "<<m_size<<"new size : "<<size<<"old scale : "<<m_scale<<"new scale : "<<scale<<std::endl;
+                }
+                m_scale = scale;
+                tm.setScale(math::Vec3f(scale.x, scale.y, scale.z));
+                recomputeBounds();
+                m_size = localBounds.getSize() * m_scale;
+                if (name == "top_left") {
+                    std::cout<<"new size : "<<m_size<<std::endl;
+                }
+                m_position = globalBounds.getPosition();
+                onResize(size);
             }
             /**
             * \fn BoundingBox getGlobalBounds()
@@ -235,7 +265,7 @@ namespace odfaeg {
             void recomputeBounds() {
                 globalBounds = localBounds.transform(getTransform());
             }
-            physic::BoundingBox& getGlobalBounds() {
+            virtual physic::BoundingBox& getGlobalBounds() {
                 return globalBounds;
             }
             /**
@@ -245,10 +275,7 @@ namespace odfaeg {
             */
             void setLocalBounds(physic::BoundingBox localBounds) {
                 this->localBounds = localBounds;
-                /*m_size.x = getGlobalBounds().getWidth();
-                m_size.y = getGlobalBounds().getHeight();
-                m_size.z = getGlobalBounds().getDepth();*/
-                //m_position = getGlobalBounds().getPosition();
+                recomputeBounds();
             }
             /**
             * \fn const Matrix4f getMatrix ()
@@ -310,15 +337,26 @@ namespace odfaeg {
             }
             template <typename Archive>
             void serialize (Archive & ar) {
+                //std::cout<<"serialize name"<<std::endl;
+                ar(name);
+                //std::cout<<"serialize position"<<std::endl;
                 ar(m_position);
+                //std::cout<<"serialize center"<<std::endl;
                 ar(m_center);
+                //std::cout<<"serialize size"<<std::endl;
                 ar(m_size);
+                //std::cout<<"serialize origin"<<std::endl;
                 ar(m_origin);
+                //std::cout<<"serialize scale"<<std::endl;
                 ar(m_scale);
+                //std::cout<<"serialize rotation"<<std::endl;
                 ar(m_rotation);
+                //std::cout<<"serialize local bounds"<<std::endl;
                 ar(localBounds);
+                //std::cout<<"serialize global bounds"<<std::endl;
                 ar(globalBounds);
-                ar(tm);
+                //std::cout<<"transform matrices"<<std::endl;
+                ar(std::ref(tm));
             }
         protected :
             /**
@@ -334,7 +372,10 @@ namespace odfaeg {
                 m_rotation = 0;
                 tm.setOrigin(m_origin);
                 tm.setRotation(math::Vec3f::zAxis, 0);
+
+                //std::cout<<"default constructor size : "<<localBounds.getSize()<<std::endl;
                 globalBounds = localBounds.transform(getTransform());
+                name = "";
             }
             /**
             * \fn Transformable(Vec3f position, Vec3f size, Vec3f origin)
@@ -343,9 +384,12 @@ namespace odfaeg {
             * \param size = the size of the transformable object.
             * \param origin = the origin of the transformable object.
             */
-            Transformable(math::Vec3f position, math::Vec3f size, math::Vec3f origin) {
+            Transformable(math::Vec3f position, math::Vec3f size, math::Vec3f origin, std::string name="") {
                 localBounds = physic::BoundingBox(0, 0, 0, size.x, size.y, size.z);
                 m_position = position;
+                /*if (name == "WALL")
+                    std::cout<<"constructor size : "<<localBounds.getSize()<<std::endl;*/
+                //std::cout<<"create transform"<<std::endl;
                 m_size = size;
                 m_center = math::Vec3f (m_position.x + origin.x, m_position.y + origin.y, m_position.z + origin.z);
                 m_origin = origin;
@@ -354,8 +398,12 @@ namespace odfaeg {
                 tm.setOrigin(m_origin);
                 tm.setRotation(math::Vec3f::zAxis, 0);
                 tm.setTranslation(m_center);
+                tm.setScale(m_scale);
                 globalBounds = localBounds.transform(getTransform());
+                this->name = name;
             }
+            virtual void onOriginChanged(math::Vec3f& origin) {}
+            virtual void onResize(math::Vec3f& s) {}
             /**
             * \fn virtual void onRotate(float angle)
             * \brief this function can be redefined in the sub-class if we need to do something when the object is rotating.
@@ -371,7 +419,7 @@ namespace odfaeg {
             * \brief this function can be redefined in the sub-class if we need to do something when the object is moving.
             */
             virtual void onMove(math::Vec3f& t) {}
-        private :
+        protected :
             /**
              * m_position : the position of the top left corner of the entity
              * m_center : the center of the entity.

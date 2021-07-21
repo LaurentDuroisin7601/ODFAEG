@@ -43,6 +43,7 @@
 #include "../Graphics/entity.h"
 #include "../Graphics/entityManager.h"
 #include "../Math/vec4.h"
+#include "../Graphics/gameObject.hpp"
 
 #include <vector>
 #include <utility>
@@ -64,7 +65,7 @@ namespace odfaeg
         /// how particles are generated and modified over time. To represent particles graphically, a particle system requires a texture,
         /// and optionally one or multiple texture rectangles.
         /// @n@n This class is noncopyable.
-        class ODFAEG_PHYSICS_API ParticleSystem : public graphic::Entity, private sf::NonCopyable, private EmissionInterface
+        class ODFAEG_PHYSICS_API ParticleSystem : public graphic::GameObject, private sf::NonCopyable, private EmissionInterface
         {
         // ---------------------------------------------------------------------------------------------------------------------------
         // Private types
@@ -98,10 +99,11 @@ namespace odfaeg
         // ---------------------------------------------------------------------------------------------------------------------------
         // Public member functions
         public:
+        ParticleSystem();
         /// @brief Default constructor
         /// @details Requires a call to setTexture() and possibly addTextureRect() before the particle system can be used.
         ParticleSystem(math::Vec3f position, math::Vec3f size, graphic::EntityManager* scene = nullptr);
-
+        graphic::Entity* clone();
         /// @brief Swaps the contents of two instances in constant time.
         ///
         void	swap(ParticleSystem& other);
@@ -171,6 +173,49 @@ namespace odfaeg
 
         void update();
         void setScene(graphic::EntityManager* scene);
+        bool isAnimated () const {
+            return false;
+        }
+        bool isModel() const {
+            return false;
+        }
+        bool selectable() const {
+            return true;
+        }
+        bool isLight() const {
+            return false;
+        }
+        bool isShadow() const {
+            return false;
+        }
+        bool isLeaf() const {
+            return true;
+        }
+        template<typename Archive>
+        void vtserialize(Archive& ar) {
+            GameObject::vtserialize(ar);
+            if (!ar.isInputArchive()) {
+                unsigned int size = mTextureRects.size();
+                ar(size);
+                for (unsigned int i = 0; i < size; i++) {
+                    ar(mTextureRects[i].left);
+                    ar(mTextureRects[i].top);
+                    ar(mTextureRects[i].width);
+                    ar(mTextureRects[i].height);
+                }
+            } else {
+                unsigned int size;
+                ar(size);
+                for (unsigned int i = 0; i < size; i++) {
+                    sf::IntRect rect;
+                    ar(rect.left);
+                    ar(rect.top);
+                    ar(rect.width);
+                    ar(rect.height);
+                    addTextureRect(rect);
+                }
+            }
+        }
         // ---------------------------------------------------------------------------------------------------------------------------
         // Private member functions
         private:
@@ -194,30 +239,7 @@ namespace odfaeg
         void	computeQuad(Quad& quad, const sf::IntRect& textureRect) const;
         void removeEmitter (std::function<void(EmissionInterface&, sf::Time)>& em);
         bool operator== (Entity& other) {
-            if (dynamic_cast<ParticleSystem*> (&other) != nullptr) {
-                ParticleSystem& ps = static_cast<ParticleSystem&> (other);
-                return mParticles == ps.mParticles && mTexture == ps.mTexture;
-            } else {
-                return false;
-            }
-        }
-        bool isAnimated () const {
-            return false;
-        }
-        bool isModel() const {
-            return false;
-        }
-        bool selectable() const {
-            return true;
-        }
-        bool isLight() const {
-            return false;
-        }
-        bool isShadow() const {
-            return false;
-        }
-        bool isLeaf() const {
-            return true;
+            return GameObject::operator==(other);
         }
         // ---------------------------------------------------------------------------------------------------------------------------
         // Private variables

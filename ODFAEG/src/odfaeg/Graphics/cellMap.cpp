@@ -3,7 +3,7 @@ namespace odfaeg {
     namespace graphic {
         using namespace std;
 
-        CellMap::CellMap (physic::BoundingPolyhedron* bp, math::Vec2f coords) {
+        CellMap::CellMap (physic::BoundingPolyhedron* bp, math::Vec3f coords) {
             cellVolume = bp;
             passable = true;
             stateChanged = false;
@@ -11,14 +11,16 @@ namespace odfaeg {
             this->coords = coords;
         }
 
-        math::Vec2f CellMap::getCoords () {
+        math::Vec3f CellMap::getCoords () {
             return coords;
         }
 
         void CellMap::addEntity (Entity *entity) {
-            std::unique_ptr<Entity> ptr;
-            ptr.reset(entity);
-            entityInside.push_back(std::move(ptr));
+            if (!containsEntity(entity)) {
+                std::unique_ptr<Entity> ptr;
+                ptr.reset(entity);
+                entityInside.push_back(std::move(ptr));
+            }
         }
         physic::BoundingPolyhedron* CellMap::getCellVolume () {
             return cellVolume;
@@ -41,8 +43,32 @@ namespace odfaeg {
             typename vector<std::unique_ptr<Entity>>::iterator it;
             for (it = entityInside.begin(); it != entityInside.end();) {
                 if (entity == it->get()) {
+                    //std::cout<<"remove entity : "<<it->get()<<std::endl;
+                    //std::cout<<"old size : "<<entityInside.size()<<std::endl;
                     it->release();
                     it = entityInside.erase(it);
+                    /*for (unsigned int i = 0; i < entityInside.size(); i++) {
+                        std::cout<<"entity inside : "<<entityInside[i].get()<<std::endl;
+                    }*/
+                    //std::cout<<"new size : "<<entityInside.size()<<std::endl;
+                    return true;
+                } else
+                    it++;
+
+            }
+            return false;
+        }
+        bool CellMap::deleteEntity (Entity *entity) {
+            typename vector<std::unique_ptr<Entity>>::iterator it;
+            for (it = entityInside.begin(); it != entityInside.end();) {
+                if (entity == it->get()) {
+                    //std::cout<<"remove entity : "<<it->get()<<std::endl;
+                    //std::cout<<"old size : "<<entityInside.size()<<std::endl;
+                    it = entityInside.erase(it);
+                    /*for (unsigned int i = 0; i < entityInside.size(); i++) {
+                        std::cout<<"entity inside : "<<entityInside[i].get()<<std::endl;
+                    }*/
+                    //std::cout<<"new size : "<<entityInside.size()<<std::endl;
                     return true;
                 } else
                     it++;
@@ -66,7 +92,6 @@ namespace odfaeg {
             typename vector<std::unique_ptr<Entity>>::iterator it;
             for (it = entityInside.begin(); it != entityInside.end();) {
                 if (it->get()->getType() == type) {
-                    it->release();
                     it = entityInside.erase(it);
                     return true;
                 } else
@@ -74,7 +99,7 @@ namespace odfaeg {
             }
             return false;
         }
-        math::Vec2f CellMap::getCenter () {
+        math::Vec3f CellMap::getCenter () {
             return cellVolume->getCenter();
         }
 
@@ -97,9 +122,11 @@ namespace odfaeg {
             return entityInside.size();
         }
         bool CellMap::containsEntity (Entity *entity) {
-            for (unsigned int i = 0; i < entityInside.size(); i++)
-                if (*entityInside[i] == *entity)
+            for (unsigned int i = 0; i < entityInside.size(); i++) {
+                if (*entityInside[i] == *entity) {
                     return true;
+                }
+            }
             return false;
         }
 
@@ -121,10 +148,6 @@ namespace odfaeg {
 
         bool CellMap::operator== (const CellMap &cellMap) {
             return *cellVolume== *cellVolume;
-        }
-
-        CellMap::~CellMap () {
-            entityInside.clear();
         }
     }
 }

@@ -26,7 +26,7 @@ namespace odfaeg {
           * Vectors are very usefull for physic's and mathematic's algorithms. (Physics, geometry, ...)
           * In ODFAEG, vectors are used to define a direction or a point.
           */
-        class ODFAEG_MATH_API Vec2f : public sf::Vector2f {
+        class ODFAEG_API_EXPORT Vec2f : public sf::Vector2f {
             public:
             /**\fn Vec2f()
             *  \brief default constructror.

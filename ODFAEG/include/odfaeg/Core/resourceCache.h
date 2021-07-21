@@ -21,9 +21,13 @@ namespace odfaeg {
         class ODFAEG_CORE_API ResourceCache {
             public :
             /** \fn addResourceManager (ResourceManager<R, I>& rmi, std::string name)
-            *   \brief add a resource manager to the cache.
-            *   \param ResourceManager<R, I>& rmi : the resource maanger to add.
-            *   \param std::string name : an unique id which is associate to the resource manager.
+            *   \brief add a derived resource manager to the cache.
+            *   \param R resource type of the derived resource manager.
+            *   \param IR alias type of the derived resource manager.
+            *   \param B resource type of the base resource manager.
+            *   \param IB : alias type of the base resource manager.
+            *   \param ResourceManager<R, IR>& the resource manager to add.
+            *   \param I name : an unique alias which is associate to the resource manager.
             */
             template <typename R, typename IR, typename B, typename IB>
             void addResourceManager(ResourceManager<R, IR>& derivedRM, const I& name) {
@@ -47,6 +51,11 @@ namespace odfaeg {
                 std::unique_ptr<ResourceManagerBase> rmi = baseRM.clone();
                 resourceManagers.insert(std::make_pair(name, std::move(rmi)));
             }
+            /** \fn addResourceManager (ResourceManager<R, I>& rmi, std::string name)
+            *   \brief add a resource manager to the class.
+            *   \param R resource type of the resource manager.
+            *   \param IR alias type of the resource manager.
+            */
             template <typename R, typename IR>
             void addResourceManager (ResourceManager<R, IR>& baseRM, const I& name) {
                 std::lock_guard<std::recursive_mutex> locker(rec_mutex);
@@ -58,8 +67,8 @@ namespace odfaeg {
             }
             /** \fn resourceManager (std::string name)
             *   \brief get a resource manager of the cache.
-            *   \return the resource manager related to the given id,
-            *   throw an error if there's no resource manager associated to this id.
+            *   \return the resource manager related to the given alias,
+            *   throw an error if there's no resource manager associated to this alias.
             */
             template <typename R, typename IR>
             ResourceManager<R, IR>& resourceManager(const I& name) {
@@ -68,8 +77,6 @@ namespace odfaeg {
                 if (it == resourceManagers.end())
                     throw Erreur (12, "Resource manager not found!", 0);
                 using DynamicType = ResourceManager<R, IR>*;
-                /*if (!dynamic_cast<DynamicType> (it->second.get()))
-                    throw Erreur (13, "Bad cast!", 0);*/
                 return *static_cast<DynamicType> (it->second.get());
             }
             private :

@@ -52,14 +52,14 @@ namespace odfaeg {
                 *   \param the bounding sphere to test with.
                 *   \return the result of the collision test.
                 */
-                bool onIntersects (BaseInterface& interface, CollisionResultSet::Info& info) {
-                    return interface.intersects(*this, info);
+                bool onIntersects (BaseInterface& _interface, CollisionResultSet::Info& info) {
+                    return _interface.intersects(*this, info);
                 }
-                bool onIntersects (BaseInterface& interface, math::Ray& ray, bool segment, CollisionResultSet::Info& info) {
-                    return interface.intersects(ray, segment, info);
+                bool onIntersects (BaseInterface& _interface, math::Ray& ray, bool segment, CollisionResultSet::Info& info) {
+                    return _interface.intersects(ray, segment, info);
                 }
-                bool onIntersects (BaseInterface& interface, math::Ray& ray, math::Vec3f& near, math::Vec3f& far, CollisionResultSet::Info& info) {
-                    return interface.intersectsWhere(ray, near, far, info);
+                bool onIntersects (BaseInterface& _interface, math::Ray& ray, math::Vec3f& _near, math::Vec3f& _far, CollisionResultSet::Info& info) {
+                    return _interface.intersectsWhere(ray, _near, _far, info);
                 }
                 bool intersects (BoundingBox& bx);
                 bool intersects (BoundingVolume &bv, CollisionResultSet::Info& info);
@@ -100,6 +100,7 @@ namespace odfaeg {
                 *   \param the point to test in.
                 *   \return the result of the collision test.
                 */
+                bool isInside(BoundingBox& other);
                 bool isPointInside (math::Vec3f point);
                 /**\fn Vec2f getCenter()
                 *  \brief gives the center of the bounding box.

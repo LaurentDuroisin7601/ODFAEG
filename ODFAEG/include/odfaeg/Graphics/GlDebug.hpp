@@ -71,6 +71,7 @@ namespace odfaeg {
                 Paramètre donné par l'utilisateur
             */
             void CALLBACK CallbackDebugLogAMD( uint32_t id, uint32_t category, uint32_t severity, int length, const char* message, void* userParam );
+            //bool functionsInitialized = false;
         }
     }
 }

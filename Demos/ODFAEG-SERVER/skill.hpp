@@ -8,25 +8,19 @@ namespace sorrok {
             NONE, HP
         };
         Skill();
-        Skill(std::string name, unsigned int damage, std::string target, unsigned int manaCost);
+        Skill(std::string name, unsigned int manaCost, std::string requiredClass);
         std::string getName();
-        unsigned int getDamage();
-        std::string getTarget();
-        void setStat(Stat stat);
-        Stat getStat();
         template <typename Archive>
         void serialize(Archive &ar) {
             ar(name);
-            ar(target);
-            ar(damage);
-            ar(stat);
             ar(manaCost);
+            ar(requiredClass);
         }
         unsigned int getManaCost();
+        std::string getRequiredClass();
         private :
-        std::string name, target;
-        unsigned int damage, manaCost;
-        Stat stat;
+        std::string name, requiredClass;
+        unsigned int manaCost;
     };
 }
 #endif

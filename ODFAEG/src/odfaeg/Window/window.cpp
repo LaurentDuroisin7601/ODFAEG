@@ -24,7 +24,6 @@ namespace odfaeg {
         {
 
             m_window = WindowFactory::create();
-            std::cout<<"create window"<<std::endl;
             m_window->create(mode, title, style, settings);
             // Perform common initializations
             initialize();
@@ -191,8 +190,7 @@ namespace odfaeg {
         {
             if (m_window)
             {
-                if (m_window->setActive(active))
-                {
+                if (m_window->setActive(active)) {
                     return true;
                 }
                 else
@@ -260,6 +258,11 @@ namespace odfaeg {
         IWindow* Window::getImpl() const {
             return m_window;
         }
+        #ifdef VULKAN
+        VkSettup& Window::getVkSettup() {
+            return m_window->getVkSettup();
+        }
+        #endif // VULKAN
         Window::~Window()
         {
             close();

@@ -35,7 +35,7 @@ namespace odfaeg {
                        return true;
                    }
               } else {
-                   Vec3f o, point;
+                   /*Vec3f o, point;
                    Vec3f r = ray.getOrig() - ray.getExt();
                    Vec3f u = p2 - p1;
                    Vec3f v = p3 - p1;
@@ -43,13 +43,66 @@ namespace odfaeg {
                    Vec3f otr = ray.getOrig() - p1;
                    point.x = n.dot2(otr) / n.dot2(r);
                    point.y = -otr.cross(u).dot2(r) / n.dot2(r);
-                   point.z = -v.cross(otr).dot2(r) / n.dot2(r);
+                   point.z = v.cross(otr).dot2(r) / n.dot2(r);
+
                    if (0 <= point.x
                    && 0 <= point.y && point.y <= 1
                    &&  0 <= point.z && point.z <= 1
                    && point.y + point.z <= 1) {
+                       //std::cout<<"point : "<<point<<std::endl;
                        return true;
-                   }
+                   }*/
+                   // compute plane's normal
+                    Vec3f v0v1 = p2 - p1;
+                    Vec3f v0v2 = p3 - p1;
+                    // no need to normalize
+                    Vec3f N = v0v1.cross(v0v2); // N
+                    float area2 = N.magnitude();
+
+                    // Step 1: finding P
+
+                    // check if ray and plane are parallel ?
+                    float NdotRayDirection = N.dot2(ray.getDir());
+                    if (fabs(NdotRayDirection) < 0.0000001) // almost 0
+                        return false; // they are parallel so they don't intersect !
+
+                    // compute d parameter using equation 2
+                    float d = N.dot2(p1);
+
+                    // compute t (equation 3)
+                    float t = (N.dot2(ray.getOrig()) + d) / NdotRayDirection;
+                    // check if the triangle is in behind the ray
+                    if (t < 0) return false; // the triangle is behind
+
+                    // compute the intersection point using equation 1
+                    Vec3f P = ray.getOrig() + ray.getDir() * t;
+
+
+                    // Step 2: inside-outside test
+                    Vec3f C; // vector perpendicular to triangle's plane
+
+                    // edge 0
+                    Vec3f edge0 = p2 - p1;
+                    Vec3f vp0 = P - p1;
+                    C = edge0.cross(vp0);
+
+                    if (N.dot2(C) < 0) return false; // P is on the right side
+
+                    // edge 1
+                    Vec3f edge1 = p3 - p2;
+                    Vec3f vp1 = P - p2;
+                    C = edge1.cross(vp1);
+
+                    if (N.dot2(C) < 0)  return false; // P is on the right side
+
+                    // edge 2
+                    Vec3f edge2 = p1 - p3;
+                    Vec3f vp2 = P - p3;
+                    C = edge2.cross(vp2);
+                    if (N.dot2(C) < 0) return false; // P is on the right side;
+                    //std::cout<<P<<std::endl;
+
+                    return true; // this ray hits the triangle
               }
               return false;
         }
@@ -100,7 +153,7 @@ namespace odfaeg {
                //The ray is not parallal to the trriangle, I use raytracing algorithm to find the intersection.
                } else {
 
-                   Vec3f o, point;
+                   /*Vec3f o, point;
                    Vec3f r = ray.getOrig() - ray.getExt();
                    Vec3f u = p2 - p1;
                    Vec3f v = p3 - p1;
@@ -113,6 +166,7 @@ namespace odfaeg {
                    && 0 <= point.y && point.y <= 1
                    &&  0 <= point.z && point.z <= 1
                    && point.y + point.z <= 1) {
+                       //std::cout<<"point : "<<point<<std::endl;
                        if (nbInt == 0) {
                            i1.x = p1.x + u.x * point.z + v.x * point.y;
                            i1.y = p1.y + u.y * point.z + v.y * point.y;
@@ -124,7 +178,71 @@ namespace odfaeg {
                            i2.z = p1.z + u.z * point.z + v.z * point.y;
                            nbInt++;
                        }
-                  }
+                  }*/
+                    float u, v;
+                    Vec3f v0v1 = p2 - p1;
+                    Vec3f v0v2 = p3 - p1;
+                    //std::cout<<"v0v1 : "<<v0v1<<std::endl;
+                    //std::cout<<"v0v2 : "<<v0v2<<std::endl;
+                    // no need to normalize
+                    Vec3f N = v0v1.cross(v0v2); // N
+                    //std::cout<<"N : "<<N<<std::endl;
+                    float denom = N.dot2(N);
+
+                    // Step 1: finding P
+
+                    // check if ray and plane are parallel ?
+                    float NdotRayDirection = N.dot2(ray.getDir());
+                    //std::cout<<"NdotRayDirection : "<<NdotRayDirection<<std::endl;
+                    if (fabs(NdotRayDirection) < 0.0000001) // almost 0
+                        return false; // they are parallel so they don't intersect !
+
+                    // compute d parameter using equation 2
+                    float d = N.dot2(p1);
+                    //std::cout<<"d : "<<d<<std::endl;
+
+                    // compute t (equation 3)
+                    float t = (N.dot2(ray.getOrig()) + d) / NdotRayDirection;
+                    //std::cout<<"t : "<<t<<std::endl;
+                    // check if the triangle is in behind the ray
+                    if (t < 0) return false; // the triangle is behind
+
+
+                    // compute the intersection point using equation 1
+                    Vec3f P = ray.getOrig() + ray.getDir() * t;
+                    //std::cout<<"P : "<<P<<std::endl;
+
+
+                    // Step 2: inside-outside test
+                    Vec3f C; // vector perpendicular to triangle's plane
+
+                    // edge 0
+                    Vec3f edge0 = p2 - p1;
+                    Vec3f vp0 = P - p1;
+                    C = edge0.cross(vp0);
+                    //std::cout<<"E 0 : "<<edge0<<std::endl;
+                    //std::cout<<"VP0 : "<<vp0<<std::endl;
+                    //std::cout<<"C0 : "<<C<<std::endl;
+
+                    if (N.dot2(C) < 0) return false; // P is on the right side
+
+                    // edge 1
+                    Vec3f edge1 = p3 - p2;
+                    Vec3f vp1 = P - p2;
+                    C = edge1.cross(vp1);
+                    //std::cout<<"C1 : "<<C<<std::endl;
+
+                    if ((u = N.dot2(C)) < 0)  return false; // P is on the right side
+
+                    // edge 2
+                    Vec3f edge2 = p1 - p3;
+                    Vec3f vp2 = P - p3;
+                    C = edge2.cross(vp2);
+                    //std::cout<<"C2 : "<<C<<std::endl;
+                    if ((v = N.dot2(C)) < 0) return false;
+                    i1 = P;
+                    i1.w = u * p1.w + v * p2.w + (1 - u - v) * p3.w;
+                    return true;
               }
               if (nbInt == 1) {
                   i2 = i1;
@@ -139,6 +257,7 @@ namespace odfaeg {
                   }
               }
               return (nbInt > 0) ? true : false;
+
         }
         bool intersects (Triangle other) {
             Ray r1 (p1, p2);

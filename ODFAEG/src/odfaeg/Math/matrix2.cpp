@@ -55,7 +55,7 @@ namespace odfaeg {
             m22 = other.m22;
             return *this;
         }
-        Matrix2f Matrix2f::inverse () throw (std::exception&) {
+        Matrix2f Matrix2f::inverse () {
             float det = getDet();
             Matrix2f tmp;
             if (Math::abs(det) < 0.f) {

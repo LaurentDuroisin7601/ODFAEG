@@ -1,7 +1,7 @@
 #include "../../../include/odfaeg/Network/client.h"
 #include "../../../include/odfaeg/Network/network.h"
 #include "../../../include/odfaeg/Network/cliEncryptedPacket.hpp"
-#include "../../../include/odfaeg/Core/application.h"
+#include "../../../include/odfaeg/Graphics/application.h"
 namespace odfaeg {
     namespace network {
         using namespace sf;
@@ -21,7 +21,7 @@ namespace odfaeg {
             bool certifiateMessageSend, pbKeyReceived, pbIvReceived, pbKeyRsaReceived, certifiate;
             certifiateMessageSend = pbKeyReceived = pbIvReceived = pbKeyRsaReceived = certifiate = false;
             EncryptedPacket enc_packet;
-
+            std::cout<<"set cli pb key"<<std::endl;
             while (!certifiate || !certifiateMessageSend || !pbKeyReceived || !pbIvReceived || !pbKeyRsaReceived) {
                 if (!certifiate && !certifiateMessageSend && !pbKeyRsaReceived && !pbKeyReceived && !pbIvReceived) {
                     CliEncryptedPacket cliEncryptedPacket;
@@ -34,6 +34,7 @@ namespace odfaeg {
                             cliEncryptedPacket<<message;
                             clientTCP.send(cliEncryptedPacket);
                             certifiateMessageSend = true;
+                            std::cout<<"certifiate message send"<<std::endl;
                         }
                     }
                 }
@@ -48,6 +49,7 @@ namespace odfaeg {
                             cliEncryptedPacket<<message;
                             clientTCP.send(cliEncryptedPacket);
                             certifiate = true;
+                            std::cout<<"get pb key rsa send"<<std::endl;
                         }
                     }
                 }
@@ -102,20 +104,25 @@ namespace odfaeg {
                 remotePortUDP = portUDP;
                 this->srvAddress = address;
                 this->useSecuredConnexion = useSecuredConnexion;
+                std::cout<<"connect to client"<<std::endl;
                 if(clientTCP.connect(address, portTCP) != Socket::Done) {
                     cout<<"Erreur : impossible de se connecter au serveur!"<<endl;
                     return false;
                 }
+                std::cout<<"bind udp port"<<std::endl;
                 if (clientUDP.bind(Socket::AnyPort) != Socket::Done) {
                     cout<<"Erreur : impossible d'écouter sur le port : "<<portUDP<<endl;
                     return false;
                 }
+                std::cout<<"send upd port message"<<std::endl;
                 Packet packet;
                 std::string message = "updateUdpPort*" + core::conversionIntString(clientUDP.getLocalPort());
                 packet<<message;
                 clientTCP.send(packet);
+                std::cout<<"get public key"<<std::endl;
                 if (useSecuredConnexion)
                     getPublicKey();
+                std::cout<<"public key get"<<std::endl;
                 selector.add(clientTCP);
                 selector.add(clientUDP);
                 running = true;
@@ -152,7 +159,7 @@ namespace odfaeg {
             if (running) {
                 short unsigned int port;
                 IpAddress address;
-                if (selector.wait(milliseconds(10))) {
+                if (selector.wait(microseconds(1))) {
                      if (selector.isReady(clientTCP)) {
                         if (useSecuredConnexion) {
                             SymEncPacket packet;
@@ -185,7 +192,7 @@ namespace odfaeg {
                                     message = "PONG";
                                     packet<<message;
                                     Network::sendUdpPacket(packet);
-                                } else if (message == "GET_TIME") {
+                                } else if (message.find("GET_TIME") != std::string::npos) {
                                     packet.clear();
                                     sf::Int64 time = core::Application::getTimeClk().getElapsedTime().asMicroseconds();
                                     message = "SET_TIME*"+core::conversionLongString(time);

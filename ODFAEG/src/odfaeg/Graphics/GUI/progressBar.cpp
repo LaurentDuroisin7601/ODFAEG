@@ -14,6 +14,7 @@ namespace odfaeg {
                 text.setSize(size);
                 text.setPosition(position);
                 text.setString(core::conversionIntString(value)+"/"+core::conversionIntString(maxi));
+                text.setColor(sf::Color::Black);
             }
             void ProgressBar::setColor(sf::Color barColor) {
                 this->barColor = barColor;

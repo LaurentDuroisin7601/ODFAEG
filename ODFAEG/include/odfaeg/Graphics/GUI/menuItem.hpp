@@ -18,6 +18,7 @@ namespace odfaeg {
                 bool isMouseOnMenu();
                 void addMenuItemListener (MenuItemListener *mil);
                 std::string getText();
+                void setText(std::string text);
                 void onEventPushed(window::IEvent event, RenderWindow& window);
             private :
                 RectangleShape rect;

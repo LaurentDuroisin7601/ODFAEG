@@ -1,25 +1,27 @@
 #include "../../../include/odfaeg/Core/utilities.h"
 #include <iostream>
+#include <filesystem>
 namespace odfaeg {
     namespace core {
         using namespace std;
         using namespace sf;
-        std::vector<std::string> split (const std::string &input, const std::string &regex) {
-            std::vector<std::string> output;
-            std::string::size_type prev_pos = 0, pos = 0;
-
-            while((pos = input.find(regex, pos)) != std::string::npos)
+        std::vector<std::string> split(const std::string& stringToBeSplitted, const std::string& delimeter)
+        {
+            std::vector<std::string> splittedString;
+            int startIndex = 0;
+            int  endIndex = 0;
+            while( (endIndex = stringToBeSplitted.find(delimeter, startIndex)) < stringToBeSplitted.size() )
             {
-                std::string substring( input.substr(prev_pos, pos-prev_pos) );
-
-                output.push_back(substring);
-
-                prev_pos = ++pos;
+                std::string val = stringToBeSplitted.substr(startIndex, endIndex - startIndex);
+                splittedString.push_back(val);
+                startIndex = endIndex + delimeter.size();
             }
-
-            output.push_back(input.substr(prev_pos, pos-prev_pos)); // Last word
-
-            return output;
+            if(startIndex < stringToBeSplitted.size())
+            {
+                std::string val = stringToBeSplitted.substr(startIndex);
+                splittedString.push_back(val);
+            }
+            return splittedString;
         }
 
         float conversionStringFloat(std::string str)
@@ -80,6 +82,7 @@ namespace odfaeg {
             return strtoul(str.c_str(), NULL, 16);
         }
         void findFiles (std::string keyword, std::vector<std::string>& files, std::string startDir) {
+            #if defined (ODFAEG_SYSTEM_LINUX)
             if (DIR* current = opendir(startDir.c_str())) {
                 dirent* ent;
                 while ((ent = readdir(current)) != NULL) {
@@ -94,6 +97,40 @@ namespace odfaeg {
                 }
                 closedir(current);
             }
+            #else if defined (ODFAEG_SYSTEM_WINDOWS)
+            if (DIR* current = opendir(startDir.c_str())) {
+                dirent* ent;
+                while ((ent = readdir(current)) != NULL) {
+                    if (strcmp(ent->d_name, ".") && strcmp(ent->d_name, "..")) {
+                       std::string path = startDir + "\\" + std::string(ent->d_name);
+                       struct stat st;
+                       stat(path.c_str(), &st);
+                       //std::cout<<"path : "<<path<<" keyword : "<<keyword<<std::endl;
+                       if (S_ISDIR(st.st_mode)) {
+                           findFiles(keyword, files, path);
+                       } else {
+                           std::vector<std::string> parts = split(keyword, " ");
+                           for (unsigned int i = 0; i < parts.size(); i++) {
+                                if (path.find(parts[i]) != std::string::npos) {
+                                    bool contains = false;
+                                    for (unsigned int j = 0; j < files.size() && !contains; j++) {
+                                        if (files[j] == path)
+                                            contains = true;
+                                    }
+                                    if (!contains) {
+                                        files.push_back(path);
+                                    }
+                                }
+                           }
+                           if (keyword == "*") {
+                                //path = std::string(ent->d_name);
+                                files.push_back(path);
+                           }
+                       }
+                    }
+                }
+            }
+            #endif
         }
         bool is_number(const std::string& s)
         {
@@ -106,10 +143,45 @@ namespace odfaeg {
             return !abs.empty() && std::find_if(abs.begin(),
             abs.end(), [](char c) { return !std::isdigit(c); }) == abs.end();
         }
+        /// Try to find in the Haystack the Needle - ignore case
+        int findString(const std::string & strHaystack, const std::string & strNeedle)
+        {
+              if(strNeedle > strHaystack) {
+                return false;
+              }
+              int e = 0, indx = -1;
+              for (unsigned int i = 0; i < strHaystack.size(); i++) {
+                   if (strHaystack.at(i) == strNeedle.at(e)) {
+                       if (e == 0) {
+                            indx = i;
+                       }
+                       e++;
+                       if (e == strNeedle.size()) {
+                           return indx;
+                       } else {
+                           e = 0;
+                       }
+                   }
+              }
+            return -1;
+        }
         std::string getCurrentPath() {
-            char cCurrentPath[FILENAME_MAX];
-            getcwd(cCurrentPath,sizeof(cCurrentPath));
-            return std::string(cCurrentPath);
+            /*char cCurrentPath[FILENAME_MAX];
+            _getcwd(cCurrentPath,sizeof(cCurrentPath));*/
+            return std::filesystem::current_path();
+        }
+        void memmv(void* src, void* dst, size_t size) {
+            char* tmp = new char[size];
+            char* csrc = (char*) src;
+            char* cdst = (char*) dst;
+            for (unsigned int i = 0; i < size; i++) {
+                tmp[i] = csrc[i];
+            }
+            for (unsigned int i = 0; i < size; i++) {
+                cdst[i] = tmp[i];
+            }
+            dst = cdst;
+            delete tmp;
         }
     }
 }

@@ -40,11 +40,11 @@ odfaeg::core::BaseFactory<BASE>::register_type(typeid(DERIVED).name(), allocator
 * \param DERIVED : the derived type of the derived class.
 * \param SIGNATURE : the signature of the function to register.
 */
-#define REGISTER_FUNC(ID, funcName, SID, BASE, DERIVED, SIGNATURE, args...) \
+#define REGISTER_FUNC(ID, funcName, SID, BASE, DERIVED, SIGNATURE, ...) \
 { \
 REGISTER_TYPE(ID, BASE, DERIVED) \
 void(DERIVED::*f##ID##funcName##SID)SIGNATURE = &DERIVED::vt##funcName; \
-odfaeg::core::FastDelegate<void> delegate##ID##funcName##SID (f##ID##funcName##SID, args); \
+odfaeg::core::FastDelegate<void> delegate##ID##funcName##SID (f##ID##funcName##SID, __VA_ARGS__); \
 odfaeg::core::BaseFactory<BASE>::register_function(typeid(DERIVED).name(), #funcName, #SID, delegate##ID##funcName##SID); \
 }
 /**
@@ -120,8 +120,10 @@ namespace odfaeg {
             */
             static void register_function(std::string typeName, std::string funcName, std::string funcArgs, FastDelegate<void> delegate) {
                 typename std::map<std::string, FastDelegate<void>>::iterator it = functions.find(typeName+funcName+funcArgs);
-                if (it == functions.end())
+                if (it == functions.end()) {
+                    //std::cout<<"register function : "<<typeName+funcName+funcArgs<<std::endl;
                     functions[typeName+funcName+funcArgs] = delegate;
+                }
             }
             /** \fn void callFunction(std::string typeName, std::string funcName, std:string fincArgs, A&&... args)
             *   \brief call a registered function of the factory, throw an error if the function isn't registered.
@@ -133,11 +135,12 @@ namespace odfaeg {
             template <typename... A>
             static void callFunction(std::string typeName, std::string funcName, std::string funcArgs, A&&... args) {
                 typename std::map<std::string, FastDelegate<void>>::iterator it = functions.find(typeName+funcName+funcArgs);
+                //std::cout<<"call function : "<<typeName+","+funcName+","+funcArgs<<std::endl;
                 if (it != functions.end()) {
                     it->second.setParams(std::forward<A>(args)...);
                     (it->second)();
                 } else {
-                    throw Erreur(0, "Unregistred function exception!", 1);
+                    throw std::runtime_error("Unregistred function exception!");
                 }
             }
             /** \fn B* create (std::string typeName)
@@ -151,7 +154,7 @@ namespace odfaeg {
                 if (it != types.end()) {
                     return (it->second)();
                 }
-                throw Erreur(0, "Unregistred type exception!"+typeName, 1);
+                throw std::runtime_error("Unregistred type exception!"+typeName);
             }
             /** \fn std::string getTypeName (B* type)
             *   \brief return the type name of a base object.
@@ -161,6 +164,7 @@ namespace odfaeg {
                 typename std::map<std::string, FastDelegate<B*>>::iterator it = types.find(typeid(*type).name());
                 if (it != types.end())
                     return it->first;
+				return "";
             }
             private :
             static std::map<std::string, FastDelegate<B*>> types; /**> An std::map which store the typeName and a callback's function to an allocator of the registered types*/

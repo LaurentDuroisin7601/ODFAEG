@@ -1,20 +1,20 @@
 
-#include "odfaeg/Core/application.h"
+#include "odfaeg/Graphics/application.h"
 #include "odfaeg/Graphics/3D/cube.h"
 #include "odfaeg/Graphics/3D/model.hpp"
 #include "odfaeg/Graphics/map.h"
 #include "odfaeg/Graphics/tGround.h"
 #include "odfaeg/Graphics/entitiesUpdater.h"
 #include "odfaeg/Graphics/billBoard.h"
-#include "odfaeg/Core/world.h"
+#include "odfaeg/Graphics/world.h"
 #include "odfaeg/Graphics/shadowRenderComponent.hpp"
 #include "odfaeg/Graphics/lightRenderComponent.hpp"
-#include "odfaeg/Graphics/zSortingRenderComponent.hpp"
 #include "odfaeg/Graphics/perPixelLinkedListRenderComponent.hpp"
+#include "odfaeg/Graphics/raytracingRenderComponent.hpp"
 class MyAppli : public odfaeg::core::Application {
 public :
     enum TEXTURES {
-        GRASS, PARTICLE
+        GRASS, PARTICLE, SKYBOX0, SKYBOX1, SKYBOX2, SKYBOX3, SKYBOX4, SKYBOX5
     };
     MyAppli(odfaeg::math::Vec2f size, std::string title);
     void onLoad();
@@ -38,4 +38,6 @@ private :
     odfaeg::core::ResourceCache<> cache;
     odfaeg::graphic::BigTile* heightmap;
     unsigned int fpsCounter;
+    odfaeg::graphic::View view3D;
+    odfaeg::graphic::g3d::Model loader;
 };

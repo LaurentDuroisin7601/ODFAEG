@@ -8,17 +8,18 @@ namespace odfaeg {
                 t->setParent(this);
                 float sy = light->getHeight() / (light->getHeight() * 0.75f);
                 setShadowScale(math::Vec3f(1.f, -sy, 1.f));
-                shadowOrigin = math::Vec3f(t->getPosition().x, t->getPosition().y, 0) + getSize();
-                setShadowOrigin(shadowOrigin);
+                setShadowOrigin(math::Vec3f(t->getPosition().x, t->getPosition().y, 0));
+            }
+            Entity* Decor::clone() {
+                Decor* decor = new Decor();
+                GameObject::copy(decor);
+                return decor;
             }
             void Decor::onMove(math::Vec3f &t) {
-                Entity::onMove(t);
+                GameObject::onMove(t);
             }
             bool Decor::operator==(Entity &other) {
-                if (other.getType() != "E_DECOR")
-                    return false;
-                Decor &decor = static_cast<Decor&> (other);
-                return *getChildren()[0] == *decor.getChildren()[0];
+                return GameObject::operator==(other);
             }
         }
     }

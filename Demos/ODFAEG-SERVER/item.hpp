@@ -8,24 +8,20 @@ namespace sorrok {
         enum Type {
             HP_POTION
         };
-        enum AttribType {
-            POTION_AMOUNT
-        };
         Item();
-        Item (std::string name, Type type);
+        Item (std::string name, Type type, std::string requiredClass);
         Type getType();
-        void addAttribute(AttribType attribType, float value);
         std::string getName();
+        std::string getRequiredClass();
         template <typename Archive>
         void serialize(Archive& ar) {
             ar(name);
             ar(type);
-            ar(attributes);
+            ar(requiredClass);
         }
     private :
-        std::string name;
+        std::string name, requiredClass;
         Type type;
-        std::map<int, float> attributes;
     };
 }
 #endif // ITEM_HPP

@@ -6,6 +6,7 @@
   * the namespace of the Opensource Development Framework Adapted for Every Games.
   */
 namespace odfaeg {
+using namespace math;
   /**
   * \file ray.h
   * \class Ray

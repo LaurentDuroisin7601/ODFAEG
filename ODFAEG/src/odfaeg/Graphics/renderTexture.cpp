@@ -25,15 +25,23 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "renderTextureImplFBO.h"
-#include "renderTextureImplDefault.h"
+
+#include "GL/glew.h"
 #include "../../../include/odfaeg/Graphics/renderTexture.h"
+#ifndef VULKAN
+
 #include <SFML/OpenGL.hpp>
 #include "glCheck.h"
+#include "renderTextureImplFBO.h"
+#include "renderTextureImplDefault.h"
+#endif
+
 namespace odfaeg
 {
     namespace graphic {
         using namespace sf;
+        #ifdef VULKAN
+        #else
         ////////////////////////////////////////////////////////////
         RenderTexture::RenderTexture() :
         m_impl(NULL),
@@ -55,18 +63,30 @@ namespace odfaeg
 
 
         ////////////////////////////////////////////////////////////
-        bool RenderTexture::create(unsigned int width, unsigned int height, window::ContextSettings settings, unsigned int precision, unsigned int format, unsigned int type, bool useSeparateContext)
+        bool RenderTexture::create(unsigned int width, unsigned int height, window::ContextSettings settings, unsigned int textureType, bool useSeparateContext, unsigned int precision, unsigned int format, unsigned int type)
         {
 
-            if (useSeparateContext)
+            if (useSeparateContext) {
                 m_context = new window::Context(settings, width, height);
-            RenderTarget::setVersionMajor(m_context->getSettings().versionMajor);
-            RenderTarget::setVersionMinor(m_context->getSettings().versionMinor);
+                m_settings = m_context->getSettings();
+            } else {
+                m_settings = settings;
+            }
+            RenderTarget::setVersionMajor(m_settings.versionMajor);
+            RenderTarget::setVersionMinor(m_settings.versionMinor);
             // Create the texture
-            if(!m_texture.create(width, height, precision, format, type))
-            {
-                std::cerr<< "Impossible to create render texture (failed to create the target texture)" << std::endl;
-                return false;
+            if (textureType == GL_TEXTURE_2D) {
+                if(!m_texture.create(width, height))
+                {
+                    std::cerr<< "Impossible to create render texture (failed to create the target texture)" << std::endl;
+                    return false;
+                }
+            } else if (textureType = GL_TEXTURE_CUBE_MAP) {
+                if(!m_texture.createCubeMap(width, height))
+                {
+                    std::cerr<< "Impossible to create render texture (failed to create the target texture)" << std::endl;
+                    return false;
+                }
             }
             // We disable smoothing by default for render textures
             setSmooth(false);
@@ -125,7 +145,10 @@ namespace odfaeg
         ////////////////////////////////////////////////////////////
         bool RenderTexture::setActive(bool active)
         {
-            return m_impl && m_context && m_context->setActive(active);
+            if (m_context)
+                return m_impl && m_context->setActive(active);
+            else
+                return true;
         }
 
 
@@ -154,8 +177,7 @@ namespace odfaeg
             return m_texture;
         }
         const window::ContextSettings& RenderTexture::getSettings() const {
-              ContextSettings empty(0, 0, 0, 0, 0);
-              if(m_context) return m_context->getSettings();
+              return m_settings;
         }
         bool RenderTexture::activate(bool active) {
             return setActive(active);
@@ -164,5 +186,28 @@ namespace odfaeg
             if (m_impl)
                 m_impl->bind();
         }
+        void RenderTexture::setLinkedListIds(unsigned int atomicBuffer, unsigned int linkedListBuffer, unsigned int headPtrTex, unsigned int clearBuff) {
+            m_atomicBuffer = atomicBuffer;
+            m_linkedListBuffer = linkedListBuffer;
+            m_headPtrTex = headPtrTex;
+            m_clearBuff = clearBuff;
+        }
+        unsigned int RenderTexture::getAtomicBuffer() {
+            return m_atomicBuffer;
+        }
+        unsigned int RenderTexture::getLinkedListBuffer() {
+            return m_linkedListBuffer;
+        }
+        unsigned int RenderTexture::getHeadPtrTex() {
+            return m_headPtrTex;
+        }
+        unsigned int RenderTexture::getClearBuff() {
+            return m_clearBuff;
+        }
+        void RenderTexture::selectCubemapFace(int cubemapFace) {
+            if(m_impl && m_texture.isCubemap())
+                m_impl->selectCubemapFace(cubemapFace, m_texture.getNativeHandle());
+        }
+        #endif // VULKAN
     }
 }

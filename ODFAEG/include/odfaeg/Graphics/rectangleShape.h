@@ -83,12 +83,13 @@ namespace odfaeg
             ///
             ////////////////////////////////////////////////////////////
             virtual sf::Vector3f getPoint(unsigned int index) const;
-            void onScale(math::Vec3f& scale);
             template <typename Archive>
             void vtserialize(Archive& ar) {
                 Shape::vtserialize(ar);
                 ar(m_size);
             }
+            void onResize(math::Vec3f& scale);
+            void onScale(math::Vec3f& scale);
         private :
 
             ////////////////////////////////////////////////////////////

@@ -21,7 +21,7 @@ namespace odfaeg {
         * \version 1.0
         * \date 1/02/2014
         */
-        class ODFAEG_CORE_API State {
+        class ODFAEG_API_EXPORT State {
 
 
             private :
@@ -61,7 +61,7 @@ namespace odfaeg {
                 *  \param std::string name : the name of the parameter.
                 */
                 bool removeParameter (std::string name);
-                StateParameter& getParameter (const std::string name) const throw (Erreur) {
+                StateParameter& getParameter (const std::string name) {
                         for (unsigned int i = 0; i < parameters.size(); i++) {
                             if (parameters[i]->getName() == name) {
 

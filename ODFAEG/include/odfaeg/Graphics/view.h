@@ -4,7 +4,7 @@
 #include "../Math/vec4.h"
 #include "projMatrix.h"
 #include "viewMatrix.h"
-#include "transformMatrix.h"
+//#include "../Math/transformMatrix.h"
 #include "viewportMatrix.h"
 #include "../Physics/boundingBox.h"
 /**
@@ -13,7 +13,7 @@
   */
 namespace odfaeg {
     namespace graphic {
-    class Entity;
+
         /**
           * \file view.h
           * \class View
@@ -190,7 +190,6 @@ namespace odfaeg {
             bool isXFlipped();
             bool isYFlipped();
             void updated();
-        private :
              /**
             * \fn void setPerspective(double left, double right, double top, double bottom, double zNear, double zFar);
             * \brief change the perspective of the view with the given frustum. (2D view)
@@ -221,6 +220,9 @@ namespace odfaeg {
             * \fn void computeVectorsFromAngles();
             * \brief compute the vectors from angles to pass form polar coordinates to cartesian coordinates.
             */
+            bool isOrtho();
+        private :
+
             void computeVectorsFromAngles();
 
             /**
@@ -228,7 +230,7 @@ namespace odfaeg {
             * \brief compute the angles from vectors to pass form cartesian coordinates to polar coordinates.
             */
             void computeAnglesFromVectors();
-            bool viewUpdated; /**> if the view matrix has been updated.*/
+            bool viewUpdated, ortho; /**> if the view matrix has been updated.*/
             ProjMatrix projMatrix; /**> The projection matrix.*/
             ViewMatrix viewMatrix; /**> The view matrix.*/
             math::Vec3f position, up, target, forward, left; /**> The position, the up vector, the target, the forward and the left vector of the view.*/

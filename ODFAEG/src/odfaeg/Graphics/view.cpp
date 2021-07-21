@@ -1,6 +1,5 @@
 #include "../../../include/odfaeg/Graphics/view.h"
 
-#include "../../../include/odfaeg/Graphics/entity.h"
 #include <SFML/OpenGL.hpp>
 namespace odfaeg {
     namespace graphic {
@@ -20,7 +19,7 @@ namespace odfaeg {
             viewUpdated = true;
             flipX = flipY = false;
         }
-        View::View (double width, double height, double zNear, double zFar) : viewport(0, 0, zNear, width, height, zFar), depth(zFar-zNear) {
+        View::View (double width, double height, double zNear, double zFar) : viewport(0, 0, zNear, width, height, zFar), depth(zFar) {
 
             setPerspective(-width * 0.5f, width * 0.5f, -height * 0.5f, height * 0.5f, zNear, zFar);
             this->up = math::Vec3f(0, 1, 0);
@@ -63,7 +62,7 @@ namespace odfaeg {
             return math::Vec3f (position.x, position.y, position.z);
         }
 
-        View::View (double width, double height, double fovy, double zNear, double zFar) : viewport(0, 0, zNear, width, height, zFar), depth(zFar - zNear) {
+        View::View (double width, double height, double fovy, double zNear, double zFar) : viewport(0, 0, zNear, width, height, zFar), depth(zFar) {
             setPerspective(-width * 0.5f, width * 0.5f, -height * 0.5f, height * 0.5f, fovy, width / height, zNear, zFar);
             this->up = math::Vec3f(0, 0, 1);
             position = math::Vec3f (0, 0, 0);
@@ -157,10 +156,13 @@ namespace odfaeg {
             matrix4f = (transform * matrix4f).inverse();
             std::vector<math::Vec3f> vertices = viewVolume.getVertices();
             for (unsigned int i = 0; i < vertices.size(); i++) {
+                //std::cout<<"vertices : "<<vertices[i]<<std::endl;
                 vertices[i] = matrix4f * vertices[i];
+                //std::cout<<"transformed vertices : "<<vertices[i]<<std::endl;
             }
             std::array<std::array<float, 2>, 3> extends = math::Computer::getExtends(vertices);
             viewVolume = physic::BoundingBox(extends[0][0], extends[1][0], extends[2][0], extends[0][1] - extends[0][0], extends[1][1] - extends[1][0],extends[2][1] - extends[2][0]);
+            //std::cout<<"view volume :  "<<viewVolume.getPosition()<<viewVolume.getSize()<<std::endl;
             return viewVolume;
         }
         math::Vec3f View::getScale() {
@@ -237,6 +239,7 @@ namespace odfaeg {
         void View::setPerspective (double left, double right, double bottom, double top, double front, double back) {
             projMatrix.setGlOrthoMatrix(left, right, bottom, top, front, back);
             viewUpdated = true;
+            ortho = true;
         }
         void View::setPerspective(double left, double right, double bottom, double top, double fovy, double aspect, double front, double back) {
             double tangent = math::Math::tang(math::Math::toRadians(fovy) * 0.5f);   // tangent of half fovY
@@ -244,6 +247,10 @@ namespace odfaeg {
             double hwidth = (hheight * aspect);
             projMatrix.setGlPerspectiveMatrix(-hwidth, hwidth, -hheight, hheight, front, back);
             viewUpdated = true;
+            ortho = false;
+        }
+        bool View::isOrtho() {
+            return ortho;
         }
         void View::setConstrains (float lockTeta, float lockPhi) {
             this->lockTeta = lockTeta;

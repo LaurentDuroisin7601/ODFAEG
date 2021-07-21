@@ -40,7 +40,7 @@ class ODFAEG_GRAPHICS_API Light : public core::Registered<Light> {
         void setHeight(int height) {
             this->height = height;
         }
-        virtual int& getLightId() = 0;
+        virtual int getLightId() = 0;
     protected :
         int height;
         math::Vec3f center;

@@ -3,7 +3,7 @@
 #include "../../../include/odfaeg/Physics/boundingEllipsoid.h"
 #include "../../../include/odfaeg/Physics/orientedBoundingBox.h"
 #include "../../../include/odfaeg/Physics/boundingPolyhedron.h"
-#include "../../../include/odfaeg/Graphics/transformMatrix.h"
+#include "../../../include/odfaeg/Math/transformMatrix.h"
 namespace odfaeg {
     namespace physic {
         OrientedBoundingBox::OrientedBoundingBox (math::Vec3f p1, math::Vec3f p2, math::Vec3f p3, math::Vec3f p4, math::Vec3f p5, math::Vec3f p6, math::Vec3f p7, math::Vec3f p8) {
@@ -494,7 +494,7 @@ namespace odfaeg {
             return true;
         }
         bool OrientedBoundingBox::intersects (BoundingBox &bx, CollisionResultSet::Info& info) {
-            /*float distMin1, distMin2;
+            float distMin1, distMin2;
             int ptIndex1, ptIndex2;
             int edgeIndex1, edgeIndex2;
             int faceIndex1, faceIndex2;
@@ -511,32 +511,30 @@ namespace odfaeg {
             info.nearestEdgeIndex2 = edgeIndex2;
             info.nearestFaceIndex2 = faceIndex2;
             if (ptIndex1 != -1) {
-                return (points[ptIndex1] - center).magnSquared() >= (bp.getPoints()[vertexIndex1] - center).magnSquared();
+                return (points[ptIndex1] - center).magnSquared() >= (bx.getVertices()[vertexIndex1] - center).magnSquared();
             }
             if (ptIndex2 != -1) {
-                return (points[ptIndex2] - center).magnSquared() >= (bp.getPoints()[vertexIndex2] - center).magnSquared();
-            }
-            if (flat && bp.isFlat()) {
+                return (points[ptIndex2] - center).magnSquared() >= (bx.getVertices()[vertexIndex2] - center).magnSquared();
+            } else if (flat && bx.isFlat()) {
                 if (faceIndex1 != -1 && faceIndex2 != -1)  {
                     math::Triangle t1(points[faceIndex1*3], points[faceIndex1*3+1], points[faceIndex1*3+2]);
                     math::Triangle t2(points[faceIndex1*3], points[faceIndex1*3+1], points[faceIndex1*3+3]);
-                    math::Triangle t3(bp.getPoints()[faceIndex1*3], bp.getPoints()[faceIndex1*3+1], bp.getPoints()[faceIndex1*3+2]);
+                    math::Triangle t3(bx.getVertices()[faceIndex1*3], bx.getVertices()[faceIndex1*3+1], bx.getVertices()[faceIndex1*3+2]);
                     return t1.intersects(t3) || t2.intersects(t3);
                 }
                 if (faceIndex1 != -1 && faceIndex2 == -1) {
-                    math::Ray r1 (bp.getPoints()[edgeIndex2], bp.getPoints()[(edgeIndex2 % 3 == 2) ? edgeIndex2 - 2 : edgeIndex2 + 1]);
-                    math::Ray r2 (bp.getPoints()[(edgeIndex2 % 3 == 2) ? edgeIndex2 - 2 : edgeIndex2 + 1], bp.getPoints()[edgeIndex2]);
+                    math::Ray r1 (bx.getVertices()[edgeIndex2], bx.getVertices()[(edgeIndex2 % 3 == 2) ? edgeIndex2 - 2 : edgeIndex2 + 1]);
+                    math::Ray r2 (bx.getVertices()[(edgeIndex2 % 3 == 2) ? edgeIndex2 - 2 : edgeIndex2 + 1], bx.getVertices()[edgeIndex2]);
                     return (intersects(r1, false, info) && intersects(r2, false, info));
                 }
                 if (faceIndex1 == -1 && faceIndex2 != -1) {
-                    math::Triangle t(bp.getPoints()[faceIndex2*3], bp.getPoints()[faceIndex2*3+1], bp.getPoints()[faceIndex2*3+2]);
+                    math::Triangle t(bx.getVertices()[faceIndex2*3], bx.getVertices()[faceIndex2*3+1], bx.getVertices()[faceIndex2*3+2]);
                     math::Ray r1 (points[edgeIndex1], points[(edgeIndex1 % 3 == 2) ? edgeIndex1 - 2 : edgeIndex1 + 1]);
                     math::Ray r2 (points[(edgeIndex1 % 3 == 2) ? edgeIndex1 - 2 : edgeIndex1 + 1], points[edgeIndex1]);
                     return (t.intersects(r1) && t.intersects(r2));
                 }
                 return false;
-            }
-            if (!flat && !bp.isFlat()) {
+            } else if (!flat && !bx.isFlat()) {
                 if (distMin1 < distMin2) {
                     if (faceIndex1 != -1) {
                         math::Vec3f bpn = (faceBissectors[faceIndex1] - center).projOnVector(faceNormals[faceIndex1]);
@@ -562,50 +560,48 @@ namespace odfaeg {
                 math::Vec3f d = points[vertexIndex2] - center;
                 float p = d.projOnAxis(bpn);
                 return p * p > bpn.magnSquared();
-            }
-            if (flat && !bp.isFlat()) {
+            } else if (flat && !bx.isFlat()) {
                 if (faceIndex1 != -1 && faceIndex2 != -1)  {
                     math::Triangle t1(points[faceIndex1*3], points[faceIndex1*3+1], points[faceIndex1*3+2]);
                     math::Triangle t2(points[faceIndex1*3], points[faceIndex1*3+1], points[faceIndex1*3+3]);
-                    math::Triangle t3(bp.getPoints()[faceIndex2*3], bp.getPoints()[faceIndex2*3+1], bp.getPoints()[faceIndex2*3+2]);
-                    return bp.isPointInside(t1.getP1())
-                            || bp.isPointInside(t1.getP2())
-                            || bp.isPointInside(t1.getP3())
-                            || bp.isPointInside(t2.getP1())
-                            || bp.isPointInside(t2.getP2())
-                            || bp.isPointInside(t2.getP3())
+                    math::Triangle t3(bx.getVertices()[faceIndex2*3], bx.getVertices()[faceIndex2*3+1], bx.getVertices()[faceIndex2*3+2]);
+                    return bx.isPointInside(t1.getP1())
+                            || bx.isPointInside(t1.getP2())
+                            || bx.isPointInside(t1.getP3())
+                            || bx.isPointInside(t2.getP1())
+                            || bx.isPointInside(t2.getP2())
+                            || bx.isPointInside(t2.getP3())
                             || t1.intersects(t3)
                             || t2.intersects(t3);
                 }
                 if (faceIndex1 != -1 && faceIndex2 == -1) {
                     math::Triangle t1(points[faceIndex1*3], points[faceIndex1*3+1], points[faceIndex1*3+2]);
                     math::Triangle t2(points[faceIndex1*3], points[faceIndex1*3+1], points[faceIndex1*3+3]);
-                    math::Ray r1 (bp.getPoints()[edgeIndex2], bp.getPoints()[(edgeIndex2 % 3 == 2) ? edgeIndex2 - 2 : edgeIndex2 + 1]);
-                    math::Ray r2 (bp.getPoints()[(edgeIndex2 % 3 == 2) ? edgeIndex2 - 2 : edgeIndex2 + 1], bp.getPoints()[edgeIndex2]);
-                    return bp.isPointInside(t1.getP1())
-                           || bp.isPointInside(t1.getP2())
-                           || bp.isPointInside(t1.getP3())
-                           || bp.isPointInside(t2.getP1())
-                           || bp.isPointInside(t2.getP2())
-                           || bp.isPointInside(t2.getP3())
+                    math::Ray r1 (bx.getVertices()[edgeIndex2], bx.getVertices()[(edgeIndex2 % 3 == 2) ? edgeIndex2 - 2 : edgeIndex2 + 1]);
+                    math::Ray r2 (bx.getVertices()[(edgeIndex2 % 3 == 2) ? edgeIndex2 - 2 : edgeIndex2 + 1], bx.getVertices()[edgeIndex2]);
+                    return bx.isPointInside(t1.getP1())
+                           || bx.isPointInside(t1.getP2())
+                           || bx.isPointInside(t1.getP3())
+                           || bx.isPointInside(t2.getP1())
+                           || bx.isPointInside(t2.getP2())
+                           || bx.isPointInside(t2.getP3())
                            || (t1.intersects(r1) && t1.intersects(r2))
                            || (t2.intersects(r1) && t2.intersects(r2));
                 }
                 if (faceIndex1 == -1 && faceIndex2 != -1) {
-                    math::Triangle t(bp.getPoints()[faceIndex2*3], bp.getPoints()[faceIndex2*3+1], bp.getPoints()[faceIndex2*3+2]);
+                    math::Triangle t(bx.getVertices()[faceIndex2*3], bx.getVertices()[faceIndex2*3+1], bx.getVertices()[faceIndex2*3+2]);
                     math::Ray r1 (points[edgeIndex1], points[(edgeIndex1 % 3 == 2) ? edgeIndex1 - 2 : edgeIndex1 + 1]);
                     math::Ray r2 (points[(edgeIndex1 % 3 == 2) ? edgeIndex1 - 2 : edgeIndex1 + 1], points[edgeIndex1]);
-                    return bp.isPointInside(r1.getOrig())
-                            || bp.isPointInside(r1.getExt())
+                    return bx.isPointInside(r1.getOrig())
+                            || bx.isPointInside(r1.getExt())
                             || (t.intersects(r1) && t.intersects(r2));
                 }
                 return false;
-            }
-            if (!flat && bp.isFlat()) {
+            } else {
                 if (faceIndex1 != -1 && faceIndex2 != -1)  {
                     math::Triangle t1(points[faceIndex1*3], points[faceIndex1*3+1], points[faceIndex1*3+2]);
                     math::Triangle t2(points[faceIndex1*3], points[faceIndex1*3+1], points[faceIndex1*3+3]);
-                    math::Triangle t3(bp.getPoints()[faceIndex2*3], bp.getPoints()[faceIndex2*3+1], bp.getPoints()[faceIndex2*3+2]);
+                    math::Triangle t3(bx.getVertices()[faceIndex2*3], bx.getVertices()[faceIndex2*3+1], bx.getVertices()[faceIndex2*3+2]);
                     return isPointInside(t2.getP1())
                             || isPointInside(t2.getP2())
                             || isPointInside(t2.getP3())
@@ -615,15 +611,15 @@ namespace odfaeg {
                 if (faceIndex1 != -1 && faceIndex2 == -1) {
                     math::Triangle t1(points[faceIndex1*3], points[faceIndex1*3+1], points[faceIndex1*3+2]);
                     math::Triangle t2(points[faceIndex1*3], points[faceIndex1*3+1], points[faceIndex1*3+3]);
-                    math::Ray r1 (bp.getPoints()[edgeIndex2], bp.getPoints()[(edgeIndex2 % 3 == 2) ? edgeIndex2 - 2 : edgeIndex2 + 1]);
-                    math::Ray r2 (bp.getPoints()[(edgeIndex2 % 3 == 2) ? edgeIndex2 - 2 : edgeIndex2 + 1], bp.getPoints()[edgeIndex2]);
+                    math::Ray r1 (bx.getVertices()[edgeIndex2], bx.getVertices()[(edgeIndex2 % 3 == 2) ? edgeIndex2 - 2 : edgeIndex2 + 1]);
+                    math::Ray r2 (bx.getVertices()[(edgeIndex2 % 3 == 2) ? edgeIndex2 - 2 : edgeIndex2 + 1], bx.getVertices()[edgeIndex2]);
                     return isPointInside(r1.getOrig())
                            || isPointInside(r1.getExt())
                            || (t1.intersects(r1) && t1.intersects(r2))
                            || (t2.intersects(r1) && t2.intersects(r2));
                 }
                 if (faceIndex1 == -1 && faceIndex2 != -1) {
-                    math::Triangle t(bp.getPoints()[faceIndex2*3], bp.getPoints()[faceIndex2*3+1], bp.getPoints()[faceIndex2*3+2]);
+                    math::Triangle t(bx.getVertices()[faceIndex2*3], bx.getVertices()[faceIndex2*3+1], bx.getVertices()[faceIndex2*3+2]);
                     math::Ray r1 (points[edgeIndex1], points[(edgeIndex1 % 3 == 2) ? edgeIndex1 - 2 : edgeIndex1 + 1]);
                     math::Ray r2 (points[(edgeIndex1 % 3 == 2) ? edgeIndex1 - 2 : edgeIndex1 + 1], points[edgeIndex1]);
                     return isPointInside(t.getP1())
@@ -632,52 +628,51 @@ namespace odfaeg {
                             || (t.intersects(r1) && t.intersects(r2));
                 }
                 return false;
-            }*/
+            }
         }
         bool OrientedBoundingBox::intersects (OrientedBoundingBox &obx, CollisionResultSet::Info& info) {
-            /*float distMin1, distMin2;
+            float distMin1, distMin2;
             int ptIndex1, ptIndex2;
             int edgeIndex1, edgeIndex2;
             int faceIndex1, faceIndex2;
 
-            int vertexIndex1 = math::Computer::checkNearestVertexFromShape(center, points, edgeBissectors, edgeNormals, faceBissectors, faceNormals, bp.getPoints(), distMin1, ptIndex1, edgeIndex1, faceIndex1);
+            int vertexIndex1 = math::Computer::checkNearestVertexFromShape(center, points, edgeBissectors, edgeNormals, faceBissectors, faceNormals, obx.getVertices(), distMin1, ptIndex1, edgeIndex1, faceIndex1, 4);
             info.nearestVertexIndex1 = vertexIndex1;
             info.nearestPtIndex1 = ptIndex1;
             info.nearestEdgeIndex1 = edgeIndex1;
             info.nearestFaceIndex1 = faceIndex1;
 
-            int vertexIndex2 = math::Computer::checkNearestVertexFromShape(bp.getCenter(), bp.getPoints(), bp.getEdgeBissectors(), bp.getEdgeNormals(), bp.getFaceBissectors(), bp.getFaceNormals(), points, distMin2, ptIndex2, edgeIndex2, faceIndex2);
+            int vertexIndex2 = math::Computer::checkNearestVertexFromShape(obx.getCenter(), obx.getVertices(), obx.getEdgeBissectors(), obx.getEdgeNormals(), obx.getFaceBissectors(), obx.getFaceNormals(), points, distMin2, ptIndex2, edgeIndex2, faceIndex2, 4);
             info.nearestVertexIndex2 = vertexIndex2;
             info.nearestPtIndex2 = ptIndex2;
             info.nearestEdgeIndex2 = edgeIndex2;
             info.nearestFaceIndex2 = faceIndex2;
             if (ptIndex1 != -1) {
-                return (points[ptIndex1] - center).magnSquared() >= (bp.getPoints()[vertexIndex1] - center).magnSquared();
+                return (points[ptIndex1] - center).magnSquared() >= (obx.getVertices()[vertexIndex1] - center).magnSquared();
             }
             if (ptIndex2 != -1) {
-                return (points[ptIndex2] - center).magnSquared() >= (bp.getPoints()[vertexIndex2] - center).magnSquared();
+                return (points[ptIndex2] - center).magnSquared() >= (obx.getVertices()[vertexIndex2] - center).magnSquared();
             }
-            if (flat && bp.isFlat()) {
+            if (flat && obx.isFlat()) {
                 if (faceIndex1 != -1 && faceIndex2 != -1)  {
                     math::Triangle t1(points[faceIndex1*3], points[faceIndex1*3+1], points[faceIndex1*3+2]);
                     math::Triangle t2(points[faceIndex1*3], points[faceIndex1*3+1], points[faceIndex1*3+3]);
-                    math::Triangle t3(bp.getPoints()[faceIndex1*3], bp.getPoints()[faceIndex1*3+1], bp.getPoints()[faceIndex1*3+2]);
+                    math::Triangle t3(obx.getVertices()[faceIndex1*3], obx.getVertices()[faceIndex1*3+1], obx.getVertices()[faceIndex1*3+2]);
                     return t1.intersects(t3) || t2.intersects(t3);
                 }
                 if (faceIndex1 != -1 && faceIndex2 == -1) {
-                    math::Ray r1 (bp.getPoints()[edgeIndex2], bp.getPoints()[(edgeIndex2 % 3 == 2) ? edgeIndex2 - 2 : edgeIndex2 + 1]);
-                    math::Ray r2 (bp.getPoints()[(edgeIndex2 % 3 == 2) ? edgeIndex2 - 2 : edgeIndex2 + 1], bp.getPoints()[edgeIndex2]);
+                    math::Ray r1 (obx.getVertices()[edgeIndex2], obx.getVertices()[(edgeIndex2 % 3 == 2) ? edgeIndex2 - 2 : edgeIndex2 + 1]);
+                    math::Ray r2 (obx.getVertices()[(edgeIndex2 % 3 == 2) ? edgeIndex2 - 2 : edgeIndex2 + 1], obx.getVertices()[edgeIndex2]);
                     return (intersects(r1, false, info) && intersects(r2, false, info));
                 }
                 if (faceIndex1 == -1 && faceIndex2 != -1) {
-                    math::Triangle t(bp.getPoints()[faceIndex2*3], bp.getPoints()[faceIndex2*3+1], bp.getPoints()[faceIndex2*3+2]);
+                    math::Triangle t(obx.getVertices()[faceIndex2*3], obx.getVertices()[faceIndex2*3+1], obx.getVertices()[faceIndex2*3+2]);
                     math::Ray r1 (points[edgeIndex1], points[(edgeIndex1 % 3 == 2) ? edgeIndex1 - 2 : edgeIndex1 + 1]);
                     math::Ray r2 (points[(edgeIndex1 % 3 == 2) ? edgeIndex1 - 2 : edgeIndex1 + 1], points[edgeIndex1]);
                     return (t.intersects(r1) && t.intersects(r2));
                 }
                 return false;
-            }
-            if (!flat && !bp.isFlat()) {
+            } else if (!flat && !obx.isFlat()) {
                 if (distMin1 < distMin2) {
                     if (faceIndex1 != -1) {
                         math::Vec3f bpn = (faceBissectors[faceIndex1] - center).projOnVector(faceNormals[faceIndex1]);
@@ -703,50 +698,47 @@ namespace odfaeg {
                 math::Vec3f d = points[vertexIndex2] - center;
                 float p = d.projOnAxis(bpn);
                 return p * p > bpn.magnSquared();
-            }
-            if (flat && !bp.isFlat()) {
+            } else if (flat && !obx.isFlat()) {
                 if (faceIndex1 != -1 && faceIndex2 != -1)  {
                     math::Triangle t1(points[faceIndex1*3], points[faceIndex1*3+1], points[faceIndex1*3+2]);
                     math::Triangle t2(points[faceIndex1*3], points[faceIndex1*3+1], points[faceIndex1*3+3]);
-                    math::Triangle t3(bp.getPoints()[faceIndex2*3], bp.getPoints()[faceIndex2*3+1], bp.getPoints()[faceIndex2*3+2]);
-                    return bp.isPointInside(t1.getP1())
-                            || bp.isPointInside(t1.getP2())
-                            || bp.isPointInside(t1.getP3())
-                            || bp.isPointInside(t2.getP1())
-                            || bp.isPointInside(t2.getP2())
-                            || bp.isPointInside(t2.getP3())
+                    math::Triangle t3(obx.getVertices()[faceIndex2*3], obx.getVertices()[faceIndex2*3+1], obx.getVertices()[faceIndex2*3+2]);
+                    return obx.isPointInside(t1.getP1())
+                            || obx.isPointInside(t1.getP2())
+                            || obx.isPointInside(t1.getP3())
+                            || obx.isPointInside(t2.getP1())
+                            || obx.isPointInside(t2.getP2())
+                            || obx.isPointInside(t2.getP3())
                             || t1.intersects(t3)
                             || t2.intersects(t3);
                 }
                 if (faceIndex1 != -1 && faceIndex2 == -1) {
                     math::Triangle t1(points[faceIndex1*3], points[faceIndex1*3+1], points[faceIndex1*3+2]);
                     math::Triangle t2(points[faceIndex1*3], points[faceIndex1*3+1], points[faceIndex1*3+3]);
-                    math::Ray r1 (bp.getPoints()[edgeIndex2], bp.getPoints()[(edgeIndex2 % 3 == 2) ? edgeIndex2 - 2 : edgeIndex2 + 1]);
-                    math::Ray r2 (bp.getPoints()[(edgeIndex2 % 3 == 2) ? edgeIndex2 - 2 : edgeIndex2 + 1], bp.getPoints()[edgeIndex2]);
-                    return bp.isPointInside(t1.getP1())
-                           || bp.isPointInside(t1.getP2())
-                           || bp.isPointInside(t1.getP3())
-                           || bp.isPointInside(t2.getP1())
-                           || bp.isPointInside(t2.getP2())
-                           || bp.isPointInside(t2.getP3())
+                    math::Ray r1 (obx.getVertices()[edgeIndex2], obx.getVertices()[(edgeIndex2 % 3 == 2) ? edgeIndex2 - 2 : edgeIndex2 + 1]);
+                    math::Ray r2 (obx.getVertices()[(edgeIndex2 % 3 == 2) ? edgeIndex2 - 2 : edgeIndex2 + 1], obx.getVertices()[edgeIndex2]);
+                    return obx.isPointInside(t1.getP1())
+                           || obx.isPointInside(t1.getP2())
+                           || obx.isPointInside(t1.getP3())
+                           || obx.isPointInside(t2.getP1())
+                           || obx.isPointInside(t2.getP2())
+                           || obx.isPointInside(t2.getP3())
                            || (t1.intersects(r1) && t1.intersects(r2))
                            || (t2.intersects(r1) && t2.intersects(r2));
-                }
-                if (faceIndex1 == -1 && faceIndex2 != -1) {
-                    math::Triangle t(bp.getPoints()[faceIndex2*3], bp.getPoints()[faceIndex2*3+1], bp.getPoints()[faceIndex2*3+2]);
+                } else if (faceIndex1 == -1 && faceIndex2 != -1) {
+                    math::Triangle t(obx.getVertices()[faceIndex2*3], obx.getVertices()[faceIndex2*3+1], obx.getVertices()[faceIndex2*3+2]);
                     math::Ray r1 (points[edgeIndex1], points[(edgeIndex1 % 3 == 2) ? edgeIndex1 - 2 : edgeIndex1 + 1]);
                     math::Ray r2 (points[(edgeIndex1 % 3 == 2) ? edgeIndex1 - 2 : edgeIndex1 + 1], points[edgeIndex1]);
-                    return bp.isPointInside(r1.getOrig())
-                            || bp.isPointInside(r1.getExt())
+                    return obx.isPointInside(r1.getOrig())
+                            || obx.isPointInside(r1.getExt())
                             || (t.intersects(r1) && t.intersects(r2));
                 }
                 return false;
-            }
-            if (!flat && bp.isFlat()) {
+            } else {
                 if (faceIndex1 != -1 && faceIndex2 != -1)  {
                     math::Triangle t1(points[faceIndex1*3], points[faceIndex1*3+1], points[faceIndex1*3+2]);
                     math::Triangle t2(points[faceIndex1*3], points[faceIndex1*3+1], points[faceIndex1*3+3]);
-                    math::Triangle t3(bp.getPoints()[faceIndex2*3], bp.getPoints()[faceIndex2*3+1], bp.getPoints()[faceIndex2*3+2]);
+                    math::Triangle t3(obx.getVertices()[faceIndex2*3], obx.getVertices()[faceIndex2*3+1], obx.getVertices()[faceIndex2*3+2]);
                     return isPointInside(t2.getP1())
                             || isPointInside(t2.getP2())
                             || isPointInside(t2.getP3())
@@ -756,15 +748,15 @@ namespace odfaeg {
                 if (faceIndex1 != -1 && faceIndex2 == -1) {
                     math::Triangle t1(points[faceIndex1*3], points[faceIndex1*3+1], points[faceIndex1*3+2]);
                     math::Triangle t2(points[faceIndex1*3], points[faceIndex1*3+1], points[faceIndex1*3+3]);
-                    math::Ray r1 (bp.getPoints()[edgeIndex2], bp.getPoints()[(edgeIndex2 % 3 == 2) ? edgeIndex2 - 2 : edgeIndex2 + 1]);
-                    math::Ray r2 (bp.getPoints()[(edgeIndex2 % 3 == 2) ? edgeIndex2 - 2 : edgeIndex2 + 1], bp.getPoints()[edgeIndex2]);
+                    math::Ray r1 (obx.getVertices()[edgeIndex2], obx.getVertices()[(edgeIndex2 % 3 == 2) ? edgeIndex2 - 2 : edgeIndex2 + 1]);
+                    math::Ray r2 (obx.getVertices()[(edgeIndex2 % 3 == 2) ? edgeIndex2 - 2 : edgeIndex2 + 1], obx.getVertices()[edgeIndex2]);
                     return isPointInside(r1.getOrig())
                            || isPointInside(r1.getExt())
                            || (t1.intersects(r1) && t1.intersects(r2))
                            || (t2.intersects(r1) && t2.intersects(r2));
                 }
                 if (faceIndex1 == -1 && faceIndex2 != -1) {
-                    math::Triangle t(bp.getPoints()[faceIndex2*3], bp.getPoints()[faceIndex2*3+1], bp.getPoints()[faceIndex2*3+2]);
+                    math::Triangle t(obx.getVertices()[faceIndex2*3], obx.getVertices()[faceIndex2*3+1], obx.getVertices()[faceIndex2*3+2]);
                     math::Ray r1 (points[edgeIndex1], points[(edgeIndex1 % 3 == 2) ? edgeIndex1 - 2 : edgeIndex1 + 1]);
                     math::Ray r2 (points[(edgeIndex1 % 3 == 2) ? edgeIndex1 - 2 : edgeIndex1 + 1], points[edgeIndex1]);
                     return isPointInside(t.getP1())
@@ -773,26 +765,18 @@ namespace odfaeg {
                             || (t.intersects(r1) && t.intersects(r2));
                 }
                 return false;
-            }*/
+            }
         }
-        bool OrientedBoundingBox::intersects (BoundingPolyhedron &bp, CollisionResultSet::Info& info) {
-            /*std::array<math::Vec3f, 6> bi;
-            bi[0] = bx * width * 0.5f;
-            bi[1] = by * height * 0.5f;
-            bi[2] = bz * depth * 0.5f;
-            bi[3] = -bx * width * 0.5f;
-            bi[4] = -by * height * 0.5f;
-            bi[5] = -bz * depth * 0.5f;
-            float distMin1 = 0, distMin2 = 0;
-            int faceIndex1 = 0, faceIndex2 = 0;
-            std::vector<math::Vec3f> normals;
-            std::vector<math::Vec3f> bissectors;
-            bissectors = bp.get3DBissectors();
-            normals = bp.get3DNormals();
-            int ptIndex1 = math::Computer::checkNearestVertexFromShape(points, bissectors, distMin1, faceIndex2);
-            int ptIndex2 = math::Computer::checkNearestVertexFromShape(bp.getPoints(), bi, distMin2, faceIndex1);
+        bool OrientedBoundingBox::intersects (BoundingPolyhedron &bp, CollisionResultSet::Info& info) {            
+            
+
+            float distMin1 = 0, distMin2 = 0;            
+            int edgeIndex1 = 0, edgeIndex2 = 0;
+            int faceIndex1 = 0, faceIndex2 = 0;            
+            int ptIndex1 = math::Computer::checkNearestVertexFromShape(center, points, edgeBissectors, edgeNormals, faceBissectors, faceNormals, bp.getPoints(), distMin1, ptIndex1, edgeIndex1, faceIndex1, 3);
+            int ptIndex2 = math::Computer::checkNearestVertexFromShape(bp.getCenter(), bp.getPoints(), bp.getEdgeBissectors(), bp.getEdgeNormals(), bp.getFaceBissectors(), bp.getFaceNormals(), points, distMin2, ptIndex2, edgeIndex2, faceIndex2, 4);
             if (distMin1 < distMin2) {
-                math::Vec3f bpn = (bissectors[faceIndex2] - bp.getCenter()).projOnVector(normals[faceIndex2]);
+                math::Vec3f bpn = (bp.getFaceBissectors()[faceIndex2] - bp.getCenter()).projOnVector(bp.getFaceNormals()[faceIndex2]);
                 math::Vec3f d = points[ptIndex1] - bp.getCenter();
                 float p = d.projOnAxis(bpn);
                 if (p * p > bpn.magnSquared()) {
@@ -800,14 +784,14 @@ namespace odfaeg {
                 }
                 return true;
             } else {
-                math::Vec3f bpn = bi[faceIndex1];
+                math::Vec3f bpn = faceNormals[faceIndex1];
                 math::Vec3f d = bp.getPoints()[ptIndex2] - center;
                 float p = d.projOnAxis(bpn);
                 if (p * p > bpn.magnSquared()) {
                     return false;
                 }
                 return true;
-            }*/
+            }
         }
 
         math::Vec3f OrientedBoundingBox::getCenter() {

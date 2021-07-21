@@ -26,7 +26,16 @@ namespace odfaeg {
                 void setBorderThickness(float thickness);
                 void setBorderColor(sf::Color color);
                 void updateScrolls();
+                void addChild(LightComponent* child);
+                void onUpdate(RenderWindow* window, window::IEvent& event);
+                bool isPointInside(math::Vec3f point);
+                void clearDrawables();
+                void setScissorDisable(bool scissor);
+                void setMoveComponents(bool moveComponents);
+                math::Vec3f getDeltas();
             private :
+                bool disableScissor, moveComponents;
+                math::Vec3f mousePos, deltas;
                 bool scrollX, scrollY;
                 RectangleShape rect;
                 RectangleShape vertScrollBar, horScrollBar, corner;

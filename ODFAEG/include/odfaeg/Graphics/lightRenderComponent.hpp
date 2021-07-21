@@ -6,7 +6,6 @@
 #include "entityManager.h"
 #include "heavyComponent.h"
 #include "2D/ambientLight.h"
-#include "entityLight.h"
 #include "../Physics/particuleSystem.h"
 #include "rectangleShape.h"
 /**
@@ -15,6 +14,8 @@
   */
 namespace odfaeg {
     namespace graphic {
+        #ifdef VULKAN
+        #else
         /**
           * \file OITRenderComponent.h
           * \class OITRenderComponent
@@ -25,10 +26,18 @@ namespace odfaeg {
           */
         class ODFAEG_GRAPHICS_API LightRenderComponent : public HeavyComponent {
             public :
+                struct uint64_to_uint128 {
+                    uint64_t handle;
+                    uint64_t padding;
+                };
+                struct Samplers {
+                    uint64_to_uint128 tex[200];
+                };
                 LightRenderComponent (RenderWindow& window, int layer, std::string expression,window::ContextSettings settings = window::ContextSettings(0, 0, 4, 3, 0));
+                void loadTextureIndexes();
+                void onVisibilityChanged(bool visible);
                 void pushEvent(window::IEvent event, RenderWindow& rw);
                 bool needToUpdate();
-                void changeVisibleEntities(Entity* toRemove, Entity* toAdd, EntityManager* em);
                 std::string getExpression();
                 void clear();
                 Sprite& getNormalMapTile ();
@@ -51,10 +60,10 @@ namespace odfaeg {
                 }
                 View& getView();
                 int getLayer();
-                void updateParticleSystems();
+                ~LightRenderComponent();
             private :
-                Batcher batcher, lightBatcher; /**> A group of faces using the same materials and primitive type.*/
-                std::vector<Instance> m_instances; /**> Instances to draw. (Instanced rendering.) */
+                Batcher batcher, lightBatcher, normalBatcher; /**> A group of faces using the same materials and primitive type.*/
+                std::vector<Instance> m_instances, m_normals; /**> Instances to draw. (Instanced rendering.) */
                 std::vector<Instance> m_light_instances; /**> Instances to draw. (Instanced rendering.) */
                 std::vector<Entity*> visibleEntities; /**> Entities loaded*/
                 RenderTexture depthBuffer; /**> the stencil buffer.*/
@@ -63,7 +72,7 @@ namespace odfaeg {
                 RenderTexture specularTexture;
                 RenderTexture lightMap;
                 Sprite  depthBufferTile, normalMapTile, bumpMapTile, specularBufferTile, lightMapTile; /**> the stencil and shadow map buffer.*/
-                Shader depthBufferGenerator; /**> the shader to generate the stencil buffer.*/
+                Shader depthBufferGenerator, depthBufferNormalGenerator; /**> the shader to generate the stencil buffer.*/
                 Shader normalMapGenerator; /**> the shader to generate the shadow map.*/
                 Shader specularTextureGenerator;
                 Shader bumpTextureGenerator;
@@ -71,10 +80,12 @@ namespace odfaeg {
                 View view; /**> the view of the component.*/
                 std::string expression;
                 bool update;
-                unsigned int vboWorldMatrices;
+                unsigned int vboWorldMatrices, ubo;
+                std::array<VertexBuffer ,Batcher::nbPrimitiveTypes> vbBindlessTex;
                 VertexBuffer vb;
                 std::vector<float> matrices;
         };
+        #endif
     }
 }
 #endif

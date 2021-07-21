@@ -1,11 +1,17 @@
 #include <GL/glew.h>
 #include "../../../include/odfaeg/Graphics/lightRenderComponent.hpp"
+#ifndef VULKAN
+
 #include "glCheck.h"
+
+#endif
 #include <memory.h>
 using namespace sf;
 using namespace std;
 namespace odfaeg {
     namespace graphic {
+        #ifdef VULKAN
+        #else
         LightRenderComponent::LightRenderComponent (RenderWindow& window, int layer, std::string expression,window::ContextSettings settings) :
                     HeavyComponent(window, math::Vec3f(window.getView().getPosition().x, window.getView().getPosition().y, layer),
                                   math::Vec3f(window.getView().getSize().x, window.getView().getSize().y, 0),
@@ -37,26 +43,50 @@ namespace odfaeg {
                     getListener().connect("UPDATE", cmd);
                     if (settings.versionMajor >= 3 && settings.versionMinor >= 3) {
                         glGenBuffers(1, &vboWorldMatrices);
-                        const std::string vertexShader = R"(#version 460 core
+                        const std::string normalVertexShader = R"(#version 460
+                                                                layout (location = 0) in vec3 position;
+                                                                layout (location = 1) in vec4 color;
+                                                                layout (location = 2) in vec2 texCoords;
+                                                                layout (location = 3) in vec3 normals;
+                                                                layout (location = 4) in uint textureIndex;
+                                                                uniform mat4 projectionMatrix;
+                                                                uniform mat4 viewMatrix;
+                                                                uniform mat4 textureMatrix[)"+core::conversionUIntString(Texture::getAllTextures().size())+R"(];
+                                                                out vec2 fTexCoords;
+                                                                out vec4 frontColor;
+                                                                out uint texIndex;
+                                                                void main() {
+                                                                    gl_Position = projectionMatrix * viewMatrix * vec4(position, 1.f);
+                                                                    fTexCoords = (textureIndex != 0) ? (textureMatrix[textureIndex-1] * vec4(texCoords, 1.f, 1.f)).xy : texCoords;
+                                                                    frontColor = color;
+                                                                    texIndex = textureIndex;
+                                                                }
+                                                                )";
+                        const std::string vertexShader = R"(#version 460
                                                         layout (location = 0) in vec3 position;
                                                         layout (location = 1) in vec4 color;
                                                         layout (location = 2) in vec2 texCoords;
-                                                        layout (location = 3) in mat4 worldMat;
+                                                        layout (location = 3) in vec3 normals;
+                                                        layout (location = 4) in mat4 worldMat;
+                                                        layout (location = 12) in uint textureIndex;
                                                         uniform mat4 projectionMatrix;
                                                         uniform mat4 viewMatrix;
-                                                        uniform mat4 textureMatrix;
+                                                        uniform mat4 textureMatrix[)"+core::conversionUIntString(Texture::getAllTextures().size())+R"(];
                                                         out vec2 fTexCoords;
                                                         out vec4 frontColor;
+                                                        out uint texIndex;
                                                         void main() {
                                                             gl_Position = projectionMatrix * viewMatrix * worldMat * vec4(position, 1.f);
-                                                            fTexCoords = (textureMatrix * vec4(texCoords, 1.f, 1.f)).xy;
+                                                            fTexCoords = (textureIndex != 0) ? (textureMatrix[textureIndex-1] * vec4(texCoords, 1.f, 1.f)).xy : texCoords;
                                                             frontColor = color;
+                                                            texIndex = textureIndex;
                                                         }
                                                         )";
-                        const std::string buildNormalMapVertexShader = R"(#version 460 core
+                        const std::string buildNormalMapVertexShader = R"(#version 460
                                                                     layout (location = 0) in vec3 position;
                                                                     layout (location = 1) in vec4 color;
                                                                     layout (location = 2) in vec2 texCoords;
+                                                                    layout (location = 3) in vec3 normals;
                                                                     uniform mat4 projectionMatrix;
                                                                     uniform mat4 viewMatrix;
                                                                     uniform mat4 worldMatrix;
@@ -69,7 +99,7 @@ namespace odfaeg {
                                                                         frontColor = color;
                                                                     }
                                                                     )";
-                        const std::string buildNormalMapFragmentShader = R"(#version 460 core
+                        const std::string buildNormalMapFragmentShader = R"(#version 460
                                                                             in vec4 frontColor;
                                                                             in vec2 fTexCoords;
                                                                             const vec2 size = vec2(2.0, 0.0);
@@ -87,24 +117,25 @@ namespace odfaeg {
                                                                                 fColor = vec4(cross(va, vb), depth.z);
                                                                             }
                                                                             )";
-                        const std::string depthGenFragShader = R"(#version 460 core
+                        const std::string depthGenFragShader = R"(#version 460
+                                                                  #extension GL_ARB_bindless_texture : enable
                                                                   in vec4 frontColor;
                                                                   in vec2 fTexCoords;
+                                                                  in flat uint texIndex;
                                                                   uniform sampler2D texture;
                                                                   uniform float haveTexture;
+                                                                  layout (std140, binding = 0) uniform ALL_TEXTURES {
+                                                                      sampler2D textures[200];
+                                                                  };
                                                                   layout (location = 0) out vec4 fColor;
                                                                   void main () {
-                                                                      vec4 texel = texture2D(texture, fTexCoords);
-                                                                      vec4 colors[2];
-                                                                      colors[1] = texel * frontColor;
-                                                                      colors[0] = frontColor;
-                                                                      bool b = (haveTexture > 0.9);
-                                                                      float current_alpha = colors[int(b)].a;
+                                                                      vec4 texel = (texIndex != 0) ? frontColor * texture2D(textures[texIndex-1], fTexCoords) : frontColor;
+                                                                      float current_alpha = texel.a;
                                                                       float z = gl_FragCoord.z;
                                                                       fColor = vec4(0, 0, z, current_alpha);
                                                                   }
                                                                   )";
-                        const std::string specularGenFragShader = R"(#version 460 core
+                        const std::string specularGenFragShader = R"(#version 460
                                                                      in vec4 frontColor;
                                                                      in vec2 fTexCoords;
                                                                      uniform sampler2D texture;
@@ -127,7 +158,7 @@ namespace odfaeg {
                                                                         fColor = vec4(intensity, power, z, color.a);
                                                                      }
                                                                   )";
-                        const std::string bumpGenFragShader =    R"(#version 460 core
+                        const std::string bumpGenFragShader =    R"(#version 460
                                                                  in vec4 frontColor;
                                                                  in vec2 fTexCoords;
                                                                  uniform sampler2D texture;
@@ -144,7 +175,7 @@ namespace odfaeg {
                                                                  }
                                                                  )";
                         const std::string perPixLightingFragmentShader =
-                                                                 R"(#version 460 core
+                                                                 R"(#version 460
                                                                  in vec4 frontColor;
                                                                  in vec2 fTexCoords;
                                                                  const vec2 size = vec2(2.0,0.0);
@@ -184,9 +215,9 @@ namespace odfaeg {
                                                                          vec3 tmpNormal = (normal.xyz);
                                                                          vec3 tangeant = normalize (vec3(size.xy, s21 - s01));
                                                                          vec3 binomial = normalize (vec3(size.yx, s12 - s10));
-                                                                         normal.x = dot(vertexToLight, tangeant);
-                                                                         normal.y = dot(vertexToLight, binomial);
-                                                                         normal.z = dot(vertexToLight, tmpNormal);
+                                                                         normal.x = dot(bump.xyz, tangeant);
+                                                                         normal.y = dot(bump.xyz, binomial);
+                                                                         normal.z = dot(bump.xyz, tmpNormal);
                                                                          normal.w = bump.w;
                                                                      }
                                                                      if (z >= normal.w) {
@@ -216,6 +247,8 @@ namespace odfaeg {
                                                                  )";
                         if (!depthBufferGenerator.loadFromMemory(vertexShader, depthGenFragShader))
                             throw core::Erreur(50, "Failed to load depth buffer generator shader", 0);
+                        if (!depthBufferNormalGenerator.loadFromMemory(normalVertexShader, depthGenFragShader))
+                            throw core::Erreur(55, "Failed to load depth buffer normal generator shader", 0);
                         std::cout<<"depth buffer generator compiled"<<std::endl;
                         if (!normalMapGenerator.loadFromMemory(buildNormalMapVertexShader, buildNormalMapFragmentShader))
                             throw core::Erreur(51, "Failed to load normal generator shader", 0);
@@ -230,15 +263,44 @@ namespace odfaeg {
                             throw core::Erreur(54, "Failed to load light map generator shader", 0);
                         normalMapGenerator.setParameter("texture", Shader::CurrentTexture);
                         depthBufferGenerator.setParameter("texture", Shader::CurrentTexture);
+                        depthBufferNormalGenerator.setParameter("texture", Shader::CurrentTexture);
                         specularTextureGenerator.setParameter("texture",Shader::CurrentTexture);
-                        specularTextureGenerator.setParameter("maxM", Material::getMaxSpecularIntensity());
-                        specularTextureGenerator.setParameter("maxP", Material::getMaxSpecularPower());
+                        /*specularTextureGenerator.setParameter("maxM", Material::getMaxSpecularIntensity());
+                        specularTextureGenerator.setParameter("maxP", Material::getMaxSpecularPower());*/
                         bumpTextureGenerator.setParameter("texture",Shader::CurrentTexture);
                         lightMapGenerator.setParameter("resolution", resolution.x, resolution.y, resolution.z);
                         lightMapGenerator.setParameter("depthTexture", depthBuffer.getTexture());
                         lightMapGenerator.setParameter("specularTexture",specularTexture.getTexture());
                         lightMapGenerator.setParameter("bumpMap",bumpTexture.getTexture());
                         lightMapGenerator.setParameter("lightMap",lightMap.getTexture());
+                        std::vector<Texture*> allTextures = Texture::getAllTextures();
+                        Samplers allSamplers{};
+                        std::vector<math::Matrix4f> textureMatrices;
+                        for (unsigned int i = 0; i < allTextures.size(); i++) {
+                            textureMatrices.push_back(allTextures[i]->getTextureMatrix());
+                            GLuint64 handle_texture = allTextures[i]->getTextureHandle();
+                            allTextures[i]->makeTextureResident(handle_texture);
+                            allSamplers.tex[i].handle = handle_texture;
+                            //std::cout<<"add texture i : "<<i<<" id : "<<allTextures[i]->getNativeHandle()<<std::endl;
+                        }
+                        depthBufferGenerator.setParameter("textureMatrix", textureMatrices);
+                        depthBufferNormalGenerator.setParameter("textureMatrix", textureMatrices);
+                        depthBuffer.setActive();
+                        glCheck(glGenBuffers(1, &ubo));
+                        unsigned int ubid;
+                        glCheck(ubid = glGetUniformBlockIndex(depthBufferGenerator.getHandle(), "ALL_TEXTURES"));
+                        glCheck(glUniformBlockBinding(depthBufferGenerator.getHandle(),    ubid, 0));
+                        glCheck(ubid = glGetUniformBlockIndex(depthBufferNormalGenerator.getHandle(), "ALL_TEXTURES"));
+                        glCheck(glUniformBlockBinding(depthBufferNormalGenerator.getHandle(),    ubid, 0));
+                        glCheck(glBindBuffer(GL_UNIFORM_BUFFER, ubo));
+                        glCheck(glBufferData(GL_UNIFORM_BUFFER, sizeof(Samplers),allSamplers.tex, GL_STATIC_DRAW));
+                        //std::cout<<"size : "<<sizeof(Samplers)<<" "<<alignof (alignas(16) uint64_t[200])<<std::endl;
+
+                        glCheck(glBindBuffer(GL_UNIFORM_BUFFER, 0));
+                        glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo));
+                        for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
+                            vbBindlessTex[i].setPrimitiveType(static_cast<sf::PrimitiveType>(i));
+                        }
                     } else {
                         if (Shader::isAvailable()) {
                             const std::string  vertexShader =
@@ -505,8 +567,8 @@ namespace odfaeg {
                             normalMapGenerator.setParameter("texture", Shader::CurrentTexture);
                             depthBufferGenerator.setParameter("texture", Shader::CurrentTexture);
                             specularTextureGenerator.setParameter("texture",Shader::CurrentTexture);
-                            specularTextureGenerator.setParameter("maxM", Material::getMaxSpecularIntensity());
-                            specularTextureGenerator.setParameter("maxP", Material::getMaxSpecularPower());
+                            /*specularTextureGenerator.setParameter("maxM", Material::getMaxSpecularIntensity());
+                            specularTextureGenerator.setParameter("maxP", Material::getMaxSpecularPower());*/
                             bumpTextureGenerator.setParameter("texture",Shader::CurrentTexture);
                             lightMapGenerator.setParameter("resolution", resolution.x, resolution.y, resolution.z);
                             lightMapGenerator.setParameter("normalMap", normalMap.getTexture());
@@ -529,14 +591,20 @@ namespace odfaeg {
             bool LightRenderComponent::needToUpdate() {
             return update;
         }
-        void LightRenderComponent::changeVisibleEntities(Entity* toRemove, Entity* toAdd, EntityManager* em) {
-            bool removed;
-            em->removeAnimatedVisibleEntity(toRemove, visibleEntities, view, removed);
-            if (removed) {
-                em->insertAnimatedVisibleEntity(toAdd, visibleEntities, view);
-                loadEntitiesOnComponent(visibleEntities);
-                update = true;
+        void LightRenderComponent::loadTextureIndexes () {
+            std::vector<Texture*> allTextures = Texture::getAllTextures();
+            Samplers allSamplers{};
+            std::vector<math::Matrix4f> textureMatrices;
+            for (unsigned int i = 0; i < allTextures.size(); i++) {
+                textureMatrices.push_back(allTextures[i]->getTextureMatrix());
+                GLuint64 handle_texture = allTextures[i]->getTextureHandle();
+                allTextures[i]->makeTextureResident(handle_texture);
+                allSamplers.tex[i].handle = handle_texture;
+                //std::cout<<"add texture i : "<<i<<" id : "<<allTextures[i]->getNativeHandle()<<std::endl;
             }
+            glCheck(glBindBuffer(GL_UNIFORM_BUFFER, ubo));
+            glCheck(glBufferData(GL_UNIFORM_BUFFER, sizeof(Samplers),allSamplers.tex, GL_STATIC_DRAW));
+            glCheck(glBindBuffer(GL_UNIFORM_BUFFER, 0));
         }
         std::string LightRenderComponent::getExpression() {
             return expression;
@@ -582,10 +650,11 @@ namespace odfaeg {
         bool LightRenderComponent::loadEntitiesOnComponent(std::vector<Entity*> vEntities)
         {
             batcher.clear();
+            normalBatcher.clear();
             lightBatcher.clear();
             for (unsigned int i = 0; i < vEntities.size(); i++) {
 
-                //if ( vEntities[i]->isLeaf()) {
+                if (vEntities[i]->isLeaf()) {
 
                     if (vEntities[i]->isLight()) {
                         for (unsigned int j = 0; j <  vEntities[i]->getNbFaces(); j++) {
@@ -593,12 +662,16 @@ namespace odfaeg {
                         }
                     } else {
                         for (unsigned int j = 0; j <  vEntities[i]->getNbFaces(); j++) {
-                            batcher.addFace(vEntities[i]->getFace(j));
+                            if (vEntities[i]->getDrawMode() == Entity::INSTANCED)
+                                batcher.addFace(vEntities[i]->getFace(j));
+                            else
+                                normalBatcher.addFace(vEntities[i]->getFace(j));
                         }
                     }
-                //}
+                }
             }
             m_instances = batcher.getInstances();
+            m_normals = normalBatcher.getInstances();
             m_light_instances = lightBatcher.getInstances();
             visibleEntities = vEntities;
             update = true;
@@ -616,6 +689,13 @@ namespace odfaeg {
             update = true;
             this->expression = expression;
         }
+        void LightRenderComponent::onVisibilityChanged (bool visible) {
+            if (visible) {
+                glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo));
+            } else {
+                glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, 0));
+            }
+        }
         void LightRenderComponent::drawNextFrame() {
             update = false;
             RenderStates states;
@@ -623,7 +703,11 @@ namespace odfaeg {
             physic::BoundingBox viewArea = view.getViewVolume();
             math::Vec3f position (viewArea.getPosition().x,viewArea.getPosition().y, view.getPosition().z);
             math::Vec3f size (viewArea.getWidth(), viewArea.getHeight(), 0);
+            for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
+                vbBindlessTex[i].clear();
+            }
             if (lightMap.getSettings().versionMajor >= 3 && lightMap.getSettings().versionMinor >= 3) {
+                    //glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo));
                     math::Matrix4f viewMatrix = view.getViewMatrix().getMatrix().transpose();
                     math::Matrix4f projMatrix = view.getProjMatrix().getMatrix().transpose();
                     depthBufferGenerator.setParameter("projectionMatrix", projMatrix);
@@ -632,6 +716,8 @@ namespace odfaeg {
                     specularTextureGenerator.setParameter("viewMatrix", viewMatrix);
                     bumpTextureGenerator.setParameter("projectionMatrix", projMatrix);
                     bumpTextureGenerator.setParameter("viewMatrix", viewMatrix);
+                    depthBufferNormalGenerator.setParameter("projectionMatrix", projMatrix);
+                    depthBufferNormalGenerator.setParameter("viewMatrix", viewMatrix);
                     for (unsigned int i = 0; i < m_instances.size(); i++) {
 
                         if (m_instances[i].getAllVertices().getVertexCount() > 0) {
@@ -669,21 +755,58 @@ namespace odfaeg {
                             }
                             glCheck(glBindBuffer(GL_ARRAY_BUFFER, vboWorldMatrices));
                             glCheck(glBufferData(GL_ARRAY_BUFFER, matrices.size() * sizeof(float), &matrices[0], GL_DYNAMIC_DRAW));
+                            /*for (unsigned int i = 0; i < 4 ; i++) {
+                                glCheck(glEnableVertexAttribArray(3 + i));
+                                glCheck(glVertexAttribPointer(3 + i, 4, GL_FLOAT, GL_FALSE, sizeof(math::Matrix4f),
+                                                        (const GLvoid*)(sizeof(GLfloat) * i * 4)));
+                                glCheck(glVertexAttribDivisor(3 + i, 1));
+                                glCheck(glDisableVertexAttribArray(3 + i));
+                            }*/
                             glCheck(glBindBuffer(GL_ARRAY_BUFFER, 0));
                             if (m_instances[i].getVertexArrays().size() > 0) {
-                                for (unsigned int j = 0; j < m_instances[i].getVertexArrays()[0]->getVertexCount(); j++) {
-                                    vb.append((*m_instances[i].getVertexArrays()[0])[j]);
+                                Entity* entity = m_instances[i].getVertexArrays()[0]->getEntity();
+                                for (unsigned int j = 0; j < m_instances[i].getVertexArrays().size(); j++) {
+                                    if (entity == m_instances[i].getVertexArrays()[j]->getEntity()) {
+                                        for (unsigned int k = 0; k < m_instances[i].getVertexArrays()[j]->getVertexCount(); k++) {
+                                            vb.append((*m_instances[i].getVertexArrays()[j])[k]);
+                                        }
+                                    }
                                 }
                                 vb.update();
                             }
                             states.texture = m_instances[i].getMaterial().getTexture();
                             states.shader = &depthBufferGenerator;
-                            depthBuffer.drawInstanced(vb, vboWorldMatrices, m_instances[i].getVertexArrays()[0]->getPrimitiveType(), 0, m_instances[i].getVertexArrays()[0]->getVertexCount(), tm.size(), states);
+                            depthBuffer.drawInstanced(vb, m_instances[i].getVertexArrays()[0]->getPrimitiveType(), 0, m_instances[i].getVertexArrays()[0]->getVertexCount(), tm.size(), states, vboWorldMatrices);
                             /*states.shader = &specularTextureGenerator;
                             specularTexture.drawInstanced(vb, vboWorldMatrices, m_instances[i].getVertexArrays()[0]->getPrimitiveType(), 0, m_instances[i].getVertexArrays()[0]->getVertexCount(), tm.size(), states);
                             states.shader = &bumpTextureGenerator;
                             states.texture = m_instances[i].getMaterial().getBumpTexture();
                             bumpTexture.drawInstanced(vb, vboWorldMatrices, m_instances[i].getVertexArrays()[0]->getPrimitiveType(), 0, m_instances[i].getVertexArrays()[0]->getVertexCount(), tm.size(), states);*/
+                        }
+                    }
+                    for (unsigned int i = 0; i < m_normals.size(); i++) {
+                       if (m_normals[i].getAllVertices().getVertexCount() > 0) {
+                            if (m_normals[i].getMaterial().getTexture() != nullptr) {
+                                math::Matrix4f texMatrix = m_normals[i].getMaterial().getTexture()->getTextureMatrix();
+                                //depthBufferNormalGenerator.setParameter("textureMatrix", texMatrix);
+                                depthBufferNormalGenerator.setParameter("haveTexture", 1.f);
+                            } else {
+                                depthBufferNormalGenerator.setParameter("haveTexture", 0.f);
+                            }
+
+                            unsigned int p = m_normals[i].getAllVertices().getPrimitiveType();
+                            for (unsigned int j = 0; j < m_normals[i].getAllVertices().getVertexCount(); j++) {
+                                vbBindlessTex[p].append(m_normals[i].getAllVertices()[j],(m_normals[i].getMaterial().getTexture() != nullptr) ? m_normals[i].getMaterial().getTexture()->getNativeHandle() : 0);
+                            }
+                        }
+                    }
+                    states.blendMode = sf::BlendNone;
+                    states.shader = &depthBufferNormalGenerator;
+                    states.texture = nullptr;
+                    for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
+                        if (vbBindlessTex[p].getVertexCount() > 0) {
+                            vbBindlessTex[p].update();
+                            depthBuffer.drawVertexBuffer(vbBindlessTex[p], states);
                         }
                     }
                     depthBuffer.display();
@@ -722,8 +845,9 @@ namespace odfaeg {
                                 vb.update();
                                 math::Matrix4f m = m_light_instances[i].getTransforms()[j]->getMatrix().transpose();
                                 lightMapGenerator.setParameter("worldMatrix", m);
-                                EntityLight* el = static_cast<EntityLight*> (m_light_instances[i].getVertexArrays()[j]->getEntity());
-                                math::Vec3f center = getWindow().mapCoordsToPixel(el->getLightCenter(), view);
+                                Entity* el = m_light_instances[i].getVertexArrays()[j]->getEntity();
+                                //std::cout<<"add light : "<<el<<std::endl;
+                                math::Vec3f center = getWindow().mapCoordsToPixel(el->getCenter() - el->getSize()*0.5f, view);
                                 center.w = el->getSize().x * 0.5f;
                                 lightMapGenerator.setParameter("lightPos", center.x, center.y, center.z, center.w);
                                 lightMapGenerator.setParameter("lightColor", el->getColor().r, el->getColor().g,el->getColor().b,el->getColor().a);
@@ -732,6 +856,7 @@ namespace odfaeg {
                         }
                     }
                     lightMap.display();
+                    //glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, 0));
             } else {
                 for (unsigned int i = 0; i < m_instances.size(); i++) {
                     if (m_instances[i].getAllVertices().getVertexCount() > 0) {
@@ -772,8 +897,8 @@ namespace odfaeg {
                         for (unsigned int j = 0; j < m_light_instances[i].getVertexArrays().size(); j++) {
                             //std::cout<<"draw light"<<std::endl;
                             states.transform =  *m_light_instances[i].getTransforms()[j];
-                            EntityLight* el = static_cast<EntityLight*> (m_light_instances[i].getVertexArrays()[j]->getEntity());
-                            math::Vec3f center = getWindow().mapCoordsToPixel(el->getLightCenter(), view);
+                            Entity* el = m_light_instances[i].getVertexArrays()[j]->getEntity();
+                            math::Vec3f center = getWindow().mapCoordsToPixel(el->getCenter(), view);
                             center.w = el->getSize().x * 0.5f;
                             lightMapGenerator.setParameter("lightPos", center.x, center.y, center.z, center.w);
                             lightMapGenerator.setParameter("lightColor", el->getColor().r, el->getColor().g,el->getColor().b,el->getColor().a);
@@ -801,14 +926,10 @@ namespace odfaeg {
         int LightRenderComponent::getLayer() {
             return getPosition().z;
         }
-        void LightRenderComponent::updateParticleSystems() {
-            /*for (unsigned int i = 0; i < visibleEntities.size(); i++) {
-                if (dynamic_cast<physic::ParticleSystem*>(visibleEntities[i]) != nullptr) {
-                    static_cast<physic::ParticleSystem*>(visibleEntities[i])->update();
-                }
-            }
-            loadEntitiesOnComponent(visibleEntities);
-            update = true;*/
+        LightRenderComponent::~LightRenderComponent() {
+            glDeleteBuffers(1, &vboWorldMatrices);
+            glDeleteBuffers(1, &ubo);
         }
+        #endif // VULKAN
     }
 }
