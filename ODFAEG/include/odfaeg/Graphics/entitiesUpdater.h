@@ -20,17 +20,18 @@ namespace odfaeg {
         */
         class ODFAEG_CORE_API EntitiesUpdater : public core::EntitySystem {
         public :
-            EntitiesUpdater() : EntitySystem() {}
+            EntitiesUpdater(EntityFactory& factory, World& world) : world(world), factory(factory), EntitySystem() {}
             /**
             * \fn void onUpdate ()
             * \brief update all the entities which are in the current view.
             */
             void onUpdate () {
                 //std::cout<<"update"<<std::endl;
-                core::Application::app->getWorld()->checkVisibleEntities();
+                world.checkVisibleEntities(factory);
             }
         private :
-
+            World& world;
+            EntityFactory& factory;
         };
     }
 }

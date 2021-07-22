@@ -10,7 +10,7 @@ namespace odfaeg {
             class Model {
                 public :
                     Model ();
-                    Entity* loadModel(std::string path);
+                    Entity* loadModel(std::string path, EntityFactory& factory);
                 private :
                     void processNode(aiNode *node, const aiScene *scene, Mesh* emesh);
                     void processMesh(aiMesh *mesh, const aiScene *scene, Mesh* emesh);

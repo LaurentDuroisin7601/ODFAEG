@@ -6,16 +6,16 @@ namespace odfaeg {
         */
         //Crée un tile, avec une image passée en paramètre.
 
-        Tile::Tile() : GameObject (math::Vec3f(0, 0, 0), math::Vec3f(0, 0, 0),math::Vec3f(0, 0, 0),"E_TILE") {
+        Tile::Tile(EntityFactory& factory) : GameObject (math::Vec3f(0, 0, 0), math::Vec3f(0, 0, 0),math::Vec3f(0, 0, 0),"E_TILE", factory) {
 
         }
         Entity* Tile::clone() {
-            Tile* t = new Tile();
+            Tile* t = factory.make_entity<Tile>(factory);
             GameObject::copy(t);
             return t;
         }
-        Tile::Tile (const Texture *image, math::Vec3f position, math::Vec3f size, sf::IntRect subRect, sf::Color color, Entity *parent)
-        : GameObject (position, size, size * 0.5f, "E_TILE") {
+        Tile::Tile (const Texture *image, math::Vec3f position, math::Vec3f size, sf::IntRect subRect, EntityFactory& factory, sf::Color color, Entity *parent)
+        : GameObject (position, size, size * 0.5f, "E_TILE", factory) {
             //std::cout<<"add vertex array"<<std::endl;
             VertexArray va(sf::Quads, 4, this);
             Vertex v1(sf::Vector3f(0, 0, 0), color);

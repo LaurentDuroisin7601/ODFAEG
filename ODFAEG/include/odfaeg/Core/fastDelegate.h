@@ -641,6 +641,12 @@ namespace odfaeg {
             using tuple_t = typename sort<LessPlaceceholder, typename unique<typename copy_if<is_placeholder, std::tuple<std::remove_cv_t<ArgT>...>>::f>::f>::f;
             using late_params_t = typename lift<tuple_t, LateParameters, std::make_index_sequence<std::tuple_size<tuple_t>::value>>::f;    /**> alias to the placeholders's holder.*/
             //We need to use two tuples here, one to store parameters values and another to store parameters values after the placeholders's values are binded.
+            //jln lib doesn't compile on mscv.
+            /*using late_params_t
+      = jln::mp::copy_if<jln::mp::lift<is_placeholder>,
+                    jln::mp::unique<jln::mp::sort<LessPlaceceholder,
+                                        jln::mp::lift<LateParameters>>>>
+        ::f<std::remove_cv_t<ArgT>...>;*/
             std::tuple<RefVal<ToStore_t<ArgT>, late_params_t>...> param; /**> the wrapped values of the parameters to pass to the callback's function.*/
             std::tuple<RefVal<ToStore_t<ArgT>, late_params_t>...> tmpParam; /**> the wrapped values of the temporary parameters (parameters with placeholder's types).*/
         };

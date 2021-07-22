@@ -12,8 +12,8 @@ namespace odfaeg {
             using namespace std;
             using namespace sf;
             //Crée une lumière avec sa position, sa direction, sa hauteur, son rayon, son intensité et son typpe.
-            DirectionnalLight::DirectionnalLight (math::Vec3f center, math::Vec3f dir, int height, float r1, float r2, float r3, float intensity, Color color, int quality, Entity *parent) :
-                EntityLight (center, color, r1, r2, r3, height, "E_DIRECTIONNAL_LIGHT", "", parent) {
+            DirectionnalLight::DirectionnalLight (math::Vec3f center, math::Vec3f dir, int height, float r1, float r2, float r3, float intensity, Color color, int quality, EntityFactory& factory, Entity *parent) :
+                EntityLight (center, color, r1, r2, r3, height, "E_DIRECTIONNAL_LIGHT", factory, "", parent) {
 
                 this->quality = quality;
                 this->dir = dir;

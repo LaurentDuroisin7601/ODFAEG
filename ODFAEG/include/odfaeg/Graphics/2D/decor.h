@@ -26,7 +26,7 @@ namespace odfaeg {
                   * \fn Decor()
                   * \brief constructor.
                   */
-                Decor() : Model(math::Vec3f(0, 0, 0), math::Vec3f(1, 1, 0), math::Vec3f(0.5f, 0.5f, 0.f),"E_DECOR"){
+                Decor(EntityFactory& factory) : Model(math::Vec3f(0, 0, 0), math::Vec3f(1, 1, 0), math::Vec3f(0.5f, 0.5f, 0.f),factory, "E_DECOR"){
 
                 }
                 Entity* clone();
@@ -38,7 +38,7 @@ namespace odfaeg {
                   * \param height : the height of the decor.
                   * \param Shadow::SHADOW_TYPE : the type of shadow to generate. (A shape, or a black sprite)
                   */
-                Decor(Tile *t, Light *light);
+                Decor(Tile *t, Light *light, EntityFactory& factory);
                 bool operator== (Entity &other);
                 /**
                  *\fn void vtserialize(Archive & ar)

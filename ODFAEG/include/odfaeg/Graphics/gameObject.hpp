@@ -5,7 +5,7 @@ namespace odfaeg {
     namespace graphic {
         class GameObject : public Entity {
             public :
-            GameObject (math::Vec3f position, math::Vec3f size, math::Vec3f origin, std::string type, std::string name = "", Entity* parent = nullptr);
+            GameObject (math::Vec3f position, math::Vec3f size, math::Vec3f origin, std::string type, EntityFactory& factory, std::string name = "", Entity* parent = nullptr);
             Entity* getRootEntity();
             /** \fn std::string getRootType.
             *   \param get the type of the root entity of the scene graph.

@@ -26,7 +26,7 @@ namespace odfaeg {
                 * \fn PonctualLight()
                 * \brief constructor.
                 */
-                PonctualLight() : EntityLight(math::Vec3f(0, 0, 0),sf::Color(0, 0, 0, 0),0, 0, 0, 0,"E_PONCTUAL_LIGHT","",nullptr) {
+                PonctualLight(EntityFactory& factory) : EntityLight(math::Vec3f(0, 0, 0),sf::Color(0, 0, 0, 0),0, 0, 0, 0,"E_PONCTUAL_LIGHT", factory, "",nullptr) {
                 }
                 /**
                 * \fn PonctualLight(math::Vec3f center, float radius1, float radius2, float radius3, float intensity, sf::Color color, int quality, Entity *parent = nullptr);
@@ -36,7 +36,7 @@ namespace odfaeg {
                 * \param float radius2 : the y radius of the light.
                 * \param float radius3 : the z radius of the light.
                 */
-                PonctualLight(math::Vec3f center, float radius1, float radius2, float radius3, float intensity, sf::Color color, int quality, Entity *parent = nullptr);
+                PonctualLight(math::Vec3f center, float radius1, float radius2, float radius3, float intensity, sf::Color color, int quality, EntityFactory& factory, Entity *parent = nullptr);
                 /**
                 * \fn void initTriangles ();
                 * \brief init the triangles of the light.

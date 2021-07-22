@@ -23,6 +23,14 @@
 * \param BASE : the base type of the derived class.
 * \param DERIVED : the derived type of the derived class.
 */
+#define REGISTER_TYPE_(ID, BASE, DERIVED, PARAMS, ARGS) \
+{ \
+DERIVED *derived##ID = nullptr; \
+odfaeg::core::Allocator<BASE> allocator##ID; \
+BASE*(odfaeg::core::Allocator<BASE>::*f##ID)(DERIVED*, PARAMS) = &odfaeg::core::Allocator<BASE>::allocate<DERIVED, PARAMS>; \
+odfaeg::core::FastDelegate<BASE*> allocatorDelegate##ID(f##ID, &allocator##ID, derived##ID, ARGS); \
+odfaeg::core::BaseFactory<BASE>::register_type(typeid(DERIVED).name(), allocatorDelegate##ID); \
+}
 #define REGISTER_TYPE(ID, BASE, DERIVED) \
 { \
 DERIVED *derived##ID = nullptr; \
@@ -42,7 +50,6 @@ odfaeg::core::BaseFactory<BASE>::register_type(typeid(DERIVED).name(), allocator
 */
 #define REGISTER_FUNC(ID, funcName, SID, BASE, DERIVED, SIGNATURE, ...) \
 { \
-REGISTER_TYPE(ID, BASE, DERIVED) \
 void(DERIVED::*f##ID##funcName##SID)SIGNATURE = &DERIVED::vt##funcName; \
 odfaeg::core::FastDelegate<void> delegate##ID##funcName##SID (f##ID##funcName##SID, __VA_ARGS__); \
 odfaeg::core::BaseFactory<BASE>::register_function(typeid(DERIVED).name(), #funcName, #SID, delegate##ID##funcName##SID); \
@@ -81,9 +88,9 @@ namespace odfaeg {
            *  \param D : the derived type.
            *  \return B* : a pointer to the base type.
            */
-           template <typename D>
-           B* allocate(D*) {
-                return new D();
+           template <typename D, class... Args>
+           B* allocate(D* d, Args&&... args) {
+                return new D(std::forward<Args>(args)...);
            }
         };
         /**\class BaseFactory
@@ -149,7 +156,8 @@ namespace odfaeg {
             *   \param the typeName of the type to allocate.
             *   \return B* a pointer of a base class which'll point to the allocated object.
             */
-            static B* create (std::string typeName) {
+            template <class... Args>
+            static B* create (std::string typeName, Args&&... args) {
                 typename std::map<std::string, FastDelegate<B*>>::iterator it = types.find(typeName);
                 if (it != types.end()) {
                     return (it->second)();

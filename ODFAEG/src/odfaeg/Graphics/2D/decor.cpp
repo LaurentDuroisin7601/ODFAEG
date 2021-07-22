@@ -3,7 +3,7 @@ namespace odfaeg {
     namespace graphic {
         namespace g2d {
             using namespace sf;
-            Decor::Decor (Tile *t, Light *light) : Model(t->getPosition(), t->getSize(), t->getSize() * 0.5f, "E_DECOR") {
+            Decor::Decor (Tile *t, Light *light, EntityFactory& factory) : Model(t->getPosition(), t->getSize(), t->getSize() * 0.5f, factory, "E_DECOR") {
                 addChild(t);
                 t->setParent(this);
                 float sy = light->getHeight() / (light->getHeight() * 0.75f);
@@ -11,7 +11,7 @@ namespace odfaeg {
                 setShadowOrigin(math::Vec3f(t->getPosition().x, t->getPosition().y, 0));
             }
             Entity* Decor::clone() {
-                Decor* decor = new Decor();
+                Decor* decor = factory.make_entity<Decor>(factory);
                 GameObject::copy(decor);
                 return decor;
             }

@@ -7,14 +7,14 @@ namespace odfaeg {
         int Entity::nbEntitiesTypes = 0;
         std::map<int, std::string> Entity::types = std::map<int, std::string>();
         //Construct an entity with the given position, size, origin, type and name.
-        Entity::Entity (math::Vec3f position, math::Vec3f size, math::Vec3f origin, std::string sType, std::string name) :
-            Transformable (position, size, origin, name), Drawable(), entityState("Entity State", nullptr) {
+        Entity::Entity (math::Vec3f position, math::Vec3f size, math::Vec3f origin, std::string sType,  EntityFactory& factory, std::string name) :
+            Transformable (position, size, origin, name), Drawable(), entityState("Entity State", nullptr), factory(factory) {
             /*If this is an ODFAEG Application and if we call functions from a shared lib (like ODFAEGCreator), we prefer to avoid to use
             static variables which leads to problems because they haven't the expected values when there are used in an executable and in a shared lib.
             So global variables are stored as member variables of the application class which contains everything.
             But if this is a simple application which just draw things on a render window like SFML applications, we can use static variables rather than
             having a factory class to store global variables as member variables in this case.*/
-            if (core::Application::app != nullptr) {
+            /*if (core::Application::app != nullptr) {
                 id = core::Application::app->getUniqueId()-1;
                 type = core::Application::app->updateTypes(sType);
             } else {
@@ -29,12 +29,14 @@ namespace odfaeg {
                     type = *it;
                 }
                 nbEntities++;
-            }
+            }*/
+            type = factory.updateTypes(sType);
+            id = factory.getUniqueId();
             getTransform().setEntityId(id);
         }
         //Setup the static variables when reading entities from an input stream.
         void Entity::onLoad() {
-            if (core::Application::app != nullptr) {
+            /*if (core::Application::app != nullptr) {
                 type = core::Application::app->updateTypes(getType());
             } else {
                 int iType = getIntOfType(getType());
@@ -44,15 +46,17 @@ namespace odfaeg {
                     nbEntitiesTypes++;
                 }
                 nbEntities++;
-            }
+            }*/
+            factory.updateTypes(getType());
         }
         //Return the number of entities created.
-        int Entity::getNbEntities () {
-            return nbEntities;
-        }
+        /*int Entity::getNbEntities () {
+            //return nbEntities;
+            return factory.getNbEntities();
+        }*/
         //Change the type of the entity and updates global variables.
         void Entity::setType(std::string sType) {
-            if (core::Application::app != nullptr) {
+            /*if (core::Application::app != nullptr) {
                 type = core::Application::app->updateTypes(sType);
             } else {
                 int iType = getIntOfType(sType);
@@ -64,7 +68,8 @@ namespace odfaeg {
                     std::map<int, std::string>::iterator it = types.find(iType);
                     type = *it;
                 }
-            }
+            }*/
+            type = factory.updateTypes(sType);
         }
         //Get the type of the entity.
         std::string Entity::getType () const {
@@ -82,22 +87,25 @@ namespace odfaeg {
         int Entity::getTypeInt () {
             return type.first;
         }
-        int Entity::getIntOfType(std::string sType) {
+        //int Entity::getIntOfType(std::string sType) {
 
-            std::map<int, std::string>::iterator it;
+            /*std::map<int, std::string>::iterator it;
             for (it = types.begin(); it != types.end(); ++it) {
                 if (it->second == sType)
                     return it->first;
             }
-            return -1;
-        }
-        std::string Entity::getTypeOfInt (int type) {
-            std::map<int, std::string>::iterator it = types.find(type);
-            return it->second;
-        }
-        int Entity::getNbEntitiesTypes () {
-            return nbEntitiesTypes;
-        }
+            return -1;*/
+            /*return factory.getIntOfType(sType);
+        }*/
+        //std::string Entity::getTypeOfInt (int type) {
+            /*std::map<int, std::string>::iterator it = types.find(type);
+            return it->second;*/
+            /*return factory.getTypeOfInt(type);
+        }*/
+        /*int Entity::getNbEntitiesTypes () {
+            //return nbEntitiesTypes;
+            factory.getNbEntitiesTypes();
+        }*/
         void Entity::setSelected(bool selected) {
             this->selected = selected;
         }

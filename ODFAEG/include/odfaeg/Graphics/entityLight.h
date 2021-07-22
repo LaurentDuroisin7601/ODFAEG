@@ -29,8 +29,8 @@ namespace odfaeg {
             * \param float radius2 : the major radius of the light.
             *  create an entity light with the given center, height, color, etc...
             */
-            EntityLight (math::Vec3f center, sf::Color color, float radius1, float radius2, float radius3, int height, std::string type, std::string name = "",Entity* parent=nullptr)
-            : Light (center, height, color), GameObject (math::Vec3f(center.x, center.y, center.z), math::Vec3f(radius1 * 2, radius2 * 2, radius3 * 2), math::Vec3f (radius1, radius2, radius3), type, name, parent) {
+            EntityLight (math::Vec3f center, sf::Color color, float radius1, float radius2, float radius3, int height, std::string type, EntityFactory& factory, std::string name = "",Entity* parent=nullptr)
+            : Light (center, height, color), GameObject (math::Vec3f(center.x, center.y, center.z), math::Vec3f(radius1 * 2, radius2 * 2, radius3 * 2), math::Vec3f (radius1, radius2, radius3), type, factory, name, parent) {
             }
             sf::Color getColor() {
                 return color;

@@ -35,13 +35,13 @@ namespace odfaeg {
             * \brief virtual function to redefine to check visible entities.
             * \param an expression which determine which entities types to get.
             */
-            virtual void checkVisibleEntities () = 0;
+            virtual void checkVisibleEntities (EntityFactory& factory) = 0;
             /**
             * \fn std::vector<Entity*>  getVisibleEntities (std::string expression)
             * \brief get the visible entities.
             * \return std::vector<Entity*> the visible entities.
             */
-            virtual std::vector<Entity*> getVisibleEntities (std::string expression)  = 0;
+            virtual std::vector<Entity*> getVisibleEntities (std::string expression, EntityFactory& factory)  = 0;
             virtual std::vector<Entity*> getEntitiesInBox(physic::BoundingBox rect, std::string expression) = 0;
             /**
             * \fn bool collide (Entity* entity)
@@ -59,7 +59,7 @@ namespace odfaeg {
             * \param std::vector<Tile*> tWalls : the tiles of the walls to generate.
             * \param BoundingZone& zone : the zone of the area where to generate the map.
             */
-            virtual void generate_map(std::vector<Tile*> tGrounds, std::vector<g2d::Wall*> tWalls, math::Vec2f tileSize, physic::BoundingBox& zone, bool terrain3D) = 0;
+            virtual void generate_map(std::vector<Tile*> tGrounds, std::vector<g2d::Wall*> tWalls, math::Vec2f tileSize, physic::BoundingBox& zone, bool terrain3D, EntityFactory& factory) = 0;
             /**
             * \fn void moveEntity(Entity* entity, float x, float y, float z)
             * \brief virtual method to redefine to move an entity to the world.

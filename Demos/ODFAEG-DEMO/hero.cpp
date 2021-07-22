@@ -1,8 +1,8 @@
 #include "hero.hpp"
 namespace sorrok {
     Hero::Hero(std::string factionName, std::string name, std::string sex, std::string currentMapName, std::string hairColor,
-        std::string eyesColor, std::string skinColor, std::string faceType, std::string classs, int level)
-        : Caracter("E_HERO", name, currentMapName, classs, level) {
+        std::string eyesColor, std::string skinColor, std::string faceType, std::string classs, int level, odfaeg::graphic::EntityFactory& factory)
+        : Caracter("E_HERO", name, currentMapName, classs, level, factory) {
         this->factionName = factionName;
         this->sex = sex;
         this->hairColor = hairColor;

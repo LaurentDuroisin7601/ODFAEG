@@ -351,8 +351,8 @@ namespace odfaeg {
             std::unique_ptr<Listener> listener;
             bool eventContextActivated;
             static sf::Clock timeClk;
-            std::thread rendering_thread;
-            std::recursive_mutex rec_mutex;
+            /*std::thread rendering_thread;
+            std::recursive_mutex rec_mutex;*/
             graphic::World world;
             unsigned int nbEntities, nbEntitiesTypes, nbComponents, nbMaterials;
             std::vector<graphic::Material*> materials;

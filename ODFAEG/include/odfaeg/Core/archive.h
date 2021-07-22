@@ -50,43 +50,6 @@ namespace odfaeg {
             static const int value = sizeof(test<T>(0)) == sizeof(yes); /**> if the class has a typedef named KEYTYPE.*/
         };
         /**
-        * \file serialization.h
-        * \class default_constructor
-        * \param T the type of the base class.
-        * \param Args the arguments of the default constructor.
-        * \brief store default arguments for non constructible object and allocate them.
-        * \author Duroisin.L
-        * \version 1.0
-        * \date 1/02/2014
-        */
-        template <typename T, typename... Args>
-        struct default_constructor {
-            /**\fn defaut_constructor (Args&&... args)
-            *  \brief constructor, initialize tuple with the default arguments.
-            *  \param Args&& the default arguments*/
-            default_constructor(Args&&... args) {
-                params = std::make_tuple(std::forward<Args>(args)...);
-            }
-            /**\fn void* allocate(D*)
-            *  \brief allocate an object, with the default arguments values.
-            *  \param D* we pass the type for template argument deduction.
-            *  \return pointer to the allocated object.*/
-            template <typename D>
-            void* allocate(D*) {
-                return allocate_impl<D>(std::index_sequence_for<Args...>());
-            }
-            /**\fn void* allocate_impl()
-            *  \brief allocate an object, extract all parameters from the tuple by expanding the parameter pack.
-            *  \param std::index_sequence<Ints...> an integer sequence.
-            *  \return pointer to the allocated object.*/
-            template<typename D, std::size_t... Ints>
-            void* allocate_impl(std::index_sequence<Ints...>) {
-                T* base = new D(std::get<Ints>(params)...);
-                return base;
-            }
-            std::tuple<Args...> params; /**Default parameter values.*/
-        };
-        /**
         * \file archive.h
         * \class OTextArchive
         * \brief Write everything into the output archive's buffer in text format.
@@ -126,9 +89,10 @@ namespace odfaeg {
             * \param D... used for SFINAE.
             */
             template <typename T,
+                      class... Args,
                       class... D,
                       class = typename std::enable_if<std::is_fundamental<T>::value>::type>
-            void operator() (T& data, D...) {
+            void operator() (T& data, Args&&... args, D...) {
                 buffer<<data<<std::endl;
                 nbSerialized++;
             }
@@ -140,9 +104,10 @@ namespace odfaeg {
             * \param D... used for SFINAE.
             */
             template <typename T,
+                      class... Args,
                       class... D,
                       class = typename std::enable_if<std::is_fundamental<T>::value>::type>
-            void operator() (std::reference_wrapper<T> ref, D...) {
+            void operator() (std::reference_wrapper<T> ref, Args&&... args, D...) {
                 T& data = ref.get();
                 //We need to get the type name (because object and first object member's variable have the same address) and the address of the data to write.
                 std::ostringstream oss;
@@ -168,9 +133,10 @@ namespace odfaeg {
             * \param D... used for SFINAE.
             */
             template <typename T,
+                  class... Args,
                   class... D,
                   class = typename std::enable_if<std::is_fundamental<T>::value>::type>
-            void operator() (T* data, D...) {
+            void operator() (T* data, Args&&... args, D...) {
                 if (data != nullptr) {
                     std::ostringstream oss;
                     oss<<typeid(*data).name()<<"*"<<reinterpret_cast<unsigned long long int>(data);
@@ -197,10 +163,11 @@ namespace odfaeg {
             *   \param E& data : the data to write.
             */
             template <typename E,
+            class... Args,
             class... D,
             class = typename std::enable_if<!std::is_fundamental<E>::value>::type,
             class = typename std::enable_if<std::is_enum<E>::value>::type>
-            void operator() (E& data, D...) {
+            void operator() (E& data, Args&&... args, D...) {
                 buffer<<data<<std::endl;
                 nbSerialized++;
             }
@@ -209,10 +176,11 @@ namespace odfaeg {
             *   \param std::reference_wrapper<E> ref : the reference to the data to write.
             */
             template <typename E,
+            class... Args,
             class... D,
             class = typename std::enable_if<!std::is_fundamental<E>::value>::type,
             class = typename std::enable_if<std::is_enum<E>::value>::type>
-            void operator() (std::reference_wrapper<E> ref, D...) {
+            void operator() (std::reference_wrapper<E> ref, Args&&... args, D...) {
                 E& data = ref.get();
                 std::ostringstream oss;
                 oss<<typeid(data).name()<<"*"<<reinterpret_cast<unsigned long long int>(&data);
@@ -232,10 +200,11 @@ namespace odfaeg {
             *   \param E* data : pointer to the data to write.
             */
             template <typename E,
+            class... Args,
             class... D,
             class = typename std::enable_if<!std::is_fundamental<E>::value>::type,
             class = typename std::enable_if<std::is_enum<E>::value>::type>
-            void operator() (E* data, D...) {
+            void operator() (E* data, Args&&... args, D...) {
                 if (data != nullptr) {
                     std::ostringstream oss;
                     oss<<typeid(*data).name()<<"*"<<reinterpret_cast<unsigned long long int>(data);
@@ -262,11 +231,12 @@ namespace odfaeg {
             *\param D... : used fo SFINAE.
             */
             template <typename T,
+                  class... Args,
                   class... D,
                   class = typename std::enable_if<!std::is_fundamental<T>::value>::type,
                   class = typename std::enable_if<std::is_same<T, std::string>::value || std::is_same<T, const std::string>::value>::type,
                   class = typename std::enable_if<!std::is_enum<T>::value>::type>
-            void operator() (T& data, D...) {
+            void operator() (T& data, Args&&... args, D...) {
                 std::size_t str_size = data.length();
                 buffer<<str_size<<std::endl;
                 const char* datas = data.c_str();
@@ -282,11 +252,12 @@ namespace odfaeg {
             *\param D... : used fo SFINAE.
             */
             template <typename T,
+                  class... Args,
                   class... D,
                   class = typename std::enable_if<!std::is_fundamental<T>::value>::type,
                   class = typename std::enable_if<std::is_same<T, std::string>::value || std::is_same<T, const std::string>::value>::type,
                   class = typename std::enable_if<!std::is_enum<T>::value>::type>
-            void operator() (std::reference_wrapper<T> ref, D...) {
+            void operator() (std::reference_wrapper<T> ref, Args&&... args, D...) {
                 T& data = ref.get();
                 std::ostringstream oss;
                 oss<<typeid(data).name()<<"*"<<reinterpret_cast<unsigned long long int>(&data);
@@ -313,11 +284,12 @@ namespace odfaeg {
             *\param D... : used for SFINAE.
             */
             template <typename T,
+                  class... Args,
                   class... D,
                   class = typename std::enable_if<!std::is_fundamental<T>::value>::type,
                   class = typename std::enable_if<std::is_same<T, std::string>::value>::type,
                   class = typename std::enable_if<!std::is_enum<T>::value>::type>
-            void operator() (T* data, D...) {
+            void operator() (T* data, Args&&... args, D...) {
                 if (data != nullptr) {
                     std::ostringstream oss;
                     oss<<typeid(*data).name()<<"*"<<reinterpret_cast<unsigned long long int>(data);
@@ -351,12 +323,13 @@ namespace odfaeg {
             *\param D... : used for SFINAE.
             */
             template <class O,
+                      class... Args,
                       class... D,
                       class = typename std::enable_if<!std::is_fundamental<O>::value>::type,
                       class = typename std::enable_if<!std::is_same<O, std::string>::value && !std::is_same<O, const std::string>::value && !std::is_pointer<O>::value>::type,
                       class = typename std::enable_if<!has_typedef_key<O>::value>::type,
                       class = typename std::enable_if<!std::is_enum<O>::value>::type>
-            void operator() (O& object, D...) {
+            void operator() (O& object, Args&&... args, D...) {
                 nbSerialized++;
                 object.serialize(*this);
             }
@@ -368,12 +341,13 @@ namespace odfaeg {
             *\param D... : used for SFINAE.
             */
             template <class O,
+                      class... Args,
                       class... D,
                       class = typename std::enable_if<!std::is_fundamental<O>::value>::type,
                       class = typename std::enable_if<!std::is_same<O, std::string>::value && !std::is_same<O, const std::string>::value && !std::is_pointer<O>::value>::type,
                       class = typename std::enable_if<!has_typedef_key<O>::value>::type,
                       class = typename std::enable_if<!std::is_enum<O>::value>::type>
-            void operator() (std::reference_wrapper<O> ref, D...) {
+            void operator() (std::reference_wrapper<O> ref, Args&&... args, D...) {
                 O& object = ref.get();
                 std::ostringstream oss;
                 oss<<typeid(object).name()<<"*"<<reinterpret_cast<unsigned long long int>(&object);
@@ -395,12 +369,13 @@ namespace odfaeg {
             *\param D... : used for SFINAE.
             */
             template <class O,
+                      class... Args,
                       class... D,
                       class = typename std::enable_if<!std::is_fundamental<O>::value>::type,
                       class = typename std::enable_if<!std::is_same<O, std::string>::value>::type,
                       class = typename std::enable_if<!has_typedef_key<O>::value>::type,
                       class = typename std::enable_if<!std::is_enum<O>::value>::type>
-            void operator() (O* object, D...) {
+            void operator() (O* object, Args&&... args, D...) {
                 if (object != nullptr) {
                     std::ostringstream oss;
                     oss<<typeid(*object).name()<<"*"<<reinterpret_cast<unsigned long long int>(object);
@@ -429,13 +404,14 @@ namespace odfaeg {
             *\param D... : used for SFINAE.
             */
             template <class O,
+                      class... Args,
                       class... D,
                       class = typename std::enable_if<!std::is_fundamental<O>::value>::type,
                       class = typename std::enable_if<!std::is_same<O, std::string>::value>::type,
                       class = typename std::enable_if<has_typedef_key<O>::value>::type,
                       class = typename std::enable_if<!std::is_enum<O>::value>::type,
                       class = typename std::enable_if<!sizeof...(D)>::type>
-            void operator() (O& object, D...) {
+            void operator() (O& object, Args&&... args, D...) {
                 nbSerialized++;
                 //If the type at compile time is the same than the type at runtime.
                 if (typeid(decltype(object)).name() == typeid(object).name()) {
@@ -454,13 +430,14 @@ namespace odfaeg {
             *\param D... : used for SFINAE.
             */
             template <class O,
+                      class... Args,
                       class... D,
                       class = typename std::enable_if<!std::is_fundamental<O>::value>::type,
                       class = typename std::enable_if<!std::is_same<O, std::string>::value>::type,
                       class = typename std::enable_if<has_typedef_key<O>::value>::type,
                       class = typename std::enable_if<!std::is_enum<O>::value>::type,
                       class = typename std::enable_if<!sizeof...(D)>::type>
-            void operator() (std::reference_wrapper<O> ref, D...) {
+            void operator() (std::reference_wrapper<O> ref, Args&&... args, D...) {
                 O& object = ref.get();
                 std::ostringstream oss;
                 oss<<typeid(object).name()<<"*"<<reinterpret_cast<unsigned long long int>(&object);
@@ -487,13 +464,14 @@ namespace odfaeg {
             *\param D... : used for SFINAE.
             */
             template <class O,
+                      class... Args,
                       class... D,
                       class = typename std::enable_if<!std::is_fundamental<O>::value>::type,
                       class = typename std::enable_if<!std::is_same<O, std::string>::value>::type,
                       class = typename std::enable_if<has_typedef_key<O>::value>::type,
                       class = typename std::enable_if<!std::is_enum<O>::value>::type,
                       class = typename std::enable_if<!sizeof...(D)>::type>
-            void operator() (O* object, D...) {
+            void operator() (O* object, Args&&... args, D...) {
                 if (object != nullptr) {
                     std::ostringstream oss;
                     oss<<typeid(*object).name()<<"*"<<reinterpret_cast<unsigned long long int>(object);
@@ -529,12 +507,12 @@ namespace odfaeg {
             *\param std::vector<O>& the list of objects to register.
             *\param D... : used for SFINAE.
             */
-            template <class O>
-            void operator() (std::vector<O>& data) {
+            template <class O, class... Args>
+            void operator() (std::vector<O>& data, Args&&... args) {
                 std::size_t size = data.size();
                 buffer<<size<<std::endl;
                 for (unsigned int i = 0; i < data.size(); i++)
-                     (*this)(data[i]);
+                     (*this)(data[i], std::forward<Args>(args)...);
             }
             /**
             *\fn void operator(std::unique_ptr<T>&, D...)
@@ -542,9 +520,9 @@ namespace odfaeg {
             *\param std::unique_ptr<T>& the unique pointer.
             *\param D... : used for SFINAE.
             */
-            template <class T>
-            void operator() (std::unique_ptr<T>& ptr) {
-                (*this)(ptr.get());
+            template <class T, class... Args>
+            void operator() (std::unique_ptr<T>& ptr, Args&&... args) {
+                (*this)(ptr.get(), std::forward<Args>(args)...);
             }
             /**
             *\fn void operator(std::pair<T1, T2>&, D...)
@@ -552,10 +530,10 @@ namespace odfaeg {
             *\param std::pair<T1, T2>& the std::pair.
             *\param D... : used for SFINAE.
             */
-            template <class T1, class T2>
-            void operator() (std::pair<T1, T2>& pair) {
-                (*this)(pair.first);
-                (*this)(pair.second);
+            template <class T1, class T2, class... Args>
+            void operator() (std::pair<T1, T2>& pair, Args&&... args) {
+                (*this)(pair.first, std::forward<Args>(args)...);
+                (*this)(pair.second, std::forward<Args>(args)...);
             }
             /**
             *\fn void operator(std::map<T1, T2>&, D...)
@@ -563,13 +541,13 @@ namespace odfaeg {
             *\param std::map<T1, T2>& the std::map.
             *\param D... : used for SFINAE.
             */
-            template <class T1, class T2>
-            void operator() (std::map<T1, T2>&  map) {
+            template <class T1, class T2, class... Args>
+            void operator() (std::map<T1, T2>&  map, Args&&... args) {
                 std::size_t size = map.size();
                 buffer<<size<<std::endl;
                 typename std::map<T1, T2>::iterator it;
                 for (it = map.begin(); it != map.end(); it++) {
-                    (*this)(*it);
+                    (*this)(*it, std::forward<Args>(args)...);
                 }
             }
         private :
@@ -628,9 +606,10 @@ namespace odfaeg {
             * \param D... used for SFINAE.
             */
             template <typename T,
+                  class... Args,
                   class... D,
                   class = typename std::enable_if<std::is_fundamental<T>::value>::type>
-            void operator() (T& data, D...) {
+            void operator() (T& data, Args&&... args, D...) {
                 nbDeserialized++;
                 buffer>>data;
                 char space;
@@ -644,9 +623,10 @@ namespace odfaeg {
             * \param D... used for SFINAE.
             */
             template <typename T,
+                  class... Args,
                   class... D,
                   class = typename std::enable_if<std::is_fundamental<T>::value>::type>
-            void operator() (std::reference_wrapper<T> ref, D...) {
+            void operator() (std::reference_wrapper<T> ref, Args&&... args, D...) {
                 T& data = ref.get();
                 long long int id;
                 buffer>>id;
@@ -674,7 +654,8 @@ namespace odfaeg {
             * \param T& the data to read.
             * \param D... used for SFINAE.
             */
-            void operator() (char& data) {
+            template <class... Args>
+            void operator() (char& data, Args&&... args) {
                 nbDeserialized++;
                 buffer.get(data);
                 char space;
@@ -686,7 +667,8 @@ namespace odfaeg {
             * \param std::reference_wrapper<char> reference to the data to read.
             * \param D... used for SFINAE.
             */
-            void operator() (std::reference_wrapper<char> ref) {
+            template <class... Args>
+            void operator() (std::reference_wrapper<char> ref, Args&&... args) {
                 char& data = ref.get();
                 long long int id;
                 buffer>>id;
@@ -714,7 +696,8 @@ namespace odfaeg {
             * \param T& the data to read.
             * \param D... used for SFINAE.
             */
-            void operator() (unsigned char& data) {
+            template <class... Args>
+            void operator() (unsigned char& data, Args&&... args) {
                 nbDeserialized++;
                 buffer.get((char&) data);
                 char space;
@@ -726,7 +709,8 @@ namespace odfaeg {
             * \param std::reference_wrapper<unsigned char> reference the data to read.
             * \param D... used for SFINAE.
             */
-            void operator() (std::reference_wrapper<unsigned char> ref) {
+            template <class... Args>
+            void operator() (std::reference_wrapper<unsigned char> ref, Args&&... args) {
                 unsigned char& data = ref.get();
                 long long int id;
                 buffer>>id;
@@ -755,9 +739,10 @@ namespace odfaeg {
             * \param D... used for SFINAE.
             */
             template <typename T,
+                  class... Args,
                   class... D,
                   class = typename std::enable_if<std::is_fundamental<T>::value>::type>
-            void operator() (T*& data, D...) {
+            void operator() (T*& data, Args&&... args, D...) {
                 long long int id;
                 buffer>>id;
                 char space;
@@ -792,9 +777,10 @@ namespace odfaeg {
             * \param D... used for SFINAE.
             */
             template <typename T,
+                  class... Args,
                   class... D,
                   class = typename std::enable_if<std::is_fundamental<T>::value>::type>
-            void operator() (char*& data, D...) {
+            void operator() (char*& data, Args&&... args, D...) {
                 long long int id;
                 buffer>>id;
                 char space;
@@ -829,9 +815,10 @@ namespace odfaeg {
             * \param D... used for SFINAE.
             */
             template <typename T,
+                  class... Args,
                   class... D,
                   class = typename std::enable_if<std::is_fundamental<T>::value>::type>
-            void operator() (unsigned char*& data, D...) {
+            void operator() (unsigned char*& data, Args&&... args, D...) {
                 long long int id;
                 buffer>>id;
                 char space;
@@ -865,10 +852,11 @@ namespace odfaeg {
             * \param E& the data the read.
             */
             template <typename E,
+                    class... Args,
                     class... D,
                     class = typename std::enable_if<!std::is_fundamental<E>::value>::type,
                     class = typename std::enable_if<std::is_enum<E>::value>::type>
-            void operator()(E& data, D...) {
+            void operator()(E& data, Args&&... args, D...) {
                 int eVal;
                 buffer>>eVal;
                 data = static_cast<E>(eVal);
@@ -882,10 +870,11 @@ namespace odfaeg {
             * \param std::reference_wrapper<E> the reference to the data the read.
             */
             template <typename E,
+                    class... Args,
                     class... D,
                     class = typename std::enable_if<!std::is_fundamental<E>::value>::type,
                     class = typename std::enable_if<std::is_enum<E>::value>::type>
-            void operator()(std::reference_wrapper<E> ref, D...) {
+            void operator()(std::reference_wrapper<E> ref, Args&&... args, D...) {
                 E& data = ref.get();
                 int eVal;
                 buffer>>eVal;
@@ -895,10 +884,11 @@ namespace odfaeg {
                 nbDeserialized++;
             }
             template <typename E,
+                    class... Args,
                     class... D,
                     class = typename std::enable_if<!std::is_fundamental<E>::value>::type,
                     class = typename std::enable_if<std::is_enum<E>::value>::type>
-            void operator() (E*& data, D...) {
+            void operator() (E*& data, Args&&... args, D...) {
                 long long int id;
                 buffer>>id;
                 char space;
@@ -934,11 +924,12 @@ namespace odfaeg {
             * \param D... used for SFINAE.
             */
             template <typename T,
+                  class... Args,
                   class... D,
                   class = typename std::enable_if<!std::is_fundamental<T>::value>::type,
                   class = typename std::enable_if<std::is_same<T, std::string>::value>::type,
                   class = typename std::enable_if<!std::is_enum<T>::value>::type>
-            void operator() (T& data, D...) {
+            void operator() (T& data, Args&&... args, D...) {
                 /*long long int id;
                 buffer>>id;
                 char space;
@@ -976,11 +967,12 @@ namespace odfaeg {
             * \param D... used for SFINAE.
             */
             template <typename T,
+                  class... Args,
                   class... D,
                   class = typename std::enable_if<!std::is_fundamental<T>::value>::type,
                   class = typename std::enable_if<std::is_same<T, std::string>::value>::type,
                   class = typename std::enable_if<!std::is_enum<T>::value>::type>
-            void operator() (std::reference_wrapper<T> ref, D...) {
+            void operator() (std::reference_wrapper<T> ref, Args&&... args, D...) {
                 T& data = ref.get();
                 long long int id;
                 buffer>>id;
@@ -1019,11 +1011,12 @@ namespace odfaeg {
             * \param D... used for SFINAE.
             */
             template <typename T,
+                  class... Args,
                   class... D,
                   class = typename std::enable_if<!std::is_fundamental<T>::value>::type,
                   class = typename std::enable_if<std::is_same<T, std::string>::value>::type,
                   class = typename std::enable_if<!std::is_enum<T>::value>::type>
-            void operator() (T*& data, D...) {
+            void operator() (T*& data, Args&&... args, D...) {
                 long long int id;
                 buffer>>id;
                 char space;
@@ -1065,12 +1058,13 @@ namespace odfaeg {
             * \param D... used for SFINAE.
             */
             template <class O,
+                      class... Args,
                       class... D,
                       class = typename std::enable_if<!std::is_fundamental<O>::value>::type,
                       class = typename std::enable_if<!std::is_same<O, std::string>::value && !std::is_pointer<O>::value>::type,
                       class = typename std::enable_if<!has_typedef_key<O>::value>::type,
                       class = typename std::enable_if<!std::is_enum<O>::value>::type>
-            void operator() (O& object, D...) {
+            void operator() (O& object, Args&&... args, D...) {
                 /*long long int id;
                 buffer>>id;
                 char space;
@@ -1097,12 +1091,13 @@ namespace odfaeg {
             * \param D... used for SFINAE.
             */
             template <class O,
+                      class... Args,
                       class... D,
                       class = typename std::enable_if<!std::is_fundamental<O>::value>::type,
                       class = typename std::enable_if<!std::is_same<O, std::string>::value && !std::is_pointer<O>::value>::type,
                       class = typename std::enable_if<!has_typedef_key<O>::value>::type,
                       class = typename std::enable_if<!std::is_enum<O>::value>::type>
-            void operator() (std::reference_wrapper<O> ref, D...) {
+            void operator() (std::reference_wrapper<O> ref, Args&&... args, D...) {
                 O& object = ref.get();
                 long long int id;
                 buffer>>id;
@@ -1130,12 +1125,13 @@ namespace odfaeg {
             * \param D... used for SFINAE.
             */
             template <class O,
+                      class... Args,
                       class... D,
                       class = typename std::enable_if<!std::is_fundamental<O>::value>::type,
                       class = typename std::enable_if<!std::is_same<O, std::string>::value>::type,
                       class = typename std::enable_if<!has_typedef_key<O>::value>::type,
                       class = typename std::enable_if<!std::is_enum<O>::value>::type>
-            void operator() (O*& object, D...) {
+            void operator() (O*& object, Args&&... args, D...) {
                 long long int id;
                 buffer>>id;
                 char space;
@@ -1148,12 +1144,7 @@ namespace odfaeg {
                         std::vector<std::string> parts = split(iss.str(), "*");
                         object = reinterpret_cast<O*> (conversionStringULong(parts[1]));
                     } else {
-                        std::map<std::string, FastDelegate<void*>>::iterator it = allocators.find(typeid(O).name());
-                        //If no allocator found, we use default constructor to allocate the object.
-                        if (it == allocators.end())
-                            object = new O();
-                        else
-                            object = static_cast<O*> (it->second());
+                        object = new O(std::forward<Args>(args)...);
                         std::ostringstream oss;
                         oss<<typeid(*object).name()<<"*"<<reinterpret_cast<unsigned long long int>(object);
                         std::pair<long long int, std::string> newAddress (id, oss.str());
@@ -1173,13 +1164,14 @@ namespace odfaeg {
             * \param D... used for SFINAE.
             */
             template <class O,
+                      class... Args,
                       class... D,
                       class = typename std::enable_if<!std::is_fundamental<O>::value>::type,
                       class = typename std::enable_if<!std::is_same<O, std::string>::value>::type,
                       class = typename std::enable_if<has_typedef_key<O>::value>::type,
                       class = typename std::enable_if<!std::is_enum<O>::value>::type,
                       class = typename std::enable_if<!sizeof...(D)>::type>
-            void operator() (O& object, D...) {
+            void operator() (O& object, Args&&... args, D...) {
                 /*long long int id;
                 buffer>>id;
                 char space;
@@ -1211,19 +1203,19 @@ namespace odfaeg {
             * \param D... used for SFINAE.
             */
             template <class O,
+                      class... Args,
                       class... D,
                       class = typename std::enable_if<!std::is_fundamental<O>::value>::type,
                       class = typename std::enable_if<!std::is_same<O, std::string>::value>::type,
                       class = typename std::enable_if<has_typedef_key<O>::value>::type,
                       class = typename std::enable_if<!std::is_enum<O>::value>::type,
                       class = typename std::enable_if<!sizeof...(D)>::type>
-            void operator() (std::reference_wrapper<O> ref, D...) {
+            void operator() (std::reference_wrapper<O> ref, Args&&... args, D...) {
                 O& object = ref.get();
                 long long int id;
                 buffer>>id;
                 char space;
                 buffer.get(space);
-                //std::cout<<"id : "<<id<<std::endl;
                 std::map<long long int, std::string>::iterator it = adresses.find(id);
                 if (it != adresses.end()) {
                     std::istringstream iss(it->second);
@@ -1251,12 +1243,13 @@ namespace odfaeg {
             */
             template <class O,
                       class... D,
+                      class... Args,
                       class = typename std::enable_if<!std::is_fundamental<O>::value>::type,
                       class = typename std::enable_if<!std::is_same<O, std::string>::value>::type,
                       class = typename std::enable_if<!std::is_enum<O>::value>::type,
                       class = typename std::enable_if<has_typedef_key<O>::value && !std::is_abstract<O>::value>::type,
                       class = typename std::enable_if<!sizeof...(D)>::type>
-            void operator() (O*& object, D...) {
+            void operator() (O*& object, Args&&... args, D...) {
                 long long int id;
                 buffer>>id;
                 char space;
@@ -1271,7 +1264,6 @@ namespace odfaeg {
                     } else {
                         std::string typeName;
                         getline(buffer, typeName);
-                        //std::cout<<"type name : "<<typeName<<std::endl;
                         if (typeName == "BaseType") {
                             object = new O();
                             std::ostringstream oss;
@@ -1281,12 +1273,7 @@ namespace odfaeg {
                             nbDeserialized++;
                             object->vtserialize(*this);
                         } else {
-                            std::map<std::string, FastDelegate<void*>>::iterator it = allocators.find(typeName);
-                            //If no allocator found, we use default constructor to allocate the object.
-                            if (it == allocators.end())
-                                object = dynamic_cast<O*>(O::allocate(typeName));
-                            else
-                                object = static_cast<O*>(it->second());
+                            object = static_cast<O*>(O::allocate(typeName));
                             std::ostringstream oss;
                             oss<<typeid(*object).name()<<"*"<<reinterpret_cast<unsigned long long int>(object);
                             std::pair<long long int, std::string> newAddress (id, oss.str());
@@ -1307,6 +1294,7 @@ namespace odfaeg {
             * \param D... used for SFINAE.
             */
             template <class O,
+                      class... Args,
                       class... D,
                       class = typename std::enable_if<!std::is_fundamental<O>::value>::type,
                       class = typename std::enable_if<!std::is_same<O, std::string>::value>::type,
@@ -1314,7 +1302,7 @@ namespace odfaeg {
                       class = typename std::enable_if<has_typedef_key<O>::value>::type,
                       class = typename std::enable_if<std::is_abstract<O>::value>::type,
                       class = typename std::enable_if<!sizeof...(D)>::type>
-            void operator() (O*& object, D...) {
+            void operator() (O*& object, Args&&... args, D...) {
                 long long int id;
                 buffer>>id;
                 char space;
@@ -1329,12 +1317,7 @@ namespace odfaeg {
                     } else {
                         std::string typeName;
                         getline(buffer, typeName);
-                        //std::cout<<"typename : "<<typeName<<std::endl;
-                        std::map<std::string, FastDelegate<void*>>::iterator it = allocators.find(typeName);
-                        if (it == allocators.end())
-                            object = dynamic_cast<O*>(O::allocate(typeName));
-                        else
-                            object = static_cast<O*>(it->second());
+                        object = static_cast<O*>(O::allocate(typeName));
                         std::ostringstream oss;
                         oss<<typeid(*object).name()<<"*"<<reinterpret_cast<unsigned long long int>(object);
                         std::pair<long long int, std::string> newAddress (id, oss.str());
@@ -1353,8 +1336,8 @@ namespace odfaeg {
             * \param O* the data to read.
             * \param D... used for SFINAE.
             */
-            template <class O>
-            void operator() (std::vector<O>& objects) {
+            template <class O, class... Args>
+            void operator() (std::vector<O>& objects, Args&&... args) {
                 std::size_t size;
                 buffer>>size;
                 char space;
@@ -1362,7 +1345,7 @@ namespace odfaeg {
                 //std::cout<<"vector size : "<<size<<std::endl;
                 for (unsigned int i = 0; i < size; i++) {
                     O object;
-                    (*this)(object);
+                    (*this)(object, std::forward<Args>(args)...);
                     objects.push_back(std::move(object));
                 }
             }
@@ -1371,10 +1354,10 @@ namespace odfaeg {
             * \brief read an std::unique_ptr from the archive.
             * \param std::unique_ptr<T>& the ptr to read.
             */
-            template <class T>
-            void operator() (std::unique_ptr<T>& ptr) {
+            template <class T, class... Args>
+            void operator() (std::unique_ptr<T>& ptr, Args&&... args) {
                 T* tmp;
-                (*this)(tmp);
+                (*this)(tmp, std::forward<Args>(args)...);
                 if (tmp != nullptr)
                     ptr.reset(tmp);
             }
@@ -1383,12 +1366,12 @@ namespace odfaeg {
             * \brief read an std::pair from the archive.
             * \param std::pair<T1, T2>& the std::pair to read.
             */
-            template <class T1, class T2>
-            void operator()(std::pair<T1, T2>& pair) {
+            template <class T1, class T2, class... Args>
+            void operator()(std::pair<T1, T2>& pair, Args&&... args) {
                 T1 type1;
                 T2 type2;
-                (*this)(type1);
-                (*this)(type2);
+                (*this)(type1, std::forward<Args>(args)...);
+                (*this)(type2, std::forward<Args>(args)...);
                 pair = std::make_pair(type1, type2);
             }
             /**
@@ -1396,8 +1379,8 @@ namespace odfaeg {
             * \brief read an std::map<T1, T2> from the archive.
             * \param std::map<T1, T2>& the std::pair to read.
             */
-            template <class T1, class T2>
-            void operator()(std::map<T1, T2>& map) {
+            template <class T1, class T2, class... Args>
+            void operator()(std::map<T1, T2>& map, Args&&... args) {
                 std::size_t size;
                 buffer>>size;
                 char space;
@@ -1405,27 +1388,14 @@ namespace odfaeg {
                 //std::cout<<"map size : "<<size<<std::endl;
                 for (unsigned int i = 0; i < size; i++) {
                     std::pair<T1, T2> pair;
-                    (*this)(pair);
+                    (*this)(pair, std::forward<Args>(args)...);
                     map.insert(pair);
-                }
-            }
-            /**
-            * \fn void add_default_constructor()
-            * \brief add a default constructor to the archive to allocate the object if the object is not default constructible.
-            */
-            template <typename B, typename D, typename... Args>
-            static void add_default_constructor(default_constructor<B, Args...> dc) {
-                D* derived = nullptr;
-                std::map<std::string, FastDelegate<void*>>::iterator it = allocators.find(typeid(D).name());
-                if (it == allocators.end()) {
-                    allocators[typeid(D).name()] = FastDelegate<void*>(&default_constructor<B, Args...>::allocate, dc, derived);
                 }
             }
         private :
             std::istream& buffer; /**< the buffer where to read the data.*/
             std::map<long long int, std::string> adresses; /**< an std::map used to store ids and adresses of readed pointers.*/
             unsigned long long int nbDeserialized; /** the nb object which have been deserailized.*/
-            static std::map<std::string, FastDelegate<void*>> allocators; /** allocators for non default constructible objects.*/
         };
     }
 }

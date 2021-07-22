@@ -103,9 +103,9 @@ namespace odfaeg {
                 *   \param the types of the entities to get.
                 *   \return the visible entities of the given types.
                 */
-                std::vector<graphic::Entity*> getVisibleEntities (std::string expression) {
+                std::vector<graphic::Entity*> getVisibleEntities (std::string expression, EntityFactory& factory) {
                     if (currentEntityManager != nullptr)
-                        return currentEntityManager->getVisibleEntities(expression);
+                        return currentEntityManager->getVisibleEntities(expression, factory);
                     return std::vector<Entity*>();
                 }
                 /**
@@ -150,10 +150,10 @@ namespace odfaeg {
                 *  \param std::vector<E*> tWalls : the tiles of the wall to generate.
                 *  \param BoundingBox zone : the zone of the map to generate.
                 */
-                void generate_map(std::vector<Tile*> tGround, std::vector<g2d::Wall*> tWall, math::Vec2f tileSize, physic::BoundingBox zone, bool terrain3D) {
+                void generate_map(std::vector<Tile*> tGround, std::vector<g2d::Wall*> tWall, math::Vec2f tileSize, physic::BoundingBox zone, bool terrain3D, EntityFactory& factory) {
 
                     if (currentEntityManager != nullptr) {
-                        currentEntityManager->generate_map(tGround, tWall, tileSize, zone, terrain3D);
+                        currentEntityManager->generate_map(tGround, tWall, tileSize, zone, terrain3D, factory);
                     }
                 }
                 /** \fn void drawOnComponents(std::string expression, int layer, sf::BlendMode mode = sf::BlendMode::BlendAlpha)
@@ -375,9 +375,9 @@ namespace odfaeg {
                     ptr.reset(holder);
                     cache.ems.push_back(std::move(ptr));
                 }
-                void checkVisibleEntities() {
+                void checkVisibleEntities(EntityFactory& factory) {
                     if (currentEntityManager != nullptr) {
-                        currentEntityManager->checkVisibleEntities();
+                        currentEntityManager->checkVisibleEntities(factory);
                     }
                 }
                 std::vector<Entity*> getEntitiesInRect(physic::BoundingBox rect, std::string expression) {

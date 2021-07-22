@@ -26,7 +26,7 @@ namespace odfaeg {
             *   \param std::string type : the type of the entity.
             *   \param Entity* entity : the parent entity.
             */
-            AnimatedEntity(math::Vec3f position, math::Vec3f size,math::Vec3f origin, std::string type, std::string name = "", Entity* parent = nullptr);
+            AnimatedEntity(math::Vec3f position, math::Vec3f size,math::Vec3f origin, std::string type, EntityFactory& factory, std::string name = "", Entity* parent = nullptr);
             public :
             /**\fn bool isAnimated() const
             *  \brief abstract method to redefine if the entity is animated.

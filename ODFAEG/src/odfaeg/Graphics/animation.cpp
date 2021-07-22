@@ -3,7 +3,7 @@ namespace odfaeg {
     namespace graphic {
         using namespace sf;
         using namespace std;
-        Anim::Anim() : AnimatedEntity (math::Vec3f(0, 0, 0), math::Vec3f(0, 0, 0), math::Vec3f(0, 0, 0), "E_ANIMATION", "", nullptr) {
+        Anim::Anim(EntityFactory& factory) : AnimatedEntity (math::Vec3f(0, 0, 0), math::Vec3f(0, 0, 0), math::Vec3f(0, 0, 0), "E_ANIMATION", factory, "", nullptr) {
             currentFrameIndex = 0;
             running = false;
             currentFrameChanged = false;
@@ -13,9 +13,9 @@ namespace odfaeg {
             loop = false;
             interpLevels = 1;
             interpPerc = 0;
-            interpolatedFrame = std::make_unique<Mesh>(math::Vec3f(0, 0, 0), math::Vec3f(0, 0, 0), "E_MESH");
+            interpolatedFrame = std::make_unique<Mesh>(math::Vec3f(0, 0, 0), math::Vec3f(0, 0, 0), "E_MESH", factory);
         }
-        Anim::Anim (float fr, math::Vec3f position, math::Vec3f size, Entity *parent) : AnimatedEntity (position, size, size * 0.5f, "E_ANIMATION", "", parent) {
+        Anim::Anim (float fr, math::Vec3f position, math::Vec3f size, EntityFactory& factory, Entity *parent) : AnimatedEntity (position, size, size * 0.5f, "E_ANIMATION", factory, "", parent) {
             this->fr = fr;
             currentFrameIndex = 0;
             running = false;
@@ -26,7 +26,7 @@ namespace odfaeg {
             loop = false;
             interpLevels = 1;
             interpPerc = 0;
-            interpolatedFrame = std::make_unique<Mesh>(position, size, "E_MESH");
+            interpolatedFrame = std::make_unique<Mesh>(position, size, "E_MESH", factory);
         }
         bool Anim::isCurrentFrameChanged() {
             return currentFrameChanged;
@@ -223,7 +223,7 @@ namespace odfaeg {
             interpolatedFrame->move(t);
         }
         Entity* Anim::clone() {
-            Anim* anim = new Anim();
+            Anim* anim = factory.make_entity<Anim>(factory);
             GameObject::copy(anim);
             anim->fr = fr;
             anim->currentFrameIndex = currentFrameIndex;

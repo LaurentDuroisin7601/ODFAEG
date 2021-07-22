@@ -33,7 +33,7 @@ namespace odfaeg {
                     * \fn  Wall()
                     * \brief constructor.
                     */
-                    Wall() : Model(math::Vec3f(0, 0, 0),math::Vec3f(1, 1, 0),math::Vec3f(0.5f, 0.5f, 0), "E_WALL", "WALL") {
+                    Wall(EntityFactory& factory) : Model(math::Vec3f(0, 0, 0),math::Vec3f(1, 1, 0),math::Vec3f(0.5f, 0.5f, 0), factory, "E_WALL", "WALL") {
                         type = TOP_LEFT;
                     }
                     /**
@@ -45,7 +45,7 @@ namespace odfaeg {
                     * \param light : the light used to generate the shadow.
                     * \param sahdowType : the type of the shadow to generate.
                     */
-                    Wall (Tile *tile, Type type, Light *light);
+                    Wall (Tile *tile, Type type, Light *light, EntityFactory& factory);
                     void createShadow(Light& light);
                     /**
                     * \fn bool isLeaf() const;

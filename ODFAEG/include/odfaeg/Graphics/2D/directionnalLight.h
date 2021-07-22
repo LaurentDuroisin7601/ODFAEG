@@ -8,7 +8,7 @@ namespace odfaeg {
             class ODFAEG_GRAPHICS_API DirectionnalLight : public EntityLight {
             public :
 
-                DirectionnalLight (math::Vec3f center, math::Vec3f dir, int height, float r1, float r2, float r3, float intensity, sf::Color color, int quality, Entity* parent = nullptr);
+                DirectionnalLight (math::Vec3f center, math::Vec3f dir, int height, float r1, float r2, float r3, float intensity, sf::Color color, int quality, EntityFactory& entity, Entity* parent = nullptr);
                 int getLightId() {
                     return Entity::getId();
                 }

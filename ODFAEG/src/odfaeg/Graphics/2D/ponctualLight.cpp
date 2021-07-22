@@ -10,8 +10,8 @@ namespace odfaeg {
             using namespace std;
             using namespace sf;
             //Crée une lumière avec sa position, son intensité et son type.
-            PonctualLight::PonctualLight (math::Vec3f center, float r1, float r2, float r3, float intensity, Color color, int quality, Entity *parent) :
-                EntityLight (center, color, r1, r2, r3, height, "E_PONCTUAL_LIGHT", "", parent) {
+            PonctualLight::PonctualLight (math::Vec3f center, float r1, float r2, float r3, float intensity, Color color, int quality, EntityFactory& factory, Entity *parent) :
+                EntityLight (center, color, r1, r2, r3, height, "E_PONCTUAL_LIGHT", factory, "", parent) {
                 this->littleRadius = r1;
                 this->bigRadius = r2;
                 this->quality = quality;
@@ -24,7 +24,7 @@ namespace odfaeg {
                 initTriangles ();
             }
             Entity* PonctualLight::clone() {
-                PonctualLight* pl = new PonctualLight();
+                PonctualLight* pl = factory.make_entity<PonctualLight>(factory);
                 GameObject::copy(pl);
                 pl->intensity = intensity;
                 pl->color = color;

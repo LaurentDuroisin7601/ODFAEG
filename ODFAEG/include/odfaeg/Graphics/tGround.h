@@ -21,13 +21,13 @@ namespace odfaeg {
             * \fn BigTile()
             * \brief constructor.
             */
-            BigTile() : GameObject (math::Vec3f(0, 0, 0), math::Vec3f (0, 0, 0), math::Vec3f (0, 0, 0), "E_BIGTILE") {}
+            BigTile(EntityFactory& factory) : GameObject (math::Vec3f(0, 0, 0), math::Vec3f (0, 0, 0), math::Vec3f (0, 0, 0), "E_BIGTILE", factory) {}
             /**
             * \fn BigTile(math::Vec3f pos)
             * \brief constructor.
             * \param pos : the position of the big tile.
             */
-            BigTile  (math::Vec3f pos, math::Vec2f tileSize=math::Vec2f(0, 0), int nbTilesPerRow = 0);
+            BigTile  (math::Vec3f pos, EntityFactory& factory, math::Vec2f tileSize=math::Vec2f(0, 0), int nbTilesPerRow = 0);
             /**
             * \fn bool operator== (Entity &entity);
             * \brief compare two entities.

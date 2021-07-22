@@ -99,10 +99,10 @@ namespace odfaeg
         // ---------------------------------------------------------------------------------------------------------------------------
         // Public member functions
         public:
-        ParticleSystem();
+        ParticleSystem(graphic::EntityFactory& factory);
         /// @brief Default constructor
         /// @details Requires a call to setTexture() and possibly addTextureRect() before the particle system can be used.
-        ParticleSystem(math::Vec3f position, math::Vec3f size, graphic::EntityManager* scene = nullptr);
+        ParticleSystem(math::Vec3f position, math::Vec3f size, graphic::EntityFactory& factory);
         graphic::Entity* clone();
         /// @brief Swaps the contents of two instances in constant time.
         ///
@@ -249,7 +249,6 @@ namespace odfaeg
         EmitterContainer	mEmitters;
         const graphic::Texture*	mTexture;
         std::vector<sf::IntRect>	mTextureRects;
-        graphic::EntityManager* scene;
         mutable graphic::VertexArray	mVertices;
         mutable bool	mNeedsVertexUpdate;
         mutable std::vector<Quad>	mQuads;

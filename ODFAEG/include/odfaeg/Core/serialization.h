@@ -24,6 +24,18 @@
 *   etc...
 *   Abstract derived classes cannot be exported.
 */
+#define VA_LIST(...) __VA_ARGS__
+#define EXPORT_CLASS_GUID_(ID, BASE, DERIVED, PARAMS, ARGS) \
+{ \
+REGISTER_TYPE_(ID, BASE, DERIVED, PARAMS , ARGS) \
+std::ostringstream oss##ID; \
+std::istringstream iss##ID; \
+odfaeg::core::OTextArchive outa##ID(oss##ID); \
+odfaeg::core::ITextArchive ina##ID(iss##ID); \
+BASE* derived##ID = nullptr; \
+REGISTER_FUNC(ID, serialize, OTextArchive, BASE, DERIVED, (odfaeg::core::OTextArchive&), derived##ID, std::ref(outa##ID)) \
+REGISTER_FUNC(ID, serialize, ITextArchive, BASE, DERIVED, (odfaeg::core::ITextArchive&), derived##ID, std::ref(ina##ID)) \
+}
 #define EXPORT_CLASS_GUID(ID, BASE, DERIVED) \
 { \
 REGISTER_TYPE(ID, BASE, DERIVED) \
@@ -31,9 +43,9 @@ std::ostringstream oss##ID; \
 std::istringstream iss##ID; \
 odfaeg::core::OTextArchive outa##ID(oss##ID); \
 odfaeg::core::ITextArchive ina##ID(iss##ID); \
-DERIVED* derived##ID = new DERIVED(); \
-REGISTER_FUNC(ID, serialize, OTextArchive, BASE, DERIVED, (odfaeg::core::OTextArchive&), static_cast<BASE*>(derived##ID), std::ref(outa##ID)) \
-REGISTER_FUNC(ID, serialize, ITextArchive, BASE, DERIVED, (odfaeg::core::ITextArchive&), static_cast<BASE*>(derived##ID), std::ref(ina##ID)) \
+BASE* derived##ID = nullptr; \
+REGISTER_FUNC(ID, serialize, OTextArchive, BASE, DERIVED, (odfaeg::core::OTextArchive&), derived##ID, std::ref(outa##ID)) \
+REGISTER_FUNC(ID, serialize, ITextArchive, BASE, DERIVED, (odfaeg::core::ITextArchive&), derived##ID, std::ref(ina##ID)) \
 }
 /**
  *\namespace odfaeg

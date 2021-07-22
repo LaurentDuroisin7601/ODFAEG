@@ -52,7 +52,7 @@ namespace odfaeg {
             public :
                 /** \fn default constructor
                 */
-                Anim();
+                Anim(EntityFactory& factory);
                 /**
                 *  \fn Anim (float fr, math::Vec3f position, math::Vec3f size, Entity* parent = nullptr)
                 *  \brief create an animation, with the given framerate, position and parent.
@@ -60,7 +60,7 @@ namespace odfaeg {
                 *  \param math::Vec3f position : the position of the animation. (It corresponds to the minimal position for each frames)
                 *  \param Entity* parent : the parent entity of the animation, can be null.
                 */
-                Anim (float fr, math::Vec3f position, math::Vec3f size, Entity* parent = nullptr);
+                Anim (float fr, math::Vec3f position, math::Vec3f size, EntityFactory& factory, Entity* parent = nullptr);
                 /**
                 *  \fn addEntity(Entity* entity)
                 *  \brief add a frame into the animation.

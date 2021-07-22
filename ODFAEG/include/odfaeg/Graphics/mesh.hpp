@@ -5,8 +5,8 @@ namespace odfaeg {
     namespace graphic {
         class Mesh : public GameObject {
             public :
-            Mesh();
-            Mesh(math::Vec3f position, math::Vec3f size, std::string type);
+            Mesh(EntityFactory& factory);
+            Mesh(math::Vec3f position, math::Vec3f size, std::string type, EntityFactory& factory);
             bool operator==(Entity& other);
             bool isAnimated() const;
             bool isModel() const;

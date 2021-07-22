@@ -8,7 +8,7 @@ namespace odfaeg {
         namespace g3d {
             class ODFAEG_GRAPHICS_API Cube : public GameObject {
             public :
-                Cube (math::Vec3f position, float w, float h, float d, sf::Color color);
+                Cube (math::Vec3f position, float w, float h, float d, sf::Color color, EntityFactory& factory);
                 bool operator== (Entity& other) {
                     if (!GameObject::operator==(other))
                         return false;

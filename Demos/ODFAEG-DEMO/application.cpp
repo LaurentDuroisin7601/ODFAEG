@@ -19,7 +19,18 @@ namespace sorrok {
         addClock(sf::Clock(), "FPS");
         day = false;
         sf::Listener::setUpVector(0.f, 0.f, 1.f);
-        ps = new ParticleSystem(Vec3f(0, 0, 150),Vec3f(100, 100, 0));
+        ps = entityFactory.make_entity<ParticleSystem>(Vec3f(0, 0, 150),Vec3f(100, 100, 0), entityFactory);
+        Tile* tile;
+        //FastDelegate<void> fd(&Allocator<Entity>::allocate<Tile, EntityFactory&>,tile, std::ref(entityFactory));
+        EXPORT_CLASS_GUID(BoundingVolumeBoundingBox, BoundingVolume, BoundingBox)
+        EXPORT_CLASS_GUID_(EntityTile, Entity, Tile, VA_LIST(EntityFactory&), VA_LIST(std::ref(entityFactory)))
+        EXPORT_CLASS_GUID_(EntityTile, Entity, BigTile, VA_LIST(EntityFactory&), VA_LIST(std::ref(entityFactory)))
+        EXPORT_CLASS_GUID_(EntityWall, Entity, g2d::Wall, VA_LIST(EntityFactory&), VA_LIST(std::ref(entityFactory)))
+        EXPORT_CLASS_GUID_(EntityDecor, Entity, g2d::Decor, VA_LIST(EntityFactory&), VA_LIST(std::ref(entityFactory)))
+        EXPORT_CLASS_GUID_(EntityAnimation, Entity, Anim, VA_LIST(EntityFactory&), VA_LIST(std::ref(entityFactory)))
+        EXPORT_CLASS_GUID_(EntityHero, Entity, Hero, VA_LIST(EntityFactory&), VA_LIST(std::ref(entityFactory)))
+        EXPORT_CLASS_GUID_(EntityMesh, Entity, Mesh, VA_LIST(EntityFactory&), VA_LIST(std::ref(entityFactory)))
+
     }
     void MyAppli::gaignedFocus(gui::TextArea* textArea) {
         std::cout<<"gaigned focus"<<std::endl;
@@ -131,7 +142,7 @@ namespace sorrok {
         theMap->setBaseChangementMatrix(bm);
         getWorld()->addSceneManager(theMap);
         getWorld()->setCurrentSceneManager("Map test");
-        eu = new EntitiesUpdater();
+        eu = new EntitiesUpdater(entityFactory, *getWorld());
         eu->setName("EntitiesUpdater");
         getWorld()->addWorker(eu);
         au = new AnimUpdater();
@@ -139,15 +150,15 @@ namespace sorrok {
         getWorld()->addTimer(au);
         psu = new ParticleSystemUpdater();
         getWorld()->addWorker(psu);
-        tiles.push_back(new Tile(tm.getResourceByAlias("WATER"), Vec3f(0, 0, 0), Vec3f(120, 60, 0),sf::IntRect(0, 0, 100, 50)));
+        tiles.push_back(entityFactory.make_entity<Tile>(tm.getResourceByAlias("WATER"), Vec3f(0, 0, 0), Vec3f(120, 60, 0),sf::IntRect(0, 0, 100, 50), entityFactory));
         walls.resize(g2d::Wall::NB_WALL_TYPES, nullptr);
         //tiles.push_back(new Tile(tm.getResourceByAlias("GRASS"), Vec3f(0, 0, 0), Vec3f(120, 60, 0),sf::IntRect(0, 0, 100, 50)));
-        walls[g2d::Wall::TOP_BOTTOM] = new g2d::Wall(new Tile(tm.getResourceByAlias("WALLS"), Vec3f(0, 0, 0), Vec3f(100, 100, 0), sf::IntRect(100, 0, 100, 100)),g2d::Wall::TOP_BOTTOM,&g2d::AmbientLight::getAmbientLight());
-        walls[g2d::Wall::RIGHT_LEFT] = new g2d::Wall(new Tile(tm.getResourceByAlias("WALLS"), Vec3f(0, 0, 0), Vec3f(100, 100, 0), sf::IntRect(100, 100, 100, 100)),g2d::Wall::RIGHT_LEFT,&g2d::AmbientLight::getAmbientLight());
-        walls[g2d::Wall::BOTTOM_LEFT] = new g2d::Wall(new Tile(tm.getResourceByAlias("WALLS"), Vec3f(0, 0, 0), Vec3f(100, 100, 0), sf::IntRect(100, 200, 100, 100)),g2d::Wall::BOTTOM_LEFT,&g2d::AmbientLight::getAmbientLight());
-        walls[g2d::Wall::TOP_RIGHT] = new g2d::Wall(new Tile(tm.getResourceByAlias("WALLS"), Vec3f(0, 0, 0), Vec3f(100, 100, 0), sf::IntRect(100, 300, 100, 100)),g2d::Wall::TOP_RIGHT,&g2d::AmbientLight::getAmbientLight());
-        walls[g2d::Wall::TOP_LEFT] = new g2d::Wall(new Tile(tm.getResourceByAlias("WALLS"), Vec3f(0, 0, 0), Vec3f(100, 100, 0), sf::IntRect(100, 400, 100, 100)),g2d::Wall::TOP_LEFT,&g2d::AmbientLight::getAmbientLight());
-        walls[g2d::Wall::BOTTOM_RIGHT] = new g2d::Wall (new Tile(tm.getResourceByAlias("WALLS"), Vec3f(0, 0, 0), Vec3f(100, 100, 0), sf::IntRect(100, 500, 100, 100)), g2d::Wall::BOTTOM_RIGHT,&g2d::AmbientLight::getAmbientLight());
+        walls[g2d::Wall::TOP_BOTTOM] = entityFactory.make_entity<g2d::Wall>(entityFactory.make_entity<Tile>(tm.getResourceByAlias("WALLS"), Vec3f(0, 0, 0), Vec3f(100, 100, 0), sf::IntRect(100, 0, 100, 100), entityFactory),g2d::Wall::TOP_BOTTOM,&g2d::AmbientLight::getAmbientLight(), entityFactory);
+        walls[g2d::Wall::RIGHT_LEFT] = entityFactory.make_entity<g2d::Wall>(entityFactory.make_entity<Tile>(tm.getResourceByAlias("WALLS"), Vec3f(0, 0, 0), Vec3f(100, 100, 0), sf::IntRect(100, 100, 100, 100), entityFactory),g2d::Wall::RIGHT_LEFT,&g2d::AmbientLight::getAmbientLight(), entityFactory);
+        walls[g2d::Wall::BOTTOM_LEFT] = entityFactory.make_entity<g2d::Wall>(entityFactory.make_entity<Tile>(tm.getResourceByAlias("WALLS"), Vec3f(0, 0, 0), Vec3f(100, 100, 0), sf::IntRect(100, 200, 100, 100), entityFactory),g2d::Wall::BOTTOM_LEFT,&g2d::AmbientLight::getAmbientLight(), entityFactory);
+        walls[g2d::Wall::TOP_RIGHT] = entityFactory.make_entity<g2d::Wall>(entityFactory.make_entity<Tile>(tm.getResourceByAlias("WALLS"), Vec3f(0, 0, 0), Vec3f(100, 100, 0), sf::IntRect(100, 300, 100, 100), entityFactory),g2d::Wall::TOP_RIGHT,&g2d::AmbientLight::getAmbientLight(), entityFactory);
+        walls[g2d::Wall::TOP_LEFT] = entityFactory.make_entity<g2d::Wall>(entityFactory.make_entity<Tile>(tm.getResourceByAlias("WALLS"), Vec3f(0, 0, 0), Vec3f(100, 100, 0), sf::IntRect(100, 400, 100, 100), entityFactory),g2d::Wall::TOP_LEFT,&g2d::AmbientLight::getAmbientLight(), entityFactory);
+        walls[g2d::Wall::BOTTOM_RIGHT] = entityFactory.make_entity<g2d::Wall> (entityFactory.make_entity<Tile>(tm.getResourceByAlias("WALLS"), Vec3f(0, 0, 0), Vec3f(100, 100, 0), sf::IntRect(100, 500, 100, 100), entityFactory), g2d::Wall::BOTTOM_RIGHT,&g2d::AmbientLight::getAmbientLight(), entityFactory);
         tiles[0]->getFace(0)->getMaterial().setTexId("WATER");
         tiles[0]->getFace(0)->getMaterial().setReflectable(true);
         tiles[0]->getFace(0)->getMaterial().setType(Material::WATER);
@@ -214,12 +225,12 @@ namespace sorrok {
             std::cout<<"not read serialisation file"<<std::endl;
             BoundingBox mapZone(0, 0, 0, 1500, 1000, 0);
             std::cout<<"generate map"<<std::endl;
-            getWorld()->generate_map(tiles, walls, Vec2f(100, 50), mapZone, false);
+            getWorld()->generate_map(tiles, walls, Vec2f(100, 50), mapZone, false, entityFactory);
             std::cout<<"map generated"<<std::endl;
-            Tile* thouse = new Tile(tm.getResourceByAlias("HOUSE"), Vec3f(0, 0, 0), Vec3f(250, 300, 0), sf::IntRect(0, 0, 250, 300));
+            Tile* thouse = entityFactory.make_entity<Tile>(tm.getResourceByAlias("HOUSE"), Vec3f(0, 0, 0), Vec3f(250, 300, 0), sf::IntRect(0, 0, 250, 300), entityFactory);
             thouse->setLayer(1);
             thouse->getFace(0)->getMaterial().setTexId("HOUSE");
-            g2d::Decor* decor = new g2d::Decor(thouse, &g2d::AmbientLight::getAmbientLight());
+            g2d::Decor* decor = entityFactory.make_entity<g2d::Decor>(thouse, &g2d::AmbientLight::getAmbientLight(), entityFactory);
             decor->setPosition(Vec3f(-100, 250, 400));
             BoundingVolume *bb = new BoundingBox(decor->getGlobalBounds().getPosition().x, decor->getGlobalBounds().getPosition().y + decor->getGlobalBounds().getSize().y * 0.4f, 0,
             decor->getGlobalBounds().getSize().x, decor->getGlobalBounds().getSize().y * 0.25f, 0);
@@ -230,23 +241,23 @@ namespace sorrok {
             thouse->getFace(0)->getMaterial().setSpecularIntensity(100);
             std::cout<<"add house"<<std::endl;
             getWorld()->addEntity(decor);
-            Anim* fire = new Anim(0.1f, Vec3f(0, 0, 0), Vec3f(100, 100, 0), 0);
-            Tile* tf1 = new Tile(tm.getResourceByAlias("FIRE1"), Vec3f(0, 100, 150), Vec3f(100, 100, 0), sf::IntRect(0, 0, 150, 200));
+            Anim* fire = entityFactory.make_entity<Anim>(0.1f, Vec3f(0, 0, 0), Vec3f(100, 100, 0), entityFactory);
+            Tile* tf1 = entityFactory.make_entity<Tile>(tm.getResourceByAlias("FIRE1"), Vec3f(0, 100, 150), Vec3f(100, 100, 0), sf::IntRect(0, 0, 150, 200), entityFactory);
             tf1->setLayer(1);
             tf1->getFace(0)->getMaterial().setTexId("FIRE1");
-            g2d::Decor *fire1 = new g2d::Decor(tf1, &g2d::AmbientLight::getAmbientLight());
+            g2d::Decor *fire1 = entityFactory.make_entity<g2d::Decor>(tf1, &g2d::AmbientLight::getAmbientLight(), entityFactory);
             fire1->setShadowCenter(Vec3f(0, 200, 0));
             //decor->changeGravityCenter(Vec3f(50, 50, 0));
-            Tile* tf2 = new Tile(tm.getResourceByAlias("FIRE2"), Vec3f(0, 100, 150), Vec3f(100, 100, 0), sf::IntRect(0, 0, 150, 200));
+            Tile* tf2 = entityFactory.make_entity<Tile>(tm.getResourceByAlias("FIRE2"), Vec3f(0, 100, 150), Vec3f(100, 100, 0), sf::IntRect(0, 0, 150, 200), entityFactory);
             tf2->setLayer(1);
             tf2->getFace(0)->getMaterial().setTexId("FIRE2");
-            g2d::Decor *fire2 = new g2d::Decor(tf2, &g2d::AmbientLight::getAmbientLight());
+            g2d::Decor *fire2 = entityFactory.make_entity<g2d::Decor>(tf2, &g2d::AmbientLight::getAmbientLight(), entityFactory);
             fire2->setShadowCenter(Vec3f(0, 200, 0));
             //decor->changeGravityCenter(Vec3f(50, 50, 0));
-            Tile* tf3 = new Tile(tm.getResourceByAlias("FIRE3"), Vec3f(0, 100, 150), Vec3f(100, 100, 0), sf::IntRect(0, 0, 150, 200));
+            Tile* tf3 = entityFactory.make_entity<Tile>(tm.getResourceByAlias("FIRE3"), Vec3f(0, 100, 150), Vec3f(100, 100, 0), sf::IntRect(0, 0, 150, 200), entityFactory);
             tf3->setLayer(1);
             tf3->getFace(0)->getMaterial().setTexId("FIRE3");
-            g2d::Decor *fire3 = new g2d::Decor(tf3, &g2d::AmbientLight::getAmbientLight());
+            g2d::Decor *fire3 = entityFactory.make_entity<g2d::Decor>(tf3, &g2d::AmbientLight::getAmbientLight(), entityFactory);
             fire3->setShadowCenter(Vec3f(0, 200, 0));
             //decor->changeGravityCenter(Vec3f(50, 50, 0));
             //fire1->setShadowCenter(Vec2f(80, 100));
@@ -261,7 +272,7 @@ namespace sorrok {
             std::cout<<"add fire"<<std::endl;
             getWorld()->addEntity(fire);
             au->addAnim(fire);
-            w = new g2d::Wall(new Tile(tm.getResourceByAlias("WALLS"), Vec3f(0, 0, 0), Vec3f(100, 100, 0), sf::IntRect(100, 200, 100, 100)),g2d::Wall::TOP_LEFT, &g2d::AmbientLight::getAmbientLight());
+            w = entityFactory.make_entity<g2d::Wall>(entityFactory.make_entity<Tile>(tm.getResourceByAlias("WALLS"), Vec3f(0, 0, 0), Vec3f(100, 100, 0), sf::IntRect(100, 200, 100, 100), entityFactory),g2d::Wall::TOP_LEFT, &g2d::AmbientLight::getAmbientLight(), entityFactory);
             w->getChildren()[0]->getFace(0)->getMaterial().setTexId("WALLS");
             w->setPosition(Vec3f(0, 130, 130 + w->getSize().y * 0.5f));
             w->setLayer(1);
@@ -321,20 +332,20 @@ namespace sorrok {
         /*getRenderComponentManager().addComponent(textArea);
         getRenderComponentManager().addComponent(op);*/
 
-        caracter = new Hero("Sorrok", "Nagi", "M", "Map test", "Brain", "Green", "White","Normal","Novice", 1);
+        caracter = entityFactory.make_entity<Hero>("Sorrok", "Nagi", "M", "Map test", "Brain", "Green", "White","Normal","Novice", 1, entityFactory);
 
         const Texture *text = cache.resourceManager<Texture, std::string>("TextureManager").getResourceByAlias("VLADSWORD");
         int textRectX = 0, textRectY = 0, textRectWidth = 50, textRectHeight = 100;
         int textWidth = text->getSize().x;
         caracter->setCenter(math::Vec3f(-25, -50, 0));
         for (unsigned int i = 0; i < 8; i++) {
-            Anim* animation = new Anim(0.1f, Vec3f(-25, -50, 0), Vec3f(50, 100, 0), 0);
+            Anim* animation = entityFactory.make_entity<Anim>(0.1f, Vec3f(-25, -50, 0), Vec3f(50, 100, 0), entityFactory);
             for (unsigned int j = 0; j < 8; j++) {
                 sf::IntRect textRect (textRectX, textRectY, textRectWidth, textRectHeight);
-                Tile *tile = new Tile(text, Vec3f(-25, -50, 0), Vec3f(textRectWidth, textRectHeight, 0), textRect);
+                Tile *tile = entityFactory.make_entity<Tile>(text, Vec3f(-25, -50, 0), Vec3f(textRectWidth, textRectHeight, 0), textRect, entityFactory);
                 tile->setLayer(1);
                 tile->getFace(0)->getMaterial().setTexId("VLADSWORD");
-                g2d::Decor *frame = new g2d::Decor(tile, &g2d::AmbientLight::getAmbientLight());
+                g2d::Decor *frame = entityFactory.make_entity<g2d::Decor>(tile, &g2d::AmbientLight::getAmbientLight(), entityFactory);
                 frame->setShadowCenter(Vec3f(0, 200, 200));
                 textRectX += textRectWidth;
                 if (textRectX + textRectWidth >= textWidth) {
@@ -354,8 +365,8 @@ namespace sorrok {
         caracter->setShadowScale(Vec3f(1, -1, 1));
         caracter->setShadowCenter(Vec3f(0, 280, -140));
         //std::cout<<bb2->getPosition()<<" "<<bb2->getSize()<<std::endl;
-        g2d::PonctualLight* light1 = new g2d::PonctualLight(Vec3f(-50, 420, 420), 100, 50, 0, 255, sf::Color::Yellow, 16);
-        g2d::PonctualLight* light2 = new g2d::PonctualLight(Vec3f(50, 160, 160), 100, 50, 0, 255, sf::Color::Yellow, 16);
+        g2d::PonctualLight* light1 = entityFactory.make_entity<g2d::PonctualLight>(Vec3f(-50, 420, 420), 100, 50, 0, 255, sf::Color::Yellow, 16, entityFactory);
+        g2d::PonctualLight* light2 = entityFactory.make_entity<g2d::PonctualLight>(Vec3f(50, 160, 160), 100, 50, 0, 255, sf::Color::Yellow, 16, entityFactory);
         getWorld()->addEntity(light1);
         getWorld()->addEntity(light2);
         //getView().move(d.x * 0.5f, d.y * 0.5f, 0);
@@ -548,3 +559,4 @@ namespace sorrok {
         //ps->update(getClock("LoopTime").getElapsedTime());
     }
 }
+

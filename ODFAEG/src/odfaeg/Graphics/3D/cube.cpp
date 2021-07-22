@@ -3,7 +3,7 @@ namespace odfaeg {
     namespace graphic {
         namespace g3d {
             using namespace sf;
-            Cube::Cube (math::Vec3f position, float w, float h, float d, Color color) : GameObject(position,math::Vec3f(w, h, d),math::Vec3f(w*0.5f,h*0.5f,d*0.5f),"E_CUBE") {
+            Cube::Cube (math::Vec3f position, float w, float h, float d, Color color, EntityFactory& factory) : GameObject(position,math::Vec3f(w, h, d),math::Vec3f(w*0.5f,h*0.5f,d*0.5f),"E_CUBE", factory) {
                     m_color = color;
                     VertexArray va1(sf::Quads, 4, this);
                     //Devant
@@ -104,7 +104,7 @@ namespace odfaeg {
                 }
             }
             Entity* Cube::clone() {
-                Cube* cube = new Cube(getPosition(), getSize().x, getSize().y, getSize().z,m_color);
+                Cube* cube = factory.make_entity<Cube>(getPosition(), getSize().x, getSize().y, getSize().z,m_color,factory);
                 GameObject::copy(cube);
                 cube->m_color = m_color;
                 return cube;

@@ -26,7 +26,7 @@ protected :
     * \param the type of the model. (E_MODEL by default)
     * \param the parent entity of the model. (null by default)
     */
-    Model (math::Vec3f position, math::Vec3f size, math::Vec3f origin, std::string type = "E_MODEL", std::string name = "", Entity *parent = nullptr);
+    Model (math::Vec3f position, math::Vec3f size, math::Vec3f origin, EntityFactory& factory, std::string type = "E_MODEL", std::string name = "", Entity *parent = nullptr);
 public :
     /**
     * \fn bool isModel() const;

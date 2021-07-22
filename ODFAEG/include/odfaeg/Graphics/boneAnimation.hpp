@@ -5,7 +5,7 @@ namespace odfaeg {
     namespace graphic {
         class BoneAnimation : public GameObject {
             public :
-            BoneAnimation(math::Vec3f position, math::Vec3f size, std::string type);
+            BoneAnimation(math::Vec3f position, math::Vec3f size, std::string type, EntityFactory& entity);
             void setBoneAnimationIndex(unsigned int index);
             unsigned int getBoneAnimationIndex();
             bool isAnimated() const {

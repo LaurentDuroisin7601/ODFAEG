@@ -15,10 +15,10 @@ namespace sorrok {
         enum ANIMS {
             WALKING, ATTACKING = 8
         };
-        Caracter() : BoneAnimation(odfaeg::math::Vec3f(0, 0, 0), odfaeg::math::Vec3f(0, 0, 0),"E_CARACTER") {
+        Caracter(odfaeg::graphic::EntityFactory& factory) : BoneAnimation(odfaeg::math::Vec3f(0, 0, 0), odfaeg::math::Vec3f(0, 0, 0),"E_CARACTER", factory) {
             currentAnimIndex = 0;
         }
-        Caracter (std::string type, std::string name, std::string currentMapName, std::string classs, int level);
+        Caracter (std::string type, std::string name, std::string currentMapName, std::string classs, int level, odfaeg::graphic::EntityFactory& factory);
         bool isMovable() const {
             return true;
         }

@@ -157,7 +157,7 @@ class ODFAEG_GRAPHICS_API Scene : public SceneManager {
         * \fn  void checkVisibleEntities();
         * \brief check the entities which are visible. (Which are in the field of view of the camera)
         */
-        void checkVisibleEntities();
+        void checkVisibleEntities(EntityFactory& factory);
         /**
         * \fn  Entity* getEntity(int id);
         * \brief get an entity from its id.
@@ -256,7 +256,7 @@ class ODFAEG_GRAPHICS_API Scene : public SceneManager {
         * \param std::string type : the types.
         * \return the visible entities.
         */
-        std::vector<Entity*> getVisibleEntities (std::string type);
+        std::vector<Entity*> getVisibleEntities (std::string type, EntityFactory& factory);
         /**
         * \fn std::vector<Entity*> getEntitiesInBox(BoundingBox bx, std::string types)
         * \brief get the entities of the given types which are into the given box.
@@ -295,13 +295,13 @@ class ODFAEG_GRAPHICS_API Scene : public SceneManager {
         bool collide(Entity *entity);
         bool collide(Entity* entity, math::Vec3f position);
         bool collide(Entity* entity, math::Ray ray);
-        void generate_labyrinthe(std::vector<Tile*> tGround, std::vector<g2d::Wall*> walls, math::Vec2f tileSize, physic::BoundingBox &box, bool terrain3D);
+        void generate_labyrinthe(std::vector<Tile*> tGround, std::vector<g2d::Wall*> walls, math::Vec2f tileSize, physic::BoundingBox &box, bool terrain3D, EntityFactory& factory);
         /** \fn generate_map(std::vector<Tile*> tGround, std::vector<Tile*> walls, BoundingBox &box)
         *   \brief generate a map in the given zone, which the given tiles for the ground and the given tiles for the walls.
         *   \param std::vector<Tile*> tGround : the tiles used for the ground.
         *   \param std::vector<Tile*> walls : the tiles used for the walls. (The walls are placed to the edges of the map)
         */
-        void generate_map(std::vector<Tile*> tGround, std::vector<g2d::Wall*> walls, math::Vec2f tileSize, physic::BoundingBox &box, bool terrain3D);
+        void generate_map(std::vector<Tile*> tGround, std::vector<g2d::Wall*> walls, math::Vec2f tileSize, physic::BoundingBox &box, bool terrain3D, EntityFactory& factory);
         /**
         *   \fn void getChildren (Entity *entity, std::vector<Entity*> &entities, std::string type);
         *   \brief get the children of a kind of types from an entity.

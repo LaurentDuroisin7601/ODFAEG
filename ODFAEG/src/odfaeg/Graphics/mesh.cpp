@@ -1,10 +1,10 @@
 #include "../../../include/odfaeg/Graphics/mesh.hpp"
 namespace odfaeg {
     namespace graphic {
-        Mesh::Mesh() : GameObject(math::Vec3f(0, 0, 0), math::Vec3f(0, 0, 0),math::Vec3f(0, 0, 0), "E_MESH") {}
-        Mesh::Mesh(math::Vec3f position, math::Vec3f size, std::string type) : GameObject(position, size, size*0.5f, type) {}
+        Mesh::Mesh(EntityFactory& factory) : GameObject(math::Vec3f(0, 0, 0), math::Vec3f(0, 0, 0),math::Vec3f(0, 0, 0), "E_MESH", factory) {}
+        Mesh::Mesh(math::Vec3f position, math::Vec3f size, std::string type, EntityFactory& factory) : GameObject(position, size, size*0.5f, type, factory) {}
         Entity* Mesh::clone() {
-            Mesh* mesh = new Mesh();
+            Mesh* mesh = factory.make_entity<Mesh>(factory);
             GameObject::copy(mesh);
             return mesh;
         }

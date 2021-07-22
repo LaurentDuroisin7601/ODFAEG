@@ -27,30 +27,72 @@ namespace odfaeg {
           *  Entities can have 0, 1 or more children and 0 or one parent.
           *  Each entity of the framework inherits from this class.
           */
+        class EntityFactory {
+            public :
+                EntityFactory() {
+                    nbEntities = 0;
+                    nbEntitiesTypes = 0;
+                }
+                int getIntOfType(std::string sType) {
+                    std::map<int, std::string>::iterator it;
+                    for (it = types.begin(); it != types.end(); ++it) {
+                        if (it->second == sType)
+                            return it->first;
+                    }
+                    return -1;
+                }
+                std::pair<int, std::string> updateTypes(std::string sType) {
+                    int iType = getIntOfType(sType);
+                    if (iType == -1) {
+                        std::pair<int, std::string> type = std::pair<int, std::string> (nbEntitiesTypes, sType);
+                        types.insert(type);
+                        nbEntitiesTypes++;
+                        return type;
+                    } else {
+                        std::map<int, std::string>::iterator it = types.find(iType);
+                        return *it;
+                    }
+                }
+                std::string getTypeOfInt (int type) {
+                    std::map<int, std::string>::iterator it = types.find(type);
+                    return it != types.end() ? it->second : "";
+                }
+                int getNbEntitiesTypes () {
+                    return nbEntitiesTypes;
+                }
+                int getNbEntities () {
+                    return nbEntities;
+                }
+                template <typename D, typename... Args>
+                D* make_entity(Args&&... args) {
+                    return new D(std::forward<Args>(args)...);
+                }
+                int getUniqueId() {
+                    nbEntities++;
+                    return nbEntities-1;
+                }
+            private :
+                //EntityFactory(const EntityFactory& entity) = delete; /**> an entity if not copiable.*/
+                //EntityFactory& operator=(const EntityFactory& entity) = delete; /**> an entity is not affectable*/
+                unsigned int nbEntities, nbEntitiesTypes;
+                std::map<int, std::string> types;
+
+        };
         class ODFAEG_API_EXPORT Entity : public Transformable, public Drawable, public core::Registered<Entity> {
+            friend class EntityFactory;
             public :
                 enum DrawMode {
                     NORMAL, INSTANCED, BASE_INSTANCED
                 };
-                /** \fn Entity(math::Vec3f position, math::Vec3f size, math::Vec3f origin, std::string type, Entity* parent)
-                 * \brief constructor.
-                 * \param position : the position of the top left corner of the entity
-                 * \param size : the size of the entity
-                 * \param origin : the origin of the entity's position wich is local to the entity's position.
-                 * \param zOrder : the layer's position of the entity
-                 * \param type : the type of the entity. (the type can be anything (model, floor, light, shadow, etc...))
-                 * \param the type should describe the kind of the entity.
-                 * \param parent : the parent of the entity, the value is null if the entity doesn't have a parent.
-                 */
-                Entity (math::Vec3f position, math::Vec3f size, math::Vec3f origin, std::string type, std::string name = "");
+
                 //Get the number of entities created with the application.
                 /**
                 *  \fn int getNbEntities ()
                 *  \brief get the number of entities which exist.
                 *  \return the number of entities which exist.
                 */
-                static int getNbEntities ();
-                static int getNbEntitiesTypes();
+                /*static int getNbEntities ();*/
+                /*static int getNbEntitiesTypes();-*
                 //Get teh type of the entity.
                 /**
                 *  \fn std::string getType() const;
@@ -73,7 +115,7 @@ namespace odfaeg {
                 *  \param the type's id.
                 *  \return  int type : the type's name of the given type's id.
                 */
-                static std::string getTypeOfInt (int type);
+                /*static std::string getTypeOfInt (int type);*/
                 /**
                 *  \fn int getIntOfType (std::string type)
                 *  \brief get the type's id of the given type's name.
@@ -82,7 +124,7 @@ namespace odfaeg {
                 *  \return the type's id.
                 */
                 //Get the id corresponding to the given type.
-                static int getIntOfType (std::string type);
+                /*static int getIntOfType (std::string type);*/
                 /**
                 *  \fn int getRadius()
                 *  \brief get the radius of the entity.
@@ -367,6 +409,19 @@ namespace odfaeg {
                 virtual void stop();
                 virtual void update(sf::Time dt);
                 virtual void update();
+            protected :
+                /** \fn Entity(math::Vec3f position, math::Vec3f size, math::Vec3f origin, std::string type, Entity* parent)
+                 * \brief constructor.
+                 * \param position : the position of the top left corner of the entity
+                 * \param size : the size of the entity
+                 * \param origin : the origin of the entity's position wich is local to the entity's position.
+                 * \param zOrder : the layer's position of the entity
+                 * \param type : the type of the entity. (the type can be anything (model, floor, light, shadow, etc...))
+                 * \param the type should describe the kind of the entity.
+                 * \param parent : the parent of the entity, the value is null if the entity doesn't have a parent.
+                 */
+                Entity (math::Vec3f position, math::Vec3f size, math::Vec3f origin, std::string type, EntityFactory& factory, std::string name = "");
+                EntityFactory& factory;
             private :
                 static std::map<int, std::string> types; /** A list of the type's id and name's of the entities. */
                 std::pair<int, std::string> type; /** The type's id and the type's name of the entity.*/

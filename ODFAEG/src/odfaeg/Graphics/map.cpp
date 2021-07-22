@@ -33,13 +33,13 @@ namespace odfaeg {
         int Scene::getCellHeight() {
             return cellHeight;
         }
-         void Scene::generate_labyrinthe (std::vector<Tile*> tGround, std::vector<Wall*> walls, math::Vec2f tileSize, physic::BoundingBox &rect, bool laby3D) {
+         void Scene::generate_labyrinthe (std::vector<Tile*> tGround, std::vector<Wall*> walls, math::Vec2f tileSize, physic::BoundingBox &rect, bool laby3D, EntityFactory& factory) {
             int startX = rect.getPosition().x / tileSize.x * tileSize.x;
             int startY = rect.getPosition().y / tileSize.y * tileSize.y;
             int endX = (rect.getPosition().x + rect.getWidth()) / tileSize.x * tileSize.x;
             int endY = (rect.getPosition().y + rect.getHeight()) / tileSize.y * tileSize.y;
             BigTile *bt;
-            bt = new BigTile(math::Vec3f(startX, startY, startY + endY * 0.5f));
+            bt = factory.make_entity<BigTile>(math::Vec3f(startX, startY, startY + endY * 0.5f), factory);
             addEntity(bt);
             unsigned int i, j;
             for (int y = startY, j = 0; y < endY; y+= tileSize.y, j++) {
@@ -174,16 +174,16 @@ namespace odfaeg {
                 }
             }
          }
-        void Scene::generate_map(std::vector<Tile*> tGround, std::vector<Wall*> walls, math::Vec2f tileSize, physic::BoundingBox &rect, bool terrain3D) {
+        void Scene::generate_map(std::vector<Tile*> tGround, std::vector<Wall*> walls, math::Vec2f tileSize, physic::BoundingBox &rect, bool terrain3D, EntityFactory& factory) {
             int startX = rect.getPosition().x / tileSize.x * tileSize.x;
             int startY = rect.getPosition().y / tileSize.y * tileSize.y;
             int endX = (rect.getPosition().x + rect.getWidth()) / tileSize.x * tileSize.x;
             int endY = (rect.getPosition().y + rect.getHeight()) / tileSize.y * tileSize.y;
             BigTile *bt;
             if (!terrain3D)
-                bt = new BigTile(math::Vec3f(startX, startY, startY + (endY - startY) * 0.5f));
+                bt = factory.make_entity<BigTile>(math::Vec3f(startX, startY, startY + (endY - startY) * 0.5f), factory);
             else
-                bt = new BigTile(math::Vec3f(startX, startY, rect.getPosition().z),tileSize,rect.getWidth() / tileSize.x);
+                bt = factory.make_entity<BigTile>(math::Vec3f(startX, startY, rect.getPosition().z),factory, tileSize,rect.getWidth() / tileSize.x);
             bt->setSize(rect.getSize());
             //bt->setCenter(math::Vec3f(rect.getCenter().x, rect.getCenter().y, rect.getPosition().z));
             //Positions de d\E9part et d'arriv\E9es en fonction de la taille, de la position et de la taille des cellules de la map.
@@ -253,7 +253,7 @@ namespace odfaeg {
                             tile = tGround[i]->clone();
                             tile->setPosition(math::Vec3f(pos.x, pos.y, pos.y + tile->getSize().y * 0.5f));
                         } else {
-                            tile = new Tile(nullptr, math::Vec3f(pos.x, pos.y, pos.y + tileSize.y * 0.5f), math::Vec3f(tileSize.x, tileSize.y, 0), sf::IntRect(0, 0, tileSize.x, tileSize.y));
+                            tile = factory.make_entity<Tile>(nullptr, math::Vec3f(pos.x, pos.y, pos.y + tileSize.y * 0.5f), math::Vec3f(tileSize.x, tileSize.y, 0), sf::IntRect(0, 0, tileSize.x, tileSize.y), factory);
                         }
                         if (terrain3D) {
                             float heights[4];
@@ -411,7 +411,7 @@ namespace odfaeg {
             entity->move(math::Vec3f(dx, dy, dz));
             addEntity(entity);
         }
-        void Scene::checkVisibleEntities() {
+        void Scene::checkVisibleEntities(EntityFactory& factory) {
             for (unsigned int c = 0; c < frcm->getNbComponents() + 1; c++) {
                 if (c == frcm->getNbComponents() || c < frcm->getNbComponents() && frcm->getRenderComponent(c) != nullptr) {
                     physic::BoundingBox view;
@@ -420,9 +420,11 @@ namespace odfaeg {
                     else
                         view = frcm->getRenderComponent(c)->getView().getViewVolume();
                     visibleEntities.clear();
-                    visibleEntities.resize(core::Application::app->getNbEntitiesTypes());
+                    //visibleEntities.resize(core::Application::app->getNbEntitiesTypes());
+                    visibleEntities.resize(factory.getNbEntitiesTypes());
                     for (unsigned int i = 0; i < visibleEntities.size(); i++) {
-                        visibleEntities[i].resize(core::Application::app->getNbEntities(), nullptr);
+                        //visibleEntities[i].resize(core::Application::app->getNbEntities(), nullptr);
+                        visibleEntities[i].resize(factory.getNbEntities(), nullptr);
                     }
                     int x = view.getPosition().x;
                     int y = view.getPosition().y;
@@ -450,7 +452,7 @@ namespace odfaeg {
                     }
                 }
                 if (c < frcm->getNbComponents() && frcm->getRenderComponent(c) != nullptr) {
-                    std::vector<Entity*> entities = getVisibleEntities(frcm->getRenderComponent(c)->getExpression());
+                    std::vector<Entity*> entities = getVisibleEntities(frcm->getRenderComponent(c)->getExpression(), factory);
                     frcm->getRenderComponent(c)->loadEntitiesOnComponent(entities);
                 }
             }
@@ -645,7 +647,7 @@ namespace odfaeg {
             return entities;
         }
 
-        vector<Entity*> Scene::getVisibleEntities (std::string type) {
+        vector<Entity*> Scene::getVisibleEntities (std::string type, EntityFactory& factory) {
             std::vector<Entity*> entities;
             if (type.size() > 0 && type.at(0) == '*') {
                 if (type.find("-") != string::npos)
@@ -672,7 +674,8 @@ namespace odfaeg {
             }
             vector<string> types = core::split(type, "+");
             for (unsigned int t = 0; t < types.size(); t++) {
-                unsigned int type = core::Application::app->getIntOfType(types[t]);
+                //unsigned int type = core::Application::app->getIntOfType(types[t]);
+                unsigned int type = factory.getIntOfType(types[t]);
                 if (type < visibleEntities.size()) {
                     vector<Entity*> visibleEntitiesType = visibleEntities[type];
                     for (unsigned int i = 0; i < visibleEntitiesType.size(); i++) {

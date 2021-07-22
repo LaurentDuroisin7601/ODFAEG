@@ -8,8 +8,8 @@ namespace odfaeg {
                 min = math::Vec3f(maxF, maxF, maxF);
                 max = math::Vec3f(minF, minF, minF);
             }
-            Entity* Model::loadModel(std::string path) {
-                Mesh* emesh = new Mesh(math::Vec3f(0, 0, 0), math::Vec3f(0, 0, 0),"E_MESH");
+            Entity* Model::loadModel(std::string path, EntityFactory& factory) {
+                Mesh* emesh = factory.make_entity<Mesh>(math::Vec3f(0, 0, 0), math::Vec3f(0, 0, 0),"E_MESH", factory);
                 Assimp::Importer importer;
                 const aiScene *scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
                 if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)

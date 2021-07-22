@@ -62,7 +62,7 @@ namespace odfaeg
 
         // ---------------------------------------------------------------------------------------------------------------------------
 
-        ParticleSystem::ParticleSystem() : graphic::GameObject(math::Vec3f(0, 0, 0), math::Vec3f(0, 0, 0), math::Vec3f(0, 0, 0), "E_PARTICLES"), mParticles()
+        ParticleSystem::ParticleSystem(graphic::EntityFactory& factory) : graphic::GameObject(math::Vec3f(0, 0, 0), math::Vec3f(0, 0, 0), math::Vec3f(0, 0, 0), "E_PARTICLES", factory), mParticles()
         , mAffectors()
         , mEmitters()
         , mTexture(nullptr)
@@ -70,12 +70,11 @@ namespace odfaeg
         , mVertices(sf::Quads)
         , mNeedsVertexUpdate(true)
         , mQuads()
-        , mNeedsQuadUpdate(true),
-          scene(nullptr){
+        , mNeedsQuadUpdate(true) {
 
         }
-        ParticleSystem::ParticleSystem(math::Vec3f position, math::Vec3f size, graphic::EntityManager* scene)
-        : graphic::GameObject(position, size, size*0.5f, "E_PARTICLES"), mParticles()
+        ParticleSystem::ParticleSystem(math::Vec3f position, math::Vec3f size, graphic::EntityFactory& factory)
+        : graphic::GameObject(position, size, size*0.5f, "E_PARTICLES", factory), mParticles()
         , mAffectors()
         , mEmitters()
         , mTexture(nullptr)
@@ -83,8 +82,7 @@ namespace odfaeg
         , mVertices(sf::Quads)
         , mNeedsVertexUpdate(true)
         , mQuads()
-        , mNeedsQuadUpdate(true),
-          scene(scene)
+        , mNeedsQuadUpdate(true)
         {
             graphic::Material material;
             material.addTexture(nullptr);
@@ -92,7 +90,7 @@ namespace odfaeg
             addFace(face);
         }
         graphic::Entity* ParticleSystem::clone() {
-            ParticleSystem* ps = new ParticleSystem(getPosition(), getSize());
+            ParticleSystem* ps = factory.make_entity<ParticleSystem>(getPosition(), getSize(), factory);
             GameObject::copy(ps);
             ps->mAffectors = mAffectors;
             ps->mEmitters = mEmitters;
@@ -100,9 +98,6 @@ namespace odfaeg
             ps->mTextureRects = mTextureRects;
             ps->mVertices = mVertices;
             return ps;
-        }
-        void ParticleSystem::setScene(graphic::EntityManager* scene) {
-            this->scene = scene;
         }
         void ParticleSystem::setTexture(const graphic::Texture& texture)
         {

@@ -30,7 +30,7 @@ namespace odfaeg {
                 * \fn Tile();
                 * \brief constructor.
                 */
-                Tile();
+                Tile(EntityFactory& factory);
                 /**
                 * \fn Tile (const Texture *image, math::Vec3f position, math::Vec3f size, sf::IntRect subRect, Entity* parent = nullptr);
                 * \brief constructor.
@@ -40,7 +40,7 @@ namespace odfaeg {
                 * \param subRect : the subrect of the texture's tile.
                 * \param parent : the parent entity of the tile. (nullptr by default)
                 */
-                Tile (const Texture *image, math::Vec3f position, math::Vec3f size, sf::IntRect subRect, sf::Color color = sf::Color::White, Entity* parent = nullptr);
+                Tile (const Texture *image, math::Vec3f position, math::Vec3f size, sf::IntRect subRect, EntityFactory& factory,  sf::Color color = sf::Color::White, Entity* parent = nullptr);
                 Entity* clone();
                 void changeVerticesHeights (float h1, float h2, float h3, float h4);
                 /**

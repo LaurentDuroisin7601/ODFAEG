@@ -2,8 +2,8 @@
 namespace odfaeg {
     namespace graphic {
         float GameObject::nbLayers = 1;
-        GameObject::GameObject (math::Vec3f position, math::Vec3f size, math::Vec3f origin, std::string sType, std::string name, Entity *parent) :
-            Entity (position, size, origin, sType, name) {
+        GameObject::GameObject (math::Vec3f position, math::Vec3f size, math::Vec3f origin, std::string sType,  EntityFactory& factory, std::string name, Entity *parent) :
+            Entity (position, size, origin, sType, factory, name) {
             this->parent = parent;
             alreadySerialized = false;
             collisionVolume = nullptr;
@@ -19,9 +19,6 @@ namespace odfaeg {
             externalObjectName = "";
 
         }
-        /*void Entity::setTypeInt (int iType) {
-            type.first = iType;
-        }*/
         void GameObject::copy(GameObject* gameObject) {
             //std::cout<<"copy entity : "<<getPosition()<<getType()<<std::endl;
             Entity::copy(gameObject);

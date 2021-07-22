@@ -3,7 +3,7 @@ namespace odfaeg {
     namespace graphic {
         namespace g2d {
 
-            Wall::Wall (Tile *tile, Type type, Light *light) : Model (tile->getPosition(),tile->getSize(), tile->getOrigin(), "E_WALL")  {
+            Wall::Wall (Tile *tile, Type type, Light *light, EntityFactory& factory) : Model (tile->getPosition(),tile->getSize(), tile->getOrigin(), factory, "E_WALL")  {
                 addChild(tile);
                 tile->setParent(this);
                 float sy = light->getHeight() / (light->getHeight() * 0.75f);
@@ -16,7 +16,7 @@ namespace odfaeg {
                 return type;
             }
             Entity* Wall::clone() {
-                Wall* w = new Wall();
+                Wall* w = factory.make_entity<Wall>(factory);
                 GameObject::copy(w);
                 w->type = type;
                 return w;
