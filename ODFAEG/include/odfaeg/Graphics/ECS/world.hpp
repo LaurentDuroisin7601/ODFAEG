@@ -4,8 +4,10 @@
 namespace odfaeg {
     namespace graphic {
         namespace ecs {
-            class World {
-                public :
+            struct World {
+                enum SystemsQueues {
+                    MainSystemQueueIndex, RenderSystemQueueIndex, LoadSystemQueueIndex
+                };
                 World() {
 
                 }
@@ -15,39 +17,19 @@ namespace odfaeg {
                     LoadSystem* loadSystem = new LoadSystem();
                     RenderSystemType1* renderSystem1 = new RenderSystemType1();
                     RenderSystemType2* renderSystem2 = new RenderSystemType2();
-                    auto systemsArray1 = systemMapping.addFlag<MainSystem>(systemsArray);
-                    auto systemsArray2 = systemMapping.addFlag<LoadSystem>(systemsArray1);
-                    auto systemsArray3 = systemMapping.addFlag<RenderSystemType1>(systemsArray2);
-                    auto systemsArray4 = systemMapping.addFlag<RenderSystemType2>(systemsArray3);
-                    std::unique_ptr<ISystem> ptr;
-                    ptr.reset(mainSystem);
-                    std::unique_ptr<ISystem> ptr1;
-                    ptr1.reset(loadSystem);
-                    std::unique_ptr<ISystem> ptr2;
-                    ptr2.reset(renderSystem1);
-                    std::unique_ptr<ISystem> ptr3;
-                    ptr3.reset(renderSystem2);
-                    systems.push_back(std::move(ptr));
-                    systems.push_back(std::move(ptr1));
-                    systems.push_back(std::move(ptr2));
-                    systems.push_back(std::move(ptr3));
-                    this->mainSystem = systemFactory.createEntity();
-                    this->loadSystem = systemFactory.createEntity();
-                    this->renderSystem1 = systemFactory.createEntity();
-                    this->renderSystem2 = systemFactory.createEntity();
-                    systemMapping.addAgregate(this->mainSystem, systemsArray4, mainSystem, systemFactory);
-                    systemMapping.addAgregate(this->loadSystem, systemsArray4, loadSystem, systemFactory);
-                    systemMapping.addAgregate(this->renderSystem1, systemsArray4, renderSystem1, systemFactory);
-                    systemMapping.addAgregate(this->renderSystem2, systemsArray4, renderSystem2, systemFactory);
-
-
+                    auto systemsArray1 = addSystem(systemsArray, mainSystem, MainSystemQueueIndex);
+                    auto systemsArray2 = addSystem(systemsArray1, loadSystem, LoadSystemQueueIndex);
+                    auto systemsArray3 = addSystem(systemsArray2, renderSystem1, RenderSystemQueueIndex);
+                    auto systemsArray4 = addSystem(systemsArray3, renderSystem2, RenderSystemQueueIndex);
                     return systemsArray4;
                 }
                 template <typename SystemArray, typename System>
-                auto addSubSystem (SystemArray& systemArray, System* system, EntityId parentSystem, size_t treeLevel, EntityId& subSystemId) {
-                    subSystemId = systemFactory.createEntity();
-                    auto newSystemArray = systemMapping.addFlag(subSystemId, systemArray, system, systemFactory);
-                    systemMapping.addChild(parentSystem, subSystemId, 0);
+                auto addSystem (SystemArray& systemArray, System* system, SystemsQueues queue) {
+                    EntityId systemId = systemFactory.createEntity();
+                    auto newSystemArray = systemMapping.addFlag(systemId, systemArray, system, systemFactory);
+                    if (queue >= systemQueueIds.size())
+                        systemQueueIds.resize(queue+1);
+                    systemQueueIds[queue].push_back(systemId);
                     std::unique_ptr<ISystem> ptr;
                     ptr.reset(system);
                     systems.push_back(std::move(ptr));
@@ -83,8 +65,8 @@ namespace odfaeg {
                     renderMapping.addAgregate(renderId, renders, render, factory);
                     std::unique_ptr<IComponent> ptr;
                     ptr.reset(render);
-                    this->renders[render->positionInTemplateParameterPack].resize(factory.getNbEntities());
-                    this->renders[render->positionInTemplateParameterPack][renderId] = renderId;
+                    this->renders[render->positionInTemplateParameterPack];
+                    this->renders[render->positionInTemplateParameterPack].push_back(renderId);
                     components.push_back(std::move(ptr));
                     return tuple;
                 }
@@ -109,19 +91,15 @@ namespace odfaeg {
                 template <typename T, size_t I, typename SystemArray, typename RenderArray, size_t... Ints, class = std::enable_if_t<(I > 1)>>
                 void draw_impl (SystemArray& systems, RenderArray& renderers, const std::index_sequence<Ints...>& seq) {
                     auto params = std::make_tuple(renderers, renders[I-1], renderMapping);
-                    std::vector<EntityId> renderSystemId;
-                    renderSystemId.push_back(renderSystem1);
-                    renderSystemId.push_back(renderSystem2);
-                    systemMapping.apply<std::tuple_element_t<Ints, T>...>(systems, *static_cast<MainSystem*>(this->systems[MainSystemIndex].get()), renderSystemId, params);
+                    std::vector<EntityId> renderSystemId = systemQueueIds[RenderSystemQueueIndex];
+                    systemMapping.apply<std::tuple_element_t<Ints, T>...>(systems, *static_cast<MainSystem*>(this->systems[MainSystemQueueIndex].get()), renderSystemId, params);
                     draw_impl<T, I-1>(systems, renderers, seq);
                 }
                 template <typename T, size_t I, typename SystemArray, typename RenderArray, size_t... Ints, class... D, class = std::enable_if_t<I == 1>>
                 void draw_impl (SystemArray& systems, RenderArray& renderers, const std::index_sequence<Ints...>& seq) {
                     auto params = std::make_tuple(renderers, renders[I-1], renderMapping);
-                    std::vector<EntityId> renderSystemId;
-                    renderSystemId.push_back(renderSystem1);
-                    renderSystemId.push_back(renderSystem2);
-                    systemMapping.apply<std::tuple_element_t<Ints, T>...>(systems, *static_cast<MainSystem*>(this->systems[MainSystemIndex].get()), renderSystemId, params);
+                    std::vector<EntityId> renderSystemId = systemQueueIds[RenderSystemQueueIndex];
+                    systemMapping.apply<std::tuple_element_t<Ints, T>...>(systems, *static_cast<MainSystem*>(this->systems[MainSystemQueueIndex].get()), renderSystemId, params);
                 }
                 template <typename T, size_t I, typename SystemArray, typename RenderArray, size_t... Ints, class... D, class... E, class = std::enable_if_t<I == 0>>
                 void draw_impl (SystemArray& systems, RenderArray& renderers, const std::index_sequence<Ints...>& seq) {
@@ -137,9 +115,8 @@ namespace odfaeg {
                     std::vector<EntityId> scenesId;
                     scenesId.push_back(currentScene);
                     auto params = std::make_tuple(scenes, scenesId, sceneMapping, renderers, renders[I-1], renderMapping);
-                    std::vector<EntityId> loadSystemId;
-                    loadSystemId.push_back(loadSystem);
-                    systemMapping.apply<std::tuple_element_t<Ints, T>...>(systems, *static_cast<MainSystem*>(this->systems[MainSystemIndex].get()), loadSystemId, params);
+                    std::vector<EntityId> loadSystemId = systemQueueIds[LoadSystemQueueIndex];
+                    systemMapping.apply<std::tuple_element_t<Ints, T>...>(systems, *static_cast<MainSystem*>(this->systems[MainSystemQueueIndex].get()), loadSystemId, params);
                     toRender_impl<T, I-1>(systems, renderers, scenes, seq);
                 }
 
@@ -148,16 +125,13 @@ namespace odfaeg {
                     std::vector<EntityId> scenesId;
                     scenesId.push_back(currentScene);
                     auto params = std::make_tuple(scenes, scenesId, sceneMapping, renderers, renders[I-1], renderMapping);
-                    std::vector<EntityId> loadSystemId;
-                    loadSystemId.push_back(loadSystem);
-                    systemMapping.apply<std::tuple_element_t<Ints, T>...>(systems, *static_cast<MainSystem*>(this->systems[MainSystemIndex].get()), loadSystemId, params);
+                    std::vector<EntityId> loadSystemId = systemQueueIds[LoadSystemQueueIndex];
+                    systemMapping.apply<std::tuple_element_t<Ints, T>...>(systems, *static_cast<MainSystem*>(this->systems[MainSystemQueueIndex].get()), loadSystemId, params);
                 }
                 template <typename T, size_t I, typename SystemArray, typename RenderArray, typename SceneArray,  size_t... Ints, class... D, class... E, class = std::enable_if_t<I == 0>>
                 void toRender_impl (SystemArray& systems, RenderArray& renderers, SceneArray& scenes, const std::index_sequence<Ints...>& seq) {
 
                 }
-                private :
-                ComponentMapping entityComponentMapping;
                 ComponentMapping renderMapping;
                 ComponentMapping sceneMapping;
                 ComponentMapping systemMapping;
@@ -165,17 +139,10 @@ namespace odfaeg {
                 std::vector<std::unique_ptr<IComponent>> components;
                 std::vector<std::vector<EntityId>> renders;
                 std::vector<std::vector<EntityId>> scenes;
+                std::vector<std::vector<EntityId>> systemQueueIds;
                 EntityId currentScene;
-
-                EntityId mainSystem;
-                EntityId loadSystem;
-                EntityId renderSystem1;
-                EntityId renderSystem2;
-
                 EFactory systemFactory;
-                enum Systems {
-                    MainSystemIndex
-                };
+
             };
         }
     }
