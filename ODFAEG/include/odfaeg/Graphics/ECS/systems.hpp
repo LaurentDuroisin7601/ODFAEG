@@ -2,7 +2,43 @@
 #define ODFAEG_ECS_SYSTEM_HPP
 namespace odfaeg {
     namespace graphic {
-        //Charge les entités visible de la scène sur le render.
+        //Call the systems with the given system's IDs.
+        struct MainSystem : ISystem {
+            template <size_t I=0, typename... Components, typename... Params, class = typename std::enable_if_t<(sizeof...(Components) != 0 && I == 0)>>
+            void operator()(std::tuple<Components...>& tp, std::tuple<Params...>& params) {
+                this->template operator()<I+1>(tp, params);
+            }
+            template <size_t I=0, typename... Components, typename... Params, class... D, class = typename std::enable_if_t<(sizeof...(Components) != 0 && I > 0 && I < sizeof...(Components)-1)>>
+            void operator()(std::tuple<Components...>& tp, std::tuple<Params...>& params) {
+                if (std::get<I>(tp) != nullptr) {
+                    auto& array = std::get<0>(params);
+                    std::vector<EntityId> entities = std::get<1>(params);
+                    auto& componentMapping = std::get<2>(params);
+                    call_system<typename std::remove_reference_t<decltype(array)>::types>(array, *std::get<I>(tp), componentMapping, entities, params, std::make_index_sequence<array.nbTypes()>());
+                } else {
+                    this->template operator()<I+1>(tp, params);
+                }
+            }
+
+            template <size_t I=0, typename... Components, typename... Params, class... D, class... E, class = typename std::enable_if_t<(sizeof...(Components) != 0 && I == sizeof...(Components)-1)>>
+            void operator()(std::tuple<Components...>& tp, std::tuple<Params...>& params) {
+                if (std::get<I>(tp) != nullptr) {
+                    auto& array = std::get<0>(params);
+                    std::vector<EntityId> entities = std::get<1>(params);
+                    auto& componentMapping = std::get<2>(params);
+                    call_system<typename std::remove_reference_t<decltype(array)>::types>(array, *std::get<I>(tp), componentMapping, entities, params, std::make_index_sequence<array.nbTypes()>());
+                }
+            }
+            template <size_t I=0, typename... Components, typename... Params, class... D, class... E, class... F, class = typename std::enable_if_t<sizeof...(Components) == 0>>
+            void operator()(std::tuple<Components...>& tp, std::tuple<Params...>& params) {
+            }
+            template <typename T, typename Array, typename System, typename Mapping, typename... Params, size_t... I>
+            void call_system(Array& array, System& system, Mapping& componentMapping, std::vector<EntityId> entities, std::tuple<Params...>& params, std::index_sequence<I...>) {
+                componentMapping.template apply<std::tuple_element_t<I, T>...>(array, system, entities, params);
+            }
+
+        };
+        //Load datas to renderders.
         struct LoaderSystem : ISystem {
             template <typename... Components, typename... Params, typename SubSystem, class <typename = std::enable_if_t<contains<Scene, Components...>::value>
             void operator()(std::tuple<Components...> components, std::tuple<Params...> params) {
@@ -19,6 +55,7 @@ namespace odfaeg {
                 }
             }
         };
+        //Render a per pixel linked list.
         struct PerPixelLinkedListRenderSystem {
             template <typename... Components, typename... Params, class = typename = std::enable_if_t<contains<PerPixelLinkedListRenderer*, Components...>::value>
             void operator()(std::tuple<Components...> components, std::tuple<Params...> params) {
@@ -28,6 +65,7 @@ namespace odfaeg {
                 }
             }
         };
+        //Update an animation.
         struct AnimationUpdaterSystem : IStystem {
             template <typename... Components, typename... Params>
             void operator()(std::tuple<Components...> components, std::tuple<Params...> params) {

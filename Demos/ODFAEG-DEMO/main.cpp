@@ -199,13 +199,14 @@ class ComponentMapping {
     template <typename T, typename DynamicTuple>
     T* getAgregate(DynamicTuple& tuple, size_t entityId) {
         if (componentMapping[entityId][tuple.template getIndexOfTypeT<T>()].has_value()) {
-            //std::cout<<"component : "<<tuple.template get<T>(componentMapping[entityId][tuple.template getIndexOfTypeT<T>()].value())<<std::endl;
+            //std::cout<<"entity : "<<entityId<<" component : "<<tuple.template get<T>(componentMapping[entityId][tuple.template getIndexOfTypeT<T>()].value())<<std::endl;
             return tuple.template get<T>(componentMapping[entityId][tuple.template getIndexOfTypeT<T>()].value());
         }
         return nullptr;
     }
     template <typename... Signature, typename DynamicTuple, typename System, typename... Params>
     void apply(DynamicTuple& tuple, System& system, std::vector<size_t>& entities, std::tuple<Params...>& params) {
+      std::cout<<"apply : "<<entities.size()<<std::endl;
       for (unsigned int i = 0; i < entities.size(); i++) {
         this->template apply_impl<Signature...>(entities[i], tuple, system, params, std::index_sequence_for<Signature...>());
         for (unsigned int j = 0; j < nbLevels[entities[i]]; j++) {
@@ -391,7 +392,6 @@ struct World {
     template <typename Scene, typename SceneArray>
     auto addSceneFlag(SceneArray& scenes) {
         auto newSceneArray = scenes.template addType<Scene>();
-        this->scenes.resize(newSceneArray.nbTypes());
         return newSceneArray;
     }
     template <typename SceneArray, typename SceneComponent, typename Factory>
@@ -400,7 +400,7 @@ struct World {
         sceneMapping.addAgregate(sceneId, scenes, scene, factory);
         std::unique_ptr<IComponent> ptr;
         ptr.reset(scene);
-        this->scenes[scene->positionInTemplateParameterPack].push_back(sceneId);
+        this->scenes.push_back(sceneId);
         components.push_back(std::move(ptr));
     }
     void setCurrentScene(EntityId scene) {
@@ -409,7 +409,6 @@ struct World {
     template <typename Render, typename RenderArray>
     auto addRenderFlag(RenderArray& renders) {
         auto newRenderArray = renderMapping.addFlag<Render>(renders);
-        this->renders.resize(newRenderArray.nbTypes());
         return newRenderArray;
     }
     template <typename RenderArray, typename RenderComponent, typename Factory>
@@ -418,8 +417,7 @@ struct World {
         renderMapping.addAgregate(renderId, renders, render, factory);
         std::unique_ptr<IComponent> ptr;
         ptr.reset(render);
-        this->renders[render->positionInTemplateParameterPack];
-        this->renders[render->positionInTemplateParameterPack].push_back(renderId);
+        this->renders.push_back(renderId);
         components.push_back(std::move(ptr));
         return tuple;
     }
@@ -428,7 +426,7 @@ struct World {
         renderMapping.addAgregate(renderId, renders, render, factory);
         std::unique_ptr<IComponent> ptr;
         ptr.reset(render);
-        this->renders[render->positionInTemplateParameterPack].push_back(renderId);
+        this->renders.push_back(renderId);
         components.push_back(std::move(ptr));
     }
     template <typename RenderArray, typename RenderComponent, typename Factory>
@@ -438,60 +436,35 @@ struct World {
     }
     template <typename SystemArray, typename RenderArray>
     void draw (SystemArray& systems, RenderArray& renderers) {
-        draw_impl<typename SystemArray::types, RenderArray::nbTypes()>(systems, renderers, std::make_index_sequence<SystemArray::nbTypes()>());
+        draw_impl<typename SystemArray::types>(systems, renderers, std::make_index_sequence<SystemArray::nbTypes()>());
     }
 
-    template <typename T, size_t I, typename SystemArray, typename RenderArray, size_t... Ints, class = std::enable_if_t<(I > 1)>>
+    template <typename T, typename SystemArray, typename RenderArray, size_t... Ints>
     void draw_impl (SystemArray& systems, RenderArray& renderers, const std::index_sequence<Ints...>& seq) {
-        auto params = std::make_tuple(renderers, renders[I-1], renderMapping);
+        auto params = std::make_tuple(renderers, renders, renderMapping);
         std::vector<EntityId> renderSystemId = systemQueueIds[RenderSystemQueueIndex];
         systemMapping.apply<std::tuple_element_t<Ints, T>...>(systems, *static_cast<MainSystem*>(this->systems[MainSystemQueueIndex].get()), renderSystemId, params);
-        draw_impl<T, I-1>(systems, renderers, seq);
-    }
-    template <typename T, size_t I, typename SystemArray, typename RenderArray, size_t... Ints, class... D, class = std::enable_if_t<I == 1>>
-    void draw_impl (SystemArray& systems, RenderArray& renderers, const std::index_sequence<Ints...>& seq) {
-        auto params = std::make_tuple(renderers, renders[I-1], renderMapping);
-        std::vector<EntityId> renderSystemId = systemQueueIds[RenderSystemQueueIndex];
-        systemMapping.apply<std::tuple_element_t<Ints, T>...>(systems, *static_cast<MainSystem*>(this->systems[MainSystemQueueIndex].get()), renderSystemId, params);
-    }
-    template <typename T, size_t I, typename SystemArray, typename RenderArray, size_t... Ints, class... D, class... E, class = std::enable_if_t<I == 0>>
-    void draw_impl (SystemArray& systems, RenderArray& renderers, const std::index_sequence<Ints...>& seq) {
-
     }
     template <typename SystemArray, typename RenderArray, typename SceneArray>
     void toRender (SystemArray& systems, RenderArray& renderers, SceneArray& scenes) {
-        toRender_impl<typename SystemArray::types, RenderArray::nbTypes()>(systems, renderers, scenes, std::make_index_sequence<SystemArray::nbTypes()>());
+        toRender_impl<typename SystemArray::types>(systems, renderers, scenes, std::make_index_sequence<SystemArray::nbTypes()>());
     }
 
-    template <typename T, size_t I, typename SystemArray, typename RenderArray, typename SceneArray, size_t... Ints, class = std::enable_if_t<(I > 1)>>
+    template <typename T, typename SystemArray, typename RenderArray, typename SceneArray, size_t... Ints>
     void toRender_impl (SystemArray& systems, RenderArray& renderers, SceneArray& scenes, const std::index_sequence<Ints...>& seq) {
         std::vector<EntityId> scenesId;
         scenesId.push_back(currentScene);
-        auto params = std::make_tuple(scenes, scenesId, sceneMapping, renderers, renders[I-1], renderMapping);
+        auto params = std::make_tuple(scenes, scenesId, sceneMapping, renderers, renders/*[I-1]*/, renderMapping);
         std::vector<EntityId> loadSystemId = systemQueueIds[LoadSystemQueueIndex];
         systemMapping.apply<std::tuple_element_t<Ints, T>...>(systems, *static_cast<MainSystem*>(this->systems[MainSystemQueueIndex].get()), loadSystemId, params);
-        toRender_impl<T, I-1>(systems, renderers, scenes, seq);
-    }
-
-    template <typename T, size_t I, typename SystemArray, typename RenderArray, typename SceneArray, size_t... Ints, class... D, class = std::enable_if_t<I == 1>>
-    void toRender_impl (SystemArray& systems,RenderArray& renderers, SceneArray& scenes, const std::index_sequence<Ints...>& seq) {
-        std::vector<EntityId> scenesId;
-        scenesId.push_back(currentScene);
-        auto params = std::make_tuple(scenes, scenesId, sceneMapping, renderers, renders[I-1], renderMapping);
-        std::vector<EntityId> loadSystemId = systemQueueIds[LoadSystemQueueIndex];
-        systemMapping.apply<std::tuple_element_t<Ints, T>...>(systems, *static_cast<MainSystem*>(this->systems[MainSystemQueueIndex].get()), loadSystemId, params);
-    }
-    template <typename T, size_t I, typename SystemArray, typename RenderArray, typename SceneArray,  size_t... Ints, class... D, class... E, class = std::enable_if_t<I == 0>>
-    void toRender_impl (SystemArray& systems, RenderArray& renderers, SceneArray& scenes, const std::index_sequence<Ints...>& seq) {
-
     }
     ComponentMapping renderMapping;
     ComponentMapping sceneMapping;
     ComponentMapping systemMapping;
     std::vector<std::unique_ptr<ISystem>> systems;
     std::vector<std::unique_ptr<IComponent>> components;
-    std::vector<std::vector<EntityId>> renders;
-    std::vector<std::vector<EntityId>> scenes;
+    std::vector<EntityId> renders;
+    std::vector<EntityId> scenes;
     std::vector<std::vector<EntityId>> systemQueueIds;
     EntityId currentScene;
     EFactory systemFactory;
@@ -500,7 +473,7 @@ struct World {
 
 
 int main(int argc, char* argv[]){
-    DynamicTuple componentArray;
+    /*DynamicTuple componentArray;
     EFactory factory;
     EntityId sphere = factory.createEntity();
     ComponentMapping mapping;
@@ -540,7 +513,7 @@ int main(int argc, char* argv[]){
     }
     MoveSystem mv;
     auto params =  std::make_tuple();
-    mapping.template apply<transform_component>(newComponentArray, mv, entities, params);
+    mapping.template apply<transform_component>(newComponentArray, mv, entities, params);*/
     DynamicTuple systemsArray;
     ::World world;
     auto systemsArray1 = world.initSystems(systemsArray);
@@ -569,9 +542,9 @@ int main(int argc, char* argv[]){
     world.addSceneAgregate(sceneArray2, sceneId2, scene2, sceneFactory);
     world.setCurrentScene(sceneId1);
     world.toRender(systemsArray1, renderArray2, sceneArray2);
-    for (unsigned int i = 0; i < components.size(); i++)
+/*    for (unsigned int i = 0; i < components.size(); i++)
         delete components[i];
-    components.clear();
+    components.clear();*/
     return 0;
     /*MyAppli app(sf::VideoMode(800, 600), "Test odfaeg");
     return app.exec();*/
