@@ -20,19 +20,27 @@ namespace odfaeg {
         constexpr size_t index() {
             return std::is_same<T, U>::value ? 0 : 1 + index<T, Types...>();
         }
-        struct IDynmaicTupleElement {
+        struct IDynamicTupleElement {
             unsigned int positionInVector, positionInTemplateParameterPack;
+            template <size_t I=0>
+            static constexpr size_t get(size_t position) {
+                if (I == position) {
+                    return I;
+                } else {
+                    get<I+1>();
+                }
+            }
         };
-        template <template <class...> class T, size_t I, class Head, class... Tail>
-        Head* get(T<I, Head, Tail...>& tuple, unsigned int index) {
+        template <template <size_t , class...> class T, size_t I, class Head, class... Tail>
+        Head* getElement(T<I, Head, Tail...>& tuple, unsigned int index) {
             if (index < tuple.T<I, Head>::elements.size())
-                return static_cast<Head*>(tuple.T<B, I, Head>::elements[index]);
+                return static_cast<Head*>(tuple.T<I, Head>::elements[index]);
             return nullptr;
         }
         template <size_t I, class D>
         struct DynamicTupleLeaf {
-            std::vector<IDynmaicTuple*> elements;
-            void add(IDynmaicTuple* element) {
+            std::vector<IDynamicTupleElement*> elements;
+            void add(IDynamicTupleElement* element) {
                 element->positionInVector = elements.size();
                 element->positionInTemplateParameterPack = I;
                 elements.push_back(element);
@@ -46,7 +54,7 @@ namespace odfaeg {
         struct DynamicTupleHolder<I, DH, DT...> : DynamicTupleLeaf<I, DH>, DynamicTupleHolder<I+1, DT...> {
             using BaseLeaf = DynamicTupleLeaf<I, DH>;
             using BaseDT = DynamicTupleHolder<I+1, DT...>;
-            void add(DH* head, size_t N) {
+            void add(IDynamicTupleElement* head, size_t N) {
                 if (I == N) {
                     BaseLeaf::add(head);
                 } else {
@@ -55,15 +63,15 @@ namespace odfaeg {
             }
             template <class H, class... T>
             void copy(DynamicTupleHolder<I, H, T...>& holder) {
-                entities = holder.entities;
+                BaseLeaf::elements = holder.DynamicTupleLeaf<I, H>::elements;
                 BaseDT::copy(holder);
             }
         };
-        template <size_t I, class DH, class... DT>
+        template <size_t I, class DH>
         struct DynamicTupleHolder<I, DH> : DynamicTupleLeaf<I, DH>, DynamicTupleHolder<I+1> {
             using BaseLeaf = DynamicTupleLeaf<I, DH>;
             using BaseDT = DynamicTupleHolder<I+1>;
-            void add(DH* head, size_t N) {
+            void add(IDynamicTupleElement* head, size_t N) {
                 if (I == N) {
                     BaseLeaf::add(head);
                 }
@@ -74,14 +82,17 @@ namespace odfaeg {
             }
         };
         template <size_t I>
-        struct DynamicTupleHolder<I> {
+        struct DynamicTupleHolder<I> : DynamicTupleLeaf<I, IDynamicTupleElement> {
+            void add(DH* head, size_t N) {
 
+            }
         };
         template <typename... TupleTypes>
         struct DynamicTuple {
             DynamicTupleHolder<0, TupleTypes...> contents;
+            using types = typename std::tuple<TupleTypes...>;
             template <typename H, class = typename std::enable_if_t<contains<H, TupleTypes...>::value>>
-            DynamicTyple add (H* head) {
+            DynamicTuple add (H* head) {
                 contents.add(head, index<H, TupleTypes...>());
                 return *this;
             }
@@ -90,6 +101,31 @@ namespace odfaeg {
                 DynamicTuple<TupleTypes..., H> tuple;
                 tuple.contents.template copy<TupleTypes...>(contents);
                 return tuple.add(head);
+            }
+            template <typename H, class = typename std::enable_if_t<!contains<H, TupleTypes...>::value>>
+            DynamicTuple <TupleTypes..., H> addType () {
+                DynamicTuple<TupleTypes..., H> tuple;
+                tuple.contents.template copy<TupleTypes...>(contents);
+                return tuple;
+            }
+            static constexpr size_t nbTypes() {
+                return std::tuple_size<types>::value;
+            }
+            template <typename T>
+            static constexpr size_t getIndexOfTypeT() {
+                return index<T, TupleTypes...>();
+            }
+            template <typename T>
+            T* get(unsigned int containerIdx) {
+                constexpr size_t I = getIndexOfTypeT<T>();
+                return getElement<DynamicTupleLeaf, I>(contents, containerIdx);
+            }
+            template <size_t I>
+            auto get(unsigned int containerIdx) {
+                return getElement<DynamicTupleLeaf, I>(contents, containerIdx);
+            }
+            auto get(unsigned int positionInTemplateParameterPack, unsigned int containerIndex) {
+                return get<IDynamicTupleElement::get(positionInTemplateParameterPack)>(containerIndex);
             }
         };
     }
