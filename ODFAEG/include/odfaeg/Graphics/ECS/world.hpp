@@ -22,22 +22,97 @@ namespace odfaeg {
                 std::vector<EntityId> getScenesIds() {
                     return scenesIds;
                 }
-                /*template <typename SceneArray, typename SceneType>
+                template <typename SceneArray, typename SceneType>
                 std::vector<CellMap*> getCasesMap(SceneArray& sceneArray) {
                     return sceneMapping.getAgregate<SceneType>(sceneArray, currentSceneId)->gridMap.getCasesMap();
                 }
-                template <typename SceneArray, typename EntityComponentArray, SceneType>
+                template <typename EntityComponentArray, typename SceneType>
                 bool addEntity(SceneArray& sceneArray, EntityComponentArray& entityComponentArray, EntityId entity) {
-                    auto params = std::make_tuple(sceneMapping.getAgregate<SceneType>(sceneArray, currentSceneId));
+                    auto params = std::make_tuple(entityComponentArray, entityComponentMapping, entityId));
                     std::vector<bool> addeds;
-                    std::vector<EntityID> entityIDs(1);
-                    entityIds[1] = entity;
-                    sceneMapping.apply<TransformComponent>(entityComponentArray, AddEntityToSceneSystem(), entityIds, params, addeds);
+                    std::vector<EntityID> scenesIDs(1);
+                    scenesIDs[1] = currentSceneId;
+                    AddEntityToSceneSystem system;
+                    sceneMapping.apply<SceneType>(sceneArray, system, sceneIDs, params, addeds);
                     for(unsigned int i = 0; i < addeds.size(); i++)
                         if (!addeds[i])
                             return false;
                     return true;
-                }*/
+                }
+                template <typename SceneArray, typename EntityComponentArray, typename SceneType>
+                bool removeEntity(EntityId entity, SceneArray& sceneArray, EntityComponentArray& entityComponentArray) {
+                    auto params = std::make_tuple(sceneMapping.getAgregate<SceneType>(sceneArray, entityComponentMapping, entityId));
+                    std::vector<bool> removeds;
+                    std::vector<EntityID> scenesIDs(1);
+                    scenesIDs[1] = currentSceneId;
+                    RemoveEntityFromSceneSystem system;
+                    sceneMapping.apply<SceneType>(sceneArray, system, entityIds, params, removeds);
+                    for(unsigned int i = 0; i < removeds.size(); i++)
+                        if (!removeds[i])
+                            return false;
+                    return true;
+                }
+                template <typename SceneArray, typename EntityComponentArray, typename SceneType, typename Factory>
+                bool destroyEntity(EntityId entityId, SceneArray& sceneArray, EntityComponentArray& entityComponentArray, Factory& factory) {
+                    auto params = std::make_tuple(sceneMapping.getAgregate<SceneType>(entityComponentArray, entityComponentMapping, entityId));
+                    std::vector<bool> removeds;
+                    std::vector<EntityID> scenesIDs(1);
+                    scenesIDs[1] = currentSceneId;
+                    RemoveEntityFromSceneSystem system;
+                    sceneMapping.apply<SceneType>(sceneArray, system, scenesIds, params, removeds);
+                    entityComponentMapping.removeMapping(entity);
+                    return factory.destroyEntity(entityId);
+                }
+                template <typename SceneArray, typename EntityComponentArray, typename SceneType>
+                std::vector<EntityId> getVisisibleEntities(SceneArray& sceneArray, EntityComponentArray& entityComponentArray, std::string expression) {
+                    auto params = std::make_tuple(entityComponentArray, entityComponentMapping, expression);
+                    RemoveEntityFromSceneSystem system;
+                    std::vector<EntityId> visibleEntities;
+                    std::vector<EntityID> scenesIDs(1);
+                    scenesIDs[1] = currentSceneId;
+                    sceneMapping.apply<SceneType>(sceneArray, system, scenesIDs, params, visibleEntities);
+                    return visibleEntities;
+                }
+                template <typename SceneArray, typename EntityComponentArray, typename SceneType>
+                void moveEntity(SceneArray& sceneArray, EntityComponentArray& entityComponentArray, EntityId entity, float x, float y, float z) {
+                    auto params = std::make_tuple(entityComponentArray, entityComponentMapping, x, y, z);
+                    MoveSystem system;
+                    std::vector<EntityID> scenesIDs(1);
+                    scenesIDs[1] = currentSceneId;
+                    sceneMapping.apply<SceneType>(sceneArray, system, scenesIds, params);
+                }
+                template <typename SceneArray, typename EntityComponentArray, typename SceneType>
+                bool collide(SceneArray& sceneArray, EntityComponentArray& entityComponentArray, EntityId* entityId) {
+                    auto params = std::make_tuple(entityComponentArray, entityComponentMapping, entityId);
+                    CollideSystem system;
+                    std::vector<EntityID> scenesIDs(1);
+                    scenesIDs[1] = currentSceneId;
+                    sceneMapping.apply<SceneType>(sceneArray, system, sceneIds, params);
+                }
+                template <typename SceneArray, typename EntityComponentArray, typename SceneType>
+                bool collide(SceneArray& sceneArray, EntityComponentArray& entityComponentArray, EntityId* entityId, math::Vec3f position) {
+                    auto params = std::make_tuple(entityComponentArray, entityComponentMapping, entityId, position);
+                    CollideSystem system;
+                    std::vector<EntityID> scenesIDs(1);
+                    scenesIDs[1] = currentSceneId;
+                    sceneMapping.apply<SceneType>(sceneArray, system, sceneIds, params);
+                }
+                template <typename SceneArray, typename EntityComponentArray, typename SceneType>
+                bool collide(SceneArray& sceneArray, EntityComponentArray& entityComponentArray, EntityId* entityId, math::Ray ray) {
+                    auto params = std::make_tuple(entityComponentArray, entityComponentMapping, entityId, ray);
+                    CollideSystem system;
+                    std::vector<EntityID> scenesIDs(1);
+                    scenesIDs[1] = currentSceneId;
+                    sceneMapping.apply<SceneType>(sceneArray, system, sceneIds, params);
+                }
+                template <typename SceneArray, typename EntityComponentArray, typename SceneType>
+                void generate_map(SceneArray& sceneArray, EntityComponentArray& entityComponentArray, std::vector<EntityId> tGround, std::vector<EntityId> tWall, math::Vec2f tileSize, physic::BoundingBox zone) {
+                    auto params = std::make_tuple(entityComponentArray, entityComponentMapping, entityId, tGround, tWall, tileSize, zone);
+                    std::vector<EntityID> scenesIDs(1);
+                    scenesIDs[1] = currentSceneId;
+                    GenerateMapSystem system;
+                    sceneMapping.apply<SceneType>(sceneArray, system, currentSceneId, params);
+                }
                 template <typename SystemArray>
                 auto initSystems(SystemArray& systemsArray) {
                     MainSystem mainSystem;
@@ -175,7 +250,7 @@ namespace odfaeg {
                 std::vector<EntityId> scenesIds;
                 std::vector<std::vector<EntityId>> systemQueueIds;
                 EntityId currentSceneId;
-                ::EntityFactory systemFactory;
+                EntityFactory systemFactory;
                 std::map<SceneAlias, EntityId> sceneKeys;
             };
         }

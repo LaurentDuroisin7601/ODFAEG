@@ -159,6 +159,21 @@ namespace odfaeg {
                 auto tp = std::make_tuple(getAgregate<std::tuple_element_t<I, std::tuple<Signature...>>>(tuple, entityId)...);
                 system(tp, params);
             }
+            template <typename... Signature, typename DynamicTuple, typename System, typename... Params>
+            void apply(DynamicTuple& tuple, System& system, std::vector<EntityId>& entities, std::tuple<Params...>& params, std::vector<R>& ret) {
+              for (unsigned int i = 0; i < entities.size(); i++) {
+                this->template apply_impl<Signature...>(entities[i], tuple, system, params, std::index_sequence_for<Signature...>());
+                for (unsigned int j = 0; j < nbLevels[*entities[i]]; j++) {
+                  for(unsigned int k = 0; k < childrenMapping[*entities[i]][j].size(); k++)
+                    this->template apply_impl<Signature...>(childrenMapping[*entities[i]][j][k], tuple, system, params, std::index_sequence_for<Signature...>(), ret);
+                }
+              }
+            }
+            template <typename... Signature, typename DynamicTuple, typename System, size_t... I, typename... Params, typename R>
+            void apply_impl(EntityId entityId, DynamicTuple& tuple, System& system, std::tuple<Params...>& params, std::index_sequence<I...>, std::vector<R>& rets) {
+                auto tp = std::make_tuple(getAgregate<std::tuple_element_t<I, std::tuple<Signature...>>>(tuple, entityId)...);
+                rets.push_back(system(tp, params));
+            }
             private :
             std::vector<std::vector<std::optional<size_t>>> componentMapping;
             std::vector<std::vector<std::vector<EntityId>>> childrenMapping;
@@ -183,18 +198,23 @@ namespace odfaeg {
             size_t getNbEntities() {
                 return nbEntities;
             }
-            void destroyEntity(EntityId id) {
-                const auto itToFind =
-                    std::find_if(ids.begin(), ids.end(),
-                                 [&](auto& p) { return p.get() == id; });
-                const bool found = (itToFind != ids.end());
-                if (found) {
-                    for (auto it = itToFind; it != ids.end(); it++) {
-                        (**it)--;
+            bool destroyEntity(EntityId id) {
+                if (id != nullptr) {
+                    const auto itToFind =
+                        std::find_if(ids.begin(), ids.end(),
+                                     [&](auto& p) { return p.get() == id; });
+                    const bool found = (itToFind != ids.end());
+                    if (found) {
+                        for (auto it = itToFind; it != ids.end(); it++) {
+                            (**it)--;
+                        }
+                        ids.erase(itToFind);
+                        nbEntities--;
+                        return true;
                     }
-                    ids.erase(itToFind);
-                    nbEntities--;
+                    return false;
                 }
+                return false;
             }
         };
     }
