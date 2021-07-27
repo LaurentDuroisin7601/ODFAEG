@@ -12,6 +12,8 @@ namespace odfaeg {
         using EntityId = std::size_t*;
         using EntityId = std::size_t*;
         class ComponentMapping {
+            template <class>
+            friend class World;
             public :
             template <typename Component, typename DynamicTuple>
             auto addFlag(DynamicTuple& tuple) {
@@ -49,6 +51,7 @@ namespace odfaeg {
                 componentMapping[*entityId][component->positionInTemplateParameterPack] = component->positionInVector;
             }
             void addChild(EntityId parentId, EntityId child, size_t treeLevel) {
+                //std::cout<<"id : "<<parentId<<std::endl;
                 if (treeLevel >= nbLevels[*parentId]) {
                     nbLevels[*parentId]++;
                     for (unsigned int i = 0; i < childrenMapping.size(); i++) {
@@ -172,10 +175,10 @@ namespace odfaeg {
             std::vector<std::optional<size_t>> treeLevels;
             std::vector<EntityId> branchIds;
             };
-
-
-
-        struct EntityFactory {
+        class EntityFactory {
+            template <typename T>
+            friend class World;
+            friend class ComponentMapping;
             size_t nbEntities=0;
             std::vector<std::unique_ptr<std::remove_pointer_t<EntityId>>> ids;
             EntityId createEntity() {
@@ -190,21 +193,15 @@ namespace odfaeg {
                 return nbEntities;
             }
             void destroyEntity(EntityId id) {
-                std::cout<<"destroy entity : "<<*id<<std::endl;
-                std::cout<<"size : "<<nbEntities<<std::endl;
                 const auto itToFind =
                     std::find_if(ids.begin(), ids.end(),
                                  [&](auto& p) { return p.get() == id; });
                 const bool found = (itToFind != ids.end());
                 if (found) {
-                    std::cout<<"entity to destroy : "<<**itToFind;
                     for (auto it = itToFind; it != ids.end(); it++) {
-                        std::cout<<"id : "<<(**it)<<std::endl;
                         (**it)--;
-                        std::cout<<"new id : "<<(**it)<<std::endl;
                     }
                     ids.erase(itToFind);
-                    std::cout<<"size : "<<ids.size()<<std::endl;
                     nbEntities--;
                 }
             }
