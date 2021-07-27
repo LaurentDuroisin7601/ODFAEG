@@ -8,7 +8,7 @@ namespace odfaeg {
             class World {
                 public :
                 enum SystemsQueues {
-                    MainSystemQueueIndex, RenderSystemQueueIndex, LoadSystemQueueIndex
+                    MainSystemQueueIndex, RendererSystemQueueIndex, SubRendererSytemQueueIndex, LoadSystemQueueIndex
                 };
                 World() {
 
@@ -23,8 +23,8 @@ namespace odfaeg {
                     return scenesIds;
                 }
                 template <typename SceneArray, typename SceneType>
-                std::vector<CellMap*> getCasesMap(SceneArray& sceneArray) {
-                    return sceneMapping.getAgregate<SceneType>(sceneArray, currentSceneId)->gridMap.getCasesMap();
+                std::vector<GridCase*> getGridCases(SceneArray& sceneArray) {
+                    return sceneMapping.getAgregate<SceneType>(sceneArray, currentSceneId)->gridMap.getGridCases();
                 }
                 template <typename EntityComponentArray, typename SceneType>
                 bool addEntity(SceneArray& sceneArray, EntityComponentArray& entityComponentArray, EntityId entity) {
@@ -66,7 +66,7 @@ namespace odfaeg {
                 template <typename SceneArray, typename EntityComponentArray, typename SceneType>
                 std::vector<EntityId> getVisisibleEntities(SceneArray& sceneArray, EntityComponentArray& entityComponentArray, std::string expression) {
                     auto params = std::make_tuple(entityComponentArray, entityComponentMapping, expression);
-                    RemoveEntityFromSceneSystem system;
+                    GetVisibleEntitiesSystem system;
                     std::vector<EntityId> visibleEntities;
                     std::vector<EntityID> scenesIDs(1);
                     scenesIDs[1] = currentSceneId;
@@ -113,6 +113,45 @@ namespace odfaeg {
                     GenerateMapSystem system;
                     sceneMapping.apply<SceneType>(sceneArray, system, currentSceneId, params);
                 }
+                template <typename RenderArray, typename RenderType>
+                void drawOnComponents(RendererArray& rendererArray, std::string expression, EntityId entityId) {
+                    auto renderer = rendererMapping.getAgregate<RendererType>(rendererArray, entityId);
+                    if (renderer) {
+                        renderer->typesToDraw = expression;
+                    }
+                }
+                template <typename SceneArray, typename SceneType, typename EntityComponentArray, typename SceneType>
+                std::vector<EntityId> getRootEntities(SceneArray& sceneArray, std::string expression) {
+                    auto params = std::make_tuple(entityComponentArray, entityComponentMapping, expression);
+                    std::vector<EntityId> rootEntities;
+                    std::vector<EntityId> scenesIDs(1);
+                    scenesIDs[1] = currentSceneId;
+                    GetRootEntitiesSystem system;
+                    sceneMapping.apply(sceneArray, system, scenesIDs, params, rootEntities);
+                    return rootEntities;
+                }
+                template <typename SceneArray, typename SceneType, typename EntityComponentArray, typename SceneType>
+                std::vector<EntityId> getChildrenEntities(SceneArray& sceneArray, std::string expression) {
+                    auto params = std::make_tuple(entityComponentArray, entityComponentMapping, expression);
+                    std::vector<EntityId> childrenEntities;
+                    std::vector<EntityId> scenesIDs(1);
+                    scenesIDs[1] = currentSceneId;
+                    GetChildrenEntitiesSystem system;
+                    sceneMapping.apply(sceneArray, system, scenesIDs, params, rootEntities);
+                    return childrenEntities;
+                }
+                template <typename SceneArray, typename SceneType, typename EntityComponentArray>
+                std::vector<math::Vec3f> getPath(SceneArray& sceneArray, EntityComponentArray& componentArray, EntityId entity, math::Vec3f finalPos) {
+                    return sceneMapping.getAgregate<SceneType>(sceneArray, currentSceneId)->grid.getPath(componentArray, componentMapping, entity, finalPos);
+                }
+                template <typename SceneType, typename EntityComponentArray>
+                std::vector<math::Vec3f> getGridCaseAt(SceneArray& sceneArray, EntityComponentArray& componentArray, math::Vec3f position) {
+                    return sceneMapping.getAgregate<SceneType>(sceneArray, currentSceneId)->grid.getGridCaseAt(componentArray, componentMapping, position);
+                }
+                template <typename SceneType, typename EntityComponentArray>
+                BaseChangementMatrix getBaseChangementMatrix(SceneArray& sceneArray, EntityComponentArray& componentArray) {
+                    return sceneMapping.getAgregate<SceneType>(sceneArray, currentSceneId)->grid.getBaseChangementMatrix();
+                }
                 template <typename SystemArray>
                 auto initSystems(SystemArray& systemsArray) {
                     MainSystem mainSystem;
@@ -155,8 +194,8 @@ namespace odfaeg {
                         std::runtime_error("Flag not found! You should call addEntityComponentFlag and get the returned array to add other components of the same type!");
                     }
                 }
-                void addChild(EntityId parentId, EntityId childId, size_t treeLevel) {
-                    entityComponentMapping.addChild(parentId, childId, treeLevel);
+                void addChild(EntityId rootId, EntityId childId, size_t treeLevel) {
+                    entityComponentMapping.addChild(rootId, childId, treeLevel);
                 }
                 template <typename SceneComponent, typename SceneArray>
                 auto addSceneFlag(SceneArray& scenes) {
@@ -239,8 +278,23 @@ namespace odfaeg {
                     scenesId.push_back(currentSceneId);
                     auto params = std::make_tuple(scenes, scenesId, sceneMapping, renderers, renderersIds, rendererMapping);
                     std::vector<EntityId> loadSystemId = systemQueueIds[LoadSystemQueueIndex];
+                    //System which call each systems of a system queue.
                     MainSystem main;
                     systemMapping.apply<std::tuple_element_t<Ints, T>...>(systems, main, loadSystemId, params);
+                }
+                template <typename SceneArray, typename EntityComponentArray, typename SceneType>
+                std::vector<EntityId> getEntitiesInRect(SceneArray& sceneArray, EntityComponentArray& entityComponentArray, physic::BoundingBox rect, std::string expression) {
+                    std::vector<EntityId> entities;
+                    auto params = std::make_tuple(entityComponentArray, entityComponentMapping, rect, expression);
+                    std::vector<EntityId> scenesId;
+                    scenesId.push_back(currentSceneId);
+                    GetEntitiesInBoxSystem system;
+                    sceneMapping.apply(sceneArray, system, scenesIds, params, entities);
+                    return entities;
+                }
+                template <typename SceneArray, typename SceneType>
+                math::Vec3f getCoordinatesAt(SceneArray& sceneArray, math::Vec3f point) {
+                    return sceneMapping.getAgregate<SceneType>(sceneArray, currentSceneId)->grid.getCoordinatesAt(point);
                 }
                 ComponentMapping entityComponentMapping;
                 ComponentMapping rendererMapping;
