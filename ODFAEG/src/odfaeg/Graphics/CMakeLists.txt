@@ -189,6 +189,12 @@ source_group ("gui" FILES ${SRC_GUI})
 set(SRC_VULKAN
 	${INCROOT}/Vulkan/instance.hpp
 	${SRCROOT}/Vulkan/instance.cpp
+
+	${INCROOT}/Vulkan/device.hpp
+	${SRCROOT}/Vulkan/device.cpp
+
+	${INCROOT}/Vulkan/vulkan_window.hpp
+	${SRCROOT}/Vulkan/vulkan_window.cpp
 )
 source_group("Vulkan" FILES ${SRC_VULKAN})
 

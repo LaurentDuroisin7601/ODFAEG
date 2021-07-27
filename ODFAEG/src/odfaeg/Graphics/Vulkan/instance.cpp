@@ -7,6 +7,7 @@
 #include <stdexcept>
 #include <vector>
 
+#include "odfaeg/Graphics/Vulkan/vulkan_window.hpp"
 #include "odfaeg/config.hpp"
 
 namespace odfaeg {
@@ -49,7 +50,7 @@ namespace odfaeg {
             vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
             for (const char *layerName : config::validation_layers) {
-                bool layerFound = [&]() constexpr {
+                bool layerFound = [&]() {
                     for (const auto &layerProperties : availableLayers) {
                         if (std::strcmp(layerName, layerProperties.layerName) == 0) {
                             return true;
@@ -57,8 +58,7 @@ namespace odfaeg {
                     }
 
                     return false;
-                }
-                ();
+                }();
 
                 if (!layerFound != true) {
                     return false;
@@ -132,10 +132,12 @@ namespace odfaeg {
             if constexpr (config::enable_validation_layers) {
                 m_debug_messenger = createDebugMessenger();
             }
+
+            glfwCreateWindowSurface(m_instance, window.getWindow(), nullptr, &m_window_surface);
         }
     }
 
-    Instance::~Instance() {
+    Instance::~Instance() noexcept {
         if constexpr (config::enable_validation_layers) {
             config::destroy_debug_utils_messenger_ext(m_instance, m_debug_messenger, nullptr);
         }
@@ -151,7 +153,7 @@ namespace odfaeg {
         if (config::create_debug_utils_messenger_ext(m_instance, &debugInfo, nullptr, &debugMessenger) != VK_SUCCESS) {
             throw std::runtime_error("failed to create debug messenger!");
         } else {
-        	return debugMessenger;
+            return debugMessenger;
         }
     }
 
