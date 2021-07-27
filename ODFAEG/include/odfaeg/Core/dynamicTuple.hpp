@@ -11,102 +11,73 @@ namespace odfaeg {
             std::true_type,
             contains<Tp, Rest...>
         >::type {};
+        template <typename T, typename Tuple>
+        struct has_type;
 
+        template <typename T>
+        struct has_type<T, std::tuple<>> : std::false_type {};
+
+        template <typename T, typename U, typename... Ts>
+        struct has_type<T, std::tuple<U, Ts...>> : has_type<T, std::tuple<Ts...>> {};
+
+        template <typename T, typename... Ts>
+        struct has_type<T, std::tuple<T, Ts...>> : std::true_type {};
         template < typename Tp >
         struct contains<Tp> : std::false_type {};
-
 
         template <typename T, typename U=void, typename... Types>
         constexpr size_t index() {
             return std::is_same<T, U>::value ? 0 : 1 + index<T, Types...>();
         }
-        struct IDynamicTupleElement {
-            unsigned int positionInVector, positionInTemplateParameterPack;
-            template <size_t I=0>
-            static constexpr size_t get(size_t position) {
-                if (I == position) {
-                    return I;
-                } else {
-                    get<I+1>();
-                }
-            }
-        };
-        template <template <size_t , class...> class T, size_t I, class Head, class... Tail>
-        Head* getElement(T<I, Head, Tail...>& tuple, unsigned int index) {
-            if (index < tuple.T<I, Head>::elements.size())
-                return static_cast<Head*>(tuple.T<I, Head>::elements[index]);
-            return nullptr;
-        }
-        template <size_t I, class D>
-        struct DynamicTupleLeaf {
-            std::vector<IDynamicTupleElement*> elements;
-            void add(IDynamicTupleElement* element) {
-                element->positionInVector = elements.size();
-                element->positionInTemplateParameterPack = I;
-                elements.push_back(element);
-            }
-        };
-        template <size_t I, class... D>
-        struct DynamicTupleHolder {
+        //Make index sequences from an offset.
+        template<std::size_t N, typename Seq> struct offset_sequence;
 
+        template<std::size_t N, std::size_t... Ints>
+        struct offset_sequence<N, std::index_sequence<Ints...>>
+        {
+         using type = std::index_sequence<Ints + N...>;
         };
-        template <size_t I, class DH, class... DT>
-        struct DynamicTupleHolder<I, DH, DT...> : DynamicTupleLeaf<I, DH>, DynamicTupleHolder<I+1, DT...> {
-            using BaseLeaf = DynamicTupleLeaf<I, DH>;
-            using BaseDT = DynamicTupleHolder<I+1, DT...>;
-            void add(IDynamicTupleElement* head, size_t N) {
-                if (I == N) {
-                    BaseLeaf::add(head);
-                } else {
-                    BaseDT::add(head, N);
-                }
-            }
-            template <class H, class... T>
-            void copy(DynamicTupleHolder<I, H, T...>& holder) {
-                BaseLeaf::elements = holder.DynamicTupleLeaf<I, H>::elements;
-                BaseDT::copy(holder);
-            }
+        template<std::size_t N, typename Seq>
+        using offset_sequence_t = typename offset_sequence<N, Seq>::type;
+        //Concatenate two sequences of indexes into one.
+        template<typename Seq1, typename Seq> struct cat_sequence;
+        template<std::size_t... Ints1, std::size_t... Ints2>
+        struct cat_sequence<std::index_sequence<Ints1...>,
+                            std::index_sequence<Ints2...>>
+        {
+         using type = std::index_sequence<Ints1..., Ints2...>;
         };
-        template <size_t I, class DH>
-        struct DynamicTupleHolder<I, DH> : DynamicTupleLeaf<I, DH>, DynamicTupleHolder<I+1> {
-            using BaseLeaf = DynamicTupleLeaf<I, DH>;
-            using BaseDT = DynamicTupleHolder<I+1>;
-            void add(IDynamicTupleElement* head, size_t N) {
-                if (I == N) {
-                    BaseLeaf::add(head);
-                }
-            }
-            template <class... T>
-            void copy(DynamicTupleHolder<I>& holder) {
+        template<typename Seq1, typename Seq2>
+        using cat_sequence_t = typename cat_sequence<Seq1, Seq2>::type;
 
-            }
-        };
-        template <size_t I>
-        struct DynamicTupleHolder<I> : DynamicTupleLeaf<I, IDynamicTupleElement> {
-            void add(DH* head, size_t N) {
-
-            }
-        };
+        template<std::size_t N, typename T>
+        auto remove_Nth(T& tuple);
         template <typename... TupleTypes>
         struct DynamicTuple {
-            DynamicTupleHolder<0, TupleTypes...> contents;
+            std::tuple<std::vector<TupleTypes>...> content;
             using types = typename std::tuple<TupleTypes...>;
+
+
             template <typename H, class = typename std::enable_if_t<contains<H, TupleTypes...>::value>>
-            DynamicTuple add (H* head) {
-                contents.add(head, index<H, TupleTypes...>());
+            DynamicTuple add (H head) {
+                std::get<std::vector<H>>(content).push_back(head);
                 return *this;
             }
             template <typename H, class = typename std::enable_if_t<!contains<H, TupleTypes...>::value>>
-            DynamicTuple <TupleTypes..., H> add (H* head) {
+            DynamicTuple <TupleTypes..., H> add (H head) {
                 DynamicTuple<TupleTypes..., H> tuple;
-                tuple.contents.template copy<TupleTypes...>(contents);
+                tuple.content = std::tuple_cat(content, std::make_tuple(std::vector<H>()));
                 return tuple.add(head);
             }
             template <typename H, class = typename std::enable_if_t<!contains<H, TupleTypes...>::value>>
             DynamicTuple <TupleTypes..., H> addType () {
                 DynamicTuple<TupleTypes..., H> tuple;
-                tuple.contents.template copy<TupleTypes...>(contents);
+                tuple.content = std::tuple_cat(content, std::make_tuple(std::vector<H>()));
                 return tuple;
+            }
+            template <typename T>
+            constexpr size_t vectorSize() {
+                return std::get<std::vector<T>>(content).size();
             }
             static constexpr size_t nbTypes() {
                 return std::tuple_size<types>::value;
@@ -118,16 +89,57 @@ namespace odfaeg {
             template <typename T>
             T* get(unsigned int containerIdx) {
                 constexpr size_t I = getIndexOfTypeT<T>();
-                return getElement<DynamicTupleLeaf, I>(contents, containerIdx);
+                return (containerIdx < vectorSize<T>()) ? &std::get<I>(content)[containerIdx] : nullptr;
             }
             template <size_t I>
             auto get(unsigned int containerIdx) {
-                return getElement<DynamicTupleLeaf, I>(contents, containerIdx);
+                return std::get<I>(content)[containerIdx];
             }
-            auto get(unsigned int positionInTemplateParameterPack, unsigned int containerIndex) {
-                return get<IDynamicTupleElement::get(positionInTemplateParameterPack)>(containerIndex);
+            template <size_t I>
+            auto removeType() {
+                return remove_Nth<I>(*this);
+            }
+            template <typename T>
+            auto removeType() {
+                return remove_Nth<index<T, TupleTypes...>()>(*this);
+            }
+            template <typename T>
+            auto remove(T element) {
+                std::vector<T> elements = std::get<index<T, TupleTypes...>()>(content);
+                typename std::vector<T>::iterator it;
+                for (it = elements.begin(); it != elements.end(); it++) {
+                    if (*it == &element) {
+                        elements.erase(it);
+                    } else {
+                        it++;
+                    }
+                }
+                if (std::get<index<T, TupleTypes...>()>(content).size() == 0) {
+                    return removeType<T>();
+                }
+                return *this;
             }
         };
+        //Return a tuple with elements at indexes.
+        template <typename T, size_t... Ints>
+        auto select_tuple(T& tuple, std::index_sequence<Ints...>)
+        {
+            DynamicTuple<std::tuple_element_t<Ints, typename T::types>...> newTuple;
+            newTuple.content = std::make_tuple(std::get<Ints>(tuple.content)...);
+            return newTuple;
+        }
+
+        //Remove the Nth elements of a tuple.
+        template<std::size_t N, typename T>
+        auto remove_Nth(T& tuple)
+        {
+          constexpr auto size = tuple.nbTypes();
+          using first = std::make_index_sequence<N>;
+          using rest = offset_sequence_t<N+1,
+                        std::make_index_sequence<size-N-1>>;
+          using indices = cat_sequence_t<first, rest>;
+          return select_tuple(tuple, indices{});
+        }
     }
 }
 #endif

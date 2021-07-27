@@ -30,40 +30,6 @@ template <typename T, typename... Ts>
 struct has_type<T, std::tuple<T, Ts...>> : std::true_type {};
 template < typename Tp >
 struct contains<Tp> : std::false_type {};
-struct IDynamicTupleElement {
-    unsigned int positionInVector, positionInTemplateParameterPack;
-    template <size_t I=0>
-    static constexpr size_t get(size_t position) {
-        if (I == position) {
-            return I;
-        } else {
-            return get<I+1>(position);
-        }
-    }
-};
-template <template <size_t , class...> class T, size_t I, class Head, class... Tail>
-Head* getElement(T<I, Head, Tail...>& tuple, unsigned int index) {
-    if (index < tuple.T<I, Head>::elements.size())
-        return static_cast<Head*>(tuple.T<I, Head>::elements[index]);
-    return nullptr;
-}
-template <template <size_t , class...> class T, size_t I, class Head, class... Tail>
-std::vector<IDynamicTupleElement*> getElements(T<I, Head, Tail...>& tuple) {
-    tuple.T<I, Head>::elements;
-}
-
-
-
-
-template <size_t I, class D>
-struct DynamicTupleLeaf {
-    std::vector<IDynamicTupleElement*> elements;
-    void add(IDynamicTupleElement* element) {
-        element->positionInVector = elements.size();
-        element->positionInTemplateParameterPack = I;
-        elements.push_back(element);
-    }
-};
 
 template <typename T, typename U=void, typename... Types>
 constexpr size_t index() {
@@ -90,138 +56,29 @@ struct cat_sequence<std::index_sequence<Ints1...>,
 template<typename Seq1, typename Seq2>
 using cat_sequence_t = typename cat_sequence<Seq1, Seq2>::type;
 
-
-template <size_t I, class... D>
-struct DynamicTupleHolder {
-
-};
-
-template <size_t I, class DH, class... DT>
-struct DynamicTupleHolder<I, DH, DT...> : DynamicTupleLeaf<I, DH>, DynamicTupleHolder<I+1, DT...> {
-    using BaseLeaf = DynamicTupleLeaf<I, DH>;
-    using BaseDT = DynamicTupleHolder<I+1, DT...>;
-    void add(IDynamicTupleElement* head, size_t N) {
-        if (I == N) {
-            BaseLeaf::add(head);
-        } else {
-            BaseDT::add(head, N);
-        }
-    }
-    template <typename VH, typename... VT>
-    void copyVectors(VH vector, VT... vectors) {
-        std::cout<<"copy vectors"<<std::endl;
-        BaseLeaf::elements = vector;
-        for (unsigned int i = 0; i < BaseLeaf::elements.size(); i++) {
-            BaseLeaf::elements[i]->positionInTemplateParameterPack = I;
-        }
-        BaseDT::copyVectors(vectors...);
-    }
-    void remove(IDynamicTupleElement* element) {
-        std::vector<IDynamicTupleElement*>::iterator it, it2;
-        for (it = BaseLeaf::elements.begin(); it != BaseLeaf::elements.end();) {
-            if (*it == element) {
-                BaseLeaf::elements.erase(it);
-                for (it2 = it; it2 != BaseLeaf::end(); it2++) {
-                    (*it2)->positionInVector--;
-                }
-            } else {
-                it++;
-            }
-        }
-        BaseDT::remove(element);
-    }
-    static constexpr size_t nbTypes() {
-        return 1 + BaseDT::nbTypes();
-    }
-    template <class H, class... T>
-    void copy(DynamicTupleHolder<I, H, T...>& holder) {
-        BaseLeaf::elements = holder.DynamicTupleLeaf<I, H>::elements;
-        BaseDT::copy(holder);
-    }
-};
-template <size_t I, class DH>
-struct DynamicTupleHolder<I, DH> : DynamicTupleLeaf<I, DH>, DynamicTupleHolder<I+1> {
-    using BaseLeaf = DynamicTupleLeaf<I, DH>;
-    using BaseDT = DynamicTupleHolder<I+1>;
-    void add(IDynamicTupleElement* head, size_t N) {
-        if (I == N) {
-            BaseLeaf::add(head);
-        }
-    }
-    void remove(IDynamicTupleElement* element) {
-        std::vector<IDynamicTupleElement*>::iterator it, it2;
-        for (it = BaseLeaf::elements.begin(); it != BaseLeaf::elements.end();) {
-            if (*it == element) {
-                BaseLeaf::elements.erase(it);
-                for (it2 = it; it2 != BaseLeaf::end(); it2++) {
-                    (*it2)->positionInVector--;
-                }
-            } else {
-                it++;
-            }
-        }
-    }
-    template <typename V>
-    void copyVectors(V vector) {
-        std::cout<<"copy vector"<<std::endl;
-        BaseLeaf::elements = vector;
-        for (unsigned int i = 0; i < BaseLeaf::elements.size(); i++) {
-            BaseLeaf::elements[i]->positionInTemplateParameterPack = I;
-        }
-    }
-    static constexpr size_t nbTypes() {
-        return 1;
-    }
-    template <class... T>
-    void copy(DynamicTupleHolder<I>& holder) {
-
-    }
-};
-template <size_t I>
-struct DynamicTupleHolder<I> : DynamicTupleLeaf<I, IDynamicTupleElement> {
-    void add(DH* head, size_t N) {
-
-    }
-    template <typename... V>
-    void copyVectors(V&&... vectors) {
-
-    }
-    static constexpr size_t nbTypes() {
-        return 0;
-    }
-};
 template<std::size_t N, typename T>
 auto remove_Nth(T& tuple);
 template <typename... TupleTypes>
 struct DynamicTuple {
-
-    //DynamicTupleHolder<0, TupleTypes...> contents;
     std::tuple<std::vector<TupleTypes>...> content;
     using types = typename std::tuple<TupleTypes...>;
-    /*template <typename... V>
-    void copyVectors(V... vectors) {
-        //std::cout<<"copy vectors"<<std::endl;
-        //contents.copyVectors(vectors...);
-    }*/
 
-    template <typename H, class = typename std::enable_if_t<has_type<std::vector<H>, decltype(content)>::value>>
+
+    template <typename H, class = typename std::enable_if_t<contains<H, TupleTypes...>::value>>
     DynamicTuple add (H head) {
         std::get<std::vector<H>>(content).push_back(head);
-        //contents.add(head, index<H, TupleTypes...>());
         return *this;
     }
-    template <typename H, class = typename std::enable_if_t<!has_type<std::vector<H>, decltype(content)>::value>>
+    template <typename H, class = typename std::enable_if_t<!contains<H, TupleTypes...>::value>>
     DynamicTuple <TupleTypes..., H> add (H head) {
         DynamicTuple<TupleTypes..., H> tuple;
         tuple.content = std::tuple_cat(content, std::make_tuple(std::vector<H>()));
-        //tuple.contents.template copy<TupleTypes...>(contents);
         return tuple.add(head);
     }
     template <typename H, class = typename std::enable_if_t<!contains<H, TupleTypes...>::value>>
     DynamicTuple <TupleTypes..., H> addType () {
         DynamicTuple<TupleTypes..., H> tuple;
         tuple.content = std::tuple_cat(content, std::make_tuple(std::vector<H>()));
-        //tuple.contents.template copy<TupleTypes...>(contents);
         return tuple;
     }
     template <typename T>
@@ -238,21 +95,12 @@ struct DynamicTuple {
     template <typename T>
     T* get(unsigned int containerIdx) {
         constexpr size_t I = getIndexOfTypeT<T>();
-        //return getElement<DynamicTupleLeaf, I>(contents, containerIdx);
         return (containerIdx < vectorSize<T>()) ? &std::get<I>(content)[containerIdx] : nullptr;
     }
     template <size_t I>
     auto get(unsigned int containerIdx) {
-        //return getElement<DynamicTupleLeaf, I>(contents, containerIdx);
         return std::get<I>(content)[containerIdx];
     }
-    /*template <size_t I>
-    auto get() {
-        return getElements<DynamicTupleLeaf, I>(contents);
-    }
-    auto get(unsigned int positionInTemplateParameterPack, unsigned int containerIdx) {
-        return get<IDynamicTupleElement::get(positionInTemplateParameterPack)>(containerIdx);
-    }*/
     template <size_t I>
     auto removeType() {
         return remove_Nth<I>(*this);
@@ -283,7 +131,6 @@ template <typename T, size_t... Ints>
 auto select_tuple(T& tuple, std::index_sequence<Ints...>)
 {
     DynamicTuple<std::tuple_element_t<Ints, typename T::types>...> newTuple;
-    //newTuple.copyVectors(tuple.template get<Ints>()...);
     newTuple.content = std::make_tuple(std::get<Ints>(tuple.content)...);
     return newTuple;
 }
@@ -299,21 +146,7 @@ auto remove_Nth(T& tuple)
   using indices = cat_sequence_t<first, rest>;
   return select_tuple(tuple, indices{});
 }
-template <size_t I=0, class... Types>
-struct elements {
-};
-template <size_t I, class H, class... T>
-struct elements <I, H, T...> : elements<I+1, T...> {
-    using type = H;
-};
-template <size_t I, class H>
-struct elements <I, H> {
-    using type = H;
-};
-template <size_t I, class... Types>
-struct element_type {
-    using type = typename elements<I, Types...>::type;
-};
+
 using EntityId = std::size_t*;
 class ComponentMapping {
     template <class>

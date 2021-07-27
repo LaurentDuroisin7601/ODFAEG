@@ -4,12 +4,6 @@
 #include "../Graphics/entity.h"
 namespace odfaeg {
     namespace core {
-        struct IComponent : IDynamicTupleElement {
-        };
-        struct ISystem {
-            size_t positionInVector;
-        };
-        using EntityId = std::size_t*;
         using EntityId = std::size_t*;
         class ComponentMapping {
             template <class>
@@ -24,7 +18,7 @@ namespace odfaeg {
                 return newTuple;
             }
             template <typename Component, typename DynamicTuple, typename Factory>
-            auto addFlag(EntityId entity, DynamicTuple& tuple, Component* component, Factory& factory) {
+            auto addFlag(EntityId entity, DynamicTuple& tuple, Component component, Factory& factory) {
                 auto newTuple = tuple.add(component);
                 componentMapping.resize(factory.getNbEntities());
                 childrenMapping.resize(factory.getNbEntities());
@@ -34,11 +28,11 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < componentMapping.size(); i++) {
                     componentMapping[i].resize(newTuple.nbTypes());
                 }
-                componentMapping[*entity][component->positionInTemplateParameterPack] = component->positionInVector;
+                componentMapping[*entity][newTuple.template getIndexOfTypeT<Component>()] = newTuple.template vectorSize<Component>()-1;
                 return newTuple;
             }
             template <typename DynamicTuple, typename Component, typename Factory>
-            void addAgregate(EntityId entityId, DynamicTuple& tuple, Component* component, Factory& factory) {
+            void addAgregate(EntityId entityId, DynamicTuple& tuple, Component component, Factory& factory) {
                 tuple.add(component);
                 componentMapping.resize(factory.getNbEntities());
                 childrenMapping.resize(factory.getNbEntities());
@@ -48,7 +42,7 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < componentMapping.size(); i++) {
                     componentMapping[i].resize(tuple.nbTypes());
                 }
-                componentMapping[*entityId][component->positionInTemplateParameterPack] = component->positionInVector;
+                componentMapping[*entityId][tuple.template getIndexOfTypeT<Component>()] = tuple.template vectorSize<Component>()-1;
             }
             void addChild(EntityId parentId, EntityId child, size_t treeLevel) {
                 //std::cout<<"id : "<<parentId<<std::endl;
@@ -62,9 +56,6 @@ namespace odfaeg {
                 //std::cout<<"add child : "<<*child<<","<<treeLevels.size()<<","<<branchIds.size()<<std::endl;
                 treeLevels[*child] = treeLevel;
                 branchIds[*child] = parentId;
-            }
-            void remove(size_t i) {
-
             }
             template <class T>
             void removeInVector(std::vector<T>& vec, size_t index) {
