@@ -1,6 +1,16 @@
 
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.20)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake_modules" ${CMAKE_MODULE_PATH})
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+if (${FORCE_COLORED_OUTPUT})
+    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+       add_compile_options (-fdiagnostics-color=always)
+    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+       add_compile_options (-fdiagnostics-color)
+    endif ()
+endif ()
+
 # define a macro that helps defining an option
 macro(ODFAEG_set_option var default type docstring)
     if(NOT DEFINED ${var})
@@ -27,7 +37,6 @@ set(VERSION_MINOR 0)
 set(VERSION_PATCH 0)
 #enable c++11 option and some optimisations options for size and speed.
 set(CMAKE_CXX_FLAGS "-std=c++17")
-
 
 # add the ODFAEG header path
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
@@ -112,9 +121,10 @@ endif()
 
 if(LINUX)
 	if (CMAKE_ARCHITECTURE STREQUAL "i386")
-		add_definitions(-m32)
+		# add_definitions(-m32)
 	endif()
     if(BUILD_SHARED_LIBS)		
+		#[[
         ODFAEG_set_option(ODFAEG_INSTALL_PKGCONFIG_FILES TRUE BOOL "TRUE to automatically install pkg-config files so other projects can find ODFAEG")
         if(ODFAEG_INSTALL_PKGCONFIG_FILES)
             foreach(ODFAEG_module IN ITEMS all)
@@ -126,6 +136,7 @@ if(LINUX)
                     DESTINATION "${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/pkgconfig")
             endforeach()
         endif()
+		]]
     else()
         if(ODFAEG_INSTALL_PKGCONFIG_FILES)
             message(WARNING "No pkg-config files are provided for the static ODFAEG libraries (ODFAEG_INSTALL_PKGCONFIG_FILES will be ignored).")
@@ -228,3 +239,4 @@ elseif(MACOSX)
     install(DIRECTORY extlibs/libs-osx/Frameworks/freetype.framework DESTINATION ${CMAKE_INSTALL_FRAMEWORK_PREFIX})
     
 endif()
+

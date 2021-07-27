@@ -1,5 +1,8 @@
 #ifndef ODFAEG_APPLICATION_HPP
 #define ODFAEG_APPLICATION_HPP
+
+#include "GL/glew.h"
+#include "GLFW/glfw3.h"
 #include "../Network/network.h"
 #include "renderWindow.h"
 #include "renderStates.h"

@@ -1,6 +1,7 @@
 #ifndef ODFAEG_LIGHT_COMPONENT
 #define ODFAEG_LIGHT_COMPONENT
-#include <GL/glew.h>
+#define GLFW_INCLUDE_NONE
+#include "GL/glew.h"
 #include "component.h"
 #ifndef VULKAN
 

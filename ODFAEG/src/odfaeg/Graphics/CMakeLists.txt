@@ -185,15 +185,32 @@ set(SRC_GUI
 	${INCROOT}/GUI/checkBox.hpp
 	${SRCROOT}/GUI/checkBox.cpp)
 source_group ("gui" FILES ${SRC_GUI})
-find_package (SFML 2 REQUIRED)
+
+set(SRC_VULKAN
+	${INCROOT}/Vulkan/instance.hpp
+	${SRCROOT}/Vulkan/instance.cpp
+
+	${INCROOT}/Vulkan/device.hpp
+	${SRCROOT}/Vulkan/device.cpp
+
+	${INCROOT}/Vulkan/vulkan_window.hpp
+	${SRCROOT}/Vulkan/vulkan_window.cpp
+)
+source_group("Vulkan" FILES ${SRC_VULKAN})
+
+find_package (SFML 2 COMPONENTS window system graphics audio REQUIRED)
+find_package(Vulkan REQUIRED)
+
 find_package(Freetype REQUIRED)
 include_directories(${CMAKE_INCLUDE_PATH} ${FREETYPE_INCLUDE_DIRS})
 link_directories(${CMAKE_LIBRARY_PATH})
 
 sfgl_add_library(odfaeg-graphics
-                 SOURCES ${SRC_GRAPHICS} ${SRC_GRAPHICS_2D} ${SRC_GRAPHICS_3D} ${SRC_GUI}
+				 SOURCES ${SRC_GRAPHICS} ${SRC_GRAPHICS_2D} ${SRC_GRAPHICS_3D} ${SRC_GUI} ${SRC_VULKAN}
 				 DEPENDS odfaeg-core odfaeg-math odfaeg-physics)
-target_link_libraries (odfaeg-graphics ${SFML_LIBRARIES})
+
+target_link_libraries (odfaeg-graphics ${SFML_LIBRARIES} Vulkan::Vulkan)
+
 
 	
 	

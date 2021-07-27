@@ -3,6 +3,7 @@
 #include "vkDebug.hpp"
 #include "../Core/erreur.h"
 
+#undef VULKAN
 #ifdef VULKAN
 #include <GLFW/glfw3.h>
 #include <set>
