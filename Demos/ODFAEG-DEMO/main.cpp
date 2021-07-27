@@ -17,15 +17,19 @@ struct contains<Tp, Head, Rest...>
     std::true_type,
     contains<Tp, Rest...>
 >::type {};
+template <typename T, typename Tuple>
+struct has_type;
 
+template <typename T>
+struct has_type<T, std::tuple<>> : std::false_type {};
+
+template <typename T, typename U, typename... Ts>
+struct has_type<T, std::tuple<U, Ts...>> : has_type<T, std::tuple<Ts...>> {};
+
+template <typename T, typename... Ts>
+struct has_type<T, std::tuple<T, Ts...>> : std::true_type {};
 template < typename Tp >
 struct contains<Tp> : std::false_type {};
-
-
-template <typename T, typename U=void, typename... Types>
-constexpr size_t index() {
-    return std::is_same<T, U>::value ? 0 : 1 + index<T, Types...>();
-}
 struct IDynamicTupleElement {
     unsigned int positionInVector, positionInTemplateParameterPack;
     template <size_t I=0>
@@ -43,6 +47,14 @@ Head* getElement(T<I, Head, Tail...>& tuple, unsigned int index) {
         return static_cast<Head*>(tuple.T<I, Head>::elements[index]);
     return nullptr;
 }
+template <template <size_t , class...> class T, size_t I, class Head, class... Tail>
+std::vector<IDynamicTupleElement*> getElements(T<I, Head, Tail...>& tuple) {
+    tuple.T<I, Head>::elements;
+}
+
+
+
+
 template <size_t I, class D>
 struct DynamicTupleLeaf {
     std::vector<IDynamicTupleElement*> elements;
@@ -52,10 +64,38 @@ struct DynamicTupleLeaf {
         elements.push_back(element);
     }
 };
+
+template <typename T, typename U=void, typename... Types>
+constexpr size_t index() {
+    return std::is_same<T, U>::value ? 0 : 1 + index<T, Types...>();
+}
+//Make index sequences from an offset.
+template<std::size_t N, typename Seq> struct offset_sequence;
+
+template<std::size_t N, std::size_t... Ints>
+struct offset_sequence<N, std::index_sequence<Ints...>>
+{
+ using type = std::index_sequence<Ints + N...>;
+};
+template<std::size_t N, typename Seq>
+using offset_sequence_t = typename offset_sequence<N, Seq>::type;
+//Concatenate two sequences of indexes into one.
+template<typename Seq1, typename Seq> struct cat_sequence;
+template<std::size_t... Ints1, std::size_t... Ints2>
+struct cat_sequence<std::index_sequence<Ints1...>,
+                    std::index_sequence<Ints2...>>
+{
+ using type = std::index_sequence<Ints1..., Ints2...>;
+};
+template<typename Seq1, typename Seq2>
+using cat_sequence_t = typename cat_sequence<Seq1, Seq2>::type;
+
+
 template <size_t I, class... D>
 struct DynamicTupleHolder {
 
 };
+
 template <size_t I, class DH, class... DT>
 struct DynamicTupleHolder<I, DH, DT...> : DynamicTupleLeaf<I, DH>, DynamicTupleHolder<I+1, DT...> {
     using BaseLeaf = DynamicTupleLeaf<I, DH>;
@@ -66,6 +106,32 @@ struct DynamicTupleHolder<I, DH, DT...> : DynamicTupleLeaf<I, DH>, DynamicTupleH
         } else {
             BaseDT::add(head, N);
         }
+    }
+    template <typename VH, typename... VT>
+    void copyVectors(VH vector, VT... vectors) {
+        std::cout<<"copy vectors"<<std::endl;
+        BaseLeaf::elements = vector;
+        for (unsigned int i = 0; i < BaseLeaf::elements.size(); i++) {
+            BaseLeaf::elements[i]->positionInTemplateParameterPack = I;
+        }
+        BaseDT::copyVectors(vectors...);
+    }
+    void remove(IDynamicTupleElement* element) {
+        std::vector<IDynamicTupleElement*>::iterator it, it2;
+        for (it = BaseLeaf::elements.begin(); it != BaseLeaf::elements.end();) {
+            if (*it == element) {
+                BaseLeaf::elements.erase(it);
+                for (it2 = it; it2 != BaseLeaf::end(); it2++) {
+                    (*it2)->positionInVector--;
+                }
+            } else {
+                it++;
+            }
+        }
+        BaseDT::remove(element);
+    }
+    static constexpr size_t nbTypes() {
+        return 1 + BaseDT::nbTypes();
     }
     template <class H, class... T>
     void copy(DynamicTupleHolder<I, H, T...>& holder) {
@@ -82,6 +148,30 @@ struct DynamicTupleHolder<I, DH> : DynamicTupleLeaf<I, DH>, DynamicTupleHolder<I
             BaseLeaf::add(head);
         }
     }
+    void remove(IDynamicTupleElement* element) {
+        std::vector<IDynamicTupleElement*>::iterator it, it2;
+        for (it = BaseLeaf::elements.begin(); it != BaseLeaf::elements.end();) {
+            if (*it == element) {
+                BaseLeaf::elements.erase(it);
+                for (it2 = it; it2 != BaseLeaf::end(); it2++) {
+                    (*it2)->positionInVector--;
+                }
+            } else {
+                it++;
+            }
+        }
+    }
+    template <typename V>
+    void copyVectors(V vector) {
+        std::cout<<"copy vector"<<std::endl;
+        BaseLeaf::elements = vector;
+        for (unsigned int i = 0; i < BaseLeaf::elements.size(); i++) {
+            BaseLeaf::elements[i]->positionInTemplateParameterPack = I;
+        }
+    }
+    static constexpr size_t nbTypes() {
+        return 1;
+    }
     template <class... T>
     void copy(DynamicTupleHolder<I>& holder) {
 
@@ -92,27 +182,51 @@ struct DynamicTupleHolder<I> : DynamicTupleLeaf<I, IDynamicTupleElement> {
     void add(DH* head, size_t N) {
 
     }
+    template <typename... V>
+    void copyVectors(V&&... vectors) {
+
+    }
+    static constexpr size_t nbTypes() {
+        return 0;
+    }
 };
+template<std::size_t N, typename T>
+auto remove_Nth(T& tuple);
 template <typename... TupleTypes>
 struct DynamicTuple {
-    DynamicTupleHolder<0, TupleTypes...> contents;
+
+    //DynamicTupleHolder<0, TupleTypes...> contents;
+    std::tuple<std::vector<TupleTypes>...> content;
     using types = typename std::tuple<TupleTypes...>;
-    template <typename H, class = typename std::enable_if_t<contains<H, TupleTypes...>::value>>
-    DynamicTuple add (H* head) {
-        contents.add(head, index<H, TupleTypes...>());
+    /*template <typename... V>
+    void copyVectors(V... vectors) {
+        //std::cout<<"copy vectors"<<std::endl;
+        //contents.copyVectors(vectors...);
+    }*/
+
+    template <typename H, class = typename std::enable_if_t<has_type<std::vector<H>, decltype(content)>::value>>
+    DynamicTuple add (H head) {
+        std::get<std::vector<H>>(content).push_back(head);
+        //contents.add(head, index<H, TupleTypes...>());
         return *this;
     }
-    template <typename H, class = typename std::enable_if_t<!contains<H, TupleTypes...>::value>>
-    DynamicTuple <TupleTypes..., H> add (H* head) {
+    template <typename H, class = typename std::enable_if_t<!has_type<std::vector<H>, decltype(content)>::value>>
+    DynamicTuple <TupleTypes..., H> add (H head) {
         DynamicTuple<TupleTypes..., H> tuple;
-        tuple.contents.template copy<TupleTypes...>(contents);
+        tuple.content = std::tuple_cat(content, std::make_tuple(std::vector<H>()));
+        //tuple.contents.template copy<TupleTypes...>(contents);
         return tuple.add(head);
     }
     template <typename H, class = typename std::enable_if_t<!contains<H, TupleTypes...>::value>>
     DynamicTuple <TupleTypes..., H> addType () {
         DynamicTuple<TupleTypes..., H> tuple;
-        tuple.contents.template copy<TupleTypes...>(contents);
+        tuple.content = std::tuple_cat(content, std::make_tuple(std::vector<H>()));
+        //tuple.contents.template copy<TupleTypes...>(contents);
         return tuple;
+    }
+    template <typename T>
+    constexpr size_t vectorSize() {
+        return std::get<std::vector<T>>(content).size();
     }
     static constexpr size_t nbTypes() {
         return std::tuple_size<types>::value;
@@ -124,16 +238,67 @@ struct DynamicTuple {
     template <typename T>
     T* get(unsigned int containerIdx) {
         constexpr size_t I = getIndexOfTypeT<T>();
-        return getElement<DynamicTupleLeaf, I>(contents, containerIdx);
+        //return getElement<DynamicTupleLeaf, I>(contents, containerIdx);
+        return (containerIdx < vectorSize<T>()) ? &std::get<I>(content)[containerIdx] : nullptr;
     }
     template <size_t I>
     auto get(unsigned int containerIdx) {
-        return getElement<DynamicTupleLeaf, I>(contents, containerIdx);
+        //return getElement<DynamicTupleLeaf, I>(contents, containerIdx);
+        return std::get<I>(content)[containerIdx];
+    }
+    /*template <size_t I>
+    auto get() {
+        return getElements<DynamicTupleLeaf, I>(contents);
     }
     auto get(unsigned int positionInTemplateParameterPack, unsigned int containerIdx) {
         return get<IDynamicTupleElement::get(positionInTemplateParameterPack)>(containerIdx);
+    }*/
+    template <size_t I>
+    auto removeType() {
+        return remove_Nth<I>(*this);
+    }
+    template <typename T>
+    auto removeType() {
+        return remove_Nth<index<T, TupleTypes...>()>(*this);
+    }
+    template <typename T>
+    auto remove(T element) {
+        std::vector<T> elements = std::get<index<T, TupleTypes...>()>(content);
+        typename std::vector<T>::iterator it;
+        for (it = elements.begin(); it != elements.end(); it++) {
+            if (*it == &element) {
+                elements.erase(it);
+            } else {
+                it++;
+            }
+        }
+        if (std::get<index<T, TupleTypes...>()>(content).size() == 0) {
+            return removeType<T>();
+        }
+        return *this;
     }
 };
+//Return a tuple with elements at indexes.
+template <typename T, size_t... Ints>
+auto select_tuple(T& tuple, std::index_sequence<Ints...>)
+{
+    DynamicTuple<std::tuple_element_t<Ints, typename T::types>...> newTuple;
+    //newTuple.copyVectors(tuple.template get<Ints>()...);
+    newTuple.content = std::make_tuple(std::get<Ints>(tuple.content)...);
+    return newTuple;
+}
+
+//Remove the Nth elements of a tuple.
+template<std::size_t N, typename T>
+auto remove_Nth(T& tuple)
+{
+  constexpr auto size = tuple.nbTypes();
+  using first = std::make_index_sequence<N>;
+  using rest = offset_sequence_t<N+1,
+                std::make_index_sequence<size-N-1>>;
+  using indices = cat_sequence_t<first, rest>;
+  return select_tuple(tuple, indices{});
+}
 template <size_t I=0, class... Types>
 struct elements {
 };
@@ -149,8 +314,6 @@ template <size_t I, class... Types>
 struct element_type {
     using type = typename elements<I, Types...>::type;
 };
-struct IComponent : IDynamicTupleElement {
-};
 using EntityId = std::size_t*;
 class ComponentMapping {
     template <class>
@@ -165,7 +328,7 @@ class ComponentMapping {
         return newTuple;
     }
     template <typename Component, typename DynamicTuple, typename Factory>
-    auto addFlag(EntityId entity, DynamicTuple& tuple, Component* component, Factory& factory) {
+    auto addFlag(EntityId entity, DynamicTuple& tuple, Component component, Factory& factory) {
         auto newTuple = tuple.add(component);
         componentMapping.resize(factory.getNbEntities());
         childrenMapping.resize(factory.getNbEntities());
@@ -175,11 +338,11 @@ class ComponentMapping {
         for (unsigned int i = 0; i < componentMapping.size(); i++) {
             componentMapping[i].resize(newTuple.nbTypes());
         }
-        componentMapping[*entity][component->positionInTemplateParameterPack] = component->positionInVector;
+        componentMapping[*entity][newTuple.template getIndexOfTypeT<Component>()] = newTuple.template vectorSize<Component>()-1;
         return newTuple;
     }
     template <typename DynamicTuple, typename Component, typename Factory>
-    void addAgregate(EntityId entityId, DynamicTuple& tuple, Component* component, Factory& factory) {
+    void addAgregate(EntityId entityId, DynamicTuple& tuple, Component component, Factory& factory) {
         tuple.add(component);
         componentMapping.resize(factory.getNbEntities());
         childrenMapping.resize(factory.getNbEntities());
@@ -189,7 +352,7 @@ class ComponentMapping {
         for (unsigned int i = 0; i < componentMapping.size(); i++) {
             componentMapping[i].resize(tuple.nbTypes());
         }
-        componentMapping[*entityId][component->positionInTemplateParameterPack] = component->positionInVector;
+        componentMapping[*entityId][tuple.template getIndexOfTypeT<Component>()] = tuple.template vectorSize<Component>()-1;
     }
     void addChild(EntityId parentId, EntityId child, size_t treeLevel) {
         //std::cout<<"id : "<<parentId<<std::endl;
@@ -203,9 +366,6 @@ class ComponentMapping {
         //std::cout<<"add child : "<<*child<<","<<treeLevels.size()<<","<<branchIds.size()<<std::endl;
         treeLevels[*child] = treeLevel;
         branchIds[*child] = parentId;
-    }
-    void remove(size_t i) {
-
     }
     template <class T>
     void removeInVector(std::vector<T>& vec, size_t index) {
@@ -351,27 +511,25 @@ struct vec3 {
     vec3(float x,float y, float z) : x(x), y(y), z(z) {}
     float x, y, z;
 };
-struct transform_component : IComponent {
+struct transform_component {
     transform_component(vec3 position) : position(position) {}
     vec3 position;
 };
-struct ISystem : IDynamicTupleElement {
 
-};
-struct MoveSystem : ISystem {
+struct MoveSystem  {
     template <typename... Components, typename... Params, class = typename std::enable_if_t<contains<transform_component*, Components...>::value>>
     void operator()(std::tuple<Components...>& tp, std::tuple<Params...>& params) {
         transform_component* tc = std::get<index<transform_component*,Components...>()>(tp);
         //std::cout<<"position : "<<tc->position.x<<","<<tc->position.y<<","<<tc->position.z<<std::endl;
     }
 };
-struct RenderType1 : IComponent {
+struct RenderType1 {
 
 };
-struct RenderType2 : IComponent {
+struct RenderType2 {
 
 };
-struct RenderSystemType1 : ISystem {
+struct RenderSystemType1 {
     template <typename... Components, typename... Params, class = typename std::enable_if_t<contains<RenderType1*, Components...>::value>>
     void operator()(std::tuple<Components...>& tp, std::tuple<Params...>& params) {
         RenderType1* renderType1 = std::get<index<RenderType1*,Components...>()>(tp);
@@ -383,7 +541,7 @@ struct RenderSystemType1 : ISystem {
     void operator()(std::tuple<Components...>& tp, std::tuple<Params...>& params) {
     }
 };
-struct RenderSystemType2 : ISystem {
+struct RenderSystemType2 {
     template <typename... Components, typename... Params, class = typename std::enable_if_t<contains<RenderType2*, Components...>::value>>
     void operator()(std::tuple<Components...>& tp, std::tuple<Params...>& params) {
         RenderType2* renderType2 = std::get<index<RenderType2*,Components...>()>(tp);
@@ -396,19 +554,19 @@ struct RenderSystemType2 : ISystem {
     }
 };
 
-struct SceneType1 : IComponent {
+struct SceneType1 {
 
 };
-struct SceneType2 : IComponent {
+struct SceneType2 {
 
 };
-struct LoadToRender : ISystem {
+struct LoadToRender {
     template <typename... Components, typename... Params>
     void operator()(std::tuple<Components...>& tp, std::tuple<Params...>& params) {
         std::cout<<"load entities from scene to render"<<std::endl;
     }
 };
-struct LoadSystem : ISystem {
+struct LoadSystem {
     template <typename... Components, typename... Params, class = typename std::enable_if_t<contains<SceneType1*, Components...>::value>>
     void operator()(std::tuple<Components...>& tp, std::tuple<Params...>& params) {
         SceneType1* scene = std::get<index<SceneType1*,Components...>()>(tp);
@@ -430,7 +588,7 @@ struct LoadSystem : ISystem {
 
     }
 };
-struct MainSystem : ISystem {
+struct MainSystem {
     template <size_t I=0, typename... Components, typename... Params, class = typename std::enable_if_t<(sizeof...(Components) != 0 && I == 0)>>
     void operator()(std::tuple<Components...>& tp, std::tuple<Params...>& params) {
         this->template operator()<I+1>(tp, params);
@@ -469,14 +627,6 @@ struct MainSystem : ISystem {
 };
 template <typename SceneAlias>
 class World {
-    template <typename T, typename P>
-    bool containsUniquePtr (std::vector<std::unique_ptr<T>>& upointers, P* rpointer) {
-        const auto itToFind =
-            std::find_if(upointers.begin(), upointers.end(),
-                         [&](auto& p) { return p.get() == rpointer; });
-        const bool found = (itToFind != upointers.end());
-        return found;
-    }
     public :
     enum SystemsQueues {
         MainSystemQueueIndex, RenderSystemQueueIndex, LoadSystemQueueIndex
@@ -511,10 +661,10 @@ class World {
     }*/
     template <typename SystemArray>
     auto initSystems(SystemArray& systemsArray) {
-        MainSystem* mainSystem = new MainSystem();
-        LoadSystem* loadSystem = new LoadSystem();
-        RenderSystemType1* renderSystem1 = new RenderSystemType1();
-        RenderSystemType2* renderSystem2 = new RenderSystemType2();
+        MainSystem mainSystem;
+        LoadSystem loadSystem;
+        RenderSystemType1 renderSystem1;
+        RenderSystemType2 renderSystem2;
         auto systemsArray1 = addSystem(systemsArray, mainSystem, MainSystemQueueIndex);
         auto systemsArray2 = addSystem(systemsArray1, loadSystem, LoadSystemQueueIndex);
         auto systemsArray3 = addSystem(systemsArray2, renderSystem1, RenderSystemQueueIndex);
@@ -522,9 +672,7 @@ class World {
         return systemsArray4;
     }
     template <typename SystemArray, typename System>
-    auto addSystem (SystemArray& systemArray, System* system, SystemsQueues queue) {
-        if (containsUniquePtr(systems, system))
-            std::runtime_error("This system is already added, a system can only be added once");
+    auto addSystem (SystemArray& systemArray, System system, SystemsQueues queue) {
         EntityId systemId = systemFactory.createEntity();
         auto newSystemArray = systemMapping.addFlag(systemId, systemArray, system, systemFactory);
         if (std::is_same<decltype(newSystemArray), decltype(systemArray)>::value)
@@ -532,9 +680,6 @@ class World {
         if (queue >= systemQueueIds.size())
             systemQueueIds.resize(queue+1);
         systemQueueIds[queue].push_back(systemId);
-        std::unique_ptr<ISystem> ptr;
-        ptr.reset(system);
-        systems.push_back(std::move(ptr));
         return newSystemArray;
     }
     template <typename Component, typename EntityComponentArray>
@@ -545,25 +690,15 @@ class World {
     auto addEntityComponentFlag(EntityComponentArray& entityComponentArray, EntityId entityId, Component* component, Factory& factory) {
         entityId = factory.createEntity();
         auto newEntityComponentArray = entityComponentMapping.addFlag(entityId, entityComponentArray, component, factory);
-        if (!containsUniquePtr(components, component)) {
-            std::unique_ptr<IComponent> ptr;
-            ptr.reset(component);
-            components.push_back(std::move(ptr));
-        }
         return newEntityComponentArray;
     }
     template <typename EntityComponentArray, typename Component, typename Factory>
-    void addEntityComponentAgregate(EntityComponentArray& entityComponentArray, EntityId& entityId, Component* component, Factory& factory) {
+    void addEntityComponentAgregate(EntityComponentArray& entityComponentArray, EntityId& entityId, Component component, Factory& factory) {
         entityId = factory.createEntity();
         entityComponentMapping.addAgregate(entityId, entityComponentArray, component, factory);
         auto newEntityComponentArray = entityComponentArray.add(component);
         if (!std::is_same<decltype(newEntityComponentArray), decltype(entityComponentArray)>::value) {
             std::runtime_error("Flag not found! You should call addEntityComponentFlag and get the returned array to add other components of the same type!");
-        }
-        if (!containsUniquePtr(components, component)) {
-            std::unique_ptr<IComponent> ptr;
-            ptr.reset(component);
-            components.push_back(std::move(ptr));
         }
     }
     void addChild(EntityId parentId, EntityId childId, size_t treeLevel) {
@@ -574,54 +709,34 @@ class World {
         return sceneMapping.addFlag<SceneComponent>(scenes);
     }
     template <typename SceneArray, typename SceneComponent, typename Factory>
-    auto addSceneFlag(SceneArray& scenes,  EntityId& sceneId, SceneComponent* scene, Factory& factory) {
-        if (containsUniquePtr(components, scene))
-            std::runtime_error("This scene is already added, a scene can only be added once");
+    auto addSceneFlag(SceneArray& scenes,  EntityId& sceneId, SceneComponent scene, Factory& factory) {
         sceneId = factory.createEntity();
         auto newScenes = scenes.add(scenes);
         sceneMapping.addFlag(sceneId, scenes, scene, factory);
-        std::unique_ptr<IComponent> ptr;
-        ptr.reset(scene);
         this->scenes.push_back(sceneId);
-        components.push_back(std::move(ptr));
         return newScenes;
     }
     template <typename SceneArray, typename SceneComponent, typename Factory>
-    void addSceneAgregate(SceneArray& scenes,  EntityId& sceneId, SceneComponent* scene, Factory& factory) {
-        if (containsUniquePtr(components, scene))
-            std::runtime_error("This scene is already added, a scene can only be added once");
+    void addSceneAgregate(SceneArray& scenes,  EntityId& sceneId, SceneComponent scene, Factory& factory) {
         sceneId = factory.createEntity();
         auto newScenes = scenes.add(scene);
         if (!std::is_same<decltype(scene), decltype(newScenes)>::value) {
             std::runtime_error("Flag not found! You should call addSceneFlag and get the returned array to add other scenes of the same type!");
         }
         sceneMapping.addAgregate(sceneId, scenes, scene, factory);
-        std::unique_ptr<IComponent> ptr;
-        ptr.reset(scene);
-        this->scenesIds.push_back(sceneId);
-        components.push_back(std::move(ptr));
     }
     template <typename RenderComponent, typename RendererArray>
     auto addRendererFlag(RendererArray& renderers) {
         return rendererMapping.addFlag<RenderComponent>(renderers);
     }
     template <typename RenderArray, typename RenderComponent, typename Factory>
-    auto addRendererFlag(RenderArray& renderers, EntityId& rendererId, RenderComponent* renderer, Factory& factory) {
-        if (containsUniquePtr(components, renderer))
-            std::runtime_error("This renderer is already added, a renderer can only be added once, if you want to make a sub pass call addSubRenderer");
+    auto addRendererFlag(RenderArray& renderers, EntityId& rendererId, RenderComponent renderer, Factory& factory) {
         rendererId = factory.createEntity();
         auto tuple = rendererMapping.addFlag(rendererId, renderers, renderer, factory);
-        rendererMapping.addAgregate(rendererId, renderers, renderer, factory);
-        std::unique_ptr<IComponent> ptr;
-        ptr.reset(renderer);
-        renderersIds.push_back(rendererId);
-        components.push_back(std::move(ptr));
         return tuple;
     }
     template <typename RenderArray, typename RenderComponent, typename Factory>
-    void addRendererAgregate(RenderArray& renderers, EntityId& rendererId, RenderComponent* renderer, Factory& factory) {
-        if (containsUniquePtr(components, renderer))
-            std::runtime_error("This renderer is already added, a renderer can only be added once");
+    void addRendererAgregate(RenderArray& renderers, EntityId& rendererId, RenderComponent renderer, Factory& factory) {
         auto newRenderers = renderers.add(renderer);
         if (!std::is_same<decltype(newRenderers), decltype(renderers)>::value) {
             std::runtime_error("Flag not found! You should call addRendererFlag and get the returned array to add other renderers of the same type!");
@@ -629,36 +744,22 @@ class World {
         rendererId = factory.createEntity();
         rendererMapping.addAgregate(rendererId, renderers, renderer, factory);
         this->renderersIds.push_back(rendererId);
-        std::unique_ptr<IComponent> ptr;
-        ptr.reset(renderer);
-        components.push_back(std::move(ptr));
     }
     template <typename RenderArray, typename RenderComponent, typename Factory>
-    auto addSubRendererFlag(RenderArray& renderers, EntityId parent, EntityId& child, size_t treeLevel, RenderComponent* renderer, Factory& factory) {
+    auto addSubRendererFlag(RenderArray& renderers, EntityId parent, EntityId& child, size_t treeLevel, RenderComponent renderer, Factory& factory) {
         child = factory.createEntity();
         auto newRenderers = rendererMapping.addFlag(child, renderers, renderer, factory);
         rendererMapping.addChild(parent, child, treeLevel);
-
-        if (!containsUniquePtr(components, renderer)) {
-            std::unique_ptr<IComponent> ptr;
-            ptr.reset(renderer);
-            components.push_back(std::move(ptr));
-        }
         return newRenderers;
     }
     template <typename RenderArray, typename RenderComponent, typename Factory>
-    void addSubRenderAgregate(RenderArray& renderers, EntityId parent, EntityId& child, size_t treeLevel, RenderComponent* renderer, Factory& factory) {
+    void addSubRenderAgregate(RenderArray& renderers, EntityId parent, EntityId& child, size_t treeLevel, RenderComponent renderer, Factory& factory) {
         child = factory.createEntity();
         rendererMapping.addAgregate(child, renderers, renderer, factory);
         rendererMapping.addChild(parent, child, treeLevel);
         auto newRenderers = renderers.add(renderer);
         if (!std::is_same<decltype(renderers), decltype(newRenderers)>::value) {
             std::runtime_error("Flag not found! You should call addSubRendererFlag and get the returned array to add other sub renderers of the same type!");
-        }
-        if (!containsUniquePtr(components, renderer)) {
-            std::unique_ptr<IComponent> ptr;
-            ptr.reset(renderer);
-            components.push_back(std::move(ptr));
         }
     }
     template <typename SystemArray, typename RenderArray>
@@ -670,7 +771,8 @@ class World {
     void draw_impl (SystemArray& systems, RenderArray& renderers, const std::index_sequence<Ints...>& seq) {
         auto params = std::make_tuple(renderers, renderersIds, rendererMapping);
         std::vector<EntityId> renderSystemId = systemQueueIds[RenderSystemQueueIndex];
-        systemMapping.apply<std::tuple_element_t<Ints, T>...>(systems, *static_cast<MainSystem*>(this->systems[MainSystemQueueIndex].get()), renderSystemId, params);
+        MainSystem main;
+        systemMapping.apply<std::tuple_element_t<Ints, T>...>(systems, main, renderSystemId, params);
     }
     template <typename SystemArray, typename RenderArray, typename SceneArray>
     void toRender (SystemArray& systems, RenderArray& renderers, SceneArray& scenes) {
@@ -683,14 +785,13 @@ class World {
         scenesId.push_back(currentSceneId);
         auto params = std::make_tuple(scenes, scenesId, sceneMapping, renderers, renderersIds, rendererMapping);
         std::vector<EntityId> loadSystemId = systemQueueIds[LoadSystemQueueIndex];
-        systemMapping.apply<std::tuple_element_t<Ints, T>...>(systems, *static_cast<MainSystem*>(this->systems[MainSystemQueueIndex].get()), loadSystemId, params);
+        MainSystem main;
+        systemMapping.apply<std::tuple_element_t<Ints, T>...>(systems, main, loadSystemId, params);
     }
     ComponentMapping entityComponentMapping;
     ComponentMapping rendererMapping;
     ComponentMapping sceneMapping;
     ComponentMapping systemMapping;
-    std::vector<std::unique_ptr<ISystem>> systems;
-    std::vector<std::unique_ptr<IComponent>> components;
     std::vector<EntityId> renderersIds;
     std::vector<EntityId> scenesIds;
     std::vector<std::vector<EntityId>> systemQueueIds;
@@ -704,20 +805,18 @@ int main(int argc, char* argv[]){
     ::World<std::string> world;
     DynamicTuple componentArray;
     ::EntityFactory factory;
-    std::vector<IComponent*> components;
-    transform_component* sphereTransform = new transform_component(vec3(0, 0, 0));
     auto newComponentArray = world.addEntityComponentFlag<transform_component>(componentArray);
 
     std::vector<EntityId> entities;
     for (unsigned int i = 0; i < 1000; i++) {
         EntityId sphere;
-        transform_component* sphereTransform = new transform_component(vec3((i+1)*3, (i+1)*3, (i+1)*3));
+        transform_component sphereTransform(vec3((i+1)*3, (i+1)*3, (i+1)*3));
         world.addEntityComponentAgregate(newComponentArray, sphere, sphereTransform, factory);
 
-        transform_component* rectTransform = new transform_component(vec3((i+1)*3+1, (i+1)*3+1, (i+1)*3+1));
+        transform_component rectTransform (vec3((i+1)*3+1, (i+1)*3+1, (i+1)*3+1));
         EntityId rectangle;
         world.addEntityComponentAgregate(newComponentArray, rectangle, rectTransform, factory);
-        transform_component* convexShapeTransform = new transform_component(vec3((i+1)*3+2, (i+1)*3+2, (i+1)*3+2));
+        transform_component convexShapeTransform(vec3((i+1)*3+2, (i+1)*3+2, (i+1)*3+2));
         EntityId convexShape;
         world.addEntityComponentAgregate(newComponentArray, convexShape, convexShapeTransform, factory);
         world.addChild(sphere, rectangle, 0);
@@ -732,8 +831,8 @@ int main(int argc, char* argv[]){
 
     auto systemsArray1 = world.initSystems(systemsArray);
     ::EntityFactory rendererFactory;
-    RenderType1* render1 = new RenderType1();
-    RenderType2* render2 = new RenderType2();
+    RenderType1 render1;
+    RenderType2 render2;
     DynamicTuple renderArray;
     auto renderArray1 = world.addRendererFlag<RenderType1>(renderArray);
     auto renderArray2 = world.addRendererFlag<RenderType2>(renderArray1);
@@ -747,8 +846,8 @@ int main(int argc, char* argv[]){
     DynamicTuple sceneArray;
     auto sceneArray1 = world.addSceneFlag<SceneType1>(sceneArray);
     auto sceneArray2 = world.addSceneFlag<SceneType2>(sceneArray1);
-    SceneType1* scene1 = new SceneType1();
-    SceneType2* scene2 = new SceneType2();
+    SceneType1 scene1;
+    SceneType2 scene2;
     ::EntityFactory sceneFactory;
     EntityId sceneId1;
     EntityId sceneId2;
@@ -756,6 +855,13 @@ int main(int argc, char* argv[]){
     world.addSceneAgregate(sceneArray2, sceneId2, scene2, sceneFactory);
     world.setCurrentScene(sceneId1);
     world.toRender(systemsArray1, renderArray2, sceneArray2);
+    DynamicTuple tp;
+    auto tp1 = tp.addType<transform_component>();
+    auto tp2 = tp1.addType<SceneType1>();
+    auto tp3 = tp2.addType<SceneType2>();
+    auto tp4 = tp3.addType<RenderType1>();
+    auto tp5 = tp4.addType<RenderType2>();
+    auto tp6 = tp5.removeType<2>();
     return 0;
     /*MyAppli app(sf::VideoMode(800, 600), "Test odfaeg");
     return app.exec();*/
