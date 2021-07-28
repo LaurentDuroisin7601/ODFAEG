@@ -91,6 +91,16 @@ namespace odfaeg {
                 }
                 return false;
             }
+            void checkMaxlevels(EntityId rootId, EntityId childId) {
+                size_t maxLevel = 0;
+                for (unsigned int i = 0; i < componentMapping.size(); i++) {
+                    if (treeLevels[i] > maxLevel)
+                        maxLevel++;
+                }
+                for (unsigned int i = 0; i < componentMapping.size(); i++) {
+                    nbLevels[i] = maxLevel;
+                }
+            }
             void removeMapping(EntityId entityId) {
 
                 bool found = false;
@@ -117,8 +127,6 @@ namespace odfaeg {
                             //si l'enfant est située à un niveau en dessous sur la même branche, on supprime le mapping!
 
                             if (same_branch(*entityId, j) && treeLevels[j].has_value() && treeLevels[j].value() > level) {
-
-                                nbLevels[*rootId]--;
                                 std::vector<std::vector<EntityId>>::iterator it2;
                                 unsigned int k;
                                 //Supression du mapping dans la children map.
@@ -139,6 +147,7 @@ namespace odfaeg {
                                 it++;
                             }
                         }
+                        checkMaxlevels(rootId);
                     }
                     //Supprime le mapping de l'entité.
                     std::vector<std::vector<std::vector<EntityId>>>::iterator it;
