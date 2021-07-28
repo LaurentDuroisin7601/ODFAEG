@@ -157,7 +157,7 @@ namespace odfaeg {
             template <typename... Signature, typename DynamicTuple, typename System, size_t... I, typename... Params>
             void apply_impl(EntityId entityId, DynamicTuple& tuple, System& system, std::tuple<Params...>& params, std::index_sequence<I...>) {
                 auto tp = std::make_tuple(getAgregate<std::tuple_element_t<I, std::tuple<Signature...>>>(tuple, entityId)...);
-                system(tp, params);
+                system(tp, entityId, params);
             }
             template <typename... Signature, typename DynamicTuple, typename System, typename... Params>
             void apply(DynamicTuple& tuple, System& system, std::vector<EntityId>& entities, std::tuple<Params...>& params, std::vector<R>& ret) {
@@ -172,7 +172,7 @@ namespace odfaeg {
             template <typename... Signature, typename DynamicTuple, typename System, size_t... I, typename... Params, typename R>
             void apply_impl(EntityId entityId, DynamicTuple& tuple, System& system, std::tuple<Params...>& params, std::index_sequence<I...>, std::vector<R>& rets) {
                 auto tp = std::make_tuple(getAgregate<std::tuple_element_t<I, std::tuple<Signature...>>>(tuple, entityId)...);
-                rets.push_back(system(tp, params));
+                rets.push_back(system(tp, entityId, params));
             }
             private :
             std::vector<std::vector<std::optional<size_t>>> componentMapping;

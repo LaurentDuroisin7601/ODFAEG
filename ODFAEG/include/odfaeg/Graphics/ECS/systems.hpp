@@ -108,8 +108,10 @@ namespace odfaeg {
         };
         struct CloningSystem {
             template <typename... Components, typename... Params>
-            void operator()(std::tuple<Components...> components, std::tuple<Params...> params) {
-                EntityId toClone = std::get<0>
+            EntityId operator()(std::tuple<Components...> components, std::tuple<Params...> params) {
+                EntityId toClone = std::get<0>(params);
+                auto factory = std::get<1>(params);
+                EntityId cloneId = factory.createEntity();
             }
         };
         struct LabyrinthGeneratorSystem {
@@ -129,8 +131,10 @@ namespace odfaeg {
                         math::Vec3f projPos = scene->grid.getBaseChangementMatrix().changeOfBase(math::Vec3f (x - startX, y - startY, 0));
                         if (x == startX && y == startY) {
                             math::Vec2f pos (projPos.x + startX, projPos.y + startY);
-                            std::vector<EntityId> wall;
-                            componentMapping.apply(componentArray, system, walls[Wall::TOP_LEFT], walls[Wall::TOP_LEFT], wall, factory);
+                            std::vector<EntityId> wallId(1);
+                            wallId[0] = walls[Wall::TOP_LEFT];
+                            auto params = std::make_tuple(componentArray, componentMapping, walls[Wall::TOP_LEFT], factory);
+                            componentMapping.apply(componentArray, system, wallId, params);
                             auto transform = componentMapping.getAgregate<TransformComponent>();
                             transform->position = math::Vec3f(pos.x, pos.y, pos.y + transform->size.y * 0.5f);
                         }

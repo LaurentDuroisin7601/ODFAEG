@@ -300,7 +300,7 @@ class ComponentMapping {
     template <typename... Signature, typename DynamicTuple, typename System, size_t... I, typename... Params>
     void apply_impl(EntityId entityId, DynamicTuple& tuple, System& system, std::tuple<Params...>& params, std::index_sequence<I...>) {
         auto tp = std::make_tuple(getAgregate<std::tuple_element_t<I, std::tuple<Signature...>>>(tuple, entityId)...);
-        system(tp, params);
+        system(tp, entityId, params);
     }
     private :
     std::vector<std::vector<std::optional<size_t>>> componentMapping;
@@ -352,7 +352,7 @@ struct transform_component {
 
 struct MoveSystem  {
     template <typename... Components, typename... Params, class = typename std::enable_if_t<contains<transform_component*, Components...>::value>>
-    void operator()(std::tuple<Components...>& tp, std::tuple<Params...>& params) {
+    void operator()(std::tuple<Components...>& tp, EntityId entityId, std::tuple<Params...>& params) {
         transform_component* tc = std::get<index<transform_component*,Components...>()>(tp);
         //std::cout<<"position : "<<tc->position.x<<","<<tc->position.y<<","<<tc->position.z<<std::endl;
     }
@@ -365,26 +365,26 @@ struct RenderType2 {
 };
 struct RenderSystemType1 {
     template <typename... Components, typename... Params, class = typename std::enable_if_t<contains<RenderType1*, Components...>::value>>
-    void operator()(std::tuple<Components...>& tp, std::tuple<Params...>& params) {
+    void operator()(std::tuple<Components...>& tp, EntityId entityId, std::tuple<Params...>& params) {
         RenderType1* renderType1 = std::get<index<RenderType1*,Components...>()>(tp);
         if (renderType1 != nullptr) {
             std::cout<<"draw render type 1 "<<std::endl;
         }
     }
     template <typename... Components, typename... Params, class... D, class = typename std::enable_if_t<!contains<RenderType1*, Components...>::value>>
-    void operator()(std::tuple<Components...>& tp, std::tuple<Params...>& params) {
+    void operator()(std::tuple<Components...>& tp,  EntityId entityId, std::tuple<Params...>& params) {
     }
 };
 struct RenderSystemType2 {
     template <typename... Components, typename... Params, class = typename std::enable_if_t<contains<RenderType2*, Components...>::value>>
-    void operator()(std::tuple<Components...>& tp, std::tuple<Params...>& params) {
+    void operator()(std::tuple<Components...>& tp,  EntityId entityId, std::tuple<Params...>& params) {
         RenderType2* renderType2 = std::get<index<RenderType2*,Components...>()>(tp);
         if (renderType2 != nullptr) {
             std::cout<<"draw render type 2 "<<std::endl;
         }
     }
     template <typename... Components, typename... Params, class... D, class = typename std::enable_if_t<!contains<RenderType2*, Components...>::value>>
-    void operator()(std::tuple<Components...>& tp, std::tuple<Params...>& params) {
+    void operator()(std::tuple<Components...>& tp,  EntityId entityId, std::tuple<Params...>& params) {
     }
 };
 
@@ -396,13 +396,13 @@ struct SceneType2 {
 };
 struct LoadToRender {
     template <typename... Components, typename... Params>
-    void operator()(std::tuple<Components...>& tp, std::tuple<Params...>& params) {
+    void operator()(std::tuple<Components...>& tp, EntityId entityId, std::tuple<Params...>& params) {
         std::cout<<"load entities from scene to render"<<std::endl;
     }
 };
 struct LoadSystem {
     template <typename... Components, typename... Params, class = typename std::enable_if_t<contains<SceneType1*, Components...>::value>>
-    void operator()(std::tuple<Components...>& tp, std::tuple<Params...>& params) {
+    void operator()(std::tuple<Components...>& tp, EntityId entityId, std::tuple<Params...>& params) {
         SceneType1* scene = std::get<index<SceneType1*,Components...>()>(tp);
         if (scene != nullptr) {
             auto renders = std::get<3>(params);
@@ -418,17 +418,17 @@ struct LoadSystem {
         componentMapping.template apply<std::tuple_element_t<I, T>...>(array, system, entities, params);
     }
     template <typename... Components, typename... Params, class... D, class = typename std::enable_if_t<!contains<SceneType1*, Components...>::value>>
-    void operator()(std::tuple<Components...>& tp, std::tuple<Params...>& params) {
+    void operator()(std::tuple<Components...>& tp, EntityId entityId, std::tuple<Params...>& params) {
 
     }
 };
 struct MainSystem {
     template <size_t I=0, typename... Components, typename... Params, class = typename std::enable_if_t<(sizeof...(Components) != 0 && I == 0)>>
-    void operator()(std::tuple<Components...>& tp, std::tuple<Params...>& params) {
-        this->template operator()<I+1>(tp, params);
+    void operator()(std::tuple<Components...>& tp, EntityId entityId, std::tuple<Params...>& params) {
+        this->template operator()<I+1>(tp, entityId, params);
     }
     template <size_t I=0, typename... Components, typename... Params, class... D, class = typename std::enable_if_t<(sizeof...(Components) != 0 && I > 0 && I < sizeof...(Components)-1)>>
-    void operator()(std::tuple<Components...>& tp, std::tuple<Params...>& params) {
+    void operator()(std::tuple<Components...>& tp, EntityId entityId, std::tuple<Params...>& params) {
         if (std::get<I>(tp) != nullptr) {
             auto& array = std::get<0>(params);
             std::vector<EntityId> entities = std::get<1>(params);
@@ -436,12 +436,12 @@ struct MainSystem {
             //std::cout<<"call system : "<<std::get<I>(tp)->positionInTemplateParameterPack<<std::endl;
             call_system<typename std::remove_reference_t<decltype(array)>::types>(array, *std::get<I>(tp), componentMapping, entities, params, std::make_index_sequence<array.nbTypes()>());
         } else {
-            this->template operator()<I+1>(tp, params);
+            this->template operator()<I+1>(tp, entityId, params);
         }
     }
 
     template <size_t I=0, typename... Components, typename... Params, class... D, class... E, class = typename std::enable_if_t<(sizeof...(Components) != 0 && I == sizeof...(Components)-1)>>
-    void operator()(std::tuple<Components...>& tp, std::tuple<Params...>& params) {
+    void operator()(std::tuple<Components...>& tp, EntityId entityId, std::tuple<Params...>& params) {
         if (std::get<I>(tp) != nullptr) {
             auto& array = std::get<0>(params);
             std::vector<EntityId> entities = std::get<1>(params);
@@ -451,7 +451,7 @@ struct MainSystem {
         }
     }
     template <size_t I=0, typename... Components, typename... Params, class... D, class... E, class... F, class = typename std::enable_if_t<sizeof...(Components) == 0>>
-    void operator()(std::tuple<Components...>& tp, std::tuple<Params...>& params) {
+    void operator()(std::tuple<Components...>& tp, EntityId entityId, std::tuple<Params...>& params) {
     }
     template <typename T, typename Array, typename System, typename Mapping, typename... Params, size_t... I>
     void call_system(Array& array, System& system, Mapping& componentMapping, std::vector<EntityId> entities, std::tuple<Params...>& params, std::index_sequence<I...>) {
