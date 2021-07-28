@@ -188,8 +188,8 @@ namespace odfaeg {
                 void addEntityComponentAgregate(EntityComponentArray& entityComponentArray, EntityId& entityId, Component component, Factory& factory) {
                     entityComponentMapping.addAgregate(entityId, entityComponentArray, component, factory);
                 }
-                void addChild(EntityId rootId, EntityId childId, size_t treeLevel) {
-                    entityComponentMapping.addChild(rootId, childId, treeLevel);
+                void addChild(EntityId rootId, EntityId parentId, EntityId childId, size_t treeLevel) {
+                    entityComponentMapping.addChild(rootId, parentId, childId, treeLevel);
                 }
                 template <typename SceneComponent, typename SceneArray>
                 auto addSceneFlag(SceneArray& scenes) {
@@ -223,15 +223,15 @@ namespace odfaeg {
                     renderersIds.push_back(rendererId);
                 }
                 template <typename RenderArray, typename RenderComponent, typename Factory>
-                auto addSubRendererFlag(RenderArray& renderers, EntityId parent, EntityId& child, size_t treeLevel, RenderComponent renderer, Factory& factory) {
+                auto addSubRendererFlag(RenderArray& renderers, EntityId root, Entity parentId, Entity childId, size_t treeLevel, RenderComponent renderer, Factory& factory) {
                     auto newRenderers = rendererMapping.addFlag(child, renderers, renderer, factory);
-                    rendererMapping.addChild(parent, child, treeLevel);
+                    rendererMapping.addChild(root, parent, child, treeLevel);
                     return newRenderers;
                 }
                 template <typename RenderArray, typename RenderComponent, typename Factory>
-                void addSubRenderAgregate(RenderArray& renderers, EntityId parent, EntityId& child, size_t treeLevel, RenderComponent renderer, Factory& factory) {
+                void addSubRenderAgregate(RenderArray& renderers, EntityId root, EntityId parent, EntityId& child, size_t treeLevel, RenderComponent renderer, Factory& factory) {
                     rendererMapping.addAgregate(child, renderers, renderer, factory);
-                    rendererMapping.addChild(parent, child, treeLevel);
+                    rendererMapping.addChild(root, parent, child, treeLevel);
                 }
                 template <typename SystemArray, typename RenderArray>
                 void draw (SystemArray& systems, RenderArray& renderers) {

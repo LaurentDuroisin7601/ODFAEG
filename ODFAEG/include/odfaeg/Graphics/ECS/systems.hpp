@@ -108,15 +108,38 @@ namespace odfaeg {
         };
         struct CloningSystem {
             template <typename... Components, typename... Params>
-            EntityId operator()(std::tuple<Components...> components, std::tuple<Params...> params) {
-                EntityId toClone = std::get<0>(params);
-                auto factory = std::get<1>(params);
+            EntityId operator()(std::tuple<Components...> components, EntityId toCloneId, std::tuple<Params...> params) {
+                auto componentArray = std::get<0>(params);
+                auto componentMapping = std::get<1>(params);
+                auto factory = std::get<2>(params);
+                std::reference_wrapper<std::vector<std::optionnal<size_t>>> treeLevels = std::get<3>(params);
+                std::reference_wrapper<std::vector<EntityId>> branchs = std::get<4>(params);
+                treeLevels.get().push_back(componentMapping.treeLevels[toCloneId]);
+                branchs.get().push_back(componentMapping.branchIds[toCloneId]);
                 EntityId cloneId = factory.createEntity();
+                clone_impl<decltype(componentArray)::types>(components, componentArray, componentMapping, toCloneId, cloneId, factory);
+                return cloneId;
+            }
+            template <typename T, size_t I = 0, typename ComponentArray, typename Factory, class = typename std::enable_if_t<(sizeof...(Components) != 0 && I < sizeof...(Components)-1)>
+            void clone_impl(ComponentArray& componentArray, EntityId tocloneId, EntityId cloneId, Factory factory) {
+                if (componentMapping.getAgregate<std::tuple_element_t<I, T>(componentArray, toCloneId)) {
+                    componentMapping.addAgregate(cloneId, componentArray, *componentMapping.getAgregate<std::tuple_element_t<I, T>(componentArray, toCloneId));
+                }
+                clone_impl<T, I+1>(componentArray, toCloneId, cloneId, factory);
+            }
+            template <typename T, size_t I = 0, typename ComponentArray, typename Factory, class... D, class = typename std::enable_if_t<(sizeof...(Components) != 0 && I == sizeof...(Components)-1)>
+            void clone_impl(ComponentArray& componentArray, EntityId tocloneId, EntityId cloneId, Factory factory) {
+                if (componentMapping.getAgregate<std::tuple_element_t<I, T>(componentArray, toCloneId)) {
+                    componentMapping.addAgregate(cloneId, componentArray, *componentMapping.getAgregate<std::tuple_element_t<I, T>(componentArray, toCloneId));
+                }
+            }
+            template <typename T, size_t I = 0, typename ComponentArray, typename Factory, class... D, class...E, class = typename std::enable_if_t<(sizeof...(Components) == 0)>
+            void clone_impl(ComponentArray& componentArray, EntityId tocloneId, EntityId cloneId, Factory factory) {
             }
         };
         struct LabyrinthGeneratorSystem {
             template <typename... Components, typename... Params>
-            void operator()(std::tuple<Components...> components, std::tuple<Params...> params) {
+            void operator()(std::tuple<Components...> components, EntitydId entityId, std::tuple<Params...> params) {
                 auto sceneArray = std::get<0>(components);
                 auto scene = std::get<1>(components);
                 auto componentArray = std::get<2>(components);
@@ -133,10 +156,12 @@ namespace odfaeg {
                             math::Vec2f pos (projPos.x + startX, projPos.y + startY);
                             std::vector<EntityId> wallId(1);
                             wallId[0] = walls[Wall::TOP_LEFT];
-                            auto params = std::make_tuple(componentArray, componentMapping, walls[Wall::TOP_LEFT], factory);
-                            componentMapping.apply(componentArray, system, wallId, params);
-                            auto transform = componentMapping.getAgregate<TransformComponent>();
-                            transform->position = math::Vec3f(pos.x, pos.y, pos.y + transform->size.y * 0.5f);
+                            std::vector<EntityId> clonedWallIds;
+                            std::vector<std::optional<size_t>> treeLevels;
+                            std::vector<EntityId> branchs;
+                            auto params = std::make_tuple(componentArray, componentMapping, factory, std::ref(treeLevels), std::ref(branchs));
+                            componentMapping.apply(componentArray, system, wallId, params, clonedWallsId);
+                            ComponentMapping::cloneTree (componentMapping, clonedWallIds, treeLevels, branchs);
                         }
                     }
                 }

@@ -8,6 +8,7 @@ namespace odfaeg {
         class ComponentMapping {
             template <class>
             friend class World;
+            friend class CloningSystem;
             private :
             template <typename Component, typename DynamicTuple>
             auto addFlag(DynamicTuple& tuple) {
@@ -44,15 +45,15 @@ namespace odfaeg {
                 }
                 componentMapping[*entityId][tuple.template getIndexOfTypeT<Component>()] = tuple.template vectorSize<Component>()-1;
             }
-            void addChild(EntityId parentId, EntityId child, size_t treeLevel) {
+            void addChild(EntityId rootId, EntityId parentId, EntityId child, size_t treeLevel) {
                 //std::cout<<"id : "<<parentId<<std::endl;
-                if (treeLevel >= nbLevels[*parentId]) {
-                    nbLevels[*parentId]++;
+                if (treeLevel >= nbLevels[*rootId]) {
+                    nbLevels[*rootId]++;
                     for (unsigned int i = 0; i < childrenMapping.size(); i++) {
-                        childrenMapping[*parentId].resize(nbLevels[*parentId]);
+                        childrenMapping[*rootId].resize(nbLevels[*parentId]);
                     }
                 }
-                childrenMapping[*parentId][treeLevel].push_back(child);
+                childrenMapping[*rootId][treeLevel].push_back(child);
                 //std::cout<<"add child : "<<*child<<","<<treeLevels.size()<<","<<branchIds.size()<<std::endl;
                 treeLevels[*child] = treeLevel;
                 branchIds[*child] = parentId;
@@ -74,6 +75,22 @@ namespace odfaeg {
                 removeInVector(nbLevels, i);
                 removeInVector(branchIds, i);
             }
+            EntityId getRoot(EntityId entityId) {
+                EntityId parentId = entityId;
+                while (treeLevels[*parentId].has_value()) {
+                    parentId = branchIds[*parentId];
+                }
+                parentId;
+            }
+            bool sameBranch (size_t id1, size_t id2) {
+                while (treeLevels[id2].has_value()) {
+                    EntityId parent = branchIds[id2];
+                    if (*parent == id1)
+                        return true;
+                    id2 = *parent;
+                }
+                return false;
+            }
             void removeMapping(EntityId entityId) {
 
                 bool found = false;
@@ -82,7 +99,6 @@ namespace odfaeg {
                 for (itToFind = componentMapping.begin(), i = 0; itToFind != componentMapping.end() && !found; itToFind++, i++) {
 
                     if (*entityId == i) {
-                        std::cout<<"found id : "<<*entityId<<"i : "<<i<<std::endl;
                         found = true;
                     }
                 }
@@ -92,24 +108,26 @@ namespace odfaeg {
 
                     //Met à jour les informations sur la branche si l'entité possèdes des enfants.
                     if (treeLevel.has_value()) {
-                        EntityId branch = branchIds[*entityId];
+                        EntityId rootId = getRoot(entityId);
                         size_t level = treeLevel.value();
                         unsigned int j;
                         std::vector<std::vector<std::optional<size_t>>>::iterator it;
+                        //Recherche du mapping des enfants à supprimer.
                         for (it = componentMapping.begin(), j = 0; it != componentMapping.end(); j++) {
-                            //si l'enfant est située à un niveau en dessous sur la même branche, on le supprime!
+                            //si l'enfant est située à un niveau en dessous sur la même branche, on supprime le mapping!
 
-                            if (branch == branchIds[j] && treeLevels[j].has_value() && treeLevels[j].value() > level) {
+                            if (same_branch(*entityId, j) && treeLevels[j].has_value() && treeLevels[j].value() > level) {
 
-                                nbLevels[*branch]--;
+                                nbLevels[*rootId]--;
                                 std::vector<std::vector<EntityId>>::iterator it2;
                                 unsigned int k;
-                                for (it2 = childrenMapping[*branch].begin(), k = 0; it2 != childrenMapping[*branch].end(); k++) {
+                                //Supression du mapping dans la children map.
+                                for (it2 = childrenMapping[*rootId].begin(), k = 0; it2 != childrenMapping[*rootId].end(); k++) {
                                     std::vector<EntityId>::iterator it3;
                                     unsigned int c;
-                                    for (it3 = childrenMapping[*branch][k].begin(), c = 0; it3 != childrenMapping[*branch][k].end(); c++) {
-                                        if (branch == childrenMapping[*branch][k][c] && nbLevels[*childrenMapping[*branch][k][c]] > level) {
-                                            childrenMapping[*branch][k].erase(it3);
+                                    for (it3 = childrenMapping[*rootId][k].begin(), c = 0; it3 != childrenMapping[*rootId][k].end(); c++) {
+                                        if (same_branch(*entityId, *childrenMapping[*rootId][k][c]) && nbLevels[*childrenMapping[*rootId][k][c]] > level) {
+                                            childrenMapping[*rootId][k].erase(it3);
                                         } else {
                                             it3++;
                                         }
@@ -122,6 +140,7 @@ namespace odfaeg {
                             }
                         }
                     }
+                    //Supprime le mapping de l'entité.
                     std::vector<std::vector<std::vector<EntityId>>>::iterator it;
                     unsigned int i = 0;
                     for (it = childrenMapping.begin(), i = 0; it != childrenMapping.end(); i++) {
@@ -135,6 +154,18 @@ namespace odfaeg {
                     removeTreeInfos(i);
                 }
 
+            }
+            static void cloneTree(ComponentMapping componentMapping, std::vector<EntityID> entities, std::vector<std::optional<size_t>> treeLevels, std::vector<EntityId> branchs) {
+                EntityId rootId;
+                //Recherche l'entité racine.
+                for (unsigned int i = 0; i < entities.size(); i++) {
+                    if (branchs[i]) {
+                        rootId = entities[i];
+                    }
+                }
+                for (unsigned int i = 0; i < entities.size(); i++) {
+                    componentMapping.addChild(rootId, branchIds[i], entities[i], treeLevels[i]);
+                }
             }
             public :
             template <typename T, typename DynamicTuple>
