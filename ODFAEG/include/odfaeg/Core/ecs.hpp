@@ -162,7 +162,7 @@ namespace odfaeg {
                 }
 
             }
-            static void cloneTree(ComponentMapping componentMapping, std::vector<EntityId> entities, std::vector<std::optional<size_t>> treeLevels, std::vector<EntityId> branchs) {
+            static void cloneTree(ComponentMapping componentMapping, EntityId toClone, std::vector<EntityId> entities, std::vector<std::optional<size_t>> treeLevels, std::vector<EntityId> branchs, std::size_t nbLevels) {
                 EntityId rootId;
                 //Recherche l'entité racine.
                 for (unsigned int i = 0; i < entities.size(); i++) {
