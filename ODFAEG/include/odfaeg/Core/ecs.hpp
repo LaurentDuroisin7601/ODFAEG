@@ -93,7 +93,7 @@ namespace odfaeg {
             }
             void checkMaxlevels(EntityId rootId) {
                 size_t maxLevel = 0;
-                for (unsigned int i = 0; i < componentMapping.size(); i++) {
+                for (unsigned int i = 0; i < childrenMapping[*rootId].size(); i++) {
                     if (treeLevels[i] > maxLevel)
                         maxLevel++;
                 }

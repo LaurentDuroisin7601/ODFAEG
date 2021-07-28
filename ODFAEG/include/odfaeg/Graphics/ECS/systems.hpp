@@ -172,6 +172,10 @@ namespace odfaeg {
                 auto factory = std::get<6>(components);
                 unsigned int i, j;
                 CloningSystem system;
+                //Besoin de garder une référence sur les ids des entités parents et l'entité racine des clones pour ajouter les enfants clônés aux parents clônés.
+                EntityId tmpClonedRootId, tmpClonedParentId;
+                //Pour la racine qui est unique.
+                bool isFirst = true;
                 for (int y = startY, j = 0; y < endY; y+= tileSize.y, j++) {
                     for (int x = startX, i = 0; x < endX; x+= tileSize.x, i++) {
                         math::Vec3f projPos = scene->grid.getBaseChangementMatrix().changeOfBase(math::Vec3f (x - startX, y - startY, 0));
@@ -183,12 +187,16 @@ namespace odfaeg {
                             std::vector<std::optional<size_t>> treeLevels;
                             std::vector<EntityId> branchs;
                             std::optional<size_t> nbLevels;
-                            //Besoin de garder une référence sur les ids des entités parents et l'entité racine des clones pour ajouter les enfants clônés aux parents clônés.
-                            EntityId tmpClonedRootId, tmpClonedParentId;
-                            //Pour la racine qui est unique.
-                            bool isFirst = true;
+                            CloningSystem cloningSystem;
                             auto params = std::make_tuple(componentArray, componentMapping, factory, std::ref(tmpClonedRootId), std::ref(tmpClonedParentId), std::ref(isFirst));
-                            componentMapping.apply(componentArray, system, wallId, params, clonedWallsId);
+                            componentMapping.apply(componentArray, cloningSystem, wallId, params, clonedWallsId);
+                            auto params = std::make_tuple(componentMapping, )
+                            MoveEntitySystem moveSystem;
+                            auto transform = componentMapping.getAgregate<TransformComponent>(componentMapping, clonedWallsId[0]);
+                            math::Vec3f position = math::Vec3f(pos.x, pos.y, pos.y + transform->size.y * 0.5f);
+                            auto params = std::make_tuple(position);
+                            wallId[0] = clonedWallsId[0];
+                            componentMapping.apply(componentArray, moveSystem, wallId, params);
                         }
                     }
                 }
