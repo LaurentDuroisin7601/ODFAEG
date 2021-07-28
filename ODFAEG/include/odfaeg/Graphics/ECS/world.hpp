@@ -31,7 +31,7 @@ namespace odfaeg {
                     auto params = std::make_tuple(entityComponentArray, entityComponentMapping, entityId));
                     std::vector<bool> addeds;
                     std::vector<EntityID> scenesIDs(1);
-                    scenesIDs[1] = currentSceneId;
+                    scenesIDs[0] = currentSceneId;
                     AddEntityToSceneSystem system;
                     sceneMapping.apply<SceneType>(sceneArray, system, sceneIDs, params, addeds);
                     for(unsigned int i = 0; i < addeds.size(); i++)
@@ -44,7 +44,7 @@ namespace odfaeg {
                     auto params = std::make_tuple(sceneMapping.getAgregate<SceneType>(sceneArray, entityComponentMapping, entityId));
                     std::vector<bool> removeds;
                     std::vector<EntityID> scenesIDs(1);
-                    scenesIDs[1] = currentSceneId;
+                    scenesIDs[0] = currentSceneId;
                     RemoveEntityFromSceneSystem system;
                     sceneMapping.apply<SceneType>(sceneArray, system, entityIds, params, removeds);
                     for(unsigned int i = 0; i < removeds.size(); i++)
@@ -57,7 +57,7 @@ namespace odfaeg {
                     auto params = std::make_tuple(sceneMapping.getAgregate<SceneType>(entityComponentArray, entityComponentMapping, entityId));
                     std::vector<bool> removeds;
                     std::vector<EntityID> scenesIDs(1);
-                    scenesIDs[1] = currentSceneId;
+                    scenesIDs[0] = currentSceneId;
                     RemoveEntityFromSceneSystem system;
                     sceneMapping.apply<SceneType>(sceneArray, system, scenesIds, params, removeds);
                     entityComponentMapping.removeMapping(entity);
@@ -69,7 +69,7 @@ namespace odfaeg {
                     GetVisibleEntitiesSystem system;
                     std::vector<EntityId> visibleEntities;
                     std::vector<EntityID> scenesIDs(1);
-                    scenesIDs[1] = currentSceneId;
+                    scenesIDs[0] = currentSceneId;
                     sceneMapping.apply<SceneType>(sceneArray, system, scenesIDs, params, visibleEntities);
                     return visibleEntities;
                 }
@@ -78,7 +78,7 @@ namespace odfaeg {
                     auto params = std::make_tuple(entityComponentArray, entityComponentMapping, x, y, z);
                     MoveSystem system;
                     std::vector<EntityID> scenesIDs(1);
-                    scenesIDs[1] = currentSceneId;
+                    scenesIDs[0] = currentSceneId;
                     sceneMapping.apply<SceneType>(sceneArray, system, scenesIds, params);
                 }
                 template <typename SceneArray, typename EntityComponentArray, typename SceneType>
@@ -86,7 +86,7 @@ namespace odfaeg {
                     auto params = std::make_tuple(entityComponentArray, entityComponentMapping, entityId);
                     CollideSystem system;
                     std::vector<EntityID> scenesIDs(1);
-                    scenesIDs[1] = currentSceneId;
+                    scenesIDs[0] = currentSceneId;
                     sceneMapping.apply<SceneType>(sceneArray, system, sceneIds, params);
                 }
                 template <typename SceneArray, typename EntityComponentArray, typename SceneType>
@@ -94,7 +94,7 @@ namespace odfaeg {
                     auto params = std::make_tuple(entityComponentArray, entityComponentMapping, entityId, position);
                     CollideSystem system;
                     std::vector<EntityID> scenesIDs(1);
-                    scenesIDs[1] = currentSceneId;
+                    scenesIDs[0] = currentSceneId;
                     sceneMapping.apply<SceneType>(sceneArray, system, sceneIds, params);
                 }
                 template <typename SceneArray, typename EntityComponentArray, typename SceneType>
@@ -102,14 +102,14 @@ namespace odfaeg {
                     auto params = std::make_tuple(entityComponentArray, entityComponentMapping, entityId, ray);
                     CollideSystem system;
                     std::vector<EntityID> scenesIDs(1);
-                    scenesIDs[1] = currentSceneId;
+                    scenesIDs[0] = currentSceneId;
                     sceneMapping.apply<SceneType>(sceneArray, system, sceneIds, params);
                 }
                 template <typename SceneArray, typename EntityComponentArray, typename SceneType>
                 void generate_map(SceneArray& sceneArray, EntityComponentArray& entityComponentArray, std::vector<EntityId> tGround, std::vector<EntityId> tWall, math::Vec2f tileSize, physic::BoundingBox zone) {
                     auto params = std::make_tuple(entityComponentArray, entityComponentMapping, entityId, tGround, tWall, tileSize, zone);
                     std::vector<EntityID> scenesIDs(1);
-                    scenesIDs[1] = currentSceneId;
+                    scenesIDs[0] = currentSceneId;
                     GenerateMapSystem system;
                     sceneMapping.apply<SceneType>(sceneArray, system, currentSceneId, params);
                 }
@@ -125,7 +125,7 @@ namespace odfaeg {
                     auto params = std::make_tuple(entityComponentArray, entityComponentMapping, expression);
                     std::vector<EntityId> rootEntities;
                     std::vector<EntityId> scenesIDs(1);
-                    scenesIDs[1] = currentSceneId;
+                    scenesIDs[0] = currentSceneId;
                     GetRootEntitiesSystem system;
                     sceneMapping.apply(sceneArray, system, scenesIDs, params, rootEntities);
                     return rootEntities;
@@ -135,7 +135,7 @@ namespace odfaeg {
                     auto params = std::make_tuple(entityComponentArray, entityComponentMapping, expression);
                     std::vector<EntityId> childrenEntities;
                     std::vector<EntityId> scenesIDs(1);
-                    scenesIDs[1] = currentSceneId;
+                    scenesIDs[0] = currentSceneId;
                     GetChildrenEntitiesSystem system;
                     sceneMapping.apply(sceneArray, system, scenesIDs, params, rootEntities);
                     return childrenEntities;

@@ -10,6 +10,7 @@ namespace odfaeg {
             math::Vec3f position;
             math::Vec3f scale;
             math::Vec3f rotationAxis;
+            math::Vec3f size;
             float angle;
             math::TransformMatrix transform;
             physic::BoundingBox globalBounds, localBounds;

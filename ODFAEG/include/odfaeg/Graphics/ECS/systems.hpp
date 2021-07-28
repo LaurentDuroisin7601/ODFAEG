@@ -106,14 +106,22 @@ namespace odfaeg {
                 }
             }
         };
+        struct CloningSystem {
+            template <typename... Components, typename... Params>
+            void operator()(std::tuple<Components...> components, std::tuple<Params...> params) {
+                EntityId toClone = std::get<0>
+            }
+        };
         struct LabyrinthGeneratorSystem {
             template <typename... Components, typename... Params>
-            EntityId operator()(std::tuple<Components...> components, std::tuple<Params...> params) {
-                auto scene = std::get<0>(components);
-                auto componentArray = std::get<1>(components);
-                auto componentMapping = std::get<2>(components);
-                EntityId bigTile = std::get<3>(components);
-                std::vector<EntityId> walls = std::get<4>(components);
+            void operator()(std::tuple<Components...> components, std::tuple<Params...> params) {
+                auto sceneArray = std::get<0>(components);
+                auto scene = std::get<1>(components);
+                auto componentArray = std::get<2>(components);
+                auto componentMapping = std::get<3>(components);
+                EntityId bigTile = std::get<4>(components);
+                std::vector<EntityId> walls = std::get<5>(components);
+                auto factory = std::get<6>(components);
                 unsigned int i, j;
                 CloningSystem system;
                 for (int y = startY, j = 0; y < endY; y+= tileSize.y, j++) {
@@ -121,9 +129,10 @@ namespace odfaeg {
                         math::Vec3f projPos = scene->grid.getBaseChangementMatrix().changeOfBase(math::Vec3f (x - startX, y - startY, 0));
                         if (x == startX && y == startY) {
                             math::Vec2f pos (projPos.x + startX, projPos.y + startY);
-                            EntityId wall;
-                            componentMapping.apply(componentArray, system, walls[Wall::TOP_LEFT], wall);
-
+                            std::vector<EntityId> wall;
+                            componentMapping.apply(componentArray, system, walls[Wall::TOP_LEFT], walls[Wall::TOP_LEFT], wall, factory);
+                            auto transform = componentMapping.getAgregate<TransformComponent>();
+                            transform->position = math::Vec3f(pos.x, pos.y, pos.y + transform->size.y * 0.5f);
                         }
                     }
                 }
