@@ -62,23 +62,21 @@ template <typename... TupleTypes>
 struct DynamicTuple {
     std::tuple<std::vector<TupleTypes>...> content;
     using types = typename std::tuple<TupleTypes...>;
-
-
     template <typename H, class = typename std::enable_if_t<contains<H, TupleTypes...>::value>>
     DynamicTuple add (H head) {
-        std::get<std::vector<H>>(content).push_back(head);
+        std::get<std::vector<std::remove_reference_t<H>>>(content).push_back(head);
         return *this;
     }
     template <typename H, class = typename std::enable_if_t<!contains<H, TupleTypes...>::value>>
     DynamicTuple <TupleTypes..., H> add (H head) {
         DynamicTuple<TupleTypes..., H> tuple;
-        tuple.content = std::tuple_cat(content, std::make_tuple(std::vector<H>()));
+        tuple.content = std::tuple_cat(content, std::make_tuple(std::vector<std::remove_reference_t<H>>()));
         return tuple.add(head);
     }
     template <typename H, class = typename std::enable_if_t<!contains<H, TupleTypes...>::value>>
     DynamicTuple <TupleTypes..., H> addType () {
         DynamicTuple<TupleTypes..., H> tuple;
-        tuple.content = std::tuple_cat(content, std::make_tuple(std::vector<H>()));
+        tuple.content = std::tuple_cat(content, std::make_tuple(std::vector<std::remove_reference_t<H>>()));
         return tuple;
     }
     template <typename T>
@@ -582,9 +580,7 @@ class World {
     void addEntityComponentAgregate(EntityComponentArray& entityComponentArray, EntityId& entityId, Component component, Factory& factory) {
         entityComponentMapping.addAgregate(entityId, entityComponentArray, component, factory);
         auto newEntityComponentArray = entityComponentArray.add(component);
-        if (!std::is_same<decltype(newEntityComponentArray), decltype(entityComponentArray)>::value) {
-            std::runtime_error("Flag not found! You should call addEntityComponentFlag and get the returned array to add other components of the same type!");
-        }
+
     }
     void addChild(EntityId rootId, EntityId parentId, EntityId childId, size_t treeLevel) {
         entityComponentMapping.addChild(rootId, parentId, childId, treeLevel);
@@ -679,27 +675,27 @@ class World {
     ::EntityFactory systemFactory;
     std::map<SceneAlias, EntityId> sceneKeys;
 };
-
-
 int main(int argc, char* argv[]){
+
+
     ::World<std::string> world;
     DynamicTuple componentArray;
     ::EntityFactory factory;
     auto newComponentArray = world.addEntityComponentFlag<transform_component>(componentArray);
-
+    auto newComponentArray2 = world.addEntityComponentFlag<transform_component*>(newComponentArray);
     std::vector<EntityId> entities;
     for (unsigned int i = 0; i < 1000; i++) {
         EntityId sphere = factory.createEntity();
-        transform_component sphereTransform(vec3((i+1)*3, (i+1)*3, (i+1)*3));
-        world.addEntityComponentAgregate(newComponentArray, sphere, sphereTransform, factory);
+        transform_component* sphereTransform = new transform_component(vec3((i+1)*3, (i+1)*3, (i+1)*3));
+        world.addEntityComponentAgregate(newComponentArray2, sphere, sphereTransform, factory);
 
         transform_component rectTransform (vec3((i+1)*3+1, (i+1)*3+1, (i+1)*3+1));
 
         EntityId rectangle = factory.createEntity();
-        world.addEntityComponentAgregate(newComponentArray, rectangle, rectTransform, factory);
+        world.addEntityComponentAgregate(newComponentArray2, rectangle, rectTransform, factory);
         transform_component convexShapeTransform(vec3((i+1)*3+2, (i+1)*3+2, (i+1)*3+2));
         EntityId convexShape = factory.createEntity();
-        world.addEntityComponentAgregate(newComponentArray, convexShape, convexShapeTransform, factory);
+        world.addEntityComponentAgregate(newComponentArray2, convexShape, convexShapeTransform, factory);
         world.addChild(sphere, sphere, rectangle, 0);
         world.addChild(sphere, sphere, convexShape, 0);
         entities.push_back(sphere);

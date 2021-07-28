@@ -109,39 +109,42 @@ namespace odfaeg {
         struct CloningSystem {
             template <typename... Components, typename... Params>
             EntityId operator()(std::tuple<Components...> components, EntityId toCloneId, std::tuple<Params...>& params) {
+                auto clonableComponent = std::get<ClonableComponent>(components);
                 auto componentArray = std::get<0>(params);
                 auto componentMapping = std::get<1>(params);
                 auto factory = std::get<2>(params);
-                EntityId& tmpClonedRootId = std::get<3>(params).get();
-                EntityId& tmpClonedParentId = std::get<4>(params).get();
-                bool& isFirst = std::get<5>(params).get();
+                if (*clonableComponent) {
+                    EntityId& tmpClonedRootId = (*clonableComponent)->tmpClonedRootId;
+                    EntityId& tmpClonedParentId = (*clonableComponent)->tmpClonedParentId;
+                    bool& isFirst = (*clonableComponent)->isFirst;
 
-                EntityId clonedId = factory.createEntity();
-                clone_impl<decltype(componentArray)::types>(components, componentArray, componentMapping, toCloneId, clonedId, factory);
-                if (isFirst) {
-                    EntityId root = componentMapping.getRoot(toCloneId);
-                    if (root != toCloneId) {
-                        tmpClonedRootId = root;
-                    }
-                    EntityId parent = componentMapping.branchIds[toCloneId];
-                    if (root != nullptr) {
-                        if (parent == root) {
-                            componentMapping.addChild(root, root, clonedId, componentMapping.treeLevels[*toCloneId]);
-                        } else {
-                            componentMapping.addChild(root, parent, clonedId, componentMapping.treeLevels[*toCloneId]);
+                    EntityId clonedId = factory.createEntity();
+                    clone_impl<decltype(componentArray)::types>(components, componentArray, componentMapping, toCloneId, clonedId, factory);
+                    if (isFirst) {
+                        EntityId root = componentMapping.getRoot(toCloneId);
+                        if (root != toCloneId) {
+                            tmpClonedRootId = root;
                         }
-                        componentMapping.addChild(root, parent, clonedId);
-                        tmpClonedRootId = root;
-                        tmpClonedParentId = parent;
+                        EntityId parent = componentMapping.branchIds[toCloneId];
+                        if (root != nullptr) {
+                            if (parent == root) {
+                                componentMapping.addChild(root, root, clonedId, componentMapping.treeLevels[*toCloneId]);
+                            } else {
+                                componentMapping.addChild(root, parent, clonedId, componentMapping.treeLevels[*toCloneId]);
+                            }
+                            componentMapping.addChild(root, parent, clonedId);
+                            tmpClonedRootId = root;
+                            tmpClonedParentId = parent;
+                        } else {
+                            tmpClonedRootId = clonedId;
+                        }
+                        isFirst = false;
                     } else {
-                        tmpClonedRootId = clonedId;
+                        addChild(tmpClonedRootId, tmpClonedParentId, clonedId);
+                        tmpClonedParentId = clonedId;
                     }
-                    isFirst = false;
-                } else {
-                    addChild(tmpClonedRootId, tmpClonedParentId, clonedId);
-                    tmpClonedParentId = clonedId;
+                    return cloneId;
                 }
-                return cloneId;
             }
             template <typename T, size_t I = 0, typename ComponentArray, typename Factory, class = typename std::enable_if_t<(sizeof...(Components) != 0 && I < sizeof...(Components)-1)>
             void clone_impl(ComponentArray& componentArray, EntityId tocloneId, EntityId clonedId, Factory factory) {
@@ -188,15 +191,15 @@ namespace odfaeg {
                             std::vector<EntityId> branchs;
                             std::optional<size_t> nbLevels;
                             CloningSystem cloningSystem;
-                            auto params = std::make_tuple(componentArray, componentMapping, factory, std::ref(tmpClonedRootId), std::ref(tmpClonedParentId), std::ref(isFirst));
-                            componentMapping.apply(componentArray, cloningSystem, wallId, params, clonedWallsId);
-                            auto params = std::make_tuple(componentMapping, )
+                            auto clparams = std::make_tuple(componentArray, componentMapping, factory);
+                            componentMapping.apply(componentArray, cloningSystem, wallId, clparams, clonedWallsId);
+
                             MoveEntitySystem moveSystem;
                             auto transform = componentMapping.getAgregate<TransformComponent>(componentMapping, clonedWallsId[0]);
                             math::Vec3f position = math::Vec3f(pos.x, pos.y, pos.y + transform->size.y * 0.5f);
-                            auto params = std::make_tuple(position);
+                            auto mvparams = std::make_tuple(componentArray, componentMapping, position);
                             wallId[0] = clonedWallsId[0];
-                            componentMapping.apply(componentArray, moveSystem, wallId, params);
+                            componentMapping.apply(componentArray, moveSystem, wallId, mvparams);
                         }
                     }
                 }
