@@ -151,7 +151,7 @@ using EntityId = std::size_t*;
 class ComponentMapping {
     template <class>
     friend class World;
-    public :
+    private :
     template <typename Component, typename DynamicTuple>
     auto addFlag(DynamicTuple& tuple) {
         auto newTuple = tuple.template addType<Component>();
@@ -279,7 +279,7 @@ class ComponentMapping {
         }
 
     }
-
+    public :
     template <typename T, typename DynamicTuple>
     T* getAgregate(DynamicTuple& tuple, EntityId entityId) {
         //std::cout<<"id : "<<*entityId<<","<<"size : "<<componentMapping.size()<<std::endl;
@@ -309,7 +309,7 @@ class ComponentMapping {
     std::vector<std::optional<size_t>> treeLevels;
     std::vector<EntityId> branchIds;
     };
-class EntityFactory {
+struct EntityFactory {
     template <typename T>
     friend class World;
     friend class ComponentMapping;
@@ -326,6 +326,7 @@ class EntityFactory {
     size_t getNbEntities() {
         return nbEntities;
     }
+    private :
     void destroyEntity(EntityId id) {
         const auto itToFind =
             std::find_if(ids.begin(), ids.end(),
@@ -521,13 +522,11 @@ class World {
     }
     template <typename EntityComponentArray, typename Component, typename Factory>
     auto addEntityComponentFlag(EntityComponentArray& entityComponentArray, EntityId entityId, Component* component, Factory& factory) {
-        entityId = factory.createEntity();
         auto newEntityComponentArray = entityComponentMapping.addFlag(entityId, entityComponentArray, component, factory);
         return newEntityComponentArray;
     }
     template <typename EntityComponentArray, typename Component, typename Factory>
     void addEntityComponentAgregate(EntityComponentArray& entityComponentArray, EntityId& entityId, Component component, Factory& factory) {
-        entityId = factory.createEntity();
         entityComponentMapping.addAgregate(entityId, entityComponentArray, component, factory);
         auto newEntityComponentArray = entityComponentArray.add(component);
         if (!std::is_same<decltype(newEntityComponentArray), decltype(entityComponentArray)>::value) {
@@ -543,7 +542,6 @@ class World {
     }
     template <typename SceneArray, typename SceneComponent, typename Factory>
     auto addSceneFlag(SceneArray& scenes,  EntityId& sceneId, SceneComponent scene, Factory& factory) {
-        sceneId = factory.createEntity();
         auto newScenes = scenes.add(scenes);
         sceneMapping.addFlag(sceneId, scenes, scene, factory);
         this->scenes.push_back(sceneId);
@@ -551,7 +549,6 @@ class World {
     }
     template <typename SceneArray, typename SceneComponent, typename Factory>
     void addSceneAgregate(SceneArray& scenes,  EntityId& sceneId, SceneComponent scene, Factory& factory) {
-        sceneId = factory.createEntity();
         auto newScenes = scenes.add(scene);
         if (!std::is_same<decltype(scene), decltype(newScenes)>::value) {
             std::runtime_error("Flag not found! You should call addSceneFlag and get the returned array to add other scenes of the same type!");
@@ -564,7 +561,6 @@ class World {
     }
     template <typename RenderArray, typename RenderComponent, typename Factory>
     auto addRendererFlag(RenderArray& renderers, EntityId& rendererId, RenderComponent renderer, Factory& factory) {
-        rendererId = factory.createEntity();
         auto tuple = rendererMapping.addFlag(rendererId, renderers, renderer, factory);
         return tuple;
     }
@@ -580,14 +576,12 @@ class World {
     }
     template <typename RenderArray, typename RenderComponent, typename Factory>
     auto addSubRendererFlag(RenderArray& renderers, EntityId parent, EntityId& child, size_t treeLevel, RenderComponent renderer, Factory& factory) {
-        child = factory.createEntity();
         auto newRenderers = rendererMapping.addFlag(child, renderers, renderer, factory);
         rendererMapping.addChild(parent, child, treeLevel);
         return newRenderers;
     }
     template <typename RenderArray, typename RenderComponent, typename Factory>
     void addSubRenderAgregate(RenderArray& renderers, EntityId parent, EntityId& child, size_t treeLevel, RenderComponent renderer, Factory& factory) {
-        child = factory.createEntity();
         rendererMapping.addAgregate(child, renderers, renderer, factory);
         rendererMapping.addChild(parent, child, treeLevel);
         auto newRenderers = renderers.add(renderer);
@@ -642,21 +636,23 @@ int main(int argc, char* argv[]){
 
     std::vector<EntityId> entities;
     for (unsigned int i = 0; i < 1000; i++) {
-        EntityId sphere;
+        EntityId sphere = factory.createEntity();
         transform_component sphereTransform(vec3((i+1)*3, (i+1)*3, (i+1)*3));
         world.addEntityComponentAgregate(newComponentArray, sphere, sphereTransform, factory);
 
         transform_component rectTransform (vec3((i+1)*3+1, (i+1)*3+1, (i+1)*3+1));
-        EntityId rectangle;
+
+        EntityId rectangle = factory.createEntity();
         world.addEntityComponentAgregate(newComponentArray, rectangle, rectTransform, factory);
         transform_component convexShapeTransform(vec3((i+1)*3+2, (i+1)*3+2, (i+1)*3+2));
-        EntityId convexShape;
+        EntityId convexShape = factory.createEntity();
         world.addEntityComponentAgregate(newComponentArray, convexShape, convexShapeTransform, factory);
         world.addChild(sphere, rectangle, 0);
         world.addChild(sphere, convexShape, 0);
         entities.push_back(sphere);
+
     }
-    std::cout<<"sphere created"<<std::endl;
+
     MoveSystem mv;
     /*auto params =  std::make_tuple();
     mapping.template apply<transform_component>(newComponentArray, mv, entities, params);*/
@@ -669,11 +665,11 @@ int main(int argc, char* argv[]){
     DynamicTuple renderArray;
     auto renderArray1 = world.addRendererFlag<RenderType1>(renderArray);
     auto renderArray2 = world.addRendererFlag<RenderType2>(renderArray1);
-    EntityId render1Id;
-    EntityId render2Id;
+    EntityId render1Id = rendererFactory.createEntity();
+    EntityId render2Id = rendererFactory.createEntity();
     world.addRendererAgregate(renderArray2, render1Id, render1, rendererFactory);
     world.addRendererAgregate(renderArray2, render2Id, render2, rendererFactory);
-    EntityId subRender;
+    EntityId subRender = rendererFactory.createEntity();
     world.addSubRenderAgregate(renderArray2, render1Id, subRender, 0, render2, rendererFactory);
     world.draw(systemsArray1, renderArray2);
     DynamicTuple sceneArray;
@@ -682,8 +678,8 @@ int main(int argc, char* argv[]){
     SceneType1 scene1;
     SceneType2 scene2;
     ::EntityFactory sceneFactory;
-    EntityId sceneId1;
-    EntityId sceneId2;
+    EntityId sceneId1 = sceneFactory.createEntity();
+    EntityId sceneId2 = sceneFactory.createEntity();
     world.addSceneAgregate(sceneArray2, sceneId1, scene1, sceneFactory);
     world.addSceneAgregate(sceneArray2, sceneId2, scene2, sceneFactory);
     world.setCurrentScene(sceneId1);

@@ -3,12 +3,12 @@
 #include "dynamicTuple.hpp"
 #include "../Graphics/entity.h"
 namespace odfaeg {
-    namespace core {
+    namespace graphic {
         using EntityId = std::size_t*;
         class ComponentMapping {
             template <class>
             friend class World;
-            public :
+            private :
             template <typename Component, typename DynamicTuple>
             auto addFlag(DynamicTuple& tuple) {
                 auto newTuple = tuple.template addType<Component>();
@@ -136,7 +136,7 @@ namespace odfaeg {
                 }
 
             }
-
+            public :
             template <typename T, typename DynamicTuple>
             T* getAgregate(DynamicTuple& tuple, EntityId entityId) {
                 //std::cout<<"id : "<<*entityId<<","<<"size : "<<componentMapping.size()<<std::endl;
@@ -180,11 +180,10 @@ namespace odfaeg {
             std::vector<size_t> nbLevels;
             std::vector<std::optional<size_t>> treeLevels;
             std::vector<EntityId> branchIds;
-            };
-        class EntityFactory {
+        };
+        struct EntityFactory {
             template <typename T>
             friend class World;
-            friend class ComponentMapping;
             size_t nbEntities=0;
             std::vector<std::unique_ptr<std::remove_pointer_t<EntityId>>> ids;
             EntityId createEntity() {
@@ -198,6 +197,7 @@ namespace odfaeg {
             size_t getNbEntities() {
                 return nbEntities;
             }
+            private :
             bool destroyEntity(EntityId id) {
                 if (id != nullptr) {
                     const auto itToFind =

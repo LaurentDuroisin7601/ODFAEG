@@ -3,7 +3,7 @@
 namespace odfaeg {
     namespace graphic {
         //Call the systems with the given system's IDs.
-        struct MainSystem : ISystem {
+        struct MainSystem {
             template <size_t I=0, typename... Components, typename... Params, class = typename std::enable_if_t<(sizeof...(Components) != 0 && I == 0)>>
             void operator()(std::tuple<Components...>& tp, std::tuple<Params...>& params) {
                 this->template operator()<I+1>(tp, params);
@@ -39,7 +39,7 @@ namespace odfaeg {
 
         };
         //Load datas to renderders.
-        struct LoaderSystem : ISystem {
+        struct LoaderSystem {
             template <typename... Components, typename... Params, typename SubSystem, class <typename = std::enable_if_t<contains<Scene, Components...>::value>
             void operator()(std::tuple<Components...> components, std::tuple<Params...> params) {
                 Scene* scene = std::get<index<Scene*, Components...>(components);
@@ -66,7 +66,7 @@ namespace odfaeg {
             }
         };
         //Update an animation.
-        struct AnimationUpdaterSystem : IStystem {
+        struct AnimationUpdaterSystem {
             template <typename... Components, typename... Params>
             void operator()(std::tuple<Components...> components, std::tuple<Params...> params) {
                 //Récupération du composant de l'animation.
@@ -101,6 +101,29 @@ namespace odfaeg {
                                 iva[j].position.z = cva[j].position.z + (nva[j].position.z - cva[j].position.z) * (interpPerc / interpLevels);
                             }
                             ac->interpolatedFrameFaces[j].setVertexArray(iva);
+                        }
+                    }
+                }
+            }
+        };
+        struct LabyrinthGeneratorSystem {
+            template <typename... Components, typename... Params>
+            EntityId operator()(std::tuple<Components...> components, std::tuple<Params...> params) {
+                auto scene = std::get<0>(components);
+                auto componentArray = std::get<1>(components);
+                auto componentMapping = std::get<2>(components);
+                EntityId bigTile = std::get<3>(components);
+                std::vector<EntityId> walls = std::get<4>(components);
+                unsigned int i, j;
+                CloningSystem system;
+                for (int y = startY, j = 0; y < endY; y+= tileSize.y, j++) {
+                    for (int x = startX, i = 0; x < endX; x+= tileSize.x, i++) {
+                        math::Vec3f projPos = scene->grid.getBaseChangementMatrix().changeOfBase(math::Vec3f (x - startX, y - startY, 0));
+                        if (x == startX && y == startY) {
+                            math::Vec2f pos (projPos.x + startX, projPos.y + startY);
+                            EntityId wall;
+                            componentMapping.apply(componentArray, system, walls[Wall::TOP_LEFT], wall);
+
                         }
                     }
                 }

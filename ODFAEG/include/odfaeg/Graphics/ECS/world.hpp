@@ -181,13 +181,11 @@ namespace odfaeg {
                 }
                 template <typename EntityComponentArray, typename Component, typename Factory>
                 auto addEntityComponentFlag(EntityComponentArray& entityComponentArray, EntityId entityId, Component* component, Factory& factory) {
-                    entityId = factory.createEntity();
                     auto newEntityComponentArray = entityComponentMapping.addFlag(entityId, entityComponentArray, component, factory);
                     return newEntityComponentArray;
                 }
                 template <typename EntityComponentArray, typename Component, typename Factory>
                 void addEntityComponentAgregate(EntityComponentArray& entityComponentArray, EntityId& entityId, Component component, Factory& factory) {
-                    entityId = factory.createEntity();
                     entityComponentMapping.addAgregate(entityId, entityComponentArray, component, factory);
                     auto newEntityComponentArray = entityComponentArray.add(component);
                     if (!std::is_same<decltype(newEntityComponentArray), decltype(entityComponentArray)>::value) {
@@ -203,7 +201,6 @@ namespace odfaeg {
                 }
                 template <typename SceneArray, typename SceneComponent, typename Factory>
                 auto addSceneFlag(SceneArray& scenes,  EntityId& sceneId, SceneComponent scene, Factory& factory) {
-                    sceneId = factory.createEntity();
                     auto newScenes = scenes.add(scenes);
                     sceneMapping.addFlag(sceneId, scenes, scene, factory);
                     this->scenes.push_back(sceneId);
@@ -211,7 +208,6 @@ namespace odfaeg {
                 }
                 template <typename SceneArray, typename SceneComponent, typename Factory>
                 void addSceneAgregate(SceneArray& scenes,  EntityId& sceneId, SceneComponent scene, Factory& factory) {
-                    sceneId = factory.createEntity();
                     auto newScenes = scenes.add(scene);
                     if (!std::is_same<decltype(scene), decltype(newScenes)>::value) {
                         std::runtime_error("Flag not found! You should call addSceneFlag and get the returned array to add other scenes of the same type!");
@@ -224,7 +220,6 @@ namespace odfaeg {
                 }
                 template <typename RenderArray, typename RenderComponent, typename Factory>
                 auto addRendererFlag(RenderArray& renderers, EntityId& rendererId, RenderComponent renderer, Factory& factory) {
-                    rendererId = factory.createEntity();
                     auto tuple = rendererMapping.addFlag(rendererId, renderers, renderer, factory);
                     return tuple;
                 }
@@ -240,14 +235,12 @@ namespace odfaeg {
                 }
                 template <typename RenderArray, typename RenderComponent, typename Factory>
                 auto addSubRendererFlag(RenderArray& renderers, EntityId parent, EntityId& child, size_t treeLevel, RenderComponent renderer, Factory& factory) {
-                    child = factory.createEntity();
                     auto newRenderers = rendererMapping.addFlag(child, renderers, renderer, factory);
                     rendererMapping.addChild(parent, child, treeLevel);
                     return newRenderers;
                 }
                 template <typename RenderArray, typename RenderComponent, typename Factory>
                 void addSubRenderAgregate(RenderArray& renderers, EntityId parent, EntityId& child, size_t treeLevel, RenderComponent renderer, Factory& factory) {
-                    child = factory.createEntity();
                     rendererMapping.addAgregate(child, renderers, renderer, factory);
                     rendererMapping.addChild(parent, child, treeLevel);
                     auto newRenderers = renderers.add(renderer);
