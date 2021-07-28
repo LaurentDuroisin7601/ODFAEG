@@ -91,15 +91,13 @@ namespace odfaeg {
                 }
                 return false;
             }
-            void checkMaxlevels(EntityId rootId, EntityId childId) {
+            void checkMaxlevels(EntityId rootId) {
                 size_t maxLevel = 0;
                 for (unsigned int i = 0; i < componentMapping.size(); i++) {
                     if (treeLevels[i] > maxLevel)
                         maxLevel++;
                 }
-                for (unsigned int i = 0; i < componentMapping.size(); i++) {
-                    nbLevels[i] = maxLevel;
-                }
+                nbLevels[*rootId] = maxLevel;
             }
             void removeMapping(EntityId entityId) {
 
@@ -126,7 +124,7 @@ namespace odfaeg {
                         for (it = componentMapping.begin(), j = 0; it != componentMapping.end(); j++) {
                             //si l'enfant est située à un niveau en dessous sur la même branche, on supprime le mapping!
 
-                            if (same_branch(*entityId, j) && treeLevels[j].has_value() && treeLevels[j].value() > level) {
+                            if (sameBranch(*entityId, j) && treeLevels[j].has_value() && treeLevels[j].value() > level) {
                                 std::vector<std::vector<EntityId>>::iterator it2;
                                 unsigned int k;
                                 //Supression du mapping dans la children map.
@@ -134,7 +132,7 @@ namespace odfaeg {
                                     std::vector<EntityId>::iterator it3;
                                     unsigned int c;
                                     for (it3 = childrenMapping[*rootId][k].begin(), c = 0; it3 != childrenMapping[*rootId][k].end(); c++) {
-                                        if (same_branch(*entityId, *childrenMapping[*rootId][k][c]) && nbLevels[*childrenMapping[*rootId][k][c]] > level) {
+                                        if (sameBranch(*entityId, *childrenMapping[*rootId][k][c]) && nbLevels[*childrenMapping[*rootId][k][c]] > level) {
                                             childrenMapping[*rootId][k].erase(it3);
                                         } else {
                                             it3++;
@@ -164,7 +162,7 @@ namespace odfaeg {
                 }
 
             }
-            static void cloneTree(ComponentMapping componentMapping, std::vector<EntityID> entities, std::vector<std::optional<size_t>> treeLevels, std::vector<EntityId> branchs) {
+            static void cloneTree(ComponentMapping componentMapping, std::vector<EntityId> entities, std::vector<std::optional<size_t>> treeLevels, std::vector<EntityId> branchs) {
                 EntityId rootId;
                 //Recherche l'entité racine.
                 for (unsigned int i = 0; i < entities.size(); i++) {
@@ -173,7 +171,7 @@ namespace odfaeg {
                     }
                 }
                 for (unsigned int i = 0; i < entities.size(); i++) {
-                    componentMapping.addChild(rootId, branchIds[i], entities[i], treeLevels[i]);
+                    componentMapping.addChild(rootId, branchs[i], entities[i], treeLevels[i].value());
                 }
             }
             public :
@@ -199,7 +197,7 @@ namespace odfaeg {
                 auto tp = std::make_tuple(getAgregate<std::tuple_element_t<I, std::tuple<Signature...>>>(tuple, entityId)...);
                 system(tp, entityId, params);
             }
-            template <typename... Signature, typename DynamicTuple, typename System, typename... Params>
+            template <typename... Signature, typename DynamicTuple, typename System, typename... Params, class R>
             void apply(DynamicTuple& tuple, System& system, std::vector<EntityId>& entities, std::tuple<Params...>& params, std::vector<R>& ret) {
               for (unsigned int i = 0; i < entities.size(); i++) {
                 this->template apply_impl<Signature...>(entities[i], tuple, system, params, std::index_sequence_for<Signature...>());
