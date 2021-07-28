@@ -187,10 +187,6 @@ namespace odfaeg {
                 template <typename EntityComponentArray, typename Component, typename Factory>
                 void addEntityComponentAgregate(EntityComponentArray& entityComponentArray, EntityId& entityId, Component component, Factory& factory) {
                     entityComponentMapping.addAgregate(entityId, entityComponentArray, component, factory);
-                    auto newEntityComponentArray = entityComponentArray.add(component);
-                    if (!std::is_same<decltype(newEntityComponentArray), decltype(entityComponentArray)>::value) {
-                        std::runtime_error("Flag not found! You should call addEntityComponentFlag and get the returned array to add other components of the same type!");
-                    }
                 }
                 void addChild(EntityId rootId, EntityId childId, size_t treeLevel) {
                     entityComponentMapping.addChild(rootId, childId, treeLevel);
@@ -208,10 +204,7 @@ namespace odfaeg {
                 }
                 template <typename SceneArray, typename SceneComponent, typename Factory>
                 void addSceneAgregate(SceneArray& scenes,  EntityId& sceneId, SceneComponent scene, Factory& factory) {
-                    auto newScenes = scenes.add(scene);
-                    if (!std::is_same<decltype(scene), decltype(newScenes)>::value) {
-                        std::runtime_error("Flag not found! You should call addSceneFlag and get the returned array to add other scenes of the same type!");
-                    }
+                    this->scenes.push_back(sceneId);
                     sceneMapping.addAgregate(sceneId, scenes, scene, factory);
                 }
                 template <typename RenderComponent, typename RendererArray>
@@ -221,17 +214,13 @@ namespace odfaeg {
                 template <typename RenderArray, typename RenderComponent, typename Factory>
                 auto addRendererFlag(RenderArray& renderers, EntityId& rendererId, RenderComponent renderer, Factory& factory) {
                     auto tuple = rendererMapping.addFlag(rendererId, renderers, renderer, factory);
+                    renderersIds.push_back(rendererId);
                     return tuple;
                 }
                 template <typename RenderArray, typename RenderComponent, typename Factory>
                 void addRendererAgregate(RenderArray& renderers, EntityId& rendererId, RenderComponent renderer, Factory& factory) {
-                    auto newRenderers = renderers.add(renderer);
-                    if (!std::is_same<decltype(newRenderers), decltype(renderers)>::value) {
-                        std::runtime_error("Flag not found! You should call addRendererFlag and get the returned array to add other renderers of the same type!");
-                    }
-                    rendererId = factory.createEntity();
                     rendererMapping.addAgregate(rendererId, renderers, renderer, factory);
-                    this->renderersIds.push_back(rendererId);
+                    renderersIds.push_back(rendererId);
                 }
                 template <typename RenderArray, typename RenderComponent, typename Factory>
                 auto addSubRendererFlag(RenderArray& renderers, EntityId parent, EntityId& child, size_t treeLevel, RenderComponent renderer, Factory& factory) {
@@ -243,10 +232,6 @@ namespace odfaeg {
                 void addSubRenderAgregate(RenderArray& renderers, EntityId parent, EntityId& child, size_t treeLevel, RenderComponent renderer, Factory& factory) {
                     rendererMapping.addAgregate(child, renderers, renderer, factory);
                     rendererMapping.addChild(parent, child, treeLevel);
-                    auto newRenderers = renderers.add(renderer);
-                    if (!std::is_same<decltype(renderers), decltype(newRenderers)>::value) {
-                        std::runtime_error("Flag not found! You should call addSubRendererFlag and get the returned array to add other sub renderers of the same type!");
-                    }
                 }
                 template <typename SystemArray, typename RenderArray>
                 void draw (SystemArray& systems, RenderArray& renderers) {
