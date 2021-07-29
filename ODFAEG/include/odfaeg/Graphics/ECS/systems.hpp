@@ -183,14 +183,28 @@ namespace odfaeg {
                 for (int y = startY, j = 0; y < endY; y+= tileSize.y, j++) {
                     for (int x = startX, i = 0; x < endX; x+= tileSize.x, i++) {
                         math::Vec3f projPos = scene->grid.getBaseChangementMatrix().changeOfBase(math::Vec3f (x - startX, y - startY, 0));
+                        math::Vec2f pos (projPos.x + startX, projPos.y + startY);
                         if (x == startX && y == startY) {
-                            math::Vec2f pos (projPos.x + startX, projPos.y + startY);
                             std::vector<EntityId> wallId(1);
                             wallId[0] = walls[Wall::TOP_LEFT];
                             std::vector<EntityId> clonedWallIds;
-                            std::vector<std::optional<size_t>> treeLevels;
-                            std::vector<EntityId> branchs;
-                            std::optional<size_t> nbLevels;
+                            CloningSystem cloningSystem;
+                            auto clparams = std::make_tuple(componentArray, componentMapping, factory);
+                            componentMapping.apply(componentArray, cloningSystem, wallId, clparams, clonedWallsId);
+                            MoveEntitySystem moveSystem;
+                            auto transform = componentMapping.getAgregate<TransformComponent>(componentMapping, clonedWallsId[0]);
+                            math::Vec3f position = math::Vec3f(pos.x, pos.y, pos.y + transform->size.y * 0.5f);
+                            auto mvparams = std::make_tuple(componentArray, componentMapping, position);
+                            wallId[0] = clonedWallsId[0];
+                            componentMapping.apply(componentArray, moveSystem, wallId, mvparams);
+                            scene->grid.getGridCellAt(math::Vec3f(w->getPosition().x, w->getPosition().y, 0))->setPassable(false);
+                            auto adparams = std::make_tuple(entityComponentArray, entityComponentMapping, entityId));
+                            AddEntityToSceneSystem addSystem;
+                            sceneMapping.apply(sceneArray, addSystem, wallId, adparams);
+                        } else if (x == endX && y == startY) {
+                            std::vector<EntityId> wallId(1);
+                            wallId[0] = walls[Wall::TOP_RIGHT];
+                            std::vector<EntityId> clonedWallIds;
                             CloningSystem cloningSystem;
                             auto clparams = std::make_tuple(componentArray, componentMapping, factory);
                             componentMapping.apply(componentArray, cloningSystem, wallId, clparams, clonedWallsId);
@@ -202,18 +216,27 @@ namespace odfaeg {
                             wallId[0] = clonedWallsId[0];
                             componentMapping.apply(componentArray, moveSystem, wallId, mvparams);
                             scene->grid.getGridCellAt(math::Vec3f(w->getPosition().x, w->getPosition().y, 0))->setPassable(false);
-                        } else if (x == endX && y == startY) {
-                            math::Vec2f pos (projPos.x + startX, projPos.y + startY);
+                        } else if (y == endY && x == endX) {
                             std::vector<EntityId> wallId(1);
-                            wallId[0] = walls[Wall::TOP_RIGHT];
+                            wallId[0] = walls[Wall::BOTTOM_RIGHT];
                             std::vector<EntityId> clonedWallIds;
-                            std::vector<std::optional<size_t>> treeLevels;
-                            std::vector<EntityId> branchs;
-                            std::optional<size_t> nbLevels;
                             CloningSystem cloningSystem;
                             auto clparams = std::make_tuple(componentArray, componentMapping, factory);
                             componentMapping.apply(componentArray, cloningSystem, wallId, clparams, clonedWallsId);
-
+                            MoveEntitySystem moveSystem;
+                            auto transform = componentMapping.getAgregate<TransformComponent>(componentMapping, clonedWallsId[0]);
+                            math::Vec3f position = math::Vec3f(pos.x, pos.y, pos.y + transform->size.y * 0.5f);
+                            auto mvparams = std::make_tuple(componentArray, componentMapping, position);
+                            wallId[0] = clonedWallsId[0];
+                            componentMapping.apply(componentArray, moveSystem, wallId, mvparams);
+                            scene->grid.getGridCellAt(math::Vec3f(w->getPosition().x, w->getPosition().y, 0))->setPassable(false);
+                        }   else if (x == startX && y == endY) {
+                            std::vector<EntityId> wallId(1);
+                            wallId[0] = walls[Wall::BOTTOM_LEFT];
+                            std::vector<EntityId> clonedWallIds;
+                            CloningSystem cloningSystem;
+                            auto clparams = std::make_tuple(componentArray, componentMapping, factory);
+                            componentMapping.apply(componentArray, cloningSystem, wallId, clparams, clonedWallsId);
                             MoveEntitySystem moveSystem;
                             auto transform = componentMapping.getAgregate<TransformComponent>(componentMapping, clonedWallsId[0]);
                             math::Vec3f position = math::Vec3f(pos.x, pos.y, pos.y + transform->size.y * 0.5f);

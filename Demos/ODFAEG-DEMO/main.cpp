@@ -189,18 +189,24 @@ class ComponentMapping {
                 componentMapping[*entityId][tuple.template getIndexOfTypeT<Component>()] = tuple.template vectorSize<Component>()-1;
             }
             void addChild(EntityId rootId, EntityId parentId, EntityId child, size_t treeLevel) {
-                //std::cout<<"id : "<<parentId<<std::endl;
+
                 if (treeLevel >= nbLevels[*rootId]) {
                     nbLevels[*rootId]++;
                     for (unsigned int i = 0; i < childrenMapping.size(); i++) {
-                        childrenMapping[*rootId].resize(nbLevels[*parentId]);
+                        childrenMapping[*rootId].resize(nbLevels[*rootId]);
                     }
                 }
                 childrenMapping[*rootId][treeLevel].push_back(child);
-                //std::cout<<"add child : "<<*child<<","<<treeLevels.size()<<","<<branchIds.size()<<std::endl;
+
+                for (unsigned int i = 0; i < childrenMapping[*rootId].size(); i++) {
+                    for (unsigned int j = 0; j < childrenMapping[*rootId][i].size(); j++) {
+                        nbLevels[*childrenMapping[*rootId][i][j]] = nbLevels[*rootId];
+                    }
+                }
                 treeLevels[*child] = treeLevel;
                 branchIds[*child] = parentId;
             }
+
             template <class T>
             void removeInVector(std::vector<T>& vec, size_t index) {
                 unsigned int i;
@@ -223,7 +229,7 @@ class ComponentMapping {
                 while (treeLevels[*parentId].has_value()) {
                     parentId = branchIds[*parentId];
                 }
-                parentId;
+                return parentId;
             }
             bool sameBranch (size_t id1, size_t id2) {
                 while (treeLevels[id2].has_value()) {
@@ -241,6 +247,11 @@ class ComponentMapping {
                         maxLevel++;
                 }
                 nbLevels[*rootId] = maxLevel;
+                for (unsigned int i = 0; i < childrenMapping[*rootId].size(); i++) {
+                    for (unsigned int j = 0; j < childrenMapping[*rootId][i].size(); j++) {
+                        nbLevels[*childrenMapping[*rootId][i][j]] = nbLevels[*rootId];
+                    }
+                }
             }
             void removeMapping(EntityId entityId) {
 
@@ -300,22 +311,11 @@ class ComponentMapping {
                             it++;
                         }
                     }
-                    componentMapping.erase(itToFind);
                     removeTreeInfos(i);
+                    componentMapping.erase(itToFind);
+
                 }
 
-            }
-            static void cloneTree(ComponentMapping componentMapping, std::vector<EntityId> entities, std::vector<std::optional<size_t>> treeLevels, std::vector<EntityId> branchs) {
-                EntityId rootId;
-                //Recherche l'entité racine.
-                for (unsigned int i = 0; i < entities.size(); i++) {
-                    if (branchs[i]) {
-                        rootId = entities[i];
-                    }
-                }
-                for (unsigned int i = 0; i < entities.size(); i++) {
-                    componentMapping.addChild(rootId, branchs[i], entities[i], treeLevels[i].value());
-                }
             }
             public :
             template <typename T, typename DynamicTuple>
@@ -329,12 +329,14 @@ class ComponentMapping {
             void apply(DynamicTuple& tuple, System& system, std::vector<EntityId>& entities, std::tuple<Params...>& params) {
               for (unsigned int i = 0; i < entities.size(); i++) {
                 this->template apply_impl<Signature...>(entities[i], tuple, system, params, std::index_sequence_for<Signature...>());
-                for (unsigned int j = 0; j < nbLevels[*entities[i]]; j++) {
-                  for(unsigned int k = 0; k < childrenMapping[*entities[i]][j].size(); k++)
-                    this->template apply_impl<Signature...>(childrenMapping[*entities[i]][j][k], tuple, system, params, std::index_sequence_for<Signature...>());
+                size_t level = (treeLevels[*entities[i]].has_value()) ? treeLevels[*entities[i]].value() : 0;
+                for (unsigned int j = level; j < nbLevels[*entities[i]]; j++) {
+                  for(unsigned int k = 0; k < childrenMapping[*getRoot(entities[i])][j].size(); k++)
+                    this->template apply_impl<Signature...>(childrenMapping[*getRoot(entities[i])][j][k], tuple, system, params, std::index_sequence_for<Signature...>());
                 }
               }
             }
+
             template <typename... Signature, typename DynamicTuple, typename System, size_t... I, typename... Params>
             void apply_impl(EntityId entityId, DynamicTuple& tuple, System& system, std::tuple<Params...>& params, std::index_sequence<I...>) {
                 auto tp = std::make_tuple(getAgregate<std::tuple_element_t<I, std::tuple<Signature...>>>(tuple, entityId)...);
@@ -343,7 +345,6 @@ class ComponentMapping {
             template <typename... Signature, typename DynamicTuple, typename System, typename... Params, class R>
             void apply(DynamicTuple& tuple, System& system, std::vector<EntityId>& entities, std::tuple<Params...>& params, std::vector<R>& ret) {
               for (unsigned int i = 0; i < entities.size(); i++) {
-
                 for (unsigned int j = 0; j < nbLevels[*entities[i]]; j++) {
                   for(unsigned int k = 0; k < childrenMapping[*entities[i]][j].size(); k++) {
                     this->template apply_impl<Signature...>(childrenMapping[*entities[i]][j][k], tuple, system, params, std::index_sequence_for<Signature...>(), ret);
@@ -406,10 +407,13 @@ struct transform_component {
 };
 
 struct MoveSystem  {
-    template <typename... Components, typename... Params, class = typename std::enable_if_t<contains<transform_component*, Components...>::value>>
+    template <typename... Components, typename... Params, class = typename std::enable_if_t<contains<transform_component, Components...>::value>>
     void operator()(std::tuple<Components...>& tp, EntityId entityId, std::tuple<Params...>& params) {
         transform_component* tc = std::get<index<transform_component*,Components...>()>(tp);
         //std::cout<<"position : "<<tc->position.x<<","<<tc->position.y<<","<<tc->position.z<<std::endl;
+    }
+    template <typename... Components, typename... Params, class...D, class = typename std::enable_if_t<!contains<transform_component, Components...>::value>>
+    void operator()(std::tuple<Components...>& tp, EntityId entityId, std::tuple<Params...>& params) {
     }
 };
 struct RenderType1 {
@@ -556,8 +560,8 @@ class World {
         RenderSystemType2 renderSystem2;
         auto systemsArray1 = addSystem(systemsArray, mainSystem, MainSystemQueueIndex);
         auto systemsArray2 = addSystem(systemsArray1, loadSystem, LoadSystemQueueIndex);
-        auto systemsArray3 = addSystem(systemsArray2, renderSystem1, RenderSystemQueueIndex);
-        auto systemsArray4 = addSystem(systemsArray3, renderSystem2, RenderSystemQueueIndex);
+        auto systemsArray3 = addSystem(systemsArray2, renderSystem2, RenderSystemQueueIndex);
+        auto systemsArray4 = addSystem(systemsArray3, renderSystem1, RenderSystemQueueIndex);
         return systemsArray4;
     }
     template <typename SystemArray, typename System>
@@ -589,6 +593,7 @@ class World {
         }
     }
     void addChild(EntityId rootId, EntityId parentId, EntityId childId, size_t treeLevel) {
+
         entityComponentMapping.addChild(rootId, parentId, childId, treeLevel);
     }
     template <typename SceneComponent, typename SceneArray>
@@ -681,71 +686,94 @@ class World {
     ::EntityFactory systemFactory;
     std::map<SceneAlias, EntityId> sceneKeys;
 };
+template <typename D>
+struct Application {
+    template <typename SystemArray, typename SceneArray, typename RendererArray, typename EntityComponentArray>
+    Application(SystemArray& systems, SceneArray& scenes, RendererArray& renderers, EntityComponentArray& components) {
+        init(systems, scenes, renderers, components);
+    }
+    template <typename SystemArray, typename SceneArray, typename RendererArray, typename EntityComponentArray>
+    void init(SystemArray& systems, SceneArray& scenes, RendererArray& renderers, EntityComponentArray& components) {
+        auto defaultSystems = world.initSystems(systems);
+        static_cast<D&>(*this).onInit(defaultSystems, scenes, renderers, components);
+    }
+    template <typename SystemArray, typename SceneArray, typename RendererArray, typename EntityComponentArray>
+    void exec(SystemArray& systems, SceneArray& scenes, RendererArray& renderers, EntityComponentArray& components) {
+        running = true;
+        while (running) {
+            world.draw(systems, renderers);
+            world.toRender(systems, renderers, scenes);
+            static_cast<D&>(*this).onExec(systems, scenes, renderers, components);
+        }
+    }
+    World<std::string> world;
+    bool running = false;
+};
+struct TestAppl : Application<TestAppl> {
+    template <typename SystemArray, typename SceneArray, typename RendererArray, typename EntityComponentArray>
+    TestAppl(SystemArray systems, SceneArray scenes, RendererArray renderers, EntityComponentArray componentArray) : Application(systems, scenes, renderers, componentArray) {
+    }
+    template <typename SystemArray, typename SceneArray, typename RendererArray, typename EntityComponentArray>
+    void onInit(SystemArray& systems, SceneArray& sceneArray, RendererArray& rendererArray, EntityComponentArray& componentArray) {
+        ::EntityFactory factory;
+        auto newComponentArray = world.addEntityComponentFlag<transform_component>(componentArray);
 
+        std::vector<EntityId> entities;
+        for (unsigned int i = 0; i < 1000; i++) {
+            EntityId sphere = factory.createEntity();
+            transform_component sphereTransform(vec3((i+1)*3, (i+1)*3, (i+1)*3));
+            world.addEntityComponentAgregate(newComponentArray, sphere, sphereTransform, factory);
 
-int main(int argc, char* argv[]){
-    ::World<std::string> world;
-    DynamicTuple componentArray;
-    ::EntityFactory factory;
-    auto newComponentArray = world.addEntityComponentFlag<transform_component>(componentArray);
+            transform_component rectTransform (vec3((i+1)*3+1, (i+1)*3+1, (i+1)*3+1));
 
-    std::vector<EntityId> entities;
-    for (unsigned int i = 0; i < 1000; i++) {
-        EntityId sphere = factory.createEntity();
-        transform_component sphereTransform(vec3((i+1)*3, (i+1)*3, (i+1)*3));
-        world.addEntityComponentAgregate(newComponentArray, sphere, sphereTransform, factory);
+            EntityId rectangle = factory.createEntity();
+            world.addEntityComponentAgregate(newComponentArray, rectangle, rectTransform, factory);
+            transform_component convexShapeTransform(vec3((i+1)*3+2, (i+1)*3+2, (i+1)*3+2));
+            EntityId convexShape = factory.createEntity();
+            world.addEntityComponentAgregate(newComponentArray, convexShape, convexShapeTransform, factory);
+            world.addChild(sphere, sphere, rectangle, 0);
+            world.addChild(sphere, sphere, convexShape, 0);
+            entities.push_back(sphere);
 
-        transform_component rectTransform (vec3((i+1)*3+1, (i+1)*3+1, (i+1)*3+1));
+        }
+        MoveSystem mv;
+        auto systemsArray1 = world.addSystem(systems, mv, World<std::string>::MainSystemQueueIndex);
+        ::EntityFactory rendererFactory;
+        RenderType1 render1;
+        RenderType2 render2;
+        auto renderArray1 = world.addRendererFlag<RenderType1>(rendererArray);
+        auto renderArray2 = world.addRendererFlag<RenderType2>(renderArray1);
+        EntityId render1Id = rendererFactory.createEntity();
+        EntityId render2Id = rendererFactory.createEntity();
+        world.addRendererAgregate(renderArray2, render1Id, render1, rendererFactory);
+        world.addRendererAgregate(renderArray2, render2Id, render2, rendererFactory);
+        EntityId subRender = rendererFactory.createEntity();
+        world.addSubRenderAgregate(renderArray2, render1Id, render1Id, subRender, 0, render2, rendererFactory);
 
-        EntityId rectangle = factory.createEntity();
-        world.addEntityComponentAgregate(newComponentArray, rectangle, rectTransform, factory);
-        transform_component convexShapeTransform(vec3((i+1)*3+2, (i+1)*3+2, (i+1)*3+2));
-        EntityId convexShape = factory.createEntity();
-        world.addEntityComponentAgregate(newComponentArray, convexShape, convexShapeTransform, factory);
-        world.addChild(sphere, sphere, rectangle, 0);
-        world.addChild(sphere, sphere, convexShape, 0);
-        entities.push_back(sphere);
+        auto sceneArray1 = world.addSceneFlag<SceneType1>(sceneArray);
+        auto sceneArray2 = world.addSceneFlag<SceneType2>(sceneArray1);
+        SceneType1 scene1;
+        SceneType2 scene2;
+        ::EntityFactory sceneFactory;
+        EntityId sceneId1 = sceneFactory.createEntity();
+        EntityId sceneId2 = sceneFactory.createEntity();
+        world.addSceneAgregate(sceneArray2, sceneId1, scene1, sceneFactory);
+        world.addSceneAgregate(sceneArray2, sceneId2, scene2, sceneFactory);
+        world.setCurrentScene(sceneId1);
+        exec(systemsArray1, sceneArray2, renderArray2, componentArray);
+    }
+    template <typename SystemArray, typename SceneArray, typename RendererArray, typename EntityComponentArray>
+    void onExec(SystemArray& systems, SceneArray& scenes, RendererArray& renderers, EntityComponentArray& components) {
 
     }
-
-    MoveSystem mv;
-    /*auto params =  std::make_tuple();
-    mapping.template apply<transform_component>(newComponentArray, mv, entities, params);*/
-    DynamicTuple systemsArray;
-
-    auto systemsArray1 = world.initSystems(systemsArray);
-    ::EntityFactory rendererFactory;
-    RenderType1 render1;
-    RenderType2 render2;
-    DynamicTuple renderArray;
-    auto renderArray1 = world.addRendererFlag<RenderType1>(renderArray);
-    auto renderArray2 = world.addRendererFlag<RenderType2>(renderArray1);
-    EntityId render1Id = rendererFactory.createEntity();
-    EntityId render2Id = rendererFactory.createEntity();
-    world.addRendererAgregate(renderArray2, render1Id, render1, rendererFactory);
-    world.addRendererAgregate(renderArray2, render2Id, render2, rendererFactory);
-    EntityId subRender = rendererFactory.createEntity();
-    world.addSubRenderAgregate(renderArray2, render1Id, render1Id, subRender, 0, render2, rendererFactory);
-    world.draw(systemsArray1, renderArray2);
-    DynamicTuple sceneArray;
-    auto sceneArray1 = world.addSceneFlag<SceneType1>(sceneArray);
-    auto sceneArray2 = world.addSceneFlag<SceneType2>(sceneArray1);
-    SceneType1 scene1;
-    SceneType2 scene2;
-    ::EntityFactory sceneFactory;
-    EntityId sceneId1 = sceneFactory.createEntity();
-    EntityId sceneId2 = sceneFactory.createEntity();
-    world.addSceneAgregate(sceneArray2, sceneId1, scene1, sceneFactory);
-    world.addSceneAgregate(sceneArray2, sceneId2, scene2, sceneFactory);
-    world.setCurrentScene(sceneId1);
-    world.toRender(systemsArray1, renderArray2, sceneArray2);
-    DynamicTuple tp;
-    auto tp1 = tp.addType<transform_component>();
-    auto tp2 = tp1.addType<SceneType1>();
-    auto tp3 = tp2.addType<SceneType2>();
-    auto tp4 = tp3.addType<RenderType1>();
-    auto tp5 = tp4.addType<RenderType2>();
-    auto tp6 = tp5.removeType<2>();
+};
+int main(int argc, char* argv[]){
+    DynamicTuple systems;
+    DynamicTuple scenes;
+    DynamicTuple renderers;
+    DynamicTuple components;
+    TestAppl test(systems, scenes, renderers, components);
+    test.exec(systems, scenes, renderers, components);
     return 0;
     /*MyAppli app(sf::VideoMode(800, 600), "Test odfaeg");
     return app.exec();*/
