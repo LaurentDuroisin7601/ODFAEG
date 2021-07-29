@@ -185,12 +185,19 @@ namespace odfaeg {
             }
             template <typename... Signature, typename DynamicTuple, typename System, typename... Params>
             void apply(DynamicTuple& tuple, System& system, std::vector<EntityId>& entities, std::tuple<Params...>& params) {
+              EntityId tmpRootEntity;
+              EntityId tmpParentEntity;
+              EntityId tmpClonedParentEntity;
+              bool first = true;
+
+              auto tmpParams = std::make_tuple(tmpclonedParentEntity, tmpRootEntity, tmpParentEntity, first);
+              auto allParams = std::tuple_cat(params, tmpParams);
               for (unsigned int i = 0; i < entities.size(); i++) {
-                this->template apply_impl<Signature...>(entities[i], tuple, system, params, std::index_sequence_for<Signature...>());
+                this->template apply_impl<Signature...>(entities[i], tuple, system, allParams, std::index_sequence_for<Signature...>());
                 size_t level = (treeLevels[*entities[i]].has_value()) ? treeLevels[*entities[i]].value() : 0;
                 for (unsigned int j = level; j < nbLevels[*entities[i]]; j++) {
                   for(unsigned int k = 0; k < childrenMapping[*getRoot(entities[i])][j].size(); k++)
-                    this->template apply_impl<Signature...>(childrenMapping[*getRoot(entities[i])][j][k], tuple, system, params, std::index_sequence_for<Signature...>());
+                    this->template apply_impl<Signature...>(childrenMapping[*getRoot(entities[i])][j][k], tuple, system, allParams, std::index_sequence_for<Signature...>());
                 }
               }
             }
@@ -201,16 +208,19 @@ namespace odfaeg {
             }
             template <typename... Signature, typename DynamicTuple, typename System, typename... Params, class R>
             void apply(DynamicTuple& tuple, System& system, std::vector<EntityId>& entities, std::tuple<Params...>& params, std::vector<R>& ret) {
+              //Paramètres supplémentaires que l'on peut utiliser dans le système pour stocker des informations sur le noeud précédent.
               EntityId tmpRootEntity;
               EntityId tmpParentEntity;
               bool first = true;
-              auto tmpParams = std::make_tuple(tmpRootEntity, tmpParentEntity, first);
+              size_t level = 0;
+              auto tmpParams = std::make_tuple(tmpRootEntity, tmpParentEntity, first, level);
               auto allParams = std::tuple_cat(params, tmpParams);
               for (unsigned int i = 0; i < entities.size(); i++) {
                 this->template apply_impl<Signature...>(entities[i], tuple, system, allParams, std::index_sequence_for<Signature...>());
-                for (unsigned int j = 0; j < nbLevels[*entities[i]]; j++) {
-                  for(unsigned int k = 0; k < childrenMapping[*entities[i]][j].size(); k++)
-                    this->template apply_impl<Signature...>(childrenMapping[*entities[i]][j][k], tuple, system, allParams, std::index_sequence_for<Signature...>(), ret);
+                size_t level = (treeLevels[*entities[i]].has_value()) ? treeLevels[*entities[i]].value() : 0;
+                for (unsigned int j = level; j < nbLevels[*entities[i]]; j++) {
+                  for(unsigned int k = 0; k < childrenMapping[*getRoot(entities[i])][j].size(); k++)
+                    this->template apply_impl<Signature...>(childrenMapping[*getRoot(entities[i])][j][k], tuple, system, allParams, std::index_sequence_for<Signature...>());
                 }
               }
             }

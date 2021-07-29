@@ -114,35 +114,35 @@ namespace odfaeg {
                 auto componentMapping = std::get<1>(params);
                 auto factory = std::get<2>(params);
                 bool& first = std::get<std::tuple_size<std::tuple<Params...>::value-1>();
-                EntityId& tmpRootEntity = std::get<std::tuple_size<std::tuple<Params...>::value-2>();
-                EntityId& tmpParentEntity = std::get<std::tuple_size<std::tuple<Params...>::value-3>();
+                EntityId& tmpRootEntityId = std::get<std::tuple_size<std::tuple<Params...>::value-3>();
+                EntityId& tmpParentEntityId = std::get<std::tuple_size<std::tuple<Params...>::value-2>();
+                EntityId& tmpClonedParentEntityId = std::get<std::tuple_size<std::tuple<Params...>::value-4>();
                 if (clonableComponent) {
 
 
                     EntityId clonedId = factory.createEntity();
                     clone_impl<decltype(componentArray)::types>(components, componentArray, componentMapping, toCloneId, clonedId, factory);
+                    //Si c'est le premier noeud que l'on clône, il faut faire des vérifications supplémentaires.
                     if (first) {
-                        EntityId root = componentMapping.getRoot(toCloneId);
-                        if (root != toCloneId) {
-                            tmpClonedRootId = root;
-                        }
-                        EntityId parent = componentMapping.branchIds[toCloneId];
-                        if (root != nullptr) {
-                            if (parent == root) {
-                                componentMapping.addChild(root, root, clonedId, componentMapping.treeLevels[*toCloneId]);
-                            } else {
-                                componentMapping.addChild(root, parent, clonedId, componentMapping.treeLevels[*toCloneId]);
-                            }
-                            componentMapping.addChild(root, parent, clonedId);
-                            tmpClonedRootId = root;
-                            tmpClonedParentId = parent;
+                        //Récupération de la racine.
+                        tmpRootEntityId = componentMapping.getRoot(toCloneId);
+                        //Si l'entité à clôner n'est pas un noeud racine, il faut ajouter le parent de l'entité à clôner à l'entité clônée, sinon, on stocke les parents pour le niveau suivant.
+                        if (tmpRootEntityId != toCloneId) {
+                            tmpParentEntity = componentMapping.branchIds[*toCloneId];
+                            componentMapping.addChild(tmpRootEntityId, tmpParentEntityId, clonedId, componentMapping.treeLevels[*toCloneId]);
                         } else {
-                            tmpClonedRootId = clonedId;
+                            tmpParentEntityId = tmpRootEntityId;
+                            tmpClonedParentEntityId = clonedId;
                         }
                         first = false;
+                    //Sinon on ajoute le noeud enfant au parent.
                     } else {
                         addChild(tmpClonedRootId, tmpClonedParentId, clonedId);
-                        tmpClonedParentId = clonedId;
+                        //Remettre à jour le parent, si ce n'est plus le même.
+                        if (tmpParentEntityId != componentMapping.branchIds[*toCloneId]) {
+                            tmpParentEntityId = componentMapping.branchIds[*toCloneId];
+                            tmpClonedParentEntityId = clonedId;
+                        }
                     }
                     return cloneId;
                 }
@@ -231,6 +231,20 @@ namespace odfaeg {
                             componentMapping.apply(componentArray, moveSystem, wallId, mvparams);
                             scene->grid.getGridCellAt(math::Vec3f(w->getPosition().x, w->getPosition().y, 0))->setPassable(false);
                         }   else if (x == startX && y == endY) {
+                            std::vector<EntityId> wallId(1);
+                            wallId[0] = walls[Wall::BOTTOM_LEFT];
+                            std::vector<EntityId> clonedWallIds;
+                            CloningSystem cloningSystem;
+                            auto clparams = std::make_tuple(componentArray, componentMapping, factory);
+                            componentMapping.apply(componentArray, cloningSystem, wallId, clparams, clonedWallsId);
+                            MoveEntitySystem moveSystem;
+                            auto transform = componentMapping.getAgregate<TransformComponent>(componentMapping, clonedWallsId[0]);
+                            math::Vec3f position = math::Vec3f(pos.x, pos.y, pos.y + transform->size.y * 0.5f);
+                            auto mvparams = std::make_tuple(componentArray, componentMapping, position);
+                            wallId[0] = clonedWallsId[0];
+                            componentMapping.apply(componentArray, moveSystem, wallId, mvparams);
+                            scene->grid.getGridCellAt(math::Vec3f(w->getPosition().x, w->getPosition().y, 0))->setPassable(false);
+                        } else if (y == startY && j % 2 != 0) {
                             std::vector<EntityId> wallId(1);
                             wallId[0] = walls[Wall::BOTTOM_LEFT];
                             std::vector<EntityId> clonedWallIds;
