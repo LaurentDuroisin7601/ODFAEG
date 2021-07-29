@@ -3,9 +3,7 @@
 namespace odfaeg {
     namespace graphic {
         struct ClonableComponent {
-            EntityId tmpClonedRootId;
-            EntityId tmpClonedParentId;
-            bool isFirst;
+
         };
         struct SceneGridComponent {
             Grid grid;

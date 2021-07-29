@@ -157,23 +157,12 @@ namespace odfaeg {
                             it++;
                         }
                     }
-                    componentMapping.erase(itToFind);
                     removeTreeInfos(i);
+                    componentMapping.erase(itToFind);
                 }
 
             }
-            static void cloneTree(ComponentMapping componentMapping, EntityId toClone, std::vector<EntityId> entities, std::vector<std::optional<size_t>> treeLevels, std::vector<EntityId> branchs, std::size_t nbLevels) {
-                EntityId rootId;
-                //Recherche l'entité racine.
-                for (unsigned int i = 0; i < entities.size(); i++) {
-                    if (branchs[i]) {
-                        rootId = entities[i];
-                    }
-                }
-                for (unsigned int i = 0; i < entities.size(); i++) {
-                    componentMapping.addChild(rootId, branchs[i], entities[i], treeLevels[i].value());
-                }
-            }
+
             public :
             template <typename T, typename DynamicTuple>
             T* getAgregate(DynamicTuple& tuple, EntityId entityId) {
@@ -185,7 +174,7 @@ namespace odfaeg {
             template <typename... Signature, typename DynamicTuple, typename System, typename... Params>
             void apply(DynamicTuple& tuple, System& system, std::vector<EntityId>& entities, std::tuple<Params...>& params) {
               for (unsigned int i = 0; i < entities.size(); i++) {
-                this->template apply_impl<Signature...>(entities[i], tuple, system, params, std::index_sequence_for<Signature...>());
+                this->template apply_impl<Signature...>(entities[i], tuple, system, allParams, std::index_sequence_for<Signature...>());
                 for (unsigned int j = 0; j < nbLevels[*entities[i]]; j++) {
                   for(unsigned int k = 0; k < childrenMapping[*entities[i]][j].size(); k++)
                     this->template apply_impl<Signature...>(childrenMapping[*entities[i]][j][k], tuple, system, params, std::index_sequence_for<Signature...>());
@@ -199,11 +188,16 @@ namespace odfaeg {
             }
             template <typename... Signature, typename DynamicTuple, typename System, typename... Params, class R>
             void apply(DynamicTuple& tuple, System& system, std::vector<EntityId>& entities, std::tuple<Params...>& params, std::vector<R>& ret) {
+              EntityId tmpRootEntity;
+              EntityId tmpParentEntity;
+              bool first = true;
+              auto tmpParams = std::make_tuple(tmpRootEntity, tmpParentEntity, first);
+              auto allParams = std::tuple_cat(params, tmpParams);
               for (unsigned int i = 0; i < entities.size(); i++) {
-                this->template apply_impl<Signature...>(entities[i], tuple, system, params, std::index_sequence_for<Signature...>());
+                this->template apply_impl<Signature...>(entities[i], tuple, system, allParams, std::index_sequence_for<Signature...>());
                 for (unsigned int j = 0; j < nbLevels[*entities[i]]; j++) {
                   for(unsigned int k = 0; k < childrenMapping[*entities[i]][j].size(); k++)
-                    this->template apply_impl<Signature...>(childrenMapping[*entities[i]][j][k], tuple, system, params, std::index_sequence_for<Signature...>(), ret);
+                    this->template apply_impl<Signature...>(childrenMapping[*entities[i]][j][k], tuple, system, allParams, std::index_sequence_for<Signature...>(), ret);
                 }
               }
             }
