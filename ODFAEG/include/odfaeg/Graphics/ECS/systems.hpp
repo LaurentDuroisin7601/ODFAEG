@@ -4,70 +4,65 @@ namespace odfaeg {
     namespace graphic {
         //Call the systems with the given system's IDs.
         struct MainSystem {
-            template <size_t I=0, typename... Components, typename... Params, class = typename std::enable_if_t<(sizeof...(Components) != 0 && I == 0)>>
-            void operator()(std::tuple<Components...>& tp, std::tuple<Params...>& params) {
-                this->template operator()<I+1>(tp, params);
+            template <size_t I=0, typename... Components, typename T2, class = typename std::enable_if_t<(sizeof...(Components) != 0 && I == 0)>>
+            void operator()(std::tuple<Components...>& tp, EntityId entityId, T2& params) {
+                auto& array = std::get<0>(params);
+                this->template operator()<I+1>(tp, entityId, params, std::make_index_sequence<array.nbTypes()>());
             }
-            template <size_t I=0, typename... Components, typename... Params, class... D, class = typename std::enable_if_t<(sizeof...(Components) != 0 && I > 0 && I < sizeof...(Components)-1)>>
-            void operator()(std::tuple<Components...>& tp, std::tuple<Params...>& params) {
-                if (std::get<I>(tp) != nullptr) {
-                    auto& array = std::get<0>(params);
-                    std::vector<EntityId> entities = std::get<1>(params);
-                    auto& componentMapping = std::get<2>(params);
-                    call_system<typename std::remove_reference_t<decltype(array)>::types>(array, *std::get<I>(tp), componentMapping, entities, params, std::make_index_sequence<array.nbTypes()>());
-                } else {
-                    this->template operator()<I+1>(tp, params);
-                }
-            }
+            template <typename ...Ts, std::enable_if_t<(std::is_function_v<Ts> && ...), bool> = true>
+            void f(Ts &&... ts) {}
 
-            template <size_t I=0, typename... Components, typename... Params, class... D, class... E, class = typename std::enable_if_t<(sizeof...(Components) != 0 && I == sizeof...(Components)-1)>>
-            void operator()(std::tuple<Components...>& tp, std::tuple<Params...>& params) {
+            template <size_t I=0, typename... Components, typename T2, class... D, size_t... Ints, class = typename std::enable_if_t<(sizeof...(Components) != 0 && I > 0 && I < sizeof...(Components)-1)>>
+            void operator()(std::tuple<Components...>& tp, EntityId entityId, T2& params, std::index_sequence<Ints...> seq) {
                 if (std::get<I>(tp) != nullptr) {
                     auto& array = std::get<0>(params);
                     std::vector<EntityId> entities = std::get<1>(params);
                     auto& componentMapping = std::get<2>(params);
-                    call_system<typename std::remove_reference_t<decltype(array)>::types>(array, *std::get<I>(tp), componentMapping, entities, params, std::make_index_sequence<array.nbTypes()>());
+                    //std::cout<<"call system : "<<std::get<I>(tp)->positionInTemplateParameterPack<<std::endl;
+                    std::thread t(
+                    &MainSystem::call_system<typename std::remove_reference_t<decltype(array)>::types,
+                    std::remove_reference_t<decltype(array)>,
+                    std::remove_reference_t<decltype(*std::get<I>(tp))>,
+                    std::remove_reference_t<decltype(componentMapping)>,
+                    std::remove_reference_t<decltype(params)>,
+                    Ints...>, this, array, *std::get<I>(tp), componentMapping, entities, params, std::make_index_sequence<array.nbTypes()>() );
+                    t.detach();
+                    //call_system<typename std::remove_reference_t<decltype(array)>::types>(array, *std::get<I>(tp), componentMapping, entities, params, std::make_index_sequence<array.nbTypes()>());
+
+                } else {
+                    this->template operator()<I+1>(tp, entityId, params, seq);
                 }
             }
-            template <size_t I=0, typename... Components, typename... Params, class... D, class... E, class... F, class = typename std::enable_if_t<sizeof...(Components) == 0>>
-            void operator()(std::tuple<Components...>& tp, std::tuple<Params...>& params) {
+            ///home/laurent/gitODFAEG/Demos/ODFAEG-DEMO/main.cpp|558|error: ‘class std::tuple<DynamicTuple<RenderType1, RenderType2>, std::vector<atomwrapper<long unsigned int*>, std::allocator<atomwrapper<long unsigned int*> > >, ComponentMapping>’ has no member named ‘apply’|
+            template <size_t I=0, typename... Components, typename T2, size_t... Ints, class... D, class... E, class = typename std::enable_if_t<(sizeof...(Components) != 0 && I == sizeof...(Components)-1)>>
+            void operator()(std::tuple<Components...>& tp, EntityId entityId, T2& params, std::index_sequence<Ints...>) {
+                if (std::get<I>(tp) != nullptr) {
+                    auto& array = std::get<0>(params);
+                    std::vector<EntityId> entities = std::get<1>(params);
+                    auto& componentMapping = std::get<2>(params);
+                    std::thread t(
+                    &MainSystem::call_system<typename std::remove_reference_t<decltype(array)>::types,
+                    std::remove_reference_t<decltype(array)>,
+                    std::remove_reference_t<decltype(*std::get<I>(tp))>,
+                    std::remove_reference_t<decltype(componentMapping)>,
+                    std::remove_reference_t<decltype(params)>,
+                    Ints...>, this, array, *std::get<I>(tp), componentMapping, entities, params, std::make_index_sequence<array.nbTypes()>() );
+                    t.detach();
+                }
             }
-            template <typename T, typename Array, typename System, typename Mapping, typename... Params, size_t... I>
-            void call_system(Array& array, System& system, Mapping& componentMapping, std::vector<EntityId> entities, std::tuple<Params...>& params, std::index_sequence<I...>) {
+            template <size_t I=0, typename... Components, typename T2, size_t... Ints, class... D, class... E, class... F, class = typename std::enable_if_t<sizeof...(Components) == 0>>
+            void operator()(std::tuple<Components...>& tp, EntityId entityId, T2& params,  std::index_sequence<Ints...>) {
+            }
+            template <typename T, typename Array, typename System, typename Mapping, typename T2, size_t... I>
+            void call_system(Array array, System system, Mapping componentMapping, std::vector<EntityId> entities, T2 params, std::index_sequence<I...>) {
                 componentMapping.template apply<std::tuple_element_t<I, T>...>(array, system, entities, params);
             }
 
         };
-        //Load datas to renderders.
-        struct LoaderSystem {
-            template <typename... Components, typename... Params, typename SubSystem, class <typename = std::enable_if_t<contains<Scene, Components...>::value>
-            void operator()(std::tuple<Components...> components, std::tuple<Params...> params) {
-                Scene* scene = std::get<index<Scene*, Components...>(components);
-                if (scene != nullptr) {
 
-                }
-            }
-            //Type de composant inconnu, on le traite avec un système défini par le développeur si il existe.
-            template <typename... Components, typename... Params, typename SubSystem, class <typename = std::enable_if_t<!contains<Scene, Components...>::value>
-            void operator()(std::tuple<Components...> components, std::tuple<Params...> params, SubSystem& subSystem) {
-                if (subSystem != nullptr) {
-                    static_cast<SubSystem&>(*subSystem)(components, params);
-                }
-            }
-        };
-        //Render a per pixel linked list.
-        struct PerPixelLinkedListRenderSystem {
-            template <typename... Components, typename... Params, class = typename = std::enable_if_t<contains<PerPixelLinkedListRenderer*, Components...>::value>
-            void operator()(std::tuple<Components...> components, std::tuple<Params...> params) {
-                PerPixelLinkedListRenderer* perPixelLinkedListRender = std::get<index<PerPixelLinkedListRenderer*, Components...>(components);
-                if (perPixelLinkedListRender != nullptr) {
-
-                }
-            }
-        };
         //Update an animation.
         struct AnimationUpdaterSystem {
-            template <typename... Components, typename... Params>
+            template <typename... Components, typename... Params, class = typename = std::enable_if_t<!contains<AnimationComponent, Components...>::value>
             void operator()(std::tuple<Components...> components, std::tuple<Params...> params) {
                 //Récupération du composant de l'animation.
                 AnimationComponent* ac = std::get<index<AnimationComponent*,Components...>()>(components);
@@ -106,8 +101,9 @@ namespace odfaeg {
                 }
             }
         };
+        //Clone une entité ainsi que tout ses composants et ses enfants.
         struct CloningSystem {
-            template <typename... Components, typename... Params>
+            template <typename... Components, typename... Params, class = typename std::enable_if_t<contains<CloningComponent, Components...>::value>
             EntityId operator()(std::tuple<Components...> components, EntityId toCloneId, std::tuple<Params...>& params) {
                 auto clonableComponent = std::get<ClonableComponent>(components);
                 auto componentArray = std::get<0>(params);
@@ -117,6 +113,7 @@ namespace odfaeg {
                 EntityId& tmpRootEntityId = std::get<std::tuple_size<std::tuple<Params...>::value-3>();
                 EntityId& tmpParentEntityId = std::get<std::tuple_size<std::tuple<Params...>::value-2>();
                 EntityId& tmpClonedParentEntityId = std::get<std::tuple_size<std::tuple<Params...>::value-4>();
+                //Vérifie si l'entité est clonable.
                 if (clonableComponent) {
 
 
@@ -146,9 +143,15 @@ namespace odfaeg {
                     }
                     return cloneId;
                 }
+                return nullptr;
             }
+            template <typename... Components, typename... Params, class... D, class = typename std::enable_if_t<!contains<CloningComponent, Components...>::value>
+            EntityId operator()(std::tuple<Components...> components, EntityId toCloneId, std::tuple<Params...>& params) {
+            }
+            //Clone tout les types de composants.
             template <typename T, size_t I = 0, typename ComponentArray, typename Factory, class = typename std::enable_if_t<(sizeof...(Components) != 0 && I < sizeof...(Components)-1)>
             void clone_impl(ComponentArray& componentArray, EntityId tocloneId, EntityId clonedId, Factory factory) {
+                //si l'entité possède le composant en question on le clône.
                 if (componentMapping.getAgregate<std::tuple_element_t<I, T>(componentArray, toCloneId)) {
                     componentMapping.addAgregate(cloneId, componentArray, *componentMapping.getAgregate<std::tuple_element_t<I, T>(componentArray, toCloneId));
                 }
@@ -164,22 +167,19 @@ namespace odfaeg {
             void clone_impl(ComponentArray& componentArray, EntityId tocloneId, EntityId clonedId, Factory factory) {
             }
         };
+        //Génère un labyrinthe. (Non testé)
         struct LabyrinthGeneratorSystem {
-            template <typename... Components, typename... Params>
+            template <typename... Components, typename... Params, class = typename std::enable_if_t<contains<Scene>::value>
             void operator()(std::tuple<Components...> components, EntitydId entityId, std::tuple<Params...>& params) {
-                auto sceneArray = std::get<0>(components);
-                auto scene = std::get<1>(components);
-                auto componentArray = std::get<2>(components);
-                auto componentMapping = std::get<3>(components);
-                EntityId bigTile = std::get<4>(components);
-                std::vector<EntityId> walls = std::get<5>(components);
-                auto factory = std::get<6>(components);
+                auto scene = std::get<0>(components);
+                auto componentArray = std::get<1>(params);
+                auto componentMapping = std::get<2>(params);
+                auto factory = std::get<3>(params);
+
+                std::vector<EntityId> walls = std::get<4>(params);
+
                 unsigned int i, j;
-                CloningSystem system;
-                //Besoin de garder une référence sur les ids des entités parents et l'entité racine des clones pour ajouter les enfants clônés aux parents clônés.
-                EntityId tmpClonedRootId, tmpClonedParentId;
-                //Pour la racine qui est unique.
-                bool isFirst = true;
+                EntityId bigTile;
                 for (int y = startY, j = 0; y < endY; y+= tileSize.y, j++) {
                     for (int x = startX, i = 0; x < endX; x+= tileSize.x, i++) {
                         math::Vec3f projPos = scene->grid.getBaseChangementMatrix().changeOfBase(math::Vec3f (x - startX, y - startY, 0));
@@ -197,10 +197,10 @@ namespace odfaeg {
                             auto mvparams = std::make_tuple(componentArray, componentMapping, position);
                             wallId[0] = clonedWallsId[0];
                             componentMapping.apply(componentArray, moveSystem, wallId, mvparams);
-                            scene->grid.getGridCellAt(math::Vec3f(w->getPosition().x, w->getPosition().y, 0))->setPassable(false);
                             auto adparams = std::make_tuple(entityComponentArray, entityComponentMapping, entityId));
                             AddEntityToSceneSystem addSystem;
                             sceneMapping.apply(sceneArray, addSystem, wallId, adparams);
+                            scene->grid.getGridCellAt(math::Vec3f(w->getPosition().x, w->getPosition().y, 0))->setPassable(false);
                         } else if (x == endX && y == startY) {
                             std::vector<EntityId> wallId(1);
                             wallId[0] = walls[Wall::TOP_RIGHT];
@@ -246,7 +246,133 @@ namespace odfaeg {
                             scene->grid.getGridCellAt(math::Vec3f(w->getPosition().x, w->getPosition().y, 0))->setPassable(false);
                         } else if (y == startY && j % 2 != 0) {
                             std::vector<EntityId> wallId(1);
-                            wallId[0] = walls[Wall::BOTTOM_LEFT];
+                            wallId[0] = walls[Wall::TOP_BOTTOM];
+                            std::vector<EntityId> clonedWallIds;
+                            CloningSystem cloningSystem;
+                            auto clparams = std::make_tuple(componentArray, componentMapping, factory);
+                            componentMapping.apply(componentArray, cloningSystem, wallId, clparams, clonedWallsId);
+                            MoveEntitySystem moveSystem;
+                            auto transform = componentMapping.getAgregate<TransformComponent>(componentMapping, clonedWallsId[0]);
+                            math::Vec3f position = math::Vec3f(pos.x, pos.y, pos.y + transform->size.y * 0.5f);
+                            auto mvparams = std::make_tuple(componentArray, componentMapping, position);
+                            wallId[0] = clonedWallsId[0];
+                            componentMapping.apply(componentArray, moveSystem, wallId, mvparams);
+                            scene->grid.getGridCellAt(math::Vec3f(w->getPosition().x, w->getPosition().y, 0))->setPassable(false);
+                        } else if (y == startY && j % 2 == 0) {
+                            std::vector<EntityId> wallId(1);
+                            wallId[0] = walls[Wall::T_TOP];
+                            std::vector<EntityId> clonedWallIds;
+                            CloningSystem cloningSystem;
+                            auto clparams = std::make_tuple(componentArray, componentMapping, factory);
+                            componentMapping.apply(componentArray, cloningSystem, wallId, clparams, clonedWallsId);
+                            MoveEntitySystem moveSystem;
+                            auto transform = componentMapping.getAgregate<TransformComponent>(componentMapping, clonedWallsId[0]);
+                            math::Vec3f position = math::Vec3f(pos.x, pos.y, pos.y + transform->size.y * 0.5f);
+                            auto mvparams = std::make_tuple(componentArray, componentMapping, position);
+                            wallId[0] = clonedWallsId[0];
+                            componentMapping.apply(componentArray, moveSystem, wallId, mvparams);
+                            scene->grid.getGridCellAt(math::Vec3f(w->getPosition().x, w->getPosition().y, 0))->setPassable(false);
+                        } else if (x == endX && j % 2 != 0) {
+                            std::vector<EntityId> wallId(1);
+                            wallId[0] = walls[Wall::RIGHT_LEFT];
+                            std::vector<EntityId> clonedWallIds;
+                            CloningSystem cloningSystem;
+                            auto clparams = std::make_tuple(componentArray, componentMapping, factory);
+                            componentMapping.apply(componentArray, cloningSystem, wallId, clparams, clonedWallsId);
+                            MoveEntitySystem moveSystem;
+                            auto transform = componentMapping.getAgregate<TransformComponent>(componentMapping, clonedWallsId[0]);
+                            math::Vec3f position = math::Vec3f(pos.x, pos.y, pos.y + transform->size.y * 0.5f);
+                            auto mvparams = std::make_tuple(componentArray, componentMapping, position);
+                            wallId[0] = clonedWallsId[0];
+                            componentMapping.apply(componentArray, moveSystem, wallId, mvparams);
+                            scene->grid.getGridCellAt(math::Vec3f(w->getPosition().x, w->getPosition().y, 0))->setPassable(false);
+                        } else if (x == endX && j % 2 == 0) {
+                            std::vector<EntityId> wallId(1);
+                            wallId[0] = walls[Wall::TOP_BOTTOM];
+                            std::vector<EntityId> clonedWallIds;
+                            CloningSystem cloningSystem;
+                            auto clparams = std::make_tuple(componentArray, componentMapping, factory);
+                            componentMapping.apply(componentArray, cloningSystem, wallId, clparams, clonedWallsId);
+                            MoveEntitySystem moveSystem;
+                            auto transform = componentMapping.getAgregate<TransformComponent>(componentMapping, clonedWallsId[0]);
+                            math::Vec3f position = math::Vec3f(pos.x, pos.y, pos.y + transform->size.y * 0.5f);
+                            auto mvparams = std::make_tuple(componentArray, componentMapping, position);
+                            wallId[0] = clonedWallsId[0];
+                            componentMapping.apply(componentArray, moveSystem, wallId, mvparams);
+                            scene->grid.getGridCellAt(math::Vec3f(w->getPosition().x, w->getPosition().y, 0))->setPassable(false);
+                        } else if (y == endY && i % 2 == 0) {
+                            std::vector<EntityId> wallId(1);
+                            wallId[0] = walls[Wall::T_BOTTOM];
+                            std::vector<EntityId> clonedWallIds;
+                            CloningSystem cloningSystem;
+                            auto clparams = std::make_tuple(componentArray, componentMapping, factory);
+                            componentMapping.apply(componentArray, cloningSystem, wallId, clparams, clonedWallsId);
+                            MoveEntitySystem moveSystem;
+                            auto transform = componentMapping.getAgregate<TransformComponent>(componentMapping, clonedWallsId[0]);
+                            math::Vec3f position = math::Vec3f(pos.x, pos.y, pos.y + transform->size.y * 0.5f);
+                            auto mvparams = std::make_tuple(componentArray, componentMapping, position);
+                            wallId[0] = clonedWallsId[0];
+                            componentMapping.apply(componentArray, moveSystem, wallId, mvparams);
+                            scene->grid.getGridCellAt(math::Vec3f(w->getPosition().x, w->getPosition().y, 0))->setPassable(false);
+                        } else if (x == startX && j % 2 != 0) {
+                            std::vector<EntityId> wallId(1);
+                            wallId[0] = walls[Wall::RIGHT_LEFT];
+                            std::vector<EntityId> clonedWallIds;
+                            CloningSystem cloningSystem;
+                            auto clparams = std::make_tuple(componentArray, componentMapping, factory);
+                            componentMapping.apply(componentArray, cloningSystem, wallId, clparams, clonedWallsId);
+                            MoveEntitySystem moveSystem;
+                            auto transform = componentMapping.getAgregate<TransformComponent>(componentMapping, clonedWallsId[0]);
+                            math::Vec3f position = math::Vec3f(pos.x, pos.y, pos.y + transform->size.y * 0.5f);
+                            auto mvparams = std::make_tuple(componentArray, componentMapping, position);
+                            wallId[0] = clonedWallsId[0];
+                            componentMapping.apply(componentArray, moveSystem, wallId, mvparams);
+                            scene->grid.getGridCellAt(math::Vec3f(w->getPosition().x, w->getPosition().y, 0))->setPassable(false);
+                        } else if (x == startX && j % 2 == 0) {
+                            std::vector<EntityId> wallId(1);
+                            wallId[0] = walls[Wall::T_LEFT];
+                            std::vector<EntityId> clonedWallIds;
+                            CloningSystem cloningSystem;
+                            auto clparams = std::make_tuple(componentArray, componentMapping, factory);
+                            componentMapping.apply(componentArray, cloningSystem, wallId, clparams, clonedWallsId);
+                            MoveEntitySystem moveSystem;
+                            auto transform = componentMapping.getAgregate<TransformComponent>(componentMapping, clonedWallsId[0]);
+                            math::Vec3f position = math::Vec3f(pos.x, pos.y, pos.y + transform->size.y * 0.5f);
+                            auto mvparams = std::make_tuple(componentArray, componentMapping, position);
+                            wallId[0] = clonedWallsId[0];
+                            componentMapping.apply(componentArray, moveSystem, wallId, mvparams);
+                            scene->grid.getGridCellAt(math::Vec3f(w->getPosition().x, w->getPosition().y, 0))->setPassable(false);
+                        } else if (j % 2 != 0 && i % 2 == 0) {
+                            std::vector<EntityId> wallId(1);
+                            wallId[0] = walls[Wall::RIGHT_LEFT];
+                            std::vector<EntityId> clonedWallIds;
+                            CloningSystem cloningSystem;
+                            auto clparams = std::make_tuple(componentArray, componentMapping, factory);
+                            componentMapping.apply(componentArray, cloningSystem, wallId, clparams, clonedWallsId);
+                            MoveEntitySystem moveSystem;
+                            auto transform = componentMapping.getAgregate<TransformComponent>(componentMapping, clonedWallsId[0]);
+                            math::Vec3f position = math::Vec3f(pos.x, pos.y, pos.y + transform->size.y * 0.5f);
+                            auto mvparams = std::make_tuple(componentArray, componentMapping, position);
+                            wallId[0] = clonedWallsId[0];
+                            componentMapping.apply(componentArray, moveSystem, wallId, mvparams);
+                            scene->grid.getGridCellAt(math::Vec3f(w->getPosition().x, w->getPosition().y, 0))->setPassable(false);
+                        } else if (j % 2 == 0 && i % 2 != 0) {
+                            std::vector<EntityId> wallId(1);
+                            wallId[0] = walls[Wall::TOP_BOTTOM];
+                            std::vector<EntityId> clonedWallIds;
+                            CloningSystem cloningSystem;
+                            auto clparams = std::make_tuple(componentArray, componentMapping, factory);
+                            componentMapping.apply(componentArray, cloningSystem, wallId, clparams, clonedWallsId);
+                            MoveEntitySystem moveSystem;
+                            auto transform = componentMapping.getAgregate<TransformComponent>(componentMapping, clonedWallsId[0]);
+                            math::Vec3f position = math::Vec3f(pos.x, pos.y, pos.y + transform->size.y * 0.5f);
+                            auto mvparams = std::make_tuple(componentArray, componentMapping, position);
+                            wallId[0] = clonedWallsId[0];
+                            componentMapping.apply(componentArray, moveSystem, wallId, mvparams);
+                            scene->grid.getGridCellAt(math::Vec3f(w->getPosition().x, w->getPosition().y, 0))->setPassable(false);
+                        } else if (j % 2 == 0 && i % 2 == 0) {
+                            std::vector<EntityId> wallId(1);
+                            wallId[0] = walls[Wall::X];
                             std::vector<EntityId> clonedWallIds;
                             CloningSystem cloningSystem;
                             auto clparams = std::make_tuple(componentArray, componentMapping, factory);
@@ -260,6 +386,285 @@ namespace odfaeg {
                             scene->grid.getGridCellAt(math::Vec3f(w->getPosition().x, w->getPosition().y, 0))->setPassable(false);
                         }
                     }
+                }
+                std::vector<CellMap*> visited;
+                std::vector<math::Vec2f> dirs;
+                int n = 0, cx = startX + tileSize.x, cy = startY + tileSize.y;
+                while (n < i * j) {
+                    for (unsigned int i = 0; i < 4; i++) {
+                        int x = cx, y = cy;
+                        math::Vec2f dir;
+                        if (i == 0) {
+                            dir = math::Vec2f (1, 0);
+                        } else if (i == 1) {
+                            dir = math::Vec2f (0, 1);
+                        } else if (i == 2) {
+                            dir = math::Vec2f (-1, 0);
+                        } else {
+                            dir = math::Vec2f (0, -1);
+                        }
+                        x += dir.x * tileSize.x * 2;
+                        y += dir.y * tileSize.y * 2;
+                        math::Vec3f projPos = gridMap->getBaseChangementMatrix().changeOfBase(math::Vec3f (x - startX, y - startY, 0));
+                        math::Vec2f pos (projPos.x + startX, projPos.y + startY);
+                        CellMap* cell = scene->grid.getGridCellAt(math::Vec2f(pos.x, pos.y));
+                        if (cell != nullptr) {
+                            dirs.push_back(dir);
+                        }
+                    }
+                    math::Vec2f dir = dirs[math::Math::random(0, dirs.size())];
+                    int x = cx + dir.x * tileSize.x;
+                    int y = cy + dir.y * tileSize.y;
+                    math::Vec3f projPos = gridMap->getBaseChangementMatrix().changeOfBase(math::Vec3f (x - startX, y - startY, 0));
+                    math::Vec2f pos (projPos.x + startX, projPos.y + startY);
+                    CellMap* cell = scene->grid.getGridCellAt(math::Vec2f(pos.x, pos.y));
+                    cell->removeEntity("E_WALL");
+                    cell->setPassable(true);
+                    cx += dir.x * tileSize.x * 2;
+                    cy += dir.y * tileSize.y * 2;
+                    x = cx, y = cy;
+                    projPos = scene->grid.getBaseChangementMatrix().changeOfBase(math::Vec3f (x - startX, y - startY, 0));
+                    pos = math::Vec2f (projPos.x + startX, projPos.y + startY);
+                    cell = gridMap->getGridCellAt(math::Vec2f(pos.x, pos.y));
+                    bool contains = false;
+                    for (unsigned int j = 0; j < visited.size() && !contains; j++) {
+                        if (visited[j] == cell)
+                            contains = true;
+                    }
+                    if (!contains) {
+                        n++;
+                        visited.push_back(cell);
+                    }
+                }
+            }
+            template <typename... Components, typename... Params, class = typename std::enable_if_t<!contains<Scene>::value>
+            void operator()(std::tuple<Components...> components, EntitydId entityId, std::tuple<Params...>& params) {
+            }
+        };
+            //Génère un terrain entouré des murs passés.
+        struct TerrainGeneratorSystem {
+            template <typename... Components, typename... Params, typename = class std::enable_if_t<contains<Scene, components...>::value>
+            void operator()(std::tuple<Components...> components, EntitydId entityId, std::tuple<Params...>& params) {
+                auto scene = std::get<0>(components);
+                auto componentArray = std::get<0>(params);
+                auto componentMapping = std::get<1>(params);
+                auto factory = std::get<2>(params);
+                auto tGround = std::get<3>(params);
+                auto walls = std::get<4>(params);
+                math::Vec3f tileSize = std::get<5>(params);
+                physic::BoundingBox rect = std::get<6>(params);
+
+                int startX = rect.getPosition().x / tileSize.x * tileSize.x;
+                int startY = rect.getPosition().y / tileSize.y * tileSize.y;
+                int endX = (rect.getPosition().x + rect.getWidth()) / tileSize.x * tileSize.x;
+                int endY = (rect.getPosition().y + rect.getHeight()) / tileSize.y * tileSize.y;
+                EntityId bt;
+                if (rect.getSize().z != 0)
+                    bt = createBigTileModel(math::Vec3f(startX, startY, startY + (endY - startY) * 0.5f), factory);
+                else
+                    bt = createBigTileModel(math::Vec3f(startX, startY, rect.getPosition().z),factory, tileSize,rect.getWidth() / tileSize.x);
+                auto szparams = std::make_tuple(componentArray, componentMapping, rect.getsize());
+                ResizeSystem resizeSystem;
+                std::vector<EntityId> bigTileId;
+                bigTileId.push_back(bt);
+                componentMapping.apply(componentArray, resizeSystem, bigTileId, szparams);
+                for (int y = startY; y < endY;  y+=tileSize.y) {
+                    for (int x = startX; x < endX; x+=tileSize.x) {
+                        //On projete les positions en fonction de la projection du jeux.
+                        math::Vec3f projPos = gridMap->getBaseChangementMatrix().changeOfBase(math::Vec3f (x - startX, y - startY, 0));
+                        math::Vec2f pos (projPos.x + startX, projPos.y + startY);
+                        if (x == startX && y == startY && walls.size() >= 11) {
+                            std::vector<EntityId> wallId(1);
+                            wallId[0] = walls[Wall::TOP_LEFT];
+                            std::vector<EntityId> clonedWallIds;
+                            CloningSystem cloningSystem;
+                            auto clparams = std::make_tuple(componentArray, componentMapping, factory);
+                            componentMapping.apply(componentArray, cloningSystem, wallId, clparams, clonedWallsId);
+                            MoveEntitySystem moveSystem;
+                            auto transform = componentMapping.getAgregate<TransformComponent>(componentMapping, clonedWallsId[0]);
+                            math::Vec3f position = math::Vec3f(pos.x, pos.y, pos.y + transform->size.y * 0.5f);
+                            auto mvparams = std::make_tuple(componentArray, componentMapping, position);
+                            wallId[0] = clonedWallsId[0];
+                            componentMapping.apply(componentArray, moveSystem, wallId, mvparams);
+                            auto adparams = std::make_tuple(entityComponentArray, entityComponentMapping, entityId));
+                            AddEntityToSceneSystem addSystem;
+                            sceneMapping.apply(sceneArray, addSystem, wallId, adparams);
+                            scene->grid.getGridCellAt(math::Vec3f(w->getPosition().x, w->getPosition().y, 0))->setPassable(false);
+                        } else if (x == endX - tileSize.x && y == startY && walls.size() >= 11) {
+                            std::vector<EntityId> wallId(1);
+                            wallId[0] = walls[Wall::TOP_RIGHT];
+                            std::vector<EntityId> clonedWallIds;
+                            CloningSystem cloningSystem;
+                            auto clparams = std::make_tuple(componentArray, componentMapping, factory);
+                            componentMapping.apply(componentArray, cloningSystem, wallId, clparams, clonedWallsId);
+                            MoveEntitySystem moveSystem;
+                            auto transform = componentMapping.getAgregate<TransformComponent>(componentMapping, clonedWallsId[0]);
+                            math::Vec3f position = math::Vec3f(pos.x, pos.y, pos.y + transform->size.y * 0.5f);
+                            auto mvparams = std::make_tuple(componentArray, componentMapping, position);
+                            wallId[0] = clonedWallsId[0];
+                            componentMapping.apply(componentArray, moveSystem, wallId, mvparams);
+                            auto adparams = std::make_tuple(entityComponentArray, entityComponentMapping, entityId));
+                            AddEntityToSceneSystem addSystem;
+                            sceneMapping.apply(sceneArray, addSystem, wallId, adparams);
+                            scene->grid.getGridCellAt(math::Vec3f(w->getPosition().x, w->getPosition().y, 0))->setPassable(false);
+                            //Mur du coin en bas \E0 droite.
+                        } else if (x == endX - tileSize.x && y == endY - tileSize.y && walls.size() >= 11) {
+                            std::vector<EntityId> wallId(1);
+                            wallId[0] = walls[Wall::TOP_RIGHT];
+                            std::vector<EntityId> clonedWallIds;
+                            CloningSystem cloningSystem;
+                            auto clparams = std::make_tuple(componentArray, componentMapping, factory);
+                            componentMapping.apply(componentArray, cloningSystem, wallId, clparams, clonedWallsId);
+                            MoveEntitySystem moveSystem;
+                            auto transform = componentMapping.getAgregate<TransformComponent>(componentMapping, clonedWallsId[0]);
+                            math::Vec3f position = math::Vec3f(pos.x, pos.y, pos.y + transform->size.y * 0.5f);
+                            auto mvparams = std::make_tuple(componentArray, componentMapping, position);
+                            wallId[0] = clonedWallsId[0];
+                            componentMapping.apply(componentArray, moveSystem, wallId, mvparams);
+                            auto adparams = std::make_tuple(entityComponentArray, entityComponentMapping, entityId));
+                            AddEntityToSceneSystem addSystem;
+                            sceneMapping.apply(sceneArray, addSystem, wallId, adparams);
+                            scene->grid.getGridCellAt(math::Vec3f(w->getPosition().x, w->getPosition().y, 0))->setPassable(false);
+                        } else if (x == startX && y == endY - tileSize.y && walls.size() >= 11) {
+                            std::vector<EntityId> wallId(1);
+                            wallId[0] = walls[Wall::BOTTOM_RIGHT];
+                            std::vector<EntityId> clonedWallIds;
+                            CloningSystem cloningSystem;
+                            auto clparams = std::make_tuple(componentArray, componentMapping, factory);
+                            componentMapping.apply(componentArray, cloningSystem, wallId, clparams, clonedWallsId);
+                            MoveEntitySystem moveSystem;
+                            auto transform = componentMapping.getAgregate<TransformComponent>(componentMapping, clonedWallsId[0]);
+                            math::Vec3f position = math::Vec3f(pos.x, pos.y, pos.y + transform->size.y * 0.5f);
+                            auto mvparams = std::make_tuple(componentArray, componentMapping, position);
+                            wallId[0] = clonedWallsId[0];
+                            componentMapping.apply(componentArray, moveSystem, wallId, mvparams);
+                            auto adparams = std::make_tuple(entityComponentArray, entityComponentMapping, entityId));
+                            AddEntityToSceneSystem addSystem;
+                            sceneMapping.apply(sceneArray, addSystem, wallId, adparams);
+                            scene->grid.getGridCellAt(math::Vec3f(w->getPosition().x, w->getPosition().y, 0))->setPassable(false);
+                        } else if ((y == startY || y == endY - tileSize.y) && walls.size() >= 11) {
+                            std::vector<EntityId> wallId(1);
+                            wallId[0] = walls[Wall::BOTTOM_RIGHT];
+                            std::vector<EntityId> clonedWallIds;
+                            CloningSystem cloningSystem;
+                            auto clparams = std::make_tuple(componentArray, componentMapping, factory);
+                            componentMapping.apply(componentArray, cloningSystem, wallId, clparams, clonedWallsId);
+                            MoveEntitySystem moveSystem;
+                            auto transform = componentMapping.getAgregate<TransformComponent>(componentMapping, clonedWallsId[0]);
+                            math::Vec3f position = math::Vec3f(pos.x, pos.y, pos.y + transform->size.y * 0.5f);
+                            auto mvparams = std::make_tuple(componentArray, componentMapping, position);
+                            wallId[0] = clonedWallsId[0];
+                            componentMapping.apply(componentArray, moveSystem, wallId, mvparams);
+                            auto adparams = std::make_tuple(entityComponentArray, entityComponentMapping, entityId));
+                            AddEntityToSceneSystem addSystem;
+                            sceneMapping.apply(sceneArray, addSystem, wallId, adparams);
+                            scene->grid.getGridCellAt(math::Vec3f(w->getPosition().x, w->getPosition().y, 0))->setPassable(false);
+                            if (y == endY - tileSize.y) {
+                                int i = math::Math::random(tGround.size());
+                                std::vector<EntityId> tileId {tGround[i]};
+                                std::vector<EntityId> clonedTileIds;
+                                componentMapping.apply(componentArray, cloningSystem, tGround[i], clparams, clonedTileIds);
+                                auto mvparams = std::make_tuple(componentArray, componentMapping, position);
+                                tileId[0] = clonedTileIds[0];
+                                componentMapping.apply(componentArray, moveSystem, tileId, mvparams);
+                                componentMapping.addChild(bt, bt, tile, 0);
+                            }
+                            gridMap->getGridCellAt(math::Vec3f(w->getPosition().x, w->getPosition().y, w->getPosition().z))->setPassable(false);
+                        } else if ((x == startX || x == endX - tileSize.x) && walls.size() >= 11) {
+                            std::vector<EntityId> wallId(1);
+                            wallId[0] = walls[Wall::RIGHT_LEFT];
+                            std::vector<EntityId> clonedWallIds;
+                            CloningSystem cloningSystem;
+                            auto clparams = std::make_tuple(componentArray, componentMapping, factory);
+                            componentMapping.apply(componentArray, cloningSystem, wallId, clparams, clonedWallsId);
+                            MoveEntitySystem moveSystem;
+                            auto transform = componentMapping.getAgregate<TransformComponent>(componentMapping, clonedWallsId[0]);
+                            math::Vec3f position = math::Vec3f(pos.x, pos.y, pos.y + transform->size.y * 0.5f);
+                            auto mvparams = std::make_tuple(componentArray, componentMapping, position);
+                            wallId[0] = clonedWallsId[0];
+                            componentMapping.apply(componentArray, moveSystem, wallId, mvparams);
+                            auto adparams = std::make_tuple(entityComponentArray, entityComponentMapping, entityId));
+                            AddEntityToSceneSystem addSystem;
+                            sceneMapping.apply(sceneArray, addSystem, wallId, adparams);
+                            scene->grid.getGridCellAt(math::Vec3f(w->getPosition().x, w->getPosition().y, 0))->setPassable(false);
+                            if (y == endY - tileSize.y) {
+                                int i = math::Math::random(tGround.size());
+                                std::vector<EntityId> tileId {tGround[i]};
+                                std::vector<EntityId> clonedTileIds;
+                                componentMapping.apply(componentArray, cloningSystem, tGround[i], clparams, clonedTileIds);
+                                auto mvparams = std::make_tuple(componentArray, componentMapping, position);
+                                tileId[0] = clonedTileIds[0];
+                                componentMapping.apply(componentArray, moveSystem, tileId, mvparams);
+                                componentMapping.addChild(bt, bt, tile, 0);
+                            }
+                            gridMap->getGridCellAt(math::Vec3f(w->getPosition().x, w->getPosition().y, w->getPosition().z))->setPassable(false);
+                        } else {
+                            EntityId tile;
+                            if (tGround.size() > 0)  {
+                                int i = math::Math::random(tGround.size());
+                                std::vector<EntityId> clonedTileIds;
+                                componentMapping.apply(componentArray, cloningSystem, tGround[i], clparams, clonedTileIds);
+                                auto mvparams = std::make_tuple(componentArray, componentMapping, position);
+                                tileId[0] = clonedTileIds[0];
+                                componentMapping.apply(componentArray, moveSystem, tileId, mvparams);
+                            } else {
+                                EntitId tile = createTileModel(componentMapping, entityComponentArray, nullptr, math::Vec3f(pos.x, pos.y, pos.y + tileSize.y * 0.5f), math::Vec3f(tileSize.x, tileSize.y, 0), sf::IntRect(0, 0, tileSize.x, tileSize.y), factory);
+                            }
+                            if (rect.getSize().z != 0) {
+                                float heights[4];
+                                for (unsigned int j = 0; j < sizeof(heights) / sizeof(float); j++) {
+                                    heights[j] = math::Math::random(rect.getPosition().z, rect.getPosition().z + rect.getDepth());
+                                }
+                                HeightmapGeneratorSystem heightMapGeneratorSystem;
+                                std::vector<EntityId> bigTileId {bt};
+                                auto params = std::make_tuple(tile, math::Vec2f(pos.x, pos.y));
+                                componentMapping.apply(componentArray, heightMapGeneratorSystem, bigTileId, params);
+                            } else {
+                                componentMapping.addChild(bt, bt, tile);
+                            }
+                        }
+                    }
+                }
+            }
+        };
+        //Load datas to renderders.
+        struct LoadVisbileDataToRenderersSystem {
+            //Copie des données des entités visible de la scene.
+            template <typename... Components, typename... Params, typename SubSystem, class <typename = std::enable_if_t<contains<Scene, Components...>::value>
+            void operator()(std::tuple<Components...> components, std::tuple<Params...> params) {
+                Scene* scene = std::get<index<Scene, Components...>(components);
+                if (scene != nullptr) {
+
+                }
+            }
+            //Type de composant inadéquat.
+            template <typename... Components, typename... Params, typename SubSystem, class = typename = std::enable_if_t<!contains<Scene, Components...>::value>
+            void operator()(std::tuple<Components...> components, std::tuple<Params...> params, SubSystem& subSystem) {
+
+            }
+        };
+        struct CheckVisbleEntities {
+            template <typename... Components, typename... Params, typename SubSystem, class <typename = std::enable_if_t<contains<Scene, Components...>::value>
+            void operator()(std::tuple<Components...> components, std::tuple<Params...> params) {
+                template <typename... Components, typename... Params, class = typename std::enable_if_t<contains<SceneType1*, Components...>::value>>
+                void operator()(std::tuple<Components...>& tp, EntityId entityId, std::tuple<Params...>& params) {
+                    Scene scene = std::get<index<SceneType1*,Components...>()>(tp);
+                    if (scene != nullptr) {
+                        auto renderers = std::get<3>(params);
+                        std::vector<EntityId> rendersIds = std::get<4>(params);
+                        ComponentMapping renderMapping = std::get<5>(params);
+                        auto tp = std::make_tuple(scene);
+                        LoadVisbileDataToRenderersSystem loader;
+                        call_sub_system<typename std::remove_reference_t<decltype(renders)>::types>(renderers, loader, renderMapping, rendersIds, params, std::make_index_sequence<renders.nbTypes()>());
+                    }
+                }
+                template <typename T, typename Array, typename System, typename Mapping, typename... Params, size_t... I>
+                void call_sub_system(Array& array, System& system, Mapping& componentMapping, std::vector<EntityId> entities, std::tuple<Params...>& params, std::index_sequence<I...>) {
+                    componentMapping.template apply<std::tuple_element_t<I, T>...>(array, system, entities, params);
+                }
+                template <typename... Components, typename... Params, class... D, class = typename std::enable_if_t<!contains<Scene, Components...>::value>>
+                void operator()(std::tuple<Components...>& tp, EntityId entityId, std::tuple<Params...>& params) {
+
                 }
             }
         };

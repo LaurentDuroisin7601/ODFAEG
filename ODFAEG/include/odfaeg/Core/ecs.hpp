@@ -4,9 +4,9 @@
 #include "../Graphics/entity.h"
 namespace odfaeg {
     namespace graphic {
-        using EntityId = std::size_t*;
-        class ComponentMapping {
-             template <class>
+        using EntityId = atomwrapper<std::size_t*>;
+class ComponentMapping {
+            template <class>
             friend class World;
             friend class CloningSystem;
             private :
@@ -29,9 +29,11 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < componentMapping.size(); i++) {
                     componentMapping[i].resize(newTuple.nbTypes());
                 }
-                componentMapping[*entity][newTuple.template getIndexOfTypeT<Component>()] = newTuple.template vectorSize<Component>()-1;
+
+                componentMapping[entity.getId()][newTuple.template getIndexOfTypeT<Component>()] = newTuple.template vectorSize<Component>()-1;
                 return newTuple;
             }
+
             template <typename DynamicTuple, typename Component, typename Factory>
             void addAgregate(EntityId entityId, DynamicTuple& tuple, Component component, Factory& factory) {
                 tuple.add(component);
@@ -43,27 +45,26 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < componentMapping.size(); i++) {
                     componentMapping[i].resize(tuple.nbTypes());
                 }
-                componentMapping[*entityId][tuple.template getIndexOfTypeT<Component>()] = tuple.template vectorSize<Component>()-1;
+                componentMapping[entityId.getId()][tuple.template getIndexOfTypeT<Component>()] = tuple.template vectorSize<Component>()-1;
             }
             void addChild(EntityId rootId, EntityId parentId, EntityId child, size_t treeLevel) {
 
-                if (treeLevel >= nbLevels[*rootId]) {
-                    nbLevels[*rootId]++;
+                if (treeLevel >= nbLevels[rootId.getId()]) {
+                    nbLevels[rootId.getId()]++;
                     for (unsigned int i = 0; i < childrenMapping.size(); i++) {
-                        childrenMapping[*rootId].resize(nbLevels[*rootId]);
+                        childrenMapping[rootId.getId()].resize(nbLevels[rootId.getId()]);
                     }
                 }
-                childrenMapping[*rootId][treeLevel].push_back(child);
 
-                for (unsigned int i = 0; i < childrenMapping[*rootId].size(); i++) {
-                    for (unsigned int j = 0; j < childrenMapping[*rootId][i].size(); j++) {
-                        nbLevels[*childrenMapping[*rootId][i][j]] = nbLevels[*rootId];
+                childrenMapping[rootId.getId()][treeLevel].push_back(child);
+                for (unsigned int i = 0; i < childrenMapping[rootId.getId()].size(); i++) {
+                    for (unsigned int j = 0; j < childrenMapping[rootId.getId()][i].size(); j++) {
+                        nbLevels[childrenMapping[rootId.getId()][i][j].getId()] = nbLevels[rootId.getId()];
                     }
                 }
-                treeLevels[*child] = treeLevel;
-                branchIds[*child] = parentId;
+                treeLevels[child.getId()] = treeLevel;
+                branchIds[child.getId()] = parentId;
             }
-
             template <class T>
             void removeInVector(std::vector<T>& vec, size_t index) {
                 unsigned int i;
@@ -79,21 +80,22 @@ namespace odfaeg {
             void removeTreeInfos(size_t i) {
                 removeInVector(treeLevels, i);
                 removeInVector(nbLevels, i);
-                removeInVector(branchIds, i);
+                //removeInVector(branchIds, i);
             }
             EntityId getRoot(EntityId entityId) {
                 EntityId parentId = entityId;
-                while (treeLevels[*parentId].has_value()) {
-                    parentId = branchIds[*parentId];
+                while (treeLevels[parentId.getId()].has_value()) {
+                    parentId = branchIds[parentId.getId()];
                 }
-                return parentId;
+                return std::move(parentId);
             }
             bool sameBranch (size_t id1, size_t id2) {
                 while (treeLevels[id2].has_value()) {
-                    EntityId parent = branchIds[id2];
-                    if (*parent == id1)
+                    EntityId parent;
+                    parent = branchIds[id2];
+                    if (parent.getId() == id1)
                         return true;
-                    id2 = *parent;
+                    id2 = parent.getId();
                 }
                 return false;
             }
@@ -103,10 +105,10 @@ namespace odfaeg {
                     if (treeLevels[i] > maxLevel)
                         maxLevel++;
                 }
-                nbLevels[*rootId] = maxLevel;
-                for (unsigned int i = 0; i < childrenMapping[*rootId].size(); i++) {
-                    for (unsigned int j = 0; j < childrenMapping[*rootId][i].size(); j++) {
-                        nbLevels[*childrenMapping[*rootId][i][j]] = nbLevels[*rootId];
+                nbLevels[rootId.getId()] = maxLevel;
+                for (unsigned int i = 0; i < childrenMapping[rootId.getId()].size(); i++) {
+                    for (unsigned int j = 0; j < childrenMapping[rootId.getId()][i].size(); j++) {
+                        nbLevels[childrenMapping[rootId.getId()][i][j].getId()] = nbLevels[rootId.getId()];
                     }
                 }
             }
@@ -117,17 +119,17 @@ namespace odfaeg {
                 unsigned int i;
                 for (itToFind = componentMapping.begin(), i = 0; itToFind != componentMapping.end() && !found; itToFind++, i++) {
 
-                    if (*entityId == i) {
+                    if (entityId.getId() == i) {
                         found = true;
                     }
                 }
                 if (found) {
                     i--;
-                    std::optional<size_t> treeLevel = treeLevels[*entityId];
+                    std::optional<size_t> treeLevel = treeLevels[entityId.getId()];
 
                     //Met à jour les informations sur la branche si l'entité possèdes des enfants.
                     if (treeLevel.has_value()) {
-                        EntityId rootId = getRoot(entityId);
+                        EntityId rootId= getRoot(entityId);
                         size_t level = treeLevel.value();
                         unsigned int j;
                         std::vector<std::vector<std::optional<size_t>>>::iterator it;
@@ -135,16 +137,16 @@ namespace odfaeg {
                         for (it = componentMapping.begin(), j = 0; it != componentMapping.end(); j++) {
                             //si l'enfant est située à un niveau en dessous sur la même branche, on supprime le mapping!
 
-                            if (sameBranch(*entityId, j) && treeLevels[j].has_value() && treeLevels[j].value() > level) {
+                            if (sameBranch(entityId.getId(), j) && treeLevels[j].has_value() && treeLevels[j].value() > level) {
                                 std::vector<std::vector<EntityId>>::iterator it2;
                                 unsigned int k;
                                 //Supression du mapping dans la children map.
-                                for (it2 = childrenMapping[*rootId].begin(), k = 0; it2 != childrenMapping[*rootId].end(); k++) {
+                                for (it2 = childrenMapping[rootId.getId()].begin(), k = 0; it2 != childrenMapping[rootId.getId()].end(); k++) {
                                     std::vector<EntityId>::iterator it3;
                                     unsigned int c;
-                                    for (it3 = childrenMapping[*rootId][k].begin(), c = 0; it3 != childrenMapping[*rootId][k].end(); c++) {
-                                        if (sameBranch(*entityId, *childrenMapping[*rootId][k][c]) && nbLevels[*childrenMapping[*rootId][k][c]] > level) {
-                                            childrenMapping[*rootId][k].erase(it3);
+                                    for (it3 = childrenMapping[rootId.getId()][k].begin(), c = 0; it3 != childrenMapping[rootId.getId()][k].end(); c++) {
+                                        if (sameBranch(entityId.getId(), childrenMapping[rootId.getId()][k][c].getId()) && nbLevels[childrenMapping[rootId.getId()][k][c].getId()] > level) {
+                                            childrenMapping[rootId.getId()][k].erase(it3);
                                         } else {
                                             it3++;
                                         }
@@ -162,7 +164,7 @@ namespace odfaeg {
                     std::vector<std::vector<std::vector<EntityId>>>::iterator it;
                     unsigned int i = 0;
                     for (it = childrenMapping.begin(), i = 0; it != childrenMapping.end(); i++) {
-                        if (i == *entityId) {
+                        if (i == entityId.getId()) {
                             childrenMapping.erase(it);
                         } else {
                             it++;
@@ -174,33 +176,26 @@ namespace odfaeg {
                 }
 
             }
-
             public :
             template <typename T, typename DynamicTuple>
             T* getAgregate(DynamicTuple& tuple, EntityId entityId) {
                 //std::cout<<"id : "<<*entityId<<","<<"size : "<<componentMapping.size()<<std::endl;
-                if (componentMapping[*entityId][tuple.template getIndexOfTypeT<T>()].has_value())
-                    return tuple.template get<T>(componentMapping[*entityId][tuple.template getIndexOfTypeT<T>()].value());
+                if (componentMapping[entityId.getId()][tuple.template getIndexOfTypeT<T>()].has_value())
+                    return tuple.template get<T>(componentMapping[entityId.getId()][tuple.template getIndexOfTypeT<T>()].value());
                 return nullptr;
             }
             template <typename... Signature, typename DynamicTuple, typename System, typename... Params>
             void apply(DynamicTuple& tuple, System& system, std::vector<EntityId>& entities, std::tuple<Params...>& params) {
-              EntityId tmpRootEntity;
-              EntityId tmpParentEntity;
-              EntityId tmpClonedParentEntity;
-              bool first = true;
-
-              auto tmpParams = std::make_tuple(tmpclonedParentEntity, tmpRootEntity, tmpParentEntity, first);
-              auto allParams = std::tuple_cat(params, tmpParams);
               for (unsigned int i = 0; i < entities.size(); i++) {
-                this->template apply_impl<Signature...>(entities[i], tuple, system, allParams, std::index_sequence_for<Signature...>());
-                size_t level = (treeLevels[*entities[i]].has_value()) ? treeLevels[*entities[i]].value() : 0;
-                for (unsigned int j = level; j < nbLevels[*entities[i]]; j++) {
-                  for(unsigned int k = 0; k < childrenMapping[*getRoot(entities[i])][j].size(); k++)
-                    this->template apply_impl<Signature...>(childrenMapping[*getRoot(entities[i])][j][k], tuple, system, allParams, std::index_sequence_for<Signature...>());
+                this->template apply_impl<Signature...>(entities[i], tuple, system, params, std::index_sequence_for<Signature...>());
+                size_t level = (treeLevels[entities[i].getId()].has_value()) ? treeLevels[entities[i].getId()].value() : 0;
+                for (unsigned int j = level; j < nbLevels[entities[i].getId()]; j++) {
+                  for(unsigned int k = 0; k < childrenMapping[getRoot(entities[i]).getId()][j].size(); k++)
+                    this->template apply_impl<Signature...>(childrenMapping[getRoot(entities[i]).getId()][j][k], tuple, system, params, std::index_sequence_for<Signature...>());
                 }
               }
             }
+
             template <typename... Signature, typename DynamicTuple, typename System, size_t... I, typename... Params>
             void apply_impl(EntityId entityId, DynamicTuple& tuple, System& system, std::tuple<Params...>& params, std::index_sequence<I...>) {
                 auto tp = std::make_tuple(getAgregate<std::tuple_element_t<I, std::tuple<Signature...>>>(tuple, entityId)...);
@@ -208,20 +203,13 @@ namespace odfaeg {
             }
             template <typename... Signature, typename DynamicTuple, typename System, typename... Params, class R>
             void apply(DynamicTuple& tuple, System& system, std::vector<EntityId>& entities, std::tuple<Params...>& params, std::vector<R>& ret) {
-              //Paramètres supplémentaires que l'on peut utiliser dans le système pour stocker des informations sur le noeud précédent.
-              EntityId tmpRootEntity;
-              EntityId tmpParentEntity;
-              bool first = true;
-              size_t level = 0;
-              auto tmpParams = std::make_tuple(tmpRootEntity, tmpParentEntity, first, level);
-              auto allParams = std::tuple_cat(params, tmpParams);
               for (unsigned int i = 0; i < entities.size(); i++) {
-                this->template apply_impl<Signature...>(entities[i], tuple, system, allParams, std::index_sequence_for<Signature...>());
-                size_t level = (treeLevels[*entities[i]].has_value()) ? treeLevels[*entities[i]].value() : 0;
-                for (unsigned int j = level; j < nbLevels[*entities[i]]; j++) {
-                  for(unsigned int k = 0; k < childrenMapping[*getRoot(entities[i])][j].size(); k++)
-                    this->template apply_impl<Signature...>(childrenMapping[*getRoot(entities[i])][j][k], tuple, system, allParams, std::index_sequence_for<Signature...>());
+                for (unsigned int j = 0; j < nbLevels[entities[i].getId()]; j++) {
+                  for(unsigned int k = 0; k < childrenMapping[entities[i].getId()][j].size(); k++) {
+                    this->template apply_impl<Signature...>(childrenMapping[entities[i].getId()][j][k], tuple, system, params, std::index_sequence_for<Signature...>(), ret);
+                  }
                 }
+                this->template apply_impl<Signature...>(entities[i], tuple, system, params, std::index_sequence_for<Signature...>());
               }
             }
             template <typename... Signature, typename DynamicTuple, typename System, size_t... I, typename... Params, typename R>
@@ -239,39 +227,38 @@ namespace odfaeg {
         struct EntityFactory {
             template <typename T>
             friend class World;
+            friend class ComponentMapping;
             size_t nbEntities=0;
-            std::vector<std::unique_ptr<std::remove_pointer_t<EntityId>>> ids;
+            std::vector<EntityId> ids;
             EntityId createEntity() {
+
+                EntityId id;
+                id.setId(nbEntities);
+                ids.push_back(id);
                 nbEntities++;
-                EntityId id = new std::remove_pointer_t<EntityId>(nbEntities-1);
-                std::unique_ptr<std::remove_pointer_t<EntityId>> ptr;
-                ptr.reset(id);
-                ids.push_back(std::move(ptr));
                 return id;
             }
             size_t getNbEntities() {
                 return nbEntities;
             }
             private :
-            bool destroyEntity(EntityId id) {
-                if (id != nullptr) {
-                    const auto itToFind =
-                        std::find_if(ids.begin(), ids.end(),
-                                     [&](auto& p) { return p.get() == id; });
-                    const bool found = (itToFind != ids.end());
-                    if (found) {
-                        for (auto it = itToFind; it != ids.end(); it++) {
-                            (**it)--;
-                        }
-                        ids.erase(itToFind);
-                        nbEntities--;
-                        return true;
+            void destroyEntity(EntityId id) {
+                const auto itToFind =
+                    std::find_if(ids.begin(), ids.end(),
+                                 [&](auto& p) { return p.getId() == id.getId(); });
+                const bool found = (itToFind != ids.end());
+                if (found) {
+                    for (auto it = itToFind; it != ids.end(); it++) {
+                        it->setId(it->getId());
                     }
-                    return false;
+
+                    ids.erase(itToFind);
+
+                    nbEntities--;
                 }
-                return false;
             }
         };
+
     }
 }
 #endif

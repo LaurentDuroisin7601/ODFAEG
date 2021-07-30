@@ -8,6 +8,7 @@ using namespace odfaeg::graphic;
 using namespace odfaeg::window;
 using namespace odfaeg::audio;
 using namespace sorrok;*/
+
 template < typename Tp, typename... List >
 struct contains : std::true_type {};
 
@@ -147,7 +148,36 @@ auto remove_Nth(T& tuple)
   return select_tuple(tuple, indices{});
 }
 
-using EntityId = std::size_t*;
+template <typename T>
+struct atomwrapper
+{
+  std::atomic<T> _a;
+
+  atomwrapper()
+    :_a()
+  {}
+
+  atomwrapper(const std::atomic<T> &a)
+    :_a(a.load())
+  {}
+
+  atomwrapper(const atomwrapper &other)
+    :_a(other._a.load())
+  {}
+
+  atomwrapper &operator=(const atomwrapper &other)
+  {
+    _a.store(other._a.load());
+    return *this;
+  }
+  void setId (size_t id) {
+    _a.store(new size_t(id));
+  }
+  std::remove_pointer_t<T> getId() {
+    return *_a.load();
+  }
+};
+using EntityId = atomwrapper<std::size_t*>;
 class ComponentMapping {
             template <class>
             friend class World;
@@ -172,9 +202,11 @@ class ComponentMapping {
                 for (unsigned int i = 0; i < componentMapping.size(); i++) {
                     componentMapping[i].resize(newTuple.nbTypes());
                 }
-                componentMapping[*entity][newTuple.template getIndexOfTypeT<Component>()] = newTuple.template vectorSize<Component>()-1;
+
+                componentMapping[entity.getId()][newTuple.template getIndexOfTypeT<Component>()] = newTuple.template vectorSize<Component>()-1;
                 return newTuple;
             }
+
             template <typename DynamicTuple, typename Component, typename Factory>
             void addAgregate(EntityId entityId, DynamicTuple& tuple, Component component, Factory& factory) {
                 tuple.add(component);
@@ -186,27 +218,26 @@ class ComponentMapping {
                 for (unsigned int i = 0; i < componentMapping.size(); i++) {
                     componentMapping[i].resize(tuple.nbTypes());
                 }
-                componentMapping[*entityId][tuple.template getIndexOfTypeT<Component>()] = tuple.template vectorSize<Component>()-1;
+                componentMapping[entityId.getId()][tuple.template getIndexOfTypeT<Component>()] = tuple.template vectorSize<Component>()-1;
             }
             void addChild(EntityId rootId, EntityId parentId, EntityId child, size_t treeLevel) {
 
-                if (treeLevel >= nbLevels[*rootId]) {
-                    nbLevels[*rootId]++;
+                if (treeLevel >= nbLevels[rootId.getId()]) {
+                    nbLevels[rootId.getId()]++;
                     for (unsigned int i = 0; i < childrenMapping.size(); i++) {
-                        childrenMapping[*rootId].resize(nbLevels[*rootId]);
+                        childrenMapping[rootId.getId()].resize(nbLevels[rootId.getId()]);
                     }
                 }
-                childrenMapping[*rootId][treeLevel].push_back(child);
 
-                for (unsigned int i = 0; i < childrenMapping[*rootId].size(); i++) {
-                    for (unsigned int j = 0; j < childrenMapping[*rootId][i].size(); j++) {
-                        nbLevels[*childrenMapping[*rootId][i][j]] = nbLevels[*rootId];
+                childrenMapping[rootId.getId()][treeLevel].push_back(child);
+                for (unsigned int i = 0; i < childrenMapping[rootId.getId()].size(); i++) {
+                    for (unsigned int j = 0; j < childrenMapping[rootId.getId()][i].size(); j++) {
+                        nbLevels[childrenMapping[rootId.getId()][i][j].getId()] = nbLevels[rootId.getId()];
                     }
                 }
-                treeLevels[*child] = treeLevel;
-                branchIds[*child] = parentId;
+                treeLevels[child.getId()] = treeLevel;
+                branchIds[child.getId()] = parentId;
             }
-
             template <class T>
             void removeInVector(std::vector<T>& vec, size_t index) {
                 unsigned int i;
@@ -222,21 +253,22 @@ class ComponentMapping {
             void removeTreeInfos(size_t i) {
                 removeInVector(treeLevels, i);
                 removeInVector(nbLevels, i);
-                removeInVector(branchIds, i);
+                //removeInVector(branchIds, i);
             }
             EntityId getRoot(EntityId entityId) {
                 EntityId parentId = entityId;
-                while (treeLevels[*parentId].has_value()) {
-                    parentId = branchIds[*parentId];
+                while (treeLevels[parentId.getId()].has_value()) {
+                    parentId = branchIds[parentId.getId()];
                 }
-                return parentId;
+                return std::move(parentId);
             }
             bool sameBranch (size_t id1, size_t id2) {
                 while (treeLevels[id2].has_value()) {
-                    EntityId parent = branchIds[id2];
-                    if (*parent == id1)
+                    EntityId parent;
+                    parent = branchIds[id2];
+                    if (parent.getId() == id1)
                         return true;
-                    id2 = *parent;
+                    id2 = parent.getId();
                 }
                 return false;
             }
@@ -246,10 +278,10 @@ class ComponentMapping {
                     if (treeLevels[i] > maxLevel)
                         maxLevel++;
                 }
-                nbLevels[*rootId] = maxLevel;
-                for (unsigned int i = 0; i < childrenMapping[*rootId].size(); i++) {
-                    for (unsigned int j = 0; j < childrenMapping[*rootId][i].size(); j++) {
-                        nbLevels[*childrenMapping[*rootId][i][j]] = nbLevels[*rootId];
+                nbLevels[rootId.getId()] = maxLevel;
+                for (unsigned int i = 0; i < childrenMapping[rootId.getId()].size(); i++) {
+                    for (unsigned int j = 0; j < childrenMapping[rootId.getId()][i].size(); j++) {
+                        nbLevels[childrenMapping[rootId.getId()][i][j].getId()] = nbLevels[rootId.getId()];
                     }
                 }
             }
@@ -260,17 +292,17 @@ class ComponentMapping {
                 unsigned int i;
                 for (itToFind = componentMapping.begin(), i = 0; itToFind != componentMapping.end() && !found; itToFind++, i++) {
 
-                    if (*entityId == i) {
+                    if (entityId.getId() == i) {
                         found = true;
                     }
                 }
                 if (found) {
                     i--;
-                    std::optional<size_t> treeLevel = treeLevels[*entityId];
+                    std::optional<size_t> treeLevel = treeLevels[entityId.getId()];
 
                     //Met à jour les informations sur la branche si l'entité possèdes des enfants.
                     if (treeLevel.has_value()) {
-                        EntityId rootId = getRoot(entityId);
+                        EntityId rootId= getRoot(entityId);
                         size_t level = treeLevel.value();
                         unsigned int j;
                         std::vector<std::vector<std::optional<size_t>>>::iterator it;
@@ -278,16 +310,16 @@ class ComponentMapping {
                         for (it = componentMapping.begin(), j = 0; it != componentMapping.end(); j++) {
                             //si l'enfant est située à un niveau en dessous sur la même branche, on supprime le mapping!
 
-                            if (sameBranch(*entityId, j) && treeLevels[j].has_value() && treeLevels[j].value() > level) {
+                            if (sameBranch(entityId.getId(), j) && treeLevels[j].has_value() && treeLevels[j].value() > level) {
                                 std::vector<std::vector<EntityId>>::iterator it2;
                                 unsigned int k;
                                 //Supression du mapping dans la children map.
-                                for (it2 = childrenMapping[*rootId].begin(), k = 0; it2 != childrenMapping[*rootId].end(); k++) {
+                                for (it2 = childrenMapping[rootId.getId()].begin(), k = 0; it2 != childrenMapping[rootId.getId()].end(); k++) {
                                     std::vector<EntityId>::iterator it3;
                                     unsigned int c;
-                                    for (it3 = childrenMapping[*rootId][k].begin(), c = 0; it3 != childrenMapping[*rootId][k].end(); c++) {
-                                        if (sameBranch(*entityId, *childrenMapping[*rootId][k][c]) && nbLevels[*childrenMapping[*rootId][k][c]] > level) {
-                                            childrenMapping[*rootId][k].erase(it3);
+                                    for (it3 = childrenMapping[rootId.getId()][k].begin(), c = 0; it3 != childrenMapping[rootId.getId()][k].end(); c++) {
+                                        if (sameBranch(entityId.getId(), childrenMapping[rootId.getId()][k][c].getId()) && nbLevels[childrenMapping[rootId.getId()][k][c].getId()] > level) {
+                                            childrenMapping[rootId.getId()][k].erase(it3);
                                         } else {
                                             it3++;
                                         }
@@ -305,7 +337,7 @@ class ComponentMapping {
                     std::vector<std::vector<std::vector<EntityId>>>::iterator it;
                     unsigned int i = 0;
                     for (it = childrenMapping.begin(), i = 0; it != childrenMapping.end(); i++) {
-                        if (i == *entityId) {
+                        if (i == entityId.getId()) {
                             childrenMapping.erase(it);
                         } else {
                             it++;
@@ -321,18 +353,18 @@ class ComponentMapping {
             template <typename T, typename DynamicTuple>
             T* getAgregate(DynamicTuple& tuple, EntityId entityId) {
                 //std::cout<<"id : "<<*entityId<<","<<"size : "<<componentMapping.size()<<std::endl;
-                if (componentMapping[*entityId][tuple.template getIndexOfTypeT<T>()].has_value())
-                    return tuple.template get<T>(componentMapping[*entityId][tuple.template getIndexOfTypeT<T>()].value());
+                if (componentMapping[entityId.getId()][tuple.template getIndexOfTypeT<T>()].has_value())
+                    return tuple.template get<T>(componentMapping[entityId.getId()][tuple.template getIndexOfTypeT<T>()].value());
                 return nullptr;
             }
             template <typename... Signature, typename DynamicTuple, typename System, typename... Params>
             void apply(DynamicTuple& tuple, System& system, std::vector<EntityId>& entities, std::tuple<Params...>& params) {
               for (unsigned int i = 0; i < entities.size(); i++) {
                 this->template apply_impl<Signature...>(entities[i], tuple, system, params, std::index_sequence_for<Signature...>());
-                size_t level = (treeLevels[*entities[i]].has_value()) ? treeLevels[*entities[i]].value() : 0;
-                for (unsigned int j = level; j < nbLevels[*entities[i]]; j++) {
-                  for(unsigned int k = 0; k < childrenMapping[*getRoot(entities[i])][j].size(); k++)
-                    this->template apply_impl<Signature...>(childrenMapping[*getRoot(entities[i])][j][k], tuple, system, params, std::index_sequence_for<Signature...>());
+                size_t level = (treeLevels[entities[i].getId()].has_value()) ? treeLevels[entities[i].getId()].value() : 0;
+                for (unsigned int j = level; j < nbLevels[entities[i].getId()]; j++) {
+                  for(unsigned int k = 0; k < childrenMapping[getRoot(entities[i]).getId()][j].size(); k++)
+                    this->template apply_impl<Signature...>(childrenMapping[getRoot(entities[i]).getId()][j][k], tuple, system, params, std::index_sequence_for<Signature...>());
                 }
               }
             }
@@ -345,9 +377,9 @@ class ComponentMapping {
             template <typename... Signature, typename DynamicTuple, typename System, typename... Params, class R>
             void apply(DynamicTuple& tuple, System& system, std::vector<EntityId>& entities, std::tuple<Params...>& params, std::vector<R>& ret) {
               for (unsigned int i = 0; i < entities.size(); i++) {
-                for (unsigned int j = 0; j < nbLevels[*entities[i]]; j++) {
-                  for(unsigned int k = 0; k < childrenMapping[*entities[i]][j].size(); k++) {
-                    this->template apply_impl<Signature...>(childrenMapping[*entities[i]][j][k], tuple, system, params, std::index_sequence_for<Signature...>(), ret);
+                for (unsigned int j = 0; j < nbLevels[entities[i].getId()]; j++) {
+                  for(unsigned int k = 0; k < childrenMapping[entities[i].getId()][j].size(); k++) {
+                    this->template apply_impl<Signature...>(childrenMapping[entities[i].getId()][j][k], tuple, system, params, std::index_sequence_for<Signature...>(), ret);
                   }
                 }
                 this->template apply_impl<Signature...>(entities[i], tuple, system, params, std::index_sequence_for<Signature...>());
@@ -370,13 +402,13 @@ struct EntityFactory {
     friend class World;
     friend class ComponentMapping;
     size_t nbEntities=0;
-    std::vector<std::unique_ptr<std::remove_pointer_t<EntityId>>> ids;
+    std::vector<EntityId> ids;
     EntityId createEntity() {
+
+        EntityId id;
+        id.setId(nbEntities);
+        ids.push_back(id);
         nbEntities++;
-        EntityId id = new std::remove_pointer_t<EntityId>(nbEntities-1);
-        std::unique_ptr<std::remove_pointer_t<EntityId>> ptr;
-        ptr.reset(id);
-        ids.push_back(std::move(ptr));
         return id;
     }
     size_t getNbEntities() {
@@ -386,17 +418,20 @@ struct EntityFactory {
     void destroyEntity(EntityId id) {
         const auto itToFind =
             std::find_if(ids.begin(), ids.end(),
-                         [&](auto& p) { return p.get() == id; });
+                         [&](auto& p) { return p.getId() == id.getId(); });
         const bool found = (itToFind != ids.end());
         if (found) {
             for (auto it = itToFind; it != ids.end(); it++) {
-                (**it)--;
+                it->setId(it->getId());
             }
+
             ids.erase(itToFind);
+
             nbEntities--;
         }
     }
 };
+
 struct vec3 {
     vec3(float x,float y, float z) : x(x), y(y), z(z) {}
     float x, y, z;
@@ -407,13 +442,13 @@ struct transform_component {
 };
 
 struct MoveSystem  {
-    template <typename... Components, typename... Params, class = typename std::enable_if_t<contains<transform_component, Components...>::value>>
-    void operator()(std::tuple<Components...>& tp, EntityId entityId, std::tuple<Params...>& params) {
+    template <typename... Components, typename T2, class = typename std::enable_if_t<contains<transform_component, Components...>::value>>
+    void operator()(std::tuple<Components...>& tp, EntityId entityId, T2& params) {
         transform_component* tc = std::get<index<transform_component*,Components...>()>(tp);
         //std::cout<<"position : "<<tc->position.x<<","<<tc->position.y<<","<<tc->position.z<<std::endl;
     }
-    template <typename... Components, typename... Params, class...D, class = typename std::enable_if_t<!contains<transform_component, Components...>::value>>
-    void operator()(std::tuple<Components...>& tp, EntityId entityId, std::tuple<Params...>& params) {
+    template <typename... Components, typename T2, class...D, class = typename std::enable_if_t<!contains<transform_component, Components...>::value>>
+    void operator()(std::tuple<Components...>& tp, EntityId entityId, T2& params) {
     }
 };
 struct RenderType1 {
@@ -423,27 +458,29 @@ struct RenderType2 {
 
 };
 struct RenderSystemType1 {
-    template <typename... Components, typename... Params, class = typename std::enable_if_t<contains<RenderType1*, Components...>::value>>
-    void operator()(std::tuple<Components...>& tp, EntityId entityId, std::tuple<Params...>& params) {
+    template <typename... Components, typename T2, class = typename std::enable_if_t<contains<RenderType1*, Components...>::value>>
+    void operator()(std::tuple<Components...>& tp, EntityId entityId, T2& params) {
         RenderType1* renderType1 = std::get<index<RenderType1*,Components...>()>(tp);
         if (renderType1 != nullptr) {
             std::cout<<"draw render type 1 "<<std::endl;
         }
     }
-    template <typename... Components, typename... Params, class... D, class = typename std::enable_if_t<!contains<RenderType1*, Components...>::value>>
-    void operator()(std::tuple<Components...>& tp,  EntityId entityId, std::tuple<Params...>& params) {
+    template <typename... Components, typename T2, class... D, class = typename std::enable_if_t<!contains<RenderType1*, Components...>::value>>
+    void operator()(std::tuple<Components...>& tp,  EntityId entityId, T2& params) {
+
     }
 };
 struct RenderSystemType2 {
-    template <typename... Components, typename... Params, class = typename std::enable_if_t<contains<RenderType2*, Components...>::value>>
-    void operator()(std::tuple<Components...>& tp,  EntityId entityId, std::tuple<Params...>& params) {
+    template <typename... Components, typename T2, class = typename std::enable_if_t<contains<RenderType2*, Components...>::value>>
+    void operator()(std::tuple<Components...>& tp,  EntityId entityId, T2& params) {
         RenderType2* renderType2 = std::get<index<RenderType2*,Components...>()>(tp);
         if (renderType2 != nullptr) {
             std::cout<<"draw render type 2 "<<std::endl;
         }
     }
-    template <typename... Components, typename... Params, class... D, class = typename std::enable_if_t<!contains<RenderType2*, Components...>::value>>
-    void operator()(std::tuple<Components...>& tp,  EntityId entityId, std::tuple<Params...>& params) {
+    template <typename... Components, typename T2, class... D, class = typename std::enable_if_t<!contains<RenderType2*, Components...>::value>>
+    void operator()(std::tuple<Components...>& tp,  EntityId entityId, T2& params) {
+
     }
 };
 
@@ -460,8 +497,8 @@ struct LoadToRender {
     }
 };
 struct LoadSystem {
-    template <typename... Components, typename... Params, class = typename std::enable_if_t<contains<SceneType1*, Components...>::value>>
-    void operator()(std::tuple<Components...>& tp, EntityId entityId, std::tuple<Params...>& params) {
+    template <typename... Components, typename T2, class = typename std::enable_if_t<contains<SceneType1*, Components...>::value>>
+    void operator()(std::tuple<Components...>& tp, EntityId entityId, T2& params) {
         SceneType1* scene = std::get<index<SceneType1*,Components...>()>(tp);
         if (scene != nullptr) {
             auto renders = std::get<3>(params);
@@ -482,38 +519,57 @@ struct LoadSystem {
     }
 };
 struct MainSystem {
-    template <size_t I=0, typename... Components, typename... Params, class = typename std::enable_if_t<(sizeof...(Components) != 0 && I == 0)>>
-    void operator()(std::tuple<Components...>& tp, EntityId entityId, std::tuple<Params...>& params) {
-        this->template operator()<I+1>(tp, entityId, params);
+    template <size_t I=0, typename... Components, typename T2, class = typename std::enable_if_t<(sizeof...(Components) != 0 && I == 0)>>
+    void operator()(std::tuple<Components...>& tp, EntityId entityId, T2& params) {
+        auto& array = std::get<0>(params);
+        this->template operator()<I+1>(tp, entityId, params, std::make_index_sequence<array.nbTypes()>());
     }
-    template <size_t I=0, typename... Components, typename... Params, class... D, class = typename std::enable_if_t<(sizeof...(Components) != 0 && I > 0 && I < sizeof...(Components)-1)>>
-    void operator()(std::tuple<Components...>& tp, EntityId entityId, std::tuple<Params...>& params) {
-        if (std::get<I>(tp) != nullptr) {
-            auto& array = std::get<0>(params);
-            std::vector<EntityId> entities = std::get<1>(params);
-            auto& componentMapping = std::get<2>(params);
-            //std::cout<<"call system : "<<std::get<I>(tp)->positionInTemplateParameterPack<<std::endl;
-            call_system<typename std::remove_reference_t<decltype(array)>::types>(array, *std::get<I>(tp), componentMapping, entities, params, std::make_index_sequence<array.nbTypes()>());
-        } else {
-            this->template operator()<I+1>(tp, entityId, params);
-        }
-    }
+    template <typename ...Ts, std::enable_if_t<(std::is_function_v<Ts> && ...), bool> = true>
+    void f(Ts &&... ts) {}
 
-    template <size_t I=0, typename... Components, typename... Params, class... D, class... E, class = typename std::enable_if_t<(sizeof...(Components) != 0 && I == sizeof...(Components)-1)>>
-    void operator()(std::tuple<Components...>& tp, EntityId entityId, std::tuple<Params...>& params) {
+    template <size_t I=0, typename... Components, typename T2, class... D, size_t... Ints, class = typename std::enable_if_t<(sizeof...(Components) != 0 && I > 0 && I < sizeof...(Components)-1)>>
+    void operator()(std::tuple<Components...>& tp, EntityId entityId, T2& params, std::index_sequence<Ints...> seq) {
         if (std::get<I>(tp) != nullptr) {
             auto& array = std::get<0>(params);
             std::vector<EntityId> entities = std::get<1>(params);
             auto& componentMapping = std::get<2>(params);
             //std::cout<<"call system : "<<std::get<I>(tp)->positionInTemplateParameterPack<<std::endl;
-            call_system<typename std::remove_reference_t<decltype(array)>::types>(array, *std::get<I>(tp), componentMapping, entities, params, std::make_index_sequence<array.nbTypes()>());
+            std::thread t(
+            &MainSystem::call_system<typename std::remove_reference_t<decltype(array)>::types,
+            std::remove_reference_t<decltype(array)>,
+            std::remove_reference_t<decltype(*std::get<I>(tp))>,
+            std::remove_reference_t<decltype(componentMapping)>,
+            std::remove_reference_t<decltype(params)>,
+            Ints...>, this, array, *std::get<I>(tp), componentMapping, entities, params, std::make_index_sequence<array.nbTypes()>() );
+            t.detach();
+            //call_system<typename std::remove_reference_t<decltype(array)>::types>(array, *std::get<I>(tp), componentMapping, entities, params, std::make_index_sequence<array.nbTypes()>());
+
+        } else {
+            this->template operator()<I+1>(tp, entityId, params, seq);
         }
     }
-    template <size_t I=0, typename... Components, typename... Params, class... D, class... E, class... F, class = typename std::enable_if_t<sizeof...(Components) == 0>>
-    void operator()(std::tuple<Components...>& tp, EntityId entityId, std::tuple<Params...>& params) {
+    ///home/laurent/gitODFAEG/Demos/ODFAEG-DEMO/main.cpp|558|error: ‘class std::tuple<DynamicTuple<RenderType1, RenderType2>, std::vector<atomwrapper<long unsigned int*>, std::allocator<atomwrapper<long unsigned int*> > >, ComponentMapping>’ has no member named ‘apply’|
+    template <size_t I=0, typename... Components, typename T2, size_t... Ints, class... D, class... E, class = typename std::enable_if_t<(sizeof...(Components) != 0 && I == sizeof...(Components)-1)>>
+    void operator()(std::tuple<Components...>& tp, EntityId entityId, T2& params, std::index_sequence<Ints...>) {
+        if (std::get<I>(tp) != nullptr) {
+            auto& array = std::get<0>(params);
+            std::vector<EntityId> entities = std::get<1>(params);
+            auto& componentMapping = std::get<2>(params);
+            std::thread t(
+            &MainSystem::call_system<typename std::remove_reference_t<decltype(array)>::types,
+            std::remove_reference_t<decltype(array)>,
+            std::remove_reference_t<decltype(*std::get<I>(tp))>,
+            std::remove_reference_t<decltype(componentMapping)>,
+            std::remove_reference_t<decltype(params)>,
+            Ints...>, this, array, *std::get<I>(tp), componentMapping, entities, params, std::make_index_sequence<array.nbTypes()>() );
+            t.detach();
+        }
     }
-    template <typename T, typename Array, typename System, typename Mapping, typename... Params, size_t... I>
-    void call_system(Array& array, System& system, Mapping& componentMapping, std::vector<EntityId> entities, std::tuple<Params...>& params, std::index_sequence<I...>) {
+    template <size_t I=0, typename... Components, typename T2, size_t... Ints, class... D, class... E, class... F, class = typename std::enable_if_t<sizeof...(Components) == 0>>
+    void operator()(std::tuple<Components...>& tp, EntityId entityId, T2& params,  std::index_sequence<Ints...>) {
+    }
+    template <typename T, typename Array, typename System, typename Mapping, typename T2, size_t... I>
+    void call_system(Array array, System system, Mapping componentMapping, std::vector<EntityId> entities, T2 params, std::index_sequence<I...>) {
         componentMapping.template apply<std::tuple_element_t<I, T>...>(array, system, entities, params);
     }
 
@@ -527,7 +583,7 @@ class World {
     World() {
 
     }
-    void setCurrentScene(EntityId scene) {
+    void setCurrentScene(EntityId& scene) {
         currentSceneId = scene;
     }
     EntityId getCurrentSceneId() {
@@ -566,7 +622,7 @@ class World {
     }
     template <typename SystemArray, typename System>
     auto addSystem (SystemArray& systemArray, System system, SystemsQueues queue) {
-        EntityId systemId = systemFactory.createEntity();
+        EntityId systemId= systemFactory.createEntity();
         auto newSystemArray = systemMapping.addFlag(systemId, systemArray, system, systemFactory);
         if (std::is_same<decltype(newSystemArray), decltype(systemArray)>::value)
             std::runtime_error("This system type is already added a system type can only be added once!");
@@ -592,7 +648,7 @@ class World {
             std::runtime_error("Flag not found! You should call addEntityComponentFlag and get the returned array to add other components of the same type!");
         }
     }
-    void addChild(EntityId rootId, EntityId parentId, EntityId childId, size_t treeLevel) {
+    void addChild(EntityId& rootId, EntityId& parentId, EntityId& childId, size_t treeLevel) {
 
         entityComponentMapping.addChild(rootId, parentId, childId, treeLevel);
     }
@@ -635,13 +691,13 @@ class World {
         this->renderersIds.push_back(rendererId);
     }
     template <typename RenderArray, typename RenderComponent, typename Factory>
-    auto addSubRendererFlag(RenderArray& renderers, EntityId rootId, EntityId parent, EntityId& child, size_t treeLevel, RenderComponent renderer, Factory& factory) {
+    auto addSubRendererFlag(RenderArray& renderers, EntityId& rootId, EntityId& parent, EntityId& child, size_t treeLevel, RenderComponent renderer, Factory& factory) {
         auto newRenderers = rendererMapping.addFlag(child, renderers, renderer, factory);
         rendererMapping.addChild(rootId, parent, child, treeLevel);
         return newRenderers;
     }
     template <typename RenderArray, typename RenderComponent, typename Factory>
-    void addSubRenderAgregate(RenderArray& renderers, EntityId root, EntityId parent, EntityId& child, size_t treeLevel, RenderComponent renderer, Factory& factory) {
+    void addSubRenderAgregate(RenderArray& renderers, EntityId& root, EntityId& parent, EntityId& child, size_t treeLevel, RenderComponent renderer, Factory& factory) {
         rendererMapping.addAgregate(child, renderers, renderer, factory);
         rendererMapping.addChild(root, parent, child, treeLevel);
         auto newRenderers = renderers.add(renderer);
@@ -699,6 +755,7 @@ struct Application {
     }
     template <typename SystemArray, typename SceneArray, typename RendererArray, typename EntityComponentArray>
     void exec(SystemArray& systems, SceneArray& scenes, RendererArray& renderers, EntityComponentArray& components) {
+        std::cout<<"lock"<<std::endl;
         running = true;
         while (running) {
             world.draw(systems, renderers);
@@ -706,9 +763,13 @@ struct Application {
             static_cast<D&>(*this).onExec(systems, scenes, renderers, components);
         }
     }
+
+
     World<std::string> world;
     bool running = false;
+
 };
+
 struct TestAppl : Application<TestAppl> {
     template <typename SystemArray, typename SceneArray, typename RendererArray, typename EntityComponentArray>
     TestAppl(SystemArray systems, SceneArray scenes, RendererArray renderers, EntityComponentArray componentArray) : Application(systems, scenes, renderers, componentArray) {
@@ -760,6 +821,8 @@ struct TestAppl : Application<TestAppl> {
         world.addSceneAgregate(sceneArray2, sceneId1, scene1, sceneFactory);
         world.addSceneAgregate(sceneArray2, sceneId2, scene2, sceneFactory);
         world.setCurrentScene(sceneId1);
+        running = false;
+
         exec(systemsArray1, sceneArray2, renderArray2, componentArray);
     }
     template <typename SystemArray, typename SceneArray, typename RendererArray, typename EntityComponentArray>
@@ -767,15 +830,48 @@ struct TestAppl : Application<TestAppl> {
 
     }
 };
-int main(int argc, char* argv[]){
+template<auto, auto>
+struct ADLType {
+    friend consteval auto ADLFunc(ADLType, auto...);
+};
+
+template<auto InstanceIdentifier, auto x>
+struct InjectDefinitionForADLFunc {
+    friend consteval auto ADLFunc(ADLType<InstanceIdentifier, x>, auto...) {}
+};
+
+template<auto InstanceIdentifier, auto x = 0, auto = []{}>
+constexpr auto ExtractThenUpdateCurrentState()->decltype(x) {
+    if constexpr (requires { ADLFunc(ADLType<InstanceIdentifier, x>{}); })
+        return ExtractThenUpdateCurrentState<InstanceIdentifier, x + 1>();
+    else
+        InjectDefinitionForADLFunc<InstanceIdentifier, x>{};
+    return x;
+}
+
+template<auto InstanceIdentifier = []{}>
+struct S {
+    template<auto x = ExtractThenUpdateCurrentState<InstanceIdentifier>()>
+    auto Use() requires (x == 0) {}
+};
+
+int main() {
     DynamicTuple systems;
     DynamicTuple scenes;
     DynamicTuple renderers;
     DynamicTuple components;
     TestAppl test(systems, scenes, renderers, components);
-    test.exec(systems, scenes, renderers, components);
-    return 0;
+
+
+    /*t test;
+    f(test);
+    std::thread t(f, std::ref(test));
+    t.join();*/
+
     /*MyAppli app(sf::VideoMode(800, 600), "Test odfaeg");
     return app.exec();*/
 }
+
+
+
 
