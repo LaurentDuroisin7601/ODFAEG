@@ -176,6 +176,10 @@ struct atomwrapper
   std::remove_pointer_t<T> getId() {
     return *_a.load();
   }
+  void destroy () {
+    T ptr = _a.load();
+    delete ptr;
+  }
 };
 using EntityId = atomwrapper<std::size_t*>;
 class ComponentMapping {
@@ -414,6 +418,11 @@ struct EntityFactory {
     size_t getNbEntities() {
         return nbEntities;
     }
+    ~EntityFactory() {
+        for (unsigned int i = 0; i < ids.size(); i++) {
+            ids[i].destroy();
+        }
+    }
     private :
     void destroyEntity(EntityId id) {
         const auto itToFind =
@@ -422,9 +431,9 @@ struct EntityFactory {
         const bool found = (itToFind != ids.end());
         if (found) {
             for (auto it = itToFind; it != ids.end(); it++) {
-                it->setId(it->getId());
+                it->setId(it->getId()-1);
             }
-
+            itToFind->destroy();
             ids.erase(itToFind);
 
             nbEntities--;

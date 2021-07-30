@@ -4,8 +4,42 @@
 #include "../Graphics/entity.h"
 namespace odfaeg {
     namespace graphic {
+        template <typename T>
+        struct atomwrapper
+        {
+          std::atomic<T> _a;
+
+          atomwrapper()
+            :_a()
+          {}
+
+          atomwrapper(const std::atomic<T> &a)
+            :_a(a.load())
+          {}
+
+          atomwrapper(const atomwrapper &other)
+            :_a(other._a.load())
+          {}
+
+          atomwrapper &operator=(const atomwrapper &other)
+          {
+            _a.store(other._a.load());
+            return *this;
+          }
+          void setId (size_t id) {
+            _a.store(new size_t(id));
+          }
+          std::remove_pointer_t<T> getId() {
+            return *_a.load();
+          }
+          void destroy () {
+            T ptr = _a.load();
+            delete ptr;
+          }
+
+        };
         using EntityId = atomwrapper<std::size_t*>;
-class ComponentMapping {
+        class ComponentMapping {
             template <class>
             friend class World;
             friend class CloningSystem;
@@ -241,6 +275,11 @@ class ComponentMapping {
             size_t getNbEntities() {
                 return nbEntities;
             }
+            ~EntityFactory() {
+                for (unsigned int i = 0; i < ids.size(); i++) {
+                    ids[i].destroy();
+                }
+            }
             private :
             void destroyEntity(EntityId id) {
                 const auto itToFind =
@@ -249,9 +288,9 @@ class ComponentMapping {
                 const bool found = (itToFind != ids.end());
                 if (found) {
                     for (auto it = itToFind; it != ids.end(); it++) {
-                        it->setId(it->getId());
+                        it->setId(it->getId()-1);
                     }
-
+                    itToFind->destroy();
                     ids.erase(itToFind);
 
                     nbEntities--;
