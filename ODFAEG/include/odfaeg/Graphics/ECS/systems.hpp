@@ -103,7 +103,7 @@ namespace odfaeg {
         };
         //Clone une entité ainsi que tout ses composants et ses enfants.
         struct CloningSystem {
-            template <typename... Components, typename... Params, class = typename std::enable_if_t<contains<CloningComponent, Components...>::value>
+            template <typename... Components, typename... Params, class = typename std::enable_if_t<contains<Clonable, Components...>::value>
             EntityId operator()(std::tuple<Components...> components, EntityId toCloneId, std::tuple<Params...>& params) {
                 auto clonableComponent = std::get<ClonableComponent>(components);
                 auto componentArray = std::get<0>(params);
@@ -145,26 +145,77 @@ namespace odfaeg {
                 }
                 return nullptr;
             }
-            template <typename... Components, typename... Params, class... D, class = typename std::enable_if_t<!contains<CloningComponent, Components...>::value>
+            template <typename... Components, typename... Params, class... D, class = typename std::enable_if_t<!contains<Clonable, Components...>::value>
             EntityId operator()(std::tuple<Components...> components, EntityId toCloneId, std::tuple<Params...>& params) {
             }
             //Clone tout les types de composants.
-            template <typename T, size_t I = 0, typename ComponentArray, typename Factory, class = typename std::enable_if_t<(sizeof...(Components) != 0 && I < sizeof...(Components)-1)>
-            void clone_impl(ComponentArray& componentArray, EntityId tocloneId, EntityId clonedId, Factory factory) {
+            template <typename T, size_t I = 0, typename ComponentArray, typename ComponentMapping, class = typename std::enable_if_t<(sizeof...(Components) != 0 && I < sizeof...(Components)-1)>
+            void clone_impl(ComponentArray& componentArray, EntityId tocloneId, EntityId clonedId, ComponentMapping& componentMapping) {
                 //si l'entité possède le composant en question on le clône.
                 if (componentMapping.getAgregate<std::tuple_element_t<I, T>(componentArray, toCloneId)) {
                     componentMapping.addAgregate(cloneId, componentArray, *componentMapping.getAgregate<std::tuple_element_t<I, T>(componentArray, toCloneId));
                 }
                 clone_impl<T, I+1>(componentArray, toCloneId, clonedId, factory);
             }
-            template <typename T, size_t I = 0, typename ComponentArray, typename Factory, class... D, class = typename std::enable_if_t<(sizeof...(Components) != 0 && I == sizeof...(Components)-1)>
-            void clone_impl(ComponentArray& componentArray, EntityId tocloneId, EntityId clonedId, Factory factory) {
+            template <typename T, size_t I = 0, typename ComponentArray, typename ComponentMapping, class... D, class = typename std::enable_if_t<(sizeof...(Components) != 0 && I == sizeof...(Components)-1)>
+            void clone_impl(ComponentArray& componentArray, EntityId tocloneId, EntityId clonedId, ComponentMapping& componentMapping) {
                 if (componentMapping.getAgregate<std::tuple_element_t<I, T>(componentArray, toCloneId)) {
                     componentMapping.addAgregate(cloneId, componentArray, *componentMapping.getAgregate<std::tuple_element_t<I, T>(componentArray, toCloneId));
                 }
             }
-            template <typename T, size_t I = 0, typename ComponentArray, typename Factory, class... D, class...E, class = typename std::enable_if_t<(sizeof...(Components) == 0)>
-            void clone_impl(ComponentArray& componentArray, EntityId tocloneId, EntityId clonedId, Factory factory) {
+            template <typename T, size_t I = 0, typename ComponentArray, typename ComponentMapping, class... D, class...E, class = typename std::enable_if_t<(sizeof...(Components) == 0)>
+            void clone_impl(ComponentArray& componentArray, EntityId tocloneId, EntityId clonedId, ComponentMapping& componentMapping) {
+            }
+        };
+        /*Merge two trees into one. (This is possible that several entities have the same id in case when the composant are not creating with the same running instance,
+        by example, with ODFAEGCreator the plugin'll create some specific components and the editor some common component), so we need to merge datas in the main script
+        after they are serialized, another example is if we have to make a system like git with a distant repository and a local repository, we need to merge the repositories
+        when pushing or pulling.*/
+        struct MergingSystem {
+            template <typename... Components, typename... Params, class = typename std::enable_if_t<contains<MergingComponent, Components...>::value>
+            void operator()(std::tuple<Components...> components, EntityId entityId, std::tuple<Params...>& params) {
+                auto componentArray = std::get<0>(params);
+                auto componentMapping = std::get<1>(params);
+                std::vector<EntityId> toMerge = std::get<2>(params);
+                auto Factory = std::get<3>(params);
+
+                for (unsigned int i = 0; i < toMerge.size(); i++) {
+                    //On merge les composants, si le noeud est le même que sur la branche distante.
+                    if (*entityId.get().load() == *toMergeIds[i].get.load()) {
+                        merge_node(componentArray, entityId, toMergeIds[i], componentMapping)
+                    //Si le noeud n'est pas le même il faut créer un nouveau noeud, récupérer le niveau du noeud sur l'arbre et l'ajouter à un parent du niveau inférieur.
+                    } else {
+                        EntityId newEntityId = factory.createEntity();
+                        merge_node(componentArray, newEntityId, toMergeIds[i], componentMapping);
+                        size_t treeLevel = componentMapping.treeLevels[*toMergeIds[i].get().load()];
+                        EntityId root = componentMapping.getRoot(entityId);
+                        //Il faut aussi vérifier si le niveau existe, si pas il faut le créer.
+                        if (treeLevel <= componentMapping.nbLevels[*root.get().load()]) {
+                            EntityId parent = branchs[*componentMapping.childrenMapping[*root.get().load()][treeLevel][0].get().load()];
+                            componentMapping.addChild (root, parent, newEntityId, treeLevel);
+                        } else {
+                            EntityId parent = branchs[*root.get().load()][componentsMapping.nbLevels[*root.get().load]][0];
+                            componentMapping.addChild (root, parent, newEntityId, componentsMapping.nbLevels[*root.get().load]+1);
+                        }
+                    }
+                }
+            }
+            template <typename T, size_t I = 0, typename ComponentArray, typename ComponentMapping, class = typename std::enable_if_t<(sizeof...(Components) != 0 && I < sizeof...(Components)-1)>
+            void merge_node(ComponentArray& componentArray, EntityId entityId, EntityId toMergeId, ComponentMapping& componentMapping) {
+                //si l'entité possède le composant en question on le clône.
+                if (componentMapping.getAgregate<std::tuple_element_t<I, T>(componentArray, toMergeId)) {
+                    componentMapping.addAgregate(entityId, componentArray, *componentMapping.getAgregate<std::tuple_element_t<I, T>(componentArray, toMergeId));
+                }
+                merge_node<T, I+1>(componentArray, toCloneId, clonedId, componentMapping);
+            }
+            template <typename T, size_t I = 0, typename ComponentArray, typename ComponentMapping, class... D, class = typename std::enable_if_t<(sizeof...(Components) != 0 && I == sizeof...(Components)-1)>
+            void merge_node(ComponentArray& componentArray, EntityId entityId, EntityId toMergeId, ComponentMapping& componentMapping) {
+                if (componentMapping.getAgregate<std::tuple_element_t<I, T>(componentArray, toMergeId)) {
+                    componentMapping.addAgregate(entityId, componentArray, *componentMapping.getAgregate<std::tuple_element_t<I, T>(componentArray, toMergeId));
+                }
+            }
+            template <typename T, size_t I = 0, typename ComponentArray, typename ComponentMapping, class... D, class...E, class = typename std::enable_if_t<(sizeof...(Components) == 0)>
+            void merge_node(ComponentArray& componentArray, EntityId tocloneId, EntityId clonedId, ComponentMapping& componentMapping) {
             }
         };
         //Génère un labyrinthe. (Non testé)
