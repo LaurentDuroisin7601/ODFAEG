@@ -220,8 +220,8 @@ namespace odfaeg {
         };
         //Génère un labyrinthe. (Non testé)
         struct LabyrinthGeneratorSystem {
-            template <typename... Components, typename... Params, class = typename std::enable_if_t<contains<Scene>::value>
-            void operator()(std::tuple<Components...> components, EntitydId entityId, std::tuple<Params...>& params) {
+            template <typename... Components, typename T, class = typename std::enable_if_t<contains<Scene>::value>
+            void operator()(std::tuple<Components...> components, EntitydId entityId, T& params) {
                 auto scene = std::get<0>(components);
                 auto componentArray = std::get<1>(params);
                 auto componentMapping = std::get<2>(params);
@@ -494,8 +494,8 @@ namespace odfaeg {
         };
             //Génère un terrain entouré des murs passés.
         struct TerrainGeneratorSystem {
-            template <typename... Components, typename... Params, typename = class std::enable_if_t<contains<Scene, components...>::value>
-            void operator()(std::tuple<Components...> components, EntitydId entityId, std::tuple<Params...>& params) {
+            template <typename... Components, typename T, typename = class std::enable_if_t<contains<Scene, components...>::value>
+            void operator()(std::tuple<Components...> components, EntitydId entityId, T& params) {
                 auto scene = std::get<0>(components);
                 auto componentArray = std::get<0>(params);
                 auto componentMapping = std::get<1>(params);
@@ -678,43 +678,176 @@ namespace odfaeg {
                 }
             }
         };
-        //Load datas to renderders.
-        struct LoadVisbileDataToRenderersSystem {
+        //Do the frustrum culling and load datas to renderers.
+        struct FrustrumCullingSystem {
             //Copie des données des entités visible de la scene.
-            template <typename... Components, typename... Params, typename SubSystem, class <typename = std::enable_if_t<contains<Scene, Components...>::value>
-            void operator()(std::tuple<Components...> components, std::tuple<Params...> params) {
-                Scene* scene = std::get<index<Scene, Components...>(components);
-                if (scene != nullptr) {
-
+            template <typename... Components, typename T>
+            void operator()(std::tuple<Components...> components, T& params) {
+                loadToRenders<Components...>(params);
+            }
+            template <typename... Components, size_t N = sizeof...(Components), typename T, class = std::enable_if_t<(N > 1)>::value>>
+            void loadToRenders(std::tuple<Components...> components, T& params) {
+                if (isConsumed<std::tuple_element_t<N-1, components>>()) {
+                    auto renderer = std::get<N-1>(components);
+                    if (render != nullptr) {
+                        auto scene = std::get<6>(params);
+                        auto componentArray = std::get<7>(params);
+                        auto componentMapping = std::get<8>(params);
+                        auto view = expression->view;
+                        std::string groupsToRender;
+                        auto partitions = scene->partitions;
+                        //Récupération du volume englobant de la vue. (Le frustrum)
+                        physic::BoundingBox frustrum = view.getViewVolume();
+                        int x = frustrum.getPosition().x;
+                        int y = frustrum.getPosition().y;
+                        int z = frustrum.getPosition().z;
+                        int endX = frustrum.getPosition().x + view.getWidth();
+                        int endY = frustrum.getPosition().y + view.getHeight();
+                        int endZ = frustrum.getPosition().z + view.getDepth();
+                        for (int i = x; i <= endX; i+=partitions->getOffsetX()) {
+                            for (int j = y; j <= endY; j+=partitions->getOffsetY()) {
+                                for (int k = z; k <= endZ; k+=partitions->getOffsetZ()) {
+                                    math::Vec3f point(i, j, k);
+                                    auto partition = partitions.getPartitionAt(point);
+                                    //Si il y a des entités à cet endroit là.
+                                    if (partition != nullptr) {
+                                        for (unsigned int n = 0; n < cell->getNbEntitiesInside(); n++) {
+                                            EntityId entity = cell->getEnttiyInside(n);
+                                            EntityId root = componentMapping.getRoot(entity);
+                                            GroupNameComponent* groupNameComponent = componentMapping.getAgregate<GroupNameComponent>(componentArray, root);
+                                            if (groupNameComponent != nullptr) {
+                                                size_t groupId = getGroupId(groupComponent->groupName);
+                                                if (groupstoRender.size() > 0 && type.at(0) == '*') {
+                                                    if (exrepssion.find("-") != string::npos) {
+                                                        exrpession= expression.substr(2, exrepssion.size() - 2);
+                                                        vector<string> excl = core::split(expression, "-");
+                                                        bool exclude = false;
+                                                        for (unsigned int t = 0; t < excl.size() && !exclude; t++) {
+                                                            if (excl[t] == groupNameComponent->groupName) {
+                                                                exclude = true;
+                                                            }
+                                                        }
+                                                        if (!exclude) {
+                                                            addEntityToRenderer(renderer, componentArray, componentMapping);
+                                                        }
+                                                    }
+                                                } else {
+                                                    vector<string> types = core::split(type, "+");
+                                                    for (unsigned int t = 0; t < types.size(); t++) {
+                                                        if (groupNameComponent->groupName == types[i]) {
+                                                            addEntityToRenderer(renderer, componentArray, componentMapping);
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        setConsumerStatus<std::tuple_element_t<N-1, components>>(false);
+                        setProducerStatus<std::tuple_element_t<N-1, components>>(true);
+                    }
+                }
+                loadtoRenders<Components..., N-1>(params);
+            }
+            template <typename... Components, size_t N = sizeof...(Components), typename T, class... D, class = std::enable_if_t<(N == 1)>::value>>
+            void loadToRenders(std::tuple<Components...> components, T& params) {
+                if (isConsumed<std::tuple_element_t<N-1, components>>()) {
+                    auto scene = std::get<6>(params);
+                    auto componentArray = std::get<7>(params);
+                    auto componentMapping = std::get<8>(params);
+                    auto view = expression->view;
+                    std::string groupsToRender;
+                    auto partitions = scene->partitions;
+                    renderer->faces.clear();
+                    //Récupération du volume englobant de la vue. (Le frustrum)
+                    physic::BoundingBox frustrum = view.getViewVolume();
+                    int x = frustrum.getPosition().x;
+                    int y = frustrum.getPosition().y;
+                    int z = frustrum.getPosition().z;
+                    int endX = frustrum.getPosition().x + view.getWidth();
+                    int endY = frustrum.getPosition().y + view.getHeight();
+                    int endZ = frustrum.getPosition().z + view.getDepth();
+                    for (int i = x; i <= endX; i+=partitions->getOffsetX()) {
+                        for (int j = y; j <= endY; j+=partitions->getOffsetY()) {
+                            for (int k = z; k <= endZ; k+=partitions->getOffsetZ()) {
+                                math::Vec3f point(i, j, k);
+                                auto partition = partitions.getPartitionAt(point);
+                                //Si il y a des entités à cet endroit là.
+                                if (partition != nullptr) {
+                                    for (unsigned int n = 0; n < cell->getNbEntitiesInside(); n++) {
+                                        EntityId entity = cell->getEnttiyInside(n);
+                                        EntityId root = componentMapping.getRoot(entity);
+                                        GroupNameComponent* groupNameComponent = componentMapping.getAgregate<GroupNameComponent>(componentArray, root);
+                                        if (groupNameComponent != nullptr) {
+                                            size_t groupId = getGroupId(groupComponent->groupName);
+                                            if (groupstoRender.size() > 0 && type.at(0) == '*') {
+                                                if (exrepssion.find("-") != string::npos) {
+                                                    exrpession= expression.substr(2, exrepssion.size() - 2);
+                                                    vector<string> excl = core::split(expression, "-");
+                                                    bool exclude = false;
+                                                    for (unsigned int t = 0; t < excl.size() && !exclude; t++) {
+                                                        if (excl[t] == groupNameComponent->groupName) {
+                                                            exclude = true;
+                                                        }
+                                                    }
+                                                    if (!exclude) {
+                                                        addEntityToRenderer(renderer, componentArray, componentMapping);
+                                                    }
+                                                }
+                                            } else {
+                                                vector<string> types = core::split(type, "+");
+                                                for (unsigned int t = 0; t < types.size(); t++) {
+                                                    if (groupNameComponent->groupName == types[i]) {
+                                                        addEntityToRenderer(renderer, componentArray, componentMapping, entity);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    setConsumerStatus<std::tuple_element_t<N-1, components>>(false);
+                    setProducerStatus<std::tuple_element_t<N-1, components>>(true);
                 }
             }
-            //Type de composant inadéquat.
-            template <typename... Components, typename... Params, typename SubSystem, class = typename = std::enable_if_t<!contains<Scene, Components...>::value>
-            void operator()(std::tuple<Components...> components, std::tuple<Params...> params, SubSystem& subSystem) {
+            template <typename... Components, size_t N = sizeof...(Components), typename T, class... D, class = std::enable_if_t<(N == 0)>::value>>
+            void loadToRenders(std::tuple<Components...> components, T& params) {
 
+            }
+            template <typename Renderer, typename ComponentArray, typename ComponentMapping>
+            void addEntityToRenderer(Renderer& renderer, ComponentArray& componentArray, ComponentMapping& componentMapping, EntityId entity) {
+                auto mesh = componentMapping.getAgregate<Mesh>(componentArray, entity);
+                for (unsigned int i = 0; i < mesh->faces.size(); i++) {
+                    renderer.faces.push_back(mesh.faces[i]);
+                }
             }
         };
         struct CheckVisbleEntities {
-            template <typename... Components, typename... Params, typename SubSystem, class <typename = std::enable_if_t<contains<Scene, Components...>::value>
+            template <typename... Components, typename T, typename SubSystem, class <typename = std::enable_if_t<contains<Scene, Components...>::value>
             void operator()(std::tuple<Components...> components, std::tuple<Params...> params) {
-                template <typename... Components, typename... Params, class = typename std::enable_if_t<contains<SceneType1*, Components...>::value>>
+                template <typename... Components, T Params, class = typename std::enable_if_t<contains<Scene*, Components...>::value>>
                 void operator()(std::tuple<Components...>& tp, EntityId entityId, std::tuple<Params...>& params) {
-                    Scene scene = std::get<index<SceneType1*,Components...>()>(tp);
+                    Scene scene = std::get<index<Scene*,Components...>()>(tp);
                     if (scene != nullptr) {
                         auto renderers = std::get<3>(params);
                         std::vector<EntityId> rendersIds = std::get<4>(params);
                         ComponentMapping renderMapping = std::get<5>(params);
-                        auto tp = std::make_tuple(scene);
-                        LoadVisbileDataToRenderersSystem loader;
-                        call_sub_system<typename std::remove_reference_t<decltype(renders)>::types>(renderers, loader, renderMapping, rendersIds, params, std::make_index_sequence<renders.nbTypes()>());
+                        auto additionnal_params = std::make_tuple(scene)
+                        auto cated_tuple = std::tuple_cat(params, additionnal_params);
+                        FrustrumCullingSystem loader;
+                        call_sub_system<typename std::remove_reference_t<decltype(renderers)>::types>(renderers, loader, renderMapping, renderersIds, cated_tuple, std::make_index_sequence<renders.nbTypes()>());
                     }
                 }
-                template <typename T, typename Array, typename System, typename Mapping, typename... Params, size_t... I>
-                void call_sub_system(Array& array, System& system, Mapping& componentMapping, std::vector<EntityId> entities, std::tuple<Params...>& params, std::index_sequence<I...>) {
+                template <typename T, typename Array, typename System, typename Mapping, typename T2, size_t... I>
+                void call_sub_system(Array& array, System& system, Mapping& componentMapping, std::vector<EntityId> entities, T2& params, std::index_sequence<I...>) {
                     componentMapping.template apply<std::tuple_element_t<I, T>...>(array, system, entities, params);
                 }
-                template <typename... Components, typename... Params, class... D, class = typename std::enable_if_t<!contains<Scene, Components...>::value>>
-                void operator()(std::tuple<Components...>& tp, EntityId entityId, std::tuple<Params...>& params) {
+                template <typename... Components,  typename T2, class... D, class = typename std::enable_if_t<!contains<Scene, Components...>::value>>
+                void operator()(std::tuple<Components...>& tp, EntityId entityId, T2& params) {
 
                 }
             }
