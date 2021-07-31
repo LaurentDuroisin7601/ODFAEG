@@ -602,7 +602,7 @@ struct SceneType2 {
 
 };
 struct LoadToRender {
-    template <typename... Components, typename T2, class = typename std::enable_if_t<contains<RenderType1*, Components...>::value>>
+    template <typename... Components, typename T2, class = typename std::enable_if_t<contains<RenderType1*, Components...>::value || contains<RenderType2*, Components...>::value>>
     void operator()(std::tuple<Components...>& tp, EntityId entityId, T2& params) {
         if (isConsumed<RenderType1>()) {
             RenderType1* renderer = std::get<index<RenderType1*,Components...>()>(tp);
@@ -616,14 +616,13 @@ struct LoadToRender {
             RenderType2* renderer = std::get<index<RenderType2*,Components...>()>(tp);
             if (renderer != nullptr) {
                 std::cout<<"load entities to renderer type 2 "<<std::endl;
-                setProducerStatus<RenderType1>(true);
-                setConsumerStatus<RenderType1>(false);
+                setProducerStatus<RenderType2>(true);
+                setConsumerStatus<RenderType2>(false);
             }
         }
     }
-    template <typename... Components, typename T2, class... D, class = typename std::enable_if_t<!contains<RenderType1*, Components...>::value>>
+    template <typename... Components, typename T2, class... D, class... E, class = typename std::enable_if_t<!contains<RenderType2*, Components...>::value && !contains<RenderType2*, Components...>::value>>
     void operator()(std::tuple<Components...>& tp, EntityId entityId, T2& params) {
-
 
     }
 };
