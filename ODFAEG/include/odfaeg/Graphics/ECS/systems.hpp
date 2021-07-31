@@ -826,7 +826,7 @@ namespace odfaeg {
                 }
             }
         };
-        struct CheckVisbleEntities {
+        struct CheckVisbleEntitiesSystem {
             template <typename... Components, typename T, typename SubSystem, class <typename = std::enable_if_t<contains<Scene, Components...>::value>
             void operator()(std::tuple<Components...> components, std::tuple<Params...> params) {
                 template <typename... Components, T Params, class = typename std::enable_if_t<contains<Scene*, Components...>::value>>
