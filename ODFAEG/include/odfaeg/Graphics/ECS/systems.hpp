@@ -678,6 +678,90 @@ namespace odfaeg {
                 }
             }
         };
+
+        struct PerPixelLinkedListPass1BindlessSubRenderSystem {
+            template <typename... Components, typename T, typename = class std::enable_if_t<contains<PerPixelLinkedListPass1SubRendererComponent, components...>::value>
+            void operator(std::tuple<Components...> components, T& params) {
+                if (isProduced<PerPixelLinkedListPass1SubRendererComponent>()) {
+                    auto rendererComponent = std::get<PerPixelLinkedListPass1SubRendererComponent>(components);
+                    if (rendererComponent != nullptr) {
+                        GLuint zero = 0;
+                        glCheck(glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, renderComponent->atomicBuffer));
+                        glCheck(glBufferSubData(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(GLuint), &zero));
+                        glCheck(glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, 0));
+                        glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, renderComponent->clearBuf));
+                        glCheck(glBindTexture(GL_TEXTURE_2D, renderComponent->headPtrTex));
+                        glCheck(glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, view.getSize().x, view.getSize().y, GL_RED_INTEGER,
+                        GL_UNSIGNED_INT, NULL));
+                        glCheck(glBindTexture(GL_TEXTURE_2D, 0));
+                        glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0));
+                        View& view = renderComponent->getView();
+                        math::Matrix4f viewMatrix = view.getViewMatrix().getMatrix().transpose();
+                        math::Matrix4f projMatrix = view.getProjMatrix().getMatrix().transpose();
+                        renderComponent->perPixelLinkedListPass1BindlessShader.setParameter("projectionMatrix", projMatrix);
+                        renderComponent->perPixelLinkedListPass1BindlessShader.setParameter("viewMatrix", viewMatrix);
+                        for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
+                            renderComponent->vbByPrimitiveTypes[i].clear();
+                        }
+                        std::vector<Instance> instances = renderComponent->batcher.getInstances();
+                        for (unsigned int i = 0; i < instances.size(); i++) {
+                            if (instances[i].getAllVertices().getVertexCount() > 0) {
+                                unsigned int p = instances[i].getAllVertices().getPrimitiveType();
+                                for (unsigned int j = 0; j < instances[i].getAllVertices().getVertexCount(); j++) {
+                                    vbByPrimitiveTypes[p].append(instances[i].getAllVertices()[j],(m_normals[i].getMaterial().getTexture() != nullptr) ? instances[i].getMaterial().getTexture()->getId() : 0);
+                                }
+                            }
+                        }
+                        currentStates.blendMode = sf::BlendNone;
+                        currentStates.shader = &renderComponnet->perPixelLinkedListPass1BindlessShader;
+                        currentStates.texture = nullptr;
+                        for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
+                            if (vbByPrimitiveTypes[p].getVertexCount() > 0) {
+
+                                vbByPrimitiveTypes[p].update();
+                                renderComponent->getRenderWindow().drawVertexBuffer(vbBindlessTex[p], currentStates);
+                            }
+                        }
+
+                        glCheck(glFinish());
+                        glCheck(glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT));
+                        setProducedStatus<PerPixelLinkedListPass1SubRenderComponent>(false);
+                        setConsumedStatus<PerPixelLinkedListPass1SubRenderComponent>(true);
+                    }
+                }
+            }
+            template <typename... Components, typename T, typename = class std::enable_if_t<!contains<PerPixelLinkedListPass1BindlessRendererComponent, components...>::value>
+            void operator(std::tuple<Components...> components, T& params) {
+
+            }
+        };
+        struct PerPixelLinkedListBindlessRendererSystem {
+            template <typename... Components, typename T, typename = class std::enable_if_t<contains<PerPixelLinkedListPass2BindlessRendererComponent, components...>::value>
+            void operator(std::tuple<Components...> components, T& params) {
+                if (isProduced<PerPixelLinkedListPass2BindlessRenderComponent>()) {
+                    auto rendererComponent = std::get<PerPixelLinkedListPass2BindlessRendererComponent>(components);
+                    if (rendererComponent != nullptr) {
+                        vb.clear();
+                        renderComponent->fullScreenQuadVb.setPrimitiveType(sf::Quads);
+                        Vertex v1 (sf::Vector3f(0, 0, renderComponent->fullScreenQuad.getSize().z));
+                        Vertex v2 (sf::Vector3f(renderComponent->fullScreenQuad.getSize().x,0, renderComponent->fullScreenQuad.getSize().z));
+                        Vertex v3 (sf::Vector3f(renderComponent->fullScreenQuad.getSize().x, renderComponent->fullScreenQuad.getSize().y, renderComponent->fullScreenQuad.getSize().z));
+                        Vertex v4 (sf::Vector3f(0, renderComponent->fullScreenQuad.getSize().y, renderComponent->fullScreenQuad.getSize().z));
+                        vb.append(v1);
+                        vb.append(v2);
+                        vb.append(v3);
+                        vb.append(v4);
+                        vb.update();
+                        math::Matrix4f matrix = renderComponent->fullScreenQuadVb.getTransform().getMatrix().transpose();
+                        perPixelLinkedListP2.setParameter("worldMat", matrix);
+                        currentStates.shader = &renderComponent->perPixelLinkedPass2BindlessShader;
+                        renderComponent->getRenderWindow().drawVertexBuffer(renderComponent->fullScreenQuadVb, currentStates);
+                        glCheck(glFinish());
+                        renderComponent->getRenderWindow().setActive(false);
+                    }
+                }
+            }
+        };
         //Do the frustrum culling and load datas to renderers.
         struct FrustrumCullingSystem {
             //Copie des données des entités visible de la scene.
@@ -696,6 +780,7 @@ namespace odfaeg {
                         auto view = expression->view;
                         std::string groupsToRender;
                         auto partitions = scene->partitions;
+                        renderer->batcher.clear();
                         //Récupération du volume englobant de la vue. (Le frustrum)
                         physic::BoundingBox frustrum = view.getViewVolume();
                         int x = frustrum.getPosition().x;
@@ -760,7 +845,7 @@ namespace odfaeg {
                     auto view = expression->view;
                     std::string groupsToRender;
                     auto partitions = scene->partitions;
-                    renderer->faces.clear();
+                    renderer->batcher.clear();
                     //Récupération du volume englobant de la vue. (Le frustrum)
                     physic::BoundingBox frustrum = view.getViewVolume();
                     int x = frustrum.getPosition().x;
@@ -822,7 +907,7 @@ namespace odfaeg {
             void addEntityToRenderer(Renderer& renderer, ComponentArray& componentArray, ComponentMapping& componentMapping, EntityId entity) {
                 auto mesh = componentMapping.getAgregate<Mesh>(componentArray, entity);
                 for (unsigned int i = 0; i < mesh->faces.size(); i++) {
-                    renderer.faces.push_back(mesh.faces[i]);
+                    renderer.batcher.addFace(mesh.faces[i]);
                 }
             }
         };
