@@ -194,8 +194,8 @@ namespace odfaeg {
                             EntityId parent = branchs[*componentMapping.childrenMapping[*root.get().load()][treeLevel][0].get().load()];
                             componentMapping.addChild (root, parent, newEntityId, treeLevel);
                         } else {
-                            EntityId parent = branchs[*root.get().load()][componentsMapping.nbLevels[*root.get().load]][0];
-                            componentMapping.addChild (root, parent, newEntityId, componentsMapping.nbLevels[*root.get().load]+1);
+                            EntityId parent = branchs[*root.get().load()][componentsMapping.nbLevels[*root.get().load()]][0];
+                            componentMapping.addChild (root, parent, newEntityId, componentsMapping.nbLevels[*root.get().load()]+1);
                         }
                     }
                 }
