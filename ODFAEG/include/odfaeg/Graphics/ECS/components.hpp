@@ -2,12 +2,17 @@
 #define ODFAEG_ECS_COMPOENNTS_HPP
 namespace odfaeg {
     namespace graphic {
+
         struct ClonableComponent {
 
         };
+        struct MergeableComponent {
+        };
+        struct GroupNameComponent {
+            std::string groupName;
+        };
         struct SceneGridComponent {
-            Grid grid;
-            std::vector<std::vector<EntityId>> visibleEntities;
+            Grid partitions;
         };
         struct TransformComponent {
             math::Vec3f position;
@@ -29,7 +34,7 @@ namespace odfaeg {
             std::vector<size_t> selectedBonesIndexes;
             std::vector<AnimationComponent> boneAnimations;
         };
-        struct PerPixelLinkedListBindlessTexSubRenderComponent  {
+        struct PerPixelLinkedListBindlessTexPass1Component  {
             size_t atomicBuffer, linkedListBuffer, clearBuff, headPtrTex, bindlessTexUBO, vboWorldMatrices;
             Vertexbuffer vb;
             std::array<VertexBuffer, Batcher::nbPrimitiveTypes> vbBindlessTex;
@@ -40,7 +45,7 @@ namespace odfaeg {
             std::vector<Face> instancesFacesToRender;
             RenderWindow& window;
         };
-        struct PerPixelLinkedListRenderComponent {
+        struct PerPixelLinkedListRenderComponentPass2Component {
             size_t linkedListBuffer, headPtrTex;
             Shader perPixelLinkedList;
             RenderWidnow& window;

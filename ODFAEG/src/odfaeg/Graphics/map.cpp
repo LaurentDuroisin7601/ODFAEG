@@ -196,11 +196,22 @@ namespace odfaeg {
                     //std::cout<<"pos : "<<pos<<std::endl;
                     //Mur du coin en haut \E0 gauche.
                     if (x == startX && y == startY && walls.size() >= 11) {
-                        Entity *w = walls[Wall::TOP_LEFT]->clone();
-                        w->setPosition(math::Vec3f(pos.x, pos.y, pos.y + walls[Wall::TOP_LEFT]->getSize().y * 0.5f));
-                        addEntity(w);
-                        //std::cout<<"entity added : "<<std::endl;
-                        gridMap->getGridCellAt(math::Vec3f(w->getPosition().x, w->getPosition().y, w->getPosition().z))->setPassable(false);
+                        std::vector<EntityId> wallId(1);
+                        wallId[0] = walls[Wall::TOP_LEFT];
+                        std::vector<EntityId> clonedWallIds;
+                        CloningSystem cloningSystem;
+                        auto clparams = std::make_tuple(componentArray, componentMapping, factory);
+                        componentMapping.apply(componentArray, cloningSystem, wallId, clparams, clonedWallsId);
+                        MoveEntitySystem moveSystem;
+                        auto transform = componentMapping.getAgregate<TransformComponent>(componentMapping, clonedWallsId[0]);
+                        math::Vec3f position = math::Vec3f(pos.x, pos.y, pos.y + transform->size.y * 0.5f);
+                        auto mvparams = std::make_tuple(componentArray, componentMapping, position);
+                        wallId[0] = clonedWallsId[0];
+                        componentMapping.apply(componentArray, moveSystem, wallId, mvparams);
+                        scene->grid.getGridCellAt(math::Vec3f(w->getPosition().x, w->getPosition().y, 0))->setPassable(false);
+                        auto adparams = std::make_tuple(entityComponentArray, entityComponentMapping, entityId));
+                        AddEntityToSceneSystem addSystem;
+                        sceneMapping.apply(sceneArray, addSystem, wallId, adparams);
 
                         //Mur du coin en haut \E0 droite.
                     } else if (x == endX - tileSize.x && y == startY && walls.size() >= 11) {
@@ -247,7 +258,7 @@ namespace odfaeg {
                         }
                         gridMap->getGridCellAt(math::Vec3f(w->getPosition().x, w->getPosition().y, w->getPosition().z))->setPassable(false);
                     } else {
-                        Entity *tile;
+                        EntityId tile;
                         if (tGround.size() > 0)  {
                             int i = math::Math::random(tGround.size());
                             tile = tGround[i]->clone();
