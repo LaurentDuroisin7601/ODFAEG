@@ -195,6 +195,9 @@ set(SRC_VULKAN
 
 	${INCROOT}/Vulkan/vulkan_window.hpp
 	${SRCROOT}/Vulkan/vulkan_window.cpp
+
+	${INCROOT}/Vulkan/swapchain.hpp
+	${SRCROOT}/Vulkan/swapchain.cpp
 )
 source_group("Vulkan" FILES ${SRC_VULKAN})
 

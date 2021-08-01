@@ -29,8 +29,10 @@ namespace odfaeg {
         [[nodiscard]] auto getLogicalDevice() const { return m_device; }
         [[nodiscard]] auto getPhysicalDEvice() const { return m_physical; }
 
+        [[nodiscard]] const QueueFamilyIndices &getFamilyIndices() const { return m_indices; }
+
       private:
-		[[nodiscard]] VkDevice createLogicalDevice();
+        [[nodiscard]] VkDevice createLogicalDevice();
         [[nodiscard]] VkPhysicalDevice pickPhysicalDevice() const;
 
       private:
@@ -39,7 +41,9 @@ namespace odfaeg {
         VkDevice m_device{nullptr};
         VkPhysicalDevice m_physical{nullptr};
 
-		VkQueue m_graphics_queue{nullptr};
-		VkQueue m_present_queue{nullptr};
+        VkQueue m_graphics_queue{nullptr};
+        VkQueue m_present_queue{nullptr};
+
+        QueueFamilyIndices m_indices;
     };
 }  // namespace odfaeg

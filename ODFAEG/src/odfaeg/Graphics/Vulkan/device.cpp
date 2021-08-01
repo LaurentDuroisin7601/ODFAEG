@@ -68,6 +68,7 @@ namespace odfaeg {
     Device::Device(std::shared_ptr<Instance> instance) : m_instance(std::move(instance)) {
         m_physical = pickPhysicalDevice();
         m_device = createLogicalDevice();
+		m_indices = find_queue_families(m_physical, m_instance->getWindowSurface());
     }
 
     Device::~Device() noexcept { vkDestroyDevice(m_device, nullptr); }
