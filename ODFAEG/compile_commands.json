@@ -1,0 +1,742 @@
+[
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_CORE_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Core/CMakeFiles/odfaeg-core.dir/archive.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Core/archive.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Core/archive.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_CORE_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Core/CMakeFiles/odfaeg-core.dir/erreur.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Core/erreur.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Core/erreur.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_CORE_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Core/CMakeFiles/odfaeg-core.dir/utilities.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Core/utilities.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Core/utilities.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_CORE_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Core/CMakeFiles/odfaeg-core.dir/__/__/__/include/odfaeg/Core/factory.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/include/odfaeg/Core/factory.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/include/odfaeg/Core/factory.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_CORE_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Core/CMakeFiles/odfaeg-core.dir/state.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Core/state.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Core/state.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_CORE_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Core/CMakeFiles/odfaeg-core.dir/stateGroup.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Core/stateGroup.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Core/stateGroup.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_CORE_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Core/CMakeFiles/odfaeg-core.dir/stateStack.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Core/stateStack.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Core/stateStack.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_CORE_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Core/CMakeFiles/odfaeg-core.dir/time.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Core/time.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Core/time.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_CORE_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Core/CMakeFiles/odfaeg-core.dir/clock.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Core/clock.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Core/clock.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_CORE_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Core/CMakeFiles/odfaeg-core.dir/class.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Core/class.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Core/class.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_CORE_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Core/CMakeFiles/odfaeg-core.dir/constructor.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Core/constructor.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Core/constructor.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_CORE_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Core/CMakeFiles/odfaeg-core.dir/memberFunction.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Core/memberFunction.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Core/memberFunction.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_CORE_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Core/CMakeFiles/odfaeg-core.dir/runtimeCompiler.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Core/runtimeCompiler.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Core/runtimeCompiler.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_MATH_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Math/CMakeFiles/odfaeg-math.dir/transformMatrix.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Math/transformMatrix.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Math/transformMatrix.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_MATH_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Math/CMakeFiles/odfaeg-math.dir/computer.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Math/computer.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Math/computer.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_MATH_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Math/CMakeFiles/odfaeg-math.dir/maths.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Math/maths.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Math/maths.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_MATH_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Math/CMakeFiles/odfaeg-math.dir/matrix2.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Math/matrix2.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Math/matrix2.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_MATH_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Math/CMakeFiles/odfaeg-math.dir/matrix3.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Math/matrix3.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Math/matrix3.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_MATH_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Math/CMakeFiles/odfaeg-math.dir/matrix4.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Math/matrix4.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Math/matrix4.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_MATH_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Math/CMakeFiles/odfaeg-math.dir/vec2.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Math/vec2.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Math/vec2.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_MATH_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Math/CMakeFiles/odfaeg-math.dir/vec4.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Math/vec4.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Math/vec4.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_MATH_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Math/CMakeFiles/odfaeg-math.dir/distribution.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Math/distribution.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Math/distribution.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_MATH_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Math/CMakeFiles/odfaeg-math.dir/ray.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Math/ray.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Math/ray.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_MATH_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Math/CMakeFiles/odfaeg-math.dir/bigInt.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Math/bigInt.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Math/bigInt.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_WINDOW_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Window/CMakeFiles/odfaeg-window.dir/actions.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Window/actions.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Window/actions.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_WINDOW_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Window/CMakeFiles/odfaeg-window.dir/command.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Window/command.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Window/command.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_WINDOW_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Window/CMakeFiles/odfaeg-window.dir/listener.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Window/listener.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Window/listener.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_WINDOW_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Window/CMakeFiles/odfaeg-window.dir/contextImpl.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Window/contextImpl.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Window/contextImpl.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_WINDOW_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Window/CMakeFiles/odfaeg-window.dir/contextSettings.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Window/contextSettings.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Window/contextSettings.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_WINDOW_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Window/CMakeFiles/odfaeg-window.dir/iKeyboard.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Window/iKeyboard.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Window/iKeyboard.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_WINDOW_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Window/CMakeFiles/odfaeg-window.dir/iMouse.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Window/iMouse.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Window/iMouse.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_WINDOW_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Window/CMakeFiles/odfaeg-window.dir/windowImpl.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Window/windowImpl.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Window/windowImpl.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_WINDOW_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Window/CMakeFiles/odfaeg-window.dir/windowFactory.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Window/windowFactory.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Window/windowFactory.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_WINDOW_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Window/CMakeFiles/odfaeg-window.dir/contextFactory.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Window/contextFactory.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Window/contextFactory.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_WINDOW_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Window/CMakeFiles/odfaeg-window.dir/window.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Window/window.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Window/window.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_WINDOW_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Window/CMakeFiles/odfaeg-window.dir/context.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Window/context.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Window/context.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_WINDOW_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Window/CMakeFiles/odfaeg-window.dir/glResource.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Window/glResource.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Window/glResource.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_WINDOW_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Window/CMakeFiles/odfaeg-window.dir/SFML/sfmlWindowImpl.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Window/SFML/sfmlWindowImpl.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Window/SFML/sfmlWindowImpl.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_WINDOW_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Window/CMakeFiles/odfaeg-window.dir/SFML/sfmlKeyboard.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Window/SFML/sfmlKeyboard.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Window/SFML/sfmlKeyboard.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_WINDOW_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Window/CMakeFiles/odfaeg-window.dir/SFML/sfmlMouse.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Window/SFML/sfmlMouse.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Window/SFML/sfmlMouse.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_WINDOW_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Window/CMakeFiles/odfaeg-window.dir/SFML/sfmlContextImpl.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Window/SFML/sfmlContextImpl.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Window/SFML/sfmlContextImpl.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_WINDOW_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Window/CMakeFiles/odfaeg-window.dir/Linux/x11Window.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Window/Linux/x11Window.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Window/Linux/x11Window.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_WINDOW_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Window/CMakeFiles/odfaeg-window.dir/Linux/glxContext.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Window/Linux/glxContext.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Window/Linux/glxContext.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_WINDOW_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Window/CMakeFiles/odfaeg-window.dir/Linux/display.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Window/Linux/display.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Window/Linux/display.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_WINDOW_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Window/CMakeFiles/odfaeg-window.dir/Linux/x11Keyboard.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Window/Linux/x11Keyboard.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Window/Linux/x11Keyboard.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_WINDOW_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Window/CMakeFiles/odfaeg-window.dir/Linux/x11Mouse.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Window/Linux/x11Mouse.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Window/Linux/x11Mouse.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_WINDOW_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Window/CMakeFiles/odfaeg-window.dir/Linux/glxExtensions.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Window/Linux/glxExtensions.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Window/Linux/glxExtensions.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_PHYSICS_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Physics/CMakeFiles/odfaeg-physics.dir/collisionResultSet.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Physics/collisionResultSet.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Physics/collisionResultSet.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_PHYSICS_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Physics/CMakeFiles/odfaeg-physics.dir/boundingSphere.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Physics/boundingSphere.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Physics/boundingSphere.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_PHYSICS_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Physics/CMakeFiles/odfaeg-physics.dir/boundingEllipsoid.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Physics/boundingEllipsoid.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Physics/boundingEllipsoid.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_PHYSICS_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Physics/CMakeFiles/odfaeg-physics.dir/boundingBox.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Physics/boundingBox.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Physics/boundingBox.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_PHYSICS_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Physics/CMakeFiles/odfaeg-physics.dir/orientedBoundingBox.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Physics/orientedBoundingBox.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Physics/orientedBoundingBox.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_PHYSICS_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Physics/CMakeFiles/odfaeg-physics.dir/boundingPolyhedron.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Physics/boundingPolyhedron.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Physics/boundingPolyhedron.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_PHYSICS_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Physics/CMakeFiles/odfaeg-physics.dir/affector.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Physics/affector.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Physics/affector.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_PHYSICS_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Physics/CMakeFiles/odfaeg-physics.dir/emitter.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Physics/emitter.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Physics/emitter.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_PHYSICS_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Physics/CMakeFiles/odfaeg-physics.dir/particle.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Physics/particle.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Physics/particle.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_PHYSICS_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Physics/CMakeFiles/odfaeg-physics.dir/particleSystem.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Physics/particleSystem.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Physics/particleSystem.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/application.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/application.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/application.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/lightRenderComponent.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/lightRenderComponent.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/lightRenderComponent.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/baseChangementMatrix.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/baseChangementMatrix.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/baseChangementMatrix.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/viewMatrix.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/viewMatrix.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/viewMatrix.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/projMatrix.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/projMatrix.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/projMatrix.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/viewport.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/viewport.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/viewport.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/renderTexture.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/renderTexture.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/renderTexture.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/renderTextureImpl.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/renderTextureImpl.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/renderTextureImpl.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/renderTextureImplDefault.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/renderTextureImplDefault.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/renderTextureImplDefault.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/renderTextureImplFBO.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/renderTextureImplFBO.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/renderTextureImplFBO.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/textureSaver.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/textureSaver.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/textureSaver.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/glCheck.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/glCheck.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/glCheck.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/shader.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/shader.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/shader.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/texture.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/texture.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/texture.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/shape.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/shape.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/shape.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/convexShape.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/convexShape.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/convexShape.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/rectangleShape.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/rectangleShape.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/rectangleShape.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/circleShape.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/circleShape.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/circleShape.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/font.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/font.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/font.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/text.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/text.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/text.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/drawable.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/drawable.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/drawable.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/renderStates.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/renderStates.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/renderStates.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/renderTarget.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/renderTarget.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/renderTarget.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/renderWindow.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/renderWindow.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/renderWindow.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/vertex.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/vertex.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/vertex.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/vertexArray.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/vertexArray.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/vertexArray.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/vertexBuffer.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/vertexBuffer.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/vertexBuffer.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/view.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/view.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/view.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/component.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/component.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/component.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/renderComponentManager.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/renderComponentManager.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/renderComponentManager.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/vbo.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/vbo.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/vbo.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/batcher.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/batcher.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/batcher.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/cellMap.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/cellMap.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/cellMap.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/sprite.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/sprite.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/sprite.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/entity.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/entity.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/entity.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/GlDebug.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/GlDebug.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/GlDebug.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/animation.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/animation.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/animation.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/tile.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/tile.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/tile.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/shadowRenderCompoenent.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/shadowRenderCompoenent.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/shadowRenderCompoenent.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/reflectRefractRenderComponent.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/reflectRefractRenderComponent.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/reflectRefractRenderComponent.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/raytracingRenderComponent.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/raytracingRenderComponent.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/raytracingRenderComponent.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/model.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/model.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/model.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/gridMap.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/gridMap.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/gridMap.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/map.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/map.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/map.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/tGround.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/tGround.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/tGround.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/billBoard.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/billBoard.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/billBoard.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/world.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/world.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/world.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/glExtensions.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/glExtensions.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/glExtensions.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/glLoader.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/glLoader.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/glLoader.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/mesh.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/mesh.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/mesh.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/boneAnimation.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/boneAnimation.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/boneAnimation.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/heavyComponent.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/heavyComponent.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/heavyComponent.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/perPixelLinkedListRenderComponent.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/perPixelLinkedListRenderComponent.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/perPixelLinkedListRenderComponent.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/gameObject.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/gameObject.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/gameObject.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/animatedEntity.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/animatedEntity.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/animatedEntity.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/2D/wall.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/2D/wall.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/2D/wall.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/2D/ambientLight.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/2D/ambientLight.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/2D/ambientLight.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/2D/ponctualLight.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/2D/ponctualLight.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/2D/ponctualLight.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/2D/directionnalLight.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/2D/directionnalLight.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/2D/directionnalLight.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/2D/decor.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/2D/decor.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/2D/decor.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/3D/cube.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/3D/cube.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/3D/cube.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/3D/model.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/3D/model.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/3D/model.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/GUI/tabPane.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/GUI/tabPane.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/GUI/tabPane.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/GUI/node.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/GUI/node.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/GUI/node.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/GUI/table.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/GUI/table.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/GUI/table.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/GUI/icon.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/GUI/icon.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/GUI/icon.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/GUI/button.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/GUI/button.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/GUI/button.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/GUI/textArea.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/GUI/textArea.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/GUI/textArea.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/GUI/optionPane.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/GUI/optionPane.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/GUI/optionPane.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/GUI/menubar.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/GUI/menubar.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/GUI/menubar.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/GUI/menu.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/GUI/menu.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/GUI/menu.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/GUI/menuItem.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/GUI/menuItem.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/GUI/menuItem.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/GUI/filedialog.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/GUI/filedialog.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/GUI/filedialog.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/GUI/label.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/GUI/label.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/GUI/label.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/GUI/panel.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/GUI/panel.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/GUI/panel.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/GUI/dropDownList.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/GUI/dropDownList.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/GUI/dropDownList.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/GUI/passwordField.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/GUI/passwordField.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/GUI/passwordField.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/GUI/progressBar.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/GUI/progressBar.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/GUI/progressBar.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_GRAPHICS_EXPORTS -I/home/mechap/Documents/ODFAEG/ODFAEG/include -I/usr/include/freetype2 -isystem /home/mechap/vulkan/1.2.182.0/x86_64/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir/GUI/checkBox.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/GUI/checkBox.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Graphics/GUI/checkBox.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_NETWORK_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Network/CMakeFiles/odfaeg-network.dir/aes.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Network/aes.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Network/aes.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_NETWORK_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Network/CMakeFiles/odfaeg-network.dir/rsa.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Network/rsa.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Network/rsa.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_NETWORK_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Network/CMakeFiles/odfaeg-network.dir/encryptedPacket.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Network/encryptedPacket.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Network/encryptedPacket.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_NETWORK_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Network/CMakeFiles/odfaeg-network.dir/symEncPacket.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Network/symEncPacket.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Network/symEncPacket.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_NETWORK_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Network/CMakeFiles/odfaeg-network.dir/client.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Network/client.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Network/client.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_NETWORK_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Network/CMakeFiles/odfaeg-network.dir/srkserveur.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Network/srkserveur.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Network/srkserveur.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_NETWORK_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Network/CMakeFiles/odfaeg-network.dir/network.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Network/network.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Network/network.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_NETWORK_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Network/CMakeFiles/odfaeg-network.dir/user.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Network/user.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Network/user.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_NETWORK_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Network/CMakeFiles/odfaeg-network.dir/cliEncryptedPacket.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Network/cliEncryptedPacket.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Network/cliEncryptedPacket.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_AUDIO_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Audio/CMakeFiles/odfaeg-audio.dir/player.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Audio/player.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Audio/player.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_AUDIO_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Audio/CMakeFiles/odfaeg-audio.dir/stream.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Audio/stream.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Audio/stream.cpp"
+},
+{
+  "directory": "/home/mechap/Documents/ODFAEG/ODFAEG/ninja-build",
+  "command": "/usr/bin/c++ -DGLEW_STATIC -DODFAEG_AUDIO_EXPORTS -I/home/mechap/vulkan/1.2.182.0/x86_64/include -I/home/mechap/Documents/ODFAEG/ODFAEG/include -std=c++17 -O3 -DNDEBUG -fPIC -fvisibility=hidden -fdiagnostics-color -std=gnu++20 -o src/odfaeg/Audio/CMakeFiles/odfaeg-audio.dir/SoundFile.cpp.o -c /home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Audio/SoundFile.cpp",
+  "file": "/home/mechap/Documents/ODFAEG/ODFAEG/src/odfaeg/Audio/SoundFile.cpp"
+}
+]

@@ -1,0 +1,5 @@
+#include "../../../include/odfaeg/Core/serialization.h"
+namespace odfaeg {
+int Serializable::nbIds = 1;
+std::tuple<Serializable*> Serializable::typelist = std::make_tuple(new Serializable(new int(0)));
+}

@@ -1,0 +1,50 @@
+/*
+Auteur : Orwel
+Date de création : 05/04/2010
+
+Rôle : Read file to load data in game
+
+Méthode:
+Read                    Lit le fichier, insére le UpsFileManager script en coupant les commentaires
+ConversionStringFloat       Static
+ConversionStringInt         Static
+
+Attribus:
+UpsFileManager                    Vecteur de string qui contient le UpsFileManager script
+line                    indique la ligne actuelle
+
+Amélioration:
+N/C
+*/
+
+#ifndef HEADER_CODE
+#define HEADER_CODE
+
+#include<string>
+#include <iostream>
+#include <vector>
+#include <string>
+#include <fstream>
+#include "../../../include/SFGL/Core/utilities.h"
+namespace sfgl {
+class UpsFileManager
+{
+public :
+    UpsFileManager(std::string path);
+    //~UpsFileManager();
+    void read(std::string path);
+    void save(std::string path);
+    ///Static Method
+    static std::vector<int> conversionStringInts(std::string str);
+    static std::vector<float> conversionStringFloats (std::string str);
+    void Display();
+
+protected :
+    std::string getLine();
+
+protected :
+    std::vector< std::string > code;
+    int line;
+};
+}
+#endif
