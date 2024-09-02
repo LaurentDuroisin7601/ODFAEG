@@ -33,6 +33,9 @@ namespace odfaeg {
             * \brief compile code of the c++ files.
             */
             void compile();
+            void makeExec();
+            void exec();
+            std::string getErrors();
             /**
             * \fn R run(std::string fName, A... a)
             * \brief run the specified function with the specified args.

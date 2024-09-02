@@ -36,8 +36,7 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < includeDirs.size(); i++) {
                     command += "-I"+includeDirs[i]+" ";
                 }
-                command += " 2> "+outputDir+"\\"+funcName+conversionIntString(s)+".err";
-                std::cout<<"command : "<<command<<std::endl;
+                command += " 2> "+outputDir+"\\"+funcName+"_"+sourceFiles[s]+".err";
                 system(command.c_str());
             }
             for (unsigned int i = 0; i < libraryDirs.size(); i++) {
@@ -60,14 +59,91 @@ namespace odfaeg {
             for (unsigned int i = 0; i < libraries.size(); i++) {
                 command += "-l"+libraries[i]+" ";
             }
-            command += " 2> "+outputDir+"\\"+funcName+"shared.err";
+            command += " 2> "+outputDir+"\\"+funcName+"_linkage.err";
 
             system(command.c_str());
+            compileErrors = "";
+            for (unsigned int s = 0; s < sourceFiles.size(); s++) {
+                std::ifstream ifs(outputDir+"\\"+funcName+"_"+sourceFiles[s]+".err");
+                std::string str;
+                while (getline(ifs, str)) {
+                    compileErrors += str;
+                }
+                ifs.close();
+            }
+            std::ifstream ifs(outputDir+"\\"+funcName+"_linkage.err");
+            std::string str;
+            while (getline(ifs, str)) {
+                compileErrors += str;
+            }
+            ifs.close();
             /*std::string path = "./"+funcName+".so";
             flib = dlopen(path.c_str(), RTLD_LAZY);
             if (!flib) {
                 throw Erreur(10, "Failed to open dynamic library!", 3);
             }*/
+        }
+        void RuntimeCompiler::makeExec() {
+            std::string command;
+            for (unsigned int s = 0; s < sourceFiles.size(); s++) {
+                command="g++ -c "+sourceFiles[s]+".cpp -o "+sourceFiles[s]+".o ";
+                for (unsigned int i = 0; i < options.size(); i++) {
+                    command+="-"+options[i]+" ";
+                }
+                for (unsigned int i = 0; i < macros.size(); i++) {
+                    command+="-D"+macros[i]+" ";
+                }
+                for (unsigned int i = 0; i < includeDirs.size(); i++) {
+                    command += "-I"+includeDirs[i]+" ";
+                }
+                command += " 2> "+outputDir+"\\"+funcName+"_"+sourceFiles[s]+".err";
+                system(command.c_str());
+            }
+            for (unsigned int i = 0; i < libraryDirs.size(); i++) {
+                if (i == 0)
+                    command = "g++ ";
+                command += "-L"+libraryDirs[i]+" ";
+            }
+            for (unsigned int i = 0; i < libraries.size(); i++) {
+                command += "-l"+libraries[i]+" ";
+            }
+            //std::cout<<"command : "<<command<<std::endl;
+            system(command.c_str());
+            command = "g++ -o "+outputDir+"\\"+funcName+".exe";
+            for (unsigned int s = 0; s < sourceFiles.size(); s++) {
+                command+=" "+sourceFiles[s]+".o ";
+            }
+            for (unsigned int i = 0; i < libraryDirs.size(); i++) {
+                command += "-L"+libraryDirs[i]+" ";
+            }
+            for (unsigned int i = 0; i < libraries.size(); i++) {
+                command += "-l"+libraries[i]+" ";
+            }
+            command += " 2> "+outputDir+"\\"+funcName+"_linkage.err";
+
+            system(command.c_str());
+            compileErrors = "";
+            for (unsigned int s = 0; s < sourceFiles.size(); s++) {
+                std::ifstream ifs(outputDir+"\\"+funcName+"_"+sourceFiles[s]+".err");
+                std::string str;
+                while (getline(ifs, str)) {
+                    compileErrors += str;
+                }
+                ifs.close();
+            }
+            std::ifstream ifs(outputDir+"\\"+funcName+"_linkage.err");
+            std::string str;
+            while (getline(ifs, str)) {
+                compileErrors += str;
+            }
+            ifs.close();
+        }
+        void RuntimeCompiler::exec() {
+            std::string command = funcName+".exe";
+            system(command.c_str());
+        }
+        std::string RuntimeCompiler::getErrors() {
+            return compileErrors;
         }
         void RuntimeCompiler::addSourceFile(std::string sourceFile) {
             bool found = false;

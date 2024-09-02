@@ -38,9 +38,9 @@ Application (vm, title, sf::Style::Resize|sf::Style::Close, ContextSettings(0, 8
     rtc.addOption("std=c++17");
     rtc.addMacro("ODFAEG_STATIC");
     rtc.addIncludeDir("\"C:\\Program Files (x86)\\ODFAEG\\include\"");
-    rtc.addIncludeDir("..\\..\\Windows\\ODFAEG\\extlibs\\headers");
+    rtc.addIncludeDir("..\\..\\ODFAEG-master\\ODFAEG-master\\ODFAEG\\extlibs\\headers");
     rtc.addLibraryDir("\"C:\\Program Files (x86)\\ODFAEG\\lib\"");
-    rtc.addLibraryDir("..\\..\\Windows\\ODFAEG\\extlibs\\libs-mingw\\x86");
+    rtc.addLibraryDir("..\\..\\ODFAEG-master\\ODFAEG-master\\ODFAEG\\extlibs\\libs-mingw\\x86");
     rtc.addLibrary("odfaeg-network-s");
 	rtc.addLibrary("odfaeg-audio-s");
 	rtc.addLibrary("odfaeg-graphics-s");
