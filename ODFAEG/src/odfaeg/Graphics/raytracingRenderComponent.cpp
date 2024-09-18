@@ -1295,6 +1295,9 @@ namespace odfaeg {
             const Texture& RaytracingRenderComponent::getFrameBufferTexture() {
                 return frameBuffer.getTexture();
             }
+            RenderTexture* RaytracingRenderComponent::getFrameBuffer() {
+                return &frameBuffer;
+            }
             RaytracingRenderComponent::~RaytracingRenderComponent() {
                 glDeleteBuffers(1, &trianglesSSBO);
                 glDeleteBuffers(1, &lightsSSBO);

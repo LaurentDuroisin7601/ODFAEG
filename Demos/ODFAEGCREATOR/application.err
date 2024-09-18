@@ -1,0 +1,89 @@
+In file included from ../../ODFAEG-master/ODFAEG-master/Demos/ODFAEGCREATOR/application.hpp:34,
+                 from ../../ODFAEG-master/ODFAEG-master/Demos/ODFAEGCREATOR/application.cpp:1:
+C:\Program Files (x86)\ODFAEG\include/odfaeg/Core/runtimeCompiler.hpp:9:7: warning: extra tokens at end of #else directive [-Wendif-labels]
+    9 | #else if defined (ODFAEG_SYSTEM_WINDOWS)
+      |       ^~
+In file included from ../../ODFAEG-master/ODFAEG-master/Demos/ODFAEGCREATOR/application.hpp:34,
+                 from ../../ODFAEG-master/ODFAEG-master/Demos/ODFAEGCREATOR/application.cpp:1:
+C:\Program Files (x86)\ODFAEG\include/odfaeg/Core/runtimeCompiler.hpp:50:23: warning: extra tokens at end of #else directive [-Wendif-labels]
+   50 |                 #else if defined (ODFAEG_SYSTEM_WINDOWS)
+      |                       ^~
+C:\Program Files (x86)\ODFAEG\include/odfaeg/Core/runtimeCompiler.hpp:63:23: warning: extra tokens at end of #else directive [-Wendif-labels]
+   63 |                 #else if defined (ODFAEG_SYSTEM_WINDOWS)
+      |                       ^~
+C:\Program Files (x86)\ODFAEG\include/odfaeg/Core/runtimeCompiler.hpp:130:19: warning: extra tokens at end of #else directive [-Wendif-labels]
+  130 |             #else if defined (ODFAEG_SYSTEM_WINDOWS)
+      |                   ^~
+../../ODFAEG-master/ODFAEG-master/Demos/ODFAEGCREATOR/application.cpp:1719:15: warning: extra tokens at end of #else directive [-Wendif-labels]
+ 1719 |         #else if defined (ODFAEG_SYSTEM_WINDOWS)
+      |               ^~
+../../ODFAEG-master/ODFAEG-master/Demos/ODFAEGCREATOR/application.cpp:1798:27: warning: extra tokens at end of #else directive [-Wendif-labels]
+ 1798 |                     #else if defined (ODFAEG_SYSTEM_WINDOWS
+      |                           ^~
+../../ODFAEG-master/ODFAEG-master/Demos/ODFAEGCREATOR/application.cpp:2186:15: warning: extra tokens at end of #else directive [-Wendif-labels]
+ 2186 |         #else if defined (ODFAEG_SYSTEM_WINDOWS)
+      |               ^~
+../../ODFAEG-master/ODFAEG-master/Demos/ODFAEGCREATOR/application.cpp:2216:15: warning: extra tokens at end of #else directive [-Wendif-labels]
+ 2216 |         #else if defined (ODFAEG_SYSTEM_WINDOWS)
+      |               ^~
+../../ODFAEG-master/ODFAEG-master/Demos/ODFAEGCREATOR/application.cpp:2323:15: warning: extra tokens at end of #else directive [-Wendif-labels]
+ 2323 |         #else if defined (ODFAEG_SYSTEM_WINDOWS)
+      |               ^~
+../../ODFAEG-master/ODFAEG-master/Demos/ODFAEGCREATOR/application.cpp:2361:19: warning: extra tokens at end of #else directive [-Wendif-labels]
+ 2361 |             #else if defined (ODFAEG_SYSTEM_WINDOWS)
+      |                   ^~
+../../ODFAEG-master/ODFAEG-master/Demos/ODFAEGCREATOR/application.cpp:2389:19: warning: extra tokens at end of #else directive [-Wendif-labels]
+ 2389 |             #else if defined (ODFAEG_SYSTEM_WINDOWS)
+      |                   ^~
+../../ODFAEG-master/ODFAEG-master/Demos/ODFAEGCREATOR/application.cpp:2423:19: warning: extra tokens at end of #else directive [-Wendif-labels]
+ 2423 |             #else if defined (ODFAEG_SYSTEM_WINDOWS)
+      |                   ^~
+In file included from C:/Program Files (x86)/ODFAEG/include/odfaeg/Window/windowFactory.hpp:3,
+                 from C:/Program Files (x86)/ODFAEG/include/odfaeg/Window/window.hpp:3,
+                 from C:\Program Files (x86)\ODFAEG\include/odfaeg/Graphics/renderWindow.h:40,
+                 from C:\Program Files (x86)\ODFAEG\include/odfaeg/Graphics/application.h:8,
+                 from ../../ODFAEG-master/ODFAEG-master/Demos/ODFAEGCREATOR/application.hpp:3,
+                 from ../../ODFAEG-master/ODFAEG-master/Demos/ODFAEGCREATOR/application.cpp:1:
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Window/iWindow.hpp: In member function 'virtual const odfaeg::window::ContextSettings& odfaeg::window::IWindow::getSettings() const':
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Window/iWindow.hpp:193:73: warning: returning reference to temporary [-Wreturn-local-addr]
+  193 |             virtual const ContextSettings& getSettings() const { return ContextSettings(0, 0, 0, 0, 0); }
+      |                                                                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from C:/Program Files (x86)/ODFAEG/include/odfaeg/Graphics/ECS/component.hpp:7,
+                 from C:/Program Files (x86)/ODFAEG/include/odfaeg/Graphics/ECS/heavyComponent.hpp:3,
+                 from C:\Program Files (x86)\ODFAEG\include/odfaeg/Graphics/renderComponentManager.h:9,
+                 from C:\Program Files (x86)\ODFAEG\include/odfaeg/Graphics/application.h:10,
+                 from ../../ODFAEG-master/ODFAEG-master/Demos/ODFAEGCREATOR/application.hpp:3,
+                 from ../../ODFAEG-master/ODFAEG-master/Demos/ODFAEGCREATOR/application.cpp:1:
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Core/ecs.hpp: In member function 'bool odfaeg::graphic::ecs::ComponentMapping::remove(odfaeg::graphic::ecs::EntityId)':
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Core/ecs.hpp:167:17: warning: no return statement in function returning non-void [-Wreturn-type]
+  167 |                 }
+      |                 ^
+In file included from C:/Program Files (x86)/ODFAEG/include/odfaeg/Core/factory.h:7,
+                 from C:/Program Files (x86)/ODFAEG/include/odfaeg/Core/archive.h:7,
+                 from C:/Program Files (x86)/ODFAEG/include/odfaeg/Core/serialization.h:9,
+                 from C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:8,
+                 from C:\Program Files (x86)\ODFAEG\include/odfaeg/Graphics/view.h:4,
+                 from C:\Program Files (x86)\ODFAEG\include/odfaeg/Graphics/renderTarget.h:3,
+                 from C:\Program Files (x86)\ODFAEG\include/odfaeg/Graphics/renderWindow.h:37,
+                 from C:\Program Files (x86)\ODFAEG\include/odfaeg/Graphics/application.h:8,
+                 from ../../ODFAEG-master/ODFAEG-master/Demos/ODFAEGCREATOR/application.hpp:3,
+                 from ../../ODFAEG-master/ODFAEG-master/Demos/ODFAEGCREATOR/application.cpp:1:
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Core/fastDelegate.h: In member function 'R odfaeg::core::FastDelegate<R>::operator()() [with R = odfaeg::graphic::Entity*]':
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Core/fastDelegate.h:764:13: warning: control reaches end of non-void function [-Wreturn-type]
+  764 |             }
+      |             ^
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Core/fastDelegate.h: In member function 'R odfaeg::core::FastDelegate<R>::operator()() [with R = odfaeg::physic::BoundingVolume*]':
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Core/fastDelegate.h:764:13: warning: control reaches end of non-void function [-Wreturn-type]
+  764 |             }
+      |             ^
+In file included from C:\Program Files (x86)\ODFAEG\include/odfaeg/Graphics/application.h:11,
+                 from ../../ODFAEG-master/ODFAEG-master/Demos/ODFAEGCREATOR/application.hpp:3,
+                 from ../../ODFAEG-master/ODFAEG-master/Demos/ODFAEGCREATOR/application.cpp:1:
+C:\Program Files (x86)\ODFAEG\include/odfaeg/Graphics/world.h: In member function 'odfaeg::math::Vec3f odfaeg::graphic::World::getCoordinatesAt(odfaeg::math::Vec3f)':
+C:\Program Files (x86)\ODFAEG\include/odfaeg/Graphics/world.h:424:17: warning: control reaches end of non-void function [-Wreturn-type]
+  424 |                 }
+      |                 ^
+../../ODFAEG-master/ODFAEG-master/Demos/ODFAEGCREATOR/application.cpp: In member function 'bool ODFAEGCreator::isAlreadyCalled(unsigned int)':
+../../ODFAEG-master/ODFAEG-master/Demos/ODFAEGCREATOR/application.cpp:6221:1: warning: control reaches end of non-void function [-Wreturn-type]
+ 6221 | }
+      | ^

@@ -110,6 +110,7 @@ namespace odfaeg {
             void setView(View view);
             View& getView();
             const Texture& getFrameBufferTexture();
+            RenderTexture* getFrameBuffer();
             ~PerPixelLinkedListRenderComponent();
             private :
             void compileShaders();

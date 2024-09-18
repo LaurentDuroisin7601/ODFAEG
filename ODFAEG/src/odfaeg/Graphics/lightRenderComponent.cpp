@@ -1363,6 +1363,9 @@ namespace odfaeg {
         int LightRenderComponent::getLayer() {
             return getPosition().z;
         }
+        RenderTexture* LightRenderComponent::getFrameBuffer() {
+            return &lightMap;
+        }
         LightRenderComponent::~LightRenderComponent() {
             glDeleteBuffers(1, &vboWorldMatrices);
             glDeleteBuffers(1, &ubo);

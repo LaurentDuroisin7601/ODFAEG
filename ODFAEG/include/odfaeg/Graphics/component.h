@@ -97,6 +97,9 @@ namespace odfaeg {
             virtual void setView(View view);
             virtual void draw(Drawable& drawable, RenderStates states);
             virtual void loadTextureIndexes();
+            virtual RenderTexture* getFrameBuffer() {
+                return nullptr;
+            }
         private :
             RenderWindow& window;
             core::Listener listener;

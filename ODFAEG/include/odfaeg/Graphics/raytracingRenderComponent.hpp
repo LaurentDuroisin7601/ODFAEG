@@ -104,6 +104,7 @@ namespace odfaeg {
             void setView(View view);
             View& getView();
             const Texture& getFrameBufferTexture();
+            RenderTexture* getFrameBuffer();
             ~RaytracingRenderComponent();
         private :
             VertexBuffer vb;

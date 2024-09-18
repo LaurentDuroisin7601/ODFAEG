@@ -1189,6 +1189,9 @@ namespace odfaeg {
         View& ReflectRefractRenderComponent::getView() {
             return view;
         }
+        RenderTexture* ReflectRefractRenderComponent::getFrameBuffer() {
+            return &reflectRefractTex;
+        }
         ReflectRefractRenderComponent::~ReflectRefractRenderComponent() {
             glDeleteBuffers(1, &vboWorldMatrices);
             glDeleteBuffers(1, &atomicBuffer);

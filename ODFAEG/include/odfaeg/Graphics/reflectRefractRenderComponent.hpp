@@ -100,6 +100,7 @@ namespace odfaeg {
             void pushEvent(window::IEvent event, RenderWindow& window);
             void setView(View view);
             View& getView();
+            RenderTexture* getFrameBuffer();
             ~ReflectRefractRenderComponent();
         private :
             RectangleShape quad;

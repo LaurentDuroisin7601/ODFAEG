@@ -79,6 +79,7 @@ namespace odfaeg {
                 }
                 View& getView();
                 int getLayer();
+                RenderTexture* getFrameBuffer();
                 ~LightRenderComponent();
             private :
                 Batcher batcher, lightBatcher, normalBatcher; /**> A group of faces using the same materials and primitive type.*/

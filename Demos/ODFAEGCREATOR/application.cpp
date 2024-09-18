@@ -56,7 +56,7 @@ Application (vm, title, sf::Style::Resize|sf::Style::Close, ContextSettings(0, 8
 	rtc.addLibrary("crypto.dll");
 	rtc.addLibrary("ssl.dll");
 	rtc.addLibrary("freetype");
-	rtc.addLibrary("glew32.dll");
+	rtc.addLibrary("glew32");
 	rtc.addLibrary("opengl32");
 	rtc.addLibrary("gdi32");
 	rtc.addLibrary("dl.dll");
@@ -1120,10 +1120,20 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
         getListener().setCommandSlotParams("MoveAction", this, static_cast<IKeyboard::Key>(event.keyboard.code));
         if (event.keyboard.control && event.keyboard.code == IKeyboard::V) {
             if (selectedObject != nullptr) {
+                Vec3f position;
+                if (dpSelectComponent->getSelectedItem() == "MAIN WINDOW") {
+                    position = getRenderWindow().mapPixelToCoords(Vec3f(cursor.getPosition().x, getRenderWindow().getSize().y - cursor.getPosition().y, 0))+getRenderWindow().getView().getSize()*0.5f;
+                } else {
+                    for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
+                        if (getRenderComponentManager().getRenderComponent(i) != nullptr && getRenderComponentManager().getRenderComponent(i)->getName() == dpSelectComponent->getSelectedItem()) {
+                            position = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(cursor.getPosition().x, getRenderWindow().getSize().y - cursor.getPosition().y, 0))+getRenderWindow().getView().getSize()*0.5f;
+                        }
+                    }
+                }
                 //std::cout<<"copy!"<<std::endl;
                 if (dynamic_cast<RectangleShape*>(selectedObject)) {
                     std::unique_ptr<Shape> shape = std::make_unique<RectangleShape> (*static_cast<RectangleShape*>(selectedObject));
-                    Vec3f position = getRenderWindow().mapPixelToCoords(Vec3f(cursor.getPosition().x, getRenderWindow().getSize().y - cursor.getPosition().y, 0))+getRenderWindow().getView().getSize()*0.5f;
+
                     shape->setPosition(position);
                     shapes.push_back(std::move(shape));
                     selectedObject = shape.get();
@@ -1131,7 +1141,6 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
                 } else if (dynamic_cast<Entity*>(selectedObject)) {
                     Entity* entity = static_cast<Entity*>(selectedObject)->clone();
                     //std::cout<<"wall type : "<<dynamic_cast<Entity*>(selectedObject)->getType()<<std::endl;
-                    Vec3f position = getRenderWindow().mapPixelToCoords(Vec3f(cursor.getPosition().x, getRenderWindow().getSize().y - cursor.getPosition().y, 0))+getRenderWindow().getView().getSize()*0.5f;
                     //std::cout<<"position : "<<position<<std::endl;
                     entity->setPosition(position);
 
@@ -1228,7 +1237,15 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
         if (tabPane->getSelectedTab() == "Collisions") {
             sf::Vector2f mousePos (event.mouseButton.x, event.mouseButton.y);
             Vec3f pos(mousePos.x, mousePos.y, 0);
-            pos = getRenderWindow().mapPixelToCoords(Vec3f(mousePos.x, getRenderWindow().getSize().y-mousePos.y, 0));
+            if (dpSelectComponent->getSelectedItem() == "MAIN WINDOW") {
+                pos = getRenderWindow().mapPixelToCoords(Vec3f(mousePos.x, getRenderWindow().getSize().y-mousePos.y, 0));
+            } else {
+                for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
+                    if (getRenderComponentManager().getRenderComponent(i) != nullptr && getRenderComponentManager().getRenderComponent(i)->getName() == dpSelectComponent->getSelectedItem()) {
+                        pos = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(cursor.getPosition().x, getRenderWindow().getSize().y - cursor.getPosition().y, 0))+getRenderWindow().getView().getSize()*0.5f;
+                    }
+                }
+            }
             /*bool isOk;
             do {
                 pos = getRenderWindow().mapPixelToCoords(Vec3f(mousePos.x, getRenderWindow().getSize().y-mousePos.y, 0));
@@ -1395,6 +1412,13 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
         int relX = (event.mouseMotion.x - oldX) * sensivity;
         int relY = (event.mouseMotion.y - oldY) * sensivity;
         //Rotate the view, (Polar coordinates) but you can also use the lookAt function to look at a point.
+        View view = getRenderWindow().getView();
+        if (!view.isOrtho()) {
+            int teta = view.getTeta() - relX;
+            int phi = view.getPhi() - relY;
+            view.rotate(teta, phi);
+            getRenderWindow().setView(view);
+        }
         for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
             if (getRenderComponentManager().getRenderComponent(i) != nullptr) {
                 View view = getRenderComponentManager().getRenderComponent(i)->getView();
@@ -1418,7 +1442,11 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
             BoundingBox box = rectSelect.getSelectionRect();
             Vec3f savedPos = box.getPosition();
             Vec3f pos = box.getPosition();
-            pos = getRenderWindow().mapPixelToCoords(Vec3f(pos.x, getRenderWindow().getSize().y-pos.y, 0))+getRenderWindow().getView().getSize()*0.5f;
+            if (dpSelectComponent->getSelectedItem() == "MAIN WINDOW") {
+                pos = getRenderWindow().mapPixelToCoords(Vec3f(pos.x, getRenderWindow().getSize().y-pos.y, 0))+getRenderWindow().getView().getSize()*0.5f;
+            } else {
+
+            }
             rectSelect.setRect(pos.x, pos.y, pos.z, box.getSize().x, box.getSize().y, box.getSize().z);
             if (getWorld()->getCurrentSceneManager() != nullptr) {
                 //std::cout<<"select get visible entities"<<std::endl;
@@ -1444,7 +1472,6 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
                     }
                 }
             }
-            std::cout<<"rect selected size : "<<rectSelect.getItems().size()<<std::endl;
             if (rectSelect.getItems().size() > 0)
                 selectedObject = rectSelect.getItems()[0];
             if (dynamic_cast<Entity*> (selectedObject)) {
@@ -2072,9 +2099,9 @@ void ODFAEGCreator::onExec() {
                 cppAppliContent.insert(std::make_pair(scriptSourceFiles[i], fileContent));
             }
 
-            rtc.addSourceFile("../../Windows/Demos/ODFAEGCREATOR/application");
-            rtc.addSourceFile("../../Windows/Demos/ODFAEGCREATOR/odfaegCreatorStateExecutor");
-            rtc.addSourceFile("../../Windows/Demos/ODFAEGCREATOR/rectangularSelection");
+            rtc.addSourceFile("../../ODFAEG-master/ODFAEG-master/Demos/ODFAEGCREATOR/application");
+            rtc.addSourceFile("../../ODFAEG-master/ODFAEG-master/Demos/ODFAEGCREATOR/odfaegCreatorStateExecutor");
+            rtc.addSourceFile("../../ODFAEG-master/ODFAEG-master/Demos/ODFAEGCREATOR/rectangularSelection");
             std::ifstream file(appliname+"\\sourceCode.cpp");
             if (file) {
                 std::string line;
@@ -2632,7 +2659,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
             sourceCode += "#include <string>\n";
             sourceCode += "#include \"odfaeg/Core/archive.h\"\n";
             sourceCode += "#include \"odfaeg/Core/class.hpp\"\n";
-            sourceCode += "#include \"../../../Windows/Demos/ODFAEGCREATOR/application.hpp\"\n";
+            sourceCode += "#include \"../../../ODFAEG-master/ODFAEG-master/Demos/ODFAEGCREATOR/application.hpp\"\n";
             sourceCode += "extern \"C\" {\n";
             sourceCode += "    void createObject(ODFAEGCreator* c, bool save);\n";
             sourceCode += "    void readObjects (ODFAEGCreator* c);\n";
@@ -2660,7 +2687,6 @@ void ODFAEGCreator::actionPerformed(Button* button) {
             sourceCode += "    odfaeg::core::Application::app = c;\n";
             sourceCode += "}\n";
         }
-
         std::vector<odfaeg::core::Class> superClasses = cl.getSuperClasses();
         bool found = false;
         while (superClasses.size() > 0 && !found) {
@@ -2694,7 +2720,6 @@ void ODFAEGCreator::actionPerformed(Button* button) {
                     }
                 } else {
                     toInsert = "std::vector<"+dpSelectPointerType->getSelectedItem()+"*> v"+cl.getName()+";\n";
-                    toInsert += "   v"+cl.getName()+".clear();\n";
                 }
                 sourceCode.insert(pos, toInsert);
             }
@@ -2714,7 +2739,14 @@ void ODFAEGCreator::actionPerformed(Button* button) {
                 std::vector<std::string> parts = split(dpSelectPointerType->getSelectedItem(), "::");
                 std::string name = parts[parts.size()-1];
                 toInsert += "   EXPORT_CLASS_GUID_("+name+cl.getName()+","+dpSelectPointerType->getSelectedItem()+","+dpSelectClass->getSelectedItem()+", VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(c->getEntityFactory()))\n";
-                sourceCode.insert(pos, toInsert);
+                if (found) {
+                    toInsert += "       std::map<std::string, std::vector<odfaeg::graphic::Entity*>>::iterator it"+cl.getName()+" = c->getExternals().find(\""+cl.getName()+"\");\n";
+                } else {
+                    toInsert += "   v"+cl.getName()+".clear()";
+                }
+            } else {
+                toInsert += "   v"+cl.getName()+".clear()";
+
             }
             toInsert += "   if(save) {\n";
             toInsert += "       std::ofstream of"+cl.getName()+" (\""+cl.getName()+".oc\");\n";
@@ -2806,18 +2838,8 @@ void ODFAEGCreator::actionPerformed(Button* button) {
                     it = nbs.find(cl.getName());
                 }
                 toInsert += "   if(it"+cl.getName()+"->second.size() == "+conversionIntString(nb)+") {\n";*/
-                if (dpSelectPointerType->getSelectedItem() == "No pointer") {
-                    if (cl.getNamespace() != "") {
-                        toInsert += "   "+cl.getNamespace()+"::"+cl.getName()+" "+taObjectName->getText()+" = "+cl.getNamespace()+"::"+cl.getName()+" ("+args+");\n";
-                    } else {
-                        toInsert += "   "+cl.getName()+" "+taObjectName->getText()+" ("+args+");\n";
-                    }
-                    toInsert += "   "+taObjectName->getText()+".setExternalObjectName(\""+taObjectName->getText()+"\");\n";
-                } else {
-                    toInsert += "   "+dpSelectPointerType->getSelectedItem()+" *"+taObjectName->getText()+" = c->getEntityFactory().make_entity<"+dpSelectClass->getSelectedItem()+"> ("+args+");\n";
-                    toInsert += "   "+taObjectName->getText()+"->setExternalObjectName(\""+taObjectName->getText()+"\");\n";
-                }
-
+                toInsert += "   "+dpSelectPointerType->getSelectedItem()+" *"+taObjectName->getText()+" = c->getEntityFactory().make_entity<"+dpSelectClass->getSelectedItem()+"> ("+args+");\n";
+                toInsert += "   "+taObjectName->getText()+"->setExternalObjectName(\""+taObjectName->getText()+"\");\n";
                 //toInsert += "       it"+cl.getName()+"->second.push_back("+taObjectName->getText()+");\n";
                 toInsert += "   c->addExternalEntity("+taObjectName->getText()+",\""+cl.getName()+"\");\n";
                 /*toInsert += "   }\n";
@@ -2857,9 +2879,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         bool found = false;
         while (superClasses.size() > 0 && !found) {
             for (unsigned int i = 0; i < superClasses.size() && !found; i++) {
-                std::cout<<"super class name : "<<superClasses[i].getName()<<std::endl;
                 if (superClasses[i].getName() == "Entity") {
-                    std::cout<<"found entity!"<<std::endl;
                     found = true;
                 }
                 std::vector<odfaeg::core::Class> tmpSuperClasses = superClasses[i].getSuperClasses();
@@ -2887,7 +2907,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
             ifs.close();
         }
         if(sourceCode.find("if(save) {\n") != std::string::npos) {
-            int pos = sourceCode.find("if(save) {\n")-3;
+            int pos = sourceCode.find("if(save) {\n")-1;
             std::string args;
             for (unsigned int j = 0; j < argValues.size(); j++) {
                 args += argValues[j];
@@ -2941,9 +2961,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         bool found = false;
         while (superClasses.size() > 0 && !found) {
             for (unsigned int i = 0; i < superClasses.size() && !found; i++) {
-                std::cout<<"super class name : "<<superClasses[i].getName()<<std::endl;
                 if (superClasses[i].getName() == "Entity") {
-                    std::cout<<"found entity!"<<std::endl;
                     found = true;
                 }
                 std::vector<odfaeg::core::Class> tmpSuperClasses = superClasses[i].getSuperClasses();

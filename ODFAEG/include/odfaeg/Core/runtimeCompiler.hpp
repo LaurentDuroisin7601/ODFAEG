@@ -10,6 +10,7 @@
 #include <windows.h>
 #endif
 #include "erreur.h"
+#include <iostream>
 namespace odfaeg {
     namespace core {
         /**

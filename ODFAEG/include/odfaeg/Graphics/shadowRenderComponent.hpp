@@ -75,6 +75,7 @@ namespace odfaeg {
                 void setView(View view);
                 bool loadEntitiesOnComponent(std::vector<Entity*> vEntities);
                 void clear();
+                RenderTexture* getFrameBuffer();
                 ~ShadowRenderComponent();
             private :
                 Batcher batcher, shadowBatcher, normalBatcher, normalShadowBatcher, batcherIndexed, shadowBatcherIndexed, normalBatcherIndexed, normalShadowBatcherIndexed; /**> A group of faces using the same materials and primitive type.*/

@@ -1201,6 +1201,9 @@ namespace odfaeg {
                  glCheck(glBindTexture(GL_TEXTURE_2D, 0));
                  glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0));
             }
+            RenderTexture* ShadowRenderComponent::getFrameBuffer() {
+                return &shadowMap;
+            }
             ShadowRenderComponent::~ShadowRenderComponent() {
                 glDeleteBuffers(1, &vboWorldMatrices);
                 glDeleteBuffers(1, &vboShadowProjMatrices);

@@ -1269,6 +1269,9 @@ namespace odfaeg {
                 glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, 0));
             }
         }
+        RenderTexture* PerPixelLinkedListRenderComponent::getFrameBuffer() {
+            return &frameBuffer;
+        }
         PerPixelLinkedListRenderComponent::~PerPixelLinkedListRenderComponent() {
             glDeleteBuffers(1, &atomicBuffer);
             glDeleteBuffers(1, &linkedListBuffer);
