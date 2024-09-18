@@ -511,10 +511,10 @@ namespace odfaeg {
                     onRender(componentManager.get());
                     componentManager->clearComponents();
                     componentManager->clearECSComponents();
+                    componentManager->updateComponents();
                     if (eventContextActivated) {
                        listener->processEvents();
                     }
-                    componentManager->updateComponents();
                     componentManager->updateECSComponents();
                     componentManager->drawRenderComponents();
                     componentManager->drawECSComponents();

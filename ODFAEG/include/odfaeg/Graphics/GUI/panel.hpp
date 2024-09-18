@@ -9,7 +9,7 @@ namespace odfaeg {
         namespace gui {
             class Panel : public LightComponent {
             public :
-                Panel(RenderWindow& window, math::Vec3f position, math::Vec3f size, int priority = 0, LightComponent* parent = nullptr);
+                Panel(RenderWindow& window, math::Vec3f position, math::Vec3f size, int priority = 0, int eventPriority = 0, LightComponent* parent = nullptr);
                 void setBackgroundColor(sf::Color color);
                 void clear();
                 void onDraw(RenderTarget& target, RenderStates states);

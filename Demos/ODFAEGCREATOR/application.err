@@ -14,29 +14,29 @@ C:\Program Files (x86)\ODFAEG\include/odfaeg/Core/runtimeCompiler.hpp:63:23: war
 C:\Program Files (x86)\ODFAEG\include/odfaeg/Core/runtimeCompiler.hpp:130:19: warning: extra tokens at end of #else directive [-Wendif-labels]
   130 |             #else if defined (ODFAEG_SYSTEM_WINDOWS)
       |                   ^~
-../../ODFAEG-master/ODFAEG-master/Demos/ODFAEGCREATOR/application.cpp:1719:15: warning: extra tokens at end of #else directive [-Wendif-labels]
- 1719 |         #else if defined (ODFAEG_SYSTEM_WINDOWS)
+../../ODFAEG-master/ODFAEG-master/Demos/ODFAEGCREATOR/application.cpp:1723:15: warning: extra tokens at end of #else directive [-Wendif-labels]
+ 1723 |         #else if defined (ODFAEG_SYSTEM_WINDOWS)
       |               ^~
-../../ODFAEG-master/ODFAEG-master/Demos/ODFAEGCREATOR/application.cpp:1798:27: warning: extra tokens at end of #else directive [-Wendif-labels]
- 1798 |                     #else if defined (ODFAEG_SYSTEM_WINDOWS
+../../ODFAEG-master/ODFAEG-master/Demos/ODFAEGCREATOR/application.cpp:1802:27: warning: extra tokens at end of #else directive [-Wendif-labels]
+ 1802 |                     #else if defined (ODFAEG_SYSTEM_WINDOWS
       |                           ^~
-../../ODFAEG-master/ODFAEG-master/Demos/ODFAEGCREATOR/application.cpp:2186:15: warning: extra tokens at end of #else directive [-Wendif-labels]
- 2186 |         #else if defined (ODFAEG_SYSTEM_WINDOWS)
+../../ODFAEG-master/ODFAEG-master/Demos/ODFAEGCREATOR/application.cpp:2190:15: warning: extra tokens at end of #else directive [-Wendif-labels]
+ 2190 |         #else if defined (ODFAEG_SYSTEM_WINDOWS)
       |               ^~
-../../ODFAEG-master/ODFAEG-master/Demos/ODFAEGCREATOR/application.cpp:2216:15: warning: extra tokens at end of #else directive [-Wendif-labels]
- 2216 |         #else if defined (ODFAEG_SYSTEM_WINDOWS)
+../../ODFAEG-master/ODFAEG-master/Demos/ODFAEGCREATOR/application.cpp:2220:15: warning: extra tokens at end of #else directive [-Wendif-labels]
+ 2220 |         #else if defined (ODFAEG_SYSTEM_WINDOWS)
       |               ^~
-../../ODFAEG-master/ODFAEG-master/Demos/ODFAEGCREATOR/application.cpp:2323:15: warning: extra tokens at end of #else directive [-Wendif-labels]
- 2323 |         #else if defined (ODFAEG_SYSTEM_WINDOWS)
+../../ODFAEG-master/ODFAEG-master/Demos/ODFAEGCREATOR/application.cpp:2327:15: warning: extra tokens at end of #else directive [-Wendif-labels]
+ 2327 |         #else if defined (ODFAEG_SYSTEM_WINDOWS)
       |               ^~
-../../ODFAEG-master/ODFAEG-master/Demos/ODFAEGCREATOR/application.cpp:2361:19: warning: extra tokens at end of #else directive [-Wendif-labels]
- 2361 |             #else if defined (ODFAEG_SYSTEM_WINDOWS)
+../../ODFAEG-master/ODFAEG-master/Demos/ODFAEGCREATOR/application.cpp:2365:19: warning: extra tokens at end of #else directive [-Wendif-labels]
+ 2365 |             #else if defined (ODFAEG_SYSTEM_WINDOWS)
       |                   ^~
-../../ODFAEG-master/ODFAEG-master/Demos/ODFAEGCREATOR/application.cpp:2389:19: warning: extra tokens at end of #else directive [-Wendif-labels]
- 2389 |             #else if defined (ODFAEG_SYSTEM_WINDOWS)
+../../ODFAEG-master/ODFAEG-master/Demos/ODFAEGCREATOR/application.cpp:2393:19: warning: extra tokens at end of #else directive [-Wendif-labels]
+ 2393 |             #else if defined (ODFAEG_SYSTEM_WINDOWS)
       |                   ^~
-../../ODFAEG-master/ODFAEG-master/Demos/ODFAEGCREATOR/application.cpp:2423:19: warning: extra tokens at end of #else directive [-Wendif-labels]
- 2423 |             #else if defined (ODFAEG_SYSTEM_WINDOWS)
+../../ODFAEG-master/ODFAEG-master/Demos/ODFAEGCREATOR/application.cpp:2427:19: warning: extra tokens at end of #else directive [-Wendif-labels]
+ 2427 |             #else if defined (ODFAEG_SYSTEM_WINDOWS)
       |                   ^~
 In file included from C:/Program Files (x86)/ODFAEG/include/odfaeg/Window/windowFactory.hpp:3,
                  from C:/Program Files (x86)/ODFAEG/include/odfaeg/Window/window.hpp:3,
@@ -84,6 +84,6 @@ C:\Program Files (x86)\ODFAEG\include/odfaeg/Graphics/world.h:424:17: warning: c
   424 |                 }
       |                 ^
 ../../ODFAEG-master/ODFAEG-master/Demos/ODFAEGCREATOR/application.cpp: In member function 'bool ODFAEGCreator::isAlreadyCalled(unsigned int)':
-../../ODFAEG-master/ODFAEG-master/Demos/ODFAEGCREATOR/application.cpp:6221:1: warning: control reaches end of non-void function [-Wreturn-type]
- 6221 | }
+../../ODFAEG-master/ODFAEG-master/Demos/ODFAEGCREATOR/application.cpp:6237:1: warning: control reaches end of non-void function [-Wreturn-type]
+ 6237 | }
       | ^

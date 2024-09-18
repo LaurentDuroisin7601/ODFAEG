@@ -2,8 +2,8 @@
 namespace odfaeg {
     namespace graphic {
         namespace gui {
-            Panel::Panel(RenderWindow& window, math::Vec3f position, math::Vec3f size, int priority, LightComponent* parent) :
-            LightComponent (window, position, size, size * 0.5f, priority, parent) {
+            Panel::Panel(RenderWindow& window, math::Vec3f position, math::Vec3f size, int priority, int eventPriority, LightComponent* parent) :
+            LightComponent (window, position, size, size * 0.5f, priority, eventPriority, parent) {
                 rect = RectangleShape(size);
                 background = sf::Color::Black;
                 rect.setFillColor(background);

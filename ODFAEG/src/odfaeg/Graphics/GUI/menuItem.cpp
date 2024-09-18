@@ -3,7 +3,7 @@ namespace odfaeg {
     namespace graphic {
         namespace gui {
             MenuItem::MenuItem(RenderWindow& rw, const Font* font, std::string t) :
-                LightComponent(rw, math::Vec3f(0, 0, 0), math::Vec3f(t.length() * 10, 20, 0), math::Vec3f(0, 0, 0), -1)
+                LightComponent(rw, math::Vec3f(0, 0, 0), math::Vec3f(t.length() * 10, 20, 0), math::Vec3f(0, 0, 0), -1, -1)
                 {
                     text.setFont(*font);
                     text.setCharacterSize(15);
@@ -15,6 +15,13 @@ namespace odfaeg {
                     background = sf::Color(50, 50, 50);
                     setVisible(false);
                     setEventContextActivated(false);
+                    contextChanged = false;
+                }
+                bool MenuItem::isContextChanged() {
+                    return contextChanged;
+                }
+                void MenuItem::setContextChanged(bool contextChanged) {
+                    this->contextChanged = contextChanged;
                 }
                 void MenuItem::clear() {
                     if (background != rect.getFillColor())

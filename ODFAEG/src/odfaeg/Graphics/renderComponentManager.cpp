@@ -13,6 +13,7 @@ namespace odfaeg {
             std::unique_ptr<Component> ptr;
             ptr.reset(component);
             components.insert(std::make_pair(component->getPriority(), std::move(ptr)));
+            eventComponents.insert(std::make_pair(component->getEventPriority(), component));
         }
         void RenderComponentManager::addECSComponent(ecs::Component* component) {
             std::unique_ptr<ecs::Component> ptr;
@@ -201,8 +202,8 @@ namespace odfaeg {
             }
         }
         void RenderComponentManager::updateComponents() {
-           std::multimap<int, std::unique_ptr<Component>, std::greater<int>>::iterator it;
-           for (it = components.begin(); it != components.end(); it++) {
+           std::multimap<int, Component*, std::greater<int>>::iterator it;
+           for (it = eventComponents.begin(); it != eventComponents.end(); it++) {
                if (it->second->isEventContextActivated() && it->second->isVisible()) {
                    it->second->processEvents();
                    it->second->recomputeSize();

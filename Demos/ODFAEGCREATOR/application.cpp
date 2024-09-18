@@ -109,11 +109,13 @@ void ODFAEGCreator::onInit() {
         menu5 = new Menu(getRenderWindow(), fm.getResourceByAlias(Fonts::Serif), "new GUI");
         getRenderComponentManager().addComponent(menu5);
 
+
         menuBar->addMenu(menu1);
         menuBar->addMenu(menu2);
         menuBar->addMenu(menu3);
         menuBar->addMenu(menu4);
         menuBar->addMenu(menu5);
+        Action amom(Action::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
         item11 = new MenuItem(getRenderWindow(), fm.getResourceByAlias(Fonts::Serif), "New application");
         item11->addMenuItemListener(this);
         getRenderComponentManager().addComponent(item11);
@@ -227,6 +229,8 @@ void ODFAEGCreator::onInit() {
         menu4->addMenuItem(item46);
 
         item51 = new MenuItem(getRenderWindow(), fm.getResourceByAlias(Fonts::Serif), "New object");
+        Command cmdmom(amom, FastDelegate<bool>(&MenuItem::isMouseOnMenu, item51), FastDelegate<void>(&ODFAEGCreator::onMouseOnMenu, this, item51));
+        item51->getListener().connect("A"+item51->getText(), cmdmom);
         item51->addMenuItemListener(this);
         getRenderComponentManager().addComponent(item51);
         item52 = new MenuItem(getRenderWindow(), fm.getResourceByAlias(Fonts::Serif), "Modify object");
@@ -2742,10 +2746,10 @@ void ODFAEGCreator::actionPerformed(Button* button) {
                 if (found) {
                     toInsert += "       std::map<std::string, std::vector<odfaeg::graphic::Entity*>>::iterator it"+cl.getName()+" = c->getExternals().find(\""+cl.getName()+"\");\n";
                 } else {
-                    toInsert += "   v"+cl.getName()+".clear()";
+                    toInsert += "   v"+cl.getName()+".clear();\n";
                 }
             } else {
-                toInsert += "   v"+cl.getName()+".clear()";
+                toInsert += "   v"+cl.getName()+".clear();\n";
 
             }
             toInsert += "   if(save) {\n";
@@ -2870,7 +2874,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         rtc.run<void>("createObject", this, false);
         wCreateNewObject->setVisible(false);
         getRenderComponentManager().setEventContextActivated(false, *wCreateNewObject);
-        tScriptEdit->setEventContextActivated(true);
+        setEventContextActivated(true);
     }
     if (button == bModifyObject) {
         std::vector<std::string> parts = split(dpSelectMClass->getSelectedItem(), "::");
@@ -3310,7 +3314,7 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
     if (item->getText() == "New scene") {
         wNewMap->setVisible(true);
         getRenderComponentManager().setEventContextActivated(true, *wNewMap);
-        tScriptEdit->setEventContextActivated(false);
+        setEventContextActivated(false);
     }
     if (item->getText() == "New component") {
         wNewComponent->setVisible(true);
@@ -3479,7 +3483,8 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
      if (item == item51) {
         wCreateNewObject->setVisible(true);
         getRenderComponentManager().setEventContextActivated(true, *wCreateNewObject);
-        tScriptEdit->setEventContextActivated(false);
+        std::cout<<"desactive context"<<std::endl;
+        setEventContextActivated(false);
      }
      if (item == item52) {
         wModifyObject->setVisible(true);
@@ -6182,6 +6187,13 @@ void ODFAEGCreator::onObjectOriginChanged(TextArea* ta) {
                 sg->addState(selectState);
             }
         }
+    }
+}
+void ODFAEGCreator::onMouseOnMenu(MenuItem* menuItem) {
+    if (menuItem->isVisible() && !menuItem->isContextChanged()) {
+        std::cout<<"desactivate event context menu item"<<std::endl;
+        setEventContextActivated(false);
+        menuItem->setContextChanged(true);
     }
 }
 void ODFAEGCreator::makeTransparent(Entity* entity) {

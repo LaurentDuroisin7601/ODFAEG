@@ -9,7 +9,7 @@ namespace odfaeg {
     namespace graphic {
         class Component : public Drawable, public Transformable {
         public :
-            Component(RenderWindow& window, math::Vec3f position, math::Vec3f size, math::Vec3f origin, unsigned int priority=0);
+            Component(RenderWindow& window, math::Vec3f position, math::Vec3f size, math::Vec3f origin, unsigned int priority=0, unsigned int eventPriority = 0);
 
             /** \fn set the relative position relative to the top-left of the parent's component.
             * if the component haven't any parent, the parent is the window.
@@ -80,6 +80,12 @@ namespace odfaeg {
             void setPriority(unsigned int priority) {
                 this->priority = priority;
             }
+            unsigned int getEventPriority() {
+                return eventPriority;
+            }
+            void setEventPriority(unsigned int eventPriority) {
+                this->eventPriority = eventPriority;
+            }
             virtual void onVisibilityChanged(bool visible);
             virtual void onEventContextActivated(bool activate);
             virtual void processEvents();
@@ -107,7 +113,7 @@ namespace odfaeg {
             bool visible;
             int id;
             //static int nbComponents;
-            unsigned int priority;
+            unsigned int priority, eventPriority;
             float relPosX, relPosY, relSizeX, relSizeY;
             bool autoResize, relPosition;
         };

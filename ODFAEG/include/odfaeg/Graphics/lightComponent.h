@@ -11,8 +11,8 @@ namespace odfaeg {
     namespace graphic {
         class LightComponent : public Component {
             public :
-            LightComponent(RenderWindow& window, math::Vec3f position, math::Vec3f size, math::Vec3f origin, unsigned int priority = 0, LightComponent* parent = nullptr) :
-                Component (window, position, size, origin, priority), parent(parent), enableScissorTest(true) {
+            LightComponent(RenderWindow& window, math::Vec3f position, math::Vec3f size, math::Vec3f origin, unsigned int priority = 0, unsigned int eventPriority = 0, LightComponent* parent = nullptr) :
+                Component (window, position, size, origin, priority, eventPriority), parent(parent), enableScissorTest(true) {
             }
             void setParent(LightComponent* parent) {
                 this->parent = parent;

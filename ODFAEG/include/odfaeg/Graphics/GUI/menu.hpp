@@ -19,6 +19,7 @@ namespace odfaeg {
                 Text text;
                 sf::Color background;
                 std::vector<MenuItem*> items;
+                bool isContextChanged;
             };
         }
     }

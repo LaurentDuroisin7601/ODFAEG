@@ -109,6 +109,7 @@ class ODFAEGCreator : public odfaeg::core::Application,
     void onSelectedWallTypeDroppedDown(odfaeg::graphic::gui::DropDownList* dp);
     void onSelectedWallTypeNotDroppedDown(odfaeg::graphic::gui::DropDownList* dp);
     void onObjectOriginChanged(odfaeg::graphic::gui::TextArea* ta);
+    void onMouseOnMenu(odfaeg::graphic::gui::MenuItem* menuItem);
     std::map<std::string, std::vector<odfaeg::graphic::Entity*>>& getExternals();
     odfaeg::graphic::EntityFactory& getEntityFactory();
     void addId (unsigned int id);

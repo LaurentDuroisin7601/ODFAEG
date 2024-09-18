@@ -111,6 +111,7 @@ namespace odfaeg {
             void updateECSComponents();
         protected :
             std::multimap<int, std::unique_ptr<Component>, std::greater<int>> components; /**> the components.*/
+            std::multimap<int, Component*, std::greater<int>> eventComponents;
             std::multimap<int, std::unique_ptr<ecs::Component>, std::greater<int>> ecs_components;
             std::vector<RenderWindow*> windows; /**> the window.*/
         };

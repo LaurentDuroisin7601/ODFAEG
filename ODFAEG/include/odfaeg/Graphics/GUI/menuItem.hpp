@@ -20,10 +20,13 @@ namespace odfaeg {
                 std::string getText();
                 void setText(std::string text);
                 void onEventPushed(window::IEvent event, RenderWindow& window);
+                bool isContextChanged();
+                void setContextChanged(bool contextChanged);
             private :
                 RectangleShape rect;
                 Text text;
                 sf::Color background;
+                bool contextChanged;
             };
         }
     }

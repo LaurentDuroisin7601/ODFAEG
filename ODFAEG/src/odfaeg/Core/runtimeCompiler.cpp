@@ -98,7 +98,7 @@ namespace odfaeg {
                 }
                 command += " 2> \""+sourceFiles[s]+".err\"";
             }
-            for (unsigned int i = 0; i < libraryDirs.size(); i++) {
+            /*for (unsigned int i = 0; i < libraryDirs.size(); i++) {
                 if (i == 0)
                     command = "g++ ";
                 command += "-L"+libraryDirs[i]+" ";
@@ -107,7 +107,7 @@ namespace odfaeg {
                 command += "-l"+libraries[i]+" ";
             }
             //std::cout<<"command : "<<command<<std::endl;
-            system(command.c_str());
+            system(command.c_str());*/
             command = "g++ -o "+outputDir+"\\"+funcName+".exe";
             for (unsigned int s = 0; s < sourceFiles.size(); s++) {
                 command+=" \""+sourceFiles[s]+".o\" ";
