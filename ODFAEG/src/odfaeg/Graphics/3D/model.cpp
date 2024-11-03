@@ -2,6 +2,8 @@
 namespace odfaeg {
     namespace graphic {
         namespace g3d {
+            #ifdef VULKAN
+            #else
             Model::Model ()  {
                 float maxF = std::numeric_limits<float>::max();
                 float minF = std::numeric_limits<float>::min();
@@ -102,7 +104,7 @@ namespace odfaeg {
                 }
                 return textures;
             }
-
+            #endif
         }
     }
 }

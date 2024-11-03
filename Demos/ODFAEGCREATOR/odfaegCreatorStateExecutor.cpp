@@ -1,3 +1,4 @@
+#ifndef VULKAN
 #include "odfaegCreatorStateExecutor.hpp"
 #include "application.hpp"
 
@@ -192,3 +193,4 @@ bool ODFAEGCreatorStateExecutor::undoState(State& state) {
     }
     return true;
 }
+#endif

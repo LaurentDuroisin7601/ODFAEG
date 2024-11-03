@@ -8,7 +8,9 @@
 #include <SFML/Graphics/PrimitiveType.hpp>
 #include "shader.h"
 #include <cstdarg>
-
+#ifdef VULKAN
+#include "../Window/vkDevice.hpp"
+#endif
 ////////////////////////////////////////////////////////////
 //
 // /!\ Important : this class is a modification of the circle shape class of the SFML
@@ -38,11 +40,7 @@
 ////////////////////////////////////////////////////////////
 
 namespace odfaeg {
-#ifdef VULKAN
-    namespace window {
-        class VkSettup;
-    }
-    #endif
+
 
     namespace graphic {
         class Drawable;
@@ -50,7 +48,7 @@ namespace odfaeg {
         #ifdef VULKAN
         class RenderTarget {
             public :
-            RenderTarget(window::VkSettup& vkSettup);
+            RenderTarget(window::Device& vkDevice);
             virtual ~RenderTarget ();
             void clear(const sf::Color& color = sf::Color(0, 0, 0, 255));
             void clearDepth();
@@ -203,20 +201,19 @@ namespace odfaeg {
             virtual sf::Vector2u getSize() const = 0;
             void cleanup();
             VertexBuffer& getVertexBuffer();
-            virtual VkSurfaceKHR getSurface() = 0;
-
         protected :
             RenderTarget ();
             void initialize();
-            VkRenderPass renderPass;
-            std::vector<VkFramebuffer> swapChainFramebuffers;
-            window::VkSettup& vkSettup;
-            void createRenderPass();
+
+            window::Device& vkDevice;
+            virtual VkSurfaceKHR getSurface() = 0;
             virtual VkExtent2D getSwapchainExtents() = 0;
             virtual VkFormat getSwapchainImageFormat() = 0;
             virtual std::vector<VkImage> getSwapchainImages() = 0;
+            virtual std::vector<VkFramebuffer> getSwapchainFrameBuffers() = 0;
             virtual size_t getCurrentFrame() = 0;
             virtual const int getMaxFramesInFlight() = 0;
+            virtual VkRenderPass getRenderPass() = 0;
             std::vector<VkCommandBuffer>& getCommandBuffers();
         private :
             void createDescriptorSetLayout(const Texture* texture);

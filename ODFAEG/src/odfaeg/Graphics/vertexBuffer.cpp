@@ -11,14 +11,14 @@ namespace odfaeg {
     namespace graphic {
         using namespace sf;
         #ifdef VULKAN
-            VertexBuffer::VertexBuffer() {
+            VertexBuffer::VertexBuffer(window::Device& vkDevice) : vkDevice(vkDevice) {
 
             }
             void VertexBuffer::clear() {
                 m_vertices.clear();
             }
-            void VertexBuffer::setVkSettup(window::VkSettup& settup) {
-                vkSettup = &settup;
+            void VertexBuffer::clearIndexes() {
+                indices.clear();
             }
             void VertexBuffer::addIndex(uint16_t index) {
                 indices.push_back(index);
@@ -33,16 +33,16 @@ namespace odfaeg {
                 createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
                 void* data;
-                vkMapMemory(vkSettup->getDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
+                vkMapMemory(vkDevice.getDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
                     memcpy(data, m_vertices.data(), (size_t) bufferSize);
-                vkUnmapMemory(vkSettup->getDevice(), stagingBufferMemory);
+                vkUnmapMemory(vkDevice.getDevice(), stagingBufferMemory);
 
                 createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
 
                 copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
 
-                vkDestroyBuffer(vkSettup->getDevice(), stagingBuffer, nullptr);
-                vkFreeMemory(vkSettup->getDevice(), stagingBufferMemory, nullptr);
+                vkDestroyBuffer(vkDevice.getDevice(), stagingBuffer, nullptr);
+                vkFreeMemory(vkDevice.getDevice(), stagingBufferMemory, nullptr);
             }
             void VertexBuffer::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory) {
                 VkBufferCreateInfo bufferInfo{};
@@ -51,33 +51,33 @@ namespace odfaeg {
                 bufferInfo.usage = usage;
                 bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-                if (vkCreateBuffer(vkSettup->getDevice(), &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
+                if (vkCreateBuffer(vkDevice.getDevice(), &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
                     throw std::runtime_error("failed to create buffer!");
                 }
 
                 VkMemoryRequirements memRequirements;
-                vkGetBufferMemoryRequirements(vkSettup->getDevice(), buffer, &memRequirements);
+                vkGetBufferMemoryRequirements(vkDevice.getDevice(), buffer, &memRequirements);
 
                 VkMemoryAllocateInfo allocInfo{};
                 allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
                 allocInfo.allocationSize = memRequirements.size;
                 allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
 
-                if (vkAllocateMemory(vkSettup->getDevice(), &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
+                if (vkAllocateMemory(vkDevice.getDevice(), &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
                     throw std::runtime_error("failed to allocate buffer memory!");
                 }
 
-                vkBindBufferMemory(vkSettup->getDevice(), buffer, bufferMemory, 0);
+                vkBindBufferMemory(vkDevice.getDevice(), buffer, bufferMemory, 0);
             }
             void VertexBuffer::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) {
                 VkCommandBufferAllocateInfo allocInfo{};
                 allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
                 allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-                allocInfo.commandPool = vkSettup->getCommandPool();
+                allocInfo.commandPool = vkDevice.getCommandPool();
                 allocInfo.commandBufferCount = 1;
 
                 VkCommandBuffer commandBuffer;
-                vkAllocateCommandBuffers(vkSettup->getDevice(), &allocInfo, &commandBuffer);
+                vkAllocateCommandBuffers(vkDevice.getDevice(), &allocInfo, &commandBuffer);
 
                 VkCommandBufferBeginInfo beginInfo{};
                 beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -96,14 +96,14 @@ namespace odfaeg {
                 submitInfo.commandBufferCount = 1;
                 submitInfo.pCommandBuffers = &commandBuffer;
 
-                vkQueueSubmit(vkSettup->getGraphicQueue(), 1, &submitInfo, VK_NULL_HANDLE);
-                vkQueueWaitIdle(vkSettup->getGraphicQueue());
+                vkQueueSubmit(vkDevice.getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
+                vkQueueWaitIdle(vkDevice.getGraphicsQueue());
 
-                vkFreeCommandBuffers(vkSettup->getDevice(), vkSettup->getCommandPool(), 1, &commandBuffer);
+                vkFreeCommandBuffers(vkDevice.getDevice(), vkDevice.getCommandPool(), 1, &commandBuffer);
             }
             uint32_t VertexBuffer::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
                 VkPhysicalDeviceMemoryProperties memProperties;
-                vkGetPhysicalDeviceMemoryProperties(vkSettup->getPhysicalDevice(), &memProperties);
+                vkGetPhysicalDeviceMemoryProperties(vkDevice.getPhysicalDevice(), &memProperties);
                 for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
                     if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
                         return i;
@@ -119,16 +119,16 @@ namespace odfaeg {
                 createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
                 void* data;
-                vkMapMemory(vkSettup->getDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
+                vkMapMemory(vkDevice.getDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
                 memcpy(data, indices.data(), (size_t) bufferSize);
-                vkUnmapMemory(vkSettup->getDevice(), stagingBufferMemory);
+                vkUnmapMemory(vkDevice.getDevice(), stagingBufferMemory);
 
                 createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
 
                 copyBuffer(stagingBuffer, indexBuffer, bufferSize);
 
-                vkDestroyBuffer(vkSettup->getDevice(), stagingBuffer, nullptr);
-                vkFreeMemory(vkSettup->getDevice(), stagingBufferMemory, nullptr);
+                vkDestroyBuffer(vkDevice.getDevice(), stagingBuffer, nullptr);
+                vkFreeMemory(vkDevice.getDevice(), stagingBufferMemory, nullptr);
             }
             VkBuffer VertexBuffer::getVertexBuffer() {
                 return vertexBuffer;
@@ -143,10 +143,10 @@ namespace odfaeg {
                 return indexBuffer;
             }
             VertexBuffer::~VertexBuffer() {
-                vkDestroyBuffer(vkSettup->getDevice(), indexBuffer, nullptr);
-                vkFreeMemory(vkSettup->getDevice(), indexBufferMemory, nullptr);
-                vkDestroyBuffer(vkSettup->getDevice(), vertexBuffer, nullptr);
-                vkFreeMemory(vkSettup->getDevice(), vertexBufferMemory, nullptr);
+                vkDestroyBuffer(vkDevice.getDevice(), indexBuffer, nullptr);
+                vkFreeMemory(vkDevice.getDevice(), indexBufferMemory, nullptr);
+                vkDestroyBuffer(vkDevice.getDevice(), vertexBuffer, nullptr);
+                vkFreeMemory(vkDevice.getDevice(), vertexBufferMemory, nullptr);
             }
         #else
         ////////////////////////////////////////////////////////////

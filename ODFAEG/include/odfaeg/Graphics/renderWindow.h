@@ -45,14 +45,18 @@ namespace odfaeg
 
         class RenderWindow : public window::Window, public RenderTarget {
         public :
-            RenderWindow(sf::VideoMode mode, const sf::String& title,   window::VkSettup& vkSettup, sf::Uint32 style = sf::Style::Default, const window::ContextSettings& settings = window::ContextSettings());
-            explicit RenderWindow(sf::WindowHandle handle, window::VkSettup& vkSettup, const window::ContextSettings& settings = window::ContextSettings());
+
+
+            RenderWindow(sf::VideoMode mode, const sf::String& title,   window::Device& vkDevice, sf::Uint32 style = sf::Style::Default, const window::ContextSettings& settings = window::ContextSettings());
+            explicit RenderWindow(sf::WindowHandle handle, window::Device& vkDevice, const window::ContextSettings& settings = window::ContextSettings());
             virtual sf::Vector2u getSize() const;
             size_t getCurrentFrame();
             void recreateSwapchain();
             void cleanupSwapchain();
             void drawVulkanFrame();
+            VkRenderPass getRenderPass();
             virtual ~RenderWindow();
+
         protected:
             VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
             VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
@@ -77,6 +81,7 @@ namespace odfaeg
             virtual void onResize();
             std::vector<VkImage> getSwapchainImages();
             std::vector<VkImageView> getSwapChainImageViews();
+            std::vector<VkFramebuffer> getSwapchainFrameBuffers();
 
             VkExtent2D getSwapchainExtents();
             VkFormat getSwapchainImageFormat();
@@ -84,16 +89,18 @@ namespace odfaeg
             VkSurfaceKHR getSurface();
             const int getMaxFramesInFlight();
         private :
+
             const int MAX_FRAMES_IN_FLIGHT = 2;
-            void createSurface(GLFWwindow* window);
+            void createSurface();
             void createSwapChain();
             void createImageViews();
             VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mipLevels);
             void createFramebuffers();
+            void createRenderPass();
             void createSyncObjects();
             void cleanup();
             VkSurfaceKHR surface;
-            window::VkSettup& vkSettup;
+            window::Device& vkDevice;
             VkSwapchainKHR swapChain;
             VkFormat swapChainImageFormat;
             VkExtent2D swapChainExtent;
@@ -103,7 +110,8 @@ namespace odfaeg
             std::vector<VkSemaphore> renderFinishedSemaphores;
             std::vector<VkFence> inFlightFences;
             std::vector<VkFence> imagesInFlight;
-
+            VkRenderPass renderPass;
+            std::vector<VkFramebuffer> swapChainFramebuffers;
             size_t currentFrame;
         };
         #else

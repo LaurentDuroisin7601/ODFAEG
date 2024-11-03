@@ -38,7 +38,7 @@
 #ifndef VULKAN
 #include "../../../include/odfaeg/Window/iGlResource.hpp"
 #else
-#include "../Window/vkSettup.hpp"
+#include "../Window/vkDevice.hpp"
 #include <vulkan/vulkan.hpp>
 #endif
 
@@ -58,7 +58,7 @@ namespace odfaeg
         #ifdef VULKAN
         class Texture {
             public :
-            Texture (window::VkSettup& vkSettup);
+            Texture (window::Device& vkDevice);
             bool loadFromImage(const sf::Image& image, const sf::IntRect& area = sf::IntRect());
             bool loadFromFile(const std::string& filename, const sf::IntRect& area = sf::IntRect());
             bool create(unsigned int width, unsigned int height);
@@ -91,7 +91,7 @@ namespace odfaeg
             uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
             void createTextureImageView();
             void createTextureSampler();
-            window::VkSettup& vkSettup;
+            window::Device& vkDevice;
             friend class Text;
             friend class RenderTexture;
             friend class RenderTarget;

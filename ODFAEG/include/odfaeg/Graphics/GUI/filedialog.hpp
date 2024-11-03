@@ -18,6 +18,8 @@
 namespace odfaeg {
     namespace graphic {
         namespace gui {
+            #ifdef VULKAN
+            #else
             class FileDialog : public LightComponent, public ActionListener {
                 public :
                     FileDialog(math::Vec3f position, math::Vec3f size, const Font* font);
@@ -39,6 +41,7 @@ namespace odfaeg {
                     std::string appliDir;
                     std::string pathChosen;
             };
+            #endif
         }
     }
 }

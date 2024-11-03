@@ -29,8 +29,7 @@ namespace odfaeg {
         class RenderTarget;
         class VertexBuffer {
         public :
-            VertexBuffer();
-            void setVkSettup(window::VkSettup& vkSettup);
+            VertexBuffer(window::Device& vkDevice);
             void append(const Vertex& vertex);
             void addIndex(uint16_t index);
             size_t getIndicesSize();
@@ -39,6 +38,7 @@ namespace odfaeg {
             VkBuffer getVertexBuffer();
             VkBuffer getIndexBuffer();
             size_t getSize();
+            void clearIndexes();
             ~VertexBuffer();
         private :
             void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
@@ -46,7 +46,7 @@ namespace odfaeg {
             void createIndexBuffer();
             uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
             std::vector<Vertex> m_vertices;
-            window::VkSettup* vkSettup;
+            window::Device& vkDevice;
             VkBuffer vertexBuffer;
             VkDeviceMemory vertexBufferMemory;
             VkBuffer indexBuffer;

@@ -1,3 +1,5 @@
+
+#ifndef VULKAN
 #ifndef ODFAEGCREATOR
 #define ODFAEGCREATOR
 #include "odfaeg/Graphics/application.h"
@@ -32,6 +34,7 @@
 #include "odfaeg/Math/distributions.h"
 #include "odfaeg/Core/class.hpp"
 #include "odfaeg/Core/runtimeCompiler.hpp"
+#include "odfaeg/Graphics/3D/model.hpp"
 class ODFAEGCreator : public odfaeg::core::Application,
                       public odfaeg::graphic::gui::MenuItemListener,
                       public odfaeg::graphic::gui::ActionListener {
@@ -133,7 +136,7 @@ class ODFAEGCreator : public odfaeg::core::Application,
         odfaeg::graphic::gui::MenuItem *item11, *item12, *item13, *item14, *item15, *item16, *item17, *item18, *item19, *item21, *item22, *item23, *item31, *item32, *item33,
         *item34, *item35, *item36, *item37, *item38, *item39, *item310, *item311, *item41, *item42, *item43, *item44, *item45, *item46, *item51, *item52;
         odfaeg::core::ResourceCache<> cache;
-        odfaeg::graphic::gui::FileDialog* fdTexturePath, *fdProjectPath;
+        odfaeg::graphic::gui::FileDialog* fdTexturePath, *fdProjectPath, *fdImport3DModel;
         odfaeg::graphic::RenderWindow* wApplicationNew, *wNewMap, *wNewComponent, *wNewEntitiesUpdater, *wNewAnimUpdater, *wNewEmitter, *wNewParticleSystemUpdater, *wCreateNewWindow, *wCreateNewObject, *wModifyObject,
         *wGenerateTerrain, *wDeleteObject;
         odfaeg::graphic::gui::TextArea* ta, *taComponentExpression, *taComponentLayer, *taEntitiesUpdaterName, *taComponentName, *taAnimUpdaterName, *taPSName, *taEmissionRate,
@@ -196,5 +199,7 @@ class ODFAEGCreator : public odfaeg::core::Application,
         std::vector<std::string> argsTps;
         std::vector<odfaeg::graphic::Tile*> ground;
         std::vector<odfaeg::graphic::g2d::Wall*> walls;
+        odfaeg::graphic::g3d::Model loader;
 };
+#endif
 #endif

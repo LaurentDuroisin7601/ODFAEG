@@ -2,6 +2,8 @@
 namespace odfaeg {
     namespace graphic {
         namespace gui {
+            #ifdef VULKAN
+            #else
             OptionPane::OptionPane(math::Vec3f position, math::Vec3f size, const Font* font, sf::String t, TYPE type) :
                 rw (sf::VideoMode(size.x, size.y), "Option Pane", sf::Style::Default, window::ContextSettings(3, 0, 0, 0, 0)),
                 LightComponent (rw, position, size, size * 0.5f),
@@ -95,6 +97,7 @@ namespace odfaeg {
                     delete no;
                 }
             }
+            #endif // VULKAN
         }
     }
 }

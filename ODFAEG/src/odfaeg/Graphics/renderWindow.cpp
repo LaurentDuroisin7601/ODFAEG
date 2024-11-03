@@ -10,13 +10,13 @@ namespace odfaeg {
         using namespace sf;
         #ifdef VULKAN
         ////////////////////////////////////////////////////////////
-        RenderWindow::RenderWindow(VideoMode mode, const String& title, window::VkSettup& vkSettup, Uint32 style,  const window::ContextSettings& settings) : RenderTarget(vkSettup), vkSettup(vkSettup)
+        RenderWindow::RenderWindow(VideoMode mode, const String& title, window::Device& vkDevice, Uint32 style,  const window::ContextSettings& settings) : RenderTarget(vkDevice), vkDevice(vkDevice)
         {
             // Don't call the base class constructor because it contains virtual function calls
             create(mode, title, style, settings);
         }
          ////////////////////////////////////////////////////////////
-        RenderWindow::RenderWindow(WindowHandle handle,  window::VkSettup& vkSettup, const window::ContextSettings& settings) : vkSettup(vkSettup), RenderTarget(vkSettup)
+        RenderWindow::RenderWindow(WindowHandle handle,  window::Device& vkDevice, const window::ContextSettings& settings) : vkDevice(vkDevice), RenderTarget(vkDevice)
         {
             // Don't call the base class constructor because it contains virtual function calls
             create(handle, settings);
@@ -24,20 +24,21 @@ namespace odfaeg {
         void RenderWindow::cleanup() {
             cleanupSwapchain();
             for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-                vkDestroySemaphore(vkSettup.getDevice(), renderFinishedSemaphores[i], nullptr);
-                vkDestroySemaphore(vkSettup.getDevice(), imageAvailableSemaphores[i], nullptr);
-                vkDestroyFence(vkSettup.getDevice(), inFlightFences[i], nullptr);
+                vkDestroySemaphore(vkDevice.getDevice(), renderFinishedSemaphores[i], nullptr);
+                vkDestroySemaphore(vkDevice.getDevice(), imageAvailableSemaphores[i], nullptr);
+                vkDestroyFence(vkDevice.getDevice(), inFlightFences[i], nullptr);
             }
-            vkDestroySurfaceKHR(vkSettup.getInstance(), surface, nullptr);
+            vkDestroySurfaceKHR(vkDevice.getInstance(), surface, nullptr);
+            vkDevice.destroyDevice();
         }
-        void RenderWindow::createSurface(GLFWwindow* window) {
+        void RenderWindow::createSurface() {
              std::cout<<"create window surface."<<std::endl;
-             if (glfwCreateWindowSurface(vkSettup.getInstance(), getWindow(), nullptr, &surface) != VK_SUCCESS) {
+             if (glfwCreateWindowSurface(vkDevice.getInstance(), getWindow(), nullptr, &surface) != VK_SUCCESS) {
                 throw core::Erreur(0, "failed to create window surface!", 1);
              }
         }
         void RenderWindow::createSwapChain() {
-            window::VkSettup::SwapChainSupportDetails swapChainSupport = vkSettup.querySwapChainSupport(vkSettup.getPhysicalDevice(), surface);
+            window::Device::SwapChainSupportDetails swapChainSupport = vkDevice.querySwapChainSupport(vkDevice.getPhysicalDevice(), surface);
 
             VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
             VkPresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
@@ -58,7 +59,7 @@ namespace odfaeg {
             createInfo.imageArrayLayers = 1;
             createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-            window::VkSettup::QueueFamilyIndices indices = vkSettup.findQueueFamilies(vkSettup.getPhysicalDevice(), surface);
+            window::Device::QueueFamilyIndices indices = vkDevice.findQueueFamilies(vkDevice.getPhysicalDevice(), surface);
             uint32_t queueFamilyIndices[] = { indices.graphicsFamily.value(), indices.presentFamily.value() };
 
             if (indices.graphicsFamily != indices.presentFamily) {
@@ -75,12 +76,12 @@ namespace odfaeg {
             createInfo.presentMode = presentMode;
             createInfo.clipped = VK_TRUE;
 
-            if (vkCreateSwapchainKHR(vkSettup.getDevice(), &createInfo, nullptr, &swapChain) != VK_SUCCESS) {
+            if (vkCreateSwapchainKHR(vkDevice.getDevice(), &createInfo, nullptr, &swapChain) != VK_SUCCESS) {
                 throw core::Erreur(0, "failed to create swap chain!", 1);
             }
-            vkGetSwapchainImagesKHR(vkSettup.getDevice(), swapChain, &imageCount, nullptr);
+            vkGetSwapchainImagesKHR(vkDevice.getDevice(), swapChain, &imageCount, nullptr);
             swapChainImages.resize(imageCount);
-            vkGetSwapchainImagesKHR(vkSettup.getDevice(), swapChain, &imageCount, swapChainImages.data());
+            vkGetSwapchainImagesKHR(vkDevice.getDevice(), swapChain, &imageCount, swapChainImages.data());
 
             swapChainImageFormat = surfaceFormat.format;
             swapChainExtent = extent;
@@ -134,7 +135,7 @@ namespace odfaeg {
             viewInfo.subresourceRange.layerCount = 1;
 
             VkImageView imageView;
-            if (vkCreateImageView(vkSettup.getDevice(), &viewInfo, nullptr, &imageView) != VK_SUCCESS) {
+            if (vkCreateImageView(vkDevice.getDevice(), &viewInfo, nullptr, &imageView) != VK_SUCCESS) {
                 throw core::Erreur(0, "failed to create texture image view!", 1);
             }
 
@@ -146,6 +147,46 @@ namespace odfaeg {
             for (uint32_t i = 0; i < swapChainImages.size(); i++) {
                 swapChainImageViews[i] = createImageView(swapChainImages[i], swapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1);
             }
+        }
+        void RenderWindow::createRenderPass() {
+            VkAttachmentDescription colorAttachment{};
+            colorAttachment.format =    swapChainImageFormat;
+            colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+            colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+            colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+            colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+            VkAttachmentReference colorAttachmentRef{};
+            colorAttachmentRef.attachment = 0;
+            colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+            VkSubpassDescription subpass{};
+            subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+            subpass.colorAttachmentCount = 1;
+            subpass.pColorAttachments = &colorAttachmentRef;
+
+            VkRenderPassCreateInfo renderPassInfo{};
+            renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+            renderPassInfo.attachmentCount = 1;
+            renderPassInfo.pAttachments = &colorAttachment;
+            renderPassInfo.subpassCount = 1;
+            renderPassInfo.pSubpasses = &subpass;
+            VkSubpassDependency dependency{};
+            dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+            dependency.dstSubpass = 0;
+            dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+            dependency.srcAccessMask = 0;
+            dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+            dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+            renderPassInfo.dependencyCount = 1;
+            renderPassInfo.pDependencies = &dependency;
+            if (vkCreateRenderPass(vkDevice.getDevice(), &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
+                throw core::Erreur(0, "failed to create render pass!", 1);
+            }
+
         }
         void RenderWindow::createSyncObjects() {
             imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
@@ -161,9 +202,9 @@ namespace odfaeg {
             fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
             for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-                if (vkCreateSemaphore(vkSettup.getDevice(), &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS ||
-                    vkCreateSemaphore(vkSettup.getDevice(), &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS ||
-                    vkCreateFence(vkSettup.getDevice(), &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS) {
+                if (vkCreateSemaphore(vkDevice.getDevice(), &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS ||
+                    vkCreateSemaphore(vkDevice.getDevice(), &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS ||
+                    vkCreateFence(vkDevice.getDevice(), &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS) {
 
                     throw core::Erreur(0, "échec de la création des objets de synchronisation pour une frame!", 1);
                 }
@@ -181,6 +222,9 @@ namespace odfaeg {
         std::vector<VkImageView> RenderWindow::getSwapChainImageViews() {
             return swapChainImageViews;
         }
+        std::vector<VkFramebuffer> RenderWindow::getSwapchainFrameBuffers() {
+            return swapChainFramebuffers;
+        }
         VkExtent2D RenderWindow::getSwapchainExtents() {
             return swapChainExtent;
         }
@@ -190,14 +234,17 @@ namespace odfaeg {
         const int RenderWindow::getMaxFramesInFlight() {
             return MAX_FRAMES_IN_FLIGHT;
         }
+        VkRenderPass RenderWindow::getRenderPass() {
+            return renderPass;
+        }
         void RenderWindow::drawVulkanFrame() {
             if (getCommandBuffers().size() > 0) {
-                vkWaitForFences(vkSettup.getDevice(), 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
+                vkWaitForFences(vkDevice.getDevice(), 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
                 uint32_t imageIndex;
-                vkAcquireNextImageKHR(vkSettup.getDevice(), swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+                vkAcquireNextImageKHR(vkDevice.getDevice(), swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
                 // Vérifier si une frame précédente est en train d'utiliser cette image (il y a une fence à attendre)
                 if (imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
-                    vkWaitForFences(vkSettup.getDevice(), 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
+                    vkWaitForFences(vkDevice.getDevice(), 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
                 }
                  // Marque l'image comme étant à nouveau utilisée par cette frame
                 imagesInFlight[imageIndex] = inFlightFences[currentFrame];
@@ -215,8 +262,8 @@ namespace odfaeg {
                 VkSemaphore signalSemaphores[] = {renderFinishedSemaphores[currentFrame]};
                 submitInfo.signalSemaphoreCount = 1;
                 submitInfo.pSignalSemaphores = signalSemaphores;
-                vkResetFences(vkSettup.getDevice(), 1, &inFlightFences[currentFrame]);
-                if (vkQueueSubmit(vkSettup.getGraphicQueue(), 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS) {
+                vkResetFences(vkDevice.getDevice(), 1, &inFlightFences[currentFrame]);
+                if (vkQueueSubmit(vkDevice.getGraphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS) {
                     throw core::Erreur(0, "échec de l'envoi d'un command buffer!", 1);
                 }
                 VkPresentInfoKHR presentInfo{};
@@ -229,28 +276,30 @@ namespace odfaeg {
                 presentInfo.pSwapchains = swapChains;
                 presentInfo.pImageIndices = &imageIndex;
                 presentInfo.pResults = nullptr; // Optionnel
-                vkQueuePresentKHR(vkSettup.getPresentQueue(), &presentInfo);
+                vkQueuePresentKHR(vkDevice.getPresentQueue(), &presentInfo);
                 currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
-                vkDeviceWaitIdle(vkSettup.getDevice());
+                vkDeviceWaitIdle(vkDevice.getDevice());
             }
         }
         void RenderWindow::cleanupSwapchain() {
             for (size_t i = 0; i < swapChainFramebuffers.size(); i++) {
-                vkDestroyFramebuffer(vkSettup.getDevice(), swapChainFramebuffers[i], nullptr);
+                vkDestroyFramebuffer(vkDevice.getDevice(), swapChainFramebuffers[i], nullptr);
             }
             for (size_t i = 0; i < swapChainImageViews.size(); i++) {
-                vkDestroyImageView(vkSettup.getDevice(), swapChainImageViews[i], nullptr);
+                vkDestroyImageView(vkDevice.getDevice(), swapChainImageViews[i], nullptr);
             }
 
-            vkDestroySwapchainKHR(vkSettup.getDevice(), swapChain, nullptr);
+            vkDestroySwapchainKHR(vkDevice.getDevice(), swapChain, nullptr);
+            vkDestroyRenderPass(vkDevice.getDevice(), renderPass, nullptr);
         }
         void RenderWindow::recreateSwapchain() {
-            vkDeviceWaitIdle(vkSettup.getDevice());
+            vkDeviceWaitIdle(vkDevice.getDevice());
 
             cleanupSwapchain();
 
             createSwapChain();
             createImageViews();
+            createRenderPass();
             createFramebuffers();
         }
         ////////////////////////////////////////////////////////////
@@ -269,15 +318,15 @@ namespace odfaeg {
         {
             // Just initialize the render target part
 
-            vkSettup.createInstance();
-            vkSettup.setupDebugMessenger();
-            createSurface(getWindow());
-            vkSettup.pickupPhysicalDevice(surface);
-            vkSettup.createLogicalDevice(surface);
+            vkDevice.createInstance();
+            createSurface();
+            vkDevice.pickupPhysicalDevice(surface);
+            vkDevice.createLogicalDevice(surface);
             createSwapChain();
             createImageViews();
-            RenderTarget::initialize();
+            createRenderPass();
             createFramebuffers();
+            RenderTarget::initialize();
             createSyncObjects();
             currentFrame = 0;
         }
@@ -290,8 +339,6 @@ namespace odfaeg {
 
             setView(getView());
             recreateSwapchain();
-            vkDestroyRenderPass(vkSettup.getDevice(), renderPass, nullptr);
-            createRenderPass();
         }
         void RenderWindow::createFramebuffers() {
             swapChainFramebuffers.resize(swapChainImageViews.size());
@@ -310,7 +357,7 @@ namespace odfaeg {
                 framebufferInfo.height = swapChainExtent.height;
                 framebufferInfo.layers = 1;
 
-                if (vkCreateFramebuffer(vkSettup.getDevice(), &framebufferInfo, nullptr, &swapChainFramebuffers[i]) != VK_SUCCESS) {
+                if (vkCreateFramebuffer(vkDevice.getDevice(), &framebufferInfo, nullptr, &swapChainFramebuffers[i]) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to create framebuffer!", 1);
                 }
             }

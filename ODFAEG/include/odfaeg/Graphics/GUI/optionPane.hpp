@@ -5,6 +5,8 @@
 namespace odfaeg {
     namespace graphic {
         namespace gui {
+            #ifdef VULKAN
+            #else
             class OptionPane : public LightComponent {
             public :
                 enum TYPE {
@@ -33,6 +35,7 @@ namespace odfaeg {
                 OPTION option;
                 TYPE type;
             };
+            #endif
         }
     }
 }

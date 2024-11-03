@@ -44,7 +44,7 @@
 #ifndef VULKAN
 #include "../../../include/odfaeg/Window/iGlResource.hpp"
 #else
-#include "../Window/vkSettup.hpp"
+#include "../Window/vkDevice.hpp"
 #include <vulkan/vulkan.hpp>
 #endif // VULKAN
 namespace sf
@@ -69,7 +69,7 @@ namespace odfaeg {
             /// This constructor creates an invalid shader.
             ///
             ////////////////////////////////////////////////////////////
-            Shader(window::VkSettup& vkSettup);
+            Shader(window::Device& vkDevice);
             ////////////////////////////////////////////////////////////
             /// \brief Destructor
             ///
@@ -157,7 +157,6 @@ namespace odfaeg {
             void cleanupShaderModules();
             VkShaderModule getVertexShaderModule();
             VkShaderModule getFragmentShaderModule();
-            void setVkSettup (window::VkSettup* vkSettup);
         private :
 
             ////////////////////////////////////////////////////////////
@@ -176,7 +175,7 @@ namespace odfaeg {
             VkShaderModule vertexShaderModule, fragmentShaderModule;
             std::vector<uint32_t> spvVertexShaderCode;
             std::vector<uint32_t> spvFragmentShaderCode;
-            window::VkSettup& vkSettup;
+            window::Device& vkDevice;
         };
         #else
         ////////////////////////////////////////////////////////////

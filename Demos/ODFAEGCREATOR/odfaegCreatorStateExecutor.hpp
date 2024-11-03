@@ -1,3 +1,4 @@
+#ifndef VULKAN
 #ifndef ODFAEGCREATOR_STATE_EXECUTOR
 #define ODFAEGCREATOR_STATE_EXECUTOR
 #include "odfaeg/Core/stateExecutor.h"
@@ -10,4 +11,5 @@ class ODFAEGCreatorStateExecutor : public odfaeg::core::StateExecutor {
     private :
     ODFAEGCreator* app;
 };
+#endif
 #endif

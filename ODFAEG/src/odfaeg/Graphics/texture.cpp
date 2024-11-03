@@ -64,7 +64,7 @@ namespace odfaeg {
     namespace graphic {
 
         #ifdef VULKAN
-        Texture::Texture(window::VkSettup& vkSettup) : vkSettup(vkSettup) {
+        Texture::Texture(window::Device& vkDevice) : vkDevice(vkDevice) {
 
         }
         bool Texture::loadFromFile(const std::string& filename, const sf::IntRect& area) {
@@ -87,16 +87,16 @@ namespace odfaeg {
             VkDeviceMemory stagingBufferMemory;
             createBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
             void* data;
-            vkMapMemory(vkSettup.getDevice(), stagingBufferMemory, 0, imageSize, 0, &data);
+            vkMapMemory(vkDevice.getDevice(), stagingBufferMemory, 0, imageSize, 0, &data);
                 memcpy(data, pixels, static_cast<size_t>(imageSize));
-            vkUnmapMemory(vkSettup.getDevice(), stagingBufferMemory);
+            vkUnmapMemory(vkDevice.getDevice(), stagingBufferMemory);
             createImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
             transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
             copyBufferToImage(stagingBuffer, textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
             transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
-            vkDestroyBuffer(vkSettup.getDevice(), stagingBuffer, nullptr);
-            vkFreeMemory(vkSettup.getDevice(), stagingBufferMemory, nullptr);
+            vkDestroyBuffer(vkDevice.getDevice(), stagingBuffer, nullptr);
+            vkFreeMemory(vkDevice.getDevice(), stagingBufferMemory, nullptr);
             createTextureImageView();
             createTextureSampler();
         }
@@ -116,22 +116,22 @@ namespace odfaeg {
             imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
             imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
             imageInfo.flags = 0; // Optionnel
-            if (vkCreateImage(vkSettup.getDevice(), &imageInfo, nullptr, &textureImage) != VK_SUCCESS) {
+            if (vkCreateImage(vkDevice.getDevice(), &imageInfo, nullptr, &textureImage) != VK_SUCCESS) {
                 throw std::runtime_error("echec de la creation d'une image!");
             }
             VkMemoryRequirements memRequirements;
-            vkGetImageMemoryRequirements(vkSettup.getDevice(), image, &memRequirements);
+            vkGetImageMemoryRequirements(vkDevice.getDevice(), image, &memRequirements);
 
             VkMemoryAllocateInfo allocInfo{};
             allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
             allocInfo.allocationSize = memRequirements.size;
             allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
 
-            if (vkAllocateMemory(vkSettup.getDevice(), &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
+            if (vkAllocateMemory(vkDevice.getDevice(), &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
                 throw std::runtime_error("echec de l'allocation de la memoire d'une image!");
             }
 
-            vkBindImageMemory(vkSettup.getDevice(), image, imageMemory, 0);
+            vkBindImageMemory(vkDevice.getDevice(), image, imageMemory, 0);
         }
         void Texture::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory) {
             VkBufferCreateInfo bufferInfo{};
@@ -139,27 +139,27 @@ namespace odfaeg {
             bufferInfo.size = size;
             bufferInfo.usage = usage;
             bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-            if (vkCreateBuffer(vkSettup.getDevice(), &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
+            if (vkCreateBuffer(vkDevice.getDevice(), &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
                 throw std::runtime_error("failed to create buffer!");
             }
 
             VkMemoryRequirements memRequirements;
-            vkGetBufferMemoryRequirements(vkSettup.getDevice(), buffer, &memRequirements);
+            vkGetBufferMemoryRequirements(vkDevice.getDevice(), buffer, &memRequirements);
 
             VkMemoryAllocateInfo allocInfo{};
             allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
             allocInfo.allocationSize = memRequirements.size;
             allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
 
-            if (vkAllocateMemory(vkSettup.getDevice(), &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
+            if (vkAllocateMemory(vkDevice.getDevice(), &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
                 throw std::runtime_error("failed to allocate buffer memory!");
             }
 
-            vkBindBufferMemory(vkSettup.getDevice(), buffer, bufferMemory, 0);
+            vkBindBufferMemory(vkDevice.getDevice(), buffer, bufferMemory, 0);
         }
         uint32_t Texture::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
             VkPhysicalDeviceMemoryProperties memProperties;
-            vkGetPhysicalDeviceMemoryProperties(vkSettup.getPhysicalDevice(), &memProperties);
+            vkGetPhysicalDeviceMemoryProperties(vkDevice.getPhysicalDevice(), &memProperties);
             for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
                 if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
                     return i;
@@ -171,11 +171,11 @@ namespace odfaeg {
             VkCommandBufferAllocateInfo allocInfo{};
             allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
             allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-            allocInfo.commandPool = vkSettup.getCommandPool();
+            allocInfo.commandPool = vkDevice.getCommandPool();
             allocInfo.commandBufferCount = 1;
 
             VkCommandBuffer commandBuffer;
-            vkAllocateCommandBuffers(vkSettup.getDevice(), &allocInfo, &commandBuffer);
+            vkAllocateCommandBuffers(vkDevice.getDevice(), &allocInfo, &commandBuffer);
 
             VkCommandBufferBeginInfo beginInfo{};
             beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -194,10 +194,10 @@ namespace odfaeg {
             submitInfo.commandBufferCount = 1;
             submitInfo.pCommandBuffers = &commandBuffer;
 
-            vkQueueSubmit(vkSettup.getGraphicQueue(), 1, &submitInfo, VK_NULL_HANDLE);
-            vkQueueWaitIdle(vkSettup.getGraphicQueue());
+            vkQueueSubmit(vkDevice.getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
+            vkQueueWaitIdle(vkDevice.getGraphicsQueue());
 
-            vkFreeCommandBuffers(vkSettup.getDevice(), vkSettup.getCommandPool(), 1, &commandBuffer);
+            vkFreeCommandBuffers(vkDevice.getDevice(), vkDevice.getCommandPool(), 1, &commandBuffer);
         }
         void Texture::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) {
             VkCommandBuffer commandBuffer = beginSingleTimeCommands();
@@ -286,7 +286,7 @@ namespace odfaeg {
             viewInfo.subresourceRange.levelCount = 1;
             viewInfo.subresourceRange.baseArrayLayer = 0;
             viewInfo.subresourceRange.layerCount = 1;
-            if (vkCreateImageView(vkSettup.getDevice(), &viewInfo, nullptr, &textureImageView) != VK_SUCCESS) {
+            if (vkCreateImageView(vkDevice.getDevice(), &viewInfo, nullptr, &textureImageView) != VK_SUCCESS) {
                 throw std::runtime_error("failed to create texture image view!");
             }
         }
@@ -300,7 +300,7 @@ namespace odfaeg {
             samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
             samplerInfo.anisotropyEnable = VK_TRUE;
             VkPhysicalDeviceProperties properties{};
-            vkGetPhysicalDeviceProperties(vkSettup.getPhysicalDevice(), &properties);
+            vkGetPhysicalDeviceProperties(vkDevice.getPhysicalDevice(), &properties);
             samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
             samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
             samplerInfo.unnormalizedCoordinates = VK_FALSE;
@@ -310,7 +310,7 @@ namespace odfaeg {
             samplerInfo.mipLodBias = 0.0f;
             samplerInfo.minLod = 0.0f;
             samplerInfo.maxLod = 0.0f;
-            if (vkCreateSampler(vkSettup.getDevice(), &samplerInfo, nullptr, &textureSampler) != VK_SUCCESS) {
+            if (vkCreateSampler(vkDevice.getDevice(), &samplerInfo, nullptr, &textureSampler) != VK_SUCCESS) {
                 throw std::runtime_error("failed to create texture sampler!");
             }
 
@@ -360,10 +360,10 @@ namespace odfaeg {
             return textureSampler;
         }
         Texture::~Texture() {
-            vkDestroySampler(vkSettup.getDevice(), textureSampler, nullptr);
-            vkDestroyImageView(vkSettup.getDevice(), textureImageView, nullptr);
-            vkDestroyImage(vkSettup.getDevice(), textureImage, nullptr);
-            vkFreeMemory(vkSettup.getDevice(), textureImageMemory, nullptr);
+            vkDestroySampler(vkDevice.getDevice(), textureSampler, nullptr);
+            vkDestroyImageView(vkDevice.getDevice(), textureImageView, nullptr);
+            vkDestroyImage(vkDevice.getDevice(), textureImage, nullptr);
+            vkFreeMemory(vkDevice.getDevice(), textureImageMemory, nullptr);
         }
         #else // VULKAN
         unsigned int Texture::nbTextures = 0;

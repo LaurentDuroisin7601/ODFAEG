@@ -4,10 +4,15 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include "../../Window/vkDevice.hpp"
 namespace odfaeg {
     namespace graphic {
         namespace g3d {
+            #ifdef VULKAN
+
+            #else
             class Model {
+
                 public :
                     Model ();
                     Entity* loadModel(std::string path, EntityFactory& factory);
@@ -20,6 +25,7 @@ namespace odfaeg {
                     math::Vec3f max, min;
                     std::string directory;
             };
+            #endif
         }
     }
 }

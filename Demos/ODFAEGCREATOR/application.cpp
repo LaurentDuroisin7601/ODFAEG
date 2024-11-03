@@ -1,4 +1,7 @@
+
+
 #include "application.hpp"
+#ifndef VULKAN
 #include "odfaeg/Window/action.h"
 #include "odfaeg/Window/command.h"
 #include <sys/stat.h>
@@ -254,6 +257,10 @@ void ODFAEGCreator::onInit() {
         fdProjectPath->setVisible(false);
         fdProjectPath->setEventContextActivated(false);
         addWindow(&fdProjectPath->getWindow(), false);
+        fdImport3DModel = new FileDialog(Vec3f(0, 0, 0), Vec3f(800, 600, 0), fm.getResourceByAlias(Fonts::Serif));
+        fdImport3DModel->setVisible(false);
+        fdImport3DModel->setEventContextActivated(false);
+        addWindow(&fdImport3DModel->getWindow(), false);
         getRenderComponentManager().addComponent(fdProjectPath);
         wApplicationNew = new RenderWindow(sf::VideoMode(400, 300), "Create ODFAEG Application", sf::Style::Default, ContextSettings(0, 0, 0, 3, 0));
         //New application.
@@ -1449,7 +1456,13 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
             if (dpSelectComponent->getSelectedItem() == "MAIN WINDOW") {
                 pos = getRenderWindow().mapPixelToCoords(Vec3f(pos.x, getRenderWindow().getSize().y-pos.y, 0))+getRenderWindow().getView().getSize()*0.5f;
             } else {
-
+                std::string name = dpSelectComponent->getSelectedItem();
+                std::vector<Component*> components = getRenderComponentManager().getRenderComponents();
+                for (unsigned int i = 0; i < components.size(); i++) {
+                    if (name == components[i]->getName() && dynamic_cast<HeavyComponent*>(components[i])) {
+                        pos = components[i]->getFrameBuffer()->mapPixelToCoords(Vec3f(pos.x, getRenderWindow().getSize().y-pos.y, 0))+getRenderWindow().getView().getSize()*0.5f;
+                    }
+                }
             }
             rectSelect.setRect(pos.x, pos.y, pos.z, box.getSize().x, box.getSize().y, box.getSize().z);
             if (getWorld()->getCurrentSceneManager() != nullptr) {
@@ -2132,6 +2145,11 @@ void ODFAEGCreator::onExec() {
         fdProjectPath->setVisible(false);
         fdProjectPath->setEventContextActivated(false);
         tScriptEdit->setEventContextActivated(true);
+    }
+    std::string model3DPath = (fdImport3DModel != nullptr) ? fdImport3DModel->getPathChosen() : "";
+    if (model3DPath != "") {
+        Entity* model = loader.loadModel(model3DPath, factory);
+        getWorld()->addEntity(model);
     }
     getWorld()->update();
 }
@@ -6256,3 +6274,4 @@ unsigned int ODFAEGCreator::findLine(std::string toFind, std::string content) {
     }
     return line;
 }
+#endif

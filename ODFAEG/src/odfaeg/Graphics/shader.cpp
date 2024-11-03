@@ -39,7 +39,6 @@
 #include <SFML/OpenGL.hpp>
 #else
 #include <shaderc/shaderc.hpp>
-#include "../../../include/odfaeg/Window/vkSettup.hpp"
 #endif // VULKAN
 using namespace sf;
 
@@ -99,7 +98,7 @@ namespace
 namespace odfaeg {
     namespace graphic {
         #ifdef VULKAN
-        Shader::Shader(window::VkSettup& vkSettup) : vkSettup(vkSettup) {
+        Shader::Shader(window::Device& vkDevice) : vkDevice(vkDevice) {
 
         }
         ////////////////////////////////////////////////////////////
@@ -179,20 +178,20 @@ namespace odfaeg {
             createVSInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
             createVSInfo.codeSize = 4*spvVertexShaderCode.size();
             createVSInfo.pCode = spvVertexShaderCode.data();
-            if (vkCreateShaderModule(vkSettup.getDevice(), &createVSInfo, nullptr, &vertexShaderModule) != VK_SUCCESS) {
+            if (vkCreateShaderModule(vkDevice.getDevice(), &createVSInfo, nullptr, &vertexShaderModule) != VK_SUCCESS) {
                 throw core::Erreur (0, "Failed to create vertex shader module", 1);
             }
             VkShaderModuleCreateInfo createFSInfo{};
             createFSInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
             createFSInfo.codeSize = 4*spvFragmentShaderCode.size();
             createFSInfo.pCode = spvFragmentShaderCode.data();
-            if (vkCreateShaderModule(vkSettup.getDevice(), &createFSInfo, nullptr, &fragmentShaderModule) != VK_SUCCESS) {
+            if (vkCreateShaderModule(vkDevice.getDevice(), &createFSInfo, nullptr, &fragmentShaderModule) != VK_SUCCESS) {
                 throw core::Erreur (0, "Failed to create fragment shader module", 1);
             }
         }
         void Shader::cleanupShaderModules() {
-            vkDestroyShaderModule(vkSettup.getDevice(), vertexShaderModule, nullptr);
-            vkDestroyShaderModule(vkSettup.getDevice(), fragmentShaderModule, nullptr);
+            vkDestroyShaderModule(vkDevice.getDevice(), vertexShaderModule, nullptr);
+            vkDestroyShaderModule(vkDevice.getDevice(), fragmentShaderModule, nullptr);
         }
         VkShaderModule Shader::getVertexShaderModule() {
             return vertexShaderModule;

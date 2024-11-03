@@ -4,6 +4,8 @@
 namespace odfaeg {
     namespace graphic {
         namespace gui {
+            #ifdef VULKAN
+            #else
             FileDialog::FileDialog(math::Vec3f position, math::Vec3f size, const Font* font) :
             rw(sf::VideoMode(size.x, size.y), "File Dialog", sf::Style::Default, window::ContextSettings(0, 0, 0, 3, 0)),
             LightComponent (rw, position, size, size * 0.5),
@@ -423,6 +425,8 @@ namespace odfaeg {
                     rw.setVisible(false);
                 }
             }
+            #endif // VULKAN
         }
+
     }
 }

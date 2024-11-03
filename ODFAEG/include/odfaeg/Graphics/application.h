@@ -31,13 +31,13 @@ namespace odfaeg {
         #ifdef VULKAN
         class ODFAEG_API_EXPORT Application {
             public :
-            Application(sf::VideoMode vm, std::string title, sf::Uint32 style = sf::Style::Default, window::ContextSettings settings = window::ContextSettings())
+            Application(window::VkSettup& vkSettup, sf::VideoMode vm, std::string title, sf::Uint32 style = sf::Style::Default, window::ContextSettings settings = window::ContextSettings())
 
             {
                 clearColor = sf::Color::Black;
-                window::VkSettup vkSettup;
-                vkSettups.push_back(vkSettup);
-                graphic::RenderWindow* window = new graphic::RenderWindow (vm, title, vkSettups.back(), style, settings);
+                window::Device vkDevice(vkSettup);
+                vkDevices.push_back(vkDevice);
+                graphic::RenderWindow* window = new graphic::RenderWindow (vm, title, vkDevices.back(), style, settings);
                 windows.push_back(std::make_pair(window, true));
                 componentManager = std::make_unique<graphic::RenderComponentManager>(*window);
                 app = this;
@@ -356,7 +356,7 @@ namespace odfaeg {
             std::vector<graphic::Material*> materials;
             std::vector<graphic::Material*> sameMaterials;
             std::map<int, std::string> types;
-            std::vector<window::VkSettup> vkSettups;
+            std::vector<window::Device> vkDevices;
         };
         #else
         class ODFAEG_API_EXPORT Application {

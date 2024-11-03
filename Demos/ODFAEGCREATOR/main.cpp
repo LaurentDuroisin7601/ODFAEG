@@ -1,3 +1,4 @@
+#ifndef VULKAN
 #include "application.hpp"
 #include "../../ODFAEG/include/odfaeg/Core/multdispvisitors.hpp"
 #include "../../ODFAEG/include/odfaeg/Core/clock.h"
@@ -6,6 +7,9 @@ using namespace odfaeg::graphic;
 using namespace odfaeg::physic;
 using namespace odfaeg::math;
 using namespace odfaeg::window;
+#else
+#include "odfaeg/Graphics/renderWindow.h"
+#endif // VULKAN#include "application.hpp"
 //using namespace odfaeg::core;
 
 
