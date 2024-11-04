@@ -52,9 +52,10 @@ namespace odfaeg
             m_texture.create(width, height);
             createRenderPass();
             createFramebuffers();
-            RenderTarget::initialize();
             m_size.x = width;
             m_size.y = height;
+            RenderTarget::initialize();
+
         }
         VkSurfaceKHR RenderTexture::getSurface() {
             return VK_NULL_HANDLE;
