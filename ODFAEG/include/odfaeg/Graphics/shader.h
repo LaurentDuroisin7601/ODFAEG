@@ -41,6 +41,7 @@
 #include <map>
 #include <string>
 #include "../../../include/odfaeg/Graphics/export.hpp"
+#include "../config.hpp"
 #ifndef VULKAN
 #include "../../../include/odfaeg/Window/iGlResource.hpp"
 #else

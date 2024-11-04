@@ -29,7 +29,7 @@ namespace odfaeg {
             std::vector<VkPhysicalDevice> devices(deviceCount);
             vkEnumeratePhysicalDevices(vkSettup.getInstance(), &deviceCount, devices.data());
             for (const auto& device : devices) {
-                if (isDeviceSuitable(device)) {
+                if (isDeviceSuitable(device, surface)) {
                     physicalDevice = device;
                     break;
                 }
@@ -54,10 +54,10 @@ namespace odfaeg {
                 vkGetPhysicalDeviceFeatures(device, &supportedFeatures);
                 return indices.isComplete() && extensionsSupported && swapChainAdequate && supportedFeatures.samplerAnisotropy;
             } else {
-                QueueFamilyIndices  indices = findQueueFamily(device, surface);
+                QueueFamilyIndices  indices = findQueueFamilies(device, surface);
                 VkPhysicalDeviceFeatures supportedFeatures;
                 vkGetPhysicalDeviceFeatures(device, &supportedFeatures);
-                return indices.isComplete() && supportedFeatures.samplerAnisotropy;
+                return indices.graphicsFamily.has_value() && supportedFeatures.samplerAnisotropy;
             }
         }
         Device::SwapChainSupportDetails Device::querySwapChainSupport(VkPhysicalDevice device,  VkSurfaceKHR surface) {
@@ -116,11 +116,12 @@ namespace odfaeg {
          void Device::createLogicalDevice(VkSurfaceKHR surface) {
             std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
             std::set<uint32_t> uniqueQueueFamilies;
+             QueueFamilyIndices indices;
             if (surface != VK_NULL_HANDLE) {
-                QueueFamilyIndices indices = findQueueFamilies(physicalDevice, surface);
+                indices = findQueueFamilies(physicalDevice, surface);
                 uniqueQueueFamilies = {indices.graphicsFamily.value(), indices.presentFamily.value()};
             } else {
-                QueueFamilyIndices indices = findQueueFamilies(physicalDevice, VK_NULL_HANDLE);
+                indices = findQueueFamilies(physicalDevice, surface);
                 uniqueQueueFamilies = {indices.graphicsFamily.value()};
             }
             float queuePriority = 1.0f;
@@ -147,7 +148,7 @@ namespace odfaeg {
             createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
             createInfo.ppEnabledExtensionNames = deviceExtensions.data();
 
-            if (vkSettup.enableValidationLayers) {
+            if (enableValidationLayers) {
                 createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
                 createInfo.ppEnabledLayerNames = validationLayers.data();
             } else {
@@ -160,13 +161,11 @@ namespace odfaeg {
 
             vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &graphicsQueue);
             vkGetDeviceQueue(device, indices.presentFamily.value(), 0, &presentQueue);
-            vkSettup.setDevice(device);
-            vkSettup.setGraphicsQueue(graphicsQueue);
         }
         VkDevice Device::getDevice() {
             return device;
         }
-        VkPhysicalDevice Device::VkDevicegetPhysicalDevice() {
+        VkPhysicalDevice Device::getPhysicalDevice() {
             return physicalDevice;
         }
         VkQueue Device::getGraphicsQueue() {
@@ -175,19 +174,19 @@ namespace odfaeg {
         VkQueue Device::getPresentQueue() {
             return presentQueue;
         }
-        void VkDevice::setCommandPool(VkCommandPool commandPool) {
+        void Device::setCommandPool(VkCommandPool commandPool) {
             this->commandPool = commandPool;
         }
-        VkCommandPool VkDevice::getCommandPool() {
+        VkCommandPool Device::getCommandPool() {
             return commandPool;
         }
-        void VkDevice::destroyDevice() {
+        void Device::destroyDevice() {
             vkDestroyDevice(device, nullptr);
         }
-        void VkDevice::createInstance() {
+        void Device::createInstance() {
             vkSettup.createInstance();
         }
-        VkInstance VkDevice::getInstance() {
+        VkInstance Device::getInstance() {
             return vkSettup.getInstance();
         }
     }

@@ -25,11 +25,12 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "../../../include/odfaeg/Graphics/texture.h"
 #ifndef VULKAN
 #include "GL/glew.h"
 #include "glCheck.h"
 #endif
-#include "../../../include/odfaeg/Graphics/texture.h"
+
 #include "../../../include/odfaeg/Window/window.hpp"
 
 #include "textureSaver.h"

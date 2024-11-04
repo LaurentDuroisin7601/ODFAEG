@@ -35,6 +35,7 @@
 #include "../Core/archive.h"
 #include "../Math/matrix4.h"
 #include <SFML/Graphics/Image.hpp>
+#include "../config.hpp"
 #ifndef VULKAN
 #include "../../../include/odfaeg/Window/iGlResource.hpp"
 #else

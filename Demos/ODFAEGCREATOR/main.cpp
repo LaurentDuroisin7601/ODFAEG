@@ -1,3 +1,4 @@
+#define VULKAN
 #ifndef VULKAN
 #include "application.hpp"
 #include "../../ODFAEG/include/odfaeg/Core/multdispvisitors.hpp"
@@ -9,6 +10,8 @@ using namespace odfaeg::math;
 using namespace odfaeg::window;
 #else
 #include "odfaeg/Graphics/renderWindow.h"
+using namespace odfaeg::graphic;
+using namespace odfaeg::window;
 #endif // VULKAN#include "application.hpp"
 //using namespace odfaeg::core;
 
@@ -983,9 +986,22 @@ int main(int argc, char* argv[])
 
     updateChildrenPosition(sphereId, 2, 2, 2);*/
 
-
-
-
-    ODFAEGCreator app(sf::VideoMode(1000,700),"ODFAEG Creator");
-    return app.exec();
+    VkSettup vkSettup;
+    Device vkDevice(vkSettup);
+    RenderWindow window(sf::VideoMode(800, 600), "Test vulkan",vkDevice);
+    Texture texture(vkDevice);
+    texture.loadFromFile("tilesets/eau.png");
+    VertexArray va;
+    va.append(Vertex(sf::Vector3f(0, 0, 0), sf::Color::White, sf::Vector2f(0, 0)));
+    va.append(Vertex(sf::Vector3f(0, 100, 0), sf::Color::White, sf::Vector2f(1, 0)));
+    va.append(Vertex(sf::Vector3f(0, 100, 50), sf::Color::White, sf::Vector2f(1, 1)));
+    va.append(Vertex(sf::Vector3f(0, 0, 50), sf::Color::White, sf::Vector2f(0, 1)));
+    while (true) {
+        RenderStates states;
+        states.texture = &texture;
+        window.draw(va, states);
+        window.display();
+    }
+    /*ODFAEGCreator app(sf::VideoMode(1000,700),"ODFAEG Creator");
+    return app.exec();*/
 }

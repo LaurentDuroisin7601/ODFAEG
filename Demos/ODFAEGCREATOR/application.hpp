@@ -1,4 +1,4 @@
-
+#define VULKAN
 #ifndef VULKAN
 #ifndef ODFAEGCREATOR
 #define ODFAEGCREATOR

@@ -1,6 +1,7 @@
-#ifndef VULKAN
 #include "odfaegCreatorStateExecutor.hpp"
 #include "application.hpp"
+#ifndef VULKAN
+
 
 using namespace odfaeg::core;
 using namespace odfaeg::math;

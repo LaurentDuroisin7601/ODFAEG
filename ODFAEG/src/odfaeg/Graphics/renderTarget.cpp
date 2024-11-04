@@ -172,6 +172,13 @@ namespace odfaeg {
              for (unsigned int i = 0; i < vertexCount; i++) {
                 vertexBuffer.append(vertices[i]);
              }
+             vertexBuffer.addIndex(0);
+             vertexBuffer.addIndex(1);
+             vertexBuffer.addIndex(2);
+             vertexBuffer.addIndex(0);
+             vertexBuffer.addIndex(2);
+             vertexBuffer.addIndex(3);
+             vertexBuffer.addIndex(0);
              UniformBufferObject ubo;
              ubo.proj = m_view.getProjMatrix().getMatrix().transpose();
              ubo.proj.m22 *= -1;

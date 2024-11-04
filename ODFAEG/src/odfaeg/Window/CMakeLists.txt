@@ -48,6 +48,8 @@ set(SRC_WINDOW
 	${SRCROOT}/vkDebug.cpp
 	${INCROOT}/vkSettup.hpp
 	${SRCROOT}/vkSettup.cpp
+	${INCROOT}/vkDevice.hpp
+	${SRCROOT}/vkDevice.cpp
 )
 if (UNIX)
 set(PLATEFORM_SRC

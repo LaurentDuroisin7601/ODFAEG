@@ -1,11 +1,8 @@
-#ifndef VK_DEVICE_HPP
-#define VK_DEVICE_HPP
+#ifndef DEVICE_HPP
+#define DEVICE_HPP
 #include "vkSettup.hpp"
 #ifdef VULKAN
 namespace odfaeg {
-    namespace graphic {
-        class RenderWindow;
-    }
     namespace window {
 
         class Device {
@@ -45,6 +42,7 @@ namespace odfaeg {
             VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
             VkDevice device;
             VkQueue graphicsQueue, presentQueue;
+            VkCommandPool commandPool;
         };
     }
 }

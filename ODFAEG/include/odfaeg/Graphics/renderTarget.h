@@ -8,9 +8,11 @@
 #include <SFML/Graphics/PrimitiveType.hpp>
 #include "shader.h"
 #include <cstdarg>
+#include "../config.hpp"
 #ifdef VULKAN
 #include "../Window/vkDevice.hpp"
 #endif
+
 ////////////////////////////////////////////////////////////
 //
 // /!\ Important : this class is a modification of the circle shape class of the SFML
