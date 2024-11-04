@@ -164,7 +164,7 @@ namespace odfaeg {
         }
         void RenderTarget::draw(const Vertex* vertices, unsigned int vertexCount, sf::PrimitiveType type,
                       RenderStates states) {
-
+             vkDevice.setCommandPool(commandPool);
              vertexBuffer.clear();
              for (unsigned int i = 0; i < vertexCount; i++) {
                 vertexBuffer.append(vertices[i]);
