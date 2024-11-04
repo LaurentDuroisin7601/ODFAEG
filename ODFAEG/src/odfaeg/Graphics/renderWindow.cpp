@@ -29,7 +29,6 @@ namespace odfaeg {
                 vkDestroyFence(vkDevice.getDevice(), inFlightFences[i], nullptr);
             }
             vkDestroySurfaceKHR(vkDevice.getInstance(), surface, nullptr);
-            vkDevice.destroyDevice();
         }
         void RenderWindow::createSurface() {
              if (glfwCreateWindowSurface(vkDevice.getInstance(), getWindow(), nullptr, &surface) != VK_SUCCESS) {

@@ -39,7 +39,7 @@ namespace odfaeg {
             VkCommandPool getCommandPool();
             void createInstance();
             VkInstance getInstance();
-            void destroyDevice();
+            ~Device();
         private :
             VkSettup& vkSettup;
             VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;

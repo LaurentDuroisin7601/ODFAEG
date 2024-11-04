@@ -171,7 +171,6 @@ namespace odfaeg
                 vkDestroyFramebuffer(vkDevice.getDevice(), swapChainFramebuffers[i], nullptr);
             }
             vkDestroyRenderPass(vkDevice.getDevice(), renderPass, nullptr);
-            vkDevice.destroyDevice();
         }
         #else
         ////////////////////////////////////////////////////////////

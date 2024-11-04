@@ -187,7 +187,7 @@ namespace odfaeg {
         VkCommandPool Device::getCommandPool() {
             return commandPool;
         }
-        void Device::destroyDevice() {
+        Device::~Device() {
             vkDestroyDevice(device, nullptr);
         }
         void Device::createInstance() {
