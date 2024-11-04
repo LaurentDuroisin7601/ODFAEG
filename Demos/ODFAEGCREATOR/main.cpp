@@ -10,6 +10,7 @@ using namespace odfaeg::math;
 using namespace odfaeg::window;
 #else
 #include "odfaeg/Graphics/renderWindow.h"
+#include "odfaeg/Graphics/renderTexture.h"
 using namespace odfaeg::graphic;
 using namespace odfaeg::window;
 #endif // VULKAN#include "application.hpp"
@@ -989,17 +990,28 @@ int main(int argc, char* argv[])
     VkSettup vkSettup;
     Device vkDevice(vkSettup);
     RenderWindow window(sf::VideoMode(800, 600), "Test vulkan",vkDevice);
+    window.getView().move(400, 300, 0);
+    RenderTexture rt(vkDevice);
+    rt.create(800, 600);
     Texture texture(vkDevice);
     texture.loadFromFile("tilesets/eau.png");
     VertexArray va;
     va.append(Vertex(sf::Vector3f(0, 0, 0), sf::Color::White, sf::Vector2f(0, 0)));
-    va.append(Vertex(sf::Vector3f(0, 100, 0), sf::Color::White, sf::Vector2f(1, 0)));
-    va.append(Vertex(sf::Vector3f(0, 100, 50), sf::Color::White, sf::Vector2f(1, 1)));
-    va.append(Vertex(sf::Vector3f(0, 0, 50), sf::Color::White, sf::Vector2f(0, 1)));
+    va.append(Vertex(sf::Vector3f(100, 0, 0), sf::Color::White, sf::Vector2f(1, 0)));
+    va.append(Vertex(sf::Vector3f(100, 50, 0), sf::Color::White, sf::Vector2f(1, 1)));
+    va.append(Vertex(sf::Vector3f(0, 50, 0), sf::Color::White, sf::Vector2f(0, 1)));
+    VertexArray va2;
+    va2.append(Vertex(sf::Vector3f(0, 0, 0), sf::Color::White, sf::Vector2f(0, 0)));
+    va2.append(Vertex(sf::Vector3f(800, 0, 0), sf::Color::White, sf::Vector2f(1, 0)));
+    va2.append(Vertex(sf::Vector3f(800, 600, 0), sf::Color::White, sf::Vector2f(1, 1)));
+    va2.append(Vertex(sf::Vector3f(0, 600, 0), sf::Color::White, sf::Vector2f(0, 1)));
     while (true) {
         RenderStates states;
         states.texture = &texture;
-        window.draw(va, states);
+        rt.draw(va, states);
+        rt.display();
+        states.texture = &rt.getTexture();
+        window.draw(va2, states);
         window.display();
     }
     /*ODFAEGCreator app(sf::VideoMode(1000,700),"ODFAEG Creator");

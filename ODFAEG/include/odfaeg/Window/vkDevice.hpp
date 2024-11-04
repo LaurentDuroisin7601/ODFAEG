@@ -20,6 +20,9 @@ namespace odfaeg {
                 bool isComplete() {
                     return graphicsFamily.has_value() && presentFamily.has_value();
                 }
+                bool isGraphicComplete() {
+                    return graphicsFamily.has_value();
+                }
             };
             Device (VkSettup& vkSettup);
             QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR surface);

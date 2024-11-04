@@ -75,9 +75,6 @@ namespace odfaeg {
                                                         layout(location = 0) out vec4 fragColor;
                                                         layout(location = 1) out vec2 fragTexCoord;
 
-                                                        out gl_PerVertex {
-                                                            vec4 gl_Position;
-                                                        };
 
                                                         void main() {
                                                             gl_Position = ubo.proj * ubo.view * ubo.model * vec4(inPosition, 1.0);
@@ -178,13 +175,11 @@ namespace odfaeg {
              vertexBuffer.addIndex(0);
              vertexBuffer.addIndex(2);
              vertexBuffer.addIndex(3);
-             vertexBuffer.addIndex(0);
              UniformBufferObject ubo;
              ubo.proj = m_view.getProjMatrix().getMatrix().transpose();
              ubo.proj.m22 *= -1;
              ubo.view = m_view.getViewMatrix().getMatrix().transpose();
              ubo.model = states.transform.getMatrix().transpose();
-
              updateUniformBuffer(getCurrentFrame(), ubo);
              createDescriptorSetLayout(states.texture);
              createGraphicPipeline(vertices, vertexCount, type, states);

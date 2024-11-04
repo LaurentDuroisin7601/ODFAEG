@@ -25,8 +25,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-
+#include "../../../include/odfaeg/config.hpp"
+#ifndef VULKAN
 #include "GL/glew.h"
+#endif
 #include "../../../include/odfaeg/Graphics/renderTexture.h"
 #ifndef VULKAN
 
@@ -41,6 +43,135 @@ namespace odfaeg
     namespace graphic {
         using namespace sf;
         #ifdef VULKAN
+        RenderTexture::RenderTexture(window::Device& vkDevice) : RenderTarget(vkDevice), vkDevice(vkDevice), m_texture(vkDevice) {
+        }
+        bool RenderTexture::create(unsigned int width, unsigned int height) {
+            vkDevice.createInstance();
+            vkDevice.pickupPhysicalDevice(VK_NULL_HANDLE);
+            vkDevice.createLogicalDevice(VK_NULL_HANDLE);
+            m_texture.create(width, height);
+            createRenderPass();
+            createFramebuffers();
+            RenderTarget::initialize();
+            m_size.x = width;
+            m_size.y = height;
+        }
+        VkSurfaceKHR RenderTexture::getSurface() {
+            return VK_NULL_HANDLE;
+        }
+        VkExtent2D RenderTexture::getSwapchainExtents() {
+            VkExtent2D actualExtent = {
+                static_cast<uint32_t>(m_texture.getSize().x),
+                static_cast<uint32_t>(m_texture.getSize().y)
+            };
+            return actualExtent;
+        }
+        VkFormat RenderTexture::getSwapchainImageFormat() {
+            return m_texture.getFormat();
+        }
+        std::vector<VkImage> RenderTexture::getSwapchainImages() {
+            std::vector<VkImage> images;
+            images.push_back(m_texture.getImage());
+            return images;
+        }
+        size_t RenderTexture::getCurrentFrame() {
+            return 0;
+        }
+        const int RenderTexture::getMaxFramesInFlight() {
+            return 1;
+        }
+        const Texture& RenderTexture::getTexture() const {
+            return m_texture;
+        }
+        sf::Vector2u RenderTexture::getSize() const {
+            return m_size;
+        }
+        std::vector<VkFramebuffer> RenderTexture::getSwapchainFrameBuffers() {
+            return swapChainFramebuffers;
+        }
+        VkRenderPass RenderTexture::getRenderPass() {
+            return renderPass;
+        }
+        void RenderTexture::createFramebuffers() {
+            swapChainFramebuffers.resize(getSwapchainImages().size());
+            for (size_t i = 0; i < getSwapchainImages().size(); i++) {
+                VkImageView attachments[] = {
+                    m_texture.getImageView()
+                };
+
+                VkFramebufferCreateInfo framebufferInfo{};
+                framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+                framebufferInfo.renderPass = renderPass;
+                framebufferInfo.attachmentCount = 1;
+                framebufferInfo.pAttachments = attachments;
+                framebufferInfo.width = getSwapchainExtents().width;
+                framebufferInfo.height = getSwapchainExtents().height;
+                framebufferInfo.layers = 1;
+
+                if (vkCreateFramebuffer(vkDevice.getDevice(), &framebufferInfo, nullptr, &swapChainFramebuffers[i]) != VK_SUCCESS) {
+                    throw core::Erreur(0, "failed to create framebuffer!", 1);
+                }
+            }
+        }
+        void RenderTexture::createRenderPass() {
+            VkAttachmentDescription colorAttachment{};
+            colorAttachment.format =    getSwapchainImageFormat();
+            colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+            colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+            colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+            colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            colorAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+            VkAttachmentReference colorAttachmentRef{};
+            colorAttachmentRef.attachment = 0;
+            colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+            VkSubpassDescription subpass{};
+            subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+            subpass.colorAttachmentCount = 1;
+            subpass.pColorAttachments = &colorAttachmentRef;
+
+            VkRenderPassCreateInfo renderPassInfo{};
+            renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+            renderPassInfo.attachmentCount = 1;
+            renderPassInfo.pAttachments = &colorAttachment;
+            renderPassInfo.subpassCount = 1;
+            renderPassInfo.pSubpasses = &subpass;
+            VkSubpassDependency dependency{};
+            dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+            dependency.dstSubpass = 0;
+            dependency.srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+            dependency.srcAccessMask = 0;
+            dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+            dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+            renderPassInfo.dependencyCount = 1;
+            renderPassInfo.pDependencies = &dependency;
+            if (vkCreateRenderPass(vkDevice.getDevice(), &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
+                throw core::Erreur(0, "failed to create render pass!", 1);
+            }
+
+        }
+        void RenderTexture::display() {
+            if (getCommandBuffers().size() > 0) {
+                VkSubmitInfo submitInfo{};
+                submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+                submitInfo.commandBufferCount = 1;
+                submitInfo.pCommandBuffers = &getCommandBuffers()[getCurrentFrame()];
+                if (vkQueueSubmit(vkDevice.getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
+                    throw core::Erreur(0, "échec de l'envoi d'un command buffer!", 1);
+                }
+                vkDeviceWaitIdle(vkDevice.getDevice());
+            }
+        }
+        RenderTexture::~RenderTexture() {
+            for (size_t i = 0; i < swapChainFramebuffers.size(); i++) {
+                vkDestroyFramebuffer(vkDevice.getDevice(), swapChainFramebuffers[i], nullptr);
+            }
+            vkDestroyRenderPass(vkDevice.getDevice(), renderPass, nullptr);
+            vkDevice.destroyDevice();
+        }
         #else
         ////////////////////////////////////////////////////////////
         RenderTexture::RenderTexture() :

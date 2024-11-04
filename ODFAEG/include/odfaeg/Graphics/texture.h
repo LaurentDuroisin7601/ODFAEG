@@ -62,7 +62,7 @@ namespace odfaeg
             Texture (window::Device& vkDevice);
             bool loadFromImage(const sf::Image& image, const sf::IntRect& area = sf::IntRect());
             bool loadFromFile(const std::string& filename, const sf::IntRect& area = sf::IntRect());
-            bool create(unsigned int width, unsigned int height);
+            bool create(uint32_t width, uint32_t height);
             sf::Vector2u getSize() const;
             void update(const sf::Uint8* pixels, unsigned int width, unsigned int height, unsigned int x, unsigned int y);
             void setSmooth(bool smooth);
@@ -80,6 +80,9 @@ namespace odfaeg
             void setNativeHandle(unsigned int handle, unsigned int width, unsigned int height);
             VkImageView getImageView() const ;
             VkSampler getSampler() const ;
+            VkFormat getFormat();
+            sf::Vector2u getSize();
+            VkImage getImage();
             ~Texture();
         private :
             VkCommandBuffer beginSingleTimeCommands();
@@ -108,6 +111,8 @@ namespace odfaeg
             VkDeviceMemory textureImageMemory;
             VkImageView textureImageView;
             VkSampler textureSampler;
+            VkFormat m_format;
+            sf::Vector2u size;
         };
         #else
         ////////////////////////////////////////////////////////////

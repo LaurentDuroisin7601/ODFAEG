@@ -68,6 +68,12 @@ namespace odfaeg {
         Texture::Texture(window::Device& vkDevice) : vkDevice(vkDevice) {
 
         }
+        bool Texture::create(uint32_t texWidth, uint32_t texHeight) {
+            createImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
+            createTextureImageView();
+            createTextureSampler();
+            return true;
+        }
         bool Texture::loadFromFile(const std::string& filename, const sf::IntRect& area) {
             Image image;
             return image.loadFromFile(filename) && loadFromImage(image, area);
@@ -110,10 +116,10 @@ namespace odfaeg {
             imageInfo.extent.depth = 1;
             imageInfo.mipLevels = 1;
             imageInfo.arrayLayers = 1;
-            imageInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
-            imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+            imageInfo.format = format;
+            imageInfo.tiling = tiling;
             imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            imageInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+            imageInfo.usage = usage;
             imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
             imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
             imageInfo.flags = 0; // Optionnel
@@ -133,6 +139,10 @@ namespace odfaeg {
             }
 
             vkBindImageMemory(vkDevice.getDevice(), image, imageMemory, 0);
+            m_size.x = texWidth;
+            m_size.y = texHeight;
+            m_format = format;
+            std::cout<<"image created"<<std::endl;
         }
         void Texture::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory) {
             VkBufferCreateInfo bufferInfo{};
@@ -316,8 +326,6 @@ namespace odfaeg {
             }
 
         }
-        bool Texture::create(unsigned int width, unsigned int height) {
-        }
         sf::Vector2u Texture::getSize() const {
         }
         void Texture::update(const Texture& texture) {
@@ -359,6 +367,15 @@ namespace odfaeg {
         }
         VkSampler Texture::getSampler() const {
             return textureSampler;
+        }
+        VkFormat Texture::getFormat() {
+            return m_format;
+        }
+        sf::Vector2u Texture::getSize() {
+            return m_size;
+        }
+        VkImage Texture::getImage() {
+            return textureImage;
         }
         Texture::~Texture() {
             vkDestroySampler(vkDevice.getDevice(), textureSampler, nullptr);

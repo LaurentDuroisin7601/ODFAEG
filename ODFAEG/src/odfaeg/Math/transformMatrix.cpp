@@ -7,12 +7,12 @@ namespace odfaeg {
         TransformMatrix::TransformMatrix() {
             t3d = math::Vec3f(0, 0, 0);
             r3d = 0;
-            r3dAxis = math::Vec3f(0, 0, 0);
+            r3dAxis = math::Vec3f(0, 0, 1);
             s3d = math::Vec3f (1, 1, 1);
             o3d = math::Vec3f (0, 0, 0);
             entityId=0;
-            needToUpdate3D = false;
-            inverseNeedToUpdate3D = false;
+            needToUpdate3D = true;
+            inverseNeedToUpdate3D = true;
         }
         void TransformMatrix::setTransformId(unsigned int id) {
             this->id = id;

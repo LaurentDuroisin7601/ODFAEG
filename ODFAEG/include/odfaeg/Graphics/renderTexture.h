@@ -32,18 +32,43 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "../../../include/odfaeg/Window/context.hpp"
-#include "../../../include/odfaeg/Window/iGlResource.hpp"
+
 #include "texture.h"
 #include "renderTarget.h"
 #ifndef VULKAN
-
-
+#include "../../../include/odfaeg/Window/context.hpp"
+#include "../../../include/odfaeg/Window/iGlResource.hpp"
 #endif
 class RenderTextureImpl;
 namespace odfaeg {
     namespace graphic {
         #ifdef VULKAN
+        class ODFAEG_GRAPHICS_API RenderTexture : public RenderTarget
+        {
+        public :
+            RenderTexture(window::Device& vkDevice);
+            bool create(unsigned int width, unsigned int height);
+            VkSurfaceKHR getSurface();
+            VkExtent2D getSwapchainExtents();
+            VkFormat getSwapchainImageFormat();
+            std::vector<VkImage> getSwapchainImages();
+            size_t getCurrentFrame();
+            const int getMaxFramesInFlight();
+            const Texture& getTexture() const;
+            sf::Vector2u getSize() const;
+            void createFramebuffers();
+            std::vector<VkFramebuffer> getSwapchainFrameBuffers();
+            void createRenderPass();
+            VkRenderPass getRenderPass();
+            void display();
+            ~RenderTexture();
+        private :
+            sf::Vector2u m_size;
+            std::vector<VkFramebuffer> swapChainFramebuffers;
+            VkRenderPass renderPass;
+            window::Device& vkDevice;
+            Texture m_texture;
+        };
         #else
         namespace priv {
             class RenderTextureImpl;

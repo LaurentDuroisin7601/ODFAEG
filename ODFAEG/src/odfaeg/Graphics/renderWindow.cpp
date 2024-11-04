@@ -32,7 +32,6 @@ namespace odfaeg {
             vkDevice.destroyDevice();
         }
         void RenderWindow::createSurface() {
-             std::cout<<"create window surface."<<std::endl;
              if (glfwCreateWindowSurface(vkDevice.getInstance(), getWindow(), nullptr, &surface) != VK_SUCCESS) {
                 throw core::Erreur(0, "failed to create window surface!", 1);
              }
