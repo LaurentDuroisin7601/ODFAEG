@@ -33,7 +33,7 @@ namespace odfaeg {
                     * \fn  Wall()
                     * \brief constructor.
                     */
-                    Wall(EntityFactory& factory) : Model(math::Vec3f(0, 0, 0),math::Vec3f(1, 1, 0),math::Vec3f(0.5f, 0.5f, 0), factory, "E_WALL", "WALL") {
+                    Wall(EntityFactory& factory) : Model(math::Vec3f(0, 0, 0),math::Vec3f(1, 1, 0),math::Vec3f(0.5f, 0.5f, 0), factory, "E_WALL", "") {
                         type = TOP_LEFT;
                     }
                     /**

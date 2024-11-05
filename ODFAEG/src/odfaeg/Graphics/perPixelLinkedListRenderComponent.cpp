@@ -1132,6 +1132,7 @@ namespace odfaeg {
 
             //std::cout<<"load tile"<<std::endl;
             for (unsigned int i = 0; i < vEntities.size(); i++) {
+
                 if ( vEntities[i]->isLeaf()) {
 
                     Entity* border;
@@ -1149,7 +1150,7 @@ namespace odfaeg {
                              else
                                 normalBatcherIndexed.addFace( vEntities[i]->getFace(j));
                         } else if (vEntities[i]->getDrawMode() == Entity::INSTANCED && vEntities[i]->isSelected()) {
-                           // std::cout<<"selected add face"<<std::endl;
+
                             if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0) {
                                 selectedInstanceBatcher.addFace(vEntities[i]->getFace(j));
                            // std::cout<<"remove texture"<<std::endl;
