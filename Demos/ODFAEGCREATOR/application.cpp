@@ -1101,22 +1101,23 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
         if(dynamic_cast<Entity*>(selectedObject) != nullptr) {
             //std::cout<<"detach children selected object : "<<std::endl;
 
-            //std::cout<<"remove selected object"<<std::endl;
-            getWorld()->removeEntity(dynamic_cast<Entity*>(selectedObject));
+            std::cout<<"remove selected object"<<std::endl;
             dynamic_cast<Entity*>(selectedObject)->detachChildren();
+            getWorld()->removeEntity(dynamic_cast<Entity*>(selectedObject));
+
             //std::cout<<"delete selected object : "<<dynamic_cast<Entity*>(selectedObject)->getType()<<std::endl;
             delete selectedObject;
 
         }
         std::vector<Transformable*> objects = rectSelect.getItems();
-        //std::cout<<"size : "<<objects.size()<<std::endl;
         for (unsigned int i = 1; i < objects.size(); i++) {
             if(dynamic_cast<Entity*>(objects[i]) != nullptr) {
                 //std::cout<<"detach children : "<<i<<std::endl;
 
-                //std::cout<<"remove entity : "<<i<<std::endl;
-                getWorld()->removeEntity(dynamic_cast<Entity*>(objects[i]));
+                //std::cout<<"remove entity : "<<dynamic_cast<Entity*>(objects[i])->getType()<<std::endl;
                 dynamic_cast<Entity*>(objects[i])->detachChildren();
+                getWorld()->removeEntity(dynamic_cast<Entity*>(objects[i]));
+
                 //std::cout<<"delete selected object : "<<dynamic_cast<Entity*>(objects[i])->getType()<<std::endl;
                 delete objects[i];
             }
@@ -1191,14 +1192,14 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
                 }
                 rectSelect.getItems().clear();
                 //std::cout<<"select get visible entities"<<std::endl;
-                std::vector<Entity*> entities = getWorld()->getEntities(taSelectExpression->getText());
-                //std::cout<<"visible entities selected get : "<<entities.size()<<std::endl;
+                std::vector<Entity*> entities = getWorld()->getEntities(taSelectExpression->getText());                ;
                 for (unsigned int i = 0; i < entities.size(); i++) {
                     //std::cout<<"type : "<<entities[i]->getType()<<std::endl<<"select pos : "<<rectSelect.getSelectionRect().getPosition()<<"select size : "<<rectSelect.getSelectionRect().getSize()<<"globalbounds pos : "<<entities[i]->getGlobalBounds().getPosition()<<"globalbounds size : "<<entities[i]->getGlobalBounds().getSize()<<std::endl;
                     //if (dynamic_cast<Tile*>(entities[i])) {
                         //std::cout<<"add tile : "<<i<<std::endl;
 
                         entities[i]->setSelected(true);
+                        rectSelect.addItem(entities[i]);
                         //std::cout<<"border added"<<std::endl;
                     //}
                 }
@@ -3215,7 +3216,6 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
                 Wall* wall = factory.make_entity<Wall>(factory);
                 Vec3f position = getRenderWindow().mapPixelToCoords(Vec3f(cursor.getPosition().x, getRenderWindow().getSize().y - cursor.getPosition().y, 0))+getRenderWindow().getView().getSize()*0.5f;
                 wall->setPosition(position);
-                wall->setName("WALL");
                 selectedObject = wall;
                 displayWallInfos(wall);
                 getWorld()->addEntity(wall);

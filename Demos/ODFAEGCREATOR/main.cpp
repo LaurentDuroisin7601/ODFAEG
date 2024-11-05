@@ -1,4 +1,3 @@
-#define VULKAN
 #ifndef VULKAN
 #include "application.hpp"
 #include "../../ODFAEG/include/odfaeg/Core/multdispvisitors.hpp"
@@ -987,7 +986,7 @@ int main(int argc, char* argv[])
 
     updateChildrenPosition(sphereId, 2, 2, 2);*/
 
-    VkSettup vkSettup;
+    /*VkSettup vkSettup;
     Device vkDevice(vkSettup);
     RenderWindow window(sf::VideoMode(800, 600), "Test vulkan",vkDevice);
     window.getView().move(400, 300, 0);
@@ -1013,7 +1012,7 @@ int main(int argc, char* argv[])
         states.texture = &rt.getTexture();
         window.draw(va2, states);
         window.display();
-    }
-    /*ODFAEGCreator app(sf::VideoMode(1000,700),"ODFAEG Creator");
-    return app.exec();*/
+    }*/
+    ODFAEGCreator app(sf::VideoMode(1000,700),"ODFAEG Creator");
+    return app.exec();
 }
