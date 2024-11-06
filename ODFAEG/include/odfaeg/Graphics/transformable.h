@@ -109,8 +109,20 @@ namespace odfaeg {
             * \param the scale of the transformable object.
             */
             void setScale(math::Vec3f scale) {
-                m_scale = scale;
-                tm.setScale(math::Vec3f(scale.x, scale.y, scale.z));
+                math::Vec3f newSize = m_size * scale;
+                if (m_size.x == 0)
+                    m_scale.x = 0;
+                else
+                    m_scale.x = newSize.x / m_size.x;
+                if (m_size.y == 0)
+                    m_scale.y = 0;
+                else
+                    m_scale.y = newSize.y / m_size.y;
+                if (m_size.z == 0)
+                    m_scale.z = 0;
+                else
+                    m_scale.z = newSize.z / m_size.z;
+                tm.setScale(math::Vec3f(m_scale.x, m_scale.y, m_scale.z));
                 recomputeBounds();
                 /*std::cout<<"get global bounds : "<<getGlobalBounds().getPosition()<<getGlobalBounds().getSize();
                 std::cout<<"global bounds : "<<globalBounds.getPosition()<<globalBounds.getSize();*/
@@ -118,7 +130,7 @@ namespace odfaeg {
                     || getGlobalBounds().getSize() != globalBounds.getSize())
                     std::cout<<"different"<<std::endl;*/
                 //physic::BoundingBox bounds = getGlobalBounds();
-                m_size = localBounds.getSize() * m_scale;
+                m_size = globalBounds.getSize();
                 m_position = globalBounds.getPosition();
                 /*if (name == "WALL") {
                     std::cout<<"set scale new size : "<<localBounds.getSize()<<m_scale<<m_size<<std::endl;
@@ -246,7 +258,7 @@ namespace odfaeg {
                 m_scale = scale;
                 tm.setScale(math::Vec3f(scale.x, scale.y, scale.z));
                 recomputeBounds();
-                m_size = localBounds.getSize() * m_scale;
+                m_size = globalBounds.getSize();
 
                 m_position = globalBounds.getPosition();
                 onResize(size);

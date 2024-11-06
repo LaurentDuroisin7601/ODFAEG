@@ -1469,12 +1469,12 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
             if (getWorld()->getCurrentSceneManager() != nullptr) {
                 //std::cout<<"select get visible entities"<<std::endl;
                 std::vector<Entity*> entities = getWorld()->getEntities(taSelectExpression->getText());
-                //std::cout<<"visible entities selected get : "<<entities.size()<<std::endl;
                 for (unsigned int i = 0; i < entities.size(); i++) {
                     //std::cout<<"type : "<<entities[i]->getType()<<std::endl<<"select pos : "<<rectSelect.getSelectionRect().getPosition()<<"select size : "<<rectSelect.getSelectionRect().getSize()<<"globalbounds pos : "<<entities[i]->getGlobalBounds().getPosition()<<"globalbounds size : "<<entities[i]->getGlobalBounds().getSize()<<std::endl;
+                    //std::cout<<rectSelect.getSelectionRect().getPosition()<<rectSelect.getSelectionRect().getSize()<<entities[i]->getGlobalBounds().getPosition()<<entities[i]->getGlobalBounds().getSize();
                     if (rectSelect.getSelectionRect().intersects(entities[i]->getGlobalBounds())) {
                         //if (dynamic_cast<Tile*>(entities[i])) {
-
+                            //std::cout<<"select entity : "<<entities[i]->getType()<<std::endl;
                             rectSelect.addItem(entities[i]);
                             entities[i]->setSelected(true);
                             //std::cout<<"border added"<<std::endl;
@@ -1850,7 +1850,8 @@ void ODFAEGCreator::onExec() {
                 ITextArchive ia2(ifs2);
                 std::vector<Scene*> maps;
                 ia2(maps);
-
+                /*std::vector<Entity*> decor = maps[0]->getEntities("E_DECOR");
+                maps[0]->deleteEntity(decor[0]);*/
                 for (unsigned int i = 0; i < maps.size(); i++) {
                     //std::cout<<"add map "<<maps[i]->getName()<<std::endl;
                     maps[i]->setRenderComponentManager(&getRenderComponentManager());
@@ -3185,6 +3186,8 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
         if (appliname != "" && getWorld()->getCurrentSceneManager() != nullptr) {
             if (!showRectSelect) {
                 Decor* decor = factory.make_entity<Decor>(factory);
+                Vec3f position = getRenderWindow().mapPixelToCoords(Vec3f(cursor.getPosition().x, getRenderWindow().getSize().y - cursor.getPosition().y, 0))+getRenderWindow().getView().getSize()*0.5f;
+                decor->setPosition(position);
                 selectedObject = decor;
                 displayDecorInfos(decor);
                 getWorld()->addEntity(decor);

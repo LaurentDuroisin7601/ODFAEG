@@ -1179,14 +1179,17 @@ namespace odfaeg {
 
                                     va[j].color = sf::Color::Cyan;
                                 }
-
+                                math::Vec3f oldSize = border->getSize();
                                 border->setOrigin(border->getSize() * 0.5f);
-                                border->setScale(math::Vec3f(1.1f, 1.1f, 1.1f));
+                                border->setSize(border->getSize() * 1.1f);
+                                math::Vec3f offset =  border->getSize() - oldSize;
+                                border->setPosition(vEntities[i]->getPosition() - offset * 0.5f);
                                // std::cout<<"add to batcher"<<std::endl;
                                 selectedInstanceIndexScaleBatcher.addFace(border->getFace(j));
                              }
                         } else {
                             if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0) {
+
                                 selectedBatcher.addFace(vEntities[i]->getFace(j));
                            // std::cout<<"remove texture"<<std::endl;
 
@@ -1197,10 +1200,11 @@ namespace odfaeg {
 
                                     va[j].color = sf::Color::Cyan;
                                 }
-
+                                math::Vec3f oldSize = border->getSize();
                                 border->setOrigin(border->getSize() * 0.5f);
-                                border->setScale(math::Vec3f(1.1f, 1.1f, 1.1f));
-                               // std::cout<<"add to batcher"<<std::endl;
+                                border->setSize(border->getSize() * 1.1f);
+                                math::Vec3f offset =  border->getSize() - oldSize;
+                                border->setPosition(vEntities[i]->getPosition() - offset * 0.5f);
                                 selectedScaleBatcher.addFace(border->getFace(j));
 
                                // std::cout<<"face added"<<std::endl;
