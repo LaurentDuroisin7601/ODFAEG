@@ -3736,26 +3736,40 @@ void ODFAEGCreator::displayInfos (Shape* shape) {
     stateStack.addStateGroup(sg);
     pScriptsFiles->setAutoResized(true);
 }
-void ODFAEGCreator::displayChildren(Label* label) {
-    Node* node = rootInfosNode->findNode(label);
-    std::vector<std::string> parts = split(label->getText(), "-");
-    Entity* entity = getWorld()->getEntity(conversionStringInt(parts[1]));
-    if (node->getNodes().size() == 0 && entity != nullptr) {
-        FontManager<Fonts>& fm = cache.resourceManager<Font, Fonts>("FontManager");
-        for (unsigned int i = 0; i < entity->getChildren().size(); i++) {
-
-            /*Label* label = new Label(getRenderWindow(), Vec3f(0, 0, 0), Vec3f(200, 17, 0),fm.getResourceByAlias(Fonts::Serif),"Id : entity-"+conversionIntString(entity->getChild(i)->getId()), 15);
-            Action a(Action::EVENT_TYPE::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
-            Command cmd(a, FastDelegate<bool>(&Label::isMouseInside, label), FastDelegate<void>(&ODFAEGCreator::displayChildren, this, label));
-            label->getListener().connect("SHOWCHILDREN"+label->getText(), cmd);
-            label->setParent(pInfos);
-            Node* lNode = new Node(label->getText() + "-child-" + conversionIntString(i), label, Vec2f(0, 0), Vec2f(1.f, 0.025f), node);
-            pInfos->addChild(label);*/
+void ODFAEGCreator::displayChildren(DropDownList* dp) {
+    if (dp->getSelectedItem() != "NONE") {
+        std::vector<Entity*> children = dynamic_cast<Entity*>(selectedObject)->getChildren();
+        Entity* child;
+        for (unsigned int i = 0; i < children.size(); i++) {
+            if (children[i]->getName() == dp->getSelectedItem()) {
+                child = children[i];
+            }
         }
-    } else if (node->isNodeVisible()) {
-        node->hideAllNodes();
-    } else {
-        node->showAllNodes();
+        if (dynamic_cast<Entity*>(selectedObject) && dynamic_cast<Anim*>(static_cast<Entity*>(child))) {
+            displayAnimInfos(child);
+            selectedObject = child;
+        } else if (dynamic_cast<Entity*>(selectedObject) && dynamic_cast<Wall*>(static_cast<Entity*>(child))) {
+            displayWallInfos(child);
+            selectedObject = child;
+        } else if (dynamic_cast<Entity*>(selectedObject) && dynamic_cast<Decor*>(static_cast<Entity*>(child))) {
+            displayDecorInfos(child);
+            selectedObject = child;
+        } else if (dynamic_cast<Entity*>(selectedObject) && dynamic_cast<BigTile*>(static_cast<Entity*>(child))) {
+            displayBigtileInfos(child);
+            selectedObject = child;
+        } else if (dynamic_cast<Entity*>(selectedObject) && dynamic_cast<ParticleSystem*>(static_cast<Entity*>(child))) {
+            displayParticleSystemInfos(child);
+            selectedObject = child;
+        } else if (dynamic_cast<Entity*>(selectedObject) && dynamic_cast<PonctualLight*>(static_cast<Entity*>(child))) {
+            displayPonctualLightInfos(child);
+            selectedObject = child;
+        } else if (dynamic_cast<Entity*>(selectedObject) && dynamic_cast<Tile*>(static_cast<Entity*>(child))) {
+            displayTileInfos(child);
+            selectedObject = child;
+        } else {
+            displayExternalEntityInfo(child);
+            selectedObject = child;
+        }
     }
 }
 void ODFAEGCreator::displayTransformInfos(Transformable* tile) {
@@ -4023,13 +4037,23 @@ void ODFAEGCreator::displayEntityInfos(Entity* tile) {
     lParent->getListener().connect("CMDPARENTCLICKED", cmdParentClicked);
     Node* parentNode = new Node("Parent",lParent,Vec2f(0, 0),Vec2f(1, 0.025),rootInfosNode.get());
     pInfos->addChild(lParent);
-    Label* lChildren = new Label(getRenderWindow(),Vec3f(0, 0, 0), Vec3f(200, 17, 0),fm.getResourceByAlias(Fonts::Serif), "Children-"+conversionIntString(tile->getId()), 15);
-    Action aChildren(Action::EVENT_TYPE::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
-    Command cmd(aChildren, FastDelegate<bool>(&Label::isMouseInside, lChildren), FastDelegate<void>(&ODFAEGCreator::displayChildren, this, lChildren));
-    lChildren->getListener().connect("SHOWCHILDREN", cmd);
+    Label* lChildren = new Label(getRenderWindow(),Vec3f(0, 0, 0), Vec3f(100, 17, 0),fm.getResourceByAlias(Fonts::Serif), "Children : ", 15);
+
     lChildren->setParent(pInfos);
-    Node* childrenNode = new Node("Children",lChildren,Vec2f(0, 0),Vec2f(1, 0.025),rootInfosNode.get());
+    Node* childrenNode = new Node("Children",lChildren,Vec2f(0, 0),Vec2f(0.25, 0.025),rootInfosNode.get());
     pInfos->addChild(lChildren);
+
+    dpChildren = new DropDownList(getRenderWindow(), Vec3f(0, 0, 0), Vec3f(100, 17, 0), fm.getResourceByAlias(Fonts::Serif), "NONE", 15);
+    for (unsigned int i = 0; i < tile->getChildren().size(); i++) {
+        if (tile->getChildren()[i]->getName() != "") {
+            dpChildren->addItem(tile->getChildren()[i]->getName(), 15);
+        }
+    }
+    dpChildren->setParent(pInfos);
+    pInfos->addChild(dpChildren);
+    childrenNode->addOtherComponent(dpChildren, Vec2f(0.75, 0.025));
+    Command cmdChildren(FastDelegate<bool>(&DropDownList::isValueChanged, dpChildren), FastDelegate<void>(&ODFAEGCreator::displayChildren, this, dpChildren));
+    dpChildren->getListener().connect("DisplayChildren", cmdChildren);
     std::vector<SceneManager*> ems = getWorld()->getSceneManagers();
     Label* lEmList = new Label(getRenderWindow(),Vec3f(0, 0, 0), Vec3f(200, 14, 0), fm.getResourceByAlias(Fonts::Serif), "Scene : ", 15);
     lEmList->setParent(pInfos);
@@ -4457,15 +4481,26 @@ void ODFAEGCreator::displayWallInfos(Entity* wall) {
     displayEntityInfos(wall);
     FontManager<Fonts>& fm = cache.resourceManager<Font, Fonts>("FontManager");
     Label* lType = new Label(getRenderWindow(),Vec3f(0, 0, 0),Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),"type : ",15);
-    lType->setParent(lType);
+    lType->setParent(pInfos);
     pInfos->addChild(lType);
     Node* node = new Node("WALLTYPE",lType,Vec2f(0, 0),Vec2f(0.25, 0.025),rootInfosNode.get());
-    taWallType = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),"",getRenderWindow());
-    Command cmdWallType(FastDelegate<bool>(&TextArea::isTextChanged, taWallType), FastDelegate<void>(&ODFAEGCreator::onWallTypeChanged,this,taWallType));
-    taWallType->getListener().connect("WallTypeChanged", cmdWallType);
-    taWallType->setParent(pInfos);
-    pInfos->addChild(taWallType);
-    node->addOtherComponent(taWallType, Vec2f(0.75, 0.025));
+    dpWallType = new DropDownList(getRenderWindow(), Vec3f(0, 0, 0), Vec3f(100, 50, 0), fm.getResourceByAlias(Fonts::Serif), "TOP_LEFT", 15);
+    dpWallType->addItem("TOP_RIGHT", 15);
+    dpWallType->addItem("BOTTOM_RIGHT", 15);
+    dpWallType->addItem("BOTTOM_LEFT", 15);
+    dpWallType->addItem("TOP_BOTTOM", 15);
+    dpWallType->addItem("RIGHT_LEFT", 15);
+    dpWallType->addItem("T_TOP", 15);
+    dpWallType->addItem("T_RIGHT", 15);
+    dpWallType->addItem("T_LEFT", 15);
+    dpWallType->addItem("T_BOTTOM", 15);
+    dpWallType->addItem("X", 15);
+
+    Command cmdWallType(FastDelegate<bool>(&DropDownList::isValueChanged, dpWallType), FastDelegate<void>(&ODFAEGCreator::onWallTypeChanged,this,dpWallType));
+    dpWallType->getListener().connect("WallTypeChanged", cmdWallType);
+    dpWallType->setParent(pInfos);
+    pInfos->addChild(dpWallType);
+    node->addOtherComponent(dpWallType, Vec2f(0.75, 0.025));
 }
 void ODFAEGCreator::displayTileInfos (Entity* tile) {
     try {
@@ -5192,10 +5227,29 @@ void ODFAEGCreator::onObjectMoveChanged(TextArea* ta) {
 void ODFAEGCreator::onObjectNameChanged(TextArea* ta) {
     selectedObject->setName(ta->getText());
 }
-void ODFAEGCreator::onWallTypeChanged(TextArea* ta) {
-    if (dynamic_cast<Wall*>(selectedObject) && is_number(ta->getText())) {
-        static_cast<Wall*>(selectedObject)->setType(ta->getText());
-    }
+void ODFAEGCreator::onWallTypeChanged(DropDownList* dp) {
+    if (dp->getSelectedItem() == "TOP_LEFT")
+        dynamic_cast<Wall*>(selectedObject)->setWallType(Wall::TOP_LEFT);
+    if (dp->getSelectedItem() == "TOP_RIGHT")
+        dynamic_cast<Wall*>(selectedObject)->setWallType(Wall::TOP_RIGHT);
+    if (dp->getSelectedItem() == "BOTTOM_RIGHT")
+        dynamic_cast<Wall*>(selectedObject)->setWallType(Wall::BOTTOM_RIGHT);
+    if (dp->getSelectedItem() == "BOTTOM_LEFT")
+        dynamic_cast<Wall*>(selectedObject)->setWallType(Wall::BOTTOM_LEFT);
+    if (dp->getSelectedItem() == "TOP_BOTTOM")
+        dynamic_cast<Wall*>(selectedObject)->setWallType(Wall::TOP_BOTTOM);
+    if (dp->getSelectedItem() == "RIGHT_LEFT")
+        dynamic_cast<Wall*>(selectedObject)->setWallType(Wall::RIGHT_LEFT);
+    if (dp->getSelectedItem() == "T_TOP")
+        dynamic_cast<Wall*>(selectedObject)->setWallType(Wall::T_TOP);
+    if (dp->getSelectedItem() == "T_RIGHT")
+        dynamic_cast<Wall*>(selectedObject)->setWallType(Wall::T_RIGHT);
+    if (dp->getSelectedItem() == "T_LEFT")
+        dynamic_cast<Wall*>(selectedObject)->setWallType(Wall::T_LEFT);
+    if (dp->getSelectedItem() == "T_BOTTOM")
+        dynamic_cast<Wall*>(selectedObject)->setWallType(Wall::T_BOTTOM);
+    if (dp->getSelectedItem() == "X")
+        dynamic_cast<Wall*>(selectedObject)->setWallType(Wall::X);
 }
 void ODFAEGCreator::onFrameRateChanged(TextArea* ta) {
     if (dynamic_cast<Anim*>(selectedObject) && is_number(ta->getText())) {
@@ -5437,13 +5491,31 @@ void ODFAEGCreator::onParentClicked(Label* label) {
     std::vector<std::string> parts = split(label->getText(), ":");
     std::string pName = parts[1].substr(1, parts[1].size()-1);
     if (pName != "NONE") {
-        if (dynamic_cast<Entity*>(selectedObject) && dynamic_cast<Anim*>(static_cast<Entity*>(selectedObject)->getParent())) {
-            displayAnimInfos(static_cast<Entity*>(selectedObject)->getParent());
-            selectedObject = static_cast<Entity*>(selectedObject)->getParent();
-        }
-        if (dynamic_cast<Entity*>(selectedObject) && dynamic_cast<Wall*>(static_cast<Entity*>(selectedObject)->getParent())) {
-            displayWallInfos(static_cast<Entity*>(selectedObject)->getParent());
-            selectedObject = static_cast<Entity*>(selectedObject)->getParent();
+        Entity* parent = dynamic_cast<Entity*>(selectedObject)->getParent();
+        if (dynamic_cast<Entity*>(selectedObject) && dynamic_cast<Anim*>(static_cast<Entity*>(parent))) {
+            displayAnimInfos(parent);
+            selectedObject = parent;
+        } else if (dynamic_cast<Entity*>(selectedObject) && dynamic_cast<Wall*>(static_cast<Entity*>(parent))) {
+            displayWallInfos(parent);
+            selectedObject = parent;
+        } else if (dynamic_cast<Entity*>(selectedObject) && dynamic_cast<Decor*>(static_cast<Entity*>(parent))) {
+            displayDecorInfos(parent);
+            selectedObject = parent;
+        } else if (dynamic_cast<Entity*>(selectedObject) && dynamic_cast<BigTile*>(static_cast<Entity*>(parent))) {
+            displayBigtileInfos(parent);
+            selectedObject = parent;
+        } else if (dynamic_cast<Entity*>(selectedObject) && dynamic_cast<ParticleSystem*>(static_cast<Entity*>(parent))) {
+            displayParticleSystemInfos(parent);
+            selectedObject = parent;
+        } else if (dynamic_cast<Entity*>(selectedObject) && dynamic_cast<PonctualLight*>(static_cast<Entity*>(parent))) {
+            displayPonctualLightInfos(parent);
+            selectedObject = parent;
+        } else if (dynamic_cast<Entity*>(selectedObject) && dynamic_cast<Tile*>(static_cast<Entity*>(parent))) {
+            displayTileInfos(parent);
+            selectedObject = parent;
+        } else {
+            displayExternalEntityInfo(parent);
+            selectedObject = parent;
         }
     }
 }

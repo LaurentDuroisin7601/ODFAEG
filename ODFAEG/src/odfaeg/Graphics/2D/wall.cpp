@@ -15,6 +15,9 @@ namespace odfaeg {
             int Wall::getWallType() {
                 return type;
             }
+            void Wall::setWallType(int type) {
+                this->type = static_cast<Type>(type);
+            }
             Entity* Wall::clone() {
                 Wall* w = factory.make_entity<Wall>(factory);
                 GameObject::copy(w);

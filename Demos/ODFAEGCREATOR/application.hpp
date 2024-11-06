@@ -66,7 +66,7 @@ class ODFAEGCreator : public odfaeg::core::Application,
     void displayAnimInfos(odfaeg::graphic::Entity* anim);
     void displayParticleSystemInfos(odfaeg::graphic::Entity* ps);
     void displayPonctualLightInfos(odfaeg::graphic::Entity* pl);
-    void displayChildren(odfaeg::graphic::gui::Label* label);
+    void displayChildren(odfaeg::graphic::gui::DropDownList* dp);
     void onObjectPosChanged(odfaeg::graphic::gui::TextArea* ta);
     void onObjectSizeChanged(odfaeg::graphic::gui::TextArea* ta);
     void onObjectColorChanged(odfaeg::graphic::gui::TextArea* ta);
@@ -87,7 +87,7 @@ class ODFAEGCreator : public odfaeg::core::Application,
     void updateScriptText(odfaeg::graphic::Tile* tile, const odfaeg::graphic::Texture* text);*/
     void onObjectNameChanged(odfaeg::graphic::gui::TextArea* ta);
     void onSelectedParentChanged(odfaeg::graphic::gui::DropDownList* dp);
-    void onWallTypeChanged(odfaeg::graphic::gui::TextArea* taWallType);
+    void onWallTypeChanged(odfaeg::graphic::gui::DropDownList* dpWallType);
     void onFrameRateChanged(odfaeg::graphic::gui::TextArea* taFRChanged);
     void onParentClicked(odfaeg::graphic::gui::Label* label);
     void onParticleSystemUpdaterChanged(odfaeg::graphic::gui::DropDownList* dp);
@@ -143,9 +143,9 @@ class ODFAEGCreator : public odfaeg::core::Application,
         *taRotMin, *taRotMax, *taTexIndexMin, *taTexIndexMax, *taScaleMinX, *taScaleMinY, *taScaleMinZ, *taScaleMaxX, *taScaleMaxY, *taScaleMaxZ, *taColor1, *taColor2,
         *taParticleSystemUpdaterName, *taTileWidth, *taTileHeight, *taZoneXPos, *taZoneYPos, *taZoneZPos, *taZoneWidth, *taZoneHeight, *taZoneDepth;
         odfaeg::graphic::gui::DropDownList* dpList, *dpSelectTexture, *dpMapTypeList, *dpComponentType, *dpSelectEm, *dpSelectComponent, *dpSelectParent, *dpSelectAU, *dpSelectPPType, *dpSelectPSU, *dpSelectClass, *dpSelectFunction, *dpSelectMClass,
-        *dpSelectMFunction, *dpSelectRClass, *dpSelectPointerType, *dpSelectViewPerspective, *dpScriptBaseClass, *dpSelectWallType;
+        *dpSelectMFunction, *dpSelectRClass, *dpSelectPointerType, *dpSelectViewPerspective, *dpScriptBaseClass, *dpSelectWallType, *dpWallType, *dpChildren;
         odfaeg::graphic::gui::Label *lWidth, *lHeight, *lMapWidth, *lMapHeight, *lOrigX, *lOrigY, *lOrigZ, *lOrigin;
-        odfaeg::graphic::gui::TextArea *taWidth, *taHeight, *tScriptEdit, *taMapName, *taMapWidth, *taMapHeight, *taWallType, *taIntensity, *taQuality, *taWindowPos, *taWindowSize, *taWindowTitle, *taWindowName, *taObjectName, *taMObjectName, *taRObjectName, *taSelectExpression;
+        odfaeg::graphic::gui::TextArea *taWidth, *taHeight, *tScriptEdit, *taMapName, *taMapWidth, *taMapHeight, *taIntensity, *taQuality, *taWindowPos, *taWindowSize, *taWindowTitle, *taWindowName, *taObjectName, *taMObjectName, *taRObjectName, *taSelectExpression;
         odfaeg::graphic::gui::Panel *pProjects, *pScriptsFiles, *pScriptsEdit, *pInfos, *pTransform, *pMaterial, *pShadows, *pCollisions, *pComponent, *pObjectsParameters, *pMObjectsParameters;
         std::string appliname, minAppliname;
         std::string applitype;
