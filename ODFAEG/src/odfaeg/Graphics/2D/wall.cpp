@@ -10,18 +10,18 @@ namespace odfaeg {
                 setShadowScale(math::Vec3f(1.f, sy, 1.f));
                 int c = getSize().y * sy;
                 setShadowCenter(math::Vec3f(0, 0, -c));
-                this->type = type;
+                wType = type;
             }
             int Wall::getWallType() {
-                return type;
+                return wType;
             }
             void Wall::setWallType(int type) {
-                this->type = static_cast<Type>(type);
+                wType = static_cast<Type>(type);
             }
             Entity* Wall::clone() {
                 Wall* w = factory.make_entity<Wall>(factory);
                 GameObject::copy(w);
-                w->type = type;
+                w->wType = wType;
                 return w;
             }
             bool Wall::isLeaf() const {
@@ -30,7 +30,7 @@ namespace odfaeg {
             bool Wall::operator== (Entity &other) {
                 if (!GameObject::operator==(other))
                     return false;
-                return type == other.getWallType();
+                return wType == other.getWallType();
             }
             bool Wall::selectable () const {
                 return true;

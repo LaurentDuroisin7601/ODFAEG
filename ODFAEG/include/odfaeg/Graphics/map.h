@@ -187,6 +187,7 @@ class ODFAEG_GRAPHICS_API Scene : public SceneManager {
                         internalEntities.push_back(entities[i]);
                     }
                 }
+                //std::cout<<"size : "<<entities.size()<<std::endl;
                 ar(internalEntities);
                 std::vector<CellMap*> cells = getCasesMap();
                 unsigned int nb = 0;
@@ -206,9 +207,13 @@ class ODFAEG_GRAPHICS_API Scene : public SceneManager {
                 }
             } else {
                 ar(name);
+                //std::cout<<"name : "<<name<<std::endl;
                 ar(cellWidth);
+                //std::cout<<"cell width : "<<cellWidth<<std::endl;
                 ar(cellHeight);
+                //std::cout<<"cell height : "<<cellHeight<<std::endl;
                 ar(cellDepth);
+                //std::cout<<"cell depth : "<<cellDepth<<std::endl;
                 gridMap = new GridMap(cellWidth, cellHeight, cellDepth);
                 BaseChangementMatrix bcm;
                 //std::cout<<"read bcm"<<std::endl;
@@ -220,7 +225,7 @@ class ODFAEG_GRAPHICS_API Scene : public SceneManager {
                 ar(entities);
                 //std::cout<<"size : "<<entities.size()<<std::endl;
                 for (unsigned int i = 0; i < entities.size(); i++) {
-                    //std::cout<<"add entity"<<std::endl;
+                    //std::cout<<"add entity : "<<entities[i]<<std::endl;
                     addEntity(entities[i]);
                 }
                 unsigned int size;

@@ -436,6 +436,7 @@ namespace odfaeg {
                         view = frcm->getWindow().getView().getViewVolume();
                     else
                         view = frcm->getRenderComponent(c)->getView().getViewVolume();
+
                     visibleEntities.clear();
                     //visibleEntities.resize(core::Application::app->getNbEntitiesTypes());
                     visibleEntities.resize(factory.getNbEntitiesTypes());
@@ -460,9 +461,17 @@ namespace odfaeg {
                                     for (unsigned int n = 0; n < cell->getNbEntitiesInside(); n++) {
                                        Entity* entity = cell->getEntityInside(n);
                                        if (visibleEntities[entity->getRootTypeInt()][entity->getId()] == nullptr) {
-                                           /*if (entity->getRootType() == "E_MONSTER" && entity->getFaces().size() > 0)
-                                               std::cout<<"map tex coords : "<<entity->getFace(0)->getVertexArray()[0].texCoords.x<<","<<entity->getFace(0)->getVertexArray()[0].texCoords.y<<std::endl;*/
+                                           /*if (entity->getRootEntity()->getType() == "E_WALL" && entity->getRootEntity()->getWallType() == 2)
+                                                std::cout<<"entity type : "<<entity->getRootTypeInt()<<","<<entity->getId()<<","<<factory.getNbEntities()<<std::endl;*/
                                            visibleEntities[entity->getRootTypeInt()][entity->getId()] = entity;
+                                           /*for (unsigned int t = 0; t < visibleEntities.size(); t++) {
+                                                if (t == 2) {
+                                                    for (unsigned int q = 0; q < visibleEntities[2].size(); q++) {
+                                                        if (visibleEntities[2][q] != nullptr && visibleEntities[2][q]->getRootEntity()->getType() == "E_WALL" && visibleEntities[2][q]->getRootEntity()->getWallType() == 2)
+                                                            std::cout<<"wall"<<std::endl;
+                                                    }
+                                                }
+                                           }*/
                                        }
                                     }
                                 }
@@ -470,7 +479,17 @@ namespace odfaeg {
                         }
                     }
                 }
+                /*for (unsigned int i = 0; i < visibleEntities.size(); i++) {
+                    if (i == 0) {
+                        for (unsigned int j = 0; j < visibleEntities[0].size(); j++) {
+                            if (visibleEntities[0][j] != nullptr && visibleEntities[0][j]->getRootEntity()->getType() == "E_WALL" && visibleEntities[0][j]->getRootEntity()->getWallType() == 2)
+                                std::cout<<"wall"<<std::endl;
+                        }
+                    }
+                }*/
+
                 if (c < frcm->getNbComponents() && frcm->getRenderComponent(c) != nullptr) {
+                    //std::cout<<"get entities on component : "<<c<<std::endl;
                     std::vector<Entity*> entities = getVisibleEntities(frcm->getRenderComponent(c)->getExpression(), factory);
                     frcm->getRenderComponent(c)->loadEntitiesOnComponent(entities);
                 }
@@ -666,12 +685,12 @@ namespace odfaeg {
             return entities;
         }
 
-        vector<Entity*> Scene::getVisibleEntities (std::string type, EntityFactory& factory) {
+        vector<Entity*> Scene::getVisibleEntities (std::string expression, EntityFactory& factory) {
             std::vector<Entity*> entities;
-            if (type.size() > 0 && type.at(0) == '*') {
-                if (type.find("-") != string::npos)
-                    type = type.substr(2, type.size() - 2);
-                vector<string> excl = core::split(type, "-");
+            if (expression.size() > 0 && expression.at(0) == '*') {
+                if (expression.find("-") != string::npos)
+                    expression = expression.substr(2, expression.size() - 2);
+                vector<string> excl = core::split(expression, "-");
                 for (unsigned int i = 0; i < visibleEntities.size(); i++) {
                     for (unsigned int j = 0; j < visibleEntities[i].size(); j++) {
                         if (visibleEntities[i][j] != nullptr) {
@@ -691,27 +710,31 @@ namespace odfaeg {
                 }
                 return entities;
             }
-            vector<string> types = core::split(type, "+");
+            vector<string> types = core::split(expression, "+");
             for (unsigned int t = 0; t < types.size(); t++) {
-                //unsigned int type = core::Application::app->getIntOfType(types[t]);
-                unsigned int type = factory.getIntOfType(types[t]);
 
-                if (type < visibleEntities.size()) {
-                    vector<Entity*> visibleEntitiesType = visibleEntities[type];
+                unsigned int typeInt = factory.getIntOfType(types[t]);
+
+
+                if (typeInt < visibleEntities.size()) {
+                    vector<Entity*> visibleEntitiesType = visibleEntities[typeInt];
                     for (unsigned int i = 0; i < visibleEntitiesType.size(); i++) {
                         bool found = false;
-                        for (unsigned int j = 0; j < types.size(); j++) {
+                        /*if (visibleEntitiesType[i] != nullptr && visibleEntitiesType[i]->getRootEntity()->getType() == "E_WALL" && visibleEntitiesType[i]->getRootEntity()->getWallType() == 2)
+                            std::cout<<"types : "<<typeInt<<std::endl<<types[t]<<std::endl;*/
+                        if (visibleEntitiesType[i] != nullptr && visibleEntitiesType[i]->getRootType() ==  types[t]) {
 
-                            if (visibleEntitiesType[i] != nullptr && visibleEntitiesType[i]->getRootType() == types[j]) {
-                                found = true;
-                            }
+                            found = true;
                         }
+
                         if (visibleEntitiesType[i] != nullptr && found) {
                             Entity* ba = visibleEntitiesType[i]->getRootEntity();
+
                             if (ba->getBoneAnimationIndex() == visibleEntitiesType[i]->getBoneIndex()) {
                                 /*if (visibleEntitiesType[i]->getRootType() == "E_MONSTER" && visibleEntitiesType[i]->getFaces().size() > 0)
                                         std::cout<<"bone index : "<<ba->getBoneAnimationIndex()<<" get visible entities texCoords : "<<visibleEntitiesType[i]->getFace(0)->getVertexArray()[0].texCoords.x<<","<<visibleEntitiesType[i]->getFace(0)->getVertexArray()[0].texCoords.y<<std::endl;*/
-
+                                /*if (visibleEntitiesType[i]->getRootType() == "E_WALL" && visibleEntitiesType[i]->getRootEntity()->getWallType() == 2)
+                                    std::cout<<"add wall"<<std::endl;*/
                                 entities.push_back(visibleEntitiesType[i]);
                             }
                         }

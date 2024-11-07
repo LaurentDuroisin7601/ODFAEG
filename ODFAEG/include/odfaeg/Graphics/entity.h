@@ -37,7 +37,6 @@ namespace odfaeg {
                     std::map<int, std::string>::iterator it;
                     for (it = types.begin(); it != types.end(); ++it) {
                         if (it->second == sType) {
-                            //std::cout<<"s type : "<<sType<<" int of type :"<<it->first<<std::endl;
                             return it->first;
                         }
                     }
@@ -349,15 +348,15 @@ namespace odfaeg {
                 void vtserialize(Archive & ar) {
                     //std::cout<<"already serialized : "<<alreadySerialized<<std::endl;
                     Transformable::serialize(ar);
-                    ar(id);
                     ar(type.first);
                     //std::cout<<"type first : "<<type.first<<std::endl;
                     ar(type.second);
                     /*if (type.second == "E_WALL")
                         std::cout<<"i type : "<<type.first<<std::endl;*/
                     //std::cout<<"entity id : "<<getId()<<std::endl<<"Transform matrix : "<<getTransform().getMatrix()<<std::endl;
-                    if (ar.isInputArchive())
-                        type = factory.updateTypes(getType());
+                    if (ar.isInputArchive()) {
+                        type = factory.updateTypes(type.second);
+                    }
                 }
                 /** \fn void onLoad()
                 *   \brief load the entities.
@@ -399,6 +398,7 @@ namespace odfaeg {
                 virtual void setExternalObjectName(std::string externalObjectName);
                 virtual std::string getExternalObjectName();
                 virtual void detachChildren();
+                virtual void detachChild(Entity* entity);
                 virtual Entity* getCurrentFrame() const;
 
                 virtual void setSelected(bool selected);

@@ -84,9 +84,8 @@ include_directories(${CMAKE_INCLUDE_PATH} ${FREETYPE_INCLUDE_DIRS})
 link_directories(${CMAKE_LIBRARY_PATH})
 
 sfgl_add_library(odfaeg-window
-                 SOURCES ${SRC_WINDOW} ${PLATEFORM_SRC}
-				 DEPENDS odfaeg-core odfaeg-math)
-target_link_libraries (odfaeg-window ${SFML_LIBRARIES})
+                 SOURCES ${SRC_WINDOW} ${PLATEFORM_SRC})
+target_link_libraries (odfaeg-window PUBLIC odfaeg-core odfaeg-math)
 
 	
 	

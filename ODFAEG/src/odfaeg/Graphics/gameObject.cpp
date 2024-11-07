@@ -90,20 +90,20 @@ namespace odfaeg {
             return drawMode;
         }
         std::string GameObject::getRootType() {
-            if (parent != nullptr) {
-                return parent->getRootType();
+            if (parent == nullptr) {
+                return getType();
             }
-            return getType();
+            return parent->getRootType();
         }
         int GameObject::getRootTypeInt() {
-            if (parent != nullptr) {
+            if (parent == nullptr) {
                 /*if (parent->getType() == "E_WALL")
                     std::cout<<"parent type : "<<parent->getTypeInt()<<std::endl;*/
-                return parent->getTypeInt();
+                return getTypeInt();
             }
             /*if (getType() == "E_WALL")
                 std::cout<<"type : "<<getType()<<" int of type :  "<<getTypeInt()<<std::endl;*/
-            return getTypeInt();
+            return parent->getRootTypeInt();
         }
         Entity* GameObject::getRootEntity() {
             if (parent == nullptr)
@@ -148,6 +148,16 @@ namespace odfaeg {
             setLocalBounds(physic::BoundingBox(pos.x, pos.y, pos.z, size.x, size.y, size.z));
 
             vecs.clear();*/
+        }
+        void GameObject::detachChild (Entity* child) {
+            std::vector<std::unique_ptr<Entity>>::iterator it;
+            for (it = children.begin(); it != children.end();) {
+                if (it->get() == child) {
+                    it->release();
+                    it = children.erase(it);
+                } else
+                    it++;
+            }
         }
         void GameObject::removeChild (Entity *child) {
             std::vector<std::unique_ptr<Entity>>::iterator it;
@@ -299,6 +309,7 @@ namespace odfaeg {
             for (unsigned int i = 0; i < children.size(); i++) {
                 children[i].release();
             }
+            children.clear();
         }
         void GameObject::reset() {
             alreadySerialized = false;

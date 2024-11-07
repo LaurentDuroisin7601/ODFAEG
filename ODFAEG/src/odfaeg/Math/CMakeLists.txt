@@ -33,7 +33,6 @@ include_directories(${CMAKE_INCLUDE_PATH})
 link_directories (${CMAKE_LIBRARY_PATH})
 find_package (SFML 2 COMPONENTS window system graphics audio REQUIRED)
 sfgl_add_library(odfaeg-math
-				 SOURCES ${SRC}
-				 DEPENDS odfaeg-core)
-target_link_libraries (odfaeg-math ${SFML_LIBRARIES})
+				 SOURCES ${SRC})
+target_link_libraries (odfaeg-math PUBLIC odfaeg-core)
 

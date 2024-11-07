@@ -30,7 +30,7 @@
 ////////////////////////////////////////////////////////////
 #include "../../../include/odfaeg/config.hpp"
 #include <string>
-#include "GlDebug.hpp"
+
 
 namespace odfaeg {
     namespace graphic {

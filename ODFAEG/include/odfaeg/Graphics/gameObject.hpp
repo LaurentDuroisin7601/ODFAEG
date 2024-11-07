@@ -247,6 +247,7 @@ namespace odfaeg {
             void setExternalObjectName(std::string externalObjectName);
             std::string getExternalObjectName();
             void detachChildren();
+            void detachChild (Entity* child);
             void updateTransform();
             virtual bool operator==(Entity& other);
             virtual bool operator!=(Entity& other);

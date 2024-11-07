@@ -1145,9 +1145,9 @@ namespace odfaeg {
                             else
                                 batcherIndexed.addFace(vEntities[i]->getFace(j));
                          } else if (vEntities[i]->getDrawMode() == Entity::NORMAL && !vEntities[i]->isSelected()) {
-                             if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0)
+                             if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0) {
                                 normalBatcher.addFace( vEntities[i]->getFace(j));
-                             else
+                             } else
                                 normalBatcherIndexed.addFace( vEntities[i]->getFace(j));
                         } else if (vEntities[i]->getDrawMode() == Entity::INSTANCED && vEntities[i]->isSelected()) {
 

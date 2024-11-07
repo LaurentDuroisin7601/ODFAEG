@@ -76,9 +76,7 @@ set(SRC_GRAPHICS
 	${INCROOT}/sprite.h
 	${SRCROOT}/sprite.cpp
 	${INCROOT}/entity.h
-	${SRCROOT}/entity.cpp
-	${SRCROOT}/GlDebug.hpp
-	${SRCROOT}/GlDebug.cpp
+	${SRCROOT}/entity.cpp	
 	${SRCROOT}/animation.cpp	
 	${INCROOT}/tile.h
 	${SRCROOT}/tile.cpp	
@@ -234,9 +232,9 @@ link_directories(${CMAKE_LIBRARY_PATH})
 
 sfgl_add_library(odfaeg-graphics
 				 SOURCES ${SRC_GRAPHICS} ${SRC_GRAPHICS_2D} ${SRC_GRAPHICS_3D} ${SRC_GUI} ${SRC_ECS}
-				 DEPENDS odfaeg-core odfaeg-math odfaeg-physics)
+				 )
 
-target_link_libraries (odfaeg-graphics ${SFML_LIBRARIES})
+target_link_libraries (odfaeg-graphics PUBLIC odfaeg-core odfaeg-math odfaeg-physics)
 
 
 	

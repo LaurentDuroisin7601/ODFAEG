@@ -27,5 +27,5 @@ find_package (OpenSSL 1 REQUIRED)
 include_directories(${CMAKE_INCLUDE_PATH} ${OPENSSL_INCLUDE_DIR})
 link_directories(${CMAKE_LIBRARY_PATH})
 sfgl_add_library(odfaeg-network
-			 SOURCES ${SRC} DEPENDS odfaeg-core)
-target_link_libraries (odfaeg-network ${OPENSSL_LIBRARIES})
+			 SOURCES ${SRC})
+target_link_libraries (odfaeg-network odfaeg-core)

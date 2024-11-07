@@ -1101,10 +1101,14 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
         if(dynamic_cast<Entity*>(selectedObject) != nullptr) {
             //std::cout<<"detach children selected object : "<<std::endl;
 
-            //std::cout<<"remove selected object"<<std::endl;
+            //std::cout<<"remove selected object : "<<dynamic_cast<Entity*>(selectedObject)->getType()<<std::endl;
+            for (unsigned int i = 0; i < dynamic_cast<Entity*>(selectedObject)->getChildren().size(); i++) {
+                dynamic_cast<Entity*>(selectedObject)->getChildren()[i]->setParent(nullptr);
+            }
             dynamic_cast<Entity*>(selectedObject)->detachChildren();
             getWorld()->removeEntity(dynamic_cast<Entity*>(selectedObject));
-
+            if (dynamic_cast<Entity*>(selectedObject)->getParent() != nullptr)
+                dynamic_cast<Entity*>(selectedObject)->getParent()->detachChild(dynamic_cast<Entity*>(selectedObject));
             //std::cout<<"delete selected object : "<<dynamic_cast<Entity*>(selectedObject)->getType()<<std::endl;
             delete selectedObject;
 
@@ -1113,13 +1117,19 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
         for (unsigned int i = 1; i < objects.size(); i++) {
             if(dynamic_cast<Entity*>(objects[i]) != nullptr) {
                 //std::cout<<"detach children : "<<i<<std::endl;
-
+                for (unsigned int i = 0; i < dynamic_cast<Entity*>(objects[i])->getChildren().size(); i++) {
+                    dynamic_cast<Entity*>(objects[i])->getChildren()[i]->setParent(nullptr);
+                }
                 //std::cout<<"remove entity : "<<dynamic_cast<Entity*>(objects[i])->getType()<<std::endl;
                 dynamic_cast<Entity*>(objects[i])->detachChildren();
+                //std::cout<<"children detached"<<std::endl;
                 getWorld()->removeEntity(dynamic_cast<Entity*>(objects[i]));
-
+                if (dynamic_cast<Entity*>(objects[i])->getParent() != nullptr)
+                    dynamic_cast<Entity*>(objects[i])->getParent()->detachChild(dynamic_cast<Entity*>(objects[i]));
+                //std::cout<<"entity removed : "<<objects[i]<<std::endl;
                 //std::cout<<"delete selected object : "<<dynamic_cast<Entity*>(objects[i])->getType()<<std::endl;
                 delete objects[i];
+                //std::cout<<"entity deleted"<<std::endl;
             }
         }
         rectSelect.getItems().clear();
@@ -1229,7 +1239,15 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
             }
         }
     }
-
+    if (event.keyboard.control && event.keyboard.code == IKeyboard::D) {
+        if (getWorld()->getCurrentSceneManager() != nullptr) {
+            for (unsigned int i = 0; i < rectSelect.getItems().size(); i++) {
+                if (dynamic_cast<Entity*>(rectSelect.getItems()[i]))
+                    dynamic_cast<Entity*>(rectSelect.getItems()[i])->setSelected(false);
+            }
+            rectSelect.getItems().clear();
+        }
+    }
     if (&getRenderWindow() == window && event.type == IEvent::WINDOW_EVENT && event.window.type == IEvent::WINDOW_EVENT_CLOSED) {
         std::ifstream fexist(appliname+"\\sourceCode.cpp");
         if (fexist && openedProjects.size() > 0) {
@@ -1586,7 +1604,7 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
     oldY = IMouse::getPosition(getRenderWindow()).y;
 }
 void ODFAEGCreator::onExec() {
-    if (IKeyboard::isKeyPressed(IKeyboard::D)) {
+    if (IKeyboard::isKeyPressed(IKeyboard::Right)) {
         View view = getRenderWindow().getView();
         if (alignToGrid)
             view.move(gridWidth, 0, 0);
@@ -1608,7 +1626,7 @@ void ODFAEGCreator::onExec() {
             }
         }
     }
-    if (IKeyboard::isKeyPressed(IKeyboard::Q)) {
+    if (IKeyboard::isKeyPressed(IKeyboard::Left)) {
         View view = getRenderWindow().getView();
         if (alignToGrid)
             view.move(-gridWidth, 0, 0);
@@ -1630,7 +1648,7 @@ void ODFAEGCreator::onExec() {
             }
         }
     }
-    if (IKeyboard::isKeyPressed(IKeyboard::Z)) {
+    if (IKeyboard::isKeyPressed(IKeyboard::Up)) {
         View view = getRenderWindow().getView();
         if (alignToGrid)
             view.move(0, -gridHeight, 0);
@@ -1652,7 +1670,7 @@ void ODFAEGCreator::onExec() {
             }
         }
     }
-    if (IKeyboard::isKeyPressed(IKeyboard::S)) {
+    if (IKeyboard::isKeyPressed(IKeyboard::Down)) {
         View view = getRenderWindow().getView();
         if (alignToGrid)
             view.move(0, gridHeight, 0);
@@ -3481,12 +3499,14 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
         file7.close();
         std::ifstream file8(appliname+"\\sourceCode.cpp");
         if (file8) {
-            rtc.run<void>("createObject", this, true);
+
             pluginSourceCode = "";
             std::string line;
             while (getline(file8, line)) {
                 pluginSourceCode += line + "\n";
             }
+            if (pluginSourceCode != "")
+                rtc.run<void>("createObject", this, true);
         }
         std::ofstream file9(appliname+"\\otherData.oc");
         OTextArchive oa8(file9);

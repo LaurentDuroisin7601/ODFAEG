@@ -33,6 +33,7 @@ namespace odfaeg {
             type = factory.updateTypes(sType);
 
             id = factory.getUniqueId();
+            std::cout<<"id : "<<id<<"nb entities : "<<factory.getNbEntities()<<std::endl;
             getTransform().setEntityId(id);
             selected = false;
         }
@@ -296,6 +297,8 @@ namespace odfaeg {
             return 0;
         }
         void Entity::detachChildren() {
+        }
+        void Entity::detachChild(Entity* child) {
         }
         Entity* Entity::getCurrentFrame() const {
             return nullptr;
