@@ -33,7 +33,6 @@ namespace odfaeg {
             type = factory.updateTypes(sType);
 
             id = factory.getUniqueId();
-            std::cout<<"id : "<<id<<"nb entities : "<<factory.getNbEntities()<<std::endl;
             getTransform().setEntityId(id);
             selected = false;
         }

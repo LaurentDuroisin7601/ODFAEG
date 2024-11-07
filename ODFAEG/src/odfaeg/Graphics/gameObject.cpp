@@ -306,8 +306,10 @@ namespace odfaeg {
             return boneIndex;
         }
         void GameObject::detachChildren() {
-            for (unsigned int i = 0; i < children.size(); i++) {
-                children[i].release();
+            std::vector<std::unique_ptr<Entity>>::iterator it;
+            for (it = children.begin(); it != children.end();) {
+                it->release();
+                it = children.erase(it);
             }
             children.clear();
         }

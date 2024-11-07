@@ -1101,35 +1101,43 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
         if(dynamic_cast<Entity*>(selectedObject) != nullptr) {
             //std::cout<<"detach children selected object : "<<std::endl;
 
-            //std::cout<<"remove selected object : "<<dynamic_cast<Entity*>(selectedObject)->getType()<<std::endl;
+
             for (unsigned int i = 0; i < dynamic_cast<Entity*>(selectedObject)->getChildren().size(); i++) {
                 dynamic_cast<Entity*>(selectedObject)->getChildren()[i]->setParent(nullptr);
             }
             dynamic_cast<Entity*>(selectedObject)->detachChildren();
+            std::cout<<"children detached"<<std::endl;
             getWorld()->removeEntity(dynamic_cast<Entity*>(selectedObject));
-            if (dynamic_cast<Entity*>(selectedObject)->getParent() != nullptr)
+            std::cout<<"selected object removed: "<<dynamic_cast<Entity*>(selectedObject)->getType()<<std::endl;
+            if (dynamic_cast<Entity*>(selectedObject)->getParent() != nullptr) {
+                std::cout<<"selected object detach child"<<std::endl;
                 dynamic_cast<Entity*>(selectedObject)->getParent()->detachChild(dynamic_cast<Entity*>(selectedObject));
-            //std::cout<<"delete selected object : "<<dynamic_cast<Entity*>(selectedObject)->getType()<<std::endl;
-            delete selectedObject;
+            }
+            std::cout<<"selected object child detached"<<std::endl;
+            delete dynamic_cast<Entity*>(selectedObject);
+            std::cout<<"selected object deleted"<<std::endl;
 
         }
         std::vector<Transformable*> objects = rectSelect.getItems();
         for (unsigned int i = 1; i < objects.size(); i++) {
             if(dynamic_cast<Entity*>(objects[i]) != nullptr) {
                 //std::cout<<"detach children : "<<i<<std::endl;
-                for (unsigned int i = 0; i < dynamic_cast<Entity*>(objects[i])->getChildren().size(); i++) {
-                    dynamic_cast<Entity*>(objects[i])->getChildren()[i]->setParent(nullptr);
+                for (unsigned int j = 0; j < dynamic_cast<Entity*>(objects[i])->getChildren().size(); j++) {
+                    dynamic_cast<Entity*>(objects[i])->getChildren()[j]->setParent(nullptr);
                 }
-                //std::cout<<"remove entity : "<<dynamic_cast<Entity*>(objects[i])->getType()<<std::endl;
+                std::cout<<"remove entity : "<<dynamic_cast<Entity*>(objects[i])->getType()<<std::endl;
                 dynamic_cast<Entity*>(objects[i])->detachChildren();
-                //std::cout<<"children detached"<<std::endl;
+                std::cout<<"children detached"<<std::endl;
                 getWorld()->removeEntity(dynamic_cast<Entity*>(objects[i]));
-                if (dynamic_cast<Entity*>(objects[i])->getParent() != nullptr)
+                std::cout<<"entity removed : "<<objects[i]<<std::endl;
+                if (dynamic_cast<Entity*>(objects[i])->getParent() != nullptr) {
+                    std::cout<<"detach child"<<std::endl;
                     dynamic_cast<Entity*>(objects[i])->getParent()->detachChild(dynamic_cast<Entity*>(objects[i]));
-                //std::cout<<"entity removed : "<<objects[i]<<std::endl;
-                //std::cout<<"delete selected object : "<<dynamic_cast<Entity*>(objects[i])->getType()<<std::endl;
-                delete objects[i];
-                //std::cout<<"entity deleted"<<std::endl;
+                }
+                std::cout<<"child detached"<<std::endl;
+                std::cout<<"delete selected object : "<<dynamic_cast<Entity*>(objects[i])->getType()<<std::endl;
+                delete dynamic_cast<Entity*>(objects[i]);
+                std::cout<<"entity deleted"<<std::endl;
             }
         }
         rectSelect.getItems().clear();
