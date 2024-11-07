@@ -339,6 +339,7 @@ class ODFAEG_GRAPHICS_API Scene : public SceneManager {
         int getCellWidth();
         int getCellHeight();
     private :
+        Entity* checkFrameEntity(Entity* frame, std::string name);
         /**
         * \fn void increaseComptImg (const void* resource);
         * \brief increase the counter for the given resource.

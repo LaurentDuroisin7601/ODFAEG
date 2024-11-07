@@ -13,7 +13,8 @@ namespace odfaeg {
             loop = false;
             interpLevels = 1;
             interpPerc = 0;
-            interpolatedFrame = std::make_unique<Mesh>(math::Vec3f(0, 0, 0), math::Vec3f(0, 0, 0), "E_MESH", factory);
+            interpolatedFrame = std::make_unique<Mesh>(math::Vec3f(0, 0, 0), math::Vec3f(0, 0, 0), "E_ANIMATION_FRAME", factory);
+            //interpolatedFrame->setName("E_ANIMATION_FRAME");
         }
         Anim::Anim (float fr, math::Vec3f position, math::Vec3f size, EntityFactory& factory, Entity *parent) : AnimatedEntity (position, size, size * 0.5f, "E_ANIMATION", factory, "", parent) {
             this->fr = fr;
@@ -26,7 +27,8 @@ namespace odfaeg {
             loop = false;
             interpLevels = 1;
             interpPerc = 0;
-            interpolatedFrame = std::make_unique<Mesh>(position, size, "E_MESH", factory);
+            interpolatedFrame = std::make_unique<Mesh>(position, size, "E_ANIMATION_FRAME", factory);
+            //interpolatedFrame->setName("E_ANIMATION_FRAME");
         }
         bool Anim::isCurrentFrameChanged() {
             return currentFrameChanged;
@@ -38,7 +40,6 @@ namespace odfaeg {
             entity->setParent(this);
             if (getChildren().size() == 0) {
                 currentFrame = entity;
-                interpolatedFrame->setType(currentFrame->getType());
                 createFirstInterpolatedFrame(entity);
             }
             else if (getChildren().size() == 1)
@@ -58,7 +59,6 @@ namespace odfaeg {
                 nextFrame = getChildren()[(index + 1 >= getChildren().size()) ? 0 : index + 1];
                 currentFrameIndex = index;
                 currentFrameChanged = true;
-                interpolatedFrame->setType(currentFrame->getType());
                 changeInterpolatedFrame(currentFrame);
             }
         }
@@ -97,11 +97,6 @@ namespace odfaeg {
             onFrameChanged();
         }
         void Anim::onFrameChanged() {
-            if (getChildren().size() != 0) {
-                for (unsigned int i = 0; i < getChildren().size(); i++) {
-                    getChildren()[i]->onFrameChanged();
-                }
-            }
             if (getChildren().size() >= 2) {
 
                 if (previousFrame == nullptr) {
@@ -122,11 +117,8 @@ namespace odfaeg {
                     currentFrame = getChildren()[currentFrameIndex];
                     nextFrame = getChildren()[(currentFrameIndex + 1 >= getChildren().size()) ? 0 : currentFrameIndex+1];
                     interpPerc = 0;
+                    changeInterpolatedFrame(currentFrame);
                 }
-                interpolatedFrame->setType(currentFrame->getType());
-                interpolatedFrame->setPosition(currentFrame->getPosition());
-                interpolatedFrame->setSize(currentFrame->getSize());
-                interpolatedFrame->setParent(currentFrame->getParent());
                 interpolate(currentFrame, nextFrame);
             }
         }
@@ -142,10 +134,17 @@ namespace odfaeg {
                     Face face (va,currentFrame->getFaces()[i].getMaterial(), currentFrame->getTransform());
                     interpolatedFrame->addFace(face);
                 }
-                interpolatedFrame->setType(currentFrame->getType());
+                interpolatedFrame->setOrigin(currentFrame->getOrigin());
                 interpolatedFrame->setPosition(currentFrame->getPosition());
                 interpolatedFrame->setSize(currentFrame->getSize());
-                interpolatedFrame->setParent(currentFrame->getParent());
+
+                math::Vec3f scale;
+                math::Vec3f localSize = currentFrame->getLocalBounds().getSize();
+                math::Vec3f size = currentFrame->getSize();
+                scale.x = (localSize.x != 0) ? size.x / localSize.x : 0;
+                scale.y = (localSize.y != 0) ? size.y / localSize.y : 0;
+                scale.z = (localSize.z != 0) ? size.x / localSize.z : 0;
+                interpolatedFrame->setScale(scale);
                 //addChild(interpolatedFrame);
                 /*if (interpolatedFrame->getRootType() == "E_ANIMATION")
                     std::cout<<"interpolated frame type : "<<interpolatedFrame->getType()<<std::endl;*/
@@ -164,12 +163,17 @@ namespace odfaeg {
                     for (unsigned int n = 0; n < va.getVertexCount(); n++) {
                         iva[n] = va[n];
                     }
+
                     interpolatedFrame->getFaces()[i].setMaterial(currentFrame->getFaces()[i].getMaterial());
                     interpolatedFrame->getFaces()[i].setTransformMatrix(currentFrame->getFaces()[i].getTransformMatrix());
                 }
-                interpolatedFrame->setPosition(currentFrame->getPosition());
-                interpolatedFrame->setSize(currentFrame->getSize());
-                interpolatedFrame->setParent(currentFrame->getParent());
+                math::Vec3f scale;
+                math::Vec3f localSize = currentFrame->getLocalBounds().getSize();
+                math::Vec3f size = currentFrame->getSize();
+                scale.x = (localSize.x != 0) ? size.x / localSize.x : 0;
+                scale.y = (localSize.y != 0) ? size.y / localSize.y : 0;
+                scale.z = (localSize.z != 0) ? size.x / localSize.z : 0;
+                interpolatedFrame->setScale(scale);
             }
         }
         void Anim::interpolate(Entity* currentFrame, Entity* nextFrame) {

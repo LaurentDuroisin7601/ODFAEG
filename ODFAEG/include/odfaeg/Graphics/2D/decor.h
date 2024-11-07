@@ -26,7 +26,7 @@ namespace odfaeg {
                   * \fn Decor()
                   * \brief constructor.
                   */
-                Decor(EntityFactory& factory) : Model(math::Vec3f(0, 0, 0), math::Vec3f(1, 1, 0), math::Vec3f(0.5f, 0.5f, 0.f),factory, "E_DECOR"){
+                Decor(EntityFactory& factory) : Model(math::Vec3f(0, 0, 0), math::Vec3f(0, 0, 0), math::Vec3f(0.5f, 0.5f, 0.f),factory, "E_DECOR"){
 
                 }
                 Entity* clone();

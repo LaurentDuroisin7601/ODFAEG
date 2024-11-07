@@ -3149,7 +3149,7 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
         if (appliname != "" && getWorld()->getCurrentSceneManager() != nullptr) {
             if (!showRectSelect) {
                 Vec3f position = getRenderWindow().mapPixelToCoords(Vec3f(cursor.getPosition().x, getRenderWindow().getSize().y - cursor.getPosition().y, 0))+getRenderWindow().getView().getSize()*0.5f;
-                Tile* tile = factory.make_entity<Tile>(nullptr, position,Vec3f(100, 50, 0), sf::IntRect(0, 0, gridWidth, gridHeight), factory);
+                Tile* tile = factory.make_entity<Tile>(nullptr, position,Vec3f(gridWidth, gridHeight, 0), sf::IntRect(0, 0, gridWidth, gridHeight), factory);
                 selectedObject = tile;
                 //std::cout << "wall center : " << tile->getCenter()<< std::endl;
                 displayTileInfos(tile);
@@ -4334,6 +4334,7 @@ void ODFAEGCreator::displayAnimInfos(Entity* anim) {
     lSelectAU->setParent(pInfos);
     pInfos->addChild(lSelectAU);
     dpSelectAU = new DropDownList(getRenderWindow(),Vec3f(0, 0, 0),Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),"NONE",15);
+    std::cout<<"add timers"<<std::endl;
     std::vector<Timer*> timers = getWorld()->getTimers();
     for (unsigned int i = 0; i < timers.size(); i++) {
         dpSelectAU->addItem(timers[i]->getName(), 15);
@@ -4341,6 +4342,7 @@ void ODFAEGCreator::displayAnimInfos(Entity* anim) {
     dpSelectAU->setParent(pInfos);
     pInfos->addChild(dpSelectAU);
     animUpdaterNode->addOtherComponent(dpSelectAU, Vec2f(0.75, 0.025));
+
     Command cmdAUChanged(FastDelegate<bool>(&DropDownList::isValueChanged,dpSelectAU), FastDelegate<void>(&ODFAEGCreator::onAnimUpdaterChanged, this, dpSelectAU));
     dpSelectAU->getListener().connect("ANIMUPDATERCHANGED", cmdAUChanged);
     if (tabPane->getSelectedTab() != "Informations")
@@ -5572,6 +5574,7 @@ void ODFAEGCreator::onSelectedParentChanged(DropDownList* dp) {
         static_cast<Entity*>(selectedObject)->setParent(nullptr);
     } else if (dp->getSelectedItem() != "") {
         Entity* entity = getWorld()->getEntity(dp->getSelectedItem());
+        //std::cout<<"entity : "<<entity<<std::endl;
         if (entity != nullptr && dynamic_cast<Entity*>(selectedObject)) {
 
             if (!entity->isAnimated()) {
@@ -5579,8 +5582,8 @@ void ODFAEGCreator::onSelectedParentChanged(DropDownList* dp) {
                 getWorld()->removeEntity(static_cast<Entity*>(entity));
                 static_cast<Entity*>(selectedObject)->setParent(entity);
                 entity->addChild(static_cast<Entity*>(selectedObject));
-                std::vector<Entity*> walls = getWorld()->getVisibleEntities("E_WALL", factory);
-                getWorld()->addEntity(entity);
+                if (entity->getRootType() != "E_ANIMATION")
+                    getWorld()->addEntity(entity);
             } else {
                 if (dynamic_cast<Anim*>(entity)) {
                     getWorld()->removeEntity(static_cast<Entity*>(selectedObject));

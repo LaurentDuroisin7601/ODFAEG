@@ -502,7 +502,28 @@ namespace odfaeg {
             return gridMap->getEntity(id);
         }
         Entity* Scene::getEntity(std::string name) {
-            return gridMap->getEntity(name);
+            std::vector<Entity*> allEntities = gridMap->getEntities();
+            for (unsigned int i = 0; i < allEntities.size(); i++) {
+                Entity* frame;
+                if (allEntities[i]->isAnimated()) {
+                    frame = checkFrameEntity(allEntities[i], name);
+                    if (frame != nullptr) {
+                        return frame;
+                    }
+                } else {
+                    if (allEntities[i]->getName() == name)
+                        return allEntities[i];
+                }
+            }
+            return nullptr;
+        }
+        Entity* Scene::checkFrameEntity(Entity* frame, std::string name) {
+            if (frame->getName() == name)
+                return frame;
+            for (unsigned int i = 0; i < frame->getChildren().size(); i++) {
+                return checkFrameEntity(frame->getChildren()[i], name);
+            }
+            return nullptr;
         }
         vector<CellMap*> Scene::getCasesMap() {
             return gridMap->getCasesMap();
@@ -561,6 +582,10 @@ namespace odfaeg {
                         if (!contains) {
                             entity->updateTransform();
                             entities.push_back(entity);
+                            if (entity->isAnimated()) {
+                                for (unsigned int f = 0; f < entity->getChildren().size(); f++)
+                                    entities.push_back(entity->getChildren()[f]);
+                            }
                         }
                     }
                 }

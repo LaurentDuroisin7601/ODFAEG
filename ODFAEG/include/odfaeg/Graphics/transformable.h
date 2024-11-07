@@ -239,8 +239,10 @@ namespace odfaeg {
                     /*if (name == "WALL") {
                         std::cout<<"change local bounds! "<<std::endl;
                     }*/
+
                     scale.y = 1;
                     m_size.y = size.y;
+
                     localBounds.setSize(localBounds.getWidth(), m_size.y, localBounds.getDepth());
                 } else {
                     scale.y = size.y / localBounds.getHeight();
