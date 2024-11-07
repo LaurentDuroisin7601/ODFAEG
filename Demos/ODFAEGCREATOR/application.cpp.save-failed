@@ -1,4 +1,7 @@
+
+
 #include "application.hpp"
+#ifndef VULKAN
 #include "odfaeg/Window/action.h"
 #include "odfaeg/Window/command.h"
 #include <sys/stat.h>
@@ -15,6 +18,9 @@ using namespace odfaeg::window;
 ODFAEGCreator::ODFAEGCreator(sf::VideoMode vm, std::string title) :
 Application (vm, title, sf::Style::Resize|sf::Style::Close, ContextSettings(0, 8, 4, 4, 6)), isGuiShown (false), cursor(10), se(this), rtc("create") {
     //Command::sname = "modified by process";
+    isSelectingPolyhedron = false;
+    isSecondClick = false;
+    isGeneratingTerrain = false;
     dpSelectTexture = nullptr;
     dpSelectEm = nullptr;
     sTextRect = nullptr;
@@ -29,13 +35,15 @@ Application (vm, title, sf::Style::Resize|sf::Style::Close, ContextSettings(0, 8
     currentBp = 0;
     fdTexturePath = nullptr;
     fdProjectPath = nullptr;
+    bAddTexRect = nullptr;
+    bSetTexRect = nullptr;
     viewPos = getRenderWindow().getView().getPosition();
-    rtc.addOption("std=c++14");
+    rtc.addOption("std=c++17");
     rtc.addMacro("ODFAEG_STATIC");
-    rtc.addIncludeDir("\"..\\..\\..\\..\\Program Files (x86)\\ODFAEG\\include\"");
-    rtc.addIncludeDir("..\\..\\Windows\\ODFAEG\\extlibs\\headers");
-    rtc.addLibraryDir("\"..\\..\\..\\..\\Program Files (x86)\\ODFAEG\\lib\"");
-    rtc.addLibraryDir("..\\..\\Windows\\ODFAEG\\extlibs\\libs-mingw\\x86");
+    rtc.addIncludeDir("\"C:\\Program Files (x86)\\ODFAEG\\include\"");
+    rtc.addIncludeDir("..\\..\\ODFAEG-master\\ODFAEG-master\\ODFAEG\\extlibs\\headers");
+    rtc.addLibraryDir("\"C:\\Program Files (x86)\\ODFAEG\\lib\"");
+    rtc.addLibraryDir("..\\..\\ODFAEG-master\\ODFAEG-master\\ODFAEG\\extlibs\\libs-mingw\\x86");
     rtc.addLibrary("odfaeg-network-s");
 	rtc.addLibrary("odfaeg-audio-s");
 	rtc.addLibrary("odfaeg-graphics-s");
@@ -51,10 +59,11 @@ Application (vm, title, sf::Style::Resize|sf::Style::Close, ContextSettings(0, 8
 	rtc.addLibrary("crypto.dll");
 	rtc.addLibrary("ssl.dll");
 	rtc.addLibrary("freetype");
-	rtc.addLibrary("glew32.dll");
+	rtc.addLibrary("glew32");
 	rtc.addLibrary("opengl32");
 	rtc.addLibrary("gdi32");
 	rtc.addLibrary("dl.dll");
+	rtc.addLibrary("sndfile");
 	rtc.addRuntimeFunction("createObject");
 	rtc.addRuntimeFunction("readObjects");
 	speed = 40.f;
@@ -78,7 +87,7 @@ Application (vm, title, sf::Style::Resize|sf::Style::Close, ContextSettings(0, 8
 void ODFAEGCreator::onLoad() {
     FontManager<Fonts> fm;
     try {
-        fm.fromFileWithAlias("fonts/Arial.ttf", Serif);
+        fm.fromFileWithAlias("fonts/FreeSerif.ttf", Serif);
     }
     catch (Erreur& erreur) {
         std::cerr << erreur.what() << std::endl;
@@ -103,11 +112,13 @@ void ODFAEGCreator::onInit() {
         menu5 = new Menu(getRenderWindow(), fm.getResourceByAlias(Fonts::Serif), "new GUI");
         getRenderComponentManager().addComponent(menu5);
 
+
         menuBar->addMenu(menu1);
         menuBar->addMenu(menu2);
         menuBar->addMenu(menu3);
         menuBar->addMenu(menu4);
         menuBar->addMenu(menu5);
+        Action amom(Action::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
         item11 = new MenuItem(getRenderWindow(), fm.getResourceByAlias(Fonts::Serif), "New application");
         item11->addMenuItemListener(this);
         getRenderComponentManager().addComponent(item11);
@@ -221,6 +232,8 @@ void ODFAEGCreator::onInit() {
         menu4->addMenuItem(item46);
 
         item51 = new MenuItem(getRenderWindow(), fm.getResourceByAlias(Fonts::Serif), "New object");
+        Command cmdmom(amom, FastDelegate<bool>(&MenuItem::isMouseOnMenu, item51), FastDelegate<void>(&ODFAEGCreator::onMouseOnMenu, this, item51));
+        item51->getListener().connect("A"+item51->getText(), cmdmom);
         item51->addMenuItemListener(this);
         getRenderComponentManager().addComponent(item51);
         item52 = new MenuItem(getRenderWindow(), fm.getResourceByAlias(Fonts::Serif), "Modify object");
@@ -244,6 +257,10 @@ void ODFAEGCreator::onInit() {
         fdProjectPath->setVisible(false);
         fdProjectPath->setEventContextActivated(false);
         addWindow(&fdProjectPath->getWindow(), false);
+        fdImport3DModel = new FileDialog(Vec3f(0, 0, 0), Vec3f(800, 600, 0), fm.getResourceByAlias(Fonts::Serif));
+        fdImport3DModel->setVisible(false);
+        fdImport3DModel->setEventContextActivated(false);
+        addWindow(&fdImport3DModel->getWindow(), false);
         getRenderComponentManager().addComponent(fdProjectPath);
         wApplicationNew = new RenderWindow(sf::VideoMode(400, 300), "Create ODFAEG Application", sf::Style::Default, ContextSettings(0, 0, 0, 3, 0));
         //New application.
@@ -644,7 +661,28 @@ void ODFAEGCreator::onInit() {
         cbIs3DTerrain = new CheckBox(*wGenerateTerrain, Vec3f(200, 415, 0), Vec3f(10, 10, 0));
         getRenderComponentManager().addComponent(cbIs3DTerrain);
 
-        bGenerateTerrain = new Button(Vec3f(0, 450, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "Generate terrain", 15, *wGenerateTerrain);
+        bAddTileGround = new Button(Vec3f(0, 450, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "Add tile ground", 15, *wGenerateTerrain);
+        bAddTileGround->addActionListener(this);
+        getRenderComponentManager().addComponent(bAddTileGround);
+
+        dpSelectWallType = new DropDownList(*wGenerateTerrain, Vec3f(0, 500, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "top bottom", 15);
+        dpSelectWallType->addItem("right left", 15);
+        dpSelectWallType->addItem("bottom right", 15);
+        dpSelectWallType->addItem("top left", 15);
+        dpSelectWallType->addItem("top right", 15);
+        dpSelectWallType->addItem("bottom left", 15);
+        Command cmdSelectWallTypeDroppeddown (FastDelegate<bool>(&DropDownList::isDroppedDown, dpSelectWallType), FastDelegate<void>(&ODFAEGCreator::onSelectedWallTypeDroppedDown, this, dpSelectWallType));
+        getRenderComponentManager().addComponent(dpSelectWallType);
+        dpSelectWallType->getListener().connect("selectWallTypeDroppedDown", cmdSelectWallTypeDroppeddown);
+        Command cmdSelectWallTypeNotDroppedDown(FastDelegate<bool>(&DropDownList::isNotDroppedDown, dpSelectWallType), FastDelegate<void>(&ODFAEGCreator::onSelectedWallTypeNotDroppedDown, this, dpSelectWallType));
+        dpSelectWallType->getListener().connect("selectWallTypeNotDroppedDown", cmdSelectWallTypeNotDroppedDown);
+
+        bAddWall = new Button(Vec3f(200, 500, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "Add wall", 15, *wGenerateTerrain);
+        bAddWall->addActionListener(this);
+        getRenderComponentManager().addComponent(bAddWall);
+
+
+        bGenerateTerrain = new Button(Vec3f(0, 550, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "Generate terrain", 15, *wGenerateTerrain);
         bGenerateTerrain->addActionListener(this);
         getRenderComponentManager().addComponent(bGenerateTerrain);
 
@@ -658,17 +696,17 @@ void ODFAEGCreator::onInit() {
         pProjects->setBackgroundColor(sf::Color::White);
         pProjects->setBorderThickness(5);
         unsigned int i = 0;
-        Label* lab = new Label(getRenderWindow(), Vec3f(0, 0, 0), Vec3f(200, 35, 0), fm.getResourceByAlias(Fonts::Serif), "GUI", 15);
+        Label* lab = new Label(getRenderWindow(), Vec3f(0, 0, 0), Vec3f(200, 35, 0), fm.getResourceByAlias(Fonts::Serif), "Scenes", 15);
         lab->setBackgroundColor(sf::Color::White);
-        Node* node = new Node("GUI", lab, Vec2f(0.f, 0.f), Vec2f(1.f, 0.05f), rootNode.get());
+        rootScenesNode = std::make_unique<Node>("Scenes", lab, Vec2f(0.f, 0.f), Vec2f(1.f, 0.025f), rootNode.get());
         lab->setForegroundColor(sf::Color::Red);
         lab->setParent(pProjects);
         pProjects->addChild(lab);
         Action a(Action::EVENT_TYPE::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
         //std::cout<<"label : "<<lab<<std::endl;
 
-        Command cmd(a, FastDelegate<bool>(&Label::isMouseInside, lab), FastDelegate<void>(&ODFAEGCreator::showGUI, this, lab));
-        lab->getListener().connect("SHOWGUI", cmd);
+        Command cmd(a, FastDelegate<bool>(&Label::isMouseInside, lab), FastDelegate<void>(&ODFAEGCreator::showScenes, this, lab));
+        lab->getListener().connect("SHOWSCENES", cmd);
         //system("PAUSE");
         getRenderComponentManager().addComponent(pProjects);
         pScriptsEdit = new Panel(getRenderWindow(), Vec3f(200, 10, 0), Vec3f(800, 700, 0));
@@ -883,38 +921,42 @@ void ODFAEGCreator::onDisplay(RenderWindow* window) {
 
         if (isGuiShown) {
             //std::cout<<"get visible tiles : "<<std::endl;
-            for (unsigned int i = 0; i < selectionBorders.size(); i++) {
+           /* for (unsigned int i = 0; i < selectionBorders.size(); i++) {
                 delete selectionBorders[i];
             }
-            selectionBorders.clear();
-            std::vector<Transformable*> entities = rectSelect.getItems();
+            selectionBorders.clear();*/
+            //std::vector<Transformable*> entities = rectSelect.getItems();
             //std::cout<<"create borders"<<std::endl;
-            for (unsigned int i = 0; i < entities.size(); i++) {
-                if (dynamic_cast<Entity*>(entities[i])) {
+            /*for (unsigned int i = 0; i < entities.size(); i++) {
+                RectangleShape rect(entities[i]->getSize());
+                rect.setPosition(entities[i]->getPosition());
+                rect.setFillColor(sf::Color::Transparent);
+                rect.setOutlineThickness(5);
+                rect.setOutlineColor(sf::Color::Cyan);
+                window->draw(rect);*/
+                /*if (dynamic_cast<Entity*>(entities[i])) {
                     Entity* border = dynamic_cast<Entity*>(entities[i])->clone();
-                    border->setName("");
-                    //std::cout<<"add border"<<std::endl;
                     for (unsigned int f = 0; f < border->getNbFaces(); f++) {
-                        //std::cout<<"clear textures"<<std::endl;
                         if (border->getFace(f)->getMaterial().getTexture() != nullptr) {
                             border->getFace(f)->getMaterial().clearTextures();
-                            //std::cout<<"add texture"<<std::endl;
                             border->getFace(f)->getMaterial().addTexture(nullptr, sf::IntRect(0, 0, 0, 0));
                         }
                         //std::cout<<"get va"<<std::endl;
                         VertexArray& va = border->getFace(f)->getVertexArray();
                         //std::cout<<"change color"<<std::endl;
                         for (unsigned int j = 0; j < va.getVertexCount(); j++) {
+
                             va[j].color = sf::Color::Cyan;
                         }
                         //std::cout<<"color changed"<<std::endl;
                     }
-                    border->setScale(Vec3f(1.1f, 1.1f, 1.0f));
+                    border->setOrigin(border->getSize() * 0.5f);
+                    border->setScale(Vec3f(1.1f, 1.1f, 1.1f));
                     selectionBorders.push_back(border);
-                }
-            }
+                }*/
+            //}
             //std::cout<<"tiles size : "<<tiles.size()<<std::endl;
-            glCheck(glEnable(GL_STENCIL_TEST));
+            /*glCheck(glEnable(GL_STENCIL_TEST));
             glCheck(glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE));
             glStencilFunc(GL_ALWAYS, 1, 0xFF);
             glStencilMask(0xFF);
@@ -939,7 +981,7 @@ void ODFAEGCreator::onDisplay(RenderWindow* window) {
             }
             //std::cout<<"borders drawn"<<std::endl;
             glCheck(glDisable(GL_STENCIL_TEST));
-            glEnable(GL_ALPHA_TEST);
+            glEnable(GL_ALPHA_TEST);*/
             if (tabPane->getSelectedTab() == "Collisions") {
                 //window->setView(defaultView);
                 BoundingBox view = currentView.getViewVolume();
@@ -1004,8 +1046,8 @@ void ODFAEGCreator::onDisplay(RenderWindow* window) {
         }
         window->setView(defaultView);
         if (isSelectingPolyhedron) {
-            window->draw(bpLines);
             window->draw(bpPoints);
+            window->draw(bpLines);
         }
         if (showRectSelect) {
             window->draw(rectSelect);
@@ -1044,46 +1086,84 @@ Vec3f ODFAEGCreator::getGridCellPos(Vec3f pos) {
 }
 void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
     if (&getRenderWindow() == window && event.type == IEvent::KEYBOARD_EVENT && event.keyboard.type == IEvent::KEY_EVENT_PRESSED && event.keyboard.code == IKeyboard::Delete) {
+
+        rootPropNode->deleteAllNodes();
+        rootMaterialNode->deleteAllNodes();
+        rootInfosNode->deleteAllNodes();
+        rootShadowsNode->deleteAllNodes();
+        rootCollisionNode->deleteAllNodes();
+        pTransform->removeAll();
+        pMaterial->removeAll();
+        pMaterial->removeSprites();
+        pInfos->removeAll();
+        pShadows->removeAll();
+        pCollisions->removeAll();
         if(dynamic_cast<Entity*>(selectedObject) != nullptr) {
-            //std::cout<<"delete selected object"<<std::endl;
+            //std::cout<<"detach children selected object : "<<std::endl;
+
+
+            for (unsigned int i = 0; i < dynamic_cast<Entity*>(selectedObject)->getChildren().size(); i++) {
+                dynamic_cast<Entity*>(selectedObject)->getChildren()[i]->setParent(nullptr);
+            }
             dynamic_cast<Entity*>(selectedObject)->detachChildren();
+            //std::cout<<"children detached"<<std::endl;
             getWorld()->removeEntity(dynamic_cast<Entity*>(selectedObject));
-            delete selectedObject;
-            rootPropNode->deleteAllNodes();
-            rootMaterialNode->deleteAllNodes();
-            rootInfosNode->deleteAllNodes();
-            rootShadowsNode->deleteAllNodes();
-            rootCollisionNode->deleteAllNodes();
-            pTransform->removeAll();
-            pMaterial->removeAll();
-            pInfos->removeAll();
-            pShadows->removeAll();
-            pCollisions->removeAll();
+            //std::cout<<"selected object removed: "<<dynamic_cast<Entity*>(selectedObject)->getType()<<std::endl;
+            if (dynamic_cast<Entity*>(selectedObject)->getParent() != nullptr) {
+                //std::cout<<"selected object detach child"<<std::endl;
+                dynamic_cast<Entity*>(selectedObject)->getParent()->detachChild(dynamic_cast<Entity*>(selectedObject));
+            }
+            //std::cout<<"selected object child detached"<<std::endl;
+            delete dynamic_cast<Entity*>(selectedObject);
+            //std::cout<<"selected object deleted"<<std::endl;
+
         }
         std::vector<Transformable*> objects = rectSelect.getItems();
-        //std::cout<<"size : "<<objects.size()<<std::endl;
         for (unsigned int i = 1; i < objects.size(); i++) {
             if(dynamic_cast<Entity*>(objects[i]) != nullptr) {
-                //std::cout<<"delete object : "<<i<<std::endl;
+                //std::cout<<"detach children : "<<i<<std::endl;
+                for (unsigned int j = 0; j < dynamic_cast<Entity*>(objects[i])->getChildren().size(); j++) {
+                    dynamic_cast<Entity*>(objects[i])->getChildren()[j]->setParent(nullptr);
+                }
+                //std::cout<<"remove entity : "<<dynamic_cast<Entity*>(objects[i])->getType()<<std::endl;
                 dynamic_cast<Entity*>(objects[i])->detachChildren();
+                //std::cout<<"children detached"<<std::endl;
                 getWorld()->removeEntity(dynamic_cast<Entity*>(objects[i]));
-                delete objects[i];
+                //std::cout<<"entity removed : "<<objects[i]<<std::endl;
+                if (dynamic_cast<Entity*>(objects[i])->getParent() != nullptr) {
+                    //std::cout<<"detach child"<<std::endl;
+                    dynamic_cast<Entity*>(objects[i])->getParent()->detachChild(dynamic_cast<Entity*>(objects[i]));
+                }
+                //std::cout<<"child detached"<<std::endl;
+                //std::cout<<"delete selected object : "<<dynamic_cast<Entity*>(objects[i])->getType()<<std::endl;
+                delete dynamic_cast<Entity*>(objects[i]);
+                //std::cout<<"entity deleted"<<std::endl;
             }
         }
         rectSelect.getItems().clear();
-        for (unsigned int i = 0; i < selectionBorders.size(); i++) {
+        /*for (unsigned int i = 0; i < selectionBorders.size(); i++) {
             delete selectionBorders[i];
         }
-        selectionBorders.clear();
+        selectionBorders.clear();*/
     }
     if (&getRenderWindow() == window && event.type == IEvent::KEYBOARD_EVENT && event.keyboard.type == IEvent::KEY_EVENT_PRESSED) {
         getListener().setCommandSlotParams("MoveAction", this, static_cast<IKeyboard::Key>(event.keyboard.code));
         if (event.keyboard.control && event.keyboard.code == IKeyboard::V) {
             if (selectedObject != nullptr) {
+                Vec3f position;
+                if (dpSelectComponent->getSelectedItem() == "MAIN WINDOW") {
+                    position = getRenderWindow().mapPixelToCoords(Vec3f(cursor.getPosition().x, getRenderWindow().getSize().y - cursor.getPosition().y, 0))+getRenderWindow().getView().getSize()*0.5f;
+                } else {
+                    for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
+                        if (getRenderComponentManager().getRenderComponent(i) != nullptr && getRenderComponentManager().getRenderComponent(i)->getName() == dpSelectComponent->getSelectedItem()) {
+                            position = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(cursor.getPosition().x, getRenderWindow().getSize().y - cursor.getPosition().y, 0))+getRenderWindow().getView().getSize()*0.5f;
+                        }
+                    }
+                }
                 //std::cout<<"copy!"<<std::endl;
                 if (dynamic_cast<RectangleShape*>(selectedObject)) {
                     std::unique_ptr<Shape> shape = std::make_unique<RectangleShape> (*static_cast<RectangleShape*>(selectedObject));
-                    Vec3f position = getRenderWindow().mapPixelToCoords(Vec3f(cursor.getPosition().x, getRenderWindow().getSize().y - cursor.getPosition().y, 0))+getRenderWindow().getView().getSize()*0.5f;
+
                     shape->setPosition(position);
                     shapes.push_back(std::move(shape));
                     selectedObject = shape.get();
@@ -1091,7 +1171,6 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
                 } else if (dynamic_cast<Entity*>(selectedObject)) {
                     Entity* entity = static_cast<Entity*>(selectedObject)->clone();
                     //std::cout<<"wall type : "<<dynamic_cast<Entity*>(selectedObject)->getType()<<std::endl;
-                    Vec3f position = getRenderWindow().mapPixelToCoords(Vec3f(cursor.getPosition().x, getRenderWindow().getSize().y - cursor.getPosition().y, 0))+getRenderWindow().getView().getSize()*0.5f;
                     //std::cout<<"position : "<<position<<std::endl;
                     entity->setPosition(position);
 
@@ -1099,6 +1178,7 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
                     getWorld()->addEntity(entity);
                     selectedObject = entity;
                     Entity* selectedEntity = dynamic_cast<Entity*>(selectedObject);
+                    selectedEntity->setSelected(true);
                     if (selectedEntity->getType() == "E_TILE") {
                         displayTileInfos(selectedEntity);
                     } else if (selectedEntity->getType() == "E_BIGTILE") {
@@ -1115,20 +1195,28 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
                         displayPonctualLightInfos(selectedEntity);
                     } else {
                         displayExternalEntityInfo(selectedEntity);
+                        std::map<std::string, std::vector<Entity*>>::iterator it = externals.find(selectedEntity->getClassName());
+                        it->second.push_back(selectedEntity);
                     }
+
                 }
             }
         }
         if (event.keyboard.control && event.keyboard.code == IKeyboard::A) {
             if (getWorld()->getCurrentSceneManager() != nullptr) {
+                for (unsigned int i = 0; i < rectSelect.getItems().size(); i++) {
+                    if (dynamic_cast<Entity*>(rectSelect.getItems()[i]))
+                        dynamic_cast<Entity*>(rectSelect.getItems()[i])->setSelected(false);
+                }
                 rectSelect.getItems().clear();
                 //std::cout<<"select get visible entities"<<std::endl;
-                std::vector<Entity*> entities = getWorld()->getEntities(taSelectExpression->getText());
-                //std::cout<<"visible entities selected get : "<<entities.size()<<std::endl;
+                std::vector<Entity*> entities = getWorld()->getEntities(taSelectExpression->getText());                ;
                 for (unsigned int i = 0; i < entities.size(); i++) {
                     //std::cout<<"type : "<<entities[i]->getType()<<std::endl<<"select pos : "<<rectSelect.getSelectionRect().getPosition()<<"select size : "<<rectSelect.getSelectionRect().getSize()<<"globalbounds pos : "<<entities[i]->getGlobalBounds().getPosition()<<"globalbounds size : "<<entities[i]->getGlobalBounds().getSize()<<std::endl;
                     //if (dynamic_cast<Tile*>(entities[i])) {
                         //std::cout<<"add tile : "<<i<<std::endl;
+
+                        entities[i]->setSelected(true);
                         rectSelect.addItem(entities[i]);
                         //std::cout<<"border added"<<std::endl;
                     //}
@@ -1137,7 +1225,7 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
                     selectedObject = rectSelect.getItems()[0];
                 if (dynamic_cast<Entity*>(selectedObject)) {
                     Entity* selectedEntity = dynamic_cast<Entity*>(selectedObject);
-                    std::cout<<"type : "<<selectedEntity->getType()<<std::endl;
+                    selectedEntity->setSelected(true);
                     if (selectedEntity->getType() == "E_TILE") {
                         displayTileInfos(selectedEntity);
                     } else if (selectedEntity->getType() == "E_BIGTILE") {
@@ -1159,14 +1247,25 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
             }
         }
     }
-
+    if (event.keyboard.control && event.keyboard.code == IKeyboard::D) {
+        if (getWorld()->getCurrentSceneManager() != nullptr) {
+            for (unsigned int i = 0; i < rectSelect.getItems().size(); i++) {
+                if (dynamic_cast<Entity*>(rectSelect.getItems()[i]))
+                    dynamic_cast<Entity*>(rectSelect.getItems()[i])->setSelected(false);
+            }
+            rectSelect.getItems().clear();
+        }
+    }
     if (&getRenderWindow() == window && event.type == IEvent::WINDOW_EVENT && event.window.type == IEvent::WINDOW_EVENT_CLOSED) {
-        std::ifstream fexist("sourceCode.cpp");
+        std::ifstream fexist(appliname+"\\sourceCode.cpp");
         if (fexist && openedProjects.size() > 0) {
-            std::ofstream file("sourceCode.cpp");
+            std::ofstream file(appliname+"\\sourceCode.cpp");
             file<<pluginSourceCode;
         }
         stop();
+    }
+    if (window != &getRenderWindow() && event.type == IEvent::WINDOW_EVENT && event.window.type == IEvent::WINDOW_EVENT_CLOSED) {
+        window->setVisible(false);
     }
     if (&getRenderWindow() == window && event.type == IEvent::MOUSE_BUTTON_EVENT && event.mouseButton.type == IEvent::BUTTON_EVENT_PRESSED && event.mouseButton.button == IMouse::Left) {
         sf::Vector2f mousePos (event.mouseButton.x, event.mouseButton.y);
@@ -1176,7 +1275,15 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
         if (tabPane->getSelectedTab() == "Collisions") {
             sf::Vector2f mousePos (event.mouseButton.x, event.mouseButton.y);
             Vec3f pos(mousePos.x, mousePos.y, 0);
-            pos = getRenderWindow().mapPixelToCoords(Vec3f(mousePos.x, getRenderWindow().getSize().y-mousePos.y, 0));
+            if (dpSelectComponent->getSelectedItem() == "MAIN WINDOW") {
+                pos = getRenderWindow().mapPixelToCoords(Vec3f(mousePos.x, getRenderWindow().getSize().y-mousePos.y, 0));
+            } else {
+                for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
+                    if (getRenderComponentManager().getRenderComponent(i) != nullptr && getRenderComponentManager().getRenderComponent(i)->getName() == dpSelectComponent->getSelectedItem()) {
+                        pos = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(cursor.getPosition().x, getRenderWindow().getSize().y - cursor.getPosition().y, 0))+getRenderWindow().getView().getSize()*0.5f;
+                    }
+                }
+            }
             /*bool isOk;
             do {
                 pos = getRenderWindow().mapPixelToCoords(Vec3f(mousePos.x, getRenderWindow().getSize().y-mousePos.y, 0));
@@ -1250,12 +1357,13 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
                 while (deltaX < pScriptsFiles->getPosition().x-gridWidth) {
                     deltaX += gridWidth;
                 }
-                deltaX = pScriptsFiles->getPosition().x - deltaX;
+                deltaX = pScriptsFiles->getPosition().x - deltaX - ((int) pMaterial->getDeltas().x % gridWidth);
                 int deltaY = 0;
                 while (deltaY < bChooseText->getPosition().y + bChooseText->getSize().y+10-gridHeight) {
                     deltaY += gridHeight;
                 }
-                deltaY = (bChooseText->getPosition().y + bChooseText->getSize().y+10) - deltaY;
+                deltaY = (bChooseText->getPosition().y + bChooseText->getSize().y+10) - deltaY - ( (int) pMaterial->getDeltas().y % gridHeight);
+
                 mousePosition = Vec3f(x+deltaX, y+deltaY, 0);
             } else {
                 int x = mousePos.x;
@@ -1315,12 +1423,12 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
                 while (deltaX < pScriptsFiles->getPosition().x-gridWidth) {
                     deltaX += gridWidth;
                 }
-                deltaX = pScriptsFiles->getPosition().x - deltaX;
+                deltaX = pScriptsFiles->getPosition().x - deltaX - ((int) pMaterial->getDeltas().x % gridWidth);
                 int deltaY = 0;
                 while (deltaY < bChooseText->getPosition().y + bChooseText->getSize().y+10-gridHeight) {
                     deltaY += gridHeight;
                 }
-                deltaY = (bChooseText->getPosition().y + bChooseText->getSize().y+10) - deltaY;
+                deltaY = (bChooseText->getPosition().y + bChooseText->getSize().y+10) - deltaY - ((int) pMaterial->getDeltas().y % gridHeight);
                 int width = x + deltaX - mousePosition.x;
                 int height = y + deltaY - mousePosition.y;
                 if (width > 0 && height > 0 && sTextRect != nullptr) {
@@ -1342,6 +1450,13 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
         int relX = (event.mouseMotion.x - oldX) * sensivity;
         int relY = (event.mouseMotion.y - oldY) * sensivity;
         //Rotate the view, (Polar coordinates) but you can also use the lookAt function to look at a point.
+        View view = getRenderWindow().getView();
+        if (!view.isOrtho()) {
+            int teta = view.getTeta() - relX;
+            int phi = view.getPhi() - relY;
+            view.rotate(teta, phi);
+            getRenderWindow().setView(view);
+        }
         for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
             if (getRenderComponentManager().getRenderComponent(i) != nullptr) {
                 View view = getRenderComponentManager().getRenderComponent(i)->getView();
@@ -1356,22 +1471,38 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
     }
     if (&getRenderWindow() == window && event.type == IEvent::MOUSE_BUTTON_EVENT && event.mouseButton.type == IEvent::BUTTON_EVENT_RELEASED && event.mouseButton.button == IMouse::Right) {
         if (showRectSelect && !pScriptsFiles->isPointInside(mousePosition)) {
+            for (unsigned int i = 0; i < rectSelect.getItems().size(); i++) {
+                if (dynamic_cast<Entity*>(rectSelect.getItems()[i])) {
+                    dynamic_cast<Entity*>(rectSelect.getItems()[i])->setSelected(false);
+                }
+            }
             rectSelect.getItems().clear();
             BoundingBox box = rectSelect.getSelectionRect();
             Vec3f savedPos = box.getPosition();
             Vec3f pos = box.getPosition();
-            pos = getRenderWindow().mapPixelToCoords(Vec3f(pos.x, getRenderWindow().getSize().y-pos.y, 0))+getRenderWindow().getView().getSize()*0.5f;
+            if (dpSelectComponent->getSelectedItem() == "MAIN WINDOW") {
+                pos = getRenderWindow().mapPixelToCoords(Vec3f(pos.x, getRenderWindow().getSize().y-pos.y, 0))+getRenderWindow().getView().getSize()*0.5f;
+            } else {
+                std::string name = dpSelectComponent->getSelectedItem();
+                std::vector<Component*> components = getRenderComponentManager().getRenderComponents();
+                for (unsigned int i = 0; i < components.size(); i++) {
+                    if (name == components[i]->getName() && dynamic_cast<HeavyComponent*>(components[i])) {
+                        pos = components[i]->getFrameBuffer()->mapPixelToCoords(Vec3f(pos.x, getRenderWindow().getSize().y-pos.y, 0))+getRenderWindow().getView().getSize()*0.5f;
+                    }
+                }
+            }
             rectSelect.setRect(pos.x, pos.y, pos.z, box.getSize().x, box.getSize().y, box.getSize().z);
             if (getWorld()->getCurrentSceneManager() != nullptr) {
                 //std::cout<<"select get visible entities"<<std::endl;
-                std::vector<Entity*> entities = getWorld()->getVisibleEntities(taSelectExpression->getText(), factory);
-                //std::cout<<"visible entities selected get : "<<entities.size()<<std::endl;
+                std::vector<Entity*> entities = getWorld()->getEntities(taSelectExpression->getText());
                 for (unsigned int i = 0; i < entities.size(); i++) {
                     //std::cout<<"type : "<<entities[i]->getType()<<std::endl<<"select pos : "<<rectSelect.getSelectionRect().getPosition()<<"select size : "<<rectSelect.getSelectionRect().getSize()<<"globalbounds pos : "<<entities[i]->getGlobalBounds().getPosition()<<"globalbounds size : "<<entities[i]->getGlobalBounds().getSize()<<std::endl;
+                    //std::cout<<rectSelect.getSelectionRect().getPosition()<<rectSelect.getSelectionRect().getSize()<<entities[i]->getGlobalBounds().getPosition()<<entities[i]->getGlobalBounds().getSize();
                     if (rectSelect.getSelectionRect().intersects(entities[i]->getGlobalBounds())) {
                         //if (dynamic_cast<Tile*>(entities[i])) {
-                            //std::cout<<"add tile : "<<i<<std::endl;
+                            //std::cout<<"select entity : "<<entities[i]->getType()<<std::endl;
                             rectSelect.addItem(entities[i]);
+                            entities[i]->setSelected(true);
                             //std::cout<<"border added"<<std::endl;
                         //}
                     }
@@ -1431,16 +1562,6 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
             tTexCoordH->setText(conversionIntString(sTextRect->getSize().y));
         }
     }
-    if (wApplicationNew == window && event.type == IEvent::WINDOW_EVENT && event.window.type == IEvent::WINDOW_EVENT_CLOSED) {
-        wApplicationNew->setVisible(false);
-        getRenderComponentManager().setEventContextActivated(false, *wApplicationNew);
-        tScriptEdit->setEventContextActivated(true);
-    }
-    if (wNewEntitiesUpdater == window && event.type == IEvent::WINDOW_EVENT && event.window.type == IEvent::WINDOW_EVENT_CLOSED) {
-        wNewEntitiesUpdater->setVisible(false);
-        getRenderComponentManager().setEventContextActivated(false, *wNewEntitiesUpdater);
-        tScriptEdit->setEventContextActivated(true);
-    }
     if (&getRenderWindow() == window && event.type == IEvent::WINDOW_EVENT && event.window.type == IEvent::WINDOW_EVENT_RESIZED) {
         getRenderWindow().getDefaultView().reset(BoundingBox(0, 0, getRenderWindow().getDefaultView().getPosition().z, event.window.data1, event.window.data2, getRenderWindow().getDefaultView().getDepth()));
         getRenderWindow().getDefaultView().setPerspective(-event.window.data1 * 0.5f, event.window.data1 * 0.5f, -event.window.data2 * 0.5f, event.window.data2 * 0.5f, getRenderWindow().getDefaultView().getViewport().getPosition().z, getRenderWindow().getDefaultView().getViewport().getSize().z);
@@ -1449,45 +1570,49 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
         view.setPerspective(-event.window.data1 * 0.5f, event.window.data1 * 0.5f, -event.window.data2 * 0.5f, event.window.data2 * 0.5f, getRenderWindow().getView().getViewport().getPosition().z, getRenderWindow().getView().getViewport().getSize().z);
         getRenderWindow().setView(view);
     }
-    if (wCreateNewObject == window && isSelectingPolyhedron && event.type == IEvent::MOUSE_BUTTON_EVENT && event.mouseButton.type == IEvent::BUTTON_EVENT_RELEASED && event.mouseButton.button == IMouse::Right) {
-        sf::Vector2f mousePos (event.mouseButton.x, event.mouseButton.y);
-        int x = mousePosition.x;
-        int y = mousePosition.y;
-        bpPoints.append(Vertex(sf::Vector3f(x, y, getRenderWindow().getDefaultView().getPosition().z), sf::Color::Red));
-        bpLines.setPrimitiveType(sf::LinesStrip);
-        if (bpPoints.getVertexCount() == 2) {
-            bpLines.append(Vertex(sf::Vector3f(bpPoints[0].position.x, bpPoints[0].position.y, bpPoints[0].position.z), sf::Color::Red));
-            bpLines.append(Vertex(sf::Vector3f(bpPoints[1].position.x, bpPoints[1].position.y, bpPoints[1].position.z), sf::Color::Red));
+    if (&getRenderWindow() == window && isSelectingPolyhedron && event.type == IEvent::MOUSE_BUTTON_EVENT && event.mouseButton.type == IEvent::BUTTON_EVENT_RELEASED && event.mouseButton.button == IMouse::Left) {
+        if (isSecondClick) {
+            sf::Vector2f mousePos (event.mouseButton.x, event.mouseButton.y);
+            int x = IMouse::getPosition(getRenderWindow()).x;
+            int y = IMouse::getPosition(getRenderWindow()).y;
+            bpPoints.append(Vertex(sf::Vector3f(x - getRenderWindow().getSize().x*0.5f, y-getRenderWindow().getSize().y*0.5f, getRenderWindow().getDefaultView().getPosition().z), sf::Color::Red));
+            bpLines.setPrimitiveType(sf::LinesStrip);
+            if (bpPoints.getVertexCount() == 2) {
+                bpLines.append(Vertex(sf::Vector3f(bpPoints[0].position.x, bpPoints[0].position.y, bpPoints[0].position.z), sf::Color::Red));
+                bpLines.append(Vertex(sf::Vector3f(bpPoints[1].position.x, bpPoints[1].position.y, bpPoints[1].position.z), sf::Color::Red));
 
-        } else if (bpPoints.getVertexCount() > 2) {
-            unsigned int last = bpPoints.getVertexCount() - 1;
-            bpLines.append(Vertex(sf::Vector3f(bpPoints[last].position.x, bpPoints[last].position.y, bpPoints[last].position.z), sf::Color::Red));
-        }
-        BoundingSphere bp (Vec3f(x, y, 0), 5);
-        selectBpPoints.push_back(bp);
-        CollisionResultSet::Info info;
-        if (selectBpPoints.size() > 2 && selectBpPoints[0].intersects(selectBpPoints[selectBpPoints.size()-1], info)) {
-            BoundingPolyhedron bp;
-            for (unsigned int i = 0; i < selectBpPoints.size()-2; i++) {
-                bp.addTriangle(getRenderWindow().mapPixelToCoords(Vec3f(selectBpPoints[0].getCenter().x, getRenderWindow().getSize().y - selectBpPoints[0].getCenter().y, selectBpPoints[0].getCenter().z)),
-                               getRenderWindow().mapPixelToCoords(Vec3f(selectBpPoints[i+1].getCenter().x, getRenderWindow().getSize().y - selectBpPoints[i+1].getCenter().y, selectBpPoints[i+1].getCenter().z)),
-                               getRenderWindow().mapPixelToCoords(Vec3f(selectBpPoints[i+2].getCenter().x, getRenderWindow().getSize().y - selectBpPoints[i+2].getCenter().y, selectBpPoints[i+2].getCenter().z)));
+            } else if (bpPoints.getVertexCount() > 2) {
+                unsigned int last = bpPoints.getVertexCount() - 1;
+                bpLines.append(Vertex(sf::Vector3f(bpPoints[last].position.x, bpPoints[last].position.y, bpPoints[last].position.z), sf::Color::Red));
             }
-            tmpBps.push_back(bp);
-            isSelectingPolyhedron = false;
-            wCreateNewObject->setVisible(true);
-            getRenderComponentManager().setEventContextActivated(true, *wCreateNewObject);
-            tScriptEdit->setEventContextActivated(false);
-            bpLines.clear();
-            bpPoints.clear();
-            selectBpPoints.clear();
+            BoundingSphere bs (Vec3f(x, y, 0), 5);
+            selectBpPoints.push_back(bs);
+            CollisionResultSet::Info info;
+            if (selectBpPoints.size() > 2 && selectBpPoints[0].intersects(selectBpPoints[selectBpPoints.size()-1], info)) {
+                BoundingPolyhedron bp;
+                for (unsigned int i = 0; i < selectBpPoints.size()-2; i++) {
+                    bp.addTriangle(getRenderWindow().mapPixelToCoords(Vec3f(selectBpPoints[0].getCenter().x, getRenderWindow().getSize().y - selectBpPoints[0].getCenter().y, selectBpPoints[0].getCenter().z)),
+                                   getRenderWindow().mapPixelToCoords(Vec3f(selectBpPoints[i+1].getCenter().x, getRenderWindow().getSize().y - selectBpPoints[i+1].getCenter().y, selectBpPoints[i+1].getCenter().z)),
+                                   getRenderWindow().mapPixelToCoords(Vec3f(selectBpPoints[i+2].getCenter().x, getRenderWindow().getSize().y - selectBpPoints[i+2].getCenter().y, selectBpPoints[i+2].getCenter().z)));
+                }
+                tmpBps.push_back(bp);
+                isSelectingPolyhedron = false;
+                isSecondClick = false;
+                wCreateNewObject->setVisible(true);
+                getRenderComponentManager().setEventContextActivated(true, *wCreateNewObject);
+                tScriptEdit->setEventContextActivated(false);
+                bpLines.clear();
+                bpPoints.clear();
+                selectBpPoints.clear();
+            }
         }
+        isSecondClick = true;
     }
     oldX = IMouse::getPosition(getRenderWindow()).x;
     oldY = IMouse::getPosition(getRenderWindow()).y;
 }
 void ODFAEGCreator::onExec() {
-    if (IKeyboard::isKeyPressed(IKeyboard::D)) {
+    if (IKeyboard::isKeyPressed(IKeyboard::Right)) {
         View view = getRenderWindow().getView();
         if (alignToGrid)
             view.move(gridWidth, 0, 0);
@@ -1509,12 +1634,12 @@ void ODFAEGCreator::onExec() {
             }
         }
     }
-    if (IKeyboard::isKeyPressed(IKeyboard::Q)) {
+    if (IKeyboard::isKeyPressed(IKeyboard::Left)) {
         View view = getRenderWindow().getView();
         if (alignToGrid)
             view.move(-gridWidth, 0, 0);
         else
-            view.move(speed * getClock("LoopTime").getElapsedTime().asSeconds(), 0, 0);
+            view.move(-speed * getClock("LoopTime").getElapsedTime().asSeconds(), 0, 0);
         getRenderWindow().setView(view);
         for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
             if (getRenderComponentManager().getRenderComponent(i) != nullptr) {
@@ -1531,7 +1656,7 @@ void ODFAEGCreator::onExec() {
             }
         }
     }
-    if (IKeyboard::isKeyPressed(IKeyboard::Z)) {
+    if (IKeyboard::isKeyPressed(IKeyboard::Up)) {
         View view = getRenderWindow().getView();
         if (alignToGrid)
             view.move(0, -gridHeight, 0);
@@ -1553,7 +1678,7 @@ void ODFAEGCreator::onExec() {
             }
         }
     }
-    if (IKeyboard::isKeyPressed(IKeyboard::S)) {
+    if (IKeyboard::isKeyPressed(IKeyboard::Down)) {
         View view = getRenderWindow().getView();
         if (alignToGrid)
             view.move(0, gridHeight, 0);
@@ -1599,6 +1724,7 @@ void ODFAEGCreator::onExec() {
                     std::cout<<"parent : "<<entity->getChildren()[j]->getParent()<<","<<entity<<std::endl;
                 }*/
                 //std::cout<<"sname from process : "<<Command::sname<<std::endl;
+
                 entity->setExternal(true);
                 getWorld()->addEntity(entity);
                 std::vector<Entity*> entities=getWorld()->getChildrenEntities(entity->getType());
@@ -1638,14 +1764,23 @@ void ODFAEGCreator::onExec() {
         lastSlash = path.find_last_of("\\");
         #endif // if
         std::string ImgName = path.substr(lastSlash+1);
-        dpSelectTexture->addItem(ImgName,15);
+        if (tTexId->getText() == "")
+            dpSelectTexture->addItem(ImgName,15);
+        else
+            dpSelectTexture->addItem(tTexId->getText(),15);
         fdTexturePath->setVisible(false);
         fdTexturePath->setEventContextActivated(false);
         TextureManager<>& tm = cache.resourceManager<Texture, std::string>("TextureManager");
         if (!tm.exists(path)) {
-            tm.fromFileWithAlias(path, ImgName);
-            textPaths.push_back(ImgName);
-            std::map<std::string, std::string>::iterator it;
+            if (tTexId->getText() == "") {
+                tm.fromFileWithAlias(path, ImgName);
+                textPaths.push_back(ImgName);
+            } else {
+                tm.fromFileWithAlias(path, tTexId->getText());
+                textPaths.push_back(tTexId->getText());
+            }
+
+            /*std::map<std::string, std::string>::iterator it;
             it = cppAppliContent.find(minAppliname+".cpp");
             if (it != cppAppliContent.end()) {
                 std::string& content = it->second;
@@ -1653,7 +1788,7 @@ void ODFAEGCreator::onExec() {
                 std::string subs = content.substr(pos);
                 pos += subs.find_first_of('\n') + 1;
                 content.insert(pos, "    tm.fromFileWithAlias("+path+","+ImgName+");");
-            }
+            }*/
             fdTexturePath->setEventContextActivated(false);
             tScriptEdit->setEventContextActivated(true);
             for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
@@ -1693,6 +1828,7 @@ void ODFAEGCreator::onExec() {
             }
         }
         if (!opened) {
+            rtc.setOutputDir(appliname);
             const char* lcars = appliname.c_str();
             char* ucars = new char[appliname.size()];
             for (unsigned int i = 0; i < appliname.length(); i++) {
@@ -1725,17 +1861,11 @@ void ODFAEGCreator::onExec() {
                 ITextArchive ia(ifs);
                 std::vector<std::string> paths;
                 ia(paths);
+                ia(textPaths);
                 for (unsigned int i = 0; i < paths.size(); i++) {
                     //std::cout<<"load texture : "<<paths[i]<<std::endl;
-                    unsigned int lastSlash;
-                    #if defined(ODFAEG_SYSTEM_LINUX)
-                    lastSlash = paths[i].find_last_of("/");
-                    #else if defined (ODFAEG_SYSTEM_WINDOWS)
-                    lastSlash = paths[i].find_last_of("\\");
-                    #endif // if
-                    std::string ImgName = paths[i].substr(lastSlash+1);
                     //std::cout<<"alias : "<<ImgName<<std::endl;
-                    tm.fromFileWithAlias(paths[i], ImgName);
+                    tm.fromFileWithAlias(paths[i], textPaths[i]);
                 }
                 ifs.close();
             }
@@ -1746,11 +1876,23 @@ void ODFAEGCreator::onExec() {
                 ITextArchive ia2(ifs2);
                 std::vector<Scene*> maps;
                 ia2(maps);
-                //std::cout<<"maps : "<<std::endl;
+                /*std::vector<Entity*> decor = maps[0]->getEntities("E_DECOR");
+                maps[0]->deleteEntity(decor[0]);*/
                 for (unsigned int i = 0; i < maps.size(); i++) {
                     //std::cout<<"add map "<<maps[i]->getName()<<std::endl;
                     maps[i]->setRenderComponentManager(&getRenderComponentManager());
                     getWorld()->addSceneManager(maps[i]);
+                    Label* lab = new Label(getRenderWindow(), Vec3f(0, 0, 0), Vec3f(200, 35, 0), fm.getResourceByAlias(Fonts::Serif), maps[i]->getName(), 15);
+                    lab->setBackgroundColor(sf::Color::White);
+                    Node* node = new Node(maps[i]->getName(), lab, Vec2f(0.f, 0.f), Vec2f(1.f, 0.025f), rootScenesNode.get());
+                    lab->setForegroundColor(sf::Color::Blue);
+                    lab->setParent(pProjects);
+                    pProjects->addChild(lab);
+
+                    Action a(Action::EVENT_TYPE::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
+                    Command cmd(a, FastDelegate<bool>(&Label::isMouseInside, lab), FastDelegate<void>(&ODFAEGCreator::showScene, this, lab));
+                    lab->getListener().connect("SHOWSCENE"+maps[i]->getName(), cmd);
+
                     getWorld()->setCurrentSceneManager(maps[i]->getName());
                 }
                 ifs2.close();
@@ -1799,7 +1941,6 @@ void ODFAEGCreator::onExec() {
                 for (unsigned int f = 0; f < entities[i]->getNbFaces(); f++) {
                     Face* face = entities[i]->getFace(f);
                     std::string alias = face->getMaterial().getTexId();
-                    std::cout<<"alias : "<<alias<<std::endl;
                     if (alias != "") {
                         face->getMaterial().clearTextures();
                         face->getMaterial().addTexture(tm.getResourceByAlias(alias), face->getMaterial().getTexRect());
@@ -1974,13 +2115,39 @@ void ODFAEGCreator::onExec() {
             findFiles(".cpp", scriptSourceFiles, startDir);
             for (unsigned int i = 0; i < scriptSourceFiles.size(); i++) {
                 int pos = scriptSourceFiles[i].find(".cpp");
-                std::string path = scriptSourceFiles[i].erase(pos);
+                std::string path = scriptSourceFiles[i];
+                path.erase(pos);
                 rtc.addSourceFile(path);
+                std::ifstream source (scriptSourceFiles[i]);
+                std::string fileContent;
+                std::string line;
+                while(getline(source, line)) {
+                    fileContent += line+"\n";
+                }
+                source.close();
+                pos = scriptSourceFiles[i].find_last_of("\\");
+                scriptSourceFiles[i].erase(0, pos+1);
+                cppAppliContent.insert(std::make_pair(scriptSourceFiles[i], fileContent));
             }
-            rtc.addSourceFile("../../Windows/Demos/ODFAEGCREATOR/application");
-            rtc.addSourceFile("../../Windows/Demos/ODFAEGCREATOR/odfaegCreatorStateExecutor");
-            rtc.addSourceFile("../../Windows/Demos/ODFAEGCREATOR/rectangularSelection");
-            std::ifstream file("sourceCode.cpp");
+            scriptSourceFiles.clear();
+            findFiles(".hpp", scriptSourceFiles, startDir);
+            for (unsigned int i = 0; i < scriptSourceFiles.size(); i++) {
+                std::ifstream source (scriptSourceFiles[i]);
+                std::string fileContent;
+                std::string line;
+                while(getline(source, line)) {
+                    fileContent += line+"\n";
+                }
+                source.close();
+                int pos = scriptSourceFiles[i].find_last_of("\\");
+                scriptSourceFiles[i].erase(0, pos+1);
+                cppAppliContent.insert(std::make_pair(scriptSourceFiles[i], fileContent));
+            }
+
+            rtc.addSourceFile("../../ODFAEG-master/ODFAEG-master/Demos/ODFAEGCREATOR/application");
+            rtc.addSourceFile("../../ODFAEG-master/ODFAEG-master/Demos/ODFAEGCREATOR/odfaegCreatorStateExecutor");
+            rtc.addSourceFile("../../ODFAEG-master/ODFAEG-master/Demos/ODFAEGCREATOR/rectangularSelection");
+            std::ifstream file(appliname+"\\sourceCode.cpp");
             if (file) {
                 std::string line;
                 while (getline(file, line)) {
@@ -1989,12 +2156,12 @@ void ODFAEGCreator::onExec() {
                 }
                 if (pluginSourceCode != "") {
                     //std::cout<<"compile!"<<std::endl;
-                    rtc.addSourceFile("sourceCode");
+                    rtc.addSourceFile(appliname+"\\sourceCode");
                     rtc.compile();
                     rtc.run<void>("readObjects", this);
                 }
             }
-            std::ifstream file9("otherData.oc");
+            std::ifstream file9(appliname+"\\otherData.oc");
             if (file9) {
                 ITextArchive ia(file9);
                 ia(callIds);
@@ -2007,9 +2174,22 @@ void ODFAEGCreator::onExec() {
         fdProjectPath->setEventContextActivated(false);
         tScriptEdit->setEventContextActivated(true);
     }
+    std::string model3DPath = (fdImport3DModel != nullptr) ? fdImport3DModel->getPathChosen() : "";
+    if (model3DPath != "") {
+        Entity* model = loader.loadModel(model3DPath, factory);
+        getWorld()->addEntity(model);
+    }
     getWorld()->update();
 }
-void ODFAEGCreator::showGUI(Label* label) {
+void ODFAEGCreator::showScenes(Label* label) {
+    if (rootScenesNode->getNodes().size() > 0 && rootScenesNode->isNodeVisible()) {
+        rootScenesNode->hideAllNodes();
+    } else if (rootScenesNode->getNodes().size() > 0 && !rootScenesNode->isNodeVisible()) {
+        rootScenesNode->showAllNodes();
+    }
+}
+void ODFAEGCreator::showScene(Label* label) {
+    getWorld()->setCurrentSceneManager(label->getText());
     isGuiShown = true;
     pScriptsEdit->setVisible(false);
 }
@@ -2125,6 +2305,60 @@ void ODFAEGCreator::processKeyHeldDown (IKeyboard::Key key) {
 
 }
 void ODFAEGCreator::actionPerformed(Button* button) {
+    if (button == bAddTileGround) {
+        isGeneratingTerrain = true;
+        wGenerateTerrain->setVisible(false);
+        getRenderComponentManager().setEventContextActivated(false, *wGenerateTerrain);
+         getRenderComponentManager().setEventContextActivated(true, getRenderWindow());
+        Tile* tile = factory.make_entity<Tile>(nullptr, Vec3f(0, 0, 0), Vec3f(120, 60, 0),sf::IntRect(0, 0, 100, 50), factory);
+        selectedObject = tile;
+        ground.push_back(tile);
+        displayTileInfos(tile);
+    }
+    if (button == bAddWall) {
+        isGeneratingTerrain = true;
+        wGenerateTerrain->setVisible(false);
+        getRenderComponentManager().setEventContextActivated(false, *wGenerateTerrain);
+        getRenderComponentManager().setEventContextActivated(true, getRenderWindow());
+        if (dpSelectWallType->getSelectedItem() == "top bottom") {
+            Wall* wall = factory.make_entity<g2d::Wall>(factory.make_entity<Tile>(nullptr, Vec3f(0, 0, 0), Vec3f(100, 100, 0), sf::IntRect(100, 0, 100, 100), factory),g2d::Wall::TOP_BOTTOM,&g2d::AmbientLight::getAmbientLight(), factory);
+            walls[g2d::Wall::TOP_BOTTOM] = wall;
+            selectedObject = wall->getChildren()[0];
+            displayTileInfos(wall->getChildren()[0]);
+        }
+        else if (dpSelectWallType->getSelectedItem() == "right left") {
+            Wall* wall = factory.make_entity<g2d::Wall>(factory.make_entity<Tile>(nullptr, Vec3f(0, 0, 0), Vec3f(100, 100, 0), sf::IntRect(100, 100, 100, 100), factory),g2d::Wall::RIGHT_LEFT,&g2d::AmbientLight::getAmbientLight(), factory);
+            walls[g2d::Wall::RIGHT_LEFT] = wall;
+            selectedObject = wall->getChildren()[0];
+            displayTileInfos(wall->getChildren()[0]);
+        } else if (dpSelectWallType->getSelectedItem() == "bottom right") {
+            Wall* wall = factory.make_entity<g2d::Wall>(factory.make_entity<Tile>(nullptr, Vec3f(0, 0, 0), Vec3f(100, 100, 0), sf::IntRect(100, 200, 100, 100), factory),g2d::Wall::BOTTOM_RIGHT,&g2d::AmbientLight::getAmbientLight(), factory);
+            walls[g2d::Wall::BOTTOM_RIGHT] = wall;
+            selectedObject = wall->getChildren()[0];
+            displayTileInfos(wall->getChildren()[0]);
+        } else if (dpSelectWallType->getSelectedItem() == "top left") {
+            Wall* wall = factory.make_entity<g2d::Wall>(factory.make_entity<Tile>(nullptr, Vec3f(0, 0, 0), Vec3f(100, 100, 0), sf::IntRect(100, 300, 100, 100), factory),g2d::Wall::TOP_LEFT,&g2d::AmbientLight::getAmbientLight(), factory);
+            walls[g2d::Wall::TOP_LEFT] = wall;
+            selectedObject = wall->getChildren()[0];
+            displayTileInfos(wall->getChildren()[0]);
+        } else if (dpSelectWallType->getSelectedItem() == "top right") {
+            Wall* wall = factory.make_entity<g2d::Wall>(factory.make_entity<Tile>(nullptr, Vec3f(0, 0, 0), Vec3f(100, 100, 0), sf::IntRect(100, 400, 100, 100), factory),g2d::Wall::TOP_RIGHT,&g2d::AmbientLight::getAmbientLight(), factory);
+            walls[g2d::Wall::TOP_RIGHT] = wall;
+            selectedObject = wall->getChildren()[0];
+            displayTileInfos(wall->getChildren()[0]);
+        } else if (dpSelectWallType->getSelectedItem() == "bottom left") {
+            Wall* wall = factory.make_entity<g2d::Wall>(factory.make_entity<Tile>(nullptr, Vec3f(0, 0, 0), Vec3f(100, 100, 0), sf::IntRect(100, 500, 100, 100), factory),g2d::Wall::BOTTOM_LEFT,&g2d::AmbientLight::getAmbientLight(), factory);
+            walls[g2d::Wall::BOTTOM_LEFT] = wall;
+            selectedObject = wall->getChildren()[0];
+            displayTileInfos(wall->getChildren()[0]);
+        }
+    }
+    if (button == bSetTexRect) {
+        isGeneratingTerrain = false;
+        wGenerateTerrain->setVisible(true);
+        getRenderComponentManager().setEventContextActivated(true, *wGenerateTerrain);
+        getRenderComponentManager().setEventContextActivated(false, getRenderWindow());
+    }
     if (button->getText() == "Select Area") {
         isSelectingPolyhedron = true;
         wCreateNewObject->setVisible(false);
@@ -2133,14 +2367,13 @@ void ODFAEGCreator::actionPerformed(Button* button) {
     }
     if (button->getText() == "Create") {
         appliname = ta->getText();
-        std::ofstream applis(appliname+".poc");
-        applis<<appliname<<std::endl;
         applitype = dpList->getSelectedItem();
         #if defined (ODFAEG_SYSTEM_LINUX)
         path = fdProjectPath->getAppiDir() + "/" + appliname;
         #else if defined (ODFAEG_SYSTEM_WINDOWS)
         path = fdProjectPath->getAppiDir() + "\\" + appliname;
         #endif // if
+
         const char* lcars = appliname.c_str();
         char* ucars = new char[appliname.size()];
         for (unsigned int i = 0; i < appliname.length(); i++) {
@@ -2157,6 +2390,8 @@ void ODFAEGCreator::actionPerformed(Button* button) {
             std::cerr<<"Failed to create application directory!";
             //std::cerr << "Error: " << strerror(errno);
         }
+        std::ofstream applis(appliname+"\\"+appliname+".poc");
+        applis<<appliname<<std::endl;
         FontManager<Fonts>& fm = cache.resourceManager<Font, Fonts>("FontManager");
         wApplicationNew->setVisible(false);
         getRenderComponentManager().setEventContextActivated(false, *wApplicationNew);
@@ -2212,216 +2447,12 @@ void ODFAEGCreator::actionPerformed(Button* button) {
             oss<<"Application (vm, title, sf::Style::Resize|sf::Style::Close, ContextSettings(0, 0, 0, 3, 0)) {"<<std::endl;
             oss<<"}"<<std::endl;
             oss<<"void "<<appliname<<"::onLoad() {"<<std::endl;
-            oss<<"  TextureManager<> tm;"<<std::endl;
-            oss<<"  cache.addResourceManager(tm, \"TextureManager\");"<<std::endl;
-            oss<<"  std::ifstream ifs(appliname+\"\\textures.oc\");"<<std::endl;
-            oss<<"  if (ifs) {"<<std::endl;
-            oss<<"      ITextArchive ia(ifs);"<<std::endl;
-            oss<<"      std::vector<std::string> paths;"<<std::endl;
-            oss<<"      ia(paths);"<<std::endl;
-            oss<<"      for (unsigned int i = 0; i < paths.size(); i++) {"<<std::endl;
-            oss<<"          unsigned int lastSlash;"<<std::endl;
-            oss<<"          #if defined(ODFAEG_SYSTEM_LINUX)"<<std::endl;
-            oss<<"              lastSlash = paths[i].find_last_of(\"/\");"<<std::endl;
-            oss<<"          #else if defined (ODFAEG_SYSTEM_WINDOWS)"<<std::endl;
-            oss<<"              lastSlash = paths[i].find_last_of(\"\\\");"<<std::endl;
-            oss<<"          #endif // if"<<std::endl;
-            oss<<"          std::string ImgName = paths[i].substr(lastSlash+1);"<<std::endl;
-            oss<<"          tm.fromFileWithAlias(paths[i], ImgName);"<<std::endl;
-            oss<<"      }"<<std::endl;
-            oss<<"      ifs.close();"<<std::endl;
-            oss<<"  }"<<std::endl;
             oss<<"}"<<std::endl;
             oss<<"void "<<appliname<<"::onInit() {"<<std::endl;
-            oss<<"  TextureManager<>& tm = cache.resourceManager<Texture, std::string>(\"TextureManager\");"<<std::endl;
-            oss<<R"(std::ifstream ifs2(appliname+"\\"+"scenes.oc");
-                if (ifs2) {
-                    ITextArchive ia2(ifs2);
-                    std::vector<Map*> maps;
-                    //std::cout<<"read map"<<std::endl;
-                    ia2(maps);
-                    //std::cout<<"maps : "<<std::endl;
-                    for (unsigned int i = 0; i < maps.size(); i++) {
-                        //std::cout<<"add map "<<maps[i]->getName()<<std::endl;
-                        maps[i]->setRenderComponentManager(&getRenderComponentManager());
-                        World::addEntityManager(maps[i]);
-                        World::setCurrentEntityManager(maps[i]->getName());
-                    }
-                    ifs2.close();
-                }
-                std::vector<Entity*> entities=World::getChildrenEntities("*");
-                for (unsigned int i = 0; i < entities.size(); i++) {
-                    std::cout<<"load entities"<<std::endl;
-                    for (unsigned int f = 0; f < entities[i]->getNbFaces(); f++) {
-                        Face* face = entities[i]->getFace(f);
-                        std::string alias = face->getMaterial().getTexId();
-                        std::cout<<"alias : "<<alias<<std::endl;
-                        if (alias != "") {
-                            face->getMaterial().clearTextures();
-                            face->getMaterial().addTexture(tm.getResourceByAlias(alias), face->getMaterial().getTexRect());
-                        } else {
-                            face->getMaterial().clearTextures();
-                            face->getMaterial().addTexture(nullptr, sf::IntRect(0, 0, 0, 0));
-                        }
-                    }
-                }
-
-                std::ifstream ifs4(appliname+"\\"+"timers.oc");
-                unsigned int size;
-                if (ifs4) {
-                    ITextArchive ia4(ifs4);
-                    ia4(size);
-                    for (unsigned int i  = 0; i < size; i++) {
-                        std::string name;
-                        std::string type;
-                        ia4(name);
-                        ia4(type);
-                        std::vector<int> animsIds;
-                        ia4(animsIds);
-                        if (type == "AnimationUpdater") {
-                            AnimUpdater* au = new AnimUpdater();
-                            au->setName(name);
-                            for (unsigned int a = 0; a < animsIds.size(); a++) {
-                                Entity* entity = World::getEntity(animsIds[a]);
-                                if (entity != nullptr && dynamic_cast<Anim*>(entity)) {
-                                    au->addAnim(static_cast<Anim*>(entity));
-                                }
-                            }
-                            World::addTimer(au);
-                        }
-                    }
-                    ifs4.close();
-                }
-                std::ifstream ifs5(appliname+"\\"+"components.oc");
-                if (ifs5) {
-                    ITextArchive ia5(ifs5);
-                    ia5(size);
-                    for (unsigned int i = 0; i < size; i++) {
-                        std::string name;
-                        std::string type;
-                        ia5(name);
-                        ia5(type);
-                        if (type == "PerPixelLinkedList") {
-                            std::cout<<"load components"<<std::endl;
-                            int layer;
-                            ia5(layer);
-                            std::string expression;
-                            ia5(expression);
-                            std::cout<<"layer : "<<layer<<std::endl;
-                            PerPixelLinkedListRenderComponent* ppll = new PerPixelLinkedListRenderComponent(getRenderWindow(),layer,expression,ContextSettings(0, 0, 4, 4, 6));
-                            ppll->setName(name);
-                            getRenderComponentManager().addComponent(ppll);
-                            dpSelectComponent->addItem(name, 15);
-                        }
-                    }
-                    ifs5.close();
-                }
-                std::ifstream ifs6(appliname+"\\"+"workers.oc");
-                if (ifs6) {
-                    ITextArchive ia6(ifs6);
-                    ia6(size);
-                    for (unsigned int i = 0; i < size; i++) {
-                        std::string name;
-                        std::string type;
-                        ia6(name);
-                        ia6(type);
-                        std::vector<int> psIds;
-                        ia6(psIds);
-                        std::cout<<"name : "<<name<<"type : "<<type<<std::endl;
-                        if (type == "EntityUpdater") {
-                            //std::cout<<"load entities updater"<<std::endl;
-                            EntitiesUpdater* eu = new EntitiesUpdater();
-                            eu->setName(name);
-                            World::addWorker(eu);
-                            std::cout<<"entities updater added"<<std::endl;
-                        }
-                        if (type == "ParticleSystemUpdater") {
-                            //std::cout<<"add particle systme updater"<<std::endl;
-                            ParticleSystemUpdater* psu = new ParticleSystemUpdater();
-                            psu->setName(name);
-
-                            for (unsigned int p = 0; p < psIds.size(); p++) {
-
-                                Entity* entity = World::getEntity(psIds[p]);
-                                if (entity != nullptr && dynamic_cast<ParticleSystem*>(entity)) {
-                                    //std::cout<<"add particle system"<<std::endl;
-                                    psu->addParticleSystem(static_cast<ParticleSystem*>(entity));
-                                }
-                            }
-                            World::addWorker(psu);
-                        }
-                    }
-                    ifs6.close();
-                }
-                std::ifstream ifs7(appliname+"\\"+"emitters.oc");
-                if (ifs7) {
-                    ITextArchive ia7(ifs7);
-                    std::vector<std::string> parameters;
-                    ia7(parameters);
-                    int i = 0;
-                    while (i < parameters.size()) {
-                        std::string psName = parameters[i];
-                        //std::cout<<"i : "<<i<<std::endl<<"size : "<<parameters.size()<<std::endl<<"psname : "<<parameters[i]<<std::endl;
-                        i++;
-                        UniversalEmitter emitter;
-                        emitter.setEmissionRate(conversionStringFloat(parameters[i]));
-                        //std::cout<<"i : "<<i<<std::endl<<"size : "<<parameters.size()<<std::endl<<"psname : "<<parameters[i]<<std::endl;
-                        i++;
-                        emitter.setParticleLifetime(Distributions::uniform(sf::seconds(conversionStringFloat(parameters[i])), sf::seconds(conversionStringFloat(parameters[i+1]))));
-                        //std::cout<<"i : "<<i<<std::endl<<"size : "<<parameters.size()<<std::endl<<"psname : "<<parameters[i]<<","<<parameters[i+1]<<std::endl;
-                        i+=2;
-                        std::string type = parameters[i];
-                        //std::cout<<"i : "<<i<<std::endl<<"size : "<<parameters.size()<<std::endl<<"psname : "<<parameters[i]<<std::endl;
-                        i++;
-                        if (type == "Rect") {
-                            emitter.setParticlePosition(Distributions::rect(Vec3f(conversionStringFloat(parameters[i]), conversionStringFloat(parameters[i+1]), conversionStringFloat(parameters[i+2])),
-                                                                           Vec3f(conversionStringFloat(parameters[i+3]), conversionStringFloat(parameters[i+4]), conversionStringFloat(parameters[i+5]))));
-                            //std::cout<<"i : "<<i<<std::endl<<"size : "<<parameters.size()<<std::endl<<"psname : "<<parameters[i]<<","<<parameters[i+1]<<","<<parameters[i+2]<<","<<parameters[i+2]<<","<<parameters[i+3]<<","<<parameters[i+4]<<","<<parameters[i+5]<<std::endl;
-                            i += 6;
-                        } else {
-                            emitter.setParticlePosition(Distributions::circle(Vec3f(conversionStringFloat(parameters[i]), conversionStringFloat(parameters[i+1]), conversionStringFloat(parameters[i+2])),
-                                                                             conversionStringFloat(parameters[i+3])));
-                            //std::cout<<"i : "<<i<<std::endl<<"size : "<<parameters.size()<<std::endl<<"psname : "<<parameters[i]<<","<<parameters[i+1]<<","<<parameters[i+2]<<","<<parameters[i+2]<<std::endl;
-                            i += 4;
-                        }
-                        emitter.setParticleVelocity(Distributions::deflect(Vec3f(conversionStringFloat(parameters[i]), conversionStringFloat(parameters[i+1]), conversionStringFloat(parameters[i+2])), conversionStringFloat(parameters[i+3])));
-                        //std::cout<<"i : "<<i<<std::endl<<"size : "<<parameters.size()<<std::endl<<"psname : "<<parameters[i]<<","<<parameters[i+1]<<","<<parameters[i+2]<<","<<parameters[i+3]<<std::endl;
-                        i += 4;
-                        emitter.setParticleRotation(Distributions::uniform(conversionStringFloat(parameters[i]), conversionStringFloat(parameters[i+1])));
-                        //std::cout<<"i : "<<i<<std::endl<<"size : "<<parameters.size()<<std::endl<<"psname : "<<parameters[i]<<","<<parameters[i+1]<<std::endl;
-                        i += 2;
-                        emitter.setParticleTextureIndex(Distributions::uniformui(conversionStringInt(parameters[i]),conversionStringInt(parameters[i+1])));
-                        //std::cout<<"i : "<<i<<std::endl<<"size : "<<parameters.size()<<std::endl<<"psname : "<<parameters[i]<<","<<parameters[i+1]<<std::endl;
-                        i += 2;
-                        emitter.setParticleScale(Distributions::rect(Vec3f(conversionStringFloat(parameters[i]), conversionStringFloat(parameters[i+1]), conversionStringFloat(parameters[i+2])),
-                                                                           Vec3f(conversionStringFloat(parameters[i+3]), conversionStringFloat(parameters[i+4]), conversionStringFloat(parameters[i+5]))));
-                        //std::cout<<"i : "<<i<<std::endl<<"size : "<<parameters.size()<<std::endl<<"psname : "<<parameters[i]<<","<<parameters[i+1]<<","<<parameters[i+2]<<","<<parameters[i+2]<<","<<parameters[i+3]<<","<<parameters[i+4]<<","<<parameters[i+5]<<std::endl;
-                        i += 6;
-                        std::vector<std::string> color1 = split(parameters[i], ";");
-                        std::vector<std::string> color2 = split(parameters[i+1], ";");
-                        Vec3f c1(conversionStringInt(color1[0]), conversionStringInt(color1[1]), conversionStringInt(color1[2]), conversionStringInt(color1[3]));
-                        //std::cout<<"i : "<<i<<std::endl<<"size : "<<parameters.size()<<std::endl<<"psname : "<<parameters[i]<<","<<parameters[i+1]<<","<<parameters[i+2]<<","<<parameters[i+3]<<std::endl;
-
-                        Vec3f c2(conversionStringInt(color2[0]), conversionStringInt(color2[1]), conversionStringInt(color2[2]), conversionStringInt(color2[3]));
-                        emitter.setParticleColor(Distributions::color(c1, c2));
-                        //std::cout<<"i : "<<i<<std::endl<<"size : "<<parameters.size()<<std::endl<<"psname : "<<parameters[i]<<","<<parameters[i+1]<<","<<parameters[i+2]<<","<<parameters[i+3]<<std::endl;
-                        i += 2;
-                        Entity* ps = World::getEntity(psName);
-                        if (dynamic_cast<ParticleSystem*>(ps)) {
-                            //std::cout<<"add emitter"<<std::endl;
-                            static_cast<ParticleSystem*>(ps)->addEmitter(emitter);
-                        }
-                    }
-                })";
             oss<<"}"<<std::endl;
             oss<<"void "<<appliname<<"::onRender(RenderComponentManager *cm) {"<<std::endl;
             oss<<"}"<<std::endl;
             oss<<"void "<<appliname<<"::onDisplay(RenderWindow* window) {"<<std::endl;
-            oss<<"   if (&getRenderWindow() == window) {"<<std::endl;
-            oss<<"       for (unsigned int i = 0; i < drawables.size(); i++) {"<<std::endl;
-            oss<<"           window->draw(*drawable[i]);"<<std::endl;
-            oss<<"       }"<<std::endl;
-            oss<<"   }"<<std::endl;
             oss<<"}"<<std::endl;
             oss<<"void "<<appliname<<"::onUpdate (RenderWindow* window, IEvent& event) {"<<std::endl;
             oss<<" if (&getRenderWindow() == window && event.type == IEvent::WINDOW_EVENT && event.window.type == IEvent::WINDOW_EVENT_CLOSED) {"<<std::endl;
@@ -2486,6 +2517,16 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         theMap->setBaseChangementMatrix(bcm);
         getWorld()->addSceneManager(theMap);
         getWorld()->setCurrentSceneManager(taMapName->getText());
+        FontManager<Fonts>& fm = cache.resourceManager<Font, Fonts>("FontManager");
+        Label* lab = new Label(getRenderWindow(),Vec3f(0,0,0),Vec3f(200, 17, 0),fm.getResourceByAlias(Fonts::Serif),taMapName->getText(), 15);
+        Node* node = new Node(taMapName->getText(),lab,Vec2f(0, 0),Vec2f(1.f, 0.025f),rootScenesNode.get());
+        lab->setParent(pProjects);
+        lab->setForegroundColor(sf::Color::Blue);
+        lab->setBackgroundColor(sf::Color::White);
+        pProjects->addChild(lab);
+        Action a(Action::EVENT_TYPE::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
+        Command cmd(a, FastDelegate<bool>(&Label::isMouseInside, lab), FastDelegate<void>(&ODFAEGCreator::showScene, this, lab));
+        lab->getListener().connect("SHOWPFILES", cmd);
         cshapes.clear();
         for (int i = 0; i < getRenderWindow().getSize().x; i+=100) {
             for (int j = 0; j < getRenderWindow().getSize().y; j+=50) {
@@ -2514,7 +2555,6 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         wNewComponent->setVisible(false);
         getRenderComponentManager().setEventContextActivated(false, *wNewComponent);
         tScriptEdit->setEventContextActivated(true);
-        std::cout<<"Create component"<<std::endl;
         if (dpComponentType->getSelectedItem() == "LinkedList") {
             PerPixelLinkedListRenderComponent* ppll = new PerPixelLinkedListRenderComponent(getRenderWindow(),conversionStringInt(taComponentLayer->getText()),taComponentExpression->getText(),ContextSettings(0, 0, 4, 4, 6));
             getRenderComponentManager().addComponent(ppll);
@@ -2617,7 +2657,6 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         emitterParams.push_back(taColor2->getText());
         Entity* ps = getWorld()->getEntity(psName);
         if (dynamic_cast<ParticleSystem*>(ps)) {
-            std::cout<<"add emitter"<<std::endl;
             static_cast<ParticleSystem*>(ps)->addEmitter(emitter);
         }
         wNewEmitter->setVisible(false);
@@ -2625,7 +2664,6 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         tScriptEdit->setEventContextActivated(true);
     }
     if (button == bCreateParticleSystemUpdater) {
-        std::cout<<"add particle system"<<std::endl;
         std::string name = taParticleSystemUpdaterName->getText();
         ParticleSystemUpdater* psu = new ParticleSystemUpdater();
         psu->setName(name);
@@ -2638,7 +2676,6 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         }
     }
     if (button == bAddTexRect) {
-        std::cout<<"add text rect"<<std::endl;
         sf::IntRect rect;
         rect.left = conversionStringInt(tTexCoordX->getText());
         rect.top = conversionStringInt(tTexCoordY->getText());
@@ -2652,9 +2689,11 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         std::vector<std::string> parts = split(dpSelectClass->getSelectedItem(), "::");
         Class cl = Class::getClass(parts[parts.size()-1]);
         std::string headerFile = cl.getFilePath();
+        /*std::cout<<"header file : "<<headerFile<<std::endl;
+        system("PAUSE");*/
         convertSlash(headerFile);
         //std::cout<<"header file : "<<headerFile<<std::endl;
-        std::ifstream ifs("sourceCode.cpp");
+        std::ifstream ifs(appliname+"\\sourceCode.cpp");
         std::string sourceCode="";
         if (pluginSourceCode != "") {
             //fileExist = true;
@@ -2670,42 +2709,39 @@ void ODFAEGCreator::actionPerformed(Button* button) {
             sourceCode += "#include <string>\n";
             sourceCode += "#include \"odfaeg/Core/archive.h\"\n";
             sourceCode += "#include \"odfaeg/Core/class.hpp\"\n";
-            sourceCode += "#include \"../../Windows/Demos/ODFAEGCREATOR/application.hpp\"\n";
+            sourceCode += "#include \"../../../ODFAEG-master/ODFAEG-master/Demos/ODFAEGCREATOR/application.hpp\"\n";
             sourceCode += "extern \"C\" {\n";
             sourceCode += "    void createObject(ODFAEGCreator* c, bool save);\n";
             sourceCode += "    void readObjects (ODFAEGCreator* c);\n";
             sourceCode += "}\n";
             sourceCode += "void createObject(ODFAEGCreator *c, bool save) {\n";
             sourceCode += "    EXPORT_CLASS_GUID(BoundingVolumeBoundingBox, odfaeg::physic::BoundingVolume, odfaeg::physic::BoundingBox)\n";
-            sourceCode += "    EXPORT_CLASS_GUID_(EntityTile, odfaeg::graphic::Entity, odfaeg::graphic::Tile, VA_LIST(EntityFactory&),VA_LIST(std::ref(c->getEntityFactory())))\n";
-            sourceCode += "    EXPORT_CLASS_GUID_(EntityBigTile, odfaeg::graphic::Entity, odfaeg::graphic::BigTile, VA_LIST(EntityFactory&),VA_LIST(std::ref(c->getEntityFactory())))\n";
-            sourceCode += "    EXPORT_CLASS_GUID_(EntityWall, odfaeg::graphic::Entity, odfaeg::graphic::g2d::Wall, VA_LIST(EntityFactory&),VA_LIST(std::ref(c->getEntityFactory())))\n";
-            sourceCode += "    EXPORT_CLASS_GUID_(EntityDecor, odfaeg::graphic::Entity, odfaeg::graphic::g2d::Decor, VA_LIST(EntityFactory&),VA_LIST(std::ref(c->getEntityFactory())))\n";
-            sourceCode += "    EXPORT_CLASS_GUID_(EntityAnimation, odfaeg::graphic::Entity, odfaeg::graphic::Anim, VA_LIST(EntityFactory&),VA_LIST(std::ref(c->getEntityFactory())))\n";
-            sourceCode += "    EXPORT_CLASS_GUID_(EntityMesh, odfaeg::graphic::Entity, odfaeg::graphic::Mesh, VA_LIST(EntityFactory&),VA_LIST(std::ref(c->getEntityFactory())))\n";
-            sourceCode += "    EXPORT_CLASS_GUID_(EntityParticleSystem, odfaeg::graphic::Entity, odfaeg::physic::ParticleSystem, VA_LIST(EntityFactory&),VA_LIST(std::ref(c->getEntityFactory())))\n";
+            sourceCode += "    EXPORT_CLASS_GUID_(EntityTile, odfaeg::graphic::Entity, odfaeg::graphic::Tile, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
+            sourceCode += "    EXPORT_CLASS_GUID_(EntityBigTile, odfaeg::graphic::Entity, odfaeg::graphic::BigTile, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
+            sourceCode += "    EXPORT_CLASS_GUID_(EntityWall, odfaeg::graphic::Entity, odfaeg::graphic::g2d::Wall, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
+            sourceCode += "    EXPORT_CLASS_GUID_(EntityDecor, odfaeg::graphic::Entity, odfaeg::graphic::g2d::Decor, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
+            sourceCode += "    EXPORT_CLASS_GUID_(EntityAnimation, odfaeg::graphic::Entity, odfaeg::graphic::Anim, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
+            sourceCode += "    EXPORT_CLASS_GUID_(EntityMesh, odfaeg::graphic::Entity, odfaeg::graphic::Mesh, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
+            sourceCode += "    EXPORT_CLASS_GUID_(EntityParticleSystem, odfaeg::graphic::Entity, odfaeg::physic::ParticleSystem, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
             sourceCode += "    odfaeg::core::Application::app = c;\n";
             sourceCode += "}\n";
             sourceCode += "void readObjects (ODFAEGCreator *c) {\n";
             sourceCode += "    EXPORT_CLASS_GUID(BoundingVolumeBoundingBox, odfaeg::physic::BoundingVolume, odfaeg::physic::BoundingBox)\n";
-            sourceCode += "    EXPORT_CLASS_GUID_(EntityTile, odfaeg::graphic::Entity, odfaeg::graphic::Tile, VA_LIST(EntityFactory&),VA_LIST(std::ref(c->getEntityFactory())))\n";
-            sourceCode += "    EXPORT_CLASS_GUID_(EntityBigTile, odfaeg::graphic::Entity, odfaeg::graphic::BigTile, VA_LIST(EntityFactory&),VA_LIST(std::ref(c->getEntityFactory())))\n";
-            sourceCode += "    EXPORT_CLASS_GUID_(EntityWall, odfaeg::graphic::Entity, odfaeg::graphic::g2d::Wall, VA_LIST(EntityFactory&),VA_LIST(std::ref(c->getEntityFactory())))\n";
-            sourceCode += "    EXPORT_CLASS_GUID_(EntityDecor, odfaeg::graphic::Entity, odfaeg::graphic::g2d::Decor, VA_LIST(EntityFactory&),VA_LIST(std::ref(c->getEntityFactory())))\n";
-            sourceCode += "    EXPORT_CLASS_GUID_(EntityAnimation, odfaeg::graphic::Entity, odfaeg::graphic::Anim, VA_LIST(EntityFactory&),VA_LIST(std::ref(c->getEntityFactory())))\n";
-            sourceCode += "    EXPORT_CLASS_GUID_(EntityMesh, odfaeg::graphic::Entity, odfaeg::graphic::Mesh, VA_LIST(EntityFactory&),VA_LIST(std::ref(c->getEntityFactory())))\n";
-            sourceCode += "    EXPORT_CLASS_GUID_(EntityParticleSystem, odfaeg::graphic::Entity, odfaeg::physic::ParticleSystem, VA_LIST(EntityFactory&),VA_LIST(std::ref(c->getEntityFactory())))\n";
+            sourceCode += "    EXPORT_CLASS_GUID_(EntityTile, odfaeg::graphic::Entity, odfaeg::graphic::Tile, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
+            sourceCode += "    EXPORT_CLASS_GUID_(EntityBigTile, odfaeg::graphic::Entity, odfaeg::graphic::BigTile, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
+            sourceCode += "    EXPORT_CLASS_GUID_(EntityWall, odfaeg::graphic::Entity, odfaeg::graphic::g2d::Wall, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
+            sourceCode += "    EXPORT_CLASS_GUID_(EntityDecor, odfaeg::graphic::Entity, odfaeg::graphic::g2d::Decor, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
+            sourceCode += "    EXPORT_CLASS_GUID_(EntityAnimation, odfaeg::graphic::Entity, odfaeg::graphic::Anim, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
+            sourceCode += "    EXPORT_CLASS_GUID_(EntityMesh, odfaeg::graphic::Entity, odfaeg::graphic::Mesh, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
+            sourceCode += "    EXPORT_CLASS_GUID_(EntityParticleSystem, odfaeg::graphic::Entity, odfaeg::physic::ParticleSystem, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
             sourceCode += "    odfaeg::core::Application::app = c;\n";
             sourceCode += "}\n";
         }
-
         std::vector<odfaeg::core::Class> superClasses = cl.getSuperClasses();
         bool found = false;
         while (superClasses.size() > 0 && !found) {
             for (unsigned int i = 0; i < superClasses.size() && !found; i++) {
-                std::cout<<"super class name : "<<superClasses[i].getName()<<std::endl;
                 if (superClasses[i].getName() == "Entity") {
-                    std::cout<<"found entity!"<<std::endl;
                     found = true;
                 }
                 std::vector<odfaeg::core::Class> tmpSuperClasses = superClasses[i].getSuperClasses();
@@ -2717,11 +2753,13 @@ void ODFAEGCreator::actionPerformed(Button* button) {
                  }
             }
         }
+        std::string toInsert = "";
+        int pos;
+        std::string toFind;
         //std::cout<<"source file : "<<sourceFile<<std::endl;
         if (sourceCode.find("#include \""+headerFile+"\"") == std::string::npos) {
             sourceCode.insert(0, "#include \""+headerFile+"\"\n");
-            std::string toInsert = "";
-            int pos;
+
             if (sourceCode.find("}") != std::string::npos) {
                 pos = sourceCode.find("}")+2;
                 if (dpSelectPointerType->getSelectedItem() == "No pointer") {
@@ -2734,74 +2772,93 @@ void ODFAEGCreator::actionPerformed(Button* button) {
                     toInsert = "std::vector<"+dpSelectPointerType->getSelectedItem()+"*> v"+cl.getName()+";\n";
                 }
                 sourceCode.insert(pos, toInsert);
-                toInsert = "";
-                std::string toFind = "void createObject(ODFAEGCreator *c, bool save) {\n";
-                toFind += "    EXPORT_CLASS_GUID(BoundingVolumeBoundingBox, odfaeg::physic::BoundingVolume, odfaeg::physic::BoundingBox)\n";
-                toFind += "    EXPORT_CLASS_GUID_(EntityTile, odfaeg::graphic::Entity, odfaeg::graphic::Tile, VA_LIST(EntityFactory&), VA_LIST(c->getEntityFactory()))\n";
-                toFind += "    EXPORT_CLASS_GUID_(EntityBigTile, odfaeg::graphic::Entity, odfaeg::graphic::BigTile, VA_LIST(EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
-                toFind += "    EXPORT_CLASS_GUID_(EntityWall, odfaeg::graphic::Entity, odfaeg::graphic::g2d::Wall, VA_LIST(EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
-                toFind += "    EXPORT_CLASS_GUID_(EntityDecor, odfaeg::graphic::Entity, odfaeg::graphic::g2d::Decor, VA_LIST(EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
-                toFind += "    EXPORT_CLASS_GUID_(EntityAnimation, odfaeg::graphic::Entity, odfaeg::graphic::Anim, VA_LIST(EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
-                toFind += "    EXPORT_CLASS_GUID_(EntityMesh, odfaeg::graphic::Entity, odfaeg::graphic::Mesh, VA_LIST(EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
-                toFind += "    EXPORT_CLASS_GUID_(EntityParticleSystem, odfaeg::graphic::Entity, odfaeg::physic::ParticleSystem, VA_LIST(EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
-                toFind += "    odfaeg::core::Application::app = c;\n";
-                pos = sourceCode.find(toFind)+toFind.size();
-                if (dpSelectPointerType->getSelectedItem() != "No pointer" && dpSelectPointerType->getSelectedItem() != dpSelectClass->getSelectedItem()) {
-                    std::vector<std::string> parts = split(dpSelectPointerType->getSelectedItem(), "::");
-                    std::string name = parts[parts.size()-1];
-                    toInsert += "   EXPORT_CLASS_GUID_("+name+cl.getName()+","+dpSelectPointerType->getSelectedItem()+","+dpSelectClass->getSelectedItem()+"VA_LIST(EntityFactory&), VA_LIST(c->getEntityFactory()))\n";
-                }
-                if (found) {
-                    toInsert += "   std::map<std::string, std::vector<odfaeg::graphic::Entity*>>::iterator it"+cl.getName()+" = c->getExternals().find(\""+cl.getName()+"\");\n";
-                    toInsert += "   if (it"+cl.getName()+" == c->getExternals().end()) {\n";
-                    toInsert += "       c->getExternals().insert(std::make_pair(\""+cl.getName()+"\","+"v"+cl.getName()+"));\n";
-                    toInsert += "       it"+cl.getName()+" = c->getExternals().find(\""+cl.getName()+"\");\n";
-                    toInsert += "   }\n";
-                }
-                toInsert += "   if(save) {\n";
-                toInsert += "       std::ofstream of"+cl.getName()+" (\""+cl.getName()+".oc\");\n";
-                toInsert += "       odfaeg::core::OTextArchive oa"+cl.getName()+" (of"+cl.getName()+");\n";
-                if (found) {
-                    toInsert += "       oa"+cl.getName()+"(it"+cl.getName()+"->second);\n";
-                } else {
-                    toInsert += "       oa"+cl.getName()+"(v"+cl.getName()+");\n";
-                }
-                toInsert += "   }\n";
-                sourceCode.insert(pos, toInsert);
-                toInsert = "";
-                toFind = "void readObjects (ODFAEGCreator *c) {\n";
-                toFind += "    EXPORT_CLASS_GUID(BoundingVolumeBoundingBox, odfaeg::physic::BoundingVolume, odfaeg::physic::BoundingBox)\n";
-                toFind += "    EXPORT_CLASS_GUID_(EntityTile, odfaeg::graphic::Entity, odfaeg::graphic::Tile, VA_LIST(EntityFactory&), VA_LIST(c->getEntityFactory()))\n";
-                toFind += "    EXPORT_CLASS_GUID_(EntityBigTile, odfaeg::graphic::Entity, odfaeg::graphic::BigTile, VA_LIST(EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
-                toFind += "    EXPORT_CLASS_GUID_(EntityWall, odfaeg::graphic::Entity, odfaeg::graphic::g2d::Wall, VA_LIST(EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
-                toFind += "    EXPORT_CLASS_GUID_(EntityDecor, odfaeg::graphic::Entity, odfaeg::graphic::g2d::Decor, VA_LIST(EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
-                toFind += "    EXPORT_CLASS_GUID_(EntityAnimation, odfaeg::graphic::Entity, odfaeg::graphic::Anim, VA_LIST(EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
-                toFind += "    EXPORT_CLASS_GUID_(EntityMesh, odfaeg::graphic::Entity, odfaeg::graphic::Mesh, VA_LIST(EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
-                toFind += "    EXPORT_CLASS_GUID_(EntityParticleSystem, odfaeg::graphic::Entity, odfaeg::physic::ParticleSystem, VA_LIST(EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
-                toFind += "    odfaeg::core::Application::app = c;\n";
-                pos = sourceCode.find(toFind)+toFind.size();
-                if (dpSelectPointerType->getSelectedItem() != "No pointer" && dpSelectPointerType->getSelectedItem() != dpSelectClass->getSelectedItem()) {
-                    std::vector<std::string> parts = split(dpSelectPointerType->getSelectedItem(), "::");
-                    std::string name = parts[parts.size()-1];
-                    toInsert += "   EXPORT_CLASS_GUID_("+name+cl.getName()+","+dpSelectPointerType->getSelectedItem()+","+dpSelectClass->getSelectedItem()+"VA_LIST(EntityFactory), VA_LIST(std::ref(c->getEntityFactory())))\n";
-                }
-                toInsert += "   std::ifstream if"+cl.getName()+" (\""+cl.getName()+".oc\");\n";
-                toInsert += "   odfaeg::core::ITextArchive ia"+cl.getName()+" (if"+cl.getName()+");\n";
-                toInsert += "   ia"+cl.getName()+"(v"+cl.getName()+");\n";
-                if (found) {
-                    //toInsert += "   c->getExternals().insert(std::make_pair(\""+cl.getName()+"\",v"+cl.getName()+"));\n";
-                    toInsert += "   for (unsigned int i = 0; i < v"+cl.getName()+".size(); i++)\n";
-                    toInsert += "       c->addExternalEntity(v"+cl.getName()+"[i],\""+cl.getName()+"\");\n";
-                    //toInsert += "   c->updateNb(\""+cl.getName()+"\",v"+cl.getName()+".size());\n";
-                }
-                sourceCode.insert(pos, toInsert);
             }
-        }
+            toInsert = "";
+            toFind = "void createObject(ODFAEGCreator *c, bool save) {\n";
+            toFind += "    EXPORT_CLASS_GUID(BoundingVolumeBoundingBox, odfaeg::physic::BoundingVolume, odfaeg::physic::BoundingBox)\n";
+            toFind += "    EXPORT_CLASS_GUID_(EntityTile, odfaeg::graphic::Entity, odfaeg::graphic::Tile, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
+            toFind += "    EXPORT_CLASS_GUID_(EntityBigTile, odfaeg::graphic::Entity, odfaeg::graphic::BigTile, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
+            toFind += "    EXPORT_CLASS_GUID_(EntityWall, odfaeg::graphic::Entity, odfaeg::graphic::g2d::Wall, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
+            toFind += "    EXPORT_CLASS_GUID_(EntityDecor, odfaeg::graphic::Entity, odfaeg::graphic::g2d::Decor, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
+            toFind += "    EXPORT_CLASS_GUID_(EntityAnimation, odfaeg::graphic::Entity, odfaeg::graphic::Anim, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
+            toFind += "    EXPORT_CLASS_GUID_(EntityMesh, odfaeg::graphic::Entity, odfaeg::graphic::Mesh, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
+            toFind += "    EXPORT_CLASS_GUID_(EntityParticleSystem, odfaeg::graphic::Entity, odfaeg::physic::ParticleSystem, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
+            toFind += "    odfaeg::core::Application::app = c;\n";
+            pos = sourceCode.find(toFind)+toFind.size();
+            if (dpSelectPointerType->getSelectedItem() != "No pointer" && dpSelectPointerType->getSelectedItem() != dpSelectClass->getSelectedItem()) {
+                std::vector<std::string> parts = split(dpSelectPointerType->getSelectedItem(), "::");
+                std::string name = parts[parts.size()-1];
+                toInsert += "   EXPORT_CLASS_GUID_("+name+cl.getName()+","+dpSelectPointerType->getSelectedItem()+","+dpSelectClass->getSelectedItem()+", VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(c->getEntityFactory()))\n";
+                if (found) {
+                    toInsert += "       std::map<std::string, std::vector<odfaeg::graphic::Entity*>>::iterator it"+cl.getName()+" = c->getExternals().find(\""+cl.getName()+"\");\n";
+                } else {
+                    toInsert += "   v"+cl.getName()+".clear();\n";
+                }
+            } else {
+                toInsert += "   v"+cl.getName()+".clear();\n";
 
+            }
+            toInsert += "   if(save) {\n";
+            toInsert += "       std::ofstream of"+cl.getName()+" (\""+cl.getName()+".oc\");\n";
+            toInsert += "       odfaeg::core::OTextArchive oa"+cl.getName()+" (of"+cl.getName()+");\n";
+            if (found) {
+                toInsert += "       oa"+cl.getName()+"(it"+cl.getName()+"->second);\n";
+            } else {
+                toInsert += "       oa"+cl.getName()+"(v"+cl.getName()+");\n";
+            }
+            toInsert += "   }\n";
+            sourceCode.insert(pos, toInsert);
+            toInsert = "";
+            toFind = "void readObjects (ODFAEGCreator *c) {\n";
+            toFind += "    EXPORT_CLASS_GUID(BoundingVolumeBoundingBox, odfaeg::physic::BoundingVolume, odfaeg::physic::BoundingBox)\n";
+            toFind += "    EXPORT_CLASS_GUID_(EntityTile, odfaeg::graphic::Entity, odfaeg::graphic::Tile, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
+            toFind += "    EXPORT_CLASS_GUID_(EntityBigTile, odfaeg::graphic::Entity, odfaeg::graphic::BigTile, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
+            toFind += "    EXPORT_CLASS_GUID_(EntityWall, odfaeg::graphic::Entity, odfaeg::graphic::g2d::Wall, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
+            toFind += "    EXPORT_CLASS_GUID_(EntityDecor, odfaeg::graphic::Entity, odfaeg::graphic::g2d::Decor, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
+            toFind += "    EXPORT_CLASS_GUID_(EntityAnimation, odfaeg::graphic::Entity, odfaeg::graphic::Anim, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
+            toFind += "    EXPORT_CLASS_GUID_(EntityMesh, odfaeg::graphic::Entity, odfaeg::graphic::Mesh, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
+            toFind += "    EXPORT_CLASS_GUID_(EntityParticleSystem, odfaeg::graphic::Entity, odfaeg::physic::ParticleSystem, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
+            toFind += "    odfaeg::core::Application::app = c;\n";
+            pos = sourceCode.find(toFind)+toFind.size();
+            if (dpSelectPointerType->getSelectedItem() != "No pointer" && dpSelectPointerType->getSelectedItem() != dpSelectClass->getSelectedItem()) {
+                std::vector<std::string> parts = split(dpSelectPointerType->getSelectedItem(), "::");
+                std::string name = parts[parts.size()-1];
+                toInsert += "   EXPORT_CLASS_GUID_("+name+cl.getName()+","+dpSelectPointerType->getSelectedItem()+","+dpSelectClass->getSelectedItem()+", VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
+            }
+            toInsert += "   std::ifstream if"+cl.getName()+" (\""+cl.getName()+".oc\");\n";
+            toInsert += "   odfaeg::core::ITextArchive ia"+cl.getName()+" (if"+cl.getName()+");\n";
+            toInsert += "   ia"+cl.getName()+"(v"+cl.getName()+");\n";
+            if (found) {
+                //toInsert += "   c->getExternals().insert(std::make_pair(\""+cl.getName()+"\",v"+cl.getName()+"));\n";
+                toInsert += "   for (unsigned int i = 0; i < v"+cl.getName()+".size(); i++)\n";
+                toInsert += "       c->addExternalEntity(v"+cl.getName()+"[i],\""+cl.getName()+"\");\n";
+                //toInsert += "   c->updateNb(\""+cl.getName()+"\",v"+cl.getName()+".size());\n";
+            }
+            sourceCode.insert(pos, toInsert);
+        }
+        toFind = "void createObject(ODFAEGCreator *c, bool save) {\n";
+        toFind += "    EXPORT_CLASS_GUID(BoundingVolumeBoundingBox, odfaeg::physic::BoundingVolume, odfaeg::physic::BoundingBox)\n";
+        toFind += "    EXPORT_CLASS_GUID_(EntityTile, odfaeg::graphic::Entity, odfaeg::graphic::Tile, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
+        toFind += "    EXPORT_CLASS_GUID_(EntityBigTile, odfaeg::graphic::Entity, odfaeg::graphic::BigTile, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
+        toFind += "    EXPORT_CLASS_GUID_(EntityWall, odfaeg::graphic::Entity, odfaeg::graphic::g2d::Wall, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
+        toFind += "    EXPORT_CLASS_GUID_(EntityDecor, odfaeg::graphic::Entity, odfaeg::graphic::g2d::Decor, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
+        toFind += "    EXPORT_CLASS_GUID_(EntityAnimation, odfaeg::graphic::Entity, odfaeg::graphic::Anim, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
+        toFind += "    EXPORT_CLASS_GUID_(EntityMesh, odfaeg::graphic::Entity, odfaeg::graphic::Mesh, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
+        toFind += "    EXPORT_CLASS_GUID_(EntityParticleSystem, odfaeg::graphic::Entity, odfaeg::physic::ParticleSystem, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
+        toFind += "    odfaeg::core::Application::app = c;\n";
+        pos = sourceCode.find(toFind)+toFind.size();
+        /*if (found) {
+            toInsert = "   std::map<std::string, std::vector<odfaeg::graphic::Entity*>>::iterator it"+cl.getName()+" = c->getExternals().find(\""+cl.getName()+"\");\n";
+            toInsert += "   if (it"+cl.getName()+" == c->getExternals().end()) {\n";
+            toInsert += "       c->getExternals().insert(std::make_pair(\""+cl.getName()+"\","+"v"+cl.getName()+"));\n";
+            toInsert += "       it"+cl.getName()+" = c->getExternals().find(\""+cl.getName()+"\");\n";
+            toInsert += "   }\n";
+            sourceCode.insert(pos, toInsert);
+        }*/
         std::vector<std::string> argValues;
         unsigned int j = 0;
         for (unsigned int i = 0; i < argsTps.size(); i++) {
-            if (argsTps[i] == "BoundingPolyhedron") {
+            if (argsTps[i] == "odfaeg::physic::BoundingPolyhedron") {
                 argValues.push_back("c->getTmpBps()["+conversionIntString(currentBp)+"];\n");
                 currentBp++;
             } else {
@@ -2831,18 +2888,8 @@ void ODFAEGCreator::actionPerformed(Button* button) {
                     it = nbs.find(cl.getName());
                 }
                 toInsert += "   if(it"+cl.getName()+"->second.size() == "+conversionIntString(nb)+") {\n";*/
-                if (dpSelectPointerType->getSelectedItem() == "No pointer") {
-                    if (cl.getNamespace() != "") {
-                        toInsert += "   "+cl.getNamespace()+"::"+cl.getName()+" "+taObjectName->getText()+" = "+cl.getNamespace()+"::"+cl.getName()+" ("+args+");\n";
-                    } else {
-                        toInsert += "   "+cl.getName()+" "+taObjectName->getText()+" ("+args+");\n";
-                    }
-                    toInsert += "   "+taObjectName->getText()+".setExternalObjectName(\""+taObjectName->getText()+"\");\n";
-                } else {
-                    toInsert += "   "+dpSelectPointerType->getSelectedItem()+" *"+taObjectName->getText()+" = c->getEntityFactory().make_entity<"+dpSelectClass->getSelectedItem()+"> ("+args+");\n";
-                    toInsert += "   "+taObjectName->getText()+"->setExternalObjectName(\""+taObjectName->getText()+"\");\n";
-                }
-
+                toInsert += "   "+dpSelectPointerType->getSelectedItem()+" *"+taObjectName->getText()+" = c->getEntityFactory().make_entity<"+dpSelectClass->getSelectedItem()+"> ("+args+");\n";
+                toInsert += "   "+taObjectName->getText()+"->setExternalObjectName(\""+taObjectName->getText()+"\");\n";
                 //toInsert += "       it"+cl.getName()+"->second.push_back("+taObjectName->getText()+");\n";
                 toInsert += "   c->addExternalEntity("+taObjectName->getText()+",\""+cl.getName()+"\");\n";
                 /*toInsert += "   }\n";
@@ -2862,18 +2909,18 @@ void ODFAEGCreator::actionPerformed(Button* button) {
             sourceCode.insert(pos, toInsert);
         }
         //std::cout<<"source code : "<<sourceCode<<std::endl;
-        std::ofstream file("sourceCode.cpp");
+        std::ofstream file(appliname+"\\sourceCode.cpp");
         file<<sourceCode;
         file.close();
 
-        rtc.addSourceFile("sourceCode");
+        rtc.addSourceFile(appliname+"\\sourceCode");
         rtc.compile();
         std::string errors = rtc.getCompileErrors();
         //std::cout<<"errors : "<<rtc.getCompileErrors();
         rtc.run<void>("createObject", this, false);
         wCreateNewObject->setVisible(false);
         getRenderComponentManager().setEventContextActivated(false, *wCreateNewObject);
-        tScriptEdit->setEventContextActivated(true);
+        setEventContextActivated(true);
     }
     if (button == bModifyObject) {
         std::vector<std::string> parts = split(dpSelectMClass->getSelectedItem(), "::");
@@ -2882,9 +2929,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         bool found = false;
         while (superClasses.size() > 0 && !found) {
             for (unsigned int i = 0; i < superClasses.size() && !found; i++) {
-                std::cout<<"super class name : "<<superClasses[i].getName()<<std::endl;
                 if (superClasses[i].getName() == "Entity") {
-                    std::cout<<"found entity!"<<std::endl;
                     found = true;
                 }
                 std::vector<odfaeg::core::Class> tmpSuperClasses = superClasses[i].getSuperClasses();
@@ -2912,7 +2957,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
             ifs.close();
         }
         if(sourceCode.find("if(save) {\n") != std::string::npos) {
-            int pos = sourceCode.find("if(save) {\n")-3;
+            int pos = sourceCode.find("if(save) {\n")-1;
             std::string args;
             for (unsigned int j = 0; j < argValues.size(); j++) {
                 args += argValues[j];
@@ -2922,12 +2967,20 @@ void ODFAEGCreator::actionPerformed(Button* button) {
             }
             if (found) {
                 std::vector<std::string> parts2 = split(dpSelectMFunction->getSelectedItem(), " ");
-                toInsert += "   for(unsigned int i = 0; i < it"+cl.getName()+"->second.size(); i++) {\n";
-                toInsert += "       if(it"+cl.getName()+"->second[i]->getExternalObjectName() == \""+taMObjectName->getText()+"\") {\n";
-                toInsert += "           it"+cl.getName()+"->second[i]->"+parts2[1]+"("+args+");\n";
+                std::string name;
+                if (cl.getNamespace() != "") {
+                    name = cl.getNamespace()+"::"+cl.getName();
+                } else {
+                    name = cl.getName();
+                }
+                toInsert += "   if(c->getCurrentId() == "+conversionIntString(currentId)+") {\n";
+                toInsert += "       for(unsigned int i = 0; i < it"+cl.getName()+"->second.size(); i++) {\n";
+                toInsert += "           if(it"+cl.getName()+"->second[i]->getExternalObjectName() == \""+taMObjectName->getText()+"\") {\n";
+                toInsert += "               static_cast<"+name+"*>(it"+cl.getName()+"->second[i])->"+parts2[1]+"("+args+");\n";
+                toInsert += "           }\n";
                 toInsert += "       }\n";
                 toInsert += "   }\n";
-                currentId++;
+
             } else {
                 std::vector<std::string> parts2 = split(dpSelectMFunction->getSelectedItem(), " ");
                 if (cbIsPointer->isChecked()) {
@@ -2938,14 +2991,15 @@ void ODFAEGCreator::actionPerformed(Button* button) {
                 sourceCode.insert(pos, toInsert);
             }
         }
-        std::ofstream file("sourceCode.cpp");
+        std::ofstream file(appliname+"\\sourceCode.cpp");
         file<<sourceCode;
         file.close();
-        rtc.addSourceFile("sourceCode");
+        rtc.addSourceFile(appliname+"\\sourceCode");
         rtc.compile();
         std::string errors = rtc.getCompileErrors();
         //std::cout<<"errors : "<<rtc.getCompileErrors();
         rtc.run<void>("createObject", this, false);
+        currentId++;
         wCreateNewObject->setVisible(false);
         getRenderComponentManager().setEventContextActivated(false, *wCreateNewObject);
         tScriptEdit->setEventContextActivated(true);
@@ -2957,9 +3011,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         bool found = false;
         while (superClasses.size() > 0 && !found) {
             for (unsigned int i = 0; i < superClasses.size() && !found; i++) {
-                std::cout<<"super class name : "<<superClasses[i].getName()<<std::endl;
                 if (superClasses[i].getName() == "Entity") {
-                    std::cout<<"found entity!"<<std::endl;
                     found = true;
                 }
                 std::vector<odfaeg::core::Class> tmpSuperClasses = superClasses[i].getSuperClasses();
@@ -2983,15 +3035,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
             ifs.close();
         }
         if (fileExist) {
-            while (sourceCode.find(taRObjectName->getText()) != std::string::npos) {
-                int pos = sourceCode.find(taRObjectName->getText());
-                while (sourceCode.at(pos) != '\n') {
-                    pos--;
-                }
-                std::string sub = sourceCode.substr(pos);
-                int pos2 = sub.find("\n")+1;
-                sourceCode.erase(pos, pos + pos2);
-            }
+
             if (found) {
                 std::map<std::string, std::vector<Entity*>>::iterator it = externals.find(cl.getName());
                 if (it != externals.end()) {
@@ -3005,11 +3049,17 @@ void ODFAEGCreator::actionPerformed(Button* button) {
                         }
                     }
                 }
+
             }
-            std::ofstream file("sourceCode.cpp");
+            std::string toFind=taRObjectName->getText();
+            while (sourceCode.find(toFind) != std::string::npos) {
+                int line = findLine(toFind, sourceCode);
+                removeLine(line, sourceCode);
+            }
+            std::ofstream file(appliname+"\\sourceCode.cpp");
             file<<sourceCode;
             file.close();
-            rtc.addSourceFile("sourceCode");
+            rtc.addSourceFile(appliname+"\\sourceCode");
             rtc.compile();
             std::string errors = rtc.getCompileErrors();
             //std::cout<<"errors : "<<rtc.getCompileErrors();
@@ -3020,22 +3070,19 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         tScriptEdit->setEventContextActivated(true);
     }
     if (button == bGenerateTerrain) {
-        std::vector<Tile*> tiles;
-        std::vector<Wall*> walls;
-        tiles.push_back(factory.make_entity<Tile>(nullptr, Vec3f(0, 0, 0), Vec3f(conversionStringFloat(taTileWidth->getText()), conversionStringFloat(taTileHeight->getText()), 0), sf::IntRect(0, 0, 0, 0), factory));
-        getWorld()->generate_map(tiles, walls, Vec2f(conversionStringFloat(taTileWidth->getText()), conversionStringFloat(taTileHeight->getText())), BoundingBox(conversionStringFloat(taZoneXPos->getText()), conversionStringFloat(taZoneYPos->getText()),conversionStringFloat(taZoneZPos->getText()),
+        wGenerateTerrain->setVisible(false);
+        getWorld()->generate_map(ground, walls, Vec2f(conversionStringFloat(taTileWidth->getText()), conversionStringFloat(taTileHeight->getText())), BoundingBox(conversionStringFloat(taZoneXPos->getText()), conversionStringFloat(taZoneYPos->getText()),conversionStringFloat(taZoneZPos->getText()),
                                                                                                                                                             conversionStringFloat(taZoneWidth->getText()), conversionStringFloat(taZoneHeight->getText()),conversionStringFloat(taZoneDepth->getText())),
                            (cbIs3DTerrain->isChecked()) ? true : false, factory);
-        wGenerateTerrain->setVisible(false);
+
         getRenderComponentManager().setEventContextActivated(false, *wGenerateTerrain);
-        tScriptEdit->setEventContextActivated(true);
+        getRenderComponentManager().setEventContextActivated(true, getRenderWindow());
     }
 }
 void ODFAEGCreator::updateNb(std::string name, unsigned int nb) {
     nbs.insert(std::make_pair(name, nb));
 }
 void ODFAEGCreator::addExternalEntity(Entity* entity, std::string type) {
-    //std::cout<<"add entity : "<<entity<<std::endl;
     /*Command::sname = "EXTERNAL";
     name = "EXTERNAL";*/
     /*entity->setExternal(true);
@@ -3045,6 +3092,9 @@ void ODFAEGCreator::addExternalEntity(Entity* entity, std::string type) {
     getWorld()->addEntity(entity);*/
     std::map<std::string, std::vector<Entity*>>::iterator it = toAdd.find(type);
     if (it == toAdd.end()) {
+        Vec3f position = getRenderWindow().mapPixelToCoords(Vec3f(cursor.getPosition().x, getRenderWindow().getSize().y - cursor.getPosition().y, 0))+getRenderWindow().getView().getSize()*0.5f;
+        entity->setPosition(position);
+        entity->setClassName(type);
         toAdd.insert(std::make_pair(type, std::vector<Entity*>()));
         it = toAdd.find(type);
         it->second.push_back(entity);
@@ -3101,7 +3151,7 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
                 Vec3f position = getRenderWindow().mapPixelToCoords(Vec3f(cursor.getPosition().x, getRenderWindow().getSize().y - cursor.getPosition().y, 0))+getRenderWindow().getView().getSize()*0.5f;
                 Tile* tile = factory.make_entity<Tile>(nullptr, position,Vec3f(100, 50, 0), sf::IntRect(0, 0, gridWidth, gridHeight), factory);
                 selectedObject = tile;
-                std::cout << "wall center : " << tile->getCenter()<< std::endl;
+                //std::cout << "wall center : " << tile->getCenter()<< std::endl;
                 displayTileInfos(tile);
                 getWorld()->addEntity(tile);
                 //tile->setName("WALL");
@@ -3162,6 +3212,8 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
         if (appliname != "" && getWorld()->getCurrentSceneManager() != nullptr) {
             if (!showRectSelect) {
                 Decor* decor = factory.make_entity<Decor>(factory);
+                Vec3f position = getRenderWindow().mapPixelToCoords(Vec3f(cursor.getPosition().x, getRenderWindow().getSize().y - cursor.getPosition().y, 0))+getRenderWindow().getView().getSize()*0.5f;
+                decor->setPosition(position);
                 selectedObject = decor;
                 displayDecorInfos(decor);
                 getWorld()->addEntity(decor);
@@ -3193,7 +3245,6 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
                 Wall* wall = factory.make_entity<Wall>(factory);
                 Vec3f position = getRenderWindow().mapPixelToCoords(Vec3f(cursor.getPosition().x, getRenderWindow().getSize().y - cursor.getPosition().y, 0))+getRenderWindow().getView().getSize()*0.5f;
                 wall->setPosition(position);
-                wall->setName("WALL");
                 selectedObject = wall;
                 displayWallInfos(wall);
                 getWorld()->addEntity(wall);
@@ -3310,7 +3361,7 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
     if (item->getText() == "New scene") {
         wNewMap->setVisible(true);
         getRenderComponentManager().setEventContextActivated(true, *wNewMap);
-        tScriptEdit->setEventContextActivated(false);
+        setEventContextActivated(false);
     }
     if (item->getText() == "New component") {
         wNewComponent->setVisible(true);
@@ -3336,13 +3387,11 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
         //Save textures.
         TextureManager<>& tm = cache.resourceManager<Texture, std::string>("TextureManager");
         std::vector<std::string> paths = tm.getPaths();
-        for (unsigned int i = 0; i < paths.size(); i++)
-            std::cout<<"path : "<<paths[i]<<std::endl;
         std::ofstream file(appliname+"\\"+"textures.oc");
         OTextArchive oa(file);
         oa(paths);
+        oa(textPaths);
         file.close();
-        std::cout<<"save entities!"<<std::endl;
         //Save entities.
         /*std::vector<Entity*> entities = World::getEntities("*");
         std::ofstream file2(appliname+"\\"+"entities.oc");
@@ -3410,11 +3459,9 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
                 workerType = "ParticleSystemUpdater";
                 std::vector<Entity*> ps = static_cast<ParticleSystemUpdater*>(workers[i])->getParticleSystems();
                 for (unsigned int j = 0; j < ps.size(); j++) {
-                    std::cout<<"ps id  : "<<ps[j]->getId()<<std::endl;
                     psIds.push_back(ps[j]->getId());
                 }
             }
-            std::cout<<"name : "<<&name<<std::endl<<"worker type : "<<&workerType<<std::endl;
             oa5(name);
             oa5(workerType);
             oa5(psIds);
@@ -3458,23 +3505,24 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
         OTextArchive oa7(file7);
         oa7(emitterParams);
         file7.close();
-        std::ifstream file8("sourceCode.cpp");
+        std::ifstream file8(appliname+"\\sourceCode.cpp");
         if (file8) {
-            rtc.run<void>("createObject", this, true);
+
             pluginSourceCode = "";
             std::string line;
             while (getline(file8, line)) {
                 pluginSourceCode += line + "\n";
             }
+            if (pluginSourceCode != "")
+                rtc.run<void>("createObject", this, true);
         }
-        std::ofstream file9("otherData.oc");
+        std::ofstream file9(appliname+"\\otherData.oc");
         OTextArchive oa8(file9);
         oa8(callIds);
         oa8(currentId);
         oa8(tmpBps);
         oa8(currentBp);
         file9.close();
-        std::cout<<"saved!"<<std::endl;
      }
      if (item == item18) {
         wNewParticleSystemUpdater->setVisible(true);
@@ -3484,7 +3532,8 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
      if (item == item51) {
         wCreateNewObject->setVisible(true);
         getRenderComponentManager().setEventContextActivated(true, *wCreateNewObject);
-        tScriptEdit->setEventContextActivated(false);
+        std::cout<<"desactive context"<<std::endl;
+        setEventContextActivated(false);
      }
      if (item == item52) {
         wModifyObject->setVisible(true);
@@ -3492,9 +3541,18 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
         tScriptEdit->setEventContextActivated(false);
      }
      if (item == item46) {
+        for (unsigned int i = 0; i < ground.size(); i++)
+            if (ground[i] != nullptr)
+                delete ground[i];
+        ground.clear();
+        for (unsigned int i = 0; i < walls.size(); i++)
+            if (walls[i] != nullptr)
+                delete walls[i];
+        walls.clear();
+        walls.resize(g2d::Wall::NB_WALL_TYPES, nullptr);
         wGenerateTerrain->setVisible(true);
         getRenderComponentManager().setEventContextActivated(true, *wGenerateTerrain);
-        tScriptEdit->setEventContextActivated(false);
+        getRenderComponentManager().setEventContextActivated(false, getRenderWindow());
      }
 }
 /*void ODFAEGCreator::addShape(Shape *shape) {
@@ -3709,26 +3767,40 @@ void ODFAEGCreator::displayInfos (Shape* shape) {
     stateStack.addStateGroup(sg);
     pScriptsFiles->setAutoResized(true);
 }
-void ODFAEGCreator::displayChildren(Label* label) {
-    Node* node = rootInfosNode->findNode(label);
-    std::vector<std::string> parts = split(label->getText(), "-");
-    Entity* entity = getWorld()->getEntity(conversionStringInt(parts[1]));
-    if (node->getNodes().size() == 0 && entity != nullptr) {
-        FontManager<Fonts>& fm = cache.resourceManager<Font, Fonts>("FontManager");
-        for (unsigned int i = 0; i < entity->getChildren().size(); i++) {
-
-            /*Label* label = new Label(getRenderWindow(), Vec3f(0, 0, 0), Vec3f(200, 17, 0),fm.getResourceByAlias(Fonts::Serif),"Id : entity-"+conversionIntString(entity->getChild(i)->getId()), 15);
-            Action a(Action::EVENT_TYPE::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
-            Command cmd(a, FastDelegate<bool>(&Label::isMouseInside, label), FastDelegate<void>(&ODFAEGCreator::displayChildren, this, label));
-            label->getListener().connect("SHOWCHILDREN"+label->getText(), cmd);
-            label->setParent(pInfos);
-            Node* lNode = new Node(label->getText() + "-child-" + conversionIntString(i), label, Vec2f(0, 0), Vec2f(1.f, 0.025f), node);
-            pInfos->addChild(label);*/
+void ODFAEGCreator::displayChildren(DropDownList* dp) {
+    if (dp->getSelectedItem() != "NONE") {
+        std::vector<Entity*> children = dynamic_cast<Entity*>(selectedObject)->getChildren();
+        Entity* child;
+        for (unsigned int i = 0; i < children.size(); i++) {
+            if (children[i]->getName() == dp->getSelectedItem()) {
+                child = children[i];
+            }
         }
-    } else if (node->isNodeVisible()) {
-        node->hideAllNodes();
-    } else {
-        node->showAllNodes();
+        if (dynamic_cast<Entity*>(selectedObject) && dynamic_cast<Anim*>(static_cast<Entity*>(child))) {
+            displayAnimInfos(child);
+            selectedObject = child;
+        } else if (dynamic_cast<Entity*>(selectedObject) && dynamic_cast<Wall*>(static_cast<Entity*>(child))) {
+            displayWallInfos(child);
+            selectedObject = child;
+        } else if (dynamic_cast<Entity*>(selectedObject) && dynamic_cast<Decor*>(static_cast<Entity*>(child))) {
+            displayDecorInfos(child);
+            selectedObject = child;
+        } else if (dynamic_cast<Entity*>(selectedObject) && dynamic_cast<BigTile*>(static_cast<Entity*>(child))) {
+            displayBigtileInfos(child);
+            selectedObject = child;
+        } else if (dynamic_cast<Entity*>(selectedObject) && dynamic_cast<ParticleSystem*>(static_cast<Entity*>(child))) {
+            displayParticleSystemInfos(child);
+            selectedObject = child;
+        } else if (dynamic_cast<Entity*>(selectedObject) && dynamic_cast<PonctualLight*>(static_cast<Entity*>(child))) {
+            displayPonctualLightInfos(child);
+            selectedObject = child;
+        } else if (dynamic_cast<Entity*>(selectedObject) && dynamic_cast<Tile*>(static_cast<Entity*>(child))) {
+            displayTileInfos(child);
+            selectedObject = child;
+        } else {
+            displayExternalEntityInfo(child);
+            selectedObject = child;
+        }
     }
 }
 void ODFAEGCreator::displayTransformInfos(Transformable* tile) {
@@ -3739,6 +3811,7 @@ void ODFAEGCreator::displayTransformInfos(Transformable* tile) {
     rootCollisionNode->deleteAllNodes();
     pTransform->removeAll();
     pMaterial->removeAll();
+    pMaterial->removeSprites();
     pInfos->removeAll();
     pShadows->removeAll();
     pCollisions->removeAll();
@@ -3965,6 +4038,8 @@ void ODFAEGCreator::displayTransformInfos(Transformable* tile) {
     pTransform->addChild(tRotAngle);
     Command cmdRotAngle (FastDelegate<bool>(&TextArea::isTextChanged, tRotAngle), FastDelegate<void>(&ODFAEGCreator::onObjectRotationChanged, this, tRotAngle));
     tRotAngle->getListener().connect("ROTANGLECHANGED", cmdRotAngle);
+    if (tabPane->getSelectedTab() != "Transfom")
+        pTransform->setEventContextActivated(false);
 }
 void ODFAEGCreator::displayEntityInfos(Entity* tile) {
     FontManager<Fonts>& fm = cache.resourceManager<Font, Fonts>("FontManager");
@@ -3972,6 +4047,10 @@ void ODFAEGCreator::displayEntityInfos(Entity* tile) {
     lId->setParent(pInfos);
     Node* lIdNode = new Node("LabId", lId, Vec2f(0, 0), Vec2f(1, 0.025), rootInfosNode.get());
     pInfos->addChild(lId);
+    Label* lType = new Label(getRenderWindow(),Vec3f(0, 0, 0), Vec3f(200, 17, 0), fm.getResourceByAlias(Fonts::Serif), "type : "+tile->getType(), 15);
+    lType->setParent(pInfos);
+    Node* typeNode = new Node("Type", lType, Vec2f(0, 0), Vec2f(1,0.025), rootInfosNode.get());
+    pInfos->addChild(lType);
     Label* lName = new Label(getRenderWindow(),Vec3f(0, 0, 0), Vec3f(200, 17, 0),fm.getResourceByAlias(Fonts::Serif), "Name : ", 15);
     lName->setParent(pInfos);
     Node* nameNode = new Node("Name", lName, Vec2f(0, 0), Vec2f(0.25, 0.025), rootInfosNode.get());
@@ -3995,13 +4074,23 @@ void ODFAEGCreator::displayEntityInfos(Entity* tile) {
     lParent->getListener().connect("CMDPARENTCLICKED", cmdParentClicked);
     Node* parentNode = new Node("Parent",lParent,Vec2f(0, 0),Vec2f(1, 0.025),rootInfosNode.get());
     pInfos->addChild(lParent);
-    Label* lChildren = new Label(getRenderWindow(),Vec3f(0, 0, 0), Vec3f(200, 17, 0),fm.getResourceByAlias(Fonts::Serif), "Children-"+conversionIntString(tile->getId()), 15);
-    Action aChildren(Action::EVENT_TYPE::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
-    Command cmd(aChildren, FastDelegate<bool>(&Label::isMouseInside, lChildren), FastDelegate<void>(&ODFAEGCreator::displayChildren, this, lChildren));
-    lChildren->getListener().connect("SHOWCHILDREN", cmd);
+    Label* lChildren = new Label(getRenderWindow(),Vec3f(0, 0, 0), Vec3f(100, 17, 0),fm.getResourceByAlias(Fonts::Serif), "Children : ", 15);
+
     lChildren->setParent(pInfos);
-    Node* childrenNode = new Node("Children",lChildren,Vec2f(0, 0),Vec2f(1, 0.025),rootInfosNode.get());
+    Node* childrenNode = new Node("Children",lChildren,Vec2f(0, 0),Vec2f(0.25, 0.025),rootInfosNode.get());
     pInfos->addChild(lChildren);
+
+    dpChildren = new DropDownList(getRenderWindow(), Vec3f(0, 0, 0), Vec3f(100, 17, 0), fm.getResourceByAlias(Fonts::Serif), "NONE", 15);
+    for (unsigned int i = 0; i < tile->getChildren().size(); i++) {
+        if (tile->getChildren()[i]->getName() != "") {
+            dpChildren->addItem(tile->getChildren()[i]->getName(), 15);
+        }
+    }
+    dpChildren->setParent(pInfos);
+    pInfos->addChild(dpChildren);
+    childrenNode->addOtherComponent(dpChildren, Vec2f(0.75, 0.025));
+    Command cmdChildren(FastDelegate<bool>(&DropDownList::isValueChanged, dpChildren), FastDelegate<void>(&ODFAEGCreator::displayChildren, this, dpChildren));
+    dpChildren->getListener().connect("DisplayChildren", cmdChildren);
     std::vector<SceneManager*> ems = getWorld()->getSceneManagers();
     Label* lEmList = new Label(getRenderWindow(),Vec3f(0, 0, 0), Vec3f(200, 14, 0), fm.getResourceByAlias(Fonts::Serif), "Scene : ", 15);
     lEmList->setParent(pInfos);
@@ -4025,7 +4114,7 @@ void ODFAEGCreator::displayEntityInfos(Entity* tile) {
     std::vector<Entity*> parents = getWorld()->getEntities("*");
 
     for (unsigned int i = 0; i < parents.size(); i++) {
-        if (!parents[i]->isLeaf()) {
+        if (!parents[i]->isLeaf() && parents[i]->getName() != "") {
             dpSelectParent->addItem(parents[i]->getName(), 15);
         }
     }
@@ -4210,6 +4299,7 @@ void ODFAEGCreator::displayEntityInfos(Entity* tile) {
     taBoundingBoxColH->getListener().connect("BBColPosHChanged", cmdBBColPosH);
     Command cmdBBColPosD (FastDelegate<bool>(&TextArea::isTextChanged, taBoundingBoxColD), FastDelegate<void>(&ODFAEGCreator::onCollisionBoundingBoxChanged, this, taBoundingBoxColD));
     taBoundingBoxColD->getListener().connect("BBColPosDChanged", cmdBBColPosD);
+
 }
 void ODFAEGCreator::displayExternalEntityInfo(Entity* entity) {
     displayTransformInfos(entity);
@@ -4218,6 +4308,8 @@ void ODFAEGCreator::displayExternalEntityInfo(Entity* entity) {
 void ODFAEGCreator::displayDecorInfos(Entity* decor) {
     displayTransformInfos(decor);
     displayEntityInfos(decor);
+    if (tabPane->getSelectedTab() != "Informations")
+        pInfos->setEventContextActivated(false);
 }
 void ODFAEGCreator::displayBigtileInfos(Entity* bigTile) {
     displayTransformInfos(bigTile);
@@ -4251,6 +4343,8 @@ void ODFAEGCreator::displayAnimInfos(Entity* anim) {
     animUpdaterNode->addOtherComponent(dpSelectAU, Vec2f(0.75, 0.025));
     Command cmdAUChanged(FastDelegate<bool>(&DropDownList::isValueChanged,dpSelectAU), FastDelegate<void>(&ODFAEGCreator::onAnimUpdaterChanged, this, dpSelectAU));
     dpSelectAU->getListener().connect("ANIMUPDATERCHANGED", cmdAUChanged);
+    if (tabPane->getSelectedTab() != "Informations")
+        pInfos->setEventContextActivated(false);
 }
 void ODFAEGCreator::displayParticleSystemInfos(Entity* ps) {
     displayTransformInfos(ps);
@@ -4429,15 +4523,28 @@ void ODFAEGCreator::displayWallInfos(Entity* wall) {
     displayEntityInfos(wall);
     FontManager<Fonts>& fm = cache.resourceManager<Font, Fonts>("FontManager");
     Label* lType = new Label(getRenderWindow(),Vec3f(0, 0, 0),Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),"type : ",15);
-    lType->setParent(lType);
+    lType->setParent(pInfos);
     pInfos->addChild(lType);
     Node* node = new Node("WALLTYPE",lType,Vec2f(0, 0),Vec2f(0.25, 0.025),rootInfosNode.get());
-    taWallType = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),"",getRenderWindow());
-    Command cmdWallType(FastDelegate<bool>(&TextArea::isTextChanged, taWallType), FastDelegate<void>(&ODFAEGCreator::onWallTypeChanged,this,taWallType));
-    taWallType->getListener().connect("WallTypeChanged", cmdWallType);
-    taWallType->setParent(pInfos);
-    pInfos->addChild(taWallType);
-    node->addOtherComponent(taWallType, Vec2f(0.75, 0.025));
+    dpWallType = new DropDownList(getRenderWindow(), Vec3f(0, 0, 0), Vec3f(100, 50, 0), fm.getResourceByAlias(Fonts::Serif), "TOP_LEFT", 15);
+    dpWallType->addItem("TOP_RIGHT", 15);
+    dpWallType->addItem("BOTTOM_RIGHT", 15);
+    dpWallType->addItem("BOTTOM_LEFT", 15);
+    dpWallType->addItem("TOP_BOTTOM", 15);
+    dpWallType->addItem("RIGHT_LEFT", 15);
+    dpWallType->addItem("T_TOP", 15);
+    dpWallType->addItem("T_RIGHT", 15);
+    dpWallType->addItem("T_LEFT", 15);
+    dpWallType->addItem("T_BOTTOM", 15);
+    dpWallType->addItem("X", 15);
+
+    Command cmdWallType(FastDelegate<bool>(&DropDownList::isValueChanged, dpWallType), FastDelegate<void>(&ODFAEGCreator::onWallTypeChanged,this,dpWallType));
+    dpWallType->getListener().connect("WallTypeChanged", cmdWallType);
+    dpWallType->setParent(pInfos);
+    pInfos->addChild(dpWallType);
+    node->addOtherComponent(dpWallType, Vec2f(0.75, 0.025));
+    if (tabPane->getSelectedTab() != "Informations")
+        pInfos->setEventContextActivated(false);
 }
 void ODFAEGCreator::displayTileInfos (Entity* tile) {
     try {
@@ -4564,12 +4671,28 @@ void ODFAEGCreator::displayTileInfos (Entity* tile) {
         dpSelectTexture->getListener().connect("TextureNotDroppedDown", cmdTxtNotDroppedDown);
         selectTextNode->addOtherComponent(dpSelectTexture, Vec2f(0.75f, 0.025f));
         pMaterial->addChild(dpSelectTexture);
+        lTexId = new Label(getRenderWindow(), Vec3f(0, 0, 0), Vec3f(100, 100, 0),fm.getResourceByAlias(Fonts::Serif),"Tex id : ", 15);
+        lTexId->setParent(pMaterial);
+        pMaterial->addChild(lTexId);
+        Node* texIdNode = new Node("TexId", lTexId,Vec2f(0, 0), Vec2f(0.5f, 0.025f), rootMaterialNode.get());
+        tTexId = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 100, 0), fm.getResourceByAlias(Fonts::Serif), "", getRenderWindow());
+        tTexId->setParent(pMaterial);
+        pMaterial->addChild(tTexId);
+        texIdNode->addOtherComponent(tTexId, Vec2f(0.5f, 0.025f));
+
         bChooseText = new Button(Vec3f(0, 0, 0), Vec3f(100, 100, 0), fm.getResourceByAlias(Fonts::Serif), "New texture", 15, getRenderWindow());
         bChooseText->setParent(pMaterial);
-        Node* chooseTextNode = new Node("ChooseText", bChooseText, Vec2f(0, 0), Vec2f(1.f, 0.025f), rootMaterialNode.get());
+        Node* chooseTextNode = new Node("ChooseText", bChooseText, Vec2f(0, 0), Vec2f(0.5f, 0.025f), rootMaterialNode.get());
         pMaterial->addChild(bChooseText);
         bChooseText->setName("CHOOSETEXT");
         bChooseText->addActionListener(this);
+        if (isGeneratingTerrain) {
+            bSetTexRect = new Button(Vec3f(0, 0, 0), Vec3f(100, 100, 0), fm.getResourceByAlias(Fonts::Serif),"Set tex rect", 15, getRenderWindow());
+            bSetTexRect->setParent(pMaterial);
+            pMaterial->addChild(bSetTexRect);
+            chooseTextNode->addOtherComponent(bSetTexRect,Vec2f(0.5f, 0.025f));
+            bSetTexRect->addActionListener(this);
+        }
         StateGroup* sg = new StateGroup("SGADDRECTANGLETILE");
         State* stAddRemoveShape = new State("ADDREMOVETILE", &se);
         std::ostringstream oss;
@@ -4582,6 +4705,10 @@ void ODFAEGCreator::displayTileInfos (Entity* tile) {
         sg->addState(stAddRemoveShape);
         stateStack.addStateGroup(sg);
         pScriptsFiles->setAutoResized(true);
+        if (tabPane->getSelectedTab() != "Informations")
+            pInfos->setEventContextActivated(false);
+        if (tabPane->getSelectedTab() != "Material")
+            pMaterial->setEventContextActivated(false);
     }
     catch (Erreur& erreur) {
         std::cerr << erreur.what() << std::endl;
@@ -5148,10 +5275,29 @@ void ODFAEGCreator::onObjectMoveChanged(TextArea* ta) {
 void ODFAEGCreator::onObjectNameChanged(TextArea* ta) {
     selectedObject->setName(ta->getText());
 }
-void ODFAEGCreator::onWallTypeChanged(TextArea* ta) {
-    if (dynamic_cast<Wall*>(selectedObject) && is_number(ta->getText())) {
-        static_cast<Wall*>(selectedObject)->setType(ta->getText());
-    }
+void ODFAEGCreator::onWallTypeChanged(DropDownList* dp) {
+    if (dp->getSelectedItem() == "TOP_LEFT")
+        dynamic_cast<Wall*>(selectedObject)->setWallType(Wall::TOP_LEFT);
+    if (dp->getSelectedItem() == "TOP_RIGHT")
+        dynamic_cast<Wall*>(selectedObject)->setWallType(Wall::TOP_RIGHT);
+    if (dp->getSelectedItem() == "BOTTOM_RIGHT")
+        dynamic_cast<Wall*>(selectedObject)->setWallType(Wall::BOTTOM_RIGHT);
+    if (dp->getSelectedItem() == "BOTTOM_LEFT")
+        dynamic_cast<Wall*>(selectedObject)->setWallType(Wall::BOTTOM_LEFT);
+    if (dp->getSelectedItem() == "TOP_BOTTOM")
+        dynamic_cast<Wall*>(selectedObject)->setWallType(Wall::TOP_BOTTOM);
+    if (dp->getSelectedItem() == "RIGHT_LEFT")
+        dynamic_cast<Wall*>(selectedObject)->setWallType(Wall::RIGHT_LEFT);
+    if (dp->getSelectedItem() == "T_TOP")
+        dynamic_cast<Wall*>(selectedObject)->setWallType(Wall::T_TOP);
+    if (dp->getSelectedItem() == "T_RIGHT")
+        dynamic_cast<Wall*>(selectedObject)->setWallType(Wall::T_RIGHT);
+    if (dp->getSelectedItem() == "T_LEFT")
+        dynamic_cast<Wall*>(selectedObject)->setWallType(Wall::T_LEFT);
+    if (dp->getSelectedItem() == "T_BOTTOM")
+        dynamic_cast<Wall*>(selectedObject)->setWallType(Wall::T_BOTTOM);
+    if (dp->getSelectedItem() == "X")
+        dynamic_cast<Wall*>(selectedObject)->setWallType(Wall::X);
 }
 void ODFAEGCreator::onFrameRateChanged(TextArea* ta) {
     if (dynamic_cast<Anim*>(selectedObject) && is_number(ta->getText())) {
@@ -5393,13 +5539,31 @@ void ODFAEGCreator::onParentClicked(Label* label) {
     std::vector<std::string> parts = split(label->getText(), ":");
     std::string pName = parts[1].substr(1, parts[1].size()-1);
     if (pName != "NONE") {
-        if (dynamic_cast<Entity*>(selectedObject) && dynamic_cast<Anim*>(static_cast<Entity*>(selectedObject)->getParent())) {
-            displayAnimInfos(static_cast<Entity*>(selectedObject)->getParent());
-            selectedObject = static_cast<Entity*>(selectedObject)->getParent();
-        }
-        if (dynamic_cast<Entity*>(selectedObject) && dynamic_cast<Wall*>(static_cast<Entity*>(selectedObject)->getParent())) {
-            displayWallInfos(static_cast<Entity*>(selectedObject)->getParent());
-            selectedObject = static_cast<Entity*>(selectedObject)->getParent();
+        Entity* parent = dynamic_cast<Entity*>(selectedObject)->getParent();
+        if (dynamic_cast<Entity*>(selectedObject) && dynamic_cast<Anim*>(static_cast<Entity*>(parent))) {
+            displayAnimInfos(parent);
+            selectedObject = parent;
+        } else if (dynamic_cast<Entity*>(selectedObject) && dynamic_cast<Wall*>(static_cast<Entity*>(parent))) {
+            displayWallInfos(parent);
+            selectedObject = parent;
+        } else if (dynamic_cast<Entity*>(selectedObject) && dynamic_cast<Decor*>(static_cast<Entity*>(parent))) {
+            displayDecorInfos(parent);
+            selectedObject = parent;
+        } else if (dynamic_cast<Entity*>(selectedObject) && dynamic_cast<BigTile*>(static_cast<Entity*>(parent))) {
+            displayBigtileInfos(parent);
+            selectedObject = parent;
+        } else if (dynamic_cast<Entity*>(selectedObject) && dynamic_cast<ParticleSystem*>(static_cast<Entity*>(parent))) {
+            displayParticleSystemInfos(parent);
+            selectedObject = parent;
+        } else if (dynamic_cast<Entity*>(selectedObject) && dynamic_cast<PonctualLight*>(static_cast<Entity*>(parent))) {
+            displayPonctualLightInfos(parent);
+            selectedObject = parent;
+        } else if (dynamic_cast<Entity*>(selectedObject) && dynamic_cast<Tile*>(static_cast<Entity*>(parent))) {
+            displayTileInfos(parent);
+            selectedObject = parent;
+        } else {
+            displayExternalEntityInfo(parent);
+            selectedObject = parent;
         }
     }
 }
@@ -5415,6 +5579,7 @@ void ODFAEGCreator::onSelectedParentChanged(DropDownList* dp) {
                 getWorld()->removeEntity(static_cast<Entity*>(entity));
                 static_cast<Entity*>(selectedObject)->setParent(entity);
                 entity->addChild(static_cast<Entity*>(selectedObject));
+                std::vector<Entity*> walls = getWorld()->getVisibleEntities("E_WALL", factory);
                 getWorld()->addEntity(entity);
             } else {
                 if (dynamic_cast<Anim*>(entity)) {
@@ -5450,6 +5615,7 @@ void ODFAEGCreator::onSelectedTextureChanged(DropDownList* dp) {
         oldTexture = static_cast<Shape*>(selectedObject)->getTexture();
     }
     if (dynamic_cast<Tile*>(selectedObject)) {
+        std::cout<<"tile : "<<std::endl;
         oldTexture = static_cast<Tile*>(selectedObject)->getFace(0)->getMaterial().getTexture();
     }
     if (dp->getSelectedItem() == "NONE") {
@@ -5486,6 +5652,7 @@ void ODFAEGCreator::onSelectedTextureChanged(DropDownList* dp) {
                     static_cast<Tile*>(selectedObject)->getFace(0)->getMaterial().addTexture(text, sf::IntRect(0, 0, text->getSize().x, text->getSize().y));
                     static_cast<Tile*>(selectedObject)->getFace(0)->getMaterial().setTexId(alias[0]);
                     textRect = sf::IntRect(0, 0, text->getSize().x, text->getSize().y);
+                    std::cout<<"tile texture set"<<std::endl;
                     //updateScriptText(static_cast<Tile*>(selectedObject), text);
                 }
                 if (dynamic_cast<ParticleSystem*>(selectedObject)) {
@@ -5576,8 +5743,9 @@ void ODFAEGCreator::onTexCoordsChanged (TextArea* ta) {
     }
     if (tex != nullptr) {
         if (ta == tTexCoordX) {
-            std::cout<<"tex coord changed"<<std::endl;
+
             if (is_number(ta->getText())) {
+                //std::cout<<"tex coord x changed : "<<ta->getText()<<std::endl;
                 int texCoordX = conversionStringInt(ta->getText());
                 StateGroup* sg = new StateGroup("SGCHANGEXTEXCOORD");
                 State* state = new State("SCHANGEXTEXCOORD", &se);
@@ -5620,6 +5788,7 @@ void ODFAEGCreator::onTexCoordsChanged (TextArea* ta) {
         }
         if (ta == tTexCoordY) {
             if (is_number(ta->getText())) {
+                //std::cout<<"tex coord y changed : "<<ta->getText()<<std::endl;
                 int texCoordY = conversionStringInt(ta->getText());
                 StateGroup* sg = new StateGroup("SGCHANGEYTEXCOORD");
                 State* state = new State("SCHANGEYTEXCOORD", &se);
@@ -5662,6 +5831,7 @@ void ODFAEGCreator::onTexCoordsChanged (TextArea* ta) {
         }
         if (ta == tTexCoordW) {
             if (is_number(ta->getText())) {
+                //std::cout<<"tex coord w changed : "<<ta->getText()<<std::endl;
                 int texCoordW = conversionStringInt(ta->getText());
                 StateGroup* sg = new StateGroup("SGCHANGEWTEXCOORD"+conversionIntString(texCoordW));
                 State* state = new State("SCHANGEWTEXCOORD", &se);
@@ -5704,6 +5874,7 @@ void ODFAEGCreator::onTexCoordsChanged (TextArea* ta) {
         }
         if (ta == tTexCoordH) {
             if (is_number(ta->getText())) {
+                //std::cout<<"tex coord h changed : "<<ta->getText()<<std::endl;
                 int texCoordH = conversionStringInt(ta->getText());
                 StateGroup* sg = new StateGroup("SGCHANGEHTEXCOORD"+conversionIntString(texCoordH));
                 State* state = new State("SCHANGEHTEXCOORD", &se);
@@ -5754,6 +5925,8 @@ void ODFAEGCreator::onTexCoordsChanged (TextArea* ta) {
     bChooseText->setEventContextActivated(true);
     if (bAddTexRect != nullptr)
         bAddTexRect->setEventContextActivated(true);
+    if (bSetTexRect != nullptr)
+        bSetTexRect->setEventContextActivated(true);
 }
 /*void ODFAEGCreator::updateScriptTextCoords(Transformable* shape) {
     std::map<std::string, std::string>::iterator it;
@@ -5934,7 +6107,7 @@ void ODFAEGCreator::onSelectedFunctionChanged(DropDownList* dp) {
                 Node* node = new Node(argsNames[i], label, Vec2f(0, 0), Vec2f(0.25, 0.025),rootObjectParams.get());
                 label->setParent(pObjectsParameters);
                 pObjectsParameters->addChild(label);
-                if (argsTypes[i] == "BoundingPolyhedron") {
+                if (argsTypes[i] == "odfaeg::physic::BoundingPolyhedron") {
                     Button* button = new Button(Vec3f(0, 0, 0), Vec3f(200, 50, 0),fm.getResourceByAlias(Fonts::Serif), "Select Area", 15, *wCreateNewObject);
                     node->addOtherComponent(button, Vec2f(0.75, 0.025));
                     button->setParent(pObjectsParameters);
@@ -6070,12 +6243,23 @@ void ODFAEGCreator::onViewPerspectiveChanged(DropDownList* dp) {
     }
 }
 void ODFAEGCreator::onSelectedTextureDroppedDown(DropDownList* dp) {
+
     bChooseText->setEventContextActivated(false);
+    std::cout<<"b choose tex false"<<std::endl;
     if (bAddTexRect != nullptr)
-        bChooseText->setEventContextActivated(false);
+        bAddTexRect->setEventContextActivated(false);
+    if (bSetTexRect != nullptr)
+        bSetTexRect->setEventContextActivated(false);
+        std::cout<<"b set tex rect false"<<std::endl;
 }
 void ODFAEGCreator::onSelectedTextureNotDroppedDown (DropDownList* dp) {
     bChooseText->setEventContextActivated(true);
+}
+void ODFAEGCreator::onSelectedWallTypeDroppedDown(odfaeg::graphic::gui::DropDownList* dp) {
+    bGenerateTerrain->setEventContextActivated(false);
+}
+void ODFAEGCreator::onSelectedWallTypeNotDroppedDown(odfaeg::graphic::gui::DropDownList* dp) {
+    bGenerateTerrain->setEventContextActivated(true);
 }
 void ODFAEGCreator::onObjectOriginChanged(TextArea* ta) {
     if (ta == taOriginX) {
@@ -6144,6 +6328,13 @@ void ODFAEGCreator::onObjectOriginChanged(TextArea* ta) {
         }
     }
 }
+void ODFAEGCreator::onMouseOnMenu(MenuItem* menuItem) {
+    if (menuItem->isVisible() && !menuItem->isContextChanged()) {
+        std::cout<<"desactivate event context menu item"<<std::endl;
+        setEventContextActivated(false);
+        menuItem->setContextChanged(true);
+    }
+}
 void ODFAEGCreator::makeTransparent(Entity* entity) {
     for (unsigned int  j = 0; j < entity->getNbFaces(); j++) {
         for (unsigned int k = 0; k < entity->getFace(j)->getVertexArray().getVertexCount(); k++) {
@@ -6157,6 +6348,9 @@ void ODFAEGCreator::makeTransparent(Entity* entity) {
 }
 EntityFactory& ODFAEGCreator::getEntityFactory() {
     return factory;
+}
+unsigned int ODFAEGCreator::getCurrentId() {
+    return currentId;
 }
 void ODFAEGCreator::addId(unsigned int id) {
     std::map<unsigned int, bool>::iterator it = callIds.find(id);
@@ -6176,3 +6370,29 @@ bool ODFAEGCreator::isAlreadyCalled(unsigned int id) {
             return it->second;
     }
 }
+void ODFAEGCreator::removeLine(unsigned int line, std::string& content) {
+    std::string cpContent = content;
+    unsigned int tmpLine=0;
+    unsigned int size = 0, pos = 0;
+    while(line > 0 && tmpLine < line) {
+        pos = size;
+        unsigned int size = cpContent.find("\n")+1;
+        cpContent.erase(0, size);
+        tmpLine++;
+    }
+    content.erase(pos, size);
+}
+unsigned int ODFAEGCreator::findLine(std::string toFind, std::string content) {
+    unsigned int line = 0;
+    unsigned int pos = content.find("\n");
+    unsigned int pos2 = content.find(toFind);
+    unsigned int pos3 = 0;
+    while (pos < pos2) {
+        line++;
+        pos3 = content.find("\n")+1;
+        pos += pos3;
+        content.erase(0, pos3);
+    }
+    return line;
+}
+#endif

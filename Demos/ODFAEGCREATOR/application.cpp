@@ -1106,16 +1106,16 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
                 dynamic_cast<Entity*>(selectedObject)->getChildren()[i]->setParent(nullptr);
             }
             dynamic_cast<Entity*>(selectedObject)->detachChildren();
-            std::cout<<"children detached"<<std::endl;
+            //std::cout<<"children detached"<<std::endl;
             getWorld()->removeEntity(dynamic_cast<Entity*>(selectedObject));
-            std::cout<<"selected object removed: "<<dynamic_cast<Entity*>(selectedObject)->getType()<<std::endl;
+            //std::cout<<"selected object removed: "<<dynamic_cast<Entity*>(selectedObject)->getType()<<std::endl;
             if (dynamic_cast<Entity*>(selectedObject)->getParent() != nullptr) {
-                std::cout<<"selected object detach child"<<std::endl;
+                //std::cout<<"selected object detach child"<<std::endl;
                 dynamic_cast<Entity*>(selectedObject)->getParent()->detachChild(dynamic_cast<Entity*>(selectedObject));
             }
-            std::cout<<"selected object child detached"<<std::endl;
+            //std::cout<<"selected object child detached"<<std::endl;
             delete dynamic_cast<Entity*>(selectedObject);
-            std::cout<<"selected object deleted"<<std::endl;
+            //std::cout<<"selected object deleted"<<std::endl;
 
         }
         std::vector<Transformable*> objects = rectSelect.getItems();
@@ -1125,19 +1125,19 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
                 for (unsigned int j = 0; j < dynamic_cast<Entity*>(objects[i])->getChildren().size(); j++) {
                     dynamic_cast<Entity*>(objects[i])->getChildren()[j]->setParent(nullptr);
                 }
-                std::cout<<"remove entity : "<<dynamic_cast<Entity*>(objects[i])->getType()<<std::endl;
+                //std::cout<<"remove entity : "<<dynamic_cast<Entity*>(objects[i])->getType()<<std::endl;
                 dynamic_cast<Entity*>(objects[i])->detachChildren();
-                std::cout<<"children detached"<<std::endl;
+                //std::cout<<"children detached"<<std::endl;
                 getWorld()->removeEntity(dynamic_cast<Entity*>(objects[i]));
-                std::cout<<"entity removed : "<<objects[i]<<std::endl;
+                //std::cout<<"entity removed : "<<objects[i]<<std::endl;
                 if (dynamic_cast<Entity*>(objects[i])->getParent() != nullptr) {
-                    std::cout<<"detach child"<<std::endl;
+                    //std::cout<<"detach child"<<std::endl;
                     dynamic_cast<Entity*>(objects[i])->getParent()->detachChild(dynamic_cast<Entity*>(objects[i]));
                 }
-                std::cout<<"child detached"<<std::endl;
-                std::cout<<"delete selected object : "<<dynamic_cast<Entity*>(objects[i])->getType()<<std::endl;
+                //std::cout<<"child detached"<<std::endl;
+                //std::cout<<"delete selected object : "<<dynamic_cast<Entity*>(objects[i])->getType()<<std::endl;
                 delete dynamic_cast<Entity*>(objects[i]);
-                std::cout<<"entity deleted"<<std::endl;
+                //std::cout<<"entity deleted"<<std::endl;
             }
         }
         rectSelect.getItems().clear();
@@ -4038,6 +4038,8 @@ void ODFAEGCreator::displayTransformInfos(Transformable* tile) {
     pTransform->addChild(tRotAngle);
     Command cmdRotAngle (FastDelegate<bool>(&TextArea::isTextChanged, tRotAngle), FastDelegate<void>(&ODFAEGCreator::onObjectRotationChanged, this, tRotAngle));
     tRotAngle->getListener().connect("ROTANGLECHANGED", cmdRotAngle);
+    if (tabPane->getSelectedTab() != "Transfom")
+        pTransform->setEventContextActivated(false);
 }
 void ODFAEGCreator::displayEntityInfos(Entity* tile) {
     FontManager<Fonts>& fm = cache.resourceManager<Font, Fonts>("FontManager");
@@ -4045,6 +4047,10 @@ void ODFAEGCreator::displayEntityInfos(Entity* tile) {
     lId->setParent(pInfos);
     Node* lIdNode = new Node("LabId", lId, Vec2f(0, 0), Vec2f(1, 0.025), rootInfosNode.get());
     pInfos->addChild(lId);
+    Label* lType = new Label(getRenderWindow(),Vec3f(0, 0, 0), Vec3f(200, 17, 0), fm.getResourceByAlias(Fonts::Serif), "type : "+tile->getType(), 15);
+    lType->setParent(pInfos);
+    Node* typeNode = new Node("Type", lType, Vec2f(0, 0), Vec2f(1,0.025), rootInfosNode.get());
+    pInfos->addChild(lType);
     Label* lName = new Label(getRenderWindow(),Vec3f(0, 0, 0), Vec3f(200, 17, 0),fm.getResourceByAlias(Fonts::Serif), "Name : ", 15);
     lName->setParent(pInfos);
     Node* nameNode = new Node("Name", lName, Vec2f(0, 0), Vec2f(0.25, 0.025), rootInfosNode.get());
@@ -4293,6 +4299,7 @@ void ODFAEGCreator::displayEntityInfos(Entity* tile) {
     taBoundingBoxColH->getListener().connect("BBColPosHChanged", cmdBBColPosH);
     Command cmdBBColPosD (FastDelegate<bool>(&TextArea::isTextChanged, taBoundingBoxColD), FastDelegate<void>(&ODFAEGCreator::onCollisionBoundingBoxChanged, this, taBoundingBoxColD));
     taBoundingBoxColD->getListener().connect("BBColPosDChanged", cmdBBColPosD);
+
 }
 void ODFAEGCreator::displayExternalEntityInfo(Entity* entity) {
     displayTransformInfos(entity);
@@ -4301,6 +4308,8 @@ void ODFAEGCreator::displayExternalEntityInfo(Entity* entity) {
 void ODFAEGCreator::displayDecorInfos(Entity* decor) {
     displayTransformInfos(decor);
     displayEntityInfos(decor);
+    if (tabPane->getSelectedTab() != "Informations")
+        pInfos->setEventContextActivated(false);
 }
 void ODFAEGCreator::displayBigtileInfos(Entity* bigTile) {
     displayTransformInfos(bigTile);
@@ -4334,6 +4343,8 @@ void ODFAEGCreator::displayAnimInfos(Entity* anim) {
     animUpdaterNode->addOtherComponent(dpSelectAU, Vec2f(0.75, 0.025));
     Command cmdAUChanged(FastDelegate<bool>(&DropDownList::isValueChanged,dpSelectAU), FastDelegate<void>(&ODFAEGCreator::onAnimUpdaterChanged, this, dpSelectAU));
     dpSelectAU->getListener().connect("ANIMUPDATERCHANGED", cmdAUChanged);
+    if (tabPane->getSelectedTab() != "Informations")
+        pInfos->setEventContextActivated(false);
 }
 void ODFAEGCreator::displayParticleSystemInfos(Entity* ps) {
     displayTransformInfos(ps);
@@ -4532,6 +4543,8 @@ void ODFAEGCreator::displayWallInfos(Entity* wall) {
     dpWallType->setParent(pInfos);
     pInfos->addChild(dpWallType);
     node->addOtherComponent(dpWallType, Vec2f(0.75, 0.025));
+    if (tabPane->getSelectedTab() != "Informations")
+        pInfos->setEventContextActivated(false);
 }
 void ODFAEGCreator::displayTileInfos (Entity* tile) {
     try {
@@ -4692,6 +4705,10 @@ void ODFAEGCreator::displayTileInfos (Entity* tile) {
         sg->addState(stAddRemoveShape);
         stateStack.addStateGroup(sg);
         pScriptsFiles->setAutoResized(true);
+        if (tabPane->getSelectedTab() != "Informations")
+            pInfos->setEventContextActivated(false);
+        if (tabPane->getSelectedTab() != "Material")
+            pMaterial->setEventContextActivated(false);
     }
     catch (Erreur& erreur) {
         std::cerr << erreur.what() << std::endl;
