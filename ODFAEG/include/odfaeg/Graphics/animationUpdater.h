@@ -35,6 +35,15 @@ namespace odfaeg {
                 anim->setAnimUpdater(getName());
                 anims.push_back(anim);
             }
+            void removeAnim(Entity* anim) {
+                std::vector<Entity*>::iterator it;
+                for (it = anims.begin(); it != anims.end();) {
+                    if (anim == *it)
+                        it = anims.erase(it);
+                    else
+                        it++;
+                }
+            }
             /**
             * \fn onUpdate()
             * \brief update all the frames of the animations.

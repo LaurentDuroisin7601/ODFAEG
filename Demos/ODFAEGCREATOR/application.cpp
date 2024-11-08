@@ -1116,7 +1116,11 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
                 dynamic_cast<Entity*>(selectedObject)->getParent()->detachChild(dynamic_cast<Entity*>(selectedObject));
             }
             //std::cout<<"selected object child detached"<<std::endl;
+            if (dynamic_cast<Entity*>(selectedObject)->isAnimated()) {
+                static_cast<AnimUpdater*>(getWorld()->getTimer(dynamic_cast<Entity*>(selectedObject)->getAnimUpdater()))->removeAnim(dynamic_cast<Entity*>(selectedObject));
+            }
             delete dynamic_cast<Entity*>(selectedObject);
+
             //std::cout<<"selected object deleted"<<std::endl;
 
         }
@@ -1138,8 +1142,11 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
                 }
                 //std::cout<<"child detached"<<std::endl;
                 //std::cout<<"delete selected object : "<<dynamic_cast<Entity*>(objects[i])->getType()<<std::endl;
+                if (dynamic_cast<Entity*>(objects[i])->isAnimated()) {
+                    static_cast<AnimUpdater*>(getWorld()->getTimer(dynamic_cast<Entity*>(objects[i])->getAnimUpdater()))->removeAnim(dynamic_cast<Entity*>(objects[i]));
+                }
                 delete dynamic_cast<Entity*>(objects[i]);
-                //std::cout<<"entity deleted"<<std::endl;
+
             }
         }
         rectSelect.getItems().clear();
