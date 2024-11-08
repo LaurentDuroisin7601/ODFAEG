@@ -2010,8 +2010,7 @@ void ODFAEGCreator::onExec() {
                     std::string type;
                     ia6(name);
                     ia6(type);
-                    std::vector<int> psIds;
-                    ia6(psIds);
+
                     std::cout<<"name : "<<name<<"type : "<<type<<std::endl;
                     if (type == "EntityUpdater") {
                         //std::cout<<"load entities updater"<<std::endl;
@@ -2024,14 +2023,13 @@ void ODFAEGCreator::onExec() {
                         //std::cout<<"add particle systme updater"<<std::endl;
                         ParticleSystemUpdater* psu = new ParticleSystemUpdater();
                         psu->setName(name);
+                        std::vector<Entity*> ps;
+                        ia6(ps);
+                        for (unsigned int p = 0; p < ps.size(); p++) {
 
-                        for (unsigned int p = 0; p < psIds.size(); p++) {
+                            //std::cout<<"add particle system"<<std::endl;
+                            psu->addParticleSystem(ps[i]);
 
-                            Entity* entity = getWorld()->getEntity(psIds[p]);
-                            if (entity != nullptr && dynamic_cast<ParticleSystem*>(entity)) {
-                                //std::cout<<"add particle system"<<std::endl;
-                                psu->addParticleSystem(static_cast<ParticleSystem*>(entity));
-                            }
                         }
                         getWorld()->addWorker(psu);
                     }
@@ -3448,20 +3446,20 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
         oa5(size);
         for (unsigned int i = 0; i < workers.size(); i++) {
             std::string name = workers[i]->getName();
+            oa5(name);
             std::string workerType;
             std::vector<int> psIds;
             if (dynamic_cast<EntitiesUpdater*>(workers[i])) {
                 workerType = "EntityUpdater";
+                oa5(workerType);
             }
             if (dynamic_cast<ParticleSystemUpdater*>(workers[i])) {
                 workerType = "ParticleSystemUpdater";
+                oa5(workerType);
                 std::vector<Entity*> ps = static_cast<ParticleSystemUpdater*>(workers[i])->getParticleSystems();
-                for (unsigned int j = 0; j < ps.size(); j++) {
-                    psIds.push_back(ps[j]->getId());
-                }
+                oa5(ps);
             }
-            oa5(name);
-            oa5(workerType);
+
             oa5(psIds);
         }
         file5.close();
