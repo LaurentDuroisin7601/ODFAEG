@@ -179,6 +179,7 @@ class ODFAEG_GRAPHICS_API Scene : public SceneManager {
                 ar(cellHeight);
                 ar(cellDepth);
                 BaseChangementMatrix bcm = getBaseChangementMatrix();
+                std::cout<<"is 2D iso write : "<<bcm.isIso2DMatrix()<<std::endl;
                 ar(bcm);
                 std::vector<Entity*> entities = getRootEntities("*");
                 std::vector<Entity*> internalEntities;
@@ -218,7 +219,7 @@ class ODFAEG_GRAPHICS_API Scene : public SceneManager {
                 BaseChangementMatrix bcm;
                 //std::cout<<"read bcm"<<std::endl;
                 ar(bcm);
-                //std::cout<<"bcm read"<<std::endl;
+                std::cout<<"bcm read : "<<bcm.isIso2DMatrix()<<std::endl;
                 setBaseChangementMatrix(bcm);
                 std::vector<Entity*> entities;
                 //std::cout<<"read entities"<<std::endl;

@@ -302,11 +302,11 @@ namespace sorrok {
         View view = getView();
         //view.rotate(0, 0, 20);
         PerPixelLinkedListRenderComponent *frc1 = new PerPixelLinkedListRenderComponent(getRenderWindow(),0, "E_BIGTILE", ContextSettings(0, 0, 4, 4, 6));
-        PerPixelLinkedListRenderComponent *frc2 = new PerPixelLinkedListRenderComponent(getRenderWindow(), 1, "E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PARTICLES", ContextSettings(0, 0, 4, 4, 6));
+        PerPixelLinkedListRenderComponent *frc2 = new PerPixelLinkedListRenderComponent(getRenderWindow(), 1, "E_WALL+E_DECOR+E_ANIMATION_FRAME+E_HERO+E_PARTICLES", ContextSettings(0, 0, 4, 4, 6));
 
-        ReflectRefractRenderComponent *rrrc = new ReflectRefractRenderComponent(getRenderWindow(), 2, "E_BIGTILE+E_WALL+E_DECOR+E_ANIMATION+E_HERO", ContextSettings(0, 0, 4, 4, 6));
-        ShadowRenderComponent *src = new ShadowRenderComponent(getRenderWindow(), 3, "E_WALL+E_DECOR+E_ANIMATION+E_HERO", ContextSettings(0, 0, 4, 4, 6));
-        LightRenderComponent *lrc = new LightRenderComponent(getRenderWindow(), 4, "E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PONCTUAL_LIGHT", ContextSettings(0, 0, 4, 4, 6));
+        ReflectRefractRenderComponent *rrrc = new ReflectRefractRenderComponent(getRenderWindow(), 2, "E_BIGTILE+E_WALL+E_DECOR+E_ANIMATION_FRAME+E_HERO", ContextSettings(0, 0, 4, 4, 6));
+        ShadowRenderComponent *src = new ShadowRenderComponent(getRenderWindow(), 3, "E_WALL+E_DECOR+E_ANIMATION_FRAME+E_HERO", ContextSettings(0, 0, 4, 4, 6));
+        LightRenderComponent *lrc = new LightRenderComponent(getRenderWindow(), 4, "E_WALL+E_DECOR+E_ANIMATION_FRAME+E_HERO+E_PONCTUAL_LIGHT", ContextSettings(0, 0, 4, 4, 6));
         //std::cout<<"component created"<<std::endl;
         /*frc1->setVisible(false);
         frc2->setVisible(false);
@@ -357,6 +357,7 @@ namespace sorrok {
                 animation->addFrame(frame);
             }
             animation->getCurrentFrame()->setBoneIndex(i);
+            animation->getCurrentFrame()->setParent(caracter);
             caracter->addAnimation(animation);
             au->addAnim(animation);
         }
@@ -366,7 +367,7 @@ namespace sorrok {
         caracter->setCenter(Vec3f(getView().getPosition().x, getView().getPosition().y, getView().getPosition().y));
         caracter->setShadowScale(Vec3f(1, -1, 1));
         caracter->setShadowCenter(Vec3f(0, 280, -140));
-        caracter->setSelected(true);
+        //caracter->setSelected(true);
         //std::cout<<bb2->getPosition()<<" "<<bb2->getSize()<<std::endl;
         g2d::PonctualLight* light1 = entityFactory.make_entity<g2d::PonctualLight>(Vec3f(-50, 420, 420), 100, 50, 0, 255, sf::Color::Yellow, 16, entityFactory);
         light1->setLayer(1);
@@ -407,10 +408,10 @@ namespace sorrok {
     void MyAppli::onRender(RenderComponentManager *cm) {
         // draw everything here...
         getWorld()->drawOnComponents("E_BIGTILE", 0);
-        getWorld()->drawOnComponents("E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PARTICLES", 1);
-        getWorld()->drawOnComponents("E_BIGTILE+E_WALL+E_DECOR+E_ANIMATION+E_HERO", 2);
-        getWorld()->drawOnComponents("E_WALL+E_DECOR+E_ANIMATION+E_HERO", 3);
-        getWorld()->drawOnComponents("E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PONCTUAL_LIGHT", 4);
+        getWorld()->drawOnComponents("E_WALL+E_DECOR+E_ANIMATION_FRAME+E_HERO+E_PARTICLES", 1);
+        getWorld()->drawOnComponents("E_BIGTILE+E_WALL+E_DECOR+E_ANIMATION_FRAME+E_HERO", 2);
+        getWorld()->drawOnComponents("E_WALL+E_DECOR+E_ANIMATION_FRAME+E_HERO", 3);
+        getWorld()->drawOnComponents("E_WALL+E_DECOR+E_ANIMATION_FRAME+E_HERO+E_PONCTUAL_LIGHT", 4);
 
     }
     void MyAppli::onDisplay(RenderWindow* window) {

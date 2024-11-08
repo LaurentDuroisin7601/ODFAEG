@@ -1146,6 +1146,7 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
             delete selectionBorders[i];
         }
         selectionBorders.clear();*/
+
     }
     if (&getRenderWindow() == window && event.type == IEvent::KEYBOARD_EVENT && event.keyboard.type == IEvent::KEY_EVENT_PRESSED) {
         getListener().setCommandSlotParams("MoveAction", this, static_cast<IKeyboard::Key>(event.keyboard.code));
@@ -1170,8 +1171,10 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
                     selectedObject = shape.get();
                     displayInfos(shape.get());
                 } else if (dynamic_cast<Entity*>(selectedObject)) {
+                    static_cast<Entity*>(selectedObject)->setSelected(false);
                     Entity* entity = static_cast<Entity*>(selectedObject)->clone();
-                    //std::cout<<"wall type : "<<dynamic_cast<Entity*>(selectedObject)->getType()<<std::endl;
+
+
                     //std::cout<<"position : "<<position<<std::endl;
                     entity->setPosition(position);
 
@@ -1179,7 +1182,7 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
                     getWorld()->addEntity(entity);
                     selectedObject = entity;
                     Entity* selectedEntity = dynamic_cast<Entity*>(selectedObject);
-                    selectedEntity->setSelected(true);
+
                     if (selectedEntity->getType() == "E_TILE") {
                         displayTileInfos(selectedEntity);
                     } else if (selectedEntity->getType() == "E_BIGTILE") {
@@ -1877,8 +1880,8 @@ void ODFAEGCreator::onExec() {
                 ITextArchive ia2(ifs2);
                 std::vector<Scene*> maps;
                 ia2(maps);
-                /*std::vector<Entity*> decor = maps[0]->getEntities("E_DECOR");
-                maps[0]->deleteEntity(decor[0]);*/
+
+                std::cout<<"is 2D iso matrix ? "<<maps[0]->getBaseChangementMatrix().isIso2DMatrix()<<std::endl;
                 for (unsigned int i = 0; i < maps.size(); i++) {
                     //std::cout<<"add map "<<maps[i]->getName()<<std::endl;
                     maps[i]->setRenderComponentManager(&getRenderComponentManager());
@@ -2318,32 +2321,38 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         getRenderComponentManager().setEventContextActivated(false, *wGenerateTerrain);
         getRenderComponentManager().setEventContextActivated(true, getRenderWindow());
         if (dpSelectWallType->getSelectedItem() == "top bottom") {
+            std::cout<<"top bottom"<<std::endl;
             Wall* wall = factory.make_entity<g2d::Wall>(factory.make_entity<Tile>(nullptr, Vec3f(0, 0, 0), Vec3f(100, 100, 0), sf::IntRect(100, 0, 100, 100), factory),g2d::Wall::TOP_BOTTOM,&g2d::AmbientLight::getAmbientLight(), factory);
             walls[g2d::Wall::TOP_BOTTOM] = wall;
             selectedObject = wall->getChildren()[0];
             displayTileInfos(wall->getChildren()[0]);
         }
         else if (dpSelectWallType->getSelectedItem() == "right left") {
+            std::cout<<"right left"<<std::endl;
             Wall* wall = factory.make_entity<g2d::Wall>(factory.make_entity<Tile>(nullptr, Vec3f(0, 0, 0), Vec3f(100, 100, 0), sf::IntRect(100, 100, 100, 100), factory),g2d::Wall::RIGHT_LEFT,&g2d::AmbientLight::getAmbientLight(), factory);
             walls[g2d::Wall::RIGHT_LEFT] = wall;
             selectedObject = wall->getChildren()[0];
             displayTileInfos(wall->getChildren()[0]);
         } else if (dpSelectWallType->getSelectedItem() == "bottom right") {
+            std::cout<<"bottom right"<<std::endl;
             Wall* wall = factory.make_entity<g2d::Wall>(factory.make_entity<Tile>(nullptr, Vec3f(0, 0, 0), Vec3f(100, 100, 0), sf::IntRect(100, 200, 100, 100), factory),g2d::Wall::BOTTOM_RIGHT,&g2d::AmbientLight::getAmbientLight(), factory);
             walls[g2d::Wall::BOTTOM_RIGHT] = wall;
             selectedObject = wall->getChildren()[0];
             displayTileInfos(wall->getChildren()[0]);
         } else if (dpSelectWallType->getSelectedItem() == "top left") {
+            std::cout<<"top left"<<std::endl;
             Wall* wall = factory.make_entity<g2d::Wall>(factory.make_entity<Tile>(nullptr, Vec3f(0, 0, 0), Vec3f(100, 100, 0), sf::IntRect(100, 300, 100, 100), factory),g2d::Wall::TOP_LEFT,&g2d::AmbientLight::getAmbientLight(), factory);
             walls[g2d::Wall::TOP_LEFT] = wall;
             selectedObject = wall->getChildren()[0];
             displayTileInfos(wall->getChildren()[0]);
         } else if (dpSelectWallType->getSelectedItem() == "top right") {
+            std::cout<<"top right"<<std::endl;
             Wall* wall = factory.make_entity<g2d::Wall>(factory.make_entity<Tile>(nullptr, Vec3f(0, 0, 0), Vec3f(100, 100, 0), sf::IntRect(100, 400, 100, 100), factory),g2d::Wall::TOP_RIGHT,&g2d::AmbientLight::getAmbientLight(), factory);
             walls[g2d::Wall::TOP_RIGHT] = wall;
             selectedObject = wall->getChildren()[0];
             displayTileInfos(wall->getChildren()[0]);
         } else if (dpSelectWallType->getSelectedItem() == "bottom left") {
+            std::cout<<"bottom left"<<std::endl;
             Wall* wall = factory.make_entity<g2d::Wall>(factory.make_entity<Tile>(nullptr, Vec3f(0, 0, 0), Vec3f(100, 100, 0), sf::IntRect(100, 500, 100, 100), factory),g2d::Wall::BOTTOM_LEFT,&g2d::AmbientLight::getAmbientLight(), factory);
             walls[g2d::Wall::BOTTOM_LEFT] = wall;
             selectedObject = wall->getChildren()[0];
@@ -2508,8 +2517,9 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         getRenderComponentManager().setEventContextActivated(false, *wNewMap);
         tScriptEdit->setEventContextActivated(true);
         BaseChangementMatrix bcm;
-        if (dpMapTypeList->getSelectedItem() == "2D iso")
+        if (dpMapTypeList->getSelectedItem() == "2D iso") {
             bcm.set2DIsoMatrix();
+        }
         theMap = new Scene(&getRenderComponentManager(), taMapName->getText(), conversionStringInt(taMapWidth->getText()), conversionStringInt(taMapHeight->getText()), 0);
         theMap->setBaseChangementMatrix(bcm);
         getWorld()->addSceneManager(theMap);
@@ -3432,9 +3442,9 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
             if (dynamic_cast<AnimUpdater*>(timers[i])) {
                 timerType = "AnimationUpdater";
                 oa4(timerType);
-                std::cout<<"save animations"<<std::endl;
+                //std::cout<<"save animations"<<std::endl;
                 std::vector<Entity*> animations = static_cast<AnimUpdater*>(timers[i])->getAnims();
-                std::cout<<"animations saved"<<std::endl;
+                //std::cout<<"animations saved"<<std::endl;
                 oa4(animations);
             }
         }

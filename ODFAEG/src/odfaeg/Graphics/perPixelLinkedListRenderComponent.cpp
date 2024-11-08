@@ -1134,7 +1134,6 @@ namespace odfaeg {
             for (unsigned int i = 0; i < vEntities.size(); i++) {
 
                 if ( vEntities[i]->isLeaf()) {
-
                     Entity* border;
                     if (vEntities[i]->isSelected())
                         border = vEntities[i]->clone();

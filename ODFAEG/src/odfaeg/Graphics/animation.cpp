@@ -156,17 +156,16 @@ namespace odfaeg {
                     changeInterpolatedFrame(currentFrame->getChildren()[i]);
                 }
             }
-            if (currentFrame->getFaces().size() == interpolatedFrame->getFaces().size()) {
+            if (currentFrame->isLeaf()) {
+                interpolatedFrame->getFaces().clear();
                 for (unsigned int i = 0; i < currentFrame->getFaces().size(); i++) {
-                    VertexArray& iva = interpolatedFrame->getFace(i)->getVertexArray();
                     VertexArray va = currentFrame->getFaces()[i].getVertexArray();
-                    for (unsigned int n = 0; n < va.getVertexCount(); n++) {
-                        iva[n] = va[n];
-                    }
-
-                    interpolatedFrame->getFaces()[i].setMaterial(currentFrame->getFaces()[i].getMaterial());
-                    interpolatedFrame->getFaces()[i].setTransformMatrix(currentFrame->getFaces()[i].getTransformMatrix());
+                    Face face (va,currentFrame->getFaces()[i].getMaterial(), currentFrame->getTransform());
+                    interpolatedFrame->addFace(face);
                 }
+                interpolatedFrame->setOrigin(currentFrame->getOrigin());
+                interpolatedFrame->setPosition(currentFrame->getPosition());
+                interpolatedFrame->setSize(currentFrame->getSize());
                 math::Vec3f scale;
                 math::Vec3f localSize = currentFrame->getLocalBounds().getSize();
                 math::Vec3f size = currentFrame->getSize();
