@@ -1959,20 +1959,18 @@ void ODFAEGCreator::onExec() {
                 ITextArchive ia4(ifs4);
                 ia4(size);
                 for (unsigned int i  = 0; i < size; i++) {
+
                     std::string name;
                     std::string type;
                     ia4(name);
                     ia4(type);
-                    std::vector<int> animsIds;
-                    ia4(animsIds);
                     if (type == "AnimationUpdater") {
                         AnimUpdater* au = new AnimUpdater();
                         au->setName(name);
-                        for (unsigned int a = 0; a < animsIds.size(); a++) {
-                            Entity* entity = getWorld()->getEntity(animsIds[a]);
-                            if (entity != nullptr && dynamic_cast<Anim*>(entity)) {
-                                au->addAnim(static_cast<Anim*>(entity));
-                            }
+                        std::vector<Entity*> anims;
+                        ia4(anims);
+                        for (unsigned int a = 0; a < anims.size(); a++) {
+                            au->addAnim(anims[i]);
                         }
                         getWorld()->addTimer(au);
                     }
@@ -3430,18 +3428,17 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
         oa4(size);
         for (unsigned int i = 0; i < timers.size(); i++) {
             std::string name = timers[i]->getName();
+            oa4(name);
             std::string timerType;
-            std::vector<int> animIds;
+            std::vector<Entity*> animations;
             if (dynamic_cast<AnimUpdater*>(timers[i])) {
                 timerType = "AnimationUpdater";
+                oa4(timerType);
+                std::cout<<"save animations"<<std::endl;
                 std::vector<Entity*> animations = static_cast<AnimUpdater*>(timers[i])->getAnims();
-                for (unsigned int j = 0; j < animations.size(); j++) {
-                    animIds.push_back(animations[i]->getId());
-                }
+                std::cout<<"animations saved"<<std::endl;
+                oa4(animations);
             }
-            oa4(name);
-            oa4(timerType);
-            oa4(animIds);
         }
         file4.close();
         std::ofstream file5(appliname+"\\"+"workers.oc");

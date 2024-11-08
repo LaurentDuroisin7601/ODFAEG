@@ -328,12 +328,11 @@ namespace odfaeg {
                     cache.aus.push_back(std::move(ptr));
                 }
                 core::Timer* getTimer(std::string name) {
+                    std::vector<core::Timer*> timers;
                     for (unsigned int i = 0; i < cache.aus.size(); i++) {
-                        if (cache.aus[i]->getName() == name) {
+                        if (cache.aus[i]->getName() == name)
                             return cache.aus[i].get();
-                        }
                     }
-                    return nullptr;
                 }
                 std::vector<core::Timer*> getTimers() {
                     std::vector<core::Timer*> timers;

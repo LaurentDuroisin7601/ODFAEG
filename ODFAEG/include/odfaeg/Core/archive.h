@@ -1262,7 +1262,7 @@ namespace odfaeg {
                         std::string typeName;
                         getline(buffer, typeName);
                         if (typeName == "BaseType") {
-                            object = new O();
+                            object = new O(std::forward<Args>(args)...);
                             std::ostringstream oss;
                             oss<<typeid(*object).name()<<"*"<<reinterpret_cast<unsigned long long int>(object);
                             std::pair<long long int, std::string> newAddress (id, oss.str());
