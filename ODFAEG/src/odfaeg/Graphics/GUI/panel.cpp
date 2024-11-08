@@ -105,28 +105,33 @@ namespace odfaeg {
             void Panel::updateScrolls() {
                 maxSize = math::Vec3f(0, 0, 0);
                 std::vector<LightComponent*> children = getChildren();
+                //std::cout<<"update children"<<std::endl;
                 for (unsigned int i = 0; i < children.size(); i++) {
                     if (children[i]->getPosition().y - getPosition().y + children[i]->getSize().y > maxSize.y)
                         maxSize.y = children[i]->getPosition().y - getPosition().y + children[i]->getSize().y;
                     if (children[i]->getPosition().x - getPosition().x + children[i]->getSize().x > maxSize.x)
                         maxSize.x = children[i]->getPosition().x - getPosition().x + children[i]->getSize().x;
                 }
+                //std::cout<<"update sprites"<<std::endl;
                 for (unsigned int i = 0; i < sprites.size(); i++) {
                     if (sprites[i].getPosition().y + sprites[i].getSize().y > maxSize.y)
                         maxSize.y = sprites[i].getPosition().y + sprites[i].getSize().y;
                     if(sprites[i].getPosition().x + sprites[i].getSize().x > maxSize.x)
                         maxSize.x = sprites[i].getPosition().x + sprites[i].getSize().x;
                 }
+                //std::cout<<"update shapes"<<std::endl;
                 for (unsigned int i = 0; i < shapes.size(); i++) {
                     if (shapes[i]->getPosition().y + shapes[i]->getSize().y > maxSize.y)
                         maxSize.y = shapes[i]->getPosition().y + shapes[i]->getSize().y;
                     if(shapes[i]->getPosition().x + shapes[i]->getSize().x > maxSize.x)
                         maxSize.x = shapes[i]->getPosition().x + shapes[i]->getSize().x;
                 }
+                //std::cout<<"corner"<<std::endl;
                 if (maxSize.x > getSize().x || maxSize.y > getSize().y) {
                     corner = RectangleShape(math::Vec3f(10, 10, 0));
                     corner.setPosition(math::Vec3f(getPosition().x + getSize().x - 10, getPosition().y + getSize().y - 10, 0));
                 }
+                //std::cout<<"vert scroll"<<std::endl;
                 if (maxSize.x > getSize().x) {
                     unsigned int scrollXSize = (getSize().x - 10) / maxSize.x * (getSize().x - 10);
                     vertScrollBar = RectangleShape(math::Vec3f(scrollXSize, 10, 0));
@@ -135,6 +140,7 @@ namespace odfaeg {
                 } else {
                     scrollX = false;
                 }
+                //std::cout<<"horizontal scroll"<<std::endl;
                 if (maxSize.y > getSize().y) {
                     unsigned int scrollYSize = (getSize().y - 10) / maxSize.y * (getSize().y - 10);
                     horScrollBar = RectangleShape(math::Vec3f(10, scrollYSize, 0));
@@ -143,6 +149,7 @@ namespace odfaeg {
                 } else {
                     scrollY = false;
                 }
+                //std::cout<<"end update scroll"<<std::endl;
             }
             void Panel::addChild(LightComponent* child) {
                 //std::cout<<"add child"<<std::endl;
@@ -151,6 +158,7 @@ namespace odfaeg {
                 recomputeSize();
                 //std::cout<<"update scrolls"<<std::endl;
                 updateScrolls();
+                //std::cout<<"end add child"<<std::endl;
             }
             void Panel::onSizeRecomputed() {
 

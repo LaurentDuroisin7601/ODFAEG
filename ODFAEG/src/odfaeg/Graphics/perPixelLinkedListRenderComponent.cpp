@@ -1130,7 +1130,7 @@ namespace odfaeg {
             selectedInstanceIndexScaleBatcher.clear();
             visibleSelectedScaleEntities.clear();
 
-            //std::cout<<"load tile"<<std::endl;
+
             for (unsigned int i = 0; i < vEntities.size(); i++) {
 
                 if ( vEntities[i]->isLeaf()) {

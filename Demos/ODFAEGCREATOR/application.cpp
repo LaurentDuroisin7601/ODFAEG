@@ -781,6 +781,7 @@ void ODFAEGCreator::onInit() {
         pScriptsFiles->setBackgroundColor(sf::Color::Black);
         pInfos = new Panel(getRenderWindow(), Vec3f(0, 0, 0), Vec3f(200, 700, 0), 0);
         pInfos->setBackgroundColor(sf::Color::White);
+        pInfos->setName("PINFOS");
         //pInfos->setScissorEnabled(false);
         rootInfosNode = std::make_unique<Node>("Infos", pInfos, Vec2f(0.f, 0.05f), Vec2f(1.f, 1.f - 0.05f));
         tabPane->addTab(pInfos, "Informations", *fm.getResourceByAlias(Fonts::Serif));
@@ -3815,6 +3816,7 @@ void ODFAEGCreator::displayTransformInfos(Transformable* tile) {
     pInfos->removeAll();
     pShadows->removeAll();
     pCollisions->removeAll();
+
     FontManager<Fonts>& fm = cache.resourceManager<Font, Fonts>("FontManager");
     //Origin.
     lOrigin = new Label(getRenderWindow(),Vec3f(0, 0, 0), Vec3f(200, 17, 0), fm.getResourceByAlias(Fonts::Serif), "Origin : ", 15);
@@ -3899,6 +3901,7 @@ void ODFAEGCreator::displayTransformInfos(Transformable* tile) {
     tPosX->getListener().connect("tPosXChanged", cmdPosX);
     tPosY->getListener().connect("tPosYChanged", cmdPosY);
     tPosZ->getListener().connect("tPosZChanged", cmdPosZ);
+
     //Size.
     Label* lSize = new Label(getRenderWindow(),Vec3f(0,0,0),Vec3f(200, 17, 0),fm.getResourceByAlias(Fonts::Serif),"Size : ", 15);
     lSize->setParent(pTransform);
@@ -3940,6 +3943,7 @@ void ODFAEGCreator::displayTransformInfos(Transformable* tile) {
     tSizeW->getListener().connect("tSizeWChanged", cmdSizeW);
     tSizeH->getListener().connect("tSizeHChanged", cmdSizeH);
     tSizeD->getListener().connect("tSizeDChanged", cmdSizeD);
+
     //Move
     Label* lMove = new Label(getRenderWindow(),Vec3f(0,0,0),Vec3f(200, 17, 0),fm.getResourceByAlias(Fonts::Serif),"Translation : ", 15);
     lMove->setParent(pTransform);
@@ -3981,6 +3985,7 @@ void ODFAEGCreator::displayTransformInfos(Transformable* tile) {
     tMoveX->getListener().connect("tMoveXChanged", cmdMoveX);
     tMoveY->getListener().connect("tMoveYChanged", cmdMoveY);
     tMoveZ->getListener().connect("tMoveZChanged", cmdMoveZ);
+
     //Scale.
     Label* lScale = new Label(getRenderWindow(),Vec3f(0,0,0),Vec3f(200, 17, 0),fm.getResourceByAlias(Fonts::Serif),"Scale : ", 15);
     lScale->setParent(pTransform);
@@ -4022,14 +4027,19 @@ void ODFAEGCreator::displayTransformInfos(Transformable* tile) {
     tScaleX->getListener().connect("tScaleXChanged", cmdScaleX);
     tScaleY->getListener().connect("tScaleYChanged", cmdScaleY);
     tScaleZ->getListener().connect("tScaleZChanged", cmdScaleZ);
+
     //Rotation.
+
     Label* lRotation = new Label(getRenderWindow(),Vec3f(0, 0, 0),Vec3f(200, 17, 0),fm.getResourceByAlias(Fonts::Serif),"rotation : ", 15);
     lRotation->setParent(pTransform);
     Node* lRotationNode = new Node("ROTATION",lRotation,Vec2f(0, 0), Vec2f(1, 0.025),rootPropNode.get());
+
     pTransform->addChild(lRotation);
+
     Label* lAngle = new Label(getRenderWindow(),Vec3f(0, 0, 0),Vec3f(200, 17, 0),fm.getResourceByAlias(Fonts::Serif),"angle : ", 15);
     lAngle->setParent(pTransform);
     Node* lRotAngleNode = new Node("ANGLE",lAngle,Vec2f(0, 0),Vec2f(0.25, 0.025), rootPropNode.get());
+
     pTransform->addChild(lAngle);
     tRotAngle = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),conversionFloatString(tile->getRotation()),getRenderWindow());
     tRotAngle->setParent(pTransform);
@@ -4038,10 +4048,12 @@ void ODFAEGCreator::displayTransformInfos(Transformable* tile) {
     pTransform->addChild(tRotAngle);
     Command cmdRotAngle (FastDelegate<bool>(&TextArea::isTextChanged, tRotAngle), FastDelegate<void>(&ODFAEGCreator::onObjectRotationChanged, this, tRotAngle));
     tRotAngle->getListener().connect("ROTANGLECHANGED", cmdRotAngle);
-    if (tabPane->getSelectedTab() != "Transfom")
+    if (tabPane->getSelectedTab() != "Transform")
         pTransform->setEventContextActivated(false);
+
 }
 void ODFAEGCreator::displayEntityInfos(Entity* tile) {
+
     FontManager<Fonts>& fm = cache.resourceManager<Font, Fonts>("FontManager");
     Label* lId = new Label(getRenderWindow(),Vec3f(0, 0, 0), Vec3f(200, 17, 0),fm.getResourceByAlias(Fonts::Serif), "Id : entity-"+conversionIntString(tile->getId()), 15);
     lId->setParent(pInfos);
@@ -4061,17 +4073,23 @@ void ODFAEGCreator::displayEntityInfos(Entity* tile) {
     taName->setName("TANAME");
     nameNode->addOtherComponent(taName, Vec2f(0.75, 0.025));
     pInfos->addChild(taName);
+
     Command cmdName (FastDelegate<bool>(&TextArea::isTextChanged, taName), FastDelegate<void>(&ODFAEGCreator::onObjectNameChanged, this,taName));
     taName->getListener().connect("CMDNAMECHANGED", cmdName);
+
     if (tile->getParent() == nullptr) {
         lParent = new Label(getRenderWindow(),Vec3f(0, 0, 0), Vec3f(200, 17, 0),fm.getResourceByAlias(Fonts::Serif), "Parent entity : NONE", 15);
     } else {
         lParent = new Label(getRenderWindow(),Vec3f(0, 0, 0), Vec3f(200, 17, 0),fm.getResourceByAlias(Fonts::Serif), "Parent entity : "+tile->getParent()->getName(), 15);
     }
     lParent->setParent(pInfos);
+
+
     Action a(Action::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
     Command cmdParentClicked(a, FastDelegate<bool>(&Label::isMouseInside, lParent), FastDelegate<void>(&ODFAEGCreator::onParentClicked, this, lParent));
-    lParent->getListener().connect("CMDPARENTCLICKED", cmdParentClicked);
+    pInfos->getListener().removeLater("CMDPARENTCLICKED");
+    pInfos->getListener().connect("CMDPARENTCLICKED", cmdParentClicked);
+
     Node* parentNode = new Node("Parent",lParent,Vec2f(0, 0),Vec2f(1, 0.025),rootInfosNode.get());
     pInfos->addChild(lParent);
     Label* lChildren = new Label(getRenderWindow(),Vec3f(0, 0, 0), Vec3f(100, 17, 0),fm.getResourceByAlias(Fonts::Serif), "Children : ", 15);
@@ -4090,7 +4108,9 @@ void ODFAEGCreator::displayEntityInfos(Entity* tile) {
     pInfos->addChild(dpChildren);
     childrenNode->addOtherComponent(dpChildren, Vec2f(0.75, 0.025));
     Command cmdChildren(FastDelegate<bool>(&DropDownList::isValueChanged, dpChildren), FastDelegate<void>(&ODFAEGCreator::displayChildren, this, dpChildren));
-    dpChildren->getListener().connect("DisplayChildren", cmdChildren);
+    pInfos->getListener().removeLater("DisplayChildren");
+    pInfos->getListener().connect("DisplayChildren", cmdChildren);
+
     std::vector<SceneManager*> ems = getWorld()->getSceneManagers();
     Label* lEmList = new Label(getRenderWindow(),Vec3f(0, 0, 0), Vec3f(200, 14, 0), fm.getResourceByAlias(Fonts::Serif), "Scene : ", 15);
     lEmList->setParent(pInfos);
@@ -4124,6 +4144,7 @@ void ODFAEGCreator::displayEntityInfos(Entity* tile) {
     dpSelectParent->getListener().connect("ParentChanged",cmdParentChanged);
     selectParentNode->addOtherComponent(dpSelectParent,Vec2f(0.75, 0.025));
     //Shadow center.
+
     Label* lShadowCenter = new Label(getRenderWindow(), Vec3f(0, 0, 0), Vec3f(100, 50, 0), fm.getResourceByAlias(Fonts::Serif), "Shadow center : ", 15);
     Node* nShadowCenter = new Node("ShadowCenter", lShadowCenter, Vec2f(0, 0), Vec2f(1, 0.025),rootShadowsNode.get());
     lShadowCenter->setParent(pShadows);
@@ -4222,7 +4243,8 @@ void ODFAEGCreator::displayEntityInfos(Entity* tile) {
     pShadows->addChild(taShadowRotAngle);
     Command cmdRotAngle(FastDelegate<bool>(&TextArea::isTextChanged, taShadowRotAngle), FastDelegate<void>(&ODFAEGCreator::onShadowRotAngleChanged, this, taShadowRotAngle));
     taShadowRotAngle->getListener().connect("SHADOWROTANGLECHANGED", cmdRotAngle);
-    //Collision.
+
+     //Collision.
     Label* lCollision = new Label(getRenderWindow(), Vec3f(0, 0, 0), Vec3f(100, 50, 0), fm.getResourceByAlias(Fonts::Serif), "Collision box : ", 15);
     Node* nCollision = new Node("Collision", lCollision, Vec2f(0, 0), Vec2f(1, 0.025),rootCollisionNode.get());
     lCollision->setParent(pCollisions);
@@ -4278,15 +4300,25 @@ void ODFAEGCreator::displayEntityInfos(Entity* tile) {
     taBoundingBoxColH->setParent(pCollisions);
     pCollisions->addChild(taBoundingBoxColH);
     //Depth.
+
     Label* lCollisionDPos = new Label(getRenderWindow(), Vec3f(0, 0, 0), Vec3f(100, 50, 0), fm.getResourceByAlias(Fonts::Serif), "D : ", 15);
+
     Node* nCollisionPosD = new Node("CollisionPosD", lCollisionDPos,Vec2f(0, 0), Vec2f(0.25, 0.025),rootCollisionNode.get());
+
     lCollisionDPos->setParent(pCollisions);
+
     pCollisions->addChild(lCollisionDPos);
+
+
     taBoundingBoxColD = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0), fm.getResourceByAlias(Fonts::Serif), (tile->getCollisionVolume() != nullptr) ? conversionFloatString(tile->getCollisionVolume()->getSize().z) : "0",getRenderWindow());
+
     taBoundingBoxColD->setTextSize(15);
+
     nCollisionPosD->addOtherComponent(taBoundingBoxColD, Vec2f(0.75, 0.025));
+
     taBoundingBoxColD->setParent(pCollisions);
     pCollisions->addChild(taBoundingBoxColD);
+
     Command cmdBBColPosX (FastDelegate<bool>(&TextArea::isTextChanged, taBoundingBoxColX), FastDelegate<void>(&ODFAEGCreator::onCollisionBoundingBoxChanged, this, taBoundingBoxColX));
     taBoundingBoxColX->getListener().connect("BBColPosXChanged", cmdBBColPosX);
     Command cmdBBColPosY (FastDelegate<bool>(&TextArea::isTextChanged, taBoundingBoxColY), FastDelegate<void>(&ODFAEGCreator::onCollisionBoundingBoxChanged, this, taBoundingBoxColY));
@@ -4299,6 +4331,13 @@ void ODFAEGCreator::displayEntityInfos(Entity* tile) {
     taBoundingBoxColH->getListener().connect("BBColPosHChanged", cmdBBColPosH);
     Command cmdBBColPosD (FastDelegate<bool>(&TextArea::isTextChanged, taBoundingBoxColD), FastDelegate<void>(&ODFAEGCreator::onCollisionBoundingBoxChanged, this, taBoundingBoxColD));
     taBoundingBoxColD->getListener().connect("BBColPosDChanged", cmdBBColPosD);
+    if (tabPane->getSelectedTab() != "Collisions")
+        pCollisions->setEventContextActivated(false);
+    if (tabPane->getSelectedTab() != "Shadow")
+        pShadows->setEventContextActivated(false);
+    if (tabPane->getSelectedTab() != "Material")
+        pMaterial->setEventContextActivated(false);
+
 
 }
 void ODFAEGCreator::displayExternalEntityInfo(Entity* entity) {
@@ -4317,24 +4356,31 @@ void ODFAEGCreator::displayBigtileInfos(Entity* bigTile) {
 }
 void ODFAEGCreator::displayAnimInfos(Entity* anim) {
     displayTransformInfos(anim);
+
     displayEntityInfos(anim);
+
     FontManager<Fonts>& fm = cache.resourceManager<Font, Fonts>("FontManager");
     Label* lFrameRate = new Label(getRenderWindow(),Vec3f(0, 0, 0),Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),"frame rate : ", 15);
     Node* frNode = new Node("FRAMERATE",lFrameRate,Vec2f(0, 0),Vec2f(0.25, 0.025),rootInfosNode.get());
     lFrameRate->setParent(pInfos);
     pInfos->addChild(lFrameRate);
-    TextArea* taFrameRate = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0), fm.getResourceByAlias(Fonts::Serif),"",getRenderWindow());
+    taFrameRate = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0), fm.getResourceByAlias(Fonts::Serif),"",getRenderWindow());
+    taFrameRate->setTextSize(15);
     taFrameRate->setParent(pInfos);
     pInfos->addChild(taFrameRate);
     frNode->addOtherComponent(taFrameRate, Vec2f(0.75, 0.025));
-    Command cmdFRChanged(FastDelegate<bool>(&TextArea::isTextChanged, taFrameRate), FastDelegate<void>(&ODFAEGCreator::onFrameRateChanged, this, taFrameRate));
+
+    Command cmdFRChanged(FastDelegate<bool> (&TextArea::isTextChanged, taFrameRate), FastDelegate<void>(&ODFAEGCreator::onFrameRateChanged, this, taFrameRate));
+
     taFrameRate->getListener().connect("FRCHANGED", cmdFRChanged);
+
+
     Label* lSelectAU = new Label(getRenderWindow(),Vec3f(0, 0, 0),Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),"Anim updater : ", 15);
     Node* animUpdaterNode = new Node("ANIMUPDATER",lSelectAU,Vec2f(0, 0),Vec2f(0.25, 0.025),rootInfosNode.get());
     lSelectAU->setParent(pInfos);
     pInfos->addChild(lSelectAU);
     dpSelectAU = new DropDownList(getRenderWindow(),Vec3f(0, 0, 0),Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),"NONE",15);
-    std::cout<<"add timers"<<std::endl;
+    //std::cout<<"add timers"<<std::endl;
     std::vector<Timer*> timers = getWorld()->getTimers();
     for (unsigned int i = 0; i < timers.size(); i++) {
         dpSelectAU->addItem(timers[i]->getName(), 15);
@@ -4347,6 +4393,8 @@ void ODFAEGCreator::displayAnimInfos(Entity* anim) {
     dpSelectAU->getListener().connect("ANIMUPDATERCHANGED", cmdAUChanged);
     if (tabPane->getSelectedTab() != "Informations")
         pInfos->setEventContextActivated(false);
+
+
 }
 void ODFAEGCreator::displayParticleSystemInfos(Entity* ps) {
     displayTransformInfos(ps);

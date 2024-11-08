@@ -140,8 +140,6 @@ namespace odfaeg {
             }
             virtual void processEvents() {
                 if (isEventContextActivated()) {
-                    /*if (getName() == "TEXCOORDY")
-                        std::cout<<"process pmaterial event"<<std::endl;*/
                     getListener().processEvents();
                 }
                 for (unsigned int i = 0; i < children.size(); i++) {
