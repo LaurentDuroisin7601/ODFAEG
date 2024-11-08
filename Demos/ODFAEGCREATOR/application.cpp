@@ -3448,7 +3448,6 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
             std::string name = workers[i]->getName();
             oa5(name);
             std::string workerType;
-            std::vector<int> psIds;
             if (dynamic_cast<EntitiesUpdater*>(workers[i])) {
                 workerType = "EntityUpdater";
                 oa5(workerType);
@@ -3459,8 +3458,6 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
                 std::vector<Entity*> ps = static_cast<ParticleSystemUpdater*>(workers[i])->getParticleSystems();
                 oa5(ps);
             }
-
-            oa5(psIds);
         }
         file5.close();
         std::ofstream file6(appliname+"\\"+"scenes.oc");
