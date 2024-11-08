@@ -421,6 +421,10 @@ namespace odfaeg {
                 virtual void stop();
                 virtual void update(sf::Time dt);
                 virtual void update();
+                virtual void setAnimUpdater(std::string name);
+                virtual std::string getAnimUpdater();
+                virtual void setPsUpdater(std::string name);
+                virtual std::string getPsUpdater();
             protected :
                 /** \fn Entity(math::Vec3f position, math::Vec3f size, math::Vec3f origin, std::string type, Entity* parent)
                  * \brief constructor.

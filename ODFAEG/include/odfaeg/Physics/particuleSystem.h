@@ -194,6 +194,7 @@ namespace odfaeg
         template<typename Archive>
         void vtserialize(Archive& ar) {
             GameObject::vtserialize(ar);
+            ar(psUpdater);
             if (!ar.isInputArchive()) {
                 unsigned int size = mTextureRects.size();
                 ar(size);
@@ -243,7 +244,10 @@ namespace odfaeg
         }
         // ---------------------------------------------------------------------------------------------------------------------------
         // Private variables
+        void setPsUpdater(std::string name);
+        std::string getPsUpdater();
         private:
+        std::string psUpdater;
         ParticleContainer	mParticles;
         AffectorContainer	mAffectors;
         EmitterContainer	mEmitters;

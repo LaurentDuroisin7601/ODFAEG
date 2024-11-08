@@ -71,7 +71,7 @@ namespace odfaeg
         , mNeedsVertexUpdate(true)
         , mQuads()
         , mNeedsQuadUpdate(true) {
-
+            psUpdater = "";
         }
         ParticleSystem::ParticleSystem(math::Vec3f position, math::Vec3f size, graphic::EntityFactory& factory)
         : graphic::GameObject(position, size, size*0.5f, "E_PARTICLES", factory), mParticles()
@@ -88,6 +88,7 @@ namespace odfaeg
             material.addTexture(nullptr);
             graphic::Face face (mVertices, material, getTransform());
             addFace(face);
+            psUpdater = "";
         }
         graphic::Entity* ParticleSystem::clone() {
             ParticleSystem* ps = factory.make_entity<ParticleSystem>(getPosition(), getSize(), factory);
@@ -335,6 +336,12 @@ namespace odfaeg
                 else
                     it++;
             }
+        }
+        void ParticleSystem::setPsUpdater(std::string name) {
+            psUpdater = name;
+        }
+        std::string ParticleSystem::getPsUpdater() {
+            return psUpdater;
         }
     }
 

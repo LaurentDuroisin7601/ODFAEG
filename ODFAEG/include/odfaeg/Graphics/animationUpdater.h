@@ -32,6 +32,7 @@ namespace odfaeg {
             * \param g2d::Anim : the 2D animation to add.
             */
             void addAnim (Entity *anim) {
+                anim->setAnimUpdater(getName());
                 anims.push_back(anim);
             }
             /**
@@ -39,13 +40,14 @@ namespace odfaeg {
             * \brief update all the frames of the animations.
             */
             void onUpdate() {
+
                 for (unsigned int i = 0; i < anims.size(); i++) {
-                   /* if (anims[i]->getRootType() == "E_MONSTER")
-                        std::cout<<"running ? "<<anims[i]->isRunning()<<std::endl;*/
+
                     if (anims[i]->isRunning() &&
                         anims[i]->getElapsedTime().asSeconds() > anims[i]->getFrameRate()) {
                        /* if (anims[i]->getRootType() == "E_HERO")
                             std::cout<<"update anim hero"<<std::endl;*/
+
                         anims[i]->computeNextFrame();
                         if (anims[i]->isCurrentFrameChanged() /*&& graphic::World::containsVisibleParentEntity(anims[i]->getRootEntity())*/) {
                             //graphic::World::changeVisibleEntity(anims[i]->getPreviousFrame(), anims[i]->getCurrentFrame());

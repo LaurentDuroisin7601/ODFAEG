@@ -190,6 +190,7 @@ namespace odfaeg {
                     ar(loop);
                     ar(currentFrameChanged);
                     ar(interpolatedFrame);
+                    ar(auname);
                 }
                 Entity* clone();
                 void onMove(math::Vec3f& t);
@@ -197,6 +198,8 @@ namespace odfaeg {
                 *  \fn ~Anim()
                 *  destructor.
                 */
+                void setAnimUpdater(std::string name);
+                std::string getAnimUpdater();
                 virtual ~Anim();
             private :
                 void interpolate(Entity* currentFrame, Entity* nextFrame);
@@ -212,6 +215,7 @@ namespace odfaeg {
                 Entity *nextFrame, *currentFrame, *previousFrame; /**> previousCurrentEntity : the previous frame and the current frame of the entity*/
                 bool running, loop, currentFrameChanged; /**> tells if the animation is currently playing in loop (or not) and if the current frame have just been changed.*/
                 std::unique_ptr<Entity> interpolatedFrame;
+                std::string auname;
         };
     }
 }

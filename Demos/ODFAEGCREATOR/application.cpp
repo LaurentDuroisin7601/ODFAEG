@@ -74,6 +74,7 @@ Application (vm, title, sf::Style::Resize|sf::Style::Close, ContextSettings(0, 8
 
 
 	getRenderWindow().setKeyRepeatEnabled(false);
+
 	EXPORT_CLASS_GUID(BoundingVolumeBoundingBox, BoundingVolume, BoundingBox)
     EXPORT_CLASS_GUID_(EntityTile, Entity, Tile, VA_LIST(EntityFactory&), VA_LIST(std::ref(factory)))
     EXPORT_CLASS_GUID_(EntityBigTile, Entity, BigTile, VA_LIST(EntityFactory&), VA_LIST(std::ref(factory)))
@@ -1498,13 +1499,18 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
             rectSelect.setRect(pos.x, pos.y, pos.z, box.getSize().x, box.getSize().y, box.getSize().z);
             if (getWorld()->getCurrentSceneManager() != nullptr) {
                 //std::cout<<"select get visible entities"<<std::endl;
+                std::cout<<"get entities"<<std::endl;
                 std::vector<Entity*> entities = getWorld()->getEntities(taSelectExpression->getText());
+
                 for (unsigned int i = 0; i < entities.size(); i++) {
+
                     //std::cout<<"type : "<<entities[i]->getType()<<std::endl<<"select pos : "<<rectSelect.getSelectionRect().getPosition()<<"select size : "<<rectSelect.getSelectionRect().getSize()<<"globalbounds pos : "<<entities[i]->getGlobalBounds().getPosition()<<"globalbounds size : "<<entities[i]->getGlobalBounds().getSize()<<std::endl;
                     //std::cout<<rectSelect.getSelectionRect().getPosition()<<rectSelect.getSelectionRect().getSize()<<entities[i]->getGlobalBounds().getPosition()<<entities[i]->getGlobalBounds().getSize();
                     if (rectSelect.getSelectionRect().intersects(entities[i]->getGlobalBounds())) {
                         //if (dynamic_cast<Tile*>(entities[i])) {
                             //std::cout<<"select entity : "<<entities[i]->getType()<<std::endl;
+                            if (entities[i]->getType() == "E_ANIMATION")
+                                std::cout<<"add animation"<<std::endl;
                             rectSelect.addItem(entities[i]);
                             entities[i]->setSelected(true);
                             //std::cout<<"border added"<<std::endl;
@@ -1881,7 +1887,7 @@ void ODFAEGCreator::onExec() {
                 std::vector<Scene*> maps;
                 ia2(maps);
 
-                std::cout<<"is 2D iso matrix ? "<<maps[0]->getBaseChangementMatrix().isIso2DMatrix()<<std::endl;
+                //std::cout<<"is 2D iso matrix ? "<<maps[0]->getBaseChangementMatrix().isIso2DMatrix()<<std::endl;
                 for (unsigned int i = 0; i < maps.size(); i++) {
                     //std::cout<<"add map "<<maps[i]->getName()<<std::endl;
                     maps[i]->setRenderComponentManager(&getRenderComponentManager());
@@ -1939,12 +1945,15 @@ void ODFAEGCreator::onExec() {
                     }
                 }
             }
+
             std::vector<Entity*> entities=getWorld()->getEntities("*");
+
             for (unsigned int i = 0; i < entities.size(); i++) {
                 //std::cout<<"load entities"<<std::endl;
                 for (unsigned int f = 0; f < entities[i]->getNbFaces(); f++) {
                     Face* face = entities[i]->getFace(f);
                     std::string alias = face->getMaterial().getTexId();
+
                     if (alias != "") {
                         face->getMaterial().clearTextures();
                         face->getMaterial().addTexture(tm.getResourceByAlias(alias), face->getMaterial().getTexRect());
@@ -1968,12 +1977,14 @@ void ODFAEGCreator::onExec() {
                     ia4(name);
                     ia4(type);
                     if (type == "AnimationUpdater") {
+                        std::cout<<"add anim updater"<<std::endl;
                         AnimUpdater* au = new AnimUpdater();
                         au->setName(name);
-                        std::vector<Entity*> anims;
-                        ia4(anims);
+                        std::vector<Entity*> anims = getWorld()->getRootEntities("E_ANIMATION");
                         for (unsigned int a = 0; a < anims.size(); a++) {
-                            au->addAnim(anims[i]);
+                            if (anims[a]->getAnimUpdater() == name) {
+                                au->addAnim(anims[a]);
+                            }
                         }
                         getWorld()->addTimer(au);
                     }
@@ -2026,12 +2037,11 @@ void ODFAEGCreator::onExec() {
                         //std::cout<<"add particle systme updater"<<std::endl;
                         ParticleSystemUpdater* psu = new ParticleSystemUpdater();
                         psu->setName(name);
-                        std::vector<Entity*> ps;
-                        ia6(ps);
+                        std::vector<Entity*> ps = getWorld()->getEntities("E_PARTICLES");
                         for (unsigned int p = 0; p < ps.size(); p++) {
 
-                            //std::cout<<"add particle system"<<std::endl;
-                            psu->addParticleSystem(ps[i]);
+                            if (ps[p]->getPsUpdater() == name)
+                                psu->addParticleSystem(ps[p]);
 
                         }
                         getWorld()->addWorker(psu);
@@ -2309,7 +2319,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         isGeneratingTerrain = true;
         wGenerateTerrain->setVisible(false);
         getRenderComponentManager().setEventContextActivated(false, *wGenerateTerrain);
-         getRenderComponentManager().setEventContextActivated(true, getRenderWindow());
+        getRenderComponentManager().setEventContextActivated(true, getRenderWindow());
         Tile* tile = factory.make_entity<Tile>(nullptr, Vec3f(0, 0, 0), Vec3f(120, 60, 0),sf::IntRect(0, 0, 100, 50), factory);
         selectedObject = tile;
         ground.push_back(tile);
@@ -3442,10 +3452,6 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
             if (dynamic_cast<AnimUpdater*>(timers[i])) {
                 timerType = "AnimationUpdater";
                 oa4(timerType);
-                //std::cout<<"save animations"<<std::endl;
-                std::vector<Entity*> animations = static_cast<AnimUpdater*>(timers[i])->getAnims();
-                //std::cout<<"animations saved"<<std::endl;
-                oa4(animations);
             }
         }
         file4.close();
@@ -3465,8 +3471,6 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
             if (dynamic_cast<ParticleSystemUpdater*>(workers[i])) {
                 workerType = "ParticleSystemUpdater";
                 oa5(workerType);
-                std::vector<Entity*> ps = static_cast<ParticleSystemUpdater*>(workers[i])->getParticleSystems();
-                oa5(ps);
             }
         }
         file5.close();
@@ -5632,8 +5636,7 @@ void ODFAEGCreator::onSelectedParentChanged(DropDownList* dp) {
                 getWorld()->removeEntity(static_cast<Entity*>(entity));
                 static_cast<Entity*>(selectedObject)->setParent(entity);
                 entity->addChild(static_cast<Entity*>(selectedObject));
-                if (entity->getRootType() != "E_ANIMATION")
-                    getWorld()->addEntity(entity);
+                getWorld()->addEntity(entity);
             } else {
                 if (dynamic_cast<Anim*>(entity)) {
                     getWorld()->removeEntity(static_cast<Entity*>(selectedObject));

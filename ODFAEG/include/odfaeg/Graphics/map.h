@@ -340,6 +340,7 @@ class ODFAEG_GRAPHICS_API Scene : public SceneManager {
         int getCellWidth();
         int getCellHeight();
     private :
+        void addAnimationChildren(Entity* entity, std::vector<Entity*>& entities);
         Entity* checkFrameEntity(Entity* frame, std::string name);
         /**
         * \fn void increaseComptImg (const void* resource);

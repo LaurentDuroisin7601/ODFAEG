@@ -26,6 +26,7 @@ namespace odfaeg {
             * \brief update all the entities which are in the current view.
             */
             void addParticleSystem(Entity* ps) {
+                ps->setPsUpdater(getName());
                 particleSystems.push_back(ps);
             }
             void removeParticleSystem (Entity* ps) {

@@ -356,5 +356,13 @@ namespace odfaeg {
         }
         void Entity::addFrame(Entity* frame) {
         }
+        void Entity::setAnimUpdater(std::string name) {
+        }
+        std::string Entity::getAnimUpdater() {
+        }
+        void Entity::setPsUpdater(std::string name) {
+        }
+        std::string Entity::getPsUpdater() {
+        }
     }
 }

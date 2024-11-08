@@ -591,8 +591,7 @@ namespace odfaeg {
                             entity->updateTransform();
                             entities.push_back(entity);
                             if (entity->isAnimated()) {
-                                for (unsigned int f = 0; f < entity->getChildren().size(); f++)
-                                    entities.push_back(entity->getChildren()[f]);
+                                addAnimationChildren(entity, entities);
                             }
                         }
                     }
@@ -612,12 +611,21 @@ namespace odfaeg {
                         }
                         if (!contains) {
                             entity->updateTransform();
+                            if (entity->isAnimated()) {
+                                addAnimationChildren(entity, entities);
+                            }
                             entities.push_back(entity);
                         }
                     }
                 }
             }
             return entities;
+        }
+        void Scene::addAnimationChildren(Entity* entity, std::vector<Entity*>& entities) {
+            for (unsigned int i = 0; i < entity->getChildren().size(); i++) {
+                addAnimationChildren(entity->getChildren()[i], entities);
+                entities.push_back(entity->getChildren()[i]);
+            }
         }
         vector<Entity*> Scene::getRootEntities(string type) {
             vector<Entity*> entities;
@@ -762,8 +770,7 @@ namespace odfaeg {
                         if (visibleEntitiesType[i] != nullptr && found) {
                             Entity* ba = visibleEntitiesType[i]->getRootEntity();
                             if (ba->getBoneAnimationIndex() == visibleEntitiesType[i]->getBoneIndex()) {
-                                /*if (visibleEntitiesType[i]->getRootType() == "E_MONSTER" && visibleEntitiesType[i]->getFaces().size() > 0)
-                                        std::cout<<"bone index : "<<ba->getBoneAnimationIndex()<<" get visible entities texCoords : "<<visibleEntitiesType[i]->getFace(0)->getVertexArray()[0].texCoords.x<<","<<visibleEntitiesType[i]->getFace(0)->getVertexArray()[0].texCoords.y<<std::endl;*/
+
                                 /*if (visibleEntitiesType[i]->getType() == "E_ANIMATION")
                                     std::cout<<"add animation"<<visibleEntitiesType[i]->getCurrentFrame()->getType()<<std::endl;*/
                                 entities.push_back(visibleEntitiesType[i]);

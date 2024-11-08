@@ -14,6 +14,8 @@ namespace odfaeg {
             interpLevels = 1;
             interpPerc = 0;
             interpolatedFrame = std::make_unique<Mesh>(math::Vec3f(0, 0, 0), math::Vec3f(0, 0, 0), "E_ANIMATION_FRAME", factory);
+            auname = "";
+            fr = 0.1f;
             //interpolatedFrame->setName("E_ANIMATION_FRAME");
         }
         Anim::Anim (float fr, math::Vec3f position, math::Vec3f size, EntityFactory& factory, Entity *parent) : AnimatedEntity (position, size, size * 0.5f, "E_ANIMATION", factory, "", parent) {
@@ -28,6 +30,7 @@ namespace odfaeg {
             interpLevels = 1;
             interpPerc = 0;
             interpolatedFrame = std::make_unique<Mesh>(position, size, "E_ANIMATION_FRAME", factory);
+            auname = "";
             //interpolatedFrame->setName("E_ANIMATION_FRAME");
         }
         bool Anim::isCurrentFrameChanged() {
@@ -252,6 +255,12 @@ namespace odfaeg {
             anim->interpPerc = interpPerc;
             anim->interpolatedFrame.reset(interpolatedFrame->clone());
             return anim;
+        }
+        void Anim::setAnimUpdater(std::string name) {
+            auname = name;
+        }
+        std::string Anim::getAnimUpdater() {
+            return auname;
         }
         Anim::~Anim () {
 
