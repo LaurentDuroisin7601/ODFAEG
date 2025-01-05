@@ -36,7 +36,7 @@
           <article class="markdown-body">
   <h1>Définition de ses propres types d'entités statiques</h1>
   <p>
-  Pour créer ses propres types d'entités, il suffit d'hériter de la classe odfaeg::graphic::Entity.<br/>
+  Pour créer ses propres types d'entités, il suffit d'hériter de la classe odfaeg::graphic::GameObject.<br/>
   Il y a quelque méthodes à redéfinir : <br/>
   opérator==(Entity* other), celui ci compare deux entités, ceci évite d'ajouter deux entités identique dans le gestionnaire <br/>
   d'entités.<br/>
@@ -44,12 +44,12 @@
   isModel() : méthode qui doit renvoyer true si l'entité est un modèle, false si l'entité est un sol.<br/>
   selectable() : méthode qui doit renvoyer true si l'entité peut être sélectionnée, sinon false.<br/>
   isLight() : méthode qui doit renvoyer true si l'entité est une lumière.<br/>
-  isSahdow() : méthode qui doit renvoyer true si l'entité est une ombre.<br/>
+  isShadow() : méthode qui doit renvoyer true si l'entité est une ombre.<br/>
   isLeaf() : méthode qui doit renvoyer true si l'entité ne possède pas d'entités enfants.<br/>
   </p>
   <p>
   Il y a également quelque méthodes que vous pouvez redéfinir vous même, les voici : <br/>
-  onDraw(RenderTarget &target, RenderStates states) : méthode à redéfinir pour dessiner l'entités.<br/>
+  onDraw(RenderTarget &target, RenderStates states) : méthode à redéfinir pour dessiner l'entité.<br/>
   onMove(math::Vec3f& t) : méthode à redéfinir si l'on doit mettre à jour des données lors du déplacement de l'entité.<br/>
   onScale(math::Vec3f& s) : méthode à redéfinir si l'on doit mettre à jour des données lors du changement d'échelle de l'entité.<br/>
   onRotate(float angle) : méthode à redéfinir si l'on doit mettre à jour des données lors de la rotation d'entité.<br/>
@@ -63,9 +63,71 @@
   lumières dynamiques.<br/>
   Une animation n'est rien d'autre qu'une entité spéciale possédant plusieurs entités enfant, qui sont les frames de l'animation.<br/>
   Les seules méthode à redéfinir sont donc selectable.<br/>
-  Il y en a une nouvelle : getCurrentFrame(), cette méthode renvoie la frame courante de l'animation.<br/>
-  Dans les méthodes pouvant être redéfinies, il y en a également une nouvelle, onFrameChanged(), on peut redéfinir cette méthode si <br/>
-  par exemple, on souhaîte effectuer une interpolation linéaire entre deux frames.<br/>
+  Pour redéfinir une entité animée (par exemple un personnage), vous pouvez hériter de la classe BoneAnimation.<br/>
+  L'avantage d'hériter de la classe BoneAnimation est que vous pouvez sélectionner une animation qui sera affichée par rapport à une série d'animations.<br/>
+  Pour celà il suffit d'appeler la méthode setBoneAnimationIndex de la classe BoneAnimation. 
+  Par exemple si vous avez 8 animations suivant la direction avec laquelle le personnage se déplace, il suffit de faire ceci : <br/>
+  Les méthodes play et stop permettent de jouer et d'arrêter l'animation, play prend un paramètre booléen qui indique si l'animation doit être jouer en boucle.<br/>
+  <pre><code>
+    void Caracter::setDir (Vec2f dir) {
+        float angleRadians = dir.getAngleBetween(Vec2f::yAxis);
+        int angle = Math::toDegrees(angleRadians);
+        unsigned int previousAnimIndex = currentAnimIndex;
+        //Sud
+        if (angle >= -10 && angle <= 10)
+            currentAnimIndex = 4;
+        //Sud ouest
+        else if (angle > -80 && angle < -10)
+            currentAnimIndex = 6;
+        //Ouest
+        else if (angle >= -100 && angle <= -80)
+            currentAnimIndex = 7;
+        //Nord ouest
+        else if (angle > -170 && angle < -100)
+            currentAnimIndex = 3;
+        //Nors est
+        else if (angle > 100 && angle < 170)
+            currentAnimIndex = 2;
+        //Est
+        else if (angle >= 80 && angle <= 100)
+            currentAnimIndex = 0;
+        //Sud est
+        else if (angle > 10 && angle < 80)
+            currentAnimIndex = 5;
+        //Nord
+        else
+            currentAnimIndex = 1;
+        this->dir = dir;
+        if (moving && previousAnimIndex != currentAnimIndex) {
+            anims[baseAnimIndex + previousAnimIndex]->stop();
+            anims[baseAnimIndex + currentAnimIndex]->play(true);
+            BoneAnimation::setBoneAnimationIndex(baseAnimIndex + currentAnimIndex);
+        }
+
+    }
+  </code></pre>
+  Pour que celà fonctione vous devez appelé la méthode setBoneIndex de la classe entity et ajouté un index pour chaque animation du personnage.
+  <pre><code>for (unsigned int i = 0; i < 8; i++) {
+            Anim* animation = entityFactory.make_entity<Anim>(0.1f, Vec3f(-25, -50, 0), Vec3f(50, 100, 0), entityFactory);
+            for (unsigned int j = 0; j < 8; j++) {
+                sf::IntRect textRect (textRectX, textRectY, textRectWidth, textRectHeight);
+                Tile *tile = entityFactory.make_entity<Tile>(text, Vec3f(-25, -50, 0), Vec3f(textRectWidth, textRectHeight, 0), textRect, entityFactory);
+                tile->setLayer(1);
+                tile->getFace(0)->getMaterial().setTexId("VLADSWORD");
+                g2d::Decor *frame = entityFactory.make_entity<g2d::Decor>(tile, &g2d::AmbientLight::getAmbientLight(), entityFactory);
+                frame->setShadowCenter(Vec3f(0, 200, 200));
+                textRectX += textRectWidth;
+                if (textRectX >= textWidth) {
+                    textRectX = 0;
+                    textRectY += textRectHeight;
+                }
+                animation->addFrame(frame);
+            }
+            animation->getCurrentFrame()->setBoneIndex(i);
+            caracter->addAnimation(animation);
+            au->addAnim(animation);
+        }</code></pre>
+  Il y a une nouvelle méthode à redéfinir : getCurrentFrame(), cette méthode renvoie l'animation courante.<br/>  
   Comme pour les entités on peut bien sûr redéfinir les méthodes onMove, onScale, etc...<br/>
   </p>
   </article>
