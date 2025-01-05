@@ -76,7 +76,7 @@
             <p>
             La troisième méthode est la méthode onRender, elle prend en paramètre un pointeur sur un objet de <br/>
             type RenderComponentManager. En fait dans cette méthode, odfaeg va décrire tout ce qui devra être affiché sur <br/> 
-            des composants de rendus, nous verrons ce que sont les composants de rendu dans le prochain chapitre, pour l'instant, <br/>
+            des composants de rendus, nous verrons ce que sont les composants de rendu dans le chapitre dédié, pour l'instant, <br/>
             considérer les simplements comme des couches sur lesquelles on va pouvoir dessiner différentes parties de notre scène. <br/>
             (Par exemple un composant pour le sol et un autre pour le reste)<br/>
             </p>
@@ -84,14 +84,14 @@
             La quatrième méthode est la méthode onDisplay, elle prend en paramètre un pointeur sur la fenêtre de rendu, <br/>
             c'est dans cette méthode que ODFAEG va dessiner sur la fenêtre de rendu!<br/>
             
-            La cinquième méthode est la méthode onUpdate, cette dernière prend un pointeur sur la fenêtre qui gère l'évènement et une référence sur un événement (IEvent), <br/>
+            La cinquième méthode est la méthode onUpdate, cette dernière prend un pointeur sur la fenêtre qui génère l'évènement et une référence sur un événement (IEvent), <br/>
             à chaque fois qu'un événement est généré, ODFAEG appelle cette méthode, c'est donc dans cette méthode que ODFAEG <br/>
             va remettre à jour tout les états de vos objets.<br/>
             
             Et la dernière méthode est la méthode onExec, cette dernière fonction membre ne prend aucun paramètre, <br/>
             c'est dans cette méthode que ODFAEG va effectué les derniers traitements en fonction des états défini dans la méthode<br/>
             onUpdate, on aura par exemple dans cette méthode : <br/>
-            les déplacements et les mises à jour des positions des objets en temps réel.<br/>
+            les déplacements et les mises à jour des positions des objets en temps réel ainsi que les traitements des messages réseau.<br/>
             </p>
             
             <h2>Création d'une application console.</h2>
@@ -162,7 +162,7 @@
               <li>Les "entity systems" qui mettent à jour les entités, par exemple la classe AnimationUpdater.</li>
               <li>Le "monde" (la classe World) qui contient tout ce qui a été cité précédemment.</li>
               Il y a deux type de composants, les composants de légés qui dessinent des interfaces graphiques et <br/>
-              les composants lourd qui dessinet des entités ODFAEG à l'aide de shaders.<br/>
+              les composants lourd qui dessinent des entités ODFAEG à l'aide de shaders.<br/>
           </article>
         </div>
       </div>
