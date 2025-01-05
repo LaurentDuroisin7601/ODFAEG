@@ -44,23 +44,20 @@
       Etant donné que le monde peut être très grand il est nécessaire de charger et de libérer des entités au fur et à mesure <br/>
       de l'exécution de l'application afin de ne pas encombre la RAM, pour cela on peut choisir d'ajouter un ou plusieurs <br/>
       gestionnaires d'entités qui se chargerons d'afficher une partie du monde, et les libérer.<br/>
-      Bref, le principe est fort similaire à celui des musiques de SFML qui sont chargée au fur et à mesure.<br/>
-      On charge les entités des zones du monde qui sont proche de la caméra, et ont libère les zones qui ne le sont plus.<br/>
       Grâce à la sauvegarde on verra plus tard qu'il est très facile de sauvegarder et de restaurer une zone du monde.<br/>
       Un gestionnaire d'entité peut donc être considéré comme une zone, le monde peut être composé d'un nombre indéfini de zones.<br/>
     </p>
       
     <h1>Les gestionnaires d'entités.</h1>
       <p>
-      Ce sont les gestionnaires d'entités qui vont contenir toutes les entités des différents zones et non pas le monde!<br/>
+      Ce sont les gestionnaires d'entités qui vont contenir toutes les entités des différentes zones et non pas le monde!<br/>
       Les gestionnaires d'entité possèdent plusieurs propriétés : <br/>
       <ul>
       <li>Une taille.</li>
       <li>Une matrice de changement de base.</li>
       <li>Une liste d'entités.</li>
       <li>La liste des entités visibles dans la fenêtre de rendu.</li>
-      <li>Un gestionnaire de composant.</li>
-      <li>La liste des entités visibles racines.</li>      
+      <li>Un gestionnaire de composant.</li>           
       </ul>
       </p>
       
@@ -79,24 +76,30 @@
       
       <i>La grille est redimentionnée automatiquement suivant la taille de la zone, la taille de la zone est calculée automatiquement suivant<br/>
       la position et la taille de toutes les entités!<br/>
-      Lorsque une entités est transformée, elle est automatiquement remise à jour dans la grille!</i><br/>
+      Lorsque une entités est transformée, elle est automatiquement remise à jour dans la grille grâce aux méthodes moveEntity, rotateEntity et scaleEntity de la classe World!</i><br/>
       </p>
       
       <h2>Créer et ajouter un gestionnaire d'entité dans le monde</h2>
       <p>
-      Le gestionnaire d'entité par défaut de ODFAEG s'appelle odfaeg::graphic::Map!<br/>
-      Le constructeur de la classe Map attend 4 paramètres : <br/>
+      Le gestionnaire d'entité par défaut de ODFAEG s'appelle odfaeg::graphic::Scene!<br/>
+      Le constructeur de la classe Scene attend 5 paramètres : <br/>
       <ul>
       <li>Le premier est un pointeur vers le gestionnaire de composants de l'application, celui-ci peut être récupérer avec la méthode getRenderComponentManager</li>
-      <li>Le second est un nom qui référencera la map.</li>
-      <li>Les deux dernier sont la taille des cases de la grille de la map.</li>
+      <li>Le second est un nom qui référencera la scène.</li>
+      <li>Les trois derniers sont la taille des cases de la grille de la map. (vous devez mettre 0 pour le dernier paramètre si la scène est en 2D)</li>
       </ul>
+      Pour faire de la 2D iso, vous devez changer la matrice de changement de base qui est configurée pour de la 2D par défaut, pour se faire il suffit de faire :
+      <pre><code>BaseChangementMatrix bm;
+        bm.set2DIsoMatrix();
+        theMap->setBaseChangementMatrix(bm);</code></pre>
       
-      Pour ajouter un gestionnaire de composant dans le monde vous devez appeler la méthode addEntityManager de la classe World!<br/>
-      Si vous souhaiter travaille avec l'entity manager vous devez le sélectionner avec la méthode setCurrentEntityManager, cette<br/>
+      Pour ajouter un gestionnaire d'entité dans le monde vous devez appeler la méthode addSceneManager de la classe World!<br/>
+      Si vous souhaiter travaille avec l'entity manager vous devez le sélectionner avec la méthode setCurrentSceneManager, cette<br/>
       méthode attend un paramètre : le nom de la map.<br/>
+        <pre><code>getWorld()->addSceneManager(theMap);
+        getWorld()->setCurrentSceneManager("Map test");</code></pre>
       
-      Vous pouvez alors ajouté des entités avec la méthode addEntity de la classe World.<br/>
+      Vous pouvez alors ajouter des entités avec la méthode addEntity de la classe World comme vu dans le chapitre sur les entités.<br/>
       </p>
       <h2>Les différents méthodes utiles de la classe World : </h2>
       
