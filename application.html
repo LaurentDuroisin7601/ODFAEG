@@ -39,15 +39,27 @@
             <p>Pour créer une application il faut hériter de la classe odfaeg::core::Application.<br/>
             (Il faut donc créer une nouvelle classe et la faire hériter de la classe odfaeg::core::Application.)<br/>
             La classe odfaeg::core::Application possède deux constructeurs, un pour les applications graphique et <br/>
-            un autre pour les applications console.<br/>
+            un autre pour les applications console par exemple les serveurs.<br/>
             </p>
             
             <h2>Création d'une application graphique.</h2>
             <p>
             Pour créer une application graphique il vaut faudra appeler le constructeur avec arguments,<br/>
-            en lui passant un sf::VideoMode, ainsi que le titre de la fenêtreSFML, (un std::string),
+            en lui passant un sf::VideoMode, ainsi que le titre de la fenêtreSFML, (un std::string),<br/>
              le style (sf::Style) ainsi que les paramètres opengl. (odfaeg::window::ContextSettings)<br/>
-            </p>            
+              Exemple :
+            </p>       
+
+            <pre><code>
+            MyAppli::MyAppli(sf::VideoMode wm, std::string title) : Application (wm, title, sf::Style::Default, ContextSettings(0, 0, 4, 4, 6)) {
+            </code></pre>
+
+            Ici donc j'appelle le constructeur de la classe mère Application en lui passant le vidéo mode, le style de la fenêtre, et les paramètres du contexte opengl qui sont : <br/>
+            -Le nombre de bits pour le depth buffer.<br/>
+            -Le nombre de bits pour le stencil buffer.<br/>
+            -Le niveau d'anti aliasing.<br/>
+            -La version majeur d'opengl.<br/>
+            -La version minteur d'opengl.<br/>
             
             <h3>Méthodes virtuelles pouvant être redéfinie.</h3>
             <p>
