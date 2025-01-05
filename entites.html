@@ -204,6 +204,13 @@
         Pour créer une (par exemple une tile) vous devez utiliser la factory comme ceci en appelant la méthode make_entity, celle-ci prend un paramètre template : <br/>
         le type d'entité que vous souhaiter créer, il vous suffit ensuite de passer les paramètres de la classe tile à la méthode make_entity.<br/>
         <pre><code>entityFactory.make_entity<Tile>(tm.getResourceByAlias("WATER"), Vec3f(0, 0, 0), Vec3f(120, 60, 0),sf::IntRect(0, 0, 100, 50), entityFactory)</code></pre>
+            <br/><b>Ajouter une entité au monde : </b><br/>
+            Pour celà il suffit de récupérer le monde de l'application et d'appelé la méthode addEntity comme ceci :
+            <pre><code>w = entityFactory.make_entity<g2d::Wall>(entityFactory.make_entity<Tile>(tm.getResourceByAlias("WALLS"), Vec3f(0, 0, 0), Vec3f(100, 100, 0), sf::IntRect(100, 200, 100, 100), entityFactory),g2d::Wall::TOP_LEFT, &g2d::AmbientLight::getAmbientLight(), entityFactory);
+            w->getChildren()[0]->getFace(0)->getMaterial().setTexId("WALLS");
+            w->setPosition(Vec3f(0, 130, 130 + w->getSize().y * 0.5f));
+            w->setLayer(1);
+            getWorld()->addEntity(w);</code></pre>
           
           Voila maintenant vous savez comment créer ces différentes entités par défaut afin de les afficher dans <br/>
           la fenêtre de rendu.<br/>
