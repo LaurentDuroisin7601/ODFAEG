@@ -37,16 +37,14 @@
           <article class="markdown-body">
   <p>
   Comme pour la classe odfaeg::graphic::Entity, pour définir son propre type de gestionnaire d'entité, il faut hériter d'une classe,<br/>
-  et cette classe se nomme odfaeg::graphic::EntityManager.<br/>
+  et cette classe se nomme odfaeg::graphic::SceneManager.<br/>
   Il y a également plusieurs méthodes à redéfinir, que voici : <br/>
   std::vector<Entity*> getEntities(std::string expression) : Retourne toutes les entités de tel(s) type(s)<br/>
   Par exemple, manager.getEntities("E_WALL") retournera toutes les entités de type (ou appartenant au groupe d'entités) "E_WALL".<br/>
   void checkVisibleEntities() : Recherche toutes les entités visibles pour chaque composant de rendu. (celles qui se trouvent<br/>
   dans le champ de vision de la caméra)<br/>
   </p>
-  <p>
-  void computeIntersectionsWithWalls() : j'utilisais encore cette méthode auparavant pour calculer les intersections mur/lumière<br/>
-  (intersections segments/triangles) pour les anciennes carte graphique ne supportant pas les shaders.<br/>
+  <p>  
   std::vector<Entity*> getVisibleEntities (std::string expression) : renvoie tout les entités visible de tel(s) type(s).<br/>
   std::vector<Entity*> getEntitiesInBox (physic::BoundingBox rect, std::string expression) : Retourne toutes les entités de <br/>
   tel(s) type(s) se trouvant dans la boîte englobante passée en paramètre.<br/>
@@ -57,41 +55,18 @@
   <p>
   bool collide (Entity* entity, math::Ray ray) : Recherche si une entité est en collision avec une autre entité <br/>
   si on la déplace suivant le rayon passé en paramètre.<br/>
-  void generate_map(std::vector<Tile*> tGrounds, std::vector<Tile*> tWalls, math::Vec2f tileSize, physic::BoundingBox& zone,<br/>
-  bool terrain3D) : génère une map (sol + contours) aléatroirement, de taille spécifiée; tGrounds sont les tiles du sol, <br/>
-  tWalls celles des contours (coins et bords), les tiles du sols sont choisies aléatoirement, celle du coutour possède <br/>
-  un numéro qui identitfie leur position (par exemple 0 = mur du coin en haut à gauche, 1 = mur de gauche, etc...), <br/>
-  si plusieurs  murs ont le même numéro, alors le mur est choisi aléatoirement; tileSize est la taille d'un carré du terrain,<br/>
-  zone est la boîte englobante du terrain, et le dernier paramètre est un booléen indiquant si le terrain à générer est en 3D <br/>
-  ou pas. (Autrement dit si le terrain est plat ou bien valloné)<br/>
+  void generate_map(std::vector<Tile*> tGrounds, std::vector<Wall*> tWalls, math::Vec2f tileSize, physic::BoundingBox& zone)
+    <br/> : génère une map (sol + contours) aléatroirement, de taille spécifiée; tGrounds sont les tiles du sol, <br/>
+  tWalls sont les murs du contours (coins et bords), les tiles du sols sont choisies aléatoirement, <br/>
+  tileSize est la taille d'un carré du terrain,<br/>
+  zone est la boîte englobante du terrain.<br/>
   void moveEntity(Entity *entity, float x, float y, float z) : <br/>
   Déplace l'entité passée en paramètre.<br/>
   </p>
   <p>
   bool addEntity(Entity *entity)<br/>
-  Ajoute une entités dans le gestionnaire, si une entité identique s'y trouve déjà, alors, la méthode retourne faux.<br/>
-  bool containsVisibleParentEntity(Entity *ae)<br/>
-  Cherche si le gestionnaire d'entité contient l'entité visible parente de l'entité passé en paramètre<br/>
-  (Cela évite d'ajouter plusieurs fois les entités enfants lorsqu'une entité parente visible se trouve dans<br/>
-  plusieurs cases de la grille)<br/>
-  void generateStencilBuffer(std::string expression, int n, va_list args) : <br/>
-  Cette méthode génère le stencil buffer pour le shadow mapping, pour les entités de tel(s) type(s), et les ids des <br/>
-  composants passés en paramètre.<br/>
-  </p>
-  <p>
-  Entity& getShadowTile(std::string expression, int n, va_list args)<br/>
-  Cette méthode renvoie la shadow map sous forme de tile, pour les entités de tel(s) type(s), et les ids des composants <br/>
-  passés en paramètre, ont peut alors l'afficher dans la fenêtre de rendu.<br/>
-  Entity& getLightTile(std::string expression, int n, va_list args) : <br/>
-  Même chose que la méthode précédente, mais cette fois, c'est la lightmap qui est renvoyée, on peut donc affiché <br/> 
-  la lightmap sur la fenêtre. <br/>
-  void drawOnComponents(std::string expression, int layer, sf::BlendMode mode) : <br/>
-  Dessine toutes les entités de tel(s) type(s), sur l'id du composant passé en paramètre, le troisième paramètre est <br/>
-  le blend mode.<br/>
-  </p>
-  <p>
-  void drawOnComponents(Drawable &drawable, int layer, RenderStates states) : <br/>
-  Même chose que la méthode précédente, à part que ici, on ne dessine pas une entité du framework, mais, un "drawable".<br/>
+  Ajoute une entités dans le gestionnaire, si une entité identique s'y trouve déjà, alors, la méthode retourne faux.<br/>  
+  
   BaseChangementMatrix getBaseChangementMatrix() : <br/>
   Renvoie la matrice de changement de base, celle-ci permet de passer des coordonnées 2D en coordonnée 2D isométrique <br/>
   par exemple. <br/>
@@ -101,19 +76,8 @@
   Retourne le chemin à parcourir par une entité pour atteindre la position passé en paramètre. <br/>
   (N'oubliez pas de prendre en compte les collisions) <br/>
   std::vector<CellMap*> getCasesMap() <br/>
-  Retourne toutes les cases de la grille virtuelle contenant les entités. <br/>
-  void changeVisibleEntity(Entity* toRemove, Entity* toAdd) : <br/>
-  Remplace une entité visible par une autre (sans la supprimer de la mémoire), utile lors du changement de frame <br/>
-  dans le cadre des animations.<br/>
-  </p>
-  <p>
-  void removeAnimatedVisibleEntity(Entity* toRemove, std::vector<Entity*>& entities, View& view, bool& removed) : <br/>
-  Supprime l'entité animée visible (sans la supprimer de la mémoire), toRemove est l'entité à supprimer, entities sont <br/> 
-  les entités visible, view la caméra et remove est un booléen indiquant si l'entité animée à pu être supprimée ou pas.<br/>
-  void insertAnimatedVisibleEntity (Entity* toAdd, std::vector<Entity*>& entities, View& view) : <br/>
-  Même chose que la méthode précédente mais au lieu de la supprimer, on l'ajoute. <br/>
-  Ces deux dernières méthodes sont utilisées par la classe odfaeg::graphic::FastRenderComponent afin de changer la frame <br/>
-  visible d'une animation.<br/>
+  Retourne toutes les cases de la grille virtuelle contenant les entités. <br/>  
+  <p>  
   bool removeEntity(Entity* entity) : Supprime l'entité (sans la supprimer de la mémoire) <br/>
   bool deleteEntity(Entity* entity) : Supprime l'entité de la mémoire.<br/>
   Entity* getEntity(int id) : retourne l'entité d'id passé en paramètre.<br/>
