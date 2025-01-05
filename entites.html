@@ -96,41 +96,45 @@
       Les lumières ponctuelles : ce sont juste des lumières en forme de cercles ou d'éllipse. <br/>
       </p>
       <h1>Les entités par défaut de ODFAEG.</h1>
-        <p>
-        Celles-ci sont simplement des tableaux de quatre sommets.<br/>
-        
+        <p>       
+        Chaque entité ODFAEG doit être créée à partir d'une factory : un objet de la classe EntityFactory, vous devez donc en déclaré un dans la classe qui.<br/>
+        Hérite de la classe Application.<br/>
+
+        <pre><code>
+          odfaeg::graphic::EntityFactory entityFactory;
+        </code></pre>
         <br/><b>Les tiles : </b><br/>
         
-        Le constructeur de la classe odfaeg::graphic::Tile attend 4 paramètres : <br/>
+        Le constructeur de la classe odfaeg::graphic::Tile attend plusieurs paramètres : <br/>
         <ul>
         <li>Le premier est un pointeur vers une texture, qui sera placée sur le quadrilatère formé par les 4 sommets de la tile.</li>
         <li>Le second est la position de la tile. (tuile)</li>
         <li>Le troisième est la taille de la tile.</li>
         <li>Le quatrième est la partie de la texture qui sera placée sur le quadrilatère.</li>
+        <li>Le cinquième est la factory.</li>        
         </ul>
         Les deux derniers paramètres sont la couleur de la tile (blanc par défaut) et un pointeur vers une entité parente (null par défaut).<br/>
+
+        
         </p>
         <p>
         <br/><b>Les grandes tiles et le sol.</b><br/>
         
         Celles-ci sont simplement des groupes de tiles dont les bords se touchent.<br/>
         
-        Le constructeur de cette classe n'attend que 3 paramètres : <br/>
+        Le constructeur de cette classe n'attend que 2 paramètres : <br/>
         <ul>
-        <li>Le premier est la position du sol.</li>
-        <li>Le second est la taille d'un carré au sol.</li>
-        <li>Et le troisième est le nombre de carrés par ligne.</li>
+        <li>Le premier est la position.</li>
+        <li>Le second est l'entity factory.</li>
+        <li>Les deux derniers sont utilisé par le générateur de terrain : la taille d'une tile et le nombre de tiles par ligne.</li>
         </ul>
         
         La méthode addTile permet d'ajouter une tile au terrain, elle attend en paramètre un pointeur sur la tile à ajouter,<br/>
-        la position de la tile sur le terrain ainsi que un tableau de quatre nombres réels qui sont les hauteurs des 4 coins de la tile.<br/>
-        Si le troisième paramètre est à null alors, la tile sera simplement ajoutée sinon, la hauteur des sommets sera ajustée en fonction<br/>
-        de la hauteur des tiles précédement ajoutées.<br/>
-        
-        <i>Les tiles doivent être ajoutée dans cet ordre : d'abord celles de la première ligne en partant de la gauche jusqu'à la dernière ligne.<br/>
-        Sinon vous aurez un crash à l'exécution.</i><br/>
-        
-        La méthode getHeight permet de récupérer la hauteur du terrain en un point bien précis, elle attend donc en paramètre un point.<br/>
+        les deux paramètres suivants sont utilisé par la générateur de terrain : la position de la tile et un tableau pour la hauteur des 4 coins de la tile.<br/>
+            
+        La méthode getHeight en 3D permet de récupérer la hauteur du terrain en un point bien précis, elle attend en paramètre un point et une référence pour récupérer la hauteur du terrrain.<br/>
+        La méthode renvoie un booléen qui renvoie vrai si le point est sur le terrain.<br/>
+        Si le terrain est en 2D, la hauteur renvoyée est la position en y du point.<br/>
         
         <br/><b>Les décors : </b><br/>
         </p>
@@ -140,34 +144,28 @@
         
         <ul>
         <li>Le premier est un pointeur sur la tile utilisée pour afficher le décor</li>
-        <li>Le second, est un pointeur vers une lumière. (Pour calculer la position de l'ombre, ce paramètre deviendra bientôt obsolète dès que
-        les PCs ne supportant pas les shaders auront disparus.)</li>
-        <li>Le troisième, la hauteur du décor. (Utilisé pour calculer la hauteur l'ombre)</li>
-        <li>Le dernier paramètre deviendra bientôt obsolète est indique le type d'ombre à générer (Une forme ou bien une tile).</li>
+        <li>Le second, est un pointeur vers une lumière (par exemple le soleil) pour calculer la matrice de transformation des ombres.</li>
+        <li>Le troisième, est l'entity factory.</li>
         </ul>
-        
-        Pour les PCs supportant les shaders les ombres sont calculée à l'aide de shaders grâce au shadow mapping et <br/>
-        à la matrice de projection des ombres! <br/>
-        
+            
         <br/><b>Les murs : </b><br/>
         
           Le constructeur de la classe odfaeg::graphic::g2d::Wall prend plusieurs paramètres dont : <br/>
           <ul>
-          <li>Le type du mur, 0 = mur du coin en haut à gauche.</li>
-          <li>La hauteur du mur. (Utilisé pour calculer la hauteur de l'ombre)</li>
           <li>Un pointeur vers la tile du mur.</li>
-          <li>L'avant dernier paramètre, est un pointeur vers une lumière. (Pour calculer la position de l'ombre, ce paramètre deviendra bientôt obsolète dès que
-           les PCs ne supportant pas les shaders auront disparus.)</li>
-          <li>Le dernier paramètre deviendra bientôt obsolète est indique le type d'ombre à générer (Une forme ou bien une tile).</li>
+          <li>Le type du mur. (Par exemple TOP_LEFT pour le mur en haut à gauche.)</li>
+          <li>Le troisième est un pointeur vers une lumière (par exemple le soleil) pour calculer la matrice de transformation des ombres.</li>
+          <li>Le quatrième est l'entity factory.</li>
           </ul>
         </p>
         <br/><b>Les animations : </b><br/>
         <p>
-          Le constructeur de la classe odfaeg::graphic::Anim attend 3 paramètres : <br/>
+          Le constructeur de la classe odfaeg::graphic::Anim attend 4 paramètres : <br/>
           <ul>
           <li>le taux de rafraichissement.</li>
           <li>la position de l'animation.</li>
-          <li>la taille des animations.</li>
+          <li>la taille de l'animation.</li>
+          <li>l'entity factory.</li>
           <li>Le dernier paramètre est un pointeur vers une entité parente. (null par défaut)</li>
           </ul>
           
@@ -197,8 +195,15 @@
           -Le premier est le centre de la lumière.<br/>
           -Les trois suivants sont les rayons en x, y et z de la lumière.<br/>
           -Le suivant est l'intensité de la lumière.<br/>
-          -L'avant dernier est la qualité de la lumière.<br/>
+          -Le suivant est la couleur de la lumière.<br/> 
+          -Le suivant est la qualité de la lumière.<br/>
+          -L'avant dernier est l'entity factory.<br/>
           -Et le dernier est un pointeur vers une entité parente. (null par défaut)<br/>
+
+          <br/><b>Créer des entités : </b><br/>
+        Pour créer une (par exemple une tile) vous devez utiliser la factory comme ceci en appelant la méthode make_entity, celle-ci prend un paramètre template : <br/>
+        le type d'entité que vous souhaiter créer, il vous suffit ensuite de passer les paramètres de la classe tile à la méthode make_entity.<br/>
+        <pre><code>entityFactory.make_entity<Tile>(tm.getResourceByAlias("WATER"), Vec3f(0, 0, 0), Vec3f(120, 60, 0),sf::IntRect(0, 0, 100, 50), entityFactory)</code></pre>
           
           Voila maintenant vous savez comment créer ces différentes entités par défaut afin de les afficher dans <br/>
           la fenêtre de rendu.<br/>
