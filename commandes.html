@@ -56,12 +56,10 @@
         </p>
         
         <pre><code>
-          #include<iostream>
-          #include<string>
-          #include <fstream>
-          #include <functional>
-          #include "odfaeg/Core/fastDelegate.h"
-          #include "odfaeg/Core/serialization.impl"
+          #include&lt;string&gt;
+          #include &lt;fstream&gt;
+          #include &lt;functional&gt;
+          #include "odfaeg/Core/fastDelegate.h"          
           using namespace std::literals;
           using namespace std::placeholders;
            
@@ -134,7 +132,7 @@
                   f3();
                   f3.setParams(13);
                   f3();
-                  std::cout << std::endl;
+                  std::cout &lt;lt; std::endl;
            
                   A a;
                   odfaeg::FastDelegate&lt;void&gt; f4(&amp;A::foo,&amp;a,14);
@@ -150,43 +148,43 @@
            
                   C c;
                   B* b = &c;
-                  odfaeg::FastDelegate<void> f6(&C::foo,&c);
+                  odfaeg::FastDelegate&lt;void&gt; f6(&amp;C::foo,&c);
                   f6();
                   f6.setParams(b);
                   f6();
-                  std::cout << std::endl;
+                  std::cout &lt;&lt; std::endl;
            
-                  odfaeg::FastDelegate<void> f7(D(),16);
+                  odfaeg::FastDelegate&lt;void&gt; f7(D(),16);
                   f7();
                   f7.setParams(17);
                   f7();
-                  std::cout << std::endl;
+                  std::cout &lt;&lt; std::endl;
            
-                  odfaeg::FastDelegate<void> f8(bar,"ab"s);
+                  odfaeg::FastDelegate&lt;void&gt; f8(bar,"ab"s);
                   f8();
                   f8.setParams("abc"s);
                   f8();
-                  std::cout << std::endl;
+                  std::cout &lt;&lt; std::endl;
                   int pi = 1;
-              odfaeg::FastDelegate<void> f9(foo, &pi);
+              odfaeg::FastDelegate&lt;void&gt; f9(foo, &pi);
                   f9();
-                  std::cout << std::endl;
+                  std::cout &lt;&lt; std::endl;
                   pi=2;
                   f9();
-                  std::cout << std::endl;
-                  odfaeg::FastDelegate<int> f10(goo,18);
-                  std::cout << f10();
+                  std::cout &lt;&lt; std::endl;
+                  odfaeg::FastDelegate&lt;int&gt; f10(goo,18);
+                  std::cout &lt;&lt; f10();
                   f10.setParams(19);
-                  std::cout << f10();
-                  std::cout << std::endl;
+                  std::cout &lt;&lt; f10();
+                  std::cout &lt;&lt; std::endl;
                   void(*fu)(int&) = &foo;
                   int vi=1;
-                  odfaeg::FastDelegate<void> f11(fu, std::ref(vi));
+                  odfaeg::FastDelegate&lt;void&gt; f11(fu, std::ref(vi));
                   f11();
-                  std::cout << std::endl;
+                  std::cout &lt;&lt; std::endl;
                   vi=2;
                   f11();
-                  std::cout<<std::endl;
+                  std::cout&lt;&lt;std::endl;
                   return 0;
           }
         </code></pre>
