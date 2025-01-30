@@ -193,10 +193,10 @@
         </p>
         <pre><code>
           void f (int i, int j, int l) {
-              std::cout<<"i : "<<i<<" j : "<<j<<" l : "<<l<<std::endl;
+              std::cout<&lt;&lt;i : "&lt;&lt;i&lt;lt;" j : "&lt;&lt;j&lt;&lt;" l : "&lt;&lt;l&lt;&lt;std::endl;
           }
           int main (int argv, char* argc[]) {
-          	odfaeg::FastDelegate<void> fd(&f, 1, 2, odfaeg::ph<0,int>()) ;
+          	odfaeg::FastDelegate&lt;void&gt; fd(&amp;f, 1, 2, odfaeg::ph<&lt;0,int&gt;()) ;
           	fd.bind(3);
           	fd() ;
           }
