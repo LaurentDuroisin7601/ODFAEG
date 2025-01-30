@@ -66,15 +66,15 @@
           using namespace std::placeholders;
            
           void foo(int i, int j)
-          { std::cout << i << j; }
+          { std::cout &lt;&lt;i &lt;&lt; j; }
            
           struct A {
               A() {
                   var = 10;
               }
                   void foo(int i)
-                  { std::cout << i; }
-                  template <typename A>
+                  { std::cout &lt;&lt; i; }
+                  template &lt;typename A&gt;
                   void serialize (A & ar) {
                   ar(var);
                   }
@@ -86,9 +86,9 @@
                   c = "serialize base";
               }
                   virtual void foo()
-                  { std::cout << 1; }
+                  { std::cout &lt;&lt; 1; }
                   virtual void print() {
-                  std::cout<<c<<std::endl;
+                  std::cout&lt;&lt;c&lt;&lt;std::endl;
                   }       
                   virtual ~B();
                   std::string c;  
@@ -103,32 +103,32 @@
               void foo();
               void print () {
                   B::print();
-                  std::cout<<c<<std::endl;
+                  std::cout&lt;&lt;c&lt;&lt;std::endl;
               }   
               std::string c;
           };
            
-          void C::foo(){ std::cout << 2; }
+          void C::foo(){ std::cout &lt;&lt; 2; }
           
           int main (int argv, char* argc[]) {
               void(*f)(int, int) = &foo;
-              odfaeg::FastDelegate<void> f1(f, 3, 4);
+              odfaeg::FastDelegate&lt;void&gt; f1(f, 3, 4);
               f1.setParams(5, 6);
                   f1();
-                  std::cout << std::endl;
+                  std::cout &lt;&lt; std::endl;
            
-                  odfaeg::FastDelegate<void> f2(
-                          [](int i, int j){ std::cout << i << j; },
+                  odfaeg::FastDelegate&lt;void&gt; f2(
+                          [](int i, int j){ std::cout &lt;&lt; i &lt;&lt; j; },
                           7,8
                   );
                   f2();
                   f2.setParams(9,10);
                   f2();
-                  std::cout << std::endl;
+                  std::cout &lt;&lt; std::endl;
            
                   int i = 11;
-                  odfaeg::FastDelegate<void> f3(
-                          [i](int j){ std::cout << i << j; },
+                  odfaeg::FastDelegate&lt;void&gt; f3(
+                          [i](int j){ std::cout &lt;&lt; i &lt;&lt; j; },
                           12
                   );
                   f3();
@@ -137,16 +137,16 @@
                   std::cout << std::endl;
            
                   A a;
-                  odfaeg::FastDelegate<void> f4(&A::foo,&a,14);
+                  odfaeg::FastDelegate&lt;void&gt; f4(&amp;A::foo,&amp;a,14);
                   f4();
-                  f4.setParams(&a,15);
+                  f4.setParams(&amp;a,15);
                   f4();
-                  std::cout << std::endl;
-                  odfaeg::FastDelegate<void> f5 = f1;
+                  std::cout &lt;&lt; std::endl;
+                  odfaeg::FastDelegate&lt;void&gt; f5 = f1;
                   f5();
                   f5=f3;
                   f5();
-                  std::cout << std::endl;
+                  std::cout &lt;&lt; std::endl;
            
                   C c;
                   B* b = &c;
