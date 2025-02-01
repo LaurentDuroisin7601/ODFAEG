@@ -49,14 +49,14 @@
       Par défaut, la perspective est en 2D (orthographique), le centre de la caméra se situe en 0, 0 (au milieu de la fenêtre),
       La tête de la caméra pointe vers le bas et la caméra regarde vers vous.
       Et la zone d'affichage à l'écran va de 0 à la largeur de la fenêtre pour x, 0 à la hauteur de la fenêtre pour y et 
-      0 à 1 pour z.
+      -hauteur de la fenêtre -100 à hauteur de la fenêtre + 100 pour z.
       
       Les plans de coupe near et far sont situés entre -hauteur de la fenêtre -100 et hauteur de la fenêtre + 100 par défaut.
       Ce qui veut dire que tout point n'étant pas compris entre ces deux plans ne sera pas dessiné!
       
-      Il faudra donc penser à déplacer la vue également en Z qui en 2D, défini le centre en y de vos objets ainsi que de la vue.
-      Cela permet à ODFAEG de savoir si un objet est devant ou derrière un autre objet, et donc, de trier vos objet
-      dans l'ordre du plus éloigné au plus proche de la caméra! 
+      Il faudra donc penser à déplacer la vue également en Z qui en 2D, défini la profondeur de vos objets ainsi que de la vue.
+      Cela permet à ODFAEG de savoir si un objet est devant ou derrière un autre objet, les pixels des objets sont ainsi triés grâce aux
+      per pixel linked lists.
       
     <b>Système de coordonnées par défaut.</b>
       
@@ -83,8 +83,8 @@
       
       Pour changer de viewport, vous devez appeler la méthode setViewport de la classe odfaeg::graphic::view!
       
-      <i>A l'inverse de la vue en 2D, en vue 3D la caméra à la tête qui pointe vers le haut et ne regarde pas vers vous mais à l'opposé!
-         Avec ODFAEG en 3D c'est l'axe z qui défini la hauteur et non l'axe y pour des raisons de facilité.</i>
+      <i>A l'inverse de la vue en 2D, en vue 3D la caméra à la tête qui pointe vers le haut et regarde vers vous!
+         L'axe z définit la profondeur des objets.</i>
       
     <h1>Jouer avec la vue.</h1>
       
@@ -96,15 +96,14 @@
       
       Pour déplacer la vue il suffit d'appeler la méthode move de la classe odfaeg::graphic::View, celle-ci attends trois paramètres, 
       les déplacements en x, y et z.
-      Vous pouvez aussi déplacer la vue dans une direction quelconque en utilisant l'autre méthodes qui attend deux paramètres : un vecteur et un scalaire.
+      Vous pouvez aussi déplacer la vue dans une direction quelconque en utilisant l'autre méthode qui attend deux paramètres : un vecteur et un scalaire.
       
       <b>Rotations.</b>
       
       Pour effectuer une rotation, il y a plusieurs méthodes :
       
       La première méthode rotate attend un angle et un axe quelconque autour duquel se fera la rotation.
-      Par defaut la rotation s'effectue autour de l'axe z c'est à dire celui qui pointe vers vous en vue 2D mais
-      qui pointe vers le haut en vue 3D.
+      Par defaut la rotation s'effectue autour de l'axe z c'est à dire celui qui pointe vers vous.
       
       La seconde méthode effectue une rotation à partir de coordonnées polaire, et attend deux angles : têta et phi.
       
