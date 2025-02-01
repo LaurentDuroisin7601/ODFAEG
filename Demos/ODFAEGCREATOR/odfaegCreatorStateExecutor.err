@@ -1,0 +1,34 @@
+In file included from ../../ODFAEG-master/Demos/ODFAEGCREATOR/application.hpp:35,
+                 from ../../ODFAEG-master/Demos/ODFAEGCREATOR/odfaegCreatorStateExecutor.cpp:2:
+C:\Program Files (x86)\ODFAEG\include/odfaeg/Core/runtimeCompiler.hpp:9:7: warning: extra tokens at end of #else directive [-Wendif-labels]
+    9 | #else if defined (ODFAEG_SYSTEM_WINDOWS)
+      |       ^~
+C:\Program Files (x86)\ODFAEG\include/odfaeg/Core/runtimeCompiler.hpp:50:23: warning: extra tokens at end of #else directive [-Wendif-labels]
+   50 |                 #else if defined (ODFAEG_SYSTEM_WINDOWS)
+      |                       ^~
+C:\Program Files (x86)\ODFAEG\include/odfaeg/Core/runtimeCompiler.hpp:63:23: warning: extra tokens at end of #else directive [-Wendif-labels]
+   63 |                 #else if defined (ODFAEG_SYSTEM_WINDOWS)
+      |                       ^~
+C:\Program Files (x86)\ODFAEG\include/odfaeg/Core/runtimeCompiler.hpp:130:19: warning: extra tokens at end of #else directive [-Wendif-labels]
+  130 |             #else if defined (ODFAEG_SYSTEM_WINDOWS)
+      |                   ^~
+In file included from C:/Program Files (x86)/ODFAEG/include/odfaeg/Window/windowFactory.hpp:3,
+                 from C:/Program Files (x86)/ODFAEG/include/odfaeg/Window/window.hpp:3,
+                 from C:\Program Files (x86)\ODFAEG\include/odfaeg/Graphics/renderWindow.h:40,
+                 from C:\Program Files (x86)\ODFAEG\include/odfaeg/Graphics/application.h:8,
+                 from ../../ODFAEG-master/Demos/ODFAEGCREATOR/application.hpp:4:
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Window/iWindow.hpp: In member function 'virtual const odfaeg::window::ContextSettings& odfaeg::window::IWindow::getSettings() const':
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Window/iWindow.hpp:193:73: warning: returning reference to temporary [-Wreturn-local-addr]
+  193 |             virtual const ContextSettings& getSettings() const { return ContextSettings(0, 0, 0, 0, 0); }
+      |                                                                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from C:/Program Files (x86)/ODFAEG/include/odfaeg/Core/factory.h:7,
+                 from C:/Program Files (x86)/ODFAEG/include/odfaeg/Core/archive.h:7,
+                 from C:/Program Files (x86)/ODFAEG/include/odfaeg/Core/serialization.h:9,
+                 from C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:8,
+                 from C:\Program Files (x86)\ODFAEG\include/odfaeg/Graphics/view.h:4,
+                 from C:\Program Files (x86)\ODFAEG\include/odfaeg/Graphics/renderTarget.h:3,
+                 from C:\Program Files (x86)\ODFAEG\include/odfaeg/Graphics/renderWindow.h:37:
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Core/fastDelegate.h: In member function 'R odfaeg::core::FastDelegate<R>::operator()() [with R = odfaeg::graphic::Shape*]':
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Core/fastDelegate.h:809:13: warning: control reaches end of non-void function [-Wreturn-type]
+  809 |             }
+      |             ^
