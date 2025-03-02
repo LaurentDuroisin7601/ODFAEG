@@ -459,6 +459,7 @@ namespace odfaeg {
                       RenderStates states = RenderStates::Default);
             void drawVertexBuffer(VertexBuffer& vertexBuffer, RenderStates states = RenderStates::Default);
             void drawIndirect(VertexBuffer& vb, sf::PrimitiveType primitiveType, unsigned int size, RenderStates states, unsigned int vboIndirect, unsigned int vboMatrices=0, unsigned int vboMatrices2=0);
+            void drawVBOBindlessIndirect(sf::PrimitiveType type, unsigned int nbIndirectCommands, RenderStates states, unsigned int vboIndirect);
                        ////////////////////////////////////////////////////////////
             /// \brief Return the size of the rendering region of the target
             ///

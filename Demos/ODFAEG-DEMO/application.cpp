@@ -164,7 +164,7 @@ namespace sorrok {
         tiles[0]->getFace(0)->getMaterial().setTexId("WATER");
         tiles[0]->getFace(0)->getMaterial().setReflectable(true);
         tiles[0]->getFace(0)->getMaterial().setType(Material::WATER);
-        tiles[0]->setDrawMode(Entity::INSTANCED);
+        //tiles[0]->setDrawMode(Entity::INSTANCED);
         walls[g2d::Wall::TOP_BOTTOM]->getChildren()[0]->getFace(0)->getMaterial().setTexId("WALLS");
         walls[g2d::Wall::RIGHT_LEFT]->getChildren()[0]->getFace(0)->getMaterial().setTexId("WALLS");
         walls[g2d::Wall::BOTTOM_LEFT]->getChildren()[0]->getFace(0)->getMaterial().setTexId("WALLS");

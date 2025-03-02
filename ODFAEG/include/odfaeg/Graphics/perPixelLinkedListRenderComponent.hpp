@@ -35,12 +35,19 @@ namespace odfaeg {
                     unsigned vertex_base;
                     unsigned instance_base;
             };
-            struct Matrix {
+            struct ModelData {
                 math::Matrix4f worldMat;
+            };
+            struct MaterialData {
+                unsigned int textureIndex;
+                unsigned int materialType;
+                /*unsigned int padding1;
+                unsigned int padding2;*/
             };
             PerPixelLinkedListRenderComponent (RenderWindow& window, int layer, std::string expression, window::ContextSettings settings);
             void onVisibilityChanged(bool visible);
             void loadTextureIndexes();
+
                  /**
             * \fn bool loadEntitiesOnComponent(std::vector<Entity*> visibleEntities)
             * \brief load the given entities onto the component.
@@ -136,7 +143,7 @@ namespace odfaeg {
             bool update;
             GLuint maxNodes;
             sf::Vector3i resolution;
-            unsigned int atomicBuffer, linkedListBuffer, matricesBuffer, clearBuf, clearBuf2, clearBuf3, pass1Index, pass2Index, headPtrTex, colorTex, depthTex, vboWorldMatrices, ubo, vboIndirect;
+            unsigned int atomicBuffer, linkedListBuffer, matricesBuffer, clearBuf, clearBuf2, clearBuf3, pass1Index, pass2Index, headPtrTex, colorTex, depthTex, modelDataBuffer, materialDataBuffer, vboWorldMatrices, ubo, vboIndirect;
             Sprite frameBufferSprite;
             VertexBuffer vb;
             std::array<VertexBuffer ,Batcher::nbPrimitiveTypes> vbBindlessTex;

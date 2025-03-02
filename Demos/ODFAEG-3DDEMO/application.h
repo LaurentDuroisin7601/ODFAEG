@@ -10,6 +10,7 @@
 #include "odfaeg/Graphics/shadowRenderComponent.hpp"
 #include "odfaeg/Graphics/lightRenderComponent.hpp"
 #include "odfaeg/Graphics/perPixelLinkedListRenderComponent.hpp"
+#include "odfaeg/Graphics/perPixelLinkedListRenderComponent2.hpp"
 #include "odfaeg/Graphics/raytracingRenderComponent.hpp"
 #include "odfaeg/Graphics/reflectRefractRenderComponent.hpp"
 #include "odfaeg/Graphics/3D/ponctualLight.hpp"

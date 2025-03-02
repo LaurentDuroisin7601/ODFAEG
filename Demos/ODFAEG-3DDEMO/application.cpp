@@ -147,6 +147,7 @@ void MyAppli::onInit() {
     ShadowRenderComponent* src = new ShadowRenderComponent(getRenderWindow(), 1, "E_MESH+E_BIGTILE",ContextSettings(0, 0, 4, 4, 6));
     src->setView(view3D);
     PerPixelLinkedListRenderComponent* frc2 = new PerPixelLinkedListRenderComponent(getRenderWindow(), 0, "E_BIGTILE+E_MESH+E_CUBE",ContextSettings(0, 0, 4, 4, 6));
+    //frc2->preloadEntitiesOnComponent(getWorld()->getEntities("*"), factory);
     frc2->setView(view3D);
     frc2->loadSkybox(skybox.get());
     ReflectRefractRenderComponent* rrrc = new ReflectRefractRenderComponent(getRenderWindow(), 2, "E_CUBE+E_BIGTILE+E_MESH", ContextSettings(0, 0, 4, 4, 6));

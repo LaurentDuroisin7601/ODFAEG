@@ -112,8 +112,7 @@ namespace odfaeg {
             void setScale(math::Vec3f scale) {
 
                 math::Vec3f newSize = bounds.getSize() * scale;
-                if (name == "SCALE")
-                    std::cout<<"size : "<<bounds.getSize()<<std::endl;
+
                 if (m_size.x == 0)
                     m_scale.x = 0;
                 else

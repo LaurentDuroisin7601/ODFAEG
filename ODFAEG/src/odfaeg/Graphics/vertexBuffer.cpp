@@ -770,9 +770,7 @@ namespace odfaeg {
                     if (needToUpdateVertexBuffer) {
 
                         if (vboVertexBuffer == 0) {
-                            if (name == "SKYBOXVB") {
-                                std::cout<<"create vbo vertex buffer"<<std::endl;
-                            }
+
                             GLuint vbo;
                             glCheck(glGenBuffers(1, &vbo));
                             vboVertexBuffer = static_cast<unsigned int>(vbo);
@@ -782,11 +780,9 @@ namespace odfaeg {
                             glCheck(glBindBuffer(GL_ARRAY_BUFFER, vboVertexBuffer));
                             glCheck(glBufferData(GL_ARRAY_BUFFER, m_vertices.size() * sizeof(Vertex), &m_vertices[0], GL_DYNAMIC_DRAW));
                             glCheck(glBindBuffer(GL_ARRAY_BUFFER, 0));
-                            if (name == "SKYBOXVB")
-                                std::cout<<"update vbo vertex buffer : "<<m_vertices.size()<<std::endl;
+
                         } else {
-                            if (name == "SKYBOXVB")
-                                std::cout<<"map vbo vertex buffer"<<std::endl;
+
                             GLvoid *pos_vbo = nullptr;
                             glCheck(glBindBuffer(GL_ARRAY_BUFFER, vboVertexBuffer));
                             pos_vbo = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);

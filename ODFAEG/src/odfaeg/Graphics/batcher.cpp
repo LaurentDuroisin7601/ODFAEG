@@ -19,6 +19,9 @@ namespace odfaeg {
                 this->texRect = texRect;
                 this->texId = texId;
             }
+            std::vector<Material*> Material::getSameMaterials() {
+                return sameMaterials;
+            }
             void Material::TextureInfo::setTexRect(sf::IntRect texRect) {
                 this->texRect = texRect;
             }

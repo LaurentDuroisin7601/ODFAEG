@@ -696,6 +696,39 @@ namespace odfaeg {
             math::Vec3f(view->getViewport().getWidth(), view->getViewport().getHeight(), 1));
             return vpm;
         }
+        void RenderTarget::drawVBOBindlessIndirect(sf::PrimitiveType type, unsigned int nbIndirectCommands, RenderStates states, unsigned int vboIndirect) {
+            if (activate(true))
+            {
+                if (!m_cache.glStatesSet)
+                    resetGLStates();
+                // Apply the view
+                if (m_cache.viewChanged)
+                    applyCurrentView();
+
+                if (states.blendMode != m_cache.lastBlendMode)
+                    applyBlendMode(states.blendMode);
+
+                // Apply the texture
+                sf::Uint64 textureId = states.texture ? states.texture->getNativeHandle() : 0;
+                if (textureId != m_cache.lastTextureId)
+                    applyTexture(states.texture);
+                // Apply the shader
+                if (states.shader)
+                    applyShader(states.shader);
+                if (m_versionMajor > 3 || m_versionMajor == 3 && m_versionMinor >= 3)
+                    glCheck(glBindVertexArray(m_vao));
+                static const GLenum modes[] = {GL_POINTS, GL_LINES, GL_LINE_STRIP, GL_TRIANGLES,
+                                                       GL_TRIANGLE_STRIP, GL_TRIANGLE_FAN, GL_QUADS};
+                GLenum mode = modes[type];
+                glCheck(glBindFramebuffer(GL_FRAMEBUFFER, m_framebufferId));
+                glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, vboIndirect));
+                glCheck(glMultiDrawArraysIndirect(mode,0,nbIndirectCommands,0));
+                if (m_versionMajor > 3 || m_versionMajor == 3 && m_versionMinor >= 3)
+                    glCheck(glBindVertexArray(0));
+            }
+            applyTexture(nullptr);
+            applyShader(nullptr);
+         }
          void RenderTarget::drawIndirect(VertexBuffer& vertexBuffer, sf::PrimitiveType type, unsigned int nbIndirectCommands, RenderStates states, unsigned int vboIndirect, unsigned int vboMatrix1, unsigned int vboMatrix2) {
             if (vertexBuffer.getVertexCount() == 0) {
                 return;
@@ -1021,6 +1054,7 @@ namespace odfaeg {
             applyTexture(nullptr);
             applyShader(nullptr);
         } //////////////////////////////////////////////////////////
+
         void RenderTarget::draw(Drawable& drawable, RenderStates states)
         {
             drawable.draw(*this, states);

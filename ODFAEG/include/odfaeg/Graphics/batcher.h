@@ -99,6 +99,7 @@ namespace odfaeg {
             Material (const Material& material);
             unsigned int getId();
             static unsigned int getNbMaterials();
+            static std::vector<Material*> getSameMaterials();
             /**
             * \fn int getNbTextures ()
             * \brief return the number of textures.

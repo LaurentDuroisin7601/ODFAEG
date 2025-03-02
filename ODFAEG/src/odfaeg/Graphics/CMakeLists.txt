@@ -124,6 +124,8 @@ set(SRC_GRAPHICS
 	${SRCROOT}/animatedEntity.cpp
 	${INCROOT}/demiCircle.hpp
 	${SRCROOT}/demiCircle.cpp
+	${INCROOT}/perPixelLinkedListRenderComponent2.hpp
+	${SRCROOT}/perPixelLinkedListRenderComponent2.cpp
 	)
 source_group ("graphics" FILES ${SRC_GRAPHICS})
 
