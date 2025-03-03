@@ -41,8 +41,6 @@ namespace odfaeg {
             struct MaterialData {
                 unsigned int textureIndex;
                 unsigned int materialType;
-                /*unsigned int padding1;
-                unsigned int padding2;*/
             };
             PerPixelLinkedListRenderComponent (RenderWindow& window, int layer, std::string expression, window::ContextSettings settings);
             void onVisibilityChanged(bool visible);
