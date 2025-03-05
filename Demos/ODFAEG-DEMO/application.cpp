@@ -164,7 +164,7 @@ namespace sorrok {
         tiles[0]->getFace(0)->getMaterial().setTexId("WATER");
         tiles[0]->getFace(0)->getMaterial().setReflectable(true);
         tiles[0]->getFace(0)->getMaterial().setType(Material::WATER);
-        //tiles[0]->setDrawMode(Entity::INSTANCED);
+        tiles[0]->setDrawMode(Entity::INSTANCED);
         walls[g2d::Wall::TOP_BOTTOM]->getChildren()[0]->getFace(0)->getMaterial().setTexId("WALLS");
         walls[g2d::Wall::RIGHT_LEFT]->getChildren()[0]->getFace(0)->getMaterial().setTexId("WALLS");
         walls[g2d::Wall::BOTTOM_LEFT]->getChildren()[0]->getFace(0)->getMaterial().setTexId("WALLS");
@@ -309,11 +309,11 @@ namespace sorrok {
         ShadowRenderComponent *src = new ShadowRenderComponent(getRenderWindow(), 3, "E_WALL+E_DECOR+E_ANIMATION+E_HERO", ContextSettings(0, 0, 4, 4, 6));
         LightRenderComponent *lrc = new LightRenderComponent(getRenderWindow(), 4, "E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PONCTUAL_LIGHT", ContextSettings(0, 0, 4, 4, 6));
         //std::cout<<"component created"<<std::endl;
-        /*frc1->setVisible(false);
-        frc2->setVisible(false);
-        rrrc->setVisible(false);
-        src->setVisible(false);
-        lrc->setVisible(false);*/
+        //frc1->setVisible(false);
+        //frc2->setVisible(false);
+        //rrrc->setVisible(false);
+        //src->setVisible(false);
+        //lrc->setVisible(false);
         /*gui::TextArea* textArea = new gui::TextArea(Vec3f(350, 275, 0),Vec3f(100, 50, 0),fm.getResourceByAlias("FreeSerif"), "Test",getRenderWindow());
         textArea->addFocusListener(this);
         textArea->setVisible(false);
