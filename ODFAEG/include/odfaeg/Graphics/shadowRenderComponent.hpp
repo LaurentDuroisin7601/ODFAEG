@@ -48,6 +48,14 @@ namespace odfaeg {
                         unsigned vertex_base;
                         unsigned instance_base;
                 };
+                struct ModelData {
+                    math::Matrix4f worldMat;
+                    math::Matrix4f shadowProjMat;
+                };
+                struct MaterialData {
+                    unsigned int textureIndex;
+                    unsigned int layer;
+                };
                 ShadowRenderComponent (RenderWindow& window, int layer, std::string expression,window::ContextSettings settings = window::ContextSettings(0, 0, 4, 3, 0));
                 void loadTextureIndexes();
                 void drawNextFrame();
@@ -95,7 +103,7 @@ namespace odfaeg {
                 View view; /**> the view of the component.*/
                 std::string expression;
                 bool update;
-                unsigned int vboWorldMatrices, vboShadowProjMatrices, ubo, clearBuf, alphaTex, clearBuf2, depthTex, stencilTex, clearBuf3, vboIndirect, clearBuf4, frameBufferTex, atomicBuffer;
+                unsigned int vboWorldMatrices, vboShadowProjMatrices, ubo, clearBuf, alphaTex, clearBuf2, depthTex, stencilTex, clearBuf3, vboIndirect, clearBuf4, frameBufferTex, atomicBuffer, modelDataBuffer, materialDataBuffer;
                 VertexBuffer vb, vb2;
                 std::array<VertexBuffer ,Batcher::nbPrimitiveTypes> vbBindlessTex;
                 std::vector<float> matrices, matrices2;
