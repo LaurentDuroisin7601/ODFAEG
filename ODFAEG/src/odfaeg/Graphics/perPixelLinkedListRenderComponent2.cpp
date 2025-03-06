@@ -1,158 +1,108 @@
 #include "../../../include/odfaeg/Graphics/perPixelLinkedListRenderComponent2.hpp"
-#include "../../../include/odfaeg/Physics/particuleSystem.h"
 #include "../../../include/odfaeg/Graphics/application.h"
 #ifndef VULKAN
+#include <SFML/OpenGL.hpp>
 #include "glCheck.h"
 #endif
+#include <memory.h>
+using namespace sf;
+using namespace std;
 namespace odfaeg {
     namespace graphic {
         #ifdef VULKAN
         #else
-            PerPixelLinkedListRenderComponent2::PerPixelLinkedListRenderComponent2(RenderWindow& window, int layer, std::string expression, window::ContextSettings settings) :
+            ShadowRenderComponent2::ShadowRenderComponent2 (RenderWindow& window, int layer, std::string expression,window::ContextSettings settings) :
             HeavyComponent(window, math::Vec3f(window.getView().getPosition().x, window.getView().getPosition().y, layer),
                           math::Vec3f(window.getView().getSize().x, window.getView().getSize().y, 0),
                           math::Vec3f(window.getView().getSize().x + window.getView().getSize().x * 0.5f, window.getView().getPosition().y + window.getView().getSize().y * 0.5f, layer)),
             view(window.getView()),
-            expression(expression),
             quad(math::Vec3f(window.getView().getSize().x, window.getView().getSize().y, window.getSize().y * 0.5f)),
-            layer(layer) {
-                if (!(settings.versionMajor >= 4 && settings.versionMinor >= 6))
-                    throw core::Erreur(53, "opengl version not supported for this renderer type");
-                quad.move(math::Vec3f(-window.getView().getSize().x * 0.5f, -window.getView().getSize().y * 0.5f, 0));
-                maxNodes = 20 * window.getView().getSize().x * window.getView().getSize().y;
-                GLint nodeSize = 5 * sizeof(GLfloat) + sizeof(GLuint);
-                frameBuffer.create(window.getView().getSize().x, window.getView().getSize().y, settings);
-                frameBufferSprite = Sprite(frameBuffer.getTexture(), math::Vec3f(0, 0, 0), math::Vec3f(window.getView().getSize().x, window.getView().getSize().y, 0), sf::IntRect(0, 0, window.getView().getSize().x, window.getView().getSize().y));
-                frameBuffer.setView(view);
-                resolution = sf::Vector3i((int) window.getSize().x, (int) window.getSize().y, window.getView().getSize().z);
-                //window.setActive();
-                glCheck(glGenBuffers(1, &atomicBuffer));
-                glCheck(glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomicBuffer));
-                glCheck(glBufferData(GL_ATOMIC_COUNTER_BUFFER, sizeof(GLuint), nullptr, GL_DYNAMIC_DRAW));
-                glCheck(glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, 0));
-                glCheck(glGenBuffers(1, &linkedListBuffer));
-                glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, linkedListBuffer));
-                glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, maxNodes * nodeSize, nullptr, GL_DYNAMIC_DRAW));
-                glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0));
-                glCheck(glGenTextures(1, &headPtrTex));
-                glCheck(glBindTexture(GL_TEXTURE_2D, headPtrTex));
-                glCheck(glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32UI, window.getView().getSize().x, window.getView().getSize().y));
-                glCheck(glBindImageTexture(0, headPtrTex, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32UI));
-                glCheck(glBindTexture(GL_TEXTURE_2D, 0));
-                std::vector<GLuint> headPtrClearBuf(window.getView().getSize().x*window.getView().getSize().y, 0xffffffff);
-                glCheck(glGenBuffers(1, &clearBuf));
-                glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, clearBuf));
-                glCheck(glBufferData(GL_PIXEL_UNPACK_BUFFER, headPtrClearBuf.size() * sizeof(GLuint),
-                &headPtrClearBuf[0], GL_STATIC_COPY));
-                glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0));
-                //std::cout<<"buffers : "<<atomicBuffer<<" "<<linkedListBuffer<<" "<<headPtrTex<<" "<<clearBuf<<std::endl;
-                core::FastDelegate<bool> signal (&PerPixelLinkedListRenderComponent2::needToUpdate, this);
-                core::FastDelegate<void> slot (&PerPixelLinkedListRenderComponent2::drawNextFrame, this);
+            expression(expression) {
+            update = false;
+            quad.move(math::Vec3f(-window.getView().getSize().x * 0.5f, -window.getView().getSize().y * 0.5f, 0));
+            sf::Vector3i resolution ((int) window.getSize().x, (int) window.getSize().y, window.getView().getSize().z);
+            //settings.depthBits = 24;
+            depthBuffer.create(resolution.x, resolution.y, settings);
+            //settings.depthBits = 0;
+
+            depthBufferTile = Sprite(depthBuffer.getTexture(), math::Vec3f(0, 0, 0), math::Vec3f(window.getView().getSize().x, window.getView().getSize().y, 0), IntRect(0, 0, window.getView().getSize().x, window.getView().getSize().y));
+
+            glCheck(glGenTextures(1, &depthTex));
+            glCheck(glBindTexture(GL_TEXTURE_2D, depthTex));
+            glCheck(glTexStorage2D(GL_TEXTURE_2D,1,GL_RGBA32F,window.getView().getSize().x, window.getView().getSize().y));
+            glCheck(glBindImageTexture(0, depthTex,0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F));
+            glCheck(glBindTexture(GL_TEXTURE_2D, 0));
+            std::vector<GLfloat> depthClearBuf(window.getView().getSize().x*window.getView().getSize().y*4, 0);
+            glCheck(glGenBuffers(1, &clearBuf));
+            glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, clearBuf));
+            glCheck(glBufferData(GL_PIXEL_UNPACK_BUFFER, depthClearBuf.size() * sizeof(GLfloat),
+            &depthClearBuf[0], GL_STATIC_COPY));
+            glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0));
+
+
+
+            stencilBuffer.create(resolution.x, resolution.y,settings);
+            stencilBufferTile = Sprite(stencilBuffer.getTexture(), math::Vec3f(0, 0, 0), math::Vec3f(window.getView().getSize().x, window.getView().getSize().y, 0), IntRect(0, 0, window.getView().getSize().x, window.getView().getSize().y));
+            glCheck(glGenTextures(1, &stencilTex));
+            glCheck(glBindTexture(GL_TEXTURE_2D, stencilTex));
+            glCheck(glTexStorage2D(GL_TEXTURE_2D,1,GL_RGBA32F,window.getView().getSize().x, window.getView().getSize().y));
+            glCheck(glBindImageTexture(0, stencilTex, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F));
+            glCheck(glBindTexture(GL_TEXTURE_2D, 0));
+            std::vector<GLfloat> stencilClearBuf(window.getView().getSize().x*window.getView().getSize().y*4, 0);
+            glCheck(glGenBuffers(1, &clearBuf2));
+            glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, clearBuf2));
+            glCheck(glBufferData(GL_PIXEL_UNPACK_BUFFER, stencilClearBuf.size() * sizeof(GLfloat),
+            &stencilClearBuf[0], GL_STATIC_COPY));
+            glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0));
+
+            alphaBuffer.create(window.getView().getSize().x, window.getView().getSize().y, settings);
+            glCheck(glGenTextures(1, &alphaTex));
+            glCheck(glBindTexture(GL_TEXTURE_2D, alphaTex));
+            glCheck(glTexStorage2D(GL_TEXTURE_2D,1,GL_RGBA32F,window.getView().getSize().x, window.getView().getSize().y));
+            glCheck(glBindImageTexture(0, alphaTex, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F));
+            glCheck(glBindTexture(GL_TEXTURE_2D, 0));
+            std::vector<GLfloat> alphaClearBuf(window.getView().getSize().x*window.getView().getSize().y*4, 0);
+            glCheck(glGenBuffers(1, &clearBuf3));
+            glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, clearBuf3));
+            glCheck(glBufferData(GL_PIXEL_UNPACK_BUFFER, alphaClearBuf.size() * sizeof(GLfloat),
+            &alphaClearBuf[0], GL_STATIC_COPY));
+            glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0));
+            alphaBufferSprite = Sprite(alphaBuffer.getTexture(), math::Vec3f(0, 0, 0), math::Vec3f(window.getView().getSize().x, window.getView().getSize().y, 0), sf::IntRect(0, 0, window.getView().getSize().x, window.getView().getSize().y));
+            //Debug image.
+            shadowMap.create(resolution.x, resolution.y,settings);
+            shadowTile = Sprite(shadowMap.getTexture(), math::Vec3f(0, 0, 0), math::Vec3f(window.getView().getSize().x, window.getView().getSize().y, 0), IntRect(0, 0, window.getView().getSize().x, window.getView().getSize().y));
+            glCheck(glGenBuffers(1, &atomicBuffer));
+            glCheck(glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomicBuffer));
+            glCheck(glBufferData(GL_ATOMIC_COUNTER_BUFFER, sizeof(GLuint), nullptr, GL_DYNAMIC_DRAW));
+            glCheck(glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, 0));
+            glCheck(glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 0, atomicBuffer));
+            glCheck(glGenTextures(1, &frameBufferTex));
+            glCheck(glBindTexture(GL_TEXTURE_2D, frameBufferTex));
+            glCheck(glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA32F, window.getView().getSize().x, window.getView().getSize().y));
+            glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+            glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+            glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+            glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+            glCheck(glBindImageTexture(0, frameBufferTex, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F));
+            glCheck(glBindTexture(GL_TEXTURE_2D, 0));
+            std::vector<GLfloat> texClearBuf(window.getView().getSize().x*window.getView().getSize().y*4, 0);
+            glCheck(glGenBuffers(1, &clearBuf4));
+            glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, clearBuf4));
+            glCheck(glBufferData(GL_PIXEL_UNPACK_BUFFER, texClearBuf.size() * sizeof(GLfloat),
+            &texClearBuf[0], GL_STATIC_COPY));
+            glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0));
+                core::FastDelegate<bool> signal (&ShadowRenderComponent2::needToUpdate, this);
+                core::FastDelegate<void> slot (&ShadowRenderComponent2::drawNextFrame, this);
                 core::Command cmd(signal, slot);
                 getListener().connect("UPDATE", cmd);
+                glCheck(glGenBuffers(1, &vboWorldMatrices));
                 glCheck(glGenBuffers(1, &vboIndirect));
-                compileShaders();
-                std::vector<Texture*> allTextures = Texture::getAllTextures();
-                Samplers allSamplers{};
-                std::vector<math::Matrix4f> textureMatrices;
-                for (unsigned int i = 0; i < allTextures.size(); i++) {
-                    textureMatrices.push_back(allTextures[i]->getTextureMatrix());
-                    GLuint64 handle_texture = allTextures[i]->getTextureHandle();
-                    allTextures[i]->makeTextureResident(handle_texture);
-                    allSamplers.tex[i].handle = handle_texture;
-                    //std::cout<<"add texture i : "<<i<<" id : "<<allTextures[i]->getId()<<std::endl;
-                }
-                perPixelLinkedList.setParameter("textureMatrix", textureMatrices);
-                glCheck(glGenBuffers(1, &ubo));
-                unsigned int ubid;
-                glCheck(ubid = glGetUniformBlockIndex(perPixelLinkedList.getHandle(), "ALL_TEXTURES"));
-                glCheck(glUniformBlockBinding(perPixelLinkedList.getHandle(),    ubid, 0));
-                backgroundColor = sf::Color::Transparent;
-                glCheck(glBindBuffer(GL_UNIFORM_BUFFER, ubo));
-                glCheck(glBufferData(GL_UNIFORM_BUFFER, sizeof(Samplers),allSamplers.tex, GL_STATIC_DRAW));
-                glCheck(glBindBuffer(GL_UNIFORM_BUFFER, 0));
-                //std::cout<<"size : "<<sizeof(Samplers)<<" "<<alignof (alignas(16) uint64_t[200])<<std::endl;
-                backgroundColor = sf::Color::Transparent;
-                glCheck(glGenBuffers(1, &entityData));
-                glCheck(glGenBuffers(1, &vertexData));
-                glCheck(glGenBuffers(1, &materialData));
-                glCheck(glGenBuffers(1, &entityIdData));
-                std::vector<MaterialData> materialsDatas;
-                materialsDatas.resize(Material::getNbMaterials());
-                for (unsigned int i = 0; i < Material::getNbMaterials(); i++) {
-                    Material *material = Material::getSameMaterials()[i];
-                    MaterialData md;
-                    md.textureId = (material->getTexture() != nullptr) ? material->getTexture()->getId() : 0;
-                    materialsDatas[material->getId()] = md;
-                }
-                glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, materialData));
-                glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, materialsDatas.size() * sizeof(MaterialData), &materialsDatas[0], GL_STATIC_DRAW));
-                glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0));
-                glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo));
-                glCheck(glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 0, atomicBuffer));
-                glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, linkedListBuffer));
-                glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, materialData));
-                glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, entityData));
-                glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, vertexData));
-                glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, entityIdData));
-                quadVBO.setPrimitiveType(sf::Quads);
-                Vertex v1 (sf::Vector3f(0, 0, quad.getSize().z));
-                Vertex v2 (sf::Vector3f(quad.getSize().x,0, quad.getSize().z));
-                Vertex v3 (sf::Vector3f(quad.getSize().x, quad.getSize().y, quad.getSize().z));
-                Vertex v4 (sf::Vector3f(0, quad.getSize().y, quad.getSize().z));
-                quadVBO.append(v1);
-                quadVBO.append(v2);
-                quadVBO.append(v3);
-                quadVBO.append(v4);
-                quadVBO.update();
-                update  = false;
-            }
-            void PerPixelLinkedListRenderComponent2::preloadEntitiesOnComponent(std::vector<Entity*> entities, EntityFactory& factory) {
-                std::vector<VertexData> verticesDatas;
-                std::vector<EntityData> entitiesDatas;
-                entitiesDatas.resize(factory.getNbEntities());
-                unsigned int vertexOffset = 0;
-                for (unsigned int e = 0; e < entities.size(); e++) {
-                    if (entities[e]->getFaces().size() > 0) {
-                        EntityData entityData;
-                        entities[e]->getTransform().update();
-                        entityData.transformMatrix = entities[e]->getTransform().getMatrix().transpose();
-                        entityData.materialID = entities[e]->getFaces()[0].getMaterial().getId();
-                        entityData.vertexOffset = vertexOffset;
-                        entitiesDatas[entities[e]->getId()] = entityData;
-                        for (unsigned int f = 0; f < entities[e]->getNbFaces(); f++) {
-                            Face face = entities[e]->getFaces()[f];
-                            for (unsigned int v = 0; v < face.getVertexArray().getVertexCount(); v++) {
-                                Vertex vertex = face.getVertexArray()[v];
-                                VertexData vertexData;
-                                vertexData.position = math::Vec3f(vertex.position.x, vertex.position.y, vertex.position.z);
-                                vertexData.color = math::Vec3f(1.f / 255.f * vertex.color.r, 1.f / 255.f * vertex.color.g, 1.f / 255.f * vertex.color.b, 1.f / 255.f * vertex.color.a);
-                                vertexData.texCoords = math::Vec3f(vertex.texCoords.x, vertex.texCoords.y, 0);
-                                verticesDatas.push_back(vertexData);
-                                vertexOffset++;
-                            }
-                        }
-                    }
-                }
-                glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, entityData));
-                glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, entitiesDatas.size() * sizeof(EntityData), &entitiesDatas[0], GL_DYNAMIC_DRAW));
-                glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, vertexData));
-                glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, verticesDatas.size() * sizeof(VertexData), &verticesDatas[0], GL_DYNAMIC_DRAW));
-                glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0));
-            }
-            void PerPixelLinkedListRenderComponent2::compileShaders() {
-                const std::string skyboxVertexShader = R"(#version 460
-                                                         layout (location = 0) in vec3 aPos;
-                                                         out vec3 texCoords;
-                                                         uniform mat4 projection;
-                                                         uniform mat4 view;
-                                                         void main()
-                                                         {
-                                                             texCoords = aPos;
-                                                             gl_Position = projection * view * vec4(aPos, 1.0);
-                                                         }
-                                                         )";
-                const std::string  simpleVertexShader = R"(#version 460
+                if (settings.versionMajor >= 3 && settings.versionMinor >= 3) {
+                    glGenBuffers(1, &vboWorldMatrices);
+                    glGenBuffers(1, &vboShadowProjMatrices);
+                    glGenBuffers(1, &modelDataBuffer);
+                    glGenBuffers(1, &materialDataBuffer);
+                    const std::string  simpleVertexShader = R"(#version 460
                                                         layout (location = 0) in vec3 position;
                                                         layout (location = 1) in vec4 color;
                                                         layout (location = 2) in vec2 texCoords;
@@ -163,202 +113,731 @@ namespace odfaeg {
                                                         void main () {
                                                             gl_Position = projectionMatrix * viewMatrix * worldMat * vec4(position, 1.f);
                                                         })";
-                const std::string vertexShader = R"(#version 460
-                                                    uniform mat4 projectionMatrix;
-                                                    uniform mat4 viewMatrix;
-                                                    uniform mat4 textureMatrix[)"+core::conversionUIntString(Texture::getAllTextures().size())+R"(];
-                                                    out vec2 fTexCoords;
-                                                    out vec4 frontColor;
-                                                    out uint texIndex;
-                                                    struct EntityData {
-                                                       mat4 transformMatrix;
-                                                       uint materialId;
-                                                       uint vertexOffset;
-                                                    };
-                                                    struct VertexData {
-                                                        vec4 position;
-                                                        vec4 color;
-                                                        vec4 texCoords;
-                                                    };
-                                                    struct MaterialData {
-                                                        uint textureId;
-                                                    };
-                                                    struct EntityIdData {
-                                                        uint entityId;
-                                                    };
-                                                    layout(binding = 1, std430) buffer materialLists {
-                                                          MaterialData materialsDatas[];
-                                                    };
-                                                    layout(binding = 2, std430) buffer entityLists {
-                                                          EntityData entitiesDatas[];
-                                                    };
-                                                    layout(binding = 3, std430) buffer vertexLists {
-                                                          VertexData verticesDatas[];
-                                                    };
-                                                    layout(binding = 4, std430) buffer entityIdLists {
-                                                          EntityIdData entitiesIdsDatas[];
-                                                    };
-                                                    void main() {
-                                                        uint vertexOffset = entitiesDatas[entitiesIdsDatas[gl_DrawID].entityId].vertexOffset;
-                                                        mat4 modelMatrix = entitiesDatas[entitiesIdsDatas[gl_DrawID].entityId].transformMatrix;
-                                                        uint materialId = entitiesDatas[entitiesIdsDatas[gl_DrawID].entityId].materialId;
-                                                        uint textureIndex = materialsDatas[materialId].textureId;
-                                                        VertexData vertex = verticesDatas[vertexOffset + gl_VertexID];
-                                                        gl_Position = projectionMatrix * viewMatrix * modelMatrix * vertex.position;
-                                                        frontColor = vertex.color;
-                                                        fTexCoords = (textureIndex != 0) ? (textureMatrix[textureIndex-1] * vertex.texCoords).xy : vec2(0, 0);
-                                                        texIndex = textureIndex;
-                                                    }
-                                                    )";
-            const std::string skyboxFragmentShader = R"(#version 460
-                                                    layout (location = 0) out vec4 fcolor;
-                                                    in vec3 texCoords;
-                                                    uniform samplerCube skybox;
-                                                    void main() {
-                                                        fcolor = texture(skybox, texCoords);
-                                                    }
-                                                    )";
-                                                    const std::string fragmentShader = R"(#version 460
-                                                      #extension GL_ARB_bindless_texture : enable
-                                                      struct NodeType {
-                                                          vec4 color;
-                                                          float depth;
-                                                          uint next;
-                                                      };
-                                                      layout(binding = 0, offset = 0) uniform atomic_uint nextNodeCounter;
-                                                      layout(binding = 0, r32ui) uniform uimage2D headPointers;
-                                                      layout(binding = 0, std430) buffer linkedLists {
-                                                          NodeType nodes[];
-                                                      };
-                                                      layout(std140, binding = 0) uniform ALL_TEXTURES {
-                                                          sampler2D textures[200];
-                                                      };
-                                                      uniform uint maxNodes;
-                                                      uniform sampler2D currentTex;
-                                                      uniform float water;
-                                                      in vec4 frontColor;
-                                                      in vec2 fTexCoords;
-                                                      in flat uint texIndex;
-                                                      layout (location = 0) out vec4 fcolor;
-                                                      /* fix: because of layout std140 16byte alignment, get uvec2 from array of uvec4 */
-                                                      /*uvec2 GetTexture(uint index)
-                                                      {
-                                                          uint index_corrected = index / 2;
-                                                          if (index % 2 == 0)
-                                                              return maps[index_corrected].xy;
-                                                          return maps[index_corrected].zw;
-                                                      }*/
-                                                      void main() {
-                                                           uint nodeIdx = atomicCounterIncrement(nextNodeCounter);
-                                                           //sampler2D tex = sampler2D(GetTexture(texIndex-1));
-                                                           vec4 color = (texIndex != 0) ? frontColor * texture(textures[texIndex-1], fTexCoords.xy) : frontColor;
-                                                           if (nodeIdx < maxNodes) {
-                                                                uint prevHead = imageAtomicExchange(headPointers, ivec2(gl_FragCoord.xy), nodeIdx);
-                                                                nodes[nodeIdx].color = color;
-                                                                nodes[nodeIdx].depth = gl_FragCoord.z;
-                                                                nodes[nodeIdx].next = prevHead;
-                                                           }
-                                                           //fcolor = vec4(0, 0, 0, 0);
-                                                      })";
-                 const std::string fragmentShader2 =
-                   R"(
-                   #version 460
-                   #define MAX_FRAGMENTS 20
-                   struct NodeType {
-                      vec4 color;
-                      float depth;
-                      uint next;
-                   };
-                   layout(binding = 0, r32ui) uniform uimage2D headPointers;
-                   layout(binding = 0, std430) buffer linkedLists {
-                       NodeType nodes[];
-                   };
-                   layout(location = 0) out vec4 fcolor;
-                   void main() {
-                      NodeType frags[MAX_FRAGMENTS];
-                      int count = 0;
-                      uint n = imageLoad(headPointers, ivec2(gl_FragCoord.xy)).r;
-                      while( n != 0xffffffffu && count < MAX_FRAGMENTS) {
-                           frags[count] = nodes[n];
-                           n = frags[count].next;
-                           count++;
-                      }
-                      //merge sort
-                      /*int i, j1, j2, k;
-                      int a, b, c;
-                      int step = 1;
-                      NodeType leftArray[MAX_FRAGMENTS/2]; //for merge sort
-                      //NodeType fgs[2];
-                      while (step <= count)
-                      {
-                          i = 0;
-                          while (i < count - step)
-                          {
-                              ////////////////////////////////////////////////////////////////////////
-                              //merge(step, i, i + step, min(i + step + step, count));
-                              a = i;
-                              b = i + step;
-                              c = (i + step + step) >= count ? count : (i + step + step);
-                              for (k = 0; k < step; k++)
-                                  leftArray[k] = frags[a + k];
-                              j1 = 0;
-                              j2 = 0;
-                              for (k = a; k < c; k++)
-                              {
+                    const std::string simpleFragmentShader = R"(#version 460
+                                                                layout(origin_upper_left) in vec4 gl_FragCoord;
+                                                                layout(rgba32f, binding = 0) uniform image2D img_output;
+                                                                layout(location = 0) out vec4 fcolor;
+                                                                void main() {
+                                                                    fcolor = imageLoad(img_output, ivec2(gl_FragCoord.xy));
+                                                                })";
+                    const std::string indirectRenderingVertexShader = R"(#version 460
+                                                                         layout (location = 0) in vec3 position;
+                                                                         layout (location = 1) in vec4 color;
+                                                                         layout (location = 2) in vec2 texCoords;
+                                                                         layout (location = 3) in vec3 normals;
+                                                                         uniform mat4 projectionMatrix;
+                                                                         uniform mat4 viewMatrix;
+                                                                         uniform mat4 textureMatrix[)"+core::conversionUIntString(Texture::getAllTextures().size())+R"(];
+                                                                         struct ModelData {
+                                                                            mat4 modelMatrix;
+                                                                            mat4 shadowProjMatrix;
+                                                                         };
+                                                                         struct MaterialData {
+                                                                             uint textureIndex;
+                                                                             uint layer;
+                                                                         };
+                                                                         layout(binding = 0, std430) buffer modelData {
+                                                                             ModelData modelDatas[];
+                                                                         };
+                                                                         layout(binding = 1, std430) buffer materialData {
+                                                                             MaterialData materialDatas[];
+                                                                         };
+                                                                         out vec2 fTexCoords;
+                                                                         out vec4 frontColor;
+                                                                         out uint texIndex;
+                                                                         out uint layer;
+                                                                         void main() {
+                                                                            ModelData model = modelDatas[gl_BaseInstance + gl_InstanceID];
+                                                                            MaterialData material = materialDatas[gl_DrawID];
+                                                                            uint textureIndex = material.textureIndex;
+                                                                            uint l = material.layer;
+                                                                            gl_Position = projectionMatrix * viewMatrix * model.modelMatrix * vec4(position, 1.f);
+                                                                            fTexCoords = (textureIndex != 0) ? (textureMatrix[textureIndex-1] * vec4(texCoords, 1.f, 1.f)).xy : texCoords;
+                                                                            frontColor = color;
+                                                                            texIndex = textureIndex;
+                                                                            layer = l;
+                                                                         }
+                                                                         )";
+                    const std::string buildDepthBufferVertexShaderNormal = R"(#version 460
+                                                                              layout (location = 0) in vec3 position;
+                                                                              layout (location = 1) in vec4 color;
+                                                                              layout (location = 2) in vec2 texCoords;
+                                                                              layout (location = 3) in vec3 normals;
+                                                                              layout (location = 4) in uint textureIndex;
+                                                                              layout (location = 6) in uint l;
+                                                                              uniform mat4 projectionMatrix;
+                                                                              uniform mat4 viewMatrix;
+                                                                              uniform mat4 textureMatrix[)"+core::conversionUIntString(Texture::getAllTextures().size())+R"(];
+                                                                              out vec2 fTexCoords;
+                                                                              out vec4 frontColor;
+                                                                              out uint texIndex;
+                                                                              out uint layer;
+                                                                              void main() {
+                                                                                  gl_Position = projectionMatrix * viewMatrix * vec4(position, 1.f);
+                                                                                  fTexCoords = (textureIndex != 0) ? (textureMatrix[textureIndex-1] * vec4(texCoords, 1.f, 1.f)).xy : texCoords;
+                                                                                  frontColor = color;
+                                                                                  texIndex = textureIndex;
+                                                                                  layer = l;
+                                                                              }
+                                                                              )";
+                    const std::string buildDepthBufferVertexShader = R"(#version 460
+                                                                        layout (location = 0) in vec3 position;
+                                                                        layout (location = 1) in vec4 color;
+                                                                        layout (location = 2) in vec2 texCoords;
+                                                                        layout (location = 3) in vec3 normals;
+                                                                        layout (location = 4) in mat4 worldMat;
+                                                                        layout (location = 12) in uint textureIndex;
+                                                                        layout (location = 14) in uint l;
+                                                                        uniform mat4 projectionMatrix;
+                                                                        uniform mat4 viewMatrix;
+                                                                        uniform mat4 textureMatrix[)"+core::conversionUIntString(Texture::getAllTextures().size())+R"(];
+                                                                        out vec2 fTexCoords;
+                                                                        out vec4 frontColor;
+                                                                        out uint texIndex;
+                                                                        out uint layer;
+                                                                        void main() {
+                                                                            gl_Position = projectionMatrix * viewMatrix * worldMat * vec4(position, 1.f);
+                                                                            fTexCoords = (textureIndex != 0) ? (textureMatrix[textureIndex-1] * vec4(texCoords, 1.f, 1.f)).xy : texCoords;
+                                                                            frontColor = color;
+                                                                            texIndex = textureIndex;
+                                                                            layer = l;
+                                                                        }
+                                                                     )";
+                     const std::string buildDepthBufferFragmentShader = R"(#version 460
+                                                                          #extension GL_ARB_bindless_texture : enable
+                                                                          #extension GL_ARB_fragment_shader_interlock : require
+                                                                          in vec4 frontColor;
+                                                                          in vec2 fTexCoords;
+                                                                          in flat uint texIndex;
+                                                                          in flat uint layer;
+                                                                          layout(std140, binding=0) uniform ALL_TEXTURES {
+                                                                              sampler2D textures[200];
+                                                                          };
 
-                                  if (b + j1 >= c || (j2 < step && leftArray[j2].depth > frags[b + j1].depth))
-                                      frags[k] = leftArray[j2++];
-                                  else
-                                      frags[k] = frags[b + j1++];
-                                  //bool idx = (b + j1 >= c || (j2 < step && leftArray[j2].depth > frags[b + j1].depth));
-                                  //fgs[1] = leftArray[j2++];
-                                  //fgs[0] = frags[b + j1++];
-                                  //frags[k] = fgs[int(idx)];
-                              }
-                              ////////////////////////////////////////////////////////////////////////
-                              i += 2 * step;
-                          }
-                          step *= 2;
-                      }*/
-                      //Insertion sort.
-                      for (int i = 0; i < count - 1; i++) {
-                        for (int j = i + 1; j > 0; j--) {
-                            if (frags[j - 1].depth > frags[j].depth) {
-                                NodeType tmp = frags[j - 1];
-                                frags[j - 1] = frags[j];
-                                frags[j] = tmp;
-                            }
+                                                                          layout(binding = 0, rgba32f) uniform image2D depthBuffer;
+                                                                          layout (location = 0) out vec4 fColor;
+
+                                                                          void main () {
+                                                                              vec4 texel = (texIndex != 0) ? frontColor * texture2D(textures[texIndex-1], fTexCoords.xy) : frontColor;
+                                                                              float z = gl_FragCoord.z;
+                                                                              float l = layer;
+                                                                              beginInvocationInterlockARB();
+                                                                              vec4 depth = imageLoad(depthBuffer,ivec2(gl_FragCoord.xy));
+                                                                              if (/*l > depth.y || l == depth.y &&*/ z > depth.z) {
+                                                                                fColor = vec4(0, l, z, texel.a);
+                                                                                imageStore(depthBuffer,ivec2(gl_FragCoord.xy),vec4(0,l,z,texel.a));
+                                                                                memoryBarrier();
+                                                                              } else {
+                                                                                fColor = depth;
+                                                                              }
+                                                                              endInvocationInterlockARB();
+                                                                          }
+                                                                        )";
+                     const std::string buildAlphaBufferFragmentShader = R"(#version 460
+                                                                      #extension GL_ARB_bindless_texture : enable
+                                                                      #extension GL_ARB_fragment_shader_interlock : require
+                                                                      layout(std140, binding=0) uniform ALL_TEXTURES {
+                                                                        sampler2D textures[200];
+                                                                      };
+                                                                      layout(binding = 0, rgba32f) coherent uniform image2D alphaBuffer;
+                                                                      layout (location = 0) out vec4 fColor;
+                                                                      uniform sampler2D depthBuffer;
+                                                                      uniform sampler2D stencilBuffer;
+                                                                      uniform vec3 resolution;
+                                                                      uniform mat4 lviewMatrix;
+                                                                      uniform mat4 lprojectionMatrix;
+                                                                      in vec4 frontColor;
+                                                                      in vec2 fTexCoords;
+                                                                      in flat uint texIndex;
+                                                                      in flat uint layer;
+                                                                      in vec4 shadowCoords;
+                                                                      void main() {
+                                                                          vec4 texel = (texIndex != 0) ? frontColor * texture2D(textures[texIndex-1], fTexCoords.xy) : frontColor;
+                                                                          float current_alpha = texel.a;
+                                                                          vec2 position = (gl_FragCoord.xy / resolution.xy);
+                                                                          vec4 depth = texture2D (depthBuffer, position);
+                                                                          beginInvocationInterlockARB();
+                                                                          vec4 alpha = imageLoad(alphaBuffer,ivec2(gl_FragCoord.xy));
+                                                                          vec3 projCoords = shadowCoords.xyz / shadowCoords.w;
+                                                                          projCoords = projCoords * 0.5 + 0.5;
+                                                                          vec4 stencil = texture2D (stencilBuffer, projCoords.xy);
+                                                                          float l = layer;
+                                                                          float z = gl_FragCoord.z;
+                                                                          if (/*l > stencil.y || l == stencil.y &&*/ stencil.z < projCoords.z && depth.z > z && current_alpha > alpha.a) {
+                                                                              imageStore(alphaBuffer,ivec2(gl_FragCoord.xy),vec4(0, l, z, current_alpha));
+                                                                              memoryBarrier();
+                                                                              fColor = vec4(0, 1, z, current_alpha);
+                                                                          } else {
+                                                                              fColor = alpha;
+                                                                          }
+                                                                          endInvocationInterlockARB();
+                                                                      }
+                                                                      )";
+                    /*const std::string buildShadowMapVertexShaderNormal = R"(#version 460
+                                                                            layout (location = 0) in vec3 position;
+                                                                            layout (location = 1) in vec4 color;
+                                                                            layout (location = 2) in vec2 texCoords;
+                                                                            layout (location = 3) in vec3 normals;
+                                                                            uniform mat4 projectionMatrix;
+                                                                            uniform mat4 viewMatrix;
+                                                                            uniform mat4 textureMatrix;
+                                                                            out vec2 fTexCoords;
+                                                                            out vec4 frontColor;
+                                                                            void main() {
+                                                                                gl_Position = projectionMatrix * viewMatrix  * vec4(position, 1.f);
+                                                                                fTexCoords = (textureMatrix * vec4(texCoords, 1.f, 1.f)).xy;
+                                                                                frontColor = color;
+                                                                            }
+                                                                        )";
+                    const std::string buildShadowMapVertexShader = R"(#version 460
+                                                                      layout (location = 0) in vec3 position;
+                                                                      layout (location = 1) in vec4 color;
+                                                                      layout (location = 2) in vec2 texCoords;
+                                                                      layout (location = 3) in vec3 normals;
+                                                                      layout (location = 4) in mat4 worldMat;
+                                                                      uniform mat4 projectionMatrix;
+                                                                      uniform mat4 viewMatrix;
+                                                                      uniform mat4 textureMatrix;
+                                                                      out vec2 fTexCoords;
+                                                                      out vec4 frontColor;
+                                                                      void main() {
+                                                                          gl_Position = projectionMatrix * viewMatrix  * worldMat * vec4(position, 1.f);
+                                                                          fTexCoords = (textureMatrix * vec4(texCoords, 1.f, 1.f)).xy;
+                                                                          frontColor = color;
+                                                                      }
+                                                                    )";*/
+                    const std::string buildShadowMapFragmentShader = R"(#version 460
+                                                                        #extension GL_ARB_bindless_texture : enable
+                                                                        #extension GL_ARB_fragment_shader_interlock : require
+                                                                        in vec4 frontColor;
+                                                                        in vec2 fTexCoords;
+
+                                                                        layout (std140, binding = 0) uniform ALL_TEXTURES {
+                                                                            sampler2D textures[200];
+                                                                        };
+                                                                        in flat uint texIndex;
+                                                                        in flat uint layer;
+                                                                        layout(binding = 0, rgba32f) coherent uniform image2D stencilBuffer;
+                                                                        layout (location = 0) out vec4 fColor;
+                                                                        void main() {
+                                                                            vec4 texel = (texIndex != 0) ? frontColor * texture2D(textures[texIndex-1], fTexCoords) : frontColor;
+                                                                            float current_alpha = texel.a;
+                                                                            beginInvocationInterlockARB();
+                                                                            vec4 alpha = imageLoad(stencilBuffer,ivec2(gl_FragCoord.xy));
+                                                                            float l = layer;
+                                                                            float z = gl_FragCoord.z;
+                                                                            if (/*l > alpha.y || l == alpha.y &&*/ z > alpha.z) {
+                                                                                imageStore(stencilBuffer,ivec2(gl_FragCoord.xy),vec4(0, l, z, current_alpha));
+                                                                                memoryBarrier();
+                                                                                fColor = vec4(0, l, z, current_alpha);
+                                                                            } else {
+                                                                                fColor = alpha;
+                                                                            }
+                                                                            endInvocationInterlockARB();
+                                                                        }
+                                                                    )";
+                        const std::string perPixShadowIndirectRenderinVertexShader = R"(#version 460
+                                                                         layout (location = 0) in vec3 position;
+                                                                         layout (location = 1) in vec4 color;
+                                                                         layout (location = 2) in vec2 texCoords;
+                                                                         layout (location = 3) in vec3 normals;
+                                                                         uniform mat4 projectionMatrix;
+                                                                         uniform mat4 viewMatrix;
+                                                                         uniform mat4 lviewMatrix;
+                                                                         uniform mat4 lprojectionMatrix;
+                                                                         uniform mat4 textureMatrix[)"+core::conversionUIntString(Texture::getAllTextures().size())+R"(];
+                                                                         struct ModelData {
+                                                                            mat4 modelMatrix;
+                                                                            mat4 shadowProjMatrix;
+                                                                         };
+                                                                         struct MaterialData {
+                                                                             uint textureIndex;
+                                                                             uint layer;
+                                                                         };
+                                                                         layout(binding = 0, std430) buffer modelData {
+                                                                             ModelData modelDatas[];
+                                                                         };
+                                                                         layout(binding = 1, std430) buffer materialData {
+                                                                             MaterialData materialDatas[];
+                                                                         };
+                                                                         out vec4 shadowCoords;
+                                                                         out vec2 fTexCoords;
+                                                                         out vec4 frontColor;
+                                                                         out uint texIndex;
+                                                                         out uint layer;
+                                                                         void main() {
+                                                                            ModelData model = modelDatas[gl_BaseInstance + gl_InstanceID];
+                                                                            MaterialData material = materialDatas[gl_DrawID];
+                                                                            uint textureIndex = material.textureIndex;
+                                                                            uint l = material.layer;
+                                                                            gl_Position = projectionMatrix * viewMatrix * model.shadowProjMatrix * model.modelMatrix * vec4(position, 1.f);
+                                                                            shadowCoords = lprojectionMatrix * lviewMatrix * model.shadowProjMatrix * model.modelMatrix * vec4(position, 1);
+                                                                            fTexCoords = (textureIndex != 0) ? (textureMatrix[textureIndex-1] * vec4(texCoords, 1.f, 1.f)).xy : texCoords;
+                                                                            frontColor = color;
+                                                                            texIndex = textureIndex;
+                                                                            layer = l;
+                                                                         }
+                                                                         )";
+                        const std::string perPixShadowVertexShader = R"(#version 460
+                                                                   layout (location = 0) in vec3 position;
+                                                                   layout (location = 1) in vec4 color;
+                                                                   layout (location = 2) in vec2 texCoords;
+                                                                   layout (location = 3) in vec3 normals;
+                                                                   layout (location = 4) in mat4 worldMat;
+                                                                   layout (location = 8) in mat4 shadowProjMat;
+                                                                   layout (location = 12) in uint textureIndex;
+                                                                   layout (location = 14) in uint l;
+                                                                   uniform mat4 projectionMatrix;
+                                                                   uniform mat4 viewMatrix;
+                                                                   uniform mat4 lviewMatrix;
+                                                                   uniform mat4 lprojectionMatrix;
+                                                                   uniform mat4 textureMatrix[)"+core::conversionUIntString(Texture::getAllTextures().size())+R"(];
+                                                                   out vec4 shadowCoords;
+                                                                   out vec4 frontColor;
+                                                                   out vec2 fTexCoords;
+                                                                   out uint texIndex;
+                                                                   out uint layer;
+                                                                   void main() {
+                                                                       gl_Position = projectionMatrix * viewMatrix * shadowProjMat * worldMat * vec4(position, 1.f);
+                                                                       fTexCoords = (textureIndex != 0) ? (textureMatrix[textureIndex-1] * vec4(texCoords, 1.f, 1.f)).xy : texCoords;
+                                                                       frontColor = color;
+                                                                       shadowCoords = lprojectionMatrix * lviewMatrix * shadowProjMat * worldMat * vec4(position, 1);
+                                                                       texIndex = textureIndex;
+                                                                       layer = l;
+                                                                   }
+                                                                  )";
+                        const std::string perPixShadowNormalVertexShader = R"(#version 460
+                                                                   layout (location = 0) in vec3 position;
+                                                                   layout (location = 1) in vec4 color;
+                                                                   layout (location = 2) in vec2 texCoords;
+                                                                   layout (location = 3) in vec3 normals;
+                                                                   layout (location = 4) in uint textureIndex;
+                                                                   layout (location = 6) in uint l;
+                                                                   uniform mat4 projectionMatrix;
+                                                                   uniform mat4 viewMatrix;
+                                                                   uniform mat4 lviewMatrix;
+                                                                   uniform mat4 lprojectionMatrix;
+                                                                   uniform mat4 textureMatrix[)"+core::conversionUIntString(Texture::getAllTextures().size())+R"(];
+                                                                   out vec4 shadowCoords;
+                                                                   out vec4 frontColor;
+                                                                   out vec2 fTexCoords;
+                                                                   out uint texIndex;
+                                                                   out uint layer;
+                                                                   void main() {
+                                                                       gl_Position = projectionMatrix * viewMatrix * vec4(position, 1.f);
+                                                                       fTexCoords = (textureIndex != 0) ? (textureMatrix[textureIndex-1] * vec4(texCoords, 1.f, 1.f)).xy : texCoords;
+                                                                       frontColor = color;
+                                                                       shadowCoords = lprojectionMatrix * lviewMatrix * vec4(position, 1);
+                                                                       texIndex = textureIndex;
+                                                                       layer = l;
+                                                                   }
+                                                                  )";
+                        const std::string perPixShadowFragmentShader = R"(#version 460
+                                                                          #extension GL_ARB_bindless_texture : enable
+                                                                          in vec4 shadowCoords;
+                                                                          in vec4 frontColor;
+                                                                          in vec2 fTexCoords;
+                                                                          in flat uint texIndex;
+                                                                          in flat uint layer;
+                                                                          uniform sampler2D stencilBuffer;
+                                                                          uniform sampler2D depthBuffer;
+                                                                          uniform sampler2D alphaBuffer;
+                                                                          uniform float haveTexture;
+                                                                          uniform vec3 resolution;
+                                                                          layout (std140, binding = 0) uniform ALL_TEXTURES {
+                                                                              sampler2D textures[200];
+                                                                          };
+                                                                          layout (location = 0) out vec4 fColor;
+                                                                          layout(rgba32f, binding = 0) uniform image2D img_output;
+                                                                          layout(binding = 0, offset = 0) uniform atomic_uint nextNodeCounter;
+
+                                                                         /*Functions to debug, draw numbers to the image,
+                                                                          draw a vertical ligne*/
+                                                                          void drawVLine (ivec2 position, int width, int nbPixels, vec4 color) {
+                                                                              int startY = position.y;
+                                                                              int startX = position.x;
+                                                                              while (position.y < startY + nbPixels) {
+                                                                                 while (position.x < startX + width) {
+                                                                                    imageStore(img_output, position, color);
+                                                                                    position.x++;
+                                                                                 }
+                                                                                 position.y++;
+                                                                                 position.x = startX;
+                                                                              }
+                                                                          }
+                                                                          /*Draw an horizontal line*/
+                                                                          void drawHLine (ivec2 position, int height, int nbPixels, vec4 color) {
+                                                                              int startY = position.y;
+                                                                              int startX = position.x;
+                                                                              while (position.y > startY - height) {
+                                                                                 while (position.x < startX + nbPixels) {
+                                                                                    imageStore(img_output, position, color);
+                                                                                    position.x++;
+                                                                                 }
+                                                                                 position.y--;
+                                                                                 position.x = startX;
+                                                                              }
+                                                                          }
+                                                                          /*Draw digits.*/
+                                                                          void drawDigit (ivec2 position, int nbPixels, vec4 color, uint digit) {
+                                                                              int digitSize = nbPixels * 10;
+                                                                              if (digit == 0) {
+                                                                                  drawVLine(position, digitSize / 2, nbPixels, color);
+                                                                                  drawHLine(position, digitSize, nbPixels, color);
+                                                                                  drawHLine(ivec2(position.x + digitSize / 2 - nbPixels, position.y), digitSize, nbPixels, color);
+                                                                                  drawVLine(ivec2(position.x, position.y - digitSize + nbPixels), digitSize / 2, nbPixels, color);
+                                                                              } else if (digit == 1) {
+                                                                                  drawHLine(ivec2(position.x + digitSize / 2 - nbPixels, position.y), digitSize, nbPixels, color);
+                                                                              } else if (digit == 2) {
+                                                                                  drawVLine(position, digitSize / 2, nbPixels, color);
+                                                                                  drawHLine(ivec2(position.x, position.y), digitSize / 2 + nbPixels / 2, nbPixels, color);
+                                                                                  drawVLine(ivec2(position.x, position.y - digitSize / 2 + nbPixels / 2), digitSize / 2, nbPixels, color);
+                                                                                  drawHLine(ivec2(position.x + digitSize / 2 - nbPixels, position.y - digitSize / 2 + nbPixels / 2), digitSize / 2 + nbPixels / 2, nbPixels, color);
+                                                                                  drawVLine(ivec2(position.x, position.y - digitSize + nbPixels), digitSize / 2, nbPixels, color);
+                                                                              } else if (digit == 3) {
+                                                                                  drawHLine(ivec2(position.x + digitSize / 2 - nbPixels, position.y), digitSize, nbPixels, color);
+                                                                                  drawVLine(position, digitSize / 2, nbPixels, color);
+                                                                                  drawVLine(ivec2(position.x, position.y - digitSize / 2 + nbPixels / 2), digitSize / 2, nbPixels, color);
+                                                                                  drawVLine(ivec2(position.x, position.y - digitSize + nbPixels), digitSize / 2, nbPixels, color);
+                                                                              } else if (digit == 4) {
+                                                                                  drawHLine(ivec2(position.x, position.y - digitSize / 2), digitSize / 2 + nbPixels / 2, nbPixels, color);
+                                                                                  drawHLine(ivec2(position.x + digitSize / 2 - nbPixels, position.y), digitSize, nbPixels, color);
+                                                                                  drawVLine(ivec2(position.x, position.y - digitSize / 2 + nbPixels / 2), digitSize / 2, nbPixels, color);
+                                                                              } else if (digit == 5) {
+                                                                                  drawVLine(position, digitSize / 2, nbPixels, color);
+                                                                                  drawHLine(ivec2(position.x, position.y - digitSize / 2 + nbPixels / 2), digitSize / 2 + nbPixels / 2, nbPixels, color);
+                                                                                  drawVLine(ivec2(position.x, position.y - digitSize / 2 + nbPixels / 2), digitSize / 2, nbPixels, color);
+                                                                                  drawHLine(ivec2(position.x + digitSize / 2 - nbPixels, position.y), digitSize / 2 + nbPixels / 2, nbPixels, color);
+                                                                                  drawVLine(ivec2(position.x, position.y - digitSize + nbPixels), digitSize / 2, nbPixels, color);
+                                                                              } else if (digit == 6) {
+                                                                                  drawVLine(position, digitSize / 2, nbPixels, color);
+                                                                                  drawHLine(ivec2(position.x + digitSize / 2 - nbPixels, position.y), digitSize, nbPixels, color);
+                                                                                  drawVLine(ivec2(position.x, position.y - digitSize / 2 + nbPixels / 2), digitSize / 2, nbPixels, color);
+                                                                                  drawHLine(position, digitSize / 2 + nbPixels / 2, nbPixels, color);
+                                                                                  drawVLine(ivec2(position.x, position.y - digitSize + nbPixels), digitSize / 2, nbPixels, color);
+                                                                              } else if (digit == 7) {
+                                                                                  drawVLine(ivec2(position.x, position.y - digitSize + nbPixels), digitSize / 2, nbPixels, color);
+                                                                                  drawHLine(ivec2(position.x + digitSize / 2 - nbPixels, position.y), digitSize, nbPixels, color);
+                                                                              } else if (digit == 8) {
+                                                                                  drawHLine(position, digitSize, nbPixels, color);
+                                                                                  drawHLine(ivec2(position.x + digitSize / 2 - nbPixels, position.y), digitSize, nbPixels, color);
+                                                                                  drawVLine(position, digitSize / 2, nbPixels, color);
+                                                                                  drawVLine(ivec2(position.x, position.y - digitSize / 2 + nbPixels / 2), digitSize / 2, nbPixels, color);
+                                                                                  drawVLine(ivec2(position.x, position.y - digitSize + nbPixels), digitSize / 2, nbPixels, color);
+                                                                              } else if (digit == 9) {
+                                                                                  drawVLine(position, digitSize / 2, nbPixels, color);
+                                                                                  drawHLine(ivec2(position.x + digitSize / 2 - nbPixels, position.y), digitSize, nbPixels, color);
+                                                                                  drawVLine(ivec2(position.x, position.y - digitSize / 2 + nbPixels / 2), digitSize / 2, nbPixels, color);
+                                                                                  drawHLine(ivec2(position.x, position.y - digitSize / 2 + nbPixels / 2), digitSize / 2 + nbPixels / 2, nbPixels, color);
+                                                                                  drawVLine(ivec2(position.x, position.y - digitSize + nbPixels), digitSize / 2, nbPixels, color);
+                                                                              }
+                                                                          }
+                                                                          void drawSquare(ivec2 position, int size, vec4 color) {
+                                                                              int startY = position.y;
+                                                                              int startX = position.x;
+                                                                              while (position.y > startY - size) {
+                                                                                 while (position.x < startX + size) {
+                                                                                    imageStore(img_output, position, color);
+                                                                                    position.x++;
+                                                                                 }
+                                                                                 position.y--;
+                                                                                 position.x = startX;
+                                                                              }
+                                                                          }
+                                                                          void drawPunt(ivec2 position, int nbPixels, vec4 color) {
+                                                                              int puntSize = nbPixels * 2;
+                                                                              drawSquare(position, puntSize, color);
+                                                                          })" \
+                                                                          R"(ivec2 print (ivec2 position, int nbPixels, vec4 color, double number) {
+                                                                              int digitSize = nbPixels * 10;
+                                                                              int digitSpacing = nbPixels * 6;
+                                                                              if (number < 0) {
+                                                                                 number = -number;
+                                                                                 drawVLine(ivec2(position.x, position.y - digitSize / 2 + nbPixels / 2), digitSize / 2, nbPixels, color);
+                                                                                 position.x += digitSpacing;
+                                                                              }
+                                                                              int pe = int(number);
+                                                                              int n = 0;
+                                                                              uint rpe[10];
+                                                                              do {
+                                                                                 uint digit = pe % 10;
+                                                                                 pe /= 10;
+                                                                                 if (n < 10) {
+                                                                                    rpe[n] = digit;
+                                                                                 }
+                                                                                 n++;
+                                                                              } while (pe != 0);
+                                                                              if (n >= 10)
+                                                                                n = 9;
+                                                                              //drawDigit(position, nbPixels, color,0);
+                                                                              for (int i = n-1; i >= 0; i--) {
+                                                                                 drawDigit(position, nbPixels, color, rpe[i]);
+                                                                                 //drawDigit(position, nbPixels, color,n-i-1);
+                                                                                 position.x += digitSpacing;
+                                                                              }
+                                                                              double rest = fract(number);
+                                                                              if (rest > 0) {
+                                                                                  drawPunt(position, nbPixels, color);
+                                                                                  position.x += digitSpacing;
+                                                                                  do {
+                                                                                     rest *= 10;
+                                                                                     int digit = int(rest);
+                                                                                     rest -= digit;
+                                                                                     drawDigit(position, nbPixels, color, digit);
+                                                                                     position.x += digitSpacing;
+                                                                                  } while (rest != 0);
+                                                                              }
+                                                                              return position;
+                                                                          }
+                                                                          ivec2 print (ivec2 position, int nbPixels, vec4 color, mat4 matrix) {
+                                                                              int numberSpacing = 10;
+                                                                              for (uint i = 0; i < 4; i++) {
+                                                                                 for (uint j = 0; j < 4; j++) {
+                                                                                    position = print(position, nbPixels, color, matrix[i][j]);
+                                                                                    position.x += numberSpacing;
+                                                                                 }
+                                                                              }
+                                                                              return position;
+                                                                          }
+                                                                          ivec2 print (ivec2 position, int nbPixels, vec4 color, vec4 vector) {
+                                                                              int numberSpacing = 10;
+                                                                              for (uint i = 0; i < 4; i++) {
+                                                                                position = print(position, nbPixels, color, vector[i]);
+                                                                                position.x += numberSpacing;
+                                                                              }
+                                                                              return position;
+                                                                          }
+                                                                        void main() {
+                                                                            uint fragmentIdx = atomicCounterIncrement(nextNodeCounter);
+                                                                            vec2 position = (gl_FragCoord.xy / resolution.xy);
+                                                                            vec4 depth = texture(depthBuffer, position);
+                                                                            vec4 alpha = texture(alphaBuffer, position);
+                                                                            vec4 texel = (texIndex != 0) ? frontColor * texture2D(textures[texIndex-1], fTexCoords) : frontColor;
+
+                                                                            float color = texel.a;
+                                                                            vec3 projCoords = shadowCoords.xyz / shadowCoords.w;
+                                                                            projCoords = projCoords * 0.5 + 0.5;
+                                                                            vec4 stencil = texture (stencilBuffer, projCoords.xy);
+                                                                            float z = gl_FragCoord.z;
+                                                                            vec4 visibility;
+                                                                            uint l = layer;
+                                                                            if (/*l > stencil.y || l == stencil.y &&*/ stencil.z < projCoords.z) {
+                                                                                if (depth.z > z) {
+                                                                                    visibility = vec4 (1, 1, 1, alpha.a);
+                                                                                } else {
+                                                                                    visibility = vec4 (0.5, 0.5, 0.5, color);
+                                                                                }
+                                                                            } else {
+                                                                                visibility = vec4 (1, 1, 1, 1);
+                                                                            }
+                                                                            /*if (fragmentIdx == 0)
+                                                                                print(ivec2(200, 100), 1, vec4(1, 0, 0, 1), vec4(0, 0, depth.z, z));*/
+                                                                            fColor = visibility /*vec4(0, 0, z*100, 1)*/;
+                                                                          }
+                                                                          )";
+                        if (!debugShader.loadFromMemory(simpleVertexShader, simpleFragmentShader)) {
+                            throw core::Erreur(51, "Failed to load debug shader", 0);
                         }
-                      }
-                      vec4 color = vec4(0, 0, 0, 0);
-                      for( int i = 0; i < count; i++)
-                      {
-                        color.rgb = frags[i].color.rgb * frags[i].color.a + color.rgb * (1 - frags[i].color.a);
-                        color.a = frags[i].color.a + color.a * (1 - frags[i].color.a);
-                        //color = mix (color, frags[i].color, frags[i].color.a);
-                      }
-                      fcolor = color;
-                   })";
-                   if (!skyboxShader.loadFromMemory(skyboxVertexShader, skyboxFragmentShader)) {
-                        throw core::Erreur(53, "Failed to load skybox shader");
-                   }
-                   if (!perPixelLinkedList.loadFromMemory(vertexShader, fragmentShader)) {
-                        throw core::Erreur(54, "Failed to load per pixel linked list shader");
-                   }
-                   if (!perPixelLinkedListP2.loadFromMemory(simpleVertexShader, fragmentShader2)) {
-                        throw core::Erreur(55, "Failed to load per pixel linked list pass 2 shader");
-                   }
-                   skyboxShader.setParameter("skybox", Shader::CurrentTexture);
-                   perPixelLinkedList.setParameter("maxNodes", maxNodes);
-                   perPixelLinkedList.setParameter("currentTex", Shader::CurrentTexture);
-                   perPixelLinkedList.setParameter("resolution", resolution.x, resolution.y, resolution.z);
-                   math::Matrix4f viewMatrix = getWindow().getDefaultView().getViewMatrix().getMatrix().transpose();
-                   math::Matrix4f projMatrix = getWindow().getDefaultView().getProjMatrix().getMatrix().transpose();
-                   perPixelLinkedListP2.setParameter("viewMatrix", viewMatrix);
-                   perPixelLinkedListP2.setParameter("projectionMatrix", projMatrix);
+                        if (!depthGenShader.loadFromMemory(indirectRenderingVertexShader, buildDepthBufferFragmentShader))  {
+                            throw core::Erreur(52, "Error, failed to load build depth buffer shader", 3);
+                        }
+                        if (!depthGenNormalShader.loadFromMemory(buildDepthBufferVertexShaderNormal, buildDepthBufferFragmentShader)) {
+                            throw core::Erreur(51, "Error, failed to load build depth buffer normal shader", 3);
+                        }
+                        if (!buildShadowMapShader.loadFromMemory(indirectRenderingVertexShader, buildShadowMapFragmentShader)) {
+                            throw core::Erreur(53, "Error, failed to load build shadow map shader", 3);
+                        }
+                        if (!buildShadowMapNormalShader.loadFromMemory(buildDepthBufferVertexShaderNormal, buildShadowMapFragmentShader)) {
+                            throw core::Erreur(50, "Error, failed to load build shadow map normal shader", 3);
+                        }
+                        if (!perPixShadowShader.loadFromMemory(perPixShadowIndirectRenderinVertexShader, perPixShadowFragmentShader)) {
+                            throw core::Erreur(54, "Error, failed to load per pix shadow map shader", 3);
+                        }
+                        if (!perPixShadowShaderNormal.loadFromMemory(perPixShadowNormalVertexShader, perPixShadowFragmentShader)) {
+                            throw core::Erreur(55, "Error, failed to load per pix normal shadow map shader", 3);
+                        }
+                        if (!sBuildAlphaBufferShader.loadFromMemory(perPixShadowIndirectRenderinVertexShader,buildAlphaBufferFragmentShader)) {
+                            throw core::Erreur(60, "Error, failed to load build alpha buffer shader", 3);
+                        }
+                        if (!sBuildAlphaBufferNormalShader.loadFromMemory(perPixShadowNormalVertexShader,buildAlphaBufferFragmentShader)) {
+                            throw core::Erreur(61, "Error, failed to load build alpha normal buffer shader", 3);
+                        }
+                        math::Matrix4f viewMatrix = window.getDefaultView().getViewMatrix().getMatrix().transpose();
+                        math::Matrix4f projMatrix = window.getDefaultView().getProjMatrix().getMatrix().transpose();
+                        debugShader.setParameter("projectionMatrix", projMatrix);
+                        debugShader.setParameter("viewMatrix", viewMatrix);
+                        depthGenShader.setParameter("texture", Shader::CurrentTexture);
+                        buildShadowMapShader.setParameter("texture", Shader::CurrentTexture);
+                        depthGenNormalShader.setParameter("texture", Shader::CurrentTexture);
+                        buildShadowMapNormalShader.setParameter("texture", Shader::CurrentTexture);
+                        perPixShadowShader.setParameter("stencilBuffer", stencilBuffer.getTexture());
+                        perPixShadowShader.setParameter("depthBuffer", depthBuffer.getTexture());
+                        perPixShadowShader.setParameter("texture", Shader::CurrentTexture);
+                        perPixShadowShader.setParameter("resolution", resolution.x, resolution.y, resolution.z);
+                        perPixShadowShader.setParameter("alphaBuffer", alphaBuffer.getTexture());
+                        perPixShadowShaderNormal.setParameter("stencilBuffer", stencilBuffer.getTexture());
+                        perPixShadowShaderNormal.setParameter("depthBuffer", depthBuffer.getTexture());
+                        perPixShadowShaderNormal.setParameter("texture", Shader::CurrentTexture);
+                        perPixShadowShaderNormal.setParameter("resolution", resolution.x, resolution.y, resolution.z);
+                        perPixShadowShaderNormal.setParameter("alphaBuffer", alphaBuffer.getTexture());
+                        sBuildAlphaBufferShader.setParameter("depthBuffer", depthBuffer.getTexture());
+                        sBuildAlphaBufferShader.setParameter("stencilBuffer", stencilBuffer.getTexture());
+                        sBuildAlphaBufferShader.setParameter("texture", Shader::CurrentTexture);
+                        sBuildAlphaBufferShader.setParameter("resolution", resolution.x, resolution.y, resolution.z);
+                        sBuildAlphaBufferNormalShader.setParameter("depthBuffer", depthBuffer.getTexture());
+                        sBuildAlphaBufferNormalShader.setParameter("stencilBuffer", stencilBuffer.getTexture());
+                        sBuildAlphaBufferNormalShader.setParameter("texture", Shader::CurrentTexture);
+                        sBuildAlphaBufferNormalShader.setParameter("resolution", resolution.x, resolution.y, resolution.z);
+                        std::vector<Texture*> allTextures = Texture::getAllTextures();
+                        Samplers allSamplers{};
+                        std::vector<math::Matrix4f> textureMatrices;
+                        for (unsigned int i = 0; i < allTextures.size(); i++) {
+                            textureMatrices.push_back(allTextures[i]->getTextureMatrix());
+                            GLuint64 handle_texture = allTextures[i]->getTextureHandle();
+                            allTextures[i]->makeTextureResident(handle_texture);
+                            allSamplers.tex[i].handle = handle_texture;
+                            //std::cout<<"add texture i : "<<i<<" id : "<<allTextures[i]->getNativeHandle()<<std::endl;
+                        }
+                        buildShadowMapNormalShader.setParameter("textureMatrix", textureMatrices);
+                        buildShadowMapShader.setParameter("textureMatrix", textureMatrices);
+                        depthGenShader.setParameter("textureMatrix", textureMatrices);
+                        depthGenNormalShader.setParameter("textureMatrix", textureMatrices);
+                        perPixShadowShader.setParameter("textureMatrix", textureMatrices);
+                        perPixShadowShaderNormal.setParameter("textureMatrix", textureMatrices);
+                        sBuildAlphaBufferNormalShader.setParameter("textureMatrix", textureMatrices);
+                        sBuildAlphaBufferShader.setParameter("textureMatrix", textureMatrices);
+
+
+                        unsigned int ubid;
+                        glCheck(ubid = glGetUniformBlockIndex(buildShadowMapShader.getHandle(), "ALL_TEXTURES"));
+                        glCheck(glUniformBlockBinding(buildShadowMapShader.getHandle(),    ubid, 0));
+                        glCheck(ubid = glGetUniformBlockIndex(buildShadowMapNormalShader.getHandle(), "ALL_TEXTURES"));
+                        glCheck(glUniformBlockBinding(buildShadowMapNormalShader.getHandle(),    ubid, 0));
+                        glCheck(ubid = glGetUniformBlockIndex(depthGenShader.getHandle(), "ALL_TEXTURES"));
+                        glCheck(glUniformBlockBinding(depthGenShader.getHandle(),    ubid, 0));
+                        glCheck(ubid = glGetUniformBlockIndex(depthGenNormalShader.getHandle(), "ALL_TEXTURES"));
+                        glCheck(glUniformBlockBinding(depthGenNormalShader.getHandle(),    ubid, 0));
+                        glCheck(ubid = glGetUniformBlockIndex(perPixShadowShader.getHandle(), "ALL_TEXTURES"));
+                        glCheck(glUniformBlockBinding(perPixShadowShader.getHandle(),    ubid, 0));
+                        glCheck(ubid = glGetUniformBlockIndex(perPixShadowShaderNormal.getHandle(), "ALL_TEXTURES"));
+                        glCheck(glUniformBlockBinding(perPixShadowShaderNormal.getHandle(),    ubid, 0));
+
+                        glCheck(glGenBuffers(1, &ubo));
+                        glCheck(glBindBuffer(GL_UNIFORM_BUFFER, ubo));
+                        glCheck(glBufferData(GL_UNIFORM_BUFFER, sizeof(Samplers),allSamplers.tex, GL_STATIC_DRAW));
+                        glCheck(glBindBuffer(GL_UNIFORM_BUFFER, 0));
+                        glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo));
+                        glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, modelDataBuffer));
+                        glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, materialDataBuffer));
+                        stencilBuffer.setActive();
+                        glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo));
+                        glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, modelDataBuffer));
+                        glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, materialDataBuffer));
+                        depthBuffer.setActive();
+                        glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo));
+                        glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, modelDataBuffer));
+                        glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, materialDataBuffer));
+                        alphaBuffer.setActive();
+                        glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo));
+                        glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, modelDataBuffer));
+                        glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, materialDataBuffer));
+                        alphaBuffer.setActive(false);
+                        //std::cout<<"size : "<<sizeof(Samplers)<<" "<<alignof (alignas(16) uint64_t[200])<<std::endl;
+
+                        /*glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo2));
+                        glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo3));*/
+
+
+                        for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
+                            vbBindlessTex[i].setPrimitiveType(static_cast<sf::PrimitiveType>(i));
+                        }
+
+                } else {
+                    if (Shader::isAvailable()) {
+                        const std::string buildShadowMapVertexShader =
+                            "#version 130 \n"
+                            "out mat4 projMat;"
+                            "void main () {"
+                                "gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;"
+                                "gl_TexCoord[0] = gl_TextureMatrix[0] * gl_MultiTexCoord0;"
+                                "gl_FrontColor = gl_Color;"
+                                "projMat = gl_ProjectionMatrix;"
+                            "}";
+                        const std::string buildShadowMapFragmentShader =
+                            "#version 130 \n"
+                            "uniform sampler2D texture;"
+                            "uniform float haveTexture;"
+                            "in mat4 projMat;"
+                            "mat4 inverse(mat4 mat) {"
+                            "   mat4 inv;"
+                            "   return inv;"
+                            "}"
+                            "void main() {"
+                            "   vec4 texel = texture2D(texture, gl_TexCoord[0].xy);"
+                            "   vec4 colors[2];"
+                            "   colors[1] = texel * gl_Color;"
+                            "   colors[0] = gl_Color;"
+                            "   bool b = (haveTexture == 1);"
+                            "   float color = colors[int(b)].a;"
+                            "   float z = (gl_FragCoord.w != 1.f) ? (inverse(projMat) * vec4(0, 0, 0, gl_FragCoord.w)).w : gl_FragCoord.z;"
+                            "   gl_FragColor = vec4(0, 0, z, color);"
+                            "}";
+                        const std::string perPixShadowVertexShader =
+                            "#version 130 \n"
+                            "uniform mat4 depthBiasMatrix;"
+                            "out vec4 shadowCoords;"
+                            "out mat4 projMat;"
+                            "void main () {"
+                                "gl_Position = gl_ProjectionMatrix * gl_Vertex;"
+                                "gl_TexCoord[0] = gl_TextureMatrix[0] * gl_MultiTexCoord0;"
+                                "gl_FrontColor = gl_Color;"
+                                "projMat = gl_ProjectionMatrix;"
+                                "shadowCoords = depthBiasMatrix * vec4(gl_Position.xyz, 1);"
+                            "}";
+                        const std::string perPixShadowFragmentShader =
+                            "#version 130 \n"
+                            "uniform sampler2D texture;"
+                            "uniform sampler2D stencilBuffer;"
+                            "uniform float haveTexture;"
+                            "in vec4 shadowCoords;"
+                            "in mat4 projMat;"
+                            "mat4 inverse(mat4 mat) {"
+                            "   mat4 inv;"
+                            "   return inv;"
+                            "}"
+                            "void main() {"
+                            "   vec4 texel = texture2D(texture, gl_TexCoord[0].xy);"
+                            "   vec4 colors[2];"
+                            "   colors[1] = texel * gl_Color;"
+                            "   colors[0] = gl_Color;"
+                            "   bool b = (haveTexture == 1);"
+                            "   float color = colors[int(b)].a;"
+                            "   vec4 stencil = texture2D (stencilBuffer, shadowCoords.xy);"
+                            "   float z = (gl_FragCoord.w != 1.f) ? (inverse(projMat) * vec4(0, 0, 0, gl_FragCoord.w)).w : gl_FragCoord.z;"
+                            "   colors[1] = vec4 (0, 0, 0, color);"
+                            "   colors[0] = vec4 (0.5, 0.5, 0.5, 0.5);"
+                            "   b = (stencil.z < z);"
+                            "   vec4 visibility = colors[int(b)];"
+                            "   gl_FragColor = visibility;"
+                            "}";
+                        if (!buildShadowMapShader.loadFromMemory(buildShadowMapVertexShader, buildShadowMapFragmentShader)) {
+                            throw core::Erreur(53, "Error, failed to load build shadow map shader", 3);
+                        }
+                        if (!perPixShadowShader.loadFromMemory(perPixShadowVertexShader, perPixShadowFragmentShader)) {
+                            throw core::Erreur(54, "Error, failed to load per pix shadow map shader", 3);
+                        }
+                        buildShadowMapShader.setParameter("texture", Shader::CurrentTexture);
+                        perPixShadowShader.setParameter("stencilBuffer", stencilBuffer.getTexture());
+                        perPixShadowShader.setParameter("texture", Shader::CurrentTexture);
+
+
+                    }   else {
+                        throw core::Erreur(55, "Shader not supported!", 0);
+                    }
+                }
+                //getListener().launchThread();
             }
-            void PerPixelLinkedListRenderComponent2::loadTextureIndexes() {
-                compileShaders();
+            void ShadowRenderComponent2::loadTextureIndexes() {
                 std::vector<Texture*> allTextures = Texture::getAllTextures();
                 Samplers allSamplers{};
                 std::vector<math::Matrix4f> textureMatrices;
@@ -367,83 +846,26 @@ namespace odfaeg {
                     GLuint64 handle_texture = allTextures[i]->getTextureHandle();
                     allTextures[i]->makeTextureResident(handle_texture);
                     allSamplers.tex[i].handle = handle_texture;
-                    //std::cout<<"add texture i : "<<i<<" id : "<<allTextures[i]->getId()<<std::endl;
+                    //std::cout<<"add texture i : "<<i<<" id : "<<allTextures[i]->getNativeHandle()<<std::endl;
                 }
-                perPixelLinkedList.setParameter("textureMatrix", textureMatrices);
                 glCheck(glBindBuffer(GL_UNIFORM_BUFFER, ubo));
                 glCheck(glBufferData(GL_UNIFORM_BUFFER, sizeof(Samplers),allSamplers.tex, GL_STATIC_DRAW));
                 glCheck(glBindBuffer(GL_UNIFORM_BUFFER, 0));
             }
-            void PerPixelLinkedListRenderComponent2::setBackgroundColor(sf::Color color) {
-                backgroundColor = color;
-            }
-            bool PerPixelLinkedListRenderComponent2::loadEntitiesOnComponent(std::vector<Entity*> visibleEntities) {
-
-                sf::PrimitiveType p;
-                for (unsigned int e = 0; e < visibleEntities.size(); e++) {
-                    if (visibleEntities[e] != nullptr && visibleEntities[e]->getNbFaces() > 0) {
-                        p = visibleEntities[e]->getFaces()[0].getVertexArray().getPrimitiveType();
-                        pVisibleEntities[p].push_back(visibleEntities[e]);
-                    }
+            void ShadowRenderComponent2::onVisibilityChanged(bool visible) {
+                if (visible) {
+                    glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo));
+                } else {
+                    glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, 0));
                 }
-                std::vector<EntityIdData> entitiesIdDatas;
-                for (unsigned int p = 0; p < pVisibleEntities.size(); p++) {
-                    std::vector<Entity*> vEntities = pVisibleEntities[p];
-                    for (unsigned int e = 0; e < vEntities.size(); e++) {
-                        EntityIdData entityIdData;
-                        entityIdData.entityId = vEntities[e]->getId();
-                        entitiesIdDatas.push_back(entityIdData);
-                    }
+            }
+            void ShadowRenderComponent2::drawInstanced() {
+                for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
+                    vbBindlessTex[i].clear();
                 }
-                glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, entityIdData));
-                glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, entitiesIdDatas.size() * sizeof(EntityIdData), &entitiesIdDatas[0], GL_DYNAMIC_DRAW));
-                glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0));
-                update = true;
-                return true;
-            }
-            void PerPixelLinkedListRenderComponent2::clear() {
-                frameBuffer.setActive();
-                frameBuffer.clear(backgroundColor);
-                //getWindow().setActive();
-                GLuint zero = 0;
-                glCheck(glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomicBuffer));
-                glCheck(glBufferSubData(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(GLuint), &zero));
-                glCheck(glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, 0));
-                glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, clearBuf));
-                glCheck(glBindTexture(GL_TEXTURE_2D, headPtrTex));
-                glCheck(glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, view.getSize().x, view.getSize().y, GL_RED_INTEGER,
-                GL_UNSIGNED_INT, NULL));
-                glCheck(glBindTexture(GL_TEXTURE_2D, 0));
-                glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0));
-
-                frameBuffer.resetGLStates();
-
-                //getWindow().resetGLStates();
-
-            }
-            void PerPixelLinkedListRenderComponent2::loadSkybox(Entity* skybox) {
-                this->skybox = skybox;
-                for (unsigned int f = 0; f < skybox->getFaces().size(); f++) {
-                    for (unsigned int v = 0; v < skybox->getFaces()[f].getVertexArray().getVertexCount(); v++) {
-                        skyboxVBO.append(skybox->getFaces()[f].getVertexArray()[v]);
-                    }
-                }
-                skyboxVBO.update();
-            }
-            void PerPixelLinkedListRenderComponent2::drawNextFrame() {
-                float zNear = view.getViewport().getPosition().z;
-                if (!view.isOrtho())
-                    view.setPerspective(80, view.getViewport().getSize().x / view.getViewport().getSize().y, 0.1f, view.getViewport().getSize().z);
-                math::Matrix4f viewMatrix = view.getViewMatrix().getMatrix().transpose();
-                math::Matrix4f projMatrix = view.getProjMatrix().getMatrix().transpose();
-                viewMatrix = math::Matrix4f(math::Matrix3f(viewMatrix));
-                skyboxShader.setParameter("projection", projMatrix);
-                skyboxShader.setParameter("view", viewMatrix);
-                currentStates.blendMode = sf::BlendAlpha;
-                currentStates.shader = &skyboxShader;
-                currentStates.texture = (skybox == nullptr ) ? nullptr : &static_cast<g3d::Skybox*>(skybox)->getTexture();
-                frameBuffer.drawVertexBuffer(skyboxVBO, currentStates);
                 std::array<std::vector<DrawArraysIndirectCommand>, Batcher::nbPrimitiveTypes> drawArraysIndirectCommands;
+                std::array<std::vector<ModelData>, Batcher::nbPrimitiveTypes> matrices;
+                std::array<std::vector<MaterialData>, Batcher::nbPrimitiveTypes> materials;
                 std::array<unsigned int, Batcher::nbPrimitiveTypes> firstIndex, baseInstance;
                 for (unsigned int i = 0; i < firstIndex.size(); i++) {
                     firstIndex[i] = 0;
@@ -451,15 +873,23 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < baseInstance.size(); i++) {
                     baseInstance[i] = 0;
                 }
-                for (unsigned int p = 0; p < pVisibleEntities.size(); p++) {
-                    std::vector<Entity*> vEntities = pVisibleEntities[p];
-                    for (unsigned int e = 0; e < vEntities.size(); e++) {
+                for (unsigned int i = 0; i < m_normals.size(); i++) {
+                   if (m_normals[i].getAllVertices().getVertexCount() > 0) {
                         DrawArraysIndirectCommand drawArraysIndirectCommand;
+                        unsigned int p = m_normals[i].getAllVertices().getPrimitiveType();
+                        MaterialData material;
+                        material.textureIndex = (m_normals[i].getMaterial().getTexture() != nullptr) ? m_normals[i].getMaterial().getTexture()->getNativeHandle() : 0;
+                        material.layer = m_normals[i].getMaterial().getLayer();
+                        materials[p].push_back(material);
+                        TransformMatrix tm;
+                        ModelData model;
+                        model.worldMat = tm.getMatrix().transpose();
+                        model.shadowProjMat = tm.getMatrix().transpose();
+                        matrices[p].push_back(model);
                         unsigned int vertexCount = 0;
-                        for (unsigned int f = 0; f < vEntities[e]->getNbFaces(); f++) {
-                            for (unsigned int v = 0; v < vEntities[e]->getFaces()[f].getVertexArray().getVertexCount(); v++) {
-                                vertexCount++;
-                            }
+                        for (unsigned int j = 0; j < m_normals[i].getAllVertices().getVertexCount(); j++) {
+                            vbBindlessTex[p].append(m_normals[i].getAllVertices()[j]);
+                            vertexCount++;
                         }
                         drawArraysIndirectCommand.count = vertexCount;
                         drawArraysIndirectCommand.firstIndex = firstIndex[p];
@@ -470,86 +900,766 @@ namespace odfaeg {
                         baseInstance[p] += 1;
                     }
                 }
-                projMatrix = view.getProjMatrix().getMatrix().transpose();
-                viewMatrix = view.getViewMatrix().getMatrix().transpose();
-                perPixelLinkedList.setParameter("projectionMatrix", projMatrix);
-                perPixelLinkedList.setParameter("viewMatrix", viewMatrix);
+                for (unsigned int i = 0; i < m_instances.size(); i++) {
+                    if (m_instances[i].getAllVertices().getVertexCount() > 0) {
+                        DrawArraysIndirectCommand drawArraysIndirectCommand;
+                        unsigned int p = m_instances[i].getAllVertices().getPrimitiveType();
+                        MaterialData material;
+                        material.textureIndex = (m_instances[i].getMaterial().getTexture() != nullptr) ? m_instances[i].getMaterial().getTexture()->getNativeHandle() : 0;
+                        material.layer = m_instances[i].getMaterial().getLayer();
+                        materials[p].push_back(material);
+                        std::vector<TransformMatrix*> tm = m_instances[i].getTransforms();
+                        for (unsigned int j = 0; j < tm.size(); j++) {
+                            tm[j]->update();
+                            ModelData model;
+                            model.worldMat = tm[j]->getMatrix().transpose();
+                            TransformMatrix tm;
+                            model.shadowProjMat = tm.getMatrix().transpose();
+                            matrices[p].push_back(model);
+                        }
+                        unsigned int vertexCount = 0;
+                        if (m_instances[i].getVertexArrays().size() > 0) {
+                            Entity* entity = m_instances[i].getVertexArrays()[0]->getEntity();
+                            for (unsigned int j = 0; j < m_instances[i].getVertexArrays().size(); j++) {
+                                if (entity == m_instances[i].getVertexArrays()[j]->getEntity()) {
+                                    unsigned int p = m_instances[i].getVertexArrays()[j]->getPrimitiveType();
+                                    for (unsigned int k = 0; k < m_instances[i].getVertexArrays()[j]->getVertexCount(); k++) {
+                                        vertexCount++;
+                                        vbBindlessTex[p].append((*m_instances[i].getVertexArrays()[j])[k]);
+                                    }
+                                }
+                            }
+                        }
+                        drawArraysIndirectCommand.count = vertexCount;
+                        drawArraysIndirectCommand.firstIndex = firstIndex[p];
+                        drawArraysIndirectCommand.baseInstance = baseInstance[p];
+                        drawArraysIndirectCommand.instanceCount = tm.size();
+                        drawArraysIndirectCommands[p].push_back(drawArraysIndirectCommand);
+                        firstIndex[p] += vertexCount;
+                        baseInstance[p] += tm.size();
+                    }
+                }
                 RenderStates currentStates;
                 currentStates.blendMode = sf::BlendNone;
-                currentStates.shader = &perPixelLinkedList;
-                currentStates.texture = nullptr;
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
-                    glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, vboIndirect));
-                    glCheck(glBufferData(GL_DRAW_INDIRECT_BUFFER, drawArraysIndirectCommands[p].size() * sizeof(DrawArraysIndirectCommand), &drawArraysIndirectCommands[p][0], GL_DYNAMIC_DRAW));
-                    glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0));
-                    frameBuffer.drawVBOBindlessIndirect(static_cast<sf::PrimitiveType>(p), drawArraysIndirectCommands[p].size(), currentStates, vboIndirect);
+                    if (vbBindlessTex[p].getVertexCount() > 0) {
+                        glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, modelDataBuffer));
+                        glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, matrices[p].size() * sizeof(ModelData), &matrices[p][0], GL_DYNAMIC_DRAW));
+                        glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, materialDataBuffer));
+                        glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, materials[p].size() * sizeof(ModelData), &materials[p][0], GL_DYNAMIC_DRAW));
+                        glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0));
+                        glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, vboIndirect));
+                        glCheck(glBufferData(GL_DRAW_INDIRECT_BUFFER, drawArraysIndirectCommands[p].size() * sizeof(DrawArraysIndirectCommand), &drawArraysIndirectCommands[p][0], GL_DYNAMIC_DRAW));
+                        glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0));
+                        vbBindlessTex[p].update();
+                        currentStates.shader = &buildShadowMapShader;
+                        stencilBuffer.drawIndirect(vbBindlessTex[p], vbBindlessTex[p].getPrimitiveType(), drawArraysIndirectCommands[p].size(), currentStates, vboIndirect);
+                        currentStates.shader = &depthGenShader;
+                        depthBuffer.drawIndirect(vbBindlessTex[p], vbBindlessTex[p].getPrimitiveType(), drawArraysIndirectCommands[p].size(), currentStates, vboIndirect);
+                        vbBindlessTex[p].clear();
+                    }
                 }
-                glCheck(glFinish());
-                glCheck(glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT));
+                glCheck(glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT));
+                physic::BoundingBox viewArea = view.getViewVolume();
+                math::Vec3f position (viewArea.getPosition().x,viewArea.getPosition().y, view.getPosition().z);
+                math::Vec3f size (viewArea.getWidth(), viewArea.getHeight(), 0);
+                stencilBuffer.display();
+                stencilBufferTile.setPosition(position);
+                depthBuffer.display();
+                depthBufferTile.setPosition(position);
+                shadowMap.setView(view);
+                for (unsigned int i = 0; i < firstIndex.size(); i++) {
+                    firstIndex[i] = 0;
+                }
+                for (unsigned int i = 0; i < baseInstance.size(); i++) {
+                    baseInstance[i] = 0;
+                }
+                for (unsigned int i = 0; i < matrices.size(); i++) {
+                    matrices[i].clear();
+                }
+                for (unsigned int i = 0; i < materials.size(); i++) {
+                    materials[i].clear();
+                }
+                for (unsigned int i = 0; i < drawArraysIndirectCommands.size(); i++) {
+                    drawArraysIndirectCommands[i].clear();
+                }
+                for (unsigned int i = 0; i < m_shadow_normals.size(); i++) {
+                    if (m_shadow_normals[i].getAllVertices().getVertexCount() > 0) {
+                        DrawArraysIndirectCommand drawArraysIndirectCommand;
+                        unsigned int p = m_shadow_normals[i].getAllVertices().getPrimitiveType();
+                        MaterialData material;
+                        material.textureIndex = (m_shadow_normals[i].getMaterial().getTexture() != nullptr) ? m_shadow_normals[i].getMaterial().getTexture()->getNativeHandle() : 0;
+                        material.layer = m_shadow_normals[i].getMaterial().getLayer();
+                        materials[p].push_back(material);
+                        TransformMatrix tm;
+                        ModelData model;
+                        model.worldMat = tm.getMatrix().transpose();
+                        model.shadowProjMat = tm.getMatrix().transpose();
+                        matrices[p].push_back(model);
+                        unsigned int vertexCount = 0;
+                        for (unsigned int j = 0; j < m_shadow_normals[i].getAllVertices().getVertexCount(); j++) {
+                            vertexCount++;
+                            vbBindlessTex[p].append(m_shadow_normals[i].getAllVertices()[j]);
+                        }
+                        drawArraysIndirectCommand.count = vertexCount;
+                        drawArraysIndirectCommand.firstIndex = firstIndex[p];
+                        drawArraysIndirectCommand.baseInstance = baseInstance[p];
+                        drawArraysIndirectCommand.instanceCount = 1;
+                        drawArraysIndirectCommands[p].push_back(drawArraysIndirectCommand);
+                        firstIndex[p] += vertexCount;
+                        baseInstance[p] += 1;
+                    }
+                }
+                for (unsigned int i = 0; i < m_shadow_instances.size(); i++) {
+                    if (m_shadow_instances[i].getAllVertices().getVertexCount() > 0) {
+                        DrawArraysIndirectCommand drawArraysIndirectCommand;
+                        unsigned int p = m_shadow_instances[i].getAllVertices().getPrimitiveType();
+                        MaterialData material;
+                        material.textureIndex = (m_shadow_normals[i].getMaterial().getTexture() != nullptr) ? m_shadow_normals[i].getMaterial().getTexture()->getNativeHandle() : 0;
+                        material.layer = m_shadow_normals[i].getMaterial().getLayer();
+                        materials[p].push_back(material);
+                        std::vector<TransformMatrix*> tm = m_shadow_instances[i].getTransforms();
+                        std::vector<TransformMatrix> tm2 = m_shadow_instances[i].getShadowProjMatrix();
+                        for (unsigned int j = 0; j < tm.size(); j++) {
+                            tm[j]->update();
+                            tm2[j].update();
+                            ModelData model;
+                            model.worldMat = tm[j]->getMatrix().transpose();
+                            model.shadowProjMat = tm2[j].getMatrix().transpose();
+                            matrices[p].push_back(model);
+                        }
+                        unsigned int vertexCount=0;
+                        if (m_shadow_instances[i].getVertexArrays().size() > 0) {
+                            Entity* entity = m_shadow_instances[i].getVertexArrays()[0]->getEntity();
+                            for (unsigned int j = 0; j < m_shadow_instances[i].getVertexArrays().size(); j++) {
+                                if (entity == m_shadow_instances[i].getVertexArrays()[j]->getEntity()) {
+                                    unsigned int p = m_shadow_instances[i].getVertexArrays()[j]->getPrimitiveType();
+                                    for (unsigned int k = 0; k < m_shadow_instances[i].getVertexArrays()[j]->getVertexCount(); k++) {
+                                        vertexCount++;
+                                        vbBindlessTex[p].append((*m_shadow_instances[i].getVertexArrays()[j])[k], (m_shadow_instances[i].getMaterial().getTexture() != nullptr) ? m_shadow_instances[i].getMaterial().getTexture()->getId() : 0);
+                                        vbBindlessTex[p].addLayer(m_shadow_instances[i].getMaterial().getLayer());
+                                    }
+                                }
+                            }
+                        }
+                        drawArraysIndirectCommand.count = vertexCount;
+                        drawArraysIndirectCommand.firstIndex = firstIndex[p];
+                        drawArraysIndirectCommand.baseInstance = baseInstance[p];
+                        drawArraysIndirectCommand.instanceCount = tm.size();
+                        drawArraysIndirectCommands[p].push_back(drawArraysIndirectCommand);
+                        firstIndex[p] += vertexCount;
+                        baseInstance[p] += tm.size();
+                    }
+                }
+                currentStates.shader = &sBuildAlphaBufferShader;
+                for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
+                    if (vbBindlessTex[p].getVertexCount() > 0) {
+                        glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, modelDataBuffer));
+                        glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, matrices[p].size() * sizeof(ModelData), &matrices[p][0], GL_DYNAMIC_DRAW));
+                        glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, materialDataBuffer));
+                        glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, materials[p].size() * sizeof(ModelData), &materials[p][0], GL_DYNAMIC_DRAW));
+                        glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0));
+                        glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, vboIndirect));
+                        glCheck(glBufferData(GL_DRAW_INDIRECT_BUFFER, drawArraysIndirectCommands[p].size() * sizeof(DrawArraysIndirectCommand), &drawArraysIndirectCommands[p][0], GL_DYNAMIC_DRAW));
+                        glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0));
+                        vbBindlessTex[p].update();
+                        alphaBuffer.drawIndirect(vbBindlessTex[p], vbBindlessTex[p].getPrimitiveType(), drawArraysIndirectCommands[p].size(), currentStates, vboIndirect);
+                    }
+                }
+                glCheck(glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT));
+                currentStates.shader = &perPixShadowShader;
+                for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
+                    if (vbBindlessTex[p].getVertexCount() > 0) {
+                        glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, modelDataBuffer));
+                        glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, matrices[p].size() * sizeof(ModelData), &matrices[p][0], GL_DYNAMIC_DRAW));
+                        glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, materialDataBuffer));
+                        glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, materials[p].size() * sizeof(ModelData), &materials[p][0], GL_DYNAMIC_DRAW));
+                        glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0));
+                        glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, vboIndirect));
+                        glCheck(glBufferData(GL_DRAW_INDIRECT_BUFFER, drawArraysIndirectCommands[p].size() * sizeof(DrawArraysIndirectCommand), &drawArraysIndirectCommands[p][0], GL_DYNAMIC_DRAW));
+                        glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0));
+                        vbBindlessTex[p].update();
+                        shadowMap.drawIndirect(vbBindlessTex[p], vbBindlessTex[p].getPrimitiveType(), drawArraysIndirectCommands[p].size(), currentStates, vboIndirect);
+                        vbBindlessTex[p].clear();
+                    }
+                }
+                shadowMap.display();
+            }
+            void ShadowRenderComponent2::drawInstancedIndexed() {
+                for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
+                    vbBindlessTex[i].clear();
+                }
+                std::array<std::vector<DrawElementsIndirectCommand>, Batcher::nbPrimitiveTypes> drawElementsIndirectCommands;
+                std::array<std::vector<float>, Batcher::nbPrimitiveTypes> matrices, matrices2;
+                std::array<unsigned int, Batcher::nbPrimitiveTypes> firstIndex, baseInstance, baseVertex;
+                for (unsigned int i = 0; i < firstIndex.size(); i++) {
+                firstIndex[i] = 0;
+                }
+                for (unsigned int i = 0; i < baseVertex.size(); i++) {
+                    baseVertex[i] = 0;
+                }
+                for (unsigned int i = 0; i < baseInstance.size(); i++) {
+                    baseInstance[i] = 0;
+                }
+                for (unsigned int i = 0; i < m_instancesIndexed.size(); i++) {
+                    DrawElementsIndirectCommand drawElementsIndirectCommand;
+                    if (m_instancesIndexed[i].getAllVertices().getVertexCount() > 0) {
+                        unsigned int p = m_instancesIndexed[i].getAllVertices().getPrimitiveType();
+                        std::vector<TransformMatrix*> tm = m_instancesIndexed[i].getTransforms();
+                        for (unsigned int j = 0; j < tm.size(); j++) {
+                            tm[j]->update();
+                            std::array<float, 16> matrix = tm[j]->getMatrix().transpose().toGlMatrix();
+                            for (unsigned int n = 0; n < 16; n++) {
+                                matrices[p].push_back(matrix[n]);
+                            }
+                        }
+                        unsigned int vertexCount = 0, indexCount = 0;
+                        if (m_instancesIndexed[i].getVertexArrays().size() > 0) {
+                            Entity* entity = m_instancesIndexed[i].getVertexArrays()[0]->getEntity();
+                            for (unsigned int j = 0; j < m_instancesIndexed[i].getVertexArrays().size(); j++) {
+                                if (entity == m_instancesIndexed[i].getVertexArrays()[j]->getEntity()) {
+                                    unsigned int p = m_instancesIndexed[i].getVertexArrays()[j]->getPrimitiveType();
+                                    for (unsigned int k = 0; k < m_instancesIndexed[i].getVertexArrays()[j]->getVertexCount(); k++) {
+                                        vertexCount++;
+                                        vbBindlessTex[p].append((*m_instancesIndexed[i].getVertexArrays()[j])[k], (m_instancesIndexed[i].getMaterial().getTexture() != nullptr) ? m_instancesIndexed[i].getMaterial().getTexture()->getId() : 0);
+                                        vbBindlessTex[p].addLayer(m_instancesIndexed[i].getMaterial().getLayer());
+                                    }
+                                    for (unsigned int k = 0; k < m_instancesIndexed[i].getVertexArrays()[j]->getIndexes().size(); k++) {
+                                        indexCount++;
+                                        vbBindlessTex[p].addIndex(m_instancesIndexed[i].getVertexArrays()[j]->getIndexes()[k]);
+                                    }
+                                }
+                            }
+                        }
+                        drawElementsIndirectCommand.index_count = indexCount;
+                        drawElementsIndirectCommand.first_index = firstIndex[p];
+                        drawElementsIndirectCommand.instance_base = baseInstance[p];
+                        drawElementsIndirectCommand.vertex_base = baseVertex[p];
+                        drawElementsIndirectCommand.instance_count = tm.size();
+                        drawElementsIndirectCommands[p].push_back(drawElementsIndirectCommand);
+                        firstIndex[p] += indexCount;
+                        baseVertex[p] += vertexCount;
+                        baseInstance[p] += tm.size();
+                    }
+                }
+                RenderStates currentStates;
+                currentStates.blendMode = sf::BlendNone;
+                for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
+                    if (vbBindlessTex[p].getVertexCount() > 0) {
+                        glCheck(glBindBuffer(GL_ARRAY_BUFFER, vboWorldMatrices));
+                        glCheck(glBufferData(GL_ARRAY_BUFFER, matrices[p].size() * sizeof(float), &matrices[p][0], GL_DYNAMIC_DRAW));
+                        glCheck(glBindBuffer(GL_ARRAY_BUFFER, 0));
+                        glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, vboIndirect));
+                        glCheck(glBufferData(GL_DRAW_INDIRECT_BUFFER, drawElementsIndirectCommands[p].size() * sizeof(DrawElementsIndirectCommand), &drawElementsIndirectCommands[p][0], GL_DYNAMIC_DRAW));
+                        glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0));
+                        vbBindlessTex[p].update();
+                        currentStates.shader = &buildShadowMapShader;
+                        stencilBuffer.drawIndirect(vbBindlessTex[p], vbBindlessTex[p].getPrimitiveType(), drawElementsIndirectCommands[p].size(), currentStates, vboIndirect, vboWorldMatrices);
+                        currentStates.shader = &depthGenShader;
+                        depthBuffer.drawIndirect(vbBindlessTex[p], vbBindlessTex[p].getPrimitiveType(), drawElementsIndirectCommands[p].size(), currentStates, vboIndirect, vboWorldMatrices);
+                        vbBindlessTex[p].clear();
+                    }
+                }
+                physic::BoundingBox viewArea = view.getViewVolume();
+                math::Vec3f position (viewArea.getPosition().x,viewArea.getPosition().y, view.getPosition().z);
+                math::Vec3f size (viewArea.getWidth(), viewArea.getHeight(), 0);
+                stencilBuffer.display();
+                stencilBufferTile.setPosition(position);
+                depthBuffer.display();
+                depthBufferTile.setPosition(position);
+                shadowMap.setView(view);
+                for (unsigned int i = 0; i < firstIndex.size(); i++) {
+                firstIndex[i] = 0;
+                }
+                for (unsigned int i = 0; i < baseVertex.size(); i++) {
+                    baseVertex[i] = 0;
+                }
+                for (unsigned int i = 0; i < baseInstance.size(); i++) {
+                    baseInstance[i] = 0;
+                }
+                for (unsigned int i = 0; i < matrices.size(); i++) {
+                    matrices[i].clear();
+                }
+                for (unsigned int i = 0; i < drawElementsIndirectCommands.size(); i++) {
+                    drawElementsIndirectCommands[i].clear();
+                }
+                for (unsigned int i = 0; i < m_shadow_instances_indexed.size(); i++) {
+                    DrawElementsIndirectCommand drawElementsIndirectCommand;
+                    if (m_shadow_instances_indexed[i].getAllVertices().getVertexCount() > 0) {
+                        unsigned int p = m_shadow_instances_indexed[i].getAllVertices().getPrimitiveType();
+                        std::vector<TransformMatrix*> tm = m_shadow_instances_indexed[i].getTransforms();
+                        for (unsigned int j = 0; j < tm.size(); j++) {
+                            tm[j]->update();
+                            std::array<float, 16> matrix = tm[j]->getMatrix().transpose().toGlMatrix();
+                            for (unsigned int n = 0; n < 16; n++) {
+                                matrices[p].push_back(matrix[n]);
+                            }
+                        }
+
+                        std::vector<TransformMatrix> tm2 = m_shadow_instances_indexed[i].getShadowProjMatrix();
+                        for (unsigned int j = 0; j < tm2.size(); j++) {
+                            tm2[j].update();
+                            std::array<float, 16> matrix = tm2[j].getMatrix().transpose().toGlMatrix();
+                            for (unsigned int n = 0; n < 16; n++) {
+                                matrices2[p].push_back(matrix[n]);
+                            }
+                        }
+                        unsigned int vertexCount = 0, indexCount = 0;
+                        if (m_shadow_instances_indexed[i].getVertexArrays().size() > 0) {
+                            Entity* entity = m_shadow_instances_indexed[i].getVertexArrays()[0]->getEntity();
+                            for (unsigned int j = 0; j < m_shadow_instances_indexed[i].getVertexArrays().size(); j++) {
+                                if (entity == m_shadow_instances_indexed[i].getVertexArrays()[j]->getEntity()) {
+                                    unsigned int p = m_shadow_instances_indexed[i].getVertexArrays()[j]->getPrimitiveType();
+                                    for (unsigned int k = 0; k < m_shadow_instances_indexed[i].getVertexArrays()[j]->getVertexCount(); k++) {
+                                        vertexCount++;
+                                        vbBindlessTex[p].append((*m_shadow_instances_indexed[i].getVertexArrays()[j])[k], (m_shadow_instances_indexed[i].getMaterial().getTexture() != nullptr) ? m_shadow_instances_indexed[i].getMaterial().getTexture()->getId() : 0);
+                                        vbBindlessTex[p].addLayer(m_shadow_instances_indexed[i].getMaterial().getLayer());
+                                    }
+                                        for (unsigned int k = 0; k < m_shadow_instances_indexed[i].getVertexArrays()[j]->getIndexes().size(); k++) {
+                                        indexCount++;
+                                        vbBindlessTex[p].addIndex(m_shadow_instances_indexed[i].getVertexArrays()[j]->getIndexes()[k]);
+                                    }
+                                }
+                            }
+                        }
+                        drawElementsIndirectCommand.index_count = indexCount;
+                        drawElementsIndirectCommand.first_index = firstIndex[p];
+                        drawElementsIndirectCommand.instance_base = baseInstance[p];
+                        drawElementsIndirectCommand.vertex_base = baseVertex[p];
+                        drawElementsIndirectCommand.instance_count = tm.size();
+                        drawElementsIndirectCommands[p].push_back(drawElementsIndirectCommand);
+                        firstIndex[p] += indexCount;
+                        baseVertex[p] += vertexCount;
+                        baseInstance[p] += tm.size();
+                    }
+                }
+                currentStates.shader = &sBuildAlphaBufferShader;
+                for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
+                    if (vbBindlessTex[p].getVertexCount() > 0) {
+                        glCheck(glBindBuffer(GL_ARRAY_BUFFER, vboWorldMatrices));
+                        glCheck(glBufferData(GL_ARRAY_BUFFER, matrices[p].size() * sizeof(float), &matrices[p][0], GL_DYNAMIC_DRAW));
+                        glCheck(glBindBuffer(GL_ARRAY_BUFFER, 0));
+                        glCheck(glBindBuffer(GL_ARRAY_BUFFER, vboShadowProjMatrices));
+                        glCheck(glBufferData(GL_ARRAY_BUFFER, matrices2[p].size() * sizeof(float), &matrices2[p][0], GL_DYNAMIC_DRAW));
+                        glCheck(glBindBuffer(GL_ARRAY_BUFFER, 0));
+                        glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, vboIndirect));
+                        glCheck(glBufferData(GL_DRAW_INDIRECT_BUFFER, drawElementsIndirectCommands[p].size() * sizeof(DrawElementsIndirectCommand), &drawElementsIndirectCommands[p][0], GL_DYNAMIC_DRAW));
+                        glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0));
+                        vbBindlessTex[p].update();
+                        alphaBuffer.drawIndirect(vbBindlessTex[p], vbBindlessTex[p].getPrimitiveType(), drawElementsIndirectCommands[p].size(), currentStates, vboIndirect, vboWorldMatrices, vboShadowProjMatrices);
+                    }
+                }
+                currentStates.shader = &perPixShadowShader;
+                for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
+                    if (vbBindlessTex[p].getVertexCount() > 0) {
+                        glCheck(glBindBuffer(GL_ARRAY_BUFFER, vboWorldMatrices));
+                        glCheck(glBufferData(GL_ARRAY_BUFFER, matrices[p].size() * sizeof(float), &matrices[p][0], GL_DYNAMIC_DRAW));
+                        glCheck(glBindBuffer(GL_ARRAY_BUFFER, 0));
+                        glCheck(glBindBuffer(GL_ARRAY_BUFFER, vboShadowProjMatrices));
+                        glCheck(glBufferData(GL_ARRAY_BUFFER, matrices2[p].size() * sizeof(float), &matrices2[p][0], GL_DYNAMIC_DRAW));
+                        glCheck(glBindBuffer(GL_ARRAY_BUFFER, 0));
+                        glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, vboIndirect));
+                        glCheck(glBufferData(GL_DRAW_INDIRECT_BUFFER, drawElementsIndirectCommands[p].size() * sizeof(DrawElementsIndirectCommand), &drawElementsIndirectCommands[p][0], GL_DYNAMIC_DRAW));
+                        glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0));
+                        vbBindlessTex[p].update();
+                        shadowMap.drawIndirect(vbBindlessTex[p], vbBindlessTex[p].getPrimitiveType(), drawElementsIndirectCommands[p].size(), currentStates, vboIndirect, vboWorldMatrices, vboShadowProjMatrices);
+                        vbBindlessTex[p].clear();
+                    }
+                }
+                shadowMap.display();
+            }
+            void ShadowRenderComponent2::drawNormal() {
+                for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
+                    vbBindlessTex[i].clear();
+                }
+                for (unsigned int i = 0; i < m_normals.size(); i++) {
+                   if (m_normals[i].getAllVertices().getVertexCount() > 0) {
+                        unsigned int p = m_normals[i].getAllVertices().getPrimitiveType();
+
+                        for (unsigned int j = 0; j < m_normals[i].getAllVertices().getVertexCount(); j++) {
+                            vbBindlessTex[p].append(m_normals[i].getAllVertices()[j], (m_normals[i].getMaterial().getTexture() != nullptr) ? m_normals[i].getMaterial().getTexture()->getNativeHandle() : 0);
+                            vbBindlessTex[p].addLayer(m_normals[i].getMaterial().getLayer());
+                        }
+                    }
+                }
+
+                RenderStates states;
+                states.blendMode = sf::BlendNone;
+                states.texture = nullptr;
+                states.shader = &depthGenNormalShader;
+                for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
+                    if (vbBindlessTex[p].getVertexCount() > 0) {
+
+                        vbBindlessTex[p].update();
+                        depthBuffer.drawVertexBuffer(vbBindlessTex[p], states);
+                        vbBindlessTex[p].clear();
+                    }
+                }
+                //glCheck(glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT));
+                depthBuffer.display();
+                for (unsigned int i = 0; i < m_stencil_buffer.size(); i++) {
+                   if (m_stencil_buffer[i].getAllVertices().getVertexCount() > 0) {
+                        unsigned int p = m_stencil_buffer[i].getAllVertices().getPrimitiveType();
+                        for (unsigned int j = 0; j < m_stencil_buffer[i].getAllVertices().getVertexCount(); j++) {
+                            vbBindlessTex[p].append(m_stencil_buffer[i].getAllVertices()[j],(m_stencil_buffer[i].getMaterial().getTexture() != nullptr) ? m_stencil_buffer[i].getMaterial().getTexture()->getNativeHandle() : 0);
+                            vbBindlessTex[p].addLayer(m_stencil_buffer[i].getMaterial().getLayer());
+                        }
+                    }
+                }
+                states.shader = &buildShadowMapNormalShader;
+                for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
+                    if (vbBindlessTex[p].getVertexCount() > 0) {
+                        vbBindlessTex[p].update();
+                        stencilBuffer.drawVertexBuffer(vbBindlessTex[p], states);
+                        vbBindlessTex[p].clear();
+                    }
+                }
+                //glCheck(glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT));
+                stencilBuffer.display();
+
+                for (unsigned int i = 0; i < m_shadow_normals.size(); i++) {
+                    if (m_shadow_normals[i].getAllVertices().getVertexCount() > 0) {
+
+
+
+                        unsigned int p = m_shadow_normals[i].getAllVertices().getPrimitiveType();
+                        for (unsigned int j = 0; j < m_shadow_normals[i].getAllVertices().getVertexCount(); j++) {
+                            vbBindlessTex[p].append(m_shadow_normals[i].getAllVertices()[j], (m_shadow_normals[i].getMaterial().getTexture() != nullptr) ? m_shadow_normals[i].getMaterial().getTexture()->getNativeHandle() : 0);
+                            vbBindlessTex[p].addLayer(m_shadow_normals[i].getMaterial().getLayer());
+                        }
+
+                    }
+                }
+                states.shader=&sBuildAlphaBufferNormalShader;
+                for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
+                    if (vbBindlessTex[p].getVertexCount() > 0) {
+                        vbBindlessTex[p].update();
+                        alphaBuffer.drawVertexBuffer(vbBindlessTex[p], states);
+                    }
+                }
+                //glCheck(glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT));
+                alphaBuffer.display();
+                for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
+                    states.shader=&perPixShadowShaderNormal;
+                    if (vbBindlessTex[p].getVertexCount() > 0) {
+                        vbBindlessTex[p].update();
+                        shadowMap.drawVertexBuffer(vbBindlessTex[p], states);
+                        vbBindlessTex[p].clear();
+                    }
+                }
+                //glCheck(glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT));
+                shadowMap.display();
+            }
+            void ShadowRenderComponent2::drawNormalIndexed() {
+                for (unsigned int i = 0; i < m_normalsIndexed.size(); i++) {
+                   if (m_normalsIndexed[i].getAllVertices().getVertexCount() > 0) {
+                        unsigned int p = m_normalsIndexed[i].getAllVertices().getPrimitiveType();
+                        for (unsigned int j = 0; j < m_normalsIndexed[i].getAllVertices().getVertexCount(); j++) {
+                            vbBindlessTex[p].append(m_normalsIndexed[i].getAllVertices()[j],(m_normalsIndexed[i].getMaterial().getTexture() != nullptr) ? m_normalsIndexed[i].getMaterial().getTexture()->getNativeHandle() : 0);
+                            vbBindlessTex[p].addLayer(m_normalsIndexed[i].getMaterial().getLayer());
+                        }
+                        for (unsigned int j = 0; j < m_normalsIndexed[i].getAllVertices().getIndexes().size(); j++) {
+                            vbBindlessTex[p].addIndex(m_normalsIndexed[i].getAllVertices().getIndexes()[j]);
+                        }
+                    }
+                }
+                RenderStates states;
+                states.blendMode = sf::BlendNone;
+                states.shader = &depthGenNormalShader;
+                states.texture = nullptr;
+                for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
+                    if (vbBindlessTex[p].getVertexCount() > 0) {
+                        states.shader = &depthGenNormalShader;
+                        vbBindlessTex[p].update();
+                        depthBuffer.drawVertexBuffer(vbBindlessTex[p], states);
+                        states.shader = &buildShadowMapNormalShader;
+                        stencilBuffer.drawVertexBuffer(vbBindlessTex[p], states);
+                        vbBindlessTex[p].clear();
+                    }
+                }
+                stencilBuffer.display();
+                depthBuffer.display();
+                for (unsigned int i = 0; i < m_shadow_normalsIndexed.size(); i++) {
+                    if (m_shadow_normalsIndexed[i].getAllVertices().getVertexCount() > 0) {
+
+
+
+                        unsigned int p = m_shadow_normalsIndexed[i].getAllVertices().getPrimitiveType();
+                        for (unsigned int j = 0; j < m_shadow_normalsIndexed[i].getAllVertices().getVertexCount(); j++) {
+                            vbBindlessTex[p].append(m_shadow_normalsIndexed[i].getAllVertices()[j],(m_shadow_normalsIndexed[i].getMaterial().getTexture() != nullptr) ? m_shadow_normalsIndexed[i].getMaterial().getTexture()->getNativeHandle() : 0);
+                            vbBindlessTex[p].addLayer(m_shadow_normalsIndexed[i].getMaterial().getLayer());
+                        }
+                        for (unsigned int j = 0; j < m_shadow_normalsIndexed[i].getAllVertices().getIndexes().size(); j++) {
+                            vbBindlessTex[p].addIndex(m_shadow_normalsIndexed[i].getAllVertices().getIndexes()[j]);
+                        }
+                    }
+                }
+                for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
+                    states.shader=&sBuildAlphaBufferNormalShader;
+                    if (vbBindlessTex[p].getVertexCount() > 0) {
+                        vbBindlessTex[p].update();
+                        alphaBuffer.drawVertexBuffer(vbBindlessTex[p], states);
+                    }
+                }
+                alphaBuffer.display();
+                for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
+                    states.shader=&perPixShadowShaderNormal;
+                    if (vbBindlessTex[p].getVertexCount() > 0) {
+                        vbBindlessTex[p].update();
+                        shadowMap.drawVertexBuffer(vbBindlessTex[p], states);
+                        vbBindlessTex[p].clear();
+                    }
+                }
+                shadowMap.display();
+            }
+            void ShadowRenderComponent2::drawNextFrame() {
+                //glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo));
+
+                math::Vec3f centerLight = g2d::AmbientLight::getAmbientLight().getLightCenter();
+
+                View lightView = View(view.getSize().x, view.getSize().y, 0, g2d::AmbientLight::getAmbientLight().getHeight());
+                lightView.setCenter(centerLight);
+                math::Vec3f forward = (lightView.getPosition() - view.getPosition()).normalize();
+                math::Vec3f target = lightView.getPosition() + forward;
+                lightView.lookAt(target.x, target.y, target.z);
+                stencilBuffer.setView(lightView);
+                depthBuffer.setView(view);
+                math::Matrix4f lviewMatrix = lightView.getViewMatrix().getMatrix().transpose();
+                math::Matrix4f lprojMatrix = lightView.getProjMatrix().getMatrix().transpose();
+                buildShadowMapShader.setParameter("projectionMatrix", lprojMatrix);
+                buildShadowMapShader.setParameter("viewMatrix", lviewMatrix);
+                buildShadowMapNormalShader.setParameter("projectionMatrix", lprojMatrix);
+                buildShadowMapNormalShader.setParameter("viewMatrix", lviewMatrix);
+                float zNear = view.getViewport().getPosition().z;
+                if (!view.isOrtho())
+                    view.setPerspective(80, view.getViewport().getSize().x / view.getViewport().getSize().y, zNear * 0.5f, view.getViewport().getSize().z);
+                math::Matrix4f viewMatrix = view.getViewMatrix().getMatrix().transpose();
+                math::Matrix4f projMatrix = view.getProjMatrix().getMatrix().transpose();
+                depthGenShader.setParameter("projectionMatrix", projMatrix);
+                depthGenShader.setParameter("viewMatrix", viewMatrix);
+                depthGenNormalShader.setParameter("projectionMatrix", projMatrix);
+                depthGenNormalShader.setParameter("viewMatrix", viewMatrix);
+                if (!view.isOrtho())
+                    view.setPerspective(80, view.getViewport().getSize().x / view.getViewport().getSize().y, zNear, view.getViewport().getSize().z);
+                viewMatrix = view.getViewMatrix().getMatrix().transpose();
+                projMatrix = view.getProjMatrix().getMatrix().transpose();
+                perPixShadowShader.setParameter("projectionMatrix", projMatrix);
+                perPixShadowShader.setParameter("viewMatrix", viewMatrix);
+                perPixShadowShader.setParameter("lviewMatrix", lviewMatrix);
+                perPixShadowShader.setParameter("lprojectionMatrix", lprojMatrix);
+                perPixShadowShaderNormal.setParameter("projectionMatrix", projMatrix);
+                perPixShadowShaderNormal.setParameter("viewMatrix", viewMatrix);
+                perPixShadowShaderNormal.setParameter("lviewMatrix", lviewMatrix);
+                perPixShadowShaderNormal.setParameter("lprojectionMatrix", lprojMatrix);
+                sBuildAlphaBufferShader.setParameter("projectionMatrix", projMatrix);
+                sBuildAlphaBufferShader.setParameter("viewMatrix", viewMatrix);
+                sBuildAlphaBufferShader.setParameter("lviewMatrix", lviewMatrix);
+                sBuildAlphaBufferShader.setParameter("lprojectionMatrix", lprojMatrix);
+                sBuildAlphaBufferNormalShader.setParameter("projectionMatrix", projMatrix);
+                sBuildAlphaBufferNormalShader.setParameter("viewMatrix", viewMatrix);
+                sBuildAlphaBufferNormalShader.setParameter("lviewMatrix", lviewMatrix);
+                sBuildAlphaBufferNormalShader.setParameter("lprojectionMatrix", lprojMatrix);
+                drawInstanced();
+                drawInstancedIndexed();
+                //drawNormal();
+                drawNormalIndexed();
+
+                /*glCheck(glFinish());
+                vb.clear();
+            //vb.name = "";
+                vb.setPrimitiveType(sf::Quads);
+                Vertex v1 (sf::Vector3f(0, 0, quad.getSize().z));
+                Vertex v2 (sf::Vector3f(quad.getSize().x,0, quad.getSize().z));
+                Vertex v3 (sf::Vector3f(quad.getSize().x, quad.getSize().y, quad.getSize().z));
+                Vertex v4 (sf::Vector3f(0, quad.getSize().y, quad.getSize().z));
+                vb.append(v1);
+                vb.append(v2);
+                vb.append(v3);
+                vb.append(v4);
+                vb.update();
                 math::Matrix4f matrix = quad.getTransform().getMatrix().transpose();
-                perPixelLinkedListP2.setParameter("worldMat", matrix);
-                currentStates.shader = &perPixelLinkedListP2;
-                frameBuffer.drawVertexBuffer(quadVBO, currentStates);
+                debugShader.setParameter("worldMat", matrix);
+                RenderStates currentStates;
+                currentStates.blendMode = sf::BlendAlpha;
+                currentStates.shader = &debugShader;
+                currentStates.texture = nullptr;
+                shadowMap.drawVertexBuffer(vb, currentStates);
                 glCheck(glFinish());
-                frameBuffer.display();
+                shadowMap.display();*/
+                    //glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, 0));
+
             }
-            void PerPixelLinkedListRenderComponent2::draw(RenderTarget& target, RenderStates states) {
-                frameBufferSprite.setCenter(target.getView().getPosition());
-                target.draw(frameBufferSprite, states);
+            std::vector<Entity*> ShadowRenderComponent2::getEntities() {
+                return visibleEntities;
             }
-            int  PerPixelLinkedListRenderComponent2::getLayer() {
-                return layer;
+            void ShadowRenderComponent2::draw(RenderTarget& target, RenderStates states) {
+                shadowTile.setCenter(target.getView().getPosition());
+                states.blendMode = sf::BlendMultiply;
+                target.draw(shadowTile, states);
             }
-            void PerPixelLinkedListRenderComponent2::draw(Drawable& drawable, RenderStates states) {
-                //drawables.insert(std::make_pair(drawable, states));
-            }
-            void PerPixelLinkedListRenderComponent2::setView(View view) {
-                frameBuffer.setView(view);
-                this->view = view;
-            }
-            std::string PerPixelLinkedListRenderComponent2::getExpression() {
-                return expression;
-            }
-            View& PerPixelLinkedListRenderComponent2::getView() {
-                return view;
-            }
-            bool PerPixelLinkedListRenderComponent2::needToUpdate() {
-                return update;
-            }
-            void PerPixelLinkedListRenderComponent2::setExpression (std::string expression) {
-                this->expression = expression;
-            }
-            void PerPixelLinkedListRenderComponent2::pushEvent(window::IEvent event, RenderWindow& rw) {
+            void ShadowRenderComponent2::pushEvent(window::IEvent event, RenderWindow& rw) {
                 if (event.type == window::IEvent::WINDOW_EVENT && event.window.type == window::IEvent::WINDOW_EVENT_RESIZED && &getWindow() == &rw && isAutoResized()) {
-                    std::cout<<"recompute size"<<std::endl;
                     recomputeSize();
                     getListener().pushEvent(event);
                     getView().reset(physic::BoundingBox(getView().getViewport().getPosition().x, getView().getViewport().getPosition().y, getView().getViewport().getPosition().z, event.window.data1, event.window.data2, getView().getViewport().getDepth()));
                 }
             }
-            const Texture& PerPixelLinkedListRenderComponent2::getFrameBufferTexture() {
-                return frameBuffer.getTexture();
+            bool ShadowRenderComponent2::needToUpdate() {
+                return update;
             }
-            RenderTexture* PerPixelLinkedListRenderComponent2::getFrameBuffer() {
-                return &frameBuffer;
+            View& ShadowRenderComponent2::getView() {
+                return view;
             }
-            std::vector<Entity*> PerPixelLinkedListRenderComponent2::getEntities() {
-                std::vector<Entity*> visibleEntities;
-                for (unsigned int p = 0; p < pVisibleEntities.size(); p++) {
-                    for (unsigned int e = 0; e < pVisibleEntities[p].size(); e++) {
-                        visibleEntities.push_back(pVisibleEntities[p][e]);
+            int ShadowRenderComponent2::getLayer() {
+                return getPosition().z;
+            }
+            const Texture& ShadowRenderComponent2::getStencilBufferTexture() {
+                return stencilBuffer.getTexture();
+            }
+            const Texture& ShadowRenderComponent2::getShadowMapTexture() {
+                return shadowMap.getTexture();
+            }
+            Sprite& ShadowRenderComponent2::getFrameBufferTile () {
+                return stencilBufferTile;
+            }
+            Sprite& ShadowRenderComponent2::getDepthBufferTile() {
+                return shadowTile;
+            }
+            void ShadowRenderComponent2::setExpression(std::string expression) {
+                update = true;
+                this->expression = expression;
+            }
+            std::string ShadowRenderComponent2::getExpression() {
+                return expression;
+            }
+            void ShadowRenderComponent2::setView(View view) {
+                this->view = view;/*View(view.getSize().x, view.getSize().y, view.getPosition().z, view.getDepth());
+                this->view.setCenter(view.getPosition());*/
+                shadowMap.setView(this->view);
+                depthBuffer.setView(this->view);
+                alphaBuffer.setView(this->view);
+            }
+            bool ShadowRenderComponent2::loadEntitiesOnComponent(std::vector<Entity*> vEntities)
+            {
+
+                batcher.clear();
+                normalBatcher.clear();
+                shadowBatcher.clear();
+                normalShadowBatcher.clear();
+                batcherIndexed.clear();
+                shadowBatcherIndexed.clear();
+                normalBatcherIndexed.clear();
+                normalShadowBatcherIndexed.clear();
+                normalStencilBuffer.clear();
+
+                for (unsigned int i = 0; i < vEntities.size(); i++) {
+                    if ( vEntities[i] != nullptr && vEntities[i]->isLeaf()) {
+                        Entity* entity = vEntities[i]->getRootEntity();
+                        math::Vec3f shadowOrigin, shadowCenter, shadowScale(1.f, 1.f, 1.f), shadowRotationAxis, shadowTranslation;
+                        float shadowRotationAngle = 0;
+                        //if (entity != nullptr && entity->isModel()) {
+                            shadowCenter = entity->getShadowCenter();
+                            shadowScale = entity->getShadowScale();
+                            shadowRotationAxis = entity->getShadowRotationAxis();
+                            shadowRotationAngle = entity->getShadowRotationAngle();
+                            shadowOrigin = entity->getPosition();
+                            shadowTranslation = entity->getPosition() + shadowCenter;
+                            /*if (entity->getType() == "E_WALL") {
+                                std::cout<<"shadow center : "<<shadowCenter<<std::endl;
+                                std::cout<<"shadow scale : "<<shadowScale<<std::endl;
+                                std::cout<<"shadow rotation axis : "<<shadowRotationAxis<<std::endl;
+                                std::cout<<"shadow rotation angle : "<<shadowRotationAngle<<std::endl;
+                                std::cout<<"shadow origin : "<<shadowOrigin<<std::endl;
+                                std::cout<<"shadow translation : "<<shadowTranslation<<std::endl;
+                            }*/
+                        //}
+                        TransformMatrix tm;
+                        tm.setOrigin(shadowOrigin);
+                        tm.setScale(shadowScale);
+                        tm.setRotation(shadowRotationAxis, shadowRotationAngle);
+                        tm.setTranslation(shadowTranslation);
+
+                        for (unsigned int j = 0; j <  vEntities[i]->getNbFaces(); j++) {
+
+                             if(vEntities[i]->getDrawMode() == Entity::INSTANCED) {
+                                if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0) {
+                                    batcher.addFace( vEntities[i]->getFace(j));
+                                    shadowBatcher.addShadowFace(vEntities[i]->getFace(j),  view.getViewMatrix(), tm);
+                                } else {
+                                    batcherIndexed.addFace( vEntities[i]->getFace(j));
+                                    shadowBatcherIndexed.addShadowFace(vEntities[i]->getFace(j),  view.getViewMatrix(), tm);
+                                }
+                             } else {
+                                 if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0) {
+                                    normalBatcher.addFace( vEntities[i]->getFace(j));
+                                    if (vEntities[i]->getRootEntity()->getType() != "E_BIGTILE") {
+                                        normalShadowBatcher.addShadowFace(vEntities[i]->getFace(j), view.getViewMatrix(), tm);
+                                        normalStencilBuffer.addFace(vEntities[i]->getFace(j));
+                                    }
+                                 } else {
+                                    normalBatcherIndexed.addFace( vEntities[i]->getFace(j));
+                                    normalShadowBatcherIndexed.addShadowFace(vEntities[i]->getFace(j), view.getViewMatrix(), tm);
+                                 }
+                             }
+                        }
                     }
                 }
-                return visibleEntities;
+                m_instances = batcher.getInstances();
+                m_normals = normalBatcher.getInstances();
+                m_shadow_instances = shadowBatcher.getInstances();
+                m_shadow_normals = normalShadowBatcher.getInstances();
+                m_instancesIndexed = batcherIndexed.getInstances();
+                m_shadow_instances_indexed = shadowBatcherIndexed.getInstances();
+                m_normalsIndexed = normalBatcherIndexed.getInstances();
+                m_shadow_normalsIndexed = normalShadowBatcherIndexed.getInstances();
+                m_stencil_buffer = normalStencilBuffer.getInstances();
+                visibleEntities = vEntities;
+                update = true;
+                return true;
             }
-            PerPixelLinkedListRenderComponent2::~PerPixelLinkedListRenderComponent2() {
-                glDeleteBuffers(1, &atomicBuffer);
-                glDeleteBuffers(1, &linkedListBuffer);
-                glDeleteBuffers(1, &clearBuf);
-                glDeleteTextures(1, &headPtrTex);
-                glDeleteBuffers(1, &vboIndirect);
+            void ShadowRenderComponent2::clear() {
+                 shadowMap.clear(sf::Color::White);
+                 depthBuffer.clear(sf::Color::Transparent);
+                 stencilBuffer.clear(sf::Color::Transparent);
+                 alphaBuffer.clear(sf::Color::Transparent);
+                 glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, clearBuf));
+                 glCheck(glBindTexture(GL_TEXTURE_2D, depthTex));
+                 glCheck(glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, view.getSize().x, view.getSize().y, GL_RGBA,
+                 GL_FLOAT, NULL));
+                 glCheck(glBindTexture(GL_TEXTURE_2D, 0));
+                 glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0));
+                 glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, clearBuf2));
+                 glCheck(glBindTexture(GL_TEXTURE_2D, stencilTex));
+                 glCheck(glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, view.getSize().x, view.getSize().y, GL_RGBA,
+                 GL_FLOAT, NULL));
+                 glCheck(glBindTexture(GL_TEXTURE_2D, 0));
+                 glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0));
+                 glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, clearBuf3));
+                 glCheck(glBindTexture(GL_TEXTURE_2D, alphaTex));
+                 glCheck(glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, view.getSize().x, view.getSize().y, GL_RGBA,
+                 GL_FLOAT, NULL));
+                 glCheck(glBindTexture(GL_TEXTURE_2D, 0));
+                 glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0));
+                 glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, clearBuf4));
+                 glCheck(glBindTexture(GL_TEXTURE_2D, frameBufferTex));
+                 glCheck(glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, view.getSize().x, view.getSize().y, GL_RGBA,
+                 GL_FLOAT, NULL));
+                 glCheck(glBindTexture(GL_TEXTURE_2D, 0));
+                 glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0));
+                 GLuint zero = 0;
+                 glCheck(glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomicBuffer));
+                 glCheck(glBufferSubData(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(GLuint), &zero));
+                 glCheck(glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, 0));
+
+            }
+            RenderTexture* ShadowRenderComponent2::getFrameBuffer() {
+                return &shadowMap;
+            }
+            ShadowRenderComponent2::~ShadowRenderComponent2() {
+                glDeleteBuffers(1, &vboWorldMatrices);
+                glDeleteBuffers(1, &vboShadowProjMatrices);
                 glDeleteBuffers(1, &ubo);
             }
-        #endif
+            #endif // VULKAN
+        }
     }
-}

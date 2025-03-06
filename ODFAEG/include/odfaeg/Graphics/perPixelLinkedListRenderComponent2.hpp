@@ -1,127 +1,117 @@
-#ifndef ODFAEG_PERPIXEL_LINKEDLIST_RENDER_COMPONENT2_HPP
-#define ODFAEG_PERPIXEL_LINKEDLIST_RENDER_COMPONENT2_HPP
-#ifndef VULKAN
+#ifndef ODFAEG_SHADOW_RENDER_COMPONENT_HPP
+#define ODFAEG_SHADOW_RENDER_COMPONENT_HPP
 #include "GL/glew.h"
-#include <SFML/OpenGL.hpp>
-#endif // VULKAN
-#include "heavyComponent.h"
+#include "renderWindow.h"
 #include "renderTexture.h"
 #include "sprite.h"
+#include "entityManager.h"
+#include "heavyComponent.h"
+#include "2D/ambientLight.h"
+#include "model.h"
 #include "rectangleShape.h"
-#include "3D/skybox.hpp"
+#include "../Physics/particuleSystem.h"
+/**
+  *\namespace odfaeg
+  * the namespace of the Opensource Development Framework Adapted for Every Games.
+  */
 namespace odfaeg {
     namespace graphic {
         #ifdef VULKAN
         #else
-        class PerPixelLinkedListRenderComponent2 : public HeavyComponent {
+        /**
+          * \file OITRenderComponent.h
+          * \class OITRenderComponent
+          * \author Duroisin.L
+          * \version 1.0
+          * \date 1/02/2014
+          * \brief represent a component used to render the entities of a scene.
+          */
+        class ODFAEG_GRAPHICS_API ShadowRenderComponent2 : public HeavyComponent {
             public :
-            struct uint64_to_uint128 {
-                uint64_t handle;
-                uint64_t padding;
-            };
-            struct Samplers {
-                uint64_to_uint128 tex[200];
-            };
-            struct DrawArraysIndirectCommand {
-                unsigned int  count;
-                unsigned int  instanceCount;
-                unsigned int  firstIndex;
-                unsigned int  baseInstance;
-            };
-            struct EntityData {
-                math::Matrix4f transformMatrix;
-                unsigned int materialID;
-                unsigned int vertexOffset;
-            };
-            struct MaterialData {
-                unsigned int textureId;
-            };
-            struct VertexData {
-                math::Vec3f position;
-                math::Vec3f color;
-                math::Vec3f texCoords;
-            };
-            struct EntityIdData {
-                unsigned int entityId;
-            };
-            PerPixelLinkedListRenderComponent2 (RenderWindow& window, int layer, std::string expression, window::ContextSettings settings);
-            void preloadEntitiesOnComponent(std::vector<Entity*> entities, EntityFactory& factory);
-            void loadTextureIndexes();
-            std::vector<Entity*> getEntities();
-            bool loadEntitiesOnComponent(std::vector<Entity*> visibleEntities);
-            void loadSkybox(Entity* skybox);
-            bool needToUpdate();
-            void clear ();
-            /**
-            * \fn void setBackgroundColor(sf::Color color)
-            * \brief set the background color of the component. (TRansparent by default)
-            * \param sf::Color color : the color.
-            */
-            void setBackgroundColor(sf::Color color);
-            /**
-            * \fn void drawNextFrame()
-            * \brief draw the next frame of the component.
-            */
-            void drawNextFrame();
-            void setExpression (std::string expression);
-            /**
-            * \fn draw(Drawable& drawable, RenderStates states = RenderStates::Default);
-            * \brief draw a drawable object onto the component.
-            * \param Drawable drawable : the drawable object to draw.
-            * \param RenderStates states : the render states.
-            */
-            void draw(Drawable& drawable, RenderStates states = RenderStates::Default);
-            /**
-            * \fn void draw(RenderTarget& target, RenderStates states)
-            * \brief draw the frame on a render target.
-            * \param RenderTarget& target : the render target.
-            * \param RenderStates states : the render states.
-            */
-            void draw(RenderTarget& target, RenderStates states);
-            std::string getExpression();
-            /**
-            * \fn int getLayer()
-            * \brief get the layer of the component.
-            * \return the number of the layer.
-            */
-            int getLayer();
-            /**
-            * \fn void setView(View& view)
-            * \brief set the view of the component.
-            * \param the view of the component.
-            */
-            /**
-            * \fn register an event to the event stack of the component.
-            * \param window::IEvent : the event to register.
-            * \param Renderwindow : the window generating the event.
-            */
-            void pushEvent(window::IEvent event, RenderWindow& window);
-            void setView(View view);
-            View& getView();
-            const Texture& getFrameBufferTexture();
-            RenderTexture* getFrameBuffer();
-            ~PerPixelLinkedListRenderComponent2();
+                struct uint64_to_uint128 {
+                    uint64_t handle;
+                    uint64_t padding;
+                };
+                struct Samplers {
+                    uint64_to_uint128 tex[200];
+                };
+                struct DrawArraysIndirectCommand {
+                    unsigned int  count;
+                    unsigned int  instanceCount;
+                    unsigned int  firstIndex;
+                    unsigned int  baseInstance;
+                };
+                struct DrawElementsIndirectCommand {
+                        unsigned index_count;
+                        unsigned instance_count;
+                        unsigned first_index;       // cf parametre offset de glDrawElements()
+                        unsigned vertex_base;
+                        unsigned instance_base;
+                };
+                struct ModelData {
+                    math::Matrix4f worldMat;
+                    math::Matrix4f shadowProjMat;
+                };
+                struct MaterialData {
+                    unsigned int textureIndex;
+                    unsigned int layer;
+                };
+                ShadowRenderComponent2 (RenderWindow& window, int layer, std::string expression,window::ContextSettings settings = window::ContextSettings(0, 0, 4, 3, 0));
+                void loadTextureIndexes();
+                void drawNextFrame();
+
+                void drawInstanced();
+                void drawInstancedIndexed();
+                void drawNormal();
+                void drawNormalIndexed();
+
+                void onVisibilityChanged(bool visible);
+                std::vector<Entity*> getEntities();
+                void draw(RenderTarget& target, RenderStates states);
+                void draw(Drawable& drawable, RenderStates states) {
+                }
+                void pushEvent(window::IEvent event, RenderWindow& rw);
+                bool needToUpdate();
+                View& getView();
+                int getLayer();
+                const Texture& getStencilBufferTexture();
+                const Texture& getShadowMapTexture();
+                Sprite& getFrameBufferTile ();
+                Sprite& getDepthBufferTile();
+                void setExpression(std::string expression);
+                std::string getExpression();
+                void setView(View view);
+                bool loadEntitiesOnComponent(std::vector<Entity*> vEntities);
+                void clear();
+                RenderTexture* getFrameBuffer();
+                ~ShadowRenderComponent2();
             private :
-            GLuint maxNodes;
-            sf::Vector3i resolution;
-            unsigned int atomicBuffer, linkedListBuffer, clearBuf, headPtrTex, ubo, vboIndirect, entityData, vertexData, materialData, entityIdData;
-            void compileShaders();
-            Shader perPixelLinkedList, perPixelLinkedListP2, skyboxShader;
-            RectangleShape quad;
-            std::vector<std::pair<std::reference_wrapper<Drawable>, RenderStates>> drawables;
-            std::array<std::vector<Entity*>, Batcher::nbPrimitiveTypes> pVisibleEntities;
-            Entity* skybox;
-            VertexBuffer quadVBO, skyboxVBO;
-            View view;
-            std::string expression;
-            Sprite frameBufferSprite;
-            RenderTexture frameBuffer;
-            sf::Color backgroundColor;
-            int layer;
-            RenderStates currentStates;
-            bool update;
-        };
-        #endif
+                Batcher batcher, shadowBatcher, normalBatcher, normalShadowBatcher, batcherIndexed, shadowBatcherIndexed, normalBatcherIndexed, normalShadowBatcherIndexed, normalStencilBuffer; /**> A group of faces using the same materials and primitive type.*/
+                std::vector<Instance> m_instances, m_normals, m_instancesIndexed, m_normalsIndexed; /**> Instances to draw. (Instanced rendering.) */
+                std::vector<Instance> m_shadow_instances, m_shadow_normals, m_shadow_instances_indexed, m_shadow_normalsIndexed;
+                std::vector<Instance> m_stencil_buffer;
+                std::vector<Entity*> visibleEntities; /**> Entities loaded*/
+                RenderTexture stencilBuffer; /**> the stencil buffer.*/
+                RenderTexture shadowMap; /**> the shadow map.*/
+                RenderTexture depthBuffer;
+                RenderTexture alphaBuffer;
+                Sprite stencilBufferTile, shadowTile, depthBufferTile, alphaBufferSprite; /**> the stencil and shadow map buffer.*/
+                Shader buildShadowMapShader, buildShadowMapNormalShader; /**> the shader to generate the stencil buffer.*/
+                Shader perPixShadowShader, perPixShadowShaderNormal; /**> the shader to generate the shadow map.*/
+                Shader depthGenShader, depthGenNormalShader;
+                Shader sBuildAlphaBufferShader, sBuildAlphaBufferNormalShader, debugShader;
+                View view; /**> the view of the component.*/
+                std::string expression;
+                bool update;
+                unsigned int vboWorldMatrices, vboShadowProjMatrices, ubo, clearBuf, alphaTex, clearBuf2, depthTex, stencilTex, clearBuf3, vboIndirect, clearBuf4, frameBufferTex, atomicBuffer, modelDataBuffer, materialDataBuffer;
+                VertexBuffer vb, vb2;
+                std::array<VertexBuffer ,Batcher::nbPrimitiveTypes> vbBindlessTex;
+                std::vector<float> matrices, matrices2;
+                RectangleShape quad;
+         };
+         #endif
     }
 }
 #endif
+
+

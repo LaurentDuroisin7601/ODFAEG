@@ -100,6 +100,8 @@ namespace odfaeg {
                 if (settings.versionMajor >= 3 && settings.versionMinor >= 3) {
                     glGenBuffers(1, &vboWorldMatrices);
                     glGenBuffers(1, &vboShadowProjMatrices);
+                    glGenBuffers(1, &modelDataBuffer);
+                    glGenBuffers(1, &materialDataBuffer);
                     const std::string  simpleVertexShader = R"(#version 460
                                                         layout (location = 0) in vec3 position;
                                                         layout (location = 1) in vec4 color;
@@ -118,6 +120,44 @@ namespace odfaeg {
                                                                 void main() {
                                                                     fcolor = imageLoad(img_output, ivec2(gl_FragCoord.xy));
                                                                 })";
+                    const std::string indirectRenderingVertexShader = R"(#version 460
+                                                                         layout (location = 0) in vec3 position;
+                                                                         layout (location = 1) in vec4 color;
+                                                                         layout (location = 2) in vec2 texCoords;
+                                                                         layout (location = 3) in vec3 normals;
+                                                                         uniform mat4 projectionMatrix;
+                                                                         uniform mat4 viewMatrix;
+                                                                         uniform mat4 textureMatrix[)"+core::conversionUIntString(Texture::getAllTextures().size())+R"(];
+                                                                         struct ModelData {
+                                                                            mat4 modelMatrix;
+                                                                            mat4 shadowProjMatrix;
+                                                                         };
+                                                                         struct MaterialData {
+                                                                             uint textureIndex;
+                                                                             uint layer;
+                                                                         };
+                                                                         layout(binding = 0, std430) buffer modelData {
+                                                                             ModelData modelDatas[];
+                                                                         };
+                                                                         layout(binding = 1, std430) buffer materialData {
+                                                                             MaterialData materialDatas[];
+                                                                         };
+                                                                         out vec2 fTexCoords;
+                                                                         out vec4 frontColor;
+                                                                         out uint texIndex;
+                                                                         out uint layer;
+                                                                         void main() {
+                                                                            ModelData model = modelDatas[gl_BaseInstance + gl_InstanceID];
+                                                                            MaterialData material = materialDatas[gl_DrawID];
+                                                                            uint textureIndex = material.textureIndex;
+                                                                            uint l = material.layer;
+                                                                            gl_Position = projectionMatrix * viewMatrix * model.modelMatrix * vec4(position, 1.f);
+                                                                            fTexCoords = (textureIndex != 0) ? (textureMatrix[textureIndex-1] * vec4(texCoords, 1.f, 1.f)).xy : texCoords;
+                                                                            frontColor = color;
+                                                                            texIndex = textureIndex;
+                                                                            layer = l;
+                                                                         }
+                                                                         )";
                     const std::string buildDepthBufferVertexShaderNormal = R"(#version 460
                                                                               layout (location = 0) in vec3 position;
                                                                               layout (location = 1) in vec4 color;
@@ -223,7 +263,7 @@ namespace odfaeg {
                                                                           vec4 stencil = texture2D (stencilBuffer, projCoords.xy);
                                                                           float l = layer;
                                                                           float z = gl_FragCoord.z;
-                                                                          if (/*l > stencil.y || l == stencil.y &&*/ stencil.z < projCoords.z && depth.z > z && current_alpha > alpha.a) {
+                                                                          if (/*l > stencil.y || l == stencil.y &&*/ stencil.z > projCoords.z && depth.z > z && current_alpha > alpha.a) {
                                                                               imageStore(alphaBuffer,ivec2(gl_FragCoord.xy),vec4(0, l, z, current_alpha));
                                                                               memoryBarrier();
                                                                               fColor = vec4(0, 1, z, current_alpha);
@@ -296,6 +336,48 @@ namespace odfaeg {
                                                                             endInvocationInterlockARB();
                                                                         }
                                                                     )";
+                        const std::string perPixShadowIndirectRenderinVertexShader = R"(#version 460
+                                                                         layout (location = 0) in vec3 position;
+                                                                         layout (location = 1) in vec4 color;
+                                                                         layout (location = 2) in vec2 texCoords;
+                                                                         layout (location = 3) in vec3 normals;
+                                                                         uniform mat4 projectionMatrix;
+                                                                         uniform mat4 viewMatrix;
+                                                                         uniform mat4 lviewMatrix;
+                                                                         uniform mat4 lprojectionMatrix;
+                                                                         uniform mat4 textureMatrix[)"+core::conversionUIntString(Texture::getAllTextures().size())+R"(];
+                                                                         struct ModelData {
+                                                                            mat4 modelMatrix;
+                                                                            mat4 shadowProjMatrix;
+                                                                         };
+                                                                         struct MaterialData {
+                                                                             uint textureIndex;
+                                                                             uint layer;
+                                                                         };
+                                                                         layout(binding = 0, std430) buffer modelData {
+                                                                             ModelData modelDatas[];
+                                                                         };
+                                                                         layout(binding = 1, std430) buffer materialData {
+                                                                             MaterialData materialDatas[];
+                                                                         };
+                                                                         out vec4 shadowCoords;
+                                                                         out vec2 fTexCoords;
+                                                                         out vec4 frontColor;
+                                                                         out uint texIndex;
+                                                                         out uint layer;
+                                                                         void main() {
+                                                                            ModelData model = modelDatas[gl_BaseInstance + gl_InstanceID];
+                                                                            MaterialData material = materialDatas[gl_DrawID];
+                                                                            uint textureIndex = material.textureIndex;
+                                                                            uint l = material.layer;
+                                                                            gl_Position = projectionMatrix * viewMatrix * model.shadowProjMatrix * model.modelMatrix * vec4(position, 1.f);
+                                                                            shadowCoords = lprojectionMatrix * lviewMatrix * model.shadowProjMatrix * model.modelMatrix * vec4(position, 1);
+                                                                            fTexCoords = (textureIndex != 0) ? (textureMatrix[textureIndex-1] * vec4(texCoords, 1.f, 1.f)).xy : texCoords;
+                                                                            frontColor = color;
+                                                                            texIndex = textureIndex;
+                                                                            layer = l;
+                                                                         }
+                                                                         )";
                         const std::string perPixShadowVertexShader = R"(#version 460
                                                                    layout (location = 0) in vec3 position;
                                                                    layout (location = 1) in vec4 color;
@@ -539,7 +621,7 @@ namespace odfaeg {
                                                                             float z = gl_FragCoord.z;
                                                                             vec4 visibility;
                                                                             uint l = layer;
-                                                                            if (/*l > stencil.y || l == stencil.y &&*/ stencil.z < projCoords.z) {
+                                                                            if (/*l > stencil.y || l == stencil.y &&*/ stencil.z > projCoords.z) {
                                                                                 if (depth.z > z) {
                                                                                     visibility = vec4 (1, 1, 1, alpha.a);
                                                                                 } else {
@@ -556,25 +638,25 @@ namespace odfaeg {
                         if (!debugShader.loadFromMemory(simpleVertexShader, simpleFragmentShader)) {
                             throw core::Erreur(51, "Failed to load debug shader", 0);
                         }
-                        if (!depthGenShader.loadFromMemory(buildDepthBufferVertexShader, buildDepthBufferFragmentShader))  {
+                        if (!depthGenShader.loadFromMemory(indirectRenderingVertexShader, buildDepthBufferFragmentShader))  {
                             throw core::Erreur(52, "Error, failed to load build depth buffer shader", 3);
                         }
                         if (!depthGenNormalShader.loadFromMemory(buildDepthBufferVertexShaderNormal, buildDepthBufferFragmentShader)) {
                             throw core::Erreur(51, "Error, failed to load build depth buffer normal shader", 3);
                         }
-                        if (!buildShadowMapShader.loadFromMemory(buildDepthBufferVertexShader, buildShadowMapFragmentShader)) {
+                        if (!buildShadowMapShader.loadFromMemory(indirectRenderingVertexShader, buildShadowMapFragmentShader)) {
                             throw core::Erreur(53, "Error, failed to load build shadow map shader", 3);
                         }
                         if (!buildShadowMapNormalShader.loadFromMemory(buildDepthBufferVertexShaderNormal, buildShadowMapFragmentShader)) {
                             throw core::Erreur(50, "Error, failed to load build shadow map normal shader", 3);
                         }
-                        if (!perPixShadowShader.loadFromMemory(perPixShadowVertexShader, perPixShadowFragmentShader)) {
+                        if (!perPixShadowShader.loadFromMemory(perPixShadowIndirectRenderinVertexShader, perPixShadowFragmentShader)) {
                             throw core::Erreur(54, "Error, failed to load per pix shadow map shader", 3);
                         }
                         if (!perPixShadowShaderNormal.loadFromMemory(perPixShadowNormalVertexShader, perPixShadowFragmentShader)) {
                             throw core::Erreur(55, "Error, failed to load per pix normal shadow map shader", 3);
                         }
-                        if (!sBuildAlphaBufferShader.loadFromMemory(perPixShadowVertexShader,buildAlphaBufferFragmentShader)) {
+                        if (!sBuildAlphaBufferShader.loadFromMemory(perPixShadowIndirectRenderinVertexShader,buildAlphaBufferFragmentShader)) {
                             throw core::Erreur(60, "Error, failed to load build alpha buffer shader", 3);
                         }
                         if (!sBuildAlphaBufferNormalShader.loadFromMemory(perPixShadowNormalVertexShader,buildAlphaBufferFragmentShader)) {
@@ -645,12 +727,20 @@ namespace odfaeg {
                         glCheck(glBufferData(GL_UNIFORM_BUFFER, sizeof(Samplers),allSamplers.tex, GL_STATIC_DRAW));
                         glCheck(glBindBuffer(GL_UNIFORM_BUFFER, 0));
                         glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo));
+                        glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, modelDataBuffer));
+                        glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, materialDataBuffer));
                         stencilBuffer.setActive();
                         glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo));
+                        glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, modelDataBuffer));
+                        glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, materialDataBuffer));
                         depthBuffer.setActive();
                         glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo));
+                        glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, modelDataBuffer));
+                        glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, materialDataBuffer));
                         alphaBuffer.setActive();
                         glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo));
+                        glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, modelDataBuffer));
+                        glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, materialDataBuffer));
                         alphaBuffer.setActive(false);
                         //std::cout<<"size : "<<sizeof(Samplers)<<" "<<alignof (alignas(16) uint64_t[200])<<std::endl;
 
@@ -774,7 +864,8 @@ namespace odfaeg {
                     vbBindlessTex[i].clear();
                 }
                 std::array<std::vector<DrawArraysIndirectCommand>, Batcher::nbPrimitiveTypes> drawArraysIndirectCommands;
-                std::array<std::vector<float>, Batcher::nbPrimitiveTypes> matrices, matrices2;
+                std::array<std::vector<ModelData>, Batcher::nbPrimitiveTypes> matrices;
+                std::array<std::vector<MaterialData>, Batcher::nbPrimitiveTypes> materials;
                 std::array<unsigned int, Batcher::nbPrimitiveTypes> firstIndex, baseInstance;
                 for (unsigned int i = 0; i < firstIndex.size(); i++) {
                     firstIndex[i] = 0;
@@ -782,17 +873,49 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < baseInstance.size(); i++) {
                     baseInstance[i] = 0;
                 }
+                for (unsigned int i = 0; i < m_normals.size(); i++) {
+                   if (m_normals[i].getAllVertices().getVertexCount() > 0) {
+                        DrawArraysIndirectCommand drawArraysIndirectCommand;
+                        unsigned int p = m_normals[i].getAllVertices().getPrimitiveType();
+                        MaterialData material;
+                        material.textureIndex = (m_normals[i].getMaterial().getTexture() != nullptr) ? m_normals[i].getMaterial().getTexture()->getNativeHandle() : 0;
+                        material.layer = m_normals[i].getMaterial().getLayer();
+                        materials[p].push_back(material);
+                        TransformMatrix tm;
+                        ModelData model;
+                        model.worldMat = tm.getMatrix().transpose();
+                        model.shadowProjMat = tm.getMatrix().transpose();
+                        matrices[p].push_back(model);
+                        unsigned int vertexCount = 0;
+                        for (unsigned int j = 0; j < m_normals[i].getAllVertices().getVertexCount(); j++) {
+                            vbBindlessTex[p].append(m_normals[i].getAllVertices()[j]);
+                            vertexCount++;
+                        }
+                        drawArraysIndirectCommand.count = vertexCount;
+                        drawArraysIndirectCommand.firstIndex = firstIndex[p];
+                        drawArraysIndirectCommand.baseInstance = baseInstance[p];
+                        drawArraysIndirectCommand.instanceCount = 1;
+                        drawArraysIndirectCommands[p].push_back(drawArraysIndirectCommand);
+                        firstIndex[p] += vertexCount;
+                        baseInstance[p] += 1;
+                    }
+                }
                 for (unsigned int i = 0; i < m_instances.size(); i++) {
                     if (m_instances[i].getAllVertices().getVertexCount() > 0) {
-                        unsigned int p = m_instances[i].getAllVertices().getPrimitiveType();
                         DrawArraysIndirectCommand drawArraysIndirectCommand;
+                        unsigned int p = m_instances[i].getAllVertices().getPrimitiveType();
+                        MaterialData material;
+                        material.textureIndex = (m_instances[i].getMaterial().getTexture() != nullptr) ? m_instances[i].getMaterial().getTexture()->getNativeHandle() : 0;
+                        material.layer = m_instances[i].getMaterial().getLayer();
+                        materials[p].push_back(material);
                         std::vector<TransformMatrix*> tm = m_instances[i].getTransforms();
                         for (unsigned int j = 0; j < tm.size(); j++) {
                             tm[j]->update();
-                            std::array<float, 16> matrix = tm[j]->getMatrix().transpose().toGlMatrix();
-                            for (unsigned int n = 0; n < 16; n++) {
-                                matrices[p].push_back(matrix[n]);
-                            }
+                            ModelData model;
+                            model.worldMat = tm[j]->getMatrix().transpose();
+                            TransformMatrix tm;
+                            model.shadowProjMat = tm.getMatrix().transpose();
+                            matrices[p].push_back(model);
                         }
                         unsigned int vertexCount = 0;
                         if (m_instances[i].getVertexArrays().size() > 0) {
@@ -802,8 +925,7 @@ namespace odfaeg {
                                     unsigned int p = m_instances[i].getVertexArrays()[j]->getPrimitiveType();
                                     for (unsigned int k = 0; k < m_instances[i].getVertexArrays()[j]->getVertexCount(); k++) {
                                         vertexCount++;
-                                        vbBindlessTex[p].append((*m_instances[i].getVertexArrays()[j])[k], (m_instances[i].getMaterial().getTexture() != nullptr) ? m_instances[i].getMaterial().getTexture()->getId() : 0);
-                                        vbBindlessTex[p].addLayer(m_instances[i].getMaterial().getLayer());
+                                        vbBindlessTex[p].append((*m_instances[i].getVertexArrays()[j])[k]);
                                     }
                                 }
                             }
@@ -817,27 +939,23 @@ namespace odfaeg {
                         baseInstance[p] += tm.size();
                     }
                 }
-                glCheck(glBindBuffer(GL_ARRAY_BUFFER, vboWorldMatrices));
-                glCheck(glBufferData(GL_ARRAY_BUFFER, matrices.size() * sizeof(float), &matrices[0], GL_DYNAMIC_DRAW));
-                glCheck(glBindBuffer(GL_ARRAY_BUFFER, 0));
-                glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, vboIndirect));
-                glCheck(glBufferData(GL_DRAW_INDIRECT_BUFFER, drawArraysIndirectCommands.size() * sizeof(DrawArraysIndirectCommand), &drawArraysIndirectCommands[0], GL_DYNAMIC_DRAW));
-                glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0));
                 RenderStates currentStates;
                 currentStates.blendMode = sf::BlendNone;
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                     if (vbBindlessTex[p].getVertexCount() > 0) {
-                        glCheck(glBindBuffer(GL_ARRAY_BUFFER, vboWorldMatrices));
-                        glCheck(glBufferData(GL_ARRAY_BUFFER, matrices[p].size() * sizeof(float), &matrices[p][0], GL_DYNAMIC_DRAW));
-                        glCheck(glBindBuffer(GL_ARRAY_BUFFER, 0));
+                        glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, modelDataBuffer));
+                        glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, matrices[p].size() * sizeof(ModelData), &matrices[p][0], GL_DYNAMIC_DRAW));
+                        glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, materialDataBuffer));
+                        glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, materials[p].size() * sizeof(ModelData), &materials[p][0], GL_DYNAMIC_DRAW));
+                        glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0));
                         glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, vboIndirect));
                         glCheck(glBufferData(GL_DRAW_INDIRECT_BUFFER, drawArraysIndirectCommands[p].size() * sizeof(DrawArraysIndirectCommand), &drawArraysIndirectCommands[p][0], GL_DYNAMIC_DRAW));
                         glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0));
                         vbBindlessTex[p].update();
                         currentStates.shader = &buildShadowMapShader;
-                        stencilBuffer.drawIndirect(vbBindlessTex[p], vbBindlessTex[p].getPrimitiveType(), drawArraysIndirectCommands[p].size(), currentStates, vboIndirect, vboWorldMatrices);
+                        stencilBuffer.drawIndirect(vbBindlessTex[p], vbBindlessTex[p].getPrimitiveType(), drawArraysIndirectCommands[p].size(), currentStates, vboIndirect);
                         currentStates.shader = &depthGenShader;
-                        depthBuffer.drawIndirect(vbBindlessTex[p], vbBindlessTex[p].getPrimitiveType(), drawArraysIndirectCommands[p].size(), currentStates, vboIndirect, vboWorldMatrices);
+                        depthBuffer.drawIndirect(vbBindlessTex[p], vbBindlessTex[p].getPrimitiveType(), drawArraysIndirectCommands[p].size(), currentStates, vboIndirect);
                         vbBindlessTex[p].clear();
                     }
                 }
@@ -859,29 +977,56 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < matrices.size(); i++) {
                     matrices[i].clear();
                 }
+                for (unsigned int i = 0; i < materials.size(); i++) {
+                    materials[i].clear();
+                }
                 for (unsigned int i = 0; i < drawArraysIndirectCommands.size(); i++) {
                     drawArraysIndirectCommands[i].clear();
                 }
+                for (unsigned int i = 0; i < m_shadow_normals.size(); i++) {
+                    if (m_shadow_normals[i].getAllVertices().getVertexCount() > 0) {
+                        DrawArraysIndirectCommand drawArraysIndirectCommand;
+                        unsigned int p = m_shadow_normals[i].getAllVertices().getPrimitiveType();
+                        MaterialData material;
+                        material.textureIndex = (m_shadow_normals[i].getMaterial().getTexture() != nullptr) ? m_shadow_normals[i].getMaterial().getTexture()->getNativeHandle() : 0;
+                        material.layer = m_shadow_normals[i].getMaterial().getLayer();
+                        materials[p].push_back(material);
+                        TransformMatrix tm;
+                        ModelData model;
+                        model.worldMat = tm.getMatrix().transpose();
+                        model.shadowProjMat = tm.getMatrix().transpose();
+                        matrices[p].push_back(model);
+                        unsigned int vertexCount = 0;
+                        for (unsigned int j = 0; j < m_shadow_normals[i].getAllVertices().getVertexCount(); j++) {
+                            vertexCount++;
+                            vbBindlessTex[p].append(m_shadow_normals[i].getAllVertices()[j]);
+                        }
+                        drawArraysIndirectCommand.count = vertexCount;
+                        drawArraysIndirectCommand.firstIndex = firstIndex[p];
+                        drawArraysIndirectCommand.baseInstance = baseInstance[p];
+                        drawArraysIndirectCommand.instanceCount = 1;
+                        drawArraysIndirectCommands[p].push_back(drawArraysIndirectCommand);
+                        firstIndex[p] += vertexCount;
+                        baseInstance[p] += 1;
+                    }
+                }
                 for (unsigned int i = 0; i < m_shadow_instances.size(); i++) {
-                    DrawArraysIndirectCommand drawArraysIndirectCommand;
-                    unsigned int p = m_shadow_instances[i].getAllVertices().getPrimitiveType();
                     if (m_shadow_instances[i].getAllVertices().getVertexCount() > 0) {
+                        DrawArraysIndirectCommand drawArraysIndirectCommand;
+                        unsigned int p = m_shadow_instances[i].getAllVertices().getPrimitiveType();
+                        MaterialData material;
+                        material.textureIndex = (m_shadow_normals[i].getMaterial().getTexture() != nullptr) ? m_shadow_normals[i].getMaterial().getTexture()->getNativeHandle() : 0;
+                        material.layer = m_shadow_normals[i].getMaterial().getLayer();
+                        materials[p].push_back(material);
                         std::vector<TransformMatrix*> tm = m_shadow_instances[i].getTransforms();
+                        std::vector<TransformMatrix> tm2 = m_shadow_instances[i].getShadowProjMatrix();
                         for (unsigned int j = 0; j < tm.size(); j++) {
                             tm[j]->update();
-                            std::array<float, 16> matrix = tm[j]->getMatrix().transpose().toGlMatrix();
-                            for (unsigned int n = 0; n < 16; n++) {
-                                matrices[p].push_back(matrix[n]);
-                            }
-                        }
-
-                        std::vector<TransformMatrix> tm2 = m_shadow_instances[i].getShadowProjMatrix();
-                        for (unsigned int j = 0; j < tm2.size(); j++) {
                             tm2[j].update();
-                            std::array<float, 16> matrix = tm2[j].getMatrix().transpose().toGlMatrix();
-                            for (unsigned int n = 0; n < 16; n++) {
-                                matrices2[p].push_back(matrix[n]);
-                            }
+                            ModelData model;
+                            model.worldMat = tm[j]->getMatrix().transpose();
+                            model.shadowProjMat = tm2[j].getMatrix().transpose();
+                            matrices[p].push_back(model);
                         }
                         unsigned int vertexCount=0;
                         if (m_shadow_instances[i].getVertexArrays().size() > 0) {
@@ -909,34 +1054,32 @@ namespace odfaeg {
                 currentStates.shader = &sBuildAlphaBufferShader;
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                     if (vbBindlessTex[p].getVertexCount() > 0) {
-                        glCheck(glBindBuffer(GL_ARRAY_BUFFER, vboWorldMatrices));
-                        glCheck(glBufferData(GL_ARRAY_BUFFER, matrices[p].size() * sizeof(float), &matrices[p][0], GL_DYNAMIC_DRAW));
-                        glCheck(glBindBuffer(GL_ARRAY_BUFFER, 0));
-                        glCheck(glBindBuffer(GL_ARRAY_BUFFER, vboShadowProjMatrices));
-                        glCheck(glBufferData(GL_ARRAY_BUFFER, matrices2[p].size() * sizeof(float), &matrices2[p][0], GL_DYNAMIC_DRAW));
-                        glCheck(glBindBuffer(GL_ARRAY_BUFFER, 0));
+                        glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, modelDataBuffer));
+                        glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, matrices[p].size() * sizeof(ModelData), &matrices[p][0], GL_DYNAMIC_DRAW));
+                        glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, materialDataBuffer));
+                        glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, materials[p].size() * sizeof(ModelData), &materials[p][0], GL_DYNAMIC_DRAW));
+                        glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0));
                         glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, vboIndirect));
                         glCheck(glBufferData(GL_DRAW_INDIRECT_BUFFER, drawArraysIndirectCommands[p].size() * sizeof(DrawArraysIndirectCommand), &drawArraysIndirectCommands[p][0], GL_DYNAMIC_DRAW));
                         glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0));
                         vbBindlessTex[p].update();
-                        alphaBuffer.drawIndirect(vbBindlessTex[p], vbBindlessTex[p].getPrimitiveType(), drawArraysIndirectCommands[p].size(), currentStates, vboIndirect, vboWorldMatrices, vboShadowProjMatrices);
+                        alphaBuffer.drawIndirect(vbBindlessTex[p], vbBindlessTex[p].getPrimitiveType(), drawArraysIndirectCommands[p].size(), currentStates, vboIndirect);
                     }
                 }
                 glCheck(glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT));
                 currentStates.shader = &perPixShadowShader;
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                     if (vbBindlessTex[p].getVertexCount() > 0) {
-                        glCheck(glBindBuffer(GL_ARRAY_BUFFER, vboWorldMatrices));
-                        glCheck(glBufferData(GL_ARRAY_BUFFER, matrices[p].size() * sizeof(float), &matrices[p][0], GL_DYNAMIC_DRAW));
-                        glCheck(glBindBuffer(GL_ARRAY_BUFFER, 0));
-                        glCheck(glBindBuffer(GL_ARRAY_BUFFER, vboShadowProjMatrices));
-                        glCheck(glBufferData(GL_ARRAY_BUFFER, matrices2[p].size() * sizeof(float), &matrices2[p][0], GL_DYNAMIC_DRAW));
-                        glCheck(glBindBuffer(GL_ARRAY_BUFFER, 0));
+                        glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, modelDataBuffer));
+                        glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, matrices[p].size() * sizeof(ModelData), &matrices[p][0], GL_DYNAMIC_DRAW));
+                        glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, materialDataBuffer));
+                        glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, materials[p].size() * sizeof(ModelData), &materials[p][0], GL_DYNAMIC_DRAW));
+                        glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0));
                         glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, vboIndirect));
                         glCheck(glBufferData(GL_DRAW_INDIRECT_BUFFER, drawArraysIndirectCommands[p].size() * sizeof(DrawArraysIndirectCommand), &drawArraysIndirectCommands[p][0], GL_DYNAMIC_DRAW));
                         glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0));
                         vbBindlessTex[p].update();
-                        shadowMap.drawIndirect(vbBindlessTex[p], vbBindlessTex[p].getPrimitiveType(), drawArraysIndirectCommands[p].size(), currentStates, vboIndirect, vboWorldMatrices, vboShadowProjMatrices);
+                        shadowMap.drawIndirect(vbBindlessTex[p], vbBindlessTex[p].getPrimitiveType(), drawArraysIndirectCommands[p].size(), currentStates, vboIndirect);
                         vbBindlessTex[p].clear();
                     }
                 }
@@ -1276,7 +1419,7 @@ namespace odfaeg {
 
                 View lightView = View(view.getSize().x, view.getSize().y, 0, g2d::AmbientLight::getAmbientLight().getHeight());
                 lightView.setCenter(centerLight);
-                math::Vec3f forward = (lightView.getPosition() - view.getPosition()).normalize();
+                math::Vec3f forward = (view.getPosition() - lightView.getPosition()).normalize();
                 math::Vec3f target = lightView.getPosition() + forward;
                 lightView.lookAt(target.x, target.y, target.z);
                 stencilBuffer.setView(lightView);
@@ -1318,7 +1461,7 @@ namespace odfaeg {
                 sBuildAlphaBufferNormalShader.setParameter("lprojectionMatrix", lprojMatrix);
                 drawInstanced();
                 drawInstancedIndexed();
-                drawNormal();
+                //drawNormal();
                 drawNormalIndexed();
 
                 /*glCheck(glFinish());
