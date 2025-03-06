@@ -1090,7 +1090,8 @@ namespace odfaeg {
                     vbBindlessTex[i].clear();
                 }
                 std::array<std::vector<DrawElementsIndirectCommand>, Batcher::nbPrimitiveTypes> drawElementsIndirectCommands;
-                std::array<std::vector<float>, Batcher::nbPrimitiveTypes> matrices, matrices2;
+                std::array<std::vector<ModelData>, Batcher::nbPrimitiveTypes> matrices;
+                std::array<std::vector<MaterialData>, Batcher::nbPrimitiveTypes> materials;
                 std::array<unsigned int, Batcher::nbPrimitiveTypes> firstIndex, baseInstance, baseVertex;
                 for (unsigned int i = 0; i < firstIndex.size(); i++) {
                 firstIndex[i] = 0;
@@ -1101,17 +1102,55 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < baseInstance.size(); i++) {
                     baseInstance[i] = 0;
                 }
+                for (unsigned int i = 0; i < m_normalsIndexed.size(); i++) {
+                   if (m_normalsIndexed[i].getAllVertices().getVertexCount() > 0) {
+                        DrawElementsIndirectCommand drawElementsIndirectCommand;
+                        unsigned int p = m_normalsIndexed[i].getAllVertices().getPrimitiveType();
+                        MaterialData material;
+                        material.textureIndex = (m_normalsIndexed[i].getMaterial().getTexture() != nullptr) ? m_normalsIndexed[i].getMaterial().getTexture()->getNativeHandle() : 0;
+                        material.layer = m_normalsIndexed[i].getMaterial().getLayer();
+                        materials[p].push_back(material);
+                        TransformMatrix tm;
+                        ModelData model;
+                        model.worldMat = tm.getMatrix().transpose();
+                        model.shadowProjMat = tm.getMatrix().transpose();
+                        matrices[p].push_back(model);
+                        unsigned int indexCount = 0, vertexCount = 0;
+                        for (unsigned int j = 0; j < m_normalsIndexed[i].getAllVertices().getVertexCount(); j++) {
+                            vertexCount++;
+                            vbBindlessTex[p].append(m_normalsIndexed[i].getAllVertices()[j]);
+                        }
+                        for (unsigned int j = 0; j < m_normalsIndexed[i].getAllVertices().getIndexes().size(); j++) {
+                            indexCount++;
+                            vbBindlessTex[p].addIndex(m_normalsIndexed[i].getAllVertices().getIndexes()[j]);
+                        }
+                        drawElementsIndirectCommand.index_count = indexCount;
+                        drawElementsIndirectCommand.first_index = firstIndex[p];
+                        drawElementsIndirectCommand.instance_base = baseInstance[p];
+                        drawElementsIndirectCommand.vertex_base = baseVertex[p];
+                        drawElementsIndirectCommand.instance_count = 1;
+                        drawElementsIndirectCommands[p].push_back(drawElementsIndirectCommand);
+                        firstIndex[p] += indexCount;
+                        baseVertex[p] += vertexCount;
+                        baseInstance[p] += 1;
+                    }
+                }
                 for (unsigned int i = 0; i < m_instancesIndexed.size(); i++) {
-                    DrawElementsIndirectCommand drawElementsIndirectCommand;
                     if (m_instancesIndexed[i].getAllVertices().getVertexCount() > 0) {
+                        DrawElementsIndirectCommand drawElementsIndirectCommand;
                         unsigned int p = m_instancesIndexed[i].getAllVertices().getPrimitiveType();
+                        MaterialData material;
+                        material.textureIndex = (m_normalsIndexed[i].getMaterial().getTexture() != nullptr) ? m_normalsIndexed[i].getMaterial().getTexture()->getNativeHandle() : 0;
+                        material.layer = m_normalsIndexed[i].getMaterial().getLayer();
+                        materials[p].push_back(material);
                         std::vector<TransformMatrix*> tm = m_instancesIndexed[i].getTransforms();
                         for (unsigned int j = 0; j < tm.size(); j++) {
                             tm[j]->update();
-                            std::array<float, 16> matrix = tm[j]->getMatrix().transpose().toGlMatrix();
-                            for (unsigned int n = 0; n < 16; n++) {
-                                matrices[p].push_back(matrix[n]);
-                            }
+                            ModelData model;
+                            model.worldMat = tm[j]->getMatrix().transpose();
+                            TransformMatrix tm;
+                            model.shadowProjMat = tm.getMatrix().transpose();
+                            matrices[p].push_back(model);
                         }
                         unsigned int vertexCount = 0, indexCount = 0;
                         if (m_instancesIndexed[i].getVertexArrays().size() > 0) {
@@ -1121,8 +1160,7 @@ namespace odfaeg {
                                     unsigned int p = m_instancesIndexed[i].getVertexArrays()[j]->getPrimitiveType();
                                     for (unsigned int k = 0; k < m_instancesIndexed[i].getVertexArrays()[j]->getVertexCount(); k++) {
                                         vertexCount++;
-                                        vbBindlessTex[p].append((*m_instancesIndexed[i].getVertexArrays()[j])[k], (m_instancesIndexed[i].getMaterial().getTexture() != nullptr) ? m_instancesIndexed[i].getMaterial().getTexture()->getId() : 0);
-                                        vbBindlessTex[p].addLayer(m_instancesIndexed[i].getMaterial().getLayer());
+                                        vbBindlessTex[p].append((*m_instancesIndexed[i].getVertexArrays()[j])[k]);
                                     }
                                     for (unsigned int k = 0; k < m_instancesIndexed[i].getVertexArrays()[j]->getIndexes().size(); k++) {
                                         indexCount++;
@@ -1146,17 +1184,19 @@ namespace odfaeg {
                 currentStates.blendMode = sf::BlendNone;
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                     if (vbBindlessTex[p].getVertexCount() > 0) {
-                        glCheck(glBindBuffer(GL_ARRAY_BUFFER, vboWorldMatrices));
-                        glCheck(glBufferData(GL_ARRAY_BUFFER, matrices[p].size() * sizeof(float), &matrices[p][0], GL_DYNAMIC_DRAW));
-                        glCheck(glBindBuffer(GL_ARRAY_BUFFER, 0));
+                        glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, modelDataBuffer));
+                        glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, matrices[p].size() * sizeof(ModelData), &matrices[p][0], GL_DYNAMIC_DRAW));
+                        glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, materialDataBuffer));
+                        glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, materials[p].size() * sizeof(ModelData), &materials[p][0], GL_DYNAMIC_DRAW));
+                        glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0));
                         glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, vboIndirect));
                         glCheck(glBufferData(GL_DRAW_INDIRECT_BUFFER, drawElementsIndirectCommands[p].size() * sizeof(DrawElementsIndirectCommand), &drawElementsIndirectCommands[p][0], GL_DYNAMIC_DRAW));
                         glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0));
                         vbBindlessTex[p].update();
                         currentStates.shader = &buildShadowMapShader;
-                        stencilBuffer.drawIndirect(vbBindlessTex[p], vbBindlessTex[p].getPrimitiveType(), drawElementsIndirectCommands[p].size(), currentStates, vboIndirect, vboWorldMatrices);
+                        stencilBuffer.drawIndirect(vbBindlessTex[p], vbBindlessTex[p].getPrimitiveType(), drawElementsIndirectCommands[p].size(), currentStates, vboIndirect);
                         currentStates.shader = &depthGenShader;
-                        depthBuffer.drawIndirect(vbBindlessTex[p], vbBindlessTex[p].getPrimitiveType(), drawElementsIndirectCommands[p].size(), currentStates, vboIndirect, vboWorldMatrices);
+                        depthBuffer.drawIndirect(vbBindlessTex[p], vbBindlessTex[p].getPrimitiveType(), drawElementsIndirectCommands[p].size(), currentStates, vboIndirect);
                         vbBindlessTex[p].clear();
                     }
                 }
@@ -1180,29 +1220,62 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < matrices.size(); i++) {
                     matrices[i].clear();
                 }
+                for (unsigned int i = 0; i < materials.size(); i++) {
+                    materials[i].clear();
+                }
                 for (unsigned int i = 0; i < drawElementsIndirectCommands.size(); i++) {
                     drawElementsIndirectCommands[i].clear();
+                }
+                for (unsigned int i = 0; i < m_shadow_normalsIndexed.size(); i++) {
+                    if (m_shadow_normalsIndexed[i].getAllVertices().getVertexCount() > 0) {
+                        DrawElementsIndirectCommand drawElementsIndirectCommand;
+                        unsigned int p = m_shadow_normalsIndexed[i].getAllVertices().getPrimitiveType();
+                        MaterialData material;
+                        material.textureIndex = (m_shadow_normalsIndexed[i].getMaterial().getTexture() != nullptr) ? m_shadow_normalsIndexed[i].getMaterial().getTexture()->getNativeHandle() : 0;
+                        material.layer = m_shadow_normalsIndexed[i].getMaterial().getLayer();
+                        materials[p].push_back(material);
+                        TransformMatrix tm;
+                        ModelData model;
+                        model.worldMat = tm.getMatrix().transpose();
+                        model.shadowProjMat = tm.getMatrix().transpose();
+                        matrices[p].push_back(model);
+                        unsigned int indexCount = 0, vertexCount = 0;
+                        for (unsigned int j = 0; j < m_shadow_normalsIndexed[i].getAllVertices().getVertexCount(); j++) {
+                            vertexCount++;
+                            vbBindlessTex[p].append(m_shadow_normalsIndexed[i].getAllVertices()[j]);
+                        }
+                        for (unsigned int j = 0; j < m_shadow_normalsIndexed[i].getAllVertices().getIndexes().size(); j++) {
+                            indexCount++;
+                            vbBindlessTex[p].addIndex(m_shadow_normalsIndexed[i].getAllVertices().getIndexes()[j]);
+                        }
+                        drawElementsIndirectCommand.index_count = indexCount;
+                        drawElementsIndirectCommand.first_index = firstIndex[p];
+                        drawElementsIndirectCommand.instance_base = baseInstance[p];
+                        drawElementsIndirectCommand.vertex_base = baseVertex[p];
+                        drawElementsIndirectCommand.instance_count = 1;
+                        drawElementsIndirectCommands[p].push_back(drawElementsIndirectCommand);
+                        firstIndex[p] += indexCount;
+                        baseVertex[p] += vertexCount;
+                        baseInstance[p] += 1;
+                    }
                 }
                 for (unsigned int i = 0; i < m_shadow_instances_indexed.size(); i++) {
                     DrawElementsIndirectCommand drawElementsIndirectCommand;
                     if (m_shadow_instances_indexed[i].getAllVertices().getVertexCount() > 0) {
                         unsigned int p = m_shadow_instances_indexed[i].getAllVertices().getPrimitiveType();
+                        MaterialData material;
+                        material.textureIndex = (m_shadow_instances_indexed[i].getMaterial().getTexture() != nullptr) ? m_shadow_instances_indexed[i].getMaterial().getTexture()->getNativeHandle() : 0;
+                        material.layer = m_shadow_instances_indexed[i].getMaterial().getLayer();
+                        materials[p].push_back(material);
                         std::vector<TransformMatrix*> tm = m_shadow_instances_indexed[i].getTransforms();
+                        std::vector<TransformMatrix> tm2 = m_shadow_instances_indexed[i].getShadowProjMatrix();
                         for (unsigned int j = 0; j < tm.size(); j++) {
                             tm[j]->update();
-                            std::array<float, 16> matrix = tm[j]->getMatrix().transpose().toGlMatrix();
-                            for (unsigned int n = 0; n < 16; n++) {
-                                matrices[p].push_back(matrix[n]);
-                            }
-                        }
-
-                        std::vector<TransformMatrix> tm2 = m_shadow_instances_indexed[i].getShadowProjMatrix();
-                        for (unsigned int j = 0; j < tm2.size(); j++) {
                             tm2[j].update();
-                            std::array<float, 16> matrix = tm2[j].getMatrix().transpose().toGlMatrix();
-                            for (unsigned int n = 0; n < 16; n++) {
-                                matrices2[p].push_back(matrix[n]);
-                            }
+                            ModelData model;
+                            model.worldMat = tm[j]->getMatrix().transpose();
+                            model.shadowProjMat = tm2[j].getMatrix().transpose();
+                            matrices[p].push_back(model);
                         }
                         unsigned int vertexCount = 0, indexCount = 0;
                         if (m_shadow_instances_indexed[i].getVertexArrays().size() > 0) {
@@ -1212,10 +1285,9 @@ namespace odfaeg {
                                     unsigned int p = m_shadow_instances_indexed[i].getVertexArrays()[j]->getPrimitiveType();
                                     for (unsigned int k = 0; k < m_shadow_instances_indexed[i].getVertexArrays()[j]->getVertexCount(); k++) {
                                         vertexCount++;
-                                        vbBindlessTex[p].append((*m_shadow_instances_indexed[i].getVertexArrays()[j])[k], (m_shadow_instances_indexed[i].getMaterial().getTexture() != nullptr) ? m_shadow_instances_indexed[i].getMaterial().getTexture()->getId() : 0);
-                                        vbBindlessTex[p].addLayer(m_shadow_instances_indexed[i].getMaterial().getLayer());
+                                        vbBindlessTex[p].append((*m_shadow_instances_indexed[i].getVertexArrays()[j])[k]);
                                     }
-                                        for (unsigned int k = 0; k < m_shadow_instances_indexed[i].getVertexArrays()[j]->getIndexes().size(); k++) {
+                                    for (unsigned int k = 0; k < m_shadow_instances_indexed[i].getVertexArrays()[j]->getIndexes().size(); k++) {
                                         indexCount++;
                                         vbBindlessTex[p].addIndex(m_shadow_instances_indexed[i].getVertexArrays()[j]->getIndexes()[k]);
                                     }
@@ -1236,33 +1308,31 @@ namespace odfaeg {
                 currentStates.shader = &sBuildAlphaBufferShader;
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                     if (vbBindlessTex[p].getVertexCount() > 0) {
-                        glCheck(glBindBuffer(GL_ARRAY_BUFFER, vboWorldMatrices));
-                        glCheck(glBufferData(GL_ARRAY_BUFFER, matrices[p].size() * sizeof(float), &matrices[p][0], GL_DYNAMIC_DRAW));
-                        glCheck(glBindBuffer(GL_ARRAY_BUFFER, 0));
-                        glCheck(glBindBuffer(GL_ARRAY_BUFFER, vboShadowProjMatrices));
-                        glCheck(glBufferData(GL_ARRAY_BUFFER, matrices2[p].size() * sizeof(float), &matrices2[p][0], GL_DYNAMIC_DRAW));
-                        glCheck(glBindBuffer(GL_ARRAY_BUFFER, 0));
+                        glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, modelDataBuffer));
+                        glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, matrices[p].size() * sizeof(ModelData), &matrices[p][0], GL_DYNAMIC_DRAW));
+                        glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, materialDataBuffer));
+                        glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, materials[p].size() * sizeof(ModelData), &materials[p][0], GL_DYNAMIC_DRAW));
+                        glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0));
                         glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, vboIndirect));
                         glCheck(glBufferData(GL_DRAW_INDIRECT_BUFFER, drawElementsIndirectCommands[p].size() * sizeof(DrawElementsIndirectCommand), &drawElementsIndirectCommands[p][0], GL_DYNAMIC_DRAW));
                         glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0));
                         vbBindlessTex[p].update();
-                        alphaBuffer.drawIndirect(vbBindlessTex[p], vbBindlessTex[p].getPrimitiveType(), drawElementsIndirectCommands[p].size(), currentStates, vboIndirect, vboWorldMatrices, vboShadowProjMatrices);
+                        alphaBuffer.drawIndirect(vbBindlessTex[p], vbBindlessTex[p].getPrimitiveType(), drawElementsIndirectCommands[p].size(), currentStates, vboIndirect);
                     }
                 }
                 currentStates.shader = &perPixShadowShader;
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                     if (vbBindlessTex[p].getVertexCount() > 0) {
-                        glCheck(glBindBuffer(GL_ARRAY_BUFFER, vboWorldMatrices));
-                        glCheck(glBufferData(GL_ARRAY_BUFFER, matrices[p].size() * sizeof(float), &matrices[p][0], GL_DYNAMIC_DRAW));
-                        glCheck(glBindBuffer(GL_ARRAY_BUFFER, 0));
-                        glCheck(glBindBuffer(GL_ARRAY_BUFFER, vboShadowProjMatrices));
-                        glCheck(glBufferData(GL_ARRAY_BUFFER, matrices2[p].size() * sizeof(float), &matrices2[p][0], GL_DYNAMIC_DRAW));
-                        glCheck(glBindBuffer(GL_ARRAY_BUFFER, 0));
+                        glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, modelDataBuffer));
+                        glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, matrices[p].size() * sizeof(ModelData), &matrices[p][0], GL_DYNAMIC_DRAW));
+                        glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, materialDataBuffer));
+                        glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, materials[p].size() * sizeof(ModelData), &materials[p][0], GL_DYNAMIC_DRAW));
+                        glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0));
                         glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, vboIndirect));
                         glCheck(glBufferData(GL_DRAW_INDIRECT_BUFFER, drawElementsIndirectCommands[p].size() * sizeof(DrawElementsIndirectCommand), &drawElementsIndirectCommands[p][0], GL_DYNAMIC_DRAW));
                         glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0));
                         vbBindlessTex[p].update();
-                        shadowMap.drawIndirect(vbBindlessTex[p], vbBindlessTex[p].getPrimitiveType(), drawElementsIndirectCommands[p].size(), currentStates, vboIndirect, vboWorldMatrices, vboShadowProjMatrices);
+                        shadowMap.drawIndirect(vbBindlessTex[p], vbBindlessTex[p].getPrimitiveType(), drawElementsIndirectCommands[p].size(), currentStates, vboIndirect);
                         vbBindlessTex[p].clear();
                     }
                 }
@@ -1462,7 +1532,7 @@ namespace odfaeg {
                 drawInstanced();
                 drawInstancedIndexed();
                 //drawNormal();
-                drawNormalIndexed();
+                //drawNormalIndexed();
 
                 /*glCheck(glFinish());
                 vb.clear();
