@@ -946,7 +946,7 @@ namespace odfaeg {
                         glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, modelDataBuffer));
                         glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, matrices[p].size() * sizeof(ModelData), &matrices[p][0], GL_DYNAMIC_DRAW));
                         glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, materialDataBuffer));
-                        glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, materials[p].size() * sizeof(ModelData), &materials[p][0], GL_DYNAMIC_DRAW));
+                        glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, materials[p].size() * sizeof(MaterialData), &materials[p][0], GL_DYNAMIC_DRAW));
                         glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0));
                         glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, vboIndirect));
                         glCheck(glBufferData(GL_DRAW_INDIRECT_BUFFER, drawArraysIndirectCommands[p].size() * sizeof(DrawArraysIndirectCommand), &drawArraysIndirectCommands[p][0], GL_DYNAMIC_DRAW));
@@ -1057,7 +1057,7 @@ namespace odfaeg {
                         glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, modelDataBuffer));
                         glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, matrices[p].size() * sizeof(ModelData), &matrices[p][0], GL_DYNAMIC_DRAW));
                         glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, materialDataBuffer));
-                        glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, materials[p].size() * sizeof(ModelData), &materials[p][0], GL_DYNAMIC_DRAW));
+                        glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, materials[p].size() * sizeof(MaterialData), &materials[p][0], GL_DYNAMIC_DRAW));
                         glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0));
                         glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, vboIndirect));
                         glCheck(glBufferData(GL_DRAW_INDIRECT_BUFFER, drawArraysIndirectCommands[p].size() * sizeof(DrawArraysIndirectCommand), &drawArraysIndirectCommands[p][0], GL_DYNAMIC_DRAW));
@@ -1073,7 +1073,7 @@ namespace odfaeg {
                         glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, modelDataBuffer));
                         glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, matrices[p].size() * sizeof(ModelData), &matrices[p][0], GL_DYNAMIC_DRAW));
                         glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, materialDataBuffer));
-                        glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, materials[p].size() * sizeof(ModelData), &materials[p][0], GL_DYNAMIC_DRAW));
+                        glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, materials[p].size() * sizeof(MaterialData), &materials[p][0], GL_DYNAMIC_DRAW));
                         glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0));
                         glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, vboIndirect));
                         glCheck(glBufferData(GL_DRAW_INDIRECT_BUFFER, drawArraysIndirectCommands[p].size() * sizeof(DrawArraysIndirectCommand), &drawArraysIndirectCommands[p][0], GL_DYNAMIC_DRAW));
@@ -1187,7 +1187,7 @@ namespace odfaeg {
                         glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, modelDataBuffer));
                         glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, matrices[p].size() * sizeof(ModelData), &matrices[p][0], GL_DYNAMIC_DRAW));
                         glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, materialDataBuffer));
-                        glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, materials[p].size() * sizeof(ModelData), &materials[p][0], GL_DYNAMIC_DRAW));
+                        glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, materials[p].size() * sizeof(MaterialData), &materials[p][0], GL_DYNAMIC_DRAW));
                         glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0));
                         glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, vboIndirect));
                         glCheck(glBufferData(GL_DRAW_INDIRECT_BUFFER, drawElementsIndirectCommands[p].size() * sizeof(DrawElementsIndirectCommand), &drawElementsIndirectCommands[p][0], GL_DYNAMIC_DRAW));
@@ -1311,7 +1311,7 @@ namespace odfaeg {
                         glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, modelDataBuffer));
                         glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, matrices[p].size() * sizeof(ModelData), &matrices[p][0], GL_DYNAMIC_DRAW));
                         glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, materialDataBuffer));
-                        glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, materials[p].size() * sizeof(ModelData), &materials[p][0], GL_DYNAMIC_DRAW));
+                        glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, materials[p].size() * sizeof(MaterialData), &materials[p][0], GL_DYNAMIC_DRAW));
                         glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0));
                         glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, vboIndirect));
                         glCheck(glBufferData(GL_DRAW_INDIRECT_BUFFER, drawElementsIndirectCommands[p].size() * sizeof(DrawElementsIndirectCommand), &drawElementsIndirectCommands[p][0], GL_DYNAMIC_DRAW));
@@ -1326,7 +1326,7 @@ namespace odfaeg {
                         glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, modelDataBuffer));
                         glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, matrices[p].size() * sizeof(ModelData), &matrices[p][0], GL_DYNAMIC_DRAW));
                         glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, materialDataBuffer));
-                        glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, materials[p].size() * sizeof(ModelData), &materials[p][0], GL_DYNAMIC_DRAW));
+                        glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, materials[p].size() * sizeof(MaterialData), &materials[p][0], GL_DYNAMIC_DRAW));
                         glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0));
                         glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, vboIndirect));
                         glCheck(glBufferData(GL_DRAW_INDIRECT_BUFFER, drawElementsIndirectCommands[p].size() * sizeof(DrawElementsIndirectCommand), &drawElementsIndirectCommands[p][0], GL_DYNAMIC_DRAW));

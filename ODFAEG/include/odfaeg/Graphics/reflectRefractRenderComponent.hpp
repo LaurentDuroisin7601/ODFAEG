@@ -36,6 +36,14 @@ namespace odfaeg {
                     unsigned vertex_base;
                     unsigned instance_base;
             };
+            struct ModelData {
+                math::Matrix4f worldMat;
+            };
+            struct MaterialData {
+                unsigned int textureIndex;
+                unsigned int layer;
+                unsigned int materialType;
+            };
             ReflectRefractRenderComponent (RenderWindow& window, int layer, std::string expression, window::ContextSettings settings);
             void loadTextureIndexes();
             std::vector<Entity*> getEntities();
@@ -116,7 +124,7 @@ namespace odfaeg {
             View view;
             std::string expression;
             bool update, cubeMapCreated;
-            unsigned int vboWorldMatrices, atomicBuffer, linkedListBuffer, clearBuf, clearBuf2, clearBuf3, headPtrTex, alphaTex, depthTex, ubo, vboIndirect;
+            unsigned int vboWorldMatrices, atomicBuffer, linkedListBuffer, clearBuf, clearBuf2, clearBuf3, headPtrTex, alphaTex, depthTex, ubo, vboIndirect, modelDataBuffer, materialDataBuffer;
             float squareSize;
             Sprite depthBufferSprite, reflectRefractTexSprite, alphaBufferSprite;
             std::array<VertexBuffer ,Batcher::nbPrimitiveTypes> vbBindlessTex;
