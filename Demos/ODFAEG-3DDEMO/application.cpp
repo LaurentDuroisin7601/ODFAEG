@@ -182,7 +182,7 @@ void MyAppli::onInit() {
 
     billboard->setView(view3D);
     //std::cout<<"screen coords : "<<getRenderWindow().mapCoordsToPixel(model->getPosition(), view3D);
-    g2d::AmbientLight::getAmbientLight().setColor(sf::Color::White);
+    g2d::AmbientLight::getAmbientLight().setColor(sf::Color::Blue);
     getWorld()->update();
 }
 void MyAppli::onRender(RenderComponentManager* frcm) {

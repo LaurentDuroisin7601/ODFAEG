@@ -50,6 +50,17 @@ namespace odfaeg {
                         unsigned vertex_base;
                         unsigned instance_base;
                 };
+                struct ModelData {
+                    math::Matrix4f worldMat;
+                };
+                struct MaterialData {
+                    unsigned int textureIndex;
+                    unsigned int layer;
+                    float specularIntensity;
+                    float specularPower;
+                    math::Vec3f lightCenter;
+                    math::Vec3f lightColor;
+                };
                 LightRenderComponent (RenderWindow& window, int layer, std::string expression,window::ContextSettings settings = window::ContextSettings(0, 0, 4, 3, 0));
                 void loadTextureIndexes();
                 void onVisibilityChanged(bool visible);
@@ -71,7 +82,8 @@ namespace odfaeg {
                 void setView(View view);
                 void setExpression(std::string expression);
                 void drawNextFrame();
-                void drawLightNormals();
+                void drawDepthLightInstances();
+                void drawLightInstances();
                 void drawNormals();
                 void drawInstances();
                 std::vector<Entity*> getEntities();
@@ -104,7 +116,7 @@ namespace odfaeg {
                 View view; /**> the view of the component.*/
                 std::string expression;
                 bool update;
-                unsigned int vboWorldMatrices, ubo, lightDepthTex, alphaTex, depthTex, clearBuf, clearBuf2, clearBuf3, clearBuf4, vboIndirect, frameBufferTex;
+                unsigned int vboWorldMatrices, ubo, lightDepthTex, alphaTex, depthTex, clearBuf, clearBuf2, clearBuf3, clearBuf4, vboIndirect, frameBufferTex, modelDataBuffer, materialDataBuffer;
                 std::array<VertexBuffer ,Batcher::nbPrimitiveTypes> vbBindlessTex;
                 VertexBuffer vb;
                 std::vector<float> matrices;

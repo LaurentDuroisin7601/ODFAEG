@@ -104,7 +104,9 @@ namespace odfaeg {
                     &texClearBuf[0], GL_STATIC_COPY));
                     glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0));
                     if (settings.versionMajor >= 3 && settings.versionMinor >= 3) {
-                        glGenBuffers(1, &vboWorldMatrices);
+                         glGenBuffers(1, &vboWorldMatrices);
+                         glGenBuffers(1, &modelDataBuffer);
+                         glGenBuffers(1, &materialDataBuffer);
                          const std::string  simpleVertexShader = R"(#version 460
                                                         layout (location = 0) in vec3 position;
                                                         layout (location = 1) in vec4 color;
@@ -123,6 +125,47 @@ namespace odfaeg {
                                                                     void main() {
                                                                         fcolor = imageLoad(img_output, ivec2(gl_FragCoord.xy));
                                                                     })";
+                        const std::string indirectRenderingVertexShader = R"(#version 460
+                                                                             layout (location = 0) in vec3 position;
+                                                                             layout (location = 1) in vec4 color;
+                                                                             layout (location = 2) in vec2 texCoords;
+                                                                             layout (location = 3) in vec3 normals;
+                                                                             uniform mat4 projectionMatrix;
+                                                                             uniform mat4 viewMatrix;
+                                                                             uniform mat4 textureMatrix[)"+core::conversionUIntString(Texture::getAllTextures().size())+R"(];
+                                                                             struct ModelData {
+                                                                                mat4 modelMatrix;
+                                                                             };
+                                                                             struct MaterialData {
+                                                                                uint textureIndex;
+                                                                                uint layer;
+                                                                                float specularIntensity;
+                                                                                float specularPower;
+                                                                                vec4 lightCenter;
+                                                                                vec4 lightColor;
+                                                                             };
+                                                                             layout(binding = 0, std430) buffer modelData {
+                                                                                 ModelData modelDatas[];
+                                                                             };
+                                                                             layout(binding = 1, std430) buffer materialData {
+                                                                                 MaterialData materialDatas[];
+                                                                             };
+                                                                             out vec2 fTexCoords;
+                                                                             out vec4 frontColor;
+                                                                             out uint texIndex;
+                                                                             out uint layer;
+                                                                             void main() {
+                                                                                 ModelData model = modelDatas[gl_BaseInstance + gl_InstanceID];
+                                                                                 MaterialData material = materialDatas[gl_DrawID];
+                                                                                 uint textureIndex = material.textureIndex;
+                                                                                 uint l = material.layer;
+                                                                                 gl_Position = projectionMatrix * viewMatrix * model.modelMatrix * vec4(position, 1.f);
+                                                                                 fTexCoords = (textureIndex != 0) ? (textureMatrix[textureIndex-1] * vec4(texCoords, 1.f, 1.f)).xy : texCoords;
+                                                                                 frontColor = color;
+                                                                                 texIndex = textureIndex;
+                                                                                 layer = l;
+                                                                             }
+                                                                             )";
                         const std::string normalVertexShader = R"(#version 460
                                                                 layout (location = 0) in vec3 position;
                                                                 layout (location = 1) in vec4 color;
@@ -168,6 +211,48 @@ namespace odfaeg {
                                                             layer = l;
                                                         }
                                                         )";
+                        const std::string specularIndirectRenderingVertexShader = R"(#version 460
+                                                                                     layout (location = 0) in vec3 position;
+                                                                                     layout (location = 1) in vec4 color;
+                                                                                     layout (location = 2) in vec2 texCoords;
+                                                                                     layout (location = 3) in vec3 normals;
+                                                                                     uniform mat4 projectionMatrix;
+                                                                                     uniform mat4 viewMatrix;
+                                                                                     uniform mat4 textureMatrix[)"+core::conversionUIntString(Texture::getAllTextures().size())+R"(];
+                                                                                     struct ModelData {
+                                                                                        mat4 modelMatrix;
+                                                                                     };
+                                                                                     struct MaterialData {
+                                                                                        uint textureIndex;
+                                                                                        uint layer;
+                                                                                        float specularIntensity;
+                                                                                        float specularPower;
+                                                                                        vec4 lightCenter;
+                                                                                        vec4 lightColor;
+                                                                                     };
+                                                                                     layout(binding = 0, std430) buffer modelData {
+                                                                                         ModelData modelDatas[];
+                                                                                     };
+                                                                                     layout(binding = 1, std430) buffer materialData {
+                                                                                         MaterialData materialDatas[];
+                                                                                     };
+                                                                                     out vec2 fTexCoords;
+                                                                                     out vec4 frontColor;
+                                                                                     out uint texIndex;
+                                                                                     out uint layer;
+                                                                                     out vec2 specular;
+                                                                                     void main() {
+                                                                                         ModelData model = modelDatas[gl_BaseInstance + gl_InstanceID];
+                                                                                         MaterialData material = materialDatas[gl_DrawID];
+                                                                                         uint textureIndex = material.textureIndex;
+                                                                                         uint l = material.layer;
+                                                                                         gl_Position = projectionMatrix * viewMatrix * model.modelMatrix * vec4(position, 1.f);
+                                                                                         frontColor = color;
+                                                                                         texIndex = textureIndex;
+                                                                                         layer = l;
+                                                                                         specular = vec2(material.specularIntensity, material.specularPower);
+                                                                                     }
+                                                                                     )";
                         const std::string normalSpecularVertexShader = R"(#version 460
                                                                 layout (location = 0) in vec3 position;
                                                                 layout (location = 1) in vec4 color;
@@ -236,6 +321,58 @@ namespace odfaeg {
                                                                         frontColor = color;
                                                                     }
                                                                     )";
+                        const std::string perPixLightingIndirectRenderingVertexShader = R"(#version 460
+                                                                                      layout (location = 0) in vec3 position;
+                                                                                      layout (location = 1) in vec4 color;
+                                                                                      layout (location = 2) in vec2 texCoords;
+                                                                                      layout (location = 3) in vec3 normals;
+                                                                                      uniform mat4 projectionMatrix;
+                                                                                      uniform mat4 viewMatrix;
+                                                                                      uniform mat4 viewportMatrix;
+                                                                                      uniform mat4 textureMatrix;
+                                                                                      uniform vec3 resolution;
+                                                                                      struct ModelData {
+                                                                                         mat4 modelMatrix;
+                                                                                      };
+                                                                                      struct MaterialData {
+                                                                                         uint textureIndex;
+                                                                                         uint layer;
+                                                                                         float specularIntensity;
+                                                                                         float specularPower;
+                                                                                         vec4 lightCenter;
+                                                                                         vec4 lightColor;
+                                                                                      };
+                                                                                      layout(binding = 0, std430) buffer modelData {
+                                                                                          ModelData modelDatas[];
+                                                                                      };
+                                                                                      layout(binding = 1, std430) buffer materialData {
+                                                                                          MaterialData materialDatas[];
+                                                                                      };
+                                                                                      out vec2 fTexCoords;
+                                                                                      out vec4 frontColor;
+                                                                                      out uint layer;
+                                                                                      out vec4 lightPos;
+                                                                                      out vec4 lightColor;
+                                                                                      void main() {
+                                                                                         ModelData model = modelDatas[gl_BaseInstance + gl_InstanceID];
+                                                                                         MaterialData material = materialDatas[gl_DrawID];
+                                                                                         uint l = material.layer;
+                                                                                         gl_Position = projectionMatrix * viewMatrix * model.modelMatrix * vec4(position, 1.f);
+                                                                                         fTexCoords = (textureMatrix * vec4(texCoords, 1.f, 1.f)).xy;
+                                                                                         frontColor = color;
+                                                                                         layer = l;
+                                                                                         vec4 coords = vec4(material.lightCenter.xyz, 1);
+                                                                                         coords = projectionMatrix * viewMatrix * model.modelMatrix * coords;
+                                                                                         if (coords.w == 0)
+                                                                                             coords.w = resolution.z * 0.5;
+                                                                                         coords = coords / coords.w;
+                                                                                         coords = viewportMatrix * coords;
+                                                                                         coords.w = material.lightCenter.w;
+                                                                                         lightPos = coords;
+                                                                                         lightColor = material.lightColor;
+                                                                                      }
+                                                                                      )";
+
                         const std::string buildPerPixMapVertexShader = R"(#version 460
                                                                 layout (location = 0) in vec3 position;
                                                                 layout (location = 1) in vec4 color;
@@ -644,7 +781,7 @@ namespace odfaeg {
                         if (!debugShader.loadFromMemory(simpleVertexShader, simpleFragmentShader)) {
                             throw core::Erreur(54, "Failed to load debug shader", 0);
                         }
-                        if (!depthBufferGenerator.loadFromMemory(vertexShader, depthGenFragShader))
+                        if (!depthBufferGenerator.loadFromMemory(indirectRenderingVertexShader, depthGenFragShader))
                             throw core::Erreur(50, "Failed to load depth buffer generator shader", 0);
                         if (!depthBufferNormalGenerator.loadFromMemory(normalVertexShader, depthGenFragShader))
                             throw core::Erreur(55, "Failed to load depth buffer normal generator shader", 0);
@@ -652,21 +789,21 @@ namespace odfaeg {
                         if (!normalMapGenerator.loadFromMemory(buildNormalMapVertexShader, buildNormalMapFragmentShader))
                             throw core::Erreur(51, "Failed to load normal generator shader", 0);
 
-                        if (!specularTextureGenerator.loadFromMemory(specularVertexShader, specularGenFragShader))
+                        if (!specularTextureGenerator.loadFromMemory(specularIndirectRenderingVertexShader, specularGenFragShader))
                             throw core::Erreur(52, "Failed to load specular texture generator shader", 0);
                         if (!specularTextureNormalGenerator.loadFromMemory(normalSpecularVertexShader, specularGenFragShader))
                             throw core::Erreur(52, "Failed to load specular texture normal generator shader", 0);
 
-                        if (!bumpTextureGenerator.loadFromMemory(vertexShader, bumpGenFragShader))
+                        if (!bumpTextureGenerator.loadFromMemory(indirectRenderingVertexShader, bumpGenFragShader))
                             throw core::Erreur(53, "Failed to load bump texture generator shader", 0);
                         if (!bumpTextureNormalGenerator.loadFromMemory(normalVertexShader, bumpGenFragShader))
                             throw core::Erreur(53, "Failed to load bump texture normal generator shader", 0);
-                        if (!buildAlphaBufferGenerator.loadFromMemory(vertexShader, buildAlphaBufferFragmentShader))
+                        if (!buildAlphaBufferGenerator.loadFromMemory(indirectRenderingVertexShader, buildAlphaBufferFragmentShader))
                             throw core::Erreur(53, "Failed to load build alpha buffer generator shader", 0);
                         if (!buildAlphaBufferNormalGenerator.loadFromMemory(normalVertexShader, buildAlphaBufferFragmentShader))
                             throw core::Erreur(53, "Failed to load build alpha buffer normal generator shader", 0);
 
-                        if (!lightMapGenerator.loadFromMemory(buildPerPixMapVertexShader, perPixLightingFragmentShader))
+                        if (!lightMapGenerator.loadFromMemory(perPixLightingIndirectRenderingVertexShader, perPixLightingFragmentShader))
                             throw core::Erreur(54, "Failed to load light map generator shader", 0);
                         normalMapGenerator.setParameter("texture", Shader::CurrentTexture);
                         bumpTextureGenerator.setParameter("resolution", resolution.x, resolution.y, resolution.z);
@@ -715,18 +852,32 @@ namespace odfaeg {
                         glCheck(glBindBuffer(GL_UNIFORM_BUFFER, ubo));
                         glCheck(glBufferData(GL_UNIFORM_BUFFER, sizeof(Samplers),allSamplers.tex, GL_STATIC_DRAW));
                         //std::cout<<"size : "<<sizeof(Samplers)<<" "<<alignof (alignas(16) uint64_t[200])<<std::endl;
-
+                        depthBuffer.setActive(true);
                         glCheck(glBindBuffer(GL_UNIFORM_BUFFER, 0));
                         glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo));
+                        glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, modelDataBuffer));
+                        glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, materialDataBuffer));
+
                         lightDepthBuffer.setActive(true);
                         glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo));
+                        glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, modelDataBuffer));
+                        glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, materialDataBuffer));
                         alphaBuffer.setActive(true);
                         glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo));
+                        glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, modelDataBuffer));
+                        glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, materialDataBuffer));
                         specularTexture.setActive(true);
                         glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo));
+                        glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, modelDataBuffer));
+                        glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, materialDataBuffer));
                         bumpTexture.setActive(true);
                         glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo));
-
+                        glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, modelDataBuffer));
+                        glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, materialDataBuffer));
+                        lightMap.setActive(true);
+                        glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo));
+                        glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, modelDataBuffer));
+                        glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, materialDataBuffer));
 
                         for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
                             vbBindlessTex[i].setPrimitiveType(static_cast<sf::PrimitiveType>(i));
@@ -1155,19 +1306,107 @@ namespace odfaeg {
                 glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, 0));
             }
         }
-        void LightRenderComponent::drawLightNormals() {
+        void LightRenderComponent::drawDepthLightInstances() {
             for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
                 vbBindlessTex[i].clear();
+            }
+            std::array<std::vector<DrawArraysIndirectCommand>, Batcher::nbPrimitiveTypes> drawArraysIndirectCommands;
+            std::array<std::vector<ModelData>, Batcher::nbPrimitiveTypes> matrices;
+            std::array<std::vector<MaterialData>, Batcher::nbPrimitiveTypes> materials;
+            std::array<unsigned int, Batcher::nbPrimitiveTypes> firstIndex, baseInstance;
+            for (unsigned int i = 0; i < firstIndex.size(); i++) {
+                firstIndex[i] = 0;
+            }
+            for (unsigned int i = 0; i < baseInstance.size(); i++) {
+                baseInstance[i] = 0;
+            }
+            for (unsigned int i = 0; i < m_light_instances.size(); i++) {
+                if (m_light_instances[i].getAllVertices().getVertexCount() > 0) {
+                    DrawArraysIndirectCommand drawArraysIndirectCommand;
+                    //std::cout<<"instance : "<<i<<std::endl;
+                    unsigned int p = m_light_instances[i].getAllVertices().getPrimitiveType();
+                    MaterialData material;
+                    material.textureIndex = 0;
+                    material.layer = m_light_instances[i].getMaterial().getLayer();
+                    materials[p].push_back(material);
+                    ModelData model;
+                    TransformMatrix tm;
+                    model.worldMat = tm.getMatrix().transpose();
+                    matrices[p].push_back(model);
+                    unsigned int vertexCount = 0;
+                    for (unsigned int j = 0; j < m_light_instances[i].getAllVertices().getVertexCount(); j++) {
+                        vertexCount++;
+                        vbBindlessTex[p].append(m_light_instances[i].getAllVertices()[j]);
+                    }
+                    drawArraysIndirectCommand.count = vertexCount;
+                    drawArraysIndirectCommand.firstIndex = firstIndex[p];
+                    drawArraysIndirectCommand.baseInstance = baseInstance[p];
+                    drawArraysIndirectCommand.instanceCount = 1;
+                    drawArraysIndirectCommands[p].push_back(drawArraysIndirectCommand);
+                    firstIndex[p] += vertexCount;
+                    baseInstance[p] += 1;
+                }
+            }
+            RenderStates states;
+            states.blendMode = sf::BlendNone;
+            states.shader = &depthBufferNormalGenerator;
+            for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
+                if (vbBindlessTex[p].getVertexCount() > 0) {
+                    glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, modelDataBuffer));
+                    glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, matrices[p].size() * sizeof(ModelData), &matrices[p][0], GL_DYNAMIC_DRAW));
+                    glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, materialDataBuffer));
+                    glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, materials[p].size() * sizeof(MaterialData), &materials[p][0], GL_DYNAMIC_DRAW));
+                    glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0));
+                    glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, vboIndirect));
+                    glCheck(glBufferData(GL_DRAW_INDIRECT_BUFFER, drawArraysIndirectCommands[p].size() * sizeof(DrawArraysIndirectCommand), &drawArraysIndirectCommands[p][0], GL_DYNAMIC_DRAW));
+                    glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0));
+                    vbBindlessTex[p].update();
+                    lightDepthBuffer.drawIndirect(vbBindlessTex[p], vbBindlessTex[p].getPrimitiveType(), drawArraysIndirectCommands[p].size(), states, vboIndirect);
+                }
+            }
+        }
+        void LightRenderComponent::drawLightInstances() {
+            for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
+                vbBindlessTex[i].clear();
+            }
+            std::array<std::vector<DrawArraysIndirectCommand>, Batcher::nbPrimitiveTypes> drawArraysIndirectCommands;
+            std::array<std::vector<ModelData>, Batcher::nbPrimitiveTypes> matrices;
+            std::array<std::vector<MaterialData>, Batcher::nbPrimitiveTypes> materials;
+            std::array<unsigned int, Batcher::nbPrimitiveTypes> firstIndex, baseInstance;
+            for (unsigned int i = 0; i < firstIndex.size(); i++) {
+                firstIndex[i] = 0;
+            }
+            for (unsigned int i = 0; i < baseInstance.size(); i++) {
+                baseInstance[i] = 0;
             }
             for (unsigned int i = 0; i < m_light_instances.size(); i++) {
                 if (m_light_instances[i].getAllVertices().getVertexCount() > 0) {
                     //std::cout<<"instance : "<<i<<std::endl;
+                    DrawArraysIndirectCommand drawArraysIndirectCommand;
                     unsigned int p = m_light_instances[i].getAllVertices().getPrimitiveType();
+                    MaterialData material;
+                    material.textureIndex = 0;
+                    material.layer = m_light_instances[i].getMaterial().getLayer();
+                    material.lightCenter = m_light_instances[i].getMaterial().getLightCenter();
+                    sf::Color c = m_light_instances[i].getMaterial().getLightColor();
+                    material.lightColor = math::Vec3f(1.f / 255.f * c.r, 1.f / 255.f * c.g, 1.f / 255.f * c.b, 1.f / 255.f * c.a);
+                    materials[p].push_back(material);
+                    ModelData model;
+                    TransformMatrix tm;
+                    model.worldMat = tm.getMatrix().transpose();
+                    matrices[p].push_back(model);
+                    unsigned int vertexCount = 0;
                     for (unsigned int j = 0; j < m_light_instances[i].getAllVertices().getVertexCount(); j++) {
-                        vbBindlessTex[p].append(m_light_instances[i].getAllVertices()[j], 0);
-                        vbBindlessTex[p].addLayer(m_light_instances[i].getMaterial().getLayer());
-                        vbBindlessTex[p].addLightInfos(m_light_instances[i].getMaterial().getLightCenter(), m_light_instances[i].getMaterial().getLightColor());
+                        vertexCount++;
+                        vbBindlessTex[p].append(m_light_instances[i].getAllVertices()[j]);
                     }
+                    drawArraysIndirectCommand.count = vertexCount;
+                    drawArraysIndirectCommand.firstIndex = firstIndex[p];
+                    drawArraysIndirectCommand.baseInstance = baseInstance[p];
+                    drawArraysIndirectCommand.instanceCount = 1;
+                    drawArraysIndirectCommands[p].push_back(drawArraysIndirectCommand);
+                    firstIndex[p] += vertexCount;
+                    baseInstance[p] += 1;
                 }
             }
             RenderStates states;
@@ -1176,8 +1415,16 @@ namespace odfaeg {
             states.texture = nullptr;
             for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                 if (vbBindlessTex[p].getVertexCount() > 0) {
+                    glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, modelDataBuffer));
+                    glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, matrices[p].size() * sizeof(ModelData), &matrices[p][0], GL_DYNAMIC_DRAW));
+                    glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, materialDataBuffer));
+                    glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, materials[p].size() * sizeof(MaterialData), &materials[p][0], GL_DYNAMIC_DRAW));
+                    glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0));
+                    glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, vboIndirect));
+                    glCheck(glBufferData(GL_DRAW_INDIRECT_BUFFER, drawArraysIndirectCommands[p].size() * sizeof(DrawArraysIndirectCommand), &drawArraysIndirectCommands[p][0], GL_DYNAMIC_DRAW));
+                    glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0));
                     vbBindlessTex[p].update();
-                    lightMap.drawVertexBuffer(vbBindlessTex[p], states);
+                    lightMap.drawIndirect(vbBindlessTex[p], vbBindlessTex[p].getPrimitiveType(), drawArraysIndirectCommands[p].size(), states, vboIndirect);
                 }
             }
             /*math::Matrix4f viewMatrix = view.getViewMatrix().getMatrix().transpose();
@@ -1282,7 +1529,8 @@ namespace odfaeg {
                 vbBindlessTex[i].clear();
             }
             std::array<std::vector<DrawArraysIndirectCommand>, Batcher::nbPrimitiveTypes> drawArraysIndirectCommands;
-            std::array<std::vector<float>, Batcher::nbPrimitiveTypes> matrices;
+            std::array<std::vector<ModelData>, Batcher::nbPrimitiveTypes> matrices;
+            std::array<std::vector<MaterialData>, Batcher::nbPrimitiveTypes> materials;
             std::array<unsigned int, Batcher::nbPrimitiveTypes> firstIndex, baseInstance;
             for (unsigned int i = 0; i < firstIndex.size(); i++) {
                 firstIndex[i] = 0;
@@ -1290,17 +1538,47 @@ namespace odfaeg {
             for (unsigned int i = 0; i < baseInstance.size(); i++) {
                 baseInstance[i] = 0;
             }
+            for (unsigned int i = 0; i < m_normals.size(); i++) {
+               if (m_normals[i].getAllVertices().getVertexCount() > 0) {
+                    DrawArraysIndirectCommand drawArraysIndirectCommand;
+                    unsigned int p = m_normals[i].getAllVertices().getPrimitiveType();
+                    MaterialData material;
+                    material.textureIndex = (m_normals[i].getMaterial().getTexture() != nullptr) ? m_normals[i].getMaterial().getTexture()->getNativeHandle() : 0;
+                    material.layer = m_normals[i].getMaterial().getLayer();
+                    materials[p].push_back(material);
+                    ModelData model;
+                    TransformMatrix tm;
+                    model.worldMat = tm.getMatrix().transpose();
+                    matrices[p].push_back(model);
+                    unsigned int vertexCount = 0;
+                    for (unsigned int j = 0; j < m_normals[i].getAllVertices().getVertexCount(); j++) {
+                        vertexCount++;
+                        vbBindlessTex[p].append(m_normals[i].getAllVertices()[j]);
+                    }
+                    drawArraysIndirectCommand.count = vertexCount;
+                    drawArraysIndirectCommand.firstIndex = firstIndex[p];
+                    drawArraysIndirectCommand.baseInstance = baseInstance[p];
+                    drawArraysIndirectCommand.instanceCount = 1;
+                    drawArraysIndirectCommands[p].push_back(drawArraysIndirectCommand);
+                    firstIndex[p] += vertexCount;
+                    baseInstance[p] += 1;
+                }
+            }
             for (unsigned int i = 0; i < m_instances.size(); i++) {
-                DrawArraysIndirectCommand drawArraysIndirectCommand;
+
                 if (m_instances[i].getAllVertices().getVertexCount() > 0) {
+                    DrawArraysIndirectCommand drawArraysIndirectCommand;
                     unsigned int p = m_instances[i].getAllVertices().getPrimitiveType();
+                    MaterialData material;
+                    material.textureIndex = (m_instances[i].getMaterial().getTexture() != nullptr) ? m_instances[i].getMaterial().getTexture()->getNativeHandle() : 0;
+                    material.layer = m_instances[i].getMaterial().getLayer();
+                    materials[p].push_back(material);
                     std::vector<TransformMatrix*> tm = m_instances[i].getTransforms();
                     for (unsigned int j = 0; j < tm.size(); j++) {
                         tm[j]->update();
-                        std::array<float, 16> matrix = tm[j]->getMatrix().transpose().toGlMatrix();
-                        for (unsigned int n = 0; n < 16; n++) {
-                            matrices[p].push_back(matrix[n]);
-                        }
+                        ModelData model;
+                        model.worldMat = tm[j]->getMatrix().transpose();
+                        matrices[p].push_back(model);
                     }
                     unsigned int vertexCount = 0;
                     if (m_instances[i].getVertexArrays().size() > 0) {
@@ -1322,34 +1600,45 @@ namespace odfaeg {
                     drawArraysIndirectCommands[p].push_back(drawArraysIndirectCommand);
                     firstIndex[p] += vertexCount;
                     baseInstance[p] += tm.size();
-                    RenderStates states;
-                    states.blendMode = sf::BlendNone;
-                    states.shader = &depthBufferGenerator;
-                    states.texture = nullptr;
-                    for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
-                        if (vbBindlessTex[p].getVertexCount() > 0) {
-                            glCheck(glBindBuffer(GL_ARRAY_BUFFER, vboWorldMatrices));
-                            glCheck(glBufferData(GL_ARRAY_BUFFER, matrices[p].size() * sizeof(float), &matrices[p][0], GL_DYNAMIC_DRAW));
-                            glCheck(glBindBuffer(GL_ARRAY_BUFFER, 0));
-                            glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, vboIndirect));
-                            glCheck(glBufferData(GL_DRAW_INDIRECT_BUFFER, drawArraysIndirectCommands[p].size() * sizeof(DrawArraysIndirectCommand), &drawArraysIndirectCommands[p][0], GL_DYNAMIC_DRAW));
-                            glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0));
-                            vbBindlessTex[p].update();
-                            depthBuffer.drawIndirect(vbBindlessTex[p], vbBindlessTex[p].getPrimitiveType(), drawArraysIndirectCommands[p].size(), states, vboIndirect, vboWorldMatrices);
-                        }
-                    }
-                    states.shader = &buildAlphaBufferGenerator;
-                    glCheck(glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT));
-                    for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
-                        if (vbBindlessTex[p].getVertexCount() > 0) {
-                            vbBindlessTex[p].update();
-                            alphaBuffer.drawIndirect(vbBindlessTex[p], vbBindlessTex[p].getPrimitiveType(), drawArraysIndirectCommands[p].size(), states, vboIndirect, vboWorldMatrices);
-                            vbBindlessTex[p].clear();
-                        }
-                    }
-                    glCheck(glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT));
                 }
             }
+            RenderStates states;
+            states.blendMode = sf::BlendNone;
+            states.shader = &depthBufferGenerator;
+            states.texture = nullptr;
+            for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
+                if (vbBindlessTex[p].getVertexCount() > 0) {
+                    glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, modelDataBuffer));
+                    glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, matrices[p].size() * sizeof(ModelData), &matrices[p][0], GL_DYNAMIC_DRAW));
+                    glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, materialDataBuffer));
+                    glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, materials[p].size() * sizeof(MaterialData), &materials[p][0], GL_DYNAMIC_DRAW));
+                    glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0));
+                    glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, vboIndirect));
+                    glCheck(glBufferData(GL_DRAW_INDIRECT_BUFFER, drawArraysIndirectCommands[p].size() * sizeof(DrawArraysIndirectCommand), &drawArraysIndirectCommands[p][0], GL_DYNAMIC_DRAW));
+                    glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0));
+                    vbBindlessTex[p].update();
+                    depthBuffer.drawIndirect(vbBindlessTex[p], vbBindlessTex[p].getPrimitiveType(), drawArraysIndirectCommands[p].size(), states, vboIndirect);
+                }
+            }
+            states.shader = &buildAlphaBufferGenerator;
+            glCheck(glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT));
+            for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
+                if (vbBindlessTex[p].getVertexCount() > 0) {
+                    glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, modelDataBuffer));
+                    glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, matrices[p].size() * sizeof(ModelData), &matrices[p][0], GL_DYNAMIC_DRAW));
+                    glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, materialDataBuffer));
+                    glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, materials[p].size() * sizeof(MaterialData), &materials[p][0], GL_DYNAMIC_DRAW));
+                    glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0));
+                    glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, vboIndirect));
+                    glCheck(glBufferData(GL_DRAW_INDIRECT_BUFFER, drawArraysIndirectCommands[p].size() * sizeof(DrawArraysIndirectCommand), &drawArraysIndirectCommands[p][0], GL_DYNAMIC_DRAW));
+                    glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0));
+                    vbBindlessTex[p].update();
+                    alphaBuffer.drawIndirect(vbBindlessTex[p], vbBindlessTex[p].getPrimitiveType(), drawArraysIndirectCommands[p].size(), states, vboIndirect);
+                    vbBindlessTex[p].clear();
+                }
+            }
+            glCheck(glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT));
+
             for (unsigned int i = 0; i < firstIndex.size(); i++) {
                 firstIndex[i] = 0;
             }
@@ -1359,20 +1648,52 @@ namespace odfaeg {
             for (unsigned int i = 0; i < matrices.size(); i++) {
                 matrices[i].clear();
             }
+            for (unsigned int i = 0; i < materials.size(); i++) {
+                materials[i].clear();
+            }
             for (unsigned int i = 0; i < drawArraysIndirectCommands.size(); i++) {
                 drawArraysIndirectCommands[i].clear();
             }
+            for (unsigned int i = 0; i < m_normals.size(); i++) {
+               if (m_normals[i].getAllVertices().getVertexCount() > 0) {
+                    DrawArraysIndirectCommand drawArraysIndirectCommand;
+                    unsigned int p = m_normals[i].getAllVertices().getPrimitiveType();
+                    MaterialData material;
+                    material.textureIndex = (m_normals[i].getMaterial().getBumpTexture() != nullptr) ? m_normals[i].getMaterial().getBumpTexture()->getNativeHandle() : 0;
+                    material.layer = m_normals[i].getMaterial().getLayer();
+                    materials[p].push_back(material);
+                    ModelData model;
+                    TransformMatrix tm;
+                    model.worldMat = tm.getMatrix().transpose();
+                    matrices[p].push_back(model);
+                    unsigned int vertexCount = 0;
+                    for (unsigned int j = 0; j < m_normals[i].getAllVertices().getVertexCount(); j++) {
+                        vertexCount++;
+                        vbBindlessTex[p].append(m_normals[i].getAllVertices()[j]);
+                    }
+                    drawArraysIndirectCommand.count = vertexCount;
+                    drawArraysIndirectCommand.firstIndex = firstIndex[p];
+                    drawArraysIndirectCommand.baseInstance = baseInstance[p];
+                    drawArraysIndirectCommand.instanceCount = 1;
+                    drawArraysIndirectCommands[p].push_back(drawArraysIndirectCommand);
+                    firstIndex[p] += vertexCount;
+                    baseInstance[p] += 1;
+                }
+            }
             for (unsigned int i = 0; i < m_instances.size(); i++) {
-                DrawArraysIndirectCommand drawArraysIndirectCommand;
                 if (m_instances[i].getAllVertices().getVertexCount() > 0) {
+                    DrawArraysIndirectCommand drawArraysIndirectCommand;
                     unsigned int p = m_instances[i].getAllVertices().getPrimitiveType();
+                    MaterialData material;
+                    material.textureIndex = (m_instances[i].getMaterial().getBumpTexture() != nullptr) ? m_instances[i].getMaterial().getBumpTexture()->getNativeHandle() : 0;
+                    material.layer = m_instances[i].getMaterial().getLayer();
+                    materials[p].push_back(material);
                     std::vector<TransformMatrix*> tm = m_instances[i].getTransforms();
                     for (unsigned int j = 0; j < tm.size(); j++) {
                         tm[j]->update();
-                        std::array<float, 16> matrix = tm[j]->getMatrix().transpose().toGlMatrix();
-                        for (unsigned int n = 0; n < 16; n++) {
-                            matrices[p].push_back(matrix[n]);
-                        }
+                        ModelData model;
+                        model.worldMat = tm[j]->getMatrix().transpose();
+                        matrices[p].push_back(model);
                     }
                     unsigned int vertexCount = 0;
                     if (m_instances[i].getVertexArrays().size() > 0) {
@@ -1394,23 +1715,24 @@ namespace odfaeg {
                     drawArraysIndirectCommands[p].push_back(drawArraysIndirectCommand);
                     firstIndex[p] += vertexCount;
                     baseInstance[p] += tm.size();
-                    RenderStates states;
-                    states.blendMode = sf::BlendNone;
-                    states.shader = &bumpTextureGenerator;
-                    states.texture = nullptr;
-                    for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
-                        if (vbBindlessTex[p].getVertexCount() > 0) {
-                            glCheck(glBindBuffer(GL_ARRAY_BUFFER, vboWorldMatrices));
-                            glCheck(glBufferData(GL_ARRAY_BUFFER, matrices[p].size() * sizeof(float), &matrices[p][0], GL_DYNAMIC_DRAW));
-                            glCheck(glBindBuffer(GL_ARRAY_BUFFER, 0));
-                            glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, vboIndirect));
-                            glCheck(glBufferData(GL_DRAW_INDIRECT_BUFFER, drawArraysIndirectCommands[p].size() * sizeof(DrawArraysIndirectCommand), &drawArraysIndirectCommands[p][0], GL_DYNAMIC_DRAW));
-                            glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0));
-                            vbBindlessTex[p].update();
-                            bumpTexture.drawIndirect(vbBindlessTex[p], vbBindlessTex[p].getPrimitiveType(), drawArraysIndirectCommands[p].size(), states, vboIndirect, vboWorldMatrices);
-                            vbBindlessTex[p].clear();
-                        }
-                    }
+                }
+            }
+            states.blendMode = sf::BlendNone;
+            states.shader = &bumpTextureGenerator;
+            states.texture = nullptr;
+            for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
+                if (vbBindlessTex[p].getVertexCount() > 0) {
+                    glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, modelDataBuffer));
+                    glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, matrices[p].size() * sizeof(ModelData), &matrices[p][0], GL_DYNAMIC_DRAW));
+                    glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, materialDataBuffer));
+                    glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, materials[p].size() * sizeof(MaterialData), &materials[p][0], GL_DYNAMIC_DRAW));
+                    glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0));
+                    glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, vboIndirect));
+                    glCheck(glBufferData(GL_DRAW_INDIRECT_BUFFER, drawArraysIndirectCommands[p].size() * sizeof(DrawArraysIndirectCommand), &drawArraysIndirectCommands[p][0], GL_DYNAMIC_DRAW));
+                    glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0));
+                    vbBindlessTex[p].update();
+                    bumpTexture.drawIndirect(vbBindlessTex[p], vbBindlessTex[p].getPrimitiveType(), drawArraysIndirectCommands[p].size(), states, vboIndirect);
+                    vbBindlessTex[p].clear();
                 }
             }
             for (unsigned int i = 0; i < firstIndex.size(); i++) {
@@ -1422,20 +1744,56 @@ namespace odfaeg {
             for (unsigned int i = 0; i < matrices.size(); i++) {
                 matrices[i].clear();
             }
+            for (unsigned int i = 0; i < materials.size(); i++) {
+                materials[i].clear();
+            }
             for (unsigned int i = 0; i < drawArraysIndirectCommands.size(); i++) {
                 drawArraysIndirectCommands[i].clear();
+            }
+            for (unsigned int i = 0; i < m_normals.size(); i++) {
+               if (m_normals[i].getAllVertices().getVertexCount() > 0) {
+                    DrawArraysIndirectCommand drawArraysIndirectCommand;
+                    unsigned int p = m_normals[i].getAllVertices().getPrimitiveType();
+                    MaterialData material;
+                    material.textureIndex = (m_normals[i].getMaterial().getTexture() != nullptr) ? m_normals[i].getMaterial().getTexture()->getNativeHandle() : 0;
+                    material.layer = m_normals[i].getMaterial().getLayer();
+                    material.specularIntensity = m_normals[i].getMaterial().getSpecularIntensity();
+                    material.specularPower = m_normals[i].getMaterial().getSpecularPower();
+                    materials[p].push_back(material);
+                    TransformMatrix tm;
+                    ModelData model;
+                    model.worldMat = tm.getMatrix().transpose();
+                    matrices[p].push_back(model);
+                    unsigned int vertexCount = 0;
+                    for (unsigned int j = 0; j < m_normals[i].getAllVertices().getVertexCount(); j++) {
+                        vertexCount++;
+                        vbBindlessTex[p].append(m_normals[i].getAllVertices()[j]);
+                    }
+                    drawArraysIndirectCommand.count = vertexCount;
+                    drawArraysIndirectCommand.firstIndex = firstIndex[p];
+                    drawArraysIndirectCommand.baseInstance = baseInstance[p];
+                    drawArraysIndirectCommand.instanceCount = 1;
+                    drawArraysIndirectCommands[p].push_back(drawArraysIndirectCommand);
+                    firstIndex[p] += vertexCount;
+                    baseInstance[p] += 1;
+                }
             }
             for (unsigned int i = 0; i < m_instances.size(); i++) {
                 DrawArraysIndirectCommand drawArraysIndirectCommand;
                 if (m_instances[i].getAllVertices().getVertexCount() > 0) {
                     unsigned int p = m_instances[i].getAllVertices().getPrimitiveType();
+                    MaterialData material;
+                    material.textureIndex = (m_instances[i].getMaterial().getBumpTexture() != nullptr) ? m_instances[i].getMaterial().getBumpTexture()->getNativeHandle() : 0;
+                    material.layer = m_instances[i].getMaterial().getLayer();
+                    material.specularIntensity = m_instances[i].getMaterial().getSpecularIntensity();
+                    material.specularPower = m_instances[i].getMaterial().getSpecularPower();
+                    materials[p].push_back(material);
                     std::vector<TransformMatrix*> tm = m_instances[i].getTransforms();
                     for (unsigned int j = 0; j < tm.size(); j++) {
                         tm[j]->update();
-                        std::array<float, 16> matrix = tm[j]->getMatrix().transpose().toGlMatrix();
-                        for (unsigned int n = 0; n < 16; n++) {
-                            matrices[p].push_back(matrix[n]);
-                        }
+                        ModelData model;
+                        model.worldMat = tm[j]->getMatrix().transpose();
+                        matrices[p].push_back(model);
                     }
                     unsigned int vertexCount = 0;
                     if (m_instances[i].getVertexArrays().size() > 0) {
@@ -1444,9 +1802,7 @@ namespace odfaeg {
                             if (entity == m_instances[i].getVertexArrays()[j]->getEntity()) {
                                 for (unsigned int k = 0; k < m_instances[i].getVertexArrays()[j]->getVertexCount(); k++) {
                                     vertexCount++;
-                                    vbBindlessTex[p].append((*m_instances[i].getVertexArrays()[j])[k], (m_instances[i].getMaterial().getTexture() != nullptr) ? m_instances[i].getMaterial().getTexture()->getId() : 0);
-                                    vbBindlessTex[p].addLayer(m_instances[i].getMaterial().getLayer());
-                                    vbBindlessTex[p].addSpecular(m_normals[i].getMaterial().getSpecularIntensity(), m_normals[i].getMaterial().getSpecularPower());
+                                    vbBindlessTex[p].append((*m_instances[i].getVertexArrays()[j])[k]);
                                 }
                             }
                         }
@@ -1458,23 +1814,24 @@ namespace odfaeg {
                     drawArraysIndirectCommands[p].push_back(drawArraysIndirectCommand);
                     firstIndex[p] += vertexCount;
                     baseInstance[p] += tm.size();
-                    RenderStates states;
-                    states.blendMode = sf::BlendNone;
-                    states.shader = &specularTextureGenerator;
-                    states.texture = nullptr;
-                    for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
-                        if (vbBindlessTex[p].getVertexCount() > 0) {
-                            glCheck(glBindBuffer(GL_ARRAY_BUFFER, vboWorldMatrices));
-                            glCheck(glBufferData(GL_ARRAY_BUFFER, matrices[p].size() * sizeof(float), &matrices[p][0], GL_DYNAMIC_DRAW));
-                            glCheck(glBindBuffer(GL_ARRAY_BUFFER, 0));
-                            glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, vboIndirect));
-                            glCheck(glBufferData(GL_DRAW_INDIRECT_BUFFER, drawArraysIndirectCommands[p].size() * sizeof(DrawArraysIndirectCommand), &drawArraysIndirectCommands[p][0], GL_DYNAMIC_DRAW));
-                            glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0));
-                            vbBindlessTex[p].update();
-                            specularTexture.drawIndirect(vbBindlessTex[p], vbBindlessTex[p].getPrimitiveType(), drawArraysIndirectCommands[p].size(), states, vboIndirect, vboWorldMatrices);
-                            vbBindlessTex[p].clear();
-                        }
-                    }
+                }
+            }
+            states.blendMode = sf::BlendNone;
+            states.shader = &specularTextureGenerator;
+            states.texture = nullptr;
+            for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
+                if (vbBindlessTex[p].getVertexCount() > 0) {
+                    glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, modelDataBuffer));
+                    glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, matrices[p].size() * sizeof(ModelData), &matrices[p][0], GL_DYNAMIC_DRAW));
+                    glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, materialDataBuffer));
+                    glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, materials[p].size() * sizeof(MaterialData), &materials[p][0], GL_DYNAMIC_DRAW));
+                    glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0));
+                    glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, vboIndirect));
+                    glCheck(glBufferData(GL_DRAW_INDIRECT_BUFFER, drawArraysIndirectCommands[p].size() * sizeof(DrawArraysIndirectCommand), &drawArraysIndirectCommands[p][0], GL_DYNAMIC_DRAW));
+                    glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0));
+                    vbBindlessTex[p].update();
+                    specularTexture.drawIndirect(vbBindlessTex[p], vbBindlessTex[p].getPrimitiveType(), drawArraysIndirectCommands[p].size(), states, vboIndirect);
+                    vbBindlessTex[p].clear();
                 }
             }
             specularTexture.display();
@@ -1511,7 +1868,7 @@ namespace odfaeg {
                     buildAlphaBufferGenerator.setParameter("viewMatrix", viewMatrix);
                     buildAlphaBufferNormalGenerator.setParameter("projectionMatrix", projMatrix);
                     buildAlphaBufferNormalGenerator.setParameter("viewMatrix", viewMatrix);
-                    for (unsigned int i = 0; i < m_light_instances.size(); i++) {
+                    /*for (unsigned int i = 0; i < m_light_instances.size(); i++) {
                         if (m_light_instances[i].getAllVertices().getVertexCount() > 0) {
                             vb.clear();
                             vb.setPrimitiveType( m_light_instances[i].getAllVertices().getPrimitiveType());
@@ -1526,15 +1883,16 @@ namespace odfaeg {
                             lightDepthBuffer.drawVertexBuffer(vb, states);
                         }
                     }
-                    lightDepthBuffer.display();
-                    drawNormals();
+                    lightDepthBuffer.display();*/
+                    drawDepthLightInstances();
+                    //drawNormals();
                     drawInstances();
                     lightMapGenerator.setParameter("projectionMatrix", projMatrix);
                     lightMapGenerator.setParameter("viewMatrix", viewMatrix);
                     lightMapGenerator.setParameter("viewportMatrix", lightMap.getViewportMatrix(&lightMap.getView()).getMatrix().transpose());
 
 
-                    drawLightNormals();
+                    drawLightInstances();
                     /*states.shader = &normalMapGenerator;
                     VertexArray va = depthBufferTile.getVertexArray();
                     depthBufferTile.setCenter(view.getPosition());

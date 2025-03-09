@@ -18,7 +18,7 @@ namespace sorrok {
         getView().move(0, 400, 400);
         fpsCounter = 0;
         addClock(sf::Clock(), "FPS");
-        day = true;
+        day = false;
         sf::Listener::setUpVector(0.f, 0.f, 1.f);
         ps = entityFactory.make_entity<ParticleSystem>(Vec3f(0, 0, 150),Vec3f(100, 100, 0), entityFactory);
         //FastDelegate<void> fd(&Allocator<Entity>::allocate<Tile, EntityFactory&>,tile, std::ref(entityFactory));
