@@ -74,13 +74,9 @@ namespace odfaeg {
             void drawNextFrame();
             void drawInstances();
             void drawInstancesIndexed();
-            void drawNormals();
-            void drawNormalsIndexed();
 
             void drawSelectedInstances();
             void drawSelectedInstancesIndexed();
-            void drawSelected();
-            void drawSelectedIndexed();
             void setExpression (std::string expression);
             /**
             * \fn draw(Drawable& drawable, RenderStates states = RenderStates::Default);
@@ -130,22 +126,21 @@ namespace odfaeg {
             std::vector<Instance> m_instances, m_normals, m_instancesIndexed, m_normalsIndexed,
             m_selectedScale, m_selected, m_selectedScaleIndexed, m_selectedIndexed,
             m_selectedScaleInstance, m_selectedInstance, m_selectedScaleInstanceIndexed, m_selectedInstanceIndexed, m_skyboxInstance; /**> Instances to draw. (Instanced rendering.) */
-            std::vector<std::unique_ptr<Face>> additionalFaces;
+
             std::vector<Entity*> visibleEntities;
             std::vector<std::unique_ptr<Entity>> visibleSelectedScaleEntities; /**> Entities loaded*/
             RenderTexture frameBuffer; /**> the frame buffer.*/
-            Shader perPixelLinkedList, perPixelLinkedListP2, perPixelLinkedList2, filterNotOpaque, initialize, indirectRenderingShader, skyboxShader;
+            Shader perPixelLinkedListP2, indirectRenderingShader, skyboxShader;
             RenderStates currentStates; /**> the current render states.*/
             View view; /**> the view of the component.*/
             std::string expression;
             bool update;
             GLuint maxNodes;
             sf::Vector3i resolution;
-            unsigned int atomicBuffer, linkedListBuffer, matricesBuffer, clearBuf, clearBuf2, clearBuf3, pass1Index, pass2Index, headPtrTex, colorTex, depthTex, modelDataBuffer, materialDataBuffer, vboWorldMatrices, ubo, vboIndirect;
+            unsigned int atomicBuffer, linkedListBuffer, clearBuf, headPtrTex, modelDataBuffer, materialDataBuffer, ubo, vboIndirect;
             Sprite frameBufferSprite;
             VertexBuffer vb;
             std::array<VertexBuffer ,Batcher::nbPrimitiveTypes> vbBindlessTex;
-            std::vector<float> matrices;
             int layer;
             Entity* skybox;
         };

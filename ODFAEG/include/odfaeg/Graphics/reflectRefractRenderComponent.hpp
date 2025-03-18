@@ -66,13 +66,9 @@ namespace odfaeg {
             * \brief draw the next frame of the component.
             */
             void drawNextFrame();
-            void drawDepthReflNormal();
             void drawDepthReflInst();
-            void drawAlphaNormal();
             void drawAlphaInst();
-            void drawEnvReflNormal();
             void drawEnvReflInst();
-            void drawReflNormal(Entity* reflectEntity);
             void drawReflInst(Entity* reflectEntity);
             void setExpression (std::string expression);
             /**
@@ -120,16 +116,15 @@ namespace odfaeg {
             std::vector<Entity*> visibleEntities;
             Entity* skybox;
             RenderTexture depthBuffer, alphaBuffer, reflectRefractTex, environmentMap;
-            Shader sBuildDepthBuffer, sBuildDepthBufferNormal, sBuildAlphaBuffer, sBuildAlphaBufferNormal, sReflectRefract, sReflectRefractNormal, sLinkedList, sLinkedListNormal, sLinkedList2, skyboxShader;
+            Shader sBuildDepthBuffer, sBuildAlphaBuffer, sReflectRefract, sLinkedList, sLinkedList2, skyboxShader;
             View view;
             std::string expression;
             bool update, cubeMapCreated;
-            unsigned int vboWorldMatrices, atomicBuffer, linkedListBuffer, clearBuf, clearBuf2, clearBuf3, headPtrTex, alphaTex, depthTex, ubo, vboIndirect, modelDataBuffer, materialDataBuffer;
+            unsigned int atomicBuffer, linkedListBuffer, clearBuf, clearBuf2, clearBuf3, headPtrTex, alphaTex, depthTex, ubo, vboIndirect, modelDataBuffer, materialDataBuffer;
             float squareSize;
             Sprite depthBufferSprite, reflectRefractTexSprite, alphaBufferSprite;
             std::array<VertexBuffer ,Batcher::nbPrimitiveTypes> vbBindlessTex;
             VertexBuffer vb, vb2;
-            std::vector<float> matrices;
             math::Vec3f dirs[6];
             math::Vec3f ups[6];
             std::vector<Entity*> rootEntities;

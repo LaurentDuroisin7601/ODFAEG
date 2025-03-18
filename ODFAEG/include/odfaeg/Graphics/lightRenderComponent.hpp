@@ -68,13 +68,11 @@ namespace odfaeg {
                 bool needToUpdate();
                 std::string getExpression();
                 void clear();
-                Sprite& getNormalMapTile ();
                 Sprite& getDepthBufferTile();
                 Sprite& getspecularTile ();
                 Sprite& getBumpTile();
                 Sprite& getLightTile();
                 const Texture& getDepthBufferTexture();
-                const Texture& getnormalMapTexture();
                 const Texture& getSpecularTexture();
                 const Texture& getbumpTexture();
                 const Texture& getLightMapTexture();
@@ -84,7 +82,6 @@ namespace odfaeg {
                 void drawNextFrame();
                 void drawDepthLightInstances();
                 void drawLightInstances();
-                void drawNormals();
                 void drawInstances();
                 std::vector<Entity*> getEntities();
                 void draw(RenderTarget& target, RenderStates states);
@@ -106,17 +103,16 @@ namespace odfaeg {
                 RenderTexture lightMap;
                 RenderTexture lightDepthBuffer;
                 RenderTexture alphaBuffer;
-                Sprite  depthBufferTile, normalMapTile, bumpMapTile, specularBufferTile, lightMapTile; /**> the stencil and shadow map buffer.*/
-                Shader depthBufferGenerator, depthBufferNormalGenerator; /**> the shader to generate the stencil buffer.*/
-                Shader normalMapGenerator; /**> the shader to generate the shadow map.*/
-                Shader specularTextureGenerator, specularTextureNormalGenerator;
-                Shader bumpTextureGenerator, bumpTextureNormalGenerator;
+                Sprite  depthBufferTile, bumpMapTile, specularBufferTile, lightMapTile; /**> the stencil and shadow map buffer.*/
+                Shader depthBufferGenerator; /**> the shader to generate the stencil buffer.*/
+                Shader specularTextureGenerator;
+                Shader bumpTextureGenerator;
                 Shader lightMapGenerator;
-                Shader buildAlphaBufferGenerator, buildAlphaBufferNormalGenerator, debugShader;
+                Shader buildAlphaBufferGenerator, debugShader;
                 View view; /**> the view of the component.*/
                 std::string expression;
                 bool update;
-                unsigned int vboWorldMatrices, ubo, lightDepthTex, alphaTex, depthTex, clearBuf, clearBuf2, clearBuf3, clearBuf4, vboIndirect, frameBufferTex, modelDataBuffer, materialDataBuffer;
+                unsigned int  ubo, lightDepthTex, alphaTex, depthTex, clearBuf, clearBuf2, clearBuf3, clearBuf4, vboIndirect, frameBufferTex, modelDataBuffer, materialDataBuffer;
                 std::array<VertexBuffer ,Batcher::nbPrimitiveTypes> vbBindlessTex;
                 VertexBuffer vb;
                 std::vector<float> matrices;

@@ -62,8 +62,6 @@ namespace odfaeg {
 
                 void drawInstanced();
                 void drawInstancedIndexed();
-                void drawNormal();
-                void drawNormalIndexed();
 
                 void onVisibilityChanged(bool visible);
                 std::vector<Entity*> getEntities();
@@ -96,17 +94,16 @@ namespace odfaeg {
                 RenderTexture depthBuffer;
                 RenderTexture alphaBuffer;
                 Sprite stencilBufferTile, shadowTile, depthBufferTile, alphaBufferSprite; /**> the stencil and shadow map buffer.*/
-                Shader buildShadowMapShader, buildShadowMapNormalShader; /**> the shader to generate the stencil buffer.*/
-                Shader perPixShadowShader, perPixShadowShaderNormal; /**> the shader to generate the shadow map.*/
-                Shader depthGenShader, depthGenNormalShader;
-                Shader sBuildAlphaBufferShader, sBuildAlphaBufferNormalShader, debugShader;
+                Shader buildShadowMapShader; /**> the shader to generate the stencil buffer.*/
+                Shader perPixShadowShader; /**> the shader to generate the shadow map.*/
+                Shader depthGenShader;
+                Shader sBuildAlphaBufferShader, debugShader;
                 View view; /**> the view of the component.*/
                 std::string expression;
                 bool update;
-                unsigned int vboWorldMatrices, vboShadowProjMatrices, ubo, clearBuf, alphaTex, clearBuf2, depthTex, stencilTex, clearBuf3, vboIndirect, clearBuf4, frameBufferTex, atomicBuffer, modelDataBuffer, materialDataBuffer;
+                unsigned int ubo, clearBuf, alphaTex, clearBuf2, depthTex, stencilTex, clearBuf3, vboIndirect, clearBuf4, frameBufferTex, atomicBuffer, modelDataBuffer, materialDataBuffer;
                 VertexBuffer vb, vb2;
                 std::array<VertexBuffer ,Batcher::nbPrimitiveTypes> vbBindlessTex;
-                std::vector<float> matrices, matrices2;
                 RectangleShape quad;
          };
          #endif
