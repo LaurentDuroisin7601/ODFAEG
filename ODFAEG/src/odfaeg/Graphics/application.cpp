@@ -306,7 +306,7 @@ namespace odfaeg {
             return timeClk;
         }
         Application::~Application() {
-            std::cout<<"rcm : "<<componentManager.get()<<std::endl;
+            std::cout<<"destroy rcm : "<<componentManager.get()<<std::endl;
 
             stop();
             for (unsigned int i = 0; i < windows.size(); i++) {

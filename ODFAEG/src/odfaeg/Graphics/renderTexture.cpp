@@ -292,6 +292,7 @@ namespace odfaeg
             }
         }
         RenderTexture::~RenderTexture() {
+            RenderTarget::cleanup();
             for (size_t i = 0; i < swapChainFramebuffers.size(); i++) {
                 vkDestroyFramebuffer(vkDevice.getDevice(), swapChainFramebuffers[i], nullptr);
             }

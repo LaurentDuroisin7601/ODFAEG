@@ -1,4 +1,4 @@
-#ifdef TEST
+
 // *** END ***
 #ifndef MY_APPLI
 #define MY_APPLI
@@ -76,4 +76,3 @@ namespace sorrok {
     };
 }
 #endif // MY_APPLI
-#endif

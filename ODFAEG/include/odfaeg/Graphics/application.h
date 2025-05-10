@@ -159,6 +159,8 @@ namespace odfaeg {
             /** > a pointer to the current odfaeg application*/
             static Application* app;
         private :
+            window::VkSettup vkSettup;
+            window::Device vkDevice;
             std::vector<std::pair<graphic::RenderWindow*, bool>> windows; /** > the render window*/
             std::unique_ptr<graphic::RenderComponentManager> componentManager; /** > the render component manager which draw components on the window*/
             std::map<std::string, sf::Clock> clocks; /** > all the clocks used by the application to measure the time.*/
@@ -176,8 +178,6 @@ namespace odfaeg {
             std::vector<graphic::Material*> materials;
             std::vector<graphic::Material*> sameMaterials;
             std::map<int, std::string> types;
-            window::Device vkDevice;
-            window::VkSettup vkSettup;
         };
         #else
         class ODFAEG_GRAPHICS_API Application {
@@ -494,8 +494,9 @@ namespace odfaeg {
             /** > a pointer to the current odfaeg application*/
             static Application* app;
         private :
-            std::vector<std::pair<graphic::RenderWindow*, bool>> windows; /** > the render window*/
+
             std::unique_ptr<graphic::RenderComponentManager> componentManager; /** > the render component manager which draw components on the window*/
+            std::vector<std::pair<graphic::RenderWindow*, bool>> windows; /** > the render window*/
             std::map<std::string, sf::Clock> clocks; /** > all the clocks used by the application to measure the time.*/
             bool running; /** > determine if the application running or not.*/
             sf::Color clearColor; /** > keep the clear color of the window*/

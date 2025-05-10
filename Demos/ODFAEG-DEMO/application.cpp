@@ -1,4 +1,4 @@
-#ifdef TEST
+
 #include "application.h"
 #include "odfaeg/Math/distributions.h"
 #include "odfaeg/Graphics/GUI/menubar.hpp"
@@ -572,4 +572,4 @@ namespace sorrok {
     }
 
 }
-#endif
+

@@ -91,8 +91,7 @@ namespace odfaeg {
             nbRenderTargets++;
         }
         RenderTarget::~RenderTarget() {
-            nbRenderTargets--;
-            cleanup();
+
         }
         void RenderTarget::enableDepthTest(bool enabled) {
             depthTestEnabled = enabled;
@@ -870,8 +869,11 @@ namespace odfaeg {
             return depthTexture[0];
         }
         void RenderTarget::cleanup() {
+
+            nbRenderTargets--;
             vkFreeCommandBuffers(vkDevice.getDevice(), commandPool, commandBuffers.size(), commandBuffers.data());
             vkDestroyCommandPool(vkDevice.getDevice(), commandPool, nullptr);
+
             if (nbRenderTargets == 0) {
                 for (unsigned int i = 0; i < graphicsPipeline.size(); i++) {
                     vkDestroyPipeline(vkDevice.getDevice(), graphicsPipeline[i], nullptr);
