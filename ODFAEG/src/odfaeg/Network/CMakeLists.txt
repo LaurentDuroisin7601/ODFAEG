@@ -28,4 +28,4 @@ include_directories(${CMAKE_INCLUDE_PATH} ${OPENSSL_INCLUDE_DIR})
 link_directories(${CMAKE_LIBRARY_PATH})
 sfgl_add_library(odfaeg-network
 			 SOURCES ${SRC})
-target_link_libraries (odfaeg-network odfaeg-core sfml-network sfml-audio sfml-graphics sfml-window sfml-system libssl libcrypto)
+target_link_libraries (odfaeg-network odfaeg-graphics odfaeg-window odfaeg-physics odfaeg-math odfaeg-core sfml-network sfml-audio sfml-graphics sfml-window sfml-system libssl libcrypto)

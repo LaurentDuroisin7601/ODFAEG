@@ -19,7 +19,9 @@ set(SRC
 	${INCROOT}/factory.h
 	${INCROOT}/factory.cpp
 	${INCROOT}/entitySystem.h
-	${INCROOT}/timer.h		
+	${SRCROOT}/entitySystem.cpp
+	${INCROOT}/timer.h
+	${SRCROOT}/timer.cpp		
 	${INCROOT}/state.h
 	${SRCROOT}/state.cpp
 	${INCROOT}/stateGroup.h

@@ -1,55 +1,84 @@
-#include "application.h"
+/*#include "application.h"
 using namespace odfaeg::core;
 using namespace odfaeg::math;
 using namespace odfaeg::physic;
 using namespace odfaeg::graphic;
-using namespace odfaeg::window;
+using namespace odfaeg::window;*/
 //using namespace odfaeg::audio;
-using namespace sorrok;
-/*class Test : public Drawable, Transformable {
+//using namespace sorrok;
+#include <iostream>
+#include <memory>
+#include <vector>
+class RenderTarget {
 public :
-    Test(Device& vkDevice) : rt(vkDevice), rect(Vec3f(100, 50, 0)) {
-        rt.create(800, 600);
-        rtSprite = Sprite(rt.getTexture(), Vec3f(0, 0, 0), Vec3f(800, 600, 0), sf::IntRect(0, 0, 800, 600));
-
+    RenderTarget() {}
+    virtual ~RenderTarget() {
+        std::cout<<"destroy render target"<<std::endl;
     }
-    void drawNextFrame() {
-        rt.clear();
-        rt.draw(rect);
-        rt.display();
+};
+class RenderTexture : public RenderTarget{
+public :
+    RenderTexture() {}
+    ~RenderTexture() {
+        std::cout<<"destroy render texture"<<std::endl;
     }
-    void draw(RenderTarget& target, RenderStates states) {
-        target.draw(rtSprite, states);
+};
+class Component {
+    public :
+    Component() {}
+    virtual ~Component() {
+        std::cout<<"destroy component"<<std::endl;
     }
-private :
-    RenderTexture rt;
-    Sprite rtSprite;
-    RectangleShape rect;
-};*/
+};
+class PerPixelLinkedListRenderComponent : public Component {
+    public :
+    PerPixelLinkedListRenderComponent() {
+    }
+    ~PerPixelLinkedListRenderComponent() {
+        std::cout<<"destroy per pixel linked list render component"<<std::endl;
+    }
+    private :
+        RenderTarget rt;
+};
+class RenderComponentManager {
+    public :
+    RenderComponentManager () {}
+    void addComponent(Component* component) {
+        std::unique_ptr<Component> ptr;
+        ptr.reset(component);
+        components.push_back(std::move(ptr));
+    }
+    ~RenderComponentManager() {
+        std::cout<<"destroy component manager"<<std::endl;
+    }
+    private :
+    std::vector<std::unique_ptr<Component>> components;
+};
+class Application {
+    public :
+    Application() {
+        componentManager = std::make_unique<RenderComponentManager>();
+    }
+    ~Application() {
+        std::cout<<"destroy application"<<std::endl;
+    }
+    RenderComponentManager& getComponentManager() {
+        return *componentManager;
+    }
+    private :
+    std::unique_ptr<RenderComponentManager> componentManager;
+};
+class MyApp : public Application {
+public :
+    MyApp() : Application() {}
+};
 int main() {
-    /*VkSettup settup;
-    Device device(settup);
-    RenderWindow window(sf::VideoMode(800, 600), "test", device);
-    window.getView().move(400, 300, 0);
+    MyApp app;
+    PerPixelLinkedListRenderComponent* ppllrc = new PerPixelLinkedListRenderComponent();
+    app.getComponentManager().addComponent(ppllrc);
 
-    Test test1(device), test2(device);
-    RectangleShape rect(Vec3f(100, 50, 0));
-    while (window.isOpen()) {
-        IEvent event;
-        while (window.pollEvent(event)) {
-            if (event.type == IEvent::WINDOW_EVENT && event.window.type == IEvent::WINDOW_EVENT_CLOSED) {
-                window.close();
-            }
-        }
-        test1.drawNextFrame();
-        test2.drawNextFrame();
-        window.clear();
-        window.draw(test1);
-        window.draw(test2);
-        window.display();
-    }*/
-    MyAppli app(sf::VideoMode(800, 600), "Test odfaeg");
-    return app.exec();
+    /*MyAppli app(sf::VideoMode(800, 600), "Test odfaeg");
+    return app.exec();*/
 }
 
 

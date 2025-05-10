@@ -105,10 +105,7 @@ namespace odfaeg {
             unsigned int getNbECSComponents();
             void updateComponents();
             void updateECSComponents();
-            virtual ~RenderComponentManager() {
-                std::cout<<"rcm desrtructor"<<std::endl;
-                system("PAUSE");
-            }
+            virtual ~RenderComponentManager();
         protected :
             std::multimap<int, std::unique_ptr<Component>, std::greater<int>> components; /**> the components.*/
             std::multimap<int, Component*, std::greater<int>> eventComponents;

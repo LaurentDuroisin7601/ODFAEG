@@ -128,6 +128,8 @@ set(SRC_GRAPHICS
 	${SRCROOT}/perPixelLinkedListRenderComponent2.cpp
 	${INCROOT}/particuleSystem.h
 	${SRCROOT}/particleSystem.cpp
+	${INCROOT}/particleSystemUpdater.hpp
+	${SRCROOT}/particleSystemUpdater.cpp
 	)
 source_group ("graphics" FILES ${SRC_GRAPHICS})
 

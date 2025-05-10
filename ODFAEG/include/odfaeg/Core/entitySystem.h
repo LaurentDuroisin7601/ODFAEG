@@ -25,21 +25,15 @@ namespace odfaeg {
             *\fn void update()
             *\brief function called when we need to update the entities, this function block the current thread until it's finished.
             */
-            void update () {
-                onUpdate();
-            }
-            void setName(std::string name) {
-                this->name = name;
-            }
-            std::string getName() {
-                return name;
-            }
+            void update ();
+            void setName(std::string name);
+            std::string getName();
             /**
             *\fn void onUpdate()
             *\brief function to refefines to updates the entities.
             */
             virtual void onUpdate() = 0;
-            virtual ~EntitySystem() {}
+            virtual ~EntitySystem();
         private:
             std::string name;
         };

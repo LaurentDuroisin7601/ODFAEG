@@ -870,9 +870,7 @@ namespace odfaeg {
             return depthTexture[0];
         }
         void RenderTarget::cleanup() {
-            for (unsigned int i = 0; i < commandBuffers.size(); i++) {
-                vkFreeCommandBuffers(vkDevice.getDevice(), commandPool, 1, &commandBuffers[i]);
-            }
+            vkFreeCommandBuffers(vkDevice.getDevice(), commandPool, commandBuffers.size(), commandBuffers.data());
             vkDestroyCommandPool(vkDevice.getDevice(), commandPool, nullptr);
             if (nbRenderTargets == 0) {
                 for (unsigned int i = 0; i < graphicsPipeline.size(); i++) {

@@ -147,8 +147,8 @@ namespace odfaeg {
                 * \return the final outputstream.
                 */
                 friend std::ostream& operator<< (std::ostream &out, const Matrix3f &mat3);
-        };        
-        std::ostream& operator<< (std::ostream &out, const Matrix3f &matrix3);        
+        };
+        ODFAEG_MATH_API std::ostream& operator<< (std::ostream &out, const Matrix3f &matrix3);
 
     }
 }

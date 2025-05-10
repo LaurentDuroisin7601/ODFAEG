@@ -621,7 +621,10 @@ namespace odfaeg
 
                 width += 2 * padding;
                 height += 2 * padding;
-
+                if (m_pages[characterSize] == nullptr) {
+                    Page* page = new Page(vkDevice);
+                    m_pages[characterSize] = page;
+                }
                 // Get the glyphs page corresponding to the character size
                 Page& page = *m_pages[characterSize];
 

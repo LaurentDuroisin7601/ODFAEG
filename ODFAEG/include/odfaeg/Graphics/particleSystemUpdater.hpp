@@ -4,6 +4,7 @@
 #include "particuleSystem.h"
 #include "world.h"
 #include "export.hpp"
+#include "application.h"
 /**
 *\namespace odfaeg
 * the namespace of the Opensource Development Framework Adapted for Every Games.
@@ -20,37 +21,15 @@ namespace odfaeg {
         */
         class ODFAEG_GRAPHICS_API ParticleSystemUpdater : public core::EntitySystem {
         public :
-            ParticleSystemUpdater() : EntitySystem() {}
+            ParticleSystemUpdater();
             /**
             * \fn void onUpdate ()
             * \brief update all the entities which are in the current view.
             */
-            void addParticleSystem(Entity* ps) {
-                ps->setPsUpdater(getName());
-                particleSystems.push_back(ps);
-            }
-            void removeParticleSystem (Entity* ps) {
-                std::vector<Entity*>::iterator it;
-                for (it = particleSystems.begin(); it != particleSystems.end();) {
-                    if (*it == ps) {
-                        it = particleSystems.erase(it);
-                    } else {
-                        it++;
-                    }
-                }
-            }
-            std::vector<Entity*> getParticleSystems() {
-                return particleSystems;
-            }
-            void onUpdate () {
-                for (unsigned int i = 0; i < particleSystems.size(); i++) {
-                    //std::cout<<"update particle"<<std::endl;
-                    if (odfaeg::core::Application::app != nullptr)
-                        particleSystems[i]->update(odfaeg::core::Application::app->getClock("LoopTime").getElapsedTime());
-                    particleSystems[i]->update();
-                }
-                //World::changeVisibleEntity(nullptr, nullptr);
-            }
+            void addParticleSystem(Entity* ps);
+            void removeParticleSystem (Entity* ps);
+            std::vector<Entity*> getParticleSystems();
+            void onUpdate ();
         private :
             std::vector<Entity*> particleSystems;
         };

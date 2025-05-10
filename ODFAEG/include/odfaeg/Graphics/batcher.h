@@ -25,7 +25,7 @@ namespace odfaeg {
              /** \struct TetureInfo
              *   \brief represent the informations about a texture used by the material.
              */
-             struct TextureInfo {
+             struct ODFAEG_GRAPHICS_API TextureInfo {
                 private :
                 const Texture* texture; /**> A texture used by the material.*/
                 sf::IntRect texRect;

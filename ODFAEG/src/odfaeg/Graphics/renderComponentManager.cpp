@@ -222,6 +222,9 @@ namespace odfaeg {
            }
            //core::Command::clearEventsStack();
         }
-
+        RenderComponentManager::~RenderComponentManager() {
+            std::cout<<"rcm desrtructor"<<std::endl;
+            system("PAUSE");
+        }
     }
 }

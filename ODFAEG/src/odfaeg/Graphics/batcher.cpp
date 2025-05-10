@@ -12,6 +12,7 @@ namespace odfaeg {
             std::vector<Material*> Material::sameMaterials = std::vector<Material*>();
             Material::TextureInfo::TextureInfo() {
                 texture = nullptr;
+                texRect = sf::IntRect(0, 0, 0, 0);
                 texId = "";
             }
             Material::TextureInfo::TextureInfo (const Texture* texture, sf::IntRect texRect, std::string texId) {

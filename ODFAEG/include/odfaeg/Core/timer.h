@@ -1,6 +1,7 @@
 #ifndef TIMER
 #define TIMER
 #include "export.hpp"
+#include <SFML/System.hpp>
 /**
  *\namespace odfaeg
  * the namespace of the Opensource Development Framework Adapted for Every Games.
@@ -23,30 +24,18 @@ namespace odfaeg {
             *  \brief set an interval of time.
             *  \param sf::Time interval : the time interval between two updates.
             */
-            void setInterval(sf::Time interval) {
-                this->interval = interval;
-            }
+            void setInterval(sf::Time interval);
             /** \fn void run()
             *   \brief lock the mutex and updates the scene at each time interval.
             */
-            void update() {
-                sf::Time elapsedTime = clock.getElapsedTime();
-                if (elapsedTime >= interval) {
-                    onUpdate();
-                    clock.restart();
-                }
-            }
+            void update();
             /** \fn virtual void onUpdate() = 0;
             *   \brief the function to redefine when updating the scene.
             */
             virtual void onUpdate() = 0;
-            void setName(std::string name) {
-                this->name = name;
-            }
-            std::string getName() {
-                return name;
-            }
-            virtual ~Timer() {}
+            void setName(std::string name);
+            std::string getName();
+            virtual ~Timer();
         private :
             sf::Clock clock; /**> A clock use to measure the time elapsed since the last update*/
             sf::Time interval; /**> The time interval between two updates.*/

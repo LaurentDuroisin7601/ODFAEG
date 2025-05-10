@@ -163,9 +163,9 @@ namespace odfaeg {
                 ar(m43);
                 ar(m44);
             }
-        };        
-        std::ostream& operator<< (std::ostream &out, const Matrix4f &mat4);
-        std::istream& operator>> (std::istream &in, Matrix4f& mat4);        
+        };
+        ODFAEG_MATH_API std::ostream& operator<< (std::ostream &out, const Matrix4f &mat4);
+        ODFAEG_MATH_API std::istream& operator>> (std::istream &in, Matrix4f& mat4);
     }
 }
 #endif

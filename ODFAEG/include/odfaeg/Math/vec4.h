@@ -246,7 +246,7 @@ namespace odfaeg {
             friend std::ostream& operator<< (std::ostream  &out, const Vec3f &vec3);
             float w; /** < the w component of the vector.*/
         };
-        std::ostream& operator<< (std::ostream  &out, const Vec3f &vec4);       
+        ODFAEG_MATH_API std::ostream& operator<< (std::ostream  &out, const Vec3f &vec4);
     }
 }
 #endif

@@ -212,9 +212,9 @@ namespace odfaeg {
             friend std::ostream& operator<< (std::ostream &out, const Vec2f &vec2);
             static const Vec2f xAxis;
             static const Vec2f yAxis;
-        };        
-        std::ostream& operator<< (std::ostream &out, const Vec2f &vec2);
-        
+        };
+        ODFAEG_MATH_API std::ostream& operator<< (std::ostream &out, const Vec2f &vec2);
+
     }
 }
 #endif
