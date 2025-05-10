@@ -1,0 +1,48 @@
+include(${PROJECT_SOURCE_DIR}/cmake/Macros.cmake)
+include(${PROJECT_SOURCE_DIR}/cmake/Modules/FindSFML.cmake)
+set(INCROOT ${PROJECT_SOURCE_DIR}/include/odfaeg/Core)
+set(SRCROOT ${PROJECT_SOURCE_DIR}/src/odfaeg/Core)
+set(SRC    
+	${INCROOT}/archive.h
+	${SRCROOT}/archive.cpp
+	${INCROOT}/serialization.h
+	${INCROOT}/erreur.h
+	${INCROOT}/export.hpp
+	${SRCROOT}/erreur.cpp	
+	${INCROOT}/resourceManager.h	
+	${INCROOT}/application.h
+	${SRCROOT}/application.cpp
+	${INCROOT}/any.h
+	${INCROOT}/resourceCache.h
+	${INCROOT}/utilities.h
+	${SRCROOT}/utilities.cpp	
+	${INCROOT}/action.h
+	${INCROOT}/command.h
+	${INCROOT}/command.tpp
+	${SRCROOT}/command.cpp
+	${INCROOT}/factory.h
+	${INCROOT}/factory.cpp
+	${INCROOT}/entitySystem.h
+	${INCROOT}/timer.h	
+	${INCROOT}/listener.h	
+	${INCROOT}/state.h
+	${SRCROOT}/state.cpp
+	${INCROOT}/stateGroup.h
+	${SRCROOT}/stateGroup.cpp
+	${INCROOT}/stateStack.h
+	${SRCROOT}/stateStack.cpp
+	${INCROOT}/stateParameter.h
+	${INCROOT}/stateParameterBase.h
+	${INCROOT}/stateExecutor.h
+	${SRCROOT}/actions.cpp	
+	${INCROOT}/archive.h	
+	)	
+
+include_directories(${CMAKE_INCLUDE_PATH})
+link_directories(${CMAKE_LIBRARY_PATH})
+
+find_package(SFML 2 REQUIRED)
+
+sfgl_add_library(odfaeg-core
+                 SOURCES ${SRC})
+target_link_libraries (odfaeg-core ${SFML_LIBRARIES})

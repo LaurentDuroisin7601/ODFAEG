@@ -1,0 +1,25 @@
+#ifndef BOUNDING_POLYGON
+#define BOUNDING_POLYGON
+#include <vector>
+#include "../math/Vec2f.h"
+#include "../math/Vec4.h"
+#include "boundingRectangle.h"
+class BoundingPolygon {
+    public :
+    BoundingPolygon ();
+    ~BoundingPolygon();
+    void addPoint(Vec2f *p);
+    Vec2f getPoint (int index);
+    bool isPointInside (Vec2f &point);
+    bool intersects (BoundingRectangle &br);
+    bool operator== (const BoundingPolygon &bp);
+    Vec2f getCenter();
+
+    private :
+    void computeCenter ();
+
+    std::vector<Vec2f*> points;
+
+    Vec2f center;
+};
+#endif
