@@ -31,7 +31,7 @@ namespace odfaeg {
           * \date 1/02/2014
           *
           */
-        class ODFAEG_API_EXPORT AES_ENC {
+        class ODFAEG_NETWORK_API AES_ENC {
         public:
             //Operation Modes
             //The Electronic Code Book (ECB), Cipher Block Chaining (CBC) and Cipher Feedback Block (CFB) modes
