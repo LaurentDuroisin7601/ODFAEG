@@ -300,6 +300,19 @@ namespace odfaeg {
             VkDeviceSize offsets[] = {0};
             //vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[pipelineId], 0, 1, &descriptorSets[shader->getId()][getCurrentFrame()], 0, nullptr);
             vkCmdBindVertexBuffers(cmd, 0, 1, vertexBuffers, offsets);
+            VkViewport viewport{};
+            viewport.x = 0.0f;
+            viewport.y = 0.0f;
+            viewport.width = getSwapchainExtents().width;
+            viewport.height = getSwapchainExtents().height;
+            viewport.minDepth = 0.0f;
+            viewport.maxDepth = 1.0f;
+            vkCmdSetViewport(cmd, 0, 1, &viewport);
+
+            VkRect2D scissor{};
+            scissor.offset = {0, 0};
+            scissor.extent = getSwapchainExtents();
+            vkCmdSetScissor(cmd, 0, 1, &scissor);
             if(vertexBuffer.getIndicesSize() > 0) {
                 vkCmdBindIndexBuffer(cmd, vertexBuffer.getIndexBuffer(), 0, VK_INDEX_TYPE_UINT16);
             }
@@ -330,6 +343,19 @@ namespace odfaeg {
             VkDeviceSize offsets[] = {0};
             vkCmdBindVertexBuffers(cmd, 0, 1, vertexBuffers, offsets);
             //vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[pipelineId], 0, 1, &descriptorSets[shader->getId()][getCurrentFrame()], 0, nullptr);
+            VkViewport viewport{};
+            viewport.x = 0.0f;
+            viewport.y = 0.0f;
+            viewport.width = getSwapchainExtents().width;
+            viewport.height = getSwapchainExtents().height;
+            viewport.minDepth = 0.0f;
+            viewport.maxDepth = 1.0f;
+            vkCmdSetViewport(cmd, 0, 1, &viewport);
+
+            VkRect2D scissor{};
+            scissor.offset = {0, 0};
+            scissor.extent = getSwapchainExtents();
+            vkCmdSetScissor(cmd, 0, 1, &scissor);
             if(vertexBuffer.getIndicesSize() > 0) {
                 vkCmdBindIndexBuffer(cmd, vertexBuffer.getIndexBuffer(), 0, VK_INDEX_TYPE_UINT16);
             }
@@ -543,24 +569,22 @@ namespace odfaeg {
             inputAssembly.topology = modes[type];
             inputAssembly.primitiveRestartEnable = VK_FALSE;
 
-            VkViewport viewport{};
-            viewport.x = 0.0f;
-            viewport.y = 0.0f;
-            viewport.width = getSwapchainExtents().width;
-            viewport.height = getSwapchainExtents().height;
-            viewport.minDepth = 0.0f;
-            viewport.maxDepth = 1.0f;
 
-            VkRect2D scissor{};
-            scissor.offset = {0, 0};
-            scissor.extent = getSwapchainExtents();
 
             VkPipelineViewportStateCreateInfo viewportState{};
             viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
             viewportState.viewportCount = 1;
-            viewportState.pViewports = &viewport;
+            //viewportState.pViewports = &viewport;
             viewportState.scissorCount = 1;
-            viewportState.pScissors = &scissor;
+            //viewportState.pScissors = &scissor;
+            std::vector<VkDynamicState> dynamicStates = {
+            VK_DYNAMIC_STATE_VIEWPORT,
+            VK_DYNAMIC_STATE_SCISSOR
+            };
+            VkPipelineDynamicStateCreateInfo dynamicState{};
+            dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+            dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
+            dynamicState.pDynamicStates = dynamicStates.data();
 
             VkPipelineRasterizationStateCreateInfo rasterizer{};
             rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -627,6 +651,7 @@ namespace odfaeg {
             pipelineInfo.pRasterizationState = &rasterizer;
             pipelineInfo.pMultisampleState = &multisampling;
             pipelineInfo.pColorBlendState = &colorBlending;
+            pipelineInfo.pDynamicState = &dynamicState;
             pipelineInfo.layout = pipelineLayout[pipelineId];
             /*if (getSurface() != VK_NULL_HANDLE)
                 std::cout<<"render pass ppl rw : "<<getRenderPass()<<std::endl;
@@ -804,6 +829,20 @@ namespace odfaeg {
 
                     vkCmdPushDescriptorSet(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[pipelineId], 0, 1, descriptorWrites.data());
                 }
+                VkViewport viewport{};
+                viewport.x = 0.0f;
+                viewport.y = 0.0f;
+                viewport.width = getSwapchainExtents().width;
+                viewport.height = getSwapchainExtents().height;
+                viewport.minDepth = 0.0f;
+                viewport.maxDepth = 1.0f;
+                vkCmdSetViewport(commandBuffers[i], 0, 1, &viewport);
+
+                VkRect2D scissor{};
+                scissor.offset = {0, 0};
+                scissor.extent = getSwapchainExtents();
+                vkCmdSetScissor(commandBuffers[i], 0, 1, &scissor);
+
 
                 if(this->vertexBuffers[selectedBuffer]->getIndicesSize() > 0) {
                     vkCmdBindIndexBuffer(commandBuffers[i], this->vertexBuffers[selectedBuffer]->getIndexBuffer(), 0, VK_INDEX_TYPE_UINT16);
