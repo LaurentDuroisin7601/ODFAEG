@@ -69,7 +69,7 @@ namespace odfaeg {
                         User* user = Network::getUser(client);
                         if (user != nullptr && user->getRemotePortUDP()) {
                             Packet packet;
-                            sf::Int64 lastSrvTime = core::Application::getTimeClk().getElapsedTime().asMicroseconds();
+                            sf::Int64 lastSrvTime = clock.getElapsedTime().asMicroseconds();
                             packet<<"GET_TIME*"+core::conversionLongString(lastSrvTime);
                             user->setLastSrvTime(lastSrvTime);
                             user->sendUdpPacket(packet);
@@ -247,7 +247,7 @@ namespace odfaeg {
                                     user->addPingTime(user->getPingClock().getElapsedTime().asMicroseconds() * 0.5f);
                                 } else if (infos[0] == "SET_TIME") {
                                     sf::Int64 cliTime = core::conversionStringLong(infos[1]);
-                                    sf::Int64 srvTime = core::Application::getTimeClk().getElapsedTime().asMicroseconds();
+                                    sf::Int64 srvTime = clock.getElapsedTime().asMicroseconds();
                                     sf::Int64 syncTime = cliTime + (srvTime - user->getLastSrvTime()) * 0.5f;
                                     user->setClientTime(syncTime);
                                 } else {

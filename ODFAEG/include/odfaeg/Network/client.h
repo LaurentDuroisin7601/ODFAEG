@@ -83,6 +83,7 @@ namespace odfaeg {
                 short unsigned int remotePortUDP; /**>the remote udp port.*/
                 sf::IpAddress srvAddress; /**> the ip address of the server.*/
                 bool useSecuredConnexion; /**>if the client is using an SSL connection.*/
+                sf::Clock clock;
         };
     }
 }

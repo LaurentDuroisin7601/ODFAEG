@@ -82,6 +82,7 @@ namespace odfaeg {
                 sf::SocketSelector selector; /**> The selector.*/
                 sf::TcpListener  listener; /**> The listener used to accept new connections.*/
                 sf::UdpSocket udpSocket; /**> The udp socket.*/
+                sf::Clock clock;
         };
     }
 }
