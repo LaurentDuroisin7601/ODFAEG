@@ -1,12 +1,12 @@
-/*#include "application.h"
+#include "application.h"
 using namespace odfaeg::core;
 using namespace odfaeg::math;
 using namespace odfaeg::physic;
 using namespace odfaeg::graphic;
-using namespace odfaeg::window;*/
-//using namespace odfaeg::audio;
-//using namespace sorrok;
-#include <iostream>
+using namespace odfaeg::window;
+using namespace odfaeg::audio;
+using namespace sorrok;
+/*#include <iostream>
 #include <memory>
 #include <vector>
 class RenderTarget {
@@ -71,14 +71,14 @@ class Application {
 class MyApp : public Application {
 public :
     MyApp() : Application() {}
-};
+};*/
 int main() {
-    MyApp app;
+    /*MyApp app;
     PerPixelLinkedListRenderComponent* ppllrc = new PerPixelLinkedListRenderComponent();
-    app.getComponentManager().addComponent(ppllrc);
+    app.getComponentManager().addComponent(ppllrc);*/
 
-    /*MyAppli app(sf::VideoMode(800, 600), "Test odfaeg");
-    return app.exec();*/
+    MyAppli app(sf::VideoMode(800, 600), "Test odfaeg");
+    return app.exec();
 }
 
 

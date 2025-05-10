@@ -63,7 +63,7 @@ namespace odfaeg {
         * \version 1.0
         * \date 1/02/2014
         */
-        class any {
+        class ODFAEG_CORE_API any {
         public :
             /**\fn any ()
             *  \brief default constructor. (No value)

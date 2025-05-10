@@ -57,7 +57,7 @@ namespace odfaeg {
         * \version 1.0
         * \date 1/02/2014
         */
-        class OTextArchive {
+        class ODFAEG_CORE_API OTextArchive {
         public :
             /**\fn OTextArchive (std::ostream& buffer)
             *  \brief pass a c++ ouptut buffer to the archive.
@@ -576,7 +576,7 @@ namespace odfaeg {
         * \version 1.0
         * \date 1/02/2014
         */
-        class ITextArchive {
+        class ODFAEG_CORE_API ITextArchive {
         public :
             /**
             *\fn ITextArchive(std::istream& buffer)

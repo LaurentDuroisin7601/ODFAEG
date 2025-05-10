@@ -11,7 +11,7 @@ namespace odfaeg {
             #ifdef VULKAN
 
             #else
-            class Model {
+            class ODFAEG_GRAPHICS_API Model {
 
                 public :
                     Model ();

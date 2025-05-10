@@ -7,7 +7,7 @@ namespace odfaeg {
         namespace g3d {
             #ifdef VULKAN
             #else
-            class Skybox : public GameObject {
+            class ODFAEG_GRAPHICS_API Skybox : public GameObject {
                 public :
                 Skybox  (std::vector<sf::Image> skyboxImages, EntityFactory& factory);
                 void onDraw (RenderTarget& target, RenderStates states);
