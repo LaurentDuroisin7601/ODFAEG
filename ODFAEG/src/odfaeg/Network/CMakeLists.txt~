@@ -1,0 +1,33 @@
+include(${PROJECT_SOURCE_DIR}/cmake/Macros.cmake)
+
+set(INCROOT ${PROJECT_SOURCE_DIR}/include/odfaeg/Network)
+set(SRCROOT ${PROJECT_SOURCE_DIR}/src/odfaeg/Network)
+
+set(SRC
+	${INCROOT}/aes.h
+	${INCROOT}/export.hpp
+	${SRCROOT}/aes.cpp
+	${INCROOT}/rsa.h
+	${SRCROOT}/rsa.cpp
+	${INCROOT}/encryptedPacket.h
+	${SRCROOT}/encryptedPacket.cpp
+	${INCROOT}/symEncPacket.h
+	${SRCROOT}/symEncPacket.cpp
+	${INCROOT}/client.h
+	${SRCROOT}/client.cpp
+	${INCROOT}/srkserveur.h
+	${SRCROOT}/srkserveur.cpp
+	${INCROOT}/network.h
+	${SRCROOT}/network.cpp
+	${INCROOT}/user.h
+	${SRCROOT}/user.cpp
+	${INCROOT}/bigInt.hpp
+	${SRCROOT}/bigInt.cpp
+	${INCROOT}/cliEncryptedPacket.hpp
+	${SRCROOT}/cliEncryptedPacket.cpp)	
+find_package (OpenSSL 1 REQUIRED)
+include_directories(${CMAKE_INCLUDE_PATH} ${OPENSSL_INCLUDE_DIR})
+link_directories(${CMAKE_LIBRARY_PATH})
+sfgl_add_library(odfaeg-network
+			 SOURCES ${SRC} DEPENDS odfaeg-core)
+target_link_libraries (odfaeg-network ${OPENSSL_LIBRARIES})

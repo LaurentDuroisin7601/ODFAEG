@@ -1,0 +1,19 @@
+#ifndef BOUNDING_CIRCLE
+#define BOUNDING_CIRCLE
+#include "../math/vec2f.h"
+#include "boundingRectangle.h"
+#include "../math/segment.h"
+class BoundingCircle {
+    public :
+        BoundingCircle (Vec2f center, float radius);
+        bool intersects (BoundingCircle &other);
+        bool intersects (BoundingRectangle &br);
+        bool isPointInside (Vec2f &point);
+        bool intersects (Segment &segment);
+        Vec2f getTNear();
+        Vec2f getTFar();
+    private :
+        Vec2f center, tNear, tFar;
+        float radius;
+};
+#endif

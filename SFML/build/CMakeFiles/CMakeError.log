@@ -1,0 +1,17 @@
+Determining if the include file dinput.h exists failed with the following output:
+Change Dir: C:/Users/Laurent/Windows/SFML/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:/TDM-GCC-32/bin/mingw32-make.exe cmTC_6ef4b/fast && C:/TDM-GCC-32/bin/mingw32-make.exe -f CMakeFiles\cmTC_6ef4b.dir\build.make CMakeFiles/cmTC_6ef4b.dir/build
+mingw32-make.exe[1]: Entering directory 'C:/Users/Laurent/Windows/SFML/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_6ef4b.dir/CheckIncludeFile.c.obj
+C:\PROGRA~2\CODEBL~1\MinGW\bin\MI0840~1.EXE    -o CMakeFiles\cmTC_6ef4b.dir\CheckIncludeFile.c.obj   -c C:\Users\Laurent\Windows\SFML\build\CMakeFiles\CMakeTmp\CheckIncludeFile.c
+C:\Users\Laurent\Windows\SFML\build\CMakeFiles\CMakeTmp\CheckIncludeFile.c:1:20: fatal error: dinput.h: No such file or directory
+compilation terminated.
+CMakeFiles\cmTC_6ef4b.dir\build.make:64: recipe for target 'CMakeFiles/cmTC_6ef4b.dir/CheckIncludeFile.c.obj' failed
+mingw32-make.exe[1]: *** [CMakeFiles/cmTC_6ef4b.dir/CheckIncludeFile.c.obj] Error 1
+mingw32-make.exe[1]: Leaving directory 'C:/Users/Laurent/Windows/SFML/build/CMakeFiles/CMakeTmp'
+Makefile:120: recipe for target 'cmTC_6ef4b/fast' failed
+mingw32-make.exe: *** [cmTC_6ef4b/fast] Error 2
+
+
+
