@@ -88,7 +88,7 @@ sfgl_add_library(odfaeg-window
 if (COMPILER_MSVC)
 	target_link_libraries (odfaeg-window PUBLIC odfaeg-core odfaeg-math sfml-network sfml-audio sfml-graphics sfml-window sfml-system glfw3dll opengl32 vulkan-1)
 else()
-	target_link_libraries (odfaeg-window PUBLIC odfaeg-core odfaeg-math sfml-network sfml-audio sfml-graphics sfml-window sfml-system glfw3 opengl32  vulkan-1)
+	target_link_libraries (odfaeg-window PUBLIC odfaeg-core odfaeg-math sfml-network sfml-audio sfml-graphics sfml-window sfml-system glfw3.dll opengl32  vulkan-1)
 endif()
 	
 	
