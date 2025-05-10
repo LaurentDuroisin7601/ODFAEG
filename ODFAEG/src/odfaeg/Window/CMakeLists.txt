@@ -86,9 +86,9 @@ link_directories(${CMAKE_LIBRARY_PATH})
 sfgl_add_library(odfaeg-window
                  SOURCES ${SRC_WINDOW} ${PLATEFORM_SRC})
 if (COMPILER_MSVC)
-	target_link_libraries (odfaeg-window PUBLIC odfaeg-core odfaeg-math sfml-network sfml-audio sfml-graphics sfml-window sfml-system opengl32 vulkan-1 glfw3dll)
+	target_link_libraries (odfaeg-window PUBLIC odfaeg-core odfaeg-math sfml-network sfml-audio sfml-graphics sfml-window sfml-system glfw3dll opengl32 vulkan-1)
 else()
-	target_link_libraries (odfaeg-window PUBLIC odfaeg-core odfaeg-math sfml-network sfml-audio sfml-graphics sfml-window sfml-system opengl32 vulkan-1 glfw3)
+	target_link_libraries (odfaeg-window PUBLIC odfaeg-core odfaeg-math sfml-network sfml-audio sfml-graphics sfml-window sfml-system glfw3 opengl32  vulkan-1)
 endif()
 	
 	
