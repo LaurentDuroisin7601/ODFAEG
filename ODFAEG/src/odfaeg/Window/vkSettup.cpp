@@ -17,7 +17,7 @@ namespace odfaeg {
                 appInfo.applicationVersion = VK_MAKE_VERSION (1, 0, 0);
                 appInfo.pEngineName = "ODFAEG";
                 appInfo.engineVersion = VK_MAKE_VERSION (1, 0, 0);
-                appInfo.apiVersion = VK_API_VERSION_1_4;
+                appInfo.apiVersion = VK_API_VERSION_1_3;
                 VkInstanceCreateInfo createInfo{};
                 createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
                 createInfo.pApplicationInfo = &appInfo;
@@ -54,8 +54,7 @@ namespace odfaeg {
             if (enableValidationLayers) {
                 extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
             }
-
-
+            extensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
             return extensions;
         }
         bool VkSettup::checkValidationLayerSupport() {

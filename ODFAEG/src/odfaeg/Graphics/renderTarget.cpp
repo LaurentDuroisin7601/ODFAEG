@@ -176,7 +176,10 @@ namespace odfaeg {
              for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
                 createGraphicPipeline(static_cast<sf::PrimitiveType>(i), states);
              }
-             vkCmdPushDescriptorSet = (PFN_vkCmdPushDescriptorSet)vkGetDeviceProcAddr(vkDevice.getDevice(), "vkCmdPushDescriptorSet");
+             vkCmdPushDescriptorSetKHR = (PFN_vkCmdPushDescriptorSetKHR)vkGetDeviceProcAddr(vkDevice.getDevice(), "vkCmdPushDescriptorSetKHR");
+             if (!vkCmdPushDescriptorSetKHR) {
+                throw core::Erreur(0, "Could not get a valid function pointer for vkCmdPushDescriptorSetKHR", 1);
+             }
              if (!vkCmdPushDescriptorSetKHR) {
                 throw odfaeg::core::Erreur(0, "Could not get a valid function pointer for vkCmdPushDescriptorSetKHR", 1);
              }
@@ -842,7 +845,7 @@ namespace odfaeg {
                     descriptorWrites[1].descriptorCount = 1;
                     descriptorWrites[1].pImageInfo = &imageInfo;
 
-                    vkCmdPushDescriptorSet(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][0], 0, 2, descriptorWrites.data());
+                    vkCmdPushDescriptorSetKHR(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][0], 0, 2, descriptorWrites.data());
                 }  else {
                     std::array<VkWriteDescriptorSet, 1> descriptorWrites{};
 
@@ -854,7 +857,7 @@ namespace odfaeg {
                     descriptorWrites[0].descriptorCount = 1;
                     descriptorWrites[0].pBufferInfo = &bufferInfo;
 
-                    vkCmdPushDescriptorSet(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][0], 0, 1, descriptorWrites.data());
+                    vkCmdPushDescriptorSetKHR(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][0], 0, 1, descriptorWrites.data());
                 }
                 VkViewport viewport{};
                 viewport.x = 0.0f;

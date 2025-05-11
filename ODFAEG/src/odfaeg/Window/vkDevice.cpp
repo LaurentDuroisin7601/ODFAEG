@@ -185,9 +185,6 @@ namespace odfaeg {
 
                 features11.pNext = &features12;
 
-
-
-
                 VkDeviceCreateInfo createInfo{};
                 createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
                 createInfo.pNext = &physical_features21;

@@ -138,7 +138,7 @@ namespace odfaeg {
             std::vector<Entity*> visibleEntities;
             math::Vec3f resolution;
             VkCommandPool commandPool;
-            PFN_vkCmdPushDescriptorSet vkCmdPushDescriptorSet{ VK_NULL_HANDLE };
+            PFN_vkCmdPushDescriptorSetKHR vkCmdPushDescriptorSetKHR{ VK_NULL_HANDLE };
             sf::Clock timeClock;
 
         };

@@ -245,7 +245,7 @@ namespace odfaeg {
 
         private :
             std::vector<unsigned int> pipelinesId;
-            PFN_vkCmdPushDescriptorSet vkCmdPushDescriptorSet{ VK_NULL_HANDLE };
+            PFN_vkCmdPushDescriptorSetKHR vkCmdPushDescriptorSetKHR{ VK_NULL_HANDLE };
             void createUniformBuffers();
             void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
             uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
