@@ -869,7 +869,7 @@ namespace odfaeg {
             return depthTexture[0];
         }
         void RenderTarget::cleanup() {
-
+            std::cout<<"destroy command buffers"<<std::endl;
             nbRenderTargets--;
             vkFreeCommandBuffers(vkDevice.getDevice(), commandPool, commandBuffers.size(), commandBuffers.data());
             vkDestroyCommandPool(vkDevice.getDevice(), commandPool, nullptr);

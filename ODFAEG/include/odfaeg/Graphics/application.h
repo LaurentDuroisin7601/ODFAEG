@@ -52,7 +52,30 @@ namespace odfaeg {
             *   \brief main loop of the odfaeg application.
             *   \return true if the application runs without errors, false otherwise.
             */
-            int exec();
+            int exec() {
+                load();
+                init();
+                running = true;
+                while (running) {
+                    /*for (unsigned int i = 0; i < windows.size(); i++) {
+                        windows[i].first->setActive(false);
+                    }*/
+                    if (windows.size() != 0 && windows[0].first->isOpen()) {
+                        //rendering_thread = std::thread(Application::render, this);
+                        render();
+                        update();
+                    }
+                    if (network::Network::getCliInstance().isRunning()) {
+                        network::Network::getCliInstance().checkMessages();
+                    }
+                    if (network::Network::getSrvInstance().isRunning()) {
+                        network::Network::getSrvInstance().checkMessages();
+                    }
+                    onExec();
+                    getClock("LoopTime").restart();
+                }
+                return EXIT_SUCCESS;
+            }
             /** \fn void stop()
             *   \brief stop the odfaeg application and close the window if it's a graphic application.
             */
@@ -161,8 +184,6 @@ namespace odfaeg {
         private :
             window::VkSettup vkSettup;
             window::Device vkDevice;
-            std::vector<std::pair<graphic::RenderWindow*, bool>> windows; /** > the render window*/
-            std::unique_ptr<graphic::RenderComponentManager> componentManager; /** > the render component manager which draw components on the window*/
             std::map<std::string, sf::Clock> clocks; /** > all the clocks used by the application to measure the time.*/
             bool running; /** > determine if the application running or not.*/
             sf::Color clearColor; /** > keep the clear color of the window*/
@@ -178,6 +199,8 @@ namespace odfaeg {
             std::vector<graphic::Material*> materials;
             std::vector<graphic::Material*> sameMaterials;
             std::map<int, std::string> types;
+            std::vector<std::pair<graphic::RenderWindow*, bool>> windows; /** > the render window*/
+            std::unique_ptr<graphic::RenderComponentManager> componentManager; /** > the render component manager which draw components on the window*/
         };
         #else
         class ODFAEG_GRAPHICS_API Application {

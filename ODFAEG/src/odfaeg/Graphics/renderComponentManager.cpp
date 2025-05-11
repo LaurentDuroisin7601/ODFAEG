@@ -224,7 +224,7 @@ namespace odfaeg {
         }
         RenderComponentManager::~RenderComponentManager() {
             std::cout<<"rcm desrtructor"<<std::endl;
-            system("PAUSE");
+
         }
     }
 }

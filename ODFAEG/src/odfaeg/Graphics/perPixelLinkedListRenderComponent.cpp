@@ -1529,7 +1529,7 @@ namespace odfaeg {
         }
         PerPixelLinkedListRenderComponent::~PerPixelLinkedListRenderComponent() {
             std::cout<<"ppll destructor"<<std::endl;
-            system("PAUSE");
+
             vkDestroyCommandPool(vkDevice.getDevice(), commandPool, nullptr);
             vkDestroySampler(vkDevice.getDevice(), headPtrTextureSampler, nullptr);
             vkDestroyImageView(vkDevice.getDevice(), headPtrTextureImageView, nullptr);

@@ -92,14 +92,12 @@ namespace odfaeg {
         *   \brief main loop of the odfaeg application.
         *   \return true if the application runs without errors, false otherwise.
         */
-        int Application::exec() {
+        /*int Application::exec() {
             load();
             init();
             running = true;
             while (running) {
-                /*for (unsigned int i = 0; i < windows.size(); i++) {
-                    windows[i].first->setActive(false);
-                }*/
+
                 if (windows.size() != 0 && windows[0].first->isOpen()) {
                     //rendering_thread = std::thread(Application::render, this);
                     render();
@@ -115,7 +113,7 @@ namespace odfaeg {
                 getClock("LoopTime").restart();
             }
             return EXIT_SUCCESS;
-        }
+        }*/
         /** \fn void stop()
         *   \brief stop the odfaeg application and close the window if it's a graphic application.
         */
@@ -306,7 +304,7 @@ namespace odfaeg {
             return timeClk;
         }
         Application::~Application() {
-            std::cout<<"destroy rcm : "<<componentManager.get()<<std::endl;
+            std::cout<<"destroy appli : "<<componentManager.get()<<std::endl;
 
             stop();
             for (unsigned int i = 0; i < windows.size(); i++) {
