@@ -140,7 +140,7 @@ namespace odfaeg {
             VkCommandPool commandPool;
             PFN_vkCmdPushDescriptorSetKHR vkCmdPushDescriptorSetKHR{ VK_NULL_HANDLE };
             sf::Clock timeClock;
-
+            std::vector<unsigned int> pipelineIds;
         };
         #else
         class PerPixelLinkedListRenderComponent : public HeavyComponent {

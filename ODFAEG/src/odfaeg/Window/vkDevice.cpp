@@ -165,8 +165,8 @@ namespace odfaeg {
 
 
 
-                VkPhysicalDeviceFeatures deviceFeatures{};
-                deviceFeatures.samplerAnisotropy = VK_TRUE;
+                /*VkPhysicalDeviceFeatures deviceFeatures{};
+                deviceFeatures.samplerAnisotropy = VK_TRUE;*/
                 VkPhysicalDeviceVulkan11Features features11 = {};
                 features11.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
                 VkPhysicalDeviceVulkan12Features features12 = {};
@@ -184,6 +184,16 @@ namespace odfaeg {
                 vkGetPhysicalDeviceFeatures2(physicalDevice, &physical_features22);
 
                 features11.pNext = &features12;
+
+                PFN_vkGetPhysicalDeviceProperties2KHR vkGetPhysicalDeviceProperties2KHR = reinterpret_cast<PFN_vkGetPhysicalDeviceProperties2KHR>(vkGetInstanceProcAddr(vkSettup.getInstance(), "vkGetPhysicalDeviceProperties2KHR"));
+                if (!vkGetPhysicalDeviceProperties2KHR) {
+                    throw core::Erreur(0, "Could not get a valid function pointer for vkGetPhysicalDeviceProperties2KHR", 1);
+                }
+                /*VkPhysicalDeviceProperties2KHR deviceProps2{};
+                pushDescriptorProps.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PUSH_DESCRIPTOR_PROPERTIES_KHR;
+                deviceProps2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2_KHR;
+                deviceProps2.pNext = &pushDescriptorProps;
+                vkGetPhysicalDeviceProperties2KHR(physicalDevice, &deviceProps2);*/
 
                 VkDeviceCreateInfo createInfo{};
                 createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;

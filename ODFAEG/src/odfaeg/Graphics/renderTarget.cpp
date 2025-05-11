@@ -509,25 +509,29 @@ namespace odfaeg {
         void RenderTarget::createGraphicPipeline(sf::PrimitiveType type,
                       RenderStates states, unsigned int depthStencilId, unsigned int nbDepthStencil) {
             Shader* shader = const_cast<Shader*>(states.shader);
-            graphicsPipeline.resize((Batcher::nbPrimitiveTypes - 1) * shader->getNbShaders());
-            pipelineLayoutInfo.resize((Batcher::nbPrimitiveTypes - 1) * shader->getNbShaders());
-            pipelineLayout.resize((Batcher::nbPrimitiveTypes - 1) * shader->getNbShaders());
-            depthStencil.resize((Batcher::nbPrimitiveTypes - 1) * shader->getNbShaders());
-
-            for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * shader->getNbShaders(); i++) {
-                graphicsPipeline[i].resize(nbRenderTargets);
-                pipelineLayoutInfo[i].resize(nbRenderTargets);
-                pipelineLayout[i].resize(nbRenderTargets);
-                depthStencil[i].resize(nbRenderTargets);
-
+            if ((Batcher::nbPrimitiveTypes - 1) * shader->getNbShaders() > graphicsPipeline.size()) {
+                graphicsPipeline.resize((Batcher::nbPrimitiveTypes - 1) * shader->getNbShaders());
+                pipelineLayoutInfo.resize((Batcher::nbPrimitiveTypes - 1) * shader->getNbShaders());
+                pipelineLayout.resize((Batcher::nbPrimitiveTypes - 1) * shader->getNbShaders());
+                depthStencil.resize((Batcher::nbPrimitiveTypes - 1) * shader->getNbShaders());
             }
             for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * shader->getNbShaders(); i++) {
-                for (unsigned int j = 0; j < nbRenderTargets; j++) {
-                    graphicsPipeline[i][j].resize(nbDepthStencil);
-                    pipelineLayoutInfo[i][j].resize(nbDepthStencil);
-                    pipelineLayout[i][j].resize(nbDepthStencil);
-                    depthStencil[i][j].resize(nbDepthStencil);
+                if (nbRenderTargets > graphicsPipeline[i].size()) {
+                    graphicsPipeline[i].resize(nbRenderTargets);
+                    pipelineLayoutInfo[i].resize(nbRenderTargets);
+                    pipelineLayout[i].resize(nbRenderTargets);
+                    depthStencil[i].resize(nbRenderTargets);
+                }
+            }
 
+            for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * shader->getNbShaders(); i++) {
+                for (unsigned int j = 0; j < nbRenderTargets; j++) {
+                    if (nbDepthStencil > graphicsPipeline[i][j].size()) {
+                        graphicsPipeline[i][j].resize(nbDepthStencil);
+                        pipelineLayoutInfo[i][j].resize(nbDepthStencil);
+                        pipelineLayout[i][j].resize(nbDepthStencil);
+                        depthStencil[i][j].resize(nbDepthStencil);
+                    }
                 }
             }
 
@@ -654,12 +658,16 @@ namespace odfaeg {
             pipelineLayoutInfo[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId].sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
             pipelineLayoutInfo[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId].setLayoutCount = 1;
             pipelineLayoutInfo[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId].pSetLayouts = &descriptorSetLayout[descriptorId];
-            /*if (pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId] != nullptr) {
+
+            if (pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId] != nullptr) {
+                system("PAUSE");
                 vkDestroyPipelineLayout(vkDevice.getDevice(), pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId], nullptr);
-            }*/
+            }
             if (vkCreatePipelineLayout(vkDevice.getDevice(), &pipelineLayoutInfo[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId], nullptr, &pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId]) != VK_SUCCESS) {
                 throw core::Erreur(0, "failed to create pipeline layout!", 1);
             }
+            //std::cout<<"pipeline layout : "<<pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId]<<std::endl;
+
             depthStencil[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId].sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
             depthStencil[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId].depthTestEnable = (depthTestEnabled) ? VK_TRUE : VK_FALSE;
             depthStencil[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId].depthWriteEnable = VK_TRUE;
@@ -690,9 +698,9 @@ namespace odfaeg {
             pipelineInfo.subpass = 0;
             pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
             pipelineInfo.pDepthStencilState = &depthStencil[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId];
-            /*if (graphicsPipeline[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId] != nullptr) {
+            if (graphicsPipeline[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId] != nullptr) {
                 vkDestroyPipeline(vkDevice.getDevice(), graphicsPipeline[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId], nullptr);
-            }*/
+            }
             if (vkCreateGraphicsPipelines(vkDevice.getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId]) != VK_SUCCESS) {
                 throw core::Erreur(0, "failed to create graphics pipeline!", 1);
             }
@@ -912,10 +920,8 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < pipelineLayout.size(); i++) {
                     for (unsigned int j = 0; j < pipelineLayout[i].size(); j++) {
                         for (unsigned int k = 0; k < pipelineLayout[i][j].size(); k++) {
-                            if (pipelineLayout[i][j][k] != nullptr) {
+                            vkDestroyPipelineLayout(vkDevice.getDevice(), pipelineLayout[i][j][k], nullptr);
 
-                                vkDestroyPipelineLayout(vkDevice.getDevice(), pipelineLayout[i][j][k], nullptr);
-                            }
                         }
                     }
                 }
@@ -923,10 +929,9 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < graphicsPipeline.size(); i++) {
                     for (unsigned int j = 0; j < graphicsPipeline[i].size(); j++) {
                         for (unsigned int k = 0; k < graphicsPipeline[i][j].size(); k++) {
-                            if (graphicsPipeline[i][j][k] != nullptr) {
 
-                                vkDestroyPipeline(vkDevice.getDevice(), graphicsPipeline[i][j][k], nullptr);
-                            }
+                            vkDestroyPipeline(vkDevice.getDevice(), graphicsPipeline[i][j][k], nullptr);
+
                         }
                     }
                 }
