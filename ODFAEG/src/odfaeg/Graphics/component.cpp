@@ -3,7 +3,7 @@
 
 namespace odfaeg {
     namespace graphic {
-        //int Component::nbComponents = 0;
+        int Component::nbComponents = 0;
         Component::Component(RenderWindow& window, math::Vec3f position, math::Vec3f size, math::Vec3f origin, unsigned int priority, unsigned int eventPriority)
         : Drawable(), Transformable(position, size, origin),
         listener(),
@@ -14,10 +14,10 @@ namespace odfaeg {
             activateEventContext = true;
             visible = true;
             id = -1;
-            if (core::Application::app != nullptr)
-                id = core::Application::app->getComponentId()-1;
-            /*id = nbComponents;
-            nbComponents++;*/
+            /*if (core::Application::app != nullptr)
+                id = core::Application::app->getComponentId()-1;*/
+            id = nbComponents;
+            nbComponents++;
             autoResize = false;
             relPosition = false;
         }
@@ -57,7 +57,7 @@ namespace odfaeg {
         }
         void Component::setExpression(std::string expression) {
         }
-        bool Component::loadEntitiesOnComponent (std::vector<Entity*> entities) { 
+        bool Component::loadEntitiesOnComponent (std::vector<Entity*> entities) {
             return false;
         }
         void Component::draw(Drawable& drawable, RenderStates states) {
@@ -66,7 +66,7 @@ namespace odfaeg {
         }
         Component::~Component() {
             std::cout<<"destructor component"<<std::endl;
-            system("PAUSE");
+
         }
     }
 }

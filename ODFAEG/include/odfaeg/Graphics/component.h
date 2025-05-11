@@ -113,7 +113,7 @@ namespace odfaeg {
             bool activateEventContext;
             bool visible;
             int id;
-            //static int nbComponents;
+            static int nbComponents;
             unsigned int priority, eventPriority;
             float relPosX, relPosY, relSizeX, relSizeY;
             bool autoResize, relPosition;

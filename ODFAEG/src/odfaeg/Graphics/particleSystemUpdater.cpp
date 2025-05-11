@@ -26,9 +26,9 @@ namespace odfaeg {
         void ParticleSystemUpdater::onUpdate () {
             for (unsigned int i = 0; i < particleSystems.size(); i++) {
                 //std::cout<<"update particle"<<std::endl;
-                if (odfaeg::core::Application::app != nullptr)
-                    particleSystems[i]->update(odfaeg::core::Application::app->getClock("LoopTime").getElapsedTime());
+                particleSystems[i]->update(timeClock.getElapsedTime());
                 particleSystems[i]->update();
+                timeClock.restart();
             }
             //World::changeVisibleEntity(nullptr, nullptr);
         }

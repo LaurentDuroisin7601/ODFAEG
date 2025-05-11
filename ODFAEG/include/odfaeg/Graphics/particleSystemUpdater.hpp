@@ -32,6 +32,7 @@ namespace odfaeg {
             void onUpdate ();
         private :
             std::vector<Entity*> particleSystems;
+            sf::Clock timeClock;
         };
     }
 }

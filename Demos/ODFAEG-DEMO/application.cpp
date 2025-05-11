@@ -11,7 +11,7 @@ using namespace odfaeg::core;
 using namespace odfaeg::audio;
 using namespace odfaeg::window;
 namespace sorrok {
-    MyAppli::MyAppli(sf::VideoMode wm, std::string title) : Application (wm, title, sf::Style::Default, ContextSettings(0, 0, 4, 4, 6)) {
+    MyAppli::MyAppli(sf::VideoMode wm, std::string title) : Application<MyAppli> (wm, title, sf::Style::Default, ContextSettings(0, 0, 4, 4, 6)) {
 
         running = false;
         actualKey = IKeyboard::Key::Unknown;
@@ -125,17 +125,17 @@ namespace sorrok {
         stream2->load(*sm.getResourceByAlias("fire"));
         player.setAudioStream(stream);
         pfire.setAudioStream(stream2);
-        cache.addResourceManager(tm, "TextureManager");
-        cache.addResourceManager(sm, "SoundManager");
+        getResourceCache().addResourceManager(sm, "SoundManager");
+        getResourceCache().addResourceManager(tm, "TextureManager");
         FontManager<> fm;
         fm.fromFileWithAlias("fonts/FreeSerif.ttf", "FreeSerif", rArgs);
-        cache.addResourceManager(fm, "FontManager");
+        getResourceCache().addResourceManager(fm, "FontManager");
     }
     void MyAppli::onInit () {
         if (day)
             g2d::AmbientLight::getAmbientLight().setColor(sf::Color::White);
-        TextureManager<> &tm = cache.resourceManager<Texture, std::string>("TextureManager");
-        FontManager<> &fm = cache.resourceManager<Font, std::string>("FontManager");
+        TextureManager<> &tm = getResourceCache().resourceManager<Texture, std::string>("TextureManager");
+        FontManager<> &fm = getResourceCache().resourceManager<Font, std::string>("FontManager");
         Vec2f pos (getView().getPosition().x - getView().getSize().x * 0.5f, getView().getPosition().y - getView().getSize().y * 0.5f);
         BoundingBox bx (pos.x, pos.y, 0, getView().getSize().x, getView().getSize().y, 0);
         theMap = new Scene(&getRenderComponentManager(), "Map test", 100, 50, 0);
@@ -338,7 +338,7 @@ namespace sorrok {
 
         caracter = entityFactory.make_entity<Hero>("Sorrok", "Nagi", "M", "Map test", "Brain", "Green", "White","Normal","Novice", 1, entityFactory);
 
-        const Texture *text = cache.resourceManager<Texture, std::string>("TextureManager").getResourceByAlias("VLADSWORD");
+        const Texture *text = getResourceCache().resourceManager<Texture, std::string>("TextureManager").getResourceByAlias("VLADSWORD");
         int textRectX = 0, textRectY = 0, textRectWidth = 50, textRectHeight = 100;
         int textWidth = text->getSize().x;
         caracter->setCenter(math::Vec3f(-25, -50, 0));

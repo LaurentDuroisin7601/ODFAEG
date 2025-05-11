@@ -112,6 +112,7 @@ namespace odfaeg {
             VkImage headPtrTextureImage;
             VkImageView headPtrTextureImageView;
             VkSampler headPtrTextureSampler;
+            VkDeviceMemory headPtrTextureImageMemory;
             std::vector<VkDescriptorPool>& descriptorPool;
             std::vector<VkDescriptorSetLayout>& descriptorSetLayout;
             std::vector<std::vector<VkDescriptorSet>>& descriptorSets;
@@ -138,6 +139,7 @@ namespace odfaeg {
             math::Vec3f resolution;
             VkCommandPool commandPool;
             PFN_vkCmdPushDescriptorSet vkCmdPushDescriptorSet{ VK_NULL_HANDLE };
+            sf::Clock timeClock;
 
         };
         #else

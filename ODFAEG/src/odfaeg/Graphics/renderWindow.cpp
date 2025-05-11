@@ -403,7 +403,6 @@ namespace odfaeg {
             for (size_t i = 0; i < swapChainImageViews.size(); i++) {
                 vkDestroyImageView(vkDevice.getDevice(), swapChainImageViews[i], nullptr);
             }
-
             vkDestroySwapchainKHR(vkDevice.getDevice(), swapChain, nullptr);
         }
         void RenderWindow::recreateSwapchain() {

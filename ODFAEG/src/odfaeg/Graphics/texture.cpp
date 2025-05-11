@@ -89,6 +89,7 @@ namespace odfaeg {
         bool Texture::createDepthTexture(uint32_t texWidth, uint32_t texHeight) {
             VkFormat depthFormat = findDepthFormat();
             createImage(texWidth, texHeight, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
+            //std::cout<<"dt address : "<<textureImage<<std::endl;
             transitionImageLayout(textureImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED,  VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
             createTextureImageView(depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
             createTextureSampler();
@@ -464,7 +465,9 @@ namespace odfaeg {
         }
         Texture::~Texture() {
             vkDestroyCommandPool(vkDevice.getDevice(), commandPool, nullptr);
+            std::cout<<"destroy texture"<<std::endl;
             if (textureImage != VK_NULL_HANDLE) {
+
                 vkDestroySampler(vkDevice.getDevice(), textureSampler, nullptr);
                 vkDestroyImageView(vkDevice.getDevice(), textureImageView, nullptr);
                 vkDestroyImage(vkDevice.getDevice(), textureImage, nullptr);

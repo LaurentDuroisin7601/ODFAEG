@@ -28,7 +28,8 @@ namespace odfaeg
         * \date 1/02/2014
         */
         class ResourceManagerBase {
-
+            public :
+            virtual ~ResourceManagerBase() {}
         };
         /**
         * \file ResourceManager.h
@@ -689,9 +690,11 @@ namespace odfaeg
         }
         template <typename B, typename I = std::string>
         class BaseResourceManager : public ResourceManager<B, I> {
+            public :
             std::unique_ptr<ResourceManagerBase> clone() {
                 return std::make_unique<BaseResourceManager<B, I>>(*this);
             }
+            virtual ~BaseResourceManager() {}
         };
     }
 }

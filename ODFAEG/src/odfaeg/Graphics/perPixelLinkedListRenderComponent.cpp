@@ -64,12 +64,12 @@ namespace odfaeg {
             allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
             allocInfo.allocationSize = memRequirements.size;
             allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-            VkDeviceMemory imageMemory;
 
-            if (vkAllocateMemory(window.getDevice().getDevice(), &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
+
+            if (vkAllocateMemory(window.getDevice().getDevice(), &allocInfo, nullptr, &headPtrTextureImageMemory) != VK_SUCCESS) {
                 throw std::runtime_error("echec de l'allocation de la memoire d'une image!");
             }
-            vkBindImageMemory(window.getDevice().getDevice(), headPtrTextureImage, imageMemory, 0);
+            vkBindImageMemory(window.getDevice().getDevice(), headPtrTextureImage, headPtrTextureImageMemory, 0);
             createHeadPtrImageView();
             createHeadPtrSampler();
             for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
@@ -945,10 +945,9 @@ namespace odfaeg {
                 if (m_normals[i].getAllVertices().getVertexCount() > 0) {
                     DrawArraysIndirectCommand drawArraysIndirectCommand;
                     //std::cout<<"next frame draw normal"<<std::endl;
-                    if (core::Application::app != nullptr) {
-                        float time = core::Application::getTimeClk().getElapsedTime().asSeconds();
-                        indirectDrawPushConsts.time = time;
-                    }
+                    float time = timeClock.getElapsedTime().asSeconds();
+                    indirectDrawPushConsts.time = time;
+
                     unsigned int p = m_normals[i].getAllVertices().getPrimitiveType();
 
                     /*if (m_normals[i].getVertexArrays()[0]->getEntity()->getRootType() == "E_MONSTER") {
@@ -987,10 +986,9 @@ namespace odfaeg {
                 if (m_instances[i].getAllVertices().getVertexCount() > 0) {
                     DrawArraysIndirectCommand drawArraysIndirectCommand;
                     unsigned int p = m_instances[i].getAllVertices().getPrimitiveType();
-                    if (core::Application::app != nullptr) {
-                        float time = core::Application::getTimeClk().getElapsedTime().asSeconds();
-                        indirectDrawPushConsts.time = time;
-                    }
+                    float time = timeClock.getElapsedTime().asSeconds();
+                    indirectDrawPushConsts.time = time;
+
                     std::vector<TransformMatrix*> tm = m_instances[i].getTransforms();
                     for (unsigned int j = 0; j < tm.size(); j++) {
                         tm[j]->update();
@@ -1534,6 +1532,8 @@ namespace odfaeg {
             vkDestroySampler(vkDevice.getDevice(), headPtrTextureSampler, nullptr);
             vkDestroyImageView(vkDevice.getDevice(), headPtrTextureImageView, nullptr);
             vkDestroyImage(vkDevice.getDevice(), headPtrTextureImage, nullptr);
+            vkFreeMemory(vkDevice.getDevice(), headPtrTextureImageMemory, nullptr);
+
             std::cout<<"image destroyed"<<std::endl;
             for (size_t i = 0; i < counterShaderStorageBuffers.size(); i++) {
                 if (counterShaderStorageBuffers[i] != VK_NULL_HANDLE) {

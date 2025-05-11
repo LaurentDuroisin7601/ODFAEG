@@ -515,9 +515,20 @@ namespace odfaeg {
             unsigned int pipelineId = depthStencilId * nbRenderTargets * shader->getNbShaders() * (Batcher::nbPrimitiveTypes - 1) + id * shader->getNbShaders() * (Batcher::nbPrimitiveTypes - 1) + shader->getId() * (Batcher::nbPrimitiveTypes - 1) + type;
             unsigned int descriptorId = id * shader->getNbShaders() + shader->getId();
             //std::cout<<"rt dl size : "<<descriptorSetLayout.size()<<std::endl;
-            /*std::cout<<"descriptor id : "<<descriptorId<<std::endl;
-            std::cout<<"pipeline id : "<<pipelineId<<std::endl;*/
+            /*std::cout<<"descriptor id : "<<descriptorId<<std::endl;*/
 
+
+
+            for (unsigned int i = 0; i < pipelinesId.size(); i++) {
+                if (pipelinesId[i] == pipelineId) {
+                    std::cout<<"Erreur"<<std::endl;
+                    system("PAUSE");
+                }
+            }
+            pipelinesId.push_back(pipelineId);
+            for (unsigned int i = 0; i < pipelinesId.size(); i++) {
+
+            }
             VkShaderModule vertShaderModule;
             VkShaderModule fragShaderModule;
 
@@ -877,11 +888,13 @@ namespace odfaeg {
             }
 
             if (nbRenderTargets == 0) {
-                for (unsigned int i = 0; i < graphicsPipeline.size(); i++) {
-                    vkDestroyPipeline(vkDevice.getDevice(), graphicsPipeline[i], nullptr);
-                }
                 for (unsigned int i = 0; i < pipelineLayout.size(); i++) {
-                    vkDestroyPipelineLayout(vkDevice.getDevice(), pipelineLayout[i], nullptr);
+                    if (pipelineLayout[i] != nullptr)
+                        vkDestroyPipelineLayout(vkDevice.getDevice(), pipelineLayout[i], nullptr);
+                }
+                for (unsigned int i = 0; i < graphicsPipeline.size(); i++) {
+                    if (graphicsPipeline[i] != nullptr)
+                        vkDestroyPipeline(vkDevice.getDevice(), graphicsPipeline[i], nullptr);
                 }
                 for (unsigned int i = 0; i < descriptorSetLayout.size(); i++) {
                     vkDestroyDescriptorSetLayout(vkDevice.getDevice(), descriptorSetLayout[i], nullptr);

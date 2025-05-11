@@ -34,7 +34,7 @@
 #include "odfaeg/Window/iMouse.hpp"
 #include <fstream>
 namespace sorrok {
-    class MyAppli : public odfaeg::core::Application, public odfaeg::graphic::gui::FocusListener {
+    class MyAppli : public odfaeg::core::Application<MyAppli>, public odfaeg::graphic::gui::FocusListener {
     private :
         const float speed = 0.2f;
         odfaeg::graphic::EntitiesUpdater *eu;
@@ -49,7 +49,7 @@ namespace sorrok {
         odfaeg::graphic::Scene* theMap;
         //odfaeg::graphic::g2d::PonctualLight* light2;
         //odfaeg::graphic::Shader shader;
-        odfaeg::core::ResourceCache<> cache;
+
         unsigned int fpsCounter;
         bool day;
         odfaeg::physic::UniversalEmitter emitter;

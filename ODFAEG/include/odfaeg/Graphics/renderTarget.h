@@ -243,6 +243,7 @@ namespace odfaeg {
             sf::Color clearColor;
 
         private :
+            std::vector<unsigned int> pipelinesId;
             PFN_vkCmdPushDescriptorSet vkCmdPushDescriptorSet{ VK_NULL_HANDLE };
             void createUniformBuffers();
             void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
