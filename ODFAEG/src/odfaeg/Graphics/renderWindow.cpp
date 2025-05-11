@@ -23,6 +23,7 @@ namespace odfaeg {
         }
         void RenderWindow::cleanup() {
             cleanupSwapchain();
+            vkDestroyRenderPass(vkDevice.getDevice(), renderPass, nullptr);
             for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
                 vkDestroySemaphore(vkDevice.getDevice(), renderFinishedSemaphores[i], nullptr);
                 vkDestroySemaphore(vkDevice.getDevice(), imageAvailableSemaphores[i], nullptr);
@@ -404,7 +405,6 @@ namespace odfaeg {
             }
 
             vkDestroySwapchainKHR(vkDevice.getDevice(), swapChain, nullptr);
-            vkDestroyRenderPass(vkDevice.getDevice(), renderPass, nullptr);
         }
         void RenderWindow::recreateSwapchain() {
             vkDeviceWaitIdle(vkDevice.getDevice());
@@ -413,13 +413,13 @@ namespace odfaeg {
 
             createSwapChain();
             createImageViews();
-            createRenderPass();
             createFramebuffers();
         }
         ////////////////////////////////////////////////////////////
         RenderWindow::~RenderWindow()
         {
-            RenderTarget::cleanup();
+            //RenderTarget::cleanup();
+            std::cout<<"destroy window"<<std::endl;
             cleanup();
         }
         ////////////////////////////////////////////////////////////

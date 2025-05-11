@@ -91,7 +91,8 @@ namespace odfaeg {
             nbRenderTargets++;
         }
         RenderTarget::~RenderTarget() {
-
+            nbRenderTargets--;
+            cleanup();
         }
         void RenderTarget::enableDepthTest(bool enabled) {
             depthTestEnabled = enabled;
@@ -870,7 +871,7 @@ namespace odfaeg {
         }
         void RenderTarget::cleanup() {
             std::cout<<"destroy command buffers"<<std::endl;
-            nbRenderTargets--;
+
             vkFreeCommandBuffers(vkDevice.getDevice(), commandPool, commandBuffers.size(), commandBuffers.data());
             vkDestroyCommandPool(vkDevice.getDevice(), commandPool, nullptr);
 

@@ -201,6 +201,7 @@ namespace odfaeg {
             std::map<int, std::string> types;
             std::vector<std::pair<graphic::RenderWindow*, bool>> windows; /** > the render window*/
             std::unique_ptr<graphic::RenderComponentManager> componentManager; /** > the render component manager which draw components on the window*/
+
         };
         #else
         class ODFAEG_GRAPHICS_API Application {

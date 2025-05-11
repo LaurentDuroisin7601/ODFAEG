@@ -292,7 +292,8 @@ namespace odfaeg
             }
         }
         RenderTexture::~RenderTexture() {
-            RenderTarget::cleanup();
+            //RenderTarget::cleanup();
+            std::cout<<"destroy render texture"<<std::endl;
             for (size_t i = 0; i < swapChainFramebuffers.size(); i++) {
                 vkDestroyFramebuffer(vkDevice.getDevice(), swapChainFramebuffers[i], nullptr);
             }

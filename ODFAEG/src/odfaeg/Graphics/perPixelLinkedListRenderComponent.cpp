@@ -1534,28 +1534,34 @@ namespace odfaeg {
             vkDestroySampler(vkDevice.getDevice(), headPtrTextureSampler, nullptr);
             vkDestroyImageView(vkDevice.getDevice(), headPtrTextureImageView, nullptr);
             vkDestroyImage(vkDevice.getDevice(), headPtrTextureImage, nullptr);
-            for (size_t i = 0; i < frameBuffer.getMaxFramesInFlight(); i++) {
+            std::cout<<"image destroyed"<<std::endl;
+            for (size_t i = 0; i < counterShaderStorageBuffers.size(); i++) {
                 if (counterShaderStorageBuffers[i] != VK_NULL_HANDLE) {
                     vkDestroyBuffer(vkDevice.getDevice(), counterShaderStorageBuffers[i], nullptr);
                     vkFreeMemory(vkDevice.getDevice(), counterShaderStorageBuffersMemory[i], nullptr);
                 }
             }
+            std::cout<<"counter ssbo destroyed"<<std::endl;
             for (unsigned int i = 0; i < linkedListShaderStorageBuffers.size(); i++) {
                 vkDestroyBuffer(vkDevice.getDevice(), linkedListShaderStorageBuffers[i], nullptr);
                 vkFreeMemory(vkDevice.getDevice(), linkedListShaderStorageBuffersMemory[i], nullptr);
             }
+            std::cout<<"linked list ssbo destroyed"<<std::endl;
             for (size_t i = 0; i < modelDataShaderStorageBuffers.size(); i++) {
                 vkDestroyBuffer(vkDevice.getDevice(), modelDataShaderStorageBuffers[i], nullptr);
                 vkFreeMemory(vkDevice.getDevice(), modelDataShaderStorageBuffersMemory[i], nullptr);
             }
+            std::cout<<"model data ssbo destroyed"<<std::endl;
             for (size_t i = 0; i < materialDataShaderStorageBuffers.size(); i++) {
                 vkDestroyBuffer(vkDevice.getDevice(), materialDataShaderStorageBuffers[i], nullptr);
                 vkFreeMemory(vkDevice.getDevice(), materialDataShaderStorageBuffersMemory[i], nullptr);
             }
+            std::cout<<"material data ssbo destroyed"<<std::endl;
             if (vboIndirect != VK_NULL_HANDLE) {
                 vkDestroyBuffer(vkDevice.getDevice(),vboIndirect, nullptr);
                 vkFreeMemory(vkDevice.getDevice(), vboIndirectMemory, nullptr);
             }
+            std::cout<<"indirect vbo destroyed"<<std::endl;
         }
         #else
         PerPixelLinkedListRenderComponent::PerPixelLinkedListRenderComponent(RenderWindow& window, int layer, std::string expression, window::ContextSettings settings) :
