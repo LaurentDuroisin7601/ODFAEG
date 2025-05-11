@@ -651,9 +651,9 @@ namespace odfaeg {
             pipelineLayoutInfo[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId].sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
             pipelineLayoutInfo[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId].setLayoutCount = 1;
             pipelineLayoutInfo[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId].pSetLayouts = &descriptorSetLayout[descriptorId];
-            if (pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId] != nullptr) {
+            /*if (pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId] != nullptr) {
                 vkDestroyPipelineLayout(vkDevice.getDevice(), pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId], nullptr);
-            }
+            }*/
             if (vkCreatePipelineLayout(vkDevice.getDevice(), &pipelineLayoutInfo[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId], nullptr, &pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId]) != VK_SUCCESS) {
                 throw core::Erreur(0, "failed to create pipeline layout!", 1);
             }
@@ -687,9 +687,9 @@ namespace odfaeg {
             pipelineInfo.subpass = 0;
             pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
             pipelineInfo.pDepthStencilState = &depthStencil[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId];
-            if (graphicsPipeline[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId] != nullptr) {
+            /*if (graphicsPipeline[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId] != nullptr) {
                 vkDestroyPipeline(vkDevice.getDevice(), graphicsPipeline[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId], nullptr);
-            }
+            }*/
             if (vkCreateGraphicsPipelines(vkDevice.getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId]) != VK_SUCCESS) {
                 throw core::Erreur(0, "failed to create graphics pipeline!", 1);
             }
