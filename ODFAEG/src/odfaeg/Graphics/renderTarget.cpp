@@ -871,9 +871,10 @@ namespace odfaeg {
         }
         void RenderTarget::cleanup() {
             std::cout<<"destroy command buffers"<<std::endl;
-
-            vkFreeCommandBuffers(vkDevice.getDevice(), commandPool, commandBuffers.size(), commandBuffers.data());
-            vkDestroyCommandPool(vkDevice.getDevice(), commandPool, nullptr);
+            if (commandBuffers.size() > 0) {
+                vkFreeCommandBuffers(vkDevice.getDevice(), commandPool, commandBuffers.size(), commandBuffers.data());
+                vkDestroyCommandPool(vkDevice.getDevice(), commandPool, nullptr);
+            }
 
             if (nbRenderTargets == 0) {
                 for (unsigned int i = 0; i < graphicsPipeline.size(); i++) {
@@ -929,13 +930,11 @@ namespace odfaeg {
         unsigned int RenderTarget::getNbRenderTargets() {
             return nbRenderTargets;
         }
-        void RenderTarget::updateCommandBuffers(std::vector<VkCommandBuffer> commandBuffers) {
-
-            for (unsigned int i = 0; i < this->commandBuffers.size(); i++) {
-                //std::cout<<"destroy command buffers"<<std::endl;
-                vkFreeCommandBuffers(vkDevice.getDevice(), commandPool, 1, &this->commandBuffers[i]);
-            }
+        void RenderTarget::updateCommandBuffers(VkCommandPool commandPool, std::vector<VkCommandBuffer> commandBuffers) {
+            vkFreeCommandBuffers(vkDevice.getDevice(), this->commandPool, this->commandBuffers.size(), this->commandBuffers.data());
+            vkDestroyCommandPool(vkDevice.getDevice(), this->commandPool, 0);
             this->commandBuffers = commandBuffers;
+            this->commandPool = commandPool;
         }
         #else
         ////////////////////////////////////////////////////////////

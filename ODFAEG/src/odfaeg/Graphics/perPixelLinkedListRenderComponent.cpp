@@ -1166,7 +1166,7 @@ namespace odfaeg {
             if (vkAllocateCommandBuffers(vkDevice.getDevice(), &allocInfo, commandBuffers.data()) != VK_SUCCESS) {
                 throw core::Erreur(0, "failed to allocate command buffers!", 1);
             }
-            frameBuffer.updateCommandBuffers(commandBuffers);
+            frameBuffer.updateCommandBuffers(commandPool, commandBuffers);
         }
         void PerPixelLinkedListRenderComponent::createCommandBuffersIndirect(unsigned int p, unsigned int nbIndirectCommands, RenderStates currentStates) {
 
@@ -1530,7 +1530,7 @@ namespace odfaeg {
         PerPixelLinkedListRenderComponent::~PerPixelLinkedListRenderComponent() {
             std::cout<<"ppll destructor"<<std::endl;
 
-            vkDestroyCommandPool(vkDevice.getDevice(), commandPool, nullptr);
+
             vkDestroySampler(vkDevice.getDevice(), headPtrTextureSampler, nullptr);
             vkDestroyImageView(vkDevice.getDevice(), headPtrTextureImageView, nullptr);
             vkDestroyImage(vkDevice.getDevice(), headPtrTextureImage, nullptr);

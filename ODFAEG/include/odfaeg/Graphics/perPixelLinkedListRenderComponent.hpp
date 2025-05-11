@@ -98,6 +98,7 @@ namespace odfaeg {
             unsigned int layer;
 
             window::Device& vkDevice;
+            RenderTexture frameBuffer;
             unsigned int maxNodes;
             Sprite frameBufferSprite;
             std::vector<VkBuffer> linkedListShaderStorageBuffers;
@@ -137,7 +138,7 @@ namespace odfaeg {
             math::Vec3f resolution;
             VkCommandPool commandPool;
             PFN_vkCmdPushDescriptorSet vkCmdPushDescriptorSet{ VK_NULL_HANDLE };
-            RenderTexture frameBuffer;
+
         };
         #else
         class PerPixelLinkedListRenderComponent : public HeavyComponent {

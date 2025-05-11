@@ -218,7 +218,7 @@ namespace odfaeg {
             static std::vector<std::vector<VkDescriptorSet>>& getDescriptorSet();
 
 
-            void updateCommandBuffers(std::vector<VkCommandBuffer> commandBuffers);
+            void updateCommandBuffers(VkCommandPool commandPool, std::vector<VkCommandBuffer> commandBuffers);
             void createDescriptorSetLayout(RenderStates states);
             void createDescriptorPool(RenderStates states);
             void createDescriptorSets(RenderStates states);
