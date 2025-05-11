@@ -94,15 +94,25 @@ namespace odfaeg {
             createDescriptorSetLayout2(states);
             //allocateDescriptorSets2(states);
             states.shader = &indirectRenderingShader;
-            std::vector<VkPipelineLayoutCreateInfo>& pipelineLayoutInfo = frameBuffer.getPipelineLayoutCreateInfo();
-            pipelineLayoutInfo.resize(NBDEPTHSTENCIL * (Batcher::nbPrimitiveTypes - 1) * indirectRenderingShader.getNbShaders() * frameBuffer.getNbRenderTargets());
-            std::vector<VkPipelineDepthStencilStateCreateInfo>& depthStencilCreateInfo = frameBuffer.getDepthStencilCreateInfo();
-            depthStencilCreateInfo.resize(NBDEPTHSTENCIL * (Batcher::nbPrimitiveTypes - 1) * indirectRenderingShader.getNbShaders() * frameBuffer.getNbRenderTargets());
+            std::vector<std::vector<std::vector<VkPipelineLayoutCreateInfo>>>& pipelineLayoutInfo = frameBuffer.getPipelineLayoutCreateInfo();
+            std::vector<std::vector<std::vector<VkPipelineDepthStencilStateCreateInfo>>>& depthStencilCreateInfo = frameBuffer.getDepthStencilCreateInfo();
+            pipelineLayoutInfo.resize((Batcher::nbPrimitiveTypes - 1) * indirectRenderingShader.getNbShaders());
+            depthStencilCreateInfo.resize((Batcher::nbPrimitiveTypes - 1) * indirectRenderingShader.getNbShaders());
+            for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * indirectRenderingShader.getNbShaders(); i++) {
+                pipelineLayoutInfo[i].resize(frameBuffer.getNbRenderTargets());
+                depthStencilCreateInfo[i].resize(frameBuffer.getNbRenderTargets());
+            }
+            for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * indirectRenderingShader.getNbShaders(); i++) {
+                for (unsigned int j = 0; j < frameBuffer.getNbRenderTargets(); j++) {
+                    pipelineLayoutInfo[i][j].resize(NBDEPTHSTENCIL);
+                    depthStencilCreateInfo[i][j].resize(NBDEPTHSTENCIL);
+                }
+            }
             for (unsigned int j = 0; j < NBDEPTHSTENCIL; j++) {
                 for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
                    if (j == 0) {
                        frameBuffer.enableStencilTest(false);
-                       unsigned int pipelineId = frameBuffer.getId() * indirectRenderingShader.getNbShaders() * (Batcher::nbPrimitiveTypes - 1) + indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1) + i;
+
                        VkPushConstantRange push_constant;
                        //this push constant range starts at the beginning
                        push_constant.offset = 0;
@@ -111,23 +121,22 @@ namespace odfaeg {
                        //this push constant range is accessible only in the vertex shader
                        push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
-                       pipelineLayoutInfo[pipelineId].pPushConstantRanges = &push_constant;
-                       pipelineLayoutInfo[pipelineId].pushConstantRangeCount = 1;
+                       pipelineLayoutInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL].pPushConstantRanges = &push_constant;
+                       pipelineLayoutInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL].pushConstantRangeCount = 1;
                        frameBuffer.createGraphicPipeline(static_cast<sf::PrimitiveType>(i), states, NODEPTHNOSTENCIL, NBDEPTHSTENCIL);
                        frameBuffer.enableStencilTest(false);
                        /*std::cout<<"ppll size dl : "<<descriptorSetLayout.size()<<std::endl;
                        system("PAUSE");*/
                    } else if (j == 1) {
                        frameBuffer.enableStencilTest(true);
-                       unsigned int pipelineId = NODEPTHSTENCIL * frameBuffer.getNbRenderTargets() * indirectRenderingShader.getNbShaders() * (Batcher::nbPrimitiveTypes - 1) + frameBuffer.getId() * indirectRenderingShader.getNbShaders() * (Batcher::nbPrimitiveTypes - 1) + indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1) + i;
-                       depthStencilCreateInfo[pipelineId].back.compareOp = VK_COMPARE_OP_ALWAYS;
-                       depthStencilCreateInfo[pipelineId].back.failOp = VK_STENCIL_OP_REPLACE;
-                       depthStencilCreateInfo[pipelineId].back.depthFailOp = VK_STENCIL_OP_REPLACE;
-                       depthStencilCreateInfo[pipelineId].back.passOp = VK_STENCIL_OP_REPLACE;
-                       depthStencilCreateInfo[pipelineId].back.compareMask = 0xff;
-                       depthStencilCreateInfo[pipelineId].back.writeMask = 0xff;
-                       depthStencilCreateInfo[pipelineId].back.reference = 1;
-                       depthStencilCreateInfo[pipelineId].front = depthStencilCreateInfo[pipelineId].back;
+                       depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL].back.compareOp = VK_COMPARE_OP_ALWAYS;
+                       depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL].back.failOp = VK_STENCIL_OP_REPLACE;
+                       depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL].back.depthFailOp = VK_STENCIL_OP_REPLACE;
+                       depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL].back.passOp = VK_STENCIL_OP_REPLACE;
+                       depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL].back.compareMask = 0xff;
+                       depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL].back.writeMask = 0xff;
+                       depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL].back.reference = 1;
+                       depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL].front = depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL].back;
                        VkPushConstantRange push_constant;
                        //this push constant range starts at the beginning
                        push_constant.offset = 0;
@@ -136,20 +145,21 @@ namespace odfaeg {
                        //this push constant range is accessible only in the vertex shader
                        push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
-                       pipelineLayoutInfo[pipelineId].pPushConstantRanges = &push_constant;
-                       pipelineLayoutInfo[pipelineId].pushConstantRangeCount = 1;
+                       pipelineLayoutInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL].pPushConstantRanges = &push_constant;
+                       pipelineLayoutInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL].pushConstantRangeCount = 1;
                        frameBuffer.createGraphicPipeline(static_cast<sf::PrimitiveType>(i), states, NODEPTHSTENCIL, NBDEPTHSTENCIL);
+
                    } else {
                        frameBuffer.enableStencilTest(true);
-                       unsigned int pipelineId = NODEPTHSTENCILOUTLINE * frameBuffer.getNbRenderTargets() * indirectRenderingShader.getNbShaders() * (Batcher::nbPrimitiveTypes - 1) + frameBuffer.getId() * indirectRenderingShader.getNbShaders() * (Batcher::nbPrimitiveTypes - 1) + indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1) + i;
-                       depthStencilCreateInfo[pipelineId].back.compareOp = VK_COMPARE_OP_NOT_EQUAL;
-                       depthStencilCreateInfo[pipelineId].back.failOp = VK_STENCIL_OP_KEEP;
-                       depthStencilCreateInfo[pipelineId].back.depthFailOp = VK_STENCIL_OP_KEEP;
-                       depthStencilCreateInfo[pipelineId].back.passOp = VK_STENCIL_OP_REPLACE;
-                       depthStencilCreateInfo[pipelineId].back.compareMask = 0xff;
-                       depthStencilCreateInfo[pipelineId].back.writeMask = 0xff;
-                       depthStencilCreateInfo[pipelineId].back.reference = 1;
-                       depthStencilCreateInfo[pipelineId].front = depthStencilCreateInfo[pipelineId].back;
+
+                       depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE].back.compareOp = VK_COMPARE_OP_NOT_EQUAL;
+                       depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE].back.failOp = VK_STENCIL_OP_KEEP;
+                       depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE].back.depthFailOp = VK_STENCIL_OP_KEEP;
+                       depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE].back.passOp = VK_STENCIL_OP_REPLACE;
+                       depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE].back.compareMask = 0xff;
+                       depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE].back.writeMask = 0xff;
+                       depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE].back.reference = 1;
+                       depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE].front = depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE].back;
                        VkPushConstantRange push_constant;
                        //this push constant range starts at the beginning
                        push_constant.offset = 0;
@@ -158,8 +168,8 @@ namespace odfaeg {
                        //this push constant range is accessible only in the vertex shader
                        push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
-                       pipelineLayoutInfo[pipelineId].pPushConstantRanges = &push_constant;
-                       pipelineLayoutInfo[pipelineId].pushConstantRangeCount = 1;
+                       pipelineLayoutInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE].pPushConstantRanges = &push_constant;
+                       pipelineLayoutInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE].pushConstantRangeCount = 1;
                        frameBuffer.createGraphicPipeline(static_cast<sf::PrimitiveType>(i), states, NODEPTHSTENCILOUTLINE, NBDEPTHSTENCIL);
                    }
                 }
@@ -169,55 +179,54 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
                     if (j == 0) {
                        frameBuffer.enableStencilTest(false);
-                       unsigned int pipelineId = frameBuffer.getId() * perPixelLinkedListP2.getNbShaders() * (Batcher::nbPrimitiveTypes - 1) + perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1) + i;
+
                        VkPushConstantRange push_constant;
                        push_constant.offset = 0;
                        //this push constant range takes up the size of a MeshPushConstants struct
                        push_constant.size = sizeof(Ppll2PushConsts);
                        //this push constant range is accessible only in the vertex shader
                        push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-                       pipelineLayoutInfo[pipelineId].pPushConstantRanges = &push_constant;
-                       pipelineLayoutInfo[pipelineId].pushConstantRangeCount = 1;
+                       pipelineLayoutInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL].pPushConstantRanges = &push_constant;
+                       pipelineLayoutInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL].pushConstantRangeCount = 1;
                        frameBuffer.createGraphicPipeline(static_cast<sf::PrimitiveType>(i), states, NODEPTHNOSTENCIL, NBDEPTHSTENCIL);
-                    } else if (j == 1) {
+                   } else if (j == 1) {
                        frameBuffer.enableStencilTest(true);
-                       unsigned int pipelineId = NODEPTHSTENCIL * frameBuffer.getNbRenderTargets() * perPixelLinkedListP2.getNbShaders() * (Batcher::nbPrimitiveTypes - 1) + frameBuffer.getId() * perPixelLinkedListP2.getNbShaders() * (Batcher::nbPrimitiveTypes - 1) + perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1) + i;
-                       depthStencilCreateInfo[pipelineId].back.compareOp = VK_COMPARE_OP_NOT_EQUAL;
-                       depthStencilCreateInfo[pipelineId].back.failOp = VK_STENCIL_OP_KEEP;
-                       depthStencilCreateInfo[pipelineId].back.depthFailOp = VK_STENCIL_OP_KEEP;
-                       depthStencilCreateInfo[pipelineId].back.passOp = VK_STENCIL_OP_REPLACE;
-                       depthStencilCreateInfo[pipelineId].back.compareMask = 0xff;
-                       depthStencilCreateInfo[pipelineId].back.writeMask = 0xff;
-                       depthStencilCreateInfo[pipelineId].back.reference = 1;
-                       depthStencilCreateInfo[pipelineId].front = depthStencilCreateInfo[pipelineId].back;
+
+                       depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL].back.compareOp = VK_COMPARE_OP_NOT_EQUAL;
+                       depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL].back.failOp = VK_STENCIL_OP_KEEP;
+                       depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL].back.depthFailOp = VK_STENCIL_OP_KEEP;
+                       depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL].back.passOp = VK_STENCIL_OP_REPLACE;
+                       depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL].back.compareMask = 0xff;
+                       depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL].back.writeMask = 0xff;
+                       depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL].back.reference = 1;
+                       depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL].front = depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL].back;
                        VkPushConstantRange push_constant;
                        push_constant.offset = 0;
                        //this push constant range takes up the size of a MeshPushConstants struct
                        push_constant.size = sizeof(Ppll2PushConsts);
                        //this push constant range is accessible only in the vertex shader
                        push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-                       pipelineLayoutInfo[pipelineId].pPushConstantRanges = &push_constant;
-                       pipelineLayoutInfo[pipelineId].pushConstantRangeCount = 1;
+                       pipelineLayoutInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL].pPushConstantRanges = &push_constant;
+                       pipelineLayoutInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL].pushConstantRangeCount = 1;
                        frameBuffer.createGraphicPipeline(static_cast<sf::PrimitiveType>(i), states, NODEPTHSTENCIL, NBDEPTHSTENCIL);
                     } else {
                        frameBuffer.enableStencilTest(true);
-                       unsigned int pipelineId = NODEPTHSTENCILOUTLINE * frameBuffer.getNbRenderTargets() * perPixelLinkedListP2.getNbShaders() * (Batcher::nbPrimitiveTypes - 1) + frameBuffer.getId() * perPixelLinkedListP2.getNbShaders() * (Batcher::nbPrimitiveTypes - 1) + perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1) + i;
-                       depthStencilCreateInfo[pipelineId].back.compareOp = VK_COMPARE_OP_ALWAYS;
-                       depthStencilCreateInfo[pipelineId].back.failOp = VK_STENCIL_OP_REPLACE;
-                       depthStencilCreateInfo[pipelineId].back.depthFailOp = VK_STENCIL_OP_REPLACE;
-                       depthStencilCreateInfo[pipelineId].back.passOp = VK_STENCIL_OP_REPLACE;
-                       depthStencilCreateInfo[pipelineId].back.compareMask = 0xff;
-                       depthStencilCreateInfo[pipelineId].back.writeMask = 0xff;
-                       depthStencilCreateInfo[pipelineId].back.reference = 1;
-                       depthStencilCreateInfo[pipelineId].front = depthStencilCreateInfo[pipelineId].back;
+                       depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE].back.compareOp = VK_COMPARE_OP_ALWAYS;
+                       depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE].back.failOp = VK_STENCIL_OP_REPLACE;
+                       depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE].back.depthFailOp = VK_STENCIL_OP_REPLACE;
+                       depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE].back.passOp = VK_STENCIL_OP_REPLACE;
+                       depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE].back.compareMask = 0xff;
+                       depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE].back.writeMask = 0xff;
+                       depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE].back.reference = 1;
+                       depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE].front = depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE].back;
                        VkPushConstantRange push_constant;
                        push_constant.offset = 0;
                        //this push constant range takes up the size of a MeshPushConstants struct
                        push_constant.size = sizeof(Ppll2PushConsts);
                        //this push constant range is accessible only in the vertex shader
                        push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-                       pipelineLayoutInfo[pipelineId].pPushConstantRanges = &push_constant;
-                       pipelineLayoutInfo[pipelineId].pushConstantRangeCount = 1;
+                       pipelineLayoutInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE].pPushConstantRanges = &push_constant;
+                       pipelineLayoutInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE].pushConstantRangeCount = 1;
                        frameBuffer.createGraphicPipeline(static_cast<sf::PrimitiveType>(i), states, NODEPTHSTENCILOUTLINE, NBDEPTHSTENCIL);
                     }
                 }
@@ -1170,7 +1179,6 @@ namespace odfaeg {
 
 
             Shader* shader = const_cast<Shader*>(currentStates.shader);
-            unsigned int pipelineId = frameBuffer.getId() * shader->getNbShaders() * (Batcher::nbPrimitiveTypes - 1) + shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p;
             std::vector<Texture*> allTextures = Texture::getAllTextures();
             for (size_t i = 0; i < commandBuffers.size(); i++) {
                 /*vkResetCommandBuffer(commandBuffers[i], VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
@@ -1263,9 +1271,9 @@ namespace odfaeg {
                 descriptorWrites[5].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
                 descriptorWrites[5].descriptorCount = 1;
                 descriptorWrites[5].pBufferInfo = &materialDataStorageBufferInfoLastFrame;
-                vkCmdPushDescriptorSet(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, frameBuffer.getPipelineLayout()[pipelineId], 0, 6, descriptorWrites.data());
-                vkCmdPushConstants(commandBuffers[i], frameBuffer.getPipelineLayout()[pipelineId], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectDrawPushConsts), &indirectDrawPushConsts);
-                frameBuffer.drawIndirect(commandBuffers[i], i, nbIndirectCommands, sizeof(DrawArraysIndirectCommand), vbBindlessTex[p], vboIndirect, currentStates);
+                vkCmdPushDescriptorSet(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][frameBuffer.getId()][NODEPTHNOSTENCIL], 0, 6, descriptorWrites.data());
+                vkCmdPushConstants(commandBuffers[i], frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][frameBuffer.getId()][NODEPTHNOSTENCIL], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectDrawPushConsts), &indirectDrawPushConsts);
+                frameBuffer.drawIndirect(commandBuffers[i], i, nbIndirectCommands, sizeof(DrawArraysIndirectCommand), vbBindlessTex[p], vboIndirect, currentStates, NODEPTHNOSTENCIL);
                 vkCmdPipelineBarrier(commandBuffers[i], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 0, nullptr);
                 VkMemoryBarrier memoryBarrier;
                 memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
@@ -1283,7 +1291,6 @@ namespace odfaeg {
         }
         void PerPixelLinkedListRenderComponent::createCommandBufferVertexBuffer(RenderStates currentStates) {
             Shader* shader = const_cast<Shader*>(currentStates.shader);
-            unsigned int pipelineId = frameBuffer.getId() * shader->getNbShaders() * (Batcher::nbPrimitiveTypes - 1) + shader->getId() * (Batcher::nbPrimitiveTypes - 1) + vb.getPrimitiveType();
             for (size_t i = 0; i < commandBuffers.size(); i++) {
                 /*vkResetCommandBuffer(commandBuffers[i], VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
                 VkCommandBufferBeginInfo beginInfo{};
@@ -1320,12 +1327,12 @@ namespace odfaeg {
                 descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
                 descriptorWrites[1].descriptorCount = 1;
                 descriptorWrites[1].pBufferInfo = &linkedListStorageBufferInfoLastFrame;
-                vkCmdPushDescriptorSet(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, frameBuffer.getPipelineLayout()[pipelineId], 0, 2, descriptorWrites.data());
+                vkCmdPushDescriptorSet(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + vb.getPrimitiveType()][frameBuffer.getId()][NODEPTHNOSTENCIL], 0, 2, descriptorWrites.data());
 
 
 
-                vkCmdPushConstants(commandBuffers[i], frameBuffer.getPipelineLayout()[pipelineId], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(Ppll2PushConsts), &ppll2PushConsts);
-                frameBuffer.drawVertexBuffer(commandBuffers[i], i, vb, currentStates);
+                vkCmdPushConstants(commandBuffers[i], frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + vb.getPrimitiveType()][frameBuffer.getId()][NODEPTHNOSTENCIL], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(Ppll2PushConsts), &ppll2PushConsts);
+                frameBuffer.drawVertexBuffer(commandBuffers[i], i, vb, currentStates, NODEPTHNOSTENCIL);
 
                 /*if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to record command buffer!", 1);

@@ -77,10 +77,10 @@ namespace odfaeg {
         std::vector<VertexBuffer*> RenderTarget::vertexBuffers =  std::vector<VertexBuffer*>();
         std::vector<std::vector<VkBuffer>> RenderTarget::uniformBuffers = std::vector<std::vector<VkBuffer>>();
         std::vector<std::vector<VkDeviceMemory>> RenderTarget::uniformBuffersMemory = std::vector<std::vector<VkDeviceMemory>>();
-        std::vector<VkPipelineLayoutCreateInfo> RenderTarget::pipelineLayoutInfo = std::vector<VkPipelineLayoutCreateInfo>();
-        std::vector<VkPipelineLayout> RenderTarget::pipelineLayout = std::vector<VkPipelineLayout>();
-        std::vector<VkPipelineDepthStencilStateCreateInfo> RenderTarget::depthStencil = std::vector<VkPipelineDepthStencilStateCreateInfo>();
-        std::vector<VkPipeline> RenderTarget::graphicsPipeline = std::vector<VkPipeline>();
+        std::vector<std::vector<std::vector<VkPipelineLayoutCreateInfo>>> RenderTarget::pipelineLayoutInfo = std::vector<std::vector<std::vector<VkPipelineLayoutCreateInfo>>>();
+        std::vector<std::vector<std::vector<VkPipelineLayout>>> RenderTarget::pipelineLayout = std::vector<std::vector<std::vector<VkPipelineLayout>>>();
+        std::vector<std::vector<std::vector<VkPipelineDepthStencilStateCreateInfo>>> RenderTarget::depthStencil = std::vector<std::vector<std::vector<VkPipelineDepthStencilStateCreateInfo>>>();
+        std::vector<std::vector<std::vector<VkPipeline>>> RenderTarget::graphicsPipeline = std::vector<std::vector<std::vector<VkPipeline>>>();
         std::vector<VkDescriptorPool> RenderTarget::descriptorPool = std::vector<VkDescriptorPool>();
         std::vector<VkDescriptorSetLayout> RenderTarget::descriptorSetLayout = std::vector<VkDescriptorSetLayout>();
         std::vector<std::vector<VkDescriptorSet>> RenderTarget::descriptorSets = std::vector<std::vector<VkDescriptorSet>>();
@@ -282,7 +282,7 @@ namespace odfaeg {
         void RenderTarget::drawIndirect(VkCommandBuffer& cmd, unsigned int i, unsigned int nbIndirectCommands, unsigned int stride, VertexBuffer& vertexBuffer, VkBuffer vboIndirect, RenderStates states,
                                         unsigned int depthStencilId) {
             Shader* shader = const_cast<Shader*>(states.shader);
-            unsigned int pipelineId = depthStencilId * nbRenderTargets * shader->getNbShaders()  * (Batcher::nbPrimitiveTypes - 1) + id *  shader->getNbShaders() * (Batcher::nbPrimitiveTypes - 1) + shader->getId() * (Batcher::nbPrimitiveTypes - 1) + vertexBuffer.getPrimitiveType();
+
             VkRenderPassBeginInfo renderPassInfo{};
             renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
             renderPassInfo.renderPass = getRenderPass();
@@ -295,11 +295,11 @@ namespace odfaeg {
             renderPassInfo.pClearValues = &clrColor;
 
             vkCmdBeginRenderPass(cmd, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-            vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline[pipelineId]);
+            vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vertexBuffer.getPrimitiveType()][id][depthStencilId]);
             VkBuffer vertexBuffers[] = {vertexBuffer.getVertexBuffer()};
-            VkDeviceSize offsets[] = {0};
-            //vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[pipelineId], 0, 1, &descriptorSets[shader->getId()][getCurrentFrame()], 0, nullptr);
+            VkDeviceSize offsets[] = {0, 0};
             vkCmdBindVertexBuffers(cmd, 0, 1, vertexBuffers, offsets);
+
             VkViewport viewport{};
             viewport.x = 0.0f;
             viewport.y = 0.0f;
@@ -323,9 +323,8 @@ namespace odfaeg {
             }
             vkCmdEndRenderPass(cmd);
         }
-        void RenderTarget::drawVertexBuffer(VkCommandBuffer& cmd, unsigned int i, VertexBuffer& vertexBuffer, RenderStates states) {
+        void RenderTarget::drawVertexBuffer(VkCommandBuffer& cmd, unsigned int i, VertexBuffer& vertexBuffer, RenderStates states, unsigned int depthStencilId) {
             Shader* shader = const_cast<Shader*>(states.shader);
-            unsigned int pipelineId = id * shader->getNbShaders() * (Batcher::nbPrimitiveTypes - 1) + shader->getId() * (Batcher::nbPrimitiveTypes - 1) + vertexBuffer.getPrimitiveType();
             VkRenderPassBeginInfo renderPassInfo{};
             renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
             renderPassInfo.renderPass = getRenderPass();
@@ -338,11 +337,11 @@ namespace odfaeg {
             renderPassInfo.pClearValues = &clrColor;
 
             vkCmdBeginRenderPass(cmd, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-            vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline[pipelineId]);
+            vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vertexBuffer.getPrimitiveType()][id][depthStencilId]);
             VkBuffer vertexBuffers[] = {vertexBuffer.getVertexBuffer()};
             VkDeviceSize offsets[] = {0};
             vkCmdBindVertexBuffers(cmd, 0, 1, vertexBuffers, offsets);
-            //vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[pipelineId], 0, 1, &descriptorSets[shader->getId()][getCurrentFrame()], 0, nullptr);
+
             VkViewport viewport{};
             viewport.x = 0.0f;
             viewport.y = 0.0f;
@@ -507,28 +506,42 @@ namespace odfaeg {
         void RenderTarget::createGraphicPipeline(sf::PrimitiveType type,
                       RenderStates states, unsigned int depthStencilId, unsigned int nbDepthStencil) {
             Shader* shader = const_cast<Shader*>(states.shader);
-            graphicsPipeline.resize(nbDepthStencil*(Batcher::nbPrimitiveTypes - 1) * shader->getNbShaders() * nbRenderTargets);
-            pipelineLayoutInfo.resize(nbDepthStencil*(Batcher::nbPrimitiveTypes - 1) * shader->getNbShaders() * nbRenderTargets);
-            pipelineLayout.resize(nbDepthStencil*(Batcher::nbPrimitiveTypes - 1) * shader->getNbShaders() * nbRenderTargets);
-            depthStencil.resize(nbDepthStencil*(Batcher::nbPrimitiveTypes - 1) * shader->getNbShaders() * nbRenderTargets);
+            graphicsPipeline.resize((Batcher::nbPrimitiveTypes - 1) * shader->getNbShaders());
+            pipelineLayoutInfo.resize((Batcher::nbPrimitiveTypes - 1) * shader->getNbShaders());
+            pipelineLayout.resize((Batcher::nbPrimitiveTypes - 1) * shader->getNbShaders());
+            depthStencil.resize((Batcher::nbPrimitiveTypes - 1) * shader->getNbShaders());
 
-            unsigned int pipelineId = depthStencilId * nbRenderTargets * shader->getNbShaders() * (Batcher::nbPrimitiveTypes - 1) + id * shader->getNbShaders() * (Batcher::nbPrimitiveTypes - 1) + shader->getId() * (Batcher::nbPrimitiveTypes - 1) + type;
+            for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * shader->getNbShaders(); i++) {
+                graphicsPipeline[i].resize(nbRenderTargets);
+                pipelineLayoutInfo[i].resize(nbRenderTargets);
+                pipelineLayout[i].resize(nbRenderTargets);
+                depthStencil[i].resize(nbRenderTargets);
+
+            }
+            for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * shader->getNbShaders(); i++) {
+                for (unsigned int j = 0; j < nbRenderTargets; j++) {
+                    graphicsPipeline[i][j].resize(nbDepthStencil);
+                    pipelineLayoutInfo[i][j].resize(nbDepthStencil);
+                    pipelineLayout[i][j].resize(nbDepthStencil);
+                    depthStencil[i][j].resize(nbDepthStencil);
+
+                }
+            }
+
             unsigned int descriptorId = id * shader->getNbShaders() + shader->getId();
             //std::cout<<"rt dl size : "<<descriptorSetLayout.size()<<std::endl;
             /*std::cout<<"descriptor id : "<<descriptorId<<std::endl;*/
+            //std::cout<<"pipeline id : "<<pipelineId<<std::endl;
 
 
-
-            for (unsigned int i = 0; i < pipelinesId.size(); i++) {
+            /*for (unsigned int i = 0; i < pipelinesId.size(); i++) {
                 if (pipelinesId[i] == pipelineId) {
                     std::cout<<"Erreur"<<std::endl;
                     system("PAUSE");
                 }
             }
-            pipelinesId.push_back(pipelineId);
-            for (unsigned int i = 0; i < pipelinesId.size(); i++) {
+            pipelinesId.push_back(pipelineId);*/
 
-            }
             VkShaderModule vertShaderModule;
             VkShaderModule fragShaderModule;
 
@@ -635,23 +648,25 @@ namespace odfaeg {
             colorBlending.blendConstants[2] = 0.0f;
             colorBlending.blendConstants[3] = 0.0f;
 
-            pipelineLayoutInfo[pipelineId].sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-            pipelineLayoutInfo[pipelineId].setLayoutCount = 1;
-            pipelineLayoutInfo[pipelineId].pSetLayouts = &descriptorSetLayout[descriptorId];
-
-            if (vkCreatePipelineLayout(vkDevice.getDevice(), &pipelineLayoutInfo[pipelineId], nullptr, &pipelineLayout[pipelineId]) != VK_SUCCESS) {
+            pipelineLayoutInfo[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId].sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+            pipelineLayoutInfo[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId].setLayoutCount = 1;
+            pipelineLayoutInfo[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId].pSetLayouts = &descriptorSetLayout[descriptorId];
+            if (pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId] != nullptr) {
+                vkDestroyPipelineLayout(vkDevice.getDevice(), pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId], nullptr);
+            }
+            if (vkCreatePipelineLayout(vkDevice.getDevice(), &pipelineLayoutInfo[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId], nullptr, &pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId]) != VK_SUCCESS) {
                 throw core::Erreur(0, "failed to create pipeline layout!", 1);
             }
-            depthStencil[pipelineId].sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-            depthStencil[pipelineId].depthTestEnable = (depthTestEnabled) ? VK_TRUE : VK_FALSE;
-            depthStencil[pipelineId].depthWriteEnable = VK_TRUE;
-            depthStencil[pipelineId].depthCompareOp = VK_COMPARE_OP_GREATER;
-            depthStencil[pipelineId].depthBoundsTestEnable = VK_FALSE;
-            depthStencil[pipelineId].minDepthBounds = 0.0f; // Optional
-            depthStencil[pipelineId].maxDepthBounds = 1.0f; // Optional
-            depthStencil[pipelineId].stencilTestEnable = (stencilTestEnabled) ? VK_TRUE : VK_FALSE;
-            depthStencil[pipelineId].front = {}; // Optional
-            depthStencil[pipelineId].back = {}; // Optional
+            depthStencil[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId].sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+            depthStencil[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId].depthTestEnable = (depthTestEnabled) ? VK_TRUE : VK_FALSE;
+            depthStencil[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId].depthWriteEnable = VK_TRUE;
+            depthStencil[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId].depthCompareOp = VK_COMPARE_OP_GREATER;
+            depthStencil[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId].depthBoundsTestEnable = VK_FALSE;
+            depthStencil[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId].minDepthBounds = 0.0f; // Optional
+            depthStencil[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId].maxDepthBounds = 1.0f; // Optional
+            depthStencil[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId].stencilTestEnable = (stencilTestEnabled) ? VK_TRUE : VK_FALSE;
+            depthStencil[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId].front = {}; // Optional
+            depthStencil[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId].back = {}; // Optional
             VkGraphicsPipelineCreateInfo pipelineInfo{};
             pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
             pipelineInfo.stageCount = 2;
@@ -663,7 +678,7 @@ namespace odfaeg {
             pipelineInfo.pMultisampleState = &multisampling;
             pipelineInfo.pColorBlendState = &colorBlending;
             pipelineInfo.pDynamicState = &dynamicState;
-            pipelineInfo.layout = pipelineLayout[pipelineId];
+            pipelineInfo.layout = pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId];
             /*if (getSurface() != VK_NULL_HANDLE)
                 std::cout<<"render pass ppl rw : "<<getRenderPass()<<std::endl;
             else
@@ -671,9 +686,11 @@ namespace odfaeg {
             pipelineInfo.renderPass = getRenderPass();
             pipelineInfo.subpass = 0;
             pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
-            pipelineInfo.pDepthStencilState = &depthStencil[pipelineId];
-
-            if (vkCreateGraphicsPipelines(vkDevice.getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline[pipelineId]) != VK_SUCCESS) {
+            pipelineInfo.pDepthStencilState = &depthStencil[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId];
+            if (graphicsPipeline[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId] != nullptr) {
+                vkDestroyPipeline(vkDevice.getDevice(), graphicsPipeline[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId], nullptr);
+            }
+            if (vkCreateGraphicsPipelines(vkDevice.getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId]) != VK_SUCCESS) {
                 throw core::Erreur(0, "failed to create graphics pipeline!", 1);
             }
             shader->cleanupShaderModules();
@@ -765,9 +782,8 @@ namespace odfaeg {
         }
         void RenderTarget::recordCommandBuffers(sf::PrimitiveType type, RenderStates states) {
             Shader* shader = const_cast<Shader*>(states.shader);
-            unsigned int pipelineId = id * shader->getNbShaders() * (Batcher::nbPrimitiveTypes - 1) + shader->getId() * (Batcher::nbPrimitiveTypes - 1) + type;
 
-            //std::cout<<"pipeline id : "<<pipelineId<<std::endl<<"pipeline size : "<<graphicsPipeline.size()<<std::endl;
+
             for (size_t i = 0; i < commandBuffers.size(); i++) {
                 /*VkCommandBufferBeginInfo beginInfo{};
                 beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -792,7 +808,7 @@ namespace odfaeg {
 
 
                 vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-                vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline[pipelineId]);
+                vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][0]);
                 //std::cout<<"buffer : "<<this->vertexBuffers[selectedBuffer]->getVertexBuffer()<<std::endl;
                 VkBuffer vertexBuffers[] = {this->vertexBuffers[selectedBuffer]->getVertexBuffer()};
                 VkDeviceSize offsets[] = {0};
@@ -826,7 +842,7 @@ namespace odfaeg {
                     descriptorWrites[1].descriptorCount = 1;
                     descriptorWrites[1].pImageInfo = &imageInfo;
 
-                    vkCmdPushDescriptorSet(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[pipelineId], 0, 2, descriptorWrites.data());
+                    vkCmdPushDescriptorSet(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][0], 0, 2, descriptorWrites.data());
                 }  else {
                     std::array<VkWriteDescriptorSet, 1> descriptorWrites{};
 
@@ -838,7 +854,7 @@ namespace odfaeg {
                     descriptorWrites[0].descriptorCount = 1;
                     descriptorWrites[0].pBufferInfo = &bufferInfo;
 
-                    vkCmdPushDescriptorSet(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[pipelineId], 0, 1, descriptorWrites.data());
+                    vkCmdPushDescriptorSet(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][0], 0, 1, descriptorWrites.data());
                 }
                 VkViewport viewport{};
                 viewport.x = 0.0f;
@@ -888,13 +904,28 @@ namespace odfaeg {
             }
 
             if (nbRenderTargets == 0) {
+
+
                 for (unsigned int i = 0; i < pipelineLayout.size(); i++) {
-                    if (pipelineLayout[i] != nullptr)
-                        vkDestroyPipelineLayout(vkDevice.getDevice(), pipelineLayout[i], nullptr);
+                    for (unsigned int j = 0; j < pipelineLayout[i].size(); j++) {
+                        for (unsigned int k = 0; k < pipelineLayout[i][j].size(); k++) {
+                            if (pipelineLayout[i][j][k] != nullptr) {
+
+                                vkDestroyPipelineLayout(vkDevice.getDevice(), pipelineLayout[i][j][k], nullptr);
+                            }
+                        }
+                    }
                 }
+
                 for (unsigned int i = 0; i < graphicsPipeline.size(); i++) {
-                    if (graphicsPipeline[i] != nullptr)
-                        vkDestroyPipeline(vkDevice.getDevice(), graphicsPipeline[i], nullptr);
+                    for (unsigned int j = 0; j < graphicsPipeline[i].size(); j++) {
+                        for (unsigned int k = 0; k < graphicsPipeline[i][j].size(); k++) {
+                            if (graphicsPipeline[i][j][k] != nullptr) {
+
+                                vkDestroyPipeline(vkDevice.getDevice(), graphicsPipeline[i][j][k], nullptr);
+                            }
+                        }
+                    }
                 }
                 for (unsigned int i = 0; i < descriptorSetLayout.size(); i++) {
                     vkDestroyDescriptorSetLayout(vkDevice.getDevice(), descriptorSetLayout[i], nullptr);
@@ -916,16 +947,16 @@ namespace odfaeg {
         std::vector<VkCommandBuffer>& RenderTarget::getCommandBuffers() {
             return commandBuffers;
         }
-        std::vector<VkPipelineLayoutCreateInfo>& RenderTarget::getPipelineLayoutCreateInfo() {
+        std::vector<std::vector<std::vector<VkPipelineLayoutCreateInfo>>>& RenderTarget::getPipelineLayoutCreateInfo() {
             return pipelineLayoutInfo;
         }
-        std::vector<VkPipelineDepthStencilStateCreateInfo>& RenderTarget::getDepthStencilCreateInfo() {
+        std::vector<std::vector<std::vector<VkPipelineDepthStencilStateCreateInfo>>>& RenderTarget::getDepthStencilCreateInfo() {
             return depthStencil;
         }
-        std::vector<VkPipelineLayout>& RenderTarget::getPipelineLayout() {
+        std::vector<std::vector<std::vector<VkPipelineLayout>>>& RenderTarget::getPipelineLayout() {
             return pipelineLayout;
         }
-        std::vector<VkPipeline>& RenderTarget::getGraphicPipeline() {
+        std::vector<std::vector<std::vector<VkPipeline>>>& RenderTarget::getGraphicPipeline() {
             return graphicsPipeline;
         }
         std::vector<VkDescriptorPool>& RenderTarget::getDescriptorPool() {

@@ -195,8 +195,9 @@ namespace odfaeg {
             ////////////////////////////////////////////////////////////
             void draw(const Vertex* vertices, unsigned int vertexCount, sf::PrimitiveType type,
                       RenderStates states = RenderStates::Default);
-            void drawIndirect(VkCommandBuffer& cmd, unsigned int i, unsigned int nbIndirectCommands, unsigned int stride, VertexBuffer& vertexBuffer, VkBuffer vboIndirect, RenderStates states = RenderStates::Default, unsigned int depthStencilId = 0);
-            void drawVertexBuffer(VkCommandBuffer& cmd, unsigned int i, VertexBuffer& vertexBuffer, RenderStates states = RenderStates::Default);
+            void drawIndirect(VkCommandBuffer& cmd, unsigned int i, unsigned int nbIndirectCommands, unsigned int stride, VertexBuffer& vertexBuffer, VkBuffer vboIndirect, RenderStates states = RenderStates::Default,
+                              unsigned int depthStencilId = 0);
+            void drawVertexBuffer(VkCommandBuffer& cmd, unsigned int i, VertexBuffer& vertexBuffer, RenderStates states = RenderStates::Default, unsigned int depthStencilId = 0);
             /// \brief Return the size of the rendering region of the target
             ///
             /// \return Size in pixels
@@ -205,14 +206,14 @@ namespace odfaeg {
             virtual sf::Vector2u getSize() const = 0;
             void cleanup();
             void createGraphicPipeline(sf::PrimitiveType type,
-                      RenderStates states = RenderStates::Default, unsigned int septhStencilId=0, unsigned int nbDepthStencil=1);
+                      RenderStates states = RenderStates::Default, unsigned int depthStencilId=0, unsigned int nbDepthStencil=1);
             virtual std::vector<VkFramebuffer> getSwapchainFrameBuffers() = 0;
             virtual VkRenderPass getRenderPass() = 0;
             virtual size_t getCurrentFrame() = 0;
-            static std::vector<VkPipelineLayoutCreateInfo>& getPipelineLayoutCreateInfo();
-            static std::vector<VkPipelineDepthStencilStateCreateInfo>& getDepthStencilCreateInfo();
-            static std::vector<VkPipelineLayout>& getPipelineLayout();
-            static std::vector<VkPipeline>& getGraphicPipeline();
+            static std::vector<std::vector<std::vector<VkPipelineLayoutCreateInfo>>>& getPipelineLayoutCreateInfo();
+            static std::vector<std::vector<std::vector<VkPipelineDepthStencilStateCreateInfo>>>& getDepthStencilCreateInfo();
+            static std::vector<std::vector<std::vector<VkPipelineLayout>>>& getPipelineLayout();
+            static std::vector<std::vector<std::vector<VkPipeline>>>& getGraphicPipeline();
             static std::vector<VkDescriptorPool>& getDescriptorPool();
             static std::vector<VkDescriptorSetLayout>& getDescriptorSetLayout();
             static std::vector<std::vector<VkDescriptorSet>>& getDescriptorSet();
@@ -261,10 +262,10 @@ namespace odfaeg {
             View        m_defaultView; ///< Default view
             View        m_view;  ///< Current view
             Shader defaultShader, defaultShader2;
-            static std::vector<VkPipelineLayoutCreateInfo> pipelineLayoutInfo;
-            static std::vector<VkPipelineDepthStencilStateCreateInfo> depthStencil;
-            static std::vector<VkPipelineLayout> pipelineLayout;
-            static std::vector<VkPipeline> graphicsPipeline;
+            static std::vector<std::vector<std::vector<VkPipelineLayoutCreateInfo>>> pipelineLayoutInfo;
+            static std::vector<std::vector<std::vector<VkPipelineDepthStencilStateCreateInfo>>> depthStencil;
+            static std::vector<std::vector<std::vector<VkPipelineLayout>>> pipelineLayout;
+            static std::vector<std::vector<std::vector<VkPipeline>>> graphicsPipeline;
             VkCommandPool commandPool;
             std::vector<VkCommandBuffer> commandBuffers;
             static std::vector<VertexBuffer*> vertexBuffers;
