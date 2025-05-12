@@ -24,11 +24,12 @@ using namespace odfaeg::math;
 int main(int argc, char *argv[]) {
     VkSettup instance;
     Device device(instance);
-    RenderWindow window(sf::VideoMode(600, 800), "test", device);
+    RenderWindow window(sf::VideoMode(800, 600), "test", device);
     Font font(device);
     font.loadFromFile("fonts/FreeSerif.ttf");
     Text text("test", font);
     text.setFillColor(sf::Color::Red);
+
     sf::Image img;
     img.loadFromFile("tilesets/herbe.png");
     const sf::Uint8* pixels = img.getPixelsPtr();
@@ -55,7 +56,7 @@ int main(int argc, char *argv[]) {
            }
         }
         window.clear();
-        window.draw(sprite);
+        window.draw(text);
         window.display();
     }
     /*MyAppli app(sf::VideoMode(800, 600), "Test odfaeg");

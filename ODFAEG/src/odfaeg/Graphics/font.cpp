@@ -818,7 +818,7 @@ namespace odfaeg
             // Reserve a 2x2 white square for texturing underlines
             for (int x = 0; x < 2; ++x)
                 for (int y = 0; y < 2; ++y)
-                    image.setPixel(x, y, Color(255, 255, 255, 255));
+                    image.setPixel(x, y, Color(255, 255, 255, 0));
 
             // Create the texture
             texture.loadFromImage(image);
