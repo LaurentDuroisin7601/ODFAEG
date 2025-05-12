@@ -86,15 +86,13 @@ namespace odfaeg
 {
     namespace graphic {
         #ifdef VULKAN
-        ////////////////////////////////////////////////////////////
-        Font::Font(window::Device& vkDevice) :
+        Font::Font(window::Device& device) : vkDevice(device),
         m_library  (NULL),
         m_face     (NULL),
         m_streamRec(NULL),
         m_stroker  (NULL),
         m_refCount (NULL),
-        m_info     (),
-        vkDevice (vkDevice)
+        m_info     ()
         {
             #ifdef SFML_SYSTEM_ANDROID
                 m_stream = NULL;
@@ -104,6 +102,7 @@ namespace odfaeg
 
         ////////////////////////////////////////////////////////////
         Font::Font(const Font& copy) :
+        vkDevice(copy.vkDevice),
         m_library    (copy.m_library),
         m_face       (copy.m_face),
         m_streamRec  (copy.m_streamRec),
@@ -111,8 +110,7 @@ namespace odfaeg
         m_refCount   (copy.m_refCount),
         m_info       (copy.m_info),
         m_pages      (copy.m_pages),
-        m_pixelBuffer(copy.m_pixelBuffer),
-        vkDevice(copy.vkDevice)
+        m_pixelBuffer(copy.m_pixelBuffer)
         {
             #ifdef SFML_SYSTEM_ANDROID
                 m_stream = NULL;
@@ -351,10 +349,7 @@ namespace odfaeg
         const Glyph& Font::getGlyph(Uint32 codePoint, unsigned int characterSize, bool bold, float outlineThickness) const
         {
             // Get the page corresponding to the character size
-            if (m_pages[characterSize] == nullptr) {
-                std::cout<<"create page get glyph"<<std::endl;
-                m_pages[characterSize] = new Page(vkDevice);
-            }
+
             GlyphTable& glyphs = m_pages[characterSize]->glyphs;
 
             // Build the key by combining the glyph index (based on code point), bold flag, and outline thickness
@@ -469,10 +464,8 @@ namespace odfaeg
         ////////////////////////////////////////////////////////////
         const Texture& Font::getTexture(unsigned int characterSize) const
         {
-            if (m_pages[characterSize] == nullptr) {
-                std::cout<<"create page get texture"<<std::endl;
+            if (m_pages[characterSize] == nullptr)
                 m_pages[characterSize] = new Page(vkDevice);
-            }
             return m_pages[characterSize]->texture;
         }
 
@@ -503,11 +496,6 @@ namespace odfaeg
         void Font::cleanup()
         {
             // Check if we must destroy the FreeType pointers
-            std::map<unsigned int, Page*>::iterator it;
-            for (it = m_pages.begin(); it != m_pages.end(); it++) {
-                delete it->second;
-            }
-            m_pages.clear();
             if (m_refCount)
             {
                 // Decrease the reference counter
@@ -543,6 +531,9 @@ namespace odfaeg
             m_stroker   = NULL;
             m_streamRec = NULL;
             m_refCount  = NULL;
+            for (unsigned int i = 0; i < m_pages.size(); i++) {
+                delete m_pages[i];
+            }
             m_pages.clear();
             std::vector<Uint8>().swap(m_pixelBuffer);
         }
@@ -625,10 +616,7 @@ namespace odfaeg
 
                 width += 2 * padding;
                 height += 2 * padding;
-                if (m_pages[characterSize] == nullptr) {
-                    std::cout<<"create page loadglyph"<<std::endl;
-                    m_pages[characterSize] =  new Page(vkDevice);
-                }
+
                 // Get the glyphs page corresponding to the character size
                 Page& page = *m_pages[characterSize];
 
@@ -817,13 +805,15 @@ namespace odfaeg
 
              return true;
         }
+
+
         ////////////////////////////////////////////////////////////
-        Font::Page::Page(window::Device& vkDevice) :
-        nextRow(3), texture(vkDevice)
+        Font::Page::Page(window::Device& device) : texture(device),
+        nextRow(3)
         {
             // Make sure that the texture is initialized by default
             sf::Image image;
-            image.create(128, 128, Color(255, 255, 255, 0));
+            image.create(128, 128, Color(255, 255, 255, 255));
 
             // Reserve a 2x2 white square for texturing underlines
             for (int x = 0; x < 2; ++x)

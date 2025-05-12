@@ -252,6 +252,7 @@ namespace odfaeg {
                 vertexBuffers[selectedBuffer]->append(vertices[i]);
                 //std::cout<<"vertex : "<<vertices[i].position.x<<std::endl;
              }
+             sf::PrimitiveType oldType;
              if (type == sf::Quads) {
                 for (unsigned int i = 0; i < vertexBuffers[selectedBuffer]->getSize(); i+=4) {
                     vertexBuffers[selectedBuffer]->addIndex(i);
@@ -262,6 +263,7 @@ namespace odfaeg {
                     vertexBuffers[selectedBuffer]->addIndex(i+3);
                 }
                 type = sf::Triangles;
+                oldType = sf::Quads;
              }
              if (states.shader == nullptr) {
                 if (states.texture != nullptr) {
@@ -278,7 +280,8 @@ namespace odfaeg {
              ubo.model = states.transform.getMatrix().transpose();
              updateUniformBuffer(getCurrentFrame(), ubo);
              recordCommandBuffers(type, states);
-             vertexBuffers[selectedBuffer]->clearIndexes();
+             if (oldType == sf::Quads)
+                vertexBuffers[selectedBuffer]->clearIndexes();
              /*std::cout<<"drawn"<<std::endl;
              system("PAUSE");*/
 

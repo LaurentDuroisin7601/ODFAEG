@@ -67,7 +67,7 @@ namespace odfaeg {
         #ifdef VULKAN
         std::vector<Texture*> Texture::allTextures = std::vector<Texture*>();
         unsigned int Texture::nbTextures = 0;
-        Texture::Texture(window::Device& vkDevice) : vkDevice(vkDevice), id(0), textureImage(nullptr), m_cacheId (getUniqueId()) {
+        Texture::Texture(window::Device& vkDevice) : vkDevice(vkDevice), id(0), textureImage(nullptr), textureImageView(nullptr), m_cacheId (getUniqueId()) {
             createCommandPool();
         }
         Texture::Texture (Texture&& tex) : vkDevice(tex.vkDevice),
@@ -117,20 +117,25 @@ namespace odfaeg {
             }
             VkBuffer stagingBuffer;
             VkDeviceMemory stagingBufferMemory;
+
+            if (textureImage == nullptr) {
+                createImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
+            }
             createBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
             void* data;
             vkMapMemory(vkDevice.getDevice(), stagingBufferMemory, 0, imageSize, 0, &data);
-                memcpy(data, pixels, static_cast<size_t>(imageSize));
+            memcpy(data, pixels, static_cast<size_t>(imageSize));
             vkUnmapMemory(vkDevice.getDevice(), stagingBufferMemory);
-            createImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
             transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-            copyBufferToImage(stagingBuffer, textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
+            copyBufferToImage(stagingBuffer, textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight),static_cast<uint32_t>(x), static_cast<uint32_t>(y));
             transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
             vkDestroyBuffer(vkDevice.getDevice(), stagingBuffer, nullptr);
             vkFreeMemory(vkDevice.getDevice(), stagingBufferMemory, nullptr);
-            createTextureImageView(VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
-            createTextureSampler();
+            if (textureImageView == nullptr) {
+                createTextureImageView(VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
+                createTextureSampler();
+            }
         }
         void Texture::createImage(uint32_t texWidth, uint32_t texHeight, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory) {
             if (textureImage != nullptr) {
@@ -356,7 +361,7 @@ namespace odfaeg {
 
             endSingleTimeCommands(commandBuffer);
         }
-        void Texture::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height) {
+        void Texture::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t x, uint32_t y) {
             VkCommandBuffer commandBuffer = beginSingleTimeCommands();
 
             VkBufferImageCopy region{};
@@ -367,12 +372,13 @@ namespace odfaeg {
             region.imageSubresource.mipLevel = 0;
             region.imageSubresource.baseArrayLayer = 0;
             region.imageSubresource.layerCount = 1;
-            region.imageOffset = {0, 0, 0};
+            region.imageOffset = {x, y, 0};
             region.imageExtent = {
                 width,
                 height,
                 1
             };
+            //std::cout<<"offsets : "<<x<<','<<y<<std::endl<<"size : "<<width<<","<<height<<std::endl;
 
             vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
