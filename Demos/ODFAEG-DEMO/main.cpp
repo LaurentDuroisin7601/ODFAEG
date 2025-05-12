@@ -29,7 +29,7 @@ int main(int argc, char *argv[]) {
     font.loadFromFile("fonts/FreeSerif.ttf");
     Text text("test", font);
     text.setFillColor(sf::Color::Red);
-
+    text.setBackgroundColor(sf::Color::Green);
     sf::Image img;
     img.loadFromFile("tilesets/herbe.png");
     const sf::Uint8* pixels = img.getPixelsPtr();

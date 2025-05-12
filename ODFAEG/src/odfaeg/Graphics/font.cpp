@@ -722,17 +722,20 @@ namespace odfaeg
                 // The current row passed all the tests: we can select it
                 row = &*it;
                 bestRatio = ratio;
+
             }
 
             // If we didn't find a matching row, create a new one (10% taller than the glyph)
             if (!row)
             {
+
                 int rowHeight = height + height / 10;
                 while ((page.nextRow + rowHeight >= page.texture.getSize().y) || (width >= page.texture.getSize().x))
                 {
                     // Not enough space: resize the texture if possible
                     unsigned int textureWidth  = page.texture.getSize().x;
                     unsigned int textureHeight = page.texture.getSize().y;
+
                     if ((textureWidth * 2 <= Texture::getMaximumSize()) && (textureHeight * 2 <= Texture::getMaximumSize()))
                     {
                         // Make the texture 2 times bigger
@@ -813,12 +816,12 @@ namespace odfaeg
         {
             // Make sure that the texture is initialized by default
             sf::Image image;
-            image.create(128, 128, Color(255, 255, 255, 255));
+            image.create(128, 128, Color(255, 255, 255, 0));
 
             // Reserve a 2x2 white square for texturing underlines
             for (int x = 0; x < 2; ++x)
                 for (int y = 0; y < 2; ++y)
-                    image.setPixel(x, y, Color(255, 255, 255, 0));
+                    image.setPixel(x, y, Color(255, 255, 255, 255));
 
             // Create the texture
             texture.loadFromImage(image);

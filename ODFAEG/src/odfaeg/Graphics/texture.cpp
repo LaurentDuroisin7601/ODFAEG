@@ -67,8 +67,35 @@ namespace odfaeg {
         #ifdef VULKAN
         std::vector<Texture*> Texture::allTextures = std::vector<Texture*>();
         unsigned int Texture::nbTextures = 0;
-        Texture::Texture(window::Device& vkDevice) : vkDevice(vkDevice), id(0), textureImage(nullptr), textureImageView(nullptr), m_cacheId (getUniqueId()) {
+        Texture::Texture(window::Device& vkDevice) : vkDevice(vkDevice), id(0), textureImage(nullptr), textureImageView(nullptr), m_cacheId (getUniqueId()), ct(UNORM) {
             createCommandPool();
+        }
+        Texture::Texture(const Texture& copy) :
+        m_size         (0, 0),
+        m_actualSize   (0, 0),
+        m_texture      (0),
+        m_isSmooth     (copy.m_isSmooth),
+        m_isRepeated   (copy.m_isRepeated),
+        m_cacheId      (getUniqueId()),
+        vkDevice(copy.vkDevice),
+        id(nbTextures+1),
+        ct(copy.ct)
+        {
+            if (copy.textureImage)
+            {
+                if (create(copy.getSize().x, copy.getSize().y))
+                {
+                    update(copy);
+                    // Force an OpenGL flush, so that the texture will appear updated
+                    // in all contexts immediately (solves problems in multi-threaded apps)
+
+                }
+                else
+                {
+                    err() << "Failed to copy texture, failed to create new texture" << std::endl;
+                }
+            }
+            nbTextures++;
         }
         Texture::Texture (Texture&& tex) : vkDevice(tex.vkDevice),
         textureImage(std::exchange(tex.textureImage, nullptr)),
@@ -78,6 +105,7 @@ namespace odfaeg {
             m_format = std::move(tex.m_format);
             id = std::move(tex.id);
             m_size = std::move(tex.m_size);
+            ct = std::move(tex.ct);
         }
         bool Texture::create(uint32_t texWidth, uint32_t texHeight) {
             createImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
@@ -553,7 +581,7 @@ namespace odfaeg {
                 samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
                 samplerInfo.compareEnable = VK_FALSE;
                 samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
-                samplerInfo.mipmapMode = (m_isSmooth) ? VK_SAMPLER_MIPMAP_MODE_LINEAR : VK_SAMPLER_MIPMAP_MODE_NEAREST;
+                samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
                 samplerInfo.mipLodBias = 0.0f;
                 samplerInfo.minLod = 0.0f;
                 samplerInfo.maxLod = 0.0f;
@@ -602,6 +630,7 @@ namespace odfaeg {
             std::swap(m_isSmooth,      right.m_isSmooth);
             std::swap(m_isRepeated,    right.m_isRepeated);
             std::swap(commandPool, right.commandPool);
+            std::swap(ct, right.ct);
             m_cacheId = getUniqueId();
             right.m_cacheId = getUniqueId();
         }
