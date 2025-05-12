@@ -15,15 +15,21 @@ using namespace sorrok;
 
 int main(int argc, char *argv[]) {
     /*VkSettup instance;
-    Device device(instance);
-    RenderWindow window(sf::VideoMode(600, 800), "test", device);
-    window.getView().move(400, 300, 0);
-    Texture texture(device);
-    texture.loadFromFile("tilesets/eau.png");
-    Sprite sprite(texture, Vec3f(0, 0, 0), Vec3f(100, 50, 0), sf::IntRect(0, 0, 100, 50));
-    RenderTexture rt(device);
-    rt.create(800, 600);
-    Sprite rtSprite(rt.getTexture(), Vec3f(0, 0, 0), Vec3f(800, 600, 0), sf::IntRect(0, 0, 800, 600));
+    Device device(instance);*/
+    RenderWindow window(sf::VideoMode(600, 800), "test"/*, device*/);
+    Font font(device);
+    font.loadFromFile("fonts/FreeSerif.ttf");
+    Text text("test", font, 20);
+    text.setFillColor(sf::Color::Red);
+    text.setBackgroundColor(sf::Color::Blue);
+    CircleShape circle(10);
+    ConvexShape cv(3);
+    cv.setPoint(0, sf::Vector3f(25, 0, 0));
+    cv.setPoint(1, sf::Vector3f(0, 50, 0));
+    cv.setPoint(2, sf::Vector3f(50, 50, 0));
+    cv.setOutlineThickness(5);
+    cv.setOutlineColor(sf::Color::Red);
+
     while (window.isOpen()) {
         IEvent event;
         while (window.pollEvent(event)) {
@@ -31,15 +37,12 @@ int main(int argc, char *argv[]) {
                 window.close();
            }
         }
-        rt.clear();
-        rt.draw(sprite);
-        rt.display();
         window.clear();
-        window.draw(rtSprite);
+        window.draw(text);
         window.display();
-    }*/
-    MyAppli app(sf::VideoMode(800, 600), "Test odfaeg");
-    return app.exec();
+    }
+    /*MyAppli app(sf::VideoMode(800, 600), "Test odfaeg");
+    return app.exec();*/
 }
 
 

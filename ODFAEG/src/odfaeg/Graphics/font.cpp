@@ -352,8 +352,8 @@ namespace odfaeg
         {
             // Get the page corresponding to the character size
             if (m_pages[characterSize] == nullptr) {
-                Page* page = new Page(vkDevice);
-                m_pages[characterSize] = page;
+                std::cout<<"create page get glyph"<<std::endl;
+                m_pages[characterSize] = new Page(vkDevice);
             }
             GlyphTable& glyphs = m_pages[characterSize]->glyphs;
 
@@ -469,6 +469,10 @@ namespace odfaeg
         ////////////////////////////////////////////////////////////
         const Texture& Font::getTexture(unsigned int characterSize) const
         {
+            if (m_pages[characterSize] == nullptr) {
+                std::cout<<"create page get texture"<<std::endl;
+                m_pages[characterSize] = new Page(vkDevice);
+            }
             return m_pages[characterSize]->texture;
         }
 
@@ -622,8 +626,8 @@ namespace odfaeg
                 width += 2 * padding;
                 height += 2 * padding;
                 if (m_pages[characterSize] == nullptr) {
-                    Page* page = new Page(vkDevice);
-                    m_pages[characterSize] = page;
+                    std::cout<<"create page loadglyph"<<std::endl;
+                    m_pages[characterSize] =  new Page(vkDevice);
                 }
                 // Get the glyphs page corresponding to the character size
                 Page& page = *m_pages[characterSize];
@@ -1094,6 +1098,7 @@ namespace odfaeg
         const Glyph& Font::getGlyph(Uint32 codePoint, unsigned int characterSize, bool bold, float outlineThickness) const
         {
             // Get the page corresponding to the character size
+
             GlyphTable& glyphs = m_pages[characterSize].glyphs;
 
             // Build the key by combining the glyph index (based on code point), bold flag, and outline thickness

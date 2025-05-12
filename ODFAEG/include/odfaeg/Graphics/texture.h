@@ -56,9 +56,14 @@ namespace odfaeg
     namespace graphic {
         class RenderTarget;
         class RenderTexture;
+
         #ifdef VULKAN
         class ODFAEG_GRAPHICS_API Texture {
             public :
+            enum CoordinateType {
+                NORM, UNORM
+            };
+
             Texture (window::Device& vkDevice);
             Texture (Texture&& texture);
             bool loadFromImage(const sf::Image& image, const sf::IntRect& area = sf::IntRect());
@@ -87,6 +92,7 @@ namespace odfaeg
             VkImage getImage();
             static std::vector<Texture*> getAllTextures();
             VkFormat findDepthFormat();
+            void setCoordinatesType(CoordinateType ct);
             ~Texture();
         private :
             Texture(const Texture&);
@@ -109,7 +115,6 @@ namespace odfaeg
             friend class Text;
             friend class RenderTexture;
             friend class RenderTarget;
-            sf::Uint64 m_cacheId;
             unsigned int m_texture;
             bool m_pixelsFlipped, m_isRepeated, m_isSmooth;
             sf::Image        m_image;
@@ -117,15 +122,18 @@ namespace odfaeg
             sf::Vector2u m_size;          ///< Public texture size
             sf::Vector2u m_actualSize;    ///< Actual texture size (can be greater than public size because of padding)
             unsigned int id;
+            sf::Uint64 m_cacheId;
             VkImage textureImage;
             VkDeviceMemory textureImageMemory;
             VkImageView textureImageView;
             VkSampler textureSampler;
             VkFormat m_format;
-            sf::Vector2u size;
+            VkImageLayout imageLayout;
+            VkImageAspectFlags imageAspectFlags;
             static std::vector<Texture*> allTextures;
             static unsigned int nbTextures;
             VkCommandPool commandPool;
+            CoordinateType ct;
         };
         #else
         ////////////////////////////////////////////////////////////

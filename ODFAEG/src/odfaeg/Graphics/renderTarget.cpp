@@ -250,6 +250,7 @@ namespace odfaeg {
              vertexBuffers[selectedBuffer]->clear();
              for (unsigned int i = 0; i < vertexCount; i++) {
                 vertexBuffers[selectedBuffer]->append(vertices[i]);
+                //std::cout<<"vertex : "<<vertices[i].position.x<<std::endl;
              }
              if (type == sf::Quads) {
                 for (unsigned int i = 0; i < vertexBuffers[selectedBuffer]->getSize(); i+=4) {

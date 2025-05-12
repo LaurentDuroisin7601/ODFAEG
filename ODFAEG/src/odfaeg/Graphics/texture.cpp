@@ -67,7 +67,7 @@ namespace odfaeg {
         #ifdef VULKAN
         std::vector<Texture*> Texture::allTextures = std::vector<Texture*>();
         unsigned int Texture::nbTextures = 0;
-        Texture::Texture(window::Device& vkDevice) : vkDevice(vkDevice), id(0), textureImage(nullptr) {
+        Texture::Texture(window::Device& vkDevice) : vkDevice(vkDevice), id(0), textureImage(nullptr), m_cacheId (getUniqueId()) {
             createCommandPool();
         }
         Texture::Texture (Texture&& tex) : vkDevice(tex.vkDevice),
@@ -80,7 +80,7 @@ namespace odfaeg {
             m_size = std::move(tex.m_size);
         }
         bool Texture::create(uint32_t texWidth, uint32_t texHeight) {
-            createImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
+            createImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
             transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
             createTextureImageView(VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
             createTextureSampler();
@@ -96,6 +96,7 @@ namespace odfaeg {
             return true;
         }
         bool Texture::loadFromFile(const std::string& filename, const sf::IntRect& area) {
+
             Image image;
             return image.loadFromFile(filename) && loadFromImage(image, area);
         }
@@ -121,7 +122,7 @@ namespace odfaeg {
             vkMapMemory(vkDevice.getDevice(), stagingBufferMemory, 0, imageSize, 0, &data);
                 memcpy(data, pixels, static_cast<size_t>(imageSize));
             vkUnmapMemory(vkDevice.getDevice(), stagingBufferMemory);
-            createImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
+            createImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
             transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
             copyBufferToImage(stagingBuffer, textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
             transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
@@ -132,6 +133,12 @@ namespace odfaeg {
             createTextureSampler();
         }
         void Texture::createImage(uint32_t texWidth, uint32_t texHeight, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory) {
+            if (textureImage != nullptr) {
+                vkDestroySampler(vkDevice.getDevice(), textureSampler, nullptr);
+                vkDestroyImageView(vkDevice.getDevice(), textureImageView, nullptr);
+                vkDestroyImage(vkDevice.getDevice(), textureImage, nullptr);
+                vkFreeMemory(vkDevice.getDevice(), textureImageMemory, nullptr);
+            }
             VkImageCreateInfo imageInfo{};
             imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
             imageInfo.imageType = VK_IMAGE_TYPE_2D;
@@ -266,7 +273,7 @@ namespace odfaeg {
         }
         void Texture::transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout) {
             VkCommandBuffer commandBuffer = beginSingleTimeCommands();
-
+            imageLayout = newLayout;
             VkImageMemoryBarrier barrier{};
             barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
             barrier.oldLayout = oldLayout;
@@ -293,12 +300,30 @@ namespace odfaeg {
             VkPipelineStageFlags sourceStage;
             VkPipelineStageFlags destinationStage;
 
-            if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
+            if (oldLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL) {
+                barrier.srcAccessMask = 0;
+                barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+
+                sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+                destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+            } else if (oldLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
                 barrier.srcAccessMask = 0;
                 barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 
                 sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
                 destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+            } else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
+                barrier.srcAccessMask = 0;
+                barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+
+                sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+                destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+            } else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+                barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+                barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+                sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+                destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
             } else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
                 barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
                 barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
@@ -364,9 +389,64 @@ namespace odfaeg {
             viewInfo.subresourceRange.levelCount = 1;
             viewInfo.subresourceRange.baseArrayLayer = 0;
             viewInfo.subresourceRange.layerCount = 1;
+            imageAspectFlags = aspectFlags;
             if (vkCreateImageView(vkDevice.getDevice(), &viewInfo, nullptr, &textureImageView) != VK_SUCCESS) {
                 throw std::runtime_error("failed to create texture image view!");
             }
+        }
+        void Texture::setCoordinatesType(CoordinateType ct) {
+            if (ct == UNORM) {
+                vkDestroySampler(vkDevice.getDevice(), textureSampler, nullptr);
+                VkSamplerCreateInfo samplerInfo{};
+                samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+                samplerInfo.magFilter = VK_FILTER_LINEAR;
+                samplerInfo.minFilter = VK_FILTER_LINEAR;
+                samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+                samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+                samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+                samplerInfo.anisotropyEnable = VK_FALSE;
+                samplerInfo.unnormalizedCoordinates = VK_TRUE;
+                VkPhysicalDeviceProperties properties{};
+                vkGetPhysicalDeviceProperties(vkDevice.getPhysicalDevice(), &properties);
+                samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
+                samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+                samplerInfo.compareEnable = VK_FALSE;
+                samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+                samplerInfo.mipmapMode = (m_isSmooth) ? VK_SAMPLER_MIPMAP_MODE_LINEAR : VK_SAMPLER_MIPMAP_MODE_NEAREST;
+                samplerInfo.mipLodBias = 0.0f;
+                samplerInfo.minLod = 0.0f;
+                samplerInfo.maxLod = 0.0f;
+                m_isRepeated = false;
+                if (vkCreateSampler(vkDevice.getDevice(), &samplerInfo, nullptr, &textureSampler) != VK_SUCCESS) {
+                    throw std::runtime_error("failed to create texture sampler!");
+                }
+            } else {
+                vkDestroySampler(vkDevice.getDevice(), textureSampler, nullptr);
+                VkSamplerCreateInfo samplerInfo{};
+                samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+                samplerInfo.magFilter = VK_FILTER_LINEAR;
+                samplerInfo.minFilter = VK_FILTER_LINEAR;
+                samplerInfo.addressModeU = (m_isRepeated) ? VK_SAMPLER_ADDRESS_MODE_REPEAT : VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+                samplerInfo.addressModeV = (m_isRepeated) ? VK_SAMPLER_ADDRESS_MODE_REPEAT : VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+                samplerInfo.addressModeW = (m_isRepeated) ? VK_SAMPLER_ADDRESS_MODE_REPEAT : VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+                samplerInfo.anisotropyEnable = VK_TRUE;
+                samplerInfo.unnormalizedCoordinates = VK_FALSE;
+                VkPhysicalDeviceProperties properties{};
+                vkGetPhysicalDeviceProperties(vkDevice.getPhysicalDevice(), &properties);
+                samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
+                samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+                samplerInfo.compareEnable = VK_FALSE;
+                samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+                samplerInfo.mipmapMode = (m_isSmooth) ? VK_SAMPLER_MIPMAP_MODE_LINEAR : VK_SAMPLER_MIPMAP_MODE_NEAREST;
+                samplerInfo.mipLodBias = 0.0f;
+                samplerInfo.minLod = 0.0f;
+                samplerInfo.maxLod = 0.0f;
+                if (vkCreateSampler(vkDevice.getDevice(), &samplerInfo, nullptr, &textureSampler) != VK_SUCCESS) {
+                    throw std::runtime_error("failed to create texture sampler!");
+                }
+
+            }
+            this->ct = ct;
         }
         void Texture::createTextureSampler() {
             VkSamplerCreateInfo samplerInfo{};
@@ -397,12 +477,127 @@ namespace odfaeg {
             return sf::Vector2u(m_size.x, m_size.y);
         }
         void Texture::update(const Texture& texture) {
+           update(texture, 0, 0);
         }
         void Texture::update(const Texture& texture, unsigned int x, unsigned int y) {
+            VkImageSubresourceLayers subResourceLayers = {
+                .aspectMask = imageAspectFlags,
+                .mipLevel = 0,
+                .baseArrayLayer = 0,
+                .layerCount = 1
+            };
+            VkImageBlit2 blitRegion{ .sType = VK_STRUCTURE_TYPE_IMAGE_BLIT_2, .pNext = nullptr };
+
+            blitRegion.srcOffsets[0].x = x;
+            blitRegion.srcOffsets[0].y = y;
+            blitRegion.srcOffsets[0].z = 0;
+            blitRegion.srcOffsets[1].x = texture.m_size.x;
+            blitRegion.srcOffsets[1].y = texture.m_size.y;
+            blitRegion.srcOffsets[1].z = 1;
+
+            blitRegion.dstOffsets[0].x = x;
+            blitRegion.dstOffsets[0].y = y;
+            blitRegion.dstOffsets[0].z = 0;
+            blitRegion.dstOffsets[1].x = m_size.x;
+            blitRegion.dstOffsets[1].y = m_size.y;
+            blitRegion.dstOffsets[1].z = 1;
+
+            blitRegion.srcSubresource.aspectMask = imageAspectFlags;
+            blitRegion.srcSubresource.baseArrayLayer = 0;
+            blitRegion.srcSubresource.layerCount = 1;
+            blitRegion.srcSubresource.mipLevel = 0;
+
+            blitRegion.dstSubresource.aspectMask = imageAspectFlags;
+            blitRegion.dstSubresource.baseArrayLayer = 0;
+            blitRegion.dstSubresource.layerCount = 1;
+            blitRegion.dstSubresource.mipLevel = 0;
+
+            VkBlitImageInfo2 blitInfo{ .sType = VK_STRUCTURE_TYPE_BLIT_IMAGE_INFO_2, .pNext = nullptr };
+            blitInfo.dstImage = textureImage;
+            blitInfo.dstImageLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+            blitInfo.srcImage = texture.textureImage;
+            blitInfo.srcImageLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+            blitInfo.filter = VK_FILTER_LINEAR;
+            blitInfo.regionCount = 1;
+            blitInfo.pRegions = &blitRegion;
+            transitionImageLayout(texture.textureImage, m_format, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+            transitionImageLayout(textureImage, m_format, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+            VkCommandBuffer  commandBuffer = beginSingleTimeCommands();
+            vkCmdBlitImage2(commandBuffer, &blitInfo);
+            endSingleTimeCommands(commandBuffer);
+            transitionImageLayout(texture.textureImage, m_format, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+            transitionImageLayout(textureImage, m_format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
         }
         void Texture::setSmooth(bool smooth) {
+            m_isSmooth = smooth;
+            if (ct == UNORM) {
+                vkDestroySampler(vkDevice.getDevice(), textureSampler, nullptr);
+                VkSamplerCreateInfo samplerInfo{};
+                samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+                samplerInfo.magFilter = VK_FILTER_LINEAR;
+                samplerInfo.minFilter = VK_FILTER_LINEAR;
+                samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+                samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+                samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+                samplerInfo.anisotropyEnable = VK_FALSE;
+                samplerInfo.unnormalizedCoordinates = VK_TRUE;
+                VkPhysicalDeviceProperties properties{};
+                vkGetPhysicalDeviceProperties(vkDevice.getPhysicalDevice(), &properties);
+                samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
+                samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+                samplerInfo.compareEnable = VK_FALSE;
+                samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+                samplerInfo.mipmapMode = (m_isSmooth) ? VK_SAMPLER_MIPMAP_MODE_LINEAR : VK_SAMPLER_MIPMAP_MODE_NEAREST;
+                samplerInfo.mipLodBias = 0.0f;
+                samplerInfo.minLod = 0.0f;
+                samplerInfo.maxLod = 0.0f;
+                m_isRepeated = false;
+                if (vkCreateSampler(vkDevice.getDevice(), &samplerInfo, nullptr, &textureSampler) != VK_SUCCESS) {
+                    throw std::runtime_error("failed to create texture sampler!");
+                }
+            } else {
+                vkDestroySampler(vkDevice.getDevice(), textureSampler, nullptr);
+                VkSamplerCreateInfo samplerInfo{};
+                samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+                samplerInfo.magFilter = VK_FILTER_LINEAR;
+                samplerInfo.minFilter = VK_FILTER_LINEAR;
+                samplerInfo.addressModeU = (m_isRepeated) ? VK_SAMPLER_ADDRESS_MODE_REPEAT : VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+                samplerInfo.addressModeV = (m_isRepeated) ? VK_SAMPLER_ADDRESS_MODE_REPEAT : VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+                samplerInfo.addressModeW = (m_isRepeated) ? VK_SAMPLER_ADDRESS_MODE_REPEAT : VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+                samplerInfo.anisotropyEnable = VK_TRUE;
+                samplerInfo.unnormalizedCoordinates = VK_FALSE;
+                VkPhysicalDeviceProperties properties{};
+                vkGetPhysicalDeviceProperties(vkDevice.getPhysicalDevice(), &properties);
+                samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
+                samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+                samplerInfo.compareEnable = VK_FALSE;
+                samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+                samplerInfo.mipmapMode = (m_isSmooth) ? VK_SAMPLER_MIPMAP_MODE_LINEAR : VK_SAMPLER_MIPMAP_MODE_NEAREST;
+                samplerInfo.mipLodBias = 0.0f;
+                samplerInfo.minLod = 0.0f;
+                samplerInfo.maxLod = 0.0f;
+                if (vkCreateSampler(vkDevice.getDevice(), &samplerInfo, nullptr, &textureSampler) != VK_SUCCESS) {
+                    throw std::runtime_error("failed to create texture sampler!");
+                }
+
+            }
         }
-        void Texture::swap(Texture& texture) {
+        void Texture::swap(Texture& right) {
+            std::swap(id, right.id);
+            std::swap(m_size,          right.m_size);
+            std::swap(m_actualSize,    right.m_actualSize);
+            std::swap(textureImage,       right.textureImage);
+            std::swap(m_format, right.m_format);
+            std::swap(imageLayout, right.imageLayout);
+            std::swap(imageAspectFlags, right.imageAspectFlags);
+            std::swap(textureImageView, right.textureImageView);
+            std::swap(textureImageMemory, right.textureImageMemory);
+            std::swap(textureSampler, right.textureSampler);
+            std::swap(m_isSmooth,      right.m_isSmooth);
+            std::swap(m_isRepeated,    right.m_isRepeated);
+            std::swap(commandPool, right.commandPool);
+            m_cacheId = getUniqueId();
+            right.m_cacheId = getUniqueId();
         }
         unsigned int Texture::getMaximumSize() {
             return 10000;
@@ -411,12 +606,64 @@ namespace odfaeg {
             return false;
         }
         bool Texture::isSmooth() const {
-            return false;
+            return m_isRepeated;
         }
         void Texture::setRepeated(bool repeated) {
+            m_isRepeated = repeated;
+            if (ct == UNORM) {
+                vkDestroySampler(vkDevice.getDevice(), textureSampler, nullptr);
+                VkSamplerCreateInfo samplerInfo{};
+                samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+                samplerInfo.magFilter = VK_FILTER_LINEAR;
+                samplerInfo.minFilter = VK_FILTER_LINEAR;
+                samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+                samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+                samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+                samplerInfo.anisotropyEnable = VK_FALSE;
+                samplerInfo.unnormalizedCoordinates = VK_TRUE;
+                VkPhysicalDeviceProperties properties{};
+                vkGetPhysicalDeviceProperties(vkDevice.getPhysicalDevice(), &properties);
+                samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
+                samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+                samplerInfo.compareEnable = VK_FALSE;
+                samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+                samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+                samplerInfo.mipLodBias = 0.0f;
+                samplerInfo.minLod = 0.0f;
+                samplerInfo.maxLod = 0.0f;
+                m_isRepeated = false;
+                if (vkCreateSampler(vkDevice.getDevice(), &samplerInfo, nullptr, &textureSampler) != VK_SUCCESS) {
+                    throw std::runtime_error("failed to create texture sampler!");
+                }
+            } else {
+                vkDestroySampler(vkDevice.getDevice(), textureSampler, nullptr);
+                VkSamplerCreateInfo samplerInfo{};
+                samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+                samplerInfo.magFilter = VK_FILTER_LINEAR;
+                samplerInfo.minFilter = VK_FILTER_LINEAR;
+                samplerInfo.addressModeU = (m_isRepeated) ? VK_SAMPLER_ADDRESS_MODE_REPEAT : VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+                samplerInfo.addressModeV = (m_isRepeated) ? VK_SAMPLER_ADDRESS_MODE_REPEAT : VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+                samplerInfo.addressModeW = (m_isRepeated) ? VK_SAMPLER_ADDRESS_MODE_REPEAT : VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+                samplerInfo.anisotropyEnable = VK_TRUE;
+                samplerInfo.unnormalizedCoordinates = VK_FALSE;
+                VkPhysicalDeviceProperties properties{};
+                vkGetPhysicalDeviceProperties(vkDevice.getPhysicalDevice(), &properties);
+                samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
+                samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+                samplerInfo.compareEnable = VK_FALSE;
+                samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+                samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+                samplerInfo.mipLodBias = 0.0f;
+                samplerInfo.minLod = 0.0f;
+                samplerInfo.maxLod = 0.0f;
+                if (vkCreateSampler(vkDevice.getDevice(), &samplerInfo, nullptr, &textureSampler) != VK_SUCCESS) {
+                    throw std::runtime_error("failed to create texture sampler!");
+                }
+
+            }
         }
         bool Texture::isRepeated() const {
-            return false;
+            return isRepeated();
         }
         bool isCubemap() {
             return false;

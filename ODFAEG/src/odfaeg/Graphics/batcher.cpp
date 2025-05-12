@@ -374,7 +374,9 @@ namespace odfaeg {
                 m_vertexArrays.push_back(&va);
                 //std::cout<<"va pushed"<<std::endl;
                 //m_indexes.push_back(std::vector<unsigned int>());
+                unsigned int baseVertex = vertices.getVertexCount();
                 for (unsigned int i = 0; i < va.getVertexCount(); i++) {
+
                     math::Vec3f t = tm.transform(math::Vec3f(va[i].position.x, va[i].position.y, va[i].position.z));
                     Vertex v (sf::Vector3f(t.x, t.y, t.z), va[i].color, va[i].texCoords);
                     //std::cout<<"tm : "<<tm.getMatrix()<<std::endl<<"position : "<<t<<std::endl;
@@ -388,6 +390,9 @@ namespace odfaeg {
                         /*m_indexes.back().push_back(va.m_indexes[i]);
                         allIndexes.push_back(va.m_indexes[i]);*/
                     //}
+                }
+                for (unsigned int i = 0; i < va.getIndexes().size(); i++) {
+                    vertices.addIndex(baseVertex + va.getIndexes()[i]);
                 }
                 //std::cout<<"vertices transformed"<<std::endl;
             }

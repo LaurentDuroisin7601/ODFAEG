@@ -138,7 +138,7 @@ namespace odfaeg {
                     if (network::Network::getSrvInstance().isRunning()) {
                         network::Network::getSrvInstance().checkMessages();
                     }
-                    onExec();
+                    static_cast<A*>(this)->onExec();
                     getClock("LoopTime").restart();
                 }
                 return EXIT_SUCCESS;

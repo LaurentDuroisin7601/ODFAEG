@@ -23,6 +23,7 @@ namespace odfaeg {
             VkInstance getInstance();
             void cleanup();
 
+
             ~VkSettup();
         private :
             static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback (VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData) {

@@ -47,6 +47,7 @@ namespace odfaeg {
             VkDevice device;
             VkQueue graphicsQueue, presentQueue;
 
+
         };
     }
 }
