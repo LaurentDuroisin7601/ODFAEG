@@ -1277,7 +1277,7 @@ namespace odfaeg {
                     vkDestroyBuffer(vkDevice.getDevice(), stagingBuffer, nullptr);
                     vkFreeMemory(vkDevice.getDevice(), stagingBufferMemory, nullptr);
                     //createDescriptorSets(p, currentStates);
-                    std::cout<<"size : "<<sizeof(DrawElementsIndirectCommand)<<std::endl;
+                    //std::cout<<"size : "<<sizeof(DrawElementsIndirectCommand)<<std::endl;
                     createCommandBuffersIndirect(p, drawElementsIndirectCommands[p].size(), sizeof(DrawElementsIndirectCommand), NODEPTHNOSTENCIL, currentStates);
 
                 }
@@ -1460,7 +1460,7 @@ namespace odfaeg {
                 vkCmdPushConstants(commandBuffers[i], frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][frameBuffer.getId()][depthStencilID], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectDrawPushConsts), &indirectDrawPushConsts);
                 //std::cout<<"stride : "<<stride<<std::endl;
                 frameBuffer.drawIndirect(commandBuffers[i], i, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
-                vkCmdPipelineBarrier(commandBuffers[i], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 0, nullptr);
+                //vkCmdPipelineBarrier(commandBuffers[i], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 0, nullptr);
                 VkMemoryBarrier memoryBarrier;
                 memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
                 memoryBarrier.pNext = VK_NULL_HANDLE;

@@ -280,8 +280,8 @@ namespace odfaeg
                 // Ensure valid index -- if this fails, you have not called addTextureRect() enough times, or p.textureIndex is simply wrong
                 assert(it->textureIndex == 0 || it->textureIndex < mTextureRects.size());
                 #ifdef VULKAN
-                const std::array<graphic::Vertex, 4>& quad = mQuads[it->textureIndex];
-                for (unsigned int i = 0; i < 4; i++)
+                const std::array<graphic::Vertex, 6>& quad = mQuads[it->textureIndex];
+                for (unsigned int i = 0; i < 6; i++)
                 {
                     graphic::Vertex vertex;
                     math::Vec3f pos = tm.transform(math::Vec3f(quad[i].position.x, quad[i].position.y,quad[i].position.z));
@@ -292,12 +292,6 @@ namespace odfaeg
                     vertex.color = it->color;
                     mVertices.append(vertex);
                 }
-                mVertices.addIndex(0);
-                mVertices.addIndex(1);
-                mVertices.addIndex(2);
-                mVertices.addIndex(0);
-                mVertices.addIndex(2);
-                mVertices.addIndex(3);
                 #else
                 const std::array<graphic::Vertex, 4>& quad = mQuads[it->textureIndex];
                 for (unsigned int i = 0; i < 4; i++)
@@ -348,15 +342,15 @@ namespace odfaeg
             quad[1].texCoords = sf::Vector2f(rect.left + rect.width, rect.top);
             quad[2].texCoords = sf::Vector2f(rect.left + rect.width, rect.top + rect.height);
             quad[3].texCoords = sf::Vector2f(rect.left, rect.top);
-            /*quad[4].texCoords = sf::Vector2f(rect.left + rect.width, rect.top + rect.height);
-            quad[5].texCoords = sf::Vector2f(rect.left, rect.top + rect.height);*/
+            quad[4].texCoords = sf::Vector2f(rect.left + rect.width, rect.top + rect.height);
+            quad[5].texCoords = sf::Vector2f(rect.left, rect.top + rect.height);
 
             quad[0].position = sf::Vector3f(-rect.width, -rect.height, rect.height) / 2.f;
             quad[1].position = sf::Vector3f( rect.width, -rect.height, rect.height) / 2.f;
             quad[2].position = sf::Vector3f( rect.width, rect.height, -rect.height) / 2.f;
             quad[3].position = sf::Vector3f(-rect.width, -rect.height, rect.height) / 2.f;
-            /*quad[4].position = sf::Vector3f( rect.width, rect.height, -rect.height) / 2.f;
-            quad[5].position = sf::Vector3f(-rect.width, rect.height, -rect.height) / 2.f;*/
+            quad[4].position = sf::Vector3f( rect.width, rect.height, -rect.height) / 2.f;
+            quad[5].position = sf::Vector3f(-rect.width, rect.height, -rect.height) / 2.f;
             #else
             quad[0].texCoords = sf::Vector2f(rect.left, rect.top);
             quad[1].texCoords = sf::Vector2f(rect.left + rect.width, rect.top);
