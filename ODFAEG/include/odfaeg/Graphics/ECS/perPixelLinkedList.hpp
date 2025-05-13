@@ -1,9 +1,6 @@
 #ifndef ECS_PER_PIXEL_LINKED_LIST
 #define ECS_PER_PIXEL_LINKED_LIST
-#ifndef VULKAN
-#include "GL/glew.h"
-#include <SFML/OpenGL.hpp>
-#endif // VULKAN
+
 #include "heavyComponent.hpp"
 #include "../renderTexture.h"
 #include "../sprite.h"

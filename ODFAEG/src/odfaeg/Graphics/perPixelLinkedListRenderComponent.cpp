@@ -1104,6 +1104,183 @@ namespace odfaeg {
                 }
             }
         }
+        void PerPixelLinkedListRenderComponent::drawInstancesIndexed() {
+             for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
+                vbBindlessTex[i].clear();
+                materialDatas[i].clear();
+                modelDatas[i].clear();
+                vbBindlessTex[i].clear();
+            }
+            std::array<std::vector<DrawElementsIndirectCommand>, Batcher::nbPrimitiveTypes> drawElementsIndirectCommands;
+            std::array<std::vector<ModelData>, Batcher::nbPrimitiveTypes> matrices;
+            std::array<std::vector<MaterialData>, Batcher::nbPrimitiveTypes> materials;
+            std::array<unsigned int, Batcher::nbPrimitiveTypes> firstIndex, baseInstance, baseVertex;
+            for (unsigned int i = 0; i < firstIndex.size(); i++) {
+                firstIndex[i] = 0;
+            }
+            for (unsigned int i = 0; i < baseVertex.size(); i++) {
+                baseVertex[i] = 0;
+            }
+            for (unsigned int i = 0; i < baseInstance.size(); i++) {
+                baseInstance[i] = 0;
+            }
+            for (unsigned int i = 0; i < m_normalsIndexed.size(); i++) {
+
+               if (m_normalsIndexed[i].getAllVertices().getVertexCount() > 0) {
+                    DrawElementsIndirectCommand drawElementsIndirectCommand;
+                    float time = timeClock.getElapsedTime().asSeconds();
+                    indirectDrawPushConsts.time = time;
+                    unsigned int p = m_normalsIndexed[i].getAllVertices().getPrimitiveType();
+                    /*if (m_normals[i].getVertexArrays()[0]->getEntity()->getRootType() == "E_MONSTER") {
+                            std::cout<<"tex coords : "<<(*m_normals[i].getVertexArrays()[0])[0].texCoords.x<<","<<(*m_normals[i].getVertexArrays()[0])[0].texCoords.y<<std::endl;
+                        }*/
+                    MaterialData material;
+                    material.textureIndex = (m_normalsIndexed[i].getMaterial().getTexture() != nullptr) ? m_normalsIndexed[i].getMaterial().getTexture()->getId() : 0;
+                    material.materialType = m_normalsIndexed[i].getMaterial().getType();
+                    materialDatas[p].push_back(material);
+
+                    TransformMatrix tm;
+                    ModelData modelData;
+                    modelData.worldMat = tm.getMatrix().transpose();
+                    modelDatas[p].push_back(modelData);
+                    unsigned int indexCount = 0, vertexCount = 0;
+                    for (unsigned int j = 0; j < m_normalsIndexed[i].getAllVertices().getVertexCount(); j++) {
+                        vbBindlessTex[p].append(m_normalsIndexed[i].getAllVertices()[j]);
+                        vertexCount++;
+                    }
+                    for (unsigned int j = 0; j < m_normalsIndexed[i].getAllVertices().getIndexes().size(); j++) {
+                        vbBindlessTex[p].addIndex(m_normalsIndexed[i].getAllVertices().getIndexes()[j]);
+                        indexCount++;
+                    }
+                    drawElementsIndirectCommand.index_count = indexCount;
+                    drawElementsIndirectCommand.first_index = firstIndex[p];
+                    drawElementsIndirectCommand.instance_base = baseInstance[p];
+                    drawElementsIndirectCommand.vertex_base = baseVertex[p];
+                    drawElementsIndirectCommand.instance_count = 1;
+                    drawElementsIndirectCommands[p].push_back(drawElementsIndirectCommand);
+                    firstIndex[p] += indexCount;
+                    baseVertex[p] += vertexCount;
+                    baseInstance[p] += 1;
+                }
+            }
+            for (unsigned int i = 0; i < m_instancesIndexed.size(); i++) {
+                if (m_instancesIndexed[i].getAllVertices().getVertexCount() > 0) {
+                    DrawElementsIndirectCommand drawElementsIndirectCommand;
+                    unsigned int p = m_instancesIndexed[i].getAllVertices().getPrimitiveType();
+                    float time = timeClock.getElapsedTime().asSeconds();
+                    indirectDrawPushConsts.time = time;
+
+                    MaterialData material;
+                    material.textureIndex = (m_instancesIndexed[i].getMaterial().getTexture() != nullptr) ? m_instancesIndexed[i].getMaterial().getTexture()->getId() : 0;
+                    material.materialType = m_instancesIndexed[i].getMaterial().getType();
+                    materialDatas[p].push_back(material);
+
+                    std::vector<TransformMatrix*> tm = m_instancesIndexed[i].getTransforms();
+                    for (unsigned int j = 0; j < tm.size(); j++) {
+                        tm[j]->update();
+                        ModelData model;
+                        model.worldMat = tm[j]->getMatrix().transpose();
+                        modelDatas[p].push_back(model);
+                    }
+
+                    unsigned int indexCount = 0, vertexCount = 0;
+                    if (m_instancesIndexed[i].getVertexArrays().size() > 0) {
+                        Entity* entity = m_instancesIndexed[i].getVertexArrays()[0]->getEntity();
+                        for (unsigned int j = 0; j < m_instancesIndexed[i].getVertexArrays().size(); j++) {
+                            if (entity == m_instancesIndexed[i].getVertexArrays()[j]->getEntity()) {
+                                unsigned int p = m_instancesIndexed[i].getVertexArrays()[j]->getPrimitiveType();
+                                for (unsigned int k = 0; k < m_instancesIndexed[i].getVertexArrays()[j]->getVertexCount(); k++) {
+                                    vertexCount++;
+                                    vbBindlessTex[p].append((*m_instancesIndexed[i].getVertexArrays()[j])[k]);
+                                }
+                                for (unsigned int k = 0; k < m_instancesIndexed[i].getVertexArrays()[j]->getIndexes().size(); k++) {
+                                    indexCount++;
+                                    vbBindlessTex[p].addIndex(m_instancesIndexed[i].getVertexArrays()[j]->getIndexes()[k]);
+                                }
+                            }
+                        }
+                    }
+                    drawElementsIndirectCommand.index_count = indexCount;
+                    drawElementsIndirectCommand.first_index = firstIndex[p];
+                    drawElementsIndirectCommand.instance_base = baseInstance[p];
+                    drawElementsIndirectCommand.vertex_base = baseVertex[p];
+                    drawElementsIndirectCommand.instance_count = tm.size();
+                    drawElementsIndirectCommands[p].push_back(drawElementsIndirectCommand);
+                    firstIndex[p] += indexCount;
+                    baseVertex[p] += vertexCount;
+                    baseInstance[p] += tm.size();
+                    //std::cout<<"texture : "<<m_instances[i].getMaterial().getTexture()<<std::endl;
+                    //std::cout<<"entity : "<<m_instances[i].getVertexArrays()[0]->getEntity()->getRootEntity()->getType()<<std::endl;
+                }
+            }
+            RenderStates currentStates;
+            currentStates.blendMode = sf::BlendNone;
+            currentStates.shader = &indirectRenderingShader;
+            currentStates.texture = nullptr;
+            for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
+                if (vbBindlessTex[p].getVertexCount() > 0) {
+
+                    vbBindlessTex[p].update();
+                    VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
+                    VkBuffer stagingBuffer;
+                    VkDeviceMemory stagingBufferMemory;
+                    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+                    void* data;
+                    vkMapMemory(vkDevice.getDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
+                    memcpy(data, modelDatas[p].data(), (size_t)bufferSize);
+                    vkUnmapMemory(vkDevice.getDevice(), stagingBufferMemory);
+                    for (unsigned int i = 0; i < modelDataShaderStorageBuffers.size(); i++) {
+                        vkDestroyBuffer(vkDevice.getDevice(), modelDataShaderStorageBuffers[i], nullptr);
+                        vkFreeMemory(vkDevice.getDevice(), modelDataShaderStorageBuffersMemory[i], nullptr);
+                    }
+                    modelDataShaderStorageBuffers.resize(frameBuffer.getMaxFramesInFlight());
+                    modelDataShaderStorageBuffersMemory.resize(frameBuffer.getMaxFramesInFlight());
+                    for (unsigned int i = 0; i < frameBuffer.getMaxFramesInFlight(); i++) {
+                        createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, modelDataShaderStorageBuffers[i], modelDataShaderStorageBuffersMemory[i]);
+                        copyBuffer(stagingBuffer, modelDataShaderStorageBuffers[i], bufferSize);
+                    }
+                    vkDestroyBuffer(vkDevice.getDevice(), stagingBuffer, nullptr);
+                    vkFreeMemory(vkDevice.getDevice(), stagingBufferMemory, nullptr);
+                    bufferSize = sizeof(MaterialData) * materialDatas[p].size();
+                    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+
+                    vkMapMemory(vkDevice.getDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
+                    memcpy(data, materialDatas[p].data(), (size_t)bufferSize);
+                    vkUnmapMemory(vkDevice.getDevice(), stagingBufferMemory);
+                    for (unsigned int i = 0; i < materialDataShaderStorageBuffers.size(); i++) {
+                        vkDestroyBuffer(vkDevice.getDevice(),materialDataShaderStorageBuffers[i], nullptr);
+                        vkFreeMemory(vkDevice.getDevice(), materialDataShaderStorageBuffersMemory[i], nullptr);
+                    }
+                    materialDataShaderStorageBuffers.resize(frameBuffer.getMaxFramesInFlight());
+                    materialDataShaderStorageBuffersMemory.resize(frameBuffer.getMaxFramesInFlight());
+                    for (unsigned int i = 0; i < frameBuffer.getMaxFramesInFlight(); i++) {
+                        createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, materialDataShaderStorageBuffers[i], materialDataShaderStorageBuffersMemory[i]);
+                        copyBuffer(stagingBuffer, materialDataShaderStorageBuffers[i], bufferSize);
+                    }
+                    vkDestroyBuffer(vkDevice.getDevice(), stagingBuffer, nullptr);
+                    vkFreeMemory(vkDevice.getDevice(), stagingBufferMemory, nullptr);
+                    bufferSize = sizeof(DrawArraysIndirectCommand) * drawArraysIndirectCommands[p].size();
+
+                    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+
+                    vkMapMemory(vkDevice.getDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
+                    memcpy(data, drawArraysIndirectCommands[p].data(), (size_t)bufferSize);
+                    vkUnmapMemory(vkDevice.getDevice(), stagingBufferMemory);
+                    if (vboIndirect != VK_NULL_HANDLE) {
+                        vkDestroyBuffer(vkDevice.getDevice(),vboIndirect, nullptr);
+                        vkFreeMemory(vkDevice.getDevice(), vboIndirectMemory, nullptr);
+                    }
+
+                    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vboIndirect, vboIndirectMemory);
+                    copyBuffer(stagingBuffer, vboIndirect, bufferSize);
+                    vkDestroyBuffer(vkDevice.getDevice(), stagingBuffer, nullptr);
+                    vkFreeMemory(vkDevice.getDevice(), stagingBufferMemory, nullptr);
+                    //createDescriptorSets(p, currentStates);
+                    createCommandBuffersIndirect(p, drawArraysIndirectCommands[p].size(), currentStates);
+
+                }
+            }
+        }
         void PerPixelLinkedListRenderComponent::drawNextFrame() {
 
 
@@ -1136,8 +1313,8 @@ namespace odfaeg {
             indirectDrawPushConsts.projMatrix.m22 *= -1;
 
             drawInstances();
-            /*drawInstancesIndexed();
-            drawSelectedInstances();
+            drawInstancesIndexed();
+            /*drawSelectedInstances();
             drawSelectedInstancesIndexed();*/
 
 
@@ -2592,7 +2769,7 @@ namespace odfaeg {
             for (unsigned int i = 0; i < baseInstance.size(); i++) {
                 baseInstance[i] = 0;
             }
-            for (unsigned int i = 0; i < m_normals.size(); i++) {
+            for (unsigned int i = 0; i < m_normalsIndexed.size(); i++) {
 
                if (m_normalsIndexed[i].getAllVertices().getVertexCount() > 0) {
                     DrawElementsIndirectCommand drawElementsIndirectCommand;
