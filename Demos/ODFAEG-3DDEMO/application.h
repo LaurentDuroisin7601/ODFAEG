@@ -14,6 +14,7 @@
 #include "odfaeg/Graphics/raytracingRenderComponent.hpp"
 #include "odfaeg/Graphics/reflectRefractRenderComponent.hpp"
 #include "odfaeg/Graphics/3D/ponctualLight.hpp"
+#include "odfaeg/Graphics/particuleSystem.h"
 class MyAppli : public odfaeg::core::Application {
 public :
     enum TEXTURES {

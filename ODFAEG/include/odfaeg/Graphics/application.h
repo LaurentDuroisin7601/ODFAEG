@@ -678,7 +678,7 @@ namespace odfaeg {
             graphic::World* getWorld() {
                 return &world;
             }
-            virtual ~Application();
+            virtual ~Application() {}
             static sf::Clock& getTimeClk() {
                 return timeClk;
             }

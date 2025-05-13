@@ -255,7 +255,7 @@ namespace odfaeg {
             unsigned int newSize = nbCasesPerCol * nbCasesPerRow * nbCasesPerDepth;
             ////std::cout<<"min z : "<<minZ<<std::endl;
             int indice = (math::Math::abs(minX) + coordsCaseP.x)
-                         + (math::Math::abs(minY) + coordsCaseP.y) * nbCasesPerRow + (math::Math::abs(minZ) + coordsCaseP.z) * nbCasesPerCol;
+                         + (math::Math::abs(minY) + coordsCaseP.y) * nbCasesPerRow + (math::Math::abs(minZ) + coordsCaseP.z) * nbCasesPerCol * nbCasesPerRow;
             //std::cout<<"create cell map at indice : "<<indice<<std::endl;
             if (newSize > casesMap.size()) {
                 //std::cout<<"resize vector! > : "<<newSize<<std::endl;
@@ -267,7 +267,7 @@ namespace odfaeg {
                     if (tmpCasesMap[i] != nullptr) {
                         math::Vec3f coords = tmpCasesMap[i]->getCoords();
                         int newInd = (math::Math::abs(minX) + coords.x)
-                                     + (math::Math::abs(minY) + coords.y) * nbCasesPerRow + (math::Math::abs(minZ) + coords.z) * nbCasesPerCol;
+                                     + (math::Math::abs(minY) + coords.y) * nbCasesPerRow + (math::Math::abs(minZ) + coords.z) * nbCasesPerCol * nbCasesPerRow;
                         ////std::cout<<"new ind  : "<<newInd<<std::endl;
                         casesMap[newInd] = tmpCasesMap[i];
                     }
@@ -283,7 +283,7 @@ namespace odfaeg {
                     if (tmpCasesMap[i] != nullptr) {
                         math::Vec3f coords = tmpCasesMap[i]->getCoords();
                         int newInd = (math::Math::abs(minX) + coords.x)
-                                     + (math::Math::abs(minY) + coords.y) * nbCasesPerRow + (math::Math::abs(minZ) + coords.z) * nbCasesPerCol;
+                                     + (math::Math::abs(minY) + coords.y) * nbCasesPerRow + (math::Math::abs(minZ) + coords.z) * nbCasesPerCol * nbCasesPerRow;
                         ////std::cout<<"new ind  : "<<newInd<<std::endl;
                         casesMap[newInd] = tmpCasesMap[i];
                     }
@@ -413,7 +413,7 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < tmpCasesMap.size(); i++) {
                     if (tmpCasesMap[i] != nullptr) {
                         math::Vec3f coords = tmpCasesMap[i]->getCoords();
-                        int newInd = math::Math::abs(minX) + coords.x + (math::Math::abs(minY) + coords.y) * nbCasesPerRow + (math::Math::abs(minZ) + coords.z) * nbCasesPerCol;
+                        int newInd = math::Math::abs(minX) + coords.x + (math::Math::abs(minY) + coords.y) * nbCasesPerRow + (math::Math::abs(minZ) + coords.z) * nbCasesPerCol * nbCasesPerRow;
                         casesMap[newInd] = tmpCasesMap[i];
                     }
                 }
@@ -426,7 +426,7 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < tmpCasesMap.size(); i++) {
                     if (tmpCasesMap[i] != nullptr) {
                         math::Vec3f coords = tmpCasesMap[i]->getCoords();
-                        int newInd = math::Math::abs(minX) + coords.x + (math::Math::abs(minY) + coords.y) * nbCasesPerRow + (math::Math::abs(minZ) + coords.z) * nbCasesPerCol;
+                        int newInd = math::Math::abs(minX) + coords.x + (math::Math::abs(minY) + coords.y) * nbCasesPerRow + (math::Math::abs(minZ) + coords.z) * nbCasesPerCol * nbCasesPerRow;
                         casesMap[newInd] = tmpCasesMap[i];
                     }
                 }
@@ -523,7 +523,7 @@ namespace odfaeg {
 
         CellMap* GridMap::getGridCellAt (math::Vec3f point) {
             math::Vec3f coordsCaseP = getCoordinatesAt(point);
-            unsigned int indice = (math::Math::abs(minX) + coordsCaseP.x) + (math::Math::abs(minY) + coordsCaseP.y) * nbCasesPerRow + (math::Math::abs(minZ) + coordsCaseP.z) * nbCasesPerCol;
+            unsigned int indice = (math::Math::abs(minX) + coordsCaseP.x) + (math::Math::abs(minY) + coordsCaseP.y) * nbCasesPerRow + (math::Math::abs(minZ) + coordsCaseP.z) * nbCasesPerCol * nbCasesPerRow;
             /*if (point.x == 50 && point.y == 25 && point.z == 75)
                 //std::cout<<"get cell map at "<<point<<"coordCaseP : "<<coordsCaseP<<"minX : "<<minX<<std::endl<<"miny : "<<minY<<std::endl<<"minz : "<<minZ<<std::endl<<"nb cases per row : "<<nbCasesPerRow<<std::endl<<"nb cases per col : "<<nbCasesPerCol<<std::endl<<"indice : "<<indice<<std::endl;*/
             if (indice >= 0 && indice < casesMap.size()) {
