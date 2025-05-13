@@ -1259,12 +1259,12 @@ namespace odfaeg {
                     }
                     vkDestroyBuffer(vkDevice.getDevice(), stagingBuffer, nullptr);
                     vkFreeMemory(vkDevice.getDevice(), stagingBufferMemory, nullptr);
-                    bufferSize = sizeof(DrawArraysIndirectCommand) * drawArraysIndirectCommands[p].size();
+                    bufferSize = sizeof(DrawElementsIndirectCommand) * drawElementsIndirectCommands[p].size();
 
                     createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
                     vkMapMemory(vkDevice.getDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
-                    memcpy(data, drawArraysIndirectCommands[p].data(), (size_t)bufferSize);
+                    memcpy(data, drawElementsIndirectCommands[p].data(), (size_t)bufferSize);
                     vkUnmapMemory(vkDevice.getDevice(), stagingBufferMemory);
                     if (vboIndirect != VK_NULL_HANDLE) {
                         vkDestroyBuffer(vkDevice.getDevice(),vboIndirect, nullptr);
@@ -1276,7 +1276,7 @@ namespace odfaeg {
                     vkDestroyBuffer(vkDevice.getDevice(), stagingBuffer, nullptr);
                     vkFreeMemory(vkDevice.getDevice(), stagingBufferMemory, nullptr);
                     //createDescriptorSets(p, currentStates);
-                    createCommandBuffersIndirect(p, drawArraysIndirectCommands[p].size(), currentStates);
+                    createCommandBuffersIndirect(p, drawElementsIndirectCommands[p].size(), currentStates);
 
                 }
             }

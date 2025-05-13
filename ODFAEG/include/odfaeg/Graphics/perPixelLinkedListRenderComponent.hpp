@@ -88,6 +88,7 @@ namespace odfaeg {
             void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
             void compileShaders();
             void drawInstances();
+            void drawInstancesIndexed();
             void createCommandBuffersIndirect(unsigned int p, unsigned int nbIndirectCommands, RenderStates currentStates);
             void createCommandBufferVertexBuffer(RenderStates currentStates);
             uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);

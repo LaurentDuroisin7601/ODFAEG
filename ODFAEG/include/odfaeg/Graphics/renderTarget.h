@@ -12,7 +12,7 @@
 #include "../config.hpp"
 #ifdef VULKAN
 #include "../Window/vkDevice.hpp"
-#else VULKAN
+#else
 #include "GL/glew.h"
 #include <SFML/OpenGL.hpp>
 #endif // VULKAN

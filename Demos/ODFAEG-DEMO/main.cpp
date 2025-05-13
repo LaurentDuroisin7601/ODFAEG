@@ -22,7 +22,7 @@ using namespace odfaeg::graphic;
 using namespace odfaeg::window;
 using namespace odfaeg::math;
 int main(int argc, char *argv[]) {
-    VkSettup instance;
+    /*VkSettup instance;
     Device device(instance);
     RenderWindow window(sf::VideoMode(800, 600), "test", device);
     Font font(device);
@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
     cv.setPoint(1, sf::Vector3f(0, 50, 0));
     cv.setPoint(2, sf::Vector3f(50, 50, 0));
     cv.setOutlineThickness(5);
-    cv.setOutlineColor(sf::Color::Red);*/
+    cv.setOutlineColor(sf::Color::Red);
 
     while (window.isOpen()) {
         IEvent event;
@@ -58,9 +58,9 @@ int main(int argc, char *argv[]) {
         window.clear();
         window.draw(text);
         window.display();
-    }
-    /*MyAppli app(sf::VideoMode(800, 600), "Test odfaeg");
-    return app.exec();*/
+    }*/
+    MyAppli app(sf::VideoMode(800, 600), "Test odfaeg");
+    return app.exec();
 }
 
 
