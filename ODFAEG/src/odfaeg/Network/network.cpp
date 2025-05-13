@@ -1,5 +1,6 @@
 #include "../../../include/odfaeg/Network/network.h"
 #include "../../../include/odfaeg/Network/application.h"
+#include "../../../include/odfaeg/Network/srkserveur.h"
 namespace odfaeg {
     namespace network {
         using namespace sf;
@@ -94,7 +95,7 @@ namespace odfaeg {
             //std::cout<<"get last request"<<std::endl;
             while (request == "" && timeoutClk.getElapsedTime().asSeconds() < timeOut.asSeconds()) {
                 //std::cout<<"check messages"<<std::endl;
-                srv.checkMessages();
+                //srv.checkMessages();
                 if (requests.size() > 0) {
                     it = requests.begin();
                     request = it->second;
