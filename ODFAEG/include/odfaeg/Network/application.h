@@ -15,6 +15,7 @@
 #include "../../../include/odfaeg/Window/iEvent.hpp"
 #include <thread>
 #include <mutex>
+#include "srkserveur.h"
 /**
   *\namespace odfaeg
   * the namespace of the Opensource Development Framework Adapted for Every Games.
@@ -136,7 +137,7 @@ namespace odfaeg {
                         network::Network::getCliInstance().checkMessages();
                     }
                     if (network::Network::getSrvInstance().isRunning()) {
-                        network::Network::getSrvInstance().checkMessages();
+                        network::Network::getSrvInstance().checkMessages<A, T>();
                     }
                     static_cast<A*>(this)->onExec();
                     getClock("LoopTime").restart();

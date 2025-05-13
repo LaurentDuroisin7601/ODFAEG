@@ -10,17 +10,15 @@ using namespace odfaeg::math;
 using namespace odfaeg::physic;
 using namespace odfaeg::graphic;
 using namespace odfaeg::window;
-using namespace odfaeg::audio;
-using namespace sorrok;*/
-#include "odfaeg/Graphics/renderWindow.h"
+using namespace odfaeg::audio;*/
+using namespace sorrok;
+/*#include "odfaeg/Graphics/renderWindow.h"
 #include "odfaeg/Graphics/font.h"
 #include "odfaeg/Graphics/text.h"
 #include "odfaeg/Graphics/sprite.h"
-#include "odfaeg/Window/iEvent.hpp"
+#include "odfaeg/Window/iEvent.hpp"*/
 
-using namespace odfaeg::graphic;
-using namespace odfaeg::window;
-using namespace odfaeg::math;
+
 int main(int argc, char *argv[]) {
     /*VkSettup instance;
     Device device(instance);
