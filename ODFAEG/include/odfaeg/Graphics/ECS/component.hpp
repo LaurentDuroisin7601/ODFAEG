@@ -1,6 +1,5 @@
 #ifndef ECS_COMPONENT_HPP
 #define ECS_COMPONENT_HPP
-#include <GL/glew.h>
 #include "../renderWindow.h"
 #include "../drawable.h"
 #include "../transformable.h"
