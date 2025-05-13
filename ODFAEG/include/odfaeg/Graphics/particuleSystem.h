@@ -85,7 +85,7 @@ namespace odfaeg
 
         // Vertex quads, used to cache texture rectangles
         #ifdef VULKAN
-        typedef std::array<graphic::Vertex, 6>	Quad;
+        typedef std::array<graphic::Vertex, 4>	Quad;
         #else
         typedef std::array<graphic::Vertex, 4>	Quad;
         #endif

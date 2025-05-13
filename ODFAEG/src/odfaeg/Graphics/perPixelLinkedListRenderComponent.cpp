@@ -1126,13 +1126,12 @@ namespace odfaeg {
             for (unsigned int i = 0; i < m_normalsIndexed.size(); i++) {
 
                if (m_normalsIndexed[i].getAllVertices().getVertexCount() > 0) {
+
                     DrawElementsIndirectCommand drawElementsIndirectCommand;
                     float time = timeClock.getElapsedTime().asSeconds();
                     indirectDrawPushConsts.time = time;
                     unsigned int p = m_normalsIndexed[i].getAllVertices().getPrimitiveType();
-                    /*if (m_normals[i].getVertexArrays()[0]->getEntity()->getRootType() == "E_MONSTER") {
-                            std::cout<<"tex coords : "<<(*m_normals[i].getVertexArrays()[0])[0].texCoords.x<<","<<(*m_normals[i].getVertexArrays()[0])[0].texCoords.y<<std::endl;
-                        }*/
+
                     MaterialData material;
                     material.textureIndex = (m_normalsIndexed[i].getMaterial().getTexture() != nullptr) ? m_normalsIndexed[i].getMaterial().getTexture()->getId() : 0;
                     material.materialType = m_normalsIndexed[i].getMaterial().getType();
@@ -1150,7 +1149,9 @@ namespace odfaeg {
                     for (unsigned int j = 0; j < m_normalsIndexed[i].getAllVertices().getIndexes().size(); j++) {
                         vbBindlessTex[p].addIndex(m_normalsIndexed[i].getAllVertices().getIndexes()[j]);
                         indexCount++;
+                        std::cout<<"index : "<<m_normalsIndexed[i].getAllVertices().getIndexes()[j]<<std::endl;
                     }
+
                     drawElementsIndirectCommand.index_count = indexCount;
                     drawElementsIndirectCommand.first_index = firstIndex[p];
                     drawElementsIndirectCommand.instance_base = baseInstance[p];
@@ -1195,6 +1196,7 @@ namespace odfaeg {
                                 for (unsigned int k = 0; k < m_instancesIndexed[i].getVertexArrays()[j]->getIndexes().size(); k++) {
                                     indexCount++;
                                     vbBindlessTex[p].addIndex(m_instancesIndexed[i].getVertexArrays()[j]->getIndexes()[k]);
+
                                 }
                             }
                         }
@@ -1275,7 +1277,8 @@ namespace odfaeg {
                     vkDestroyBuffer(vkDevice.getDevice(), stagingBuffer, nullptr);
                     vkFreeMemory(vkDevice.getDevice(), stagingBufferMemory, nullptr);
                     //createDescriptorSets(p, currentStates);
-                    createCommandBuffersIndirect(p, drawElementsIndirectCommands[p].size(), sizeof(DrawElementsIndirectCommand)+4, NODEPTHNOSTENCIL, currentStates);
+                    std::cout<<"size : "<<sizeof(DrawElementsIndirectCommand)<<std::endl;
+                    createCommandBuffersIndirect(p, drawElementsIndirectCommands[p].size(), sizeof(DrawElementsIndirectCommand), NODEPTHNOSTENCIL, currentStates);
 
                 }
             }
@@ -1455,6 +1458,7 @@ namespace odfaeg {
                 descriptorWrites[5].pBufferInfo = &materialDataStorageBufferInfoLastFrame;
                 vkCmdPushDescriptorSetKHR(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][frameBuffer.getId()][NODEPTHNOSTENCIL], 0, 6, descriptorWrites.data());
                 vkCmdPushConstants(commandBuffers[i], frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][frameBuffer.getId()][depthStencilID], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectDrawPushConsts), &indirectDrawPushConsts);
+                //std::cout<<"stride : "<<stride<<std::endl;
                 frameBuffer.drawIndirect(commandBuffers[i], i, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
                 vkCmdPipelineBarrier(commandBuffers[i], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 0, nullptr);
                 VkMemoryBarrier memoryBarrier;

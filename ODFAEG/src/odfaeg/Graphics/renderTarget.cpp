@@ -795,6 +795,7 @@ namespace odfaeg {
 
         }
         void RenderTarget::beginRecordCommandBuffers() {
+            //std::cout<<"render texture begin command buffer"<<std::endl;
             for (unsigned int i = 0; i < getCommandBuffers().size(); i++) {
                 VkCommandBufferBeginInfo beginInfo{};
                 beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;

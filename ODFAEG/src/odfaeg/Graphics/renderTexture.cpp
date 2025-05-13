@@ -188,6 +188,7 @@ namespace odfaeg
 
         }
         void RenderTexture::clear(const sf::Color& color) {
+             //std::cout<<"render texture clear begin command buffer"<<std::endl;
              clearColor = color;
              VkClearColorValue clearValue = {clearColor.r / 255.f, clearColor.g / 255.f, clearColor.b / 255.f, clearColor.a / 255.f};
              VkClearDepthStencilValue clearDepthStencilValue = {
@@ -277,6 +278,7 @@ namespace odfaeg
         }
         void RenderTexture::display() {
             if (getCommandBuffers().size() > 0) {
+                //std::cout<<"render texture end command buffer"<<std::endl;
 
                 for (unsigned int i = 0; i < getCommandBuffers().size(); i++) {
                     if (vkEndCommandBuffer(getCommandBuffers()[i]) != VK_SUCCESS) {
@@ -300,6 +302,7 @@ namespace odfaeg
                 vkGetQueueCheckpointData2NV(vkDevice.getGraphicsQueue(), &checkPointDataCount, &checkPointData);*/
                 //std::cout<<"render texture result : "<<result<<std::endl;
                 vkResetFences(vkDevice.getDevice(), 1, &inFlightFences[currentFrame]);
+
                 if (vkQueueSubmit(vkDevice.getGraphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame])) {
                     throw core::Erreur(0, "échec de l'envoi d'un command buffer!", 1);
                 }
