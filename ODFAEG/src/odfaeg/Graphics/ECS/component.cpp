@@ -13,8 +13,8 @@ namespace odfaeg {
                 activateEventContext = true;
                 visible = true;
                 id = -1;
-                if (core::ecs::Application::app != nullptr)
-                    id = core::ecs::Application::app->getComponentId()-1;
+                /*if (core::ecs::Application::app != nullptr)
+                    id = core::ecs::Application::app->getComponentId()-1;*/
                 /*id = nbComponents;
                 nbComponents++;*/
                 autoResize = false;
@@ -56,7 +56,7 @@ namespace odfaeg {
             }
             void Component::setExpression(std::string expression) {
             }
-            bool Component::loadEntitiesOnComponent (ComponentMapping& componentMapping, std::vector<EntityId> entities) { 
+            bool Component::loadEntitiesOnComponent (ComponentMapping& componentMapping, std::vector<EntityId> entities) {
                 return false;
             }
             void Component::draw(Drawable& drawable, RenderStates states) {

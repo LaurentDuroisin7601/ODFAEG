@@ -31,6 +31,22 @@ namespace odfaeg {
             isServer = true;
             return srv.startSrv(portTCP, portUDP);
         }
+        SrkServer& Network::getSrvInstance() {
+            if (&srv == nullptr) {
+                static SrkServer* server = new SrkServer();
+                return *server;
+            } else {
+                return srv;
+            }
+        }
+        SrkClient& Network::getCliInstance () {
+            if (&cli == nullptr) {
+                static SrkClient* client = new SrkClient();
+                return *client;
+            } else {
+                return cli;
+            }
+        }
         void Network::addRequest(User* user, std::string request) {
             std::pair<User*, std::string> userreq(user, request);
             requests.push_back(userreq);
@@ -153,17 +169,7 @@ namespace odfaeg {
             User* user = new User(tcpSocket, udpSocket);
             users.push_back(user);
         }
-        void Network::removeUser(sf::TcpSocket& socket) {
-            std::vector<User*>::iterator it;
-            for (it = users.begin(); it != users.end();) {
-                if (&(*it)->getTcpSocket() == &socket) {
-                    if (app != nullptr)
-                        app->onDisconnected(*it);
-                    it = users.erase(it);
-                } else
-                    it++;
-            }
-        }
+
         void Network::sendPbKeyRsa(User &user) {
             unsigned char* out = nullptr;
             int length = EncryptedPacket::getCertificate(&out);

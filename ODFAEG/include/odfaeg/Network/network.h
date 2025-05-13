@@ -3,14 +3,18 @@
 #include <SFML/Network.hpp>
 #include "client.h"
 #include "user.h"
-#include "srkserveur.h"
 #include "export.hpp"
 /**
   *\namespace odfaeg
   * the namespace of the Opensource Development Framework Adapted for Every Games.
   */
 namespace odfaeg {
+    namespace core {
+        template <typename D, typename T>
+        class Application;
+    }
     namespace network {
+        class SrkServer;
         /**
           * \file network.h
           * \class Network
@@ -70,7 +74,18 @@ namespace odfaeg {
                 * \brief remove a user from the network.
                 * \param address : the ip address of the user to remove.
                 */
-                static void removeUser(sf::TcpSocket& tcpSocket);
+                template <typename D, typename T>
+                static void removeUser(sf::TcpSocket& socket) {
+                    std::vector<User*>::iterator it;
+                    for (it = users.begin(); it != users.end();) {
+                        if (&(*it)->getTcpSocket() == &socket) {
+                            if (core::Application<D, T>::app != nullptr)
+                                core::Application<D, T>::app->onDisconnected(*it);
+                            it = users.erase(it);
+                        } else
+                            it++;
+                    }
+                }
                 /**
                 * \fn void sendPbKeyRsa(User& user)
                 * \brief send the public key to the user for the rsa encryption.
@@ -187,14 +202,7 @@ namespace odfaeg {
                 * \brief return an instance of the client.
                 * \return an instance of the client.
                 */
-                static SrkClient& getCliInstance () {
-                    if (&cli == nullptr) {
-                        static SrkClient* client = new SrkClient();
-                        return *client;
-                    } else {
-                        return cli;
-                    }
-                }
+                static SrkClient& getCliInstance ();
                 /**
                 * \fn void setTimeBtw2Pings(sf::Time time)
                 * \brief set the time interval between two ping requests.
@@ -224,14 +232,7 @@ namespace odfaeg {
                 * \brief return an instance of the server.
                 * \return an instance of the server.
                 */
-                static SrkServer& getSrvInstance() {
-                    if (&srv == nullptr) {
-                        static SrkServer* server = new SrkServer();
-                        return *server;
-                    } else {
-                        return srv;
-                    }
-                }
+                static SrkServer& getSrvInstance();
                 static sf::Clock& getTimeBtw2SyncClk() {
                     return timeBtw2SyncClk;
                 }

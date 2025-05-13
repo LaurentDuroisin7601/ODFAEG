@@ -21,8 +21,9 @@
 namespace odfaeg {
     namespace core {
         namespace ecs {
+            #ifdef ECS
             #ifdef VULKAN
-             class ODFAEG_GRAPHICS_API Application {
+            /** class ODFAEG_GRAPHICS_API Application {
             public :
                 std::string name;
                 /** \fn Application(sf::VideoMode, std::string title, int nbComponents, bool depthDepth, sf::Uint32 style, sf::ContetSettings settings)
@@ -362,7 +363,7 @@ namespace odfaeg {
                 std::vector<graphic::Material*> sameMaterials;
                 std::map<int, std::string> types;
                 std::vector<window::Device> vkDevices;
-            };
+            };*/
             #else
             /**
             * \file application.h
@@ -711,6 +712,7 @@ namespace odfaeg {
                 std::vector<graphic::Material*> sameMaterials;
                 std::map<int, std::string> types;
             };
+            #endif
             #endif
         }
     }
