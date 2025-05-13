@@ -325,6 +325,7 @@ namespace odfaeg {
             }
             vkDestroyBuffer(vkDevice.getDevice(), stagingBuffer, nullptr);
             vkFreeMemory(vkDevice.getDevice(), stagingBufferMemory, nullptr);
+            firstDraw = true;
         }
         VkCommandBuffer PerPixelLinkedListRenderComponent::beginSingleTimeCommands() {
             VkCommandBufferAllocateInfo allocInfo{};
@@ -1274,7 +1275,7 @@ namespace odfaeg {
                     vkDestroyBuffer(vkDevice.getDevice(), stagingBuffer, nullptr);
                     vkFreeMemory(vkDevice.getDevice(), stagingBufferMemory, nullptr);
                     //createDescriptorSets(p, currentStates);
-                    createCommandBuffersIndirect(p, drawElementsIndirectCommands[p].size(), sizeof(DrawElementsIndirectCommand), NODEPTHNOSTENCIL, currentStates);
+                    createCommandBuffersIndirect(p, drawElementsIndirectCommands[p].size(), sizeof(DrawElementsIndirectCommand)+4, NODEPTHNOSTENCIL, currentStates);
 
                 }
             }
@@ -1311,7 +1312,6 @@ namespace odfaeg {
             indirectDrawPushConsts.projMatrix.m22 *= -1;
 
             drawInstances();
-            frameBuffer.beginRecordCommandBuffers();
             drawInstancesIndexed();
             /*drawSelectedInstances();
             drawSelectedInstancesIndexed();*/
@@ -1338,7 +1338,6 @@ namespace odfaeg {
             currentStates.shader = &perPixelLinkedListP2;
             currentStates.blendMode = sf::BlendNone;
             //createDescriptorSets2(currentStates);
-            frameBuffer.beginRecordCommandBuffers();
             createCommandBufferVertexBuffer(currentStates);
 
         }
@@ -1356,8 +1355,11 @@ namespace odfaeg {
             frameBuffer.updateCommandBuffers(commandPool, commandBuffers);
         }
         void PerPixelLinkedListRenderComponent::createCommandBuffersIndirect(unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, DepthStencilID depthStencilID, RenderStates currentStates) {
-
-
+            if (firstDraw) {
+                frameBuffer.display();
+                firstDraw = false;
+            }
+            frameBuffer.beginRecordCommandBuffers();
             Shader* shader = const_cast<Shader*>(currentStates.shader);
             std::vector<Texture*> allTextures = Texture::getAllTextures();
             for (size_t i = 0; i < commandBuffers.size(); i++) {
@@ -1466,10 +1468,11 @@ namespace odfaeg {
                 }*/
 
             }
-
             frameBuffer.display();
+
         }
         void PerPixelLinkedListRenderComponent::createCommandBufferVertexBuffer(RenderStates currentStates) {
+            frameBuffer.beginRecordCommandBuffers();
             Shader* shader = const_cast<Shader*>(currentStates.shader);
             for (size_t i = 0; i < commandBuffers.size(); i++) {
                 /*vkResetCommandBuffer(commandBuffers[i], VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
@@ -1519,8 +1522,8 @@ namespace odfaeg {
                 }*/
 
             }
-
             frameBuffer.display();
+
         }
         bool PerPixelLinkedListRenderComponent::loadEntitiesOnComponent(std::vector<Entity*> vEntities) {
             batcher.clear();
