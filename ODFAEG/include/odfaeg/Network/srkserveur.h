@@ -61,7 +61,7 @@ namespace odfaeg {
                 * \fn void checkMessages()
                 * \brief check if messages are received and store them into the queue.
                 */
-                template<typename D, typename T>
+                template<typename A, typename T>
                 void checkMessages() {
                     //std::cout<<"check messages"<<std::endl;
                     if (running) {
@@ -138,7 +138,7 @@ namespace odfaeg {
                                             }
                                             //std::cout<<"packet send"<<std::endl;
                                         } else {
-                                            Network::removeUser<D, T>(client);
+                                            Network::removeUser<A, T>(client);
                                             selector.remove(client);
                                             it = clients.erase(it);
                                             delete *it;
@@ -155,7 +155,7 @@ namespace odfaeg {
                                                 Network::sendClientCertifiate(*user);
                                                 user->setCertifiate(true);
                                             } else {
-                                                Network::removeUser<D, T>(client);
+                                                Network::removeUser<A, T>(client);
                                                 selector.remove(client);
                                                 it = clients.erase(it);
                                                 delete *it;
@@ -181,7 +181,7 @@ namespace odfaeg {
                                             }
                                             //std::cout<<"packet send pb key rsa"<<std::endl;
                                         } else {
-                                            Network::removeUser<D, T>(client);
+                                            Network::removeUser<A, T>(client);
                                             selector.remove(client);
                                             it = clients.erase(it);
                                             delete *it;
@@ -198,7 +198,7 @@ namespace odfaeg {
                                                  Network::sendPbKey(*user);
                                                  user->setHasPbKey(true);
                                             } else {
-                                                Network::removeUser<D, T>(client);
+                                                Network::removeUser<A, T>(client);
                                                 selector.remove(client);
                                                 it = clients.erase(it);
                                                 delete *it;
@@ -217,7 +217,7 @@ namespace odfaeg {
                                                 Network::sendPbIv(*user);
                                                 user->setHasPbIv(true);
                                             } else {
-                                                Network::removeUser<D, T>(client);
+                                                Network::removeUser<A, T>(client);
                                                 selector.remove(client);
                                                 it = clients.erase(it);
                                                 delete *it;
@@ -237,7 +237,7 @@ namespace odfaeg {
                                             Network::addRequest (user, request);
                                             //std::cout<<"packet send sym enc packet"<<std::endl;
                                         } else {
-                                            Network::removeUser<D, T>(client);
+                                            Network::removeUser<A, T>(client);
                                             selector.remove(client);
                                             it = clients.erase(it);
                                             delete *it;

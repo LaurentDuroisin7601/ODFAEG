@@ -4,14 +4,14 @@
 #include "GL/glew.h"
 #endif
 #include "GLFW/glfw3.h"
-#include "../../Network/network.h"
-#include "../renderWindow.h"
-#include "../renderStates.h"
-#include "../renderComponentManager.h"
-#include "world.hpp"
+#include "../../Graphics/renderWindow.h"
+#include "../../Graphics/renderStates.h"
+#include "../../Graphics/renderComponentManager.h"
+#include "../../Graphics/ECS/world.hpp"
 #include "../export.hpp"
 
 #include "../../../../include/odfaeg/Window/iEvent.hpp"
+#include "../network.h"
 #include <thread>
 #include <mutex>
 /**
@@ -21,9 +21,9 @@
 namespace odfaeg {
     namespace core {
         namespace ecs {
-            #ifdef ECS
             #ifdef VULKAN
-            /** class ODFAEG_GRAPHICS_API Application {
+            template <typename A, typename T=std::string>
+            class ODFAEG_NETWORK_API Application {
             public :
                 std::string name;
                 /** \fn Application(sf::VideoMode, std::string title, int nbComponents, bool depthDepth, sf::Uint32 style, sf::ContetSettings settings)
@@ -140,7 +140,7 @@ namespace odfaeg {
                         if (network::Network::getSrvInstance().isRunning()) {
                             network::Network::getSrvInstance().checkMessages();
                         }
-                        onExec();
+                        static_cast<A*>(this)->onExec();
                         getClock("LoopTime").restart();
                     }
                     return EXIT_SUCCESS;
@@ -158,13 +158,13 @@ namespace odfaeg {
                 *   \brief call the onLoad function, this is where all resources used by the application are loaded.
                 */
                 void load() {
-                    onLoad();
+                    static_cast<A*>(this)->onLoad();
                 }
                 /** \fn void init()
                 *   \brief call the onInit function, this is where all the entities used by the application are initialized.
                 */
                 void init() {
-                    onInit();
+                    static_cast<A*>(this)->onInit();
                 }
                 /** \fn void render()
                 *   \brief call the rendering functions used to render entities on components or on the window.
@@ -174,7 +174,7 @@ namespace odfaeg {
                         for (unsigned int i = 0; i < windows.size(); i++) {
                             windows[i].first->clear(clearColor);
                         }
-                        onRender(componentManager.get());
+                        static_cast<A*>(this)->onRender(componentManager.get());
                         componentManager->clearComponents();
                         componentManager->clearECSComponents();
                         if (eventContextActivated) {
@@ -185,7 +185,7 @@ namespace odfaeg {
                         componentManager->drawRenderComponents();
                         componentManager->drawECSComponents();
 
-                        onDisplay(windows[0].first);
+                        static_cast<A*>(this)->onDisplay(windows[0].first);
                         componentManager->drawGuiComponents();
                         for (unsigned int i = 0; i < windows.size(); i++)
                             windows[i].first->display();
@@ -214,7 +214,7 @@ namespace odfaeg {
                         }
                         if (events.size() > 0) {
                             for (it = events.begin(); it != events.end(); it++) {
-                                onUpdate(it->first, it->second);
+                                static_cast<A*>(this)->onUpdate(it->first, it->second);
                                 if (eventContextActivated) {
                                     listener->pushEvent(it->second);
                                 }
@@ -233,35 +233,35 @@ namespace odfaeg {
                 * \fn void onLoad()
                 * \brief function which can be redefined if the application have to load resources at the start.
                 */
-                virtual void onLoad (){}
+                void onLoad (){}
                 /**
                 * \fn void onLoad()
                 * \brief function which can be redefined if the application have to init entities at the start.
                 */
-                virtual void onInit() {}
+                void onInit() {}
                 /**
                 * \fn void onLoad()
                 * \brief function which can be redefined if the application have to render entities on components.
                 * \param RenderComponentManager : the manager of all render components.
                 */
-                virtual void onRender (graphic::RenderComponentManager* cm){}
+                void onRender (graphic::RenderComponentManager* cm){}
                 /**
                 * \fn void onLoad()
                 * \brief function which can be redefined if the application have to render entities on the window.
                 */
-                virtual void onDisplay(graphic::RenderWindow *rw){}
+                void onDisplay(graphic::RenderWindow *rw){}
                 /**
                 * \fn void onUpdate()
                 * \brief function which can be redefined if the application have to update entities when window's events are generated.
                 * \param the generated event.
                 */
-                virtual void onUpdate (graphic::RenderWindow* window, window::IEvent& event) {}
+                void onUpdate (graphic::RenderWindow* window, window::IEvent& event) {}
                 /**
                 * \fn void onExec()
                 * \brief function which can be redefined if the application need to do something at each loop.
                 * by example if the application need to do something when a networking message is arrived.
                 */
-                virtual void onExec() {}
+                void onExec() {}
                 /** \fn void addClock(sf::Clock clock, std::string name)
                 *   \brief add a clock to the application, the clock is so accessible everywhere in the source code.
                 *   \param Clock : the clock to add.
@@ -363,7 +363,9 @@ namespace odfaeg {
                 std::vector<graphic::Material*> sameMaterials;
                 std::map<int, std::string> types;
                 std::vector<window::Device> vkDevices;
-            };*/
+            };
+            template <typename A, typename T>
+            Application<A, T>* Application<A, T>::app = nullptr;
             #else
             /**
             * \file application.h
@@ -712,7 +714,6 @@ namespace odfaeg {
                 std::vector<graphic::Material*> sameMaterials;
                 std::map<int, std::string> types;
             };
-            #endif
             #endif
         }
     }

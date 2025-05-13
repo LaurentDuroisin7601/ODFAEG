@@ -154,9 +154,7 @@ set(SRC_ECS
 	${SRCROOT}/ECS/reflectRefractRenderComponent.cpp
 	${INCROOT}/ECS/lightRenderComponent.hpp
 	${SRCROOT}/ECS/lightRenderComponent.cpp
-	${INCROOT}/ECS/entitiesUpdater.hpp
-	${INCROOT}/ECS/application.hpp
-	${SRCROOT}/ECS/application.cpp
+	${INCROOT}/ECS/entitiesUpdater.hpp	
 	${INCROOT}/ECS/animationUpdater.hpp
 	${SRCROOT}/ECS/animationUpdater.cpp	
 	${INCROOT}/ECS/particleSystem.hpp

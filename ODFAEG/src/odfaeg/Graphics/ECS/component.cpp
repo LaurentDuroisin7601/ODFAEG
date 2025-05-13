@@ -1,4 +1,4 @@
-#include "../../../../include/odfaeg/Graphics/ECS/application.hpp"
+//#include "../../../../include/odfaeg/Graphics/ECS/application.hpp"
 #include "../../../../include/odfaeg/Graphics/ECS/component.hpp"
 namespace odfaeg {
     namespace graphic {

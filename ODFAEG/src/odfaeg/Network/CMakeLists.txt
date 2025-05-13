@@ -24,7 +24,9 @@ set(SRC
 	${INCROOT}/cliEncryptedPacket.hpp
 	${SRCROOT}/cliEncryptedPacket.cpp
 	${INCROOT}/application.h
-	${SRCROOT}/application.cpp)	
+	${SRCROOT}/application.cpp
+	${INCROOT}/ECS/application.hpp
+	${SRCROOT}/ECS/application.cpp)	
 #find_package (OpenSSL 1 REQUIRED)
 include_directories(${CMAKE_INCLUDE_PATH} ${OPENSSL_INCLUDE_DIR})
 link_directories(${CMAKE_LIBRARY_PATH})

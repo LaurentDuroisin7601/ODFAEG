@@ -74,13 +74,13 @@ namespace odfaeg {
                 * \brief remove a user from the network.
                 * \param address : the ip address of the user to remove.
                 */
-                template <typename D, typename T>
+                template <typename A, typename T>
                 static void removeUser(sf::TcpSocket& socket) {
                     std::vector<User*>::iterator it;
                     for (it = users.begin(); it != users.end();) {
                         if (&(*it)->getTcpSocket() == &socket) {
-                            if (core::Application<D, T>::app != nullptr)
-                                core::Application<D, T>::app->onDisconnected(*it);
+                            if (core::Application<A, T>::app != nullptr)
+                                core::Application<A, T>::app->onDisconnected(*it);
                             it = users.erase(it);
                         } else
                             it++;

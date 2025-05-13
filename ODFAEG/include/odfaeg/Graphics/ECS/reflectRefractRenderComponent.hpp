@@ -8,7 +8,7 @@
 #include "../rectangleShape.h"
 #include "../world.h"
 #include "../3D/cube.h"
-#include "application.hpp"
+//#include "application.hpp"
 namespace odfaeg {
     namespace graphic {
         namespace ecs {
