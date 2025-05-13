@@ -49,7 +49,7 @@ namespace odfaeg {
                             unsigned vertex_base;
                             unsigned instance_base;
                     };
-                    ShadowRenderComponent (RenderWindow& window, int layer, std::string expression,window::ContextSettings settings = window::ContextSettings(0, 0, 4, 3, 0));
+                    ShadowRenderComponent (RenderWindow& window, int layer, std::string expression,ComponentMapping& componentMapping, window::ContextSettings settings = window::ContextSettings(0, 0, 4, 3, 0));
                     void loadTextureIndexes();
                     void drawNextFrame();
 
@@ -99,6 +99,7 @@ namespace odfaeg {
                     VertexBuffer vb, vb2;
                     std::array<VertexBuffer ,Batcher::nbPrimitiveTypes> vbBindlessTex;
                     std::vector<float> matrices, matrices2;
+                    ComponentMapping& componentMapping;
              };
          #endif
         }

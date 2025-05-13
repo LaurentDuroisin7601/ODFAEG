@@ -8,14 +8,15 @@ namespace odfaeg {
         namespace ecs {
                 #ifdef VULKAN
                 #else
-                PerPixelLinkedListRenderComponent::PerPixelLinkedListRenderComponent(RenderWindow& window, int layer, std::string expression, window::ContextSettings settings) :
+                PerPixelLinkedListRenderComponent::PerPixelLinkedListRenderComponent(RenderWindow& window, int layer, std::string expression,  ComponentMapping& componentMapping, window::ContextSettings settings) :
                 HeavyComponent(window, math::Vec3f(window.getView().getPosition().x, window.getView().getPosition().y, layer),
                               math::Vec3f(window.getView().getSize().x, window.getView().getSize().y, 0),
                               math::Vec3f(window.getView().getSize().x + window.getView().getSize().x * 0.5f, window.getView().getPosition().y + window.getView().getSize().y * 0.5f, layer)),
                 view(window.getView()),
                 expression(expression),
                 quad(math::Vec3f(window.getView().getSize().x, window.getView().getSize().y, window.getSize().y * 0.5f)),
-                layer(layer) {
+                layer(layer),
+                componentMapping(componentMapping) {
                 if (!(settings.versionMajor >= 4 && settings.versionMinor >= 6))
                     throw core::Erreur(53, "opengl version not supported for this renderer type");
                 //std::cout<<"move quad"<<std::endl;
@@ -394,7 +395,7 @@ namespace odfaeg {
                         DrawArraysIndirectCommand drawArraysIndirectCommand;
                         unsigned int p = m_selectedInstance[i].getAllVertices().getPrimitiveType();
 
-                        float time = timeClock.getTimeClk().getElapsedTime().asSeconds();
+                        float time = timeClock.getElapsedTime().asSeconds();
                         indirectRenderingShader.setParameter("time", time);
 
                         MaterialData material;
@@ -589,7 +590,7 @@ namespace odfaeg {
                         DrawElementsIndirectCommand drawElementsIndirectCommand;
                         //std::cout<<"next frame draw normal"<<std::endl;
 
-                        float time = timeClock.getTimeClk().getElapsedTime().asSeconds();
+                        float time = timeClock.getElapsedTime().asSeconds();
                         indirectRenderingShader.setParameter("time", time);
 
                         unsigned int p = m_selectedIndexed[i].getAllVertices().getPrimitiveType();
@@ -645,9 +646,9 @@ namespace odfaeg {
                         }
                         unsigned int indexCount = 0, vertexCount = 0;
                         if (m_selectedInstanceIndexed[i].getVertexArrays().size() > 0) {
-                            Entity* entity = m_selectedInstanceIndexed[i].getVertexArrays()[0]->getEntity();
+                            EntityId entity = m_selectedInstanceIndexed[i].getVertexArrays()[0]->getEntityId();
                             for (unsigned int j = 0; j < m_selectedInstanceIndexed[i].getVertexArrays().size(); j++) {
-                                if (entity == m_selectedInstanceIndexed[i].getVertexArrays()[j]->getEntity()) {
+                                if (entity == m_selectedInstanceIndexed[i].getVertexArrays()[j]->getEntityId()) {
 
                                     for (unsigned int k = 0; k < m_selectedInstanceIndexed[i].getVertexArrays()[j]->getVertexCount(); k++) {
                                         vertexCount++;
@@ -770,9 +771,9 @@ namespace odfaeg {
                         }
                         unsigned int indexCount = 0, vertexCount = 0;
                         if (m_selectedScaleInstanceIndexed[i].getVertexArrays().size() > 0) {
-                            Entity* entity = m_selectedScaleInstanceIndexed[i].getVertexArrays()[0]->getEntity();
+                            EntityId entity = m_selectedScaleInstanceIndexed[i].getVertexArrays()[0]->getEntityId();
                             for (unsigned int j = 0; j < m_selectedScaleInstanceIndexed[i].getVertexArrays().size(); j++) {
-                                if (entity == m_selectedScaleInstanceIndexed[i].getVertexArrays()[j]->getEntity()) {
+                                if (entity == m_selectedScaleInstanceIndexed[i].getVertexArrays()[j]->getEntityId()) {
                                     unsigned int p = m_selectedScaleInstanceIndexed[i].getVertexArrays()[j]->getPrimitiveType();
                                     for (unsigned int k = 0; k < m_selectedScaleInstanceIndexed[i].getVertexArrays()[j]->getVertexCount(); k++) {
                                         vertexCount++;
@@ -849,7 +850,7 @@ namespace odfaeg {
                 }
                 currentStates.blendMode = sf::BlendAlpha;
                 currentStates.shader = &skyboxShader;
-                currentStates.texture = (skybox == entt::null ) ? nullptr : core::ecs::Application::app->getWorld()->getComponentMapping().getComponent<MeshComponent>(skybox)->faces[0].getMaterial().getTexture();
+                currentStates.texture = (skybox == entt::null ) ? nullptr : componentMapping.getComponent<MeshComponent>(skybox)->faces[0].getMaterial().getTexture();
                 vb.update();
                 frameBuffer.drawVertexBuffer(vb, currentStates);
                 vb.clear();
@@ -913,7 +914,7 @@ namespace odfaeg {
                         DrawArraysIndirectCommand drawArraysIndirectCommand;
                         //std::cout<<"next frame draw normal"<<std::endl;
 
-                        float time = timeClock.getTimeClk().getElapsedTime().asSeconds();
+                        float time = timeClock.getElapsedTime().asSeconds();
                         indirectRenderingShader.setParameter("time", time);
 
                         unsigned int p = m_normals[i].getAllVertices().getPrimitiveType();
@@ -954,7 +955,7 @@ namespace odfaeg {
                         DrawArraysIndirectCommand drawArraysIndirectCommand;
                         unsigned int p = m_instances[i].getAllVertices().getPrimitiveType();
 
-                        float time = timeClock.getTimeClk().getElapsedTime().asSeconds();
+                        float time = timeClock.getElapsedTime().asSeconds();
                         indirectRenderingShader.setParameter("time", time);
 
                         std::vector<TransformMatrix*> tm = m_instances[i].getTransforms();
@@ -1034,7 +1035,7 @@ namespace odfaeg {
                    if (m_normalsIndexed[i].getAllVertices().getVertexCount() > 0) {
                         DrawElementsIndirectCommand drawElementsIndirectCommand;
 
-                        float time = timeClock.getTimeClk().getElapsedTime().asSeconds();
+                        float time = timeClock.getElapsedTime().asSeconds();
                         indirectRenderingShader.setParameter("time", time);
 
                         unsigned int p = m_normalsIndexed[i].getAllVertices().getPrimitiveType();

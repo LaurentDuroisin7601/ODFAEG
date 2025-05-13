@@ -50,7 +50,7 @@ namespace odfaeg {
                             unsigned vertex_base;
                             unsigned instance_base;
                     };
-                    LightRenderComponent (RenderWindow& window, int layer, std::string expression,window::ContextSettings settings = window::ContextSettings(0, 0, 4, 3, 0));
+                    LightRenderComponent (RenderWindow& window, int layer, std::string expression, ComponentMapping& componentMapping, window::ContextSettings settings = window::ContextSettings(0, 0, 4, 3, 0));
                     void loadTextureIndexes();
                     void onVisibilityChanged(bool visible);
                     void pushEvent(window::IEvent event, RenderWindow& rw);
@@ -109,6 +109,7 @@ namespace odfaeg {
                     VertexBuffer vb;
                     std::vector<float> matrices;
                     RectangleShape quad;
+                    ComponentMapping& componentMapping;
             };
         }
     }

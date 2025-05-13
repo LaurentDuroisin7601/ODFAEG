@@ -8,12 +8,13 @@ namespace odfaeg {
             #ifdef VULKAN
             #else
 
-            ReflectRefractRenderComponent::ReflectRefractRenderComponent (RenderWindow& window, int layer, std::string expression, window::ContextSettings settings) :
+            ReflectRefractRenderComponent::ReflectRefractRenderComponent (RenderWindow& window, int layer, std::string expression, ComponentMapping& componentMapping, window::ContextSettings settings) :
                 HeavyComponent(window, math::Vec3f(window.getView().getPosition().x, window.getView().getPosition().y, layer),
                               math::Vec3f(window.getView().getSize().x, window.getView().getSize().y, 0),
                               math::Vec3f(window.getView().getSize().x + window.getView().getSize().x * 0.5f, window.getView().getPosition().y + window.getView().getSize().y * 0.5f, layer)),
                 view(window.getView()),
-                expression(expression)
+                expression(expression),
+                componentMapping(componentMapping)
                 {
                 if (window.getView().getSize().x > window.getView().getSize().y) {
                     squareSize = window.getView().getSize().x;
@@ -999,21 +1000,18 @@ namespace odfaeg {
                             if (instances[n].getAllVertices().getVertexCount() > 0) {
                                 entt::entity entityId = instances[n].getVertexArrays()[0]->getEntityId();
                                 math::Vec3f scale(1, 1, 1), position(0, 0, 0), size(0, 0, 0);
-                                if (core::ecs::Application::app != nullptr) {
-                                    ComponentMapping& componentMapping = core::ecs::Application::app->getWorld()->getComponentMapping();
-                                    EntityId entity = componentMapping.getRoot(instances[n].getVertexArrays()[0]->getEntityId());
+                                EntityId entity = componentMapping.getRoot(instances[n].getVertexArrays()[0]->getEntityId());
 
-                                    TransformComponent* tc = componentMapping.getComponent<TransformComponent>(componentMapping.getRoot(entity));
-                                    if (tc != nullptr) {
-                                        if (tc->size.x > squareSize) {
-                                            scale.x = tc->size.x / squareSize;
-                                        }
-                                        if (tc->size.y > squareSize) {
-                                            scale.y = tc->size.y / squareSize;
-                                        }
-                                        position = tc->position;
-                                        size = tc->size;
+                                TransformComponent* tc = componentMapping.getComponent<TransformComponent>(componentMapping.getRoot(entity));
+                                if (tc != nullptr) {
+                                    if (tc->size.x > squareSize) {
+                                        scale.x = tc->size.x / squareSize;
                                     }
+                                    if (tc->size.y > squareSize) {
+                                        scale.y = tc->size.y / squareSize;
+                                    }
+                                    position = tc->position;
+                                    size = tc->size;
                                 }
                                 //std::cout<<"scale : "<<scale<<"position : "<<position<<std::endl;
                                 reflectView.setScale(scale.x, scale.y, scale.z);

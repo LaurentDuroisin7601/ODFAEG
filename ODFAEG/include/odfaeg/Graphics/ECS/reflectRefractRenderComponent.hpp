@@ -36,7 +36,7 @@ namespace odfaeg {
                         unsigned vertex_base;
                         unsigned instance_base;
                 };
-                ReflectRefractRenderComponent (RenderWindow& window, int layer, std::string expression, window::ContextSettings settings);
+                ReflectRefractRenderComponent (RenderWindow& window, int layer, std::string expression, ComponentMapping& componentMapping, window::ContextSettings settings);
                 void loadTextureIndexes();
                 std::vector<EntityId> getEntities();
                 bool loadEntitiesOnComponent(ComponentMapping& componentMapping, std::vector<EntityId> visibleEntities);
@@ -121,6 +121,7 @@ namespace odfaeg {
                 VertexBuffer vb, vb2;
                 std::vector<float> matrices;
                 math::Vec3f dirs[6];
+                ComponentMapping& componentMapping;
             };
             #endif
         }

@@ -11,12 +11,13 @@ namespace odfaeg {
         namespace ecs {
             #ifdef VULKAN
             #else
-            ShadowRenderComponent::ShadowRenderComponent (RenderWindow& window, int layer, std::string expression,window::ContextSettings settings) :
+            ShadowRenderComponent::ShadowRenderComponent (RenderWindow& window, int layer, std::string expression,ComponentMapping& componentMapping, window::ContextSettings settings) :
             HeavyComponent(window, math::Vec3f(window.getView().getPosition().x, window.getView().getPosition().y, layer),
                           math::Vec3f(window.getView().getSize().x, window.getView().getSize().y, 0),
                           math::Vec3f(window.getView().getSize().x + window.getView().getSize().x * 0.5f, window.getView().getPosition().y + window.getView().getSize().y * 0.5f, layer)),
             view(window.getView()),
-            expression(expression) {
+            expression(expression),
+            componentMapping(componentMapping) {
             update = false;
             sf::Vector3i resolution ((int) window.getSize().x, (int) window.getSize().y, window.getView().getSize().z);
             shadowMap.create(resolution.x, resolution.y,settings);

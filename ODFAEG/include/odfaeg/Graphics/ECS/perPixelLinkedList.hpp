@@ -42,7 +42,7 @@ namespace odfaeg {
                     unsigned int textureIndex;
                     unsigned int materialType;
                 };
-                PerPixelLinkedListRenderComponent (RenderWindow& window, int layer, std::string expression, window::ContextSettings settings);
+                PerPixelLinkedListRenderComponent (RenderWindow& window, int layer, std::string expression, ComponentMapping& componentMapping, window::ContextSettings settings);
                 void onVisibilityChanged(bool visible);
                 void loadTextureIndexes();
 
@@ -128,7 +128,7 @@ namespace odfaeg {
                 m_selectedScaleInstance, m_selectedInstance, m_selectedScaleInstanceIndexed, m_selectedInstanceIndexed, m_skyboxInstance; /**> Instances to draw. (Instanced rendering.) */
 
                 std::vector<EntityId> visibleEntities;
-                std::vector<std::unique_ptr<Entity>> visibleSelectedScaleEntities; /**> Entities loaded*/
+                //std::vector<std::unique_ptr<EntityId>> visibleSelectedScaleEntities; /**> Entities loaded*/
                 RenderTexture frameBuffer; /**> the frame buffer.*/
                 Shader perPixelLinkedListP2, indirectRenderingShader, skyboxShader;
                 RenderStates currentStates; /**> the current render states.*/
@@ -144,6 +144,7 @@ namespace odfaeg {
                 int layer;
                 EntityId skybox;
                 sf::Clock timeClock;
+                ComponentMapping& componentMapping;
             };
             #endif
         }

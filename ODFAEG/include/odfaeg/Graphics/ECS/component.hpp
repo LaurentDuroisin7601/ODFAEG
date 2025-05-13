@@ -1,9 +1,10 @@
 #ifndef ECS_COMPONENT_HPP
 #define ECS_COMPONENT_HPP
+#include <GL/glew.h>
+#include "../renderWindow.h"
 #include "../drawable.h"
 #include "../transformable.h"
 #include "../../Window/listener.h"
-#include "../renderWindow.h"
 #include "../../Core/ecs.hpp"
 namespace odfaeg {
     namespace graphic {
