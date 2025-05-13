@@ -89,7 +89,7 @@ namespace odfaeg {
             void compileShaders();
             void drawInstances();
             void drawInstancesIndexed();
-            void createCommandBuffersIndirect(unsigned int p, unsigned int nbIndirectCommands, RenderStates currentStates);
+            void createCommandBuffersIndirect(unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, DepthStencilID dephStencilID, RenderStates currentStates);
             void createCommandBufferVertexBuffer(RenderStates currentStates);
             uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
             void allocateCommandBuffers();

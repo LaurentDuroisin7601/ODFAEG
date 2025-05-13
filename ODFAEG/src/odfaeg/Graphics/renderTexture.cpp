@@ -277,12 +277,13 @@ namespace odfaeg
         }
         void RenderTexture::display() {
             if (getCommandBuffers().size() > 0) {
-                vkWaitForFences(vkDevice.getDevice(), 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
+
                 for (unsigned int i = 0; i < getCommandBuffers().size(); i++) {
                     if (vkEndCommandBuffer(getCommandBuffers()[i]) != VK_SUCCESS) {
                         throw core::Erreur(0, "failed to record command buffer!", 1);
                     }
                 }
+                vkWaitForFences(vkDevice.getDevice(), 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
                 //encode_checkpoint();
                 //vkWaitForFences(vkDevice.getDevice(), 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
                 VkSubmitInfo submitInfo{};

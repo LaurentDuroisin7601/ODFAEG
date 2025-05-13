@@ -1099,11 +1099,10 @@ namespace odfaeg {
                     vkDestroyBuffer(vkDevice.getDevice(), stagingBuffer, nullptr);
                     vkFreeMemory(vkDevice.getDevice(), stagingBufferMemory, nullptr);
                     //createDescriptorSets(p, currentStates);
-                    createCommandBuffersIndirect(p, drawArraysIndirectCommands[p].size(), currentStates);
+                    createCommandBuffersIndirect(p, drawArraysIndirectCommands[p].size(), sizeof(DrawArraysIndirectCommand), NODEPTHNOSTENCIL, currentStates);
 
                 }
             }
-
         }
         void PerPixelLinkedListRenderComponent::drawInstancesIndexed() {
              for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
@@ -1275,11 +1274,10 @@ namespace odfaeg {
                     vkDestroyBuffer(vkDevice.getDevice(), stagingBuffer, nullptr);
                     vkFreeMemory(vkDevice.getDevice(), stagingBufferMemory, nullptr);
                     //createDescriptorSets(p, currentStates);
-                    createCommandBuffersIndirect(p, drawElementsIndirectCommands[p].size(), currentStates);
+                    createCommandBuffersIndirect(p, drawElementsIndirectCommands[p].size(), sizeof(DrawElementsIndirectCommand), NODEPTHNOSTENCIL, currentStates);
 
                 }
             }
-
         }
         void PerPixelLinkedListRenderComponent::drawNextFrame() {
 
@@ -1357,7 +1355,7 @@ namespace odfaeg {
             }
             frameBuffer.updateCommandBuffers(commandPool, commandBuffers);
         }
-        void PerPixelLinkedListRenderComponent::createCommandBuffersIndirect(unsigned int p, unsigned int nbIndirectCommands, RenderStates currentStates) {
+        void PerPixelLinkedListRenderComponent::createCommandBuffersIndirect(unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, DepthStencilID depthStencilID, RenderStates currentStates) {
 
 
             Shader* shader = const_cast<Shader*>(currentStates.shader);
@@ -1454,8 +1452,8 @@ namespace odfaeg {
                 descriptorWrites[5].descriptorCount = 1;
                 descriptorWrites[5].pBufferInfo = &materialDataStorageBufferInfoLastFrame;
                 vkCmdPushDescriptorSetKHR(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][frameBuffer.getId()][NODEPTHNOSTENCIL], 0, 6, descriptorWrites.data());
-                vkCmdPushConstants(commandBuffers[i], frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][frameBuffer.getId()][NODEPTHNOSTENCIL], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectDrawPushConsts), &indirectDrawPushConsts);
-                frameBuffer.drawIndirect(commandBuffers[i], i, nbIndirectCommands, sizeof(DrawArraysIndirectCommand), vbBindlessTex[p], vboIndirect, currentStates, NODEPTHNOSTENCIL);
+                vkCmdPushConstants(commandBuffers[i], frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][frameBuffer.getId()][depthStencilID], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectDrawPushConsts), &indirectDrawPushConsts);
+                frameBuffer.drawIndirect(commandBuffers[i], i, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
                 vkCmdPipelineBarrier(commandBuffers[i], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 0, nullptr);
                 VkMemoryBarrier memoryBarrier;
                 memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;

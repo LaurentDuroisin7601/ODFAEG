@@ -286,8 +286,7 @@ namespace odfaeg {
              system("PAUSE");*/
 
         }
-        void RenderTarget::drawIndirect(VkCommandBuffer& cmd, unsigned int i, unsigned int nbIndirectCommands, unsigned int stride, VertexBuffer& vertexBuffer, VkBuffer vboIndirect, RenderStates states,
-                                        unsigned int depthStencilId) {
+        void RenderTarget::drawIndirect(VkCommandBuffer& cmd, unsigned int i, unsigned int nbIndirectCommands, unsigned int stride, VertexBuffer& vertexBuffer, VkBuffer vboIndirect, unsigned int depthStencilId, RenderStates states) {
             Shader* shader = const_cast<Shader*>(states.shader);
 
             VkRenderPassBeginInfo renderPassInfo{};
