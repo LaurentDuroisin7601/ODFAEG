@@ -35,7 +35,7 @@ namespace odfaeg {
             va[2] = v3;
             va[3] = v4;
             #else
-            VertexArray va(sf::Triangles, 6, this);
+            VertexArray va(sf::Triangles, 4, this);
             Vertex v1(sf::Vector3f(0, 0, 0), color);
             Vertex v2(sf::Vector3f(size.x, 0, 0), color);
             Vertex v3(sf::Vector3f(size.x, size.y, size.z), color);

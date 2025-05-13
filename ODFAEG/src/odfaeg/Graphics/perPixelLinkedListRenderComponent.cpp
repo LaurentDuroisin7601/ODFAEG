@@ -1149,7 +1149,7 @@ namespace odfaeg {
                     for (unsigned int j = 0; j < m_normalsIndexed[i].getAllVertices().getIndexes().size(); j++) {
                         vbBindlessTex[p].addIndex(m_normalsIndexed[i].getAllVertices().getIndexes()[j]);
                         indexCount++;
-                        std::cout<<"index : "<<m_normalsIndexed[i].getAllVertices().getIndexes()[j]<<std::endl;
+                        //std::cout<<"index : "<<m_normalsIndexed[i].getAllVertices().getIndexes()[j]<<std::endl;
                     }
 
                     drawElementsIndirectCommand.index_count = indexCount;
