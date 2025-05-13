@@ -1,9 +1,6 @@
 #ifndef ODFAEG_RENDER_TARGET_HPP
 #define ODFAEG_RENDER_TARGET_HPP
-#ifndef VULKAN
-#include "GL/glew.h"
-#include <SFML/OpenGL.hpp>
-#endif // VULKAN
+
 #include "view.h"
 #include "vertex.h"
 #include "vertexBuffer.hpp"
@@ -15,7 +12,11 @@
 #include "../config.hpp"
 #ifdef VULKAN
 #include "../Window/vkDevice.hpp"
-#endif
+#else VULKAN
+#include "GL/glew.h"
+#include <SFML/OpenGL.hpp>
+#endif // VULKAN
+
 
 ////////////////////////////////////////////////////////////
 //

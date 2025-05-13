@@ -1,8 +1,9 @@
 #ifndef ODFAEG_FAST_RENDER_COMPONENT_MANAGER_HPP
 #define ODFAEG_FAST_RENDER_COMPONENT_MANAGER_HPP
-#include "../../../include/odfaeg/Graphics/lightComponent.h"
 #include "renderTexture.h"
 #include "renderWindow.h"
+#include "../../../include/odfaeg/Graphics/lightComponent.h"
+
 #include "shader.h"
 #include "../Graphics/tile.h"
 #include "../../../include/odfaeg/Graphics/heavyComponent.h"
