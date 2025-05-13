@@ -1,5 +1,5 @@
 #include "../../../include/odfaeg/Network/network.h"
-#include "../../../include/odfaeg/Graphics/application.h"
+#include "../../../include/odfaeg/Network/application.h"
 namespace odfaeg {
     namespace network {
         using namespace sf;
@@ -157,8 +157,8 @@ namespace odfaeg {
             std::vector<User*>::iterator it;
             for (it = users.begin(); it != users.end();) {
                 if (&(*it)->getTcpSocket() == &socket) {
-                    /*if (core::Application::app != nullptr)
-                        core::Application::app->onDisconnected(*it);*/
+                    if (core::Application::app != nullptr)
+                        core::Application::app->onDisconnected(*it);
                     it = users.erase(it);
                 } else
                     it++;

@@ -1,7 +1,7 @@
 #ifndef ODFAEG_ENTITIES_UPDATER_HPP
 #define ODFAEG_ENTITIES_UPDATER_HPP
 #include "../Core/entitySystem.h"
-#include "../Graphics/application.h"
+//#include "../Graphics/application.h"
 #include "export.hpp"
 /**
 *\namespace odfaeg

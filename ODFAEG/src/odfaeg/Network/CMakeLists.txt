@@ -22,10 +22,12 @@ set(SRC
 	${INCROOT}/user.h
 	${SRCROOT}/user.cpp	
 	${INCROOT}/cliEncryptedPacket.hpp
-	${SRCROOT}/cliEncryptedPacket.cpp)	
+	${SRCROOT}/cliEncryptedPacket.cpp
+	${INCROOT}/application.h
+	${SRCROOT}/application.cpp)	
 #find_package (OpenSSL 1 REQUIRED)
 include_directories(${CMAKE_INCLUDE_PATH} ${OPENSSL_INCLUDE_DIR})
 link_directories(${CMAKE_LIBRARY_PATH})
 sfgl_add_library(odfaeg-network
 			 SOURCES ${SRC})
-target_link_libraries (odfaeg-network odfaeg-window odfaeg-physics odfaeg-math odfaeg-core sfml-network sfml-audio sfml-graphics sfml-window sfml-system libssl libcrypto)
+target_link_libraries (odfaeg-network odfaeg-graphics odfaeg-window odfaeg-physics odfaeg-math odfaeg-core sfml-network sfml-audio sfml-graphics sfml-window sfml-system libssl libcrypto)

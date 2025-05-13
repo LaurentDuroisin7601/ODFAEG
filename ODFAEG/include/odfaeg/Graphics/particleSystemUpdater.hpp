@@ -4,7 +4,7 @@
 #include "particuleSystem.h"
 #include "world.h"
 #include "export.hpp"
-#include "application.h"
+//#include "application.h"
 /**
 *\namespace odfaeg
 * the namespace of the Opensource Development Framework Adapted for Every Games.

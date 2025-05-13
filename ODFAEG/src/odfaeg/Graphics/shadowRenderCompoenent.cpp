@@ -1,5 +1,5 @@
 #include "../../../include/odfaeg/Graphics/shadowRenderComponent.hpp"
-#include "../../../include/odfaeg/Graphics/application.h"
+//#include "../../../include/odfaeg/Graphics/application.h"
 #ifndef VULKAN
 #include <SFML/OpenGL.hpp>
 #include "glCheck.h"

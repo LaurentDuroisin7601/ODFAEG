@@ -1,9 +1,9 @@
 #include "../../../include/odfaeg/Graphics/entity.h"
-#include "../../../include/odfaeg/Graphics/application.h"
+//#include "../../../include/odfaeg/Graphics/application.h"
 namespace odfaeg {
     namespace graphic {
         //Initialization of static variables.
-        
+
         std::map<int, std::string> Entity::types = std::map<int, std::string>();
         //Construct an entity with the given position, size, origin, type and name.
         Entity::Entity (math::Vec3f position, math::Vec3f size, math::Vec3f origin, std::string sType,  EntityFactory& factory, std::string name) :
@@ -357,12 +357,12 @@ namespace odfaeg {
         }
         void Entity::setAnimUpdater(std::string name) {
         }
-        std::string Entity::getAnimUpdater() { 
+        std::string Entity::getAnimUpdater() {
             return "";
         }
         void Entity::setPsUpdater(std::string name) {
         }
-        std::string Entity::getPsUpdater() { 
+        std::string Entity::getPsUpdater() {
             return "";
         }
         void Entity::decreaseNbEntities() {

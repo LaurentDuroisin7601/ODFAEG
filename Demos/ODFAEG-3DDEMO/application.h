@@ -1,5 +1,5 @@
 
-#include "odfaeg/Graphics/application.h"
+#include "odfaeg/Network/application.h"
 #include "odfaeg/Graphics/3D/cube.h"
 #include "odfaeg/Graphics/3D/model.hpp"
 #include "odfaeg/Graphics/map.h"

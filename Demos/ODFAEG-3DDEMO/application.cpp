@@ -5,6 +5,7 @@ using namespace odfaeg::physic;
 using namespace odfaeg::core;
 using namespace odfaeg::graphic;
 using namespace odfaeg::window;
+using namespace odfaeg::network;
 MyAppli::MyAppli(Vec2f size, std::string title) :
     Application(sf::VideoMode(size.x, size.y), title, sf::Style::Default, ContextSettings(24, 0, 4, 3, 0)),
     view3D(size.x, size.y, 80, 1, 1000) {

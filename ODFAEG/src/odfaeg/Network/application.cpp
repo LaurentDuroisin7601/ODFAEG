@@ -1,4 +1,4 @@
-#include "../../../include/odfaeg/Graphics/application.h"
+#include "../../../include/odfaeg/Network/application.h"
 namespace odfaeg {
     namespace core {
         using namespace sf;

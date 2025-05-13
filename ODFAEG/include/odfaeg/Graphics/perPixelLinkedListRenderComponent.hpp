@@ -273,6 +273,7 @@ namespace odfaeg {
             std::array<VertexBuffer ,Batcher::nbPrimitiveTypes> vbBindlessTex;
             int layer;
             Entity* skybox;
+            sf::Clock timeClock;
         };
         #endif
     }

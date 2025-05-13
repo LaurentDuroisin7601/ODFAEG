@@ -6,7 +6,7 @@
 #include "../../../include/odfaeg/Core/singleton.h"
 #include "../../../include/odfaeg/Graphics/tGround.h"
 #include "../../../include/odfaeg/Graphics/boneAnimation.hpp"
-#include "../../../include/odfaeg/Graphics/application.h"
+//#include "../../../include/odfaeg/Graphics/application.h"
 namespace odfaeg {
     namespace graphic {
     using namespace std;

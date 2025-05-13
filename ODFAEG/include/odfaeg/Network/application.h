@@ -6,10 +6,10 @@
 #include "GLFW/glfw3.h"
 #endif
 #include "../Network/network.h"
-#include "renderWindow.h"
-#include "renderStates.h"
-#include "renderComponentManager.h"
-#include "world.h"
+#include "../Graphics/renderWindow.h"
+#include "../Graphics/renderStates.h"
+#include "../Graphics/renderComponentManager.h"
+#include "../Graphics/world.h"
 #include "export.hpp"
 
 #include "../../../include/odfaeg/Window/iEvent.hpp"
@@ -678,7 +678,13 @@ namespace odfaeg {
             graphic::World* getWorld() {
                 return &world;
             }
-            virtual ~Application() {}
+            virtual ~Application() {
+                stop();
+                for (unsigned int i = 0; i < windows.size(); i++) {
+                    if (windows[i].second)
+                        delete windows[i].first;
+                }
+            }
             static sf::Clock& getTimeClk() {
                 return timeClk;
             }

@@ -1,6 +1,6 @@
 #include "../../../include/odfaeg/Graphics/perPixelLinkedListRenderComponent.hpp"
 
-#include "../../../include/odfaeg/Graphics/application.h"
+//#include "../../../include/odfaeg/Graphics/application.h"
 #ifndef VULKAN
 #include "glCheck.h"
 #endif
@@ -1927,10 +1927,10 @@ namespace odfaeg {
                 if (m_selected[i].getAllVertices().getVertexCount() > 0) {
                     DrawArraysIndirectCommand drawArraysIndirectCommand;
                     //std::cout<<"next frame draw normal"<<std::endl;
-                    if (core::Application::app != nullptr) {
-                        float time = core::Application::getTimeClk().getElapsedTime().asSeconds();
-                        indirectRenderingShader.setParameter("time", time);
-                    }
+
+                    float time = timeClock.getElapsedTime().asSeconds();
+                    indirectRenderingShader.setParameter("time", time);
+
                     unsigned int p = m_selected[i].getAllVertices().getPrimitiveType();
                     MaterialData material;
                     material.textureIndex = (m_selected[i].getMaterial().getTexture() != nullptr) ? m_selected[i].getMaterial().getTexture()->getId() : 0;
@@ -1959,10 +1959,10 @@ namespace odfaeg {
                 if (m_selectedInstance[i].getAllVertices().getVertexCount() > 0) {
                     DrawArraysIndirectCommand drawArraysIndirectCommand;
                     unsigned int p = m_selectedInstance[i].getAllVertices().getPrimitiveType();
-                    if (core::Application::app != nullptr) {
-                        float time = core::Application::getTimeClk().getElapsedTime().asSeconds();
-                        indirectRenderingShader.setParameter("time", time);
-                    }
+
+                    float time = timeClock.getElapsedTime().asSeconds();
+                    indirectRenderingShader.setParameter("time", time);
+
                     MaterialData material;
                     material.textureIndex = (m_selectedInstance[i].getMaterial().getTexture() != nullptr) ? m_selectedInstance[i].getMaterial().getTexture()->getId() : 0;
                     material.materialType = m_selectedInstance[i].getMaterial().getType();
@@ -2154,10 +2154,10 @@ namespace odfaeg {
                 if (m_selected[i].getAllVertices().getVertexCount() > 0) {
                     DrawElementsIndirectCommand drawElementsIndirectCommand;
                     //std::cout<<"next frame draw normal"<<std::endl;
-                    if (core::Application::app != nullptr) {
-                        float time = core::Application::getTimeClk().getElapsedTime().asSeconds();
-                        indirectRenderingShader.setParameter("time", time);
-                    }
+
+                    float time = timeClock.getElapsedTime().asSeconds();
+                    indirectRenderingShader.setParameter("time", time);
+
                     unsigned int p = m_selectedIndexed[i].getAllVertices().getPrimitiveType();
 
                     MaterialData material;
@@ -2478,10 +2478,9 @@ namespace odfaeg {
                 if (m_normals[i].getAllVertices().getVertexCount() > 0) {
                     DrawArraysIndirectCommand drawArraysIndirectCommand;
                     //std::cout<<"next frame draw normal"<<std::endl;
-                    if (core::Application::app != nullptr) {
-                        float time = core::Application::getTimeClk().getElapsedTime().asSeconds();
-                        indirectRenderingShader.setParameter("time", time);
-                    }
+                    float time = timeClock.getElapsedTime().asSeconds();
+                    indirectRenderingShader.setParameter("time", time);
+
                     unsigned int p = m_normals[i].getAllVertices().getPrimitiveType();
                     /*if (m_normals[i].getVertexArrays()[0]->getEntity()->getRootType() == "E_MONSTER") {
                             std::cout<<"tex coords : "<<(*m_normals[i].getVertexArrays()[0])[0].texCoords.x<<","<<(*m_normals[i].getVertexArrays()[0])[0].texCoords.y<<std::endl;
@@ -2519,10 +2518,8 @@ namespace odfaeg {
                 if (m_instances[i].getAllVertices().getVertexCount() > 0) {
                     DrawArraysIndirectCommand drawArraysIndirectCommand;
                     unsigned int p = m_instances[i].getAllVertices().getPrimitiveType();
-                    if (core::Application::app != nullptr) {
-                        float time = core::Application::getTimeClk().getElapsedTime().asSeconds();
-                        indirectRenderingShader.setParameter("time", time);
-                    }
+                    float time = timeClock.getElapsedTime().asSeconds();
+                    indirectRenderingShader.setParameter("time", time);
                     std::vector<TransformMatrix*> tm = m_instances[i].getTransforms();
                     for (unsigned int j = 0; j < tm.size(); j++) {
                         tm[j]->update();
@@ -2599,10 +2596,8 @@ namespace odfaeg {
 
                if (m_normalsIndexed[i].getAllVertices().getVertexCount() > 0) {
                     DrawElementsIndirectCommand drawElementsIndirectCommand;
-                    if (core::Application::app != nullptr) {
-                        float time = core::Application::getTimeClk().getElapsedTime().asSeconds();
-                        indirectRenderingShader.setParameter("time", time);
-                    }
+                    float time = timeClock.getElapsedTime().asSeconds();
+                    indirectRenderingShader.setParameter("time", time);
                     unsigned int p = m_normalsIndexed[i].getAllVertices().getPrimitiveType();
                     /*if (m_normals[i].getVertexArrays()[0]->getEntity()->getRootType() == "E_MONSTER") {
                             std::cout<<"tex coords : "<<(*m_normals[i].getVertexArrays()[0])[0].texCoords.x<<","<<(*m_normals[i].getVertexArrays()[0])[0].texCoords.y<<std::endl;
