@@ -232,6 +232,7 @@ namespace odfaeg {
             static unsigned int getNbRenderTargets();
             void enableStencilTest(bool enabled);
             void enableDepthTest(bool enable);
+            void beginRecordCommandBuffers();
 
 
         protected :

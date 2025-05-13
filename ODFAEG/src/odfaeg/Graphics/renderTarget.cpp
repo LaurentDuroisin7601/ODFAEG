@@ -795,6 +795,16 @@ namespace odfaeg {
 
 
         }
+        void RenderTarget::beginRecordCommandBuffers() {
+            for (unsigned int i = 0; i < getCommandBuffers().size(); i++) {
+                VkCommandBufferBeginInfo beginInfo{};
+                beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+                if (vkBeginCommandBuffer(getCommandBuffers()[i], &beginInfo) != VK_SUCCESS) {
+
+                    throw core::Erreur(0, "failed to begin recording command buffer!", 1);
+                }
+            }
+        }
         void RenderTarget::recordCommandBuffers(sf::PrimitiveType type, RenderStates states) {
             Shader* shader = const_cast<Shader*>(states.shader);
 

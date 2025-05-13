@@ -1313,6 +1313,7 @@ namespace odfaeg {
             indirectDrawPushConsts.projMatrix.m22 *= -1;
 
             drawInstances();
+            frameBuffer.beginRecordCommandBuffers();
             drawInstancesIndexed();
             /*drawSelectedInstances();
             drawSelectedInstancesIndexed();*/
@@ -1339,6 +1340,7 @@ namespace odfaeg {
             currentStates.shader = &perPixelLinkedListP2;
             currentStates.blendMode = sf::BlendNone;
             //createDescriptorSets2(currentStates);
+            frameBuffer.beginRecordCommandBuffers();
             createCommandBufferVertexBuffer(currentStates);
 
         }

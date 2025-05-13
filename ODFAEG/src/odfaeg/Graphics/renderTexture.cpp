@@ -52,6 +52,7 @@ namespace odfaeg
             getDepthTexture().createDepthTexture(width, height);
             createRenderPass();
             createFramebuffers();
+            createSyncObjects();
             m_size.x = width;
             m_size.y = height;
             RenderTarget::initialize();
@@ -59,6 +60,7 @@ namespace odfaeg
             return true;
         }
         void RenderTexture::createSyncObjects() {
+            inFlightFences.resize(getMaxFramesInFlight());
             VkFenceCreateInfo fenceInfo{};
             fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
             fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
@@ -310,6 +312,9 @@ namespace odfaeg
                 vkDestroyFramebuffer(vkDevice.getDevice(), swapChainFramebuffers[i], nullptr);
             }
             vkDestroyRenderPass(vkDevice.getDevice(), renderPass, nullptr);
+            for (size_t i = 0; i < getMaxFramesInFlight(); i++) {
+                vkDestroyFence(vkDevice.getDevice(), inFlightFences[i], nullptr);
+            }
         }
         #else
         ////////////////////////////////////////////////////////////
