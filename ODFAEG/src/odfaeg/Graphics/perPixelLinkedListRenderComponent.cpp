@@ -1103,6 +1103,7 @@ namespace odfaeg {
 
                 }
             }
+
         }
         void PerPixelLinkedListRenderComponent::drawInstancesIndexed() {
              for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
@@ -1112,8 +1113,6 @@ namespace odfaeg {
                 vbBindlessTex[i].clear();
             }
             std::array<std::vector<DrawElementsIndirectCommand>, Batcher::nbPrimitiveTypes> drawElementsIndirectCommands;
-            std::array<std::vector<ModelData>, Batcher::nbPrimitiveTypes> matrices;
-            std::array<std::vector<MaterialData>, Batcher::nbPrimitiveTypes> materials;
             std::array<unsigned int, Batcher::nbPrimitiveTypes> firstIndex, baseInstance, baseVertex;
             for (unsigned int i = 0; i < firstIndex.size(); i++) {
                 firstIndex[i] = 0;
@@ -1280,6 +1279,7 @@ namespace odfaeg {
 
                 }
             }
+
         }
         void PerPixelLinkedListRenderComponent::drawNextFrame() {
 
@@ -1340,7 +1340,7 @@ namespace odfaeg {
             currentStates.blendMode = sf::BlendNone;
             //createDescriptorSets2(currentStates);
             createCommandBufferVertexBuffer(currentStates);
-            frameBuffer.display();
+
         }
         void PerPixelLinkedListRenderComponent::allocateCommandBuffers() {
             commandBuffers.resize(frameBuffer.getSwapchainFrameBuffers().size());
@@ -1467,7 +1467,7 @@ namespace odfaeg {
 
             }
 
-            //frameBuffer.submit();
+            frameBuffer.display();
         }
         void PerPixelLinkedListRenderComponent::createCommandBufferVertexBuffer(RenderStates currentStates) {
             Shader* shader = const_cast<Shader*>(currentStates.shader);
@@ -1520,7 +1520,7 @@ namespace odfaeg {
 
             }
 
-            //frameBuffer.submit();
+            frameBuffer.display();
         }
         bool PerPixelLinkedListRenderComponent::loadEntitiesOnComponent(std::vector<Entity*> vEntities) {
             batcher.clear();

@@ -5,6 +5,7 @@
 #else
 #include "GLFW/glfw3.h"
 #endif
+#include "srkserveur.h"
 #include "../Network/network.h"
 #include "../Graphics/renderWindow.h"
 #include "../Graphics/renderStates.h"
@@ -13,9 +14,10 @@
 #include "export.hpp"
 
 #include "../../../include/odfaeg/Window/iEvent.hpp"
+#include "../Core/resourceCache.h"
 #include <thread>
 #include <mutex>
-#include "srkserveur.h"
+
 /**
   *\namespace odfaeg
   * the namespace of the Opensource Development Framework Adapted for Every Games.
@@ -333,6 +335,9 @@ namespace odfaeg {
             sf::Clock getTimeClk() {
                 return timeClk;
             }
+            ResourceCache<T>& getResourceCache() {
+                return resourceCache;
+            }
             ~Application() {
                 std::cout<<"destroy appli : "<<componentManager.get()<<std::endl;
 
@@ -342,9 +347,7 @@ namespace odfaeg {
                         delete windows[i].first;
                 }
             }
-            ResourceCache<T> getResourceCache() {
-                return resourceCache;
-            }
+
             static Application<A, T>* app;
         private :
             window::VkSettup vkSettup;
@@ -689,7 +692,7 @@ namespace odfaeg {
             static sf::Clock& getTimeClk() {
                 return timeClk;
             }
-            ResourceCache<T> getResourceCache() {
+            ResourceCache<T>& getResourceCache() {
                 return resourceCache;
             }
             /** > a pointer to the current odfaeg application*/

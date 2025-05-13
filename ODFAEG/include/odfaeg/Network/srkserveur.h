@@ -14,7 +14,7 @@
   */
 namespace odfaeg {
     namespace network {
-
+        class Network;
 
         class ODFAEG_NETWORK_API SrkServer
         {

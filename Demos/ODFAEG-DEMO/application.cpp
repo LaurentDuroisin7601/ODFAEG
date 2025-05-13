@@ -125,11 +125,12 @@ namespace sorrok {
         stream2->load(*sm.getResourceByAlias("fire"));
         player.setAudioStream(stream);
         pfire.setAudioStream(stream2);
-        getResourceCache().addResourceManager(sm, "SoundManager");
-        getResourceCache().addResourceManager(tm, "TextureManager");
+        ResourceCache<>& rc = getResourceCache();
+        rc.addResourceManager(sm, "SoundManager");
+        rc.addResourceManager(tm, "TextureManager");
         FontManager<> fm;
         fm.fromFileWithAlias("fonts/FreeSerif.ttf", "FreeSerif", rArgs);
-        getResourceCache().addResourceManager(fm, "FontManager");
+        rc.addResourceManager(fm, "FontManager");
     }
     void MyAppli::onInit () {
         if (day)

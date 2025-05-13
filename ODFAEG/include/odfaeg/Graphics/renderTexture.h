@@ -103,12 +103,14 @@ namespace odfaeg {
             }*/
             ~RenderTexture();
         private :
+            void createSyncObjects();
             sf::Vector2u m_size;
             std::vector<VkFramebuffer> swapChainFramebuffers;
             VkRenderPass renderPass;
             window::Device& vkDevice;
             Texture m_texture;
             size_t currentFrame;
+            std::vector<VkFence> inFlightFences;
         };
         #else
         namespace priv {

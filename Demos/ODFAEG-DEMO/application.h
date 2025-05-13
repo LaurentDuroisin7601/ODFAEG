@@ -7,7 +7,7 @@
 #include "odfaeg/Graphics/lightRenderComponent.hpp"
 #include "odfaeg/Graphics/fastRenderComponent.hpp"
 #include "odfaeg/Graphics/reflectRefractRenderComponent.hpp"
-#include "odfaeg/Graphics/application.h"
+#include "odfaeg/Network/application.h"
 #include "odfaeg/Graphics/convexShape.h"
 #include "odfaeg/Graphics/rectangleShape.h"
 #include "odfaeg/Graphics/circleShape.h"

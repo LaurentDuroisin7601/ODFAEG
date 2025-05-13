@@ -54,6 +54,12 @@ namespace odfaeg {
             va.addIndex(0);
             va.addIndex(2);
             va.addIndex(3);
+            /*va[0] = v1;
+            va[1] = v2;
+            va[2] = v3;
+            va[3] = v1;
+            va[3] = v3;
+            va[3] = v4;*/
             #endif
             Material material;
             material.addTexture(nullptr, sf::IntRect(0, 0, 0, 0));

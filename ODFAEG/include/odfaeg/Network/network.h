@@ -10,7 +10,7 @@
   */
 namespace odfaeg {
     namespace core {
-        template <typename D, typename T>
+        template <typename A, typename T>
         class Application;
     }
     namespace network {
@@ -75,17 +75,7 @@ namespace odfaeg {
                 * \param address : the ip address of the user to remove.
                 */
                 template <typename A, typename T>
-                static void removeUser(sf::TcpSocket& socket) {
-                    std::vector<User*>::iterator it;
-                    for (it = users.begin(); it != users.end();) {
-                        if (&(*it)->getTcpSocket() == &socket) {
-                            if (core::Application<A, T>::app != nullptr)
-                                core::Application<A, T>::app->onDisconnected(*it);
-                            it = users.erase(it);
-                        } else
-                            it++;
-                    }
-                }
+                static void removeUser(sf::TcpSocket& socket);
                 /**
                 * \fn void sendPbKeyRsa(User& user)
                 * \brief send the public key to the user for the rsa encryption.
@@ -256,6 +246,18 @@ namespace odfaeg {
                 static std::string certifiateClientMess;
                 static bool isServer;
         };
+        template <typename A, typename T>
+        void Network::removeUser(sf::TcpSocket& socket) {
+            std::vector<User*>::iterator it;
+            for (it = users.begin(); it != users.end();) {
+                if (&(*it)->getTcpSocket() == &socket) {
+                    if (core::Application<A, T>::app != nullptr)
+                        core::Application<A, T>::app->onDisconnected(*it);
+                    it = users.erase(it);
+                } else
+                    it++;
+            }
+        }
     }
 }
 #endif

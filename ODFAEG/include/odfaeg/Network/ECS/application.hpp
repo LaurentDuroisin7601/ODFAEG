@@ -11,7 +11,9 @@
 #include "../export.hpp"
 
 #include "../../../../include/odfaeg/Window/iEvent.hpp"
+#include "../srkserveur.h"
 #include "../network.h"
+
 #include <thread>
 #include <mutex>
 /**
@@ -138,7 +140,7 @@ namespace odfaeg {
                             network::Network::getCliInstance().checkMessages();
                         }
                         if (network::Network::getSrvInstance().isRunning()) {
-                            network::Network::getSrvInstance().checkMessages();
+                            network::Network::getSrvInstance().checkMessages<A, T>();
                         }
                         static_cast<A*>(this)->onExec();
                         getClock("LoopTime").restart();
@@ -342,7 +344,7 @@ namespace odfaeg {
                 static sf::Clock& getTimeClk() {
                     return timeClk;
                 }
-                ResourceCache<T> getResourceCache() {
+                ResourceCache<T>& getResourceCache() {
                     return resourceCache;
                 }
                 /** > a pointer to the current odfaeg application*/
@@ -494,7 +496,7 @@ namespace odfaeg {
                             network::Network::getCliInstance().checkMessages();
                         }
                         if (network::Network::getSrvInstance().isRunning()) {
-                            network::Network::getSrvInstance().checkMessages();
+                            network::Network::getSrvInstance().checkMessages<A, T>();
                         }
                         static_cast<A*>(this)->onExec();
                         getClock("LoopTime").restart();
@@ -698,7 +700,7 @@ namespace odfaeg {
                 static sf::Clock& getTimeClk() {
                     return timeClk;
                 }
-                ResourceCache<T> getResourceCache() {
+                ResourceCache<T>& getResourceCache() {
                     return resourceCache;
                 }
                 /** > a pointer to the current odfaeg application*/

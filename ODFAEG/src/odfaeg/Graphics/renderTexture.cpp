@@ -58,7 +58,18 @@ namespace odfaeg
             currentFrame = 0;
             return true;
         }
+        void RenderTexture::createSyncObjects() {
+            VkFenceCreateInfo fenceInfo{};
+            fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+            fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
+            for (size_t i = 0; i < getMaxFramesInFlight(); i++) {
+                if (vkCreateFence(vkDevice.getDevice(), &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS) {
+
+                    throw core::Erreur(0, "échec de la création des objets de synchronisation pour une frame!", 1);
+                }
+            }
+        }
         VkSurfaceKHR RenderTexture::getSurface() {
             return VK_NULL_HANDLE;
         }
@@ -264,6 +275,7 @@ namespace odfaeg
         }
         void RenderTexture::display() {
             if (getCommandBuffers().size() > 0) {
+                vkWaitForFences(vkDevice.getDevice(), 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
                 for (unsigned int i = 0; i < getCommandBuffers().size(); i++) {
                     if (vkEndCommandBuffer(getCommandBuffers()[i]) != VK_SUCCESS) {
                         throw core::Erreur(0, "failed to record command buffer!", 1);
@@ -284,8 +296,8 @@ namespace odfaeg
                 uint32_t checkPointDataCount;
                 vkGetQueueCheckpointData2NV(vkDevice.getGraphicsQueue(), &checkPointDataCount, &checkPointData);*/
                 //std::cout<<"render texture result : "<<result<<std::endl;
-
-                if (vkQueueSubmit(vkDevice.getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE)) {
+                vkResetFences(vkDevice.getDevice(), 1, &inFlightFences[currentFrame]);
+                if (vkQueueSubmit(vkDevice.getGraphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame])) {
                     throw core::Erreur(0, "échec de l'envoi d'un command buffer!", 1);
                 }
                 vkDeviceWaitIdle(vkDevice.getDevice());
