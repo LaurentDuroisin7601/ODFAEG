@@ -157,8 +157,8 @@ namespace odfaeg {
             std::vector<User*>::iterator it;
             for (it = users.begin(); it != users.end();) {
                 if (&(*it)->getTcpSocket() == &socket) {
-                    if (core::Application::app != nullptr)
-                        core::Application::app->onDisconnected(*it);
+                    if (app != nullptr)
+                        app->onDisconnected(*it);
                     it = users.erase(it);
                 } else
                     it++;
