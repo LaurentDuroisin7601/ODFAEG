@@ -1297,29 +1297,43 @@ namespace odfaeg {
             for (unsigned int i = 0; i < baseInstance.size(); i++) {
                 baseInstance[i] = 0;
             }
+            for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
+                vbBindlessTex[i].clear();
+                materialDatas[i].clear();
+                modelDatas[i].clear();
+            }
+            for (unsigned int i = 0; i < firstIndex.size(); i++) {
+                firstIndex[i] = 0;
+            }
+            for (unsigned int i = 0; i < baseInstance.size(); i++) {
+                baseInstance[i] = 0;
+            }
             for (unsigned int i = 0; i < m_selected.size(); i++) {
                 if (m_selected[i].getAllVertices().getVertexCount() > 0) {
                     DrawArraysIndirectCommand drawArraysIndirectCommand;
                     //std::cout<<"next frame draw normal"<<std::endl;
-
                     float time = timeClock.getElapsedTime().asSeconds();
                     indirectDrawPushConsts.time = time;
 
                     unsigned int p = m_selected[i].getAllVertices().getPrimitiveType();
+
+                    /*if (m_selecteds[i].getVertexArrays()[0]->getEntity()->getRootType() == "E_MONSTER") {
+                            std::cout<<"tex coords : "<<(*m_selecteds[i].getVertexArrays()[0])[0].texCoords.x<<","<<(*m_selecteds[i].getVertexArrays()[0])[0].texCoords.y<<std::endl;
+                        }*/
+                    unsigned int vertexCount = 0;
                     MaterialData material;
                     material.textureIndex = (m_selected[i].getMaterial().getTexture() != nullptr) ? m_selected[i].getMaterial().getTexture()->getId() : 0;
                     material.materialType = m_selected[i].getMaterial().getType();
                     materialDatas[p].push_back(material);
-
-                    TransformMatrix tm;
-                    ModelData model;
-                    model.worldMat = tm.getMatrix().transpose();
-                    modelDatas[p].push_back(model);
-                    unsigned int vertexCount = 0;
                     for (unsigned int j = 0; j < m_selected[i].getAllVertices().getVertexCount(); j++) {
                         vbBindlessTex[p].append(m_selected[i].getAllVertices()[j]);
                         vertexCount++;
                     }
+                    TransformMatrix tm;
+                    ModelData modelData;
+                    modelData.worldMat = tm.getMatrix().transpose();
+                    modelDatas[p].push_back(modelData);
+
                     drawArraysIndirectCommand.count = vertexCount;
                     drawArraysIndirectCommand.firstIndex = firstIndex[p];
                     drawArraysIndirectCommand.baseInstance = baseInstance[p];
@@ -1327,28 +1341,32 @@ namespace odfaeg {
                     drawArraysIndirectCommands[p].push_back(drawArraysIndirectCommand);
                     firstIndex[p] += vertexCount;
                     baseInstance[p] += 1;
+                    /*for (unsigned int j = 0; j < m_selecteds[i].getVertexArrays().size(); j++) {
+                        if (m_selecteds[i].getVertexArrays()[j]->getEntity() != nullptr && m_selecteds[i].getVertexArrays()[j]->getEntity()->getRootType() == "E_HERO") {
+                            for (unsigned int n = 0; n < m_selecteds[i].getVertexArrays()[j]->getVertexCount(); n++)
+                                std::cout<<"position hero : "<<(*m_selecteds[i].getVertexArrays()[j])[n].position.x<<","<<(*m_selecteds[i].getVertexArrays()[j])[n].position.y<<","<<(*m_selecteds[i].getVertexArrays()[j])[n].position.z<<std::endl;
+                        }
+                    }*/
                 }
             }
             for (unsigned int i = 0; i < m_selectedInstance.size(); i++) {
                 if (m_selectedInstance[i].getAllVertices().getVertexCount() > 0) {
                     DrawArraysIndirectCommand drawArraysIndirectCommand;
                     unsigned int p = m_selectedInstance[i].getAllVertices().getPrimitiveType();
-
                     float time = timeClock.getElapsedTime().asSeconds();
                     indirectDrawPushConsts.time = time;
-
-                    MaterialData material;
-                    material.textureIndex = (m_selectedInstance[i].getMaterial().getTexture() != nullptr) ? m_selectedInstance[i].getMaterial().getTexture()->getId() : 0;
-                    material.materialType = m_selectedInstance[i].getMaterial().getType();
-                    materialDatas[p].push_back(material);
 
                     std::vector<TransformMatrix*> tm = m_selectedInstance[i].getTransforms();
                     for (unsigned int j = 0; j < tm.size(); j++) {
                         tm[j]->update();
-                        ModelData model;
-                        model.worldMat = tm[j]->getMatrix().transpose();
-                        modelDatas[p].push_back(model);
+                        ModelData modelData;
+                        modelData.worldMat = tm[j]->getMatrix().transpose();
+                        modelDatas[p].push_back(modelData);
                     }
+                    MaterialData materialData;
+                    materialData.textureIndex = (m_selectedInstance[i].getMaterial().getTexture() != nullptr) ? m_selectedInstance[i].getMaterial().getTexture()->getId() : 0;
+                    materialData.materialType = m_selectedInstance[i].getMaterial().getType();
+                    materialDatas[p].push_back(materialData);
                     unsigned int vertexCount = 0;
                     if (m_selectedInstance[i].getVertexArrays().size() > 0) {
                         Entity* entity = m_selectedInstance[i].getVertexArrays()[0]->getEntity();
@@ -1436,7 +1454,7 @@ namespace odfaeg {
                     vkDestroyBuffer(vkDevice.getDevice(), stagingBuffer, nullptr);
                     vkFreeMemory(vkDevice.getDevice(), stagingBufferMemory, nullptr);
                     //createDescriptorSets(p, currentStates);
-                    createCommandBuffersIndirect(p, drawArraysIndirectCommands[p].size(), sizeof(DrawArraysIndirectCommand), NODEPTHSTENCIL, currentStates);
+                    createCommandBuffersIndirect(p, drawArraysIndirectCommands[p].size(), sizeof(DrawArraysIndirectCommand), NODEPTHNOSTENCIL, currentStates);
 
                 }
             }
@@ -1593,7 +1611,7 @@ namespace odfaeg {
                     vkDestroyBuffer(vkDevice.getDevice(), stagingBuffer, nullptr);
                     vkFreeMemory(vkDevice.getDevice(), stagingBufferMemory, nullptr);
                     //createDescriptorSets(p, currentStates);
-                    createCommandBuffersIndirect(p, drawArraysIndirectCommands[p].size(), sizeof(DrawArraysIndirectCommand), NODEPTHSTENCILOUTLINE, currentStates);
+                    createCommandBuffersIndirect(p, drawArraysIndirectCommands[p].size(), sizeof(DrawArraysIndirectCommand), NODEPTHNOSTENCIL, currentStates);
 
                 }
             }
@@ -1615,8 +1633,8 @@ namespace odfaeg {
             for (unsigned int i = 0; i < baseInstance.size(); i++) {
                 baseInstance[i] = 0;
             }
-            for (unsigned int i = 0; i < m_selected.size(); i++) {
-                if (m_selected[i].getAllVertices().getVertexCount() > 0) {
+            for (unsigned int i = 0; i < m_selectedIndexed.size(); i++) {
+                if (m_selectedIndexed[i].getAllVertices().getVertexCount() > 0) {
                     DrawElementsIndirectCommand drawElementsIndirectCommand;
                     //std::cout<<"next frame draw normal"<<std::endl;
 
@@ -1974,7 +1992,7 @@ namespace odfaeg {
             drawInstances();
             drawInstancesIndexed();
             drawSelectedInstances();
-            //drawSelectedInstancesIndexed();
+            drawSelectedInstancesIndexed();
 
 
 
