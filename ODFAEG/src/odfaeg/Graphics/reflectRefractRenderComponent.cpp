@@ -1084,16 +1084,19 @@ namespace odfaeg {
                                 }
                                 if (!contains) {
                                     rootEntities.push_back(entity);
-                                    math::Vec3f scale(1, 1, 1);
+                                    /*math::Vec3f scale(1, 1, 1);
                                     if (entity->getSize().x > squareSize) {
                                         scale.x = entity->getSize().x / squareSize;
                                     }
                                     if (entity->getSize().y > squareSize) {
                                         scale.y = entity->getSize().y / squareSize;
-                                    }
+                                    }*/
                                     //std::cout<<"scale : "<<scale<<"position : "<<entity->getPosition()<<std::endl;
-                                    reflectView.setScale(scale.x, scale.y, scale.z);
-                                    reflectView.setCenter(entity->getPosition()+entity->getSize()*0.5f);
+                                    //reflectView.setScale(scale.x, scale.y, scale.z);
+                                    if (entity->getType() != "E_BIGTILE")
+                                        reflectView.setCenter(entity->getPosition()+entity->getSize()*0.5f);
+                                    else
+                                        reflectView.setCenter(view.getPosition());
                                     std::vector<math::Matrix4f> projMatrices;
                                     std::vector<math::Matrix4f> viewMatrices;
                                     std::vector<math::Matrix4f> sbProjMatrices;
