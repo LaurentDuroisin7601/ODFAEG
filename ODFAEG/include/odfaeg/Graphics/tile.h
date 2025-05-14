@@ -24,7 +24,7 @@ namespace odfaeg {
           * \date 1/02/2014
           * Represent a 2D tile.
           */
-        class ODFAEG_GRAPHICS_API Tile : public GameObject, public Selectable {
+        class ODFAEG_GRAPHICS_API Tile : public GameObject/*, public Selectable*/ {
             public :
                 /**
                 * \fn Tile();

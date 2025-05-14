@@ -20,7 +20,7 @@ namespace odfaeg {
               * \version 1.0
               * \date 1/02/2014
               */
-            class ODFAEG_GRAPHICS_API Decor : public Selectable, public Model {
+            class ODFAEG_GRAPHICS_API Decor : /*public Selectable,*/ public Model {
             public :
                 /**
                   * \fn Decor()

@@ -87,7 +87,7 @@ namespace odfaeg {
         }
         void Anim::setSelected(bool selected) {
             //std::cout<<"set selected : "<<selected<<std::endl;
-            Entity::setSelected(selected);
+            Entity::updateSelected(selected);
             interpolatedFrame->setSelected(selected);
         }
         void Anim::setLayer(unsigned int layer) {

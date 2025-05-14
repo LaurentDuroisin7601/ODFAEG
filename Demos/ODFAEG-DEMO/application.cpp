@@ -179,7 +179,7 @@ namespace sorrok {
         walls[g2d::Wall::TOP_RIGHT]->getChildren()[0]->setLayer(1);
         walls[g2d::Wall::TOP_LEFT]->getChildren()[0]->setLayer(1);
         walls[g2d::Wall::BOTTOM_RIGHT]->getChildren()[0]->setLayer(1);
-        std::ifstream ifs("FichierDeSerialisation");
+        /*std::ifstream ifs("FichierDeSerialisation");
         if(ifs) {
             std::cout<<"read serialisation file"<<std::endl;
             ITextArchive ia(ifs);
@@ -225,14 +225,16 @@ namespace sorrok {
                 }
             }
             ifs.close();
-        } else {
+        } else {*/
             std::cout<<"not read serialisation file"<<std::endl;
             BoundingBox mapZone(0, 0, 0, 1500, 1000, 0);
             getWorld()->generate_map(tiles, walls, Vec2f(100, 50), mapZone, entityFactory);
             Tile* thouse = entityFactory.make_entity<Tile>(tm.getResourceByAlias("HOUSE"), Vec3f(-100, 250, 400), Vec3f(250, 300, 0), sf::IntRect(0, 0, 250, 300), entityFactory);
+
             //thouse->setLayer(1);
             thouse->getFace(0)->getMaterial().setTexId("HOUSE");
             g2d::Decor* decor = entityFactory.make_entity<g2d::Decor>(thouse, &g2d::AmbientLight::getAmbientLight(), entityFactory);
+            //decor->setSelected(true);
 
             BoundingVolume *bb = new BoundingBox(decor->getGlobalBounds().getPosition().x, decor->getGlobalBounds().getPosition().y + decor->getGlobalBounds().getSize().y * 0.4f, 0,
             decor->getGlobalBounds().getSize().x, decor->getGlobalBounds().getSize().y * 0.25f, 0);
@@ -281,7 +283,7 @@ namespace sorrok {
             w->setPosition(Vec3f(0, 130, 130 + w->getSize().y * 0.5f));
             w->setLayer(1);
             getWorld()->addEntity(w);
-        }
+        //}
         ps->setTexture(*tm.getResourceByAlias("PARTICLE"));
         for (unsigned int i = 0; i < 10; i++) {
             ps->addTextureRect(sf::IntRect(i*10, 0, 10, 10));

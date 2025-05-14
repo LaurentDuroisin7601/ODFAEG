@@ -404,7 +404,8 @@ namespace odfaeg {
                 virtual void detachChild(Entity* entity);
                 virtual Entity* getCurrentFrame() const;
 
-                virtual void setSelected(bool selected);
+                void updateSelected(bool selected);
+                virtual void setSelected(bool selected) = 0;
                 bool isSelected();
                 virtual int getIntensity();
                 virtual void onFrameChanged();
@@ -447,7 +448,7 @@ namespace odfaeg {
                 static std::map<int, std::string> types; /** A list of the type's id and name's of the entities. */
                 std::pair<int, std::string> type; /** The type's id and the type's name of the entity.*/
                 int id; /** the id of the entity.*/
-                bool selected;                
+                bool selected;
                 core::State entityState;                                         /** the states of the entity.*/
                 Entity(const Entity& entity) = delete; /**> an entity if not copiable.*/
                 Entity& operator=(const Entity& entity) = delete; /**> an entity is not affectable*/

@@ -107,7 +107,7 @@ namespace odfaeg {
             //return nbEntitiesTypes;
             factory.getNbEntitiesTypes();
         }*/
-        void Entity::setSelected(bool selected) {
+        void Entity::updateSelected(bool selected) {
             this->selected = selected;
         }
         bool Entity::isSelected() {

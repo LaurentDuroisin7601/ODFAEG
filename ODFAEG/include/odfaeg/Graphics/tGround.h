@@ -15,7 +15,7 @@ namespace odfaeg {
         * \date 1/02/2014
         * \brief represent a sets of several tiles.
         */
-        class ODFAEG_GRAPHICS_API BigTile : public GameObject, public Selectable {
+        class ODFAEG_GRAPHICS_API BigTile : public GameObject/*, public Selectable*/ {
         public :
             /**
             * \fn BigTile()

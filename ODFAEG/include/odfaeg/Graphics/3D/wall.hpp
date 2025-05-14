@@ -24,7 +24,7 @@ namespace odfaeg {
               * \date 1/02/2014
               * Represent a wall.
               */
-            class ODFAEG_GRAPHICS_API Wall : public Selectable, public Model {
+            class ODFAEG_GRAPHICS_API Wall : /*public Selectable,*/ public Model {
                 public :
                     enum Type {
                         TOP_LEFT, TOP_RIGHT, BOTTOM_RIGHT, BOTTOM_LEFT, TOP_BOTTOM, RIGHT_LEFT, T_TOP, T_RIGHT, T_LEFT, T_BOTTOM, X, NB_WALL_TYPES

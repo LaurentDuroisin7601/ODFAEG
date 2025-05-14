@@ -119,7 +119,7 @@ namespace odfaeg {
         }
         void GameObject::setSelected(bool selected) {
 
-            Entity::setSelected(selected);
+            Entity::updateSelected(selected);
             for (unsigned int i = 0; i < getChildren().size(); i++) {
                 getChildren()[i]->setSelected(selected);
             }
