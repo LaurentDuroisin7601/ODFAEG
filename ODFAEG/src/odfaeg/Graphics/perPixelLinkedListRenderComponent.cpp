@@ -123,8 +123,10 @@ namespace odfaeg {
 
                        pipelineLayoutInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL].pPushConstantRanges = &push_constant;
                        pipelineLayoutInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL].pushConstantRangeCount = 1;
+                       depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL].front = {}; // Optional
+                       depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL].back = {}; // Optional
                        frameBuffer.createGraphicPipeline(static_cast<sf::PrimitiveType>(i), states, NODEPTHNOSTENCIL, NBDEPTHSTENCIL);
-                       frameBuffer.enableStencilTest(false);
+
                        /*std::cout<<"ppll size dl : "<<descriptorSetLayout.size()<<std::endl;
                        system("PAUSE");*/
                    } else if (j == 1) {
@@ -188,6 +190,8 @@ namespace odfaeg {
                        push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
                        pipelineLayoutInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL].pPushConstantRanges = &push_constant;
                        pipelineLayoutInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL].pushConstantRangeCount = 1;
+                       depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL].front = {}; // Optional
+                       depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL].back = {}; // Optional
                        frameBuffer.createGraphicPipeline(static_cast<sf::PrimitiveType>(i), states, NODEPTHNOSTENCIL, NBDEPTHSTENCIL);
                    } else if (j == 1) {
                        frameBuffer.enableStencilTest(true);
@@ -1454,7 +1458,7 @@ namespace odfaeg {
                     vkDestroyBuffer(vkDevice.getDevice(), stagingBuffer, nullptr);
                     vkFreeMemory(vkDevice.getDevice(), stagingBufferMemory, nullptr);
                     //createDescriptorSets(p, currentStates);
-                    createCommandBuffersIndirect(p, drawArraysIndirectCommands[p].size(), sizeof(DrawArraysIndirectCommand), NODEPTHNOSTENCIL, currentStates);
+                    createCommandBuffersIndirect(p, drawArraysIndirectCommands[p].size(), sizeof(DrawArraysIndirectCommand), NODEPTHSTENCIL, currentStates);
 
                 }
             }
@@ -1611,7 +1615,7 @@ namespace odfaeg {
                     vkDestroyBuffer(vkDevice.getDevice(), stagingBuffer, nullptr);
                     vkFreeMemory(vkDevice.getDevice(), stagingBufferMemory, nullptr);
                     //createDescriptorSets(p, currentStates);
-                    createCommandBuffersIndirect(p, drawArraysIndirectCommands[p].size(), sizeof(DrawArraysIndirectCommand), NODEPTHNOSTENCIL, currentStates);
+                    createCommandBuffersIndirect(p, drawArraysIndirectCommands[p].size(), sizeof(DrawArraysIndirectCommand), NODEPTHSTENCILOUTLINE, currentStates);
 
                 }
             }
@@ -2194,7 +2198,7 @@ namespace odfaeg {
 
 
                 vkCmdPushConstants(commandBuffers[i], frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + vb.getPrimitiveType()][frameBuffer.getId()][NODEPTHNOSTENCIL], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(Ppll2PushConsts), &ppll2PushConsts);
-                frameBuffer.drawVertexBuffer(commandBuffers[i], i, vb, currentStates, NODEPTHNOSTENCIL);
+                frameBuffer.drawVertexBuffer(commandBuffers[i], i, vb, NODEPTHNOSTENCIL, currentStates);
 
                 /*if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to record command buffer!", 1);
@@ -2256,9 +2260,12 @@ namespace odfaeg {
 
                                     va[j].color = sf::Color::Cyan;
                                 }
-
+                                Entity* root = (vEntities[i]->getRootEntity()->isAnimated()) ? vEntities[i]->getRootEntity() : vEntities[i];
+                                math::Vec3f oldSize = root->getSize();
                                 border->setOrigin(border->getSize() * 0.5f);
                                 border->setScale(math::Vec3f(1.1f, 1.1f, 1.1f));
+                                math::Vec3f offset =  root->getSize() - oldSize;
+                                border->setPosition(root->getPosition() - offset * 0.5f);
                                // std::cout<<"add to batcher"<<std::endl;
                                 selectedInstanceScaleBatcher.addFace(border->getFace(j));
                            // std::cout<<"face added"<<std::endl;

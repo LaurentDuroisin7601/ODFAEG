@@ -1,5 +1,11 @@
 #ifndef ODFAEG_RENDER_TARGET_HPP
 #define ODFAEG_RENDER_TARGET_HPP
+#ifdef VULKAN
+#include "../Window/vkDevice.hpp"
+#else
+#include "GL/glew.h"
+#include <SFML/OpenGL.hpp>
+#endif // VULKAN
 
 #include "view.h"
 #include "vertex.h"
@@ -10,12 +16,6 @@
 #include "shader.h"
 #include <cstdarg>
 #include "../config.hpp"
-#ifdef VULKAN
-#include "../Window/vkDevice.hpp"
-#else
-#include "GL/glew.h"
-#include <SFML/OpenGL.hpp>
-#endif // VULKAN
 
 
 ////////////////////////////////////////////////////////////
@@ -201,7 +201,7 @@ namespace odfaeg {
             void draw(const Vertex* vertices, unsigned int vertexCount, sf::PrimitiveType type,
                       RenderStates states = RenderStates::Default);
             void drawIndirect(VkCommandBuffer& cmd, unsigned int i, unsigned int nbIndirectCommands, unsigned int stride, VertexBuffer& vertexBuffer, VkBuffer vboIndirect,unsigned int depthStencilId = 0, RenderStates states = RenderStates::Default);
-            void drawVertexBuffer(VkCommandBuffer& cmd, unsigned int i,VertexBuffer& vertexBuffer, RenderStates states = RenderStates::Default, unsigned int depthStencilId = 0);
+            void drawVertexBuffer(VkCommandBuffer& cmd, unsigned int i,VertexBuffer& vertexBuffer,  unsigned int depthStencilId = 0, RenderStates states = RenderStates::Default);
             /// \brief Return the size of the rendering region of the target
             ///
             /// \return Size in pixels
