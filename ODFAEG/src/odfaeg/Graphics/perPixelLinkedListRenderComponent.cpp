@@ -3016,8 +3016,8 @@ namespace odfaeg {
             for (unsigned int i = 0; i < baseInstance.size(); i++) {
                 baseInstance[i] = 0;
             }
-            for (unsigned int i = 0; i < m_selected.size(); i++) {
-                if (m_selected[i].getAllVertices().getVertexCount() > 0) {
+            for (unsigned int i = 0; i < m_selectedIndexed.size(); i++) {
+                if (m_selectedIndexed[i].getAllVertices().getVertexCount() > 0) {
                     DrawElementsIndirectCommand drawElementsIndirectCommand;
                     //std::cout<<"next frame draw normal"<<std::endl;
 

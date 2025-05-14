@@ -374,7 +374,7 @@ namespace odfaeg {
         template<typename A, typename T>
         Application<A, T>* Application<A, T>::app = nullptr;
         #else
-        template <typename A, typename T>
+        template <typename A, typename T=std::string>
         class Application {
         public :
             std::string name;
@@ -488,7 +488,7 @@ namespace odfaeg {
                         network::Network::getCliInstance().checkMessages();
                     }
                     if (network::Network::getSrvInstance().isRunning()) {
-                        network::Network::getSrvInstance().checkMessages();
+                        network::Network::getSrvInstance().checkMessages<A, T>();
                     }
                     static_cast<A*>(this)->onExec();
                     getClock("LoopTime").restart();

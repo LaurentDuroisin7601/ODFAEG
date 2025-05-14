@@ -381,7 +381,7 @@ namespace odfaeg {
             * \version 1.0
             * \date 1/02/2014
             */
-            template <typename A, typename T>
+            template <typename A, typename T=std::string>
             class Application {
             public :
                 std::string name;
