@@ -123,6 +123,24 @@ namespace odfaeg {
             createTextureSampler();
             return true;
         }
+        bool Texture::loadCubeMapFromFile(std::vector<std::string> filenames, const sf::IntRect& area) {
+            for (unsigned int i = 0; i < 6; i++) {
+                Image image;
+                if (!image.loadFromFile(filenames[i]) || !loadCubeMapFromImage(image, area, i))
+                    return false;
+            }
+            return true;
+        }
+        bool Texture::loadCubeMapFromImage(const sf::Image& image, const sf::IntRect& area, uint32_t face) {
+            const sf::Uint8* pixels = image.getPixelsPtr();
+            int texWidth = image.getSize().x;
+            int texHeight = image.getSize().y;
+            updateCubeMap(pixels, texWidth, texHeight, 0, 0, face);
+            allTextures.push_back(this);
+            id = nbTextures + 1;
+            nbTextures++;
+            return true;
+        }
         bool Texture::loadFromFile(const std::string& filename, const sf::IntRect& area) {
 
             Image image;
@@ -137,6 +155,32 @@ namespace odfaeg {
             id = nbTextures + 1;
             nbTextures++;
             return true;
+        }
+        void Texture::updateCubeMap(const sf::Uint8* pixels, unsigned int texWidth, unsigned int texHeight, unsigned int x, unsigned int y, uint32_t face) {
+            VkDeviceSize imageSize = texWidth * texHeight * 4;
+            if (!pixels) {
+                throw std::runtime_error("échec du chargement d'une image!");
+            }
+            VkBuffer stagingBuffer;
+            VkDeviceMemory stagingBufferMemory;
+            if (textureImage == nullptr) {
+                createCubeMapImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
+            }
+            createBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+            void* data;
+            vkMapMemory(vkDevice.getDevice(), stagingBufferMemory, 0, imageSize, 0, &data);
+            memcpy(data, pixels, static_cast<size_t>(imageSize));
+            vkUnmapMemory(vkDevice.getDevice(), stagingBufferMemory);
+            transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+            copyBufferToImage(stagingBuffer, textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight),static_cast<uint32_t>(x), static_cast<uint32_t>(y));
+            transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+            vkDestroyBuffer(vkDevice.getDevice(), stagingBuffer, nullptr);
+            vkFreeMemory(vkDevice.getDevice(), stagingBufferMemory, nullptr);
+            if (textureImageView == nullptr) {
+                createCubeMapTextureImageView(VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
+                createCubeMapTextureImageSampler();
+            }
         }
         void Texture::update(const sf::Uint8* pixels, unsigned int texWidth, unsigned int texHeight, unsigned int x, unsigned int y) {
             VkDeviceSize imageSize = texWidth * texHeight * 4;
@@ -389,7 +433,7 @@ namespace odfaeg {
 
             endSingleTimeCommands(commandBuffer);
         }
-        void Texture::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t x, uint32_t y) {
+        void Texture::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t x, uint32_t y, uint32_t face) {
             VkCommandBuffer commandBuffer = beginSingleTimeCommands();
 
             VkBufferImageCopy region{};
@@ -398,7 +442,7 @@ namespace odfaeg {
             region.bufferImageHeight = 0;
             region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
             region.imageSubresource.mipLevel = 0;
-            region.imageSubresource.baseArrayLayer = 0;
+            region.imageSubresource.baseArrayLayer = face;
             region.imageSubresource.layerCount = 1;
             region.imageOffset = {x, y, 0};
             region.imageExtent = {
@@ -638,7 +682,71 @@ namespace odfaeg {
             return 10000;
         }
         bool Texture::createCubeMap (unsigned int width, unsigned int height) {
-            return false;
+            createCubeMapImage(width, height, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
+            transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+            createCubeMapTextureImageView(VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
+            createCubeMapTextureImageSampler();
+            return true;
+        }
+        void Texture::createCubeMapImage (uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage image, VkDeviceMemory device) {
+            VkImageCreateInfo imageCreateInfo = {};
+            imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+            imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
+            imageCreateInfo.format = format;
+            imageCreateInfo.mipLevels = 1;
+            imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+            imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+            imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+            imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            imageCreateInfo.extent = { width, height, 1 };
+            imageCreateInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+            // Cube faces count as array layers in Vulkan
+            imageCreateInfo.arrayLayers = 6;
+            // This flag is required for cube map images
+            imageCreateInfo.flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
+            if (vkCreateImage(vkDevice.getDevice(), &imageCreateInfo, nullptr, &textureImage) != VK_SUCCESS) {
+                throw core::Erreur(0, "Failed to create cubemap image!", 1);
+            }
+        }
+        void Texture::createCubeMapTextureImageView(VkFormat format, VkImageAspectFlags aspectFlags) {
+            VkImageViewCreateInfo view = {};
+            view.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+            // Cube map view type
+            view.viewType = VK_IMAGE_VIEW_TYPE_CUBE;
+            view.format = format;
+            view.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+            // 6 array layers (faces)
+            view.subresourceRange.layerCount = 6;
+            // Set number of mip levels
+            view.subresourceRange.levelCount = 1;
+            view.image = textureImage;
+            if(vkCreateImageView(vkDevice.getDevice(), &view, nullptr, &textureImageView) != VK_SUCCESS) {
+                throw core::Erreur(0, "Failed to create image view!", 1);
+            }
+        }
+        void Texture::createCubeMapTextureImageSampler () {
+            VkSamplerCreateInfo sampler = {};
+            sampler.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+            sampler.magFilter = VK_FILTER_LINEAR;
+            sampler.minFilter = VK_FILTER_LINEAR;
+            sampler.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+            sampler.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+            sampler.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+            sampler.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+            sampler.mipLodBias = 0.0f;
+            sampler.compareOp = VK_COMPARE_OP_NEVER;
+            sampler.minLod = 0.0f;
+            sampler.maxLod = 0.0f;
+            sampler.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+            sampler.maxAnisotropy = 1.0f;
+            VkPhysicalDeviceProperties properties{};
+            vkGetPhysicalDeviceProperties(vkDevice.getPhysicalDevice(), &properties);
+            sampler.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
+            sampler.anisotropyEnable = VK_TRUE;
+
+            if(!vkCreateSampler(vkDevice.getDevice(), &sampler, nullptr, &textureSampler)) {
+                throw core::Erreur(0, "failed to create cubemap sampler");
+            }
         }
         bool Texture::isSmooth() const {
             return m_isRepeated;
