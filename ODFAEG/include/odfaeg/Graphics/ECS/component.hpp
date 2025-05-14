@@ -1,6 +1,6 @@
 #ifndef ECS_COMPONENT_HPP
 #define ECS_COMPONENT_HPP
-#include "../renderWindow.h"
+//#include "../renderWindow.h"
 #include "../drawable.h"
 #include "../transformable.h"
 #include "../../Window/listener.h"

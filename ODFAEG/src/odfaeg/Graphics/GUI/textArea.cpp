@@ -1,4 +1,5 @@
 #include "../../../../include/odfaeg/Graphics/GUI/textArea.hpp"
+#include <SFML/OpenGL.hpp>
 namespace odfaeg {
     namespace graphic {
         namespace gui {

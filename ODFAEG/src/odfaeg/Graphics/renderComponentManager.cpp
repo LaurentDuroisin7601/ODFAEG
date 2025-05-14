@@ -1,6 +1,6 @@
 #include "../../../include/odfaeg/Graphics/renderComponentManager.h"
-#include "../../../include/odfaeg/Graphics/GUI/menu.hpp"
-#include "../../../include/odfaeg/Window/command.h"
+/*#include "../../../include/odfaeg/Graphics/GUI/menu.hpp"
+#include "../../../include/odfaeg/Window/command.h"*/
 namespace odfaeg {
     namespace graphic {
         RenderComponentManager::RenderComponentManager(RenderWindow& window) {

@@ -1,19 +1,17 @@
 #ifndef ODFAEG_RENDER_TARGET_HPP
 #define ODFAEG_RENDER_TARGET_HPP
+
 #ifdef VULKAN
 #include "../Window/vkDevice.hpp"
-#else
-#include "GL/glew.h"
-#include <SFML/OpenGL.hpp>
 #endif // VULKAN
-
+#include "shader.h"
 #include "view.h"
 #include "vertex.h"
 #include "vertexBuffer.hpp"
 
 #include "renderStates.h"
 #include <SFML/Graphics/PrimitiveType.hpp>
-#include "shader.h"
+
 #include <cstdarg>
 #include "../config.hpp"
 
