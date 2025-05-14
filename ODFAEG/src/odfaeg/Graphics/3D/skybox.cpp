@@ -4,7 +4,7 @@ namespace odfaeg {
         namespace g3d {
             using namespace sf;
             #ifdef VULKAN
-            Skybox::Skybox(std::vector<std::string> filepaths, EntityFactory& factory) : GameObject(math::Vec3f(0, 0, 0),math::Vec3f(2, 2, 2),math::Vec3f(1,1,1),"E_SKYBOX", factory) {
+            Skybox::Skybox(std::vector<std::string> filepaths, EntityFactory& factory, window::Device& vkDevice) : GameObject(math::Vec3f(0, 0, 0),math::Vec3f(2, 2, 2),math::Vec3f(1,1,1),"E_SKYBOX", factory), vkDevice(vkDevice), skyboxCM(vkDevice) {
                 skyboxCM.loadCubeMapFromFile(filepaths);
                 VertexArray va1(sf::Quads, 4, this);
                 Vertex v1(Vector3f(1, -1, -1));
@@ -105,9 +105,9 @@ namespace odfaeg {
                 return skyboxCM;
             }
             Entity* Skybox::clone() {
-                Skybox* skybox = factory.make_entity<Skybox>(filepaths,factory);
+                Skybox* skybox = factory.make_entity<Skybox>(filepaths,factory, vkDevice);
                 GameObject::copy(skybox);
-                skybox->skyboxCM = skyboxCM;
+                skybox->skyboxCM = getTexture();
                 return skybox;
             }
             #else

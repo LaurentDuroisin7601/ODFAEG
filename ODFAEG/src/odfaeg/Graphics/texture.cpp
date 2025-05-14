@@ -678,6 +678,11 @@ namespace odfaeg {
             m_cacheId = getUniqueId();
             right.m_cacheId = getUniqueId();
         }
+        Texture& Texture::operator=(const Texture& right) {
+            Texture temp(right);
+            swap(temp);
+            return *this;
+        }
         unsigned int Texture::getMaximumSize() {
             return 10000;
         }

@@ -59,6 +59,21 @@ namespace odfaeg
             currentFrame = 0;
             return true;
         }
+        bool RenderTexture::createCubeMap(unsigned int width, unsigned int height) {
+            vkDevice.createInstance();
+            vkDevice.pickupPhysicalDevice(VK_NULL_HANDLE);
+            vkDevice.createLogicalDevice(VK_NULL_HANDLE);
+            m_texture.createCubeMap(width, height);
+            getDepthTexture().createDepthTexture(width, height);
+            createRenderPass();
+            createFramebuffers();
+            createSyncObjects();
+            m_size.x = width;
+            m_size.y = height;
+            RenderTarget::initialize();
+            currentFrame = 0;
+            return true;
+        }
         void RenderTexture::createSyncObjects() {
             inFlightFences.resize(getMaxFramesInFlight());
             VkFenceCreateInfo fenceInfo{};

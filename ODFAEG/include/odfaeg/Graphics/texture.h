@@ -65,7 +65,9 @@ namespace odfaeg
             };
 
             Texture (window::Device& vkDevice);
+            Texture(const Texture&);
             Texture (Texture&& texture);
+            Texture& operator=(const Texture&);
             bool loadFromImage(const sf::Image& image, const sf::IntRect& area = sf::IntRect());
             bool loadFromFile(const std::string& filename, const sf::IntRect& area = sf::IntRect());
             bool loadCubeMapFromFile(std::vector<std::string> filenames, const sf::IntRect& area = sf::IntRect());
@@ -97,8 +99,8 @@ namespace odfaeg
             void setCoordinatesType(CoordinateType ct);
             ~Texture();
         private :
-            Texture(const Texture&);
-            Texture& operator=(const Texture&);
+
+
             VkFormat findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 
             bool hasStencilComponent(VkFormat format);

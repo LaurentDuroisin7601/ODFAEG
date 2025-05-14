@@ -72,6 +72,7 @@ namespace odfaeg {
         public :
             RenderTexture(window::Device& vkDevice);
             bool create(unsigned int width, unsigned int height);
+            bool createCubeMap(unsigned int width, unsigned int height);
             VkSurfaceKHR getSurface();
             VkExtent2D getSwapchainExtents();
             VkFormat getSwapchainImageFormat();
