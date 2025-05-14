@@ -176,6 +176,7 @@ namespace odfaeg {
                 VkPhysicalDeviceFeatures2 physical_features21;
                 physical_features21.sType =  VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
                 physical_features21.pNext = &features11;
+                physical_features21.features = deviceFeatures;
                 vkGetPhysicalDeviceFeatures2(physicalDevice, &physical_features21);
 
                 VkPhysicalDeviceFeatures2 physical_features22;
