@@ -68,7 +68,7 @@ namespace odfaeg
             Texture (Texture&& texture);
             bool loadFromImage(const sf::Image& image, const sf::IntRect& area = sf::IntRect());
             bool loadFromFile(const std::string& filename, const sf::IntRect& area = sf::IntRect());
-            bool loadCubeMapFromFile(std::vector<std::string> filenames, const sf::IntRect& area);
+            bool loadCubeMapFromFile(std::vector<std::string> filenames, const sf::IntRect& area = sf::IntRect());
             bool create(uint32_t width, uint32_t height);
             bool createDepthTexture (uint32_t width, uint32_t height);
             sf::Vector2u getSize() const;

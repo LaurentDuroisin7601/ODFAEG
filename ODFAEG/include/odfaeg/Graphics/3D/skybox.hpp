@@ -6,6 +6,34 @@ namespace odfaeg {
     namespace graphic {
         namespace g3d {
             #ifdef VULKAN
+            class ODFAEG_GRAPHICS_API Skybox : public GameObject {
+                public :
+                Skybox  (std::vector<std::string> filepaths, EntityFactory& factory);
+                void onDraw (RenderTarget& target, RenderStates states);
+                Texture& getTexture();
+                bool isAnimated() const {
+                    return false;
+                }
+                bool isModel() const {
+                    return false;
+                }
+                bool selectable() const {
+                    return false;
+                }
+                bool isLight() const {
+                    return false;
+                }
+                bool isShadow() const {
+                    return false;
+                }
+                bool isLeaf() const {
+                    return true;
+                }
+                Entity* clone();
+                private :
+                Texture skyboxCM;
+                std::vector<std::string> filepaths;
+            };
             #else
             class ODFAEG_GRAPHICS_API Skybox : public GameObject {
                 public :
