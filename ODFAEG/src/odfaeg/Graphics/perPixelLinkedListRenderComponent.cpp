@@ -72,12 +72,42 @@ namespace odfaeg {
             vkBindImageMemory(window.getDevice().getDevice(), headPtrTextureImage, headPtrTextureImageMemory, 0);
             createHeadPtrImageView();
             createHeadPtrSampler();
+
+
             for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
                 vbBindlessTex[i].setPrimitiveType(static_cast<sf::PrimitiveType>(i));
             }
+            VkBuffer stagingBuffer;
+            VkDeviceMemory stagingBufferMemory;
+
             compileShaders();
             createCommandPool();
             allocateCommandBuffers();
+            transitionImageLayout(headPtrTextureImage, VK_FORMAT_R32_UINT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
+
+            AtomicCounterSSBO counter;
+            counter.count = 0;
+            counter.maxNodeCount = maxNodes;
+            bufferSize = sizeof(AtomicCounterSSBO);
+
+
+            createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+            void* data;
+            vkMapMemory(vkDevice.getDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
+            memcpy(data, &counter, (size_t)bufferSize);
+            vkUnmapMemory(vkDevice.getDevice(), stagingBufferMemory);
+            for (unsigned int i = 0; i < counterShaderStorageBuffers.size(); i++) {
+                vkDestroyBuffer(vkDevice.getDevice(), counterShaderStorageBuffers[i], nullptr);
+                vkFreeMemory(vkDevice.getDevice(), counterShaderStorageBuffersMemory[i], nullptr);
+            }
+            counterShaderStorageBuffers.resize(frameBuffer.getMaxFramesInFlight());
+            counterShaderStorageBuffersMemory.resize(frameBuffer.getMaxFramesInFlight());
+            for (size_t i = 0; i < frameBuffer.getMaxFramesInFlight(); i++) {
+                createBuffer(bufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, counterShaderStorageBuffers[i], counterShaderStorageBuffersMemory[i]);
+                copyBuffer(stagingBuffer, counterShaderStorageBuffers[i], bufferSize);
+            }
+            vkDestroyBuffer(vkDevice.getDevice(), stagingBuffer, nullptr);
+            vkFreeMemory(vkDevice.getDevice(), stagingBufferMemory, nullptr);
 
             core::FastDelegate<bool> signal (&PerPixelLinkedListRenderComponent::needToUpdate, this);
             core::FastDelegate<void> slot (&PerPixelLinkedListRenderComponent::drawNextFrame, this);
@@ -292,7 +322,17 @@ namespace odfaeg {
         }
         void PerPixelLinkedListRenderComponent::clear() {
             frameBuffer.clear(sf::Color::Transparent);
-            std::vector<unsigned int> headPtrClearBuf(view.getSize().x*view.getSize().y, 0xffffffff);
+            VkClearColorValue clearColor;
+            clearColor.uint32[0] = 0xffffffff;
+            for (unsigned int i = 0; i < commandBuffers.size(); i++) {
+                VkImageSubresourceRange subresRange = {};
+                subresRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                subresRange.levelCount = 1;
+                subresRange.layerCount = 1;
+                vkCmdClearColorImage(commandBuffers[i], headPtrTextureImage, VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
+                vkCmdFillBuffer(commandBuffers[i], counterShaderStorageBuffers[i], 0, sizeof(uint32_t), 0);
+            }
+            /*std::vector<unsigned int> headPtrClearBuf(view.getSize().x*view.getSize().y, 0xffffffff);
             VkDeviceSize imageSize = view.getSize().x*view.getSize().y * sizeof(unsigned int);
             VkBuffer stagingBuffer;
             VkDeviceMemory stagingBufferMemory;
@@ -328,7 +368,7 @@ namespace odfaeg {
                 copyBuffer(stagingBuffer, counterShaderStorageBuffers[i], bufferSize);
             }
             vkDestroyBuffer(vkDevice.getDevice(), stagingBuffer, nullptr);
-            vkFreeMemory(vkDevice.getDevice(), stagingBufferMemory, nullptr);
+            vkFreeMemory(vkDevice.getDevice(), stagingBufferMemory, nullptr);*/
             firstDraw = true;
         }
         VkCommandBuffer PerPixelLinkedListRenderComponent::beginSingleTimeCommands() {
@@ -395,8 +435,14 @@ namespace odfaeg {
 
                 sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
                 destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+            } else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_GENERAL) {
+                barrier.srcAccessMask = 0;
+                barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+                sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+                destinationStage =  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
             } else {
-                throw std::invalid_argument("unsupported layout transition!");
+               throw std::invalid_argument("unsupported layout transition!");
             }
             vkCmdPipelineBarrier(
             commandBuffer,
