@@ -369,7 +369,8 @@ namespace odfaeg {
             }
             vkDestroyBuffer(vkDevice.getDevice(), stagingBuffer, nullptr);
             vkFreeMemory(vkDevice.getDevice(), stagingBufferMemory, nullptr);*/
-            firstDraw = true;
+            //firstDraw = true;
+            frameBuffer.display();
         }
         VkCommandBuffer PerPixelLinkedListRenderComponent::beginSingleTimeCommands() {
             VkCommandBufferAllocateInfo allocInfo{};
@@ -2083,10 +2084,10 @@ namespace odfaeg {
             frameBuffer.updateCommandBuffers(commandPool, commandBuffers);
         }
         void PerPixelLinkedListRenderComponent::createCommandBuffersIndirect(unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, DepthStencilID depthStencilID, RenderStates currentStates) {
-            if (firstDraw) {
+            /*if (firstDraw) {
                 frameBuffer.display();
                 firstDraw = false;
-            }
+            }*/
             frameBuffer.beginRecordCommandBuffers();
             Shader* shader = const_cast<Shader*>(currentStates.shader);
             std::vector<Texture*> allTextures = Texture::getAllTextures();

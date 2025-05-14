@@ -234,7 +234,7 @@ namespace sorrok {
             //thouse->setLayer(1);
             thouse->getFace(0)->getMaterial().setTexId("HOUSE");
             g2d::Decor* decor = entityFactory.make_entity<g2d::Decor>(thouse, &g2d::AmbientLight::getAmbientLight(), entityFactory);
-            //decor->setSelected(true);
+            decor->setSelected(true);
 
 
             BoundingVolume *bb = new BoundingBox(decor->getGlobalBounds().getPosition().x, decor->getGlobalBounds().getPosition().y + decor->getGlobalBounds().getSize().y * 0.4f, 0,
