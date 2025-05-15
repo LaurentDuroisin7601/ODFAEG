@@ -50,7 +50,7 @@ namespace odfaeg
             RenderWindow(sf::VideoMode mode, const sf::String& title,   window::Device& vkDevice, sf::Uint32 style = sf::Style::Default, const window::ContextSettings& settings = window::ContextSettings());
             explicit RenderWindow(sf::WindowHandle handle, window::Device& vkDevice, const window::ContextSettings& settings = window::ContextSettings());
             virtual sf::Vector2u getSize() const;
-            size_t getCurrentFrame();
+            uint32_t getCurrentFrame();
             void recreateSwapchain();
             void cleanupSwapchain();
             void drawVulkanFrame();
@@ -87,7 +87,6 @@ namespace odfaeg
 
             VkExtent2D getSwapchainExtents();
             VkFormat getSwapchainImageFormat();
-            size_t getcurrentFrame();
             VkSurfaceKHR getSurface();
             const int getMaxFramesInFlight();
 

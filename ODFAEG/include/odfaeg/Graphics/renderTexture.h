@@ -77,7 +77,7 @@ namespace odfaeg {
             VkExtent2D getSwapchainExtents();
             VkFormat getSwapchainImageFormat();
             std::vector<VkImage> getSwapchainImages();
-            size_t getCurrentFrame();
+            uint32_t getCurrentFrame();
             const int getMaxFramesInFlight();
             const Texture& getTexture() const;
             sf::Vector2u getSize() const;
@@ -110,7 +110,7 @@ namespace odfaeg {
             VkRenderPass renderPass;
             window::Device& vkDevice;
             Texture m_texture;
-            size_t currentFrame;
+            uint32_t currentFrame;
             std::vector<VkFence> inFlightFences;
             std::vector<VkSemaphore> imageAvailableSemaphores;
             std::vector<VkSemaphore> renderFinishedSemaphores;

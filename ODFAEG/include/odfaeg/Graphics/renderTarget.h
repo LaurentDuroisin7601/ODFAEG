@@ -211,7 +211,7 @@ namespace odfaeg {
                       RenderStates states = RenderStates::Default, unsigned int depthStencilId=0, unsigned int nbDepthStencil=1);
             virtual std::vector<VkFramebuffer> getSwapchainFrameBuffers() = 0;
             virtual VkRenderPass getRenderPass() = 0;
-            virtual size_t getCurrentFrame() = 0;
+            virtual uint32_t getCurrentFrame() = 0;
             static std::vector<std::vector<std::vector<VkPipelineLayoutCreateInfo>>>& getPipelineLayoutCreateInfo();
             static std::vector<std::vector<std::vector<VkPipelineDepthStencilStateCreateInfo>>>& getDepthStencilCreateInfo();
             static std::vector<std::vector<std::vector<VkPipelineLayout>>>& getPipelineLayout();

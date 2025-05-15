@@ -229,7 +229,7 @@ namespace odfaeg {
                 }
             }
         }
-        size_t RenderWindow::getCurrentFrame() {
+        uint32_t RenderWindow::getCurrentFrame() {
             return currentFrame;
         }
         VkFormat RenderWindow::getSwapchainImageFormat() {
@@ -376,8 +376,7 @@ namespace odfaeg {
                 submitInfo.signalSemaphoreCount = 1;
                 submitInfo.pSignalSemaphores = signalSemaphores;
                 vkResetFences(vkDevice.getDevice(), 1, &inFlightFences[currentFrame]);
-                /*VkResult result = vkQueueSubmit(vkDevice.getGraphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]);
-                std::cout<<"render window result : "<<result<<std::endl;*/
+
                 if (vkQueueSubmit(vkDevice.getGraphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS) {
                     throw core::Erreur(0, "échec de l'envoi d'un command buffer!", 1);
                 }
@@ -476,9 +475,6 @@ namespace odfaeg {
                     throw core::Erreur(0, "failed to create framebuffer!", 1);
                 }
             }
-        }
-        size_t RenderWindow::getcurrentFrame() {
-            return currentFrame;
         }
         window::Device& RenderWindow::getDevice() {
             return vkDevice;

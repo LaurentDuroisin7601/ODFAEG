@@ -76,8 +76,7 @@ namespace odfaeg
         }
         void RenderTexture::createSyncObjects() {
             inFlightFences.resize(getMaxFramesInFlight());
-            imageAvailableSemaphores.resize(getMaxFramesInFlight());
-            renderFinishedSemaphores.resize(getMaxFramesInFlight());
+
             VkFenceCreateInfo fenceInfo{};
             fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
             fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
@@ -85,9 +84,7 @@ namespace odfaeg
             semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
             for (size_t i = 0; i < getMaxFramesInFlight(); i++) {
-                if (vkCreateFence(vkDevice.getDevice(), &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS
-                    /*|| vkCreateSemaphore(vkDevice.getDevice(), &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS
-                    || vkCreateSemaphore(vkDevice.getDevice(), &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS*/) {
+                if (vkCreateFence(vkDevice.getDevice(), &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS) {
 
                     throw core::Erreur(0, "échec de la création des objets de synchronisation pour une frame!", 1);
                 }
@@ -111,7 +108,7 @@ namespace odfaeg
             images.push_back(m_texture.getImage());
             return images;
         }
-        size_t RenderTexture::getCurrentFrame() {
+        uint32_t RenderTexture::getCurrentFrame() {
             return 0;
         }
         const int RenderTexture::getMaxFramesInFlight() {
@@ -312,9 +309,9 @@ namespace odfaeg
                 submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
                 submitInfo.commandBufferCount = 1;
                 submitInfo.pCommandBuffers = &getCommandBuffers()[getCurrentFrame()];
-                vkResetFences(vkDevice.getDevice(), 1, &inFlightFences[currentFrame]);
 
-                if (vkQueueSubmit(vkDevice.getGraphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame])) {
+                vkResetFences(vkDevice.getDevice(), 1, &inFlightFences[currentFrame]);
+                if (vkQueueSubmit(vkDevice.getGraphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS) {
                     throw core::Erreur(0, "échec de l'envoi d'un command buffer!", 1);
                 }
                 vkDeviceWaitIdle(vkDevice.getDevice());
