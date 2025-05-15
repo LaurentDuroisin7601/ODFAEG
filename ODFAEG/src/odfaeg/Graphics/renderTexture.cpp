@@ -76,12 +76,18 @@ namespace odfaeg
         }
         void RenderTexture::createSyncObjects() {
             inFlightFences.resize(getMaxFramesInFlight());
+            imageAvailableSemaphores.resize(getMaxFramesInFlight());
+            renderFinishedSemaphores.resize(getMaxFramesInFlight());
             VkFenceCreateInfo fenceInfo{};
             fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
             fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+            VkSemaphoreCreateInfo semaphoreInfo{};
+            semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
             for (size_t i = 0; i < getMaxFramesInFlight(); i++) {
-                if (vkCreateFence(vkDevice.getDevice(), &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS) {
+                if (vkCreateFence(vkDevice.getDevice(), &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS
+                    /*|| vkCreateSemaphore(vkDevice.getDevice(), &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS
+                    || vkCreateSemaphore(vkDevice.getDevice(), &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS*/) {
 
                     throw core::Erreur(0, "échec de la création des objets de synchronisation pour une frame!", 1);
                 }
@@ -301,21 +307,11 @@ namespace odfaeg
                     }
                 }
                 vkWaitForFences(vkDevice.getDevice(), 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
-                //encode_checkpoint();
-                //vkWaitForFences(vkDevice.getDevice(), 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
+
                 VkSubmitInfo submitInfo{};
                 submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-
                 submitInfo.commandBufferCount = 1;
                 submitInfo.pCommandBuffers = &getCommandBuffers()[getCurrentFrame()];
-
-                //vkResetFences(vkDevice.getDevice(), 1, &inFlightFences[currentFrame]);
-                /*VkResult result = vkQueueSubmit(vkDevice.getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
-                VkCheckpointData2NV checkPointData;
-                checkPointData.sType = VK_STRUCTURE_TYPE_CHECKPOINT_DATA_NV;
-                uint32_t checkPointDataCount;
-                vkGetQueueCheckpointData2NV(vkDevice.getGraphicsQueue(), &checkPointDataCount, &checkPointData);*/
-                //std::cout<<"render texture result : "<<result<<std::endl;
                 vkResetFences(vkDevice.getDevice(), 1, &inFlightFences[currentFrame]);
 
                 if (vkQueueSubmit(vkDevice.getGraphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame])) {

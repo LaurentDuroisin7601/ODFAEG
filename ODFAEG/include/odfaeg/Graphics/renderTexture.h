@@ -112,6 +112,8 @@ namespace odfaeg {
             Texture m_texture;
             size_t currentFrame;
             std::vector<VkFence> inFlightFences;
+            std::vector<VkSemaphore> imageAvailableSemaphores;
+            std::vector<VkSemaphore> renderFinishedSemaphores;
         };
         #else
         namespace priv {
