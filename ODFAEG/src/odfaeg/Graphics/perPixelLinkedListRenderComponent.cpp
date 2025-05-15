@@ -941,7 +941,7 @@ namespace odfaeg {
                                                       float depth;
                                                       uint next;
                                                    };
-                                                   layout(set = 0, binding = 0, r32ui) uniform coherent uimage2D headPointers;
+                                                   layout(set = 0, binding = 0, r32ui) uniform uimage2D headPointers;
                                                    layout(set = 0, binding = 1) buffer linkedLists {
                                                        NodeType nodes[];
                                                    };
@@ -957,22 +957,24 @@ namespace odfaeg {
                                                            n = frags[count].next;
                                                            count++;
                                                       }
-                                                      //Bubble sort.
-                                                      for (int i = 0; i < count - 1; i++) {
-                                                        for (int j = i + 1; j > 0; j--) {
-                                                            if (frags[j - 1].depth > frags[j].depth) {
-                                                                NodeType tmp = frags[j - 1];
-                                                                frags[j - 1] = frags[j];
-                                                                frags[j] = tmp;
-                                                            }
-                                                        }
+                                                      // Do the insertion sort
+                                                      for (uint i = 1; i < count; ++i)
+                                                      {
+                                                          NodeType insert = frags[i];
+                                                          uint j = i;
+                                                          while (j > 0 && insert.depth < frags[j - 1].depth)
+                                                          {
+                                                              frags[j] = frags[j-1];
+                                                              --j;
+                                                          }
+                                                          frags[j] = insert;
                                                       }
                                                       vec4 color = vec4(0, 0, 0, 0);
                                                       for( int i = 0; i < count; i++)
                                                       {
-                                                        /*color.rgb = frags[i].color.rgb * frags[i].color.a + color.rgb * (1 - frags[i].color.a);
-                                                        color.a = frags[i].color.a + color.a * (1 - frags[i].color.a);*/
-                                                        color = mix (color, frags[i].color, frags[i].color.a);
+                                                        color.rgb = frags[i].color.rgb * frags[i].color.a + color.rgb * (1 - frags[i].color.a);
+                                                        color.a = frags[i].color.a + color.a * (1 - frags[i].color.a);
+                                                        //color = mix (color, frags[i].color, frags[i].color.a);
                                                       }
                                                       fcolor = color;
                                                    })";
@@ -1342,17 +1344,6 @@ namespace odfaeg {
             }
             std::array<std::vector<DrawArraysIndirectCommand>, Batcher::nbPrimitiveTypes> drawArraysIndirectCommands;
             std::array<unsigned int, Batcher::nbPrimitiveTypes> firstIndex, baseInstance;
-            for (unsigned int i = 0; i < firstIndex.size(); i++) {
-                firstIndex[i] = 0;
-            }
-            for (unsigned int i = 0; i < baseInstance.size(); i++) {
-                baseInstance[i] = 0;
-            }
-            for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
-                vbBindlessTex[i].clear();
-                materialDatas[i].clear();
-                modelDatas[i].clear();
-            }
             for (unsigned int i = 0; i < firstIndex.size(); i++) {
                 firstIndex[i] = 0;
             }

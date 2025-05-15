@@ -167,6 +167,7 @@ namespace odfaeg {
 
                 VkPhysicalDeviceFeatures deviceFeatures{};
                 deviceFeatures.samplerAnisotropy = VK_TRUE;
+                deviceFeatures.fragmentStoresAndAtomics = VK_TRUE;
                 VkPhysicalDeviceVulkan11Features features11 = {};
                 features11.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
                 VkPhysicalDeviceVulkan12Features features12 = {};
