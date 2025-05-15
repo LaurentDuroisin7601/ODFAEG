@@ -13,7 +13,7 @@ namespace odfaeg {
                 std::vector<VkPresentModeKHR> presentModes;
             };
             const std::vector<const char*> deviceExtensions = {
-                VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME
+                VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME, VK_EXT_FRAGMENT_SHADER_INTERLOCK_EXTENSION_NAME
             };
             struct QueueFamilyIndices {
                 std::optional<uint32_t> graphicsFamily, presentFamily;
@@ -42,6 +42,7 @@ namespace odfaeg {
 
         private :
             VkPhysicalDevicePushDescriptorPropertiesKHR pushDescriptorProps{};
+            VkPhysicalDeviceFragmentShaderInterlockFeaturesEXT fragmentShaderInterlockProps;
             VkSettup& vkSettup;
             VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
             VkDevice device;

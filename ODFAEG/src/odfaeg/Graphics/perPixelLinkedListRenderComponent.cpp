@@ -36,7 +36,7 @@ namespace odfaeg {
             linkedListShaderStorageBuffersMemory.resize(frameBuffer.getMaxFramesInFlight());
             VkDeviceSize bufferSize = maxNodes * nodeSize;
             for (unsigned int i = 0; i < frameBuffer.getMaxFramesInFlight(); i++) {
-                createBuffer(bufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, linkedListShaderStorageBuffers[i], linkedListShaderStorageBuffersMemory[i]);
+                createBuffer(bufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, linkedListShaderStorageBuffers[i], linkedListShaderStorageBuffersMemory[i]);
             }
             VkImageCreateInfo imageInfo{};
             imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -902,6 +902,7 @@ namespace odfaeg {
                 const std::string fragmentShader = R"(#version 460
                                                       #extension GL_ARB_separate_shader_objects : enable
                                                       #extension GL_EXT_nonuniform_qualifier : enable
+                                                      #extension GL_ARB_fragment_shader_interlock : enable
                                                       struct NodeType {
                                                           vec4 color;
                                                           float depth;
@@ -923,12 +924,14 @@ namespace odfaeg {
                                                       void main() {
                                                            uint nodeIdx = atomicAdd(count, 1);
                                                            vec4 color = (texIndex != 0) ? frontColor * textureLod(textures[texIndex-1], fTexCoords.xy, 0) : frontColor;
+                                                           //beginInvocationInterlockARB();
                                                            if (nodeIdx < maxNodes) {
                                                                 uint prevHead = imageAtomicExchange(headPointers, ivec2(gl_FragCoord.xy), nodeIdx);
                                                                 nodes[nodeIdx].color = color;
                                                                 nodes[nodeIdx].depth = gl_FragCoord.z;
                                                                 nodes[nodeIdx].next = prevHead;
                                                            }
+                                                           //endInvocationInterlockARB();
                                                            //fcolor = vec4(1, 0, 0, 1);
                                                       })";
                  const std::string fragmentShader2 =
@@ -975,6 +978,7 @@ namespace odfaeg {
                                                         color.rgb = frags[i].color.rgb * frags[i].color.a + color.rgb * (1 - frags[i].color.a);
                                                         color.a = frags[i].color.a + color.a * (1 - frags[i].color.a);
                                                         //color = mix (color, frags[i].color, frags[i].color.a);
+                                                        //fcolor = vec4(frags[i].depth, 0, 0, 1);
                                                       }
                                                       fcolor = color;
                                                    })";
@@ -2226,12 +2230,46 @@ namespace odfaeg {
                 descriptorWrites[1].descriptorCount = 1;
                 descriptorWrites[1].pBufferInfo = &linkedListStorageBufferInfoLastFrame;
                 vkCmdPipelineBarrier(commandBuffers[i], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 0, nullptr);
+
+
                 VkMemoryBarrier memoryBarrier;
-                memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+                memoryBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
                 memoryBarrier.pNext = VK_NULL_HANDLE;
                 memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
                 memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-                vkCmdPipelineBarrier(commandBuffers[i], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
+
+                VkBufferMemoryBarrier bufferMemoryBarrier;
+                bufferMemoryBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+                bufferMemoryBarrier.pNext = VK_NULL_HANDLE;
+                bufferMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+                bufferMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+                bufferMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                bufferMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                bufferMemoryBarrier.buffer = linkedListShaderStorageBuffers[i];
+                bufferMemoryBarrier.offset = 0;
+                bufferMemoryBarrier.size = nodeSize * maxNodes;
+
+                VkImageSubresourceRange    subresourceRange;
+                subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                subresourceRange.baseMipLevel = 0;
+                subresourceRange.levelCount = 1;
+                subresourceRange.baseArrayLayer = 0;
+                subresourceRange.layerCount = 1;
+
+                VkImageMemoryBarrier imgMemoryBarrier;
+                imgMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+                imgMemoryBarrier.pNext = VK_NULL_HANDLE;
+                imgMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+                imgMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+                imgMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
+                imgMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+                imgMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                imgMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                imgMemoryBarrier.image = headPtrTextureImage;
+                imgMemoryBarrier.subresourceRange = subresourceRange;
+
+
+                vkCmdPipelineBarrier(commandBuffers[i], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 1, &bufferMemoryBarrier, 1, &imgMemoryBarrier);
                 vkCmdPushDescriptorSetKHR(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + vb.getPrimitiveType()][frameBuffer.getId()][NODEPTHNOSTENCIL], 0, 2, descriptorWrites.data());
 
 
