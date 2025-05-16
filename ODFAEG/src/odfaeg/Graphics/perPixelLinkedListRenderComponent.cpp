@@ -138,6 +138,7 @@ namespace odfaeg {
                     depthStencilCreateInfo[i][j].resize(NBDEPTHSTENCIL);
                 }
             }
+            frameBuffer.enableDepthTest(true);
             for (unsigned int j = 0; j < NBDEPTHSTENCIL; j++) {
                 for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
                    if (j == 0) {

@@ -312,8 +312,8 @@ namespace odfaeg {
             viewport.y = 0.0f;
             viewport.width = getSwapchainExtents().width;
             viewport.height = getSwapchainExtents().height;
-            viewport.minDepth = 0.0f;
-            viewport.maxDepth = 1.0f;
+            viewport.minDepth = 1.0f;
+            viewport.maxDepth = 0.0f;
             vkCmdSetViewport(cmd, 0, 1, &viewport);
 
             VkRect2D scissor{};
@@ -355,8 +355,8 @@ namespace odfaeg {
             viewport.y = 0.0f;
             viewport.width = getSwapchainExtents().width;
             viewport.height = getSwapchainExtents().height;
-            viewport.minDepth = 0.0f;
-            viewport.maxDepth = 1.0f;
+            viewport.minDepth = 1.0f;
+            viewport.maxDepth = 0.0f;
             vkCmdSetViewport(cmd, 0, 1, &viewport);
 
             VkRect2D scissor{};
@@ -676,7 +676,7 @@ namespace odfaeg {
             depthStencil[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId].sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
             depthStencil[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId].depthTestEnable = (depthTestEnabled) ? VK_TRUE : VK_FALSE;
             depthStencil[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId].depthWriteEnable = VK_TRUE;
-            depthStencil[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId].depthCompareOp = VK_COMPARE_OP_GREATER;
+            depthStencil[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId].depthCompareOp = VK_COMPARE_OP_ALWAYS;
             depthStencil[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId].depthBoundsTestEnable = VK_FALSE;
             depthStencil[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId].minDepthBounds = 0.0f; // Optional
             depthStencil[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId].maxDepthBounds = 1.0f; // Optional
@@ -888,8 +888,8 @@ namespace odfaeg {
                 viewport.y = 0.0f;
                 viewport.width = getSwapchainExtents().width;
                 viewport.height = getSwapchainExtents().height;
-                viewport.minDepth = 0.0f;
-                viewport.maxDepth = 1.0f;
+                viewport.minDepth = 1.0f;
+                viewport.maxDepth = 0.0f;
                 vkCmdSetViewport(commandBuffers[i], 0, 1, &viewport);
 
                 VkRect2D scissor{};
