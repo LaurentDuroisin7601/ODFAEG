@@ -231,7 +231,6 @@ namespace odfaeg {
             void enableDepthTest(bool enable);
             void beginRecordCommandBuffers();
 
-
         protected :
 
             void initialize();

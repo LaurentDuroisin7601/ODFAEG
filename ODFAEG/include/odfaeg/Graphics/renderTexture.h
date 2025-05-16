@@ -111,8 +111,8 @@ namespace odfaeg {
             window::Device& vkDevice;
             Texture m_texture;
             uint32_t currentFrame;
+            uint64_t value;
             std::vector<VkFence> inFlightFences;
-            std::vector<VkSemaphore> imageAvailableSemaphores;
             std::vector<VkSemaphore> renderFinishedSemaphores;
         };
         #else
