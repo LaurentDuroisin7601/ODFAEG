@@ -163,8 +163,15 @@ namespace odfaeg {
                     queueCreateInfos.push_back(queueCreateInfo);
                 }
 
+
+
+                VkPhysicalDeviceSynchronization2Features synchronization2Features {
+                    .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES_KHR,
+                    .synchronization2 = VK_TRUE
+                };
                 VkPhysicalDeviceFragmentShaderInterlockFeaturesEXT physcialDeviceFragmentShaderInterlock{};
                 physcialDeviceFragmentShaderInterlock.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_INTERLOCK_FEATURES_EXT;
+                physcialDeviceFragmentShaderInterlock.pNext = &synchronization2Features;
                 physcialDeviceFragmentShaderInterlock.fragmentShaderPixelInterlock = VK_TRUE;
 
                 VkPhysicalDeviceFeatures deviceFeatures{};
@@ -201,11 +208,8 @@ namespace odfaeg {
                 devicePropsEXT2.pNext = &pushDescriptorProps;
                 vkGetPhysicalDeviceProperties2KHR(physicalDevice, &devicePropsEXT2);
 
-                /*VkPhysicalDeviceProperties2 deviceProps2{};
-                fragmentShaderInterlockProps.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_INTERLOCK_FEATURES_EXT;
-                deviceProps2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
-                deviceProps2.pNext = &fragmentShaderInterlockProps;
-                vkGetPhysicalDeviceProperties2(physicalDevice, &deviceProps2);*/
+
+
 
                 VkDeviceCreateInfo createInfo{};
                 createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;

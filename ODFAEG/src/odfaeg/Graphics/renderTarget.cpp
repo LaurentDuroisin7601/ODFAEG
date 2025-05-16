@@ -288,12 +288,12 @@ namespace odfaeg {
         }
         void RenderTarget::drawIndirect(VkCommandBuffer& cmd, unsigned int i, unsigned int nbIndirectCommands, unsigned int stride, VertexBuffer& vertexBuffer, VkBuffer vboIndirect, unsigned int depthStencilId, RenderStates states) {
             Shader* shader = const_cast<Shader*>(states.shader);
-            std::cout<<"draw indirect depth stencil id :"<<depthStencilId<<std::endl;
+            //std::cout<<"draw indirect depth stencil id :"<<depthStencilId<<std::endl;
 
             VkRenderPassBeginInfo renderPassInfo{};
             renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-            renderPassInfo.renderPass = getRenderPass();
-            renderPassInfo.framebuffer = getSwapchainFrameBuffers()[i];
+            renderPassInfo.renderPass = (depthTestEnabled || stencilTestEnabled) ? getRenderPass(1) : getRenderPass(0);
+            renderPassInfo.framebuffer = (depthTestEnabled || stencilTestEnabled) ? getSwapchainFrameBuffers(1)[i] : getSwapchainFrameBuffers(0)[i];
             renderPassInfo.renderArea.offset = {0, 0};
             renderPassInfo.renderArea.extent = getSwapchainExtents();
 
@@ -331,12 +331,12 @@ namespace odfaeg {
             vkCmdEndRenderPass(cmd);
         }
         void RenderTarget::drawVertexBuffer(VkCommandBuffer& cmd, unsigned int i, VertexBuffer& vertexBuffer, unsigned int depthStencilId, RenderStates states) {
-            std::cout<<"vertex stencil id :"<<depthStencilId<<std::endl;
+            //std::cout<<"vertex stencil id :"<<depthStencilId<<std::endl;
             Shader* shader = const_cast<Shader*>(states.shader);
             VkRenderPassBeginInfo renderPassInfo{};
             renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-            renderPassInfo.renderPass = getRenderPass();
-            renderPassInfo.framebuffer = getSwapchainFrameBuffers()[i];
+            renderPassInfo.renderPass = (depthTestEnabled || stencilTestEnabled) ? getRenderPass(1) : getRenderPass(0);
+            renderPassInfo.framebuffer = (depthTestEnabled || stencilTestEnabled) ? getSwapchainFrameBuffers(1)[i] : getSwapchainFrameBuffers(0)[i];
             renderPassInfo.renderArea.offset = {0, 0};
             renderPassInfo.renderArea.extent = getSwapchainExtents();
 
@@ -699,7 +699,7 @@ namespace odfaeg {
                 std::cout<<"render pass ppl rw : "<<getRenderPass()<<std::endl;
             else
                 std::cout<<"render pass ppl rt : "<<getRenderPass()<<std::endl;*/
-            pipelineInfo.renderPass = getRenderPass();
+            pipelineInfo.renderPass = (depthTestEnabled || stencilTestEnabled) ? getRenderPass(1) : getRenderPass(0);
             pipelineInfo.subpass = 0;
             pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
             pipelineInfo.pDepthStencilState = &depthStencil[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId];
@@ -782,7 +782,7 @@ namespace odfaeg {
             throw std::runtime_error("aucun type de memoire ne satisfait le buffer!");
         }
         void RenderTarget::createCommandBuffers() {
-            commandBuffers.resize(getSwapchainFrameBuffers().size());
+            commandBuffers.resize(getSwapchainImages().size());
 
             VkCommandBufferAllocateInfo allocInfo{};
             allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -824,8 +824,8 @@ namespace odfaeg {
                     std::cout<<"render pass cmd rw : "<<getRenderPass()<<std::endl;
                 else
                     std::cout<<"render pass cmd rt : "<<getRenderPass()<<std::endl;*/
-                renderPassInfo.renderPass = getRenderPass();
-                renderPassInfo.framebuffer = getSwapchainFrameBuffers()[i];
+                renderPassInfo.renderPass = (depthTestEnabled || stencilTestEnabled) ? getRenderPass(1) : getRenderPass(0);
+                renderPassInfo.framebuffer = (depthTestEnabled || stencilTestEnabled) ? getSwapchainFrameBuffers(1)[i] : getSwapchainFrameBuffers(0)[i];
                 renderPassInfo.renderArea.offset = {0, 0};
                 renderPassInfo.renderArea.extent = getSwapchainExtents();
 

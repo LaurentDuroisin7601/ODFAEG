@@ -920,7 +920,6 @@ namespace odfaeg {
                                                       layout(location = 0) in vec4 frontColor;
                                                       layout(location = 1) in vec2 fTexCoords;
                                                       layout(location = 2) in flat uint texIndex;
-                                                      layout (location = 0) out vec4 fcolor;
                                                       void main() {
                                                            uint nodeIdx = atomicAdd(count, 1);
                                                            vec4 color = (texIndex != 0) ? frontColor * textureLod(textures[texIndex-1], fTexCoords.xy, 0) : frontColor;
@@ -932,7 +931,7 @@ namespace odfaeg {
                                                                 nodes[nodeIdx].next = prevHead;
                                                            }
                                                            //endInvocationInterlockARB();
-                                                           //fcolor = vec4(1, 0, 0, 1);
+                                                           //fcolor = vec4(0, 0, 0, 0);
                                                       })";
                  const std::string fragmentShader2 =
                                                    R"(
@@ -977,7 +976,7 @@ namespace odfaeg {
                                                       {
                                                         color.rgb = frags[i].color.rgb * frags[i].color.a + color.rgb * (1 - frags[i].color.a);
                                                         color.a = frags[i].color.a + color.a * (1 - frags[i].color.a);
-                                                        //color = mix (color, frags[i].color, frags[i].color.a);
+                                                       // color = mix (color, frags[i].color, frags[i].color.a);
                                                         //fcolor = vec4(frags[i].depth, 0, 0, 1);
                                                       }
                                                       fcolor = color;
@@ -1098,6 +1097,7 @@ namespace odfaeg {
             currentStates.blendMode = sf::BlendNone;
             currentStates.shader = &indirectRenderingShader;
             currentStates.texture = nullptr;
+            frameBuffer.enableStencilTest(false);
             for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                 if (vbBindlessTex[p].getVertexCount() > 0) {
 
@@ -1275,6 +1275,7 @@ namespace odfaeg {
             currentStates.blendMode = sf::BlendNone;
             currentStates.shader = &indirectRenderingShader;
             currentStates.texture = nullptr;
+            frameBuffer.enableStencilTest(false);
             for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                 if (vbBindlessTex[p].getVertexCount() > 0) {
 
@@ -1441,6 +1442,7 @@ namespace odfaeg {
             currentStates.blendMode = sf::BlendNone;
             currentStates.shader = &indirectRenderingShader;
             currentStates.texture = nullptr;
+            frameBuffer.enableStencilTest(true);
             for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                 if (vbBindlessTex[p].getVertexCount() > 0) {
 
@@ -1769,6 +1771,7 @@ namespace odfaeg {
             currentStates.blendMode = sf::BlendNone;
             currentStates.shader = &indirectRenderingShader;
             currentStates.texture = nullptr;
+            frameBuffer.enableStencilTest(true);
             for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                 if (vbBindlessTex[p].getVertexCount() > 0) {
 
@@ -2042,7 +2045,6 @@ namespace odfaeg {
 
 
 
-
             vb.clear();
             vb.setPrimitiveType(sf::Triangles);
             Vertex v1 (sf::Vector3f(0, 0, quad.getSize().z));
@@ -2061,12 +2063,13 @@ namespace odfaeg {
             RenderStates currentStates;
             currentStates.shader = &perPixelLinkedListP2;
             currentStates.blendMode = sf::BlendNone;
+            frameBuffer.enableStencilTest(false);
             //createDescriptorSets2(currentStates);
             createCommandBufferVertexBuffer(currentStates);
 
         }
         void PerPixelLinkedListRenderComponent::allocateCommandBuffers() {
-            commandBuffers.resize(frameBuffer.getSwapchainFrameBuffers().size());
+            commandBuffers.resize(frameBuffer.getSwapchainImages().size());
 
             VkCommandBufferAllocateInfo allocInfo{};
             allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;

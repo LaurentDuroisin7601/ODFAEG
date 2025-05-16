@@ -82,9 +82,9 @@ namespace odfaeg {
             const Texture& getTexture() const;
             sf::Vector2u getSize() const;
             void createFramebuffers();
-            std::vector<VkFramebuffer> getSwapchainFrameBuffers();
+            std::vector<VkFramebuffer> getSwapchainFrameBuffers(unsigned int frameBufferId);
             void createRenderPass();
-            VkRenderPass getRenderPass();
+            VkRenderPass getRenderPass(unsigned int renderPassId);
             void clear(const sf::Color& color = sf::Color(0, 0, 0, 255));
             void display();
             /*template<class... Args>
@@ -106,8 +106,8 @@ namespace odfaeg {
         private :
             void createSyncObjects();
             sf::Vector2u m_size;
-            std::vector<VkFramebuffer> swapChainFramebuffers;
-            VkRenderPass renderPass;
+            std::vector<std::vector<VkFramebuffer>> swapChainFramebuffers;
+            std::vector<VkRenderPass> renderPasses;
             window::Device& vkDevice;
             Texture m_texture;
             uint32_t currentFrame;

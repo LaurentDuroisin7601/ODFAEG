@@ -54,7 +54,7 @@ namespace odfaeg
             void recreateSwapchain();
             void cleanupSwapchain();
             void drawVulkanFrame();
-            VkRenderPass getRenderPass();
+            VkRenderPass getRenderPass(unsigned int renderPassId);
             window::Device& getDevice();
             void clear(const sf::Color& color = sf::Color(0, 0, 0, 255));
             virtual ~RenderWindow();
@@ -83,7 +83,7 @@ namespace odfaeg
             virtual void onResize();
             std::vector<VkImage> getSwapchainImages();
             std::vector<VkImageView> getSwapChainImageViews();
-            std::vector<VkFramebuffer> getSwapchainFrameBuffers();
+            std::vector<VkFramebuffer> getSwapchainFrameBuffers(unsigned int frameBufferId);
 
             VkExtent2D getSwapchainExtents();
             VkFormat getSwapchainImageFormat();
@@ -112,8 +112,8 @@ namespace odfaeg
             std::vector<VkSemaphore> renderFinishedSemaphores;
             std::vector<VkFence> inFlightFences;
             std::vector<VkFence> imagesInFlight;
-            VkRenderPass renderPass;
-            std::vector<VkFramebuffer> swapChainFramebuffers;
+            std::vector<VkRenderPass> renderPasses;
+            std::vector<std::vector<VkFramebuffer>> swapChainFramebuffers;
             size_t currentFrame;
         };
         #else
