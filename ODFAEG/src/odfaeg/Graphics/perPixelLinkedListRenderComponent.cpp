@@ -270,6 +270,7 @@ namespace odfaeg {
             if (!vkCmdPushDescriptorSetKHR) {
                 throw core::Erreur(0, "Could not get a valid function pointer for vkCmdPushDescriptorSetKHR", 1);
             }
+
         }
         uint32_t PerPixelLinkedListRenderComponent::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
             VkPhysicalDeviceMemoryProperties memProperties;
@@ -323,6 +324,10 @@ namespace odfaeg {
         }
         void PerPixelLinkedListRenderComponent::clear() {
             frameBuffer.clear(sf::Color::Transparent);
+            for (unsigned int i = 0; i < events.size(); i++) {
+                vkDestroyEvent(vkDevice.getDevice(), events[i], nullptr);
+            }
+            events.clear();
             VkClearColorValue clearColor;
             clearColor.uint32[0] = 0xffffffff;
             for (unsigned int i = 0; i < commandBuffers.size(); i++) {
@@ -332,44 +337,9 @@ namespace odfaeg {
                 subresRange.layerCount = 1;
                 vkCmdClearColorImage(commandBuffers[i], headPtrTextureImage, VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
                 vkCmdFillBuffer(commandBuffers[i], counterShaderStorageBuffers[i], 0, sizeof(uint32_t), 0);
-            }
-            /*std::vector<unsigned int> headPtrClearBuf(view.getSize().x*view.getSize().y, 0xffffffff);
-            VkDeviceSize imageSize = view.getSize().x*view.getSize().y * sizeof(unsigned int);
-            VkBuffer stagingBuffer;
-            VkDeviceMemory stagingBufferMemory;
-            createBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
-            void* data;
-            vkMapMemory(vkDevice.getDevice(), stagingBufferMemory, 0, imageSize, 0, &data);
-            memcpy(data, headPtrClearBuf.data(), static_cast<size_t>(imageSize));
-            vkUnmapMemory(vkDevice.getDevice(), stagingBufferMemory);
-            transitionImageLayout(headPtrTextureImage, VK_FORMAT_R32_UINT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-            copyBufferToImage(stagingBuffer, headPtrTextureImage, static_cast<uint32_t>(view.getSize().x), static_cast<uint32_t>(view.getSize().y));
-            transitionImageLayout(headPtrTextureImage, VK_FORMAT_R32_UINT, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL);
-            vkDestroyBuffer(vkDevice.getDevice(), stagingBuffer, nullptr);
-            vkFreeMemory(vkDevice.getDevice(), stagingBufferMemory, nullptr);
-            AtomicCounterSSBO counter;
-            counter.count = 0;
-            counter.maxNodeCount = maxNodes;
-            VkDeviceSize bufferSize = sizeof(AtomicCounterSSBO);
 
-
-            createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
-
-            vkMapMemory(vkDevice.getDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
-            memcpy(data, &counter, (size_t)bufferSize);
-            vkUnmapMemory(vkDevice.getDevice(), stagingBufferMemory);
-            for (unsigned int i = 0; i < counterShaderStorageBuffers.size(); i++) {
-                vkDestroyBuffer(vkDevice.getDevice(), counterShaderStorageBuffers[i], nullptr);
-                vkFreeMemory(vkDevice.getDevice(), counterShaderStorageBuffersMemory[i], nullptr);
             }
-            counterShaderStorageBuffers.resize(frameBuffer.getMaxFramesInFlight());
-            counterShaderStorageBuffersMemory.resize(frameBuffer.getMaxFramesInFlight());
-            for (size_t i = 0; i < frameBuffer.getMaxFramesInFlight(); i++) {
-                createBuffer(bufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, counterShaderStorageBuffers[i], counterShaderStorageBuffersMemory[i]);
-                copyBuffer(stagingBuffer, counterShaderStorageBuffers[i], bufferSize);
-            }
-            vkDestroyBuffer(vkDevice.getDevice(), stagingBuffer, nullptr);
-            vkFreeMemory(vkDevice.getDevice(), stagingBufferMemory, nullptr);*/
+
             //firstDraw = true;
             frameBuffer.display();
         }
@@ -2181,48 +2151,21 @@ namespace odfaeg {
                 descriptorWrites[5].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
                 descriptorWrites[5].descriptorCount = 1;
                 descriptorWrites[5].pBufferInfo = &materialDataStorageBufferInfoLastFrame;
+
                 vkCmdPushDescriptorSetKHR(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][frameBuffer.getId()][NODEPTHNOSTENCIL], 0, 6, descriptorWrites.data());
                 vkCmdPushConstants(commandBuffers[i], frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][frameBuffer.getId()][depthStencilID], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectDrawPushConsts), &indirectDrawPushConsts);
-                VkMemoryBarrier memoryBarrier;
-                memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-                memoryBarrier.pNext = VK_NULL_HANDLE;
-                memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-                memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-
-                VkBufferMemoryBarrier bufferMemoryBarrier;
-                bufferMemoryBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-                bufferMemoryBarrier.pNext = VK_NULL_HANDLE;
-                bufferMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-                bufferMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-                bufferMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-                bufferMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-                bufferMemoryBarrier.buffer = linkedListShaderStorageBuffers[i];
-                bufferMemoryBarrier.offset = 0;
-                bufferMemoryBarrier.size = nodeSize * maxNodes;
-
-                VkImageSubresourceRange    subresourceRange;
-                subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-                subresourceRange.baseMipLevel = 0;
-                subresourceRange.levelCount = 1;
-                subresourceRange.baseArrayLayer = 0;
-                subresourceRange.layerCount = 1;
-
-                VkImageMemoryBarrier imgMemoryBarrier;
-                imgMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-                imgMemoryBarrier.pNext = VK_NULL_HANDLE;
-                imgMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-                imgMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-                imgMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
-                imgMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
-                imgMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-                imgMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-                imgMemoryBarrier.image = headPtrTextureImage;
-                imgMemoryBarrier.subresourceRange = subresourceRange;
-
-
-                vkCmdPipelineBarrier(commandBuffers[i], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 1, &bufferMemoryBarrier, 1, &imgMemoryBarrier);
                 //std::cout<<"stride : "<<stride<<std::endl;
+
                 frameBuffer.drawIndirect(commandBuffers[i], i, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
+                VkEvent event;
+                VkEventCreateInfo eventInfo = {};
+                eventInfo.sType = VK_STRUCTURE_TYPE_EVENT_CREATE_INFO;
+                eventInfo.pNext = NULL;
+                eventInfo.flags = 0;
+                vkCreateEvent(vkDevice.getDevice(), &eventInfo, NULL, &event);
+                vkCmdSetEvent(commandBuffers[i], event, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT);
+                events.push_back(event);
+
 
                 /*if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to record command buffer!", 1);
@@ -2317,7 +2260,10 @@ namespace odfaeg {
 
 
                 vkCmdPushConstants(commandBuffers[i], frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + vb.getPrimitiveType()][frameBuffer.getId()][NODEPTHNOSTENCIL], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(Ppll2PushConsts), &ppll2PushConsts);
+
                 frameBuffer.drawVertexBuffer(commandBuffers[i], i, vb, NODEPTHNOSTENCIL, currentStates);
+                 vkCmdWaitEvents(commandBuffers[i], events.size(), events.data(), VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, nullptr, 0, nullptr,
+                    0, nullptr);
 
                 /*if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to record command buffer!", 1);
@@ -2523,7 +2469,9 @@ namespace odfaeg {
         PerPixelLinkedListRenderComponent::~PerPixelLinkedListRenderComponent() {
             std::cout<<"ppll destructor"<<std::endl;
 
-
+            for (unsigned int i = 0; i < events.size(); i++) {
+                vkDestroyEvent(vkDevice.getDevice(), events[i], nullptr);
+            }
             vkDestroySampler(vkDevice.getDevice(), headPtrTextureSampler, nullptr);
             vkDestroyImageView(vkDevice.getDevice(), headPtrTextureImageView, nullptr);
             vkDestroyImage(vkDevice.getDevice(), headPtrTextureImage, nullptr);
