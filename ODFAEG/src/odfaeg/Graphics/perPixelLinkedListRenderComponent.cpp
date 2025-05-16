@@ -2183,6 +2183,44 @@ namespace odfaeg {
                 descriptorWrites[5].pBufferInfo = &materialDataStorageBufferInfoLastFrame;
                 vkCmdPushDescriptorSetKHR(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][frameBuffer.getId()][NODEPTHNOSTENCIL], 0, 6, descriptorWrites.data());
                 vkCmdPushConstants(commandBuffers[i], frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][frameBuffer.getId()][depthStencilID], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectDrawPushConsts), &indirectDrawPushConsts);
+                VkMemoryBarrier memoryBarrier;
+                memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+                memoryBarrier.pNext = VK_NULL_HANDLE;
+                memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+                memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+
+                VkBufferMemoryBarrier bufferMemoryBarrier;
+                bufferMemoryBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+                bufferMemoryBarrier.pNext = VK_NULL_HANDLE;
+                bufferMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+                bufferMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+                bufferMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                bufferMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                bufferMemoryBarrier.buffer = linkedListShaderStorageBuffers[i];
+                bufferMemoryBarrier.offset = 0;
+                bufferMemoryBarrier.size = nodeSize * maxNodes;
+
+                VkImageSubresourceRange    subresourceRange;
+                subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                subresourceRange.baseMipLevel = 0;
+                subresourceRange.levelCount = 1;
+                subresourceRange.baseArrayLayer = 0;
+                subresourceRange.layerCount = 1;
+
+                VkImageMemoryBarrier imgMemoryBarrier;
+                imgMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+                imgMemoryBarrier.pNext = VK_NULL_HANDLE;
+                imgMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+                imgMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+                imgMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
+                imgMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+                imgMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                imgMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                imgMemoryBarrier.image = headPtrTextureImage;
+                imgMemoryBarrier.subresourceRange = subresourceRange;
+
+
+                vkCmdPipelineBarrier(commandBuffers[i], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 1, &bufferMemoryBarrier, 1, &imgMemoryBarrier);
                 //std::cout<<"stride : "<<stride<<std::endl;
                 frameBuffer.drawIndirect(commandBuffers[i], i, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
 
