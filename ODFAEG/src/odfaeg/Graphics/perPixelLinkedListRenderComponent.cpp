@@ -2163,7 +2163,7 @@ namespace odfaeg {
                 eventInfo.pNext = NULL;
                 eventInfo.flags = 0;
                 vkCreateEvent(vkDevice.getDevice(), &eventInfo, NULL, &event);
-                vkCmdSetEvent(commandBuffers[i], event, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT);
+                vkCmdSetEvent(commandBuffers[i], event,  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
                 events.push_back(event);
 
 
@@ -2214,7 +2214,7 @@ namespace odfaeg {
                 descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
                 descriptorWrites[1].descriptorCount = 1;
                 descriptorWrites[1].pBufferInfo = &linkedListStorageBufferInfoLastFrame;
-                vkCmdPipelineBarrier(commandBuffers[i], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 0, nullptr);
+                //vkCmdPipelineBarrier(commandBuffers[i], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 0, nullptr);
 
 
                 VkMemoryBarrier memoryBarrier;
@@ -2223,38 +2223,9 @@ namespace odfaeg {
                 memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
                 memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
 
-                VkBufferMemoryBarrier bufferMemoryBarrier;
-                bufferMemoryBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-                bufferMemoryBarrier.pNext = VK_NULL_HANDLE;
-                bufferMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-                bufferMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-                bufferMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-                bufferMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-                bufferMemoryBarrier.buffer = linkedListShaderStorageBuffers[i];
-                bufferMemoryBarrier.offset = 0;
-                bufferMemoryBarrier.size = nodeSize * maxNodes;
-
-                VkImageSubresourceRange    subresourceRange;
-                subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-                subresourceRange.baseMipLevel = 0;
-                subresourceRange.levelCount = 1;
-                subresourceRange.baseArrayLayer = 0;
-                subresourceRange.layerCount = 1;
-
-                VkImageMemoryBarrier imgMemoryBarrier;
-                imgMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-                imgMemoryBarrier.pNext = VK_NULL_HANDLE;
-                imgMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-                imgMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-                imgMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
-                imgMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
-                imgMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-                imgMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-                imgMemoryBarrier.image = headPtrTextureImage;
-                imgMemoryBarrier.subresourceRange = subresourceRange;
 
 
-                vkCmdPipelineBarrier(commandBuffers[i], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 1, &bufferMemoryBarrier, 1, &imgMemoryBarrier);
+                //vkCmdPipelineBarrier(commandBuffers[i], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
                 vkCmdPushDescriptorSetKHR(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + vb.getPrimitiveType()][frameBuffer.getId()][NODEPTHNOSTENCIL], 0, 2, descriptorWrites.data());
 
 
@@ -2262,7 +2233,7 @@ namespace odfaeg {
                 vkCmdPushConstants(commandBuffers[i], frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + vb.getPrimitiveType()][frameBuffer.getId()][NODEPTHNOSTENCIL], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(Ppll2PushConsts), &ppll2PushConsts);
 
                 frameBuffer.drawVertexBuffer(commandBuffers[i], i, vb, NODEPTHNOSTENCIL, currentStates);
-                 vkCmdWaitEvents(commandBuffers[i], events.size(), events.data(), VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, nullptr, 0, nullptr,
+                 vkCmdWaitEvents(commandBuffers[i], events.size(), events.data(), VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 1, &memoryBarrier, 0, nullptr,
                     0, nullptr);
 
                 /*if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS) {
