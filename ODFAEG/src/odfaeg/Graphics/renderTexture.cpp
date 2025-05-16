@@ -313,7 +313,7 @@ namespace odfaeg
                         throw core::Erreur(0, "failed to record command buffer!", 1);
                     }
                 }
-
+                vkWaitForFences(vkDevice.getDevice(), 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
                 const uint64_t waitValue = value; // Wait until semaphore value is >= 2
                 const uint64_t signalValue = value+1;
 
