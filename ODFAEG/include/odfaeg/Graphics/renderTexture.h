@@ -73,6 +73,7 @@ namespace odfaeg {
             RenderTexture(window::Device& vkDevice);
             bool create(unsigned int width, unsigned int height);
             bool createCubeMap(unsigned int width, unsigned int height);
+            uint32_t getImageIndex();
             VkSurfaceKHR getSurface();
             VkExtent2D getSwapchainExtents();
             VkFormat getSwapchainImageFormat();
@@ -110,7 +111,7 @@ namespace odfaeg {
             std::vector<VkRenderPass> renderPasses;
             window::Device& vkDevice;
             Texture m_texture;
-            uint32_t currentFrame;
+            uint32_t currentFrame, imageIndex;
             uint64_t value;
             std::vector<VkFence> inFlightFences;
             std::vector<VkSemaphore> renderFinishedSemaphores;

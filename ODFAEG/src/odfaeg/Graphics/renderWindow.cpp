@@ -309,6 +309,9 @@ namespace odfaeg {
             return renderPasses[renderPassId];
         }
         void RenderWindow::clear(const sf::Color& color) {
+             vkWaitForFences(vkDevice.getDevice(), 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
+
+             vkAcquireNextImageKHR(vkDevice.getDevice(), swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
              clearColor = color;
              VkClearColorValue clearValue  = {clearColor.r / 255.f, clearColor.g / 255.f, clearColor.b / 255.f, clearColor.a / 255.f};
              VkClearDepthStencilValue clearDepthStencilValue = {
@@ -331,10 +334,10 @@ namespace odfaeg {
                  .layerCount = 1
              };
 
-             for (unsigned int i = 0; i < getCommandBuffers().size(); i++) {
+             //for (unsigned int i = 0; i < getCommandBuffers().size(); i++) {
                 VkCommandBufferBeginInfo beginInfo{};
                 beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-                if (vkBeginCommandBuffer(getCommandBuffers()[i], &beginInfo) != VK_SUCCESS) {
+                if (vkBeginCommandBuffer(getCommandBuffers()[currentFrame], &beginInfo) != VK_SUCCESS) {
 
                     throw core::Erreur(0, "failed to begin recording command buffer!", 1);
                 }
@@ -347,7 +350,7 @@ namespace odfaeg {
                     .newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                     .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
                     .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                    .image = getSwapchainImages()[i],
+                    .image = getSwapchainImages()[imageIndex],
                     .subresourceRange = imageRange
                 };
                 VkImageMemoryBarrier clearToPresentBarrier {
@@ -359,12 +362,12 @@ namespace odfaeg {
                     .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
                     .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
                     .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                    .image = getSwapchainImages()[i],
+                    .image = getSwapchainImages()[imageIndex],
                     .subresourceRange = imageRange
                 };
-                vkCmdPipelineBarrier(getCommandBuffers()[i], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &presentToClearBarrier);
-                vkCmdClearColorImage(getCommandBuffers()[i], getSwapchainImages()[i], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearValue, 1, &imageRange);
-                vkCmdPipelineBarrier(getCommandBuffers()[i], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &clearToPresentBarrier);
+                vkCmdPipelineBarrier(getCommandBuffers()[currentFrame], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &presentToClearBarrier);
+                vkCmdClearColorImage(getCommandBuffers()[currentFrame], getSwapchainImages()[imageIndex], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearValue, 1, &imageRange);
+                vkCmdPipelineBarrier(getCommandBuffers()[currentFrame], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &clearToPresentBarrier);
                 VkImageMemoryBarrier depthStencilToClearBarrier {
                     .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
                     .pNext = nullptr,
@@ -389,30 +392,27 @@ namespace odfaeg {
                     .image = getDepthTexture().getImage(),
                     .subresourceRange = imageRange2
                 };
-                vkCmdPipelineBarrier(getCommandBuffers()[i], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &depthStencilToClearBarrier);
-                vkCmdClearDepthStencilImage(getCommandBuffers()[i], getDepthTexture().getImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearDepthStencilValue, 1, &imageRange2);
-                vkCmdPipelineBarrier(getCommandBuffers()[i], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &clearToDepthStencilBarrier);
-                /*if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS) {
+                vkCmdPipelineBarrier(getCommandBuffers()[currentFrame], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &depthStencilToClearBarrier);
+                vkCmdClearDepthStencilImage(getCommandBuffers()[currentFrame], getDepthTexture().getImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearDepthStencilValue, 1, &imageRange2);
+                vkCmdPipelineBarrier(getCommandBuffers()[currentFrame], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &clearToDepthStencilBarrier);
+                /*if (vkEndCommandBuffer(commandBuffers[currentFrame]) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to record command buffer!", 1);
                 }*/
-             }
+             //}
+        }
+        uint32_t RenderWindow::getImageIndex() {
+            return imageIndex;
         }
         void RenderWindow::drawVulkanFrame() {
             if (getCommandBuffers().size() > 0) {
-                for (unsigned int i = 0; i < getCommandBuffers().size(); i++) {
-                    if (vkEndCommandBuffer(getCommandBuffers()[i]) != VK_SUCCESS) {
+                //for (unsigned int i = 0; i < getCommandBuffers().size(); i++) {
+                    if (vkEndCommandBuffer(getCommandBuffers()[currentFrame]) != VK_SUCCESS) {
                         throw core::Erreur(0, "failed to record command buffer!", 1);
                     }
-                }
-                vkWaitForFences(vkDevice.getDevice(), 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
-                uint32_t imageIndex;
-                vkAcquireNextImageKHR(vkDevice.getDevice(), swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+                //}
+
                 // Vérifier si une frame précédente est en train d'utiliser cette image (il y a une fence à attendre)
-                if (imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
-                    vkWaitForFences(vkDevice.getDevice(), 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
-                }
-                 // Marque l'image comme étant à nouveau utilisée par cette frame
-                imagesInFlight[imageIndex] = inFlightFences[currentFrame];
+                vkResetFences(vkDevice.getDevice(), 1, &inFlightFences[currentFrame]);
 
                 VkSubmitInfo submitInfo{};
                 submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -423,7 +423,7 @@ namespace odfaeg {
                 submitInfo.pWaitSemaphores = waitSemaphores;
                 submitInfo.pWaitDstStageMask = waitStages;
                 submitInfo.commandBufferCount = 1;
-                submitInfo.pCommandBuffers = &getCommandBuffers()[imageIndex];
+                submitInfo.pCommandBuffers = &getCommandBuffers()[currentFrame];
                 VkSemaphore signalSemaphores[] = {renderFinishedSemaphores[currentFrame]};
                 submitInfo.signalSemaphoreCount = 1;
                 submitInfo.pSignalSemaphores = signalSemaphores;

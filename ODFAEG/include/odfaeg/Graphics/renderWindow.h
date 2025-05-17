@@ -57,6 +57,7 @@ namespace odfaeg
             VkRenderPass getRenderPass(unsigned int renderPassId);
             window::Device& getDevice();
             void clear(const sf::Color& color = sf::Color(0, 0, 0, 255));
+            uint32_t getImageIndex();
             virtual ~RenderWindow();
 
         protected:
@@ -91,7 +92,7 @@ namespace odfaeg
             const int getMaxFramesInFlight();
 
         private :
-
+            uint32_t imageIndex;
             const int MAX_FRAMES_IN_FLIGHT = 2;
             void createSurface();
             void createSwapChain();

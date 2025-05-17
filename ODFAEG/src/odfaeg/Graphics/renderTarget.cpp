@@ -293,7 +293,7 @@ namespace odfaeg {
             VkRenderPassBeginInfo renderPassInfo{};
             renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
             renderPassInfo.renderPass = (depthTestEnabled || stencilTestEnabled) ? getRenderPass(1) : getRenderPass(0);
-            renderPassInfo.framebuffer = (depthTestEnabled || stencilTestEnabled) ? getSwapchainFrameBuffers(1)[i] : getSwapchainFrameBuffers(0)[i];
+            renderPassInfo.framebuffer = (depthTestEnabled || stencilTestEnabled) ? getSwapchainFrameBuffers(1)[getImageIndex()] : getSwapchainFrameBuffers(0)[getImageIndex()];
             renderPassInfo.renderArea.offset = {0, 0};
             renderPassInfo.renderArea.extent = getSwapchainExtents();
 
@@ -336,7 +336,7 @@ namespace odfaeg {
             VkRenderPassBeginInfo renderPassInfo{};
             renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
             renderPassInfo.renderPass = (depthTestEnabled || stencilTestEnabled) ? getRenderPass(1) : getRenderPass(0);
-            renderPassInfo.framebuffer = (depthTestEnabled || stencilTestEnabled) ? getSwapchainFrameBuffers(1)[i] : getSwapchainFrameBuffers(0)[i];
+            renderPassInfo.framebuffer = (depthTestEnabled || stencilTestEnabled) ? getSwapchainFrameBuffers(1)[getImageIndex()] : getSwapchainFrameBuffers(0)[getImageIndex()];
             renderPassInfo.renderArea.offset = {0, 0};
             renderPassInfo.renderArea.extent = getSwapchainExtents();
 
@@ -798,24 +798,24 @@ namespace odfaeg {
         }
         void RenderTarget::beginRecordCommandBuffers() {
             //std::cout<<"render texture begin command buffer"<<std::endl;
-            for (unsigned int i = 0; i < getCommandBuffers().size(); i++) {
+            //for (unsigned int i = 0; i < getCommandBuffers().size(); i++) {
                 VkCommandBufferBeginInfo beginInfo{};
                 beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-                if (vkBeginCommandBuffer(getCommandBuffers()[i], &beginInfo) != VK_SUCCESS) {
+                if (vkBeginCommandBuffer(getCommandBuffers()[getCurrentFrame()], &beginInfo) != VK_SUCCESS) {
 
                     throw core::Erreur(0, "failed to begin recording command buffer!", 1);
                 }
-            }
+            //}
         }
         void RenderTarget::recordCommandBuffers(sf::PrimitiveType type, RenderStates states) {
             Shader* shader = const_cast<Shader*>(states.shader);
 
 
-            for (size_t i = 0; i < commandBuffers.size(); i++) {
+            //for (size_t i = 0; i < commandBuffers.size(); i++) {
                 /*VkCommandBufferBeginInfo beginInfo{};
                 beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
-                if (vkBeginCommandBuffer(commandBuffers[i], &beginInfo) != VK_SUCCESS) {
+                if (vkBeginCommandBuffer(commandBuffers[getCurrentFrame()], &beginInfo) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to begin recording command buffer!", 1);
                 }*/
                 VkRenderPassBeginInfo renderPassInfo{};
@@ -825,7 +825,7 @@ namespace odfaeg {
                 else
                     std::cout<<"render pass cmd rt : "<<getRenderPass()<<std::endl;*/
                 renderPassInfo.renderPass = (depthTestEnabled || stencilTestEnabled) ? getRenderPass(1) : getRenderPass(0);
-                renderPassInfo.framebuffer = (depthTestEnabled || stencilTestEnabled) ? getSwapchainFrameBuffers(1)[i] : getSwapchainFrameBuffers(0)[i];
+                renderPassInfo.framebuffer = (depthTestEnabled || stencilTestEnabled) ? getSwapchainFrameBuffers(1)[getImageIndex()] : getSwapchainFrameBuffers(0)[getImageIndex()];
                 renderPassInfo.renderArea.offset = {0, 0};
                 renderPassInfo.renderArea.extent = getSwapchainExtents();
 
@@ -834,12 +834,12 @@ namespace odfaeg {
                 renderPassInfo.pClearValues = &clrColor;
 
 
-                vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-                vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][0]);
+                vkCmdBeginRenderPass(commandBuffers[getCurrentFrame()], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+                vkCmdBindPipeline(commandBuffers[getCurrentFrame()], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][0]);
                 //std::cout<<"buffer : "<<this->vertexBuffers[selectedBuffer]->getVertexBuffer()<<std::endl;
                 VkBuffer vertexBuffers[] = {this->vertexBuffers[selectedBuffer]->getVertexBuffer()};
                 VkDeviceSize offsets[] = {0};
-                vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
+                vkCmdBindVertexBuffers(commandBuffers[getCurrentFrame()], 0, 1, vertexBuffers, offsets);
                 VkDescriptorBufferInfo bufferInfo{};
                 bufferInfo.buffer = uniformBuffers[selectedBuffer][getCurrentFrame()];
                 bufferInfo.offset = 0;
@@ -869,7 +869,7 @@ namespace odfaeg {
                     descriptorWrites[1].descriptorCount = 1;
                     descriptorWrites[1].pImageInfo = &imageInfo;
 
-                    vkCmdPushDescriptorSetKHR(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][0], 0, 2, descriptorWrites.data());
+                    vkCmdPushDescriptorSetKHR(commandBuffers[getCurrentFrame()], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][0], 0, 2, descriptorWrites.data());
                 }  else {
                     std::array<VkWriteDescriptorSet, 1> descriptorWrites{};
 
@@ -881,7 +881,7 @@ namespace odfaeg {
                     descriptorWrites[0].descriptorCount = 1;
                     descriptorWrites[0].pBufferInfo = &bufferInfo;
 
-                    vkCmdPushDescriptorSetKHR(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][0], 0, 1, descriptorWrites.data());
+                    vkCmdPushDescriptorSetKHR(commandBuffers[getCurrentFrame()], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][0], 0, 1, descriptorWrites.data());
                 }
                 VkViewport viewport{};
                 viewport.x = 0.0f;
@@ -890,30 +890,30 @@ namespace odfaeg {
                 viewport.height = getSwapchainExtents().height;
                 viewport.minDepth = 0.0f;
                 viewport.maxDepth = 1.0f;
-                vkCmdSetViewport(commandBuffers[i], 0, 1, &viewport);
+                vkCmdSetViewport(commandBuffers[getCurrentFrame()], 0, 1, &viewport);
 
                 VkRect2D scissor{};
                 scissor.offset = {0, 0};
                 scissor.extent = getSwapchainExtents();
-                vkCmdSetScissor(commandBuffers[i], 0, 1, &scissor);
+                vkCmdSetScissor(commandBuffers[getCurrentFrame()], 0, 1, &scissor);
 
 
                 if(this->vertexBuffers[selectedBuffer]->getIndicesSize() > 0) {
-                    vkCmdBindIndexBuffer(commandBuffers[i], this->vertexBuffers[selectedBuffer]->getIndexBuffer(), 0, VK_INDEX_TYPE_UINT16);
+                    vkCmdBindIndexBuffer(commandBuffers[getCurrentFrame()], this->vertexBuffers[selectedBuffer]->getIndexBuffer(), 0, VK_INDEX_TYPE_UINT16);
                 }
                 if(this->vertexBuffers[selectedBuffer]->getIndicesSize() > 0) {
-                    vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(this->vertexBuffers[selectedBuffer]->getIndicesSize()), 1, 0, 0, 0);
+                    vkCmdDrawIndexed(commandBuffers[getCurrentFrame()], static_cast<uint32_t>(this->vertexBuffers[selectedBuffer]->getIndicesSize()), 1, 0, 0, 0);
                 } else {
-                    vkCmdDraw(commandBuffers[i], static_cast<uint32_t>(this->vertexBuffers[selectedBuffer]->getSize()), 1, 0, 0);
+                    vkCmdDraw(commandBuffers[getCurrentFrame()], static_cast<uint32_t>(this->vertexBuffers[selectedBuffer]->getSize()), 1, 0, 0);
                 }
 
-                vkCmdEndRenderPass(commandBuffers[i]);
+                vkCmdEndRenderPass(commandBuffers[getCurrentFrame()]);
 
-                /*if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS) {
+                /*if (vkEndCommandBuffer(commandBuffers[getCurrentFrame()]) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to record command buffer!", 1);
                 }*/
 
-            }
+            //}
 
         }
         Texture& RenderTarget::getDepthTexture() {

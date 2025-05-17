@@ -2068,14 +2068,15 @@ namespace odfaeg {
             frameBuffer.beginRecordCommandBuffers();
             Shader* shader = const_cast<Shader*>(currentStates.shader);
             std::vector<Texture*> allTextures = Texture::getAllTextures();
-            for (size_t i = 0; i < commandBuffers.size(); i++) {
+            unsigned int currentFrame = frameBuffer.getCurrentFrame();
+            //for (size_t i = 0; i < commandBuffers.size(); i++) {
 
 
                 /*vkResetCommandBuffer(commandBuffers[i], VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
                 VkCommandBufferBeginInfo beginInfo{};
                 beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
-                if (vkBeginCommandBuffer(commandBuffers[i], &beginInfo) != VK_SUCCESS) {
+                if (vkBeginCommandBuffer(commandBuffers[currentFrame], &beginInfo) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to begin recording command buffer!", 1);
                 }*/
 
@@ -2088,7 +2089,7 @@ namespace odfaeg {
                 }
                 std::array<VkWriteDescriptorSet, 6> descriptorWrites{};
                 VkDescriptorBufferInfo counterStorageBufferInfoLastFrame{};
-                counterStorageBufferInfoLastFrame.buffer = counterShaderStorageBuffers[i];
+                counterStorageBufferInfoLastFrame.buffer = counterShaderStorageBuffers[currentFrame];
                 counterStorageBufferInfoLastFrame.offset = 0;
                 counterStorageBufferInfoLastFrame.range = sizeof(AtomicCounterSSBO);
 
@@ -2114,7 +2115,7 @@ namespace odfaeg {
                 descriptorWrites[1].pImageInfo = &headPtrDescriptorImageInfo;
 
                 VkDescriptorBufferInfo linkedListStorageBufferInfoLastFrame{};
-                linkedListStorageBufferInfoLastFrame.buffer = linkedListShaderStorageBuffers[i];
+                linkedListStorageBufferInfoLastFrame.buffer = linkedListShaderStorageBuffers[currentFrame];
                 linkedListStorageBufferInfoLastFrame.offset = 0;
                 unsigned int nodeSize = 5 * sizeof(float) + sizeof(unsigned int);
                 linkedListStorageBufferInfoLastFrame.range = maxNodes * nodeSize;
@@ -2137,7 +2138,7 @@ namespace odfaeg {
                 descriptorWrites[3].pImageInfo = descriptorImageInfos.data();
 
                 VkDescriptorBufferInfo modelDataStorageBufferInfoLastFrame{};
-                modelDataStorageBufferInfoLastFrame.buffer = modelDataShaderStorageBuffers[i];
+                modelDataStorageBufferInfoLastFrame.buffer = modelDataShaderStorageBuffers[currentFrame];
                 modelDataStorageBufferInfoLastFrame.offset = 0;
                 modelDataStorageBufferInfoLastFrame.range = sizeof(ModelData) * modelDatas[p].size();
 
@@ -2150,7 +2151,7 @@ namespace odfaeg {
                 descriptorWrites[4].pBufferInfo = &modelDataStorageBufferInfoLastFrame;
 
                 VkDescriptorBufferInfo materialDataStorageBufferInfoLastFrame{};
-                materialDataStorageBufferInfoLastFrame.buffer = materialDataShaderStorageBuffers[i];
+                materialDataStorageBufferInfoLastFrame.buffer = materialDataShaderStorageBuffers[currentFrame];
                 materialDataStorageBufferInfoLastFrame.offset = 0;
                 materialDataStorageBufferInfoLastFrame.range = sizeof(MaterialData) * materialDatas[p].size();
 
@@ -2162,29 +2163,30 @@ namespace odfaeg {
                 descriptorWrites[5].descriptorCount = 1;
                 descriptorWrites[5].pBufferInfo = &materialDataStorageBufferInfoLastFrame;
 
-                vkCmdPushDescriptorSetKHR(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][frameBuffer.getId()][NODEPTHNOSTENCIL], 0, 6, descriptorWrites.data());
-                vkCmdPushConstants(commandBuffers[i], frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][frameBuffer.getId()][depthStencilID], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectDrawPushConsts), &indirectDrawPushConsts);
+                vkCmdPushDescriptorSetKHR(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][frameBuffer.getId()][NODEPTHNOSTENCIL], 0, 6, descriptorWrites.data());
+                vkCmdPushConstants(commandBuffers[currentFrame], frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][frameBuffer.getId()][depthStencilID], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectDrawPushConsts), &indirectDrawPushConsts);
                 //std::cout<<"stride : "<<stride<<std::endl;
 
 
-                frameBuffer.drawIndirect(commandBuffers[i], i, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
+                frameBuffer.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
 
-                vkCmdResetEvent(commandBuffers[i], events[i],  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
-                vkCmdSetEvent(commandBuffers[i], events[i],  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
+                vkCmdResetEvent(commandBuffers[currentFrame], events[currentFrame],  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
+                vkCmdSetEvent(commandBuffers[currentFrame], events[currentFrame],  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
 
-                /*if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS) {
+                /*if (vkEndCommandBuffer(commandBuffers[currentFrame]) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to record command buffer!", 1);
                 }*/
 
-            }
+            //}
             frameBuffer.display();
 
         }
         void PerPixelLinkedListRenderComponent::createCommandBufferVertexBuffer(RenderStates currentStates) {
             frameBuffer.beginRecordCommandBuffers();
             Shader* shader = const_cast<Shader*>(currentStates.shader);
-            for (size_t i = 0; i < commandBuffers.size(); i++) {
-                /*vkResetCommandBuffer(commandBuffers[i], VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
+            unsigned int currentFrame = frameBuffer.getCurrentFrame();
+            //for (size_t i = 0; i < commandBuffers.size(); i++) {
+                /*vkResetCommandBuffer(commandBuffers[currentFrame], VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
                 VkCommandBufferBeginInfo beginInfo{};
                 beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
@@ -2207,7 +2209,7 @@ namespace odfaeg {
                 descriptorWrites[0].pImageInfo = &headPtrDescriptorImageInfo;
 
                 VkDescriptorBufferInfo linkedListStorageBufferInfoLastFrame{};
-                linkedListStorageBufferInfoLastFrame.buffer = linkedListShaderStorageBuffers[i];
+                linkedListStorageBufferInfoLastFrame.buffer = linkedListShaderStorageBuffers[currentFrame];
                 linkedListStorageBufferInfoLastFrame.offset = 0;
                 unsigned int nodeSize = 5 * sizeof(float) + sizeof(unsigned int);
                 linkedListStorageBufferInfoLastFrame.range = maxNodes * nodeSize;
@@ -2230,21 +2232,21 @@ namespace odfaeg {
 
 
 
-                //vkCmdPipelineBarrier(commandBuffers[i], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
-                vkCmdPushDescriptorSetKHR(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + vb.getPrimitiveType()][frameBuffer.getId()][NODEPTHNOSTENCIL], 0, 2, descriptorWrites.data());
+                //vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
+                vkCmdPushDescriptorSetKHR(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + vb.getPrimitiveType()][frameBuffer.getId()][NODEPTHNOSTENCIL], 0, 2, descriptorWrites.data());
 
 
 
-                vkCmdPushConstants(commandBuffers[i], frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + vb.getPrimitiveType()][frameBuffer.getId()][NODEPTHNOSTENCIL], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(Ppll2PushConsts), &ppll2PushConsts);
-                vkCmdWaitEvents(commandBuffers[i], 1, &events[i], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
-                frameBuffer.drawVertexBuffer(commandBuffers[i], i, vb, NODEPTHNOSTENCIL, currentStates);
+                vkCmdPushConstants(commandBuffers[currentFrame], frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + vb.getPrimitiveType()][frameBuffer.getId()][NODEPTHNOSTENCIL], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(Ppll2PushConsts), &ppll2PushConsts);
+                vkCmdWaitEvents(commandBuffers[currentFrame], 1, &events[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
+                frameBuffer.drawVertexBuffer(commandBuffers[currentFrame], currentFrame, vb, NODEPTHNOSTENCIL, currentStates);
 
 
-                /*if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS) {
+                /*if (vkEndCommandBuffer(commandBuffers[currentFrame]) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to record command buffer!", 1);
                 }*/
 
-            }
+            //}
             frameBuffer.display();
 
         }

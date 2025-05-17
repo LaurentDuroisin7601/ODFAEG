@@ -206,6 +206,7 @@ namespace odfaeg {
             ///
             ////////////////////////////////////////////////////////////
             virtual sf::Vector2u getSize() const = 0;
+            virtual uint32_t getImageIndex() = 0;
             void cleanup();
             void createGraphicPipeline(sf::PrimitiveType type,
                       RenderStates states = RenderStates::Default, unsigned int depthStencilId=0, unsigned int nbDepthStencil=1);

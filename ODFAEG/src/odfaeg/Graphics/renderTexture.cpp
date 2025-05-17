@@ -57,7 +57,7 @@ namespace odfaeg
             m_size.x = width;
             m_size.y = height;
             RenderTarget::initialize();
-            currentFrame = 0;
+            currentFrame = imageIndex = 0;
             return true;
         }
         bool RenderTexture::createCubeMap(unsigned int width, unsigned int height) {
@@ -311,11 +311,10 @@ namespace odfaeg
                  .baseArrayLayer = 0,
                  .layerCount = 1
              };
-             for (unsigned int i = 0; i < getCommandBuffers().size(); i++) {
-                vkResetCommandBuffer(getCommandBuffers()[i], VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
+             //for (unsigned int i = 0; i < getCommandBuffers().size(); i++) {
                 VkCommandBufferBeginInfo beginInfo{};
                 beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-                if (vkBeginCommandBuffer(getCommandBuffers()[i], &beginInfo) != VK_SUCCESS) {
+                if (vkBeginCommandBuffer(getCommandBuffers()[currentFrame], &beginInfo) != VK_SUCCESS) {
 
                     throw core::Erreur(0, "failed to begin recording command buffer!", 1);
                 }
@@ -328,7 +327,7 @@ namespace odfaeg
                     .newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                     .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
                     .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                    .image = getSwapchainImages()[i],
+                    .image = getSwapchainImages()[imageIndex],
                     .subresourceRange = imageRange
                 };
                 VkImageMemoryBarrier clearToPresentBarrier {
@@ -340,12 +339,12 @@ namespace odfaeg
                     .newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
                     .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
                     .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-                    .image = getSwapchainImages()[i],
+                    .image = getSwapchainImages()[imageIndex],
                     .subresourceRange = imageRange
                 };
-                vkCmdPipelineBarrier(getCommandBuffers()[i], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &presentToClearBarrier);
-                vkCmdClearColorImage(getCommandBuffers()[i], getSwapchainImages()[i], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearValue, 1, &imageRange);
-                vkCmdPipelineBarrier(getCommandBuffers()[i], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &clearToPresentBarrier);
+                vkCmdPipelineBarrier(getCommandBuffers()[currentFrame], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &presentToClearBarrier);
+                vkCmdClearColorImage(getCommandBuffers()[currentFrame], getSwapchainImages()[imageIndex], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearValue, 1, &imageRange);
+                vkCmdPipelineBarrier(getCommandBuffers()[currentFrame], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &clearToPresentBarrier);
                 VkImageMemoryBarrier depthStencilToClearBarrier {
                     .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
                     .pNext = nullptr,
@@ -370,23 +369,26 @@ namespace odfaeg
                     .image = getDepthTexture().getImage(),
                     .subresourceRange = imageRange2
                 };
-                vkCmdPipelineBarrier(getCommandBuffers()[i], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &depthStencilToClearBarrier);
-                vkCmdClearDepthStencilImage(getCommandBuffers()[i], getDepthTexture().getImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearDepthStencilValue, 1, &imageRange2);
-                vkCmdPipelineBarrier(getCommandBuffers()[i], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &clearToDepthStencilBarrier);
-                /*if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS) {
+                vkCmdPipelineBarrier(getCommandBuffers()[currentFrame], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &depthStencilToClearBarrier);
+                vkCmdClearDepthStencilImage(getCommandBuffers()[currentFrame], getDepthTexture().getImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearDepthStencilValue, 1, &imageRange2);
+                vkCmdPipelineBarrier(getCommandBuffers()[currentFrame], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &clearToDepthStencilBarrier);
+                /*if (vkEndCommandBuffer(commandBuffers[currentFrame]) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to record command buffer!", 1);
                 }*/
-             }
+             //}
+        }
+        uint32_t RenderTexture::getImageIndex() {
+            return imageIndex;
         }
         void RenderTexture::display() {
             if (getCommandBuffers().size() > 0) {
                 //std::cout<<"render texture end command buffer"<<std::endl;
 
-                for (unsigned int i = 0; i < getCommandBuffers().size(); i++) {
-                    if (vkEndCommandBuffer(getCommandBuffers()[i]) != VK_SUCCESS) {
+                //for (unsigned int i = 0; i < getCommandBuffers().size(); i++) {
+                    if (vkEndCommandBuffer(getCommandBuffers()[currentFrame]) != VK_SUCCESS) {
                         throw core::Erreur(0, "failed to record command buffer!", 1);
                     }
-                }
+                //}
                 vkWaitForFences(vkDevice.getDevice(), 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
                 const uint64_t waitValue = value; // Wait until semaphore value is >= 2
                 const uint64_t signalValue = value+1;
