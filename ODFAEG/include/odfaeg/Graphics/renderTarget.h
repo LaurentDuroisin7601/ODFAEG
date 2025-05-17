@@ -244,6 +244,7 @@ namespace odfaeg {
             Texture& getDepthTexture();
             std::vector<VkCommandBuffer>& getCommandBuffers();
             sf::Color clearColor;
+            bool depthTestEnabled, stencilTestEnabled;
 
         private :
             PFN_vkCmdPushDescriptorSetKHR vkCmdPushDescriptorSetKHR{ VK_NULL_HANDLE };
@@ -276,11 +277,10 @@ namespace odfaeg {
             static std::vector<VkDescriptorSetLayout> descriptorSetLayout;
             static std::vector<std::vector<VkDescriptorSet>> descriptorSets;
             unsigned int selectedBuffer;
-            bool depthTestEnabled, stencilTestEnabled;
             static unsigned int nbBuffers;
             unsigned int id;
             static unsigned int nbRenderTargets;
-            std::vector<Texture> depthTexture;
+            std::vector<Texture*> depthTexture;
         };
         #else
         ////////////////////////////////////////////////////////////

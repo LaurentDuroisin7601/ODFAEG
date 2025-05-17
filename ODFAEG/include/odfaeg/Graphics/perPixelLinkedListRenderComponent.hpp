@@ -144,7 +144,7 @@ namespace odfaeg {
             PFN_vkCmdPushDescriptorSetKHR vkCmdPushDescriptorSetKHR{ VK_NULL_HANDLE };
             sf::Clock timeClock;
             std::vector<unsigned int> pipelineIds;
-            VkEvent event;
+            std::vector<VkEvent> events;
 
         };
         #else

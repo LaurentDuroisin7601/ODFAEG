@@ -312,8 +312,8 @@ namespace odfaeg {
             viewport.y = 0.0f;
             viewport.width = getSwapchainExtents().width;
             viewport.height = getSwapchainExtents().height;
-            viewport.minDepth = 1.0f;
-            viewport.maxDepth = 0.0f;
+            viewport.minDepth = 0.0f;
+            viewport.maxDepth = 1.0f;
             vkCmdSetViewport(cmd, 0, 1, &viewport);
 
             VkRect2D scissor{};
@@ -355,8 +355,8 @@ namespace odfaeg {
             viewport.y = 0.0f;
             viewport.width = getSwapchainExtents().width;
             viewport.height = getSwapchainExtents().height;
-            viewport.minDepth = 1.0f;
-            viewport.maxDepth = 0.0f;
+            viewport.minDepth = 0.0f;
+            viewport.maxDepth = 1.0f;
             vkCmdSetViewport(cmd, 0, 1, &viewport);
 
             VkRect2D scissor{};
@@ -888,8 +888,8 @@ namespace odfaeg {
                 viewport.y = 0.0f;
                 viewport.width = getSwapchainExtents().width;
                 viewport.height = getSwapchainExtents().height;
-                viewport.minDepth = 1.0f;
-                viewport.maxDepth = 0.0f;
+                viewport.minDepth = 0.0f;
+                viewport.maxDepth = 1.0f;
                 vkCmdSetViewport(commandBuffers[i], 0, 1, &viewport);
 
                 VkRect2D scissor{};
@@ -918,10 +918,10 @@ namespace odfaeg {
         }
         Texture& RenderTarget::getDepthTexture() {
             if (depthTexture.empty()) {
-                Texture depthTex(vkDevice);
-                depthTexture.push_back(std::move(depthTex));
+                Texture* depthTex = new Texture(vkDevice);
+                depthTexture.push_back(depthTex);
             }
-            return depthTexture[0];
+            return *depthTexture[0];
         }
         void RenderTarget::cleanup() {
             std::cout<<"destroy command buffers"<<std::endl;
@@ -929,7 +929,9 @@ namespace odfaeg {
                 vkFreeCommandBuffers(vkDevice.getDevice(), commandPool, commandBuffers.size(), commandBuffers.data());
                 vkDestroyCommandPool(vkDevice.getDevice(), commandPool, nullptr);
             }
-
+            for (unsigned int i = 0; i < depthTexture.size(); i++) {
+                delete depthTexture[i];
+            }
             if (nbRenderTargets == 0) {
 
 

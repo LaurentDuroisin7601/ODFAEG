@@ -490,7 +490,8 @@ namespace odfaeg {
             vkDevice.createLogicalDevice(surface);
             createSwapChain();
             createImageViews();
-            getDepthTexture().createDepthTexture(swapChainExtent.width, swapChainExtent.height);
+            //if (depthTestEnabled || stencilTestEnabled)
+                getDepthTexture().createDepthTexture(swapChainExtent.width, swapChainExtent.height);
             createRenderPass();
             createFramebuffers();
             RenderTarget::initialize();

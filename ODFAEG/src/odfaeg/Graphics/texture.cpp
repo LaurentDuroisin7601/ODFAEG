@@ -116,7 +116,7 @@ namespace odfaeg {
         }
         bool Texture::createDepthTexture(uint32_t texWidth, uint32_t texHeight) {
             VkFormat depthFormat = findDepthFormat();
-            createImage(texWidth, texHeight, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
+            createImage(texWidth, texHeight, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT /*| VK_IMAGE_USAGE_SAMPLED_BIT*/, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
             //std::cout<<"dt address : "<<textureImage<<std::endl;
             transitionImageLayout(textureImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED,  VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
             createTextureImageView(depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
@@ -414,6 +414,7 @@ namespace odfaeg {
                 destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 
             } else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
+
                 barrier.srcAccessMask = 0;
                 barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 

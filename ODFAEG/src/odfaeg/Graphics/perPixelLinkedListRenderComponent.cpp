@@ -270,11 +270,15 @@ namespace odfaeg {
             if (!vkCmdPushDescriptorSetKHR) {
                 throw core::Erreur(0, "Could not get a valid function pointer for vkCmdPushDescriptorSetKHR", 1);
             }
-            VkEventCreateInfo eventInfo = {};
-            eventInfo.sType = VK_STRUCTURE_TYPE_EVENT_CREATE_INFO;
-            eventInfo.pNext = NULL;
-            eventInfo.flags = 0;
-            vkCreateEvent(vkDevice.getDevice(), &eventInfo, NULL, &event);
+            for (unsigned int i = 0; i < commandBuffers.size(); i++) {
+                VkEventCreateInfo eventInfo = {};
+                eventInfo.sType = VK_STRUCTURE_TYPE_EVENT_CREATE_INFO;
+                eventInfo.pNext = NULL;
+                eventInfo.flags = 0;
+                VkEvent event;
+                vkCreateEvent(vkDevice.getDevice(), &eventInfo, NULL, &event);
+                events.push_back(event);
+            }
 
         }
         uint32_t PerPixelLinkedListRenderComponent::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
@@ -2066,8 +2070,7 @@ namespace odfaeg {
             std::vector<Texture*> allTextures = Texture::getAllTextures();
             for (size_t i = 0; i < commandBuffers.size(); i++) {
 
-                vkCmdResetEvent(commandBuffers[i], event,  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
-                vkCmdSetEvent(commandBuffers[i], event,  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
+
                 /*vkResetCommandBuffer(commandBuffers[i], VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
                 VkCommandBufferBeginInfo beginInfo{};
                 beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -2163,11 +2166,11 @@ namespace odfaeg {
                 vkCmdPushConstants(commandBuffers[i], frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][frameBuffer.getId()][depthStencilID], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectDrawPushConsts), &indirectDrawPushConsts);
                 //std::cout<<"stride : "<<stride<<std::endl;
 
+
                 frameBuffer.drawIndirect(commandBuffers[i], i, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
 
-
-
-
+                vkCmdResetEvent(commandBuffers[i], events[i],  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
+                vkCmdSetEvent(commandBuffers[i], events[i],  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
 
                 /*if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to record command buffer!", 1);
@@ -2233,7 +2236,7 @@ namespace odfaeg {
 
 
                 vkCmdPushConstants(commandBuffers[i], frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + vb.getPrimitiveType()][frameBuffer.getId()][NODEPTHNOSTENCIL], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(Ppll2PushConsts), &ppll2PushConsts);
-                vkCmdWaitEvents(commandBuffers[i], 1, &event, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
+                vkCmdWaitEvents(commandBuffers[i], 1, &events[i], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
                 frameBuffer.drawVertexBuffer(commandBuffers[i], i, vb, NODEPTHNOSTENCIL, currentStates);
 
 
@@ -2440,8 +2443,9 @@ namespace odfaeg {
         }
         PerPixelLinkedListRenderComponent::~PerPixelLinkedListRenderComponent() {
             std::cout<<"ppll destructor"<<std::endl;
-
-            vkDestroyEvent(vkDevice.getDevice(), event, nullptr);
+            for (unsigned int i = 0; i < events.size(); i++) {
+                vkDestroyEvent(vkDevice.getDevice(), events[i], nullptr);
+            }
 
             vkDestroySampler(vkDevice.getDevice(), headPtrTextureSampler, nullptr);
             vkDestroyImageView(vkDevice.getDevice(), headPtrTextureImageView, nullptr);

@@ -49,7 +49,8 @@ namespace odfaeg
             vkDevice.pickupPhysicalDevice(VK_NULL_HANDLE);
             vkDevice.createLogicalDevice(VK_NULL_HANDLE);
             m_texture.create(width, height);
-            getDepthTexture().createDepthTexture(width, height);
+            //if (depthTestEnabled || stencilTestEnabled)
+                getDepthTexture().createDepthTexture(width, height);
             createRenderPass();
             createFramebuffers();
             createSyncObjects();
