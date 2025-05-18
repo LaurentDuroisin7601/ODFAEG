@@ -115,9 +115,11 @@ namespace odfaeg {
                                                         layout(location = 0) in vec3 inPosition;
                                                         layout(location = 1) in vec4 inColor;
                                                         layout(location = 2) in vec2 inTexCoord;
+                                                        layout(location = 3) in vec3 normals;
 
                                                         layout(location = 0) out vec4 fragColor;
                                                         layout(location = 1) out vec2 fragTexCoord;
+                                                        layout(location = 2) out vec3 normal;
 
 
                                                         void main() {
@@ -125,6 +127,7 @@ namespace odfaeg {
                                                             gl_Position =  vec4(inPosition, 1.0) * ubo.model * ubo.view * ubo.proj;
                                                             fragColor = inColor;
                                                             fragTexCoord = inTexCoord;
+                                                            normal = normals;
                                                         }
                                                         )";
             const std::string defaultFragmentShader = R"(#version 450
@@ -132,6 +135,7 @@ namespace odfaeg {
                                                           layout(binding = 1) uniform sampler2D texSampler;
                                                           layout(location = 0) in vec4 fragColor;
                                                           layout(location = 1) in vec2 fragTexCoord;
+                                                          layout(location = 2) in vec3 normal;
                                                           layout(location = 0) out vec4 outColor;
                                                           void main() {
                                                              outColor = textureLod(texSampler, fragTexCoord, 0) * fragColor;
@@ -140,6 +144,7 @@ namespace odfaeg {
                                                           #extension GL_ARB_separate_shader_objects : enable
                                                           layout(location = 0) in vec4 fragColor;
                                                           layout(location = 1) in vec2 fragTexCoord;
+                                                          layout(location = 2) in vec3 normal;
                                                           layout(location = 0) out vec4 outColor;
                                                           void main() {
                                                              outColor = fragColor;
