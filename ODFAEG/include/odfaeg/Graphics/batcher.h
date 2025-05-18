@@ -4,6 +4,7 @@
 #include "view.h"
 #include <map>
 #include "../Core/entityFactory.hpp"
+#include "../config.hpp"
 /**
   *\namespace odfaeg
   * the namespace of the Opensource Development Framework Adapted for Every Games.

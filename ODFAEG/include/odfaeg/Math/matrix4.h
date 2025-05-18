@@ -144,6 +144,7 @@ namespace odfaeg {
             bool operator==(const Matrix4f& other) const;
             std::array<float, 16> toGlMatrix();
             Matrix4f transpose();
+            Matrix4f toLeftHanded();
             template <typename Archive>
             void serialize(Archive & ar) {
                 ar(m11);
@@ -166,6 +167,7 @@ namespace odfaeg {
         };
         ODFAEG_MATH_API std::ostream& operator<< (std::ostream &out, const Matrix4f &mat4);
         ODFAEG_MATH_API std::istream& operator>> (std::istream &in, Matrix4f& mat4);
+
     }
 }
 #endif

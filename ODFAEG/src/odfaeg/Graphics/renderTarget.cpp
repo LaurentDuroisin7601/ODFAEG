@@ -87,7 +87,7 @@ namespace odfaeg {
         unsigned int RenderTarget::nbRenderTargets = 0;
 
         RenderTarget::RenderTarget(window::Device& vkDevice) : vkDevice(vkDevice), defaultShader(vkDevice), defaultShader2(vkDevice),
-        m_defaultView(), m_view(), id(nbRenderTargets), depthTestEnabled(false), stencilTestEnabled(false) {
+        m_defaultView(), m_view(), id(nbRenderTargets), depthTestEnabled(false), stencilTestEnabled(false), depthTexture(nullptr) {
             nbRenderTargets++;
         }
         RenderTarget::~RenderTarget() {
@@ -122,7 +122,7 @@ namespace odfaeg {
 
                                                         void main() {
                                                             gl_PointSize = 2.0f;
-                                                            gl_Position = ubo.proj * ubo.view * ubo.model * vec4(inPosition, 1.0);
+                                                            gl_Position =  vec4(inPosition, 1.0) * ubo.model * ubo.view * ubo.proj;
                                                             fragColor = inColor;
                                                             fragTexCoord = inTexCoord;
                                                         }
@@ -274,10 +274,10 @@ namespace odfaeg {
              }
              vertexBuffers[selectedBuffer]->update();
              UniformBufferObject ubo;
-             ubo.proj = m_view.getProjMatrix().getMatrix().transpose();
-             ubo.proj.m22 *= -1;
-             ubo.view = m_view.getViewMatrix().getMatrix().transpose();
-             ubo.model = states.transform.getMatrix().transpose();
+             ubo.proj = m_view.getProjMatrix().getMatrix()/*.transpose()*/;
+             //ubo.proj.m22 *= -1;
+             ubo.view = m_view.getViewMatrix().getMatrix()/*.transpose()*/;
+             ubo.model = states.transform.getMatrix()/*.transpose()*/;
              updateUniformBuffer(getCurrentFrame(), ubo);
              recordCommandBuffers(type, states);
              if (oldType == sf::Quads)
@@ -309,9 +309,9 @@ namespace odfaeg {
 
             VkViewport viewport{};
             viewport.x = 0.0f;
-            viewport.y = 0.0f;
+            viewport.y = (float) getSwapchainExtents().height;
             viewport.width = getSwapchainExtents().width;
-            viewport.height = getSwapchainExtents().height;
+            viewport.height = -(float) getSwapchainExtents().height;
             viewport.minDepth = 0.0f;
             viewport.maxDepth = 1.0f;
             vkCmdSetViewport(cmd, 0, 1, &viewport);
@@ -352,9 +352,9 @@ namespace odfaeg {
 
             VkViewport viewport{};
             viewport.x = 0.0f;
-            viewport.y = 0.0f;
+            viewport.y = (float) getSwapchainExtents().height;
             viewport.width = getSwapchainExtents().width;
-            viewport.height = getSwapchainExtents().height;
+            viewport.height = -(float) getSwapchainExtents().height;
             viewport.minDepth = 0.0f;
             viewport.maxDepth = 1.0f;
             vkCmdSetViewport(cmd, 0, 1, &viewport);
@@ -885,9 +885,9 @@ namespace odfaeg {
                 }
                 VkViewport viewport{};
                 viewport.x = 0.0f;
-                viewport.y = 0.0f;
+                viewport.y = (float) getSwapchainExtents().height;
                 viewport.width = getSwapchainExtents().width;
-                viewport.height = getSwapchainExtents().height;
+                viewport.height = -(float) getSwapchainExtents().height;
                 viewport.minDepth = 0.0f;
                 viewport.maxDepth = 1.0f;
                 vkCmdSetViewport(commandBuffers[getCurrentFrame()], 0, 1, &viewport);
@@ -917,11 +917,10 @@ namespace odfaeg {
 
         }
         Texture& RenderTarget::getDepthTexture() {
-            if (depthTexture.empty()) {
-                Texture* depthTex = new Texture(vkDevice);
-                depthTexture.push_back(depthTex);
+            if (depthTexture == nullptr) {
+                depthTexture = new Texture(vkDevice);
             }
-            return *depthTexture[0];
+            return *depthTexture;
         }
         void RenderTarget::cleanup() {
             std::cout<<"destroy command buffers"<<std::endl;
@@ -929,9 +928,8 @@ namespace odfaeg {
                 vkFreeCommandBuffers(vkDevice.getDevice(), commandPool, commandBuffers.size(), commandBuffers.data());
                 vkDestroyCommandPool(vkDevice.getDevice(), commandPool, nullptr);
             }
-            for (unsigned int i = 0; i < depthTexture.size(); i++) {
-                delete depthTexture[i];
-            }
+            delete depthTexture;
+
             if (nbRenderTargets == 0) {
 
 

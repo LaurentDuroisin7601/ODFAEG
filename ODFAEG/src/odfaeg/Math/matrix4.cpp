@@ -139,13 +139,13 @@ namespace odfaeg {
             Matrix4f m4f (m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44);
             return m4f;
         }
+
         Vec3f Matrix4f::operator* (const Vec3f &vec) {
             float x = m11 * vec.x + m12 * vec.y + m13 * vec.z + m14 * vec.w;
             float y = m21 * vec.x + m22 * vec.y + m23 * vec.z + m24 * vec.w;
             float z = m31 * vec.x + m32 * vec.y + m33 * vec.z + m34 * vec.w;
             float w = m41 * vec.x + m42 * vec.y + m43 * vec.z + m44 * vec.w;
-
-            return Vec3f(x, y, z, w);
+            return Vec3f(x, y, z);
         }
         Matrix4f Matrix4f::operator* (float scalar) {
             float m11 = this->m11 * scalar;
@@ -268,6 +268,26 @@ namespace odfaeg {
             matrix.m41 = m14;
             matrix.m42 = m24;
             matrix.m43 = m34;
+            matrix.m44 = m44;
+            return matrix;
+        }
+        Matrix4f Matrix4f::toLeftHanded() {
+            Matrix4f matrix;
+            matrix.m11 = m11;
+            matrix.m12 = m13;
+            matrix.m13 = m12;
+            matrix.m14 = m14;
+            matrix.m21 = m31;
+            matrix.m22 = m33;
+            matrix.m23 = m32;
+            matrix.m24 = m34;
+            matrix.m31 = m21;
+            matrix.m32 = m23;
+            matrix.m33 = m22;
+            matrix.m34 = m24;
+            matrix.m41 = m41;
+            matrix.m42 = m42;
+            matrix.m43 = m43;
             matrix.m44 = m44;
             return matrix;
         }

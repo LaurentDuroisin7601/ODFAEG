@@ -372,14 +372,30 @@ namespace odfaeg {
                 }
                 //std::cout<<"transform pushed"<<std::endl;
                 m_vertexArrays.push_back(&va);
+
                 //std::cout<<"va pushed"<<std::endl;
                 //m_indexes.push_back(std::vector<unsigned int>());
                 unsigned int baseVertex = vertices.getVertexCount();
                 for (unsigned int i = 0; i < va.getVertexCount(); i++) {
 
-                    math::Vec3f t = tm.transform(math::Vec3f(va[i].position.x, va[i].position.y, va[i].position.z));
+                    math::Matrix4f m = tm.getMatrix();
+                    /*#ifdef VULKAN
+                    m = m.toLeftHanded();
+                    math::Vec3f t = m * (math::Vec3f(va[i].position.x, va[i].position.y, va[i].position.z));
                     Vertex v (sf::Vector3f(t.x, t.y, t.z), va[i].color, va[i].texCoords);
-                    //std::cout<<"tm : "<<tm.getMatrix()<<std::endl<<"position : "<<t<<std::endl;
+                    #else*/
+                    math::Vec3f t = m * (math::Vec3f(va[i].position.x, va[i].position.y, va[i].position.z));
+                    //std::cout<<"position : "<<t<<std::endl;
+                    Vertex v (sf::Vector3f(t.x, t.y, t.z), va[i].color, va[i].texCoords);
+                    //#endif // VULKAN
+
+
+
+
+                    /*if (va.getEntity() != nullptr && va.getEntity()->getType() == "E_PARTICLES") {
+                        std::cout<<"position : "<<t<<std::endl;
+                        system("PAUSE");
+                    }*/
                     /*if (va.getEntity()->getRootType() == "E_HERO")
                         std::cout<<"v : "<<v.position.x<<","<<v.position.y<<","<<v.position.z<<std::endl;*/
                     vertices.append(v);

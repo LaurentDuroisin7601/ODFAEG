@@ -852,7 +852,8 @@ namespace odfaeg {
                                                                     xOff = 0.025*cos(position.x*12+pushConsts.time*FPI)*pushConsts.resolution.x;
                                                                 }
                                                                 uint textureIndex =  materialData.textureIndex;
-                                                                gl_Position = pushConsts.projectionMatrix * pushConsts.viewMatrix * modelData.modelMatrix * vec4((position.x - xOff), (position.y + yOff), position.z, 1.f);
+                                                                gl_Position = vec4((position.x - xOff), (position.y + yOff), position.z, 1.f) * modelData.modelMatrix * pushConsts.viewMatrix * pushConsts.projectionMatrix;
+                                                                //gl_Position.z = gl_Position.z * 0.5 + 0.5;
                                                                 fTexCoords = texCoords;
                                                                 frontColor = color;
                                                                 texIndex = textureIndex;
@@ -871,7 +872,8 @@ namespace odfaeg {
                                                             mat4 worldMat;
                                                         } pushConsts;
                                                         void main () {
-                                                            gl_Position = pushConsts.projectionMatrix * pushConsts.viewMatrix * pushConsts.worldMat * vec4(position, 1.f);
+                                                            gl_Position = vec4(position, 1.f) * pushConsts.worldMat * pushConsts.viewMatrix * pushConsts.projectionMatrix;
+                                                            //gl_Position.z = gl_Position.z * 0.5 + 0.5;
                                                             gl_PointSize = 2.0f;
                                                             frontColor = color;
                                                             fTexCoords = texCoords;
@@ -966,11 +968,11 @@ namespace odfaeg {
             }
 
 
-            math::Matrix4f viewMatrix = getWindow().getDefaultView().getViewMatrix().getMatrix().transpose();
-            math::Matrix4f projMatrix = getWindow().getDefaultView().getProjMatrix().getMatrix().transpose();
+            math::Matrix4f viewMatrix = getWindow().getDefaultView().getViewMatrix().getMatrix()/*.transpose()*/;
+            math::Matrix4f projMatrix = getWindow().getDefaultView().getProjMatrix().getMatrix()/*.transpose()*/;
             ppll2PushConsts.viewMatrix = viewMatrix;
             ppll2PushConsts.projMatrix = projMatrix;
-            ppll2PushConsts.projMatrix.m22 *= -1;
+            //ppll2PushConsts.projMatrix.m22 *= -1;
             indirectDrawPushConsts.resolution = resolution;
         }
         void PerPixelLinkedListRenderComponent::drawInstances() {
@@ -1010,7 +1012,8 @@ namespace odfaeg {
                     }
                     TransformMatrix tm;
                     ModelData modelData;
-                    modelData.worldMat = tm.getMatrix().transpose();
+                    modelData.worldMat = tm.getMatrix()/*.transpose()*/;
+
                     modelDatas[p].push_back(modelData);
 
                     drawArraysIndirectCommand.count = vertexCount;
@@ -1039,7 +1042,7 @@ namespace odfaeg {
                     for (unsigned int j = 0; j < tm.size(); j++) {
                         tm[j]->update();
                         ModelData modelData;
-                        modelData.worldMat = tm[j]->getMatrix().transpose();
+                        modelData.worldMat = tm[j]->getMatrix()/*.transpose()*/;
                         modelDatas[p].push_back(modelData);
                     }
                     MaterialData materialData;
@@ -1173,7 +1176,7 @@ namespace odfaeg {
 
                     TransformMatrix tm;
                     ModelData modelData;
-                    modelData.worldMat = tm.getMatrix().transpose();
+                    modelData.worldMat = tm.getMatrix()/*.transpose()*/;
                     modelDatas[p].push_back(modelData);
                     unsigned int indexCount = 0, vertexCount = 0;
                     for (unsigned int j = 0; j < m_normalsIndexed[i].getAllVertices().getVertexCount(); j++) {
@@ -1213,7 +1216,7 @@ namespace odfaeg {
                     for (unsigned int j = 0; j < tm.size(); j++) {
                         tm[j]->update();
                         ModelData model;
-                        model.worldMat = tm[j]->getMatrix().transpose();
+                        model.worldMat = tm[j]->getMatrix()/*.transpose()*/;
                         modelDatas[p].push_back(model);
                     }
 
@@ -1355,7 +1358,7 @@ namespace odfaeg {
                     }
                     TransformMatrix tm;
                     ModelData modelData;
-                    modelData.worldMat = tm.getMatrix().transpose();
+                    modelData.worldMat = tm.getMatrix()/*.transpose()*/;
                     modelDatas[p].push_back(modelData);
 
                     drawArraysIndirectCommand.count = vertexCount;
@@ -1384,7 +1387,7 @@ namespace odfaeg {
                     for (unsigned int j = 0; j < tm.size(); j++) {
                         tm[j]->update();
                         ModelData modelData;
-                        modelData.worldMat = tm[j]->getMatrix().transpose();
+                        modelData.worldMat = tm[j]->getMatrix()/*.transpose()*/;
                         modelDatas[p].push_back(modelData);
                     }
                     MaterialData materialData;
@@ -1516,7 +1519,7 @@ namespace odfaeg {
                     materialDatas[p].push_back(material);
                     TransformMatrix tm;
                     ModelData model;
-                    model.worldMat = tm.getMatrix().transpose();
+                    model.worldMat = tm.getMatrix()/*.transpose()*/;
                     modelDatas[p].push_back(model);
 
                     unsigned int vertexCount = 0;
@@ -1547,7 +1550,7 @@ namespace odfaeg {
                     for (unsigned int j = 0; j < tm.size(); j++) {
                         tm[j]->update();
                         ModelData model;
-                        model.worldMat = tm[j]->getMatrix().transpose();
+                        model.worldMat = tm[j]->getMatrix()/*.transpose()*/;
                         modelDatas[p].push_back(model);
                     }
                     unsigned int vertexCount = 0;
@@ -1675,7 +1678,7 @@ namespace odfaeg {
 
                     TransformMatrix tm;
                     ModelData model;
-                    model.worldMat = tm.getMatrix().transpose();
+                    model.worldMat = tm.getMatrix()/*.transpose()*/;
                     modelDatas[p].push_back(model);
                     unsigned int vertexCount = 0, indexCount = 0;
                     for (unsigned int j = 0; j < m_selectedIndexed[i].getAllVertices().getVertexCount(); j++) {
@@ -1711,7 +1714,7 @@ namespace odfaeg {
                     for (unsigned int j = 0; j < tm.size(); j++) {
                         tm[j]->update();
                         ModelData model;
-                        model.worldMat = tm[j]->getMatrix().transpose();
+                        model.worldMat = tm[j]->getMatrix()/*.transpose()*/;
                         modelDatas[p].push_back(model);
                     }
                     unsigned int indexCount = 0, vertexCount = 0;
@@ -2009,11 +2012,11 @@ namespace odfaeg {
             vb.update();
             frameBuffer.drawVertexBuffer(vb, currentStates);
             vb.clear();*/
-            math::Matrix4f projMatrix = view.getProjMatrix().getMatrix().transpose();
-            math::Matrix4f viewMatrix = view.getViewMatrix().getMatrix().transpose();
+            math::Matrix4f projMatrix = view.getProjMatrix().getMatrix()/*.transpose()*/;
+            math::Matrix4f viewMatrix = view.getViewMatrix().getMatrix()/*.transpose()*/;
             indirectDrawPushConsts.projMatrix = projMatrix;
             indirectDrawPushConsts.viewMatrix = viewMatrix;
-            indirectDrawPushConsts.projMatrix.m22 *= -1;
+            //indirectDrawPushConsts.projMatrix.m22 *= -1;
 
 
 
@@ -2037,7 +2040,7 @@ namespace odfaeg {
             vb.append(v3);
             vb.append(v4);
             vb.update();
-            math::Matrix4f matrix = quad.getTransform().getMatrix().transpose();
+            math::Matrix4f matrix = quad.getTransform().getMatrix()/*.transpose()*/;
             ppll2PushConsts.worldMat = matrix;
             RenderStates currentStates;
             currentStates.shader = &perPixelLinkedListP2;

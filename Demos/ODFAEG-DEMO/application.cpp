@@ -17,11 +17,12 @@ namespace sorrok {
         actualKey = IKeyboard::Key::Unknown;
         previousKey = IKeyboard::Key::Unknown;
         fpsCounter = 0;
-        getView().move(0, 300, 0);
+        getView().move(0, 300, 300);
         addClock(sf::Clock(), "FPS");
         day = false;
         sf::Listener::setUpVector(0.f, 0.f, 1.f);
         ps = entityFactory.make_entity<ParticleSystem>(Vec3f(0, 0, 150),Vec3f(100, 100, 0), entityFactory);
+        //
         //FastDelegate<void> fd(&Allocator<Entity>::allocate<Tile, EntityFactory&>,tile, std::ref(entityFactory));
         EXPORT_CLASS_GUID(BoundingVolumeBoundingBox, BoundingVolume, BoundingBox)
         EXPORT_CLASS_GUID_(EntityTile, Entity, Tile, VA_LIST(EntityFactory&), VA_LIST(std::ref(entityFactory)))
@@ -304,6 +305,7 @@ namespace sorrok {
         ps->setLayer(1);
         psu->addParticleSystem(ps);
         psu->setName("ParticlesSystemUpdater");
+        //ps->move(Vec3f(0, -125, 0));
         getWorld()->addEntity(ps);
         View view = getView();
         //view.rotate(0, 0, 20);
@@ -370,7 +372,7 @@ namespace sorrok {
         caracter->getGlobalBounds().getSize().x, caracter->getGlobalBounds().getSize().y * 0.25f, 0);
         caracter->setCollisionVolume(bb2);
         caracter->setCenter(Vec3f(getView().getPosition().x, getView().getPosition().y, getView().getPosition().y));
-        caracter->move(Vec3f(0, -50, -50));
+        //caracter->move(Vec3f(0, -50, -50));
         //caracter->setSelected(true);
         caracter->setShadowScale(Vec3f(1, -1, 1));
         caracter->setShadowCenter(Vec3f(0, 280, -140));

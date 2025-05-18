@@ -281,7 +281,7 @@ namespace odfaeg {
             static unsigned int nbBuffers;
             unsigned int id;
             static unsigned int nbRenderTargets;
-            std::vector<Texture*> depthTexture;
+            Texture* depthTexture;
         };
         #else
         ////////////////////////////////////////////////////////////

@@ -189,7 +189,7 @@ namespace odfaeg
                     colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
                     colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
                     colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-                    colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+                    colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
                     colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
                     colorAttachment.initialLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                     colorAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -234,7 +234,7 @@ namespace odfaeg
                     colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
                     colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
                     colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-                    colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+                    colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
                     colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
                     colorAttachment.initialLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                     colorAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
