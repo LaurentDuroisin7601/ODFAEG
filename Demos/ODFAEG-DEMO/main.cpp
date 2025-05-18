@@ -23,10 +23,11 @@ using namespace sorrok;
 #define GLM_FORCE_LEFT_HANDED
 
 int main(int argc, char *argv[]) {
-    /*VkSettup settup;
+    VkSettup settup;
     Device device(settup);
     RenderWindow window(sf::VideoMode(800, 600), "test",device);
     Vec3f pos(100, 50, 100);
+    Vec3f pos2(100, 50, 200);
     Matrix4f proj = window.getView().getProjMatrix().getMatrix();
     Matrix4f view = window.getView().getViewMatrix().getMatrix();
     proj.m22 *= -1;
@@ -37,10 +38,10 @@ int main(int argc, char *argv[]) {
 
     //std::cout<<"lf : "<<lh<<std::endl;
 
-    Vec3f mvpgpu = proj * view * model * pos;
-    std::cout<<mvpgpu<<std::endl;
-    Vec3f mvpcpu = proj * view * model * pos;
-    std::cout<<mvpcpu<<std::endl;*/
+    Vec3f mvpcpu1 = proj * view * model * pos;
+    std::cout<<mvpcpu1<<std::endl;
+    Vec3f mvpcpu2 = proj * view * model * pos2;
+    std::cout<<mvpcpu2<<std::endl;
     /*window.enableDepthTest(true);
     RectangleShape rect(Vec3f(100, 50, 100));*/
     /*while (window.isOpen()) {
@@ -54,8 +55,8 @@ int main(int argc, char *argv[]) {
             window.display();
         }
     }*/
-    MyAppli app(sf::VideoMode(800, 600), "Test odfaeg");
-    return app.exec();
+    /*MyAppli app(sf::VideoMode(800, 600), "Test odfaeg");
+    return app.exec();*/
 }
 
 

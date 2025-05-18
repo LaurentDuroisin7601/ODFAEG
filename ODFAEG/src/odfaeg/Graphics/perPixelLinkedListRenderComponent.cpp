@@ -853,7 +853,6 @@ namespace odfaeg {
                                                                 }
                                                                 uint textureIndex =  materialData.textureIndex;
                                                                 gl_Position = vec4((position.x - xOff), (position.y + yOff), position.z, 1.f) * modelData.modelMatrix * pushConsts.viewMatrix * pushConsts.projectionMatrix;
-                                                                //gl_Position.z = gl_Position.z * 0.5 + 0.5;
                                                                 fTexCoords = texCoords;
                                                                 frontColor = color;
                                                                 texIndex = textureIndex;
@@ -873,7 +872,6 @@ namespace odfaeg {
                                                         } pushConsts;
                                                         void main () {
                                                             gl_Position = vec4(position, 1.f) * pushConsts.worldMat * pushConsts.viewMatrix * pushConsts.projectionMatrix;
-                                                            //gl_Position.z = gl_Position.z * 0.5 + 0.5;
                                                             gl_PointSize = 2.0f;
                                                             frontColor = color;
                                                             fTexCoords = texCoords;
