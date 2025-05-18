@@ -315,6 +315,9 @@ namespace odfaeg {
                     }
                 }
             }
+            for (unsigned int i = 0; i < m_vertices.size(); i++) {
+                m_vertices[i].normal = m_normals[i];
+            }
         }
         ///////////////////////////////////////////////////////////
         unsigned int VertexArray::getVertexCount() const

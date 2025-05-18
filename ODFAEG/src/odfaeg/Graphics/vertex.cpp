@@ -6,7 +6,8 @@ namespace odfaeg {
         Vertex::Vertex() :
         position (0, 0, 0),
         color    (255, 255, 255),
-        texCoords(0, 0)
+        texCoords(0, 0),
+        normal(0, 0, 0)
         {
         }
 
@@ -15,7 +16,8 @@ namespace odfaeg {
         Vertex::Vertex(const Vector3f& thePosition) :
         position (thePosition),
         color    (255, 255, 255),
-        texCoords(0, 0)
+        texCoords(0, 0),
+        normal(0, 0, 0)
         {
         }
 
@@ -24,7 +26,8 @@ namespace odfaeg {
         Vertex::Vertex(const Vector3f& thePosition, const Color& theColor) :
         position (thePosition),
         color    (theColor),
-        texCoords(0, 0)
+        texCoords(0, 0),
+        normal(0, 0, 0)
         {
         }
 
@@ -33,7 +36,8 @@ namespace odfaeg {
         Vertex::Vertex(const Vector3f& thePosition, const Vector2f& theTexCoords) :
         position (thePosition),
         color    (255, 255, 255),
-        texCoords(theTexCoords)
+        texCoords(theTexCoords),
+        normal(0, 0, 0)
         {
         }
 
@@ -42,11 +46,12 @@ namespace odfaeg {
         Vertex::Vertex(const Vector3f& thePosition, const Color& theColor, const Vector2f& theTexCoords) :
         position (thePosition),
         color    (theColor),
-        texCoords(theTexCoords)
+        texCoords(theTexCoords),
+        normal(0, 0, 0)
         {
         }
         bool Vertex::operator== (const Vertex& other) const {
-            return position == other.position && color == other.color && texCoords == other.texCoords;
+            return position == other.position && color == other.color && texCoords == other.texCoords && normal == other.normal;
         }
         bool Vertex::operator!= (const Vertex& other) const {
             return !(*this == other);

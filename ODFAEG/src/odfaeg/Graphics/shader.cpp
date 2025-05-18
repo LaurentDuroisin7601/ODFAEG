@@ -101,7 +101,7 @@ namespace odfaeg {
         unsigned int Shader::nbShaders = 0;
         std::vector<Shader*> Shader::shaders = std::vector<Shader*>();
         std::vector<Shader*> Shader::sameShaders= std::vector<Shader*>();
-        Shader::Shader(window::Device& vkDevice) : vkDevice(vkDevice) {
+        Shader::Shader(window::Device& vkDevice) : vkDevice(vkDevice), geometryShaderModule(nullptr) {
             id = 0;
             isCompiled = false;
             shaders.push_back(this);
@@ -201,8 +201,68 @@ namespace odfaeg {
             // Compile the shader program
             return compile(&vertexShader[0], &fragmentShader[0]);
         }
+        bool Shader::loadFromFile(const std::string& vertexShaderFilename, const std::string& fragmentShaderFilename, const std::string& geometryShaderFilename) {
+            std::vector<char> vertexShader;
+            if (!getFileContents(vertexShaderFilename, vertexShader))
+            {
+                err() << "Failed to open vertex shader file \"" << vertexShaderFilename << "\"" << std::endl;
+                return false;
+            }
+
+            // Read the fragment shader file
+            std::vector<char> fragmentShader;
+            if (!getFileContents(fragmentShaderFilename, fragmentShader))
+            {
+                err() << "Failed to open fragment shader file \"" << fragmentShaderFilename << "\"" << std::endl;
+                return false;
+            }
+            std::vector<char> geometryShader;
+            if(!getFileContents(geometryShaderFilename, geometryShader)) {
+                err() << "Failed to open geometry shader file \"" << fragmentShaderFilename << "\"" << std::endl;
+                return false;
+            }
+            vertexShaderCode = std::string(&vertexShader[0]);
+            fragmentShaderCode = std::string(&fragmentShader[0]);
+            geometryShaderCode = std::string(&geometryShader[0]);
+            return compile(&vertexShader[0], &fragmentShader[0], &geometryShader[0]);
+        }
+        bool Shader::loadFromMemory(const std::string& vertexShader, const std::string& fragmentShader, const std::string& geometryShader) {
+            vertexShaderCode = vertexShader;
+            fragmentShaderCode = fragmentShader;
+            geometryShaderCode = geometryShader;
+            return compile(vertexShader.c_str(), fragmentShader.c_str(), geometryShader.c_str());
+        }
+        bool Shader::loadFromStream(sf::InputStream& vertexShaderStream, sf::InputStream& fragmentShaderStream, sf::InputStream& geometryShaderStream) {
+            // Read the vertex shader code from the stream
+            std::vector<char> vertexShader;
+            if (!getStreamContents(vertexShaderStream, vertexShader))
+            {
+                err() << "Failed to read vertex shader from stream" << std::endl;
+                return false;
+            }
+
+            // Read the fragment shader code from the stream
+            std::vector<char> fragmentShader;
+            if (!getStreamContents(fragmentShaderStream, fragmentShader))
+            {
+                err() << "Failed to read fragment shader from stream" << std::endl;
+                return false;
+            }
+
+            std::vector<char> geometryShader;
+            if (!getStreamContents(geometryShaderStream, geometryShader))
+            {
+                err() << "Failed to read fragment shader from stream" << std::endl;
+                return false;
+            }
+            vertexShaderCode = std::string(&vertexShader[0]);
+            fragmentShaderCode = std::string(&fragmentShader[0]);
+            geometryShaderCode = std::string(&geometryShader[0]);
+            // Compile the shader program
+            return compile(&vertexShader[0], &fragmentShader[0], &geometryShader[0]);
+        }
         ////////////////////////////////////////////////////////////
-        bool Shader::compile(const char* vertexShaderCode, const char* fragmentShaderCode) {
+        bool Shader::compile(const char* vertexShaderCode, const char* fragmentShaderCode, const char* geometryShaderCode) {
             shaderc::Compiler compiler;
             shaderc::CompileOptions options;
             options.SetOptimizationLevel(shaderc_optimization_level_size);
@@ -220,6 +280,15 @@ namespace odfaeg {
                 return false;
             } else {
                 spvFragmentShaderCode = {module.cbegin(), module.cend()};
+            }
+            if (geometryShaderCode != nullptr) {
+                module = compiler.CompileGlslToSpv(geometryShaderCode, shaderc_glsl_geometry_shader, "shader_src", options);
+                if (module.GetCompilationStatus() != shaderc_compilation_status_success) {
+                    std::cerr << "Failed to compile vertex shader :  "<<module.GetErrorMessage();
+                    return false;
+                } else {
+                    spvGeometryShaderCode = {module.cbegin(), module.cend()};
+                }
             }
             isCompiled = true;
             updateIds();
@@ -240,16 +309,31 @@ namespace odfaeg {
             if (vkCreateShaderModule(vkDevice.getDevice(), &createFSInfo, nullptr, &fragmentShaderModule) != VK_SUCCESS) {
                 throw core::Erreur (0, "Failed to create fragment shader module", 1);
             }
+            if (geometryShaderCode != "") {
+                VkShaderModuleCreateInfo createGSInfo{};
+                createGSInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+                createGSInfo.codeSize = 4*spvGeometryShaderCode.size();
+                createGSInfo.pCode = spvGeometryShaderCode.data();
+                if (vkCreateShaderModule(vkDevice.getDevice(), &createGSInfo, nullptr, &geometryShaderModule) != VK_SUCCESS) {
+                    throw core::Erreur (0, "Failed to create geometry shader module", 1);
+                }
+            }
         }
         void Shader::cleanupShaderModules() {
             vkDestroyShaderModule(vkDevice.getDevice(), vertexShaderModule, nullptr);
             vkDestroyShaderModule(vkDevice.getDevice(), fragmentShaderModule, nullptr);
+            if (geometryShaderModule != nullptr) {
+                vkDestroyShaderModule(vkDevice.getDevice(), geometryShaderModule, nullptr);
+            }
         }
         VkShaderModule Shader::getVertexShaderModule() {
             return vertexShaderModule;
         }
         VkShaderModule Shader::getFragmentShaderModule() {
             return fragmentShaderModule;
+        }
+        VkShaderModule Shader::getGeometryShaderModule() {
+            return geometryShaderModule;
         }
         Shader::~Shader() {
         }

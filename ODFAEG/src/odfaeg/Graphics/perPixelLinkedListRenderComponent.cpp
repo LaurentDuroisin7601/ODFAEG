@@ -818,7 +818,7 @@ namespace odfaeg {
                                                             layout (location = 0) in vec3 position;
                                                             layout (location = 1) in vec4 color;
                                                             layout (location = 2) in vec2 texCoords;
-                                                            //layout (location = 3) in vec3 normals;
+                                                            layout (location = 3) in vec3 normals;
                                                             layout (push_constant) uniform PushConsts {
                                                                 mat4 projectionMatrix;
                                                                 mat4 viewMatrix;
@@ -841,6 +841,7 @@ namespace odfaeg {
                                                             layout(location = 0) out vec4 frontColor;
                                                             layout(location = 1) out vec2 fTexCoords;
                                                             layout(location = 2) out uint texIndex;
+                                                            layout(location = 3) out vec3 normal;
                                                             void main() {
                                                                 gl_PointSize = 2.0f;
                                                                 MaterialData materialData = materialDatas[gl_DrawID];
@@ -856,15 +857,17 @@ namespace odfaeg {
                                                                 fTexCoords = texCoords;
                                                                 frontColor = color;
                                                                 texIndex = textureIndex;
+                                                                normal = normals;
                                                             }
                                                             )";
                 const std::string  simpleVertexShader = R"(#version 460
                                                         layout (location = 0) in vec3 position;
                                                         layout (location = 1) in vec4 color;
                                                         layout (location = 2) in vec2 texCoords;
-                                                        //layout (location = 3) in vec3 normals;
+                                                        layout (location = 3) in vec3 normals;
                                                         layout(location = 0) out vec4 frontColor;
                                                         layout(location = 1) out vec2 fTexCoords;
+                                                        layout(location = 2) out vec3 normal;
                                                         layout (push_constant) uniform PushConsts {
                                                             mat4 projectionMatrix;
                                                             mat4 viewMatrix;
@@ -875,11 +878,11 @@ namespace odfaeg {
                                                             gl_PointSize = 2.0f;
                                                             frontColor = color;
                                                             fTexCoords = texCoords;
+                                                            normal = normals;
                                                         })";
                 const std::string fragmentShader = R"(#version 460
                                                       #extension GL_ARB_separate_shader_objects : enable
                                                       #extension GL_EXT_nonuniform_qualifier : enable
-                                                      #extension GL_ARB_fragment_shader_interlock : enable
                                                       struct NodeType {
                                                           vec4 color;
                                                           float depth;
@@ -897,18 +900,16 @@ namespace odfaeg {
                                                       layout(location = 0) in vec4 frontColor;
                                                       layout(location = 1) in vec2 fTexCoords;
                                                       layout(location = 2) in flat uint texIndex;
+                                                      layout(location = 3) in vec3 normal;
                                                       void main() {
                                                            uint nodeIdx = atomicAdd(count, 1);
                                                            vec4 color = (texIndex != 0) ? frontColor * textureLod(textures[texIndex-1], fTexCoords.xy, 0) : frontColor;
-                                                           //beginInvocationInterlockARB();
                                                            if (nodeIdx < maxNodes) {
                                                                 uint prevHead = imageAtomicExchange(headPointers, ivec2(gl_FragCoord.xy), nodeIdx);
                                                                 nodes[nodeIdx].color = color;
                                                                 nodes[nodeIdx].depth = gl_FragCoord.z;
                                                                 nodes[nodeIdx].next = prevHead;
                                                            }
-                                                           //endInvocationInterlockARB();
-                                                           //fcolor = vec4(0, 0, 0, 0);
                                                       })";
                  const std::string fragmentShader2 =
                                                    R"(
@@ -926,6 +927,7 @@ namespace odfaeg {
                                                    };
                                                    layout(location = 0) in vec4 frontColor;
                                                    layout(location = 1) in vec2 fTexCoords;
+                                                   layout(location = 2) in vec3 normal;
                                                    layout(location = 0) out vec4 fcolor;
                                                    void main() {
                                                       NodeType frags[MAX_FRAGMENTS];
@@ -953,8 +955,8 @@ namespace odfaeg {
                                                       {
                                                         color.rgb = frags[i].color.rgb * frags[i].color.a + color.rgb * (1 - frags[i].color.a);
                                                         color.a = frags[i].color.a + color.a * (1 - frags[i].color.a);
-                                                       // color = mix (color, frags[i].color, frags[i].color.a);
-                                                        //fcolor = vec4(frags[i].depth, 0, 0, 1);
+                                                        //color = mix (color, frags[i].color, frags[i].color.a);
+
                                                       }
                                                       fcolor = color;
                                                    })";

@@ -556,6 +556,7 @@ namespace odfaeg {
 
             VkShaderModule vertShaderModule;
             VkShaderModule fragShaderModule;
+            VkShaderModule geomShaderModule=nullptr;
 
             if (states.shader == nullptr) {
                 if (states.texture != nullptr) {
@@ -573,20 +574,48 @@ namespace odfaeg {
                 shader->createShaderModules();
                 vertShaderModule = shader->getVertexShaderModule();
                 fragShaderModule = shader->getFragmentShaderModule();
+                if (shader->getGeometryShaderModule() != nullptr) {
+                    geomShaderModule = shader->getGeometryShaderModule();
+                }
             }
-            VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
-            vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-            vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-            vertShaderStageInfo.module = vertShaderModule;
-            vertShaderStageInfo.pName = "main";
 
-            VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
-            fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-            fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-            fragShaderStageInfo.module = fragShaderModule;
-            fragShaderStageInfo.pName = "main";
+            std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
 
-            VkPipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo, fragShaderStageInfo};
+            if (geomShaderModule == nullptr) {
+                VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
+                vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+                vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
+                vertShaderStageInfo.module = vertShaderModule;
+                vertShaderStageInfo.pName = "main";
+
+                VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
+                fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+                fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+                fragShaderStageInfo.module = fragShaderModule;
+                fragShaderStageInfo.pName = "main";
+
+                shaderStages = {vertShaderStageInfo, fragShaderStageInfo};
+            } else {
+                VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
+                vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+                vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
+                vertShaderStageInfo.module = vertShaderModule;
+                vertShaderStageInfo.pName = "main";
+
+                VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
+                fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+                fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+                fragShaderStageInfo.module = fragShaderModule;
+                fragShaderStageInfo.pName = "main";
+
+                VkPipelineShaderStageCreateInfo geomShaderStageInfo{};
+                fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+                fragShaderStageInfo.stage = VK_SHADER_STAGE_GEOMETRY_BIT;
+                fragShaderStageInfo.module = geomShaderModule;
+                fragShaderStageInfo.pName = "main";
+
+                shaderStages = {vertShaderStageInfo, fragShaderStageInfo, geomShaderStageInfo};
+            }
 
             VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
             auto bindingDescription = Vertex::getBindingDescription();
@@ -685,8 +714,8 @@ namespace odfaeg {
 
             VkGraphicsPipelineCreateInfo pipelineInfo{};
             pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-            pipelineInfo.stageCount = 2;
-            pipelineInfo.pStages = shaderStages;
+            pipelineInfo.stageCount = shaderStages.size();
+            pipelineInfo.pStages = shaderStages.data();
             pipelineInfo.pVertexInputState = &vertexInputInfo;
             pipelineInfo.pInputAssemblyState = &inputAssembly;
             pipelineInfo.pViewportState = &viewportState;
@@ -1183,8 +1212,7 @@ namespace odfaeg {
                         glCheck(glVertexAttribPointer(1, 4,GL_UNSIGNED_BYTE,GL_TRUE,sizeof(Vertex),(GLvoid*) 12));
                         glCheck(glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*) 16));
                         glCheck(glEnableVertexAttribArray(3));
-                        glCheck(glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer.vboNormalBuffer));
-                        glCheck(glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(sf::Vector3f), (GLvoid*) 0));
+                        glCheck(glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*) 24));
                         glCheck(glDisableVertexAttribArray(0));
                         glCheck(glDisableVertexAttribArray(1));
                         glCheck(glDisableVertexAttribArray(2));
@@ -1377,8 +1405,7 @@ namespace odfaeg {
                         glCheck(glVertexAttribPointer(1, 4,GL_UNSIGNED_BYTE,GL_TRUE,sizeof(Vertex),(GLvoid*) 12));
                         glCheck(glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*) 16));
                         glCheck(glEnableVertexAttribArray(3));
-                        glCheck(glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer.vboNormalBuffer));
-                        glCheck(glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(sf::Vector3f), (GLvoid*) 0));
+                        glCheck(glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*) 24));
                         glCheck(glDisableVertexAttribArray(0));
                         glCheck(glDisableVertexAttribArray(1));
                         glCheck(glDisableVertexAttribArray(2));
@@ -1607,8 +1634,7 @@ namespace odfaeg {
                         glCheck(glVertexAttribPointer(1, 4,GL_UNSIGNED_BYTE,GL_TRUE,sizeof(Vertex),(GLvoid*) 12));
                         glCheck(glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*) 16));
                         glCheck(glEnableVertexAttribArray(3));
-                        glCheck(glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer.vboNormalBuffer));
-                        glCheck(glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(sf::Vector3f), (GLvoid*) 0));
+                        glCheck(glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*) 24));
                         glCheck(glEnableVertexAttribArray(4));
                         if (vertexBuffer.vboMaterialType != 0) {
                             glCheck(glEnableVertexAttribArray(5));
