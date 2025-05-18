@@ -17,7 +17,7 @@ namespace sorrok {
         actualKey = IKeyboard::Key::Unknown;
         previousKey = IKeyboard::Key::Unknown;
         fpsCounter = 0;
-        getView().move(0, 300, 300);
+        getView().move(0, 300, 0);
         addClock(sf::Clock(), "FPS");
         day = false;
         sf::Listener::setUpVector(0.f, 0.f, 1.f);

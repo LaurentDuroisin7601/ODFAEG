@@ -23,7 +23,7 @@ using namespace sorrok;
 #define GLM_FORCE_LEFT_HANDED
 
 int main(int argc, char *argv[]) {
-    VkSettup settup;
+    /*VkSettup settup;
     Device device(settup);
     RenderWindow window(sf::VideoMode(800, 600), "test",device);
     Vec3f pos(100, 50, 100);
@@ -55,8 +55,8 @@ int main(int argc, char *argv[]) {
             window.display();
         }
     }*/
-    /*MyAppli app(sf::VideoMode(800, 600), "Test odfaeg");
-    return app.exec();*/
+    MyAppli app(sf::VideoMode(800, 600), "Test odfaeg");
+    return app.exec();
 }
 
 
