@@ -25,6 +25,7 @@ namespace odfaeg {
             descriptorSetLayout(window.getDescriptorSetLayout()),
             descriptorSets(window.getDescriptorSet()),
             vboIndirect(nullptr) {
+            needToUpdateDS = false;
             maxVboIndirectSize = maxModelDataSize = maxMaterialDataSize = 0;
             vboIndirectStagingBuffer = modelDataStagingBuffer = materialDataStagingBuffer = nullptr;
             quad.move(math::Vec3f(-window.getView().getSize().x * 0.5f, -window.getView().getSize().y * 0.5f, 0));
@@ -120,11 +121,11 @@ namespace odfaeg {
             states.shader = &indirectRenderingShader;
             createDescriptorPool(states);
             createDescriptorSetLayout(states);
-            //allocateDescriptorSets(states);
+            allocateDescriptorSets(states);
             states.shader = &perPixelLinkedListP2;
             createDescriptorPool2(states);
             createDescriptorSetLayout2(states);
-            //allocateDescriptorSets2(states);
+            allocateDescriptorSets2(states);
             states.shader = &indirectRenderingShader;
             std::vector<std::vector<std::vector<VkPipelineLayoutCreateInfo>>>& pipelineLayoutInfo = frameBuffer.getPipelineLayoutCreateInfo();
             std::vector<std::vector<std::vector<VkPipelineDepthStencilStateCreateInfo>>>& depthStencilCreateInfo = frameBuffer.getDepthStencilCreateInfo();
@@ -538,7 +539,7 @@ namespace odfaeg {
             std::array<VkDescriptorSetLayoutBinding, 6> bindings = {counterLayoutBinding, headPtrImageLayoutBinding, linkedListLayoutBinding, samplerLayoutBinding, modelDataLayoutBinding, materialDataLayoutBinding};
             VkDescriptorSetLayoutCreateInfo layoutInfo{};
             layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-            layoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR;
+            //layoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR;
             layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());;
             layoutInfo.pBindings = bindings.data();
 
@@ -547,24 +548,26 @@ namespace odfaeg {
             }
         }
         void PerPixelLinkedListRenderComponent::allocateDescriptorSets(RenderStates states) {
-            /*Shader* shader = const_cast<Shader*>(states.shader);
-            descriptorSets.resize(shader->getNbShaders());
-            for (unsigned int i = 0; i < states.shader->getNbShaders(); i++) {
+            Shader* shader = const_cast<Shader*>(states.shader);
+            descriptorSets.resize(shader->getNbShaders()*frameBuffer.getNbRenderTargets());
+            unsigned int descriptorId = frameBuffer.getId() * shader->getNbShaders() + shader->getId();
+            for (unsigned int i = 0; i < descriptorSets.size(); i++) {
                 descriptorSets[i].resize(frameBuffer.getMaxFramesInFlight());
             }
-            std::vector<VkDescriptorSetLayout> layouts(frameBuffer.getMaxFramesInFlight(), descriptorSetLayout[shader->getId()]);
+            std::vector<VkDescriptorSetLayout> layouts(frameBuffer.getMaxFramesInFlight(), descriptorSetLayout[descriptorId]);
             VkDescriptorSetAllocateInfo allocInfo{};
             allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-            allocInfo.descriptorPool = descriptorPool[shader->getId()];
+            allocInfo.descriptorPool = descriptorPool[descriptorId];
             allocInfo.descriptorSetCount = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight());
             allocInfo.pSetLayouts = layouts.data();
-            if (vkAllocateDescriptorSets(vkDevice.getDevice(), &allocInfo, descriptorSets[shader->getId()].data()) != VK_SUCCESS) {
+            if (vkAllocateDescriptorSets(vkDevice.getDevice(), &allocInfo, descriptorSets[descriptorId].data()) != VK_SUCCESS) {
                 throw std::runtime_error("echec de l'allocation d'un set de descripteurs!");
-            }*/
+            }
         }
         void PerPixelLinkedListRenderComponent::createDescriptorSets(unsigned int p, RenderStates states) {
             Shader* shader = const_cast<Shader*>(states.shader);
             std::vector<Texture*> allTextures = Texture::getAllTextures();
+            unsigned int descriptorId = frameBuffer.getId() * shader->getNbShaders() + shader->getId();
             for (size_t i = 0; i < frameBuffer.getMaxFramesInFlight(); i++) {
                 std::vector<VkDescriptorImageInfo>	descriptorImageInfos;
                 descriptorImageInfos.resize(allTextures.size());
@@ -581,7 +584,7 @@ namespace odfaeg {
                 counterStorageBufferInfoLastFrame.range = sizeof(AtomicCounterSSBO);
 
                 descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                descriptorWrites[0].dstSet = descriptorSets[shader->getId()][i];
+                descriptorWrites[0].dstSet = descriptorSets[descriptorId][i];
                 descriptorWrites[0].dstBinding = 0;
                 descriptorWrites[0].dstArrayElement = 0;
                 descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
@@ -594,7 +597,7 @@ namespace odfaeg {
                 headPtrDescriptorImageInfo.sampler = headPtrTextureSampler;
 
                 descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                descriptorWrites[1].dstSet = descriptorSets[shader->getId()][i];
+                descriptorWrites[1].dstSet = descriptorSets[descriptorId][i];
                 descriptorWrites[1].dstBinding = 1;
                 descriptorWrites[1].dstArrayElement = 0;
                 descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
@@ -608,7 +611,7 @@ namespace odfaeg {
                 linkedListStorageBufferInfoLastFrame.range = maxNodes * nodeSize;
 
                 descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                descriptorWrites[2].dstSet = descriptorSets[shader->getId()][i];
+                descriptorWrites[2].dstSet = descriptorSets[descriptorId][i];
                 descriptorWrites[2].dstBinding = 2;
                 descriptorWrites[2].dstArrayElement = 0;
                 descriptorWrites[2].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
@@ -617,7 +620,7 @@ namespace odfaeg {
 
 
                 descriptorWrites[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                descriptorWrites[3].dstSet = descriptorSets[shader->getId()][i];
+                descriptorWrites[3].dstSet = descriptorSets[descriptorId][i];
                 descriptorWrites[3].dstBinding = 3;
                 descriptorWrites[3].dstArrayElement = 0;
                 descriptorWrites[3].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -630,7 +633,7 @@ namespace odfaeg {
                 modelDataStorageBufferInfoLastFrame.range = maxModelDataSize;
 
                 descriptorWrites[4].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                descriptorWrites[4].dstSet = descriptorSets[shader->getId()][i];
+                descriptorWrites[4].dstSet = descriptorSets[descriptorId][i];
                 descriptorWrites[4].dstBinding = 4;
                 descriptorWrites[4].dstArrayElement = 0;
                 descriptorWrites[4].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
@@ -643,7 +646,7 @@ namespace odfaeg {
                 materialDataStorageBufferInfoLastFrame.range = maxMaterialDataSize;
 
                 descriptorWrites[5].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                descriptorWrites[5].dstSet = descriptorSets[shader->getId()][i];
+                descriptorWrites[5].dstSet = descriptorSets[descriptorId][i];
                 descriptorWrites[5].dstBinding = 5;
                 descriptorWrites[5].dstArrayElement = 0;
                 descriptorWrites[5].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
@@ -704,8 +707,8 @@ namespace odfaeg {
         }
         void PerPixelLinkedListRenderComponent::allocateDescriptorSets2(RenderStates states) {
             /*Shader* shader = const_cast<Shader*>(states.shader);
-            descriptorSets.resize(shader->getNbShaders());
-            for (unsigned int i = 0; i < states.shader->getNbShaders(); i++) {
+            descriptorSets.resize(shader->getNbShaders()*frameBuffer.getNbRenderTargets());
+            for (unsigned int i = 0; i < descriptorSets.size(); i++) {
                 descriptorSets[i].resize(frameBuffer.getMaxFramesInFlight());
             }
             std::vector<VkDescriptorSetLayout> layouts(frameBuffer.getMaxFramesInFlight(), descriptorSetLayout[shader->getId()]);
@@ -1101,6 +1104,7 @@ namespace odfaeg {
                             createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, modelDataShaderStorageBuffers[i], modelDataShaderStorageBuffersMemory[i]);
                         }
                         maxModelDataSize = bufferSize;
+                        needToUpdateDS  = true;
                     }
 
 
@@ -1129,6 +1133,7 @@ namespace odfaeg {
                             createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, materialDataShaderStorageBuffers[i], materialDataShaderStorageBuffersMemory[i]);
                         }
                         maxMaterialDataSize = bufferSize;
+                        needToUpdateDS = true;
                     }
 
                     vkMapMemory(vkDevice.getDevice(), materialDataStagingBufferMemory, 0, bufferSize, 0, &data);
@@ -1298,6 +1303,7 @@ namespace odfaeg {
                             createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, modelDataShaderStorageBuffers[i], modelDataShaderStorageBuffersMemory[i]);
                         }
                         maxModelDataSize = bufferSize;
+                        needToUpdateDS = true;
                     }
 
 
@@ -1326,6 +1332,7 @@ namespace odfaeg {
                             createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, materialDataShaderStorageBuffers[i], materialDataShaderStorageBuffersMemory[i]);
                         }
                         maxMaterialDataSize = bufferSize;
+                        needToUpdateDS = true;
                     }
 
                     vkMapMemory(vkDevice.getDevice(), materialDataStagingBufferMemory, 0, bufferSize, 0, &data);
@@ -1484,6 +1491,7 @@ namespace odfaeg {
                             createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, modelDataShaderStorageBuffers[i], modelDataShaderStorageBuffersMemory[i]);
                         }
                         maxModelDataSize = bufferSize;
+                        needToUpdateDS = true;
                     }
 
 
@@ -1512,6 +1520,7 @@ namespace odfaeg {
                             createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, materialDataShaderStorageBuffers[i], materialDataShaderStorageBuffersMemory[i]);
                         }
                         maxMaterialDataSize = bufferSize;
+                        needToUpdateDS = true;
                     }
 
                     vkMapMemory(vkDevice.getDevice(), materialDataStagingBufferMemory, 0, bufferSize, 0, &data);
@@ -1851,6 +1860,7 @@ namespace odfaeg {
                             createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, modelDataShaderStorageBuffers[i], modelDataShaderStorageBuffersMemory[i]);
                         }
                         maxModelDataSize = bufferSize;
+                        needToUpdateDS = true;
                     }
 
 
@@ -1879,6 +1889,7 @@ namespace odfaeg {
                             createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, materialDataShaderStorageBuffers[i], materialDataShaderStorageBuffersMemory[i]);
                         }
                         maxMaterialDataSize = bufferSize;
+                        needToUpdateDS = true;
                     }
 
                     vkMapMemory(vkDevice.getDevice(), materialDataStagingBufferMemory, 0, bufferSize, 0, &data);
@@ -2184,6 +2195,10 @@ namespace odfaeg {
                 frameBuffer.display();
                 firstDraw = false;
             }*/
+            if (needToUpdateDS) {
+                createDescriptorSets(p, currentStates);
+                needToUpdateDS = false;
+            }
             frameBuffer.beginRecordCommandBuffers();
             Shader* shader = const_cast<Shader*>(currentStates.shader);
             std::vector<Texture*> allTextures = Texture::getAllTextures();
@@ -2199,7 +2214,7 @@ namespace odfaeg {
                     throw core::Erreur(0, "failed to begin recording command buffer!", 1);
                 }*/
 
-                std::vector<VkDescriptorImageInfo>	descriptorImageInfos;
+                /*std::vector<VkDescriptorImageInfo>	descriptorImageInfos;
                 descriptorImageInfos.resize(allTextures.size());
                 for (unsigned int j = 0; j < allTextures.size(); j++) {
                     descriptorImageInfos[j].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -2282,9 +2297,9 @@ namespace odfaeg {
                 descriptorWrites[5].descriptorCount = 1;
                 descriptorWrites[5].pBufferInfo = &materialDataStorageBufferInfoLastFrame;
 
-                vkCmdPushDescriptorSetKHR(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][frameBuffer.getId()][NODEPTHNOSTENCIL], 0, 6, descriptorWrites.data());
+                vkCmdPushDescriptorSetKHR(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][frameBuffer.getId()][NODEPTHNOSTENCIL], 0, 6, descriptorWrites.data());*/
                 vkCmdPushConstants(commandBuffers[currentFrame], frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][frameBuffer.getId()][depthStencilID], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectDrawPushConsts), &indirectDrawPushConsts);
-                //std::cout<<"stride : "<<stride<<std::endl;
+
 
 
                 frameBuffer.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);

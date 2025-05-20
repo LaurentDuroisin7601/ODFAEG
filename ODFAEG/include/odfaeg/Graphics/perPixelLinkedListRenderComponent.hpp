@@ -140,7 +140,7 @@ namespace odfaeg {
             Batcher batcher, batcherIndexed, normalBatcher, normalBatcherIndexed,
             selectedInstanceBatcher, selectedInstanceScaleBatcher, selectedInstanceIndexBatcher, selectedInstanceIndexScaleBatcher,
             selectedBatcher, selectedScaleBatcher, selectedIndexBatcher, selectedIndexScaleBatcher, skyboxBatcher;
-            bool update, firstDraw;
+            bool update, needToUpdateDS;
             Entity* skybox;
             std::vector<std::unique_ptr<Entity>> visibleSelectedScaleEntities;
             std::vector<Entity*> visibleEntities;
