@@ -312,19 +312,7 @@ namespace odfaeg {
             VkDeviceSize offsets[] = {0, 0};
             vkCmdBindVertexBuffers(cmd, 0, 1, vertexBuffers, offsets);
 
-            VkViewport viewport{};
-            viewport.x = 0.0f;
-            viewport.y = (float) getSwapchainExtents().height;
-            viewport.width = getSwapchainExtents().width;
-            viewport.height = -(float) getSwapchainExtents().height;
-            viewport.minDepth = 0.0f;
-            viewport.maxDepth = 1.0f;
-            vkCmdSetViewport(cmd, 0, 1, &viewport);
-
-            VkRect2D scissor{};
-            scissor.offset = {0, 0};
-            scissor.extent = getSwapchainExtents();
-            vkCmdSetScissor(cmd, 0, 1, &scissor);
+            applyViewportAndScissor();
             if(vertexBuffer.getIndicesSize() > 0) {
                 vkCmdBindIndexBuffer(cmd, vertexBuffer.getIndexBuffer(), 0, VK_INDEX_TYPE_UINT16);
             }
@@ -355,19 +343,7 @@ namespace odfaeg {
             VkDeviceSize offsets[] = {0};
             vkCmdBindVertexBuffers(cmd, 0, 1, vertexBuffers, offsets);
 
-            VkViewport viewport{};
-            viewport.x = 0.0f;
-            viewport.y = (float) getSwapchainExtents().height;
-            viewport.width = getSwapchainExtents().width;
-            viewport.height = -(float) getSwapchainExtents().height;
-            viewport.minDepth = 0.0f;
-            viewport.maxDepth = 1.0f;
-            vkCmdSetViewport(cmd, 0, 1, &viewport);
-
-            VkRect2D scissor{};
-            scissor.offset = {0, 0};
-            scissor.extent = getSwapchainExtents();
-            vkCmdSetScissor(cmd, 0, 1, &scissor);
+            applyViewportAndScissor();
             if(vertexBuffer.getIndicesSize() > 0) {
                 vkCmdBindIndexBuffer(cmd, vertexBuffer.getIndexBuffer(), 0, VK_INDEX_TYPE_UINT16);
             }
@@ -841,6 +817,21 @@ namespace odfaeg {
                 }
             //}
         }
+        void RenderTarget::applyViewportAndScissor() {
+            VkViewport viewport{};
+            viewport.x = m_view.getViewport().getPosition().x;
+            viewport.y = (float) m_view.getViewport().getSize().y - m_view.getViewport().getPosition().y;
+            viewport.width = m_view.getViewport().getSize().x;
+            viewport.height = -(float)  m_view.getViewport().getSize().y;
+            viewport.minDepth = 0.0f;
+            viewport.maxDepth = 1.0f;
+            vkCmdSetViewport(commandBuffers[getCurrentFrame()], 0, 1, &viewport);
+
+            VkRect2D scissor{};
+            scissor.offset = {0, 0};
+            scissor.extent = getSwapchainExtents();
+            vkCmdSetScissor(commandBuffers[getCurrentFrame()], 0, 1, &scissor);
+        }
         void RenderTarget::recordCommandBuffers(sf::PrimitiveType type, RenderStates states) {
             Shader* shader = const_cast<Shader*>(states.shader);
 
@@ -917,19 +908,7 @@ namespace odfaeg {
 
                     vkCmdPushDescriptorSetKHR(commandBuffers[getCurrentFrame()], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][0], 0, 1, descriptorWrites.data());
                 }
-                VkViewport viewport{};
-                viewport.x = 0.0f;
-                viewport.y = (float) getSwapchainExtents().height;
-                viewport.width = getSwapchainExtents().width;
-                viewport.height = -(float) getSwapchainExtents().height;
-                viewport.minDepth = 0.0f;
-                viewport.maxDepth = 1.0f;
-                vkCmdSetViewport(commandBuffers[getCurrentFrame()], 0, 1, &viewport);
-
-                VkRect2D scissor{};
-                scissor.offset = {0, 0};
-                scissor.extent = getSwapchainExtents();
-                vkCmdSetScissor(commandBuffers[getCurrentFrame()], 0, 1, &scissor);
+                applyViewportAndScissor();
 
 
                 if(this->vertexBuffers[selectedBuffer]->getIndicesSize() > 0) {

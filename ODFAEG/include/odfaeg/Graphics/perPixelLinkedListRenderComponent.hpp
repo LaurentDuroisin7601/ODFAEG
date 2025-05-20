@@ -112,6 +112,10 @@ namespace odfaeg {
             std::vector<VkDeviceMemory> modelDataShaderStorageBuffersMemory;
             std::vector<VkBuffer> materialDataShaderStorageBuffers;
             std::vector<VkDeviceMemory> materialDataShaderStorageBuffersMemory;
+            VkBuffer modelDataStagingBuffer, materialDataStagingBuffer;
+            VkDeviceMemory modelDataStagingBufferMemory, materialDataStagingBufferMemory;
+            VkDeviceSize maxVboIndirectSize, maxModelDataSize, maxMaterialDataSize;
+
             VkImage headPtrTextureImage;
             VkImageView headPtrTextureImageView;
             VkSampler headPtrTextureSampler;
@@ -121,13 +125,14 @@ namespace odfaeg {
             std::vector<std::vector<VkDescriptorSet>>& descriptorSets;
             std::array<std::vector<ModelData>, Batcher::nbPrimitiveTypes> modelDatas;
             std::array<std::vector<MaterialData>, Batcher::nbPrimitiveTypes> materialDatas;
+
             Shader indirectRenderingShader, perPixelLinkedListP2;
             Ppll2PushConsts ppll2PushConsts;
             IndirectDrawPushConsts indirectDrawPushConsts;
             std::array<VertexBuffer ,Batcher::nbPrimitiveTypes> vbBindlessTex;
             VertexBuffer vb;
-            VkBuffer vboIndirect;
-            VkDeviceMemory vboIndirectMemory;
+            VkBuffer vboIndirect, vboIndirectStagingBuffer;
+            VkDeviceMemory vboIndirectMemory, vboIndirectStagingBufferMemory;
             std::vector<VkCommandBuffer> commandBuffers;
             std::vector<Instance> m_instances, m_normals, m_instancesIndexed, m_normalsIndexed,
             m_selectedScale, m_selected, m_selectedScaleIndexed, m_selectedIndexed,

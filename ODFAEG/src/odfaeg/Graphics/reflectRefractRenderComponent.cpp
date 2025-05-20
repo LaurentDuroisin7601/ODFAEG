@@ -5,6 +5,541 @@
 namespace odfaeg {
     namespace graphic {
         #ifdef VULKAN
+            ReflectRefractRenderComponent::ReflectRefractRenderComponent (RenderWindow& window, int layer, std::string expression, window::ContextSettings settings) :
+            HeavyComponent(window, math::Vec3f(window.getView().getPosition().x, window.getView().getPosition().y, layer),
+                          math::Vec3f(window.getView().getSize().x, window.getView().getSize().y, 0),
+                          math::Vec3f(window.getView().getSize().x + window.getView().getSize().x * 0.5f, window.getView().getPosition().y + window.getView().getSize().y * 0.5f, layer)),
+            view(window.getView()),
+            expression(expression),
+            depthBuffer(window.getDevice()), alphaBuffer(window.getDevice()), environmentMap(window.getDevice()), reflectRefractTex(window.getDevice()),
+            vb(window.getDevice()), vb2(window.getDevice()),
+            vbBindlessTex {VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()),
+             VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice())},
+             descriptorSetLayout(window.getDescriptorSetLayout()),
+             sBuildDepthBuffer(window.getDevice()), sBuildAlphaBuffer(window.getDevice()), sReflectRefract(window.getDevice()), sLinkedList(window.getDevice()),
+             sLinkedList2(window.getDevice()), skyboxShader(window.getDevice()),
+             vkDevice(window.getDevice())
+            {
+                if (window.getView().getSize().x > window.getView().getSize().y) {
+                    squareSize = window.getView().getSize().x;
+                } else {
+                    squareSize = window.getView().getSize().y;
+                }
+                quad = RectangleShape(math::Vec3f(squareSize, squareSize, squareSize * 0.5f));
+                quad.move(math::Vec3f(-squareSize * 0.5f, -squareSize * 0.5f, 0));
+                dirs[0] = math::Vec3f(1, 0, 0);
+                dirs[1] = math::Vec3f(-1, 0, 0);
+                dirs[2] = math::Vec3f(0, 1, 0);
+                dirs[3] = math::Vec3f(0, -1, 0);
+                dirs[4] = math::Vec3f(0, 0, 1);
+                dirs[5] = math::Vec3f(0, 0, -1);
+                ups[0] = math::Vec3f(0, -1, 0);
+                ups[1] = math::Vec3f(0, -1, 0);
+                ups[2] = math::Vec3f(0, 0, 1);
+                ups[3] = math::Vec3f(0, 0, -1);
+                ups[4] = math::Vec3f(0, -1, 0);
+                ups[5] = math::Vec3f(0, -1, 0);
+                depthBuffer.create(window.getView().getSize().x, window.getView().getSize().y);
+                depthBufferSprite = Sprite(depthBuffer.getTexture(), math::Vec3f(0, 0, 0), math::Vec3f(window.getView().getSize().x, window.getView().getSize().y, 0), sf::IntRect(0, 0, window.getView().getSize().x, window.getView().getSize().y));
+                alphaBuffer.create(window.getView().getSize().x, window.getView().getSize().y);
+                alphaBufferSprite = Sprite(alphaBuffer.getTexture(), math::Vec3f(0, 0, 0), math::Vec3f(window.getView().getSize().x, window.getView().getSize().y, 0), sf::IntRect(0, 0, window.getView().getSize().x, window.getView().getSize().y));
+                environmentMap.createCubeMap(squareSize, squareSize);
+                reflectRefractTex.create(window.getView().getSize().x, window.getView().getSize().y);
+                reflectRefractTexSprite = Sprite(reflectRefractTex.getTexture(), math::Vec3f(0, 0, 0), math::Vec3f(window.getView().getSize().x, window.getView().getSize().y, 0), sf::IntRect(0, 0, window.getView().getSize().x, window.getView().getSize().y));
+                linkedListShaderStorageBuffers.resize(reflectRefractTex.getMaxFramesInFlight());
+                linkedListShaderStorageBuffersMemory.resize(reflectRefractTex.getMaxFramesInFlight());
+                maxNodes = 20;
+                unsigned int nodeSize = 5  * sizeof(float) + sizeof(unsigned int);
+                VkDeviceSize bufferSize = maxNodes * nodeSize;
+                for (unsigned int i = 0; i < reflectRefractTex.getMaxFramesInFlight(); i++) {
+                    createBuffer(bufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, linkedListShaderStorageBuffers[i], linkedListShaderStorageBuffersMemory[i]);
+                }
+                VkImageCreateInfo imageInfo{};
+                imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+                imageInfo.imageType = VK_IMAGE_TYPE_3D;
+                imageInfo.extent.width = static_cast<uint32_t>(window.getView().getSize().x);
+                imageInfo.extent.height = static_cast<uint32_t>(window.getView().getSize().y);
+                imageInfo.extent.depth = 1;
+                imageInfo.mipLevels = 1;
+                imageInfo.arrayLayers = 6;
+                imageInfo.format = VK_FORMAT_R32_UINT;
+                imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+                imageInfo.initialLayout = VK_IMAGE_LAYOUT_GENERAL;
+                imageInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT;
+                imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+                imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+                imageInfo.flags = 0; // Optionnel
+                if (vkCreateImage(window.getDevice().getDevice(), &imageInfo, nullptr, &headPtrTextureImage) != VK_SUCCESS) {
+                    throw std::runtime_error("echec de la creation d'une image!");
+                }
+
+                VkMemoryRequirements memRequirements;
+                vkGetImageMemoryRequirements(window.getDevice().getDevice(), headPtrTextureImage, &memRequirements);
+
+                VkMemoryAllocateInfo allocInfo{};
+                allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+                allocInfo.allocationSize = memRequirements.size;
+                allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+
+                if (vkAllocateMemory(window.getDevice().getDevice(), &allocInfo, nullptr, &headPtrTextureImageMemory) != VK_SUCCESS) {
+                    throw std::runtime_error("echec de l'allocation de la memoire d'une image!");
+                }
+                vkBindImageMemory(window.getDevice().getDevice(), headPtrTextureImage, headPtrTextureImageMemory, 0);
+
+
+
+                imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+                imageInfo.imageType = VK_IMAGE_TYPE_2D;
+                imageInfo.extent.width = static_cast<uint32_t>(window.getView().getSize().x);
+                imageInfo.extent.height = static_cast<uint32_t>(window.getView().getSize().y);
+                imageInfo.extent.depth = 1;
+                imageInfo.mipLevels = 1;
+                imageInfo.arrayLayers = 1;
+                imageInfo.format =  VK_FORMAT_R8G8B8A8_SRGB;
+                imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+                imageInfo.initialLayout = VK_IMAGE_LAYOUT_GENERAL;
+                imageInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT;
+                imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+                imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+                imageInfo.flags = 0; // Optionnel
+                if (vkCreateImage(window.getDevice().getDevice(), &imageInfo, nullptr, &depthTextureImage) != VK_SUCCESS) {
+                    throw std::runtime_error("echec de la creation d'une image!");
+                }
+
+
+                vkGetImageMemoryRequirements(window.getDevice().getDevice(), depthTextureImage, &memRequirements);
+
+
+                allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+                allocInfo.allocationSize = memRequirements.size;
+                allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+
+                if (vkAllocateMemory(window.getDevice().getDevice(), &allocInfo, nullptr, &depthTextureImageMemory) != VK_SUCCESS) {
+                    throw std::runtime_error("echec de l'allocation de la memoire d'une image!");
+                }
+                vkBindImageMemory(window.getDevice().getDevice(), depthTextureImage, depthTextureImageMemory, 0);
+
+
+
+                imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+                imageInfo.imageType = VK_IMAGE_TYPE_2D;
+                imageInfo.extent.width = static_cast<uint32_t>(window.getView().getSize().x);
+                imageInfo.extent.height = static_cast<uint32_t>(window.getView().getSize().y);
+                imageInfo.extent.depth = 1;
+                imageInfo.mipLevels = 1;
+                imageInfo.arrayLayers = 1;
+                imageInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
+                imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+                imageInfo.initialLayout = VK_IMAGE_LAYOUT_GENERAL;
+                imageInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT;
+                imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+                imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+                imageInfo.flags = 0; // Optionnel
+                if (vkCreateImage(window.getDevice().getDevice(), &imageInfo, nullptr, &alphaTextureImage) != VK_SUCCESS) {
+                    throw std::runtime_error("echec de la creation d'une image!");
+                }
+
+
+                vkGetImageMemoryRequirements(window.getDevice().getDevice(), alphaTextureImage, &memRequirements);
+
+
+                allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+                allocInfo.allocationSize = memRequirements.size;
+                allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+
+                if (vkAllocateMemory(window.getDevice().getDevice(), &allocInfo, nullptr, &alphaTextureImageMemory) != VK_SUCCESS) {
+                    throw std::runtime_error("echec de l'allocation de la memoire d'une image!");
+                }
+                vkBindImageMemory(window.getDevice().getDevice(), alphaTextureImage, alphaTextureImageMemory, 0);
+            }
+            uint32_t ReflectRefractRenderComponent::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
+                VkPhysicalDeviceMemoryProperties memProperties;
+                vkGetPhysicalDeviceMemoryProperties(vkDevice.getPhysicalDevice(), &memProperties);
+                for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
+                    if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
+                        return i;
+                    }
+                }
+                throw std::runtime_error("aucun type de memoire ne satisfait le buffer!");
+            }
+            void ReflectRefractRenderComponent::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory) {
+                VkBufferCreateInfo bufferInfo{};
+                bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+                bufferInfo.size = size;
+                bufferInfo.usage = usage;
+                bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+                if (vkCreateBuffer(vkDevice.getDevice(), &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
+                    throw std::runtime_error("failed to create buffer!");
+                }
+
+                VkMemoryRequirements memRequirements;
+                vkGetBufferMemoryRequirements(vkDevice.getDevice(), buffer, &memRequirements);
+
+                VkMemoryAllocateInfo allocInfo{};
+                allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+                allocInfo.allocationSize = memRequirements.size;
+                allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
+
+                if (vkAllocateMemory(vkDevice.getDevice(), &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
+                    throw std::runtime_error("failed to allocate buffer memory!");
+                }
+
+                vkBindBufferMemory(vkDevice.getDevice(), buffer, bufferMemory, 0);
+                compileShaders();
+                vkCmdPushDescriptorSetKHR = (PFN_vkCmdPushDescriptorSetKHR)vkGetDeviceProcAddr(vkDevice.getDevice(), "vkCmdPushDescriptorSetKHR");
+            }
+            void ReflectRefractRenderComponent::compileShaders() {
+                const std::string indirectRenderingVertexShader = R"(#version 460
+                                                                     layout (location = 0) in vec3 position;
+                                                                     layout (location = 1) in vec4 color;
+                                                                     layout (location = 2) in vec2 texCoords;
+                                                                     layout (location = 3) in vec3 normals;
+                                                                     layout (push_constant)uniform PushConsts {
+                                                                         mat4 projectionMatrix;
+                                                                         mat4 viewMatrix;
+                                                                     } pushConsts;
+                                                                     struct ModelData {
+                                                                         mat4 modelMatrix;
+                                                                     };
+                                                                     struct MaterialData {
+                                                                         uint textureIndex;
+                                                                         uint layer;
+                                                                         uint materialType;
+                                                                     };
+                                                                     layout(set = 0, binding = 4) buffer modelData {
+                                                                         ModelData modelDatas[];
+                                                                     };
+                                                                     layout(set = 0, binding = 5) buffer materialData {
+                                                                         MaterialData materialDatas[];
+                                                                     };
+                                                                     layout (location = 0) out vec2 fTexCoords;
+                                                                     layout (location = 1) out vec4 frontColor;
+                                                                     layout (location = 2) out uint texIndex;
+                                                                     layout (location = 3) out uint layer;
+                                                                     layout (location = 4) out vec3 normal;
+                                                                     void main() {
+                                                                         MaterialData material = materialDatas[gl_DrawID];
+                                                                         ModelData model = modelDatas[gl_BaseInstance + gl_InstanceID];
+                                                                         uint textureIndex = material.textureIndex;
+                                                                         uint l = material.layer;
+                                                                         gl_Position = vec4(position, 1.f) * model.modelMatrix * pushConsts.viewMatrix * pushConsts.projectionMatrix;
+                                                                         fTexCoords = texCoords;
+                                                                         frontColor = color;
+                                                                         texIndex = textureIndex;
+                                                                         normal = normals;
+                                                                         layer = l;
+                                                                         gl_PointSize = 2.0f;
+                                                                     }
+                                                                     )";
+                const std::string  linkedListVertexShader2 = R"(#version 460
+                                                                layout (location = 0) in vec3 position;
+                                                                layout (location = 1) in vec4 color;
+                                                                layout (location = 2) in vec2 texCoords;
+                                                                layout (location = 3) in vec3 normals;
+                                                                layout (push_constant)uniform PushConsts {
+                                                                     mat4 projectionMatrix;
+                                                                     mat4 viewMatrix;
+                                                                     mat4 worldMat;
+                                                                } pushConsts;
+                                                                layout (location = 0) out vec2 fTexCoords;
+                                                                layout (location = 1) out vec4 frontColor;
+                                                                layout (location = 2) out vec3 normal;
+                                                                void main () {
+                                                                    gl_Position = vec4(position, 1.f) * pushConsts.worldMat * pushConsts.viewMatrix * pushConsts.projectionMatrix;
+                                                                    gl_PointSize = 2.0f;
+                                                                    frontColor = color;
+                                                                    fTexCoords = texCoords;
+                                                                    normal = normals;
+                                                                })";
+                const std::string perPixReflectRefractIndirectRenderingVertexShader = R"(#version 460
+                                                                                         layout (location = 0) in vec3 position;
+                                                                                         layout (location = 1) in vec4 color;
+                                                                                         layout (location = 2) in vec2 texCoords;
+                                                                                         layout (location = 3) in vec3 normals;
+                                                                                         layout (push_constant)uniform PushConsts {
+                                                                                             mat4 projectionMatrix;
+                                                                                             mat4 viewMatrix;
+                                                                                         } pushConsts;
+                                                                                         struct ModelData {
+                                                                                             mat4 modelMatrix;
+                                                                                         };
+                                                                                         struct MaterialData {
+                                                                                             uint textureIndex;
+                                                                                             uint layer;
+                                                                                             uint materialType;
+                                                                                         };
+                                                                                         layout(set = 0, binding = 1) buffer modelData {
+                                                                                             ModelData modelDatas[];
+                                                                                         };
+                                                                                         layout(set = 0, binding = 2) buffer materialData {
+                                                                                             MaterialData materialDatas[];
+                                                                                         };
+                                                                                         layout (location = 0) out vec3 pos;
+                                                                                         layout (location = 1) out vec4 frontColor;
+                                                                                         layout (location = 2) out uint materialType;
+                                                                                         layout (location = 3) out vec3 normal;
+                                                                                         void main () {
+                                                                                             MaterialData material = materialDatas[gl_DrawID];
+                                                                                             ModelData model = modelDatas[gl_BaseInstance + gl_InstanceID];
+                                                                                             uint materialT = material.materialType;
+                                                                                             pos = vec3(vec4(position, 1.0) * model.modelMatrix);
+                                                                                             gl_Position = vec4(position, 1.f) * model.modelMatrix * pushConsts.viewMatrix * pushConsts.projectionMatrix;
+                                                                                             frontColor = color;
+                                                                                             normal = mat3(transpose(inverse(model.modelMatrix))) * normals;
+                                                                                             materialType = materialT;
+                                                                                         }
+                                                                                         )";
+                const std::string geometryShader = R"(#version 460
+                                                      layout (triangles) in;
+                                                      layout (triangle_strip, max_vertices = 18) out;
+                                                      layout (location = 0) in vec4 vColor[];
+                                                      layout (location = 1) in vec2 vTexCoord[];
+                                                      layout (location = 2) in uint tIndex[];
+                                                      layout (location = 3) in vec3 vNormal[];
+                                                      layout (location = 0) out vec4 frontColor;
+                                                      layout (location = 1) out vec2 fTexCoords;
+                                                      layout (location = 2) out uint layer;
+                                                      layout (location = 3) out uint texIndex;
+                                                      layout (location = 4) out vec3 normal;
+                                                      layout (push_constant)uniform PushConsts {
+                                                         mat4 projectionMatrix[6];
+                                                         mat4 viewMatrix[6];
+                                                     } pushConsts;
+                                                      void main() {
+                                                        for (int face = 0; face < 6; face++) {
+                                                            gl_Layer = face;
+                                                            for (uint i = 0; i < 3; i++) {
+                                                                gl_Position = gl_in[i].gl_Position * viewMatrices[face] * projMatrices[face];
+                                                                frontColor = vColor[i];
+                                                                fTexCoords = vTexCoord[i];
+                                                                texIndex = tIndex[i];
+                                                                layer = face;
+                                                                normal = vNormal[i];
+                                                                EmitVertex();
+                                                            }
+                                                            EndPrimitive();
+                                                        }
+                                                      }
+                                                      )";
+                const std::string geometryShader2 = R"(#version 460
+                                                      layout (triangles) in;
+                                                      layout (triangle_strip, max_vertices = 18) out;
+                                                      layout (location = 0) in vec4 vColor[];
+                                                      layout (location = 1) in vec2 vTexCoord[];
+                                                      layout (location = 2) in vec3 vNormal[];
+                                                      layout (location = 0) out vec4 frontColor;
+                                                      layout (location = 1) out vec2 fTexCoords;
+                                                      layout (location = 2) out uint layer;
+                                                      layout (location = 3) out vec3 normal;
+                                                      out uint layer;
+                                                      void main() {
+                                                        for (int face = 0; face < 6; face++) {
+                                                            gl_Layer = face;
+                                                            for (uint i = 0; i < 3; i++) {
+                                                                gl_Position = gl_in[i].gl_Position;
+                                                                frontColor = vColor[i];
+                                                                fTexCoords = vTexCoord[i];
+                                                                layer = face;
+                                                                normal = vNormal[i];
+                                                                EmitVertex();
+                                                            }
+                                                            EndPrimitive();
+                                                        }
+                                                      }
+                                                      )";
+                                                      const std::string buildDepthBufferFragmentShader = R"(#version 460
+                                                                      #extension GL_ARB_fragment_shader_interlock : require
+                                                                      #extension GL_EXT_nonuniform_qualifier : enable
+                                                                          layout (location = 0) in vec4 frontColor;
+                                                                          layout (location = 1) in vec2 fTexCoords;
+                                                                          layout (location = 2) in flat uint texIndex;
+                                                                          layout (location = 3) in flat uint layer;
+                                                                          layout (location = 4) in vec3 normal;
+                                                                          in flat uint layer;
+                                                                          layout (push_constant) uniform PushConsts {
+                                                                            uint nbLayers;
+                                                                          } pushConsts;
+                                                                          layout(set = 0, binding = 0) uniform sampler2D textures[];
+                                                                          layout(set = 0, binding = 1, rgba32f) uniform coherent image2D depthBuffer;
+                                                                          layout(location = 0) out vec4 fColor;
+
+                                                                          void main () {
+                                                                              vec4 texel = (texIndex != 0) ? frontColor * texture2D(textures[texIndex-1], fTexCoords.xy) : frontColor;
+                                                                              float z = gl_FragCoord.z;
+                                                                              float l = float(layer) / float(pushConsts.nbLayers);
+                                                                              beginInvocationInterlockARB();
+                                                                              memoryBarrier();
+                                                                              vec4 depth = imageLoad(depthBuffer,ivec2(gl_FragCoord.xy));
+                                                                              if (l > depth.y || l == depth.y && z > depth.z) {
+                                                                                imageStore(depthBuffer,ivec2(gl_FragCoord.xy),vec4(0,l,z,texel.a));
+                                                                                fColor = vec4(0, l, z, texel.a);
+                                                                              } else {
+                                                                                fColor = depth;
+                                                                              }
+                                                                              endInvocationInterlockARB();
+                                                                          }
+                                                                        )";
+                const std::string buildAlphaBufferFragmentShader = R"(#version 460
+                                                                      #extension GL_ARB_bindless_texture : enable
+                                                                      #extension GL_ARB_fragment_shader_interlock : require
+                                                                      layout(set = 0, binding = 0) uniform sampler2D textures[];
+                                                                      layout(set = 0, binding = 1, rgba32f) uniform coherent image2D alphaBuffer;
+                                                                      layout (location = 0) out vec4 fColor;
+                                                                      layout (set = 0, binding = 2) uniform sampler2D depthBuffer;
+                                                                      layout (push_constant) uniform PushConsts {
+                                                                            uint nbLayers;
+                                                                            vec3 resolution;
+                                                                      } pushConsts;
+                                                                      layout (location = 0) in vec4 frontColor;
+                                                                      layout (location = 1) in vec2 fTexCoords;
+                                                                      layout (location = 2) in flat uint texIndex;
+                                                                      layout (location = 3) in flat uint layer;
+                                                                      void main() {
+                                                                          vec4 texel = (texIndex != 0) ? frontColor * texture2D(textures[texIndex-1], fTexCoords.xy) : frontColor;
+                                                                          float current_alpha = texel.a;
+                                                                          vec2 position = (gl_FragCoord.xy / pushConsts.resolution.xy);
+                                                                          vec4 depth = texture2D (depthBuffer, position);
+                                                                          beginInvocationInterlockARB();
+                                                                          memoryBarrier();
+                                                                          vec4 alpha = imageLoad(alphaBuffer,ivec2(gl_FragCoord.xy));
+                                                                          float l = float(layer) / float(pushConsts.nbLayers);
+                                                                          float z = gl_FragCoord.z;
+                                                                          if ((l > depth.y || l == depth.y && z > depth.z) && current_alpha > alpha.a) {
+                                                                              imageStore(alphaBuffer,ivec2(gl_FragCoord.xy),vec4(0, l, z, current_alpha));
+                                                                              fColor = vec4(0, l, z, current_alpha);
+                                                                          } else {
+                                                                              fColor = alpha;
+                                                                          }
+                                                                          endInvocationInterlockARB();
+                                                                      }
+                                                                      )";
+                const std::string buildFramebufferShader = R"(#version 460
+                                                                layout (location = 0) in vec3 pos;
+                                                                layout (location = 1) in vec4 frontColor;
+                                                                layout (location = 2) in flat uint materialType;
+                                                                layout (location = 3) in vec3 normal;
+                                                                layout (push_constant) uniform PushConsts {
+                                                                    vec3 cameraPos;
+                                                                    vec3 resolution;
+                                                                } pushConsts;
+                                                                layout (set = 0, binding = 0) uniform samplerCube sceneBox;
+                                                                layout (set = 0, binding = 1) uniform sampler2D alphaBuffer;
+                                                                layout (location = 0) out vec4 fColor;
+                                                                void main () {
+                                                                    vec2 position = (gl_FragCoord.xy / pushConsts.resolution.xy);
+                                                                    vec4 alpha = texture2D(alphaBuffer, position);
+                                                                    bool refr = false;
+                                                                    float ratio = 1;
+                                                                    if (materialType == 1) {
+                                                                        ratio = 1.00 / 1.33;
+                                                                        refr = true;
+                                                                    } else if (materialType == 2) {
+                                                                        ratio = 1.00 / 1.309;
+                                                                        refr = true;
+                                                                    } else if (materialType == 3) {
+                                                                        ratio = 1.00 / 1.52;
+                                                                        refr = true;
+                                                                    } else if (materialType == 4) {
+                                                                        ratio = 1.00 / 2.42;
+                                                                        refr = true;
+                                                                    }
+                                                                    vec3 i = (pos - pushConts.cameraPos);
+                                                                    if (refr) {
+                                                                        vec3 r = refract (i, normalize(normal), ratio);
+                                                                        fColor = texture(sceneBox, r) * (1 - alpha.a);
+                                                                    } else {
+                                                                        vec3 r = reflect (i, normalize(normal));
+                                                                        fColor = texture(sceneBox, r) * (1 - alpha.a);
+                                                                    }
+                                                                }
+                                                              )";
+                const std::string fragmentShader = R"(#version 460
+                                                      #extension GL_ARB_bindless_texture : enable
+                                                      struct NodeType {
+                                                          vec4 color;
+                                                          float depth;
+                                                          uint next;
+                                                      };
+                                                      layout(set = 0, binding = 0) buffer CounterSSBO {
+                                                          uint count[6];
+                                                          uint maxNodes;
+                                                      };
+                                                      layout(set = 0, binding = 1, r32ui) uniform coherent uimage3D headPointers;
+                                                      layout(set = 0, binding = 2) buffer linkedLists {
+                                                          NodeType nodes[];
+                                                      };
+                                                      layout(set = 0, binding = 3) uniform sampler2D textures[];
+                                                      layout(location = 0) in vec4 frontColor;
+                                                      layout(location = 1) in vec2 fTexCoords;
+                                                      layout(location = 2) in flat uint texIndex;
+                                                      layout(location = 3) in flat uint layer;
+                                                      layout(location = 4) in vec3 normal;
+                                                      layout(location = 0) out vec4 fcolor;
+                                                      void main() {
+                                                           uint nodeIdx = atomicAdd(count[layer], 1);
+                                                           vec4 texel = (texIndex != 0) ? frontColor * texture2D(textures[texIndex-1], fTexCoords.xy) : frontColor;
+                                                           if (nodeIdx < maxNodes) {
+                                                                uint prevHead = imageAtomicExchange(headPointers, ivec3(gl_FragCoord.xy, layer), nodeIdx);
+                                                                nodes[nodeIdx+layer*maxNodes].color = texel;
+                                                                nodes[nodeIdx+layer*maxNodes].depth = gl_FragCoord.z;
+                                                                nodes[nodeIdx+layer*maxNodes].next = prevHead;
+                                                           }
+                                                           fcolor = vec4(0, 0, 0, 0);
+                                                      })";
+                 const std::string fragmentShader2 =
+                   R"(
+                   #version 460
+                   #define MAX_FRAGMENTS 20
+                   struct NodeType {
+                      vec4 color;
+                      float depth;
+                      uint next;
+                   };
+                   layout(set = 0, binding = 0) buffer CounterSSBO {
+                      uint count[6];
+                      uint maxNodes;
+                   };
+                   layout(set = 0, binding = 1, r32ui) uniform uimage3D headPointers;
+                   layout(set = 0, binding = 2) buffer linkedLists {
+                       NodeType nodes[];
+                   };
+                   layout (location = 0) out vec4 fcolor;
+                   layout (location = 0) in vec4 frontColor;
+                   layout (location = 1) in vec2 fTexCoords;
+                   layout (location = 2) in flat uint layer;
+                   layout (location = 3) in vec3 normal;
+                   void main() {
+                      NodeType frags[MAX_FRAGMENTS];
+                      int count = 0;
+                      uint n = imageLoad(headPointers, ivec3(gl_FragCoord.xy, layer)).r;
+                      while( n != 0xffffffffu && count < MAX_FRAGMENTS) {
+                           frags[count] = nodes[n+maxNodes*layer];
+                           n = frags[count].next+maxNodes*layer;
+                           count++;
+                      }
+                      //Insertion sort.
+                      for (int i = 0; i < count - 1; i++) {
+                        for (int j = i + 1; j > 0; j--) {
+                            if (frags[j - 1].depth > frags[j].depth) {
+                                NodeType tmp = frags[j - 1];
+                                frags[j - 1] = frags[j];
+                                frags[j] = tmp;
+                            }
+                        }
+                      }
+                      vec4 color = vec4(0, 0, 0, 0);
+                      for( int i = 0; i < count; i++)
+                      {
+                        color.rgb = frags[i].color.rgb * frags[i].color.a + color.rgb * (1 - frags[i].color.a);
+                        color.a = frags[i].color.a + color.a * (1 - frags[i].color.a);
+                      }
+                      fcolor = color;
+                   })";
+            }
         #else
         ReflectRefractRenderComponent::ReflectRefractRenderComponent (RenderWindow& window, int layer, std::string expression, window::ContextSettings settings) :
             HeavyComponent(window, math::Vec3f(window.getView().getPosition().x, window.getView().getPosition().y, layer),

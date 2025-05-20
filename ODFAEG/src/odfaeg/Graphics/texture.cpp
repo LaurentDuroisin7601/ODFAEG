@@ -445,7 +445,7 @@ namespace odfaeg {
             region.imageSubresource.mipLevel = 0;
             region.imageSubresource.baseArrayLayer = face;
             region.imageSubresource.layerCount = 1;
-            region.imageOffset = {x, y, 0};
+            region.imageOffset = {static_cast<int32_t>(x), static_cast<int32_t>(y), 0};
             region.imageExtent = {
                 width,
                 height,

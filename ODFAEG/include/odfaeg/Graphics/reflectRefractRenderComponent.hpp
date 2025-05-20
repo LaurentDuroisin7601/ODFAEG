@@ -88,6 +88,11 @@ namespace odfaeg {
             RenderTexture* getFrameBuffer();
             ~ReflectRefractRenderComponent();
             private :
+            void compileShaders();
+            void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+            unsigned int maxNodes;
+            uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+            float squareSize;
             RectangleShape quad;
             Batcher batcher, normalBatcher, reflBatcher, reflNormalBatcher, rvBatcher, normalRvBatcher, skyboxBatcher;
             sf::Color backgroundColor; /**> The background color.*/
@@ -132,6 +137,7 @@ namespace odfaeg {
             VkImageView alphaTextureImageView;
             VkSampler alphaTextureSampler;
             VkDeviceMemory alphaTextureImageMemory;
+            window::Device& vkDevice;
             PFN_vkCmdPushDescriptorSetKHR vkCmdPushDescriptorSetKHR{ VK_NULL_HANDLE };
 
         };
