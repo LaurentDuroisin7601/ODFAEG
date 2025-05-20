@@ -327,6 +327,7 @@ namespace odfaeg {
         void RenderTarget::drawVertexBuffer(VkCommandBuffer& cmd, unsigned int i, VertexBuffer& vertexBuffer, unsigned int depthStencilId, RenderStates states) {
             //std::cout<<"vertex stencil id :"<<depthStencilId<<std::endl;
             Shader* shader = const_cast<Shader*>(states.shader);
+            unsigned int descriptorId = id * shader->getNbShaders() + shader->getId();
             VkRenderPassBeginInfo renderPassInfo{};
             renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
             renderPassInfo.renderPass = (depthTestEnabled || stencilTestEnabled) ? getRenderPass(1) : getRenderPass(0);
@@ -343,6 +344,7 @@ namespace odfaeg {
             VkBuffer vertexBuffers[] = {vertexBuffer.getVertexBuffer()};
             VkDeviceSize offsets[] = {0};
             vkCmdBindVertexBuffers(cmd, 0, 1, vertexBuffers, offsets);
+            vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vertexBuffer.getPrimitiveType()][id][depthStencilId], 0, 1, &descriptorSets[descriptorId][getCurrentFrame()], 0, nullptr);
 
             applyViewportAndScissor();
             if(vertexBuffer.getIndicesSize() > 0) {

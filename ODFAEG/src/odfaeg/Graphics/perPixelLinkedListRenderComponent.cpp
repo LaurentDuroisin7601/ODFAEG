@@ -126,6 +126,7 @@ namespace odfaeg {
             createDescriptorPool2(states);
             createDescriptorSetLayout2(states);
             allocateDescriptorSets2(states);
+            createDescriptorSets2(states);
             states.shader = &indirectRenderingShader;
             std::vector<std::vector<std::vector<VkPipelineLayoutCreateInfo>>>& pipelineLayoutInfo = frameBuffer.getPipelineLayoutCreateInfo();
             std::vector<std::vector<std::vector<VkPipelineDepthStencilStateCreateInfo>>>& depthStencilCreateInfo = frameBuffer.getDepthStencilCreateInfo();
@@ -697,7 +698,7 @@ namespace odfaeg {
             std::array<VkDescriptorSetLayoutBinding, 2> bindings = {headPtrImageLayoutBinding, linkedListLayoutBinding};
             VkDescriptorSetLayoutCreateInfo layoutInfo{};
             layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-            layoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR;
+            //layoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR;
             layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());;
             layoutInfo.pBindings = bindings.data();
 
@@ -706,25 +707,27 @@ namespace odfaeg {
             }
         }
         void PerPixelLinkedListRenderComponent::allocateDescriptorSets2(RenderStates states) {
-            /*Shader* shader = const_cast<Shader*>(states.shader);
+            Shader* shader = const_cast<Shader*>(states.shader);
             descriptorSets.resize(shader->getNbShaders()*frameBuffer.getNbRenderTargets());
+            unsigned int descriptorId = frameBuffer.getId() * shader->getNbShaders() + shader->getId();
             for (unsigned int i = 0; i < descriptorSets.size(); i++) {
                 descriptorSets[i].resize(frameBuffer.getMaxFramesInFlight());
             }
-            std::vector<VkDescriptorSetLayout> layouts(frameBuffer.getMaxFramesInFlight(), descriptorSetLayout[shader->getId()]);
+            std::vector<VkDescriptorSetLayout> layouts(frameBuffer.getMaxFramesInFlight(), descriptorSetLayout[descriptorId]);
             VkDescriptorSetAllocateInfo allocInfo{};
             allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 
-            allocInfo.descriptorPool = descriptorPool[shader->getId()];
+            allocInfo.descriptorPool = descriptorPool[descriptorId];
             allocInfo.descriptorSetCount = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight());
             allocInfo.pSetLayouts = layouts.data();
-            if (vkAllocateDescriptorSets(vkDevice.getDevice(), &allocInfo, descriptorSets[shader->getId()].data()) != VK_SUCCESS) {
+            if (vkAllocateDescriptorSets(vkDevice.getDevice(), &allocInfo, descriptorSets[descriptorId].data()) != VK_SUCCESS) {
                 throw std::runtime_error("echec de l'allocation d'un set de descripteurs!");
-            }*/
+            }
         }
         void PerPixelLinkedListRenderComponent::createDescriptorSets2(RenderStates states) {
             Shader* shader = const_cast<Shader*>(states.shader);
-            descriptorSets.resize(shader->getNbShaders());
+            descriptorSets.resize(shader->getNbShaders()*frameBuffer.getNbRenderTargets());
+            unsigned int descriptorId = frameBuffer.getId() * shader->getNbShaders() + shader->getId();
             for (size_t i = 0; i < frameBuffer.getMaxFramesInFlight(); i++) {
 
                 std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
@@ -735,7 +738,7 @@ namespace odfaeg {
                 headPtrDescriptorImageInfo.sampler = headPtrTextureSampler;
 
                 descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                descriptorWrites[0].dstSet = descriptorSets[shader->getId()][i];
+                descriptorWrites[0].dstSet = descriptorSets[descriptorId][i];
                 descriptorWrites[0].dstBinding = 0;
                 descriptorWrites[0].dstArrayElement = 0;
                 descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
@@ -749,7 +752,7 @@ namespace odfaeg {
                 linkedListStorageBufferInfoLastFrame.range = maxNodes * nodeSize;
 
                 descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                descriptorWrites[1].dstSet = descriptorSets[shader->getId()][i];
+                descriptorWrites[1].dstSet = descriptorSets[descriptorId][i];
                 descriptorWrites[1].dstBinding = 1;
                 descriptorWrites[1].dstArrayElement = 0;
                 descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
@@ -2327,7 +2330,7 @@ namespace odfaeg {
                 if (vkBeginCommandBuffer(commandBuffers[i], &beginInfo) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to begin recording command buffer!", 1);
                 }*/
-                std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
+                /*std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
 
                 VkDescriptorImageInfo headPtrDescriptorImageInfo;
                 headPtrDescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
@@ -2354,7 +2357,7 @@ namespace odfaeg {
                 descriptorWrites[1].dstArrayElement = 0;
                 descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
                 descriptorWrites[1].descriptorCount = 1;
-                descriptorWrites[1].pBufferInfo = &linkedListStorageBufferInfoLastFrame;
+                descriptorWrites[1].pBufferInfo = &linkedListStorageBufferInfoLastFrame;*/
                 //vkCmdPipelineBarrier(commandBuffers[i], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 0, nullptr);
 
 
@@ -2367,7 +2370,7 @@ namespace odfaeg {
 
 
                 //vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
-                vkCmdPushDescriptorSetKHR(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + vb.getPrimitiveType()][frameBuffer.getId()][NODEPTHNOSTENCIL], 0, 2, descriptorWrites.data());
+                //vkCmdPushDescriptorSetKHR(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + vb.getPrimitiveType()][frameBuffer.getId()][NODEPTHNOSTENCIL], 0, 2, descriptorWrites.data());
 
 
 
