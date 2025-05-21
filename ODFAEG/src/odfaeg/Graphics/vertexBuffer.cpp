@@ -12,7 +12,8 @@ namespace odfaeg {
         using namespace sf;
         #ifdef VULKAN
             VertexBuffer::VertexBuffer(window::Device& vkDevice) : vkDevice(vkDevice),
-            needToUpdateVertexBuffer(false), needToUpdateIndexBuffer(false), vertexBuffer(VK_NULL_HANDLE), indexBuffer(VK_NULL_HANDLE) {
+            needToUpdateVertexBuffer(false), needToUpdateIndexBuffer(false), vertexBuffer(VK_NULL_HANDLE), indexBuffer(VK_NULL_HANDLE),
+            vertexStagingBuffer(VK_NULL_HANDLE), indexStagingBuffer(VK_NULL_HANDLE), maxVerticesSize(0), maxIndexSize(0) {
                 createCommandPool();
             }
             /*VertexBuffer::VertexBuffer(const VertexBuffer& vb) : vkDevice(vb.vkDevice) {
@@ -167,52 +168,51 @@ namespace odfaeg {
 
 
                 if (needToUpdateVertexBuffer) {
-                    if (vertexBuffer != VK_NULL_HANDLE) {
-                        vkDestroyBuffer(vkDevice.getDevice(), vertexBuffer, nullptr);
-                        vkFreeMemory(vkDevice.getDevice(), vertexBufferMemory, nullptr);
-                    }
                     VkDeviceSize bufferSize = sizeof(Vertex) * m_vertices.size();
-
-                    VkBuffer stagingBuffer;
-                    VkDeviceMemory stagingBufferMemory;
-                    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+                    if (bufferSize > maxVerticesSize) {
+                        if (vertexBuffer != VK_NULL_HANDLE) {
+                            vkDestroyBuffer(vkDevice.getDevice(), vertexBuffer, nullptr);
+                            vkFreeMemory(vkDevice.getDevice(), vertexBufferMemory, nullptr);
+                            vkDestroyBuffer(vkDevice.getDevice(), vertexStagingBuffer, nullptr);
+                            vkFreeMemory(vkDevice.getDevice(), vertexStagingBufferMemory, nullptr);
+                        }
+                        createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, vertexStagingBuffer, vertexStagingBufferMemory);
+                        createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
+                        maxVerticesSize = bufferSize;
+                    }
 
                     void* data;
-                    vkMapMemory(vkDevice.getDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
+                    vkMapMemory(vkDevice.getDevice(), vertexStagingBufferMemory, 0, bufferSize, 0, &data);
                         memcpy(data, m_vertices.data(), (size_t) bufferSize);
-                    vkUnmapMemory(vkDevice.getDevice(), stagingBufferMemory);
+                    vkUnmapMemory(vkDevice.getDevice(), vertexStagingBufferMemory);
+                    copyBuffer(vertexStagingBuffer, vertexBuffer, bufferSize);
 
-                    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
 
-                    copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
-
-                    vkDestroyBuffer(vkDevice.getDevice(), stagingBuffer, nullptr);
-                    vkFreeMemory(vkDevice.getDevice(), stagingBufferMemory, nullptr);
                     needToUpdateVertexBuffer = false;
                     //std::cout<<"vertex buffer : "<<indexBuffer<<std::endl;
                 }
                 if (needToUpdateIndexBuffer) {
-                    if (indexBuffer != VK_NULL_HANDLE) {
-                        vkDestroyBuffer(vkDevice.getDevice(), indexBuffer, nullptr);
-                        vkFreeMemory(vkDevice.getDevice(), indexBufferMemory, nullptr);
-                    }
                     VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
-
-                    VkBuffer stagingBuffer;
-                    VkDeviceMemory stagingBufferMemory;
-                    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+                    if (bufferSize > maxIndexSize) {
+                        if (indexBuffer != VK_NULL_HANDLE) {
+                            vkDestroyBuffer(vkDevice.getDevice(), indexBuffer, nullptr);
+                            vkFreeMemory(vkDevice.getDevice(), indexBufferMemory, nullptr);
+                            vkDestroyBuffer(vkDevice.getDevice(), indexStagingBuffer, nullptr);
+                            vkFreeMemory(vkDevice.getDevice(), indexStagingBufferMemory, nullptr);
+                        }
+                        createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, indexStagingBuffer, indexStagingBufferMemory);
+                        createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
+                        maxIndexSize = bufferSize;
+                    }
 
                     void* data;
-                    vkMapMemory(vkDevice.getDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
+                    vkMapMemory(vkDevice.getDevice(), indexStagingBufferMemory, 0, bufferSize, 0, &data);
                     memcpy(data, indices.data(), (size_t) bufferSize);
-                    vkUnmapMemory(vkDevice.getDevice(), stagingBufferMemory);
+                    vkUnmapMemory(vkDevice.getDevice(), indexStagingBufferMemory);
 
-                    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
+                    copyBuffer(indexStagingBuffer, indexBuffer, bufferSize);
 
-                    copyBuffer(stagingBuffer, indexBuffer, bufferSize);
 
-                    vkDestroyBuffer(vkDevice.getDevice(), stagingBuffer, nullptr);
-                    vkFreeMemory(vkDevice.getDevice(), stagingBufferMemory, nullptr);
                     needToUpdateIndexBuffer  = false;
                     //std::cout<<"index buffer : "<<indexBuffer<<std::endl;
                 }
@@ -239,10 +239,14 @@ namespace odfaeg {
                 if (vertexBuffer != VK_NULL_HANDLE) {
                     vkDestroyBuffer(vkDevice.getDevice(), vertexBuffer, nullptr);
                     vkFreeMemory(vkDevice.getDevice(), vertexBufferMemory, nullptr);
+                    vkDestroyBuffer(vkDevice.getDevice(), vertexStagingBuffer, nullptr);
+                    vkFreeMemory(vkDevice.getDevice(), vertexStagingBufferMemory, nullptr);
                 }
                 if (indexBuffer != VK_NULL_HANDLE) {
                     vkDestroyBuffer(vkDevice.getDevice(), indexBuffer, nullptr);
                     vkFreeMemory(vkDevice.getDevice(), indexBufferMemory, nullptr);
+                    vkDestroyBuffer(vkDevice.getDevice(), indexStagingBuffer, nullptr);
+                    vkFreeMemory(vkDevice.getDevice(), indexStagingBufferMemory, nullptr);
                 }
             }
         #else

@@ -66,14 +66,15 @@ namespace odfaeg {
             uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
             std::vector<Vertex> m_vertices;
             window::Device& vkDevice;
-            VkBuffer vertexBuffer = VK_NULL_HANDLE;
-            VkDeviceMemory vertexBufferMemory = VK_NULL_HANDLE;
-            VkBuffer indexBuffer = VK_NULL_HANDLE;
-            VkDeviceMemory indexBufferMemory = VK_NULL_HANDLE;
+            VkBuffer vertexBuffer, vertexStagingBuffer;
+            VkDeviceMemory vertexBufferMemory, vertexStagingBufferMemory;
+            VkBuffer indexBuffer, indexStagingBuffer;
+            VkDeviceMemory indexBufferMemory, indexStagingBufferMemory;
             std::vector<uint16_t> indices;
             sf::PrimitiveType       m_primitiveType; ///< Type of primitives to draw
             bool needToUpdateVertexBuffer, needToUpdateIndexBuffer;
             VkCommandPool commandPool;
+            VkDeviceSize maxVerticesSize, maxIndexSize;
         };
         #else
         ////////////////////////////////////////////////////////////
