@@ -40,6 +40,26 @@ namespace odfaeg {
                 unsigned int count[6];
                 unsigned int maxNodeCount;
             };
+            struct indirectRenderingPC  {
+                math::Matrix4f projMatrix;
+                math::Matrix4f viewMatrix;
+            };
+            struct linkedList2PC  {
+                math::Matrix4f projMatrix;
+                math::Matrix4f viewMatrix;
+                math::Matrix4f worldMat;
+            };
+            struct buildDepthPC {
+                unsigned int nbLayers;
+            };
+            struct buildAlphaPC {
+                math::Vec3f resolution;
+                unsigned int nbLayers;
+            };
+            struct buildFrameBufferPC {
+                math::Vec3f cameraPos;
+                math::Vec3f resolution;
+            };
             ReflectRefractRenderComponent (RenderWindow& window, int layer, std::string expression, window::ContextSettings settings);
             void loadTextureIndexes();
             std::vector<Entity*> getEntities();
@@ -88,8 +108,15 @@ namespace odfaeg {
             RenderTexture* getFrameBuffer();
             ~ReflectRefractRenderComponent();
             private :
+            void createDescriptorPool(RenderStates states);
+            void createDescriptorSetLayout(RenderStates states);
+            void createDescriptorSets(unsigned int p, RenderStates states);
+            void allocateDescriptorSets(RenderStates states);
             void compileShaders();
             void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+            void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+            void createImageView();
+            void createSampler();
             unsigned int maxNodes;
             uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
             float squareSize;
@@ -111,12 +138,9 @@ namespace odfaeg {
             math::Vec3f ups[6];
             std::vector<Entity*> rootEntities;
             VkCommandPool commandPool;
-            std::array<std::vector<ModelData>, Batcher::nbPrimitiveTypes> modelDatas;
-            std::array<std::vector<MaterialData>, Batcher::nbPrimitiveTypes> materialDatas;
             std::vector<VkCommandBuffer> commandBuffers;
             VkBuffer vboIndirect;
             VkDeviceMemory vboIndirectMemory;
-            std::vector<VkDescriptorSetLayout>& descriptorSetLayout;
             std::vector<VkBuffer> linkedListShaderStorageBuffers;
             std::vector<VkDeviceMemory> linkedListShaderStorageBuffersMemory;
             std::vector<VkBuffer> counterShaderStorageBuffers;
@@ -139,7 +163,12 @@ namespace odfaeg {
             VkDeviceMemory alphaTextureImageMemory;
             window::Device& vkDevice;
             PFN_vkCmdPushDescriptorSetKHR vkCmdPushDescriptorSetKHR{ VK_NULL_HANDLE };
-
+            std::vector<VkDescriptorPool>& descriptorPool;
+            std::vector<VkDescriptorSetLayout>& descriptorSetLayout;
+            std::vector<std::vector<VkDescriptorSet>>& descriptorSets;
+            std::array<std::vector<ModelData>, Batcher::nbPrimitiveTypes> modelDatas;
+            std::array<std::vector<MaterialData>, Batcher::nbPrimitiveTypes> materialDatas;
+            VkDeviceSize maxModelDataSize, maxMaterialDataSize;
         };
         #else
         class ODFAEG_GRAPHICS_API ReflectRefractRenderComponent : public HeavyComponent {
