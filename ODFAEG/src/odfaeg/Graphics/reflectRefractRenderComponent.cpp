@@ -1065,6 +1065,48 @@ namespace odfaeg {
                     if (vkCreateDescriptorSetLayout(vkDevice.getDevice(), &layoutInfo, nullptr, &descriptorSetLayout[descriptorId]) != VK_SUCCESS) {
                         throw std::runtime_error("failed to create descriptor set layout!");
                     }
+                } else {
+                    descriptorSetLayout.resize(shader->getNbShaders()*reflectRefractTex.getNbRenderTargets());
+                    unsigned int descriptorId = reflectRefractTex.getId() * shader->getNbShaders() + shader->getId();
+                    VkDescriptorSetLayoutBinding samplerLayoutBinding{};
+                    samplerLayoutBinding.binding = 0;
+                    samplerLayoutBinding.descriptorCount = 1;
+                    samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                    samplerLayoutBinding.pImmutableSamplers = nullptr;
+                    samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+                    VkDescriptorSetLayoutBinding sampler2LayoutBinding{};
+                    samplerLayoutBinding.binding = 1;
+                    samplerLayoutBinding.descriptorCount = 1;
+                    samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                    samplerLayoutBinding.pImmutableSamplers = nullptr;
+                    samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+                    VkDescriptorSetLayoutBinding modelDataLayoutBinding{};
+                    modelDataLayoutBinding.binding = 4;
+                    modelDataLayoutBinding.descriptorCount = 1;
+                    modelDataLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                    modelDataLayoutBinding.pImmutableSamplers = nullptr;
+                    modelDataLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+                    VkDescriptorSetLayoutBinding materialDataLayoutBinding{};
+                    materialDataLayoutBinding.binding = 5;
+                    materialDataLayoutBinding.descriptorCount = 1;
+                    materialDataLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                    materialDataLayoutBinding.pImmutableSamplers = nullptr;
+                    materialDataLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+                    std::array<VkDescriptorSetLayoutBinding, 4> bindings = {samplerLayoutBinding, sampler2LayoutBinding, modelDataLayoutBinding, materialDataLayoutBinding};
+
+                    VkDescriptorSetLayoutCreateInfo layoutInfo{};
+                    layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+                    //layoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR;
+                    layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());;
+                    layoutInfo.pBindings = bindings.data();
+
+                    if (vkCreateDescriptorSetLayout(vkDevice.getDevice(), &layoutInfo, nullptr, &descriptorSetLayout[descriptorId]) != VK_SUCCESS) {
+                        throw std::runtime_error("failed to create descriptor set layout!");
+                    }
                 }
             }
             void ReflectRefractRenderComponent::allocateDescriptorSets(RenderStates states) {
@@ -1337,8 +1379,8 @@ namespace odfaeg {
 
                             VkDescriptorImageInfo headPtrDescriptorImageInfo;
                             headPtrDescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
-                            headPtrDescriptorImageInfo.imageView = depthTextureImageView;
-                            headPtrDescriptorImageInfo.sampler = depthTextureSampler;
+                            headPtrDescriptorImageInfo.imageView = alphaTextureImageView;
+                            headPtrDescriptorImageInfo.sampler = alphaTextureSampler;
 
                             descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                             descriptorWrites[1].dstSet = descriptorSets[descriptorId][i];
