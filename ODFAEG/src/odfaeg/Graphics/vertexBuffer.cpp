@@ -866,7 +866,7 @@ namespace odfaeg {
         }
         void VertexBuffer::update() {
             if (!m_vertices.empty()) {
-                computeNormals();
+                //computeNormals();
                 if (GLEW_ARB_vertex_buffer_object) {
                     if (needToUpdateVertexBuffer) {
 
