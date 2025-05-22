@@ -387,6 +387,7 @@ namespace odfaeg {
                     math::Vec3f t = m * (math::Vec3f(va[i].position.x, va[i].position.y, va[i].position.z));
                     //std::cout<<"position : "<<t<<std::endl;
                     Vertex v (sf::Vector3f(t.x, t.y, t.z), va[i].color, va[i].texCoords);
+                    v.normal = va[i].normal;
                     //#endif // VULKAN
 
 
