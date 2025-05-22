@@ -158,6 +158,7 @@ namespace odfaeg {
 
                        pipelineLayoutInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL].pPushConstantRanges = &push_constant;
                        pipelineLayoutInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL].pushConstantRangeCount = 1;
+                       depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL].depthCompareOp = VK_COMPARE_OP_ALWAYS;
                        depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL].front = {}; // Optional
                        depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL].back = {}; // Optional
                        frameBuffer.createGraphicPipeline(static_cast<sf::PrimitiveType>(i), states, NODEPTHNOSTENCIL, NBDEPTHSTENCIL);
@@ -166,6 +167,7 @@ namespace odfaeg {
                        system("PAUSE");*/
                    } else if (j == 1) {
                        frameBuffer.enableStencilTest(true);
+                       depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL].depthCompareOp = VK_COMPARE_OP_ALWAYS;
                        depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL].back.compareOp = VK_COMPARE_OP_ALWAYS;
                        depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL].back.failOp = VK_STENCIL_OP_REPLACE;
                        depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL].back.depthFailOp = VK_STENCIL_OP_REPLACE;
@@ -189,6 +191,7 @@ namespace odfaeg {
                    } else {
                        frameBuffer.enableStencilTest(true);
 
+                       depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE].depthCompareOp = VK_COMPARE_OP_ALWAYS;
                        depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE].back.compareOp = VK_COMPARE_OP_NOT_EQUAL;
                        depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE].back.failOp = VK_STENCIL_OP_KEEP;
                        depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE].back.depthFailOp = VK_STENCIL_OP_KEEP;
@@ -225,12 +228,14 @@ namespace odfaeg {
                        push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
                        pipelineLayoutInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL].pPushConstantRanges = &push_constant;
                        pipelineLayoutInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL].pushConstantRangeCount = 1;
+                       depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL].depthCompareOp = VK_COMPARE_OP_ALWAYS;
                        depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL].front = {}; // Optional
                        depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL].back = {}; // Optional
                        frameBuffer.createGraphicPipeline(static_cast<sf::PrimitiveType>(i), states, NODEPTHNOSTENCIL, NBDEPTHSTENCIL);
                    } else if (j == 1) {
                        frameBuffer.enableStencilTest(true);
 
+                       depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL].depthCompareOp = VK_COMPARE_OP_ALWAYS;
                        depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL].back.compareOp = VK_COMPARE_OP_ALWAYS;
                        depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL].back.failOp = VK_STENCIL_OP_REPLACE;
                        depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL].back.depthFailOp = VK_STENCIL_OP_REPLACE;
@@ -250,6 +255,7 @@ namespace odfaeg {
                        frameBuffer.createGraphicPipeline(static_cast<sf::PrimitiveType>(i), states, NODEPTHSTENCIL, NBDEPTHSTENCIL);
                     } else {
                        frameBuffer.enableStencilTest(true);
+                       depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE].depthCompareOp = VK_COMPARE_OP_ALWAYS;
                        depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE].back.compareOp = VK_COMPARE_OP_NOT_EQUAL;
                        depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE].back.failOp = VK_STENCIL_OP_KEEP;
                        depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE].back.depthFailOp = VK_STENCIL_OP_KEEP;

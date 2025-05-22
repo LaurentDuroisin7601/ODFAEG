@@ -15,6 +15,9 @@ namespace odfaeg {
         #ifdef VULKAN
         class ODFAEG_GRAPHICS_API ReflectRefractRenderComponent : public HeavyComponent {
             public :
+            enum DepthStencilID {
+                NODEPTHNOSTENCIL, DEPTHNOSTENCIL, NBDEPTHSTENCIL
+            };
             struct DrawArraysIndirectCommand {
                 unsigned int  count;
                 unsigned int  instanceCount;
@@ -40,23 +43,27 @@ namespace odfaeg {
                 unsigned int count[6];
                 unsigned int maxNodeCount;
             };
-            struct indirectRenderingPC  {
+            struct LinkedListPC  {
+                math::Matrix4f projMatrix[6];
+                math::Matrix4f viewMatrix[6];
+            };
+            struct IndirectRenderingPC  {
                 math::Matrix4f projMatrix;
                 math::Matrix4f viewMatrix;
             };
-            struct linkedList2PC  {
+            struct LinkedList2PC  {
                 math::Matrix4f projMatrix;
                 math::Matrix4f viewMatrix;
                 math::Matrix4f worldMat;
             };
-            struct buildDepthPC {
+            struct BuildDepthPC {
                 unsigned int nbLayers;
             };
-            struct buildAlphaPC {
+            struct BuildAlphaPC {
                 math::Vec3f resolution;
                 unsigned int nbLayers;
             };
-            struct buildFrameBufferPC {
+            struct BuildFrameBufferPC {
                 math::Vec3f cameraPos;
                 math::Vec3f resolution;
             };
@@ -110,7 +117,7 @@ namespace odfaeg {
             private :
             void createDescriptorPool(RenderStates states);
             void createDescriptorSetLayout(RenderStates states);
-            void createDescriptorSets(unsigned int p, RenderStates states);
+            void createDescriptorSets(RenderStates states);
             void allocateDescriptorSets(RenderStates states);
             void compileShaders();
             void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);

@@ -689,7 +689,7 @@ namespace odfaeg {
             depthStencil[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId].sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
             depthStencil[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId].depthTestEnable = (depthTestEnabled) ? VK_TRUE : VK_FALSE;
             depthStencil[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId].depthWriteEnable = VK_TRUE;
-            depthStencil[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId].depthCompareOp = VK_COMPARE_OP_ALWAYS;
+            //depthStencil[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId].depthCompareOp = VK_COMPARE_OP_ALWAYS;
             depthStencil[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId].depthBoundsTestEnable = VK_FALSE;
             depthStencil[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId].minDepthBounds = 0.0f; // Optional
             depthStencil[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId].maxDepthBounds = 1.0f; // Optional
