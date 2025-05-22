@@ -361,7 +361,7 @@ namespace odfaeg {
                 material = &mat;
             }
             void Instance::addVertexArray(VertexArray& va, TransformMatrix& tm) {                //std::cout<<"push transform"<<std::endl;
-
+                va.computeNormals();
                 m_perVaTransforms.push_back(&tm);
                 if (!containsEntity(va.getEntity(), va.getEntityId())) {
                     m_transforms.push_back(&tm);
