@@ -315,10 +315,10 @@ namespace odfaeg {
                                                                    uint layer;
                                                                    uint materialType;
                                                                };
-                                                               layout(binding = 1, std430) buffer modelData {
+                                                               layout(set = 0, binding = 4) buffer modelData {
                                                                    ModelData modelDatas[];
                                                                };
-                                                               layout(binding = 2, std430) buffer materialData {
+                                                               layout(set = 0, binding = 5) buffer materialData {
                                                                    MaterialData materialDatas[];
                                                                };
                                                                layout (location = 0) out vec4 vColor;
@@ -373,10 +373,10 @@ namespace odfaeg {
                                                                                              uint layer;
                                                                                              uint materialType;
                                                                                          };
-                                                                                         layout(set = 0, binding = 1) buffer modelData {
+                                                                                         layout(set = 0, binding = 4) buffer modelData {
                                                                                              ModelData modelDatas[];
                                                                                          };
-                                                                                         layout(set = 0, binding = 2) buffer materialData {
+                                                                                         layout(set = 0, binding = 5) buffer materialData {
                                                                                              MaterialData materialDatas[];
                                                                                          };
                                                                                          layout (location = 0) out vec3 pos;
@@ -821,6 +821,15 @@ namespace odfaeg {
                     poolSizes[2].descriptorCount = static_cast<uint32_t>(depthBuffer.getMaxFramesInFlight());
                     poolSizes[3].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
                     poolSizes[3].descriptorCount = static_cast<uint32_t>(depthBuffer.getMaxFramesInFlight());
+
+                    VkDescriptorPoolCreateInfo poolInfo{};
+                    poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+                    poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+                    poolInfo.pPoolSizes = poolSizes.data();
+                    poolInfo.maxSets = static_cast<uint32_t>(environmentMap.getMaxFramesInFlight());
+                    if (vkCreateDescriptorPool(vkDevice.getDevice(), &poolInfo, nullptr, &descriptorPool[descriptorId]) != VK_SUCCESS) {
+                        throw std::runtime_error("echec de la creation de la pool de descripteurs!");
+                    }
                 } else if (shader == &sBuildAlphaBuffer) {
                     descriptorPool.resize(shader->getNbShaders()*alphaBuffer.getNbRenderTargets());
                     unsigned int descriptorId = alphaBuffer.getId() * shader->getNbShaders() + shader->getId();
@@ -836,6 +845,36 @@ namespace odfaeg {
                     poolSizes[3].descriptorCount = static_cast<uint32_t>(depthBuffer.getMaxFramesInFlight());
                     poolSizes[4].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
                     poolSizes[4].descriptorCount = static_cast<uint32_t>(depthBuffer.getMaxFramesInFlight());
+
+                    VkDescriptorPoolCreateInfo poolInfo{};
+                    poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+                    poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+                    poolInfo.pPoolSizes = poolSizes.data();
+                    poolInfo.maxSets = static_cast<uint32_t>(environmentMap.getMaxFramesInFlight());
+                    if (vkCreateDescriptorPool(vkDevice.getDevice(), &poolInfo, nullptr, &descriptorPool[descriptorId]) != VK_SUCCESS) {
+                        throw std::runtime_error("echec de la creation de la pool de descripteurs!");
+                    }
+                } else {
+                    descriptorPool.resize(shader->getNbShaders()*reflectRefractTex.getNbRenderTargets());
+                    unsigned int descriptorId = reflectRefractTex.getId() * shader->getNbShaders() + shader->getId();
+                    std::array<VkDescriptorPoolSize, 4> poolSizes;
+                    poolSizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                    poolSizes[0].descriptorCount = 1;
+                    poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                    poolSizes[1].descriptorCount = 1;
+                    poolSizes[2].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                    poolSizes[2].descriptorCount = static_cast<uint32_t>(reflectRefractTex.getMaxFramesInFlight());
+                    poolSizes[3].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                    poolSizes[3].descriptorCount = static_cast<uint32_t>(reflectRefractTex.getMaxFramesInFlight());
+
+                    VkDescriptorPoolCreateInfo poolInfo{};
+                    poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+                    poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+                    poolInfo.pPoolSizes = poolSizes.data();
+                    poolInfo.maxSets = static_cast<uint32_t>(environmentMap.getMaxFramesInFlight());
+                    if (vkCreateDescriptorPool(vkDevice.getDevice(), &poolInfo, nullptr, &descriptorPool[descriptorId]) != VK_SUCCESS) {
+                        throw std::runtime_error("echec de la creation de la pool de descripteurs!");
+                    }
                 }
             }
             void ReflectRefractRenderComponent::createDescriptorSetLayout(RenderStates states) {
