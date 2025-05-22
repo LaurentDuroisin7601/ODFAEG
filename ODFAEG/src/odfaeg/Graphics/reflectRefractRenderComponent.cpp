@@ -1156,6 +1156,21 @@ namespace odfaeg {
                     if (vkAllocateDescriptorSets(vkDevice.getDevice(), &allocInfo, descriptorSets[descriptorId].data()) != VK_SUCCESS) {
                         throw std::runtime_error("echec de l'allocation d'un set de descripteurs!");
                     }
+                } else {
+                    descriptorSets.resize(shader->getNbShaders()*reflectRefractTex.getNbRenderTargets());
+                    unsigned int descriptorId = reflectRefractTex.getId() * shader->getNbShaders() + shader->getId();
+                    for (unsigned int i = 0; i < descriptorSets.size(); i++) {
+                        descriptorSets[i].resize(reflectRefractTex.getMaxFramesInFlight());
+                    }
+                    std::vector<VkDescriptorSetLayout> layouts(reflectRefractTex.getMaxFramesInFlight(), descriptorSetLayout[descriptorId]);
+                    VkDescriptorSetAllocateInfo allocInfo{};
+                    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+                    allocInfo.descriptorPool = descriptorPool[descriptorId];
+                    allocInfo.descriptorSetCount = static_cast<uint32_t>(reflectRefractTex.getMaxFramesInFlight());
+                    allocInfo.pSetLayouts = layouts.data();
+                    if (vkAllocateDescriptorSets(vkDevice.getDevice(), &allocInfo, descriptorSets[descriptorId].data()) != VK_SUCCESS) {
+                        throw std::runtime_error("echec de l'allocation d'un set de descripteurs!");
+                    }
                 }
             }
             void ReflectRefractRenderComponent::createDescriptorSets(unsigned int p, RenderStates states) {
@@ -1430,6 +1445,63 @@ namespace odfaeg {
                             descriptorWrites[4].pBufferInfo = &materialDataStorageBufferInfoLastFrame;
 
                             vkUpdateDescriptorSets(vkDevice.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+                    }
+                } else {
+                    unsigned int descriptorId = reflectRefractTex.getId() * shader->getNbShaders() + shader->getId();
+                    for (size_t i = 0; i < reflectRefractTex.getMaxFramesInFlight(); i++) {
+                        VkDescriptorImageInfo   descriptorImageInfo;
+                        descriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                        descriptorImageInfo.imageView = environmentMap.getTexture().getImageView();
+                        descriptorImageInfo.sampler = environmentMap.getTexture().getSampler();
+
+                        std::array<VkWriteDescriptorSet, 4> descriptorWrites{};
+                        descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                        descriptorWrites[0].dstSet = descriptorSets[descriptorId][i];
+                        descriptorWrites[0].dstBinding = 0;
+                        descriptorWrites[0].dstArrayElement = 0;
+                        descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                        descriptorWrites[0].descriptorCount = 1;
+                        descriptorWrites[0].pImageInfo = &descriptorImageInfo;
+
+                        descriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                        descriptorImageInfo.imageView = alphaBuffer.getTexture().getImageView();
+                        descriptorImageInfo.sampler = alphaBuffer.getTexture().getSampler();
+
+                        descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                        descriptorWrites[1].dstSet = descriptorSets[descriptorId][i];
+                        descriptorWrites[1].dstBinding = 1;
+                        descriptorWrites[1].dstArrayElement = 0;
+                        descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                        descriptorWrites[1].descriptorCount = 1;
+                        descriptorWrites[1].pImageInfo = &descriptorImageInfo;
+
+                        VkDescriptorBufferInfo modelDataStorageBufferInfoLastFrame{};
+                        modelDataStorageBufferInfoLastFrame.buffer = modelDataShaderStorageBuffers[i];
+                        modelDataStorageBufferInfoLastFrame.offset = 0;
+                        modelDataStorageBufferInfoLastFrame.range = maxModelDataSize;
+
+                        descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                        descriptorWrites[2].dstSet = descriptorSets[descriptorId][i];
+                        descriptorWrites[2].dstBinding = 4;
+                        descriptorWrites[2].dstArrayElement = 0;
+                        descriptorWrites[2].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                        descriptorWrites[2].descriptorCount = 1;
+                        descriptorWrites[2].pBufferInfo = &modelDataStorageBufferInfoLastFrame;
+
+                        VkDescriptorBufferInfo materialDataStorageBufferInfoLastFrame{};
+                        materialDataStorageBufferInfoLastFrame.buffer = materialDataShaderStorageBuffers[i];
+                        materialDataStorageBufferInfoLastFrame.offset = 0;
+                        materialDataStorageBufferInfoLastFrame.range = maxMaterialDataSize;
+
+                        descriptorWrites[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                        descriptorWrites[3].dstSet = descriptorSets[descriptorId][i];
+                        descriptorWrites[3].dstBinding = 5;
+                        descriptorWrites[3].dstArrayElement = 0;
+                        descriptorWrites[3].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                        descriptorWrites[3].descriptorCount = 1;
+                        descriptorWrites[3].pBufferInfo = &materialDataStorageBufferInfoLastFrame;
+
+                        vkUpdateDescriptorSets(vkDevice.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
                     }
                 }
             }
