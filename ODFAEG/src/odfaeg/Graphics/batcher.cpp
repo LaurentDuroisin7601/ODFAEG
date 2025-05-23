@@ -446,6 +446,9 @@ namespace odfaeg {
             std::vector<Entity*> Instance::getEntities() {
                 return m_entities;
             }
+            std::vector<ecs::EntityId> Instance::getEntitiesId() {
+                return m_entitiesId;
+            }
             std::vector<TransformMatrix*> Instance::getPerVaTransforms() {
                 return m_perVaTransforms;
             }

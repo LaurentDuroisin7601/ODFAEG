@@ -153,7 +153,7 @@ namespace odfaeg {
 
         };
         #else
-        class PerPixelLinkedListRenderComponent : public HeavyComponent {
+        class ODFAEG_GRAPHICS_API PerPixelLinkedListRenderComponent : public HeavyComponent {
             public :
             struct uint64_to_uint128 {
                 uint64_t handle;

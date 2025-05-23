@@ -31,6 +31,9 @@ namespace odfaeg {
                     ar(boundingVolume);
                 }
             };
+            struct SkyboxComponent {
+                Texture texture;
+            };
             struct EntityInfoComponent {
                 int id=0;
                 std::string groupName="";

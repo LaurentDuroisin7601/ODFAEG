@@ -419,6 +419,7 @@ namespace odfaeg {
             VertexArray& getAllVertices();
             bool containsEntity(Entity* entity, entt::entity entityId);
             std::vector<Entity*> getEntities();
+            std::vector<ecs::EntityId> getEntitiesId();
 
             ~Instance();
         private:
@@ -433,7 +434,7 @@ namespace odfaeg {
             std::vector<unsigned int> allIndexes;
             std::vector<std::vector<unsigned int>> m_indexes;
             std::vector<Entity*> m_entities;
-            std::vector<entt::entity> m_entitiesId;
+            std::vector<ecs::EntityId> m_entitiesId;
         };
         /**
           * \file face.h

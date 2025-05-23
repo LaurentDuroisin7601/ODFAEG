@@ -36,6 +36,14 @@ namespace odfaeg {
                         unsigned vertex_base;
                         unsigned instance_base;
                 };
+                struct ModelData {
+                    math::Matrix4f worldMat;
+                };
+                struct MaterialData {
+                    unsigned int textureIndex;
+                    unsigned int layer;
+                    unsigned int materialType;
+                };
                 ReflectRefractRenderComponent (RenderWindow& window, int layer, std::string expression, ComponentMapping& componentMapping, window::ContextSettings settings);
                 void loadTextureIndexes();
                 std::vector<EntityId> getEntities();
@@ -57,14 +65,10 @@ namespace odfaeg {
                 * \brief draw the next frame of the component.
                 */
                 void drawNextFrame();
-                void drawDepthReflNormal();
                 void drawDepthReflInst();
-                void drawAlphaNormal();
                 void drawAlphaInst();
-                void drawEnvReflNormal();
                 void drawEnvReflInst();
-                void drawReflNormal();
-                void drawReflInst();
+                void drawReflInst(EntityId reflectEntity);
                 void setExpression (std::string expression);
                 /**
                 * \fn draw(Drawable& drawable, RenderStates states = RenderStates::Default);
@@ -105,23 +109,27 @@ namespace odfaeg {
                 ~ReflectRefractRenderComponent();
             private :
                 RectangleShape quad;
-                Batcher batcher, normalBatcher, reflBatcher, reflNormalBatcher, rvBatcher, normalRvBatcher;
+                Batcher batcher, normalBatcher, reflBatcher, reflNormalBatcher, rvBatcher, normalRvBatcher, skyboxBatcher;
                 sf::Color backgroundColor; /**> The background color.*/
-                std::vector<Instance> m_instances, m_normals, m_reflInstances, m_reflNormals; /**> Instances to draw. (Instanced rendering.) */
+                std::vector<Instance> m_instances, m_normals, m_reflInstances, m_reflNormals, m_skyboxInstance; /**> Instances to draw. (Instanced rendering.) */
                 std::vector<EntityId> visibleEntities;
                 RenderTexture depthBuffer, alphaBuffer, reflectRefractTex, environmentMap;
-                Shader sBuildDepthBuffer, sBuildDepthBufferNormal, sBuildAlphaBuffer, sBuildAlphaBufferNormal, sReflectRefract, sReflectRefractNormal, sLinkedList, sLinkedListNormal, sLinkedList2;
+                Shader skyboxShader, sBuildDepthBuffer, sBuildDepthBufferNormal, sBuildAlphaBuffer, sBuildAlphaBufferNormal, sReflectRefract, sReflectRefractNormal, sLinkedList, sLinkedListNormal, sLinkedList2;
                 View view;
                 std::string expression;
                 bool update, cubeMapCreated;
-                unsigned int vboWorldMatrices, atomicBuffer, linkedListBuffer, clearBuf, clearBuf2, clearBuf3, headPtrTex, alphaTex, depthTex, ubo, vboIndirect;
+                unsigned int vboWorldMatrices, atomicBuffer, linkedListBuffer, clearBuf, clearBuf2, clearBuf3, headPtrTex, alphaTex, depthTex, ubo, vboIndirect,
+                modelDataBuffer, materialDataBuffer;
                 float squareSize;
                 Sprite depthBufferSprite, reflectRefractTexSprite, alphaBufferSprite;
                 std::array<VertexBuffer ,Batcher::nbPrimitiveTypes> vbBindlessTex;
                 VertexBuffer vb, vb2;
                 std::vector<float> matrices;
                 math::Vec3f dirs[6];
+                math::Vec3f ups[6];
                 ComponentMapping& componentMapping;
+                std::vector<EntityId> rootEntities;
+                EntityId skybox;
             };
             #endif
         }
