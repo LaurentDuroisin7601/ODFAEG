@@ -115,6 +115,7 @@ namespace odfaeg {
             RenderTexture* getFrameBuffer();
             ~ReflectRefractRenderComponent();
             private :
+
             void createDescriptorPool(RenderStates states);
             void createDescriptorSetLayout(RenderStates states);
             void createDescriptorSets(RenderStates states);
@@ -124,6 +125,8 @@ namespace odfaeg {
             void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
             void createImageView();
             void createSampler();
+            void createCommandBuffersIndirect(unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, DepthStencilID dephStencilID, RenderStates currentStates);
+            void createCommandBufferVertexBuffer(RenderStates currentStates);
             unsigned int maxNodes;
             uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
             float squareSize;
@@ -146,8 +149,11 @@ namespace odfaeg {
             std::vector<Entity*> rootEntities;
             VkCommandPool commandPool;
             std::vector<VkCommandBuffer> commandBuffers;
-            VkBuffer vboIndirect;
-            VkDeviceMemory vboIndirectMemory;
+            VkBuffer modelDataBuffer, materialDataBuffer, modelDataStagingBuffer, materialDataStagingBuffer;
+            VkDeviceMemory modelDataStagingBufferMemory, materialDataStagingBufferMemory;
+            VkDeviceSize maxVboIndirectSize, maxModelDataSize, maxMaterialDataSize;
+            VkBuffer vboIndirect, vboIndirectStagingBuffer;
+            VkDeviceMemory vboIndirectMemory, vboIndirectStagingBufferMemory;
             std::vector<VkBuffer> linkedListShaderStorageBuffers;
             std::vector<VkDeviceMemory> linkedListShaderStorageBuffersMemory;
             std::vector<VkBuffer> counterShaderStorageBuffers;
@@ -175,7 +181,14 @@ namespace odfaeg {
             std::vector<std::vector<VkDescriptorSet>>& descriptorSets;
             std::array<std::vector<ModelData>, Batcher::nbPrimitiveTypes> modelDatas;
             std::array<std::vector<MaterialData>, Batcher::nbPrimitiveTypes> materialDatas;
-            VkDeviceSize maxModelDataSize, maxMaterialDataSize;
+            math::Vec3f resolution;
+            LinkedListPC linkedListPC;
+            LinkedList2PC linkedList2PC;
+            IndirectRenderingPC indirectRenderingPC;
+            BuildDepthPC buildDepthPC;
+            BuildAlphaPC buildAlphaPC;
+            BuildFrameBufferPC buildFrameBufferPC;
+            bool needToUpdateDS;
         };
         #else
         class ODFAEG_GRAPHICS_API ReflectRefractRenderComponent : public HeavyComponent {
