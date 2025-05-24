@@ -68,7 +68,7 @@ namespace odfaeg {
                 math::Vec3f resolution;
             };
             ReflectRefractRenderComponent (RenderWindow& window, int layer, std::string expression, window::ContextSettings settings);
-            void loadTextureIndexes();
+            void loadTextureIndexes() {}
             std::vector<Entity*> getEntities();
             bool loadEntitiesOnComponent(std::vector<Entity*> visibleEntities);
             void loadSkybox(Entity* skybox);
@@ -125,7 +125,7 @@ namespace odfaeg {
             void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
             void createImageView();
             void createSampler();
-            void createCommandBuffersIndirect(unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, DepthStencilID dephStencilID, RenderStates currentStates);
+            void createCommandBuffersIndirect(unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, DepthStencilID depthStencilID, RenderStates currentStates);
             void createCommandBufferVertexBuffer(RenderStates currentStates);
             unsigned int maxNodes;
             uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);

@@ -231,6 +231,7 @@ namespace odfaeg {
             void enableStencilTest(bool enabled);
             void enableDepthTest(bool enable);
             void beginRecordCommandBuffers();
+            std::vector<VkCommandBuffer>& getCommandBuffers();
 
         protected :
 
@@ -243,7 +244,7 @@ namespace odfaeg {
             virtual std::vector<VkImage> getSwapchainImages() = 0;
             virtual const int getMaxFramesInFlight() = 0;
             Texture& getDepthTexture();
-            std::vector<VkCommandBuffer>& getCommandBuffers();
+
             sf::Color clearColor;
             bool depthTestEnabled, stencilTestEnabled;
 

@@ -1771,6 +1771,47 @@ namespace odfaeg {
                     }
                 }
             }
+            void ReflectRefractRenderComponent::clear() {
+                depthBuffer.clear(sf::Color::Transparent);
+                std::vector<VkCommandBuffer>& commandBuffers = depthBuffer.getCommandBuffers();
+                VkClearColorValue clearColor;
+                clearColor.uint32[0] = 0xffffffff;
+                VkImageSubresourceRange subresRange = {};
+                subresRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                subresRange.levelCount = 1;
+                subresRange.layerCount = 1;
+                for (unsigned int i = 0; i < commandBuffers.size(); i++) {
+                    vkCmdClearColorImage(commandBuffers[i], depthTextureImage, VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
+
+                }
+                alphaBuffer.clear(sf::Color::Transparent);
+                commandBuffers = alphaBuffer.getCommandBuffers();
+                for (unsigned int i = 0; i < commandBuffers.size(); i++) {
+                    vkCmdClearColorImage(commandBuffers[i], alphaTextureImage, VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
+
+                }
+                reflectRefractTex.clear(sf::Color::Transparent);
+                depthBuffer.display();
+                alphaBuffer.display();
+                reflectRefractTex.display();
+            }
+            void ReflectRefractRenderComponent::createCommandBuffersIndirect(unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, DepthStencilID depthStencilID, RenderStates currentStates) {
+                if (needToUpdateDS) {
+                    createDescriptorSets(currentStates);
+                    needToUpdateDS = false;
+                }
+                Shader* shader = const_cast<Shader*>(currentStates.shader);
+                if (shader == &sBuildDepthBuffer) {
+                    depthBuffer.beginRecordCommandBuffers();
+                    std::vector<VkCommandBuffer>& commandBuffers = depthBuffer.getCommandBuffers();
+                    unsigned int currentFrame = depthBuffer.getCurrentFrame();
+                    buildDepthPC.nbLayers = GameObject::getNbLayers();
+                    vkCmdPushConstants(commandBuffers[currentFrame], depthBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][depthBuffer.getId()][depthStencilID], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectRenderingPC), &indirectRenderingPC);
+                    vkCmdPushConstants(commandBuffers[currentFrame], depthBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][depthBuffer.getId()][depthStencilID], VK_SHADER_STAGE_VERTEX_BIT, 64, sizeof(BuildDepthPC), &buildDepthPC);
+                    depthBuffer.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
+                    depthBuffer.display();
+                }
+            }
             void ReflectRefractRenderComponent::drawDepthReflInst() {
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                     vbBindlessTex[p].clear();
