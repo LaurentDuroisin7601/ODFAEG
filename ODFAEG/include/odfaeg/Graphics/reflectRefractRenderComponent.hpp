@@ -1,7 +1,9 @@
 #ifndef ODFAEG_REFLECT_REFRACT_RENDER_COMPONENT
 #define ODFAEG_REFLECT_REFRACT_RENDER_COMPONENT
+
 #include "GL/glew.h"
 #include <SFML/OpenGL.hpp>
+
 #include "heavyComponent.h"
 #include "renderTexture.h"
 #include "sprite.h"
@@ -68,7 +70,7 @@ namespace odfaeg {
                 math::Matrix4f viewMatrix[6];
             };
             ReflectRefractRenderComponent (RenderWindow& window, int layer, std::string expression, window::ContextSettings settings);
-            void loadTextureIndexes() {}
+            void loadTextureIndexes();
             std::vector<Entity*> getEntities();
             bool loadEntitiesOnComponent(std::vector<Entity*> visibleEntities);
             void loadSkybox(Entity* skybox);
@@ -112,10 +114,15 @@ namespace odfaeg {
             void pushEvent(window::IEvent event, RenderWindow& window) {}
             void setView(View view);
             View& getView();
+            int getLayer();
             RenderTexture* getFrameBuffer();
             ~ReflectRefractRenderComponent();
+            void onVisibilityChanged(bool visible) {}
             private :
-
+            void createCommandPool();
+            VkCommandBuffer beginSingleTimeCommands();
+            void endSingleTimeCommands(VkCommandBuffer commandBuffer);
+            void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
             void createDescriptorPool(RenderStates states);
             void createDescriptorSetLayout(RenderStates states);
             void createDescriptorSets(RenderStates states);

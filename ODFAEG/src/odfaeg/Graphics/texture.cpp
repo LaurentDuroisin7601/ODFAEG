@@ -705,7 +705,7 @@ namespace odfaeg {
             imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
             imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
             imageCreateInfo.extent = { width, height, 1 };
-            imageCreateInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+            imageCreateInfo.usage = usage;
             // Cube faces count as array layers in Vulkan
             imageCreateInfo.arrayLayers = 6;
             // This flag is required for cube map images
@@ -713,6 +713,22 @@ namespace odfaeg {
             if (vkCreateImage(vkDevice.getDevice(), &imageCreateInfo, nullptr, &textureImage) != VK_SUCCESS) {
                 throw core::Erreur(0, "Failed to create cubemap image!", 1);
             }
+            VkMemoryRequirements memRequirements;
+            vkGetImageMemoryRequirements(vkDevice.getDevice(), textureImage, &memRequirements);
+
+            VkMemoryAllocateInfo allocInfo{};
+            allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+            allocInfo.allocationSize = memRequirements.size;
+            allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
+
+            if (vkAllocateMemory(vkDevice.getDevice(), &allocInfo, nullptr, &textureImageMemory) != VK_SUCCESS) {
+                throw std::runtime_error("echec de l'allocation de la memoire d'une image!");
+            }
+
+            vkBindImageMemory(vkDevice.getDevice(), textureImage, textureImageMemory, 0);
+            m_size.x = width;
+            m_size.y = height;
+            m_format = format;
         }
         void Texture::createCubeMapTextureImageView(VkFormat format, VkImageAspectFlags aspectFlags) {
             VkImageViewCreateInfo view = {};
@@ -750,7 +766,7 @@ namespace odfaeg {
             sampler.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
             sampler.anisotropyEnable = VK_TRUE;
 
-            if(!vkCreateSampler(vkDevice.getDevice(), &sampler, nullptr, &textureSampler)) {
+            if(vkCreateSampler(vkDevice.getDevice(), &sampler, nullptr, &textureSampler) != VK_SUCCESS) {
                 throw core::Erreur(0, "failed to create cubemap sampler");
             }
         }

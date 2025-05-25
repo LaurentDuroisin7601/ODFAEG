@@ -22,6 +22,7 @@ namespace odfaeg {
              descriptorPool(window.getDescriptorPool()),
              descriptorSets(window.getDescriptorSet())
              {
+                createCommandPool();
                 if (window.getView().getSize().x > window.getView().getSize().y) {
                     squareSize = window.getView().getSize().x;
                 } else {
@@ -58,7 +59,10 @@ namespace odfaeg {
                     createBuffer(bufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, linkedListShaderStorageBuffers[i], linkedListShaderStorageBuffersMemory[i]);
                 }
 
-
+                core::FastDelegate<bool> signal (&PerPixelLinkedListRenderComponent::needToUpdate, this);
+                core::FastDelegate<void> slot (&PerPixelLinkedListRenderComponent::drawNextFrame, this);
+                core::Command cmd(signal, slot);
+                getListener().connect("UPDATE", cmd);
 
                 AtomicCounterSSBO counter;
                 for (unsigned int i = 0; i < 6; i++) {
@@ -94,10 +98,10 @@ namespace odfaeg {
                 imageInfo.extent.height = static_cast<uint32_t>(window.getView().getSize().y);
                 imageInfo.extent.depth = 1;
                 imageInfo.mipLevels = 1;
-                imageInfo.arrayLayers = 6;
+                imageInfo.arrayLayers = 1;
                 imageInfo.format = VK_FORMAT_R32_UINT;
                 imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-                imageInfo.initialLayout = VK_IMAGE_LAYOUT_GENERAL;
+                imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
                 imageInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT;
                 imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
                 imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -119,6 +123,7 @@ namespace odfaeg {
                     throw std::runtime_error("echec de l'allocation de la memoire d'une image!");
                 }
                 vkBindImageMemory(window.getDevice().getDevice(), headPtrTextureImage, headPtrTextureImageMemory, 0);
+                transitionImageLayout(headPtrTextureImage, VK_FORMAT_R32_UINT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
 
 
 
@@ -129,9 +134,9 @@ namespace odfaeg {
                 imageInfo.extent.depth = 1;
                 imageInfo.mipLevels = 1;
                 imageInfo.arrayLayers = 1;
-                imageInfo.format =  VK_FORMAT_R8G8B8A8_SRGB;
+                imageInfo.format =  VK_FORMAT_R32G32B32A32_SFLOAT;
                 imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-                imageInfo.initialLayout = VK_IMAGE_LAYOUT_GENERAL;
+                imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
                 imageInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT;
                 imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
                 imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -153,6 +158,8 @@ namespace odfaeg {
                     throw std::runtime_error("echec de l'allocation de la memoire d'une image!");
                 }
                 vkBindImageMemory(window.getDevice().getDevice(), depthTextureImage, depthTextureImageMemory, 0);
+                transitionImageLayout(depthTextureImage, VK_FORMAT_R32_UINT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
+
 
 
 
@@ -163,9 +170,9 @@ namespace odfaeg {
                 imageInfo.extent.depth = 1;
                 imageInfo.mipLevels = 1;
                 imageInfo.arrayLayers = 1;
-                imageInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
+                imageInfo.format = VK_FORMAT_R32G32B32A32_SFLOAT;
                 imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-                imageInfo.initialLayout = VK_IMAGE_LAYOUT_GENERAL;
+                imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
                 imageInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT;
                 imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
                 imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -187,6 +194,7 @@ namespace odfaeg {
                     throw std::runtime_error("echec de l'allocation de la memoire d'une image!");
                 }
                 vkBindImageMemory(window.getDevice().getDevice(), alphaTextureImage, alphaTextureImageMemory, 0);
+                transitionImageLayout(alphaTextureImage, VK_FORMAT_R32_UINT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
                 createImageView();
                 createSampler();
                 createUniformBuffers();
@@ -435,6 +443,95 @@ namespace odfaeg {
                 }
                 vkCmdPushDescriptorSetKHR = (PFN_vkCmdPushDescriptorSetKHR)vkGetDeviceProcAddr(vkDevice.getDevice(), "vkCmdPushDescriptorSetKHR");
             }
+            VkCommandBuffer ReflectRefractRenderComponent::beginSingleTimeCommands() {
+                VkCommandBufferAllocateInfo allocInfo{};
+                allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+                allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+
+                allocInfo.commandPool = commandPool;
+                allocInfo.commandBufferCount = 1;
+
+                VkCommandBuffer commandBuffer;
+                vkAllocateCommandBuffers(vkDevice.getDevice(), &allocInfo, &commandBuffer);
+
+                VkCommandBufferBeginInfo beginInfo{};
+                beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+                beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+                vkBeginCommandBuffer(commandBuffer, &beginInfo);
+
+                return commandBuffer;
+            }
+
+            void ReflectRefractRenderComponent::endSingleTimeCommands(VkCommandBuffer commandBuffer) {
+                vkEndCommandBuffer(commandBuffer);
+
+                VkSubmitInfo submitInfo{};
+                submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+                submitInfo.commandBufferCount = 1;
+                submitInfo.pCommandBuffers = &commandBuffer;
+
+                vkQueueSubmit(vkDevice.getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
+                vkQueueWaitIdle(vkDevice.getGraphicsQueue());
+
+                vkFreeCommandBuffers(vkDevice.getDevice(), commandPool, 1, &commandBuffer);
+            }
+            void ReflectRefractRenderComponent::transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout) {
+                VkCommandBuffer commandBuffer = beginSingleTimeCommands();
+
+                VkImageMemoryBarrier barrier{};
+                barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+                barrier.oldLayout = oldLayout;
+                barrier.newLayout = newLayout;
+                barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                barrier.image = image;
+                barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                barrier.subresourceRange.baseMipLevel = 0;
+                barrier.subresourceRange.levelCount = 1;
+                barrier.subresourceRange.baseArrayLayer = 0;
+                barrier.subresourceRange.layerCount = 1;
+
+                VkPipelineStageFlags sourceStage;
+                VkPipelineStageFlags destinationStage;
+
+                if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
+                    barrier.srcAccessMask = 0;
+                    barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+
+                    sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+                    destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+                } else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_GENERAL) {
+                    barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                    barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+                    sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+                    destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+                } else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_GENERAL) {
+                    barrier.srcAccessMask = 0;
+                    barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+                    sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+                    destinationStage =  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+                } else {
+                   throw std::invalid_argument("unsupported layout transition!");
+                }
+                vkCmdPipelineBarrier(
+                commandBuffer,
+                sourceStage, destinationStage,
+                0,
+                0, nullptr,
+                0, nullptr,
+                1, &barrier
+                );
+
+                endSingleTimeCommands(commandBuffer);
+            }
+            void ReflectRefractRenderComponent::loadTextureIndexes() {
+            }
+            std::vector<Entity*> ReflectRefractRenderComponent::getEntities() {
+                return vEntities;
+            }
             uint32_t ReflectRefractRenderComponent::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
                 VkPhysicalDeviceMemoryProperties memProperties;
                 vkGetPhysicalDeviceMemoryProperties(vkDevice.getPhysicalDevice(), &memProperties);
@@ -487,6 +584,17 @@ namespace odfaeg {
                 vkBindBufferMemory(vkDevice.getDevice(), buffer, bufferMemory, 0);
                 compileShaders();
 
+            }
+            void ReflectRefractRenderComponent::createCommandPool() {
+                window::Device::QueueFamilyIndices queueFamilyIndices = vkDevice.findQueueFamilies(vkDevice.getPhysicalDevice(), VK_NULL_HANDLE);
+
+                VkCommandPoolCreateInfo poolInfo{};
+                poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+                poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
+                poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT; // Optionel
+                if (vkCreateCommandPool(vkDevice.getDevice(), &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {
+                    throw core::Erreur(0, "échec de la création d'une command pool!", 1);
+                }
             }
             void ReflectRefractRenderComponent::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) {
                 VkCommandBufferAllocateInfo allocInfo{};
@@ -591,7 +699,7 @@ namespace odfaeg {
                                                                     ModelData model = modelDatas[gl_InstanceIndex];
                                                                     uint textureIndex = material.textureIndex;
                                                                     gl_Position = vec4(position, 1.f) * model.modelMatrix;
-                                                                    vTexCoord = (textureIndex != 0) ? (textureMatrix[textureIndex-1] * vec4(texCoords, 1.f, 1.f)).xy : texCoords;
+                                                                    vTexCoord = texCoords;
                                                                     vColor = color;
                                                                     tIndex = textureIndex;
                                                                     normal = normals;
@@ -667,15 +775,18 @@ namespace odfaeg {
                                                       layout (location = 2) out uint layer;
                                                       layout (location = 3) out uint texIndex;
                                                       layout (location = 4) out vec3 normal;
-                                                      layout (binding = 6) uniform UniformBufferObject {
-                                                         mat4 projectionMatrix[6];
-                                                         mat4 viewMatrix[6];
-                                                      } ubo;
+                                                      struct MatricesDatas {
+                                                          mat4 projectionMatrix;
+                                                          mat4 viewMatrix;
+                                                      };
+                                                      layout (set = 0, binding = 6) uniform UniformBufferObject {
+                                                         MatricesDatas datas[6];
+                                                      };
                                                       void main() {
                                                         for (int face = 0; face < 6; face++) {
                                                             gl_Layer = face;
                                                             for (uint i = 0; i < 3; i++) {
-                                                                gl_Position = gl_in[i].gl_Position * ubo.viewMatrices[face] * ubo.projMatrices[face];
+                                                                gl_Position = gl_in[i].gl_Position * datas[face].viewMatrix * datas[face].projectionMatrix;
                                                                 frontColor = vColor[i];
                                                                 fTexCoords = vTexCoord[i];
                                                                 texIndex = tIndex[i];
@@ -697,7 +808,6 @@ namespace odfaeg {
                                                       layout (location = 1) out vec2 fTexCoords;
                                                       layout (location = 2) out uint layer;
                                                       layout (location = 3) out vec3 normal;
-                                                      out uint layer;
                                                       void main() {
                                                         for (int face = 0; face < 6; face++) {
                                                             gl_Layer = face;
@@ -721,7 +831,6 @@ namespace odfaeg {
                                                                           layout (location = 2) in flat uint texIndex;
                                                                           layout (location = 3) in flat uint layer;
                                                                           layout (location = 4) in vec3 normal;
-                                                                          in flat uint layer;
                                                                           layout (push_constant) uniform PushConsts {
                                                                              uint nbLayers;
                                                                           } pushConsts;
@@ -730,7 +839,7 @@ namespace odfaeg {
                                                                           layout(location = 0) out vec4 fColor;
 
                                                                           void main () {
-                                                                              vec4 texel = (texIndex != 0) ? frontColor * texture2D(textures[texIndex-1], fTexCoords.xy) : frontColor;
+                                                                              vec4 texel = (texIndex != 0) ? frontColor * texture(textures[texIndex-1], fTexCoords.xy) : frontColor;
                                                                               float z = gl_FragCoord.z;
                                                                               float l = float(layer) / float(pushConsts.nbLayers);
                                                                               beginInvocationInterlockARB();
@@ -746,8 +855,8 @@ namespace odfaeg {
                                                                           }
                                                                         )";
                 const std::string buildAlphaBufferFragmentShader = R"(#version 460
-                                                                      #extension GL_ARB_bindless_texture : enable
                                                                       #extension GL_ARB_fragment_shader_interlock : require
+                                                                      #extension GL_EXT_nonuniform_qualifier : enable
                                                                       layout(set = 0, binding = 0) uniform sampler2D textures[];
                                                                       layout(set = 0, binding = 1, rgba32f) uniform coherent image2D alphaBuffer;
                                                                       layout (location = 0) out vec4 fColor;
@@ -761,10 +870,10 @@ namespace odfaeg {
                                                                       layout (location = 2) in flat uint texIndex;
                                                                       layout (location = 3) in flat uint layer;
                                                                       void main() {
-                                                                          vec4 texel = (texIndex != 0) ? frontColor * texture2D(textures[texIndex-1], fTexCoords.xy) : frontColor;
+                                                                          vec4 texel = (texIndex != 0) ? frontColor * texture(textures[texIndex-1], fTexCoords.xy) : frontColor;
                                                                           float current_alpha = texel.a;
                                                                           vec2 position = (gl_FragCoord.xy / pushConsts.resolution.xy);
-                                                                          vec4 depth = texture2D (depthBuffer, position);
+                                                                          vec4 depth = texture (depthBuffer, position);
                                                                           beginInvocationInterlockARB();
                                                                           memoryBarrier();
                                                                           vec4 alpha = imageLoad(alphaBuffer,ivec2(gl_FragCoord.xy));
@@ -793,7 +902,7 @@ namespace odfaeg {
                                                                 layout (location = 0) out vec4 fColor;
                                                                 void main () {
                                                                     vec2 position = (gl_FragCoord.xy / pushConsts.resolution.xy);
-                                                                    vec4 alpha = texture2D(alphaBuffer, position);
+                                                                    vec4 alpha = texture(alphaBuffer, position);
                                                                     bool refr = false;
                                                                     float ratio = 1;
                                                                     if (materialType == 1) {
@@ -809,7 +918,7 @@ namespace odfaeg {
                                                                         ratio = 1.00 / 2.42;
                                                                         refr = true;
                                                                     }
-                                                                    vec3 i = (pos - pushConts.cameraPos);
+                                                                    vec3 i = (vec4(pos.xyz, 1) - pushConsts.cameraPos).xyz;
                                                                     if (refr) {
                                                                         vec3 r = refract (i, normalize(normal), ratio);
                                                                         fColor = texture(sceneBox, r) * (1 - alpha.a);
@@ -820,7 +929,7 @@ namespace odfaeg {
                                                                 }
                                                               )";
                 const std::string fragmentShader = R"(#version 460
-                                                      #extension GL_ARB_bindless_texture : enable
+                                                      #extension GL_EXT_nonuniform_qualifier : enable
                                                       struct NodeType {
                                                           vec4 color;
                                                           float depth;
@@ -843,7 +952,7 @@ namespace odfaeg {
                                                       layout(location = 0) out vec4 fcolor;
                                                       void main() {
                                                            uint nodeIdx = atomicAdd(count[layer], 1);
-                                                           vec4 texel = (texIndex != 0) ? frontColor * texture2D(textures[texIndex-1], fTexCoords.xy) : frontColor;
+                                                           vec4 texel = (texIndex != 0) ? frontColor * texture(textures[texIndex-1], fTexCoords.xy) : frontColor;
                                                            if (nodeIdx < maxNodes) {
                                                                 uint prevHead = imageAtomicExchange(headPointers, ivec3(gl_FragCoord.xy, layer), nodeIdx);
                                                                 nodes[nodeIdx+layer*maxNodes].color = texel;
@@ -938,7 +1047,7 @@ namespace odfaeg {
                 viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
                 viewInfo.image = depthTextureImage;
                 viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-                viewInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
+                viewInfo.format = VK_FORMAT_R32G32B32A32_SFLOAT;
                 viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
                 viewInfo.subresourceRange.baseMipLevel = 0;
                 viewInfo.subresourceRange.levelCount = 1;
@@ -950,7 +1059,7 @@ namespace odfaeg {
                 viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
                 viewInfo.image = alphaTextureImage;
                 viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-                viewInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
+                viewInfo.format = VK_FORMAT_R32G32B32A32_SFLOAT;
                 viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
                 viewInfo.subresourceRange.baseMipLevel = 0;
                 viewInfo.subresourceRange.levelCount = 1;
@@ -1194,11 +1303,11 @@ namespace odfaeg {
                     materialDataLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
                     VkDescriptorSetLayoutBinding uniformBufferLayoutBinding;
-                    materialDataLayoutBinding.binding = 6;
-                    materialDataLayoutBinding.descriptorCount = 1;
-                    materialDataLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-                    materialDataLayoutBinding.pImmutableSamplers = nullptr;
-                    materialDataLayoutBinding.stageFlags = VK_SHADER_STAGE_GEOMETRY_BIT;
+                    uniformBufferLayoutBinding.binding = 6;
+                    uniformBufferLayoutBinding.descriptorCount = 1;
+                    uniformBufferLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+                    uniformBufferLayoutBinding.pImmutableSamplers = nullptr;
+                    uniformBufferLayoutBinding.stageFlags = VK_SHADER_STAGE_GEOMETRY_BIT;
 
                     std::array<VkDescriptorSetLayoutBinding, 7> bindings = {counterLayoutBinding, headPtrImageLayoutBinding, linkedListLayoutBinding, samplerLayoutBinding, modelDataLayoutBinding, materialDataLayoutBinding, uniformBufferLayoutBinding};
                     VkDescriptorSetLayoutCreateInfo layoutInfo{};
@@ -2707,6 +2816,12 @@ namespace odfaeg {
             }
             RenderTexture* ReflectRefractRenderComponent::getFrameBuffer() {
                 return &reflectRefractTex;
+            }
+            int ReflectRefractRenderComponent::getLayer() {
+                return getPosition().z;
+            }
+            bool ReflectRefractRenderComponent::needToUpdate() {
+                return update;
             }
             bool ReflectRefractRenderComponent::loadEntitiesOnComponent(std::vector<Entity*> visibleEntities) {
                 batcher.clear();
