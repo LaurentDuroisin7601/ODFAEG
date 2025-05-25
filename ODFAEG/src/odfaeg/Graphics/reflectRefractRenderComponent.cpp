@@ -189,6 +189,7 @@ namespace odfaeg {
                 vkBindImageMemory(window.getDevice().getDevice(), alphaTextureImage, alphaTextureImageMemory, 0);
                 createImageView();
                 createSampler();
+                createUniformBuffers();
                 RenderStates states;
                 states.shader = &sLinkedList;
                 createDescriptorPool(states);
@@ -234,28 +235,10 @@ namespace odfaeg {
                 for (unsigned int j = 0; j < NBDEPTHSTENCIL; j++) {
                     for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
                         if (j == 0) {
-                           VkPushConstantRange push_constant;
-                           //this push constant range starts at the beginning
-                           push_constant.offset = 0;
-                           //this push constant range takes up the size of a MeshPushConstants struct
-                           push_constant.size = sizeof(LinkedListPC);
-                           //this push constant range is accessible only in the vertex shader
-                           push_constant.stageFlags = VK_SHADER_STAGE_GEOMETRY_BIT;
-                           pipelineLayoutInfo[sLinkedList.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][NODEPTHNOSTENCIL].pPushConstantRanges = &push_constant;
-                           pipelineLayoutInfo[sLinkedList.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][NODEPTHNOSTENCIL].pushConstantRangeCount = 1;
                            depthStencilCreateInfo[sLinkedList.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][NODEPTHNOSTENCIL].depthCompareOp = VK_COMPARE_OP_ALWAYS;
                            depthStencilCreateInfo[sLinkedList.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][NODEPTHNOSTENCIL].front = {};
                            depthStencilCreateInfo[sLinkedList.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][NODEPTHNOSTENCIL].back = {};
                         } else {
-                            VkPushConstantRange push_constant;
-                           //this push constant range starts at the beginning
-                           push_constant.offset = 0;
-                           //this push constant range takes up the size of a MeshPushConstants struct
-                           push_constant.size = sizeof(LinkedListPC);
-                           //this push constant range is accessible only in the vertex shader
-                           push_constant.stageFlags = VK_SHADER_STAGE_GEOMETRY_BIT;
-                           pipelineLayoutInfo[sLinkedList.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][DEPTHNOSTENCIL].pPushConstantRanges = &push_constant;
-                           pipelineLayoutInfo[sLinkedList.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][DEPTHNOSTENCIL].pushConstantRangeCount = 1;
                            depthStencilCreateInfo[sLinkedList.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][DEPTHNOSTENCIL].depthCompareOp = VK_COMPARE_OP_GREATER;
                            depthStencilCreateInfo[sLinkedList.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][DEPTHNOSTENCIL].front = {};
                            depthStencilCreateInfo[sLinkedList.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][DEPTHNOSTENCIL].back = {};
@@ -332,7 +315,7 @@ namespace odfaeg {
                             push_constants[0] = push_constant;
                             VkPushConstantRange push_constant2;
                             //this push constant range starts at the beginning
-                            push_constant.offset = 64;
+                            push_constant.offset = 128;
                             //this push constant range takes up the size of a MeshPushConstants struct
                             push_constant.size = sizeof(BuildDepthPC);
                             //this push constant range is accessible only in the vertex shader
@@ -361,7 +344,7 @@ namespace odfaeg {
                             push_constants[0] = push_constant;
                             VkPushConstantRange push_constant2;
                             //this push constant range starts at the beginning
-                            push_constant.offset = 64;
+                            push_constant.offset = 128;
                             //this push constant range takes up the size of a MeshPushConstants struct
                             push_constant.size = sizeof(BuildAlphaPC);
                             //this push constant range is accessible only in the vertex shader
@@ -461,6 +444,22 @@ namespace odfaeg {
                     }
                 }
                 throw std::runtime_error("aucun type de memoire ne satisfait le buffer!");
+            }
+            void ReflectRefractRenderComponent::createUniformBuffers() {
+                VkDeviceSize bufferSize = sizeof(UniformBufferObject);
+                uniformBuffer.resize(environmentMap.getMaxFramesInFlight());
+                uniformBufferMemory.resize(environmentMap.getMaxFramesInFlight());
+                for (size_t i = 0; i < environmentMap.getMaxFramesInFlight(); i++) {
+                    createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffer[i], uniformBufferMemory[i]);
+                    //std::cout<<"uniform buffer : "<<ubos[i]<<std::endl;
+                }
+            }
+            void ReflectRefractRenderComponent::updateUniformBuffer(uint32_t currentImage, UniformBufferObject ubo) {
+                void* data;
+                vkMapMemory(vkDevice.getDevice(), uniformBufferMemory[currentImage], 0, sizeof(ubo), 0, &data);
+                    memcpy(data, &ubo, sizeof(ubo));
+                vkUnmapMemory(vkDevice.getDevice(), uniformBufferMemory[currentImage]);
+
             }
             void ReflectRefractRenderComponent::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory) {
                 VkBufferCreateInfo bufferInfo{};
@@ -668,10 +667,10 @@ namespace odfaeg {
                                                       layout (location = 2) out uint layer;
                                                       layout (location = 3) out uint texIndex;
                                                       layout (location = 4) out vec3 normal;
-                                                      layout (push_constant)uniform PushConsts {
+                                                      layout (binding = 6) uniform UniformBufferObject {
                                                          mat4 projectionMatrix[6];
                                                          mat4 viewMatrix[6];
-                                                      } pushConsts;
+                                                      } ubo;
                                                       void main() {
                                                         for (int face = 0; face < 6; face++) {
                                                             gl_Layer = face;
@@ -724,7 +723,7 @@ namespace odfaeg {
                                                                           layout (location = 4) in vec3 normal;
                                                                           in flat uint layer;
                                                                           layout (push_constant) uniform PushConsts {
-                                                                            layout (offset = 64) uint nbLayers;
+                                                                             uint nbLayers;
                                                                           } pushConsts;
                                                                           layout(set = 0, binding = 0) uniform sampler2D textures[];
                                                                           layout(set = 0, binding = 1, rgba32f) uniform coherent image2D depthBuffer;
@@ -754,7 +753,7 @@ namespace odfaeg {
                                                                       layout (location = 0) out vec4 fColor;
                                                                       layout (set = 0, binding = 2) uniform sampler2D depthBuffer;
                                                                       layout (push_constant) uniform PushConsts {
-                                                                            layout (offset = 64) vec4 resolution;
+                                                                            vec4 resolution;
                                                                             uint nbLayers;
                                                                       } pushConsts;
                                                                       layout (location = 0) in vec4 frontColor;
@@ -917,8 +916,8 @@ namespace odfaeg {
                     if (!sBuildAlphaBuffer.loadFromMemory(indirectRenderingVertexShader,buildAlphaBufferFragmentShader)) {
                         throw core::Erreur(60, "Error, failed to load build alpha buffer shader", 3);
                     }
-                    math::Matrix4f viewMatrix = getWindow().getDefaultView().getViewMatrix().getMatrix()/*.transpose()*/;
-                    math::Matrix4f projMatrix = getWindow().getDefaultView().getProjMatrix().getMatrix()/*.transpose()*/;
+                    math::Matrix4f viewMatrix = getWindow().getDefaultView().getViewMatrix().getMatrix().transpose();
+                    math::Matrix4f projMatrix = getWindow().getDefaultView().getProjMatrix().getMatrix().transpose();
                     linkedList2PC.viewMatrix = viewMatrix;
                     linkedList2PC.projMatrix = projMatrix;
             }
@@ -1033,7 +1032,7 @@ namespace odfaeg {
                     descriptorPool.resize(shader->getNbShaders()*environmentMap.getNbRenderTargets());
                     //std::cout<<"ppll descriptor id : "<<environmentMap.getId()<<","<<shader->getId()<<","<<environmentMap.getId() * shader->getNbShaders() + shader->getId()<<std::endl;
                     std::vector<Texture*> allTextures = Texture::getAllTextures();
-                    std::array<VkDescriptorPoolSize, 6> poolSizes;
+                    std::array<VkDescriptorPoolSize, 7> poolSizes;
                     poolSizes[0].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
                     poolSizes[0].descriptorCount = static_cast<uint32_t>(environmentMap.getMaxFramesInFlight());
                     poolSizes[1].type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
@@ -1046,6 +1045,8 @@ namespace odfaeg {
                     poolSizes[4].descriptorCount = static_cast<uint32_t>(environmentMap.getMaxFramesInFlight());
                     poolSizes[5].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
                     poolSizes[5].descriptorCount = static_cast<uint32_t>(environmentMap.getMaxFramesInFlight());
+                    poolSizes[6].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+                    poolSizes[6].descriptorCount = static_cast<uint32_t>(environmentMap.getMaxFramesInFlight());
 
 
                     VkDescriptorPoolCreateInfo poolInfo{};
@@ -1192,7 +1193,14 @@ namespace odfaeg {
                     materialDataLayoutBinding.pImmutableSamplers = nullptr;
                     materialDataLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
-                    std::array<VkDescriptorSetLayoutBinding, 6> bindings = {counterLayoutBinding, headPtrImageLayoutBinding, linkedListLayoutBinding, samplerLayoutBinding, modelDataLayoutBinding, materialDataLayoutBinding};
+                    VkDescriptorSetLayoutBinding uniformBufferLayoutBinding;
+                    materialDataLayoutBinding.binding = 6;
+                    materialDataLayoutBinding.descriptorCount = 1;
+                    materialDataLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+                    materialDataLayoutBinding.pImmutableSamplers = nullptr;
+                    materialDataLayoutBinding.stageFlags = VK_SHADER_STAGE_GEOMETRY_BIT;
+
+                    std::array<VkDescriptorSetLayoutBinding, 7> bindings = {counterLayoutBinding, headPtrImageLayoutBinding, linkedListLayoutBinding, samplerLayoutBinding, modelDataLayoutBinding, materialDataLayoutBinding, uniformBufferLayoutBinding};
                     VkDescriptorSetLayoutCreateInfo layoutInfo{};
                     layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
                     //layoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR;
@@ -1452,7 +1460,7 @@ namespace odfaeg {
                             descriptorImageInfos[j].imageView = allTextures[j]->getImageView();
                             descriptorImageInfos[j].sampler = allTextures[j]->getSampler();
                         }
-                        std::array<VkWriteDescriptorSet, 6> descriptorWrites{};
+                        std::array<VkWriteDescriptorSet, 7> descriptorWrites{};
 
                         VkDescriptorBufferInfo counterStorageBufferInfoLastFrame{};
                         counterStorageBufferInfoLastFrame.buffer = counterShaderStorageBuffers[i];
@@ -1528,6 +1536,19 @@ namespace odfaeg {
                         descriptorWrites[5].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
                         descriptorWrites[5].descriptorCount = 1;
                         descriptorWrites[5].pBufferInfo = &materialDataStorageBufferInfoLastFrame;
+
+                        VkDescriptorBufferInfo bufferInfo{};
+                        bufferInfo.buffer = uniformBuffer[i];
+                        bufferInfo.offset = 0;
+                        bufferInfo.range = sizeof(UniformBufferObject);
+
+                        descriptorWrites[6].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                        descriptorWrites[6].dstSet = descriptorSets[descriptorId][i];
+                        descriptorWrites[6].dstBinding = 6;
+                        descriptorWrites[6].dstArrayElement = 0;
+                        descriptorWrites[6].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+                        descriptorWrites[6].descriptorCount = 1;
+                        descriptorWrites[6].pBufferInfo = &bufferInfo;
 
                         vkUpdateDescriptorSets(vkDevice.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
                     }
@@ -1807,7 +1828,7 @@ namespace odfaeg {
                     unsigned int currentFrame = depthBuffer.getCurrentFrame();
                     buildDepthPC.nbLayers = GameObject::getNbLayers();
                     vkCmdPushConstants(commandBuffers[currentFrame], depthBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][depthBuffer.getId()][depthStencilID], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectRenderingPC), &indirectRenderingPC);
-                    vkCmdPushConstants(commandBuffers[currentFrame], depthBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][depthBuffer.getId()][depthStencilID], VK_SHADER_STAGE_VERTEX_BIT, 64, sizeof(BuildDepthPC), &buildDepthPC);
+                    vkCmdPushConstants(commandBuffers[currentFrame], depthBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][depthBuffer.getId()][depthStencilID], VK_SHADER_STAGE_VERTEX_BIT, 128, sizeof(BuildDepthPC), &buildDepthPC);
                     depthBuffer.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
                     depthBuffer.display();
                 }

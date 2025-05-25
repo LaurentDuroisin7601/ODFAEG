@@ -43,10 +43,6 @@ namespace odfaeg {
                 unsigned int count[6];
                 unsigned int maxNodeCount;
             };
-            struct LinkedListPC  {
-                math::Matrix4f projMatrix[6];
-                math::Matrix4f viewMatrix[6];
-            };
             struct IndirectRenderingPC  {
                 math::Matrix4f projMatrix;
                 math::Matrix4f viewMatrix;
@@ -66,6 +62,10 @@ namespace odfaeg {
             struct BuildFrameBufferPC {
                 math::Vec3f cameraPos;
                 math::Vec3f resolution;
+            };
+            struct UniformBufferObject {
+                math::Matrix4f projMatrix[6];
+                math::Matrix4f viewMatrix[6];
             };
             ReflectRefractRenderComponent (RenderWindow& window, int layer, std::string expression, window::ContextSettings settings);
             void loadTextureIndexes() {}
@@ -121,6 +121,8 @@ namespace odfaeg {
             void createDescriptorSets(RenderStates states);
             void allocateDescriptorSets(RenderStates states);
             void compileShaders();
+            void createUniformBuffers();
+            void updateUniformBuffer(uint32_t currentImage, UniformBufferObject ubo);
             void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
             void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
             void createImageView();
@@ -154,6 +156,8 @@ namespace odfaeg {
             VkDeviceSize maxVboIndirectSize, maxModelDataSize, maxMaterialDataSize;
             VkBuffer vboIndirect, vboIndirectStagingBuffer;
             VkDeviceMemory vboIndirectMemory, vboIndirectStagingBufferMemory;
+            std::vector<VkBuffer> uniformBuffer;
+            std::vector<VkDeviceMemory> uniformBufferMemory;
             std::vector<VkBuffer> linkedListShaderStorageBuffers;
             std::vector<VkDeviceMemory> linkedListShaderStorageBuffersMemory;
             std::vector<VkBuffer> counterShaderStorageBuffers;
@@ -182,12 +186,12 @@ namespace odfaeg {
             std::array<std::vector<ModelData>, Batcher::nbPrimitiveTypes> modelDatas;
             std::array<std::vector<MaterialData>, Batcher::nbPrimitiveTypes> materialDatas;
             math::Vec3f resolution;
-            LinkedListPC linkedListPC;
             LinkedList2PC linkedList2PC;
             IndirectRenderingPC indirectRenderingPC;
             BuildDepthPC buildDepthPC;
             BuildAlphaPC buildAlphaPC;
             BuildFrameBufferPC buildFrameBufferPC;
+            UniformBufferObject ubo;
             bool needToUpdateDS;
         };
         #else
