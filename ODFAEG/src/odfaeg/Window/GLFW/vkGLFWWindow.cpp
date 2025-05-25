@@ -42,6 +42,7 @@ namespace odfaeg {
             glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
             glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
             window = glfwCreateWindow(mode.width, mode.height, title.toAnsiString().c_str(), nullptr, nullptr);
+            glfwSetKeyCallback(window, key_callback);
             opened = true;
         }
         void VKGLFWWindow::create (sf::WindowHandle handle, const ContextSettings& settings) {
