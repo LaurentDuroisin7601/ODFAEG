@@ -183,8 +183,7 @@ namespace odfaeg {
                        depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL].back = {}; // Optional
                        frameBuffer.createGraphicPipeline(static_cast<sf::PrimitiveType>(i), states, NODEPTHNOSTENCIL, NBDEPTHSTENCIL);
 
-                       /*std::cout<<"ppll size dl : "<<descriptorSetLayout.size()<<std::endl;
-                       system("PAUSE");*/
+
                    } else if (j == 1) {
                        frameBuffer.enableStencilTest(true);
                        depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL].depthCompareOp = VK_COMPARE_OP_ALWAYS;
