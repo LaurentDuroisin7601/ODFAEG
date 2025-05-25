@@ -1,5 +1,6 @@
 #include "../../../../include/odfaeg/Window/GLFW/vkGLFWWindow.hpp"
 #include "../../../../include/odfaeg/Window/GLFW/glfwKeyboard.hpp"
+#include "../../../../include/odfaeg/Window/GLFW/glfwMouse.hpp"
 #ifdef VULKAN
 
 namespace odfaeg {
@@ -29,6 +30,32 @@ namespace odfaeg {
             event.keyboard.code = GLFWKeyboard::glfwToODFAEGKey(key);
             VKGLFWWindow::currentGLFWWindow->pushEvent(event);
         }
+        void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
+        {
+            IEvent event;
+            event.type = IEvent::EventType::MOUSE_MOTION_EVENT;
+            event.mouseMotion.type = IEvent::EventType::MOUSE_MOTION_EVENT;
+            event.mouseMotion.x = xpos;
+            event.mouseMotion.y = ypos;
+            VKGLFWWindow::currentGLFWWindow->pushEvent(event);
+        }
+        void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+        {
+            IEvent event;
+            event.type = IEvent::EventType::MOUSE_BUTTON_EVENT;
+            if (action == GLFW_PRESS) {
+                event.mouseButton.type = IEvent::MouseEventID::BUTTON_EVENT_PRESSED;
+            }
+            if (action == GLFW_RELEASE) {
+                event.mouseButton.type = IEvent::MouseEventID::BUTTON_EVENT_RELEASED;
+            }
+            event.mouseButton.button = GLFWMouse::glfwToODFAEGButton(button);
+            double xpos, ypos;
+            glfwGetCursorPos(window, &xpos, &ypos);
+            event.mouseButton.x = xpos;
+            event.mouseButton.y = ypos;
+            VKGLFWWindow::currentGLFWWindow->pushEvent(event);
+        }
         VKGLFWWindow* VKGLFWWindow::currentGLFWWindow = nullptr;
         VKGLFWWindow::VKGLFWWindow() {
             m_settings = ContextSettings(0, 0, 0, 0, 0);
@@ -43,6 +70,8 @@ namespace odfaeg {
             glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
             window = glfwCreateWindow(mode.width, mode.height, title.toAnsiString().c_str(), nullptr, nullptr);
             glfwSetKeyCallback(window, key_callback);
+            glfwSetCursorPosCallback(window, cursor_position_callback);
+            glfwSetMouseButtonCallback(window, mouse_button_callback);
             opened = true;
         }
         void VKGLFWWindow::create (sf::WindowHandle handle, const ContextSettings& settings) {

@@ -46,6 +46,8 @@ set(SRC_WINDOW
 	${SRCROOT}/GLFW/vkGLFWWindow.cpp
 	${INCROOT}/GLFW/glfwKeyboard.hpp
 	${SRCROOT}/GLFW/glfwKeyboard.cpp
+	${INCROOT}/GLFW/glfwMouse.hpp
+	${SRCROOT}/GLFW/glfwMouse.cpp
 	${INCROOT}/vkDebug.hpp
 	${SRCROOT}/vkDebug.cpp
 	${INCROOT}/vkSettup.hpp
