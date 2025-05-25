@@ -196,14 +196,16 @@ namespace odfaeg {
             void display();
             GLFWwindow* getWindow();
             const ContextSettings& getSettings() const;
-            private :
             void pushEvent(IEvent event);
+            static VKGLFWWindow* currentGLFWWindow;
+            private :
             std::queue<IEvent> events;
             bool opened;
             ContextSettings m_settings;
             GLFWwindow* window;
-            static VKGLFWWindow* currentGLFWWindow;
+
         };
+        void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
     }
 }
 #endif

@@ -1,8 +1,34 @@
 #include "../../../../include/odfaeg/Window/GLFW/vkGLFWWindow.hpp"
+#include "../../../../include/odfaeg/Window/GLFW/glfwKeyboard.hpp"
 #ifdef VULKAN
 
 namespace odfaeg {
     namespace window {
+        void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+        {
+            IEvent event;
+            event.type = IEvent::KEYBOARD_EVENT;
+            if (mods == GLFW_MOD_SHIFT) {
+                event.keyboard.shift = true;
+            }
+            if (mods == GLFW_MOD_CONTROL) {
+                event.keyboard.control = true;
+            }
+            if (mods == GLFW_MOD_ALT) {
+                event.keyboard.alt = true;
+            }
+            if (mods == GLFW_MOD_SUPER) {
+                event.keyboard.system = true;
+            }
+            if (action == GLFW_PRESS) {
+                event.keyboard.type    = IEvent::KeyEventID::KEY_EVENT_PRESSED;
+            }
+            if (action == GLFW_RELEASE) {
+                event.keyboard.type    = IEvent::KeyEventID::KEY_EVENT_RELEASED;
+            }
+            event.keyboard.code = GLFWKeyboard::glfwToODFAEGKey(key);
+            VKGLFWWindow::currentGLFWWindow->pushEvent(event);
+        }
         VKGLFWWindow* VKGLFWWindow::currentGLFWWindow = nullptr;
         VKGLFWWindow::VKGLFWWindow() {
             m_settings = ContextSettings(0, 0, 0, 0, 0);
@@ -22,6 +48,9 @@ namespace odfaeg {
         }
         bool VKGLFWWindow::isOpen() const {
             return opened;
+        }
+        void VKGLFWWindow::pushEvent(IEvent event) {
+            events.push(event);
         }
         bool VKGLFWWindow::pollEvent (IEvent& event) {
             currentGLFWWindow = this;

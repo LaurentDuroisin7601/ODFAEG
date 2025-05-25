@@ -44,6 +44,8 @@ set(SRC_WINDOW
 	${SRCROOT}/SFML/sfmlContextImpl.cpp
 	${INCROOT}/GLFW/vkGLFWWindow.hpp
 	${SRCROOT}/GLFW/vkGLFWWindow.cpp
+	${INCROOT}/GLFW/glfwKeyboard.hpp
+	${SRCROOT}/GLFW/glfwKeyboard.cpp
 	${INCROOT}/vkDebug.hpp
 	${SRCROOT}/vkDebug.cpp
 	${INCROOT}/vkSettup.hpp
