@@ -1796,7 +1796,10 @@ namespace odfaeg {
                 depthBuffer.clear(sf::Color::Transparent);
                 std::vector<VkCommandBuffer>& commandBuffers = depthBuffer.getCommandBuffers();
                 VkClearColorValue clearColor;
-                clearColor.uint32[0] = 0xffffffff;
+                clearColor.uint32[0] = 0;
+                clearColor.uint32[1] = 0;
+                clearColor.uint32[2] = 0;
+                clearColor.uint32[3] = 0;
                 VkImageSubresourceRange subresRange = {};
                 subresRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
                 subresRange.levelCount = 1;
@@ -1857,6 +1860,29 @@ namespace odfaeg {
                     reflectRefractTex.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
                     reflectRefractTex.display();
                 }
+            }
+            void ReflectRefractRenderComponent::createCommandBufferVertexBuffer(RenderStates currentStates) {
+                environmentMap.beginRecordCommandBuffers();
+                Shader* shader = const_cast<Shader*>(currentStates.shader);
+                unsigned int currentFrame = environmentMap.getCurrentFrame();
+                std::vector<VkCommandBuffer>& commandBuffers = environmentMap.getCommandBuffers();
+                vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 0, nullptr);
+
+
+                VkMemoryBarrier memoryBarrier;
+                memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+                memoryBarrier.pNext = VK_NULL_HANDLE;
+                memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+                memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+
+
+
+                vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
+                vkCmdPushConstants(commandBuffers[currentFrame], environmentMap.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + vb.getPrimitiveType()][environmentMap.getId()][NODEPTHNOSTENCIL], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(LinkedList2PC), &linkedList2PC);
+
+                environmentMap.drawVertexBuffer(commandBuffers[currentFrame], currentFrame, vb, NODEPTHNOSTENCIL, currentStates);
+                environmentMap.display();
+
             }
             void ReflectRefractRenderComponent::drawDepthReflInst() {
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
@@ -2525,6 +2551,140 @@ namespace odfaeg {
                         createCommandBuffersIndirect(p, drawArraysIndirectCommands[p].size(), sizeof(DrawArraysIndirectCommand), NODEPTHNOSTENCIL, currentStates);
                     }
                 }
+            }
+            void ReflectRefractRenderComponent::drawNextFrame() {
+                RenderStates currentStates;
+                math::Matrix4f viewMatrix = view.getViewMatrix().getMatrix()/*.transpose()*/;
+                math::Matrix4f projMatrix = view.getProjMatrix().getMatrix()/*.transpose()*/;
+                indirectRenderingPC.projMatrix = projMatrix;
+                indirectRenderingPC.viewMatrix = viewMatrix;
+
+                drawDepthReflInst();
+                drawAlphaInst();
+
+                View reflectView;
+                if (view.isOrtho()) {
+                    reflectView = View (squareSize, squareSize, view.getViewport().getPosition().z, view.getViewport().getSize().z);
+                } else {
+                    reflectView = View (squareSize, squareSize, 80, view.getViewport().getPosition().z, view.getViewport().getSize().z);
+                }
+                rootEntities.clear();
+                for (unsigned int t = 0; t < 2; t++) {
+                    std::vector<Instance> instances = (t == 0) ? m_reflInstances : m_reflNormals;
+                    for (unsigned int n = 0; n < instances.size(); n++) {
+                        if (instances[n].getAllVertices().getVertexCount() > 0) {
+                            std::vector<Entity*> entities = instances[n].getEntities();
+                            for (unsigned int e = 0; e < entities.size(); e++) {
+                                Entity* entity = entities[e]->getRootEntity();
+                                bool contains = false;
+                                for (unsigned int r = 0; r < rootEntities.size() && !contains; r++) {
+                                    if (rootEntities[r] == entity)
+                                        contains = true;
+                                }
+                                if (!contains) {
+                                    rootEntities.push_back(entity);
+                                    /*math::Vec3f scale(1, 1, 1);
+                                    if (entity->getSize().x > squareSize) {
+                                        scale.x = entity->getSize().x / squareSize;
+                                    }
+                                    if (entity->getSize().y > squareSize) {
+                                        scale.y = entity->getSize().y / squareSize;
+                                    }*/
+                                    //std::cout<<"scale : "<<scale<<"position : "<<entity->getPosition()<<std::endl;
+                                    //reflectView.setScale(scale.x, scale.y, scale.z);
+                                    if (entity->getType() != "E_BIGTILE")
+                                        reflectView.setCenter(entity->getPosition()+entity->getSize()*0.5f);
+                                    else
+                                        reflectView.setCenter(view.getPosition());
+                                    math::Matrix4f projMatrices[6];
+                                    math::Matrix4f viewMatrices[6];
+                                    math::Matrix4f sbProjMatrices[6];
+                                    math::Matrix4f sbViewMatrices[6];
+
+                                    environmentMap.setView(reflectView);
+                                    for (unsigned int m = 0; m < 6; m++) {
+                                        math::Vec3f target = reflectView.getPosition() + dirs[m];
+                                        reflectView.lookAt(target.x, target.y, target.z, ups[m]);
+                                        projMatrix = reflectView.getProjMatrix().getMatrix().transpose();
+                                        viewMatrix = reflectView.getViewMatrix().getMatrix().transpose();
+                                        projMatrices[m] = projMatrix;
+                                        viewMatrices[m] = viewMatrix;
+                                        float zNear = reflectView.getViewport().getPosition().z;
+                                        if (!reflectView.isOrtho())
+                                            reflectView.setPerspective(80, view.getViewport().getSize().x / view.getViewport().getSize().y, 0.1f, view.getViewport().getSize().z);
+                                        viewMatrix = reflectView.getViewMatrix().getMatrix().transpose();
+                                        projMatrix = reflectView.getProjMatrix().getMatrix().transpose();
+                                        math::Matrix4f sbViewMatrix = math::Matrix4f(math::Matrix3f(viewMatrix));
+                                        sbViewMatrices[m] = sbViewMatrix;
+                                        sbProjMatrices[m] = projMatrix;
+                                        if (!reflectView.isOrtho())
+                                            reflectView.setPerspective(80, view.getViewport().getSize().x / view.getViewport().getSize().y, zNear, view.getViewport().getSize().z);
+
+                                    }
+                                    environmentMap.clear(sf::Color::Transparent);
+                                    VkClearColorValue clearColor;
+                                    clearColor.uint32[0] = 0xffffffff;
+                                    std::vector<VkCommandBuffer>& commandBuffers = environmentMap.getCommandBuffers();
+                                    for (unsigned int i = 0; i < commandBuffers.size(); i++) {
+                                        VkImageSubresourceRange subresRange = {};
+                                        subresRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                                        subresRange.levelCount = 1;
+                                        subresRange.layerCount = 1;
+                                        vkCmdClearColorImage(commandBuffers[i], headPtrTextureImage, VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
+                                        for (unsigned int j = 0; j < 6; j++) {
+                                            vkCmdFillBuffer(commandBuffers[i], counterShaderStorageBuffers[i], i, sizeof(uint32_t), 0);
+                                        }
+                                    }
+
+                                    /*vb.clear();
+                                    //vb.name = "SKYBOXVB";
+                                    for (unsigned int i = 0; i < m_skyboxInstance.size(); i++) {
+                                        if (m_skyboxInstance[i].getAllVertices().getVertexCount() > 0) {
+                                            vb.setPrimitiveType(m_skyboxInstance[i].getAllVertices().getPrimitiveType());
+                                            for (unsigned int j = 0; j < m_skyboxInstance[i].getAllVertices().getVertexCount(); j++) {
+                                                //std::cout<<"append"<<std::endl;
+                                                vb.append(m_skyboxInstance[i].getAllVertices()[j]);
+                                            }
+                                        }
+                                    }
+                                    currentStates.blendMode = sf::BlendAlpha;
+                                    currentStates.shader = &skyboxShader;
+                                    currentStates.texture = (skybox == nullptr ) ? nullptr : &static_cast<g3d::Skybox*>(skybox)->getTexture();
+                                    vb.update();
+                                    environmentMap.drawVertexBuffer(vb, currentStates);*/
+                                    UniformBufferObject ubo;
+                                    for (unsigned int f = 0; f < 6; f++) {
+                                        ubo.projMatrix[f] = projMatrices[f];
+                                        ubo.viewMatrix[f] = viewMatrices[f];
+                                    }
+                                    updateUniformBuffer(environmentMap.getCurrentFrame(), ubo);
+                                    drawEnvReflInst();
+                                    vb.clear();
+                                    vb.setPrimitiveType(sf::Quads);
+                                    Vertex v1 (sf::Vector3f(0, 0, quad.getSize().z));
+                                    Vertex v2 (sf::Vector3f(quad.getSize().x,0, quad.getSize().z));
+                                    Vertex v3 (sf::Vector3f(quad.getSize().x, quad.getSize().y, quad.getSize().z));
+                                    Vertex v4 (sf::Vector3f(0, quad.getSize().y, quad.getSize().z));
+                                    vb.append(v1);
+                                    vb.append(v2);
+                                    vb.append(v3);
+                                    vb.append(v4);
+                                    vb.update();
+                                    math::Matrix4f matrix = quad.getTransform().getMatrix()/*.transpose()*/;
+                                    linkedList2PC.worldMat = matrix;
+                                    currentStates.shader = &sLinkedList2;
+                                    currentStates.texture = nullptr;
+                                    createCommandBufferVertexBuffer(currentStates);
+
+                                    buildFrameBufferPC.cameraPos = math::Vec3f(view.getPosition().x, view.getPosition().y, view.getPosition().z);
+                                    drawReflInst(entity);
+                                }
+                            }
+                        }
+
+                    }
+                }
+                reflectRefractTex.display();
             }
             ReflectRefractRenderComponent::~ReflectRefractRenderComponent() {
 
