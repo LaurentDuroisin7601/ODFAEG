@@ -54,6 +54,7 @@ namespace odfaeg {
                 math::Matrix4f worldMat;
             };
             PerPixelLinkedListRenderComponent (RenderWindow& window, int layer, std::string expression, window::ContextSettings settings);
+            void createDescriptorsAndPipelines();
             void drawNextFrame();
             bool loadEntitiesOnComponent(std::vector<Entity*> visibleEntities);
             bool needToUpdate();
