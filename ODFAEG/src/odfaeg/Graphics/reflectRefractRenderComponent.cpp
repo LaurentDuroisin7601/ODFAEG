@@ -2686,6 +2686,68 @@ namespace odfaeg {
                 }
                 reflectRefractTex.display();
             }
+            void ReflectRefractRenderComponent::draw(RenderTarget& target, RenderStates states) {
+                reflectRefractTexSprite.setCenter(target.getView().getPosition());
+                target.draw(reflectRefractTexSprite, states);
+            }
+            std::string ReflectRefractRenderComponent::getExpression() {
+                return expression;
+            }
+            void ReflectRefractRenderComponent::setExpression (std::string expression) {
+                this->expression = expression;
+            }
+            void ReflectRefractRenderComponent::setView(View view) {
+                depthBuffer.setView(view);
+                alphaBuffer.setView(view);
+                reflectRefractTex.setView(view);
+                this->view = view;
+            }
+            View& ReflectRefractRenderComponent::getView() {
+                return view;
+            }
+            RenderTexture* ReflectRefractRenderComponent::getFrameBuffer() {
+                return &reflectRefractTex;
+            }
+            bool ReflectRefractRenderComponent::loadEntitiesOnComponent(std::vector<Entity*> visibleEntities) {
+                batcher.clear();
+                normalBatcher.clear();
+                reflBatcher.clear();
+                reflNormalBatcher.clear();
+                skyboxBatcher.clear();
+                if (skybox != nullptr) {
+                    for (unsigned int i = 0; i < skybox->getFaces().size(); i++) {
+                        skyboxBatcher.addFace(skybox->getFace(i));
+                    }
+                }
+                for (unsigned int i = 0; i < vEntities.size(); i++) {
+                    if ( vEntities[i] != nullptr && vEntities[i]->isLeaf()) {
+                        for (unsigned int j = 0; j <  vEntities[i]->getNbFaces(); j++) {
+                            if (vEntities[i]->getFace(j)->getMaterial().isReflectable() || vEntities[i]->getFace(j)->getMaterial().isRefractable()) {
+
+                                if (vEntities[i]->getDrawMode() == Entity::INSTANCED) {
+                                    reflBatcher.addFace( vEntities[i]->getFace(j));
+                                } else {
+                                    reflNormalBatcher.addFace(vEntities[i]->getFace(j));
+                                }
+                            } else {
+                                if (vEntities[i]->getDrawMode() == Entity::INSTANCED) {
+                                    batcher.addFace( vEntities[i]->getFace(j));
+                                } else {
+                                    normalBatcher.addFace(vEntities[i]->getFace(j));
+                                }
+                            }
+                        }
+                    }
+                }
+                m_instances = batcher.getInstances();
+                m_normals = normalBatcher.getInstances();
+                m_reflInstances = reflBatcher.getInstances();
+                m_reflNormals = reflNormalBatcher.getInstances();
+                m_skyboxInstance = skyboxBatcher.getInstances();
+                visibleEntities = vEntities;
+                update = true;
+                return true;
+            }
             ReflectRefractRenderComponent::~ReflectRefractRenderComponent() {
 
             }

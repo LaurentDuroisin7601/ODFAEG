@@ -83,7 +83,7 @@ namespace odfaeg {
             * \brief set the background color of the component. (TRansparent by default)
             * \param sf::Color color : the color.
             */
-            void setBackgroundColor(sf::Color color);
+            void setBackgroundColor(sf::Color color) {}
             /**
             * \fn void drawNextFrame()
             * \brief draw the next frame of the component.
@@ -100,7 +100,7 @@ namespace odfaeg {
             * \param Drawable drawable : the drawable object to draw.
             * \param RenderStates states : the render states.
             */
-            void draw(Drawable& drawable, RenderStates states = RenderStates::Default);
+            void draw(Drawable& drawable, RenderStates states = RenderStates::Default) {}
             /**
             * \fn void draw(RenderTarget& target, RenderStates states)
             * \brief draw the frame on a render target.
@@ -109,7 +109,7 @@ namespace odfaeg {
             */
             void draw(RenderTarget& target, RenderStates states);
             std::string getExpression();
-            void pushEvent(window::IEvent event, RenderWindow& window);
+            void pushEvent(window::IEvent event, RenderWindow& window) {}
             void setView(View view);
             View& getView();
             RenderTexture* getFrameBuffer();
@@ -193,6 +193,7 @@ namespace odfaeg {
             BuildFrameBufferPC buildFrameBufferPC;
             UniformBufferObject ubo;
             bool needToUpdateDS;
+            std::vector<Entity*> vEntities;
         };
         #else
         class ODFAEG_GRAPHICS_API ReflectRefractRenderComponent : public HeavyComponent {
@@ -283,7 +284,7 @@ namespace odfaeg {
             * \param window::IEvent : the event to register.
             * \param Renderwindow : the window generating the event.
             */
-            void onVisibilityChanged(bool visible);
+            void onVisibilityChanged(bool visible) {}
             void pushEvent(window::IEvent event, RenderWindow& window);
             void setView(View view);
             View& getView();
