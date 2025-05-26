@@ -103,7 +103,7 @@ namespace odfaeg {
                 imageInfo.imageType = VK_IMAGE_TYPE_3D;
                 imageInfo.extent.width = static_cast<uint32_t>(window.getView().getSize().x);
                 imageInfo.extent.height = static_cast<uint32_t>(window.getView().getSize().y);
-                imageInfo.extent.depth = 1;
+                imageInfo.extent.depth = 6;
                 imageInfo.mipLevels = 1;
                 imageInfo.arrayLayers = 1;
                 imageInfo.format = VK_FORMAT_R32_UINT;
@@ -2689,7 +2689,7 @@ namespace odfaeg {
                 RenderStates currentStates;
                 currentStates.blendMode = sf::BlendNone;
                 currentStates.shader = &sReflectRefract;
-                currentStates.texture = nullptr;
+                currentStates.texture = &environmentMap.getTexture();
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                     if (vbBindlessTex[p].getVertexCount() > 0) {
                         vbBindlessTex[p].update();
