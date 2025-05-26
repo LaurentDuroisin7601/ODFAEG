@@ -42,7 +42,7 @@ namespace odfaeg
 {
     namespace graphic {
         #ifdef VULKAN
-        RenderTexture::RenderTexture(window::Device& vkDevice) : RenderTarget(vkDevice), vkDevice(vkDevice), m_texture(vkDevice), value(0) {
+        RenderTexture::RenderTexture(window::Device& vkDevice) : RenderTarget(vkDevice), vkDevice(vkDevice), m_texture(vkDevice), value(0), isCubeMap(false) {
         }
         bool RenderTexture::create(unsigned int width, unsigned int height) {
             vkDevice.createInstance();
@@ -73,6 +73,7 @@ namespace odfaeg
             m_size.y = height;
             RenderTarget::initialize();
             currentFrame = imageIndex = 0;
+            isCubeMap = true;
             return true;
         }
         void RenderTexture::createSyncObjects() {
@@ -154,7 +155,7 @@ namespace odfaeg
                         framebufferInfo.pAttachments = attachments.data();
                         framebufferInfo.width = getSwapchainExtents().width;
                         framebufferInfo.height = getSwapchainExtents().height;
-                        framebufferInfo.layers = 1;
+                        framebufferInfo.layers = (isCubeMap) ? 6 : 1;
 
                         if (vkCreateFramebuffer(vkDevice.getDevice(), &framebufferInfo, nullptr, &swapChainFramebuffers[j][i]) != VK_SUCCESS) {
                             throw core::Erreur(0, "failed to create framebuffer!", 1);
@@ -172,7 +173,8 @@ namespace odfaeg
                         framebufferInfo.pAttachments = attachments.data();
                         framebufferInfo.width = getSwapchainExtents().width;
                         framebufferInfo.height = getSwapchainExtents().height;
-                        framebufferInfo.layers = 1;
+                        framebufferInfo.layers = (isCubeMap) ? 6 : 1;
+
 
                         if (vkCreateFramebuffer(vkDevice.getDevice(), &framebufferInfo, nullptr, &swapChainFramebuffers[j][i]) != VK_SUCCESS) {
                             throw core::Erreur(0, "failed to create framebuffer!", 1);

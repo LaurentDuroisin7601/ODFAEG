@@ -165,7 +165,7 @@ namespace odfaeg {
                     throw std::runtime_error("echec de l'allocation de la memoire d'une image!");
                 }
                 vkBindImageMemory(window.getDevice().getDevice(), depthTextureImage, depthTextureImageMemory, 0);
-                transitionImageLayout(depthTextureImage, VK_FORMAT_R32_UINT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
+                transitionImageLayout(depthTextureImage, VK_FORMAT_R32G32B32A32_SFLOAT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
 
 
 
@@ -201,7 +201,7 @@ namespace odfaeg {
                     throw std::runtime_error("echec de l'allocation de la memoire d'une image!");
                 }
                 vkBindImageMemory(window.getDevice().getDevice(), alphaTextureImage, alphaTextureImageMemory, 0);
-                transitionImageLayout(alphaTextureImage, VK_FORMAT_R32_UINT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
+                transitionImageLayout(alphaTextureImage, VK_FORMAT_R32G32B32A32_SFLOAT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
                 createImageView();
                 createSampler();
                 createUniformBuffers();
@@ -772,8 +772,9 @@ namespace odfaeg {
                                                                                          };
                                                                                          layout (location = 0) out vec3 pos;
                                                                                          layout (location = 1) out vec4 frontColor;
-                                                                                         layout (location = 2) out uint materialType;
-                                                                                         layout (location = 3) out vec3 normal;
+                                                                                         layout (location = 2) out vec2 texCoord;
+                                                                                         layout (location = 3) out uint materialType;
+                                                                                         layout (location = 4) out vec3 normal;
                                                                                          void main () {
                                                                                              MaterialData material = materialDatas[gl_DrawID];
                                                                                              ModelData model = modelDatas[gl_InstanceIndex];
@@ -781,6 +782,7 @@ namespace odfaeg {
                                                                                              pos = vec3(vec4(position, 1.0) * model.modelMatrix);
                                                                                              gl_Position = vec4(position, 1.f) * model.modelMatrix * pushConsts.viewMatrix * pushConsts.projectionMatrix;
                                                                                              frontColor = color;
+                                                                                             texCoord = texCoords;
                                                                                              normal = mat3(transpose(inverse(model.modelMatrix))) * normals;
                                                                                              materialType = materialT;
                                                                                          }
@@ -896,7 +898,7 @@ namespace odfaeg {
                                                                           vec4 texel = (texIndex != 0) ? frontColor * texture(textures[texIndex-1], fTexCoords.xy) : frontColor;
                                                                           float current_alpha = texel.a;
                                                                           vec2 position = (gl_FragCoord.xy / pushConsts.resolution.xy);
-                                                                          vec4 depth = texture (depthBuffer, position);
+                                                                          vec4 depth = textureLod (depthBuffer, position, 0);
                                                                           beginInvocationInterlockARB();
                                                                           memoryBarrier();
                                                                           vec4 alpha = imageLoad(alphaBuffer,ivec2(gl_FragCoord.xy));
@@ -914,8 +916,9 @@ namespace odfaeg {
                 const std::string buildFramebufferShader = R"(#version 460
                                                                 layout (location = 0) in vec3 pos;
                                                                 layout (location = 1) in vec4 frontColor;
-                                                                layout (location = 2) in flat uint materialType;
-                                                                layout (location = 3) in vec3 normal;
+                                                                layout (location = 2) in vec2 texCoord;
+                                                                layout (location = 3) in flat uint materialType;
+                                                                layout (location = 4) in vec3 normal;
                                                                 layout (push_constant) uniform PushConsts {
                                                                     layout(offset = 128) vec4 cameraPos;
                                                                     layout(offset = 144) vec4 resolution;
@@ -2838,7 +2841,7 @@ namespace odfaeg {
                                             vkCmdFillBuffer(commandBuffers[i], counterShaderStorageBuffers[i], i*sizeof(uint32_t), sizeof(uint32_t), 0);
                                         }
                                     }
-
+                                    environmentMap.display();
                                     /*vb.clear();
                                     //vb.name = "SKYBOXVB";
                                     for (unsigned int i = 0; i < m_skyboxInstance.size(); i++) {

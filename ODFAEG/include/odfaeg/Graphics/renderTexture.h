@@ -115,6 +115,7 @@ namespace odfaeg {
             uint64_t value;
             std::vector<VkFence> inFlightFences;
             std::vector<VkSemaphore> renderFinishedSemaphores;
+            bool isCubeMap;
         };
         #else
         namespace priv {
