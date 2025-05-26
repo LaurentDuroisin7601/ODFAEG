@@ -2008,7 +2008,16 @@ namespace odfaeg {
             }
             void ReflectRefractRenderComponent::createCommandBuffersIndirect(unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, DepthStencilID depthStencilID, RenderStates currentStates) {
                 if (needToUpdateDS) {
+                    Shader* shader = const_cast<Shader*>(currentStates.shader);
+                    currentStates.shader = &sLinkedList;
                     createDescriptorSets(currentStates);
+                    currentStates.shader = &sBuildDepthBuffer;
+                    createDescriptorSets(currentStates);
+                    currentStates.shader = &sBuildAlphaBuffer;
+                    createDescriptorSets(currentStates);
+                    currentStates.shader = &sReflectRefract;
+                    createDescriptorSets(currentStates);
+                    currentStates.shader = shader;
                     needToUpdateDS = false;
                 }
                 Shader* shader = const_cast<Shader*>(currentStates.shader);
