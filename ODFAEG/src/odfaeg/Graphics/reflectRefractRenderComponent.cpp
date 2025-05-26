@@ -393,7 +393,7 @@ namespace odfaeg {
                             //this push constant range starts at the beginning
                             push_constant2.offset = 128;
                             //this push constant range takes up the size of a MeshPushConstants struct
-                            push_constant2.size = sizeof(BuildDepthPC);
+                            push_constant2.size = sizeof(BuildAlphaPC);
                             //this push constant range is accessible only in the vertex shader
                             push_constant2.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
                             push_constants[1] = push_constant2;
