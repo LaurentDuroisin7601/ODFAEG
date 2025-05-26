@@ -313,7 +313,7 @@ namespace odfaeg {
                             push_constants[0] = push_constant;
                             VkPushConstantRange push_constant2;
                             //this push constant range starts at the beginning
-                            push_constant2.offset = 128;
+                            push_constant2.offset = 0;
                             //this push constant range takes up the size of a MeshPushConstants struct
                             push_constant2.size = sizeof(BuildDepthPC);
                             //this push constant range is accessible only in the vertex shader
@@ -337,7 +337,7 @@ namespace odfaeg {
                             push_constants[0] = push_constant;
                             VkPushConstantRange push_constant2;
                             //this push constant range starts at the beginning
-                            push_constant2.offset = 128;
+                            push_constant2.offset = 0;
                             //this push constant range takes up the size of a MeshPushConstants struct
                             push_constant2.size = sizeof(BuildDepthPC);
                             //this push constant range is accessible only in the vertex shader
@@ -367,7 +367,7 @@ namespace odfaeg {
                             push_constants[0] = push_constant;
                             VkPushConstantRange push_constant2;
                             //this push constant range starts at the beginning
-                            push_constant2.offset = 128;
+                            push_constant2.offset = 0;
                             //this push constant range takes up the size of a MeshPushConstants struct
                             push_constant2.size = sizeof(BuildAlphaPC);
                             //this push constant range is accessible only in the vertex shader
@@ -391,7 +391,7 @@ namespace odfaeg {
                             push_constants[0] = push_constant;
                             VkPushConstantRange push_constant2;
                             //this push constant range starts at the beginning
-                            push_constant2.offset = 64;
+                            push_constant2.offset = 0;
                             //this push constant range takes up the size of a MeshPushConstants struct
                             push_constant2.size = sizeof(BuildDepthPC);
                             //this push constant range is accessible only in the vertex shader
@@ -421,7 +421,7 @@ namespace odfaeg {
                             push_constants[0] = push_constant;
                             VkPushConstantRange push_constant2;
                             //this push constant range starts at the beginning
-                            push_constant2.offset = 128;
+                            push_constant2.offset = 0;
                             //this push constant range takes up the size of a MeshPushConstants struct
                             push_constant2.size = sizeof(BuildFrameBufferPC);
                             //this push constant range is accessible only in the vertex shader
@@ -445,7 +445,7 @@ namespace odfaeg {
                             push_constants[0] = push_constant;
                             VkPushConstantRange push_constant2;
                             //this push constant range starts at the beginning
-                            push_constant2.offset = 128;
+                            push_constant2.offset = 0;
                             //this push constant range takes up the size of a MeshPushConstants struct
                             push_constant.size = sizeof(BuildFrameBufferPC);
                             //this push constant range is accessible only in the vertex shader
@@ -1482,11 +1482,11 @@ namespace odfaeg {
                     headPtrImageLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
                     VkDescriptorSetLayoutBinding sampler2LayoutBinding{};
-                    samplerLayoutBinding.binding = 2;
-                    samplerLayoutBinding.descriptorCount = 1;
-                    samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                    samplerLayoutBinding.pImmutableSamplers = nullptr;
-                    samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+                    sampler2LayoutBinding.binding = 2;
+                    sampler2LayoutBinding.descriptorCount = 1;
+                    sampler2LayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                    sampler2LayoutBinding.pImmutableSamplers = nullptr;
+                    sampler2LayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
                     VkDescriptorSetLayoutBinding modelDataLayoutBinding{};
                     modelDataLayoutBinding.binding = 4;
@@ -1529,11 +1529,11 @@ namespace odfaeg {
                     samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
                     VkDescriptorSetLayoutBinding sampler2LayoutBinding{};
-                    samplerLayoutBinding.binding = 1;
-                    samplerLayoutBinding.descriptorCount = 1;
-                    samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                    samplerLayoutBinding.pImmutableSamplers = nullptr;
-                    samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+                    sampler2LayoutBinding.binding = 1;
+                    sampler2LayoutBinding.descriptorCount = 1;
+                    sampler2LayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                    sampler2LayoutBinding.pImmutableSamplers = nullptr;
+                    sampler2LayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
                     VkDescriptorSetLayoutBinding modelDataLayoutBinding{};
                     modelDataLayoutBinding.binding = 4;
