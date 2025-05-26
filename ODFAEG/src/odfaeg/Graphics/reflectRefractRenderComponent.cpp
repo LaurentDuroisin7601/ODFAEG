@@ -2040,6 +2040,7 @@ namespace odfaeg {
                 }
                 Shader* shader = const_cast<Shader*>(currentStates.shader);
                 if (shader == &sBuildDepthBuffer) {
+                    //std::cout<<"draw on db"<<std::endl;
                     depthBuffer.beginRecordCommandBuffers();
                     std::vector<VkCommandBuffer> commandBuffers = depthBuffer.getCommandBuffers();
                     unsigned int currentFrame = depthBuffer.getCurrentFrame();
@@ -2054,6 +2055,15 @@ namespace odfaeg {
                     unsigned int currentFrame = alphaBuffer.getCurrentFrame();
                     buildAlphaPC.nbLayers = GameObject::getNbLayers();
                     buildAlphaPC.resolution = resolution;
+                    VkMemoryBarrier memoryBarrier;
+                    memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+                    memoryBarrier.pNext = VK_NULL_HANDLE;
+                    memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+                    memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+
+
+
+                    vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
                     vkCmdPushConstants(commandBuffers[currentFrame], alphaBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][alphaBuffer.getId()][depthStencilID], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectRenderingPC), &indirectRenderingPC);
                     vkCmdPushConstants(commandBuffers[currentFrame], alphaBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][alphaBuffer.getId()][depthStencilID], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(BuildAlphaPC), &buildAlphaPC);
                     alphaBuffer.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
@@ -2069,6 +2079,15 @@ namespace odfaeg {
                     std::vector<VkCommandBuffer> commandBuffers = reflectRefractTex.getCommandBuffers();
                     unsigned int currentFrame = reflectRefractTex.getCurrentFrame();
                     buildFrameBufferPC.resolution = resolution;
+                    VkMemoryBarrier memoryBarrier;
+                    memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+                    memoryBarrier.pNext = VK_NULL_HANDLE;
+                    memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+                    memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+
+
+
+                    vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
                     vkCmdPushConstants(commandBuffers[currentFrame], reflectRefractTex.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][reflectRefractTex.getId()][depthStencilID], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectRenderingPC), &indirectRenderingPC);
                     vkCmdPushConstants(commandBuffers[currentFrame], reflectRefractTex.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][reflectRefractTex.getId()][depthStencilID], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(BuildFrameBufferPC), &buildFrameBufferPC);
                     reflectRefractTex.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
@@ -2154,7 +2173,7 @@ namespace odfaeg {
                             model.worldMat = tm[j]->getMatrix().transpose();
                             modelDatas[p].push_back(model);
                         }
-                        std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
+                        //std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
                         unsigned int vertexCount = 0;
 
                         if (m_reflInstances[i].getVertexArrays().size() > 0) {
@@ -2190,7 +2209,7 @@ namespace odfaeg {
                     if (vbBindlessTex[p].getVertexCount() > 0) {
                         vbBindlessTex[p].update();
                         VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
-                        std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
+                        //std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
                         if (bufferSize > maxModelDataSize) {
                             if (modelDataStagingBuffer != nullptr) {
                                 vkDestroyBuffer(vkDevice.getDevice(), modelDataStagingBuffer, nullptr);

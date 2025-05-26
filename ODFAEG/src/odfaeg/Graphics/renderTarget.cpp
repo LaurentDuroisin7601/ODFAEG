@@ -810,13 +810,13 @@ namespace odfaeg {
                 std::cout<<"allocate cmd : "<<commandBuffers.size()<<std::endl;*/
         }
         void RenderTarget::beginRecordCommandBuffers() {
-            if (m_name == "depthBuffer")
-                std::cout<<"render texture begin command buffer"<<std::endl;
+            /*if (m_name == "depthBuffer")
+                std::cout<<"render texture begin command buffer"<<std::endl;*/
             //for (unsigned int i = 0; i < getCommandBuffers().size(); i++) {
                 VkCommandBufferBeginInfo beginInfo{};
                 beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-                if (m_name == "depthBuffer")
-                    std::cout<<"begin cmd : "<<commandBuffers.size()<<std::endl;
+                /*if (m_name == "depthBuffer")
+                    std::cout<<"begin cmd : "<<commandBuffers.size()<<std::endl;*/
                 if (vkBeginCommandBuffer(getCommandBuffers()[getCurrentFrame()], &beginInfo) != VK_SUCCESS) {
 
                     throw core::Erreur(0, "failed to begin recording command buffer!", 1);
