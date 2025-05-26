@@ -491,7 +491,9 @@ namespace odfaeg {
             poolSizes[5].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
             poolSizes[5].descriptorCount = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight());
 
-
+            if (descriptorPool[descriptorId] != nullptr) {
+                vkDestroyDescriptorPool(vkDevice.getDevice(), descriptorPool[descriptorId], nullptr);
+            }
             VkDescriptorPoolCreateInfo poolInfo{};
             poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
             poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
@@ -549,6 +551,10 @@ namespace odfaeg {
             materialDataLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
             materialDataLayoutBinding.pImmutableSamplers = nullptr;
             materialDataLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+            if (descriptorSetLayout[descriptorId] != nullptr) {
+                vkDestroyDescriptorSetLayout(vkDevice.getDevice(), descriptorSetLayout[descriptorId], nullptr);
+            }
 
             std::array<VkDescriptorSetLayoutBinding, 6> bindings = {counterLayoutBinding, headPtrImageLayoutBinding, linkedListLayoutBinding, samplerLayoutBinding, modelDataLayoutBinding, materialDataLayoutBinding};
             VkDescriptorSetLayoutCreateInfo layoutInfo{};
@@ -683,6 +689,10 @@ namespace odfaeg {
             poolSizes[1].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
             poolSizes[1].descriptorCount = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight());
 
+            if (descriptorPool[descriptorId] != nullptr) {
+                vkDestroyDescriptorPool(vkDevice.getDevice(), descriptorPool[descriptorId], nullptr);
+            }
+
 
             VkDescriptorPoolCreateInfo poolInfo{};
             poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -711,6 +721,10 @@ namespace odfaeg {
             linkedListLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
             linkedListLayoutBinding.pImmutableSamplers = nullptr;
             linkedListLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+            if (descriptorSetLayout[descriptorId] != nullptr) {
+                vkDestroyDescriptorSetLayout(vkDevice.getDevice(), descriptorSetLayout[descriptorId], nullptr);
+            }
 
             std::array<VkDescriptorSetLayoutBinding, 2> bindings = {headPtrImageLayoutBinding, linkedListLayoutBinding};
             VkDescriptorSetLayoutCreateInfo layoutInfo{};

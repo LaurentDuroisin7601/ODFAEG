@@ -72,7 +72,7 @@ namespace odfaeg
             m_size.x = width;
             m_size.y = height;
             RenderTarget::initialize();
-            currentFrame = 0;
+            currentFrame = imageIndex = 0;
             return true;
         }
         void RenderTexture::createSyncObjects() {

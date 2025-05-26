@@ -232,6 +232,7 @@ namespace odfaeg {
             void enableDepthTest(bool enable);
             void beginRecordCommandBuffers();
             std::vector<VkCommandBuffer>& getCommandBuffers();
+            std::string m_name;
 
         protected :
 
@@ -577,6 +578,7 @@ namespace odfaeg {
             std::string getName() {
                 return m_name;
             }
+
             void setEnableCubeMap(bool enableCubeMap);
         protected :
             void setVersionMajor(unsigned int version);
@@ -676,6 +678,7 @@ namespace odfaeg {
             unsigned int m_vao, m_versionMajor, m_versionMinor, m_framebufferId;
             bool enableAlphaTest, enableCubeMap;
             std::string m_name;
+
         };
         #endif
     }

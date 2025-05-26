@@ -157,7 +157,7 @@ namespace odfaeg {
             math::Vec3f ups[6];
             std::vector<Entity*> rootEntities;
             VkCommandPool commandPool;
-            std::vector<VkCommandBuffer> commandBuffers;
+            //std::vector<VkCommandBuffer> commandBuffers;
             VkBuffer modelDataBuffer, materialDataBuffer, modelDataStagingBuffer, materialDataStagingBuffer;
             VkDeviceMemory modelDataStagingBufferMemory, materialDataStagingBufferMemory;
             VkDeviceSize maxVboIndirectSize, maxModelDataSize, maxMaterialDataSize;
@@ -291,7 +291,7 @@ namespace odfaeg {
             * \param window::IEvent : the event to register.
             * \param Renderwindow : the window generating the event.
             */
-            void onVisibilityChanged(bool visible) {}
+            void onVisibilityChanged(bool visible);
             void pushEvent(window::IEvent event, RenderWindow& window);
             void setView(View view);
             View& getView();

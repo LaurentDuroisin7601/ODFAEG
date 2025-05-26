@@ -105,7 +105,7 @@ namespace sorrok {
         std::cout<<"Mouse inside : "<<mousePos.x<<" "<<mousePos.y<<std::endl;
     }
     void MyAppli::onLoad() {
-        std::tuple<std::reference_wrapper<Device>> rArgs = std::make_tuple(std::ref(getDevice()));
+        std::tuple</*std::reference_wrapper<Device>*/> rArgs = std::make_tuple(/*std::ref(getDevice())*/);
         TextureManager<> tm;
         tm.fromFileWithAlias("tilesets/eau.png", "WATER", rArgs);
         tm.fromFileWithAlias("tilesets/herbe.png", "GRASS", rArgs);
@@ -338,8 +338,8 @@ namespace sorrok {
         lrc->setVisible(false);*/
         getRenderComponentManager().addComponent(frc1);
         getRenderComponentManager().addComponent(frc2);
-        /*getRenderComponentManager().addComponent(rrrc);
-        getRenderComponentManager().addComponent(src);
+        getRenderComponentManager().addComponent(rrrc);
+        /*getRenderComponentManager().addComponent(src);
         getRenderComponentManager().addComponent(lrc);
         /*getRenderComponentManager().addComponent(textArea);
         getRenderComponentManager().addComponent(op);*/
@@ -419,8 +419,8 @@ namespace sorrok {
         // draw everything here...
         getWorld()->drawOnComponents("E_BIGTILE", 0);
         getWorld()->drawOnComponents("E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PARTICLES", 1);
-        /*getWorld()->drawOnComponents("E_BIGTILE+E_WALL+E_DECOR+E_ANIMATION+E_HERO", 2);
-        getWorld()->drawOnComponents("E_WALL+E_DECOR+E_ANIMATION+E_HERO", 3);
+        getWorld()->drawOnComponents("E_BIGTILE+E_WALL+E_DECOR+E_ANIMATION+E_HERO", 2);
+        /*getWorld()->drawOnComponents("E_WALL+E_DECOR+E_ANIMATION+E_HERO", 3);
         getWorld()->drawOnComponents("E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PONCTUAL_LIGHT", 4);*/
 
     }

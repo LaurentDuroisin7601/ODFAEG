@@ -22,6 +22,7 @@ namespace odfaeg {
              descriptorPool(window.getDescriptorPool()),
              descriptorSets(window.getDescriptorSet())
              {
+                vboIndirect = vboIndirectStagingBuffer = modelDataStagingBuffer = materialDataStagingBuffer = nullptr;
                 createCommandPool();
                 if (window.getView().getSize().x > window.getView().getSize().y) {
                     squareSize = window.getView().getSize().x;
@@ -43,12 +44,17 @@ namespace odfaeg {
                 ups[3] = math::Vec3f(0, 0, -1);
                 ups[4] = math::Vec3f(0, -1, 0);
                 ups[5] = math::Vec3f(0, -1, 0);
+                depthBuffer.m_name = "depthBuffer";
                 depthBuffer.create(window.getView().getSize().x, window.getView().getSize().y);
+
                 depthBufferSprite = Sprite(depthBuffer.getTexture(), math::Vec3f(0, 0, 0), math::Vec3f(window.getView().getSize().x, window.getView().getSize().y, 0), sf::IntRect(0, 0, window.getView().getSize().x, window.getView().getSize().y));
                 alphaBuffer.create(window.getView().getSize().x, window.getView().getSize().y);
+                //alphaBuffer.m_name = "alphaBuffer";
                 alphaBufferSprite = Sprite(alphaBuffer.getTexture(), math::Vec3f(0, 0, 0), math::Vec3f(window.getView().getSize().x, window.getView().getSize().y, 0), sf::IntRect(0, 0, window.getView().getSize().x, window.getView().getSize().y));
                 environmentMap.createCubeMap(squareSize, squareSize);
+                //environmentMap.m_name = "environmentMap";
                 reflectRefractTex.create(window.getView().getSize().x, window.getView().getSize().y);
+                //reflectRefractTex.m_name = "relfectRefractTex";
                 reflectRefractTexSprite = Sprite(reflectRefractTex.getTexture(), math::Vec3f(0, 0, 0), math::Vec3f(window.getView().getSize().x, window.getView().getSize().y, 0), sf::IntRect(0, 0, window.getView().getSize().x, window.getView().getSize().y));
                 linkedListShaderStorageBuffers.resize(reflectRefractTex.getMaxFramesInFlight());
                 linkedListShaderStorageBuffersMemory.resize(reflectRefractTex.getMaxFramesInFlight());
@@ -59,8 +65,8 @@ namespace odfaeg {
                     createBuffer(bufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, linkedListShaderStorageBuffers[i], linkedListShaderStorageBuffersMemory[i]);
                 }
 
-                core::FastDelegate<bool> signal (&PerPixelLinkedListRenderComponent::needToUpdate, this);
-                core::FastDelegate<void> slot (&PerPixelLinkedListRenderComponent::drawNextFrame, this);
+                core::FastDelegate<bool> signal (&ReflectRefractRenderComponent::needToUpdate, this);
+                core::FastDelegate<void> slot (&ReflectRefractRenderComponent::drawNextFrame, this);
                 core::Command cmd(signal, slot);
                 getListener().connect("UPDATE", cmd);
 
@@ -444,6 +450,7 @@ namespace odfaeg {
                     }
                 }
                 vkCmdPushDescriptorSetKHR = (PFN_vkCmdPushDescriptorSetKHR)vkGetDeviceProcAddr(vkDevice.getDevice(), "vkCmdPushDescriptorSetKHR");
+                skybox = nullptr;
             }
             VkCommandBuffer ReflectRefractRenderComponent::beginSingleTimeCommands() {
                 VkCommandBufferAllocateInfo allocInfo{};
@@ -1159,6 +1166,9 @@ namespace odfaeg {
                     poolSizes[6].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
                     poolSizes[6].descriptorCount = static_cast<uint32_t>(environmentMap.getMaxFramesInFlight());
 
+                    if (descriptorPool[descriptorId] != nullptr) {
+                        vkDestroyDescriptorPool(vkDevice.getDevice(), descriptorPool[descriptorId], nullptr);
+                    }
 
                     VkDescriptorPoolCreateInfo poolInfo{};
                     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -1179,6 +1189,11 @@ namespace odfaeg {
                     poolSizes[1].descriptorCount = static_cast<uint32_t>(environmentMap.getMaxFramesInFlight());
                     poolSizes[2].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
                     poolSizes[2].descriptorCount = static_cast<uint32_t>(environmentMap.getMaxFramesInFlight());
+
+                    if (descriptorPool[descriptorId] != nullptr) {
+                        vkDestroyDescriptorPool(vkDevice.getDevice(), descriptorPool[descriptorId], nullptr);
+                    }
+
                     VkDescriptorPoolCreateInfo poolInfo{};
                     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
                     poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
@@ -1201,6 +1216,10 @@ namespace odfaeg {
                     poolSizes[2].descriptorCount = static_cast<uint32_t>(depthBuffer.getMaxFramesInFlight());
                     poolSizes[3].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
                     poolSizes[3].descriptorCount = static_cast<uint32_t>(depthBuffer.getMaxFramesInFlight());
+
+                    if (descriptorPool[descriptorId] != nullptr) {
+                        vkDestroyDescriptorPool(vkDevice.getDevice(), descriptorPool[descriptorId], nullptr);
+                    }
 
                     VkDescriptorPoolCreateInfo poolInfo{};
                     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -1227,6 +1246,10 @@ namespace odfaeg {
                     poolSizes[4].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
                     poolSizes[4].descriptorCount = static_cast<uint32_t>(depthBuffer.getMaxFramesInFlight());
 
+                    if (descriptorPool[descriptorId] != nullptr) {
+                        vkDestroyDescriptorPool(vkDevice.getDevice(), descriptorPool[descriptorId], nullptr);
+                    }
+
                     VkDescriptorPoolCreateInfo poolInfo{};
                     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
                     poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
@@ -1248,6 +1271,10 @@ namespace odfaeg {
                     poolSizes[2].descriptorCount = static_cast<uint32_t>(reflectRefractTex.getMaxFramesInFlight());
                     poolSizes[3].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
                     poolSizes[3].descriptorCount = static_cast<uint32_t>(reflectRefractTex.getMaxFramesInFlight());
+
+                    if (descriptorPool[descriptorId] != nullptr) {
+                        vkDestroyDescriptorPool(vkDevice.getDevice(), descriptorPool[descriptorId], nullptr);
+                    }
 
                     VkDescriptorPoolCreateInfo poolInfo{};
                     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -1316,6 +1343,10 @@ namespace odfaeg {
                     uniformBufferLayoutBinding.pImmutableSamplers = nullptr;
                     uniformBufferLayoutBinding.stageFlags = VK_SHADER_STAGE_GEOMETRY_BIT;
 
+                    if (descriptorSetLayout[descriptorId] != nullptr) {
+                        vkDestroyDescriptorSetLayout(vkDevice.getDevice(), descriptorSetLayout[descriptorId], nullptr);
+                    }
+
                     std::array<VkDescriptorSetLayoutBinding, 7> bindings = {counterLayoutBinding, headPtrImageLayoutBinding, linkedListLayoutBinding, samplerLayoutBinding, modelDataLayoutBinding, materialDataLayoutBinding, uniformBufferLayoutBinding};
                     VkDescriptorSetLayoutCreateInfo layoutInfo{};
                     layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -1353,6 +1384,11 @@ namespace odfaeg {
                     linkedListLayoutBinding.pImmutableSamplers = nullptr;
                     linkedListLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
                     std::array<VkDescriptorSetLayoutBinding, 3> bindings = {counterLayoutBinding, headPtrImageLayoutBinding, linkedListLayoutBinding};
+
+                    if (descriptorSetLayout[descriptorId] != nullptr) {
+                        vkDestroyDescriptorSetLayout(vkDevice.getDevice(), descriptorSetLayout[descriptorId], nullptr);
+                    }
+
                     VkDescriptorSetLayoutCreateInfo layoutInfo{};
                     layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
                     //layoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR;
@@ -1397,6 +1433,10 @@ namespace odfaeg {
                     materialDataLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
                     std::array<VkDescriptorSetLayoutBinding, 4> bindings = {samplerLayoutBinding, headPtrImageLayoutBinding, modelDataLayoutBinding, materialDataLayoutBinding};
+
+                    if (descriptorSetLayout[descriptorId] != nullptr) {
+                        vkDestroyDescriptorSetLayout(vkDevice.getDevice(), descriptorSetLayout[descriptorId], nullptr);
+                    }
 
                     VkDescriptorSetLayoutCreateInfo layoutInfo{};
                     layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -1449,6 +1489,10 @@ namespace odfaeg {
 
                     std::array<VkDescriptorSetLayoutBinding, 5> bindings = {samplerLayoutBinding, headPtrImageLayoutBinding, sampler2LayoutBinding, modelDataLayoutBinding, materialDataLayoutBinding};
 
+                    if (descriptorSetLayout[descriptorId] != nullptr) {
+                        vkDestroyDescriptorSetLayout(vkDevice.getDevice(), descriptorSetLayout[descriptorId], nullptr);
+                    }
+
                     VkDescriptorSetLayoutCreateInfo layoutInfo{};
                     layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
                     //layoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR;
@@ -1491,6 +1535,10 @@ namespace odfaeg {
                     materialDataLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
                     std::array<VkDescriptorSetLayoutBinding, 4> bindings = {samplerLayoutBinding, sampler2LayoutBinding, modelDataLayoutBinding, materialDataLayoutBinding};
+
+                    if (descriptorSetLayout[descriptorId] != nullptr) {
+                        vkDestroyDescriptorSetLayout(vkDevice.getDevice(), descriptorSetLayout[descriptorId], nullptr);
+                    }
 
                     VkDescriptorSetLayoutCreateInfo layoutInfo{};
                     layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -1932,15 +1980,15 @@ namespace odfaeg {
                     vkCmdClearColorImage(commandBuffers[i], depthTextureImage, VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
 
                 }
+                depthBuffer.display();
                 alphaBuffer.clear(sf::Color::Transparent);
                 commandBuffers = alphaBuffer.getCommandBuffers();
                 for (unsigned int i = 0; i < commandBuffers.size(); i++) {
                     vkCmdClearColorImage(commandBuffers[i], alphaTextureImage, VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
 
                 }
-                reflectRefractTex.clear(sf::Color::Transparent);
-                depthBuffer.display();
                 alphaBuffer.display();
+                reflectRefractTex.clear(sf::Color::Transparent);
                 reflectRefractTex.display();
             }
             void ReflectRefractRenderComponent::createCommandBuffersIndirect(unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, DepthStencilID depthStencilID, RenderStates currentStates) {
@@ -2009,6 +2057,7 @@ namespace odfaeg {
 
             }
             void ReflectRefractRenderComponent::drawDepthReflInst() {
+
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                     vbBindlessTex[p].clear();
                     materialDatas[p].clear();
@@ -2066,13 +2115,17 @@ namespace odfaeg {
                             modelDatas[p].push_back(model);
                         }
                         unsigned int vertexCount = 0;
+
                         if (m_reflInstances[i].getVertexArrays().size() > 0) {
                             Entity* entity = m_reflInstances[i].getVertexArrays()[0]->getEntity();
+
                             for (unsigned int j = 0; j < m_reflInstances[i].getVertexArrays().size(); j++) {
+
                                 if (entity == m_reflInstances[i].getVertexArrays()[j]->getEntity()) {
 
                                     unsigned int p = m_reflInstances[i].getVertexArrays()[j]->getPrimitiveType();
                                     for (unsigned int k = 0; k < m_reflInstances[i].getVertexArrays()[j]->getVertexCount(); k++) {
+
                                         vertexCount++;
                                         vbBindlessTex[p].append((*m_reflInstances[i].getVertexArrays()[j])[k]);
                                     }
@@ -2171,6 +2224,7 @@ namespace odfaeg {
                         vkUnmapMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory);
                         copyBuffer(vboIndirectStagingBuffer, vboIndirect, bufferSize);
                         //createDescriptorSets(p, currentStates);
+
                         createCommandBuffersIndirect(p, drawArraysIndirectCommands[p].size(), sizeof(DrawArraysIndirectCommand), NODEPTHNOSTENCIL, currentStates);
                     }
                 }
@@ -2672,7 +2726,7 @@ namespace odfaeg {
                         vkUnmapMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory);
                         copyBuffer(vboIndirectStagingBuffer, vboIndirect, bufferSize);
                         //createDescriptorSets(p, currentStates);
-                        createCommandBuffersIndirect(p, drawArraysIndirectCommands[p].size(), sizeof(DrawArraysIndirectCommand), NODEPTHNOSTENCIL, currentStates);
+                        createCommandBuffersIndirect(p, drawArraysIndirectCommands[p].size(), sizeof(DrawArraysIndirectCommand), DEPTHNOSTENCIL, currentStates);
                     }
                 }
             }
@@ -2756,7 +2810,7 @@ namespace odfaeg {
                                         subresRange.layerCount = 1;
                                         vkCmdClearColorImage(commandBuffers[i], headPtrTextureImage, VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
                                         for (unsigned int j = 0; j < 6; j++) {
-                                            vkCmdFillBuffer(commandBuffers[i], counterShaderStorageBuffers[i], i, sizeof(uint32_t), 0);
+                                            vkCmdFillBuffer(commandBuffers[i], counterShaderStorageBuffers[i], i*sizeof(uint32_t), sizeof(uint32_t), 0);
                                         }
                                     }
 
@@ -2808,7 +2862,7 @@ namespace odfaeg {
 
                     }
                 }
-                reflectRefractTex.display();
+                //reflectRefractTex.display();
             }
             void ReflectRefractRenderComponent::draw(RenderTarget& target, RenderStates states) {
                 reflectRefractTexSprite.setCenter(target.getView().getPosition());
@@ -2852,9 +2906,12 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < vEntities.size(); i++) {
                     if ( vEntities[i] != nullptr && vEntities[i]->isLeaf()) {
                         for (unsigned int j = 0; j <  vEntities[i]->getNbFaces(); j++) {
+                            if (vEntities[i]->getFace(j)->getMaterial().isRefractable())
+                                std::cout<<"refractable"<<std::endl;
                             if (vEntities[i]->getFace(j)->getMaterial().isReflectable() || vEntities[i]->getFace(j)->getMaterial().isRefractable()) {
 
                                 if (vEntities[i]->getDrawMode() == Entity::INSTANCED) {
+
                                     reflBatcher.addFace( vEntities[i]->getFace(j));
                                 } else {
                                     reflNormalBatcher.addFace(vEntities[i]->getFace(j));
@@ -2879,7 +2936,66 @@ namespace odfaeg {
                 return true;
             }
             ReflectRefractRenderComponent::~ReflectRefractRenderComponent() {
+                vkDestroyCommandPool(vkDevice.getDevice(), commandPool, nullptr);
 
+                vkDestroySampler(vkDevice.getDevice(), headPtrTextureSampler, nullptr);
+                vkDestroyImageView(vkDevice.getDevice(), headPtrTextureImageView, nullptr);
+                vkDestroyImage(vkDevice.getDevice(), headPtrTextureImage, nullptr);
+                vkFreeMemory(vkDevice.getDevice(), headPtrTextureImageMemory, nullptr);
+
+                vkDestroySampler(vkDevice.getDevice(), depthTextureSampler, nullptr);
+                vkDestroyImageView(vkDevice.getDevice(), depthTextureImageView, nullptr);
+                vkDestroyImage(vkDevice.getDevice(), depthTextureImage, nullptr);
+                vkFreeMemory(vkDevice.getDevice(), depthTextureImageMemory, nullptr);
+
+                vkDestroySampler(vkDevice.getDevice(), alphaTextureSampler, nullptr);
+                vkDestroyImageView(vkDevice.getDevice(), alphaTextureImageView, nullptr);
+                vkDestroyImage(vkDevice.getDevice(), alphaTextureImage, nullptr);
+                vkFreeMemory(vkDevice.getDevice(), alphaTextureImageMemory, nullptr);
+
+                for (size_t i = 0; i < counterShaderStorageBuffers.size(); i++) {
+                    if (counterShaderStorageBuffers[i] != VK_NULL_HANDLE) {
+                        vkDestroyBuffer(vkDevice.getDevice(), counterShaderStorageBuffers[i], nullptr);
+                        vkFreeMemory(vkDevice.getDevice(), counterShaderStorageBuffersMemory[i], nullptr);
+                    }
+                }
+                std::cout<<"counter ssbo destroyed"<<std::endl;
+                for (unsigned int i = 0; i < linkedListShaderStorageBuffers.size(); i++) {
+                    vkDestroyBuffer(vkDevice.getDevice(), linkedListShaderStorageBuffers[i], nullptr);
+                    vkFreeMemory(vkDevice.getDevice(), linkedListShaderStorageBuffersMemory[i], nullptr);
+                }
+                std::cout<<"linked list ssbo destroyed"<<std::endl;
+                for (size_t i = 0; i < modelDataShaderStorageBuffers.size(); i++) {
+                    vkDestroyBuffer(vkDevice.getDevice(), modelDataShaderStorageBuffers[i], nullptr);
+                    vkFreeMemory(vkDevice.getDevice(), modelDataShaderStorageBuffersMemory[i], nullptr);
+                }
+                if (modelDataStagingBuffer != nullptr) {
+                    vkDestroyBuffer(vkDevice.getDevice(), modelDataStagingBuffer, nullptr);
+                    vkFreeMemory(vkDevice.getDevice(), modelDataStagingBufferMemory, nullptr);
+                }
+                std::cout<<"model data ssbo destroyed"<<std::endl;
+                for (size_t i = 0; i < materialDataShaderStorageBuffers.size(); i++) {
+                    vkDestroyBuffer(vkDevice.getDevice(), materialDataShaderStorageBuffers[i], nullptr);
+                    vkFreeMemory(vkDevice.getDevice(), materialDataShaderStorageBuffersMemory[i], nullptr);
+                }
+                for (size_t i = 0; i < uniformBuffer.size(); i++) {
+                    vkDestroyBuffer(vkDevice.getDevice(), uniformBuffer[i], nullptr);
+                    vkFreeMemory(vkDevice.getDevice(), uniformBufferMemory[i], nullptr);
+                }
+                if (materialDataStagingBuffer != nullptr) {
+                    vkDestroyBuffer(vkDevice.getDevice(), materialDataStagingBuffer, nullptr);
+                    vkFreeMemory(vkDevice.getDevice(), materialDataStagingBufferMemory, nullptr);
+                }
+                if (vboIndirectStagingBuffer != nullptr) {
+                    vkDestroyBuffer(vkDevice.getDevice(), vboIndirectStagingBuffer, nullptr);
+                    vkFreeMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory, nullptr);
+                }
+                std::cout<<"material data ssbo destroyed"<<std::endl;
+                if (vboIndirect != VK_NULL_HANDLE) {
+                    vkDestroyBuffer(vkDevice.getDevice(),vboIndirect, nullptr);
+                    vkFreeMemory(vkDevice.getDevice(), vboIndirectMemory, nullptr);
+                }
+                std::cout<<"indirect vbo destroyed"<<std::endl;
             }
         #else
         ReflectRefractRenderComponent::ReflectRefractRenderComponent (RenderWindow& window, int layer, std::string expression, window::ContextSettings settings) :
@@ -4103,6 +4219,7 @@ namespace odfaeg {
                         if (vEntities[i]->getFace(j)->getMaterial().isReflectable() || vEntities[i]->getFace(j)->getMaterial().isRefractable()) {
 
                             if (vEntities[i]->getDrawMode() == Entity::INSTANCED) {
+                                std::cout<<"add refl face"<<std::endl;
                                 reflBatcher.addFace( vEntities[i]->getFace(j));
                             } else {
                                 reflNormalBatcher.addFace(vEntities[i]->getFace(j));
