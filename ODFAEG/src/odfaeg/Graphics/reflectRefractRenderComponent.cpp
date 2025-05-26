@@ -313,7 +313,7 @@ namespace odfaeg {
                             push_constants[0] = push_constant;
                             VkPushConstantRange push_constant2;
                             //this push constant range starts at the beginning
-                            push_constant2.offset = 0;
+                            push_constant2.offset = 128;
                             //this push constant range takes up the size of a MeshPushConstants struct
                             push_constant2.size = sizeof(BuildDepthPC);
                             //this push constant range is accessible only in the vertex shader
@@ -337,7 +337,7 @@ namespace odfaeg {
                             push_constants[0] = push_constant;
                             VkPushConstantRange push_constant2;
                             //this push constant range starts at the beginning
-                            push_constant2.offset = 0;
+                            push_constant2.offset = 128;
                             //this push constant range takes up the size of a MeshPushConstants struct
                             push_constant2.size = sizeof(BuildDepthPC);
                             //this push constant range is accessible only in the vertex shader
@@ -367,7 +367,7 @@ namespace odfaeg {
                             push_constants[0] = push_constant;
                             VkPushConstantRange push_constant2;
                             //this push constant range starts at the beginning
-                            push_constant2.offset = 0;
+                            push_constant2.offset = 128;
                             //this push constant range takes up the size of a MeshPushConstants struct
                             push_constant2.size = sizeof(BuildAlphaPC);
                             //this push constant range is accessible only in the vertex shader
@@ -391,7 +391,7 @@ namespace odfaeg {
                             push_constants[0] = push_constant;
                             VkPushConstantRange push_constant2;
                             //this push constant range starts at the beginning
-                            push_constant2.offset = 0;
+                            push_constant2.offset = 128;
                             //this push constant range takes up the size of a MeshPushConstants struct
                             push_constant2.size = sizeof(BuildDepthPC);
                             //this push constant range is accessible only in the vertex shader
@@ -421,7 +421,7 @@ namespace odfaeg {
                             push_constants[0] = push_constant;
                             VkPushConstantRange push_constant2;
                             //this push constant range starts at the beginning
-                            push_constant2.offset = 0;
+                            push_constant2.offset = 128;
                             //this push constant range takes up the size of a MeshPushConstants struct
                             push_constant2.size = sizeof(BuildFrameBufferPC);
                             //this push constant range is accessible only in the vertex shader
@@ -445,9 +445,9 @@ namespace odfaeg {
                             push_constants[0] = push_constant;
                             VkPushConstantRange push_constant2;
                             //this push constant range starts at the beginning
-                            push_constant2.offset = 0;
+                            push_constant2.offset = 128;
                             //this push constant range takes up the size of a MeshPushConstants struct
-                            push_constant.size = sizeof(BuildFrameBufferPC);
+                            push_constant2.size = sizeof(BuildFrameBufferPC);
                             //this push constant range is accessible only in the vertex shader
                             push_constant2.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
                             push_constants[1] = push_constant2;
@@ -854,7 +854,7 @@ namespace odfaeg {
                                                                           layout (location = 3) in flat uint layer;
                                                                           layout (location = 4) in vec3 normal;
                                                                           layout (push_constant) uniform PushConsts {
-                                                                             uint nbLayers;
+                                                                             layout (offset = 128) uint nbLayers;
                                                                           } pushConsts;
                                                                           layout(set = 0, binding = 0) uniform sampler2D textures[];
                                                                           layout(set = 0, binding = 1, rgba32f) uniform coherent image2D depthBuffer;
@@ -884,8 +884,8 @@ namespace odfaeg {
                                                                       layout (location = 0) out vec4 fColor;
                                                                       layout (set = 0, binding = 2) uniform sampler2D depthBuffer;
                                                                       layout (push_constant) uniform PushConsts {
-                                                                            vec4 resolution;
-                                                                            uint nbLayers;
+                                                                            layout (offset = 128) vec4 resolution;
+                                                                            layout (offset = 144) uint nbLayers;
                                                                       } pushConsts;
                                                                       layout (location = 0) in vec2 fTexCoords;
                                                                       layout (location = 1) in vec4 frontColor;
@@ -917,8 +917,8 @@ namespace odfaeg {
                                                                 layout (location = 2) in flat uint materialType;
                                                                 layout (location = 3) in vec3 normal;
                                                                 layout (push_constant) uniform PushConsts {
-                                                                    vec4 cameraPos;
-                                                                    vec4 resolution;
+                                                                    layout(offset = 128) vec4 cameraPos;
+                                                                    layout(offset = 144) vec4 resolution;
                                                                 } pushConsts;
                                                                 layout (set = 0, binding = 0) uniform samplerCube sceneBox;
                                                                 layout (set = 0, binding = 1) uniform sampler2D alphaBuffer;
