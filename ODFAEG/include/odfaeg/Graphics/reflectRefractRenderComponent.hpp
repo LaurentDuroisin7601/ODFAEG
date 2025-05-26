@@ -200,7 +200,6 @@ namespace odfaeg {
             BuildFrameBufferPC buildFrameBufferPC;
             UniformBufferObject ubo;
             bool needToUpdateDS;
-            std::vector<Entity*> vEntities;
         };
         #else
         class ODFAEG_GRAPHICS_API ReflectRefractRenderComponent : public HeavyComponent {

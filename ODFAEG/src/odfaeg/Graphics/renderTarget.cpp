@@ -593,10 +593,10 @@ namespace odfaeg {
                 fragShaderStageInfo.pName = "main";
 
                 VkPipelineShaderStageCreateInfo geomShaderStageInfo{};
-                fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-                fragShaderStageInfo.stage = VK_SHADER_STAGE_GEOMETRY_BIT;
-                fragShaderStageInfo.module = geomShaderModule;
-                fragShaderStageInfo.pName = "main";
+                geomShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+                geomShaderStageInfo.stage = VK_SHADER_STAGE_GEOMETRY_BIT;
+                geomShaderStageInfo.module = geomShaderModule;
+                geomShaderStageInfo.pName = "main";
 
                 shaderStages = {vertShaderStageInfo, fragShaderStageInfo, geomShaderStageInfo};
             }

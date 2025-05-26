@@ -23,6 +23,7 @@ namespace odfaeg {
              descriptorSets(window.getDescriptorSet())
              {
                 vboIndirect = vboIndirectStagingBuffer = modelDataStagingBuffer = materialDataStagingBuffer = nullptr;
+                maxVboIndirectSize = maxModelDataSize = maxMaterialDataSize = 0;
                 createCommandPool();
                 if (window.getView().getSize().x > window.getView().getSize().y) {
                     squareSize = window.getView().getSize().x;
@@ -249,21 +250,23 @@ namespace odfaeg {
                 reflectRefractTex.enableDepthTest(true);
                 states.shader = &sLinkedList;
                 for (unsigned int j = 0; j < NBDEPTHSTENCIL; j++) {
-                    for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
+                    for (unsigned int i = 3; i < Batcher::nbPrimitiveTypes - 1; i++) {
                         if (j == 0) {
                            depthStencilCreateInfo[sLinkedList.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][NODEPTHNOSTENCIL].depthCompareOp = VK_COMPARE_OP_ALWAYS;
                            depthStencilCreateInfo[sLinkedList.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][NODEPTHNOSTENCIL].front = {};
                            depthStencilCreateInfo[sLinkedList.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][NODEPTHNOSTENCIL].back = {};
+                           environmentMap.createGraphicPipeline(static_cast<sf::PrimitiveType>(i), states, NODEPTHNOSTENCIL, NBDEPTHSTENCIL);
                         } else {
                            depthStencilCreateInfo[sLinkedList.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][DEPTHNOSTENCIL].depthCompareOp = VK_COMPARE_OP_GREATER;
                            depthStencilCreateInfo[sLinkedList.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][DEPTHNOSTENCIL].front = {};
                            depthStencilCreateInfo[sLinkedList.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][DEPTHNOSTENCIL].back = {};
+                           environmentMap.createGraphicPipeline(static_cast<sf::PrimitiveType>(i), states, DEPTHNOSTENCIL, NBDEPTHSTENCIL);
                         }
                     }
                 }
                 states.shader = &sLinkedList2;
                 for (unsigned int j = 0; j < NBDEPTHSTENCIL; j++) {
-                    for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
+                    for (unsigned int i = 3; i < Batcher::nbPrimitiveTypes - 1; i++) {
                         if (j == 0) {
                            VkPushConstantRange push_constant;
                            //this push constant range starts at the beginning
@@ -277,6 +280,7 @@ namespace odfaeg {
                            depthStencilCreateInfo[sLinkedList2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][NODEPTHNOSTENCIL].depthCompareOp = VK_COMPARE_OP_ALWAYS;
                            depthStencilCreateInfo[sLinkedList2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][NODEPTHNOSTENCIL].front = {};
                            depthStencilCreateInfo[sLinkedList2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][NODEPTHNOSTENCIL].back = {};
+                           environmentMap.createGraphicPipeline(static_cast<sf::PrimitiveType>(i), states, NODEPTHNOSTENCIL, NBDEPTHSTENCIL);
                         } else {
                            VkPushConstantRange push_constant;
                            //this push constant range starts at the beginning
@@ -290,12 +294,13 @@ namespace odfaeg {
                            depthStencilCreateInfo[sLinkedList2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][DEPTHNOSTENCIL].depthCompareOp = VK_COMPARE_OP_GREATER;
                            depthStencilCreateInfo[sLinkedList2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][DEPTHNOSTENCIL].front = {};
                            depthStencilCreateInfo[sLinkedList2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][DEPTHNOSTENCIL].back = {};
+                           environmentMap.createGraphicPipeline(static_cast<sf::PrimitiveType>(i), states, DEPTHNOSTENCIL, NBDEPTHSTENCIL);
                         }
                     }
                 }
                 states.shader = &sBuildDepthBuffer;
                 for (unsigned int j = 0; j < NBDEPTHSTENCIL; j++) {
-                    for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
+                    for (unsigned int i = 3; i < Batcher::nbPrimitiveTypes - 1; i++) {
                         if (j == 0) {
                             std::array<VkPushConstantRange, 2> push_constants;
                             VkPushConstantRange push_constant;
@@ -308,17 +313,18 @@ namespace odfaeg {
                             push_constants[0] = push_constant;
                             VkPushConstantRange push_constant2;
                             //this push constant range starts at the beginning
-                            push_constant.offset = 64;
+                            push_constant2.offset = 128;
                             //this push constant range takes up the size of a MeshPushConstants struct
-                            push_constant.size = sizeof(BuildDepthPC);
+                            push_constant2.size = sizeof(BuildDepthPC);
                             //this push constant range is accessible only in the vertex shader
-                            push_constant.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+                            push_constant2.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
                             push_constants[1] = push_constant2;
                             pipelineLayoutInfo[sBuildDepthBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][NODEPTHNOSTENCIL].pPushConstantRanges = push_constants.data();
                             pipelineLayoutInfo[sBuildDepthBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][NODEPTHNOSTENCIL].pushConstantRangeCount = 2;
                             depthStencilCreateInfo[sBuildDepthBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][NODEPTHNOSTENCIL].depthCompareOp = VK_COMPARE_OP_ALWAYS;
                             depthStencilCreateInfo[sBuildDepthBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][NODEPTHNOSTENCIL].front = {};
                             depthStencilCreateInfo[sBuildDepthBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][NODEPTHNOSTENCIL].back = {};
+                            depthBuffer.createGraphicPipeline(static_cast<sf::PrimitiveType>(i), states, NODEPTHNOSTENCIL, NBDEPTHSTENCIL);
                         } else {
                             std::array<VkPushConstantRange, 2> push_constants;
                             VkPushConstantRange push_constant;
@@ -331,23 +337,24 @@ namespace odfaeg {
                             push_constants[0] = push_constant;
                             VkPushConstantRange push_constant2;
                             //this push constant range starts at the beginning
-                            push_constant.offset = 128;
+                            push_constant2.offset = 128;
                             //this push constant range takes up the size of a MeshPushConstants struct
-                            push_constant.size = sizeof(BuildDepthPC);
+                            push_constant2.size = sizeof(BuildDepthPC);
                             //this push constant range is accessible only in the vertex shader
-                            push_constant.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+                            push_constant2.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
                             push_constants[1] = push_constant2;
                             pipelineLayoutInfo[sBuildDepthBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][DEPTHNOSTENCIL].pPushConstantRanges = push_constants.data();
                             pipelineLayoutInfo[sBuildDepthBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][DEPTHNOSTENCIL].pushConstantRangeCount = 2;
                             depthStencilCreateInfo[sBuildDepthBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][DEPTHNOSTENCIL].depthCompareOp = VK_COMPARE_OP_ALWAYS;
                             depthStencilCreateInfo[sBuildDepthBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][DEPTHNOSTENCIL].front = {};
                             depthStencilCreateInfo[sBuildDepthBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][DEPTHNOSTENCIL].back = {};
+                            depthBuffer.createGraphicPipeline(static_cast<sf::PrimitiveType>(i), states, DEPTHNOSTENCIL, NBDEPTHSTENCIL);
                         }
                     }
                 }
                 states.shader = &sBuildAlphaBuffer;
                 for (unsigned int j = 0; j < NBDEPTHSTENCIL; j++) {
-                    for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
+                    for (unsigned int i = 3; i < Batcher::nbPrimitiveTypes - 1; i++) {
                         if (j == 0) {
                             std::array<VkPushConstantRange, 2> push_constants;
                             VkPushConstantRange push_constant;
@@ -360,17 +367,18 @@ namespace odfaeg {
                             push_constants[0] = push_constant;
                             VkPushConstantRange push_constant2;
                             //this push constant range starts at the beginning
-                            push_constant.offset = 128;
+                            push_constant2.offset = 128;
                             //this push constant range takes up the size of a MeshPushConstants struct
-                            push_constant.size = sizeof(BuildAlphaPC);
+                            push_constant2.size = sizeof(BuildAlphaPC);
                             //this push constant range is accessible only in the vertex shader
-                            push_constant.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+                            push_constant2.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
                             push_constants[1] = push_constant2;
                             pipelineLayoutInfo[sBuildAlphaBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][NODEPTHNOSTENCIL].pPushConstantRanges = push_constants.data();
                             pipelineLayoutInfo[sBuildAlphaBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][NODEPTHNOSTENCIL].pushConstantRangeCount = 2;
                             depthStencilCreateInfo[sBuildAlphaBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][NODEPTHNOSTENCIL].depthCompareOp = VK_COMPARE_OP_ALWAYS;
                             depthStencilCreateInfo[sBuildAlphaBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][NODEPTHNOSTENCIL].front = {};
                             depthStencilCreateInfo[sBuildAlphaBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][NODEPTHNOSTENCIL].back = {};
+                            alphaBuffer.createGraphicPipeline(static_cast<sf::PrimitiveType>(i), states, NODEPTHNOSTENCIL, NBDEPTHSTENCIL);
                         } else {
                             std::array<VkPushConstantRange, 2> push_constants;
                             VkPushConstantRange push_constant;
@@ -383,23 +391,24 @@ namespace odfaeg {
                             push_constants[0] = push_constant;
                             VkPushConstantRange push_constant2;
                             //this push constant range starts at the beginning
-                            push_constant.offset = 64;
+                            push_constant2.offset = 64;
                             //this push constant range takes up the size of a MeshPushConstants struct
-                            push_constant.size = sizeof(BuildDepthPC);
+                            push_constant2.size = sizeof(BuildDepthPC);
                             //this push constant range is accessible only in the vertex shader
-                            push_constant.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+                            push_constant2.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
                             push_constants[1] = push_constant2;
                             pipelineLayoutInfo[sBuildAlphaBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][DEPTHNOSTENCIL].pPushConstantRanges = push_constants.data();
                             pipelineLayoutInfo[sBuildAlphaBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][DEPTHNOSTENCIL].pushConstantRangeCount = 2;
                             depthStencilCreateInfo[sBuildAlphaBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][DEPTHNOSTENCIL].depthCompareOp = VK_COMPARE_OP_ALWAYS;
                             depthStencilCreateInfo[sBuildAlphaBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][DEPTHNOSTENCIL].front = {};
                             depthStencilCreateInfo[sBuildAlphaBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][DEPTHNOSTENCIL].back = {};
+                            alphaBuffer.createGraphicPipeline(static_cast<sf::PrimitiveType>(i), states, DEPTHNOSTENCIL, NBDEPTHSTENCIL);
                         }
                     }
                 }
                 states.shader = &sReflectRefract;
                 for (unsigned int j = 0; j < NBDEPTHSTENCIL; j++) {
-                    for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
+                    for (unsigned int i = 3; i < Batcher::nbPrimitiveTypes - 1; i++) {
                         if (j == 0) {
                             std::array<VkPushConstantRange, 2> push_constants;
                             VkPushConstantRange push_constant;
@@ -412,17 +421,18 @@ namespace odfaeg {
                             push_constants[0] = push_constant;
                             VkPushConstantRange push_constant2;
                             //this push constant range starts at the beginning
-                            push_constant.offset = 128;
+                            push_constant2.offset = 128;
                             //this push constant range takes up the size of a MeshPushConstants struct
-                            push_constant.size = sizeof(BuildFrameBufferPC);
+                            push_constant2.size = sizeof(BuildFrameBufferPC);
                             //this push constant range is accessible only in the vertex shader
-                            push_constant.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+                            push_constant2.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
                             push_constants[1] = push_constant2;
                             pipelineLayoutInfo[sReflectRefract.getId() * (Batcher::nbPrimitiveTypes - 1)+i][reflectRefractTex.getId()][NODEPTHNOSTENCIL].pPushConstantRanges = push_constants.data();
                             pipelineLayoutInfo[sReflectRefract.getId() * (Batcher::nbPrimitiveTypes - 1)+i][reflectRefractTex.getId()][NODEPTHNOSTENCIL].pushConstantRangeCount = 2;
                             depthStencilCreateInfo[sReflectRefract.getId() * (Batcher::nbPrimitiveTypes - 1)+i][reflectRefractTex.getId()][NODEPTHNOSTENCIL].depthCompareOp = VK_COMPARE_OP_ALWAYS;
                             depthStencilCreateInfo[sReflectRefract.getId() * (Batcher::nbPrimitiveTypes - 1)+i][reflectRefractTex.getId()][NODEPTHNOSTENCIL].front = {};
                             depthStencilCreateInfo[sReflectRefract.getId() * (Batcher::nbPrimitiveTypes - 1)+i][reflectRefractTex.getId()][NODEPTHNOSTENCIL].back = {};
+                            reflectRefractTex.createGraphicPipeline(static_cast<sf::PrimitiveType>(i), states, NODEPTHNOSTENCIL, NBDEPTHSTENCIL);
                         } else {
                             std::array<VkPushConstantRange, 2> push_constants;
                             VkPushConstantRange push_constant;
@@ -435,19 +445,23 @@ namespace odfaeg {
                             push_constants[0] = push_constant;
                             VkPushConstantRange push_constant2;
                             //this push constant range starts at the beginning
-                            push_constant.offset = 64;
+                            push_constant2.offset = 128;
                             //this push constant range takes up the size of a MeshPushConstants struct
                             push_constant.size = sizeof(BuildFrameBufferPC);
                             //this push constant range is accessible only in the vertex shader
-                            push_constant.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+                            push_constant2.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
                             push_constants[1] = push_constant2;
                             pipelineLayoutInfo[sReflectRefract.getId() * (Batcher::nbPrimitiveTypes - 1)+i][reflectRefractTex.getId()][DEPTHNOSTENCIL].pPushConstantRanges = push_constants.data();
                             pipelineLayoutInfo[sReflectRefract.getId() * (Batcher::nbPrimitiveTypes - 1)+i][reflectRefractTex.getId()][DEPTHNOSTENCIL].pushConstantRangeCount = 2;
                             depthStencilCreateInfo[sReflectRefract.getId() * (Batcher::nbPrimitiveTypes - 1)+i][reflectRefractTex.getId()][DEPTHNOSTENCIL].depthCompareOp = VK_COMPARE_OP_ALWAYS;
                             depthStencilCreateInfo[sReflectRefract.getId() * (Batcher::nbPrimitiveTypes - 1)+i][reflectRefractTex.getId()][DEPTHNOSTENCIL].front = {};
                             depthStencilCreateInfo[sReflectRefract.getId() * (Batcher::nbPrimitiveTypes - 1)+i][reflectRefractTex.getId()][DEPTHNOSTENCIL].back = {};
+                            reflectRefractTex.createGraphicPipeline(static_cast<sf::PrimitiveType>(i), states, DEPTHNOSTENCIL, NBDEPTHSTENCIL);
                         }
                     }
+                }
+                for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
+                    vbBindlessTex[i].setPrimitiveType(static_cast<sf::PrimitiveType>(i));
                 }
                 vkCmdPushDescriptorSetKHR = (PFN_vkCmdPushDescriptorSetKHR)vkGetDeviceProcAddr(vkDevice.getDevice(), "vkCmdPushDescriptorSetKHR");
                 skybox = nullptr;
@@ -539,7 +553,7 @@ namespace odfaeg {
             void ReflectRefractRenderComponent::loadTextureIndexes() {
             }
             std::vector<Entity*> ReflectRefractRenderComponent::getEntities() {
-                return vEntities;
+                return visibleEntities;
             }
             uint32_t ReflectRefractRenderComponent::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
                 VkPhysicalDeviceMemoryProperties memProperties;
@@ -701,7 +715,7 @@ namespace odfaeg {
                                                                layout (location = 0) out vec4 vColor;
                                                                layout (location = 1) out vec2 vTexCoord;
                                                                layout (location = 2) out uint tIndex;
-                                                               layout (location = 3) out vec3 normal;
+                                                               layout (location = 3) out vec3 vNormal;
                                                                void main() {
                                                                     MaterialData material = materialDatas[gl_DrawID];
                                                                     ModelData model = modelDatas[gl_InstanceIndex];
@@ -710,7 +724,7 @@ namespace odfaeg {
                                                                     vTexCoord = texCoords;
                                                                     vColor = color;
                                                                     tIndex = textureIndex;
-                                                                    normal = normals;
+                                                                    vNormal = normals;
                                                                }
                                                                )";
                 const std::string  linkedListVertexShader2 = R"(#version 460
@@ -723,14 +737,14 @@ namespace odfaeg {
                                                                      mat4 viewMatrix;
                                                                      mat4 worldMat;
                                                                 } pushConsts;
-                                                                layout (location = 0) out vec2 fTexCoords;
-                                                                layout (location = 1) out vec4 frontColor;
+                                                                layout (location = 0) out vec4 vColor;
+                                                                layout (location = 1) out vec2 vTexCoord;
                                                                 layout (location = 2) out vec3 vNormal;
                                                                 void main () {
                                                                     gl_Position = vec4(position, 1.f) * pushConsts.worldMat * pushConsts.viewMatrix * pushConsts.projectionMatrix;
                                                                     gl_PointSize = 2.0f;
-                                                                    frontColor = color;
-                                                                    fTexCoords = texCoords;
+                                                                    vColor = color;
+                                                                    vTexCoord = texCoords;
                                                                     vNormal = normals;
                                                                 })";
                 const std::string perPixReflectRefractIndirectRenderingVertexShader = R"(#version 460
@@ -834,8 +848,8 @@ namespace odfaeg {
                     const std::string buildDepthBufferFragmentShader = R"(#version 460
                                                                       #extension GL_ARB_fragment_shader_interlock : require
                                                                       #extension GL_EXT_nonuniform_qualifier : enable
-                                                                          layout (location = 0) in vec4 frontColor;
-                                                                          layout (location = 1) in vec2 fTexCoords;
+                                                                          layout (location = 0) in vec2 fTexCoords;
+                                                                          layout (location = 1) in vec4 frontColor;
                                                                           layout (location = 2) in flat uint texIndex;
                                                                           layout (location = 3) in flat uint layer;
                                                                           layout (location = 4) in vec3 normal;
@@ -873,10 +887,11 @@ namespace odfaeg {
                                                                             vec4 resolution;
                                                                             uint nbLayers;
                                                                       } pushConsts;
-                                                                      layout (location = 0) in vec4 frontColor;
-                                                                      layout (location = 1) in vec2 fTexCoords;
+                                                                      layout (location = 0) in vec2 fTexCoords;
+                                                                      layout (location = 1) in vec4 frontColor;
                                                                       layout (location = 2) in flat uint texIndex;
                                                                       layout (location = 3) in flat uint layer;
+                                                                      layout (location = 4) in vec3 normal;
                                                                       void main() {
                                                                           vec4 texel = (texIndex != 0) ? frontColor * texture(textures[texIndex-1], fTexCoords.xy) : frontColor;
                                                                           float current_alpha = texel.a;
@@ -952,11 +967,11 @@ namespace odfaeg {
                                                           NodeType nodes[];
                                                       };
                                                       layout(set = 0, binding = 3) uniform sampler2D textures[];
-                                                      layout(location = 0) in vec4 frontColor;
-                                                      layout(location = 1) in vec2 fTexCoords;
-                                                      layout(location = 2) in flat uint texIndex;
-                                                      layout(location = 3) in flat uint layer;
-                                                      layout(location = 4) in vec3 normal;
+                                                      layout (location = 0) in vec4 frontColor;
+                                                      layout (location = 1) in vec2 fTexCoords;
+                                                      layout (location = 2) in flat uint layer;
+                                                      layout (location = 3) in flat uint texIndex;
+                                                      layout (location = 4) in vec3 normal;
                                                       layout(location = 0) out vec4 fcolor;
                                                       void main() {
                                                            uint nodeIdx = atomicAdd(count[layer], 1);
@@ -1999,7 +2014,7 @@ namespace odfaeg {
                 Shader* shader = const_cast<Shader*>(currentStates.shader);
                 if (shader == &sBuildDepthBuffer) {
                     depthBuffer.beginRecordCommandBuffers();
-                    std::vector<VkCommandBuffer>& commandBuffers = depthBuffer.getCommandBuffers();
+                    std::vector<VkCommandBuffer> commandBuffers = depthBuffer.getCommandBuffers();
                     unsigned int currentFrame = depthBuffer.getCurrentFrame();
                     buildDepthPC.nbLayers = GameObject::getNbLayers();
                     vkCmdPushConstants(commandBuffers[currentFrame], depthBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][depthBuffer.getId()][depthStencilID], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectRenderingPC), &indirectRenderingPC);
@@ -2008,7 +2023,7 @@ namespace odfaeg {
                     depthBuffer.display();
                 } else if (shader == &sBuildAlphaBuffer) {
                     alphaBuffer.beginRecordCommandBuffers();
-                    std::vector<VkCommandBuffer>& commandBuffers = alphaBuffer.getCommandBuffers();
+                    std::vector<VkCommandBuffer> commandBuffers = alphaBuffer.getCommandBuffers();
                     unsigned int currentFrame = alphaBuffer.getCurrentFrame();
                     buildAlphaPC.nbLayers = GameObject::getNbLayers();
                     buildAlphaPC.resolution = resolution;
@@ -2018,13 +2033,13 @@ namespace odfaeg {
                     alphaBuffer.display();
                 } else if (shader == &sLinkedList) {
                     environmentMap.beginRecordCommandBuffers();
-                    std::vector<VkCommandBuffer>& commandBuffers = environmentMap.getCommandBuffers();
+                    std::vector<VkCommandBuffer> commandBuffers = environmentMap.getCommandBuffers();
                     unsigned int currentFrame = environmentMap.getCurrentFrame();
                     environmentMap.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
                     environmentMap.display();
                 } else {
                     reflectRefractTex.beginRecordCommandBuffers();
-                    std::vector<VkCommandBuffer>& commandBuffers = reflectRefractTex.getCommandBuffers();
+                    std::vector<VkCommandBuffer> commandBuffers = reflectRefractTex.getCommandBuffers();
                     unsigned int currentFrame = reflectRefractTex.getCurrentFrame();
                     buildFrameBufferPC.resolution = resolution;
                     vkCmdPushConstants(commandBuffers[currentFrame], reflectRefractTex.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][reflectRefractTex.getId()][depthStencilID], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectRenderingPC), &indirectRenderingPC);
@@ -2037,7 +2052,7 @@ namespace odfaeg {
                 environmentMap.beginRecordCommandBuffers();
                 Shader* shader = const_cast<Shader*>(currentStates.shader);
                 unsigned int currentFrame = environmentMap.getCurrentFrame();
-                std::vector<VkCommandBuffer>& commandBuffers = environmentMap.getCommandBuffers();
+                std::vector<VkCommandBuffer> commandBuffers = environmentMap.getCommandBuffers();
                 vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 0, nullptr);
 
 
@@ -2064,8 +2079,6 @@ namespace odfaeg {
                     modelDatas[p].clear();
                 }
                 std::array<std::vector<DrawArraysIndirectCommand>, Batcher::nbPrimitiveTypes> drawArraysIndirectCommands;
-                std::array<std::vector<ModelData>, Batcher::nbPrimitiveTypes> matrices;
-                std::array<std::vector<MaterialData>, Batcher::nbPrimitiveTypes> materials;
                 std::array<unsigned int, Batcher::nbPrimitiveTypes> firstIndex, baseInstance;
                 for (unsigned int i = 0; i < firstIndex.size(); i++) {
                     firstIndex[i] = 0;
@@ -2102,7 +2115,7 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < m_reflInstances.size(); i++) {
                     if (m_reflInstances[i].getAllVertices().getVertexCount() > 0) {
                         DrawArraysIndirectCommand drawArraysIndirectCommand;
-                        unsigned int p = m_instances[i].getAllVertices().getPrimitiveType();
+                        unsigned int p = m_reflInstances[i].getAllVertices().getPrimitiveType();
                         MaterialData material;
                         material.textureIndex = (m_reflInstances[i].getMaterial().getTexture() != nullptr) ? m_reflInstances[i].getMaterial().getTexture()->getId() : 0;
                         material.layer = m_reflInstances[i].getMaterial().getLayer();
@@ -2114,6 +2127,7 @@ namespace odfaeg {
                             model.worldMat = tm[j]->getMatrix().transpose();
                             modelDatas[p].push_back(model);
                         }
+                        std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
                         unsigned int vertexCount = 0;
 
                         if (m_reflInstances[i].getVertexArrays().size() > 0) {
@@ -2149,11 +2163,13 @@ namespace odfaeg {
                     if (vbBindlessTex[p].getVertexCount() > 0) {
                         vbBindlessTex[p].update();
                         VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
+                        std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
                         if (bufferSize > maxModelDataSize) {
                             if (modelDataStagingBuffer != nullptr) {
                                 vkDestroyBuffer(vkDevice.getDevice(), modelDataStagingBuffer, nullptr);
                                 vkFreeMemory(vkDevice.getDevice(), modelDataStagingBufferMemory, nullptr);
                             }
+
                             createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, modelDataStagingBuffer, modelDataStagingBufferMemory);
                             for (unsigned int i = 0; i < modelDataShaderStorageBuffers.size(); i++) {
                                 vkDestroyBuffer(vkDevice.getDevice(), modelDataShaderStorageBuffers[i], nullptr);
@@ -2802,7 +2818,7 @@ namespace odfaeg {
                                     environmentMap.clear(sf::Color::Transparent);
                                     VkClearColorValue clearColor;
                                     clearColor.uint32[0] = 0xffffffff;
-                                    std::vector<VkCommandBuffer>& commandBuffers = environmentMap.getCommandBuffers();
+                                    std::vector<VkCommandBuffer> commandBuffers = environmentMap.getCommandBuffers();
                                     for (unsigned int i = 0; i < commandBuffers.size(); i++) {
                                         VkImageSubresourceRange subresRange = {};
                                         subresRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -2892,7 +2908,7 @@ namespace odfaeg {
             bool ReflectRefractRenderComponent::needToUpdate() {
                 return update;
             }
-            bool ReflectRefractRenderComponent::loadEntitiesOnComponent(std::vector<Entity*> visibleEntities) {
+            bool ReflectRefractRenderComponent::loadEntitiesOnComponent(std::vector<Entity*> vEntities) {
                 batcher.clear();
                 normalBatcher.clear();
                 reflBatcher.clear();
@@ -2905,13 +2921,13 @@ namespace odfaeg {
                 }
                 for (unsigned int i = 0; i < vEntities.size(); i++) {
                     if ( vEntities[i] != nullptr && vEntities[i]->isLeaf()) {
+                        //std::cout<<"add entity"<<std::endl;
                         for (unsigned int j = 0; j <  vEntities[i]->getNbFaces(); j++) {
-                            if (vEntities[i]->getFace(j)->getMaterial().isRefractable())
-                                std::cout<<"refractable"<<std::endl;
+
                             if (vEntities[i]->getFace(j)->getMaterial().isReflectable() || vEntities[i]->getFace(j)->getMaterial().isRefractable()) {
 
                                 if (vEntities[i]->getDrawMode() == Entity::INSTANCED) {
-
+                                    //std::cout<<"add refl face"<<std::endl;
                                     reflBatcher.addFace( vEntities[i]->getFace(j));
                                 } else {
                                     reflNormalBatcher.addFace(vEntities[i]->getFace(j));
@@ -3671,7 +3687,7 @@ namespace odfaeg {
             for (unsigned int i = 0; i < m_reflInstances.size(); i++) {
                 if (m_reflInstances[i].getAllVertices().getVertexCount() > 0) {
                     DrawArraysIndirectCommand drawArraysIndirectCommand;
-                    unsigned int p = m_instances[i].getAllVertices().getPrimitiveType();
+                    unsigned int p = m_reflInstances[i].getAllVertices().getPrimitiveType();
                     MaterialData material;
                     material.textureIndex = (m_reflInstances[i].getMaterial().getTexture() != nullptr) ? m_reflInstances[i].getMaterial().getTexture()->getNativeHandle() : 0;
                     material.layer = m_reflInstances[i].getMaterial().getLayer();
