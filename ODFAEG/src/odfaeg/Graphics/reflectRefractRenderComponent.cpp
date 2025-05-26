@@ -942,7 +942,7 @@ namespace odfaeg {
                                                                 layout (location = 0) out vec4 fColor;
                                                                 void main () {
                                                                     vec2 position = (gl_FragCoord.xy / pushConsts.resolution.xy);
-                                                                    vec4 alpha = texture(alphaBuffer, position);
+                                                                    vec4 alpha = textureLod(alphaBuffer, position, 0);
                                                                     bool refr = false;
                                                                     float ratio = 1;
                                                                     if (materialType == 1) {
@@ -1954,9 +1954,10 @@ namespace odfaeg {
                         descriptorWrites[0].descriptorCount = 1;
                         descriptorWrites[0].pImageInfo = &descriptorImageInfo;
 
-                        descriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                        descriptorImageInfo.imageView = alphaBuffer.getTexture().getImageView();
-                        descriptorImageInfo.sampler = alphaBuffer.getTexture().getSampler();
+                        VkDescriptorImageInfo   descriptorImageInfo2;
+                        descriptorImageInfo2.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                        descriptorImageInfo2.imageView = alphaBuffer.getTexture().getImageView();
+                        descriptorImageInfo2.sampler = alphaBuffer.getTexture().getSampler();
 
                         descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                         descriptorWrites[1].dstSet = descriptorSets[descriptorId][i];
@@ -1964,7 +1965,7 @@ namespace odfaeg {
                         descriptorWrites[1].dstArrayElement = 0;
                         descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
                         descriptorWrites[1].descriptorCount = 1;
-                        descriptorWrites[1].pImageInfo = &descriptorImageInfo;
+                        descriptorWrites[1].pImageInfo = &descriptorImageInfo2;
 
                         VkDescriptorBufferInfo modelDataStorageBufferInfoLastFrame{};
                         modelDataStorageBufferInfoLastFrame.buffer = modelDataShaderStorageBuffers[i];
@@ -2688,7 +2689,7 @@ namespace odfaeg {
                 RenderStates currentStates;
                 currentStates.blendMode = sf::BlendNone;
                 currentStates.shader = &sReflectRefract;
-                currentStates.texture = &environmentMap.getTexture();
+                currentStates.texture = nullptr;
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                     if (vbBindlessTex[p].getVertexCount() > 0) {
                         vbBindlessTex[p].update();
