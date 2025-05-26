@@ -85,7 +85,6 @@ namespace odfaeg
             bool isSmooth() const;
             void setRepeated(bool repeated);
             bool isRepeated() const;
-            bool isCubemap();
             unsigned int getNativeHandle();
             unsigned int getId() const;
             void setNativeHandle(unsigned int handle, unsigned int width, unsigned int height);
@@ -142,6 +141,7 @@ namespace odfaeg
             static unsigned int nbTextures;
             VkCommandPool commandPool;
             CoordinateType ct;
+            bool isCubeMap;
         };
         #else
         ////////////////////////////////////////////////////////////

@@ -2880,13 +2880,15 @@ namespace odfaeg {
                                     updateUniformBuffer(environmentMap.getCurrentFrame(), ubo);
                                     drawEnvReflInst();
                                     vb.clear();
-                                    vb.setPrimitiveType(sf::Quads);
+                                    vb.setPrimitiveType(sf::Triangles);
                                     Vertex v1 (sf::Vector3f(0, 0, quad.getSize().z));
                                     Vertex v2 (sf::Vector3f(quad.getSize().x,0, quad.getSize().z));
                                     Vertex v3 (sf::Vector3f(quad.getSize().x, quad.getSize().y, quad.getSize().z));
                                     Vertex v4 (sf::Vector3f(0, quad.getSize().y, quad.getSize().z));
                                     vb.append(v1);
                                     vb.append(v2);
+                                    vb.append(v3);
+                                    vb.append(v1);
                                     vb.append(v3);
                                     vb.append(v4);
                                     vb.update();
