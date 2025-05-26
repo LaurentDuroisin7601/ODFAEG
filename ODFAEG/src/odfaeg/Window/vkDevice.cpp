@@ -169,6 +169,7 @@ namespace odfaeg {
                     .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES_KHR,
                     .synchronization2 = VK_TRUE
                 };
+
                 VkPhysicalDeviceFragmentShaderInterlockFeaturesEXT physcialDeviceFragmentShaderInterlock{};
                 physcialDeviceFragmentShaderInterlock.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_INTERLOCK_FEATURES_EXT;
                 physcialDeviceFragmentShaderInterlock.pNext = &synchronization2Features;
@@ -183,6 +184,7 @@ namespace odfaeg {
                 features12.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
 
 
+
                 VkPhysicalDeviceFeatures2 physical_features21;
                 physical_features21.sType =  VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
                 physical_features21.pNext = &features11;
@@ -194,9 +196,12 @@ namespace odfaeg {
                 physical_features22.pNext = &features12;
                 vkGetPhysicalDeviceFeatures2(physicalDevice, &physical_features22);
 
+
                 features11.pNext = &features12;
 
                 features12.pNext = &physcialDeviceFragmentShaderInterlock;
+
+
 
                 PFN_vkGetPhysicalDeviceProperties2KHR vkGetPhysicalDeviceProperties2KHR = reinterpret_cast<PFN_vkGetPhysicalDeviceProperties2KHR>(vkGetInstanceProcAddr(vkSettup.getInstance(), "vkGetPhysicalDeviceProperties2KHR"));
                 if (!vkGetPhysicalDeviceProperties2KHR) {

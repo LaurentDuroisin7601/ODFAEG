@@ -694,6 +694,7 @@ namespace odfaeg {
                                                                      }
                                                                      )";
                 const std::string linkedListIndirectRenderingVertexShader = R"(#version 460
+                                                               #extension GL_EXT_multiview : enable
                                                                layout (location = 0) in vec3 position;
                                                                layout (location = 1) in vec4 color;
                                                                layout (location = 2) in vec2 texCoords;
@@ -712,40 +713,53 @@ namespace odfaeg {
                                                                layout(set = 0, binding = 5) buffer materialData {
                                                                    MaterialData materialDatas[];
                                                                };
-                                                               layout (location = 0) out vec4 vColor;
-                                                               layout (location = 1) out vec2 vTexCoord;
-                                                               layout (location = 2) out uint tIndex;
-                                                               layout (location = 3) out vec3 vNormal;
+                                                               struct MatricesDatas {
+                                                                  mat4 projectionMatrix;
+                                                                  mat4 viewMatrix;
+                                                               };
+                                                               layout (set = 0, binding = 6) uniform UniformBufferObject {
+                                                                  MatricesDatas datas[6];
+                                                               };
+                                                               layout (location = 0) out vec4 frontColor;
+                                                               layout (location = 1) out vec2 fTexCoords;
+                                                               layout (location = 2) out uint layer;
+                                                               layout (location = 3) out uint texIndex;
+                                                               layout (location = 4) out vec3 normal;
                                                                void main() {
                                                                     MaterialData material = materialDatas[gl_DrawID];
                                                                     ModelData model = modelDatas[gl_InstanceIndex];
                                                                     uint textureIndex = material.textureIndex;
-                                                                    gl_Position = vec4(position, 1.f) * model.modelMatrix;
-                                                                    vTexCoord = texCoords;
-                                                                    vColor = color;
-                                                                    tIndex = textureIndex;
-                                                                    vNormal = normals;
+                                                                    gl_Position = vec4(position, 1.f) * model.modelMatrix * datas[gl_ViewIndex].viewMatrix * datas[gl_ViewIndex].projectionMatrix;
+                                                                    fTexCoords = texCoords;
+                                                                    frontColor = color;
+                                                                    layer = gl_ViewIndex;
+                                                                    texIndex = textureIndex;
+                                                                    normal = normals;
                                                                }
                                                                )";
                 const std::string  linkedListVertexShader2 = R"(#version 460
+                                                                #extension GL_EXT_multiview : enable
                                                                 layout (location = 0) in vec3 position;
                                                                 layout (location = 1) in vec4 color;
                                                                 layout (location = 2) in vec2 texCoords;
                                                                 layout (location = 3) in vec3 normals;
+
                                                                 layout (push_constant)uniform PushConsts {
                                                                      mat4 projectionMatrix;
                                                                      mat4 viewMatrix;
                                                                      mat4 worldMat;
                                                                 } pushConsts;
-                                                                layout (location = 0) out vec4 vColor;
-                                                                layout (location = 1) out vec2 vTexCoord;
-                                                                layout (location = 2) out vec3 vNormal;
+                                                                layout (location = 0) out vec4 frontColor;
+                                                                layout (location = 1) out vec2 fTexCoords;
+                                                                layout (location = 2) out uint layer;
+                                                                layout (location = 3) out vec3 normal;
                                                                 void main () {
                                                                     gl_Position = vec4(position, 1.f) * pushConsts.worldMat * pushConsts.viewMatrix * pushConsts.projectionMatrix;
                                                                     gl_PointSize = 2.0f;
-                                                                    vColor = color;
-                                                                    vTexCoord = texCoords;
-                                                                    vNormal = normals;
+                                                                    frontColor = color;
+                                                                    fTexCoords = texCoords;
+                                                                    normal = normals;
+                                                                    layer = gl_ViewIndex;
                                                                 })";
                 const std::string perPixReflectRefractIndirectRenderingVertexShader = R"(#version 460
                                                                                          layout (location = 0) in vec3 position;
@@ -1042,10 +1056,10 @@ namespace odfaeg {
                     if (!sReflectRefract.loadFromMemory(perPixReflectRefractIndirectRenderingVertexShader, buildFramebufferShader)) {
                         throw core::Erreur(57, "Error, failed to load reflect refract shader", 3);
                     }
-                    if (!sLinkedList.loadFromMemory(linkedListIndirectRenderingVertexShader, fragmentShader, geometryShader)) {
+                    if (!sLinkedList.loadFromMemory(linkedListIndirectRenderingVertexShader, fragmentShader)) {
                         throw core::Erreur(58, "Error, failed to load per pixel linked list shader", 3);
                     }
-                    if (!sLinkedList2.loadFromMemory(linkedListVertexShader2, fragmentShader2, geometryShader2)) {
+                    if (!sLinkedList2.loadFromMemory(linkedListVertexShader2, fragmentShader2)) {
                         throw core::Erreur(59, "Error, failed to load per pixel linked list 2 shader", 3);
                     }
                     if (!sBuildAlphaBuffer.loadFromMemory(indirectRenderingVertexShader,buildAlphaBufferFragmentShader)) {
@@ -1359,7 +1373,7 @@ namespace odfaeg {
                     uniformBufferLayoutBinding.descriptorCount = 1;
                     uniformBufferLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
                     uniformBufferLayoutBinding.pImmutableSamplers = nullptr;
-                    uniformBufferLayoutBinding.stageFlags = VK_SHADER_STAGE_GEOMETRY_BIT;
+                    uniformBufferLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
                     if (descriptorSetLayout[descriptorId] != nullptr) {
                         vkDestroyDescriptorSetLayout(vkDevice.getDevice(), descriptorSetLayout[descriptorId], nullptr);

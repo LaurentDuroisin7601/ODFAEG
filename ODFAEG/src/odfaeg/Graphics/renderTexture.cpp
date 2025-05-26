@@ -155,7 +155,7 @@ namespace odfaeg
                         framebufferInfo.pAttachments = attachments.data();
                         framebufferInfo.width = getSwapchainExtents().width;
                         framebufferInfo.height = getSwapchainExtents().height;
-                        framebufferInfo.layers = (isCubeMap) ? 6 : 1;
+                        framebufferInfo.layers = 1;
 
                         if (vkCreateFramebuffer(vkDevice.getDevice(), &framebufferInfo, nullptr, &swapChainFramebuffers[j][i]) != VK_SUCCESS) {
                             throw core::Erreur(0, "failed to create framebuffer!", 1);
@@ -173,7 +173,7 @@ namespace odfaeg
                         framebufferInfo.pAttachments = attachments.data();
                         framebufferInfo.width = getSwapchainExtents().width;
                         framebufferInfo.height = getSwapchainExtents().height;
-                        framebufferInfo.layers = (isCubeMap) ? 6 : 1;
+                        framebufferInfo.layers = 1;
 
 
                         if (vkCreateFramebuffer(vkDevice.getDevice(), &framebufferInfo, nullptr, &swapChainFramebuffers[j][i]) != VK_SUCCESS) {
@@ -224,6 +224,15 @@ namespace odfaeg
                     dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
                     renderPassInfo.dependencyCount = 1;
                     renderPassInfo.pDependencies = &dependency;
+
+                    if (isCubeMap) {
+                        const uint32_t viewMask = 0b00111111;
+                        VkRenderPassMultiviewCreateInfo multiviewInfo{};
+                        multiviewInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO;
+                        multiviewInfo.subpassCount = 1;
+                        multiviewInfo.pViewMasks = &viewMask;
+                        renderPassInfo.pNext = &multiviewInfo;
+                    }
                     VkRenderPass renderPass;
                     if (vkCreateRenderPass(vkDevice.getDevice(), &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
                         throw core::Erreur(0, "failed to create render pass!", 1);
@@ -282,6 +291,15 @@ namespace odfaeg
                     dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
                     renderPassInfo.dependencyCount = 1;
                     renderPassInfo.pDependencies = &dependency;
+
+                    if (isCubeMap) {
+                        const uint32_t viewMask = 0b00111111;
+                        VkRenderPassMultiviewCreateInfo multiviewInfo{};
+                        multiviewInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO;
+                        multiviewInfo.subpassCount = 1;
+                        multiviewInfo.pViewMasks = &viewMask;
+                        renderPassInfo.pNext = &multiviewInfo;
+                    }
                     VkRenderPass renderPass;
                     if (vkCreateRenderPass(vkDevice.getDevice(), &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
                         throw core::Erreur(0, "failed to create render pass!", 1);
