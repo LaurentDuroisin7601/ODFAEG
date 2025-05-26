@@ -1998,7 +1998,7 @@ namespace odfaeg {
             }
             void ReflectRefractRenderComponent::clear() {
                 depthBuffer.clear(sf::Color::Transparent);
-                std::vector<VkCommandBuffer>& commandBuffers = depthBuffer.getCommandBuffers();
+                std::vector<VkCommandBuffer> commandBuffers = depthBuffer.getCommandBuffers();
                 VkClearColorValue clearColor;
                 clearColor.uint32[0] = 0;
                 clearColor.uint32[1] = 0;

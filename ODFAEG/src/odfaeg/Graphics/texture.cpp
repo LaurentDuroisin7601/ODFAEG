@@ -698,7 +698,7 @@ namespace odfaeg {
         void Texture::createCubeMapImage (uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage image, VkDeviceMemory device) {
             VkImageCreateInfo imageCreateInfo = {};
             imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-            imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
+            imageCreateInfo.imageType = VK_IMAGE_TYPE_3D;
             imageCreateInfo.format = format;
             imageCreateInfo.mipLevels = 1;
             imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
