@@ -45,16 +45,19 @@ namespace odfaeg {
                 ups[3] = math::Vec3f(0, 0, -1);
                 ups[4] = math::Vec3f(0, -1, 0);
                 ups[5] = math::Vec3f(0, -1, 0);
-                depthBuffer.m_name = "depthBuffer";
+                //depthBuffer.m_name = "depthBuffer";
                 depthBuffer.create(window.getView().getSize().x, window.getView().getSize().y);
+                depthBuffer.setView(view);
 
                 depthBufferSprite = Sprite(depthBuffer.getTexture(), math::Vec3f(0, 0, 0), math::Vec3f(window.getView().getSize().x, window.getView().getSize().y, 0), sf::IntRect(0, 0, window.getView().getSize().x, window.getView().getSize().y));
                 alphaBuffer.create(window.getView().getSize().x, window.getView().getSize().y);
+                alphaBuffer.setView(view);
                 //alphaBuffer.m_name = "alphaBuffer";
                 alphaBufferSprite = Sprite(alphaBuffer.getTexture(), math::Vec3f(0, 0, 0), math::Vec3f(window.getView().getSize().x, window.getView().getSize().y, 0), sf::IntRect(0, 0, window.getView().getSize().x, window.getView().getSize().y));
                 environmentMap.createCubeMap(squareSize, squareSize);
                 //environmentMap.m_name = "environmentMap";
                 reflectRefractTex.create(window.getView().getSize().x, window.getView().getSize().y);
+                reflectRefractTex.setView(view);
                 //reflectRefractTex.m_name = "relfectRefractTex";
                 reflectRefractTexSprite = Sprite(reflectRefractTex.getTexture(), math::Vec3f(0, 0, 0), math::Vec3f(window.getView().getSize().x, window.getView().getSize().y, 0), sf::IntRect(0, 0, window.getView().getSize().x, window.getView().getSize().y));
                 linkedListShaderStorageBuffers.resize(reflectRefractTex.getMaxFramesInFlight());
@@ -2852,15 +2855,15 @@ namespace odfaeg {
                                     for (unsigned int m = 0; m < 6; m++) {
                                         math::Vec3f target = reflectView.getPosition() + dirs[m];
                                         reflectView.lookAt(target.x, target.y, target.z, ups[m]);
-                                        projMatrix = reflectView.getProjMatrix().getMatrix().transpose();
-                                        viewMatrix = reflectView.getViewMatrix().getMatrix().transpose();
+                                        projMatrix = reflectView.getProjMatrix().getMatrix()/*.transpose()*/;
+                                        viewMatrix = reflectView.getViewMatrix().getMatrix()/*.transpose()*/;
                                         projMatrices[m] = projMatrix;
                                         viewMatrices[m] = viewMatrix;
                                         float zNear = reflectView.getViewport().getPosition().z;
                                         if (!reflectView.isOrtho())
                                             reflectView.setPerspective(80, view.getViewport().getSize().x / view.getViewport().getSize().y, 0.1f, view.getViewport().getSize().z);
-                                        viewMatrix = reflectView.getViewMatrix().getMatrix().transpose();
-                                        projMatrix = reflectView.getProjMatrix().getMatrix().transpose();
+                                        viewMatrix = reflectView.getViewMatrix().getMatrix()/*.transpose()*/;
+                                        projMatrix = reflectView.getProjMatrix().getMatrix()/*.transpose()*/;
                                         math::Matrix4f sbViewMatrix = math::Matrix4f(math::Matrix3f(viewMatrix));
                                         sbViewMatrices[m] = sbViewMatrix;
                                         sbProjMatrices[m] = projMatrix;
