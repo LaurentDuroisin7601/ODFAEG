@@ -309,12 +309,12 @@ namespace sorrok {
         getWorld()->addEntity(ps);
         View view = getView();
         //view.rotate(0, 0, 20);
-        /*PerPixelLinkedListRenderComponent *frc1 = new PerPixelLinkedListRenderComponent(getRenderWindow(),0, "E_BIGTILE", ContextSettings(0, 0, 4, 4, 6));
-        PerPixelLinkedListRenderComponent *frc2 = new PerPixelLinkedListRenderComponent(getRenderWindow(), 1, "E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PARTICLES", ContextSettings(0, 0, 4, 4, 6));*/
+        PerPixelLinkedListRenderComponent *frc1 = new PerPixelLinkedListRenderComponent(getRenderWindow(),0, "E_BIGTILE", ContextSettings(0, 0, 4, 4, 6));
+        PerPixelLinkedListRenderComponent *frc2 = new PerPixelLinkedListRenderComponent(getRenderWindow(), 1, "E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PARTICLES", ContextSettings(0, 0, 4, 4, 6));
 
-        ReflectRefractRenderComponent *rrrc = new ReflectRefractRenderComponent(getRenderWindow(), 0, "E_BIGTILE+E_WALL+E_DECOR+E_ANIMATION+E_HERO", ContextSettings(0, 0, 4, 4, 6));
-        /*frc1->createDescriptorsAndPipelines();
-        frc2->createDescriptorsAndPipelines();*/
+        ReflectRefractRenderComponent *rrrc = new ReflectRefractRenderComponent(getRenderWindow(), 2, "E_BIGTILE+E_WALL+E_DECOR+E_ANIMATION+E_HERO", ContextSettings(0, 0, 4, 4, 6));
+        frc1->createDescriptorsAndPipelines();
+        frc2->createDescriptorsAndPipelines();
         /*ShadowRenderComponent *src = new ShadowRenderComponent(getRenderWindow(), 3, "E_WALL+E_DECOR+E_ANIMATION+E_HERO", ContextSettings(0, 0, 4, 4, 6));
         LightRenderComponent *lrc = new LightRenderComponent(getRenderWindow(), 4, "E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PONCTUAL_LIGHT", ContextSettings(0, 0, 4, 4, 6));
         //std::cout<<"component created"<<std::endl;
@@ -336,8 +336,8 @@ namespace sorrok {
         rrrc->setVisible(false);
         src->setVisible(false);
         lrc->setVisible(false);*/
-        /*getRenderComponentManager().addComponent(frc1);
-        getRenderComponentManager().addComponent(frc2);*/
+        getRenderComponentManager().addComponent(frc1);
+        getRenderComponentManager().addComponent(frc2);
         getRenderComponentManager().addComponent(rrrc);
         /*getRenderComponentManager().addComponent(src);
         getRenderComponentManager().addComponent(lrc);
@@ -417,9 +417,9 @@ namespace sorrok {
     }
     void MyAppli::onRender(RenderComponentManager *cm) {
         // draw everything here...
-        /*getWorld()->drawOnComponents("E_BIGTILE", 0);
-        getWorld()->drawOnComponents("E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PARTICLES", 1);*/
-        getWorld()->drawOnComponents("E_BIGTILE+E_WALL+E_DECOR+E_ANIMATION+E_HERO", 0);
+        getWorld()->drawOnComponents("E_BIGTILE", 0);
+        getWorld()->drawOnComponents("E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PARTICLES", 1);
+        getWorld()->drawOnComponents("E_BIGTILE+E_WALL+E_DECOR+E_ANIMATION+E_HERO", 2);
         /*getWorld()->drawOnComponents("E_WALL+E_DECOR+E_ANIMATION+E_HERO", 3);
         getWorld()->drawOnComponents("E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PONCTUAL_LIGHT", 4);*/
 

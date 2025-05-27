@@ -30,6 +30,7 @@ namespace odfaeg {
                 } else {
                     squareSize = window.getView().getSize().y;
                 }
+                needToUpdateDS = false;
                 quad = RectangleShape(math::Vec3f(squareSize, squareSize, squareSize * 0.5f));
                 quad.move(math::Vec3f(-squareSize * 0.5f, -squareSize * 0.5f, 0));
                 resolution = math::Vec3f((int) window.getSize().x, (int) window.getSize().y, window.getView().getSize().z);
@@ -660,6 +661,7 @@ namespace odfaeg {
                                                                      layout (location = 1) in vec4 color;
                                                                      layout (location = 2) in vec2 texCoords;
                                                                      layout (location = 3) in vec3 normals;
+                                                                     #extension GL_EXT_debug_printf : enable
                                                                      layout (push_constant)uniform PushConsts {
                                                                          mat4 projectionMatrix;
                                                                          mat4 viewMatrix;
@@ -694,6 +696,9 @@ namespace odfaeg {
                                                                          frontColor = color;
                                                                          texIndex = textureIndex;
                                                                          normal = normals;
+                                                                         if (gl_VertexIndex == 0) {
+                                                                            debugPrintfEXT("test");
+                                                                         }
                                                                          layer = l;
                                                                          gl_PointSize = 2.0f;
                                                                      }
@@ -871,6 +876,7 @@ namespace odfaeg {
                     const std::string buildDepthBufferFragmentShader = R"(#version 460
                                                                       #extension GL_ARB_fragment_shader_interlock : require
                                                                       #extension GL_EXT_nonuniform_qualifier : enable
+                                                                          //layout(origin_upper_left) in vec4 gl_FragCoord;
                                                                           layout (location = 0) in vec2 fTexCoords;
                                                                           layout (location = 1) in vec4 frontColor;
                                                                           layout (location = 2) in flat uint texIndex;
@@ -1264,7 +1270,7 @@ namespace odfaeg {
                     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
                     poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
                     poolInfo.pPoolSizes = poolSizes.data();
-                    poolInfo.maxSets = static_cast<uint32_t>(environmentMap.getMaxFramesInFlight());
+                    poolInfo.maxSets = static_cast<uint32_t>(depthBuffer.getMaxFramesInFlight());
                     if (vkCreateDescriptorPool(vkDevice.getDevice(), &poolInfo, nullptr, &descriptorPool[descriptorId]) != VK_SUCCESS) {
                         throw std::runtime_error("echec de la creation de la pool de descripteurs!");
                     }
@@ -1293,7 +1299,7 @@ namespace odfaeg {
                     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
                     poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
                     poolInfo.pPoolSizes = poolSizes.data();
-                    poolInfo.maxSets = static_cast<uint32_t>(environmentMap.getMaxFramesInFlight());
+                    poolInfo.maxSets = static_cast<uint32_t>(alphaBuffer.getMaxFramesInFlight());
                     if (vkCreateDescriptorPool(vkDevice.getDevice(), &poolInfo, nullptr, &descriptorPool[descriptorId]) != VK_SUCCESS) {
                         throw std::runtime_error("echec de la creation de la pool de descripteurs!");
                     }
@@ -1319,7 +1325,7 @@ namespace odfaeg {
                     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
                     poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
                     poolInfo.pPoolSizes = poolSizes.data();
-                    poolInfo.maxSets = static_cast<uint32_t>(environmentMap.getMaxFramesInFlight());
+                    poolInfo.maxSets = static_cast<uint32_t>(reflectRefractTex.getMaxFramesInFlight());
                     if (vkCreateDescriptorPool(vkDevice.getDevice(), &poolInfo, nullptr, &descriptorPool[descriptorId]) != VK_SUCCESS) {
                         throw std::runtime_error("echec de la creation de la pool de descripteurs!");
                     }
@@ -2939,8 +2945,8 @@ namespace odfaeg {
                 //reflectRefractTex.display();
             }
             void ReflectRefractRenderComponent::draw(RenderTarget& target, RenderStates states) {
-                reflectRefractTexSprite.setCenter(target.getView().getPosition());
-                target.draw(reflectRefractTexSprite, states);
+                depthBufferSprite.setCenter(target.getView().getPosition());
+                target.draw(depthBufferSprite, states);
             }
             std::string ReflectRefractRenderComponent::getExpression() {
                 return expression;
