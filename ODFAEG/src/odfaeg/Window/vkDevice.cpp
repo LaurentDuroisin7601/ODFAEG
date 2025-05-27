@@ -166,8 +166,13 @@ namespace odfaeg {
                     queueCreateInfos.push_back(queueCreateInfo);
                 }
 
+                VkPhysicalDeviceMultiviewFeatures physicalDeviceMultiviewFeatures{};
+                physicalDeviceMultiviewFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES_KHR;
+                physicalDeviceMultiviewFeatures.multiview = VK_TRUE;
+
                 VkPhysicalDeviceMaintenance4Features maintenance4Features {
                     .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_4_FEATURES,
+                    .pNext = & physicalDeviceMultiviewFeatures,
                     .maintenance4 = VK_TRUE
                 };
 
