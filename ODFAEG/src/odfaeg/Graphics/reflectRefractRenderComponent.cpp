@@ -664,7 +664,7 @@ namespace odfaeg {
                                                                      #extension GL_EXT_debug_printf : enable
                                                                      layout (push_constant)uniform PushConsts {
                                                                          mat4 projectionMatrix;
-                                                                         mat4 viewMatrix;
+                                                                         layout (offset = 64) mat4 viewMatrix;
                                                                      } pushConsts;
                                                                      struct ModelData {
                                                                          mat4 modelMatrix;
@@ -688,17 +688,27 @@ namespace odfaeg {
                                                                      void main() {
                                                                          gl_PointSize = 2.0f;
                                                                          MaterialData material = materialDatas[gl_DrawID];
-                                                                         ModelData model = modelDatas[gl_InstanceIndex];
+                                                                         ModelData modelData = modelDatas[gl_InstanceIndex];
                                                                          uint textureIndex = material.textureIndex;
                                                                          uint l = material.layer;
-                                                                         gl_Position = vec4(position, 1.f) * model.modelMatrix * pushConsts.viewMatrix * pushConsts.projectionMatrix;
+                                                                         gl_Position = vec4(position, 1.f) * modelData.modelMatrix * pushConsts.viewMatrix * pushConsts.projectionMatrix;
                                                                          fTexCoords = texCoords;
                                                                          frontColor = color;
                                                                          texIndex = textureIndex;
                                                                          normal = normals;
-                                                                         if (gl_VertexIndex == 0) {
-                                                                            debugPrintfEXT("test");
-                                                                         }
+                                                                         //mat4 combined =  modelData.modelMatrix * pushConsts.viewMatrix * pushConsts.projectionMatrix;
+                                                                         vec4 row1 = modelData.modelMatrix[0];
+                                                                         vec4 row2 = modelData.modelMatrix[1];
+                                                                         vec4 row3 = modelData.modelMatrix[2];
+                                                                         vec4 row4 = modelData.modelMatrix[3];
+                                                                         //if (gl_VertexIndex == 0) {
+                                                                             debugPrintfEXT("reflect refract projMatrix row 1 : %v4f\n", row1);
+                                                                             debugPrintfEXT("reflect refract projMatrix row 2 : %v4f\n", row2);
+                                                                             debugPrintfEXT("reflect refract projMatrix row 3 : %v4f\n", row3);
+                                                                             debugPrintfEXT("reflect refract projMatrix row 4 : %v4f\n", row4);
+                                                                             //debugPrintfEXT("position : %v3f\n", gl_Position);
+                                                                         //}
+
                                                                          layer = l;
                                                                          gl_PointSize = 2.0f;
                                                                      }
@@ -2186,7 +2196,7 @@ namespace odfaeg {
                         for (unsigned int j = 0; j < tm.size(); j++) {
                             tm[j]->update();
                             ModelData model;
-                            model.worldMat = tm[j]->getMatrix().transpose();
+                            model.worldMat = tm[j]->getMatrix()/*.transpose()*/;
                             modelDatas[p].push_back(model);
                         }
                         //std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
@@ -2361,7 +2371,7 @@ namespace odfaeg {
                         for (unsigned int j = 0; j < tm.size(); j++) {
                             tm[j]->update();
                             ModelData model;
-                            model.worldMat = tm[j]->getMatrix().transpose();
+                            model.worldMat = tm[j]->getMatrix()/*.transpose()*/;
                             modelDatas[p].push_back(model);
                         }
                         unsigned int vertexCount = 0;
@@ -2524,7 +2534,7 @@ namespace odfaeg {
                         for (unsigned int j = 0; j < tm.size(); j++) {
                             tm[j]->update();
                             ModelData model;
-                            model.worldMat = tm[j]->getMatrix().transpose();
+                            model.worldMat = tm[j]->getMatrix()/*.transpose()*/;
                             modelDatas[p].push_back(model);
                         }
 
@@ -2697,7 +2707,7 @@ namespace odfaeg {
                         for (unsigned int j = 0; j < tm.size(); j++) {
                             tm[j]->update();
                             ModelData model;
-                            model.worldMat = tm[j]->getMatrix().transpose();
+                            model.worldMat = tm[j]->getMatrix()/*.transpose()*/;
                             modelDatas[p].push_back(model);
                         }
                         unsigned int vertexCount = 0;
@@ -2945,8 +2955,8 @@ namespace odfaeg {
                 //reflectRefractTex.display();
             }
             void ReflectRefractRenderComponent::draw(RenderTarget& target, RenderStates states) {
-                depthBufferSprite.setCenter(target.getView().getPosition());
-                target.draw(depthBufferSprite, states);
+                reflectRefractTexSprite.setCenter(target.getView().getPosition());
+                target.draw(reflectRefractTexSprite, states);
             }
             std::string ReflectRefractRenderComponent::getExpression() {
                 return expression;

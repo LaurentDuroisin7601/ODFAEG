@@ -855,6 +855,7 @@ namespace odfaeg {
             const std::string indirectDrawVertexShader = R"(#version 460
                                                             #define M_PI 3.1415926535897932384626433832795
                                                             #define FPI M_PI/4
+                                                            #extension GL_EXT_debug_printf : enable
                                                             layout (location = 0) in vec3 position;
                                                             layout (location = 1) in vec4 color;
                                                             layout (location = 2) in vec2 texCoords;
@@ -898,6 +899,18 @@ namespace odfaeg {
                                                                 frontColor = color;
                                                                 texIndex = textureIndex;
                                                                 normal = normals;
+                                                                //mat4 combined =  modelData.modelMatrix * pushConsts.viewMatrix * pushConsts.projectionMatrix;
+                                                                 vec4 row1 = modelData.modelMatrix[0];
+                                                                 vec4 row2 = modelData.modelMatrix[1];
+                                                                 vec4 row3 = modelData.modelMatrix[2];
+                                                                 vec4 row4 = modelData.modelMatrix[3];
+                                                                 if (gl_VertexIndex == 0) {
+                                                                     debugPrintfEXT("linked list projMatrix row 1 : %v4f\n", row1);
+                                                                     debugPrintfEXT("linked list projMatrix row 2 : %v4f\n", row2);
+                                                                     debugPrintfEXT("linked list projMatrix row 3 : %v4f\n", row3);
+                                                                     debugPrintfEXT("linked list projMatrix row 4 : %v4f\n", row4);
+                                                                     //debugPrintfEXT("position : %v3f\n", position);
+                                                                 }
                                                             }
                                                             )";
                 const std::string  simpleVertexShader = R"(#version 460
