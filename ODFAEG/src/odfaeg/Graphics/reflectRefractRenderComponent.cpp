@@ -61,7 +61,7 @@ namespace odfaeg {
                 linkedListShaderStorageBuffersMemory.resize(reflectRefractTex.getMaxFramesInFlight());
                 maxNodes = 20;
                 unsigned int nodeSize = 5  * sizeof(float) + sizeof(unsigned int);
-                VkDeviceSize bufferSize = maxNodes * nodeSize;
+                VkDeviceSize bufferSize = maxNodes * nodeSize * 6;
                 for (unsigned int i = 0; i < reflectRefractTex.getMaxFramesInFlight(); i++) {
                     createBuffer(bufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, linkedListShaderStorageBuffers[i], linkedListShaderStorageBuffersMemory[i]);
                 }
@@ -250,7 +250,7 @@ namespace odfaeg {
                 reflectRefractTex.enableDepthTest(true);
                 states.shader = &sLinkedList;
                 for (unsigned int j = 0; j < NBDEPTHSTENCIL; j++) {
-                    for (unsigned int i = 3; i < Batcher::nbPrimitiveTypes - 1; i++) {
+                    for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
                         if (j == 0) {
                            depthStencilCreateInfo[sLinkedList.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][NODEPTHNOSTENCIL].depthCompareOp = VK_COMPARE_OP_ALWAYS;
                            depthStencilCreateInfo[sLinkedList.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][NODEPTHNOSTENCIL].front = {};
@@ -266,7 +266,7 @@ namespace odfaeg {
                 }
                 states.shader = &sLinkedList2;
                 for (unsigned int j = 0; j < NBDEPTHSTENCIL; j++) {
-                    for (unsigned int i = 3; i < Batcher::nbPrimitiveTypes - 1; i++) {
+                    for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
                         if (j == 0) {
                            VkPushConstantRange push_constant;
                            //this push constant range starts at the beginning
@@ -300,7 +300,7 @@ namespace odfaeg {
                 }
                 states.shader = &sBuildDepthBuffer;
                 for (unsigned int j = 0; j < NBDEPTHSTENCIL; j++) {
-                    for (unsigned int i = 3; i < Batcher::nbPrimitiveTypes - 1; i++) {
+                    for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
                         if (j == 0) {
                             std::array<VkPushConstantRange, 2> push_constants;
                             VkPushConstantRange push_constant;
@@ -354,7 +354,7 @@ namespace odfaeg {
                 }
                 states.shader = &sBuildAlphaBuffer;
                 for (unsigned int j = 0; j < NBDEPTHSTENCIL; j++) {
-                    for (unsigned int i = 3; i < Batcher::nbPrimitiveTypes - 1; i++) {
+                    for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
                         if (j == 0) {
                             std::array<VkPushConstantRange, 2> push_constants;
                             VkPushConstantRange push_constant;
@@ -408,7 +408,7 @@ namespace odfaeg {
                 }
                 states.shader = &sReflectRefract;
                 for (unsigned int j = 0; j < NBDEPTHSTENCIL; j++) {
-                    for (unsigned int i = 3; i < Batcher::nbPrimitiveTypes - 1; i++) {
+                    for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
                         if (j == 0) {
                             std::array<VkPushConstantRange, 2> push_constants;
                             VkPushConstantRange push_constant;
@@ -680,6 +680,7 @@ namespace odfaeg {
                                                                      layout (location = 3) out uint layer;
                                                                      layout (location = 4) out vec3 normal;
                                                                      void main() {
+                                                                         gl_PointSize = 2.0f;
                                                                          MaterialData material = materialDatas[gl_DrawID];
                                                                          ModelData model = modelDatas[gl_InstanceIndex];
                                                                          uint textureIndex = material.textureIndex;
@@ -726,6 +727,7 @@ namespace odfaeg {
                                                                layout (location = 3) out uint texIndex;
                                                                layout (location = 4) out vec3 normal;
                                                                void main() {
+                                                                    gl_PointSize = 2.0f;
                                                                     MaterialData material = materialDatas[gl_DrawID];
                                                                     ModelData model = modelDatas[gl_InstanceIndex];
                                                                     uint textureIndex = material.textureIndex;
@@ -790,6 +792,7 @@ namespace odfaeg {
                                                                                          layout (location = 3) out uint materialType;
                                                                                          layout (location = 4) out vec3 normal;
                                                                                          void main () {
+                                                                                             gl_PointSize = 2.0f;
                                                                                              MaterialData material = materialDatas[gl_DrawID];
                                                                                              ModelData model = modelDatas[gl_InstanceIndex];
                                                                                              uint materialT = material.materialType;

@@ -123,6 +123,16 @@ namespace odfaeg {
             createTextureSampler();
             return true;
         }
+        bool Texture::createDepthTextureCM(uint32_t texWidth, uint32_t texHeight) {
+            isCubeMap = true;
+            VkFormat depthFormat = findDepthFormat();
+            createImage(texWidth, texHeight, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT /*| VK_IMAGE_USAGE_SAMPLED_BIT*/, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
+            //std::cout<<"dt address : "<<textureImage<<std::endl;
+            transitionImageLayout(textureImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED,  VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+            createTextureImageView(depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+            createTextureSampler();
+            return true;
+        }
         bool Texture::loadCubeMapFromFile(std::vector<std::string> filenames, const sf::IntRect& area) {
             for (unsigned int i = 0; i < 6; i++) {
                 Image image;
@@ -223,7 +233,7 @@ namespace odfaeg {
             imageInfo.extent.height = static_cast<uint32_t>(texHeight);
             imageInfo.extent.depth = 1;
             imageInfo.mipLevels = 1;
-            imageInfo.arrayLayers = 1;
+            imageInfo.arrayLayers = (isCubeMap) ? 6 : 1;
             imageInfo.format = format;
             imageInfo.tiling = tiling;
             imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -461,13 +471,13 @@ namespace odfaeg {
             VkImageViewCreateInfo viewInfo{};
             viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
             viewInfo.image = textureImage;
-            viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+            viewInfo.viewType = (isCubeMap) ? VK_IMAGE_VIEW_TYPE_2D_ARRAY : VK_IMAGE_VIEW_TYPE_2D;
             viewInfo.format = format;
             viewInfo.subresourceRange.aspectMask = aspectFlags;
             viewInfo.subresourceRange.baseMipLevel = 0;
             viewInfo.subresourceRange.levelCount = 1;
             viewInfo.subresourceRange.baseArrayLayer = 0;
-            viewInfo.subresourceRange.layerCount = 1;
+            viewInfo.subresourceRange.layerCount = (isCubeMap) ? 6 : 1;
             imageAspectFlags = aspectFlags;
             if (vkCreateImageView(vkDevice.getDevice(), &viewInfo, nullptr, &textureImageView) != VK_SUCCESS) {
                 throw std::runtime_error("failed to create texture image view!");

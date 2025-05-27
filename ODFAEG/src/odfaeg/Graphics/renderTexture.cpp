@@ -61,11 +61,12 @@ namespace odfaeg
             return true;
         }
         bool RenderTexture::createCubeMap(unsigned int width, unsigned int height) {
+            isCubeMap = true;
             vkDevice.createInstance();
             vkDevice.pickupPhysicalDevice(VK_NULL_HANDLE);
             vkDevice.createLogicalDevice(VK_NULL_HANDLE);
             m_texture.createCubeMap(width, height);
-            getDepthTexture().createDepthTexture(width, height);
+            getDepthTexture().createDepthTextureCM(width, height);
             createRenderPass();
             createFramebuffers();
             createSyncObjects();
@@ -73,7 +74,7 @@ namespace odfaeg
             m_size.y = height;
             RenderTarget::initialize();
             currentFrame = imageIndex = 0;
-            isCubeMap = true;
+
             return true;
         }
         void RenderTexture::createSyncObjects() {
@@ -173,7 +174,7 @@ namespace odfaeg
                         framebufferInfo.pAttachments = attachments.data();
                         framebufferInfo.width = getSwapchainExtents().width;
                         framebufferInfo.height = getSwapchainExtents().height;
-                        framebufferInfo.layers = 1;
+                        framebufferInfo.layers = 1;;
 
 
                         if (vkCreateFramebuffer(vkDevice.getDevice(), &framebufferInfo, nullptr, &swapChainFramebuffers[j][i]) != VK_SUCCESS) {

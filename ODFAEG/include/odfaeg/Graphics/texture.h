@@ -73,6 +73,7 @@ namespace odfaeg
             bool loadCubeMapFromFile(std::vector<std::string> filenames, const sf::IntRect& area = sf::IntRect());
             bool create(uint32_t width, uint32_t height);
             bool createDepthTexture (uint32_t width, uint32_t height);
+            bool createDepthTextureCM (uint32_t width, uint32_t height);
             sf::Vector2u getSize() const;
             void update(const sf::Uint8* pixels, unsigned int width, unsigned int height, unsigned int x, unsigned int y);
             void updateCubeMap(const sf::Uint8* pixels, unsigned int width, unsigned int height, unsigned int x, unsigned int y, uint32_t face);
