@@ -5,7 +5,7 @@ namespace odfaeg {
         ProjMatrix::ProjMatrix () {
 
         }
-        //Réinitialise la matrice de projection.
+        //RÃ©initialise la matrice de projection.
         void ProjMatrix::reset () {
             matrix4f.identity ();
         }
@@ -21,8 +21,8 @@ namespace odfaeg {
             matrix4f.m24 = -((t + b) / (t - b));
             matrix4f.m31 = 0;
             matrix4f.m32 = 0;
-            matrix4f.m33 = -2 / (f - n);
-            matrix4f.m34 = -((f + n) / (f - n));
+            matrix4f.m33 = -1 / (f - n);
+            matrix4f.m34 = -n / (f - n);
             matrix4f.m41 = 0;
             matrix4f.m42 = 0;
             matrix4f.m43 = 0;
@@ -46,8 +46,8 @@ namespace odfaeg {
             matrix4f.m24 = 0;
             matrix4f.m31 = 0;
             matrix4f.m32 = 0;
-            matrix4f.m33 = (f + n) / (f - n);
-            matrix4f.m34 = (2 * f * n) / (f - n);
+            matrix4f.m33 = f / (f - n);
+            matrix4f.m34 = (f * n) / (f - n);
             matrix4f.m41 = 0;
             matrix4f.m42 = 0;
             matrix4f.m43 = -1;
@@ -108,13 +108,13 @@ namespace odfaeg {
         math::Matrix4f ProjMatrix::getMatrix() {
             return matrix4f;
         }
-        //Projette un vecteur suivant la matrice de projection définie.
+        //Projette un vecteur suivant la matrice de projection dÃ©finie.
         math::Vec3f ProjMatrix::project (math::Vec3f vec3) {
             math::Matrix4f mat = matrix4f;
             mat.m22 = -mat.m22;
             return matrix4f * vec3;
         }
-        //Déprojette un vecteur suivant la matrice de projection définie.
+        //DÃ©projette un vecteur suivant la matrice de projection dÃ©finie.
         math::Vec3f ProjMatrix::unProject (math::Vec3f vec3f) {
             math::Matrix4f mat = matrix4f;
             mat.m22 = -mat.m22;
