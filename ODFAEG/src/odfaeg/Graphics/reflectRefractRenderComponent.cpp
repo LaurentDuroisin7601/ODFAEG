@@ -696,18 +696,6 @@ namespace odfaeg {
                                                                          frontColor = color;
                                                                          texIndex = textureIndex;
                                                                          normal = normals;
-                                                                         //mat4 combined =  modelData.modelMatrix * pushConsts.viewMatrix * pushConsts.projectionMatrix;
-                                                                         vec4 row1 = modelData.modelMatrix[0];
-                                                                         vec4 row2 = modelData.modelMatrix[1];
-                                                                         vec4 row3 = modelData.modelMatrix[2];
-                                                                         vec4 row4 = modelData.modelMatrix[3];
-                                                                         //if (gl_VertexIndex == 0) {
-                                                                             debugPrintfEXT("reflect refract projMatrix row 1 : %v4f\n", row1);
-                                                                             debugPrintfEXT("reflect refract projMatrix row 2 : %v4f\n", row2);
-                                                                             debugPrintfEXT("reflect refract projMatrix row 3 : %v4f\n", row3);
-                                                                             debugPrintfEXT("reflect refract projMatrix row 4 : %v4f\n", row4);
-                                                                             //debugPrintfEXT("position : %v3f\n", gl_Position);
-                                                                         //}
 
                                                                          layer = l;
                                                                          gl_PointSize = 2.0f;
@@ -715,6 +703,7 @@ namespace odfaeg {
                                                                      )";
                 const std::string linkedListIndirectRenderingVertexShader = R"(#version 460
                                                                #extension GL_EXT_multiview : enable
+                                                               #extension GL_EXT_debug_printf : enable
                                                                layout (location = 0) in vec3 position;
                                                                layout (location = 1) in vec4 color;
                                                                layout (location = 2) in vec2 texCoords;
@@ -756,10 +745,17 @@ namespace odfaeg {
                                                                     layer = gl_ViewIndex;
                                                                     texIndex = textureIndex;
                                                                     normal = normals;
+                                                                    /*vec4 row1 = datas[gl_ViewIndex].projectionMatrix[0];
+                                                                    vec4 row2 = datas[gl_ViewIndex].projectionMatrix[1];
+                                                                    vec4 row3 = datas[gl_ViewIndex].projectionMatrix[2];
+                                                                    vec4 row4 = datas[gl_ViewIndex].projectionMatrix[3];*/
+
+
                                                                }
                                                                )";
                 const std::string  linkedListVertexShader2 = R"(#version 460
                                                                 #extension GL_EXT_multiview : enable
+                                                                #extension GL_EXT_debug_printf : enable
                                                                 layout (location = 0) in vec3 position;
                                                                 layout (location = 1) in vec4 color;
                                                                 layout (location = 2) in vec2 texCoords;
@@ -781,6 +777,7 @@ namespace odfaeg {
                                                                     fTexCoords = texCoords;
                                                                     normal = normals;
                                                                     layer = gl_ViewIndex;
+                                                                    //debugPrintfEXT("view index : %i\n", gl_ViewIndex);
                                                                 })";
                 const std::string perPixReflectRefractIndirectRenderingVertexShader = R"(#version 460
                                                                                          layout (location = 0) in vec3 position;
@@ -789,7 +786,7 @@ namespace odfaeg {
                                                                                          layout (location = 3) in vec3 normals;
                                                                                          layout (push_constant)uniform PushConsts {
                                                                                              mat4 projectionMatrix;
-                                                                                             mat4 viewMatrix;
+                                                                                             layout (offset = 64) mat4 viewMatrix;
                                                                                          } pushConsts;
                                                                                          struct ModelData {
                                                                                              mat4 modelMatrix;
@@ -823,66 +820,6 @@ namespace odfaeg {
                                                                                              materialType = materialT;
                                                                                          }
                                                                                          )";
-                const std::string geometryShader = R"(#version 460
-                                                      layout (triangles) in;
-                                                      layout (triangle_strip, max_vertices = 18) out;
-                                                      layout (location = 0) in vec4 vColor[];
-                                                      layout (location = 1) in vec2 vTexCoord[];
-                                                      layout (location = 2) in uint tIndex[];
-                                                      layout (location = 3) in vec3 vNormal[];
-                                                      layout (location = 0) out vec4 frontColor;
-                                                      layout (location = 1) out vec2 fTexCoords;
-                                                      layout (location = 2) out uint layer;
-                                                      layout (location = 3) out uint texIndex;
-                                                      layout (location = 4) out vec3 normal;
-                                                      struct MatricesDatas {
-                                                          mat4 projectionMatrix;
-                                                          mat4 viewMatrix;
-                                                      };
-                                                      layout (set = 0, binding = 6) uniform UniformBufferObject {
-                                                         MatricesDatas datas[6];
-                                                      };
-                                                      void main() {
-                                                        for (int face = 0; face < 6; face++) {
-                                                            gl_Layer = face;
-                                                            for (uint i = 0; i < 3; i++) {
-                                                                gl_Position = gl_in[i].gl_Position * datas[face].viewMatrix * datas[face].projectionMatrix;
-                                                                frontColor = vColor[i];
-                                                                fTexCoords = vTexCoord[i];
-                                                                texIndex = tIndex[i];
-                                                                layer = face;
-                                                                normal = vNormal[i];
-                                                                EmitVertex();
-                                                            }
-                                                            EndPrimitive();
-                                                        }
-                                                      }
-                                                      )";
-                const std::string geometryShader2 = R"(#version 460
-                                                      layout (triangles) in;
-                                                      layout (triangle_strip, max_vertices = 18) out;
-                                                      layout (location = 0) in vec4 vColor[];
-                                                      layout (location = 1) in vec2 vTexCoord[];
-                                                      layout (location = 2) in vec3 vNormal[];
-                                                      layout (location = 0) out vec4 frontColor;
-                                                      layout (location = 1) out vec2 fTexCoords;
-                                                      layout (location = 2) out uint layer;
-                                                      layout (location = 3) out vec3 normal;
-                                                      void main() {
-                                                        for (int face = 0; face < 6; face++) {
-                                                            gl_Layer = face;
-                                                            for (uint i = 0; i < 3; i++) {
-                                                                gl_Position = gl_in[i].gl_Position;
-                                                                frontColor = vColor[i];
-                                                                fTexCoords = vTexCoord[i];
-                                                                layer = face;
-                                                                normal = vNormal[i];
-                                                                EmitVertex();
-                                                            }
-                                                            EndPrimitive();
-                                                        }
-                                                      }
-                                                      )";
                     const std::string buildDepthBufferFragmentShader = R"(#version 460
                                                                       #extension GL_ARB_fragment_shader_interlock : require
                                                                       #extension GL_EXT_nonuniform_qualifier : enable
@@ -993,6 +930,8 @@ namespace odfaeg {
                                                               )";
                 const std::string fragmentShader = R"(#version 460
                                                       #extension GL_EXT_nonuniform_qualifier : enable
+                                                      #extension GL_EXT_debug_printf : enable
+                                                      #extension GL_EXT_multiview : enable
                                                       struct NodeType {
                                                           vec4 color;
                                                           float depth;
@@ -1014,13 +953,15 @@ namespace odfaeg {
                                                       layout (location = 4) in vec3 normal;
                                                       layout(location = 0) out vec4 fcolor;
                                                       void main() {
-                                                           uint nodeIdx = atomicAdd(count[layer], 1);
+                                                           uint nodeIdx = atomicAdd(count[gl_ViewIndex], 1);
                                                            vec4 texel = (texIndex != 0) ? frontColor * texture(textures[texIndex-1], fTexCoords.xy) : frontColor;
                                                            if (nodeIdx < maxNodes) {
-                                                                uint prevHead = imageAtomicExchange(headPointers, ivec3(gl_FragCoord.xy, layer), nodeIdx);
-                                                                nodes[nodeIdx+layer*maxNodes].color = texel;
-                                                                nodes[nodeIdx+layer*maxNodes].depth = gl_FragCoord.z;
-                                                                nodes[nodeIdx+layer*maxNodes].next = prevHead;
+                                                                uint prevHead = imageAtomicExchange(headPointers, ivec3(gl_FragCoord.xy, gl_ViewIndex), nodeIdx);
+                                                                nodes[nodeIdx+gl_ViewIndex*maxNodes].color = texel;
+                                                                nodes[nodeIdx+gl_ViewIndex*maxNodes].depth = gl_FragCoord.z;
+                                                                nodes[nodeIdx+gl_ViewIndex*maxNodes].next = prevHead;
+                                                                //debugPrintfEXT("layer : %i, nodeIdx : %i\n", gl_ViewIndex, nodeIdx);
+
                                                            }
                                                            fcolor = vec4(0, 0, 0, 0);
                                                       })";
@@ -1028,6 +969,8 @@ namespace odfaeg {
                    R"(
                    #version 460
                    #define MAX_FRAGMENTS 20
+                   #extension GL_EXT_debug_printf : enable
+                   #extension GL_EXT_multiview : enable
                    struct NodeType {
                       vec4 color;
                       float depth;
@@ -1049,10 +992,11 @@ namespace odfaeg {
                    void main() {
                       NodeType frags[MAX_FRAGMENTS];
                       int count = 0;
-                      uint n = imageLoad(headPointers, ivec3(gl_FragCoord.xy, layer)).r;
+                      uint n = imageLoad(headPointers, ivec3(gl_FragCoord.xy, gl_ViewIndex)).r;
+                      debugPrintfEXT("layer : %i, nodeIdx : %i\n", gl_ViewIndex, n);
                       while( n != 0xffffffffu && count < MAX_FRAGMENTS) {
-                           frags[count] = nodes[n+maxNodes*layer];
-                           n = frags[count].next+maxNodes*layer;
+                           frags[count] = nodes[n+maxNodes*gl_ViewIndex];
+                           n = frags[count].next+maxNodes*gl_ViewIndex;
                            count++;
                       }
                       //Insertion sort.
@@ -1071,6 +1015,7 @@ namespace odfaeg {
                         color.rgb = frags[i].color.rgb * frags[i].color.a + color.rgb * (1 - frags[i].color.a);
                         color.a = frags[i].color.a + color.a * (1 - frags[i].color.a);
                       }
+
                       fcolor = color;
                    })";
                    if (!sBuildDepthBuffer.loadFromMemory(indirectRenderingVertexShader, buildDepthBufferFragmentShader)) {
@@ -2898,7 +2843,7 @@ namespace odfaeg {
                                         subresRange.layerCount = 1;
                                         vkCmdClearColorImage(commandBuffers[i], headPtrTextureImage, VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
                                         for (unsigned int j = 0; j < 6; j++) {
-                                            vkCmdFillBuffer(commandBuffers[i], counterShaderStorageBuffers[i], i*sizeof(uint32_t), sizeof(uint32_t), 0);
+                                            vkCmdFillBuffer(commandBuffers[i], counterShaderStorageBuffers[i], j*sizeof(uint32_t), sizeof(uint32_t), 0);
                                         }
                                     }
                                     environmentMap.display();
