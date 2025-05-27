@@ -733,6 +733,7 @@ namespace odfaeg {
                                                                layout (location = 1) out vec2 fTexCoords;
                                                                layout (location = 2) out uint texIndex;
                                                                layout (location = 3) out vec3 normal;
+                                                               layout (location = 4) out flat uint viewIndex;
                                                                void main() {
                                                                     gl_PointSize = 2.0f;
                                                                     MaterialData material = materialDatas[gl_DrawID];
@@ -743,9 +744,7 @@ namespace odfaeg {
                                                                     frontColor = color;
                                                                     texIndex = textureIndex;
                                                                     normal = normals;
-
-
-
+                                                                    viewIndex = gl_ViewIndex;
                                                                }
                                                                )";
                 const std::string  linkedListVertexShader2 = R"(#version 460
@@ -764,12 +763,14 @@ namespace odfaeg {
                                                                 layout (location = 0) out vec4 frontColor;
                                                                 layout (location = 1) out vec2 fTexCoords;
                                                                 layout (location = 2) out vec3 normal;
+                                                                layout (location = 3) out flat uint viewIndex;
                                                                 void main () {
                                                                     gl_Position = vec4(position, 1.f) * pushConsts.worldMat * pushConsts.viewMatrix * pushConsts.projectionMatrix;
                                                                     gl_PointSize = 2.0f;
                                                                     frontColor = color;
                                                                     fTexCoords = texCoords;
                                                                     normal = normals;
+                                                                    viewIndex = gl_ViewIndex;
                                                                     //debugPrintfEXT("view index : %i\n", gl_ViewIndex);
                                                                 })";
                 const std::string perPixReflectRefractIndirectRenderingVertexShader = R"(#version 460
@@ -924,7 +925,6 @@ namespace odfaeg {
                 const std::string fragmentShader = R"(#version 460
                                                       #extension GL_EXT_nonuniform_qualifier : enable
                                                       #extension GL_EXT_debug_printf : enable
-                                                      #extension GL_EXT_multiview : enable
                                                       struct NodeType {
                                                           vec4 color;
                                                           float depth;
@@ -943,16 +943,17 @@ namespace odfaeg {
                                                       layout (location = 1) in vec2 fTexCoords;
                                                       layout (location = 2) in flat uint texIndex;
                                                       layout (location = 3) in vec3 normal;
+                                                      layout (location = 4) in flat uint viewIndex;
                                                       layout(location = 0) out vec4 fcolor;
                                                       void main() {
-                                                           uint nodeIdx = atomicAdd(count[gl_ViewIndex], 1);
+                                                           uint nodeIdx = atomicAdd(count[viewIndex], 1);
                                                            vec4 texel = (texIndex != 0) ? frontColor * texture(textures[texIndex-1], fTexCoords.xy) : frontColor;
                                                            if (nodeIdx < maxNodes) {
-                                                                uint prevHead = imageAtomicExchange(headPointers, ivec3(gl_FragCoord.xy, gl_ViewIndex), nodeIdx);
-                                                                nodes[nodeIdx+gl_ViewIndex*maxNodes].color = texel;
-                                                                nodes[nodeIdx+gl_ViewIndex*maxNodes].depth = gl_FragCoord.z;
-                                                                nodes[nodeIdx+gl_ViewIndex*maxNodes].next = prevHead;
-                                                                //debugPrintfEXT("layer : %i, nodeIdx : %i\n", gl_ViewIndex, nodeIdx);
+                                                                uint prevHead = imageAtomicExchange(headPointers, ivec3(gl_FragCoord.xy, viewIndex), nodeIdx);
+                                                                nodes[nodeIdx+viewIndex*maxNodes].color = texel;
+                                                                nodes[nodeIdx+viewIndex*maxNodes].depth = gl_FragCoord.z;
+                                                                nodes[nodeIdx+viewIndex*maxNodes].next = prevHead;
+                                                                //debugPrintfEXT("layer : %i, nodeIdx : %i\n", viewIndex, nodeIdx);
 
                                                            }
                                                            fcolor = vec4(0, 0, 0, 0);
@@ -962,7 +963,6 @@ namespace odfaeg {
                    #version 460
                    #define MAX_FRAGMENTS 20
                    #extension GL_EXT_debug_printf : enable
-                   #extension GL_EXT_multiview : enable
                    struct NodeType {
                       vec4 color;
                       float depth;
@@ -980,14 +980,15 @@ namespace odfaeg {
                    layout (location = 0) in vec4 frontColor;
                    layout (location = 1) in vec2 fTexCoords;
                    layout (location = 2) in vec3 normal;
+                   layout (location = 3) in flat uint viewIndex;
                    void main() {
                       NodeType frags[MAX_FRAGMENTS];
                       int count = 0;
-                      uint n = imageLoad(headPointers, ivec3(gl_FragCoord.xy, gl_ViewIndex)).r;
-                      debugPrintfEXT("layer : %i, nodeIdx : %i\n", gl_ViewIndex, n);
+                      uint n = imageLoad(headPointers, ivec3(gl_FragCoord.xy, viewIndex)).r;
+                      debugPrintfEXT("layer : %i, nodeIdx : %i\n", viewIndex, n);
                       while( n != 0xffffffffu && count < MAX_FRAGMENTS) {
-                           frags[count] = nodes[n+maxNodes*gl_ViewIndex];
-                           n = frags[count].next+maxNodes*gl_ViewIndex;
+                           frags[count] = nodes[n+maxNodes*viewIndex];
+                           n = frags[count].next+maxNodes*viewIndex;
                            count++;
                       }
                       //Insertion sort.
