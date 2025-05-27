@@ -185,6 +185,7 @@ namespace odfaeg
             }
         }
         void RenderTexture::createRenderPass() {
+            renderPasses.resize(2);
             for (unsigned int i = 0; i < 2; i++) {
                 if (i == 0) {
                     VkAttachmentDescription colorAttachment{};
@@ -234,12 +235,9 @@ namespace odfaeg
                         multiviewInfo.pViewMasks = &viewMask;
                         renderPassInfo.pNext = &multiviewInfo;
                     }
-                    VkRenderPass renderPass;
-                    if (vkCreateRenderPass(vkDevice.getDevice(), &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
+                    if (vkCreateRenderPass(vkDevice.getDevice(), &renderPassInfo, nullptr, &renderPasses[0]) != VK_SUCCESS) {
                         throw core::Erreur(0, "failed to create render pass!", 1);
                     }
-                    renderPasses.push_back(renderPass);
-
                 } else {
                     VkAttachmentDescription colorAttachment{};
                     colorAttachment.format =    getSwapchainImageFormat();
@@ -295,17 +293,18 @@ namespace odfaeg
 
                     if (isCubeMap) {
                         const uint32_t viewMask = 0b00111111;
+                        const uint32_t correlationMask = 0b00111111;
                         VkRenderPassMultiviewCreateInfo multiviewInfo{};
                         multiviewInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO;
                         multiviewInfo.subpassCount = 1;
                         multiviewInfo.pViewMasks = &viewMask;
+                        multiviewInfo.correlationMaskCount = 1;
+                        multiviewInfo.pCorrelationMasks = &correlationMask;
                         renderPassInfo.pNext = &multiviewInfo;
                     }
-                    VkRenderPass renderPass;
-                    if (vkCreateRenderPass(vkDevice.getDevice(), &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
+                    if (vkCreateRenderPass(vkDevice.getDevice(), &renderPassInfo, nullptr, &renderPasses[1]) != VK_SUCCESS) {
                         throw core::Erreur(0, "failed to create render pass!", 1);
                     }
-                    renderPasses.push_back(renderPass);
                 }
             }
 

@@ -13,6 +13,9 @@ namespace odfaeg {
             std::vector<VkExtensionProperties> availableExtensions(extensionCount);
             vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
 
+            // Check if VK_KHR_maintenance4 is supported
+
+
             std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
 
             for (const auto& extension : availableExtensions) {
@@ -163,11 +166,16 @@ namespace odfaeg {
                     queueCreateInfos.push_back(queueCreateInfo);
                 }
 
-
+                VkPhysicalDeviceMaintenance4Features maintenance4Features {
+                    .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_4_FEATURES,
+                    .maintenance4 = VK_TRUE
+                };
 
                 VkPhysicalDeviceSynchronization2Features synchronization2Features {
                     .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES_KHR,
+                    .pNext = &maintenance4Features,
                     .synchronization2 = VK_TRUE
+
                 };
 
                 VkPhysicalDeviceFragmentShaderInterlockFeaturesEXT physcialDeviceFragmentShaderInterlock{};

@@ -281,6 +281,7 @@ namespace odfaeg {
                            depthStencilCreateInfo[sLinkedList2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][NODEPTHNOSTENCIL].front = {};
                            depthStencilCreateInfo[sLinkedList2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][NODEPTHNOSTENCIL].back = {};
                            environmentMap.createGraphicPipeline(static_cast<sf::PrimitiveType>(i), states, NODEPTHNOSTENCIL, NBDEPTHSTENCIL);
+                           //std::cout<<"pipeline ids : "<<sLinkedList2.getId() * (Batcher::nbPrimitiveTypes - 1) + i<<","<<environmentMap.getId()<<","<<NODEPTHNOSTENCIL<<std::endl;
                         } else {
                            VkPushConstantRange push_constant;
                            //this push constant range starts at the beginning
@@ -2115,6 +2116,9 @@ namespace odfaeg {
 
                 vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
                 vkCmdPushConstants(commandBuffers[currentFrame], environmentMap.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + vb.getPrimitiveType()][environmentMap.getId()][NODEPTHNOSTENCIL], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(LinkedList2PC), &linkedList2PC);
+
+
+                //std::cout<<"ids : "<<shader->getId() * (Batcher::nbPrimitiveTypes - 1) + vb.getPrimitiveType()<<","<<environmentMap.getId()<<","<<NODEPTHNOSTENCIL<<std::endl;
 
                 environmentMap.drawVertexBuffer(commandBuffers[currentFrame], currentFrame, vb, NODEPTHNOSTENCIL, currentStates);
                 environmentMap.display();

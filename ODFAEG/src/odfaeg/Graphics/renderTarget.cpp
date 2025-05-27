@@ -344,6 +344,8 @@ namespace odfaeg {
             VkBuffer vertexBuffers[] = {vertexBuffer.getVertexBuffer()};
             VkDeviceSize offsets[] = {0};
             vkCmdBindVertexBuffers(cmd, 0, 1, vertexBuffers, offsets);
+            /*std::cout<<"draw pipeline id : "<<shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vertexBuffer.getPrimitiveType()<<","<<id<<","<<depthStencilId<<std::endl;
+            system("PAUSE");*/
             vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vertexBuffer.getPrimitiveType()][id][depthStencilId], 0, 1, &descriptorSets[descriptorId][getCurrentFrame()], 0, nullptr);
 
             applyViewportAndScissor();
