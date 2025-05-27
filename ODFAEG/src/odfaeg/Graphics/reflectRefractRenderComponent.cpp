@@ -733,7 +733,7 @@ namespace odfaeg {
                                                                layout (location = 1) out vec2 fTexCoords;
                                                                layout (location = 2) out uint texIndex;
                                                                layout (location = 3) out vec3 normal;
-                                                               layout (location = 4) out flat uint viewIndex;
+                                                               layout (location = 4) out flat int viewIndex;
                                                                void main() {
                                                                     gl_PointSize = 2.0f;
                                                                     MaterialData material = materialDatas[gl_DrawID];
@@ -763,7 +763,7 @@ namespace odfaeg {
                                                                 layout (location = 0) out vec4 frontColor;
                                                                 layout (location = 1) out vec2 fTexCoords;
                                                                 layout (location = 2) out vec3 normal;
-                                                                layout (location = 3) out flat uint viewIndex;
+                                                                layout (location = 3) out flat int viewIndex;
                                                                 void main () {
                                                                     gl_Position = vec4(position, 1.f) * pushConsts.worldMat * pushConsts.viewMatrix * pushConsts.projectionMatrix;
                                                                     gl_PointSize = 2.0f;
@@ -943,7 +943,7 @@ namespace odfaeg {
                                                       layout (location = 1) in vec2 fTexCoords;
                                                       layout (location = 2) in flat uint texIndex;
                                                       layout (location = 3) in vec3 normal;
-                                                      layout (location = 4) in flat uint viewIndex;
+                                                      layout (location = 4) in flat int viewIndex;
                                                       layout(location = 0) out vec4 fcolor;
                                                       void main() {
                                                            uint nodeIdx = atomicAdd(count[viewIndex], 1);
@@ -980,7 +980,7 @@ namespace odfaeg {
                    layout (location = 0) in vec4 frontColor;
                    layout (location = 1) in vec2 fTexCoords;
                    layout (location = 2) in vec3 normal;
-                   layout (location = 3) in flat uint viewIndex;
+                   layout (location = 3) in flat int viewIndex;
                    void main() {
                       NodeType frags[MAX_FRAGMENTS];
                       int count = 0;
