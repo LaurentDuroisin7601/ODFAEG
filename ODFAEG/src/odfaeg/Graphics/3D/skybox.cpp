@@ -165,9 +165,9 @@ namespace odfaeg {
                 Material material4;
                 material4.addTexture(nullptr, sf::IntRect(0, 0, 0, 0));
                 Face face4 (va4, material4, getTransform());
-                for (unsigned int i = 0; i < face4.getVertexArray().getVertexCount(); i++) {
+                /*for (unsigned int i = 0; i < face4.getVertexArray().getVertexCount(); i++) {
                     std::cout<<"vertex position : "<<face4.getVertexArray()[i].position.x<<std::endl;
-                }
+                }*/
                 //Devant
                 VertexArray va5(sf::Quads, 4, this);
                 Vertex v17(Vector3f(-1, -1, 1));

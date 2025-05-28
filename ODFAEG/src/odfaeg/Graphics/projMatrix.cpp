@@ -35,7 +35,7 @@ namespace odfaeg {
             this->f = f;
             invMatrix4f = matrix4f.inverse();
         }
-        /*void ProjMatrix::setGlPerspectiveMatrix (double aspect, double tanHalFovy, double n, double f) {
+        void ProjMatrix::setGlPerspectiveMatrix (double aspect, double tanHalFovy, double n, double f) {
             matrix4f.m11 = 1.0 / (aspect * tanHalFovy);
             matrix4f.m12 = 0;
             matrix4f.m13 = 0;
@@ -46,8 +46,8 @@ namespace odfaeg {
             matrix4f.m24 = 0;
             matrix4f.m31 = 0;
             matrix4f.m32 = 0;
-            matrix4f.m33 = f / (f - n);
-            matrix4f.m34 = (f * n) / (f - n);
+            matrix4f.m33 = (f + n) / (f - n);
+            matrix4f.m34 = (2 * f * n) / (f - n);
             matrix4f.m41 = 0;
             matrix4f.m42 = 0;
             matrix4f.m43 = -1;
@@ -59,8 +59,8 @@ namespace odfaeg {
             this->n = n;
             this->f = f;
             invMatrix4f = matrix4f.inverse();
-        }*/
-        void ProjMatrix::setGlPerspectiveMatrix (double l, double r, double b, double t, double n, double f) {
+        }
+        /*void ProjMatrix::setGlPerspectiveMatrix (double l, double r, double b, double t, double n, double f) {
             matrix4f.m11 = (2 * n) / (r - l);
             matrix4f.m12 = 0;
             matrix4f.m13 = (r + l) / (r - l);
@@ -84,7 +84,7 @@ namespace odfaeg {
             this->n = n;
             this->f = f;
             invMatrix4f.inverse();
-        }
+        }*/
         float* ProjMatrix::getGlMatrix () {
             float* matrix = new float[16];
             matrix[0] = matrix4f.m11;

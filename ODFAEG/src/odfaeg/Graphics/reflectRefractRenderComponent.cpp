@@ -4109,7 +4109,7 @@ namespace odfaeg {
                                     }*/
                                     //std::cout<<"scale : "<<scale<<"position : "<<entity->getPosition()<<std::endl;
                                     //reflectView.setScale(scale.x, scale.y, scale.z);
-                                    if (entity->getType() != "E_BIGTILE")
+                                    if (entity->getFaces().size() > 0 && !entity->getFaces()[0].getMaterial().getType() == Material::WATER)
                                         reflectView.setCenter(entity->getPosition()+entity->getSize()*0.5f);
                                     else
                                         reflectView.setCenter(view.getPosition());

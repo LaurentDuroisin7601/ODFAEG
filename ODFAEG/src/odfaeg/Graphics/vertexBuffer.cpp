@@ -588,7 +588,11 @@ namespace odfaeg {
                         }
                     }
                 }
+                for (unsigned int i = 0; i < m_normals.size(); i++) {
+                    m_vertices[i].normal = m_normals[i];
+                }
             }
+
             needToUpdateNormals = false;
         }
         bool VertexBuffer::isLoop() {
@@ -866,7 +870,7 @@ namespace odfaeg {
         }
         void VertexBuffer::update() {
             if (!m_vertices.empty()) {
-                //computeNormals();
+                computeNormals();
                 if (GLEW_ARB_vertex_buffer_object) {
                     if (needToUpdateVertexBuffer) {
 
