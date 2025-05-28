@@ -991,8 +991,8 @@ namespace odfaeg {
                            n = frags[count].next/*+maxNodes*viewIndex*/;
                            count++;
                       }
-
-
+                     if (count > 0)
+                        debugPrintfEXT("count : %i", count);
                       //Insertion sort.
                       for (int i = 0; i < count - 1; i++) {
                         for (int j = i + 1; j > 0; j--) {
@@ -1977,14 +1977,24 @@ namespace odfaeg {
                 subresRange.layerCount = 1;
                 for (unsigned int i = 0; i < commandBuffers.size(); i++) {
                     vkCmdClearColorImage(commandBuffers[i], depthTextureImage, VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
-
+                    VkMemoryBarrier memoryBarrier;
+                    memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+                    memoryBarrier.pNext = VK_NULL_HANDLE;
+                    memoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                    memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+                    vkCmdPipelineBarrier(commandBuffers[i], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
                 }
                 depthBuffer.display();
                 alphaBuffer.clear(sf::Color::Transparent);
                 commandBuffers = alphaBuffer.getCommandBuffers();
                 for (unsigned int i = 0; i < commandBuffers.size(); i++) {
                     vkCmdClearColorImage(commandBuffers[i], alphaTextureImage, VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
-
+                    VkMemoryBarrier memoryBarrier;
+                    memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+                    memoryBarrier.pNext = VK_NULL_HANDLE;
+                    memoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                    memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+                    vkCmdPipelineBarrier(commandBuffers[i], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
                 }
                 alphaBuffer.display();
                 reflectRefractTex.clear(sf::Color::Transparent);
@@ -2851,6 +2861,12 @@ namespace odfaeg {
                                         for (unsigned int j = 0; j < 6; j++) {
                                             vkCmdFillBuffer(commandBuffers[i], counterShaderStorageBuffers[i], j*sizeof(uint32_t), sizeof(uint32_t), 0);
                                         }
+                                        VkMemoryBarrier memoryBarrier;
+                                        memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+                                        memoryBarrier.pNext = VK_NULL_HANDLE;
+                                        memoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                                        memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+                                        vkCmdPipelineBarrier(commandBuffers[i], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
                                     }
                                     environmentMap.display();
                                     /*vb.clear();
