@@ -15,7 +15,7 @@
 #include "odfaeg/Graphics/reflectRefractRenderComponent.hpp"
 #include "odfaeg/Graphics/3D/ponctualLight.hpp"
 #include "odfaeg/Graphics/particuleSystem.h"
-class MyAppli : public odfaeg::core::Application {
+class MyAppli : public odfaeg::core::Application<MyAppli> {
 public :
     enum TEXTURES {
         GRASS, PARTICLE, SKYBOX0, SKYBOX1, SKYBOX2, SKYBOX3, SKYBOX4, SKYBOX5

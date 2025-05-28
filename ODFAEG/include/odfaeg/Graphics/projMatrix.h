@@ -84,8 +84,8 @@ namespace odfaeg {
                 * \param n the near value of the frustum.
                 * \param f the far value of the frustum.
                 */
-                void setGlPerspectiveMatrix (double aspect, double tanHalFovy, double n, double f);
-                //void setGlPerspectiveMatrix (double l, double r, double b, double t, double n, double f);
+                //void setGlPerspectiveMatrix (double aspect, double tanHalFovy, double n, double f);
+                void setGlPerspectiveMatrix (double l, double r, double b, double t, double n, double f);
                  /**
                 * \fn void setGlOrthoMatrix (double l, double r, double b, double t, double n, double f)
                 * \brief set a 3D perspective projection matrix. (right - left = width, top - bottom = height and

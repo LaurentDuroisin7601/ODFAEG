@@ -215,12 +215,12 @@ namespace odfaeg {
             ortho = true;
         }
         void View::setPerspective(double fovy, double aspect, double front, double back) {
-            double tangent = math::Math::tang(math::Math::toRadians(fovy) * 0.5f);   // tangent of half fovY
-            projMatrix.setGlPerspectiveMatrix(aspect, tangent, front, back);
             /*double tangent = math::Math::tang(math::Math::toRadians(fovy) * 0.5f);   // tangent of half fovY
+            projMatrix.setGlPerspectiveMatrix(aspect, tangent, front, back);*/
+            double tangent = math::Math::tang(math::Math::toRadians(fovy) * 0.5f);   // tangent of half fovY
             double hheight = (front * tangent);          // half height of near plane
             double hwidth = (hheight * aspect);
-            projMatrix.setGlPerspectiveMatrix(-hwidth, hwidth, -hheight, hheight, front, back);*/
+            projMatrix.setGlPerspectiveMatrix(-hwidth, hwidth, -hheight, hheight, front, back);
             viewUpdated = true;
             ortho = false;
         }

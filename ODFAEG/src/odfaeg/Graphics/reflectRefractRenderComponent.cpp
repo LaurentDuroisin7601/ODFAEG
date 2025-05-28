@@ -136,34 +136,24 @@ namespace odfaeg {
                 vkBindImageMemory(window.getDevice().getDevice(), headPtrTextureImage, headPtrTextureImageMemory, 0);
                 transitionImageLayout(headPtrTextureImage, VK_FORMAT_R32_UINT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
 
-
-
-                imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-                imageInfo.imageType = VK_IMAGE_TYPE_2D;
-                imageInfo.extent.width = static_cast<uint32_t>(window.getView().getSize().x);
-                imageInfo.extent.height = static_cast<uint32_t>(window.getView().getSize().y);
-                imageInfo.extent.depth = 1;
-                imageInfo.mipLevels = 1;
-                imageInfo.arrayLayers = 1;
-                imageInfo.format =  VK_FORMAT_R32G32B32A32_SFLOAT;
-                imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-                imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-                imageInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT;
-                imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-                imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-                imageInfo.flags = 0; // Optionnel
-                if (vkCreateImage(window.getDevice().getDevice(), &imageInfo, nullptr, &depthTextureImage) != VK_SUCCESS) {
+                VkImageCreateInfo imageInfo2{};
+                imageInfo2.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+                imageInfo2.imageType = VK_IMAGE_TYPE_2D;
+                imageInfo2.extent.width = static_cast<uint32_t>(window.getView().getSize().x);
+                imageInfo2.extent.height = static_cast<uint32_t>(window.getView().getSize().y);
+                imageInfo2.extent.depth = 1;
+                imageInfo2.mipLevels = 1;
+                imageInfo2.arrayLayers = 1;
+                imageInfo2.format =  VK_FORMAT_R32G32B32A32_SFLOAT;
+                imageInfo2.tiling = VK_IMAGE_TILING_OPTIMAL;
+                imageInfo2.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+                imageInfo2.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT;
+                imageInfo2.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+                imageInfo2.samples = VK_SAMPLE_COUNT_1_BIT;
+                imageInfo2.flags = 0; // Optionnel
+                if (vkCreateImage(window.getDevice().getDevice(), &imageInfo2, nullptr, &depthTextureImage) != VK_SUCCESS) {
                     throw std::runtime_error("echec de la creation d'une image!");
                 }
-
-
-                vkGetImageMemoryRequirements(window.getDevice().getDevice(), depthTextureImage, &memRequirements);
-
-
-                allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-                allocInfo.allocationSize = memRequirements.size;
-                allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-
 
                 if (vkAllocateMemory(window.getDevice().getDevice(), &allocInfo, nullptr, &depthTextureImageMemory) != VK_SUCCESS) {
                     throw std::runtime_error("echec de l'allocation de la memoire d'une image!");
@@ -173,33 +163,24 @@ namespace odfaeg {
 
 
 
-
-                imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-                imageInfo.imageType = VK_IMAGE_TYPE_2D;
-                imageInfo.extent.width = static_cast<uint32_t>(window.getView().getSize().x);
-                imageInfo.extent.height = static_cast<uint32_t>(window.getView().getSize().y);
-                imageInfo.extent.depth = 1;
-                imageInfo.mipLevels = 1;
-                imageInfo.arrayLayers = 1;
-                imageInfo.format = VK_FORMAT_R32G32B32A32_SFLOAT;
-                imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-                imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-                imageInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT;
-                imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-                imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-                imageInfo.flags = 0; // Optionnel
-                if (vkCreateImage(window.getDevice().getDevice(), &imageInfo, nullptr, &alphaTextureImage) != VK_SUCCESS) {
+                VkImageCreateInfo imageInfo3{};
+                imageInfo3.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+                imageInfo3.imageType = VK_IMAGE_TYPE_2D;
+                imageInfo3.extent.width = static_cast<uint32_t>(window.getView().getSize().x);
+                imageInfo3.extent.height = static_cast<uint32_t>(window.getView().getSize().y);
+                imageInfo3.extent.depth = 1;
+                imageInfo3.mipLevels = 1;
+                imageInfo3.arrayLayers = 1;
+                imageInfo3.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+                imageInfo3.tiling = VK_IMAGE_TILING_OPTIMAL;
+                imageInfo3.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+                imageInfo3.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT;
+                imageInfo3.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+                imageInfo3.samples = VK_SAMPLE_COUNT_1_BIT;
+                imageInfo3.flags = 0; // Optionnel
+                if (vkCreateImage(window.getDevice().getDevice(), &imageInfo3, nullptr, &alphaTextureImage) != VK_SUCCESS) {
                     throw std::runtime_error("echec de la creation d'une image!");
                 }
-
-
-                vkGetImageMemoryRequirements(window.getDevice().getDevice(), alphaTextureImage, &memRequirements);
-
-
-                allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-                allocInfo.allocationSize = memRequirements.size;
-                allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-
 
                 if (vkAllocateMemory(window.getDevice().getDevice(), &allocInfo, nullptr, &alphaTextureImageMemory) != VK_SUCCESS) {
                     throw std::runtime_error("echec de l'allocation de la memoire d'une image!");
@@ -745,14 +726,15 @@ namespace odfaeg {
                                                                     texIndex = textureIndex;
                                                                     normal = normals;
                                                                     viewIndex = gl_ViewIndex;
-                                                                    vec4 row1 = datas[gl_ViewIndex].viewMatrix[0];
-                                                                    vec4 row2 = datas[gl_ViewIndex].viewMatrix[1];
-                                                                    vec4 row3 = datas[gl_ViewIndex].viewMatrix[2];
-                                                                    vec4 row4 = datas[gl_ViewIndex].viewMatrix[3];
+                                                                    /*vec4 row1 = model.modelMatrix[0];
+                                                                    vec4 row2 = model.modelMatrix[1];
+                                                                    vec4 row3 = model.modelMatrix[2];
+                                                                    vec4 row4 = model.modelMatrix[3];
                                                                     debugPrintfEXT("r1 : %v4f\n", row1);
                                                                     debugPrintfEXT("r2 : %v4f\n", row2);
                                                                     debugPrintfEXT("r3 : %v4f\n", row3);
-                                                                    debugPrintfEXT("r4 : %v4f\n", row4);
+                                                                    debugPrintfEXT("r4 : %v4f\n", row4);*/
+                                                                    //debugPrintfEXT("position : %v4f\n", gl_Position);
                                                                }
                                                                )";
                 const std::string  linkedListVertexShader2 = R"(#version 460
@@ -773,10 +755,6 @@ namespace odfaeg {
                                                                 layout (location = 2) out vec3 normal;
                                                                 layout (location = 3) out flat int viewIndex;
                                                                 void main () {
-                                                                    vec4 colors[6] = {vec4(1, 0, 0, 1), vec4(0, 1, 0, 1),
-                                                                                        vec4(0, 0, 1, 1), vec4(1, 1, 0, 1),
-                                                                                        vec4(1, 0, 1, 1), vec4(0, 1, 1, 1)};
-                                                                      vec4 clr = colors[gl_ViewIndex];
                                                                     gl_Position = vec4(position, 1.f) * pushConsts.worldMat * pushConsts.viewMatrix * pushConsts.projectionMatrix;
                                                                     gl_PointSize = 2.0f;
                                                                     frontColor = color;
@@ -958,18 +936,15 @@ namespace odfaeg {
                                                       layout (location = 4) in flat int viewIndex;
                                                       layout(location = 0) out vec4 fcolor;
                                                       void main() {
-                                                           vec4 colors[6] = {vec4(1, 0, 0, 1), vec4(0, 1, 0, 1),
-                                                                            vec4(0, 0, 1, 1), vec4(1, 1, 0, 1),
-                                                                            vec4(1, 0, 1, 1), vec4(0, 1, 1, 1)};
-                                                           vec4 clr = colors[viewIndex];
                                                            uint nodeIdx = atomicAdd(count[viewIndex], 1);
                                                            vec4 texel = (texIndex != 0) ? frontColor * texture(textures[texIndex-1], fTexCoords.xy) : frontColor;
                                                            if (nodeIdx < maxNodes) {
+
                                                                 uint prevHead = imageAtomicExchange(headPointers, ivec3(gl_FragCoord.xy, viewIndex), nodeIdx);
                                                                 nodes[nodeIdx+viewIndex*maxNodes].color = texel;
                                                                 nodes[nodeIdx+viewIndex*maxNodes].depth = gl_FragCoord.z;
                                                                 nodes[nodeIdx+viewIndex*maxNodes].next = prevHead;
-                                                                //debugPrintfEXT("fragcoords first pass : %v4f\n", gl_FragCoord);
+                                                                debugPrintfEXT("prev head : %i, node Idx : %i, view index : %i\n", prevHead, nodeIdx, viewIndex);
 
                                                            }
                                                            fcolor = vec4(0, 0, 0, 0);
@@ -998,19 +973,17 @@ namespace odfaeg {
                    layout (location = 2) in vec3 normal;
                    layout (location = 3) in flat int viewIndex;
                    void main() {
-                      vec4 colors[6] = {vec4(1, 0, 0, 1), vec4(0, 1, 0, 1),
-                                        vec4(0, 0, 1, 1), vec4(1, 1, 0, 1),
-                                        vec4(1, 0, 1, 1), vec4(0, 1, 1, 1)};
-                      vec4 clr = colors[viewIndex];
                       NodeType frags[MAX_FRAGMENTS];
                       int count = 0;
                       uint n = imageLoad(headPointers, ivec3(gl_FragCoord.xy, viewIndex)).r;
-                      //debugPrintfEXT("layer : %i, nodeIdx : %i\n", viewIndex, n);
                       while( n != 0xffffffffu && count < MAX_FRAGMENTS) {
                            frags[count] = nodes[n+maxNodes*viewIndex];
-                           n = frags[count].next+maxNodes*viewIndex;
+                           n = frags[count].next/*+maxNodes*viewIndex*/;
+                           //debugPrintfEXT("n : %i\n", n);
                            count++;
                       }
+                      //if (count > 0)
+
                       //Insertion sort.
                       for (int i = 0; i < count - 1; i++) {
                         for (int j = i + 1; j > 0; j--) {
@@ -1027,7 +1000,7 @@ namespace odfaeg {
                         color.rgb = frags[i].color.rgb * frags[i].color.a + color.rgb * (1 - frags[i].color.a);
                         color.a = frags[i].color.a + color.a * (1 - frags[i].color.a);
                       }
-                      //debugPrintfEXT("fragcoords second pass : %v4f\n", gl_FragCoord);
+
                       fcolor = color;
                    })";
                    if (!sBuildDepthBuffer.loadFromMemory(indirectRenderingVertexShader, buildDepthBufferFragmentShader)) {
@@ -1064,28 +1037,30 @@ namespace odfaeg {
                 if (vkCreateImageView(vkDevice.getDevice(), &viewInfo, nullptr, &headPtrTextureImageView) != VK_SUCCESS) {
                     throw std::runtime_error("failed to create head ptr texture image view!");
                 }
-                viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-                viewInfo.image = depthTextureImage;
-                viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-                viewInfo.format = VK_FORMAT_R32G32B32A32_SFLOAT;
-                viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-                viewInfo.subresourceRange.baseMipLevel = 0;
-                viewInfo.subresourceRange.levelCount = 1;
-                viewInfo.subresourceRange.baseArrayLayer = 0;
-                viewInfo.subresourceRange.layerCount = 1;
-                if (vkCreateImageView(vkDevice.getDevice(), &viewInfo, nullptr, &depthTextureImageView) != VK_SUCCESS) {
+                VkImageViewCreateInfo viewInfo2{};
+                viewInfo2.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+                viewInfo2.image = depthTextureImage;
+                viewInfo2.viewType = VK_IMAGE_VIEW_TYPE_2D;
+                viewInfo2.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+                viewInfo2.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                viewInfo2.subresourceRange.baseMipLevel = 0;
+                viewInfo2.subresourceRange.levelCount = 1;
+                viewInfo2.subresourceRange.baseArrayLayer = 0;
+                viewInfo2.subresourceRange.layerCount = 1;
+                if (vkCreateImageView(vkDevice.getDevice(), &viewInfo2, nullptr, &depthTextureImageView) != VK_SUCCESS) {
                     throw std::runtime_error("failed to create head ptr texture image view!");
                 }
-                viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-                viewInfo.image = alphaTextureImage;
-                viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-                viewInfo.format = VK_FORMAT_R32G32B32A32_SFLOAT;
-                viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-                viewInfo.subresourceRange.baseMipLevel = 0;
-                viewInfo.subresourceRange.levelCount = 1;
-                viewInfo.subresourceRange.baseArrayLayer = 0;
-                viewInfo.subresourceRange.layerCount = 1;
-                if (vkCreateImageView(vkDevice.getDevice(), &viewInfo, nullptr, &alphaTextureImageView) != VK_SUCCESS) {
+                VkImageViewCreateInfo viewInfo3{};
+                viewInfo3.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+                viewInfo3.image = alphaTextureImage;
+                viewInfo3.viewType = VK_IMAGE_VIEW_TYPE_2D;
+                viewInfo3.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+                viewInfo3.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                viewInfo3.subresourceRange.baseMipLevel = 0;
+                viewInfo3.subresourceRange.levelCount = 1;
+                viewInfo3.subresourceRange.baseArrayLayer = 0;
+                viewInfo3.subresourceRange.layerCount = 1;
+                if (vkCreateImageView(vkDevice.getDevice(), &viewInfo3, nullptr, &alphaTextureImageView) != VK_SUCCESS) {
                     throw std::runtime_error("failed to create head ptr texture image view!");
                 }
             }
@@ -1112,45 +1087,46 @@ namespace odfaeg {
                 if (vkCreateSampler(vkDevice.getDevice(), &samplerInfo, nullptr, &headPtrTextureSampler) != VK_SUCCESS) {
                     throw std::runtime_error("failed to create texture sampler!");
                 }
-
-                samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-                samplerInfo.magFilter = VK_FILTER_LINEAR;
-                samplerInfo.minFilter = VK_FILTER_LINEAR;
-                samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-                samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-                samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-                samplerInfo.anisotropyEnable = VK_TRUE;
+                VkSamplerCreateInfo samplerInfo2{};
+                samplerInfo2.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+                samplerInfo2.magFilter = VK_FILTER_LINEAR;
+                samplerInfo2.minFilter = VK_FILTER_LINEAR;
+                samplerInfo2.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+                samplerInfo2.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+                samplerInfo2.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+                samplerInfo2.anisotropyEnable = VK_TRUE;
                 vkGetPhysicalDeviceProperties(vkDevice.getPhysicalDevice(), &properties);
-                samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
-                samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
-                samplerInfo.unnormalizedCoordinates = VK_FALSE;
-                samplerInfo.compareEnable = VK_FALSE;
-                samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
-                samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-                samplerInfo.mipLodBias = 0.0f;
-                samplerInfo.minLod = 0.0f;
-                samplerInfo.maxLod = 0.0f;
-                if (vkCreateSampler(vkDevice.getDevice(), &samplerInfo, nullptr, &depthTextureSampler) != VK_SUCCESS) {
+                samplerInfo2.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
+                samplerInfo2.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+                samplerInfo2.unnormalizedCoordinates = VK_FALSE;
+                samplerInfo2.compareEnable = VK_FALSE;
+                samplerInfo2.compareOp = VK_COMPARE_OP_ALWAYS;
+                samplerInfo2.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+                samplerInfo2.mipLodBias = 0.0f;
+                samplerInfo2.minLod = 0.0f;
+                samplerInfo2.maxLod = 0.0f;
+                if (vkCreateSampler(vkDevice.getDevice(), &samplerInfo2, nullptr, &depthTextureSampler) != VK_SUCCESS) {
                     throw std::runtime_error("failed to create texture sampler!");
                 }
-                samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-                samplerInfo.magFilter = VK_FILTER_LINEAR;
-                samplerInfo.minFilter = VK_FILTER_LINEAR;
-                samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-                samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-                samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-                samplerInfo.anisotropyEnable = VK_TRUE;
+                VkSamplerCreateInfo samplerInfo3{};
+                samplerInfo3.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+                samplerInfo3.magFilter = VK_FILTER_LINEAR;
+                samplerInfo3.minFilter = VK_FILTER_LINEAR;
+                samplerInfo3.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+                samplerInfo3.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+                samplerInfo3.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+                samplerInfo3.anisotropyEnable = VK_TRUE;
                 vkGetPhysicalDeviceProperties(vkDevice.getPhysicalDevice(), &properties);
-                samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
-                samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
-                samplerInfo.unnormalizedCoordinates = VK_FALSE;
-                samplerInfo.compareEnable = VK_FALSE;
-                samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
-                samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-                samplerInfo.mipLodBias = 0.0f;
-                samplerInfo.minLod = 0.0f;
-                samplerInfo.maxLod = 0.0f;
-                if (vkCreateSampler(vkDevice.getDevice(), &samplerInfo, nullptr, &alphaTextureSampler) != VK_SUCCESS) {
+                samplerInfo3.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
+                samplerInfo3.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+                samplerInfo3.unnormalizedCoordinates = VK_FALSE;
+                samplerInfo3.compareEnable = VK_FALSE;
+                samplerInfo3.compareOp = VK_COMPARE_OP_ALWAYS;
+                samplerInfo3.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+                samplerInfo3.mipLodBias = 0.0f;
+                samplerInfo3.minLod = 0.0f;
+                samplerInfo3.maxLod = 0.0f;
+                if (vkCreateSampler(vkDevice.getDevice(), &samplerInfo3, nullptr, &alphaTextureSampler) != VK_SUCCESS) {
                     throw std::runtime_error("failed to create texture sampler!");
                 }
             }
@@ -3515,7 +3491,7 @@ namespace odfaeg {
                       uint n = imageLoad(headPointers, ivec3(gl_FragCoord.xy, layer)).r;
                       while( n != 0xffffffffu && count < MAX_FRAGMENTS) {
                            frags[count] = nodes[n+maxNodes*layer];
-                           n = frags[count].next+maxNodes*layer;
+                           n = frags[count].next/*+maxNodes*layer*/;
                            count++;
                       }
                       //merge sort

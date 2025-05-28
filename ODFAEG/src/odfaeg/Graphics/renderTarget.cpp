@@ -1857,7 +1857,7 @@ namespace odfaeg {
                 glCheck(glClearDepth(0));
                 glCheck(glDepthMask(GL_TRUE));
                 glCheck(glDisable(GL_SCISSOR_TEST));
-                glCheck(glClipControl(GL_UPPER_LEFT, GL_ZERO_TO_ONE));
+                //glCheck(glClipControl(GL_UPPER_LEFT, GL_ZERO_TO_ONE));
 
                 m_cache.glStatesSet = true;
 
