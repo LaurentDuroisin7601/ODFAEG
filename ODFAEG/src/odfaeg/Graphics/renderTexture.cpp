@@ -293,13 +293,13 @@ namespace odfaeg
 
                     if (isCubeMap) {
                         const uint32_t viewMask = 0b00111111;
-                        const uint32_t correlationMask = 0b00111111;
+                        //const uint32_t correlationMask = 0b00111111;
                         VkRenderPassMultiviewCreateInfo multiviewInfo{};
                         multiviewInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO;
                         multiviewInfo.subpassCount = 1;
                         multiviewInfo.pViewMasks = &viewMask;
-                        multiviewInfo.correlationMaskCount = 1;
-                        multiviewInfo.pCorrelationMasks = &correlationMask;
+                        /*multiviewInfo.correlationMaskCount = 1;
+                        multiviewInfo.pCorrelationMasks = &correlationMask;*/
                         renderPassInfo.pNext = &multiviewInfo;
                     }
                     if (vkCreateRenderPass(vkDevice.getDevice(), &renderPassInfo, nullptr, &renderPasses[1]) != VK_SUCCESS) {

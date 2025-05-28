@@ -765,6 +765,10 @@ namespace odfaeg {
                                                                 layout (location = 2) out vec3 normal;
                                                                 layout (location = 3) out flat int viewIndex;
                                                                 void main () {
+                                                                    vec4 colors[6] = {vec4(1, 0, 0, 1), vec4(0, 1, 0, 1),
+                                                                                        vec4(0, 0, 1, 1), vec4(1, 1, 0, 1),
+                                                                                        vec4(1, 0, 1, 1), vec4(0, 1, 1, 1)};
+                                                                      vec4 clr = colors[gl_ViewIndex];
                                                                     gl_Position = vec4(position, 1.f) * pushConsts.worldMat * pushConsts.viewMatrix * pushConsts.projectionMatrix;
                                                                     gl_PointSize = 2.0f;
                                                                     frontColor = color;
@@ -946,6 +950,10 @@ namespace odfaeg {
                                                       layout (location = 4) in flat int viewIndex;
                                                       layout(location = 0) out vec4 fcolor;
                                                       void main() {
+                                                           vec4 colors[6] = {vec4(1, 0, 0, 1), vec4(0, 1, 0, 1),
+                                                                            vec4(0, 0, 1, 1), vec4(1, 1, 0, 1),
+                                                                            vec4(1, 0, 1, 1), vec4(0, 1, 1, 1)};
+                                                           vec4 clr = colors[viewIndex];
                                                            uint nodeIdx = atomicAdd(count[viewIndex], 1);
                                                            vec4 texel = (texIndex != 0) ? frontColor * texture(textures[texIndex-1], fTexCoords.xy) : frontColor;
                                                            if (nodeIdx < maxNodes) {
@@ -953,7 +961,7 @@ namespace odfaeg {
                                                                 nodes[nodeIdx+viewIndex*maxNodes].color = texel;
                                                                 nodes[nodeIdx+viewIndex*maxNodes].depth = gl_FragCoord.z;
                                                                 nodes[nodeIdx+viewIndex*maxNodes].next = prevHead;
-                                                                //debugPrintfEXT("layer : %i, nodeIdx : %i\n", viewIndex, nodeIdx);
+                                                                debugPrintfEXT("fragcoords first pass : %v4f\n", gl_FragCoord);
 
                                                            }
                                                            fcolor = vec4(0, 0, 0, 0);
@@ -982,6 +990,10 @@ namespace odfaeg {
                    layout (location = 2) in vec3 normal;
                    layout (location = 3) in flat int viewIndex;
                    void main() {
+                      vec4 colors[6] = {vec4(1, 0, 0, 1), vec4(0, 1, 0, 1),
+                                        vec4(0, 0, 1, 1), vec4(1, 1, 0, 1),
+                                        vec4(1, 0, 1, 1), vec4(0, 1, 1, 1)};
+                      vec4 clr = colors[viewIndex];
                       NodeType frags[MAX_FRAGMENTS];
                       int count = 0;
                       uint n = imageLoad(headPointers, ivec3(gl_FragCoord.xy, viewIndex)).r;
@@ -1007,7 +1019,7 @@ namespace odfaeg {
                         color.rgb = frags[i].color.rgb * frags[i].color.a + color.rgb * (1 - frags[i].color.a);
                         color.a = frags[i].color.a + color.a * (1 - frags[i].color.a);
                       }
-
+                      debugPrintfEXT("fragcoords second pass : %v4f\n", gl_FragCoord);
                       fcolor = color;
                    })";
                    if (!sBuildDepthBuffer.loadFromMemory(indirectRenderingVertexShader, buildDepthBufferFragmentShader)) {

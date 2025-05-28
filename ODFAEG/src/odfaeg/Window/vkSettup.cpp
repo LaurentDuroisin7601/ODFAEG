@@ -29,6 +29,12 @@ namespace odfaeg {
                 if (enableValidationLayers) {
                     createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
                     createInfo.ppEnabledLayerNames = validationLayers.data();
+                    const char* setting_debug_action[] = {"VK_DBG_LAYER_ACTION_LOG_MSG"};
+                    const int32_t setting_printf_buffer_size = 1048576;
+                    const VkLayerSettingEXT settings[] = {
+                        {"VK_LAYER_KHRONOS_validation", "debug_action", VK_LAYER_SETTING_TYPE_STRING_EXT, 1, &setting_debug_action},
+                        {"VK_LAYER_KHRONOS_validation", "printf_buffer_size", VK_LAYER_SETTING_TYPE_UINT32_EXT, 1, &setting_printf_buffer_size}
+                    };
 
                     VkValidationFeatureEnableEXT enables[] = {VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT};
                     VkValidationFeaturesEXT features = {};
@@ -36,9 +42,13 @@ namespace odfaeg {
                     features.enabledValidationFeatureCount = 1;
                     features.pEnabledValidationFeatures = enables;
 
+                    const VkLayerSettingsCreateInfoEXT layer_settings_create_info = {
+                    VK_STRUCTURE_TYPE_LAYER_SETTINGS_CREATE_INFO_EXT, &features,
+                    static_cast<uint32_t>(std::size(settings)), settings};
+
                     populateDebugMessengerCreateInfo(debugCreateInfo);
                     features.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
-                    createInfo.pNext = &features;
+                    createInfo.pNext = &layer_settings_create_info;
                 }
                 else {
                     createInfo.enabledLayerCount = 0;

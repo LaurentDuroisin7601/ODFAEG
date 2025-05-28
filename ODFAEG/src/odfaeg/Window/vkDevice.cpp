@@ -172,7 +172,6 @@ namespace odfaeg {
 
                 VkPhysicalDeviceMaintenance4Features maintenance4Features {
                     .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_4_FEATURES,
-                    .pNext = & physicalDeviceMultiviewFeatures,
                     .maintenance4 = VK_TRUE
                 };
 
