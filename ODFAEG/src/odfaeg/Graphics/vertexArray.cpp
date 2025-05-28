@@ -204,7 +204,7 @@ namespace odfaeg {
             return m_indexes;
         }
         void VertexArray::computeNormals() {
-            if (needToUpdateNormals) {
+           if (needToUpdateNormals) {
                 unsigned int size = 0;
                 if (m_primitiveType == sf::PrimitiveType::Quads) {
                     size = m_vertices.size() / 4;
@@ -213,6 +213,7 @@ namespace odfaeg {
                 } else if (m_primitiveType == sf::PrimitiveType::TriangleStrip || m_primitiveType == sf::PrimitiveType::TriangleFan) {
                     size = (m_vertices.size() > 2) ? m_vertices.size() - 2 : 0;
                 }
+                m_normals.resize(m_vertices.size());
                 for (unsigned int i = 0; i < size; i++) {
                     if (m_primitiveType == sf::PrimitiveType::Quads) {
                         for (unsigned int n = 0; n < 4; n++) {
@@ -232,7 +233,7 @@ namespace odfaeg {
                             math::Vec3f dir1 = v2 - v1;
                             math::Vec3f dir2 = v3 - v1;
                             math::Vec3f normal = dir1.cross(dir2).normalize();
-                            m_normals.push_back(Vector3f(normal.x, normal.y, normal.z));
+                            m_normals[i*4+n] = Vector3f(normal.x, normal.y, normal.z);
                         }
                     } else if (m_primitiveType == sf::PrimitiveType::Triangles) {
                         for (unsigned int n = 0; n < 3; n++) {
@@ -252,7 +253,7 @@ namespace odfaeg {
                             math::Vec3f dir1 = v2 - v1;
                             math::Vec3f dir2 = v3 - v1;
                             math::Vec3f normal = dir1.cross(dir2).normalize();
-                            m_normals.push_back(Vector3f(normal.x, normal.y, normal.z));
+                            m_normals[i*3+n] = Vector3f(normal.x, normal.y, normal.z);
                         }
                     } else if (m_primitiveType == sf::PrimitiveType::TriangleStrip) {
                         if (i == 0) {
@@ -273,7 +274,7 @@ namespace odfaeg {
                                 math::Vec3f dir1 = v2 - v1;
                                 math::Vec3f dir2 = v3 - v1;
                                 math::Vec3f normal = dir1.cross(dir2).normalize();
-                                m_normals.push_back(Vector3f(normal.x, normal.y, normal.z));
+                                m_normals[i*3+n] = Vector3f(normal.x, normal.y, normal.z);
                             }
                         } else {
                             math::Vec3f v1 (m_vertices[i+2].position.x, m_vertices[i+2].position.y, m_vertices[i+2].position.z);
@@ -282,7 +283,7 @@ namespace odfaeg {
                             math::Vec3f dir1 = v2 - v1;
                             math::Vec3f dir2 = v3 - v1;
                             math::Vec3f normal = dir1.cross(dir2).normalize();
-                            m_normals.push_back(Vector3f(normal.x, normal.y, normal.z));
+                            m_normals[i+3] = Vector3f(normal.x, normal.y, normal.z);
                         }
                     } else if (m_primitiveType == sf::TriangleFan) {
                         if (i == 0) {
@@ -303,7 +304,7 @@ namespace odfaeg {
                                 math::Vec3f dir1 = v2 - v1;
                                 math::Vec3f dir2 = v3 - v1;
                                 math::Vec3f normal = dir1.cross(dir2).normalize();
-                                m_normals.push_back(Vector3f(normal.x, normal.y, normal.z));
+                                m_normals[i*3+n] = Vector3f(normal.x, normal.y, normal.z);
                             }
                         } else {
                             math::Vec3f v1 (m_vertices[i+2].position.x, m_vertices[i+2].position.y, m_vertices[i+2].position.z);
@@ -312,15 +313,16 @@ namespace odfaeg {
                             math::Vec3f dir1 = v2 - v1;
                             math::Vec3f dir2 = v3 - v1;
                             math::Vec3f normal = dir1.cross(dir2).normalize();
-                            m_normals.push_back(Vector3f(normal.x, normal.y, normal.z));
+                            m_normals[i+3] = Vector3f(normal.x, normal.y, normal.z);
                         }
                     }
                 }
-                for (unsigned int i = 0; i < m_vertices.size(); i++) {
+                for (unsigned int i = 0; i < m_normals.size(); i++) {
                     m_vertices[i].normal = m_normals[i];
                 }
-                needToUpdateNormals = false;
             }
+
+            needToUpdateNormals = false;
         }
         ///////////////////////////////////////////////////////////
         unsigned int VertexArray::getVertexCount() const

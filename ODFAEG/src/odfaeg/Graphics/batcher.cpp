@@ -388,6 +388,8 @@ namespace odfaeg {
                     //std::cout<<"position : "<<t<<std::endl;
                     Vertex v (sf::Vector3f(t.x, t.y, t.z), va[i].color, va[i].texCoords);
                     v.normal = va[i].normal;
+                    /*if (va.getEntity()->getType() == "E_SKYBOX")
+                    std::cout<<"normal : "<<v.normal.x<<","<<v.normal.y<<","<<v.normal.z<<std::endl;*/
                     //#endif // VULKAN
 
 

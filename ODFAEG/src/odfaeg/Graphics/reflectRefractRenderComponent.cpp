@@ -3987,6 +3987,7 @@ namespace odfaeg {
                                 vertexCount++;
                                 math::Vec3f t = m_reflNormals[i].getVertexArrays()[j]->getEntity()->getTransform().transform(math::Vec3f((*m_reflNormals[i].getVertexArrays()[j])[k].position.x, (*m_reflNormals[i].getVertexArrays()[j])[k].position.y, (*m_reflNormals[i].getVertexArrays()[j])[k].position.z));
                                 Vertex v (sf::Vector3f(t.x, t.y, t.z), (*m_reflNormals[i].getVertexArrays()[j])[k].color, (*m_reflNormals[i].getVertexArrays()[j])[k].texCoords);
+                                v.normal = (*m_reflNormals[i].getVertexArrays()[j])[k].normal;
                                 vbBindlessTex[p].append(v);
                             }
                         }
@@ -4244,7 +4245,7 @@ namespace odfaeg {
                         if (vEntities[i]->getFace(j)->getMaterial().isReflectable() || vEntities[i]->getFace(j)->getMaterial().isRefractable()) {
 
                             if (vEntities[i]->getDrawMode() == Entity::INSTANCED) {
-                                std::cout<<"add refl face"<<std::endl;
+                                //std::cout<<"add refl face"<<std::endl;
                                 reflBatcher.addFace( vEntities[i]->getFace(j));
                             } else {
                                 reflNormalBatcher.addFace(vEntities[i]->getFace(j));

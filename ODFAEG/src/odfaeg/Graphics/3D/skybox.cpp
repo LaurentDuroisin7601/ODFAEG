@@ -203,6 +203,10 @@ namespace odfaeg {
                 addFace(face5);
                 addFace(face6);
 
+                for (unsigned int i = 0; i < 6; i++) {
+                    getFaces()[i].getVertexArray().computeNormals();
+                }
+
                 skyboxImgs = skyboxImages;
             }
             void Skybox::onDraw(RenderTarget& target, RenderStates states) {
