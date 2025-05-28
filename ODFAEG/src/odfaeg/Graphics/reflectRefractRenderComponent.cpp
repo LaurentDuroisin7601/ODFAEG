@@ -873,6 +873,7 @@ namespace odfaeg {
                                                                       }
                                                                       )";
                 const std::string buildFramebufferShader = R"(#version 460
+                                                              #extension GL_EXT_debug_printf : enable
                                                                 layout (location = 0) in vec3 pos;
                                                                 layout (location = 1) in vec4 frontColor;
                                                                 layout (location = 2) in vec2 texCoord;
@@ -903,6 +904,7 @@ namespace odfaeg {
                                                                         ratio = 1.00 / 2.42;
                                                                         refr = true;
                                                                     }
+
                                                                     vec3 i = (vec4(pos.xyz, 1) - pushConsts.cameraPos).xyz;
                                                                     if (refr) {
                                                                         vec3 r = refract (i, normalize(normal), ratio);
@@ -944,7 +946,7 @@ namespace odfaeg {
                                                                 nodes[nodeIdx+viewIndex*maxNodes].color = texel;
                                                                 nodes[nodeIdx+viewIndex*maxNodes].depth = gl_FragCoord.z;
                                                                 nodes[nodeIdx+viewIndex*maxNodes].next = prevHead;
-                                                                debugPrintfEXT("prev head : %i, next : %i, node Idx : %i, view index : %i\n", prevHead, nodes[nodeIdx+viewIndex*maxNodes].next, nodeIdx, maxNodes);
+                                                                //debugPrintfEXT("prev head : %i, next : %i, node Idx : %i, view index : %i\n", prevHead, nodes[nodeIdx+viewIndex*maxNodes].next, nodeIdx, viewIndex);
                                                            }
                                                            fcolor = vec4(0, 0, 0, 0);
                                                       })";
@@ -1251,9 +1253,9 @@ namespace odfaeg {
                     unsigned int descriptorId = reflectRefractTex.getId() * shader->getNbShaders() + shader->getId();
                     std::array<VkDescriptorPoolSize, 4> poolSizes;
                     poolSizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                    poolSizes[0].descriptorCount = 1;
+                    poolSizes[0].descriptorCount = static_cast<uint32_t>(reflectRefractTex.getMaxFramesInFlight());
                     poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                    poolSizes[1].descriptorCount = 1;
+                    poolSizes[1].descriptorCount = static_cast<uint32_t>(reflectRefractTex.getMaxFramesInFlight());
                     poolSizes[2].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
                     poolSizes[2].descriptorCount = static_cast<uint32_t>(reflectRefractTex.getMaxFramesInFlight());
                     poolSizes[3].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
@@ -2034,6 +2036,7 @@ namespace odfaeg {
                     std::vector<VkCommandBuffer> commandBuffers = reflectRefractTex.getCommandBuffers();
                     unsigned int currentFrame = reflectRefractTex.getCurrentFrame();
                     buildFrameBufferPC.resolution = resolution;
+                    vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 0, nullptr);
                     VkMemoryBarrier memoryBarrier;
                     memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
                     memoryBarrier.pNext = VK_NULL_HANDLE;

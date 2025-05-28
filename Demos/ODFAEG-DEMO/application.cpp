@@ -319,7 +319,7 @@ namespace sorrok {
         LightRenderComponent *lrc = new LightRenderComponent(getRenderWindow(), 4, "E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PONCTUAL_LIGHT", ContextSettings(0, 0, 4, 4, 6));
         //std::cout<<"component created"<<std::endl;
         //frc1->setVisible(false);
-        //frc2->setVisible(false);
+        //frc2->setVisible(false);*/
         //rrrc->setVisible(false);
         //src->setVisible(false);
         //lrc->setVisible(false);
