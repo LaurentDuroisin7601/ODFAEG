@@ -997,7 +997,7 @@ namespace odfaeg {
                       NodeType frags[MAX_FRAGMENTS];
                       int count = 0;
                       uint n = imageLoad(headPointers, ivec3(gl_FragCoord.xy, viewIndex)).r;
-                      debugPrintfEXT("layer : %i, nodeIdx : %i\n", viewIndex, n);
+                      //debugPrintfEXT("layer : %i, nodeIdx : %i\n", viewIndex, n);
                       while( n != 0xffffffffu && count < MAX_FRAGMENTS) {
                            frags[count] = nodes[n+maxNodes*viewIndex];
                            n = frags[count].next+maxNodes*viewIndex;
@@ -1019,7 +1019,7 @@ namespace odfaeg {
                         color.rgb = frags[i].color.rgb * frags[i].color.a + color.rgb * (1 - frags[i].color.a);
                         color.a = frags[i].color.a + color.a * (1 - frags[i].color.a);
                       }
-                      debugPrintfEXT("fragcoords second pass : %v4f\n", gl_FragCoord);
+                      //debugPrintfEXT("fragcoords second pass : %v4f\n", gl_FragCoord);
                       fcolor = color;
                    })";
                    if (!sBuildDepthBuffer.loadFromMemory(indirectRenderingVertexShader, buildDepthBufferFragmentShader)) {

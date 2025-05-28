@@ -31,7 +31,9 @@ namespace odfaeg {
                     createInfo.ppEnabledLayerNames = validationLayers.data();
                     const char* setting_debug_action[] = {"VK_DBG_LAYER_ACTION_LOG_MSG"};
                     const int32_t setting_printf_buffer_size = 1048576;
+                    const VkBool32 setting_enable_message_limit = VK_FALSE;
                     const VkLayerSettingEXT settings[] = {
+                        {"VK_LAYER_KHRONOS_validation", "enable_message_limit", VK_LAYER_SETTING_TYPE_BOOL32_EXT, 1, &setting_enable_message_limit},
                         {"VK_LAYER_KHRONOS_validation", "debug_action", VK_LAYER_SETTING_TYPE_STRING_EXT, 1, &setting_debug_action},
                         {"VK_LAYER_KHRONOS_validation", "printf_buffer_size", VK_LAYER_SETTING_TYPE_UINT32_EXT, 1, &setting_printf_buffer_size}
                     };
