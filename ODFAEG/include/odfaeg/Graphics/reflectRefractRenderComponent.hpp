@@ -65,9 +65,13 @@ namespace odfaeg {
                 math::Vec3f cameraPos;
                 math::Vec3f resolution;
             };
+            struct MatricesData {
+                math::Matrix4f projMatrix;
+                math::Matrix4f viewMatrix;
+            };
             struct UniformBufferObject {
-                math::Matrix4f projMatrix[6];
-                math::Matrix4f viewMatrix[6];
+                MatricesData matrices[6];
+
             };
             ReflectRefractRenderComponent (RenderWindow& window, int layer, std::string expression, window::ContextSettings settings);
             void loadTextureIndexes();

@@ -745,6 +745,14 @@ namespace odfaeg {
                                                                     texIndex = textureIndex;
                                                                     normal = normals;
                                                                     viewIndex = gl_ViewIndex;
+                                                                    vec4 row1 = datas[gl_ViewIndex].viewMatrix[0];
+                                                                    vec4 row2 = datas[gl_ViewIndex].viewMatrix[1];
+                                                                    vec4 row3 = datas[gl_ViewIndex].viewMatrix[2];
+                                                                    vec4 row4 = datas[gl_ViewIndex].viewMatrix[3];
+                                                                    debugPrintfEXT("r1 : %v4f\n", row1);
+                                                                    debugPrintfEXT("r2 : %v4f\n", row2);
+                                                                    debugPrintfEXT("r3 : %v4f\n", row3);
+                                                                    debugPrintfEXT("r4 : %v4f\n", row4);
                                                                }
                                                                )";
                 const std::string  linkedListVertexShader2 = R"(#version 460
@@ -961,7 +969,7 @@ namespace odfaeg {
                                                                 nodes[nodeIdx+viewIndex*maxNodes].color = texel;
                                                                 nodes[nodeIdx+viewIndex*maxNodes].depth = gl_FragCoord.z;
                                                                 nodes[nodeIdx+viewIndex*maxNodes].next = prevHead;
-                                                                debugPrintfEXT("fragcoords first pass : %v4f\n", gl_FragCoord);
+                                                                //debugPrintfEXT("fragcoords first pass : %v4f\n", gl_FragCoord);
 
                                                            }
                                                            fcolor = vec4(0, 0, 0, 0);
@@ -2869,8 +2877,10 @@ namespace odfaeg {
                                     environmentMap.drawVertexBuffer(vb, currentStates);*/
                                     UniformBufferObject ubo;
                                     for (unsigned int f = 0; f < 6; f++) {
-                                        ubo.projMatrix[f] = projMatrices[f];
-                                        ubo.viewMatrix[f] = viewMatrices[f];
+                                        MatricesData matrices;
+                                        matrices.projMatrix = projMatrices[f];
+                                        matrices.viewMatrix = viewMatrices[f];
+                                        ubo.matrices[f] = matrices;
                                     }
                                     updateUniformBuffer(environmentMap.getCurrentFrame(), ubo);
                                     drawEnvReflInst();
