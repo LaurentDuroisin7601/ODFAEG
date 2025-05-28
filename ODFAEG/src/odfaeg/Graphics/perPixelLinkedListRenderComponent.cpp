@@ -924,6 +924,7 @@ namespace odfaeg {
                 const std::string fragmentShader = R"(#version 460
                                                       #extension GL_ARB_separate_shader_objects : enable
                                                       #extension GL_EXT_nonuniform_qualifier : enable
+                                                      #extension GL_EXT_debug_printf : enable
                                                       struct NodeType {
                                                           vec4 color;
                                                           float depth;
@@ -950,6 +951,7 @@ namespace odfaeg {
                                                                 nodes[nodeIdx].color = color;
                                                                 nodes[nodeIdx].depth = gl_FragCoord.z;
                                                                 nodes[nodeIdx].next = prevHead;
+                                                                //debugPrintfEXT("prev head : %i, next : %i, node Idx : %i\n", prevHead, nodes[nodeIdx].next, nodeIdx);
                                                            }
                                                       })";
                  const std::string fragmentShader2 =
