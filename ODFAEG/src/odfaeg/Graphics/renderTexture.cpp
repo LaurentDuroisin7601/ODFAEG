@@ -322,14 +322,14 @@ namespace odfaeg
                  .baseMipLevel = 0,
                  .levelCount = 1,
                  .baseArrayLayer = 0,
-                 .layerCount = 1
+                 .layerCount = (isCubeMap) ? 6 : 1
              };
              VkImageSubresourceRange imageRange2 = {
                  .aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT,
                  .baseMipLevel = 0,
                  .levelCount = 1,
                  .baseArrayLayer = 0,
-                 .layerCount = 1
+                 .layerCount = (isCubeMap) ? 6 : 1
              };
              //for (unsigned int i = 0; i < getCommandBuffers().size(); i++) {
                 VkCommandBufferBeginInfo beginInfo{};
