@@ -286,6 +286,7 @@ namespace odfaeg {
             int layer;
             Entity* skybox;
             sf::Clock timeClock;
+            unsigned int maxModelDataSize, maxMaterialDataSize, maxVboIndirectSize;
         };
         #endif
     }

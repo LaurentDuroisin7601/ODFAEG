@@ -2227,10 +2227,7 @@ namespace odfaeg {
             frameBuffer.updateCommandBuffers(commandPool, commandBuffers);
         }
         void PerPixelLinkedListRenderComponent::createCommandBuffersIndirect(unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, DepthStencilID depthStencilID, RenderStates currentStates) {
-            /*if (firstDraw) {
-                frameBuffer.display();
-                firstDraw = false;
-            }*/
+
             if (needToUpdateDS) {
                 createDescriptorSets(p, currentStates);
                 needToUpdateDS = false;
@@ -2239,115 +2236,16 @@ namespace odfaeg {
             Shader* shader = const_cast<Shader*>(currentStates.shader);
             std::vector<Texture*> allTextures = Texture::getAllTextures();
             unsigned int currentFrame = frameBuffer.getCurrentFrame();
-            //for (size_t i = 0; i < commandBuffers.size(); i++) {
 
 
-                /*vkResetCommandBuffer(commandBuffers[i], VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
-                VkCommandBufferBeginInfo beginInfo{};
-                beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-
-                if (vkBeginCommandBuffer(commandBuffers[currentFrame], &beginInfo) != VK_SUCCESS) {
-                    throw core::Erreur(0, "failed to begin recording command buffer!", 1);
-                }*/
-
-                /*std::vector<VkDescriptorImageInfo>	descriptorImageInfos;
-                descriptorImageInfos.resize(allTextures.size());
-                for (unsigned int j = 0; j < allTextures.size(); j++) {
-                    descriptorImageInfos[j].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                    descriptorImageInfos[j].imageView = allTextures[j]->getImageView();
-                    descriptorImageInfos[j].sampler = allTextures[j]->getSampler();
-                }
-                std::array<VkWriteDescriptorSet, 6> descriptorWrites{};
-                VkDescriptorBufferInfo counterStorageBufferInfoLastFrame{};
-                counterStorageBufferInfoLastFrame.buffer = counterShaderStorageBuffers[currentFrame];
-                counterStorageBufferInfoLastFrame.offset = 0;
-                counterStorageBufferInfoLastFrame.range = sizeof(AtomicCounterSSBO);
-
-                descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                descriptorWrites[0].dstSet = 0;
-                descriptorWrites[0].dstBinding = 0;
-                descriptorWrites[0].dstArrayElement = 0;
-                descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-                descriptorWrites[0].descriptorCount = 1;
-                descriptorWrites[0].pBufferInfo = &counterStorageBufferInfoLastFrame;
-
-                VkDescriptorImageInfo headPtrDescriptorImageInfo;
-                headPtrDescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
-                headPtrDescriptorImageInfo.imageView = headPtrTextureImageView;
-                headPtrDescriptorImageInfo.sampler = headPtrTextureSampler;
-
-                descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                descriptorWrites[1].dstSet = 0;
-                descriptorWrites[1].dstBinding = 1;
-                descriptorWrites[1].dstArrayElement = 0;
-                descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-                descriptorWrites[1].descriptorCount = 1;
-                descriptorWrites[1].pImageInfo = &headPtrDescriptorImageInfo;
-
-                VkDescriptorBufferInfo linkedListStorageBufferInfoLastFrame{};
-                linkedListStorageBufferInfoLastFrame.buffer = linkedListShaderStorageBuffers[currentFrame];
-                linkedListStorageBufferInfoLastFrame.offset = 0;
-                unsigned int nodeSize = 5 * sizeof(float) + sizeof(unsigned int);
-                linkedListStorageBufferInfoLastFrame.range = maxNodes * nodeSize;
-
-                descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                descriptorWrites[2].dstSet = 0;
-                descriptorWrites[2].dstBinding = 2;
-                descriptorWrites[2].dstArrayElement = 0;
-                descriptorWrites[2].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-                descriptorWrites[2].descriptorCount = 1;
-                descriptorWrites[2].pBufferInfo = &linkedListStorageBufferInfoLastFrame;
-
-
-                descriptorWrites[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                descriptorWrites[3].dstSet = 0;
-                descriptorWrites[3].dstBinding = 3;
-                descriptorWrites[3].dstArrayElement = 0;
-                descriptorWrites[3].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                descriptorWrites[3].descriptorCount = allTextures.size();
-                descriptorWrites[3].pImageInfo = descriptorImageInfos.data();
-
-                VkDescriptorBufferInfo modelDataStorageBufferInfoLastFrame{};
-                modelDataStorageBufferInfoLastFrame.buffer = modelDataShaderStorageBuffers[currentFrame];
-                modelDataStorageBufferInfoLastFrame.offset = 0;
-                modelDataStorageBufferInfoLastFrame.range = maxModelDataSize;
-
-                descriptorWrites[4].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                descriptorWrites[4].dstSet = 0;
-                descriptorWrites[4].dstBinding = 4;
-                descriptorWrites[4].dstArrayElement = 0;
-                descriptorWrites[4].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-                descriptorWrites[4].descriptorCount = 1;
-                descriptorWrites[4].pBufferInfo = &modelDataStorageBufferInfoLastFrame;
-
-                VkDescriptorBufferInfo materialDataStorageBufferInfoLastFrame{};
-                materialDataStorageBufferInfoLastFrame.buffer = materialDataShaderStorageBuffers[currentFrame];
-                materialDataStorageBufferInfoLastFrame.offset = 0;
-                materialDataStorageBufferInfoLastFrame.range = maxMaterialDataSize;
-
-                descriptorWrites[5].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                descriptorWrites[5].dstSet = 0;
-                descriptorWrites[5].dstBinding = 5;
-                descriptorWrites[5].dstArrayElement = 0;
-                descriptorWrites[5].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-                descriptorWrites[5].descriptorCount = 1;
-                descriptorWrites[5].pBufferInfo = &materialDataStorageBufferInfoLastFrame;
-
-                vkCmdPushDescriptorSetKHR(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][frameBuffer.getId()][NODEPTHNOSTENCIL], 0, 6, descriptorWrites.data());*/
-                vkCmdPushConstants(commandBuffers[currentFrame], frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][frameBuffer.getId()][depthStencilID], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectDrawPushConsts), &indirectDrawPushConsts);
+            vkCmdPushConstants(commandBuffers[currentFrame], frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][frameBuffer.getId()][depthStencilID], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectDrawPushConsts), &indirectDrawPushConsts);
 
 
 
-                frameBuffer.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
+            frameBuffer.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
 
-                vkCmdResetEvent(commandBuffers[currentFrame], events[currentFrame],  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
-                vkCmdSetEvent(commandBuffers[currentFrame], events[currentFrame],  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
-
-                /*if (vkEndCommandBuffer(commandBuffers[currentFrame]) != VK_SUCCESS) {
-                    throw core::Erreur(0, "failed to record command buffer!", 1);
-                }*/
-
-            //}
+            vkCmdResetEvent(commandBuffers[currentFrame], events[currentFrame],  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
+            vkCmdSetEvent(commandBuffers[currentFrame], events[currentFrame],  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
             frameBuffer.display();
 
         }
@@ -2674,6 +2572,7 @@ namespace odfaeg {
             expression(expression),
             quad(math::Vec3f(window.getView().getSize().x, window.getView().getSize().y, window.getSize().y * 0.5f)),
             layer(layer) {
+            maxModelDataSize = maxMaterialDataSize = maxVboIndirectSize = 0;
             if (!(settings.versionMajor >= 4 && settings.versionMinor >= 6))
                 throw core::Erreur(53, "opengl version not supported for this renderer type");
             //std::cout<<"move quad"<<std::endl;
@@ -3654,12 +3553,20 @@ namespace odfaeg {
             for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                 if (vbBindlessTex[p].getVertexCount() > 0) {
                     glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, modelDataBuffer));
+
                     glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, matrices[p].size() * sizeof(ModelData), &matrices[p][0], GL_DYNAMIC_DRAW));
+
+
                     glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, materialDataBuffer));
+
                     glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, materials[p].size() * sizeof(MaterialData), &materials[p][0], GL_DYNAMIC_DRAW));
+
                     glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0));
                     glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, vboIndirect));
+
                     glCheck(glBufferData(GL_DRAW_INDIRECT_BUFFER, drawArraysIndirectCommands[p].size() * sizeof(DrawArraysIndirectCommand), &drawArraysIndirectCommands[p][0], GL_DYNAMIC_DRAW));
+
+
                     glCheck(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0));
                     vbBindlessTex[p].update();
                     frameBuffer.drawIndirect(vbBindlessTex[p], vbBindlessTex[p].getPrimitiveType(), drawArraysIndirectCommands[p].size(), currentStates, vboIndirect);

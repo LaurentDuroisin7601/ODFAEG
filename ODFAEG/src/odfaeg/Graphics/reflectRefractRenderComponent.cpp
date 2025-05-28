@@ -66,7 +66,7 @@ namespace odfaeg {
                 maxNodes = 20;
                 unsigned int nodeSize = 5  * sizeof(float) + sizeof(unsigned int);
                 VkDeviceSize bufferSize = maxNodes * nodeSize * 6;
-                for (unsigned int i = 0; i < reflectRefractTex.getMaxFramesInFlight(); i++) {
+                for (unsigned int i = 0; i < environmentMap.getMaxFramesInFlight(); i++) {
                     createBuffer(bufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, linkedListShaderStorageBuffers[i], linkedListShaderStorageBuffersMemory[i]);
                 }
 
@@ -764,6 +764,7 @@ namespace odfaeg {
                                                                     //debugPrintfEXT("view index : %i\n", gl_ViewIndex);
                                                                 })";
                 const std::string perPixReflectRefractIndirectRenderingVertexShader = R"(#version 460
+                                                                                         #extension GL_EXT_debug_printf : enable
                                                                                          layout (location = 0) in vec3 position;
                                                                                          layout (location = 1) in vec4 color;
                                                                                          layout (location = 2) in vec2 texCoords;
@@ -939,13 +940,11 @@ namespace odfaeg {
                                                            uint nodeIdx = atomicAdd(count[viewIndex], 1);
                                                            vec4 texel = (texIndex != 0) ? frontColor * texture(textures[texIndex-1], fTexCoords.xy) : frontColor;
                                                            if (nodeIdx < maxNodes) {
-
                                                                 uint prevHead = imageAtomicExchange(headPointers, ivec3(gl_FragCoord.xy, viewIndex), nodeIdx);
                                                                 nodes[nodeIdx+viewIndex*maxNodes].color = texel;
                                                                 nodes[nodeIdx+viewIndex*maxNodes].depth = gl_FragCoord.z;
                                                                 nodes[nodeIdx+viewIndex*maxNodes].next = prevHead;
-                                                                debugPrintfEXT("prev head : %i, node Idx : %i, view index : %i\n", prevHead, nodeIdx, viewIndex);
-
+                                                                //debugPrintfEXT("prev head : %i, next : %i, node Idx : %i, view index : %i\n", prevHead, nodes[nodeIdx+viewIndex*maxNodes].next, nodeIdx, viewIndex);
                                                            }
                                                            fcolor = vec4(0, 0, 0, 0);
                                                       })";
@@ -979,10 +978,9 @@ namespace odfaeg {
                       while( n != 0xffffffffu && count < MAX_FRAGMENTS) {
                            frags[count] = nodes[n+maxNodes*viewIndex];
                            n = frags[count].next/*+maxNodes*viewIndex*/;
-                           //debugPrintfEXT("n : %i\n", n);
                            count++;
                       }
-                      //if (count > 0)
+
 
                       //Insertion sort.
                       for (int i = 0; i < count - 1; i++) {
@@ -1000,7 +998,8 @@ namespace odfaeg {
                         color.rgb = frags[i].color.rgb * frags[i].color.a + color.rgb * (1 - frags[i].color.a);
                         color.a = frags[i].color.a + color.a * (1 - frags[i].color.a);
                       }
-
+                      /*if (color.r != 0 || color.g != 0 || color.b != 0 || color.a != 0)
+                        debugPrintfEXT("count : %v4f\n", color);*/
                       fcolor = color;
                    })";
                    if (!sBuildDepthBuffer.loadFromMemory(indirectRenderingVertexShader, buildDepthBufferFragmentShader)) {
@@ -1652,7 +1651,7 @@ namespace odfaeg {
                         linkedListStorageBufferInfoLastFrame.buffer = linkedListShaderStorageBuffers[i];
                         linkedListStorageBufferInfoLastFrame.offset = 0;
                         unsigned int nodeSize = 5 * sizeof(float) + sizeof(unsigned int);
-                        linkedListStorageBufferInfoLastFrame.range = maxNodes * nodeSize;
+                        linkedListStorageBufferInfoLastFrame.range = maxNodes * nodeSize * 6;
 
                         descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                         descriptorWrites[2].dstSet = descriptorSets[descriptorId][i];
@@ -1747,7 +1746,7 @@ namespace odfaeg {
                         linkedListStorageBufferInfoLastFrame.buffer = linkedListShaderStorageBuffers[i];
                         linkedListStorageBufferInfoLastFrame.offset = 0;
                         unsigned int nodeSize = 5 * sizeof(float) + sizeof(unsigned int);
-                        linkedListStorageBufferInfoLastFrame.range = maxNodes * nodeSize;
+                        linkedListStorageBufferInfoLastFrame.range = maxNodes * nodeSize * 6;
 
                         descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                         descriptorWrites[2].dstSet = descriptorSets[descriptorId][i];
@@ -2615,6 +2614,7 @@ namespace odfaeg {
                                     vertexCount++;
                                     math::Vec3f t = m_reflNormals[i].getVertexArrays()[j]->getEntity()->getTransform().transform(math::Vec3f((*m_reflNormals[i].getVertexArrays()[j])[k].position.x, (*m_reflNormals[i].getVertexArrays()[j])[k].position.y, (*m_reflNormals[i].getVertexArrays()[j])[k].position.z));
                                     Vertex v (sf::Vector3f(t.x, t.y, t.z), (*m_reflNormals[i].getVertexArrays()[j])[k].color, (*m_reflNormals[i].getVertexArrays()[j])[k].texCoords);
+                                    v.normal = (*m_reflNormals[i].getVertexArrays()[j])[k].normal;
                                     vbBindlessTex[p].append(v);
                                 }
                             }
