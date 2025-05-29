@@ -159,7 +159,7 @@ namespace odfaeg {
                     throw std::runtime_error("echec de l'allocation de la memoire d'une image!");
                 }
                 vkBindImageMemory(window.getDevice().getDevice(), depthTextureImage, depthTextureImageMemory, 0);
-                transitionImageLayout(depthTextureImage, VK_FORMAT_R32G32B32A32_SFLOAT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
+                //transitionImageLayout(depthTextureImage, VK_FORMAT_R32G32B32A32_SFLOAT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
 
 
 
@@ -186,7 +186,7 @@ namespace odfaeg {
                     throw std::runtime_error("echec de l'allocation de la memoire d'une image!");
                 }
                 vkBindImageMemory(window.getDevice().getDevice(), alphaTextureImage, alphaTextureImageMemory, 0);
-                transitionImageLayout(alphaTextureImage, VK_FORMAT_R32G32B32A32_SFLOAT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
+                //transitionImageLayout(alphaTextureImage, VK_FORMAT_R32G32B32A32_SFLOAT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
                 createImageView();
                 createSampler();
                 createUniformBuffers();
@@ -473,6 +473,26 @@ namespace odfaeg {
                 barrier.subresourceRange.levelCount = 1;
                 barrier.subresourceRange.layerCount = 1;
                 vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+                VkImageMemoryBarrier barrier2 = {};
+                barrier2.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+                barrier2.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                barrier2.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+                barrier2.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+                barrier2.image = depthTextureImage;
+                barrier2.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                barrier2.subresourceRange.levelCount = 1;
+                barrier2.subresourceRange.layerCount = 1;
+                vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier2);
+                VkImageMemoryBarrier barrier3 = {};
+                barrier3.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+                barrier3.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                barrier3.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+                barrier3.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+                barrier3.image = alphaTextureImage;
+                barrier3.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                barrier3.subresourceRange.levelCount = 1;
+                barrier3.subresourceRange.layerCount = 1;
+                vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier3);
                  environmentMap.display();
             }
             VkCommandBuffer ReflectRefractRenderComponent::beginSingleTimeCommands() {
