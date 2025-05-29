@@ -87,7 +87,7 @@ namespace odfaeg {
             compileShaders();
             createCommandPool();
             allocateCommandBuffers();
-            transitionImageLayout(headPtrTextureImage, VK_FORMAT_R32_UINT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
+            //transitionImageLayout(headPtrTextureImage, VK_FORMAT_R32_UINT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
 
             AtomicCounterSSBO counter;
             counter.count = 0;
@@ -134,6 +134,19 @@ namespace odfaeg {
                 vkCreateEvent(vkDevice.getDevice(), &eventInfo, NULL, &event);
                 events.push_back(event);
             }
+            frameBuffer.beginRecordCommandBuffers();
+            unsigned int currentFrame =  frameBuffer.getCurrentFrame();
+            VkImageMemoryBarrier barrier = {};
+            barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+            barrier.image = headPtrTextureImage;
+            barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            barrier.subresourceRange.levelCount = 1;
+            barrier.subresourceRange.layerCount = 1;
+            vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+             frameBuffer.display();
 
         }
         void PerPixelLinkedListRenderComponent::createDescriptorsAndPipelines() {
@@ -963,6 +976,7 @@ namespace odfaeg {
                                                    R"(
                                                    #version 460
                                                    #extension GL_ARB_separate_shader_objects : enable
+                                                   #extension GL_EXT_debug_printf : enable
                                                    #define MAX_FRAGMENTS 20
                                                    struct NodeType {
                                                       vec4 color;
@@ -986,6 +1000,7 @@ namespace odfaeg {
                                                            n = frags[count].next;
                                                            count++;
                                                       }
+
                                                       // Do the insertion sort
                                                       for (uint i = 1; i < count; ++i)
                                                       {
