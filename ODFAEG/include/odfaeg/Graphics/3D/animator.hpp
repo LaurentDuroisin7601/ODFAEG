@@ -6,11 +6,12 @@ namespace odfaeg {
         namespace g3d {
             class ODFAEG_GRAPHICS_API Animator : public GameObject {
             public :
-                Animator(Animation* Animation);
+                Animator(Animation* animation, EntityFactory& factory);
                 void updateAnimation(float dt);
                 void playAnimation(Animation* pAnimation);
-                void calculateBoneTransform(const AssimpNodeData* node, glm::mat4 parentTransform);
+                void calculateBoneTransform(const Animation::AssimpNodeData* node, math::Matrix4f parentTransform);
                 std::vector<math::Matrix4f> getFinalBoneMatrices();
+                void onDraw (RenderTarget &target, RenderStates states) {}
                 Entity* clone();
                 bool isAnimated() const {
                     return true;
@@ -55,6 +56,11 @@ namespace odfaeg {
                 bool isLeaf() const {
                     return true;
                 }
+                private:
+                std::vector<math::Matrix4f> m_FinalBoneMatrices;
+                Animation* m_CurrentAnimation;
+                float m_CurrentTime;
+                float m_DeltaTime;
             };
         }
     }

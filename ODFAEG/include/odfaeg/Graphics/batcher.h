@@ -420,7 +420,7 @@ namespace odfaeg {
             bool containsEntity(Entity* entity, entt::entity entityId);
             std::vector<Entity*> getEntities();
             std::vector<ecs::EntityId> getEntitiesId();
-            std::vector<std::vector<math::Matrix4f>>& getFinalBoneMatrices();
+            std::vector<math::Matrix4f>& getFinalBoneMatrices();
 
             ~Instance();
         private:
@@ -429,7 +429,7 @@ namespace odfaeg {
             std::vector<TransformMatrix*> m_transforms; /**> the transformations of the instance.*/
             std::vector<TransformMatrix*> m_perVaTransforms;
             std::vector<TransformMatrix> m_shadowProjMatrix;
-            std::vector<std::vector<math::Matrix4f>> m_finalBoneMatrices;
+            std::vector<math::Matrix4f> m_finalBoneMatrices;
             sf::PrimitiveType primType; /**>The primitive type of the instance.*/
             unsigned int numInstances; /**>The number of instances.*/
             VertexArray vertices;

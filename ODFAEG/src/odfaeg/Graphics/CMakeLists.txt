@@ -190,7 +190,9 @@ set(SRC_GRAPHICS_3D
 	${INCROOT}/3D/bone.hpp
 	${SRCROOT}/3D/bone.cpp
 	${INCROOT}/3D/animation.hpp
-	${SRCROOT}/3D/animation.cpp)
+	${SRCROOT}/3D/animation.cpp
+	${INCROOT}/3D/animator.hpp
+	${SRCROOT}/3D/animator.cpp)
 	
 source_group("3d_graphics" FILES ${SRC_GRAPHICS_3D})
 set(SRC_GUI

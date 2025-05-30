@@ -81,8 +81,12 @@ namespace odfaeg {
                 }
                 extractBoneWeightForVertices(ptrVerts, mesh, scene);
                 std::array<std::array<float, 2>, 3> exts = math::Computer::getExtends(verts);
+                size = math::Vec3f(exts[0][1] - exts[0][0], exts[1][1] - exts[1][0], exts[2][1] - exts[2][0]);
                 emesh->setSize(math::Vec3f(exts[0][1] - exts[0][0], exts[1][1] - exts[1][0], exts[2][1] - exts[2][0]));
                 emesh->setOrigin(math::Vec3f(emesh->getSize()*0.5));
+            }
+            math::Vec3f Model::getSize() {
+                return size;
             }
             void Model::setVertexBoneData(Vertex& vertex, int boneID, float weight)
             {

@@ -12,8 +12,11 @@ namespace odfaeg {
                 m_TicksPerSecond = animation->mTicksPerSecond;
                 readHeirarchyData(m_RootNode, scene->mRootNode);
                 readMissingBones(animation, *model);
+                size = model->getSize();
             }
-
+            math::Vec3f Animation::getSize() {
+                return size;
+            }
 
             Bone* Animation::findBone(const std::string& name)
             {

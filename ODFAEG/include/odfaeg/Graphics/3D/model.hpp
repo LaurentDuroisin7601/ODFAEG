@@ -25,6 +25,7 @@ namespace odfaeg {
                     Entity* loadModel(std::string path, EntityFactory& factory);
                     std::map<std::string, BoneInfo>& getBoneInfoMap();
                     int& getBoneCount();
+                    math::Vec3f getSize();
                 private :
                     math::Matrix4f convertAssimpToODFAEGMatrix(aiMatrix4x4 aiMatrix);
                     void setVertexBoneData(Vertex& vertex, int boneID, float weight);
@@ -38,6 +39,7 @@ namespace odfaeg {
                     std::string directory;
                     std::map<std::string, BoneInfo> m_BoneInfoMap; //
                     int m_BoneCounter = 0;
+                    math::Vec3f size;
             };
             #endif
         }
