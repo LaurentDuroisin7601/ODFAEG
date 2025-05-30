@@ -3538,7 +3538,7 @@ namespace odfaeg {
 
                     std::vector<math::Matrix4f> finalBoneMatrices = m_normals[i].getFinalBoneMatrices();
                     for (unsigned int b = 0; b < MAX_BONES; b++) {
-                        modelData.finalBoneMatrices[b] = finalBoneMatrices[b];
+                        modelData.finalBoneMatrices[b] = finalBoneMatrices[b].transpose();
                     }
 
                     matrices[p].push_back(modelData);
