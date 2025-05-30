@@ -91,6 +91,12 @@ namespace odfaeg {
         class ODFAEG_GRAPHICS_API Entity : public Transformable, public Drawable, public core::Registered<Entity> {
             friend class EntityFactory;
             public :
+                struct BoneInfo {
+                    /*id is index in finalBoneMatrices*/
+                    int id;
+                    /*offset matrix transforms vertex from model space to bone space*/
+                    math::Matrix4f offset;
+                };
                 enum DrawMode {
                     NORMAL, INSTANCED, BASE_INSTANCED
                 };
@@ -431,6 +437,9 @@ namespace odfaeg {
                 virtual std::string getPsUpdater();
                 virtual std::vector<math::Matrix4f> getFinalBoneMatrices();
                 void decreaseNbEntities();
+                virtual void updateAnimation(float dt);
+                std::map<std::string, Entity::BoneInfo>& getBoneInfoMap();
+                int& getBoneCount();
             protected :
                 /** \fn Entity(math::Vec3f position, math::Vec3f size, math::Vec3f origin, std::string type, Entity* parent)
                  * \brief constructor.
@@ -453,6 +462,8 @@ namespace odfaeg {
                 core::State entityState;                                         /** the states of the entity.*/
                 Entity(const Entity& entity) = delete; /**> an entity if not copiable.*/
                 Entity& operator=(const Entity& entity) = delete; /**> an entity is not affectable*/
+                std::map<std::string, BoneInfo> m_BoneInfoMap; //
+                int m_BoneCounter = 0;
         };
     }
 }

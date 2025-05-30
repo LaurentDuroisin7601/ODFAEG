@@ -31,6 +31,9 @@ namespace odfaeg {
             * \brief add a 2D animation to the updater.
             * \param g2d::Anim : the 2D animation to add.
             */
+            void addBoneAnim (Entity *anim) {
+                boneAnims.push_back(anim);
+            }
             void addAnim (Entity *anim) {
                 anim->setAnimUpdater(getName());
                 anims.push_back(anim);
@@ -65,6 +68,10 @@ namespace odfaeg {
                         anims[i]->resetClock();
                     }
                 }
+                for (unsigned int i = 0; i < boneAnims.size(); i++) {
+                    boneAnims[i]->updateAnimation(clock.getElapsedTime().asSeconds());
+                }
+                clock.restart();
                // std::cout<<"end animations"<<std::endl;
             }
             std::vector<Entity*> getAnims() {
@@ -72,8 +79,10 @@ namespace odfaeg {
             }
         private :
             /** < the animations of the updater. */
+            std::vector<Entity*>  boneAnims;
             std::vector<Entity*> anims;
             EntityManager* scene;
+            sf::Clock clock;
         };
     }
 }

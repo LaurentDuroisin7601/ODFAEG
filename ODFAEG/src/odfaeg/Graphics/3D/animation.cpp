@@ -2,7 +2,7 @@
 namespace odfaeg {
     namespace graphic {
         namespace g3d {
-            Animation::Animation(const std::string& animationPath, Model* model)
+            Animation::Animation(const std::string& animationPath, Entity* model)
             {
                 Assimp::Importer importer;
                 const aiScene* scene = importer.ReadFile(animationPath, aiProcess_Triangulate);
@@ -37,12 +37,12 @@ namespace odfaeg {
 
             const Animation::AssimpNodeData& Animation::getRootNode() { return m_RootNode; }
 
-            const std::map<std::string,Model::BoneInfo>& Animation::getBoneIDMap()
+            const std::map<std::string,Entity::BoneInfo>& Animation::getBoneIDMap()
             {
                 return m_BoneInfoMap;
             }
 
-            void Animation::readMissingBones(const aiAnimation* animation, Model& model)
+            void Animation::readMissingBones(const aiAnimation* animation, Entity& model)
             {
                 int size = animation->mNumChannels;
 

@@ -371,5 +371,9 @@ namespace odfaeg {
         std::vector<math::Matrix4f> Entity::getFinalBoneMatrices() {
             return std::vector<math::Matrix4f>();
         }
+        void Entity::updateAnimation(float dt) {
+        }
+        std::map<std::string, Entity::BoneInfo>& Entity::getBoneInfoMap() { return m_BoneInfoMap; }
+        int& Entity::getBoneCount() { return m_BoneCounter; }
     }
 }

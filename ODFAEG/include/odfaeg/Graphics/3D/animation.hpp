@@ -15,22 +15,22 @@ namespace odfaeg {
                     std::vector<AssimpNodeData> children;
                 };
                 Animation() = default;
-                Animation(const std::string& animationPath, Model* model);
+                Animation(const std::string& animationPath, Entity* model);
                 Bone* findBone(const std::string& name);
                 inline float getTicksPerSecond();
                 inline float getDuration();
                 inline const AssimpNodeData& getRootNode();
-                inline const std::map<std::string,Model::BoneInfo>& getBoneIDMap();
+                inline const std::map<std::string,Entity::BoneInfo>& getBoneIDMap();
                 math::Vec3f getSize();
             private :
                 math::Matrix4f convertAssimpToODFAEGMatrix(aiMatrix4x4 aiMatrix);
-                void readMissingBones(const aiAnimation* animation, Model& model);
+                void readMissingBones(const aiAnimation* animation, Entity& model);
                 void readHeirarchyData(AssimpNodeData& dest, const aiNode* src);
                 float m_Duration;
                 int m_TicksPerSecond;
                 std::vector<Bone> m_Bones;
                 AssimpNodeData m_RootNode;
-                std::map<std::string, Model::BoneInfo> m_BoneInfoMap;
+                std::map<std::string, Entity::BoneInfo> m_BoneInfoMap;
                 math::Vec3f size;
             };
         }
