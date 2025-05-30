@@ -115,10 +115,13 @@ void MyAppli::onInit() {
     loader = g3d::Model();
     model = loader.loadModel("tilesets/mesh_puddingmill/puddingmill.obj", factory);
 
-    /*animatedModel = loader.loadModel("tilesets/vampire/dancing_vampire.dae");
-    Animation anim =*/
+    animatedModel = loader.loadModel("tilesets/vampire/dancing_vampire.dae", factory);
+    g3d::Animation* danceAnimation = new g3d::Animation("tilesets/vampire/dancing_vampire.dae", animatedModel);
+    g3d::Animator* animator = new g3d::Animator(danceAnimation, factory);
+    animator->move(Vec3f(0, 0, 20));
 
-    float y;
+
+    float y, z;
     model->move(Vec3f(0, 0, 10));
     isOnHeightMap = heightmap->getHeight(Vec2f(model->getPosition().x, model->getPosition().z), y);
     float y2;
@@ -138,6 +141,9 @@ void MyAppli::onInit() {
     model->setShadowRotation(90 + angle * 100, Vec3f(1, 0, 0));
     //model->setShadowRotation(angle2 * 150, Vec3f(0, 0, 1));
     model->setShadowCenter(Vec3f(0, 0, -5));
+    isOnHeightMap = heightmap->getHeight(Vec2f(animatedModel->getPosition().x, animatedModel->getPosition().z), z);
+    animatedModel->move(Vec3f(0, z, 0));
+    getWorld()->addEntity(animator);
 
     //std::cout<<model->getPosition()<<model->getCenter()<<std::endl;
 
@@ -151,7 +157,7 @@ void MyAppli::onInit() {
     //frc->setVisible(false);
     ShadowRenderComponent* src = new ShadowRenderComponent(getRenderWindow(), 1, "E_MESH+E_BIGTILE",ContextSettings(0, 0, 4, 4, 6));
     src->setView(view3D);
-    PerPixelLinkedListRenderComponent* frc2 = new PerPixelLinkedListRenderComponent(getRenderWindow(), 0, "E_BIGTILE+E_MESH+E_CUBE",ContextSettings(0, 0, 4, 4, 6));
+    PerPixelLinkedListRenderComponent* frc2 = new PerPixelLinkedListRenderComponent(getRenderWindow(), 0, "E_BIGTILE+E_MESH+E_CUBE+E_BONE_ANIMATION",ContextSettings(0, 0, 4, 4, 6));
     //frc2->preloadEntitiesOnComponent(getWorld()->getEntities("*"), factory);
     frc2->setView(view3D);
     frc2->loadSkybox(skybox.get());
@@ -189,12 +195,13 @@ void MyAppli::onInit() {
     //std::cout<<"screen coords : "<<getRenderWindow().mapCoordsToPixel(model->getPosition(), view3D);
     g2d::AmbientLight::getAmbientLight().setColor(sf::Color::White);
     animUpdater = new AnimUpdater();
+    animUpdater->addBoneAnim(animator);
     getWorld()->addTimer(animUpdater);
     getWorld()->update();
 }
 void MyAppli::onRender(RenderComponentManager* frcm) {
     //getWorld()->drawOnComponents("E_CUBE", 0);
-    getWorld()->drawOnComponents("E_MESH+E_BIGTILE", 1);
+    getWorld()->drawOnComponents("E_MESH+E_BIGTILE+E_BONE_ANIMATION", 1);
     getWorld()->drawOnComponents("E_BIGTILE+E_MESH+E_CUBE", 0);
     getWorld()->drawOnComponents("E_CUBE+E_BIGTILE+E_MESH", 2);
     getWorld()->drawOnComponents("E_PONCTUAL_LIGHT+E_BIGTILE", 3);

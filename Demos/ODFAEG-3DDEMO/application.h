@@ -16,6 +16,7 @@
 #include "odfaeg/Graphics/3D/ponctualLight.hpp"
 #include "odfaeg/Graphics/particuleSystem.h"
 #include "odfaeg/Graphics/animationUpdater.h"
+#include "odfaeg/Graphics/3D/animator.hpp"
 class MyAppli : public odfaeg::core::Application<MyAppli> {
 public :
     enum TEXTURES {
@@ -45,7 +46,7 @@ private :
     unsigned int fpsCounter;
     odfaeg::graphic::View view3D;
     odfaeg::graphic::g3d::Model loader;
-    odfaeg::graphic::Entity* model;
+    odfaeg::graphic::Entity *model, *animatedModel;
     odfaeg::graphic::EntityFactory factory;
     std::unique_ptr<odfaeg::graphic::g3d::Skybox> skybox;
     odfaeg::graphic::AnimUpdater* animUpdater;

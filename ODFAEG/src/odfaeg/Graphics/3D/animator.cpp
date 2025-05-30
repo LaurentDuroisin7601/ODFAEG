@@ -61,6 +61,11 @@ namespace odfaeg {
             {
                 return m_FinalBoneMatrices;
             }
+            Entity* Animator::clone() {
+                Animator* a = factory.make_entity<Animator>(m_CurrentAnimation, factory);
+                GameObject::copy(a);
+                return a;
+            }
             Animator::~Animator() {
                 delete m_CurrentAnimation;
             }
