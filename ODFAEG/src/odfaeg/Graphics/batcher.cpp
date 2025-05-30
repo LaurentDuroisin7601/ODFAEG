@@ -367,8 +367,11 @@ namespace odfaeg {
                     m_transforms.push_back(&tm);
                     if (va.getEntity() != nullptr) {
                         m_entities.push_back(va.getEntity());
-                        for (unsigned int i = 0; i < va.getEntity()->getFinalBoneMatrices().size(); i++) {
-                            m_finalBoneMatrices.push_back(va.getEntity()->getFinalBoneMatrices()[i]);
+                        if (va.getEntity()->getRootEntity()->getType() == "E_BONE_ANIMATION")
+                            std::cout<<"get final matrices"<<std::endl;
+                        for (unsigned int i = 0; i < va.getEntity()->getRootEntity()->getFinalBoneMatrices().size(); i++) {
+                            std::cout<<"add matrix : "<<va.getEntity()->getRootEntity()->getFinalBoneMatrices()[i]<<std::endl;
+                            m_finalBoneMatrices.push_back(va.getEntity()->getRootEntity()->getFinalBoneMatrices()[i]);
                         }
                     }
                     if (va.getEntityId() != entt::null)

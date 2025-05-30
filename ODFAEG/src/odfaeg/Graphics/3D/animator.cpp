@@ -4,6 +4,8 @@ namespace odfaeg {
         namespace g3d {
             Animator::Animator(Animation* animation, EntityFactory& factory) : GameObject (math::Vec3f(0, 0, 0), animation->getSize(),animation->getSize() * 0.5f,"E_BONE_ANIMATION", factory)
             {
+                animation->getModel()->setParent(this);
+                addChild(animation->getModel());
                 m_CurrentTime = 0.0;
                 m_CurrentAnimation = animation;
 
@@ -59,6 +61,7 @@ namespace odfaeg {
 
             std::vector<math::Matrix4f> Animator::getFinalBoneMatrices()
             {
+                std::cout<<"get final bones matrice"<<std::endl;
                 return m_FinalBoneMatrices;
             }
             Entity* Animator::clone() {

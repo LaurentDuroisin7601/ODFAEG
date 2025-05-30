@@ -105,6 +105,9 @@ namespace odfaeg {
                 mat.m44 = aiMatrix.d4;
                 return mat;
             }
+            Entity* Animation::getModel() {
+                return model;
+            }
             Animation::~Animation() {
                 delete model;
             }

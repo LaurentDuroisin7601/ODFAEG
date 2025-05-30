@@ -22,6 +22,7 @@ namespace odfaeg {
                 const AssimpNodeData& getRootNode();
                 const std::map<std::string,Entity::BoneInfo>& getBoneIDMap();
                 math::Vec3f getSize();
+                Entity* getModel();
                 ~Animation();
             private :
                 math::Matrix4f convertAssimpToODFAEGMatrix(aiMatrix4x4 aiMatrix);

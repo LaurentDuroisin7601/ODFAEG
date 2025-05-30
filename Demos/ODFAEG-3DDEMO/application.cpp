@@ -117,7 +117,7 @@ void MyAppli::onInit() {
 
     animatedModel = loader.loadModel("tilesets/vampire/dancing_vampire.dae", factory);
     g3d::Animation* danceAnimation = new g3d::Animation("tilesets/vampire/dancing_vampire.dae", animatedModel);
-    g3d::Animator* animator = new g3d::Animator(danceAnimation, factory);
+    Entity* animator = factory.make_entity<g3d::Animator>(danceAnimation, factory);
     animator->move(Vec3f(0, 0, 20));
 
 
@@ -142,7 +142,7 @@ void MyAppli::onInit() {
     //model->setShadowRotation(angle2 * 150, Vec3f(0, 0, 1));
     model->setShadowCenter(Vec3f(0, 0, -5));
     isOnHeightMap = heightmap->getHeight(Vec2f(animatedModel->getPosition().x, animatedModel->getPosition().z), z);
-    animatedModel->move(Vec3f(0, z, 0));
+    animator->move(Vec3f(0, z, 0));
     getWorld()->addEntity(animator);
 
     //std::cout<<model->getPosition()<<model->getCenter()<<std::endl;
@@ -201,8 +201,8 @@ void MyAppli::onInit() {
 }
 void MyAppli::onRender(RenderComponentManager* frcm) {
     //getWorld()->drawOnComponents("E_CUBE", 0);
-    getWorld()->drawOnComponents("E_MESH+E_BIGTILE+E_BONE_ANIMATION", 1);
-    getWorld()->drawOnComponents("E_BIGTILE+E_MESH+E_CUBE", 0);
+    getWorld()->drawOnComponents("E_MESH+E_BIGTILE", 1);
+    getWorld()->drawOnComponents("E_BIGTILE+E_MESH+E_CUBE+E_BONE_ANIMATION", 0);
     getWorld()->drawOnComponents("E_CUBE+E_BIGTILE+E_MESH", 2);
     getWorld()->drawOnComponents("E_PONCTUAL_LIGHT+E_BIGTILE", 3);
     fpsCounter++;
