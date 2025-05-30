@@ -178,6 +178,8 @@ namespace odfaeg {
                 }
                 return textures;
             }
+            std::map<std::string, Model::BoneInfo>& Model::getBoneInfoMap() { return m_BoneInfoMap; }
+            int& Model::getBoneCount() { return m_BoneCounter; }
             #endif
         }
     }

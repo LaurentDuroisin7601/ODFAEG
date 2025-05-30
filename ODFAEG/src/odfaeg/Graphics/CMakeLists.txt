@@ -188,7 +188,9 @@ set(SRC_GRAPHICS_3D
 	${INCROOT}/3D/ponctualLight.hpp
 	${SRCROOT}/3D/ponctualLight.cpp
 	${INCROOT}/3D/bone.hpp
-	${SRCROOT}/3D/bone.cpp)
+	${SRCROOT}/3D/bone.cpp
+	${INCROOT}/3D/animation.hpp
+	${SRCROOT}/3D/animation.cpp)
 	
 source_group("3d_graphics" FILES ${SRC_GRAPHICS_3D})
 set(SRC_GUI

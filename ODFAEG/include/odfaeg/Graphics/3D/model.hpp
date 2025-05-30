@@ -23,6 +23,8 @@ namespace odfaeg {
                     };
                     Model ();
                     Entity* loadModel(std::string path, EntityFactory& factory);
+                    std::map<std::string, BoneInfo>& getBoneInfoMap();
+                    int& getBoneCount();
                 private :
                     math::Matrix4f convertAssimpToODFAEGMatrix(aiMatrix4x4 aiMatrix);
                     void setVertexBoneData(Vertex& vertex, int boneID, float weight);
