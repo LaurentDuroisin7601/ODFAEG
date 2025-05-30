@@ -53,6 +53,7 @@ namespace odfaeg {
                     int index = boneInfoMap[nodeName].id;
                     math::Matrix4f offset = boneInfoMap[nodeName].offset;
                     m_FinalBoneMatrices[index] = globalTransformation * offset;
+                    //std::cout<<"bone matrix : "<<m_FinalBoneMatrices[index]<<std::endl;
                 }
 
                 for (int i = 0; i < node->childrenCount; i++)
@@ -61,7 +62,6 @@ namespace odfaeg {
 
             std::vector<math::Matrix4f> Animator::getFinalBoneMatrices()
             {
-                std::cout<<"get final bones matrice"<<std::endl;
                 return m_FinalBoneMatrices;
             }
             Entity* Animator::clone() {

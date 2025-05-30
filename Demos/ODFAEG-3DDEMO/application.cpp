@@ -119,6 +119,7 @@ void MyAppli::onInit() {
     g3d::Animation* danceAnimation = new g3d::Animation("tilesets/vampire/dancing_vampire.dae", animatedModel);
     Entity* animator = factory.make_entity<g3d::Animator>(danceAnimation, factory);
     animator->move(Vec3f(0, 0, 20));
+    animator->setScale(Vec3f(0.1f, 0.1f, 0.1f));
 
 
     float y, z;
@@ -299,7 +300,7 @@ void MyAppli::onExec() {
         float z = heightmap->getHeight(Vec2f(view.getPosition().x, view.getPosition().y));
         view.setCenter(Vec3f(view.getPosition().x, view.getPosition().y, z+20));
         getRenderWindow().setView(view);*/
-        getWorld()->update();
+
     }
     if (IKeyboard::isKeyPressed(IKeyboard::Down)) {
         for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
@@ -321,7 +322,7 @@ void MyAppli::onExec() {
         float z = heightmap->getHeight(Vec2f(view.getPosition().x, view.getPosition().y));
         view.setCenter(Vec3f(view.getPosition().x, view.getPosition().y, z+20));
         getRenderWindow().setView(view);*/
-        getWorld()->update();
+
     }
     if (IKeyboard::isKeyPressed(IKeyboard::Right)) {
         for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
@@ -343,7 +344,7 @@ void MyAppli::onExec() {
         float z = heightmap->getHeight(Vec2f(view.getPosition().x, view.getPosition().y));
         view.setCenter(Vec3f(view.getPosition().x, view.getPosition().y, z+20));
         getRenderWindow().setView(view);*/
-        getWorld()->update();
+
     }
     if (IKeyboard::isKeyPressed(IKeyboard::Left)) {
         for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
@@ -365,10 +366,11 @@ void MyAppli::onExec() {
         float z = heightmap->getHeight(Vec2f(view.getPosition().x, view.getPosition().y));
         view.setCenter(Vec3f(view.getPosition().x, view.getPosition().y, z+20));
         getRenderWindow().setView(view);*/
-        getWorld()->update();
+
     }
-    ps->update(clock.getElapsedTime());
-    animUpdater->update();
+    getWorld()->update();
+    /*ps->update(clock.getElapsedTime());
+    animUpdater->update();*/
     /*if (clock2.getElapsedTime() > timeBeforeStoppingVerticalMotion) {
         verticalMotionActive = false;
         verticalMotionDirection = 0;

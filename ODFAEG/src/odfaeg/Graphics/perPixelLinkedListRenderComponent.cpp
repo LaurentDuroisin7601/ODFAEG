@@ -3538,6 +3538,7 @@ namespace odfaeg {
 
                     std::vector<math::Matrix4f> finalBoneMatrices = m_normals[i].getFinalBoneMatrices();
                     for (unsigned int b = 0; b < MAX_BONES && b < finalBoneMatrices.size(); b++) {
+                        //std::cout<<"final bone matrix : "<<finalBoneMatrices[b].transpose()<<std::endl;
                         modelData.finalBoneMatrices[b] = finalBoneMatrices[b].transpose();
                     }
 
@@ -3840,8 +3841,6 @@ namespace odfaeg {
                 }
             }
             for (unsigned int i = 0; i < vEntities.size(); i++) {
-                if (vEntities[i] != nullptr && vEntities[i]->getRootType() == "E_BONE_ANIMATION")
-                    std::cout<<"add bone anim"<<std::endl;
 
                 if ( vEntities[i] != nullptr && vEntities[i]->isLeaf()) {
                     Entity* border;
