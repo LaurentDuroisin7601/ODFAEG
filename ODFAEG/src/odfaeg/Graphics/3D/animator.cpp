@@ -61,6 +61,9 @@ namespace odfaeg {
             {
                 return m_FinalBoneMatrices;
             }
+            Animator::~Animator() {
+                delete m_CurrentAnimation;
+            }
         }
     }
 }

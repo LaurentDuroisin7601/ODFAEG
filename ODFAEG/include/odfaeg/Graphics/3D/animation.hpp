@@ -22,6 +22,7 @@ namespace odfaeg {
                 inline const AssimpNodeData& getRootNode();
                 inline const std::map<std::string,Entity::BoneInfo>& getBoneIDMap();
                 math::Vec3f getSize();
+                ~Animation();
             private :
                 math::Matrix4f convertAssimpToODFAEGMatrix(aiMatrix4x4 aiMatrix);
                 void readMissingBones(const aiAnimation* animation, Entity& model);
@@ -32,6 +33,7 @@ namespace odfaeg {
                 AssimpNodeData m_RootNode;
                 std::map<std::string, Entity::BoneInfo> m_BoneInfoMap;
                 math::Vec3f size;
+                Entity* model;
             };
         }
     }

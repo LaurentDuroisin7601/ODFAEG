@@ -114,6 +114,10 @@ void MyAppli::onInit() {
 
     loader = g3d::Model();
     model = loader.loadModel("tilesets/mesh_puddingmill/puddingmill.obj", factory);
+
+    /*animatedModel = loader.loadModel("tilesets/vampire/dancing_vampire.dae");
+    Animation anim =*/
+
     float y;
     model->move(Vec3f(0, 0, 10));
     isOnHeightMap = heightmap->getHeight(Vec2f(model->getPosition().x, model->getPosition().z), y);
@@ -184,6 +188,8 @@ void MyAppli::onInit() {
     billboard->setView(view3D);
     //std::cout<<"screen coords : "<<getRenderWindow().mapCoordsToPixel(model->getPosition(), view3D);
     g2d::AmbientLight::getAmbientLight().setColor(sf::Color::White);
+    animUpdater = new AnimUpdater();
+    getWorld()->addTimer(animUpdater);
     getWorld()->update();
 }
 void MyAppli::onRender(RenderComponentManager* frcm) {
@@ -355,6 +361,7 @@ void MyAppli::onExec() {
         getWorld()->update();
     }
     ps->update(clock.getElapsedTime());
+    animUpdater->update();
     /*if (clock2.getElapsedTime() > timeBeforeStoppingVerticalMotion) {
         verticalMotionActive = false;
         verticalMotionDirection = 0;

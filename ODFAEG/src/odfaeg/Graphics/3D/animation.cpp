@@ -2,7 +2,7 @@
 namespace odfaeg {
     namespace graphic {
         namespace g3d {
-            Animation::Animation(const std::string& animationPath, Entity* model)
+            Animation::Animation(const std::string& animationPath, Entity* model) : model(model)
             {
                 Assimp::Importer importer;
                 const aiScene* scene = importer.ReadFile(animationPath, aiProcess_Triangulate);
@@ -104,6 +104,9 @@ namespace odfaeg {
                 mat.m43 = aiMatrix.d3;
                 mat.m44 = aiMatrix.d4;
                 return mat;
+            }
+            Animation::~Animation() {
+                delete model;
             }
         }
     }

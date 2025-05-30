@@ -56,6 +56,7 @@ namespace odfaeg {
                 bool isLeaf() const {
                     return true;
                 }
+                ~Animator();
                 private:
                 std::vector<math::Matrix4f> m_FinalBoneMatrices;
                 Animation* m_CurrentAnimation;
