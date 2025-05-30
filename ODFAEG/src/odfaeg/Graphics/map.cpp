@@ -1079,9 +1079,9 @@ namespace odfaeg {
                         if (visibleEntitiesType[i] != nullptr && found) {
                             Entity* ba = visibleEntitiesType[i]->getRootEntity();
                             if (ba->getBoneAnimationIndex() == visibleEntitiesType[i]->getBoneIndex()) {
-
                                 /*if (visibleEntitiesType[i]->getType() == "E_ANIMATION")
                                     //std::cout<<"add animation"<<visibleEntitiesType[i]->getCurrentFrame()->getType()<<std::endl;*/
+
                                 entities[visibleEntitiesType[i]->getId()] = visibleEntitiesType[i];
                             }
                         }

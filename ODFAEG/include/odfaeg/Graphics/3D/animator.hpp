@@ -54,8 +54,9 @@ namespace odfaeg {
                 * \return true, a tile can't have children.
                 */
                 bool isLeaf() const {
-                    return true;
+                    return false;
                 }
+                Entity* getCurrentFrame() const;
                 ~Animator();
                 private:
                 std::vector<math::Matrix4f> m_FinalBoneMatrices;

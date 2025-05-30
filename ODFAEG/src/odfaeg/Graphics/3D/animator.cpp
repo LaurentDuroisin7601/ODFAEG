@@ -69,6 +69,9 @@ namespace odfaeg {
                 GameObject::copy(a);
                 return a;
             }
+            Entity* Animator::getCurrentFrame() const {
+                return m_CurrentAnimation->getModel();
+            }
             Animator::~Animator() {
                 delete m_CurrentAnimation;
             }
