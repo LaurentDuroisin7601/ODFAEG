@@ -105,7 +105,7 @@ namespace sorrok {
         std::cout<<"Mouse inside : "<<mousePos.x<<" "<<mousePos.y<<std::endl;
     }
     void MyAppli::onLoad() {
-        std::tuple<std::reference_wrapper<Device>> rArgs = std::make_tuple(std::ref(getDevice()));
+        std::tuple</*std::reference_wrapper<Device>*/> rArgs = std::make_tuple(/*std::ref(getDevice())*/);
         TextureManager<> tm;
         tm.fromFileWithAlias("tilesets/eau.png", "WATER", rArgs);
         tm.fromFileWithAlias("tilesets/herbe.png", "GRASS", rArgs);
@@ -232,7 +232,7 @@ namespace sorrok {
             getWorld()->generate_map(tiles, walls, Vec2f(100, 50), mapZone, entityFactory);
             Tile* thouse = entityFactory.make_entity<Tile>(tm.getResourceByAlias("HOUSE"), Vec3f(-100, 250, 400), Vec3f(250, 300, 0), sf::IntRect(0, 0, 250, 300), entityFactory);
 
-            //thouse->setLayer(1);
+            thouse->setLayer(1);
             thouse->getFace(0)->getMaterial().setTexId("HOUSE");
             g2d::Decor* decor = entityFactory.make_entity<g2d::Decor>(thouse, &g2d::AmbientLight::getAmbientLight(), entityFactory);
             decor->setSelected(true);
@@ -313,9 +313,9 @@ namespace sorrok {
         PerPixelLinkedListRenderComponent *frc2 = new PerPixelLinkedListRenderComponent(getRenderWindow(), 1, "E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PARTICLES", ContextSettings(0, 0, 4, 4, 6));
 
         ReflectRefractRenderComponent *rrrc = new ReflectRefractRenderComponent(getRenderWindow(), 2, "E_BIGTILE+E_WALL+E_DECOR+E_ANIMATION+E_HERO", ContextSettings(0, 0, 4, 4, 6));
-        frc1->createDescriptorsAndPipelines();
-        frc2->createDescriptorsAndPipelines();
-        /*ShadowRenderComponent *src = new ShadowRenderComponent(getRenderWindow(), 3, "E_WALL+E_DECOR+E_ANIMATION+E_HERO", ContextSettings(0, 0, 4, 4, 6));
+        /*frc1->createDescriptorsAndPipelines();
+        frc2->createDescriptorsAndPipelines();*/
+        ShadowRenderComponent *src = new ShadowRenderComponent(getRenderWindow(), 3, "E_WALL+E_DECOR+E_ANIMATION+E_HERO", ContextSettings(0, 0, 4, 4, 6));
         LightRenderComponent *lrc = new LightRenderComponent(getRenderWindow(), 4, "E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PONCTUAL_LIGHT", ContextSettings(0, 0, 4, 4, 6));
         //std::cout<<"component created"<<std::endl;
         //frc1->setVisible(false);
@@ -339,7 +339,7 @@ namespace sorrok {
         getRenderComponentManager().addComponent(frc1);
         getRenderComponentManager().addComponent(frc2);
         getRenderComponentManager().addComponent(rrrc);
-        /*getRenderComponentManager().addComponent(src);
+        getRenderComponentManager().addComponent(src);
         getRenderComponentManager().addComponent(lrc);
         /*getRenderComponentManager().addComponent(textArea);
         getRenderComponentManager().addComponent(op);*/
@@ -420,8 +420,8 @@ namespace sorrok {
         getWorld()->drawOnComponents("E_BIGTILE", 0);
         getWorld()->drawOnComponents("E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PARTICLES", 1);
         getWorld()->drawOnComponents("E_BIGTILE+E_WALL+E_DECOR+E_ANIMATION+E_HERO", 2);
-        /*getWorld()->drawOnComponents("E_WALL+E_DECOR+E_ANIMATION+E_HERO", 3);
-        getWorld()->drawOnComponents("E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PONCTUAL_LIGHT", 4);*/
+        getWorld()->drawOnComponents("E_WALL+E_DECOR+E_ANIMATION+E_HERO", 3);
+        getWorld()->drawOnComponents("E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PONCTUAL_LIGHT", 4);
 
     }
     void MyAppli::onDisplay(RenderWindow* window) {

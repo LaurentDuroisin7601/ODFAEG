@@ -191,6 +191,40 @@ namespace odfaeg {
                 createSampler();
                 createUniformBuffers();
                 compileShaders();
+                environmentMap.beginRecordCommandBuffers();
+                std::vector<VkCommandBuffer> commandBuffers = environmentMap.getCommandBuffers();
+                unsigned int currentFrame =  environmentMap.getCurrentFrame();
+                VkImageMemoryBarrier barrier = {};
+                barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+                barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+                barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+                barrier.image = headPtrTextureImage;
+                barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                barrier.subresourceRange.levelCount = 1;
+                barrier.subresourceRange.layerCount = 1;
+                vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+                VkImageMemoryBarrier barrier2 = {};
+                barrier2.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+                barrier2.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                barrier2.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+                barrier2.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+                barrier2.image = depthTextureImage;
+                barrier2.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                barrier2.subresourceRange.levelCount = 1;
+                barrier2.subresourceRange.layerCount = 1;
+                vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier2);
+                VkImageMemoryBarrier barrier3 = {};
+                barrier3.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+                barrier3.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                barrier3.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+                barrier3.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+                barrier3.image = alphaTextureImage;
+                barrier3.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                barrier3.subresourceRange.levelCount = 1;
+                barrier3.subresourceRange.layerCount = 1;
+                vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier3);
+                 environmentMap.display();
 
                 RenderStates states;
                 states.shader = &sLinkedList;
@@ -460,40 +494,7 @@ namespace odfaeg {
                 }
                 vkCmdPushDescriptorSetKHR = (PFN_vkCmdPushDescriptorSetKHR)vkGetDeviceProcAddr(vkDevice.getDevice(), "vkCmdPushDescriptorSetKHR");
                 skybox = nullptr;
-                environmentMap.beginRecordCommandBuffers();
-                std::vector<VkCommandBuffer> commandBuffers = environmentMap.getCommandBuffers();
-                unsigned int currentFrame =  environmentMap.getCurrentFrame();
-                VkImageMemoryBarrier barrier = {};
-                barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-                barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-                barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-                barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
-                barrier.image = headPtrTextureImage;
-                barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-                barrier.subresourceRange.levelCount = 1;
-                barrier.subresourceRange.layerCount = 1;
-                vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
-                VkImageMemoryBarrier barrier2 = {};
-                barrier2.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-                barrier2.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-                barrier2.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-                barrier2.newLayout = VK_IMAGE_LAYOUT_GENERAL;
-                barrier2.image = depthTextureImage;
-                barrier2.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-                barrier2.subresourceRange.levelCount = 1;
-                barrier2.subresourceRange.layerCount = 1;
-                vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier2);
-                VkImageMemoryBarrier barrier3 = {};
-                barrier3.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-                barrier3.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-                barrier3.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-                barrier3.newLayout = VK_IMAGE_LAYOUT_GENERAL;
-                barrier3.image = alphaTextureImage;
-                barrier3.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-                barrier3.subresourceRange.levelCount = 1;
-                barrier3.subresourceRange.layerCount = 1;
-                vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier3);
-                 environmentMap.display();
+
             }
             VkCommandBuffer ReflectRefractRenderComponent::beginSingleTimeCommands() {
                 VkCommandBufferAllocateInfo allocInfo{};
@@ -992,10 +993,12 @@ namespace odfaeg {
                                                            vec4 texel = (texIndex != 0) ? frontColor * texture(textures[texIndex-1], fTexCoords.xy) : frontColor;
                                                            if (nodeIdx < maxNodes) {
                                                                 uint prevHead = imageAtomicExchange(headPointers, ivec3(gl_FragCoord.xy, viewIndex), nodeIdx);
+                                                                uint value = imageLoad(headPointers, ivec3(gl_FragCoord.xy, viewIndex)).r;
                                                                 nodes[nodeIdx+viewIndex*maxNodes].color = texel;
                                                                 nodes[nodeIdx+viewIndex*maxNodes].depth = gl_FragCoord.z;
                                                                 nodes[nodeIdx+viewIndex*maxNodes].next = prevHead;
-                                                                //debugPrintfEXT("prev head : %i, next : %i, node Idx : %i, view index : %i\n", prevHead, nodes[nodeIdx+viewIndex*maxNodes].next, nodeIdx, viewIndex);
+                                                                if (value == 0)
+                                                                    debugPrintfEXT("value : %i, view index : %i\n", value, viewIndex);
                                                            }
                                                            fcolor = vec4(0, 0, 0, 0);
                                                       })";
@@ -1031,8 +1034,8 @@ namespace odfaeg {
                            n = frags[count].next/*+maxNodes*viewIndex*/;
                            count++;
                       }
-                      if (count > 0)
-                        debugPrintfEXT("count : %i", count);
+                      /*if (count > 0)
+                        debugPrintfEXT("count : %i", count);*/
                       //Insertion sort.
                       for (int i = 0; i < count - 1; i++) {
                         for (int j = i + 1; j > 0; j--) {
@@ -2091,13 +2094,15 @@ namespace odfaeg {
                     environmentMap.beginRecordCommandBuffers();
                     std::vector<VkCommandBuffer> commandBuffers = environmentMap.getCommandBuffers();
                     unsigned int currentFrame = environmentMap.getCurrentFrame();
+
+                    //vkCmdWaitEvents(commandBuffers[currentFrame], 1, &events[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
+                    environmentMap.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
                     VkMemoryBarrier memoryBarrier;
                     memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
                     memoryBarrier.pNext = VK_NULL_HANDLE;
-                    memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-                    memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-                    vkCmdWaitEvents(commandBuffers[currentFrame], 1, &events[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
-                    environmentMap.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
+                    memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+                    memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+                    vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
                     environmentMap.display();
                 } else {
                     reflectRefractTex.beginRecordCommandBuffers();
