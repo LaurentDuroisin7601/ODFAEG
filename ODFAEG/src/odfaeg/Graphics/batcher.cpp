@@ -365,8 +365,14 @@ namespace odfaeg {
                 m_perVaTransforms.push_back(&tm);
                 if (!containsEntity(va.getEntity(), va.getEntityId())) {
                     m_transforms.push_back(&tm);
-                    if (va.getEntity() != nullptr)
+                    if (va.getEntity() != nullptr) {
                         m_entities.push_back(va.getEntity());
+                        std::vector<math::Matrix4f> boneMatrices;
+                        for (unsigned int i = 0; i < va.getEntity()->getFinalBoneMatrices().size(); i++) {
+                            boneMatrices.push_back(va.getEntity()->getFinalBoneMatrices()[i]);
+                        }
+                        m_finalBoneMatrices.push_back(boneMatrices);
+                    }
                     if (va.getEntityId() != entt::null)
                         m_entitiesId.push_back(va.getEntityId());
                 }
@@ -454,6 +460,9 @@ namespace odfaeg {
             std::vector<TransformMatrix*> Instance::getPerVaTransforms() {
                 return m_perVaTransforms;
             }
+            std::vector<std::vector<math::Matrix4f>>& Instance::getFinalBoneMatrices() {
+                return m_finalBoneMatrices;
+            }
             void Instance::sortVertexArrays(View& view) {
                 vertices.clear();
                 allIndexes.clear();
@@ -508,6 +517,7 @@ namespace odfaeg {
                 m_transforms.clear();
                 m_vertexArrays.clear();
                 m_shadowProjMatrix.clear();
+                m_finalBoneMatrices.clear();
             }
             std::vector<TransformMatrix*> Instance::getTransforms() {
                  return m_transforms;

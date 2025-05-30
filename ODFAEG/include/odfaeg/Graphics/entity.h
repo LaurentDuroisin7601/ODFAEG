@@ -429,6 +429,7 @@ namespace odfaeg {
                 virtual std::string getAnimUpdater();
                 virtual void setPsUpdater(std::string name);
                 virtual std::string getPsUpdater();
+                virtual std::vector<math::Matrix4f> getFinalBoneMatrices();
                 void decreaseNbEntities();
             protected :
                 /** \fn Entity(math::Vec3f position, math::Vec3f size, math::Vec3f origin, std::string type, Entity* parent)
