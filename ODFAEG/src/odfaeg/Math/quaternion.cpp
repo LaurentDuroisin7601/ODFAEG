@@ -11,8 +11,7 @@ namespace odfaeg {
             this->z = z;
             this->w = w;
         }
-        Quaternion Quaternion::fromAngles(float xAngle, float yAngle, float zAngle) {
-            Quaternion quaternion;
+        void Quaternion::fromAngles(float xAngle, float yAngle, float zAngle) {
             float angle;
             float sinY, sinZ, sinX, cosY, cosZ, cosX;
             angle = zAngle * 0.5f;
@@ -31,12 +30,11 @@ namespace odfaeg {
             float cosYXsinZ = cosY * sinZ;
             float sinYXcosZ = sinY * cosZ;
 
-            quaternion.w = (cosYXcosZ * cosX - sinYXsinZ * sinX);
-            quaternion.x = (cosYXcosZ * sinX + sinYXsinZ * cosX);
-            quaternion.y = (sinYXcosZ * cosX + cosYXsinZ * sinX);
-            quaternion.z = (cosYXsinZ * cosX - sinYXcosZ * sinX);
+            w = (cosYXcosZ * cosX - sinYXsinZ * sinX);
+            x = (cosYXcosZ * sinX + sinYXsinZ * cosX);
+            y = (sinYXcosZ * cosX + cosYXsinZ * sinX);
+            z = (cosYXsinZ * cosX - sinYXcosZ * sinX);
 
-            return quaternion;
         }
         float Quaternion::norm() {
             return w * w + x * x + y * y + z * z;

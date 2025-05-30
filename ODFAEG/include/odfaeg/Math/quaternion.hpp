@@ -8,7 +8,7 @@ namespace odfaeg {
             float x, y, z, w;
             Quaternion();
             Quaternion(float x, float y, float z, float w);
-            Quaternion fromAngles(float xAngle, float yAngle, float zAngle);
+            void fromAngles(float xAngle, float yAngle, float zAngle);
             Matrix4f toRotationMatrix();
             Quaternion slerp(Quaternion other, float changeAmount);
             Quaternion normalize();
