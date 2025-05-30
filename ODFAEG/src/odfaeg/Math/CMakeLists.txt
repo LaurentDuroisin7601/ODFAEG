@@ -18,6 +18,8 @@ set(SRC
 	${SRCROOT}/matrix3.cpp
 	${INCROOT}/matrix4.h
 	${SRCROOT}/matrix4.cpp	
+	${INCROOT}/quaternion.hpp
+	${SRCROOT}/quaternion.cpp
 	${INCROOT}/vec2f.h
 	${SRCROOT}/vec2.cpp
 	${INCROOT}/vec4.h

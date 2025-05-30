@@ -228,6 +228,7 @@ namespace odfaeg {
             *   \return an SFML vector.
             */
             Vec3f& operator= (const Vec3f& other);
+            Vec3f mix (Vec3f& other, float a);
             sf::Vector3f getVec3sf() const;
             template <typename Archive>
             void serialize (Archive &ar) {

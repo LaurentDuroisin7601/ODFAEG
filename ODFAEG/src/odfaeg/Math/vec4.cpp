@@ -269,6 +269,9 @@ namespace odfaeg {
             else
                 return w;
         }
+        Vec3f Vec3f::mix(Vec3f& other, float a) {
+            return (*this) * (1 - a) + other * a;
+        }
     }
 }
 
