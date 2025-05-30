@@ -898,7 +898,7 @@ namespace odfaeg {
                             }
                             glCheck(glBindBuffer(GL_ARRAY_BUFFER, 0));
                         }
-                        if (vboNormalBuffer == 0) {
+                        /*if (vboNormalBuffer == 0) {
                             //std::cout<<"create vbo normal buffer"<<std::endl;
                             GLuint vbo;
                             glCheck(glGenBuffers(1, &vbo));
@@ -928,10 +928,7 @@ namespace odfaeg {
                             glCheck(glBindBuffer(GL_ARRAY_BUFFER, vboTextureIndexesBuffer));
                             glCheck(glBufferData(GL_ARRAY_BUFFER, m_texturesIndexes.size() * sizeof(unsigned int), &m_texturesIndexes[0], GL_DYNAMIC_DRAW));
                             //std::cout<<"vbo index texture : "<<vboTextureIndexesBuffer<<std::endl;
-                            /*for (unsigned int i = 0; i < m_texturesIndexes.size(); i++) {
-                                if (m_texturesIndexes[i] > 1)
-                                    std::cout<<"texture indexes size : "<<m_texturesIndexes.size()<<" index : "<<m_texturesIndexes[i]<<std::endl;
-                            }*/
+
                             glCheck(glBindBuffer(GL_ARRAY_BUFFER, 0));
                         } else {
                             GLvoid *pos_vbo = nullptr;
@@ -945,7 +942,7 @@ namespace odfaeg {
                             glCheck(glBindBuffer(GL_ARRAY_BUFFER, 0));
                         }
                         needToUpdateVertexBuffer = false;
-                    }
+                    }*/
                     if (needToUpdateIndexBuffer) {
                         if (vboIndexBuffer == 0) {
                             //std::cout<<"create index vbo buffer"<<std::endl;
@@ -972,7 +969,7 @@ namespace odfaeg {
                         }
                         needToUpdateIndexBuffer = false;
                     }
-                    if (needToUpdateMaterialTypeBuffer) {
+                    /*if (needToUpdateMaterialTypeBuffer) {
                         if (vboMaterialType == 0) {
                             GLuint vbo;
                             glCheck(glGenBuffers(1, &vbo));
@@ -1066,7 +1063,7 @@ namespace odfaeg {
                                 pos_vbo = nullptr;
                             }
                             glCheck(glBindBuffer(GL_ARRAY_BUFFER, 0));
-                        }
+                        }*/
                     }
                     oldVerticesSize = m_vertices.size();
                     oldIndexesSize = m_indexes.size();
