@@ -119,7 +119,7 @@ void MyAppli::onInit() {
     g3d::Animation* danceAnimation = new g3d::Animation("tilesets/vampire/dancing_vampire.dae", animatedModel);
     Entity* animator = factory.make_entity<g3d::Animator>(danceAnimation, factory);
     animator->move(Vec3f(0, 0, 20));
-    animator->setScale(Vec3f(0.1f, 0.1f, 0.1f));
+    //animator->setScale(Vec3f(0.1f, 0.1f, 0.1f));
 
 
     float y, z;
