@@ -2703,13 +2703,18 @@ namespace odfaeg {
                                                             layout (location = 1) in vec4 color;
                                                             layout (location = 2) in vec2 texCoords;
                                                             layout (location = 3) in vec3 normals;
+                                                            layout (location = 4) in ivec4 boneIds;
+                                                            layout (location = 5) in vec4 weights;
                                                             uniform mat4 projectionMatrix;
                                                             uniform mat4 viewMatrix;
                                                             uniform mat4 textureMatrix[)"+core::conversionUIntString(Texture::getAllTextures().size())+R"(];
                                                             uniform float time;
                                                             uniform vec3 resolution;
+                                                            const int MAX_BONES = 100;
+                                                            const int MAX_BONE_INFLUENCE = 4;
                                                             struct ModelData {
                                                                 mat4 modelMatrix;
+                                                                mat4 finalBonesMatrices[MAX_BONES];
                                                             };
                                                             struct MaterialData {
                                                                 uint textureIndex;
@@ -2727,14 +2732,33 @@ namespace odfaeg {
                                                             void main() {
                                                                 MaterialData materialData = materialDatas[gl_DrawID];
                                                                 ModelData modelData = modelDatas[gl_BaseInstance + gl_InstanceID];
+                                                                mat4 finalBonesMatrices[MAX_BONES] = modelData.finalBonesMatrices;
                                                                 float xOff = 0;
                                                                 float yOff = 0;
                                                                 if (materialData.materialType == 1) {
                                                                     yOff = 0.05*sin(position.x*12+time*FPI)*resolution.y;
                                                                     xOff = 0.025*cos(position.x*12+time*FPI)*resolution.x;
                                                                 }
+                                                                vec4 totalPosition = vec4(0.0f);
+                                                                bool hasBones = false;
+                                                                for(int i = 0 ; i < MAX_BONE_INFLUENCE ; i++)
+                                                                {
+                                                                    if(boneIds[i] == -1)
+                                                                        continue;
+                                                                    if(boneIds[i] >=MAX_BONES)
+                                                                    {
+                                                                        totalPosition = vec4(position,1.0f);
+                                                                        break;
+                                                                    }
+                                                                    hasBones = true;
+                                                                    vec4 localPosition = finalBonesMatrices[boneIds[i]] * vec4(position,1.0f);
+                                                                    totalPosition += localPosition * weights[i];
+                                                                }
+                                                                if (!hasBones) {
+                                                                    totalPosition = vec4(position, 1.f);
+                                                                }
                                                                 uint textureIndex =  materialData.textureIndex;
-                                                                gl_Position = projectionMatrix * viewMatrix * modelData.modelMatrix * vec4((position.x - xOff), (position.y + yOff), position.z, 1.f);
+                                                                gl_Position = projectionMatrix * viewMatrix * modelData.modelMatrix * vec4((totalPosition.x - xOff), (totalPosition.y + yOff), totalPosition.z, 1.f);
                                                                 fTexCoords = (textureIndex != 0) ? (textureMatrix[textureIndex-1] * vec4(texCoords, 1.f, 1.f)).xy : texCoords;
                                                                 frontColor = color;
                                                                 texIndex = textureIndex;

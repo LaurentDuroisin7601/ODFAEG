@@ -42,6 +42,7 @@ namespace odfaeg {
 
                 Material mat;
                 mat.clearTextures();
+                std::vector<Vertex*> ptrVerts;
                 if(mesh->mMaterialIndex >= 0) {
                     aiMaterial *material = scene->mMaterials[mesh->mMaterialIndex];
                     std::vector<const Texture*> diffuseMaps = loadMaterialTextures(material,
@@ -73,9 +74,82 @@ namespace odfaeg {
                     Face f(va,mat,emesh->getTransform());
                     emesh->addFace(f);
                 }
+                for (unsigned int i = 0; i < emesh->getFaces().size(); i++) {
+                    for (unsigned int v = 0; v < emesh->getFaces()[i].getVertexArray().getVertexCount(); v++) {
+                        ptrVerts.push_back(&emesh->getFaces()[i].getVertexArray()[v]);
+                    }
+                }
+                extractBoneWeightForVertices(ptrVerts, mesh, scene);
                 std::array<std::array<float, 2>, 3> exts = math::Computer::getExtends(verts);
                 emesh->setSize(math::Vec3f(exts[0][1] - exts[0][0], exts[1][1] - exts[1][0], exts[2][1] - exts[2][0]));
                 emesh->setOrigin(math::Vec3f(emesh->getSize()*0.5));
+            }
+            void Model::setVertexBoneData(Vertex& vertex, int boneID, float weight)
+            {
+                for (int i = 0; i < MAX_BONE_INFLUENCE; ++i)
+                {
+                    if (vertex.m_BoneIDs[i] < 0)
+                    {
+                        vertex.m_Weights[i] = weight;
+                        vertex.m_BoneIDs[i] = boneID;
+                        break;
+                    }
+                }
+            }
+            math::Matrix4f Model::convertAssimpToODFAEGMatrix(aiMatrix4x4 aiMatrix) {
+                math::Matrix4f mat;
+                mat.m11 = aiMatrix.a1;
+                mat.m12 = aiMatrix.a2;
+                mat.m13 = aiMatrix.a3;
+                mat.m14 = aiMatrix.a4;
+
+                mat.m21 = aiMatrix.b1;
+                mat.m22 = aiMatrix.b2;
+                mat.m23 = aiMatrix.b3;
+                mat.m24 = aiMatrix.b4;
+
+                mat.m31 = aiMatrix.c1;
+                mat.m32 = aiMatrix.c2;
+                mat.m33 = aiMatrix.c3;
+                mat.m34 = aiMatrix.c4;
+
+                mat.m41 = aiMatrix.d1;
+                mat.m42 = aiMatrix.d2;
+                mat.m43 = aiMatrix.d3;
+                mat.m44 = aiMatrix.d4;
+                return mat;
+            }
+            void Model::extractBoneWeightForVertices(std::vector<Vertex*>& vertices, aiMesh* mesh, const aiScene* scene)
+            {
+                for (int boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
+                {
+                    int boneID = -1;
+                    std::string boneName = mesh->mBones[boneIndex]->mName.C_Str();
+                    if (m_BoneInfoMap.find(boneName) == m_BoneInfoMap.end())
+                    {
+                        BoneInfo newBoneInfo;
+                        newBoneInfo.id = m_BoneCounter;
+                        newBoneInfo.offset = convertAssimpToODFAEGMatrix(mesh->mBones[boneIndex]->mOffsetMatrix);
+                        m_BoneInfoMap[boneName] = newBoneInfo;
+                        boneID = m_BoneCounter;
+                        m_BoneCounter++;
+                    }
+                    else
+                    {
+                        boneID = m_BoneInfoMap[boneName].id;
+                    }
+                    assert(boneID != -1);
+                    auto weights = mesh->mBones[boneIndex]->mWeights;
+                    int numWeights = mesh->mBones[boneIndex]->mNumWeights;
+
+                    for (int weightIndex = 0; weightIndex < numWeights; ++weightIndex)
+                    {
+                        int vertexId = weights[weightIndex].mVertexId;
+                        float weight = weights[weightIndex].mWeight;
+                        assert(vertexId <= vertices.size());
+                        setVertexBoneData(*vertices[vertexId], boneID, weight);
+                    }
+                }
             }
             std::vector<const Texture*> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type, std::string typeName)
             {

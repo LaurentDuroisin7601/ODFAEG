@@ -30,6 +30,7 @@ namespace odfaeg {
               */
             class ODFAEG_GRAPHICS_API LightRenderComponent : public HeavyComponent {
                 public :
+
                     struct uint64_to_uint128 {
                         uint64_t handle;
                         uint64_t padding;
@@ -52,6 +53,7 @@ namespace odfaeg {
                     };
                     struct ModelData {
                         math::Matrix4f worldMat;
+                        math::Matrix4f finalBonesMatrices[MAX_BONES];
                     };
                     struct MaterialData {
                         unsigned int textureIndex;

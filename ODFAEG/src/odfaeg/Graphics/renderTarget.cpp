@@ -1205,10 +1205,16 @@ namespace odfaeg {
                         glCheck(glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*) 16));
                         glCheck(glEnableVertexAttribArray(3));
                         glCheck(glVertexAttribPointer(3, 3, GL_FLOAT, GL_TRUE, sizeof(Vertex), (GLvoid*) 24));
+                        glCheck(glEnableVertexAttribArray(4));
+                        glCheck(glVertexAttribIPointer(4, 4, GL_INT, sizeof(Vertex), (void*)offsetof(Vertex, m_BoneIDs)));
+                        glCheck(glEnableVertexAttribArray(5));
+                        glCheck(glVertexAttribPointer(5, 4,  GL_FLOAT, GL_FALSE, sizeof(Vertex),(void*)offsetof(Vertex, m_Weights)));
                         glCheck(glDisableVertexAttribArray(0));
                         glCheck(glDisableVertexAttribArray(1));
                         glCheck(glDisableVertexAttribArray(2));
                         glCheck(glDisableVertexAttribArray(3));
+                        glCheck(glDisableVertexAttribArray(4));
+                        glCheck(glDisableVertexAttribArray(5));
                         glCheck(glBindBuffer(GL_ARRAY_BUFFER, 0));
 
                         /*va_list args;
@@ -1291,6 +1297,8 @@ namespace odfaeg {
                     glCheck(glEnableVertexAttribArray(1));
                     glCheck(glEnableVertexAttribArray(2));
                     glCheck(glEnableVertexAttribArray(3));
+                    glCheck(glEnableVertexAttribArray(4));
+                    glCheck(glEnableVertexAttribArray(5));
                     /*if (vboMatrix1 != 0) {
                         for (unsigned int i = 0; i < 4 ; i++) {
                             glCheck(glEnableVertexAttribArray(4 + i));
@@ -1332,6 +1340,8 @@ namespace odfaeg {
                     glCheck(glDisableVertexAttribArray(1));
                     glCheck(glDisableVertexAttribArray(2));
                     glCheck(glDisableVertexAttribArray(3));
+                    glCheck(glDisableVertexAttribArray(4));
+                    glCheck(glDisableVertexAttribArray(5));
                     /*if (vboMatrix1 != 0) {
                         for (unsigned int i = 0; i < 4 ; i++) {
                             glCheck(glDisableVertexAttribArray(4 + i));

@@ -36,6 +36,7 @@
 #include <vulkan/vulkan.hpp>
 #include <array>
 #endif
+#define MAX_BONE_INFLUENCE 4
 namespace odfaeg {
     namespace graphic {
         ////////////////////////////////////////////////////////////
@@ -133,6 +134,10 @@ namespace odfaeg {
             sf::Color color; ///< Color of the vertex
             sf::Vector2f texCoords; ///< Coordinates of the texture's pixel to map to the vertex
             sf::Vector3f normal;
+            //bone indexes which will influence this vertex
+            int m_BoneIDs[MAX_BONE_INFLUENCE];
+            //weights from each bone
+            float m_Weights[MAX_BONE_INFLUENCE];
             #ifdef VULKAN
             static VkVertexInputBindingDescription getBindingDescription() {
                 VkVertexInputBindingDescription bindingDescription{};
