@@ -1226,7 +1226,7 @@ namespace odfaeg {
                             }
                         }
                         va_end(args);*/
-                        if (vboMatrix1 != 0) {
+                        /*if (vboMatrix1 != 0) {
                             for (unsigned int i = 0; i < 4; i++) {
                                 glCheck(glEnableVertexAttribArray(i + 4));
                                 glCheck(glBindBuffer(GL_ARRAY_BUFFER, vboMatrix1));
@@ -1281,7 +1281,7 @@ namespace odfaeg {
                             glCheck(glVertexAttribPointer(17, 4,GL_UNSIGNED_BYTE,GL_TRUE,sizeof(Vertex),(GLvoid*) 16));
                             glCheck(glDisableVertexAttribArray(16));
                             glCheck(glDisableVertexAttribArray(17));
-                        }
+                        }*/
                     }
                     m_cache.lastVboBuffer = &vertexBuffer;
 
@@ -1291,7 +1291,7 @@ namespace odfaeg {
                     glCheck(glEnableVertexAttribArray(1));
                     glCheck(glEnableVertexAttribArray(2));
                     glCheck(glEnableVertexAttribArray(3));
-                    if (vboMatrix1 != 0) {
+                    /*if (vboMatrix1 != 0) {
                         for (unsigned int i = 0; i < 4 ; i++) {
                             glCheck(glEnableVertexAttribArray(4 + i));
                         }
@@ -1314,7 +1314,7 @@ namespace odfaeg {
                     if (vertexBuffer.vboLightInfos != 0) {
                         glCheck(glEnableVertexAttribArray(16));
                         glCheck(glEnableVertexAttribArray(17));
-                    }
+                    }*/
                     static const GLenum modes[] = {GL_POINTS, GL_LINES, GL_LINE_STRIP, GL_TRIANGLES,
                                                        GL_TRIANGLE_STRIP, GL_TRIANGLE_FAN, GL_QUADS};
                     GLenum mode = modes[type];
@@ -1332,7 +1332,7 @@ namespace odfaeg {
                     glCheck(glDisableVertexAttribArray(1));
                     glCheck(glDisableVertexAttribArray(2));
                     glCheck(glDisableVertexAttribArray(3));
-                    if (vboMatrix1 != 0) {
+                    /*if (vboMatrix1 != 0) {
                         for (unsigned int i = 0; i < 4 ; i++) {
                             glCheck(glDisableVertexAttribArray(4 + i));
                         }
@@ -1355,7 +1355,7 @@ namespace odfaeg {
                     if (vertexBuffer.vboLightInfos != 0) {
                         glCheck(glDisableVertexAttribArray(16));
                         glCheck(glDisableVertexAttribArray(17));
-                    }
+                    }*/
                     glCheck(glBindVertexArray(0));
                 }
             }
@@ -1419,7 +1419,7 @@ namespace odfaeg {
                             }
                         }
                         va_end(args);*/
-                        if (vboMatrix1 != 0) {
+                        /*if (vboMatrix1 != 0) {
                             for (unsigned int i = 0; i < 4; i++) {
                                 glCheck(glEnableVertexAttribArray(i + 4));
                                 glCheck(glBindBuffer(GL_ARRAY_BUFFER, vboMatrix1));
@@ -1445,7 +1445,7 @@ namespace odfaeg {
                         glCheck(glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer.vboTextureIndexesBuffer));
                         glCheck(glVertexAttribIPointer(12, 1, GL_UNSIGNED_INT, sizeof(GLuint), (GLvoid*) 0));
                         glCheck(glDisableVertexAttribArray(12));
-                        glCheck(glBindBuffer(GL_ARRAY_BUFFER, 0));
+                        glCheck(glBindBuffer(GL_ARRAY_BUFFER, 0));*/
                     }
                     m_cache.lastVboBuffer = &vertexBuffer;
 
@@ -1455,7 +1455,7 @@ namespace odfaeg {
                     glCheck(glEnableVertexAttribArray(1));
                     glCheck(glEnableVertexAttribArray(2));
                     glCheck(glEnableVertexAttribArray(3));
-                    if (vboMatrix1 != 0) {
+                    /*if (vboMatrix1 != 0) {
                         for (unsigned int i = 0; i < 4 ; i++) {
                             glCheck(glEnableVertexAttribArray(4 + i));
                         }
@@ -1465,7 +1465,7 @@ namespace odfaeg {
                             glCheck(glEnableVertexAttribArray(8 + i));
                         }
                     }
-                    glCheck(glEnableVertexAttribArray(12));
+                    glCheck(glEnableVertexAttribArray(12));*/
                     static const GLenum modes[] = {GL_POINTS, GL_LINES, GL_LINE_STRIP, GL_TRIANGLES,
                                                        GL_TRIANGLE_STRIP, GL_TRIANGLE_FAN, GL_QUADS};
                     GLenum mode = modes[type];
@@ -1475,7 +1475,7 @@ namespace odfaeg {
                     glCheck(glDisableVertexAttribArray(1));
                     glCheck(glDisableVertexAttribArray(2));
                     glCheck(glDisableVertexAttribArray(3));
-                    if (vboMatrix1 != 0) {
+                    /*if (vboMatrix1 != 0) {
                         for (unsigned int i = 0; i < 4 ; i++) {
                             glCheck(glDisableVertexAttribArray(4 + i));
                         }
@@ -1485,7 +1485,7 @@ namespace odfaeg {
                             glCheck(glDisableVertexAttribArray(8 + i));
                         }
                     }
-                    glCheck(glDisableVertexAttribArray(12));
+                    glCheck(glDisableVertexAttribArray(12));*/
                     glCheck(glBindVertexArray(0));
                 }
             }
@@ -1627,7 +1627,7 @@ namespace odfaeg {
                         glCheck(glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*) 16));
                         glCheck(glEnableVertexAttribArray(3));
                         glCheck(glVertexAttribPointer(3, 3, GL_FLOAT, GL_TRUE, sizeof(Vertex), (GLvoid*) 24));
-                        glCheck(glEnableVertexAttribArray(4));
+                        /*glCheck(glEnableVertexAttribArray(4));
                         if (vertexBuffer.vboMaterialType != 0) {
                             glCheck(glEnableVertexAttribArray(5));
                             glCheck(glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer.vboMaterialType));
@@ -1662,12 +1662,12 @@ namespace odfaeg {
                         //std::cout<<"vbo texture index buffer : "<<vertexBuffer.vboTextureIndexesBuffer<<std::endl;
                         glCheck(glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer.vboTextureIndexesBuffer));
 
-                        glCheck(glVertexAttribIPointer(4, 1, GL_UNSIGNED_INT/*,GL_FALSE*/,sizeof(GLuint),(GLvoid*) 0));
+                        glCheck(glVertexAttribIPointer(4, 1, GL_UNSIGNED_INT,GL_FALSE,sizeof(GLuint),(GLvoid*) 0));*/
                         glCheck(glDisableVertexAttribArray(0));
                         glCheck(glDisableVertexAttribArray(1));
                         glCheck(glDisableVertexAttribArray(2));
                         glCheck(glDisableVertexAttribArray(3));
-                        glCheck(glDisableVertexAttribArray(4));
+                       /* glCheck(glDisableVertexAttribArray(4));
                         if (vertexBuffer.vboMaterialType != 0) {
                             glCheck(glDisableVertexAttribArray(5));
                         }
@@ -1680,7 +1680,7 @@ namespace odfaeg {
                         if (vertexBuffer.vboLightInfos != 0) {
                             glCheck(glDisableVertexAttribArray(8));
                             glCheck(glDisableVertexAttribArray(9));
-                        }
+                        }*/
 
                         glCheck(glBindBuffer(GL_ARRAY_BUFFER, 0));
                     } else {
@@ -1707,7 +1707,7 @@ namespace odfaeg {
                     glCheck(glEnableVertexAttribArray(1));
                     glCheck(glEnableVertexAttribArray(2));
                     glCheck(glEnableVertexAttribArray(3));
-                    glCheck(glEnableVertexAttribArray(4));
+                    /*glCheck(glEnableVertexAttribArray(4));
                     if (vertexBuffer.vboMaterialType != 0) {
                         glCheck(glEnableVertexAttribArray(5));
                     }
@@ -1720,7 +1720,7 @@ namespace odfaeg {
                     if (vertexBuffer.vboLightInfos != 0) {
                         glCheck(glEnableVertexAttribArray(8));
                         glCheck(glEnableVertexAttribArray(9));
-                    }
+                    }*/
                 } else {
                     glCheck(glEnableClientState(GL_COLOR_ARRAY));
                     glCheck(glEnableClientState(GL_TEXTURE_COORD_ARRAY));
@@ -1748,7 +1748,7 @@ namespace odfaeg {
                     glCheck(glDisableVertexAttribArray(1));
                     glCheck(glDisableVertexAttribArray(2));
                     glCheck(glDisableVertexAttribArray(3));
-                    glCheck(glDisableVertexAttribArray(4));
+                    /*glCheck(glDisableVertexAttribArray(4));
                     if (vertexBuffer.vboMaterialType != 0) {
                         glCheck(glDisableVertexAttribArray(5));
                     }
@@ -1761,7 +1761,7 @@ namespace odfaeg {
                     if (vertexBuffer.vboLightInfos != 0) {
                         glCheck(glDisableVertexAttribArray(8));
                         glCheck(glDisableVertexAttribArray(9));
-                    }
+                    }*/
                     glCheck(glBindVertexArray(0));
                 } else {
                     glCheck(glDisableClientState(GL_COLOR_ARRAY));
