@@ -70,7 +70,6 @@ namespace odfaeg {
                     } else {
                         vertex.texCoords = sf::Vector2f(0, 0);
                     }
-                    vertex.normal = sf::Vector3f(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);
                     vertices.push_back(vertex);
                     verts.push_back(math::Vec3f(vertex.position.x, vertex.position.y, vertex.position.z));
                 }
