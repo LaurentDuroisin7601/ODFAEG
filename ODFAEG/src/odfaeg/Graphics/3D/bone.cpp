@@ -6,7 +6,7 @@ namespace odfaeg {
                 :
                 m_Name(name),
                 m_ID(ID),
-                m_LocalTransform()
+                m_LocalTransform(1.f)
             {
                 m_NumPositions = channel->mNumPositionKeys;
 

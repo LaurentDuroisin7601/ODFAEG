@@ -2,10 +2,12 @@
 namespace odfaeg {
     namespace graphic {
         namespace g3d {
-            Animator::Animator(Animation* animation, EntityFactory& factory) : GameObject (math::Vec3f(0, 0, 0), animation->getSize(),animation->getSize() * 0.5f,"E_BONE_ANIMATION", factory)
+            Animator::Animator(Animation* animation, EntityFactory& factory) : GameObject (math::Vec3f(0, 0, 0), math::Vec3f(0, 0, 0), math::Vec3f(0, 0, 0),"E_BONE_ANIMATION", factory)
             {
                 animation->getModel()->setParent(this);
                 addChild(animation->getModel());
+                setSize(animation->getSize());
+                setOrigin(animation->getSize()*0.5f);
                 m_CurrentTime = 0.0;
                 m_CurrentAnimation = animation;
 

@@ -3571,8 +3571,8 @@ namespace odfaeg {
                         tm[j]->update();
                         ModelData modelData;
                         modelData.worldMat = tm[j]->getMatrix().transpose();
-                        std::vector<glm::mat4> finalBoneMatrices = m_normals[i].getFinalBoneMatrices();
-                        for (unsigned int m = 0, b = MAX_BONES*j && b < finalBoneMatrices.size(); b < j*MAX_BONES+MAX_BONES; b++, m++) {
+                        std::vector<glm::mat4> finalBoneMatrices = m_instances[i].getFinalBoneMatrices();
+                        for (unsigned int m = 0, b = MAX_BONES*j; b < j*MAX_BONES+MAX_BONES && b < finalBoneMatrices.size(); b++, m++) {
 
                             modelData.finalBoneMatrices[m] = finalBoneMatrices[b];
                         }

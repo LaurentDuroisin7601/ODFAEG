@@ -74,6 +74,7 @@ namespace odfaeg {
                     verts.push_back(math::Vec3f(vertex.position.x, vertex.position.y, vertex.position.z));
                 }
                 extractBoneWeightForVertices(vertices, mesh, scene, emesh);
+
                 //std::cout<<"num bones : "<<mesh->mNumBones<<std::endl;
 
                 for(unsigned int i = 0; i < mesh->mNumFaces; i++)

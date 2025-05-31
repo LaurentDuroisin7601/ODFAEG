@@ -119,8 +119,8 @@ void MyAppli::onInit() {
     g3d::Animation* danceAnimation = new g3d::Animation("tilesets/vampire/dancing_vampire.dae", animatedModel);
     Entity* animator = factory.make_entity<g3d::Animator>(danceAnimation, factory);
     animator->move(Vec3f(0, 0, 20));
-    //animator->setScale(Vec3f(0.1f, 0.1f, 0.1f));
-
+    animator->setScale(Vec3f(5, 5, 5));
+    //animator->setDrawMode(Entity::INSTANCED);
 
     float y, z;
     model->move(Vec3f(0, 0, 10));
@@ -142,8 +142,9 @@ void MyAppli::onInit() {
     model->setShadowRotation(90 + angle * 100, Vec3f(1, 0, 0));
     //model->setShadowRotation(angle2 * 150, Vec3f(0, 0, 1));
     model->setShadowCenter(Vec3f(0, 0, -5));
-    isOnHeightMap = heightmap->getHeight(Vec2f(animatedModel->getPosition().x, animatedModel->getPosition().z), z);
-    animator->move(Vec3f(0, z, 0));
+    isOnHeightMap = heightmap->getHeight(Vec2f(animator->getPosition().x, animator->getPosition().z), z);
+    //std::cout<<"animator size : "<<animator->getSize()<<std::endl;
+    animator->move(Vec3f(0, z+animator->getSize().y, 0));
     getWorld()->addEntity(animator);
 
     //std::cout<<model->getPosition()<<model->getCenter()<<std::endl;
