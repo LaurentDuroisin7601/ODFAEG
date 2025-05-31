@@ -65,7 +65,10 @@ namespace odfaeg {
                 math::Matrix4f translation = interpolatePosition(animationTime);
                 math::Matrix4f rotation = interpolateRotation(animationTime);
                 math::Matrix4f scale = interpolateScaling(animationTime);
-                m_LocalTransform = translation * rotation * scale;
+                m_LocalTransform = scale * rotation * translation;
+                std::cout<<"translation : "<<translation<<std::endl;
+                std::cout<<"rotation : "<<rotation<<std::endl;
+                std::cout<<"scale : "<<scale<<std::endl;
             }
 
             math::Matrix4f Bone::getLocalTransform() { return m_LocalTransform; }

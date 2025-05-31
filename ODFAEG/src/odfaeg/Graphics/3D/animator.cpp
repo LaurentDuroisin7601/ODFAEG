@@ -37,22 +37,23 @@ namespace odfaeg {
                 std::string nodeName = node->name;
                 math::Matrix4f nodeTransform = node->transformation;
 
-                Bone* Bone = m_CurrentAnimation->findBone(nodeName);
+                Bone* bone = m_CurrentAnimation->findBone(nodeName);
 
-                if (Bone)
+                if (bone)
                 {
-                    Bone->update(m_CurrentTime);
-                    nodeTransform = Bone->getLocalTransform();
+                    //std::cout<<"update"<<std::endl;
+                    bone->update(m_CurrentTime);
+                    nodeTransform = bone->getLocalTransform();
                 }
 
-                math::Matrix4f globalTransformation = parentTransform * nodeTransform;
+                math::Matrix4f globalTransformation = nodeTransform * parentTransform;
 
                 auto boneInfoMap = m_CurrentAnimation->getBoneIDMap();
                 if (boneInfoMap.find(nodeName) != boneInfoMap.end())
                 {
                     int index = boneInfoMap[nodeName].id;
                     math::Matrix4f offset = boneInfoMap[nodeName].offset;
-                    m_FinalBoneMatrices[index] = globalTransformation * offset;
+                    m_FinalBoneMatrices[index] = offset * globalTransformation;
                     //std::cout<<"bone matrix : "<<m_FinalBoneMatrices[index]<<std::endl;
                 }
 
