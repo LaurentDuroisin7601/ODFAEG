@@ -66,9 +66,6 @@ namespace odfaeg {
                 math::Matrix4f rotation = interpolateRotation(animationTime);
                 math::Matrix4f scale = interpolateScaling(animationTime);
                 m_LocalTransform = scale * rotation * translation;
-                std::cout<<"translation : "<<translation<<std::endl;
-                std::cout<<"rotation : "<<rotation<<std::endl;
-                std::cout<<"scale : "<<scale<<std::endl;
             }
 
             math::Matrix4f Bone::getLocalTransform() { return m_LocalTransform; }
@@ -138,8 +135,10 @@ namespace odfaeg {
                 float scaleFactor = getScaleFactor(m_Positions[p0Index].timeStamp,
                     m_Positions[p1Index].timeStamp, animationTime);
                 math::Vec3f finalPosition = m_Positions[p0Index].position.mix(m_Positions[p1Index].position, scaleFactor);
+
                 TransformMatrix tm;
                 tm.setTranslation(finalPosition);
+                //std::cout<<"transform : "<<tm.getMatrix()<<std::endl;
                 return tm.getMatrix();
             }
 
@@ -159,7 +158,9 @@ namespace odfaeg {
                     m_Rotations[p1Index].timeStamp, animationTime);
                 math::Quaternion finalRotation = m_Rotations[p0Index].orientation.slerp(
                     m_Rotations[p1Index].orientation, scaleFactor);
+
                 finalRotation = finalRotation.normalize();
+                std::cout<<"rotation : "<<finalRotation.toRotationMatrix()<<std::endl;
                 return finalRotation.toRotationMatrix();
             }
 

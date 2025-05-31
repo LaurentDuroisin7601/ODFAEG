@@ -42,10 +42,10 @@ namespace odfaeg {
         Quaternion Quaternion::normalize() {
             Quaternion quaternion;
             float n =  Math::inversSqrt(norm());
-            quaternion.x *= n;
-            quaternion.y *= n;
-            quaternion.z *= n;
-            quaternion.w *= n;
+            quaternion.x = x * n;
+            quaternion.y = y * n;
+            quaternion.z = z * n;
+            quaternion.w = w * n;
             return quaternion;
         }
         Quaternion Quaternion::slerp(Quaternion q2, float changeAmount) {
