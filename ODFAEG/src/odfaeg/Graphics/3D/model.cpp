@@ -99,23 +99,23 @@ namespace odfaeg {
             math::Matrix4f Model::convertAssimpToODFAEGMatrix(aiMatrix4x4 aiMatrix) {
                 math::Matrix4f mat;
                 mat.m11 = aiMatrix.a1;
-                mat.m12 = aiMatrix.b1;
-                mat.m13 = aiMatrix.c1;
-                mat.m14 = aiMatrix.d1;
+                mat.m12 = aiMatrix.a2;
+                mat.m13 = aiMatrix.a3;
+                mat.m14 = aiMatrix.a4;
 
-                mat.m21 = aiMatrix.a2;
+                mat.m21 = aiMatrix.b1;
                 mat.m22 = aiMatrix.b2;
-                mat.m23 = aiMatrix.c2;
-                mat.m24 = aiMatrix.d2;
+                mat.m23 = aiMatrix.b3;
+                mat.m24 = aiMatrix.b4;
 
-                mat.m31 = aiMatrix.a3;
-                mat.m32 = aiMatrix.b3;
+                mat.m31 = aiMatrix.c1;
+                mat.m32 = aiMatrix.c2;
                 mat.m33 = aiMatrix.c3;
-                mat.m34 = aiMatrix.d3;
+                mat.m34 = aiMatrix.c4;
 
-                mat.m41 = aiMatrix.a4;
-                mat.m42 = aiMatrix.b4;
-                mat.m43 = aiMatrix.c4;
+                mat.m41 = aiMatrix.d1;
+                mat.m42 = aiMatrix.d2;
+                mat.m43 = aiMatrix.d3;
                 mat.m44 = aiMatrix.d4;
                 return mat;
             }
