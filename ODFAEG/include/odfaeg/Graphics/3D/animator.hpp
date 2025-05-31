@@ -9,8 +9,8 @@ namespace odfaeg {
                 Animator(Animation* animation, EntityFactory& factory);
                 void updateAnimation(float dt);
                 void playAnimation(Animation* pAnimation);
-                void calculateBoneTransform(const Animation::AssimpNodeData* node, math::Matrix4f parentTransform);
-                std::vector<math::Matrix4f> getFinalBoneMatrices();
+                void calculateBoneTransform(const Animation::AssimpNodeData* node, glm::mat4 parentTransform);
+                std::vector<glm::mat4> getFinalBoneMatrices();
                 void onDraw (RenderTarget &target, RenderStates states) {}
                 Entity* clone();
                 bool isAnimated() const {
@@ -59,7 +59,7 @@ namespace odfaeg {
                 Entity* getCurrentFrame() const;
                 ~Animator();
                 private:
-                std::vector<math::Matrix4f> m_FinalBoneMatrices;
+                std::vector<glm::mat4> m_FinalBoneMatrices;
                 Animation* m_CurrentAnimation;
                 float m_CurrentTime;
                 float m_DeltaTime;

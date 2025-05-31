@@ -462,7 +462,7 @@ namespace odfaeg {
             std::vector<TransformMatrix*> Instance::getPerVaTransforms() {
                 return m_perVaTransforms;
             }
-            std::vector<math::Matrix4f>& Instance::getFinalBoneMatrices() {
+            std::vector<glm::mat4>& Instance::getFinalBoneMatrices() {
                 return m_finalBoneMatrices;
             }
             void Instance::sortVertexArrays(View& view) {

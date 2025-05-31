@@ -42,7 +42,6 @@ namespace odfaeg {
 
                 Material mat;
                 mat.clearTextures();
-                std::vector<Vertex*> ptrVerts;
                 if(mesh->mMaterialIndex >= 0) {
                     aiMaterial *material = scene->mMaterials[mesh->mMaterialIndex];
                     std::vector<const Texture*> diffuseMaps = loadMaterialTextures(material,
@@ -56,40 +55,41 @@ namespace odfaeg {
                         mat.addTexture(specularMaps[i], sf::IntRect(0, 0, 0, 0));
                     }
                 }
-                //std::cout<<"num bones : "<<mesh->mNumBones<<std::endl;
+                std::vector<Vertex> vertices;
                 std::vector<math::Vec3f> verts;
+                for (unsigned int i = 0; i < mesh->mNumVertices; i++)
+                {
+                    Vertex vertex;
+                    vertex.position.x = mesh->mVertices[i].x;
+                    vertex.position.y = mesh->mVertices[i].y;
+                    vertex.position.z = mesh->mVertices[i].z;
+                    if (mesh->mTextureCoords[0])
+                    {
+                        vertex.texCoords.x = mesh->mTextureCoords[0][i].x * mat.getTexture()->getSize().x;
+                        vertex.texCoords.y = mesh->mTextureCoords[0][i].y * mat.getTexture()->getSize().y;
+                    } else {
+                        vertex.texCoords = sf::Vector2f(0, 0);
+                    }
+                    vertex.normal = sf::Vector3f(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);
+                    vertices.push_back(vertex);
+                    verts.push_back(math::Vec3f(vertex.position.x, vertex.position.y, vertex.position.z));
+                }
+                extractBoneWeightForVertices(vertices, mesh, scene, emesh);
+                //std::cout<<"num bones : "<<mesh->mNumBones<<std::endl;
+
                 for(unsigned int i = 0; i < mesh->mNumFaces; i++)
                 {
                     VertexArray va(sf::Triangles, 0, emesh);
                     aiFace face = mesh->mFaces[i];
                     for(unsigned int j = 0; j < face.mNumIndices; j++) {
-                        Vertex vertex;
-                        vertex.position.x = mesh->mVertices[face.mIndices[j]].x;
-                        vertex.position.y = mesh->mVertices[face.mIndices[j]].y;
-                        vertex.position.z = mesh->mVertices[face.mIndices[j]].z;
-                        vertex.texCoords.x = mesh->mTextureCoords[0][face.mIndices[j]].x * mat.getTexture()->getSize().x;
-                        vertex.texCoords.y = mesh->mTextureCoords[0][face.mIndices[j]].y * mat.getTexture()->getSize().y;
-                        va.append(vertex);
-                        verts.push_back(math::Vec3f(vertex.position.x, vertex.position.y, vertex.position.z));
+                        va.append(vertices[face.mIndices[j]]);
                     }
                     Face f(va,mat,emesh->getTransform());
                     emesh->addFace(f);
                 }
-                for (unsigned int i = 0; i < emesh->getFaces().size(); i++) {
-                    for (unsigned int v = 0; v < emesh->getFaces()[i].getVertexArray().getVertexCount(); v++) {
-                        ptrVerts.push_back(&emesh->getFaces()[i].getVertexArray()[v]);
-                    }
-                }
-                extractBoneWeightForVertices(ptrVerts, mesh, scene, emesh);
                 std::array<std::array<float, 2>, 3> exts = math::Computer::getExtends(verts);
                 emesh->setSize(math::Vec3f(exts[0][1] - exts[0][0], exts[1][1] - exts[1][0], exts[2][1] - exts[2][0]));
                 emesh->setOrigin(math::Vec3f(emesh->getSize()*0.5));
-                for (unsigned int i = 0; i < ptrVerts.size(); i++) {
-                    for (unsigned int b = 0; b < MAX_BONE_INFLUENCE; b++) {
-                        //std::cout<<"pverts bone id : "<<ptrVerts[i]->m_BoneIDs[b]<<std::endl;
-                        //system("PAUSE");
-                    }
-                }
             }
             void Model::setVertexBoneData(Vertex& vertex, int boneID, float weight)
             {
@@ -104,30 +104,7 @@ namespace odfaeg {
                     }
                 }
             }
-            math::Matrix4f Model::convertAssimpToODFAEGMatrix(aiMatrix4x4 aiMatrix) {
-                math::Matrix4f mat;
-                mat.m11 = aiMatrix.a1;
-                mat.m12 = aiMatrix.a2;
-                mat.m13 = aiMatrix.a3;
-                mat.m14 = aiMatrix.a4;
-
-                mat.m21 = aiMatrix.b1;
-                mat.m22 = aiMatrix.b2;
-                mat.m23 = aiMatrix.b3;
-                mat.m24 = aiMatrix.b4;
-
-                mat.m31 = aiMatrix.c1;
-                mat.m32 = aiMatrix.c2;
-                mat.m33 = aiMatrix.c3;
-                mat.m34 = aiMatrix.c4;
-
-                mat.m41 = aiMatrix.d1;
-                mat.m42 = aiMatrix.d2;
-                mat.m43 = aiMatrix.d3;
-                mat.m44 = aiMatrix.d4;
-                return mat;
-            }
-            void Model::extractBoneWeightForVertices(std::vector<Vertex*>& vertices, aiMesh* mesh, const aiScene* scene, Mesh* emesh)
+            void Model::extractBoneWeightForVertices(std::vector<Vertex>& vertices, aiMesh* mesh, const aiScene* scene, Mesh* emesh)
             {
 
                 for (int boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
@@ -138,7 +115,7 @@ namespace odfaeg {
                     {
                         Entity::BoneInfo newBoneInfo;
                         newBoneInfo.id = emesh->getBoneCount();
-                        newBoneInfo.offset = convertAssimpToODFAEGMatrix(mesh->mBones[boneIndex]->mOffsetMatrix);
+                        newBoneInfo.offset = AssimpHelpers::convertMatrixToGLMFormat(mesh->mBones[boneIndex]->mOffsetMatrix);
                         emesh->getBoneInfoMap()[boneName] = newBoneInfo;
                         boneID = emesh->getBoneCount();
                         emesh->getBoneCount()++;
@@ -159,7 +136,7 @@ namespace odfaeg {
                         int vertexId = weights[weightIndex].mVertexId;
                         float weight = weights[weightIndex].mWeight;
                         assert(vertexId <= vertices.size());
-                        setVertexBoneData(*vertices[vertexId], boneID, weight);
+                        setVertexBoneData(vertices[vertexId], boneID, weight);
                         /*std::cout<<"vertex bone id : "<<vertices[vertexId]->m_BoneIDs[boneID]<<std::endl;
                         system("PAUSE");*/
                     }

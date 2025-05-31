@@ -12,7 +12,7 @@ namespace odfaeg {
                 m_FinalBoneMatrices.reserve(MAX_BONES);
 
                 for (int i = 0; i < MAX_BONES; i++)
-                    m_FinalBoneMatrices.push_back(math::Matrix4f());
+                    m_FinalBoneMatrices.push_back(glm::mat4(1.f));
             }
 
             void Animator::updateAnimation(float dt)
@@ -22,7 +22,7 @@ namespace odfaeg {
                 {
                     m_CurrentTime += m_CurrentAnimation->getTicksPerSecond() * dt;
                     m_CurrentTime = fmod(m_CurrentTime, m_CurrentAnimation->getDuration());
-                    calculateBoneTransform(&m_CurrentAnimation->getRootNode(), math::Matrix4f());
+                    calculateBoneTransform(&m_CurrentAnimation->getRootNode(), glm::mat4(1.f));
                 }
             }
 
@@ -32,10 +32,10 @@ namespace odfaeg {
                 m_CurrentTime = 0.0f;
             }
 
-            void Animator::calculateBoneTransform(const Animation::AssimpNodeData* node, math::Matrix4f parentTransform)
+            void Animator::calculateBoneTransform(const Animation::AssimpNodeData* node, glm::mat4 parentTransform)
             {
                 std::string nodeName = node->name;
-                math::Matrix4f nodeTransform = node->transformation;
+                glm::mat4 nodeTransform = node->transformation;
 
                 Bone* bone = m_CurrentAnimation->findBone(nodeName);
 
@@ -45,23 +45,23 @@ namespace odfaeg {
                     bone->update(m_CurrentTime);
                     nodeTransform = bone->getLocalTransform();
                 }
-
-                math::Matrix4f globalTransformation = nodeTransform * parentTransform ;
+                glm::mat4 globalTransformation = parentTransform * nodeTransform;
 
                 auto boneInfoMap = m_CurrentAnimation->getBoneIDMap();
                 if (boneInfoMap.find(nodeName) != boneInfoMap.end())
                 {
                     int index = boneInfoMap[nodeName].id;
-                    math::Matrix4f offset = boneInfoMap[nodeName].offset;
-                    m_FinalBoneMatrices[index] = offset * globalTransformation;
-                    //std::cout<<"bone matrix : "<<m_FinalBoneMatrices[index]<<std::endl;
+                    glm::mat4 offset = boneInfoMap[nodeName].offset;
+                    m_FinalBoneMatrices[index] = globalTransformation * offset;
+                    //std::cout<<"final bone matrix : "<<m_FinalBoneMatrices[index]<<std::endl;
+                    //system("PAUSE");
                 }
 
                 for (int i = 0; i < node->childrenCount; i++)
                     calculateBoneTransform(&node->children[i], globalTransformation);
             }
 
-            std::vector<math::Matrix4f> Animator::getFinalBoneMatrices()
+            std::vector<glm::mat4> Animator::getFinalBoneMatrices()
             {
                 return m_FinalBoneMatrices;
             }

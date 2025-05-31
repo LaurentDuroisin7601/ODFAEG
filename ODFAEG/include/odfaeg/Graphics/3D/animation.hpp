@@ -9,7 +9,7 @@ namespace odfaeg {
             public :
                 struct AssimpNodeData
                 {
-                    math::Matrix4f transformation;
+                    glm::mat4 transformation;
                     std::string name;
                     int childrenCount;
                     std::vector<AssimpNodeData> children;
@@ -25,7 +25,6 @@ namespace odfaeg {
                 Entity* getModel();
                 ~Animation();
             private :
-                math::Matrix4f convertAssimpToODFAEGMatrix(aiMatrix4x4 aiMatrix);
                 void readMissingBones(const aiAnimation* animation, Entity& model);
                 void readHeirarchyData(AssimpNodeData& dest, const aiNode* src);
                 float m_Duration;

@@ -6,6 +6,10 @@
 #include <assimp/postprocess.h>
 #include "../export.hpp"
 #include "../../Math/transformMatrix.h"
+#include <glm/glm.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/quaternion.hpp>
+#include "../assimp_helper.hpp"
 namespace odfaeg {
     namespace graphic {
         namespace g3d {
@@ -13,36 +17,34 @@ namespace odfaeg {
             public :
                 struct KeyPosition
                 {
-                    math::Vec3f position;
+                    glm::vec3 position;
                     float timeStamp;
                 };
 
                 struct KeyRotation
                 {
-                    math::Quaternion orientation;
+                    glm::quat orientation;
                     float timeStamp;
                 };
 
                 struct KeyScale
                 {
-                    math::Vec3f scale;
+                    glm::vec3 scale;
                     float timeStamp;
                 };
                 Bone(const std::string& name, int ID, const aiNodeAnim* channel);
                 void update(float animationTime);
-                math::Matrix4f getLocalTransform();
+                glm::mat4 getLocalTransform();
                 std::string getBoneName() const;
                 int getBoneID();
                 int getPositionIndex(float animationTime);
                 int getRotationIndex(float animationTime);
                 int getScaleIndex(float animationTime);
             private :
-                math::Vec3f convertAssimpToODFAEGVec4(aiVector3D aiVec);
-                math::Quaternion convertAssimpToODFAEGQuaternion(aiQuaternion aiQuat);
                 float getScaleFactor(float lastTimeStamp, float nextTimeStamp, float animationTime);
-                math::Matrix4f interpolatePosition(float animationTime);
-                math::Matrix4f interpolateRotation(float animationTime);
-                math::Matrix4f interpolateScaling(float animationTime);
+                glm::mat4 interpolatePosition(float animationTime);
+                glm::mat4 interpolateRotation(float animationTime);
+                glm::mat4 interpolateScaling(float animationTime);
                 std::vector<KeyPosition> m_Positions;
                 std::vector<KeyRotation> m_Rotations;
                 std::vector<KeyScale> m_Scales;
@@ -50,7 +52,7 @@ namespace odfaeg {
                 int m_NumRotations;
                 int m_NumScalings;
 
-                math::Matrix4f m_LocalTransform;
+                glm::mat4 m_LocalTransform;
                 std::string m_Name;
                 int m_ID;
             };

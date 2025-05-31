@@ -5,6 +5,7 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include "../../Window/vkDevice.hpp"
+#include "../assimp_helper.hpp"
 #include <map>
 namespace odfaeg {
     namespace graphic {
@@ -20,9 +21,8 @@ namespace odfaeg {
                     Entity* loadModel(std::string path, EntityFactory& factory);
 
                 private :
-                    math::Matrix4f convertAssimpToODFAEGMatrix(aiMatrix4x4 aiMatrix);
                     void setVertexBoneData(Vertex& vertex, int boneID, float weight);
-                    void extractBoneWeightForVertices(std::vector<Vertex*>& vertices, aiMesh* mesh, const aiScene* scene, Mesh* eMesh);
+                    void extractBoneWeightForVertices(std::vector<Vertex>& vertices, aiMesh* mesh, const aiScene* scene, Mesh* eMesh);
                     void processNode(aiNode *node, const aiScene *scene, Mesh* emesh);
                     void processMesh(aiMesh *mesh, const aiScene *scene, Mesh* emesh);
                     std::vector<const Texture*> loadMaterialTextures(aiMaterial *mat, aiTextureType type,

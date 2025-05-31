@@ -15,7 +15,7 @@ namespace odfaeg {
                     aiVector3D aiPosition = channel->mPositionKeys[positionIndex].mValue;
                     float timeStamp = channel->mPositionKeys[positionIndex].mTime;
                     KeyPosition data;
-                    data.position = convertAssimpToODFAEGVec4(aiPosition);
+                    data.position = AssimpHelpers::getGLMVec(aiPosition);
 
                     data.timeStamp = timeStamp;
                     m_Positions.push_back(data);
@@ -27,7 +27,7 @@ namespace odfaeg {
                     aiQuaternion aiOrientation = channel->mRotationKeys[rotationIndex].mValue;
                     float timeStamp = channel->mRotationKeys[rotationIndex].mTime;
                     KeyRotation data;
-                    data.orientation = convertAssimpToODFAEGQuaternion(aiOrientation);
+                    data.orientation = AssimpHelpers::getGLMQuat(aiOrientation);
                     data.timeStamp = timeStamp;
                     m_Rotations.push_back(data);
                 }
@@ -38,38 +38,24 @@ namespace odfaeg {
                     aiVector3D scale = channel->mScalingKeys[keyIndex].mValue;
                     float timeStamp = channel->mScalingKeys[keyIndex].mTime;
                     KeyScale data;
-                    data.scale = convertAssimpToODFAEGVec4(scale);
+                    data.scale = AssimpHelpers::getGLMVec(scale);
                     data.timeStamp = timeStamp;
                     m_Scales.push_back(data);
                 }
             }
-            math::Vec3f Bone::convertAssimpToODFAEGVec4(aiVector3D aiVec) {
-                math::Vec3f vec;
-                vec.x = aiVec.x;
-                vec.y = aiVec.y;
-                vec.z = aiVec.z;
-                return vec;
-            }
-            math::Quaternion Bone::convertAssimpToODFAEGQuaternion(aiQuaternion aiQuat) {
-                math::Quaternion quat;
-                quat.x = aiQuat.x;
-                quat.y = aiQuat.y;
-                quat.z = aiQuat.z;
-                quat.w = aiQuat.w;
-                return quat;
-            }
+
             /*interpolates  b/w positions,rotations & scaling keys based on the curren time of
             the animation and prepares the local transformation matrix by combining all keys
             tranformations*/
             void Bone::update(float animationTime)
             {
-                math::Matrix4f translation = interpolatePosition(animationTime);
-                math::Matrix4f rotation = interpolateRotation(animationTime);
-                math::Matrix4f scale = interpolateScaling(animationTime);
-                m_LocalTransform = scale * rotation * translation;
+                glm::mat4 translation = interpolatePosition(animationTime);
+                glm::mat4 rotation = interpolateRotation(animationTime);
+                glm::mat4 scale = interpolateScaling(animationTime);
+                m_LocalTransform = translation * rotation * scale;
             }
 
-            math::Matrix4f Bone::getLocalTransform() { return m_LocalTransform; }
+            glm::mat4 Bone::getLocalTransform() { return m_LocalTransform; }
             std::string Bone::getBoneName() const { return m_Name; }
             int Bone::getBoneID() { return m_ID; }
 
@@ -123,12 +109,10 @@ namespace odfaeg {
 
             /*figures out which position keys to interpolate b/w and performs the interpolation
             and returns the translation matrix*/
-            math::Matrix4f Bone::interpolatePosition(float animationTime)
+            glm::mat4 Bone::interpolatePosition(float animationTime)
             {
                 if (1 == m_NumPositions) {
-                    TransformMatrix tm;
-                    tm.setTranslation(m_Positions[0].position);
-                    return tm.getMatrix();
+                    return glm::translate(glm::mat4(1.0f), m_Positions[0].position);
                 }
 
                 int p0Index = getPositionIndex(animationTime);
@@ -136,57 +120,46 @@ namespace odfaeg {
 
                 float scaleFactor = getScaleFactor(m_Positions[p0Index].timeStamp,
                     m_Positions[p1Index].timeStamp, animationTime);
-                math::Vec3f finalPosition = m_Positions[p0Index].position.mix(m_Positions[p1Index].position, scaleFactor);
-
-
-                TransformMatrix tm;
-                tm.setTranslation(finalPosition);
-
-                return tm.getMatrix();
+                glm::vec3 finalPosition = glm::mix(m_Positions[p0Index].position,
+                m_Positions[p1Index].position, scaleFactor);
+                return glm::translate(glm::mat4(1.0f), finalPosition);
             }
 
             /*figures out which rotations keys to interpolate b/w and performs the interpolation
             and returns the rotation matrix*/
-            math::Matrix4f Bone::interpolateRotation(float animationTime)
+            glm::mat4 Bone::interpolateRotation(float animationTime)
             {
                 if (1 == m_NumRotations)
                 {
-                    auto rotation = (m_Rotations[0].orientation).normalize();
-                    return rotation.toRotationMatrix();
+                    auto rotation = glm::normalize(m_Rotations[0].orientation);
+                    return glm::toMat4(rotation);
                 }
 
                 int p0Index = getRotationIndex(animationTime);
                 int p1Index = p0Index + 1;
                 float scaleFactor = getScaleFactor(m_Rotations[p0Index].timeStamp,
                     m_Rotations[p1Index].timeStamp, animationTime);
-                math::Quaternion finalRotation = m_Rotations[p0Index].orientation.slerp(
-                    m_Rotations[p1Index].orientation, scaleFactor);
-
-                finalRotation = finalRotation.normalize();
-
-                return finalRotation.toRotationMatrix();
+                glm::quat finalRotation = glm::slerp(m_Rotations[p0Index].orientation,
+                m_Rotations[p1Index].orientation, scaleFactor);
+                finalRotation = glm::normalize(finalRotation);
+                return glm::toMat4(finalRotation);
             }
 
             /*figures out which scaling keys to interpolate b/w and performs the interpolation
             and returns the scale matrix*/
-            math::Matrix4f Bone::interpolateScaling(float animationTime)
+            glm::mat4 Bone::interpolateScaling(float animationTime)
             {
                 if (1 == m_NumScalings) {
-                    TransformMatrix tm;
-                    tm.setScale(m_Scales[0].scale);
-                    return tm.getMatrix();
+                    return glm::scale(glm::mat4(1.0f), m_Scales[0].scale);
                 }
 
                 int p0Index = getScaleIndex(animationTime);
                 int p1Index = p0Index + 1;
                 float scaleFactor = getScaleFactor(m_Scales[p0Index].timeStamp,
                     m_Scales[p1Index].timeStamp, animationTime);
-                math::Vec3f finalScale = m_Scales[p0Index].scale.mix(m_Scales[p1Index].scale
-                    , scaleFactor);
-                TransformMatrix tm;
-                tm.setScale(finalScale);
-                //std::cout<<"scale : "<<tm.getMatrix()<<std::endl;
-                return tm.getMatrix();
+                glm::vec3 finalScale = glm::mix(m_Scales[p0Index].scale, m_Scales[p1Index].scale
+                , scaleFactor);
+                return glm::scale(glm::mat4(1.0f), finalScale);
             }
         }
     }

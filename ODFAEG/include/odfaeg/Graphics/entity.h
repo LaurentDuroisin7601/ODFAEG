@@ -9,6 +9,7 @@
 #include "../Math/computer.h"
 #include "../Core/serialization.h"
 #include <vector>
+#include <glm/glm.hpp>
 /**
   *\namespace odfaeg
   * the namespace of the Opensource Development Framework Adapted for Every Games.
@@ -95,7 +96,7 @@ namespace odfaeg {
                     /*id is index in finalBoneMatrices*/
                     int id;
                     /*offset matrix transforms vertex from model space to bone space*/
-                    math::Matrix4f offset;
+                    glm::mat4 offset;
                 };
                 enum DrawMode {
                     NORMAL, INSTANCED, BASE_INSTANCED
@@ -435,7 +436,7 @@ namespace odfaeg {
                 virtual std::string getAnimUpdater();
                 virtual void setPsUpdater(std::string name);
                 virtual std::string getPsUpdater();
-                virtual std::vector<math::Matrix4f> getFinalBoneMatrices();
+                virtual std::vector<glm::mat4> getFinalBoneMatrices();
                 void decreaseNbEntities();
                 virtual void updateAnimation(float dt);
                 std::map<std::string, Entity::BoneInfo>& getBoneInfoMap();

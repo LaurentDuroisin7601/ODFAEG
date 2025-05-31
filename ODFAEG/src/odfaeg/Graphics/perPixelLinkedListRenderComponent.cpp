@@ -4,6 +4,8 @@
 #ifndef VULKAN
 #include "glCheck.h"
 #endif
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/string_cast.hpp>
 namespace odfaeg {
     namespace graphic {
         #ifdef VULKAN
@@ -2753,6 +2755,7 @@ namespace odfaeg {
                                                                     hasBones = true;
                                                                     vec4 localPosition = finalBonesMatrices[boneIds[i]] * vec4(position,1.0f);
                                                                     totalPosition += localPosition * weights[i];
+                                                                    vec3 localNormal = mat3(finalBonesMatrices[boneIds[i]]) * normals;
                                                                 }
                                                                 if (!hasBones) {
                                                                     totalPosition = vec4(position, 1.f);
@@ -3536,10 +3539,9 @@ namespace odfaeg {
                     ModelData modelData;
                     modelData.worldMat = tm.getMatrix().transpose();
 
-                    std::vector<math::Matrix4f> finalBoneMatrices = m_normals[i].getFinalBoneMatrices();
+                    std::vector<glm::mat4> finalBoneMatrices = m_normals[i].getFinalBoneMatrices();
                     for (unsigned int b = 0; b < MAX_BONES && b < finalBoneMatrices.size(); b++) {
-                        //std::cout<<"final bone matrix : "<<finalBoneMatrices[b]<<std::endl;
-                        modelData.finalBoneMatrices[b] = finalBoneMatrices[b].transpose();
+                        modelData.finalBoneMatrices[b] = finalBoneMatrices[b];
                     }
 
                     matrices[p].push_back(modelData);
@@ -3569,8 +3571,9 @@ namespace odfaeg {
                         tm[j]->update();
                         ModelData modelData;
                         modelData.worldMat = tm[j]->getMatrix().transpose();
-                        std::vector<math::Matrix4f> finalBoneMatrices = m_normals[i].getFinalBoneMatrices();
+                        std::vector<glm::mat4> finalBoneMatrices = m_normals[i].getFinalBoneMatrices();
                         for (unsigned int m = 0, b = MAX_BONES*j && b < finalBoneMatrices.size(); b < j*MAX_BONES+MAX_BONES; b++, m++) {
+
                             modelData.finalBoneMatrices[m] = finalBoneMatrices[b];
                         }
                         matrices[p].push_back(modelData);

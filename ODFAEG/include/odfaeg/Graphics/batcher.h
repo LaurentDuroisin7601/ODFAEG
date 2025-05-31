@@ -5,6 +5,7 @@
 #include <map>
 #include "../Core/entityFactory.hpp"
 #include "../config.hpp"
+#include <glm/glm.hpp>
 /**
   *\namespace odfaeg
   * the namespace of the Opensource Development Framework Adapted for Every Games.
@@ -420,7 +421,7 @@ namespace odfaeg {
             bool containsEntity(Entity* entity, entt::entity entityId);
             std::vector<Entity*> getEntities();
             std::vector<ecs::EntityId> getEntitiesId();
-            std::vector<math::Matrix4f>& getFinalBoneMatrices();
+            std::vector<glm::mat4>& getFinalBoneMatrices();
 
             ~Instance();
         private:
@@ -429,7 +430,7 @@ namespace odfaeg {
             std::vector<TransformMatrix*> m_transforms; /**> the transformations of the instance.*/
             std::vector<TransformMatrix*> m_perVaTransforms;
             std::vector<TransformMatrix> m_shadowProjMatrix;
-            std::vector<math::Matrix4f> m_finalBoneMatrices;
+            std::vector<glm::mat4> m_finalBoneMatrices;
             sf::PrimitiveType primType; /**>The primitive type of the instance.*/
             unsigned int numInstances; /**>The number of instances.*/
             VertexArray vertices;
