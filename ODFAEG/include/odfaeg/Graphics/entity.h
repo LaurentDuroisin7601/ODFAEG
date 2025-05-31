@@ -96,7 +96,7 @@ namespace odfaeg {
                     /*id is index in finalBoneMatrices*/
                     int id;
                     /*offset matrix transforms vertex from model space to bone space*/
-                    glm::mat4 offset;
+                    math::Matrix4f offset;
                 };
                 enum DrawMode {
                     NORMAL, INSTANCED, BASE_INSTANCED
@@ -436,7 +436,7 @@ namespace odfaeg {
                 virtual std::string getAnimUpdater();
                 virtual void setPsUpdater(std::string name);
                 virtual std::string getPsUpdater();
-                virtual std::vector<glm::mat4> getFinalBoneMatrices();
+                virtual std::vector<math::Matrix4f> getFinalBoneMatrices();
                 void decreaseNbEntities();
                 virtual void updateAnimation(float dt);
                 std::map<std::string, Entity::BoneInfo>& getBoneInfoMap();

@@ -179,7 +179,7 @@ namespace odfaeg {
             };
             struct ModelData {
                 math::Matrix4f worldMat;
-                glm::mat4 finalBoneMatrices[MAX_BONES];
+                math::Matrix4f finalBoneMatrices[MAX_BONES];
             };
             struct MaterialData {
                 unsigned int textureIndex;

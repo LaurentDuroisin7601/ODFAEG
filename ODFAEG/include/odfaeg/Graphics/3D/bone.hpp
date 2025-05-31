@@ -17,24 +17,24 @@ namespace odfaeg {
             public :
                 struct KeyPosition
                 {
-                    glm::vec3 position;
+                    math::Vec3f position;
                     float timeStamp;
                 };
 
                 struct KeyRotation
                 {
-                    glm::quat orientation;
+                    math::Quaternion orientation;
                     float timeStamp;
                 };
 
                 struct KeyScale
                 {
-                    glm::vec3 scale;
+                    math::Vec3f scale;
                     float timeStamp;
                 };
                 Bone(const std::string& name, int ID, const aiNodeAnim* channel);
                 void update(float animationTime);
-                glm::mat4 getLocalTransform();
+                math::Matrix4f getLocalTransform();
                 std::string getBoneName() const;
                 int getBoneID();
                 int getPositionIndex(float animationTime);
@@ -42,9 +42,9 @@ namespace odfaeg {
                 int getScaleIndex(float animationTime);
             private :
                 float getScaleFactor(float lastTimeStamp, float nextTimeStamp, float animationTime);
-                glm::mat4 interpolatePosition(float animationTime);
-                glm::mat4 interpolateRotation(float animationTime);
-                glm::mat4 interpolateScaling(float animationTime);
+                math::Matrix4f interpolatePosition(float animationTime);
+                math::Matrix4f interpolateRotation(float animationTime);
+                math::Matrix4f interpolateScaling(float animationTime);
                 std::vector<KeyPosition> m_Positions;
                 std::vector<KeyRotation> m_Rotations;
                 std::vector<KeyScale> m_Scales;
@@ -52,7 +52,7 @@ namespace odfaeg {
                 int m_NumRotations;
                 int m_NumScalings;
 
-                glm::mat4 m_LocalTransform;
+                math::Matrix4f m_LocalTransform;
                 std::string m_Name;
                 int m_ID;
             };

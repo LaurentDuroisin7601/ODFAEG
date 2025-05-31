@@ -115,7 +115,7 @@ namespace odfaeg {
                     {
                         Entity::BoneInfo newBoneInfo;
                         newBoneInfo.id = emesh->getBoneCount();
-                        newBoneInfo.offset = AssimpHelpers::convertMatrixToGLMFormat(mesh->mBones[boneIndex]->mOffsetMatrix);
+                        newBoneInfo.offset = AssimpHelpers::convertAssimpToODFAEGMatrix(mesh->mBones[boneIndex]->mOffsetMatrix);
                         emesh->getBoneInfoMap()[boneName] = newBoneInfo;
                         boneID = emesh->getBoneCount();
                         emesh->getBoneCount()++;

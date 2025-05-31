@@ -368,8 +368,8 @@ namespace odfaeg {
         void Entity::decreaseNbEntities() {
             factory.decreaseNbEntities();
         }
-        std::vector<glm::mat4> Entity::getFinalBoneMatrices() {
-            return std::vector<glm::mat4>();
+        std::vector<math::Matrix4f> Entity::getFinalBoneMatrices() {
+            return std::vector<math::Matrix4f>();
         }
         void Entity::updateAnimation(float dt) {
         }

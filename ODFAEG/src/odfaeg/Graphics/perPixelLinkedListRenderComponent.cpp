@@ -3539,9 +3539,9 @@ namespace odfaeg {
                     ModelData modelData;
                     modelData.worldMat = tm.getMatrix().transpose();
 
-                    std::vector<glm::mat4> finalBoneMatrices = m_normals[i].getFinalBoneMatrices();
+                    std::vector<math::Matrix4f> finalBoneMatrices = m_normals[i].getFinalBoneMatrices();
                     for (unsigned int b = 0; b < MAX_BONES && b < finalBoneMatrices.size(); b++) {
-                        modelData.finalBoneMatrices[b] = finalBoneMatrices[b];
+                        modelData.finalBoneMatrices[b] = finalBoneMatrices[b].transpose();
                     }
 
                     matrices[p].push_back(modelData);
@@ -3571,10 +3571,10 @@ namespace odfaeg {
                         tm[j]->update();
                         ModelData modelData;
                         modelData.worldMat = tm[j]->getMatrix().transpose();
-                        std::vector<glm::mat4> finalBoneMatrices = m_instances[i].getFinalBoneMatrices();
+                        std::vector<math::Matrix4f> finalBoneMatrices = m_instances[i].getFinalBoneMatrices();
                         for (unsigned int m = 0, b = MAX_BONES*j; b < j*MAX_BONES+MAX_BONES && b < finalBoneMatrices.size(); b++, m++) {
 
-                            modelData.finalBoneMatrices[m] = finalBoneMatrices[b];
+                            modelData.finalBoneMatrices[m] = finalBoneMatrices[b].transpose();
                         }
                         matrices[p].push_back(modelData);
                     }

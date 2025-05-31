@@ -9,7 +9,7 @@ namespace odfaeg {
             public :
                 struct AssimpNodeData
                 {
-                    glm::mat4 transformation;
+                    math::Matrix4f transformation;
                     std::string name;
                     int childrenCount;
                     std::vector<AssimpNodeData> children;

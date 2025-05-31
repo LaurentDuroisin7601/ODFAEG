@@ -72,7 +72,7 @@ namespace odfaeg {
                 assert(src);
 
                 dest.name = src->mName.data;
-                dest.transformation = AssimpHelpers::convertMatrixToGLMFormat(src->mTransformation);
+                dest.transformation = AssimpHelpers::convertAssimpToODFAEGMatrix(src->mTransformation);
                 dest.childrenCount = src->mNumChildren;
 
                 for (int i = 0; i < src->mNumChildren; i++)
