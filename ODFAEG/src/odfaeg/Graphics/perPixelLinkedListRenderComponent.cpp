@@ -2761,7 +2761,7 @@ namespace odfaeg {
                                                                     totalPosition = vec4(position, 1.f);
                                                                 }
                                                                 uint textureIndex =  materialData.textureIndex;
-                                                                gl_Position = projectionMatrix * viewMatrix * modelData.modelMatrix * vec4((totalPosition.x - xOff), (totalPosition.y + yOff), totalPosition.z, 1.f);
+                                                                gl_Position = projectionMatrix * viewMatrix * modelData.modelMatrix * vec4((totalPosition.x - xOff), (totalPosition.y + yOff), totalPosition.z, totalPosition.w);
                                                                 fTexCoords = (textureIndex != 0) ? (textureMatrix[textureIndex-1] * vec4(texCoords, 1.f, 1.f)).xy : texCoords;
                                                                 frontColor = color;
                                                                 texIndex = textureIndex;

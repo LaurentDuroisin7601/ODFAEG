@@ -120,7 +120,7 @@ void MyAppli::onInit() {
     Entity* animator = factory.make_entity<g3d::Animator>(danceAnimation, factory);
     animator->move(Vec3f(0, 0, 20));
     animator->setScale(Vec3f(5, 5, 5));
-    //animator->setDrawMode(Entity::INSTANCED);
+    animator->setDrawMode(Entity::INSTANCED);
 
     float y, z;
     model->move(Vec3f(0, 0, 10));
@@ -144,7 +144,7 @@ void MyAppli::onInit() {
     model->setShadowCenter(Vec3f(0, 0, -5));
     isOnHeightMap = heightmap->getHeight(Vec2f(animator->getPosition().x, animator->getPosition().z), z);
     //std::cout<<"animator size : "<<animator->getSize()<<std::endl;
-    animator->move(Vec3f(0, z+animator->getSize().y, 0));
+    animator->move(Vec3f(0, z, 0));
     getWorld()->addEntity(animator);
 
     //std::cout<<model->getPosition()<<model->getCenter()<<std::endl;
