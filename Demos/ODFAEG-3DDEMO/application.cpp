@@ -119,11 +119,14 @@ void MyAppli::onInit() {
     g3d::Animation* danceAnimation = new g3d::Animation("tilesets/vampire/dancing_vampire.dae", animatedModel);
     Entity* animator = factory.make_entity<g3d::Animator>(danceAnimation, factory);
     animator->move(Vec3f(0, 0, 20));
-
+    //animator->setScale(Vec3f(0.1f, 0.1f, 0.1f));
     animator->setDrawMode(Entity::INSTANCED);
 
     float y, z;
     model->move(Vec3f(0, 0, 10));
+    //model->setScale(Vec3f(2.f, 2.f, 2.f));
+
+    //animator->scale(Vec3f(0.1f, 0.1f, 0.1f));
     isOnHeightMap = heightmap->getHeight(Vec2f(model->getPosition().x, model->getPosition().z), y);
     float y2;
     isOnHeightMap = heightmap->getHeight(Vec2f(model->getPosition().x, model->getPosition().z - 5), y2);
