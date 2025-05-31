@@ -16,6 +16,7 @@ namespace odfaeg {
                     float timeStamp = channel->mPositionKeys[positionIndex].mTime;
                     KeyPosition data;
                     data.position = convertAssimpToODFAEGVec4(aiPosition);
+
                     data.timeStamp = timeStamp;
                     m_Positions.push_back(data);
                 }
@@ -132,13 +133,15 @@ namespace odfaeg {
 
                 int p0Index = getPositionIndex(animationTime);
                 int p1Index = p0Index + 1;
+
                 float scaleFactor = getScaleFactor(m_Positions[p0Index].timeStamp,
                     m_Positions[p1Index].timeStamp, animationTime);
                 math::Vec3f finalPosition = m_Positions[p0Index].position.mix(m_Positions[p1Index].position, scaleFactor);
 
+
                 TransformMatrix tm;
                 tm.setTranslation(finalPosition);
-                //std::cout<<"transform : "<<tm.getMatrix()<<std::endl;
+
                 return tm.getMatrix();
             }
 
