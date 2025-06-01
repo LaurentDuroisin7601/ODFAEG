@@ -118,7 +118,7 @@ void MyAppli::onInit() {
     animatedModel = loader.loadModel("tilesets/vampire/dancing_vampire.dae", factory);
     g3d::Animation* danceAnimation = new g3d::Animation("tilesets/vampire/dancing_vampire.dae", animatedModel);
     Entity* animator = factory.make_entity<g3d::Animator>(danceAnimation, factory);
-    animator->move(Vec3f(0, -85, 20));
+    animator->move(Vec3f(-100, -85, 0));
     animator->setScale(Vec3f(0.1f, 0.1f, 0.1f));
     //animator->setRotation(90);
     animator->setDrawMode(Entity::INSTANCED);
