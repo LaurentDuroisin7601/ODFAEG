@@ -18,6 +18,7 @@ namespace odfaeg {
 
             void Animator::updateAnimation(float dt)
             {
+                //std::cout<<"update anim"<<std::endl;
                 m_DeltaTime = dt;
                 if (m_CurrentAnimation)
                 {
@@ -53,6 +54,7 @@ namespace odfaeg {
                 {
                     int index = boneInfoMap[nodeName].id;
                     math::Matrix4f offset = boneInfoMap[nodeName].offset;
+                    std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                     m_FinalBoneMatrices[index] = globalTransformation * offset;
                     //std::cout<<"final bone matrix : "<<m_FinalBoneMatrices[index]<<std::endl;
                     //system("PAUSE");

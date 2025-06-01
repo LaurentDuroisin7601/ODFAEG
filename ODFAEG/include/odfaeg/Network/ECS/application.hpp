@@ -15,7 +15,7 @@
 #include "../network.h"
 
 #include <thread>
-#include <mutex>
+
 /**
   *\namespace odfaeg
   * the namespace of the Opensource Development Framework Adapted for Every Games.
@@ -361,7 +361,7 @@ namespace odfaeg {
                 bool eventContextActivated;
                 static sf::Clock timeClk;
                 /*std::thread rendering_thread;
-                std::recursive_mutex rec_mutex;*/
+                std::recursive_rec_mutex rec_rec_mutex;*/
                 graphic::ecs::World world;
                 unsigned int nbEntities, nbEntitiesTypes, nbComponents, nbMaterials;
                 std::vector<graphic::Material*> materials;
@@ -717,7 +717,7 @@ namespace odfaeg {
                 bool eventContextActivated;
                 static sf::Clock timeClk;
                 /*std::thread rendering_thread;
-                std::recursive_mutex rec_mutex;*/
+                std::recursive_rec_mutex rec_rec_mutex;*/
                 graphic::ecs::World world;
                 unsigned int nbEntities, nbEntitiesTypes, nbComponents, nbMaterials;
                 std::vector<graphic::Material*> materials;

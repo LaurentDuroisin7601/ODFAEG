@@ -31,6 +31,8 @@
 #define ODFAEG_VERSION_MAJOR 1
 #define ODFAEG_VERSION_MINOR 0
 #define MAX_BONES 100
+#include <mutex>
+static std::recursive_mutex rec_mutex;
 
 ////////////////////////////////////////////////////////////
 // Identify the operating system

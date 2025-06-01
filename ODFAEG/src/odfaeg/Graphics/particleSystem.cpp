@@ -306,6 +306,7 @@ namespace odfaeg
                     mVertices.append(vertex);
                 }
                 #endif // VULKAN
+                std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                 const_cast<ParticleSystem*>(this)->getFace(0)->setVertexArray(mVertices);
                 tm.reset3D();
             }

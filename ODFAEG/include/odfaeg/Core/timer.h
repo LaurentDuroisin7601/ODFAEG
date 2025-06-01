@@ -2,6 +2,7 @@
 #define TIMER
 #include "export.hpp"
 #include <SFML/System.hpp>
+#include <thread>
 /**
  *\namespace odfaeg
  * the namespace of the Opensource Development Framework Adapted for Every Games.
@@ -19,6 +20,7 @@ namespace odfaeg {
         */
         class ODFAEG_CORE_API Timer {
         public :
+            Timer();
             /**
             *  \fn setInterval(sf::Time interval)
             *  \brief set an interval of time.
@@ -26,9 +28,10 @@ namespace odfaeg {
             */
             void setInterval(sf::Time interval);
             /** \fn void run()
-            *   \brief lock the mutex and updates the scene at each time interval.
+            *   \brief lock the rec_mutex and updates the scene at each time interval.
             */
             void update();
+            void stop();
             /** \fn virtual void onUpdate() = 0;
             *   \brief the function to redefine when updating the scene.
             */
@@ -40,6 +43,8 @@ namespace odfaeg {
             sf::Clock clock; /**> A clock use to measure the time elapsed since the last update*/
             sf::Time interval; /**> The time interval between two updates.*/
             std::string name;
+            std::thread m_thread;
+            bool running;
         };
     }
 }

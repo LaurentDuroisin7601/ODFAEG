@@ -49,7 +49,7 @@ namespace odfaeg {
                 static unsigned int nbContexts;
                 static IContext* sharedContext;
                 static sf::ThreadLocalPtr<odfaeg::window::ContextImpl> current_ContextImpl;
-                static sf::Mutex mutex;
+                static sf::Mutex rec_mutex;
                 // This structure contains all the state necessary to
                 // track TransientContext usage
                 // This per-thread variable tracks if and how a transient
@@ -72,7 +72,7 @@ namespace odfaeg {
                         }
                         else if (!current_ContextImpl)
                         {
-                            sharedContextLock = new sf::Lock(mutex);
+                            sharedContextLock = new sf::Lock(rec_mutex);
                             useSharedContext = true;
                             sharedContext->setActive(true);
                         }

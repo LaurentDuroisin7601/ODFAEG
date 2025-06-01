@@ -10,8 +10,8 @@ namespace odfaeg {
         ////////////////////////////////////////////////////////////
         ::Display* Display::openDisplay()
         {
-            Mutex mutex;
-            Lock lock(mutex);
+            Mutex rec_mutex;
+            Lock lock(rec_mutex);
 
             if (referenceCount == 0)
             {
@@ -34,8 +34,8 @@ namespace odfaeg {
         ////////////////////////////////////////////////////////////
         void Display::closeDisplay(::Display* display)
         {
-            Mutex mutex;
-            Lock lock(mutex);
+            Mutex rec_mutex;
+            Lock lock(rec_mutex);
 
             assert(display == sharedDisplay);
 

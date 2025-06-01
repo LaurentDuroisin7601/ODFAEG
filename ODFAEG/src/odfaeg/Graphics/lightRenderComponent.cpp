@@ -21,6 +21,7 @@ namespace odfaeg {
                     expression(expression),
                     quad(math::Vec3f(window.getView().getSize().x, window.getView().getSize().y, window.getSize().y * 0.5f)) {
                     update = false;
+                    datasReady = false;
                     quad.move(math::Vec3f(-window.getView().getSize().x * 0.5f, -window.getView().getSize().y * 0.5f, 0));
                     sf::Vector3i resolution ((int) window.getSize().x, (int) window.getSize().y, window.getView().getSize().z);
                     //settings.depthBits = 24;
@@ -787,13 +788,18 @@ namespace odfaeg {
         }
         bool LightRenderComponent::loadEntitiesOnComponent(std::vector<Entity*> vEntities)
         {
-            batcher.clear();
-            normalBatcher.clear();
-            lightBatcher.clear();
+            {
+                std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                datasReady = false;
+                batcher.clear();
+                normalBatcher.clear();
+                lightBatcher.clear();
+            }
+
             for (unsigned int i = 0; i < vEntities.size(); i++) {
 
                 if (vEntities[i] != nullptr && vEntities[i]->isLeaf()) {
-
+                    std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                     if (vEntities[i]->isLight()) {
                         for (unsigned int j = 0; j <  vEntities[i]->getNbFaces(); j++) {
                             lightBatcher.addFace(vEntities[i]->getFace(j));
@@ -808,11 +814,11 @@ namespace odfaeg {
                     }
                 }
             }
-            m_instances = batcher.getInstances();
-            m_normals = normalBatcher.getInstances();
-            m_light_instances = lightBatcher.getInstances();
+
             visibleEntities = vEntities;
             update = true;
+            std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+            datasReady = true;
             return true;
         }
         void LightRenderComponent::setView(View view){
@@ -1301,6 +1307,17 @@ namespace odfaeg {
             math::Vec3f size (viewArea.getWidth(), viewArea.getHeight(), 0);
 
             if (lightMap.getSettings().versionMajor >= 3 && lightMap.getSettings().versionMinor >= 3) {
+
+                   {
+                       std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                       if (datasReady) {
+                           datasReady = false;
+                           m_instances = batcher.getInstances();
+                           m_normals = normalBatcher.getInstances();
+                           m_light_instances = lightBatcher.getInstances();
+                       }
+
+                   }
                     //glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo));
                     if (!view.isOrtho())
                         view.setPerspective(80, view.getViewport().getSize().x / view.getViewport().getSize().y, 0.1, view.getViewport().getSize().z);

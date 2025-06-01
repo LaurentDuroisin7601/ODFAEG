@@ -69,7 +69,7 @@ namespace odfaeg {
         }
         bool Stream::onGetData(Chunk& data)
         {
-            Lock lock(m_mutex);
+            Lock lock(m_rec_mutex);
             if (m_file == nullptr) {
                 // number of samples to stream every time the function is called;
                 // in a more robust implementation, it would rather be a fixed

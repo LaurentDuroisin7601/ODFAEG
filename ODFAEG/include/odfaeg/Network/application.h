@@ -16,7 +16,7 @@
 #include "../../../include/odfaeg/Window/iEvent.hpp"
 #include "../Core/resourceCache.h"
 #include <thread>
-#include <mutex>
+
 
 /**
   *\namespace odfaeg
@@ -361,7 +361,7 @@ namespace odfaeg {
             bool eventContextActivated;
             static sf::Clock timeClk;
             /*std::thread rendering_thread;
-            std::recursive_mutex rec_mutex;*/
+            std::recursive_rec_mutex rec_rec_mutex;*/
             graphic::World world;
             unsigned int nbEntities, nbEntitiesTypes, nbComponents, nbMaterials;
             std::vector<graphic::Material*> materials;
@@ -500,6 +500,7 @@ namespace odfaeg {
             */
             void stop() {
                 running = false;
+
                 //rendering_thread.join();
                 for(unsigned int i = 0; i < windows.size(); i++)
                     windows[i].first->close();
@@ -577,7 +578,7 @@ namespace odfaeg {
                         }
                     }
                 }
-                world.updateTimers();
+                //world.updateTimers();
             }
             /**
             * \fn void onLoad()
@@ -710,7 +711,7 @@ namespace odfaeg {
             bool eventContextActivated;
             static sf::Clock timeClk;
             /*std::thread rendering_thread;
-            std::recursive_mutex rec_mutex;*/
+            std::recursive_rec_mutex rec_rec_mutex;*/
             graphic::World world;
             unsigned int nbEntities, nbEntitiesTypes, nbComponents, nbMaterials;
             std::vector<graphic::Material*> materials;

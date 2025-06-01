@@ -1,7 +1,6 @@
 #ifndef ODFAEG_ENTITY_SYSTEM_HPP
 #define ODFAEG_ENTITY_SYSTEM_HPP
 #include <condition_variable>
-#include <mutex>
 #include <thread>
 #include "export.hpp"
 #include <chrono>
@@ -21,13 +20,16 @@ namespace odfaeg {
         */
         class ODFAEG_CORE_API EntitySystem {
         public :
+            EntitySystem();
             /**
             *\fn void update()
             *\brief function called when we need to update the entities, this function block the current thread until it's finished.
             */
+            void needToUpdate();
             void update ();
             void setName(std::string name);
             std::string getName();
+            void stop();
             /**
             *\fn void onUpdate()
             *\brief function to refefines to updates the entities.
@@ -36,6 +38,8 @@ namespace odfaeg {
             virtual ~EntitySystem();
         private:
             std::string name;
+            bool m_needToUpdate, running;
+            std::thread m_thread;
         };
     }
 }

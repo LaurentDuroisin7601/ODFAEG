@@ -86,7 +86,7 @@ namespace odfaeg {
             sf::Time m_duration; /**> the duration of the stream.*/
             std::vector<sf::Int16> m_samples; /**>the samples.*/
             std::size_t m_currentSample; /**>The current sample which'll be read.*/
-            sf::Mutex m_mutex; /**>Mutex to protect samples data because sounds are played with a thread.*/
+            sf::Mutex m_rec_mutex; /**>Mutex to protect samples data because sounds are played with a thread.*/
         };
     }
 }

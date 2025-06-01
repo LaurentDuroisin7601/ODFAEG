@@ -111,7 +111,7 @@ namespace odfaeg {
                 Shader buildAlphaBufferGenerator, debugShader;
                 View view; /**> the view of the component.*/
                 std::string expression;
-                bool update;
+                bool update, datasReady;
                 unsigned int  ubo, lightDepthTex, alphaTex, depthTex, clearBuf, clearBuf2, clearBuf3, clearBuf4, vboIndirect, frameBufferTex, modelDataBuffer, materialDataBuffer;
                 std::array<VertexBuffer ,Batcher::nbPrimitiveTypes> vbBindlessTex;
                 VertexBuffer vb;

@@ -3,7 +3,7 @@
 #include <SFML/Network.hpp>
 #include "../Core/utilities.h"
 #include "export.hpp"
-#include <mutex>
+
 #include <condition_variable>
 /**
   *\namespace odfaeg
@@ -162,7 +162,7 @@ namespace odfaeg {
                 sf::Clock pingClock; /**> the clock which measure pings.*/
                 std::condition_variable g_signal; /**> the condition variable used to wait until the remote udp port
                 * is given before sending a message.*/
-                std::mutex g_lock_send; /**> the mutex used to lock the condition variable on.*/
+                //std::rec_mutex g_lock_send; /**> the rec_mutex used to lock the condition variable on.*/
                 sf::Int64 lastSrvTime;
                 sf::Int64 clientTime;
                 sf::Clock elapsedTime;

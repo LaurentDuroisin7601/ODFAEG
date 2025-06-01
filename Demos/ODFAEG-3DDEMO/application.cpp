@@ -118,7 +118,7 @@ void MyAppli::onInit() {
     animatedModel = loader.loadModel("tilesets/vampire/dancing_vampire.dae", factory);
     g3d::Animation* danceAnimation = new g3d::Animation("tilesets/vampire/dancing_vampire.dae", animatedModel);
     Entity* animator = factory.make_entity<g3d::Animator>(danceAnimation, factory);
-    animator->move(Vec3f(-100, -75, 0));
+    animator->move(Vec3f(-100, -100, 0));
     animator->setScale(Vec3f(0.1f, 0.1f, 0.1f));
     //animator->setRotation(90);
     animator->setDrawMode(Entity::INSTANCED);
@@ -203,7 +203,8 @@ void MyAppli::onInit() {
     animUpdater = new AnimUpdater();
     animUpdater->addBoneAnim(animator);
     getWorld()->addTimer(animUpdater);
-    getWorld()->update();
+    eu->needToUpdate();
+    //getWorld()->update();
 }
 void MyAppli::onRender(RenderComponentManager* frcm) {
     //getWorld()->drawOnComponents("E_CUBE", 0);
@@ -244,6 +245,8 @@ void MyAppli::onUpdate (RenderWindow* window, IEvent& event) {
         if (event.type == IEvent::WINDOW_EVENT && event.window.type == IEvent::WINDOW_EVENT_CLOSED)
         {
             stop();
+            animUpdater->stop();
+            eu->stop();
         }
         if (event.type == IEvent::WINDOW_EVENT && event.window.type == IEvent::WINDOW_EVENT_RESIZED)
         {
@@ -265,7 +268,7 @@ void MyAppli::onUpdate (RenderWindow* window, IEvent& event) {
             float phi = view.getPhi() - relX;
             view.rotate(teta, phi);
             billboard->setView(view);
-            getWorld()->update();
+
         } /*else if (event.type == sf::Event::MouseWheelMoved) {
             if (event.mouseWheel.delta > 0) {
                 verticalMotionActive = true;
@@ -373,7 +376,8 @@ void MyAppli::onExec() {
         getRenderWindow().setView(view);*/
 
     }
-    getWorld()->update();
+    eu->needToUpdate();
+    //getWorld()->update();
     /*ps->update(clock.getElapsedTime());
     animUpdater->update();*/
     /*if (clock2.getElapsedTime() > timeBeforeStoppingVerticalMotion) {

@@ -19,6 +19,7 @@ namespace odfaeg {
             quad(math::Vec3f(window.getView().getSize().x, window.getView().getSize().y, window.getSize().y * 0.5f)),
             expression(expression) {
             update = false;
+            datasReady = false;
             quad.move(math::Vec3f(-window.getView().getSize().x * 0.5f, -window.getView().getSize().y * 0.5f, 0));
             sf::Vector3i resolution ((int) window.getSize().x, (int) window.getSize().y, window.getView().getSize().z);
             //settings.depthBits = 24;
@@ -1080,6 +1081,22 @@ namespace odfaeg {
             void ShadowRenderComponent::drawNextFrame() {
                 //glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo));
 
+                {
+                    std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                    if (datasReady) {
+                        datasReady = false;
+                        m_instances = batcher.getInstances();
+                        m_normals = normalBatcher.getInstances();
+                        m_shadow_instances = shadowBatcher.getInstances();
+                        m_shadow_normals = normalShadowBatcher.getInstances();
+                        m_instancesIndexed = batcherIndexed.getInstances();
+                        m_shadow_instances_indexed = shadowBatcherIndexed.getInstances();
+                        m_normalsIndexed = normalBatcherIndexed.getInstances();
+                        m_shadow_normalsIndexed = normalShadowBatcherIndexed.getInstances();
+                        m_stencil_buffer = normalStencilBuffer.getInstances();
+                    }
+                }
+
                 math::Vec3f centerLight = g2d::AmbientLight::getAmbientLight().getLightCenter();
 
                 View lightView = View(view.getSize().x, view.getSize().y, 0, g2d::AmbientLight::getAmbientLight().getHeight());
@@ -1193,19 +1210,26 @@ namespace odfaeg {
             }
             bool ShadowRenderComponent::loadEntitiesOnComponent(std::vector<Entity*> vEntities)
             {
+                {
+                    std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                    datasReady = false;
+                    batcher.clear();
+                    normalBatcher.clear();
+                    shadowBatcher.clear();
+                    normalShadowBatcher.clear();
+                    batcherIndexed.clear();
+                    shadowBatcherIndexed.clear();
+                    normalBatcherIndexed.clear();
+                    normalShadowBatcherIndexed.clear();
+                    normalStencilBuffer.clear();
 
-                batcher.clear();
-                normalBatcher.clear();
-                shadowBatcher.clear();
-                normalShadowBatcher.clear();
-                batcherIndexed.clear();
-                shadowBatcherIndexed.clear();
-                normalBatcherIndexed.clear();
-                normalShadowBatcherIndexed.clear();
-                normalStencilBuffer.clear();
+                }
+
+
 
                 for (unsigned int i = 0; i < vEntities.size(); i++) {
                     if ( vEntities[i] != nullptr && vEntities[i]->isLeaf()) {
+                        std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                         Entity* entity = vEntities[i]->getRootEntity();
                         math::Vec3f shadowOrigin, shadowCenter, shadowScale(1.f, 1.f, 1.f), shadowRotationAxis, shadowTranslation;
                         float shadowRotationAngle = 0;
@@ -1256,17 +1280,10 @@ namespace odfaeg {
                         }
                     }
                 }
-                m_instances = batcher.getInstances();
-                m_normals = normalBatcher.getInstances();
-                m_shadow_instances = shadowBatcher.getInstances();
-                m_shadow_normals = normalShadowBatcher.getInstances();
-                m_instancesIndexed = batcherIndexed.getInstances();
-                m_shadow_instances_indexed = shadowBatcherIndexed.getInstances();
-                m_normalsIndexed = normalBatcherIndexed.getInstances();
-                m_shadow_normalsIndexed = normalShadowBatcherIndexed.getInstances();
-                m_stencil_buffer = normalStencilBuffer.getInstances();
                 visibleEntities = vEntities;
                 update = true;
+                std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                datasReady = true;
                 return true;
             }
             void ShadowRenderComponent::clear() {

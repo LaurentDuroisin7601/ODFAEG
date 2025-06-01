@@ -10,6 +10,8 @@
 #include "sprite.h"
 #include "rectangleShape.h"
 #include "3D/skybox.hpp"
+#include <condition_variable>
+#include <mutex>
 
 namespace odfaeg {
     namespace graphic {
@@ -288,6 +290,8 @@ namespace odfaeg {
             Entity* skybox;
             sf::Clock timeClock;
             unsigned int maxModelDataSize, maxMaterialDataSize, maxVboIndirectSize;
+            bool datasReady;
+
         };
         #endif
     }

@@ -31,7 +31,7 @@ namespace odfaeg {
             */
             template <typename R, typename IR, typename B, typename IB>
             void addResourceManager(ResourceManager<R, IR>& derivedRM, const I& name) {
-                std::lock_guard<std::recursive_mutex> locker(rec_mutex);
+                std::unique_lock<std::recursive_mutex> locker(rec_mutex);
                 typename std::map<I, std::unique_ptr<ResourceManagerBase>>::iterator it = resourceManagers.find(name);
                 if (it != resourceManagers.end())
                     throw Erreur(1, "Identifiant already used!", 5);
@@ -58,7 +58,7 @@ namespace odfaeg {
             */
             template <typename R, typename IR>
             void addResourceManager (ResourceManager<R, IR>& baseRM, const I& name) {
-                std::lock_guard<std::recursive_mutex> locker(rec_mutex);
+                std::unique_lock<std::recursive_mutex> locker(rec_mutex);
                 typename std::map<I, std::unique_ptr<ResourceManagerBase>>::iterator it = resourceManagers.find(name);
                 if (it != resourceManagers.end())
                     throw Erreur(1, "Identifiant already used!", 5);
@@ -72,7 +72,7 @@ namespace odfaeg {
             */
             template <typename R, typename IR>
             ResourceManager<R, IR>& resourceManager(const I& name) {
-                std::lock_guard<std::recursive_mutex> locker(rec_mutex);
+                std::unique_lock<std::recursive_mutex> locker(rec_mutex);
                 typename std::map<I, std::unique_ptr<ResourceManagerBase>>::iterator it = resourceManagers.find(name);
                 if (it == resourceManagers.end())
                     throw Erreur (12, "Resource manager not found!", 0);

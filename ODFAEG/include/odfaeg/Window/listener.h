@@ -4,7 +4,6 @@
 #include "command.h"
 #include <thread>
 #include <map>
-#include <mutex>
 #include <condition_variable>
 #include "export.hpp"
 #include <chrono>

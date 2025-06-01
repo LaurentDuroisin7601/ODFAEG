@@ -362,7 +362,7 @@ namespace odfaeg
         template <typename... A>
         void ResourceManager<R, I>::fromFile(const std::string& path, A... args)
         {
-            std::lock_guard<std::recursive_mutex> locker(rec_mutex);
+            std::unique_lock<std::recursive_mutex> locker(rec_mutex);
             if (!exists(path)) {
                 std::unique_ptr<R> resource = std::make_unique<R>();
                 insertResource(path, std::move(resource));
@@ -372,7 +372,7 @@ namespace odfaeg
         template <typename... A, typename... RA>
         void ResourceManager<R, I>::fromFileWithAlias(const std::string& path, const I& alias, A... args, std::tuple<std::reference_wrapper<RA>...> rArgs)
         {
-            std::lock_guard<std::recursive_mutex> locker(rec_mutex);
+            std::unique_lock<std::recursive_mutex> locker(rec_mutex);
             // Create and load resource
             if (!exists(path)) {
                 std::unique_ptr<R> resource = createResourceFromTuple(rArgs, std::make_index_sequence<sizeof...(RA)>());
@@ -395,7 +395,7 @@ namespace odfaeg
         template <typename... A, typename L>
         void ResourceManager<R, I>::fromMemory(L* localisation, A... args)
         {
-            std::lock_guard<std::recursive_mutex> locker(rec_mutex);
+            std::unique_lock<std::recursive_mutex> locker(rec_mutex);
             if (!exists(conversionLongString(reinterpret_cast<unsigned long long int>(localisation)))) {
                 std::unique_ptr<R> resource = std::make_unique<R>();
                 if (!resource->loadFromMemory(localisation, args...)) {
@@ -408,7 +408,7 @@ namespace odfaeg
         template <typename... A, typename L>
         void ResourceManager<R, I>::fromMemoryWithAlias(L* localisation, const I& alias, A... args)
         {
-            std::lock_guard<std::recursive_mutex> locker(rec_mutex);
+            std::unique_lock<std::recursive_mutex> locker(rec_mutex);
             // Create and load resource
             if (!exists(conversionLongString(reinterpret_cast<unsigned long long int>(localisation)))) {
                 std::unique_ptr<R> resource = std::make_unique<R>();
@@ -429,7 +429,7 @@ namespace odfaeg
         template <typename R, typename I>
         template <typename... A>
         void ResourceManager<R, I>::fromFile (std::function<bool(R*,A...)> func, const std::string& path, A... args) {
-            std::lock_guard<std::recursive_mutex> locker(rec_mutex);
+            std::unique_lock<std::recursive_mutex> locker(rec_mutex);
             if (!exists(path)) {
                 std::unique_ptr<R> resource = std::make_unique<R>();
                 if (!func(resource, path, args...)) {
@@ -443,7 +443,7 @@ namespace odfaeg
         template <typename... A>
         void ResourceManager<R, I>::fromFileWithAlias(std::function<bool(R*, A...)> func, const std::string& path, const I& alias, A... args)
         {
-            std::lock_guard<std::recursive_mutex> locker(rec_mutex);
+            std::unique_lock<std::recursive_mutex> locker(rec_mutex);
             if (!exists(path) == nullptr) {
                 // Create and load resource
                 std::unique_ptr<R> resource = std::make_unique<R>();
@@ -464,7 +464,7 @@ namespace odfaeg
         template <typename R, typename I>
         template <typename... A, typename L>
         void ResourceManager<R, I>::fromMemory (std::function<bool(R*,A...)> func, L* localisation, A... args) {
-            std::lock_guard<std::recursive_mutex> locker(rec_mutex);
+            std::unique_lock<std::recursive_mutex> locker(rec_mutex);
             if (!exists(conversionLongString(reinterpret_cast<unsigned long long int>(localisation)))) {
                 std::unique_ptr<R> resource = std::make_unique<R>();
                 if (!func(resource, localisation, args...)) {
@@ -477,7 +477,7 @@ namespace odfaeg
         template <typename... A, typename L>
         void ResourceManager<R, I>::fromMemoryWithAlias(std::function<bool(R*, A...)> func, L* localisation, const I& alias, A... args)
         {
-            std::lock_guard<std::recursive_mutex> locker(rec_mutex);
+            std::unique_lock<std::recursive_mutex> locker(rec_mutex);
             if (!exists(conversionLongString(reinterpret_cast<unsigned long long int>(localisation)))) {
                 // Create and load resource
                 std::unique_ptr<R> resource = std::make_unique<R>();
@@ -498,7 +498,7 @@ namespace odfaeg
         template <typename R, typename I>
         bool ResourceManager<R, I>::exists(const std::string &path) const
         {
-            std::lock_guard<std::recursive_mutex> locker(rec_mutex);
+            std::unique_lock<std::recursive_mutex> locker(rec_mutex);
             typename std::vector<Resource>::const_iterator it;
             for (it = mResourceMap.begin(); it != mResourceMap.end(); it++) {
                 if (it->getPath() == path)
@@ -509,12 +509,12 @@ namespace odfaeg
         template <typename R, typename I>
         bool ResourceManager<R, I>::exists(const unsigned int id) const
         {
-            std::lock_guard<std::recursive_mutex> locker(rec_mutex);
+            std::unique_lock<std::recursive_mutex> locker(rec_mutex);
             return (id >= 0 && id < mResourceMap.size());
         }
         template <typename R, typename I>
         const unsigned int& ResourceManager<R, I>::getIdByAlias (const I &alias) const {
-            std::lock_guard<std::recursive_mutex> locker(rec_mutex);
+            std::unique_lock<std::recursive_mutex> locker(rec_mutex);
             typename std::map<I, unsigned int>::const_iterator it = mAliasMap.find(alias);
             if (it == mAliasMap.end())
                 throw Erreur(8, "Alias not found!",0);
@@ -522,7 +522,7 @@ namespace odfaeg
         }
         template <typename R, typename I>
         const unsigned int& ResourceManager<R, I>::getIdByResource (const R* resource) const {
-            std::lock_guard<std::recursive_mutex> locker(rec_mutex);
+            std::unique_lock<std::recursive_mutex> locker(rec_mutex);
             typename std::vector<Resource>::const_iterator it;
             for (it = mResourceMap.begin(); it != mResourceMap.end(); it++) {
                 if (it->getResource() == resource)
@@ -532,7 +532,7 @@ namespace odfaeg
         }
         template <typename R, typename I>
         const unsigned int& ResourceManager<R, I>::getIdByPath (const std::string &path) const {
-            std::lock_guard<std::recursive_mutex> locker(rec_mutex);
+            std::unique_lock<std::recursive_mutex> locker(rec_mutex);
             typename std::vector<Resource>::const_iterator it;
             for (it = mResourceMap.begin(); it != mResourceMap.end(); it++) {
                 if (it->getPath() == path)
@@ -543,7 +543,7 @@ namespace odfaeg
         template <typename R, typename I>
         const R* ResourceManager<R, I>::getResourceById (const unsigned int id) const
         {
-            std::lock_guard<std::recursive_mutex> locker(rec_mutex);
+            std::unique_lock<std::recursive_mutex> locker(rec_mutex);
             if(id >= mResourceMap.size())
                 throw Erreur (7, "Id not found!", 0);
             return mResourceMap[id].getResource();
@@ -551,14 +551,14 @@ namespace odfaeg
         template <typename R, typename I>
         const R* ResourceManager<R, I>::getResourceByAlias(const I &alias) const
         {
-            std::lock_guard<std::recursive_mutex> locker(rec_mutex);
+            std::unique_lock<std::recursive_mutex> locker(rec_mutex);
             int id = getIdByAlias(alias);
             return getResourceById(id);
         }
         template <typename R, typename I>
         const R* ResourceManager<R, I>::getResourceByPath(const std::string &path) const
         {
-            std::lock_guard<std::recursive_mutex> locker(rec_mutex);
+            std::unique_lock<std::recursive_mutex> locker(rec_mutex);
             typename std::vector<Resource>::const_iterator it;
             for (it = mResourceMap.begin(); it != mResourceMap.end(); it++) {
                 if (it->getPath() == path)
@@ -568,7 +568,7 @@ namespace odfaeg
         }
         template <typename R, typename I>
         std::string ResourceManager<R, I>::getPathById (const unsigned int id) const {
-            std::lock_guard<std::recursive_mutex> locker(rec_mutex);
+            std::unique_lock<std::recursive_mutex> locker(rec_mutex);
             typename std::vector<Resource>::iterator it;
             R* resource = getResourceById(id);
             if (resource != nullptr)
@@ -577,14 +577,14 @@ namespace odfaeg
         }
         template <typename R, typename I>
         std::string ResourceManager<R, I>::getPathByAlias (const I &alias) const {
-            std::lock_guard<std::recursive_mutex> locker(rec_mutex);
+            std::unique_lock<std::recursive_mutex> locker(rec_mutex);
             unsigned int id = getIdByAlias(alias);
             R* resource = getResourceById();
             return resource->getPath();
         }
         template <typename R, typename I>
         std::string ResourceManager<R, I>::getPathByResource (const R* resource) const {
-            std::lock_guard<std::recursive_mutex> locker(rec_mutex);
+            std::unique_lock<std::recursive_mutex> locker(rec_mutex);
             typename std::vector<Resource>::const_iterator it;
             for (it = mResourceMap.begin(); it != mResourceMap.end(); it++)
                 if (it->getResource() == resource)
@@ -604,7 +604,7 @@ namespace odfaeg
         }
         template <typename R, typename I>
         std::vector<std::string> ResourceManager<R, I>::getPaths () {
-            std::lock_guard<std::recursive_mutex> locker(rec_mutex);
+            std::unique_lock<std::recursive_mutex> locker(rec_mutex);
             std::vector<std::string> paths;
             typename std::vector<Resource>::iterator it;
             for (it = mResourceMap.begin(); it != mResourceMap.end(); it++) {
@@ -631,25 +631,25 @@ namespace odfaeg
         }
         template <typename R, typename I>
         void ResourceManager<R, I>::deleteResourceById(const unsigned int id) {
-            std::lock_guard<std::recursive_mutex> locker(rec_mutex);
+            std::unique_lock<std::recursive_mutex> locker(rec_mutex);
             R* resource = const_cast<R*>(getResourceById(id));
             deleteResource(resource);
         }
         template <typename R, typename I>
         void ResourceManager<R, I>::deleteResourceByPath (const std::string &path) {
-            std::lock_guard<std::recursive_mutex> locker(rec_mutex);
+            std::unique_lock<std::recursive_mutex> locker(rec_mutex);
             R* resource = const_cast<R*>(getResourceByPath(path));
             deleteResource(resource);
         }
         template <typename R, typename I>
         void ResourceManager<R, I>::deleteResourceByAlias (const I &alias) {
-            std::lock_guard<std::recursive_mutex> locker(rec_mutex);
+            std::unique_lock<std::recursive_mutex> locker(rec_mutex);
             R* resource = const_cast<R*> (getResourceByAlias(alias));
             deleteResource(resource);
         }
         template <typename R, typename I>
         void ResourceManager<R, I>::deleteResource(R* resource) {
-            std::lock_guard<std::recursive_mutex> locker(rec_mutex);
+            std::unique_lock<std::recursive_mutex> locker(rec_mutex);
             typename std::vector<Resource>::iterator it;
             for (it = mResourceMap.begin(); it != mResourceMap.end();) {
                 if (it->getResource() != nullptr && it->getResource() == resource) {
@@ -670,7 +670,7 @@ namespace odfaeg
         }
         template <typename R, typename I>
         void ResourceManager<R, I>::deleteAll() {
-            std::lock_guard<std::recursive_mutex> locker(rec_mutex);
+            std::unique_lock<std::recursive_mutex> locker(rec_mutex);
             typename std::vector<Resource>::iterator it;
             for (it = mResourceMap.begin(); it != mResourceMap.end();) {
                 if (it->getResource() != nullptr) {

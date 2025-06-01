@@ -60,7 +60,7 @@ namespace odfaeg {
         unsigned int ContextImpl::nbContexts = 0;
         unsigned int ContextImpl::resourceCount = 0;
         sf::Uint64 ContextImpl::id = 1;
-        sf::Mutex ContextImpl::mutex;
+        sf::Mutex ContextImpl::rec_mutex;
         sf::ThreadLocalPtr<ContextImpl> ContextImpl::current_ContextImpl(nullptr);
         //sf::ThreadLocalPtr<ContextImpl::TransientContext> ContextImpl::transientContext(nullptr);
         IContext* ContextImpl::sharedContext = nullptr;
@@ -86,7 +86,7 @@ namespace odfaeg {
         }
         void ContextImpl::initResource() {
             // Protect from concurrent access
-            sf::Lock lock(mutex);
+            sf::Lock lock(rec_mutex);
             if (nbContexts == 0) {
                 sharedContext = new ContextImplType();
                 ContextSettings settings;
@@ -228,7 +228,7 @@ namespace odfaeg {
         bool ContextImpl::setActive(bool active) {
             if (active) {
                 if (this != current_ContextImpl) {
-                    Lock lock(mutex);
+                    Lock lock(rec_mutex);
                     if (ContextImplType::setActive(true)) {
                         current_ContextImpl = this;
 
@@ -293,7 +293,7 @@ namespace odfaeg {
         {
             #if !defined(ODFAEG_OPENGL_ES)
 
-                Lock lock(mutex);
+                Lock lock(rec_mutex);
 
                 return ContextImplType::getFunction(name);
 
@@ -314,7 +314,7 @@ namespace odfaeg {
        /* void ContextImpl::acquireTransientContext()
         {
             // Protect from concurrent access
-            Lock lock(mutex);
+            Lock lock(rec_mutex);
 
             // If this is the first TransientContextLock on this thread
             // construct the state object
@@ -330,7 +330,7 @@ namespace odfaeg {
         void ContextImpl::releaseTransientContext()
         {
             // Protect from concurrent access
-            Lock lock(mutex);
+            Lock lock(rec_mutex);
 
             // Make sure a matching acquireTransientContext() was called
             assert(transientContext);

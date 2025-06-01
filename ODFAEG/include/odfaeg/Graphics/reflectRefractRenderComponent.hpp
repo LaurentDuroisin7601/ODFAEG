@@ -321,6 +321,7 @@ namespace odfaeg {
             math::Vec3f dirs[6];
             math::Vec3f ups[6];
             std::vector<Entity*> rootEntities;
+            bool datasReady;
         };
         #endif
     }

@@ -387,9 +387,10 @@ namespace sorrok {
         getWorld()->addEntity(light2);
         //getView().move(d.x * 0.5f, d.y * 0.5f, 0);
         getWorld()->addEntity(caracter);
+        eu->needToUpdate();
 
         //World::computeIntersectionsWithWalls();
-        getWorld()->update();
+        //getWorld()->update();
         Action a1 (Action::EVENT_TYPE::KEY_PRESSED_ONCE, IKeyboard::Key::Z);
         Action a2 (Action::EVENT_TYPE::KEY_PRESSED_ONCE, IKeyboard::Key::Q);
         Action a3 (Action::EVENT_TYPE::KEY_PRESSED_ONCE, IKeyboard::Key::S);
@@ -480,6 +481,9 @@ namespace sorrok {
             /*eu->stop();
             au->stop();*/
             pfire.stop();
+            psu->stop();
+            au->stop();
+            eu->stop();
             std::vector<Entity*> entities = getWorld()->getRootEntities("E_BIGTILE+E_WALL+E_DECOR+E_ANIMATION");
             //std::cout<<"size : "<<entities.size()<<std::endl;
             std::ofstream ofs("FichierDeSerialisation");
@@ -570,7 +574,8 @@ namespace sorrok {
                 //World::update("EntitiesUpdater");
             }
         }
-        getWorld()->update();
+        eu->needToUpdate();
+        psu->needToUpdate();
         fpsCounter++;
         if (getClock("FPS").getElapsedTime() >= sf::seconds(1.f)) {
             std::cout<<"FPS : "<<fpsCounter<<std::endl;

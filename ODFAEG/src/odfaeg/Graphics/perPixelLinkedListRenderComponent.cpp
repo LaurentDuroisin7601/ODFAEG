@@ -2600,6 +2600,7 @@ namespace odfaeg {
             if (!(settings.versionMajor >= 4 && settings.versionMinor >= 6))
                 throw core::Erreur(53, "opengl version not supported for this renderer type");
             //std::cout<<"move quad"<<std::endl;
+            datasReady = false;
             quad.move(math::Vec3f(-window.getView().getSize().x * 0.5f, -window.getView().getSize().y * 0.5f, 0));
             maxNodes = 20 * window.getView().getSize().x * window.getView().getSize().y;
             GLint nodeSize = 5 * sizeof(GLfloat) + sizeof(GLuint);
@@ -2668,6 +2669,8 @@ namespace odfaeg {
                 vbBindlessTex[i].setPrimitiveType(static_cast<sf::PrimitiveType>(i));
             }
             skybox = nullptr;
+            /*std::unique_lock<std::recursive_mutex> lock(rec_mutex);
+            std::notify_all_at_thread_exit(cv, std::move(lock));*/
         }
         void PerPixelLinkedListRenderComponent::loadTextureIndexes() {
             compileShaders();
@@ -2751,7 +2754,6 @@ namespace odfaeg {
                                                                         totalPosition = vec4(position,1.0f);
                                                                         break;
                                                                     }
-                                                                    hasBones = true;
                                                                     vec4 localPosition = finalBonesMatrices[boneIds[i]] * vec4(position,1.0f);
                                                                     totalPosition += localPosition * weights[i];
                                                                     //vec3 localNormal = mat3(finalBonesMatrices[boneIds[i]]) * normals;
@@ -2941,6 +2943,7 @@ namespace odfaeg {
             glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0));
 
             frameBuffer.resetGLStates();
+
 
             //getWindow().resetGLStates();
 
@@ -3429,6 +3432,40 @@ namespace odfaeg {
             glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, linkedListBuffer));*/
             //std::cout<<"draw nex frame"<<std::endl;
             //basicView.setPerspective(-1, 1, -1, 1, 0, 1);
+
+
+            {
+
+                std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                /*if (!datasReady) {
+                    //std::cout<<"wait"<<std::endl;
+                    cv.wait(lock, [this] { return datasReady; });
+
+
+                }
+                datasReady = false;
+                cv.notify_all();*/
+                if(datasReady) {
+                    datasReady = false;
+
+
+
+                    //std::cout<<"data ready"<<std::endl;
+                    m_instances = batcher.getInstances();
+                    m_normals = normalBatcher.getInstances();
+                    m_instancesIndexed = batcherIndexed.getInstances();
+                    m_normalsIndexed = normalBatcherIndexed.getInstances();
+                    m_selected = selectedBatcher.getInstances();
+                    m_selectedScale = selectedScaleBatcher.getInstances();
+                    m_selectedIndexed = selectedIndexBatcher.getInstances();
+                    m_selectedScaleIndexed = selectedIndexScaleBatcher.getInstances();
+                    m_selectedInstance = selectedInstanceBatcher.getInstances();
+                    m_selectedScaleInstance = selectedInstanceScaleBatcher.getInstances();
+                    m_selectedInstanceIndexed = selectedInstanceIndexBatcher.getInstances();
+                    m_selectedScaleInstanceIndexed = selectedInstanceIndexScaleBatcher.getInstances();
+                    m_skyboxInstance = skyboxBatcher.getInstances();
+                }
+            }
             float zNear = view.getViewport().getPosition().z;
             if (!view.isOrtho())
                 view.setPerspective(80, view.getViewport().getSize().x / view.getViewport().getSize().y, 0.1f, view.getViewport().getSize().z);
@@ -3490,6 +3527,7 @@ namespace odfaeg {
             frameBuffer.drawVertexBuffer(vb, currentStates);
             glCheck(glFinish());
             frameBuffer.display();
+
             //glCheck(glMemoryBarrier(GL_ALL_BARRIER_BITS));
             /*glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, 0));
             glCheck(glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 0, 0));
@@ -3820,20 +3858,31 @@ namespace odfaeg {
             this->skybox = skybox;
         }
         bool PerPixelLinkedListRenderComponent::loadEntitiesOnComponent(std::vector<Entity*> vEntities) {
-            batcher.clear();
-            normalBatcher.clear();
-            batcherIndexed.clear();
-            normalBatcherIndexed.clear();
-            selectedBatcher.clear();
-            selectedScaleBatcher.clear();
-            selectedIndexBatcher.clear();
-            selectedIndexScaleBatcher.clear();
-            selectedInstanceBatcher.clear();
-            selectedInstanceScaleBatcher.clear();
-            selectedInstanceIndexBatcher.clear();
-            selectedInstanceIndexScaleBatcher.clear();
-            skyboxBatcher.clear();
-            visibleSelectedScaleEntities.clear();
+
+            {
+                std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                datasReady = false;
+
+                //if (datasReady) {
+                    //std::cout<<"wait 2 "<<std::endl;
+                    //cv.wait(lock, [this]() {return !datasReady;});
+                //}
+                //std::cout<<"data unready"<<std::endl;
+                batcher.clear();
+                normalBatcher.clear();
+                batcherIndexed.clear();
+                normalBatcherIndexed.clear();
+                selectedBatcher.clear();
+                selectedScaleBatcher.clear();
+                selectedIndexBatcher.clear();
+                selectedIndexScaleBatcher.clear();
+                selectedInstanceBatcher.clear();
+                selectedInstanceScaleBatcher.clear();
+                selectedInstanceIndexBatcher.clear();
+                selectedInstanceIndexScaleBatcher.clear();
+                skyboxBatcher.clear();
+                visibleSelectedScaleEntities.clear();
+            }
             if (skybox != nullptr) {
                 for (unsigned int i = 0; i <  skybox->getNbFaces(); i++) {
                     skyboxBatcher.addFace(skybox->getFace(i));
@@ -3848,6 +3897,7 @@ namespace odfaeg {
                         border->decreaseNbEntities();
                     }
                     for (unsigned int j = 0; j <  vEntities[i]->getNbFaces(); j++) {
+                         std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                          if (vEntities[i]->getDrawMode() == Entity::INSTANCED && !vEntities[i]->isSelected()) {
                             if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0)
                                 batcher.addFace( vEntities[i]->getFace(j));
@@ -3947,22 +3997,15 @@ namespace odfaeg {
                 }
 
             }
-            m_instances = batcher.getInstances();
-            m_normals = normalBatcher.getInstances();
-            m_instancesIndexed = batcherIndexed.getInstances();
-            m_normalsIndexed = normalBatcherIndexed.getInstances();
-            m_selected = selectedBatcher.getInstances();
-            m_selectedScale = selectedScaleBatcher.getInstances();
-            m_selectedIndexed = selectedIndexBatcher.getInstances();
-            m_selectedScaleIndexed = selectedIndexScaleBatcher.getInstances();
-            m_selectedInstance = selectedInstanceBatcher.getInstances();
-            m_selectedScaleInstance = selectedInstanceScaleBatcher.getInstances();
-            m_selectedInstanceIndexed = selectedInstanceIndexBatcher.getInstances();
-            m_selectedScaleInstanceIndexed = selectedInstanceIndexScaleBatcher.getInstances();
-            m_skyboxInstance = skyboxBatcher.getInstances();
+
             //std::cout<<"instances added"<<std::endl;
             visibleEntities = vEntities;
             update = true;
+            std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+            datasReady = true;
+
+
+
             return true;
         }
         void PerPixelLinkedListRenderComponent::pushEvent(window::IEvent event, RenderWindow& rw) {

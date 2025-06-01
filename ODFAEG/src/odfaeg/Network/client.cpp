@@ -142,13 +142,13 @@ namespace odfaeg {
         }
         void SrkClient::sendTCPPacket(Packet &packet) {
             //if (useThread)
-                //lock_guard<recursive_mutex> locker(rec_mutex);
+                //lock_guard<recursive_rec_mutex> locker(rec_rec_mutex);
             if(clientTCP.send(packet) != Socket::Done)
                 cout<<"Erreur!"<<endl;
         }
         void SrkClient::sendUDPPacket(Packet &packet) {
             //if (useThread)
-                //lock_guard<recursive_mutex> locker(rec_mutex);
+                //lock_guard<recursive_rec_mutex> locker(rec_rec_mutex);
             if(clientUDP.send(packet, srvAddress, remotePortUDP) != Socket::Done)
                 cout<<"Erreur!"<<endl;
         }

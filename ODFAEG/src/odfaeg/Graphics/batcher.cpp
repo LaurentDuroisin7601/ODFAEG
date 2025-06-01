@@ -367,6 +367,8 @@ namespace odfaeg {
                     m_transforms.push_back(&tm);
                     if (va.getEntity() != nullptr) {
                         m_entities.push_back(va.getEntity());
+                        /*std::rec_mutex rec_mutex;
+                        std::lock_guard<std::rec_mutex> lock(rec_mutex);*/
                         for (unsigned int i = 0; i < va.getEntity()->getRootEntity()->getFinalBoneMatrices().size(); i++) {
                             m_finalBoneMatrices.push_back(va.getEntity()->getRootEntity()->getFinalBoneMatrices()[i]);
                         }

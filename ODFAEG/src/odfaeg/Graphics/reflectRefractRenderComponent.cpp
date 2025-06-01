@@ -3129,6 +3129,7 @@ namespace odfaeg {
             } else {
                 squareSize = window.getView().getSize().y;
             }
+            datasReady = false;
             quad = RectangleShape(math::Vec3f(squareSize, squareSize, squareSize * 0.5f));
             quad.move(math::Vec3f(-squareSize * 0.5f, -squareSize * 0.5f, 0));
             dirs[0] = math::Vec3f(1, 0, 0);
@@ -4153,6 +4154,17 @@ namespace odfaeg {
         }
         void ReflectRefractRenderComponent::drawNextFrame() {
             if (reflectRefractTex.getSettings().versionMajor >= 4 && reflectRefractTex.getSettings().versionMinor >= 3) {
+                {
+                    std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                    if(datasReady) {
+                        datasReady = false;
+                        m_instances = batcher.getInstances();
+                        m_normals = normalBatcher.getInstances();
+                        m_reflInstances = reflBatcher.getInstances();
+                        m_reflNormals = reflNormalBatcher.getInstances();
+                        m_skyboxInstance = skyboxBatcher.getInstances();
+                    }
+                }
 
                 /*glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo));
                 glCheck(glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 0, atomicBuffer));
@@ -4323,11 +4335,16 @@ namespace odfaeg {
             this->skybox = skybox;
         }
         bool ReflectRefractRenderComponent::loadEntitiesOnComponent(std::vector<Entity*> vEntities) {
-            batcher.clear();
-            normalBatcher.clear();
-            reflBatcher.clear();
-            reflNormalBatcher.clear();
-            skyboxBatcher.clear();
+            {
+                std::lock_guard<std::recursive_mutex> lock (rec_mutex);
+                datasReady = false;
+                batcher.clear();
+                normalBatcher.clear();
+                reflBatcher.clear();
+                reflNormalBatcher.clear();
+                skyboxBatcher.clear();
+            }
+
             if (skybox != nullptr) {
                 for (unsigned int i = 0; i < skybox->getFaces().size(); i++) {
                     skyboxBatcher.addFace(skybox->getFace(i));
@@ -4336,6 +4353,7 @@ namespace odfaeg {
             for (unsigned int i = 0; i < vEntities.size(); i++) {
                 if ( vEntities[i] != nullptr && vEntities[i]->isLeaf()) {
                     for (unsigned int j = 0; j <  vEntities[i]->getNbFaces(); j++) {
+                        std::lock_guard<std::recursive_mutex> lock (rec_mutex);
                         if (vEntities[i]->getFace(j)->getMaterial().isReflectable() || vEntities[i]->getFace(j)->getMaterial().isRefractable()) {
 
                             if (vEntities[i]->getDrawMode() == Entity::INSTANCED) {
@@ -4354,13 +4372,10 @@ namespace odfaeg {
                     }
                 }
             }
-            m_instances = batcher.getInstances();
-            m_normals = normalBatcher.getInstances();
-            m_reflInstances = reflBatcher.getInstances();
-            m_reflNormals = reflNormalBatcher.getInstances();
-            m_skyboxInstance = skyboxBatcher.getInstances();
             visibleEntities = vEntities;
             update = true;
+            std::lock_guard<std::recursive_mutex> lock (rec_mutex);
+            datasReady = true;
             return true;
         }
         bool ReflectRefractRenderComponent::needToUpdate() {
