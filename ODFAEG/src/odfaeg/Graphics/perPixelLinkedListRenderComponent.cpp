@@ -2742,7 +2742,6 @@ namespace odfaeg {
                                                                     xOff = 0.025*cos(position.x*12+time*FPI)*resolution.x;
                                                                 }
                                                                 vec4 totalPosition = vec4(0.0f);
-                                                                bool hasBones = false;
                                                                 for(int i = 0 ; i < MAX_BONE_INFLUENCE ; i++)
                                                                 {
                                                                     if(boneIds[i] == -1)
@@ -2756,9 +2755,6 @@ namespace odfaeg {
                                                                     vec4 localPosition = finalBonesMatrices[boneIds[i]] * vec4(position,1.0f);
                                                                     totalPosition += localPosition * weights[i];
                                                                     //vec3 localNormal = mat3(finalBonesMatrices[boneIds[i]]) * normals;
-                                                                }
-                                                                if (!hasBones) {
-                                                                    totalPosition = vec4(1.f, 1.f, 1.f, 1.f);
                                                                 }
                                                                 uint textureIndex =  materialData.textureIndex;
                                                                 gl_Position = projectionMatrix * viewMatrix * modelData.modelMatrix * vec4((position.x - xOff), (position.y + yOff), position.z, 1.f) + totalPosition;
