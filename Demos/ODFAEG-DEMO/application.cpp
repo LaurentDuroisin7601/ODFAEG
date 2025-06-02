@@ -105,7 +105,7 @@ namespace sorrok {
         std::cout<<"Mouse inside : "<<mousePos.x<<" "<<mousePos.y<<std::endl;
     }
     void MyAppli::onLoad() {
-        std::tuple</*std::reference_wrapper<Device>*/> rArgs = std::make_tuple(/*std::ref(getDevice())*/);
+        std::tuple<std::reference_wrapper<Device>> rArgs = std::make_tuple(std::ref(getDevice()));
         TextureManager<> tm;
         tm.fromFileWithAlias("tilesets/eau.png", "WATER", rArgs);
         tm.fromFileWithAlias("tilesets/herbe.png", "GRASS", rArgs);
@@ -146,13 +146,13 @@ namespace sorrok {
         theMap->setBaseChangementMatrix(bm);
         getWorld()->addSceneManager(theMap);
         getWorld()->setCurrentSceneManager("Map test");
-        eu = new EntitiesUpdater(entityFactory, *getWorld());
+        eu = new EntitiesUpdater(entityFactory, *getWorld(), false);
         eu->setName("EntitiesUpdater");
         getWorld()->addWorker(eu);
-        au = new AnimUpdater();
+        au = new AnimUpdater(false);
         au->setInterval(sf::seconds(0.01f));
         getWorld()->addTimer(au);
-        psu = new ParticleSystemUpdater();
+        psu = new ParticleSystemUpdater(false);
         getWorld()->addWorker(psu);
         tiles.push_back(entityFactory.make_entity<Tile>(tm.getResourceByAlias("WATER"), Vec3f(0, 0, 0), Vec3f(120, 60, 0),sf::IntRect(0, 0, 100, 50), entityFactory));
         walls.resize(g2d::Wall::NB_WALL_TYPES, nullptr);
@@ -313,9 +313,9 @@ namespace sorrok {
         PerPixelLinkedListRenderComponent *frc2 = new PerPixelLinkedListRenderComponent(getRenderWindow(), 1, "E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PARTICLES", ContextSettings(0, 0, 4, 4, 6));
 
         ReflectRefractRenderComponent *rrrc = new ReflectRefractRenderComponent(getRenderWindow(), 2, "E_BIGTILE+E_WALL+E_DECOR+E_ANIMATION+E_HERO", ContextSettings(0, 0, 4, 4, 6));
-        /*frc1->createDescriptorsAndPipelines();
-        frc2->createDescriptorsAndPipelines();*/
-        ShadowRenderComponent *src = new ShadowRenderComponent(getRenderWindow(), 3, "E_WALL+E_DECOR+E_ANIMATION+E_HERO", ContextSettings(0, 0, 4, 4, 6));
+        frc1->createDescriptorsAndPipelines();
+        frc2->createDescriptorsAndPipelines();
+        /*ShadowRenderComponent *src = new ShadowRenderComponent(getRenderWindow(), 3, "E_WALL+E_DECOR+E_ANIMATION+E_HERO", ContextSettings(0, 0, 4, 4, 6));
         LightRenderComponent *lrc = new LightRenderComponent(getRenderWindow(), 4, "E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PONCTUAL_LIGHT", ContextSettings(0, 0, 4, 4, 6));
         //std::cout<<"component created"<<std::endl;
         //frc1->setVisible(false);
@@ -339,7 +339,7 @@ namespace sorrok {
         getRenderComponentManager().addComponent(frc1);
         getRenderComponentManager().addComponent(frc2);
         getRenderComponentManager().addComponent(rrrc);
-        getRenderComponentManager().addComponent(src);
+        /*getRenderComponentManager().addComponent(src);
         getRenderComponentManager().addComponent(lrc);
         /*getRenderComponentManager().addComponent(textArea);
         getRenderComponentManager().addComponent(op);*/
@@ -387,10 +387,10 @@ namespace sorrok {
         getWorld()->addEntity(light2);
         //getView().move(d.x * 0.5f, d.y * 0.5f, 0);
         getWorld()->addEntity(caracter);
-        eu->needToUpdate();
+        //eu->needToUpdate();
 
         //World::computeIntersectionsWithWalls();
-        //getWorld()->update();
+        getWorld()->update();
         Action a1 (Action::EVENT_TYPE::KEY_PRESSED_ONCE, IKeyboard::Key::Z);
         Action a2 (Action::EVENT_TYPE::KEY_PRESSED_ONCE, IKeyboard::Key::Q);
         Action a3 (Action::EVENT_TYPE::KEY_PRESSED_ONCE, IKeyboard::Key::S);
@@ -421,8 +421,8 @@ namespace sorrok {
         getWorld()->drawOnComponents("E_BIGTILE", 0);
         getWorld()->drawOnComponents("E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PARTICLES", 1);
         getWorld()->drawOnComponents("E_BIGTILE+E_WALL+E_DECOR+E_ANIMATION+E_HERO", 2);
-        getWorld()->drawOnComponents("E_WALL+E_DECOR+E_ANIMATION+E_HERO", 3);
-        getWorld()->drawOnComponents("E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PONCTUAL_LIGHT", 4);
+        /*getWorld()->drawOnComponents("E_WALL+E_DECOR+E_ANIMATION+E_HERO", 3);
+        getWorld()->drawOnComponents("E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PONCTUAL_LIGHT", 4);*/
 
     }
     void MyAppli::onDisplay(RenderWindow* window) {
@@ -481,9 +481,9 @@ namespace sorrok {
             /*eu->stop();
             au->stop();*/
             pfire.stop();
-            psu->stop();
+            /*psu->stop();
             au->stop();
-            eu->stop();
+            eu->stop();*/
             std::vector<Entity*> entities = getWorld()->getRootEntities("E_BIGTILE+E_WALL+E_DECOR+E_ANIMATION");
             //std::cout<<"size : "<<entities.size()<<std::endl;
             std::ofstream ofs("FichierDeSerialisation");
@@ -574,14 +574,16 @@ namespace sorrok {
                 //World::update("EntitiesUpdater");
             }
         }
-        eu->needToUpdate();
-        psu->needToUpdate();
+        /*eu->needToUpdate();
+        psu->needToUpdate();*/
         fpsCounter++;
         if (getClock("FPS").getElapsedTime() >= sf::seconds(1.f)) {
             std::cout<<"FPS : "<<fpsCounter<<std::endl;
             fpsCounter = 0;
             getClock("FPS").restart();
         }
+        getWorld()->update();
+        getWorld()->updateTimers();
         //ps->update(getClock("LoopTime").getElapsedTime());
     }
 

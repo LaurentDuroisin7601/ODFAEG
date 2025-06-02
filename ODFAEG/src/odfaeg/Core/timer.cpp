@@ -2,8 +2,10 @@
 #include <iostream>
 namespace odfaeg {
     namespace core {
-            Timer::Timer() : m_thread(Timer::update, this), interval(sf::seconds(0.1f)) {
-
+            Timer::Timer(bool usingThread) : interval(sf::seconds(0.1f)) {
+                if (usingThread) {
+                    m_thread = std::thread(Timer::tUpdate, this);
+                }
             }
         /**
             *  \fn setInterval(sf::Time interval)
@@ -17,6 +19,14 @@ namespace odfaeg {
             *   \brief lock the mutex and updates the scene at each time interval.
             */
             void Timer::update() {
+                //std::cout<<"update"<<std::endl;
+                sf::Time elapsedTime = clock.getElapsedTime();
+                if (elapsedTime >= interval) {
+                    onUpdate();
+                    clock.restart();
+                }
+            }
+            void Timer::tUpdate() {
                 running = true;
                 while (running) {
                     //std::cout<<"update"<<std::endl;

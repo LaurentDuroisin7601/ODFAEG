@@ -1,12 +1,18 @@
 #include "../../../include/odfaeg/Core/entitySystem.h"
 namespace odfaeg {
     namespace core {
-        EntitySystem::EntitySystem() : m_needToUpdate(false), m_thread(EntitySystem::update, this) {
+        EntitySystem::EntitySystem(bool usingThread) : m_needToUpdate(false) {
+            if (usingThread) {
+                m_thread = std::thread(EntitySystem::tUpdate, this);
+            }
         }
         void EntitySystem::needToUpdate() {
             m_needToUpdate = true;
         }
         void EntitySystem::update() {
+            onUpdate();
+        }
+        void EntitySystem::tUpdate() {
             running = true;
             while (running) {
                 if (m_needToUpdate) {

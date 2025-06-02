@@ -303,6 +303,7 @@ int main(int argc, char *argv[]) {
     barrier.subresourceRange.levelCount = 1;
     barrier.subresourceRange.layerCount = 1;
     vkCmdPipelineBarrier(rtCubeMap.getCommandBuffers()[0], VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+    rtCubeMap.beginRenderPass();
     rtCubeMap.display();
     VkBuffer ubo;
     VkDeviceMemory uboMemory;
@@ -333,6 +334,8 @@ int main(int argc, char *argv[]) {
             }
         }
         rtCubeMap.clear(sf::Color::Transparent);
+        rtCubeMap.display();
+        rtCubeMap.beginRecordCommandBuffers();
         VkClearColorValue clearColor;
         clearColor.uint32[0] = 0xffffffff;
         VkImageSubresourceRange subresRange = {};
@@ -341,14 +344,24 @@ int main(int argc, char *argv[]) {
         subresRange.layerCount = 1;
         //transitionImageLayout(headPtrTextureImage, VK_FORMAT_R32_UINT, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
         vkCmdClearColorImage(rtCubeMap.getCommandBuffers()[0], headPtrTextureImage, VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
+        VkMemoryBarrier barrier = {};
+        barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+        barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+        barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_MEMORY_READ_BIT;
+        VkImageMemoryBarrier barrier2 = {};
 
-        VkMemoryBarrier memoryBarrier;
-        memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-        memoryBarrier.pNext = VK_NULL_HANDLE;
-        memoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-        memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_MEMORY_READ_BIT;
-        vkCmdPipelineBarrier(rtCubeMap.getCommandBuffers()[0], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
+        barrier2.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        barrier2.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+        barrier2.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_MEMORY_READ_BIT;
+        barrier2.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
+        barrier2.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+        barrier2.image = headPtrTextureImage;
+        barrier2.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        barrier2.subresourceRange.levelCount = 1;
+        barrier2.subresourceRange.layerCount = 1;
+        vkCmdPipelineBarrier(rtCubeMap.getCommandBuffers()[0], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &barrier, 0, nullptr, 1, &barrier2);
         unsigned int descriptorId = rtCubeMap.getId() * Shader::getNbShaders() + linkedListShader.getId();
+        rtCubeMap.beginRenderPass();
         rtCubeMap.drawVertexBuffer(rtCubeMap.getCommandBuffers()[0], 0, vb, 0, states);
         rtCubeMap.display();
         window.clear(sf::Color::Black);

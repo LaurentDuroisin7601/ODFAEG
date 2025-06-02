@@ -22,7 +22,7 @@ namespace odfaeg {
         */
         class ODFAEG_GRAPHICS_API AnimUpdater : public core::Timer {
         public :
-            AnimUpdater(EntityManager* scene=nullptr) : Timer(), scene(scene) {}
+            AnimUpdater(bool useThread = true, EntityManager* scene=nullptr) : Timer(useThread), scene(scene) {}
             void setScene(EntityManager* scene) {
                 this->scene = scene;
             }

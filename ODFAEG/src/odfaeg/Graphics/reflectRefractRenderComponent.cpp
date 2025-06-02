@@ -224,7 +224,8 @@ namespace odfaeg {
                 barrier3.subresourceRange.levelCount = 1;
                 barrier3.subresourceRange.layerCount = 1;
                 vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier3);
-                 environmentMap.display();
+                environmentMap.beginRenderPass();
+                environmentMap.display();
 
                 RenderStates states;
                 states.shader = &sLinkedList;
@@ -483,7 +484,7 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
                     vbBindlessTex[i].setPrimitiveType(static_cast<sf::PrimitiveType>(i));
                 }
-                for (unsigned int i = 0; i < reflectRefractTex.getMaxFramesInFlight(); i++) {
+                /*for (unsigned int i = 0; i < reflectRefractTex.getMaxFramesInFlight(); i++) {
                     VkEventCreateInfo eventInfo = {};
                     eventInfo.sType = VK_STRUCTURE_TYPE_EVENT_CREATE_INFO;
                     eventInfo.pNext = NULL;
@@ -491,7 +492,7 @@ namespace odfaeg {
                     VkEvent event;
                     vkCreateEvent(vkDevice.getDevice(), &eventInfo, NULL, &event);
                     events.push_back(event);
-                }
+                }*/
                 vkCmdPushDescriptorSetKHR = (PFN_vkCmdPushDescriptorSetKHR)vkGetDeviceProcAddr(vkDevice.getDevice(), "vkCmdPushDescriptorSetKHR");
                 skybox = nullptr;
                 datasReady = false;
@@ -2009,6 +2010,8 @@ namespace odfaeg {
             }
             void ReflectRefractRenderComponent::clear() {
                 depthBuffer.clear(sf::Color::Transparent);
+                depthBuffer.display();
+                depthBuffer.beginRecordCommandBuffers();
                 std::vector<VkCommandBuffer> commandBuffers = depthBuffer.getCommandBuffers();
                 VkClearColorValue clearColor;
                 clearColor.uint32[0] = 0;
@@ -2028,8 +2031,11 @@ namespace odfaeg {
                     memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
                     vkCmdPipelineBarrier(commandBuffers[i], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
                 }
+                depthBuffer.beginRenderPass();
                 depthBuffer.display();
                 alphaBuffer.clear(sf::Color::Transparent);
+                alphaBuffer.display();
+                alphaBuffer.beginRecordCommandBuffers();
                 commandBuffers = alphaBuffer.getCommandBuffers();
                 for (unsigned int i = 0; i < commandBuffers.size(); i++) {
                     vkCmdClearColorImage(commandBuffers[i], alphaTextureImage, VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
@@ -2040,6 +2046,7 @@ namespace odfaeg {
                     memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
                     vkCmdPipelineBarrier(commandBuffers[i], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
                 }
+                alphaBuffer.beginRenderPass();
                 alphaBuffer.display();
                 reflectRefractTex.clear(sf::Color::Transparent);
                 reflectRefractTex.display();
@@ -2062,6 +2069,7 @@ namespace odfaeg {
                 if (shader == &sBuildDepthBuffer) {
                     //std::cout<<"draw on db"<<std::endl;
                     depthBuffer.beginRecordCommandBuffers();
+                    depthBuffer.beginRenderPass();
                     std::vector<VkCommandBuffer> commandBuffers = depthBuffer.getCommandBuffers();
                     unsigned int currentFrame = depthBuffer.getCurrentFrame();
                     buildDepthPC.nbLayers = GameObject::getNbLayers();
@@ -2071,12 +2079,13 @@ namespace odfaeg {
                     depthBuffer.display();
                 } else if (shader == &sBuildAlphaBuffer) {
                     alphaBuffer.beginRecordCommandBuffers();
+
                     std::vector<VkCommandBuffer> commandBuffers = alphaBuffer.getCommandBuffers();
                     unsigned int currentFrame = alphaBuffer.getCurrentFrame();
                     buildAlphaPC.nbLayers = GameObject::getNbLayers();
                     buildAlphaPC.resolution = resolution;
-                    vkCmdResetEvent(commandBuffers[currentFrame], events[currentFrame],  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
-                    vkCmdSetEvent(commandBuffers[currentFrame], events[currentFrame],  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
+                    /*vkCmdResetEvent(commandBuffers[currentFrame], events[currentFrame],  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
+                    vkCmdSetEvent(commandBuffers[currentFrame], events[currentFrame],  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);*/
                     vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 0, nullptr);
                     VkMemoryBarrier memoryBarrier;
                     memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
@@ -2087,26 +2096,33 @@ namespace odfaeg {
 
 
                     vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
+                    alphaBuffer.beginRenderPass();
                     vkCmdPushConstants(commandBuffers[currentFrame], alphaBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][alphaBuffer.getId()][depthStencilID], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectRenderingPC), &indirectRenderingPC);
                     vkCmdPushConstants(commandBuffers[currentFrame], alphaBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][alphaBuffer.getId()][depthStencilID], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(BuildAlphaPC), &buildAlphaPC);
                     alphaBuffer.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
                     alphaBuffer.display();
                 } else if (shader == &sLinkedList) {
                     environmentMap.beginRecordCommandBuffers();
+
                     std::vector<VkCommandBuffer> commandBuffers = environmentMap.getCommandBuffers();
                     unsigned int currentFrame = environmentMap.getCurrentFrame();
 
                     //vkCmdWaitEvents(commandBuffers[currentFrame], 1, &events[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
+                    environmentMap.beginRenderPass();
                     environmentMap.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
+                    environmentMap.display();
+                    environmentMap.beginRecordCommandBuffers();
                     VkMemoryBarrier memoryBarrier;
                     memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
                     memoryBarrier.pNext = VK_NULL_HANDLE;
                     memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
                     memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
                     vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
+                    environmentMap.beginRenderPass();
                     environmentMap.display();
                 } else {
                     reflectRefractTex.beginRecordCommandBuffers();
+
                     std::vector<VkCommandBuffer> commandBuffers = reflectRefractTex.getCommandBuffers();
                     unsigned int currentFrame = reflectRefractTex.getCurrentFrame();
                     buildFrameBufferPC.resolution = resolution;
@@ -2118,11 +2134,12 @@ namespace odfaeg {
                     memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
                     memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
 
-                    vkCmdWaitEvents(commandBuffers[currentFrame], 1, &events[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
+                    //vkCmdWaitEvents(commandBuffers[currentFrame], 1, &events[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
 
                     vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
                     vkCmdPushConstants(commandBuffers[currentFrame], reflectRefractTex.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][reflectRefractTex.getId()][depthStencilID], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectRenderingPC), &indirectRenderingPC);
                     vkCmdPushConstants(commandBuffers[currentFrame], reflectRefractTex.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][reflectRefractTex.getId()][depthStencilID], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(BuildFrameBufferPC), &buildFrameBufferPC);
+                    reflectRefractTex.beginRenderPass();
                     reflectRefractTex.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
                     reflectRefractTex.display();
                 }
@@ -2132,8 +2149,8 @@ namespace odfaeg {
                 Shader* shader = const_cast<Shader*>(currentStates.shader);
                 unsigned int currentFrame = environmentMap.getCurrentFrame();
                 std::vector<VkCommandBuffer> commandBuffers = environmentMap.getCommandBuffers();
-                vkCmdResetEvent(commandBuffers[currentFrame], events[currentFrame],  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
-                vkCmdSetEvent(commandBuffers[currentFrame], events[currentFrame],  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
+                /*vkCmdResetEvent(commandBuffers[currentFrame], events[currentFrame],  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
+                vkCmdSetEvent(commandBuffers[currentFrame], events[currentFrame],  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);*/
                 vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 0, nullptr);
 
 
@@ -2150,7 +2167,7 @@ namespace odfaeg {
 
 
                 //std::cout<<"ids : "<<shader->getId() * (Batcher::nbPrimitiveTypes - 1) + vb.getPrimitiveType()<<","<<environmentMap.getId()<<","<<NODEPTHNOSTENCIL<<std::endl;
-
+                environmentMap.beginRenderPass();
                 environmentMap.drawVertexBuffer(commandBuffers[currentFrame], currentFrame, vb, NODEPTHNOSTENCIL, currentStates);
                 environmentMap.display();
 
@@ -2913,6 +2930,8 @@ namespace odfaeg {
 
                                     }
                                     environmentMap.clear(sf::Color::Transparent);
+                                    environmentMap.display();
+                                    environmentMap.beginRecordCommandBuffers();
                                     VkClearColorValue clearColor;
                                     clearColor.uint32[0] = 0xffffffff;
                                     std::vector<VkCommandBuffer> commandBuffers = environmentMap.getCommandBuffers();
@@ -2932,11 +2951,12 @@ namespace odfaeg {
                                         memoryBarrier.pNext = VK_NULL_HANDLE;
                                         memoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
                                         memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_MEMORY_READ_BIT;
-                                        vkCmdResetEvent(commandBuffers[currentFrame], events[currentFrame],  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
-                                        vkCmdSetEvent(commandBuffers[currentFrame], events[currentFrame],  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
+                                        /*vkCmdResetEvent(commandBuffers[currentFrame], events[currentFrame],  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
+                                        vkCmdSetEvent(commandBuffers[currentFrame], events[currentFrame],  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);*/
                                         vkCmdPipelineBarrier(commandBuffers[i], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
                                         //transitionImageLayout(headPtrTextureImage, VK_FORMAT_R32_UINT, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL);
                                     }
+                                    environmentMap.beginRenderPass();
                                     environmentMap.display();
                                     /*vb.clear();
                                     //vb.name = "SKYBOXVB";
@@ -3067,9 +3087,9 @@ namespace odfaeg {
             ReflectRefractRenderComponent::~ReflectRefractRenderComponent() {
                 vkDestroyCommandPool(vkDevice.getDevice(), commandPool, nullptr);
 
-                for (unsigned int i = 0; i < events.size(); i++) {
+                /*for (unsigned int i = 0; i < events.size(); i++) {
                     vkDestroyEvent(vkDevice.getDevice(), events[i], nullptr);
-                }
+                }*/
 
                 vkDestroySampler(vkDevice.getDevice(), headPtrTextureSampler, nullptr);
                 vkDestroyImageView(vkDevice.getDevice(), headPtrTextureImageView, nullptr);

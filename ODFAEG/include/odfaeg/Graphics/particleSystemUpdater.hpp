@@ -21,7 +21,7 @@ namespace odfaeg {
         */
         class ODFAEG_GRAPHICS_API ParticleSystemUpdater : public core::EntitySystem {
         public :
-            ParticleSystemUpdater();
+            ParticleSystemUpdater(bool useThread = true);
             /**
             * \fn void onUpdate ()
             * \brief update all the entities which are in the current view.

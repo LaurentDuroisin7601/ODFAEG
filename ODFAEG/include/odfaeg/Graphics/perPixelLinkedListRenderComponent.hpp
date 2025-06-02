@@ -155,6 +155,7 @@ namespace odfaeg {
             std::vector<unsigned int> pipelineIds;
             //std::vector<VkEvent> events;
 
+
         };
         #else
         class ODFAEG_GRAPHICS_API PerPixelLinkedListRenderComponent : public HeavyComponent {

@@ -20,7 +20,7 @@ namespace odfaeg {
         */
         class ODFAEG_GRAPHICS_API EntitiesUpdater : public core::EntitySystem {
         public :
-            EntitiesUpdater(EntityFactory& factory, World& world) : world(world), factory(factory), EntitySystem() {}
+            EntitiesUpdater(EntityFactory& factory, World& world, bool useThread = true) : world(world), factory(factory), EntitySystem(useThread) {}
             /**
             * \fn void onUpdate ()
             * \brief update all the entities which are in the current view.

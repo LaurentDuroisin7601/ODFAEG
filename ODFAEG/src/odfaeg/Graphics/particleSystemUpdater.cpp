@@ -1,7 +1,7 @@
 #include "../../../include/odfaeg/Graphics/particleSystemUpdater.hpp"
 namespace odfaeg {
     namespace graphic {
-        ParticleSystemUpdater::ParticleSystemUpdater() : EntitySystem() {}
+        ParticleSystemUpdater::ParticleSystemUpdater(bool useThread) : EntitySystem(useThread) {}
         /**
         * \fn void onUpdate ()
         * \brief update all the entities which are in the current view.

@@ -20,7 +20,7 @@ namespace odfaeg {
         */
         class ODFAEG_CORE_API Timer {
         public :
-            Timer();
+            Timer(bool useThread=true);
             /**
             *  \fn setInterval(sf::Time interval)
             *  \brief set an interval of time.
@@ -31,6 +31,7 @@ namespace odfaeg {
             *   \brief lock the rec_mutex and updates the scene at each time interval.
             */
             void update();
+            void tUpdate();
             void stop();
             /** \fn virtual void onUpdate() = 0;
             *   \brief the function to redefine when updating the scene.

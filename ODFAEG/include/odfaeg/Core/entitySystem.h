@@ -20,13 +20,14 @@ namespace odfaeg {
         */
         class ODFAEG_CORE_API EntitySystem {
         public :
-            EntitySystem();
+            EntitySystem(bool useThread=true);
             /**
             *\fn void update()
             *\brief function called when we need to update the entities, this function block the current thread until it's finished.
             */
             void needToUpdate();
             void update ();
+            void tUpdate();
             void setName(std::string name);
             std::string getName();
             void stop();
