@@ -1031,7 +1031,7 @@ namespace odfaeg {
                       NodeType frags[MAX_FRAGMENTS];
                       int count = 0;
                       uint n = imageLoad(headPointers, ivec3(gl_FragCoord.xy, viewIndex)).r;
-                      while( n != 0xffffffffu && count < MAX_FRAGMENTS) {
+                      while(n != 0xffffffffu && count < MAX_FRAGMENTS) {
                            frags[count] = nodes[n+maxNodes*viewIndex];
                            n = frags[count].next/*+maxNodes*viewIndex*/;
                            count++;
