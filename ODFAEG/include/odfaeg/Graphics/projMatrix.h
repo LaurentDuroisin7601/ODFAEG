@@ -7,6 +7,7 @@
 #include "../Math/maths.h"
 #include "../Physics/boundingBox.h"
 #include "export.hpp"
+#include "../config.hpp"
 /**
   *\namespace odfaeg
   * the namespace of the Opensource Development Framework Adapted for Every Games.

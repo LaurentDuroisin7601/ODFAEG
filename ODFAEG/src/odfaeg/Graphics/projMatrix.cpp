@@ -21,8 +21,13 @@ namespace odfaeg {
             matrix4f.m24 = -((t + b) / (t - b));
             matrix4f.m31 = 0;
             matrix4f.m32 = 0;
+            #ifndef VULKAN
+            matrix4f.m33 = -2 / (f - n);
+            matrix4f.m34 = -(f + n) / (f - n);
+            #else
             matrix4f.m33 = -1 / (f - n);
             matrix4f.m34 = -n / (f - n);
+            #endif
             matrix4f.m41 = 0;
             matrix4f.m42 = 0;
             matrix4f.m43 = 0;
@@ -46,8 +51,13 @@ namespace odfaeg {
             matrix4f.m24 = 0;
             matrix4f.m31 = 0;
             matrix4f.m32 = 0;
+            #ifndef VULKAN
             matrix4f.m33 = (f + n) / (f - n);
             matrix4f.m34 = (2 * f * n) / (f - n);
+            #else
+            matrix4f.m33 = f / (f - n);
+            matrix4f.m34 = (f * n) / (f - n);
+            #endif
             matrix4f.m41 = 0;
             matrix4f.m42 = 0;
             matrix4f.m43 = -1;

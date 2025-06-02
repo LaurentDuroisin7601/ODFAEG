@@ -144,7 +144,7 @@ namespace odfaeg {
             Batcher batcher, batcherIndexed, normalBatcher, normalBatcherIndexed,
             selectedInstanceBatcher, selectedInstanceScaleBatcher, selectedInstanceIndexBatcher, selectedInstanceIndexScaleBatcher,
             selectedBatcher, selectedScaleBatcher, selectedIndexBatcher, selectedIndexScaleBatcher, skyboxBatcher;
-            bool update, needToUpdateDS;
+            bool update, needToUpdateDS, datasReady;
             Entity* skybox;
             std::vector<std::unique_ptr<Entity>> visibleSelectedScaleEntities;
             std::vector<Entity*> visibleEntities;
@@ -153,7 +153,7 @@ namespace odfaeg {
             PFN_vkCmdPushDescriptorSetKHR vkCmdPushDescriptorSetKHR{ VK_NULL_HANDLE };
             sf::Clock timeClock;
             std::vector<unsigned int> pipelineIds;
-            std::vector<VkEvent> events;
+            //std::vector<VkEvent> events;
 
         };
         #else

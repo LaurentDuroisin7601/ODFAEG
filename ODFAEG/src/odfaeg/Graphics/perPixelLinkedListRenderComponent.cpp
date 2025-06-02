@@ -127,7 +127,7 @@ namespace odfaeg {
             if (!vkCmdPushDescriptorSetKHR) {
                 throw core::Erreur(0, "Could not get a valid function pointer for vkCmdPushDescriptorSetKHR", 1);
             }
-            for (unsigned int i = 0; i < commandBuffers.size(); i++) {
+           /* for (unsigned int i = 0; i < commandBuffers.size(); i++) {
                 VkEventCreateInfo eventInfo = {};
                 eventInfo.sType = VK_STRUCTURE_TYPE_EVENT_CREATE_INFO;
                 eventInfo.pNext = NULL;
@@ -135,9 +135,10 @@ namespace odfaeg {
                 VkEvent event;
                 vkCreateEvent(vkDevice.getDevice(), &eventInfo, NULL, &event);
                 events.push_back(event);
-            }
-            frameBuffer.beginRecordCommandBuffers();
+            }*/
+
             unsigned int currentFrame =  frameBuffer.getCurrentFrame();
+            frameBuffer.beginRecordCommandBuffers();
             VkImageMemoryBarrier barrier = {};
             barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
             barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
@@ -147,8 +148,12 @@ namespace odfaeg {
             barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
             barrier.subresourceRange.levelCount = 1;
             barrier.subresourceRange.layerCount = 1;
-            vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
-             frameBuffer.display();
+            vkCmdPipelineBarrier(frameBuffer.getCommandBuffers()[currentFrame], VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+
+
+            frameBuffer.beginRenderPass();
+            frameBuffer.display();
+            datasReady = false;
 
         }
         void PerPixelLinkedListRenderComponent::createDescriptorsAndPipelines() {
@@ -362,8 +367,8 @@ namespace odfaeg {
 
         }
         void PerPixelLinkedListRenderComponent::clear() {
-            frameBuffer.clear(sf::Color::Transparent);
-
+            frameBuffer.beginRecordCommandBuffers();
+            unsigned int currentFrame = frameBuffer.getCurrentFrame();
             VkClearColorValue clearColor;
             clearColor.uint32[0] = 0xffffffff;
             for (unsigned int i = 0; i < commandBuffers.size(); i++) {
@@ -371,16 +376,18 @@ namespace odfaeg {
                 subresRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
                 subresRange.levelCount = 1;
                 subresRange.layerCount = 1;
-                vkCmdClearColorImage(commandBuffers[i], headPtrTextureImage, VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
-                vkCmdFillBuffer(commandBuffers[i], counterShaderStorageBuffers[i], 0, sizeof(uint32_t), 0);
+                vkCmdClearColorImage(frameBuffer.getCommandBuffers()[i], headPtrTextureImage, VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
+                vkCmdFillBuffer(frameBuffer.getCommandBuffers()[i], counterShaderStorageBuffers[i], 0, sizeof(uint32_t), 0);
                 VkMemoryBarrier memoryBarrier;
                 memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
                 memoryBarrier.pNext = VK_NULL_HANDLE;
                 memoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
                 memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-                vkCmdPipelineBarrier(commandBuffers[i], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
+                vkCmdPipelineBarrier(frameBuffer.getCommandBuffers()[i], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
             }
-
+            frameBuffer.beginRenderPass();
+            frameBuffer.display();
+            frameBuffer.clear(sf::Color::Transparent);
             //firstDraw = true;
             frameBuffer.display();
         }
@@ -2175,7 +2182,25 @@ namespace odfaeg {
             }
         }
         void PerPixelLinkedListRenderComponent::drawNextFrame() {
-
+            {
+                std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                if (datasReady) {
+                    datasReady = false;
+                    m_instances = batcher.getInstances();
+                    m_normals = normalBatcher.getInstances();
+                    m_instancesIndexed = batcherIndexed.getInstances();
+                    m_normalsIndexed = normalBatcherIndexed.getInstances();
+                    m_selected = selectedBatcher.getInstances();
+                    m_selectedScale = selectedScaleBatcher.getInstances();
+                    m_selectedIndexed = selectedIndexBatcher.getInstances();
+                    m_selectedScaleIndexed = selectedIndexScaleBatcher.getInstances();
+                    m_selectedInstance = selectedInstanceBatcher.getInstances();
+                    m_selectedScaleInstance = selectedInstanceScaleBatcher.getInstances();
+                    m_selectedInstanceIndexed = selectedInstanceIndexBatcher.getInstances();
+                    m_selectedScaleInstanceIndexed = selectedInstanceIndexScaleBatcher.getInstances();
+                    m_skyboxInstance = skyboxBatcher.getInstances();
+                }
+            }
 
             /*math::Matrix4f viewMatrix = view.getViewMatrix().getMatrix().transpose();
             math::Matrix4f projMatrix = view.getProjMatrix().getMatrix().transpose();
@@ -2240,15 +2265,15 @@ namespace odfaeg {
         void PerPixelLinkedListRenderComponent::allocateCommandBuffers() {
             commandBuffers.resize(frameBuffer.getSwapchainImages().size());
 
+
             VkCommandBufferAllocateInfo allocInfo{};
             allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
             allocInfo.commandPool = commandPool;
-            allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+            allocInfo.level = VK_COMMAND_BUFFER_LEVEL_SECONDARY;
             allocInfo.commandBufferCount = (uint32_t) commandBuffers.size();
             if (vkAllocateCommandBuffers(vkDevice.getDevice(), &allocInfo, commandBuffers.data()) != VK_SUCCESS) {
                 throw core::Erreur(0, "failed to allocate command buffers!", 1);
             }
-            frameBuffer.updateCommandBuffers(commandPool, commandBuffers);
         }
         void PerPixelLinkedListRenderComponent::createCommandBuffersIndirect(unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, DepthStencilID depthStencilID, RenderStates currentStates) {
 
@@ -2256,27 +2281,71 @@ namespace odfaeg {
                 createDescriptorSets(p, currentStates);
                 needToUpdateDS = false;
             }
+            unsigned int currentFrame = frameBuffer.getCurrentFrame();
             frameBuffer.beginRecordCommandBuffers();
+            frameBuffer.beginRenderPass();
+            /*VkCommandBufferInheritanceInfo inheritanceInfo;
+            inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+            inheritanceInfo.pNext = nullptr;
+            inheritanceInfo.renderPass = frameBuffer.getRenderPass(1);
+            inheritanceInfo.subpass = 0;
+            inheritanceInfo.framebuffer = frameBuffer.getSwapchainFrameBuffers(1)[currentFrame];
+            inheritanceInfo.occlusionQueryEnable = VK_FALSE;
+            inheritanceInfo.queryFlags = 0;
+            inheritanceInfo.pipelineStatistics = 0;
+            VkCommandBufferBeginInfo commandBufferBeginInfo;
+            commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+            commandBufferBeginInfo.pNext = nullptr;
+            commandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+            commandBufferBeginInfo.pInheritanceInfo = &inheritanceInfo;
+
+            if (vkBeginCommandBuffer(commandBuffers[currentFrame], &commandBufferBeginInfo) != VK_SUCCESS) {
+                std::runtime_error("Failed to begin recording command buffers");
+            }*/
+
             Shader* shader = const_cast<Shader*>(currentStates.shader);
             std::vector<Texture*> allTextures = Texture::getAllTextures();
-            unsigned int currentFrame = frameBuffer.getCurrentFrame();
-
-
-            vkCmdPushConstants(commandBuffers[currentFrame], frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][frameBuffer.getId()][depthStencilID], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectDrawPushConsts), &indirectDrawPushConsts);
 
 
 
-            frameBuffer.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
+            vkCmdPushConstants(frameBuffer.getCommandBuffers()[currentFrame], frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][frameBuffer.getId()][depthStencilID], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectDrawPushConsts), &indirectDrawPushConsts);
 
-            vkCmdResetEvent(commandBuffers[currentFrame], events[currentFrame],  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
-            vkCmdSetEvent(commandBuffers[currentFrame], events[currentFrame],  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
+
+
+            frameBuffer.drawIndirect(frameBuffer.getCommandBuffers()[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
+
+            /*vkCmdResetEvent(frameBuffer.getCommandBuffers()[currentFrame], events[currentFrame],  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
+            vkCmdSetEvent(frameBuffer.getCommandBuffers()[currentFrame], events[currentFrame],  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);*/
+
+            /*frameBuffer.beginRecordCommandBuffers();
+            frameBuffer.beginRenderPass();
+            vkCmdExecuteCommands(frameBuffer.getCommandBuffers()[currentFrame], static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());*/
             frameBuffer.display();
 
         }
         void PerPixelLinkedListRenderComponent::createCommandBufferVertexBuffer(RenderStates currentStates) {
             frameBuffer.beginRecordCommandBuffers();
-            Shader* shader = const_cast<Shader*>(currentStates.shader);
+
             unsigned int currentFrame = frameBuffer.getCurrentFrame();
+            /*VkCommandBufferInheritanceInfo inheritanceInfo;
+            inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+            inheritanceInfo.pNext = nullptr;
+            inheritanceInfo.renderPass = frameBuffer.getRenderPass(1);
+            inheritanceInfo.subpass = 0;
+            inheritanceInfo.framebuffer = frameBuffer.getSwapchainFrameBuffers(1)[currentFrame];
+            inheritanceInfo.occlusionQueryEnable = VK_FALSE;
+            inheritanceInfo.queryFlags = 0;
+            inheritanceInfo.pipelineStatistics = 0;
+            VkCommandBufferBeginInfo commandBufferBeginInfo;
+            commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+            commandBufferBeginInfo.pNext = nullptr;
+            commandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+            commandBufferBeginInfo.pInheritanceInfo = &inheritanceInfo;
+            if (vkBeginCommandBuffer(commandBuffers[currentFrame], &commandBufferBeginInfo) != VK_SUCCESS) {
+                std::runtime_error("Failed to begin recording command buffers");
+            }*/
+            Shader* shader = const_cast<Shader*>(currentStates.shader);
+
             //for (size_t i = 0; i < commandBuffers.size(); i++) {
                 /*vkResetCommandBuffer(commandBuffers[currentFrame], VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
                 VkCommandBufferBeginInfo beginInfo{};
@@ -2313,7 +2382,7 @@ namespace odfaeg {
                 descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
                 descriptorWrites[1].descriptorCount = 1;
                 descriptorWrites[1].pBufferInfo = &linkedListStorageBufferInfoLastFrame;*/
-                vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 0, nullptr);
+                vkCmdPipelineBarrier(frameBuffer.getCommandBuffers()[currentFrame], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 0, nullptr);
 
 
                 VkMemoryBarrier memoryBarrier;
@@ -2324,14 +2393,14 @@ namespace odfaeg {
 
 
 
-                vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
+                vkCmdPipelineBarrier(frameBuffer.getCommandBuffers()[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
                 //vkCmdPushDescriptorSetKHR(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + vb.getPrimitiveType()][frameBuffer.getId()][NODEPTHNOSTENCIL], 0, 2, descriptorWrites.data());
 
+                frameBuffer.beginRenderPass();
 
-
-                vkCmdPushConstants(commandBuffers[currentFrame], frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + vb.getPrimitiveType()][frameBuffer.getId()][NODEPTHNOSTENCIL], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(Ppll2PushConsts), &ppll2PushConsts);
-                vkCmdWaitEvents(commandBuffers[currentFrame], 1, &events[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
-                frameBuffer.drawVertexBuffer(commandBuffers[currentFrame], currentFrame, vb, NODEPTHNOSTENCIL, currentStates);
+                vkCmdPushConstants(frameBuffer.getCommandBuffers()[currentFrame], frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + vb.getPrimitiveType()][frameBuffer.getId()][NODEPTHNOSTENCIL], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(Ppll2PushConsts), &ppll2PushConsts);
+                //vkCmdWaitEvents(frameBuffer.getCommandBuffers()[currentFrame], 1, &events[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
+                frameBuffer.drawVertexBuffer(frameBuffer.getCommandBuffers()[currentFrame], currentFrame, vb, NODEPTHNOSTENCIL, currentStates);
 
 
                 /*if (vkEndCommandBuffer(commandBuffers[currentFrame]) != VK_SUCCESS) {
@@ -2339,24 +2408,34 @@ namespace odfaeg {
                 }*/
 
             //}
+            /*if(vkEndCommandBuffer(commandBuffers[currentFrame]) != VK_SUCCESS) {
+                std::runtime_error("Failed to record command buffers");
+            }*/
+            /*frameBuffer.beginRecordCommandBuffers();
+            frameBuffer.beginRenderPass();
+            vkCmdExecuteCommands(frameBuffer.getCommandBuffers()[currentFrame], static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());*/
             frameBuffer.display();
 
         }
         bool PerPixelLinkedListRenderComponent::loadEntitiesOnComponent(std::vector<Entity*> vEntities) {
-            batcher.clear();
-            normalBatcher.clear();
-            batcherIndexed.clear();
-            normalBatcherIndexed.clear();
-            selectedBatcher.clear();
-            selectedScaleBatcher.clear();
-            selectedIndexBatcher.clear();
-            selectedIndexScaleBatcher.clear();
-            selectedInstanceBatcher.clear();
-            selectedInstanceScaleBatcher.clear();
-            selectedInstanceIndexBatcher.clear();
-            selectedInstanceIndexScaleBatcher.clear();
-            skyboxBatcher.clear();
-            visibleSelectedScaleEntities.clear();
+            {
+                std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                datasReady = false;
+                batcher.clear();
+                normalBatcher.clear();
+                batcherIndexed.clear();
+                normalBatcherIndexed.clear();
+                selectedBatcher.clear();
+                selectedScaleBatcher.clear();
+                selectedIndexBatcher.clear();
+                selectedIndexScaleBatcher.clear();
+                selectedInstanceBatcher.clear();
+                selectedInstanceScaleBatcher.clear();
+                selectedInstanceIndexBatcher.clear();
+                selectedInstanceIndexScaleBatcher.clear();
+                skyboxBatcher.clear();
+                visibleSelectedScaleEntities.clear();
+            }
             if (skybox != nullptr) {
                 for (unsigned int i = 0; i <  skybox->getNbFaces(); i++) {
                     skyboxBatcher.addFace(skybox->getFace(i));
@@ -2371,6 +2450,7 @@ namespace odfaeg {
                         border->decreaseNbEntities();
                     }
                     for (unsigned int j = 0; j <  vEntities[i]->getNbFaces(); j++) {
+                         std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                          if (vEntities[i]->getDrawMode() == Entity::INSTANCED && !vEntities[i]->isSelected()) {
                             if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0)
                                 batcher.addFace( vEntities[i]->getFace(j));
@@ -2473,22 +2553,12 @@ namespace odfaeg {
                 }
 
             }
-            m_instances = batcher.getInstances();
-            m_normals = normalBatcher.getInstances();
-            m_instancesIndexed = batcherIndexed.getInstances();
-            m_normalsIndexed = normalBatcherIndexed.getInstances();
-            m_selected = selectedBatcher.getInstances();
-            m_selectedScale = selectedScaleBatcher.getInstances();
-            m_selectedIndexed = selectedIndexBatcher.getInstances();
-            m_selectedScaleIndexed = selectedIndexScaleBatcher.getInstances();
-            m_selectedInstance = selectedInstanceBatcher.getInstances();
-            m_selectedScaleInstance = selectedInstanceScaleBatcher.getInstances();
-            m_selectedInstanceIndexed = selectedInstanceIndexBatcher.getInstances();
-            m_selectedScaleInstanceIndexed = selectedInstanceIndexScaleBatcher.getInstances();
-            m_skyboxInstance = skyboxBatcher.getInstances();
+
             //std::cout<<"instances added"<<std::endl;
             visibleEntities = vEntities;
             update = true;
+            std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+            datasReady = true;
             return true;
         }
         bool PerPixelLinkedListRenderComponent::needToUpdate() {
@@ -2537,9 +2607,9 @@ namespace odfaeg {
         }
         PerPixelLinkedListRenderComponent::~PerPixelLinkedListRenderComponent() {
             std::cout<<"ppll destructor"<<std::endl;
-            for (unsigned int i = 0; i < events.size(); i++) {
+            /*for (unsigned int i = 0; i < events.size(); i++) {
                 vkDestroyEvent(vkDevice.getDevice(), events[i], nullptr);
-            }
+            }*/
 
             vkDestroySampler(vkDevice.getDevice(), headPtrTextureSampler, nullptr);
             vkDestroyImageView(vkDevice.getDevice(), headPtrTextureImageView, nullptr);

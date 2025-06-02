@@ -295,18 +295,6 @@ namespace odfaeg {
             Shader* shader = const_cast<Shader*>(states.shader);
             //std::cout<<"draw indirect depth stencil id :"<<depthStencilId<<std::endl;
             unsigned int descriptorId = id * shader->getNbShaders() + shader->getId();
-            VkRenderPassBeginInfo renderPassInfo{};
-            renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-            renderPassInfo.renderPass = (depthTestEnabled || stencilTestEnabled) ? getRenderPass(1) : getRenderPass(0);
-            renderPassInfo.framebuffer = (depthTestEnabled || stencilTestEnabled) ? getSwapchainFrameBuffers(1)[getImageIndex()] : getSwapchainFrameBuffers(0)[getImageIndex()];
-            renderPassInfo.renderArea.offset = {0, 0};
-            renderPassInfo.renderArea.extent = getSwapchainExtents();
-
-            VkClearValue clrColor = {clearColor.r / 255.f,clearColor.g / 255.f, clearColor.b / 255.f, clearColor.a / 255.f};
-            renderPassInfo.clearValueCount = 1;
-            renderPassInfo.pClearValues = &clrColor;
-
-            vkCmdBeginRenderPass(cmd, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
             vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vertexBuffer.getPrimitiveType()][id][depthStencilId]);
             VkBuffer vertexBuffers[] = {vertexBuffer.getVertexBuffer()};
             VkDeviceSize offsets[] = {0, 0};
@@ -322,24 +310,11 @@ namespace odfaeg {
             } else {
                 vkCmdDrawIndirect(cmd, vboIndirect, 0, nbIndirectCommands, stride);
             }
-            vkCmdEndRenderPass(cmd);
         }
         void RenderTarget::drawVertexBuffer(VkCommandBuffer& cmd, unsigned int i, VertexBuffer& vertexBuffer, unsigned int depthStencilId, RenderStates states) {
             //std::cout<<"vertex stencil id :"<<depthStencilId<<std::endl;
             Shader* shader = const_cast<Shader*>(states.shader);
             unsigned int descriptorId = id * shader->getNbShaders() + shader->getId();
-            VkRenderPassBeginInfo renderPassInfo{};
-            renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-            renderPassInfo.renderPass = (depthTestEnabled || stencilTestEnabled) ? getRenderPass(1) : getRenderPass(0);
-            renderPassInfo.framebuffer = (depthTestEnabled || stencilTestEnabled) ? getSwapchainFrameBuffers(1)[getImageIndex()] : getSwapchainFrameBuffers(0)[getImageIndex()];
-            renderPassInfo.renderArea.offset = {0, 0};
-            renderPassInfo.renderArea.extent = getSwapchainExtents();
-
-            VkClearValue clrColor = {clearColor.r / 255.f,clearColor.g / 255.f, clearColor.b / 255.f, clearColor.a / 255.f};
-            renderPassInfo.clearValueCount = 1;
-            renderPassInfo.pClearValues = &clrColor;
-
-            vkCmdBeginRenderPass(cmd, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
             vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vertexBuffer.getPrimitiveType()][id][depthStencilId]);
             VkBuffer vertexBuffers[] = {vertexBuffer.getVertexBuffer()};
             VkDeviceSize offsets[] = {0};
@@ -357,8 +332,6 @@ namespace odfaeg {
             } else {
                 vkCmdDraw(cmd, static_cast<uint32_t>(vertexBuffer.getSize()), 1, 0, 0);
             }
-
-            vkCmdEndRenderPass(cmd);
         }
 
 
@@ -823,7 +796,23 @@ namespace odfaeg {
 
                     throw core::Erreur(0, "failed to begin recording command buffer!", 1);
                 }
+
             //}
+        }
+        void RenderTarget::beginRenderPass() {
+            VkRenderPassBeginInfo renderPassInfo{};
+            renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+            renderPassInfo.renderPass = (depthTestEnabled || stencilTestEnabled) ? getRenderPass(1) : getRenderPass(0);
+            renderPassInfo.framebuffer = (depthTestEnabled || stencilTestEnabled) ? getSwapchainFrameBuffers(1)[getImageIndex()] : getSwapchainFrameBuffers(0)[getImageIndex()];
+            renderPassInfo.renderArea.offset = {0, 0};
+            renderPassInfo.renderArea.extent = getSwapchainExtents();
+
+            VkClearValue clrColor = {clearColor.r / 255.f,clearColor.g / 255.f, clearColor.b / 255.f, clearColor.a / 255.f};
+            renderPassInfo.clearValueCount = 1;
+            renderPassInfo.pClearValues = &clrColor;
+
+
+            vkCmdBeginRenderPass(getCommandBuffers()[getCurrentFrame()], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE_AND_SECONDARY_COMMAND_BUFFERS_KHR);
         }
         void RenderTarget::applyViewportAndScissor() {
             VkViewport viewport{};
@@ -851,23 +840,13 @@ namespace odfaeg {
                 if (vkBeginCommandBuffer(commandBuffers[getCurrentFrame()], &beginInfo) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to begin recording command buffer!", 1);
                 }*/
-                VkRenderPassBeginInfo renderPassInfo{};
-                renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+
+
                 /*if (getSurface() != VK_NULL_HANDLE)
                     std::cout<<"render pass cmd rw : "<<getRenderPass()<<std::endl;
                 else
                     std::cout<<"render pass cmd rt : "<<getRenderPass()<<std::endl;*/
-                renderPassInfo.renderPass = (depthTestEnabled || stencilTestEnabled) ? getRenderPass(1) : getRenderPass(0);
-                renderPassInfo.framebuffer = (depthTestEnabled || stencilTestEnabled) ? getSwapchainFrameBuffers(1)[getImageIndex()] : getSwapchainFrameBuffers(0)[getImageIndex()];
-                renderPassInfo.renderArea.offset = {0, 0};
-                renderPassInfo.renderArea.extent = getSwapchainExtents();
 
-                VkClearValue clrColor = {clearColor.r / 255.f,clearColor.g / 255.f, clearColor.b / 255.f, clearColor.a / 255.f};
-                renderPassInfo.clearValueCount = 1;
-                renderPassInfo.pClearValues = &clrColor;
-
-
-                vkCmdBeginRenderPass(commandBuffers[getCurrentFrame()], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
                 vkCmdBindPipeline(commandBuffers[getCurrentFrame()], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][0]);
                 //std::cout<<"buffer : "<<this->vertexBuffers[selectedBuffer]->getVertexBuffer()<<std::endl;
                 VkBuffer vertexBuffers[] = {this->vertexBuffers[selectedBuffer]->getVertexBuffer()};
@@ -928,7 +907,7 @@ namespace odfaeg {
                     vkCmdDraw(commandBuffers[getCurrentFrame()], static_cast<uint32_t>(this->vertexBuffers[selectedBuffer]->getSize()), 1, 0, 0);
                 }
 
-                vkCmdEndRenderPass(commandBuffers[getCurrentFrame()]);
+
 
                 /*if (vkEndCommandBuffer(commandBuffers[getCurrentFrame()]) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to record command buffer!", 1);

@@ -203,7 +203,7 @@ namespace odfaeg {
             BuildAlphaPC buildAlphaPC;
             BuildFrameBufferPC buildFrameBufferPC;
             UniformBufferObject ubo;
-            bool needToUpdateDS;
+            bool needToUpdateDS, datasReady;
             std::vector<VkEvent> events;
         };
         #else

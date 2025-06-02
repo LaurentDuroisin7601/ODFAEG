@@ -29,7 +29,14 @@ namespace odfaeg {
             * \brief constructor.
             */
              std::string name;
-             Listener() : removeListener(false) {
+             Listener() : removeListener(false), useThread(false) {
+             }
+             void launch() {
+                useThread = true;
+                m_thread = std::thread(tProcessEvents, this);
+             }
+             bool isUsingThread() {
+                 return useThread;
              }
              /**
              * \fn void connect (std::string key, Command command)
@@ -39,8 +46,7 @@ namespace odfaeg {
              */
              void connect(std::string key, Command command) {
                 command.setName(key);
-                if (command.getName() == "IconMoved")
-                        std::cout<<"add icon moved command ? "<<std::endl;
+
                 toAdd.insert(std::make_pair(key, command));
              }
              /**
@@ -115,10 +121,54 @@ namespace odfaeg {
                     }
                  }
              }
+             void stop() {
+                 running = false;
+                 m_thread.join();
+             }
              /** \fn void processEvents ()
              *   \brief check if the commands are triggered and execute them.
              *   the current thread is blocked until this method is finished.
              */
+             void tProcessEvents() {
+                 running = true;
+                 while(running) {
+                    std::map<std::string, Command>::iterator it;
+                     for (unsigned int i = 0; i < toRemove.size(); i++) {
+                        it = commands.find(toRemove[i]);
+                        if (it != commands.end()) {
+                            commands.erase(it);
+                        }
+                     }
+                     toRemove.clear();
+                     for (it = toAdd.begin(); it != toAdd.end(); it++) {
+
+                        commands.insert(std::make_pair(it->first, it->second));
+                     }
+                     toAdd.clear();
+                     for (it = commands.begin(); it != commands.end(); it++) {
+                        /*if (it->second.getName() == "IconMoved")
+                            std::cout<<"is icon moved triggered ? "<<std::endl;*/
+                        if (it->second.isTriggered()) {
+                            (it->second)();
+                            if (removeListener) {
+                                break;
+                            }
+                        }
+                        if (!removeListener) {
+                            it->second.clearEventsStack();
+                        }
+                        /*Action* action = it->second.getAction();
+                        if (action != nullptr) {
+                            std::vector<window::IEvent> events;
+                            action->getEvents(events);
+                            for (unsigned int i = 0; i < events.size(); i++) {
+                                Command::removeEvent(events[i]);
+                            }
+                        }*/
+                     }
+                 //Command::clearEventsStack();
+                 }
+             }
              void processEvents() {
                  std::map<std::string, Command>::iterator it;
                  for (unsigned int i = 0; i < toRemove.size(); i++) {
@@ -137,8 +187,6 @@ namespace odfaeg {
                     /*if (it->second.getName() == "IconMoved")
                         std::cout<<"is icon moved triggered ? "<<std::endl;*/
                     if (it->second.isTriggered()) {
-                        if (name == "fd open project")
-                            std::cout<<"action triggered"<<std::endl;
                         (it->second)();
                         if (removeListener) {
                             break;
@@ -178,6 +226,10 @@ namespace odfaeg {
              void setRemoveListener(bool removeListener) {
                  this->removeListener = removeListener;
              }
+             ~Listener() {
+                 if (useThread)
+                    stop();
+             }
              private :
              /** \fn void stopListen()
              *   \brief stop the thread which triggers and execute commands.
@@ -185,8 +237,8 @@ namespace odfaeg {
              std::map<std::string, Command> commands; /**> stores and execute commands.*/
              std::vector<std::string> toRemove;
              std::map<std::string, Command> toAdd;
-             bool removeListener;
-
+             bool removeListener, useThread, running;
+             std::thread m_thread;
         };
     }
 }

@@ -335,12 +335,7 @@ namespace odfaeg {
              };
 
              //for (unsigned int i = 0; i < getCommandBuffers().size(); i++) {
-                VkCommandBufferBeginInfo beginInfo{};
-                beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-                if (vkBeginCommandBuffer(getCommandBuffers()[currentFrame], &beginInfo) != VK_SUCCESS) {
-
-                    throw core::Erreur(0, "failed to begin recording command buffer!", 1);
-                }
+                beginRecordCommandBuffers();
                 VkImageMemoryBarrier presentToClearBarrier {
                     .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
                     .pNext = nullptr,
@@ -395,6 +390,7 @@ namespace odfaeg {
                 vkCmdPipelineBarrier(getCommandBuffers()[currentFrame], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &depthStencilToClearBarrier);
                 vkCmdClearDepthStencilImage(getCommandBuffers()[currentFrame], getDepthTexture().getImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearDepthStencilValue, 1, &imageRange2);
                 vkCmdPipelineBarrier(getCommandBuffers()[currentFrame], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &clearToDepthStencilBarrier);
+                beginRenderPass();
                 /*if (vkEndCommandBuffer(commandBuffers[currentFrame]) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to record command buffer!", 1);
                 }*/
@@ -406,6 +402,7 @@ namespace odfaeg {
         void RenderWindow::drawVulkanFrame() {
             if (getCommandBuffers().size() > 0) {
                 //for (unsigned int i = 0; i < getCommandBuffers().size(); i++) {
+                    vkCmdEndRenderPass(getCommandBuffers()[getCurrentFrame()]);
                     if (vkEndCommandBuffer(getCommandBuffers()[currentFrame]) != VK_SUCCESS) {
                         throw core::Erreur(0, "failed to record command buffer!", 1);
                     }

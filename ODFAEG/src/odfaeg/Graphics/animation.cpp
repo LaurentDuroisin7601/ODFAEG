@@ -151,14 +151,18 @@ namespace odfaeg {
             }
         }
         void Anim::changeInterpolatedFrame(Entity* currentFrame) {
+
             if (currentFrame->getChildren().size() > 0) {
                 for (unsigned int i = 0; i < currentFrame->getChildren().size(); i++) {
                     changeInterpolatedFrame(currentFrame->getChildren()[i]);
                 }
             }
             if (currentFrame->isLeaf()) {
+
+                std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                 interpolatedFrame->getFaces().clear();
                 for (unsigned int i = 0; i < currentFrame->getFaces().size(); i++) {
+
                     VertexArray va = currentFrame->getFaces()[i].getVertexArray();
                     Face face (va,currentFrame->getFaces()[i].getMaterial(), currentFrame->getTransform());
                     interpolatedFrame->addFace(face);

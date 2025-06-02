@@ -494,6 +494,7 @@ namespace odfaeg {
                 }
                 vkCmdPushDescriptorSetKHR = (PFN_vkCmdPushDescriptorSetKHR)vkGetDeviceProcAddr(vkDevice.getDevice(), "vkCmdPushDescriptorSetKHR");
                 skybox = nullptr;
+                datasReady = false;
 
             }
             VkCommandBuffer ReflectRefractRenderComponent::beginSingleTimeCommands() {
@@ -997,8 +998,8 @@ namespace odfaeg {
                                                                 nodes[nodeIdx+viewIndex*maxNodes].color = texel;
                                                                 nodes[nodeIdx+viewIndex*maxNodes].depth = gl_FragCoord.z;
                                                                 nodes[nodeIdx+viewIndex*maxNodes].next = prevHead;
-                                                                if (value == 0)
-                                                                    debugPrintfEXT("value : %i, view index : %i\n", value, viewIndex);
+                                                                /*if (value == 0)
+                                                                    debugPrintfEXT("value : %i, view index : %i\n", value, viewIndex);*/
                                                            }
                                                            fcolor = vec4(0, 0, 0, 0);
                                                       })";
@@ -2831,6 +2832,18 @@ namespace odfaeg {
                 }
             }
             void ReflectRefractRenderComponent::drawNextFrame() {
+                std::cout<<"draw next frame"<<std::endl;
+                {
+                    std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                    if (datasReady) {
+                        datasReady = false;
+                        m_instances = batcher.getInstances();
+                        m_normals = normalBatcher.getInstances();
+                        m_reflInstances = reflBatcher.getInstances();
+                        m_reflNormals = reflNormalBatcher.getInstances();
+                        m_skyboxInstance = skyboxBatcher.getInstances();
+                    }
+                }
                 RenderStates currentStates;
                 math::Matrix4f viewMatrix = view.getViewMatrix().getMatrix()/*.transpose()*/;
                 math::Matrix4f projMatrix = view.getProjMatrix().getMatrix()/*.transpose()*/;
@@ -3008,21 +3021,26 @@ namespace odfaeg {
                 return update;
             }
             bool ReflectRefractRenderComponent::loadEntitiesOnComponent(std::vector<Entity*> vEntities) {
-                batcher.clear();
-                normalBatcher.clear();
-                reflBatcher.clear();
-                reflNormalBatcher.clear();
-                skyboxBatcher.clear();
+                {
+                    std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                    datasReady = false;
+                    batcher.clear();
+                    normalBatcher.clear();
+                    reflBatcher.clear();
+                    reflNormalBatcher.clear();
+                    skyboxBatcher.clear();
+                }
                 if (skybox != nullptr) {
                     for (unsigned int i = 0; i < skybox->getFaces().size(); i++) {
                         skyboxBatcher.addFace(skybox->getFace(i));
                     }
                 }
+
                 for (unsigned int i = 0; i < vEntities.size(); i++) {
                     if ( vEntities[i] != nullptr && vEntities[i]->isLeaf()) {
                         //std::cout<<"add entity"<<std::endl;
                         for (unsigned int j = 0; j <  vEntities[i]->getNbFaces(); j++) {
-
+                            std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                             if (vEntities[i]->getFace(j)->getMaterial().isReflectable() || vEntities[i]->getFace(j)->getMaterial().isRefractable()) {
 
                                 if (vEntities[i]->getDrawMode() == Entity::INSTANCED) {
@@ -3041,13 +3059,9 @@ namespace odfaeg {
                         }
                     }
                 }
-                m_instances = batcher.getInstances();
-                m_normals = normalBatcher.getInstances();
-                m_reflInstances = reflBatcher.getInstances();
-                m_reflNormals = reflNormalBatcher.getInstances();
-                m_skyboxInstance = skyboxBatcher.getInstances();
-                visibleEntities = vEntities;
                 update = true;
+                std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                datasReady = true;
                 return true;
             }
             ReflectRefractRenderComponent::~ReflectRefractRenderComponent() {

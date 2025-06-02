@@ -231,6 +231,7 @@ namespace odfaeg {
             void enableStencilTest(bool enabled);
             void enableDepthTest(bool enable);
             void beginRecordCommandBuffers();
+            void beginRenderPass();
             std::vector<VkCommandBuffer>& getCommandBuffers();
             std::string m_name;
 

@@ -206,7 +206,8 @@ namespace odfaeg {
            std::multimap<int, Component*, std::greater<int>>::iterator it;
            for (it = eventComponents.begin(); it != eventComponents.end(); it++) {
                if (it->second->isEventContextActivated() && it->second->isVisible()) {
-                   it->second->processEvents();
+                   if (!it->second->getListener().isUsingThread())
+                       it->second->processEvents();
                    it->second->recomputeSize();
                }
            }
