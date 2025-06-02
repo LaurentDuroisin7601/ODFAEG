@@ -999,8 +999,8 @@ namespace odfaeg {
                                                                 nodes[nodeIdx+viewIndex*maxNodes].color = texel;
                                                                 nodes[nodeIdx+viewIndex*maxNodes].depth = gl_FragCoord.z;
                                                                 nodes[nodeIdx+viewIndex*maxNodes].next = prevHead;
-                                                                /*if (value == 0)
-                                                                    debugPrintfEXT("value : %i, view index : %i\n", value, viewIndex);*/
+                                                                if (value == 0)
+                                                                    debugPrintfEXT("value : %i, view index : %i\n", value, viewIndex);
                                                            }
                                                            fcolor = vec4(0, 0, 0, 0);
                                                       })";
@@ -2849,7 +2849,7 @@ namespace odfaeg {
                 }
             }
             void ReflectRefractRenderComponent::drawNextFrame() {
-                std::cout<<"draw next frame"<<std::endl;
+                //std::cout<<"draw next frame"<<std::endl;
                 {
                     std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                     if (datasReady) {
@@ -2936,26 +2936,27 @@ namespace odfaeg {
                                     clearColor.uint32[0] = 0xffffffff;
                                     std::vector<VkCommandBuffer> commandBuffers = environmentMap.getCommandBuffers();
                                     unsigned int currentFrame = environmentMap.getCurrentFrame();
-                                    for (unsigned int i = 0; i < commandBuffers.size(); i++) {
-                                        VkImageSubresourceRange subresRange = {};
-                                        subresRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-                                        subresRange.levelCount = 1;
-                                        subresRange.layerCount = 1;
-                                        //transitionImageLayout(headPtrTextureImage, VK_FORMAT_R32_UINT, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-                                        vkCmdClearColorImage(commandBuffers[i], headPtrTextureImage, VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
-                                        for (unsigned int j = 0; j < 6; j++) {
-                                            vkCmdFillBuffer(commandBuffers[i], counterShaderStorageBuffers[i], j*sizeof(uint32_t), sizeof(uint32_t), 0);
-                                        }
-                                        VkMemoryBarrier memoryBarrier;
-                                        memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-                                        memoryBarrier.pNext = VK_NULL_HANDLE;
-                                        memoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-                                        memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_MEMORY_READ_BIT;
-                                        /*vkCmdResetEvent(commandBuffers[currentFrame], events[currentFrame],  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
-                                        vkCmdSetEvent(commandBuffers[currentFrame], events[currentFrame],  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);*/
-                                        vkCmdPipelineBarrier(commandBuffers[i], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
-                                        //transitionImageLayout(headPtrTextureImage, VK_FORMAT_R32_UINT, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL);
+                                    VkImageSubresourceRange subresRange = {};
+                                    subresRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                                    subresRange.levelCount = 1;
+                                    subresRange.layerCount = 1;
+
+                                    //transitionImageLayout(headPtrTextureImage, VK_FORMAT_R32_UINT, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+                                    vkCmdClearColorImage(commandBuffers[currentFrame], headPtrTextureImage, VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
+
+                                    for (unsigned int j = 0; j < 6; j++) {
+                                        vkCmdFillBuffer(commandBuffers[currentFrame], counterShaderStorageBuffers[currentFrame], j*sizeof(uint32_t), sizeof(uint32_t), 0);
                                     }
+                                    VkMemoryBarrier memoryBarrier;
+                                    memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+                                    memoryBarrier.pNext = VK_NULL_HANDLE;
+                                    memoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                                    memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_MEMORY_READ_BIT;
+                                    /*vkCmdResetEvent(commandBuffers[currentFrame], events[currentFrame],  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
+                                    vkCmdSetEvent(commandBuffers[currentFrame], events[currentFrame],  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);*/
+                                    vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
+                                        //transitionImageLayout(headPtrTextureImage, VK_FORMAT_R32_UINT, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL);
+
                                     environmentMap.beginRenderPass();
                                     environmentMap.display();
                                     /*vb.clear();

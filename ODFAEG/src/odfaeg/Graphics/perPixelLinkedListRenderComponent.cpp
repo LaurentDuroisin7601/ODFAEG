@@ -2263,7 +2263,7 @@ namespace odfaeg {
 
         }
         void PerPixelLinkedListRenderComponent::allocateCommandBuffers() {
-            commandBuffers.resize(frameBuffer.getSwapchainImages().size());
+            /*commandBuffers.resize(frameBuffer.getSwapchainImages().size());
 
 
             VkCommandBufferAllocateInfo allocInfo{};
@@ -2273,7 +2273,7 @@ namespace odfaeg {
             allocInfo.commandBufferCount = (uint32_t) commandBuffers.size();
             if (vkAllocateCommandBuffers(vkDevice.getDevice(), &allocInfo, commandBuffers.data()) != VK_SUCCESS) {
                 throw core::Erreur(0, "failed to allocate command buffers!", 1);
-            }
+            }*/
         }
         void PerPixelLinkedListRenderComponent::createCommandBuffersIndirect(unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, DepthStencilID depthStencilID, RenderStates currentStates) {
 
@@ -2610,7 +2610,7 @@ namespace odfaeg {
             /*for (unsigned int i = 0; i < events.size(); i++) {
                 vkDestroyEvent(vkDevice.getDevice(), events[i], nullptr);
             }*/
-
+            vkDestroyCommandPool(vkDevice.getDevice(), commandPool, nullptr);
             vkDestroySampler(vkDevice.getDevice(), headPtrTextureSampler, nullptr);
             vkDestroyImageView(vkDevice.getDevice(), headPtrTextureImageView, nullptr);
             vkDestroyImage(vkDevice.getDevice(), headPtrTextureImage, nullptr);
