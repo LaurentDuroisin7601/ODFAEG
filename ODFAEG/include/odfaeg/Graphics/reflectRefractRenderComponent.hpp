@@ -204,7 +204,7 @@ namespace odfaeg {
             BuildFrameBufferPC buildFrameBufferPC;
             UniformBufferObject ubo;
             bool needToUpdateDS, datasReady;
-            //std::vector<VkEvent> events;
+            std::vector<VkEvent> events;
         };
         #else
         class ODFAEG_GRAPHICS_API ReflectRefractRenderComponent : public HeavyComponent {

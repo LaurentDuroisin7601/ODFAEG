@@ -387,8 +387,7 @@ namespace odfaeg {
                 memoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
                 memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
                 vkCmdPipelineBarrier(frameBuffer.getCommandBuffers()[i], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
-                vkCmdResetEvent(frameBuffer.getCommandBuffers()[i], events[i],  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
-                vkCmdSetEvent(frameBuffer.getCommandBuffers()[i], events[i],  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
+
             }
             frameBuffer.beginRenderPass();
             frameBuffer.display();
@@ -2308,13 +2307,6 @@ namespace odfaeg {
 
             Shader* shader = const_cast<Shader*>(currentStates.shader);
             std::vector<Texture*> allTextures = Texture::getAllTextures();
-            VkMemoryBarrier memoryBarrier;
-            memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-            memoryBarrier.pNext = VK_NULL_HANDLE;
-            memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-            memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-
-            //vkCmdWaitEvents(frameBuffer.getCommandBuffers()[currentFrame], 1, &events[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
             vkCmdResetEvent(frameBuffer.getCommandBuffers()[currentFrame], events[currentFrame],  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
             vkCmdSetEvent(frameBuffer.getCommandBuffers()[currentFrame], events[currentFrame],  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
             frameBuffer.beginRenderPass();
@@ -2617,9 +2609,9 @@ namespace odfaeg {
         }
         PerPixelLinkedListRenderComponent::~PerPixelLinkedListRenderComponent() {
             std::cout<<"ppll destructor"<<std::endl;
-            /*for (unsigned int i = 0; i < events.size(); i++) {
+            for (unsigned int i = 0; i < events.size(); i++) {
                 vkDestroyEvent(vkDevice.getDevice(), events[i], nullptr);
-            }*/
+            }
             vkDestroyCommandPool(vkDevice.getDevice(), commandPool, nullptr);
             vkDestroySampler(vkDevice.getDevice(), headPtrTextureSampler, nullptr);
             vkDestroyImageView(vkDevice.getDevice(), headPtrTextureImageView, nullptr);
