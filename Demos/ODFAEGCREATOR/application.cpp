@@ -775,6 +775,10 @@ void ODFAEGCreator::onInit() {
         Command cmdSelectWallTypeNotDroppedDown3D(FastDelegate<bool>(&DropDownList::isNotDroppedDown, dpSelectWallType3D), FastDelegate<void>(&ODFAEGCreator::onSelectedWallTypeNotDroppedDown, this, dpSelectWallType3D));
         dpSelectWallType->getListener().connect("selectWallTypeNotDroppedDown3D", cmdSelectWallTypeNotDroppedDown3D);
 
+        bAddWall3D = new Button(Vec3f(200, 500, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "Add wall", 15, *wGenerate3DTerrain);
+        bAddWall3D->addActionListener(this);
+        getRenderComponentManager().addComponent(bAddWall3D);
+
         bGenerate3DTerrain = new Button(Vec3f(0, 550, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "Generate terrain", 15, *wGenerate3DTerrain);
         bGenerate3DTerrain->addActionListener(this);
         getRenderComponentManager().addComponent(bGenerate3DTerrain);
@@ -2749,7 +2753,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
     }
     if (button == bAddTileGround3D) {
         isGenerating3DTerrain = true;
-        wGenerateTerrain->setVisible(false);
+        wGenerate3DTerrain->setVisible(false);
         getRenderComponentManager().setEventContextActivated(false, *wGenerate3DTerrain);
         getRenderComponentManager().setEventContextActivated(true, getRenderWindow());
         Tile* tile = factory.make_entity<Tile>(nullptr, Vec3f(0, 0, 0), Vec3f(50, 0, 50),sf::IntRect(0, 0, 50, 50), factory);
@@ -2979,21 +2983,6 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         fdTexturePath->setVisible(true);
         fdTexturePath->setEventContextActivated(true);
         tScriptEdit->setEventContextActivated(false);
-    }
-    if (button == bAddTexRect) {
-        std::cout<<"add tex rect"<<std::endl;
-        sf::IntRect texRect;
-        if (is_number(tTexCoordX->getText()))
-            texRect.left = conversionStringInt(tTexCoordX->getText());
-        if (is_number(tTexCoordY->getText()))
-            texRect.top = conversionStringInt(tTexCoordY->getText());
-        if (is_number(tTexCoordW->getText()))
-            texRect.width = conversionStringInt(tTexCoordW->getText());
-        if (is_number(tTexCoordH->getText()))
-            texRect.height = conversionStringInt(tTexCoordH->getText());
-        if (dynamic_cast<ParticleSystem*>(selectedObject)) {
-            static_cast<ParticleSystem*>(selectedObject)->addTextureRect(texRect);
-        }
     }
     if (button->getText() == "Create scene") {
         wNewMap->setVisible(false);
@@ -3589,8 +3578,12 @@ void ODFAEGCreator::actionPerformed(Button* button) {
     }
     if (button == bGenerate3DTerrain) {
         wGenerate3DTerrain->setVisible(false);
+        std::cout<<"ground : "<<ground.size()<<std::endl;
+        std::cout<<"tile size : "<<conversionStringInt(taTileWidth3D->getText())<<","<<conversionStringInt(taZoneHeight3D->getText())<<std::endl;
+        std::cout<<"generate 3D terrain bx : "<<conversionStringInt(taZoneXPos3D->getText())<<","<<conversionStringInt(taZoneYPos3D->getText())<<","<<conversionStringInt(taZoneZPos3D->getText())
+        <<","<<conversionStringInt(taZoneWidth3D->getText())<<","<<conversionStringInt(taZoneHeight3D->getText())<<","<<conversionStringInt(taZoneDepth3D->getText())<<std::endl;
         getWorld()->generate_3d_map(ground, walls3D, Vec2f(conversionStringInt(taTileWidth3D->getText()), conversionStringInt(taTileDepth3D->getText())), BoundingBox(conversionStringInt(taZoneXPos3D->getText()), conversionStringInt(taZoneYPos3D->getText()),conversionStringInt(taZoneZPos3D->getText()),
-                                                                                                                                                            conversionStringInt(taZoneWidth3D->getText()), conversionStringInt(taZoneHeight3D->getText()),conversionStringInt(taZoneDepth3D->getText())), factory);
+                                                                                                                              conversionStringInt(taZoneWidth3D->getText()), conversionStringInt(taZoneHeight3D->getText()),conversionStringInt(taZoneDepth3D->getText())), factory);
         getRenderComponentManager().setEventContextActivated(false, *wGenerate3DTerrain);
         getRenderComponentManager().setEventContextActivated(true, getRenderWindow());
     }

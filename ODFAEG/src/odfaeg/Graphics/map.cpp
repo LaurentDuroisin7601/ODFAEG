@@ -429,12 +429,12 @@ namespace odfaeg {
                             Entity *w = walls[Wall::TOP_BOTTOM]->clone();
                             w->setPosition(math::Vec3f(pos.x, pos.y, pos.y + walls[Wall::TOP_BOTTOM]->getSize().y * 0.5f));
                             addEntity(w);
-                            if (getBaseChangementMatrix().isIso2DMatrix() && y == endY - tileSize.y) {
+                            /*if (getBaseChangementMatrix().isIso2DMatrix() && y == endY - tileSize.y) {
                                 int i = math::Math::random(tGround.size());
                                 Entity *tile = tGround[i]->clone();
                                 tile->setPosition(math::Vec3f(pos.x, pos.y, pos.y + tile->getSize().y * 0.5f));
                                 bt->addTile(tile);
-                            }
+                            }*/
                             gridMap->getGridCellAt(math::Vec3f(w->getPosition().x, w->getPosition().y, w->getPosition().z))->setPassable(false);
                         }
                     } else if ((x == startX || x == endX - tileSize.x) && walls.size() >= 11) {
@@ -444,26 +444,26 @@ namespace odfaeg {
 
                             w->setPosition(math::Vec3f(pos.x, pos.y, pos.y + walls[Wall::RIGHT_LEFT]->getSize().y * 0.5f));
                             addEntity(w);
-                            if (getBaseChangementMatrix().isIso2DMatrix() && x == endX - tileSize.x) {
+                            /*if (getBaseChangementMatrix().isIso2DMatrix() && x == endX - tileSize.x) {
                                 int i = math::Math::random(tGround.size());
                                 Entity *tile = tGround[i]->clone();
                                 tile->setPosition(math::Vec3f(pos.x, pos.y, pos.y + tile->getSize().y * 0.5f));
                                 bt->addTile(tile);
-                            }
+                            }*/
                             gridMap->getGridCellAt(math::Vec3f(w->getPosition().x, w->getPosition().y, w->getPosition().z))->setPassable(false);
                         }
-                    } else {
-                        Entity* tile;
-                        if (tGround.size() > 0)  {
-                            int i = math::Math::random(tGround.size());
-                            tile = tGround[i]->clone();
-                            tile->setPosition(math::Vec3f(pos.x, pos.y, pos.y + tile->getSize().y * 0.5f));
-                            ////std::cout<<"add tile : "<<tile->getPosition()<<std::endl;
-                        } else {
-                            tile = factory.make_entity<Tile>(nullptr, math::Vec3f(pos.x, pos.y, pos.y + tileSize.y * 0.5f), math::Vec3f(tileSize.x, tileSize.y, 0), sf::IntRect(0, 0, tileSize.x, tileSize.y), factory);
-                        }
-                        bt->addTile(tile);
                     }
+                    Entity* tile;
+                    if (tGround.size() > 0)  {
+                        int i = math::Math::random(tGround.size());
+                        tile = tGround[i]->clone();
+                        tile->setPosition(math::Vec3f(pos.x, pos.y, pos.y + tile->getSize().y * 0.5f));
+                        ////std::cout<<"add tile : "<<tile->getPosition()<<std::endl;
+                    } else {
+                        tile = factory.make_entity<Tile>(nullptr, math::Vec3f(pos.x, pos.y, pos.y + tileSize.y * 0.5f), math::Vec3f(tileSize.x, tileSize.y, 0), sf::IntRect(0, 0, tileSize.x, tileSize.y), factory);
+                    }
+                    bt->addTile(tile);
+
                 }
             }
             addEntity(bt);
@@ -559,21 +559,20 @@ namespace odfaeg {
                             }*/
                             gridMap->getGridCellAt(math::Vec3f(w->getPosition().x, w->getPosition().y, w->getPosition().z))->setPassable(false);
                         }
-                    } else {
-                        Entity* tile;
-                        if (tGround.size() > 0)  {
-                            int i = math::Math::random(tGround.size());
-                            tile = tGround[i]->clone();
-                            tile->setPosition(math::Vec3f(pos.x, 0, pos.y));
-                        } else {
-                            tile = factory.make_entity<Tile>(nullptr, math::Vec3f(pos.x, 0, pos.y), math::Vec3f(tileSize.x, 0, tileSize.y), sf::IntRect(0, 0, tileSize.x, tileSize.y), factory);
-                        }
-                        float heights[4];
-                        for (unsigned int j = 0; j < sizeof(heights) / sizeof(float); j++) {
-                            heights[j] = math::Math::random(rect.getPosition().y, rect.getPosition().y + rect.getHeight());
-                        }
-                        bt->addTile(tile, math::Vec2f(pos.x, pos.y), heights);
                     }
+                    Entity* tile;
+                    if (tGround.size() > 0)  {
+                        int i = math::Math::random(tGround.size());
+                        tile = tGround[i]->clone();
+                        tile->setPosition(math::Vec3f(pos.x, 0, pos.y));
+                    } else {
+                        tile = factory.make_entity<Tile>(nullptr, math::Vec3f(pos.x, 0, pos.y), math::Vec3f(tileSize.x, 0, tileSize.y), sf::IntRect(0, 0, tileSize.x, tileSize.y), factory);
+                    }
+                    float heights[4];
+                    for (unsigned int j = 0; j < 4; j++) {
+                        heights[j] = math::Math::random(rect.getPosition().y, rect.getPosition().y + rect.getHeight());
+                    }
+                    bt->addTile(tile, math::Vec2f(pos.x, pos.y), heights);
                 }
             }
             addEntity(bt);
