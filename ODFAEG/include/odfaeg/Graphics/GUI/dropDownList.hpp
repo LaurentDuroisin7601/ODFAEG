@@ -29,6 +29,7 @@ namespace odfaeg {
                     void processEvents();
                     std::string getSelectedItem();
                     void removeAllItems();
+                    void setSelectedItem(std::string t);
                     ~DropDownList();
                 private :
                     math::Vec3f selectedItemPos;

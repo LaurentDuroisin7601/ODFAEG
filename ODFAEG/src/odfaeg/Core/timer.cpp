@@ -2,7 +2,7 @@
 #include <iostream>
 namespace odfaeg {
     namespace core {
-            Timer::Timer(bool usingThread) : interval(sf::seconds(0.1f)) {
+            Timer::Timer(bool usingThread) : isUsingThread(usingThread), interval(sf::seconds(0.1f)) {
                 if (usingThread) {
                     m_thread = std::thread(Timer::tUpdate, this);
                 }
@@ -38,8 +38,10 @@ namespace odfaeg {
                 }
             }
             void Timer::stop() {
-                running = false;
-                m_thread.join();
+                if (isUsingThread) {
+                    running = false;
+                    m_thread.join();
+                }
             }
             /** \fn virtual void onUpdate() = 0;
             *   \brief the function to redefine when updating the scene.
@@ -50,6 +52,8 @@ namespace odfaeg {
             std::string Timer::getName() {
                 return name;
             }
-            Timer::~Timer() {}
+            Timer::~Timer() {
+                stop();
+            }
     }
 }

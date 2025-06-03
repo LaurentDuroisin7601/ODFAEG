@@ -92,6 +92,13 @@ namespace odfaeg {
                 core::Command cmd (a, core::FastDelegate<bool>(&Label::isMouseInside, items.back()), core::FastDelegate<void>(&DropDownList::onItemSelected, this, items.back()));
                 label->getListener().connect(items.back()->getText().toAnsiString(), cmd);
             }
+            void DropDownList::setSelectedItem(std::string t) {
+                for (unsigned int i = 0; i < items.size(); i++) {
+                    if (items[i]->getText() == t) {
+                        selectedItem = items[i];
+                    }
+                }
+            }
             void DropDownList::removeAllItems() {
                 items.clear();
                 /*if (getName() == "FUNCTION")

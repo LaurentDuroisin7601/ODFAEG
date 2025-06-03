@@ -45,7 +45,7 @@ namespace odfaeg {
             sf::Time interval; /**> The time interval between two updates.*/
             std::string name;
             std::thread m_thread;
-            bool running;
+            bool running, isUsingThread;
         };
     }
 }

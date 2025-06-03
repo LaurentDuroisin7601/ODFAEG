@@ -1,7 +1,7 @@
 #include "../../../include/odfaeg/Core/entitySystem.h"
 namespace odfaeg {
     namespace core {
-        EntitySystem::EntitySystem(bool usingThread) : m_needToUpdate(false) {
+        EntitySystem::EntitySystem(bool usingThread) : isUsingThread(usingThread), m_needToUpdate(false) {
             if (usingThread) {
                 m_thread = std::thread(EntitySystem::tUpdate, this);
             }
@@ -22,8 +22,10 @@ namespace odfaeg {
             }
         }
         void EntitySystem::stop() {
-            running = false;
-            m_thread.join();
+            if (isUsingThread) {
+                running = false;
+                m_thread.join();
+            }
         }
         void EntitySystem::setName(std::string name) {
             this->name = name;
@@ -31,6 +33,8 @@ namespace odfaeg {
         std::string EntitySystem::getName() {
             return name;
         }
-        EntitySystem::~EntitySystem() {}
+        EntitySystem::~EntitySystem() {
+            stop();
+        }
     }
 }

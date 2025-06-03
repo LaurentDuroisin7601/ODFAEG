@@ -39,7 +39,7 @@ namespace odfaeg {
             virtual ~EntitySystem();
         private:
             std::string name;
-            bool m_needToUpdate, running;
+            bool m_needToUpdate, running, isUsingThread;
             std::thread m_thread;
         };
     }

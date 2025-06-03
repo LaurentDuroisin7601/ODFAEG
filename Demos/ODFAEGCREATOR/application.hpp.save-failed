@@ -217,7 +217,7 @@ class ODFAEGCreator : public odfaeg::core::Application<ODFAEGCreator>,
         odfaeg::math::Vec3f firstInters, prevObjectPos, prevObjectScale;
         bool isMovingXPos, isMovingYPos, isMovingZPos, isScalingX, isScalingY, isScalingZ;
         float prevAngle;
-        odfaeg::graphic::View selectedComponentView;
+        View selectedComponentView;
 };
 #endif
 #endif

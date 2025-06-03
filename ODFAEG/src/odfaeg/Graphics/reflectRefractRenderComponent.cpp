@@ -892,6 +892,7 @@ namespace odfaeg {
                 const std::string buildAlphaBufferFragmentShader = R"(#version 460
                                                                       #extension GL_ARB_fragment_shader_interlock : require
                                                                       #extension GL_EXT_nonuniform_qualifier : enable
+                                                                      #extension GL_EXT_debug_printf : enable
                                                                       layout(set = 0, binding = 0) uniform sampler2D textures[];
                                                                       layout(set = 0, binding = 1, rgba32f) uniform coherent image2D alphaBuffer;
                                                                       layout (location = 0) out vec4 fColor;
@@ -925,6 +926,7 @@ namespace odfaeg {
                                                                       }
                                                                       )";
                 const std::string buildFramebufferShader = R"(#version 460
+                                                              #extension GL_ARB_fragment_shader_interlock : require
                                                               #extension GL_EXT_debug_printf : enable
                                                                 layout (location = 0) in vec3 pos;
                                                                 layout (location = 1) in vec4 frontColor;
@@ -959,6 +961,7 @@ namespace odfaeg {
 
                                                                     vec3 i = (vec4(pos.xyz, 1) - pushConsts.cameraPos).xyz;
                                                                     if (refr) {
+                                                                        //debugPrintfEXT("resolution : %v4f\n", pushConsts.resolution);
                                                                         vec3 r = refract (i, normalize(normal), ratio);
                                                                         fColor = texture(sceneBox, r) * (1 - alpha.a);
                                                                     } else {
@@ -2013,11 +2016,7 @@ namespace odfaeg {
                 depthBuffer.display();
                 depthBuffer.beginRecordCommandBuffers();
                 std::vector<VkCommandBuffer> commandBuffers = depthBuffer.getCommandBuffers();
-                VkClearColorValue clearColor;
-                clearColor.uint32[0] = 0;
-                clearColor.uint32[1] = 0;
-                clearColor.uint32[2] = 0;
-                clearColor.uint32[3] = 0;
+                VkClearColorValue clearColor = {0.f, 0.f, 0.f, 0.f};
                 VkImageSubresourceRange subresRange = {};
                 subresRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
                 subresRange.levelCount = 1;
@@ -2128,7 +2127,7 @@ namespace odfaeg {
                     unsigned int currentFrame = reflectRefractTex.getCurrentFrame();
                     buildFrameBufferPC.resolution = resolution;
 
-                    vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 0, nullptr);
+                    //vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 0, nullptr);
                     VkMemoryBarrier memoryBarrier;
                     memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
                     memoryBarrier.pNext = VK_NULL_HANDLE;

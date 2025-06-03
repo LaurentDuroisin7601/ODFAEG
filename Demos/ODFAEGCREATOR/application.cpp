@@ -1800,7 +1800,7 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
 }
 void ODFAEGCreator::onExec() {
     if (IKeyboard::isKeyPressed(IKeyboard::Right)) {
-        View view = getRenderWindow().getView();
+        /*View view = getRenderWindow().getView();
         if (static_cast<Scene*>(getWorld()->getCurrentSceneManager())->getCellDepth() == 0) {
 
             if (alignToGrid)
@@ -1808,12 +1808,12 @@ void ODFAEGCreator::onExec() {
             else
                 view.move(speed * getClock("LoopTime").getElapsedTime().asSeconds(), 0, 0);
             getRenderWindow().setView(view);
-        }
+        }*/
         for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
             if (getRenderComponentManager().getRenderComponent(i) != nullptr) {
                 View cpntView = getRenderComponentManager().getRenderComponent(i)->getView();
                 if (cpntView.isOrtho()) {
-                    getRenderComponentManager().getRenderComponent(i)->setView(view);
+                    getRenderComponentManager().getRenderComponent(i)->setView(cpntView);
                 } else {
                     if (alignToGrid)
                         cpntView.move(cpntView.getLeft(), gridWidth);
@@ -1825,7 +1825,7 @@ void ODFAEGCreator::onExec() {
         }
     }
     if (IKeyboard::isKeyPressed(IKeyboard::Left)) {
-        View view = getRenderWindow().getView();
+        /*View view = getRenderWindow().getView();
         if (static_cast<Scene*>(getWorld()->getCurrentSceneManager())->getCellDepth() == 0) {
 
             if (alignToGrid)
@@ -1833,12 +1833,12 @@ void ODFAEGCreator::onExec() {
             else
                 view.move(-speed * getClock("LoopTime").getElapsedTime().asSeconds(), 0, 0);
             getRenderWindow().setView(view);
-        }
+        }*/
         for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
             if (getRenderComponentManager().getRenderComponent(i) != nullptr) {
                 View cpntView = getRenderComponentManager().getRenderComponent(i)->getView();
                 if (cpntView.isOrtho()) {
-                    getRenderComponentManager().getRenderComponent(i)->setView(view);
+                    getRenderComponentManager().getRenderComponent(i)->setView(cpntView);
                 } else {
                     if (alignToGrid)
                         cpntView.move(cpntView.getLeft(), -gridWidth);
@@ -1850,7 +1850,7 @@ void ODFAEGCreator::onExec() {
         }
     }
     if (IKeyboard::isKeyPressed(IKeyboard::Up)) {
-        View view = getRenderWindow().getView();
+        /*View view = getRenderWindow().getView();
         if (static_cast<Scene*>(getWorld()->getCurrentSceneManager())->getCellDepth() == 0) {
 
             if (alignToGrid)
@@ -1858,12 +1858,12 @@ void ODFAEGCreator::onExec() {
             else
                 view.move(0, -speed * getClock("LoopTime").getElapsedTime().asSeconds(), 0);
             getRenderWindow().setView(view);
-        }
+        }*/
         for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
             if (getRenderComponentManager().getRenderComponent(i) != nullptr) {
                 View cpntView = getRenderComponentManager().getRenderComponent(i)->getView();
                 if (cpntView.isOrtho()) {
-                    getRenderComponentManager().getRenderComponent(i)->setView(view);
+                    getRenderComponentManager().getRenderComponent(i)->setView(cpntView);
                 } else {
                     if (alignToGrid)
                         cpntView.move(cpntView.getForward(), -gridHeight);
@@ -1875,7 +1875,7 @@ void ODFAEGCreator::onExec() {
         }
     }
     if (IKeyboard::isKeyPressed(IKeyboard::Down)) {
-        View view = getRenderWindow().getView();
+        /*View view = getRenderWindow().getView();
         if (static_cast<Scene*>(getWorld()->getCurrentSceneManager())->getCellDepth() == 0) {
 
             if (alignToGrid)
@@ -1883,12 +1883,12 @@ void ODFAEGCreator::onExec() {
             else
                 view.move(0, speed * getClock("LoopTime").getElapsedTime().asSeconds(), 0);
             getRenderWindow().setView(view);
-        }
+        }*/
         for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
             if (getRenderComponentManager().getRenderComponent(i) != nullptr) {
                 View cpntView = getRenderComponentManager().getRenderComponent(i)->getView();
                 if (cpntView.isOrtho()) {
-                    getRenderComponentManager().getRenderComponent(i)->setView(view);
+                    getRenderComponentManager().getRenderComponent(i)->setView(cpntView);
                 } else {
                     if (alignToGrid)
                         cpntView.move(cpntView.getForward(), gridHeight);
@@ -2848,24 +2848,33 @@ void ODFAEGCreator::actionPerformed(Button* button) {
             getRenderComponentManager().addComponent(ppll);
             ppll->setName(taComponentName->getText());
             dpSelectComponent->addItem(taComponentName->getText(), 15);
+            dpSelectComponent->setSelectedItem(taComponentName->getText());
         }
         if (dpComponentType->getSelectedItem() == "Shadow") {
             ShadowRenderComponent* src = new ShadowRenderComponent(getRenderWindow(),conversionStringInt(taComponentLayer->getText()),taComponentExpression->getText(),ContextSettings(0, 0, 4, 4, 6));
             getRenderComponentManager().addComponent(src);
             src->setName(taComponentName->getText());
             dpSelectComponent->addItem(taComponentName->getText(), 15);
+            dpSelectComponent->setSelectedItem(taComponentName->getText());
         }
         if (dpComponentType->getSelectedItem() == "Light") {
             LightRenderComponent* lrc = new LightRenderComponent(getRenderWindow(),conversionStringInt(taComponentLayer->getText()),taComponentExpression->getText(),ContextSettings(0, 0, 4, 4, 6));
             getRenderComponentManager().addComponent(lrc);
             lrc->setName(taComponentName->getText());
             dpSelectComponent->addItem(taComponentName->getText(), 15);
+            dpSelectComponent->setSelectedItem(taComponentName->getText());
         }
         if (dpComponentType->getSelectedItem() == "Refraction") {
             ReflectRefractRenderComponent* rrrc = new ReflectRefractRenderComponent(getRenderWindow(),conversionStringInt(taComponentLayer->getText()),taComponentExpression->getText(),ContextSettings(0, 0, 4, 4, 6));
             getRenderComponentManager().addComponent(rrrc);
             rrrc->setName(taComponentName->getText());
             dpSelectComponent->addItem(taComponentName->getText(), 15);
+            dpSelectComponent->setSelectedItem(taComponentName->getText());
+        }
+        for (unsigned int i = 0; i < getRenderComponentManager().getComponents().size(); i++) {
+            if (getRenderComponentManager().getComponents()[i]->getName() == dpSelectComponent->getSelectedItem()) {
+                selectedComponentView = getRenderComponentManager().getComponents()[i]->getFrameBuffer()->getView();
+            }
         }
     }
     if(button==bCreateEntitiesUpdater) {
@@ -5995,6 +6004,7 @@ void ODFAEGCreator::onSelectedComponentChanged(DropDownList* dp) {
         std::vector<Component*> components = getRenderComponentManager().getRenderComponents();
         for (unsigned int i = 0; i < components.size(); i++) {
             if (components[i]->getName() == name && dynamic_cast<HeavyComponent*>(components[i])) {
+                selectedComponentView = components[i]->getFrameBuffer()->getView();
                 taChangeComponentExpression->setText(static_cast<HeavyComponent*>(components[i])->getExpression());
             }
         }
