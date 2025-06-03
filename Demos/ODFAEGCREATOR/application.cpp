@@ -849,25 +849,7 @@ void ODFAEGCreator::onInit() {
     catch (Erreur& erreur) {
         std::cerr << erreur.what() << std::endl;
     }
-    cshapes.clear();
-    for (int i = 0; i < getRenderWindow().getSize().x; i+=gridWidth) {
-        for (int j = 0; j < getRenderWindow().getSize().y; j+=gridHeight) {
-            ConvexShape cshape(4);
-            cshape.setFillColor(sf::Color::Transparent);
-            cshape.setOutlineColor(sf::Color(75, 75, 75));
-            cshape.setOutlineThickness(1.f);
-            Vec2f points[4];
-            points[0] = Vec2f(0, 0);
-            points[1] = Vec2f(gridWidth, 0);
-            points[2] = Vec2f(gridWidth, gridHeight);
-            points[3] = Vec2f(0, gridHeight);
-            for (unsigned int n = 0; n < 4; n++) {
-                points[n] += Vec2f(i, j);
-                cshape.setPoint(n, sf::Vector3f(points[n].x, points[n].y, 0));
-            }
-            cshapes.push_back(cshape);
-        }
-    }
+
     //std::cout<<"on init"<<std::endl;
 }
 /*void ODFAEGCreator::updateScriptText(Shape* shape, const Texture* text) {
@@ -942,8 +924,9 @@ void ODFAEGCreator::onDisplay(RenderWindow* window) {
     if (window == &getRenderWindow()) {
         for (unsigned int i = 0; i < shapes.size(); i++)
             window->draw(*shapes[i]);
-        View currentView = window->getView();
         View defaultView = window->getDefaultView();
+        window->setView(selectedComponentView);
+
 
         if (isGuiShown) {
             //std::cout<<"get visible tiles : "<<std::endl;
@@ -1010,14 +993,14 @@ void ODFAEGCreator::onDisplay(RenderWindow* window) {
             glEnable(GL_ALPHA_TEST);*/
             if (tabPane->getSelectedTab() == "Collisions") {
                 //window->setView(defaultView);
-                BoundingBox view = currentView.getViewVolume();
-                Vec3f delta = defaultView.getPosition()-currentView.getPosition();
+                BoundingBox view = selectedComponentView.getViewVolume();
+                /*Vec3f delta = defaultView.getPosition()-selectedComponentView.getPosition();
                 int moveX = (int) delta.x / (int) (gridWidth) * (int) (gridWidth);
                 int moveY = (int) delta.y / (int) (gridHeight) * (int) (gridHeight);
                 if (delta.x < 0)
                     moveX-=gridWidth;
                 if (delta.y < 0)
-                    moveY-=gridHeight;
+                    moveY-=gridHeight;*/
                 int x = view.getPosition().x;
                 int y = view.getPosition().y;
                 int endX = view.getPosition().x + view.getWidth();
@@ -1054,17 +1037,48 @@ void ODFAEGCreator::onDisplay(RenderWindow* window) {
                         }
                     }
                 }
-                window->setView(currentView);
+
                 //std::cout<<"draw collision rect!"<<std::endl;
                 window->draw(collisionBox);
             }
             window->draw(rotationGuismo);
             window->draw(translationGuismo);
             window->draw(scaleGuismo);
-            window->setView(defaultView);
             window->draw(cursor);
             if (showGrid) {
-                window->getView().move(getRenderWindow().getSize().x * 0.5f, getRenderWindow().getSize().y * 0.5f, 0);
+                BoundingBox view = selectedComponentView.getViewVolume();
+                cshapes.clear();
+
+                int x = (int) view.getPosition().x / gridWidth * gridWidth;
+                int y = (int) view.getPosition().y / gridHeight * gridHeight;
+                int endX = (int) (view.getPosition().x + view.getWidth()) / gridWidth * gridWidth;
+                int endY = (int) (view.getPosition().y + view.getHeight()) / gridHeight * gridHeight;
+                for (int i = x; i < endX; i+=gridWidth) {
+                    for (int j = y; j < endY; j+=gridHeight) {
+                        ConvexShape cshape(4);
+                        cshape.setFillColor(sf::Color::Transparent);
+                        cshape.setOutlineColor(sf::Color(75, 75, 75));
+                        cshape.setOutlineThickness(1.f);
+                        Vec3f points[4];
+                        points[0] = Vec2f(0, 0);
+                        points[1] = Vec2f(gridWidth, 0);
+                        points[2] = Vec2f(gridWidth, gridHeight);
+                        points[3] = Vec2f(0, gridHeight);
+                        for (unsigned int i = 0; i < 8; i++) {
+
+                            if (getWorld()->getCurrentSceneManager() != nullptr) {
+                                points[i] = getWorld()->getCurrentSceneManager()->getBaseChangementMatrix().changeOfBase(points[i]);
+                            }
+                            /*if (i < 4)
+                                //std::cout<<"point "<<i<<" : "<<v[i]<<std::endl;*/
+                        }
+                        for (unsigned int n = 0; n < 4; n++) {
+                            points[n] += Vec3f(i, j, 0);
+                            cshape.setPoint(n, sf::Vector3f(points[n].x, points[n].y, 0));
+                        }
+                        cshapes.push_back(cshape);
+                    }
+                }
                 for (unsigned int  i = 0; i < cshapes.size(); i++)
                     window->draw(cshapes[i]);
             }
@@ -1079,7 +1093,6 @@ void ODFAEGCreator::onDisplay(RenderWindow* window) {
         if (showRectSelect) {
             window->draw(rectSelect);
         }
-        window->setView(currentView);
 
     }
 }
@@ -1813,6 +1826,10 @@ void ODFAEGCreator::onExec() {
             if (getRenderComponentManager().getRenderComponent(i) != nullptr) {
                 View cpntView = getRenderComponentManager().getRenderComponent(i)->getView();
                 if (cpntView.isOrtho()) {
+                    if (alignToGrid)
+                        cpntView.move(gridWidth, 0, 0);
+                    else
+                        cpntView.move(speed * getClock("LoopTime").getElapsedTime().asSeconds(), 0, 0);
                     getRenderComponentManager().getRenderComponent(i)->setView(cpntView);
                 } else {
                     if (alignToGrid)
@@ -1838,6 +1855,10 @@ void ODFAEGCreator::onExec() {
             if (getRenderComponentManager().getRenderComponent(i) != nullptr) {
                 View cpntView = getRenderComponentManager().getRenderComponent(i)->getView();
                 if (cpntView.isOrtho()) {
+                    if (alignToGrid)
+                        cpntView.move(-gridWidth, 0, 0);
+                    else
+                        cpntView.move(-speed * getClock("LoopTime").getElapsedTime().asSeconds(), 0, 0);
                     getRenderComponentManager().getRenderComponent(i)->setView(cpntView);
                 } else {
                     if (alignToGrid)
@@ -1863,6 +1884,10 @@ void ODFAEGCreator::onExec() {
             if (getRenderComponentManager().getRenderComponent(i) != nullptr) {
                 View cpntView = getRenderComponentManager().getRenderComponent(i)->getView();
                 if (cpntView.isOrtho()) {
+                    if (alignToGrid)
+                        cpntView.move(0, -gridHeight, 0);
+                    else
+                        cpntView.move(0, -speed * getClock("LoopTime").getElapsedTime().asSeconds(), 0);
                     getRenderComponentManager().getRenderComponent(i)->setView(cpntView);
                 } else {
                     if (alignToGrid)
@@ -1888,6 +1913,10 @@ void ODFAEGCreator::onExec() {
             if (getRenderComponentManager().getRenderComponent(i) != nullptr) {
                 View cpntView = getRenderComponentManager().getRenderComponent(i)->getView();
                 if (cpntView.isOrtho()) {
+                    if (alignToGrid)
+                        cpntView.move(0, gridHeight, 0);
+                    else
+                        cpntView.move(0, speed * getClock("LoopTime").getElapsedTime().asSeconds(), 0);
                     getRenderComponentManager().getRenderComponent(i)->setView(cpntView);
                 } else {
                     if (alignToGrid)
@@ -1897,6 +1926,11 @@ void ODFAEGCreator::onExec() {
                     getRenderComponentManager().getRenderComponent(i)->setView(cpntView);
                 }
             }
+        }
+    }
+    for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
+        if (getRenderComponentManager().getRenderComponent(i) != nullptr && getRenderComponentManager().getRenderComponent(i)->getName() == dpSelectComponent->getSelectedItem()) {
+            selectedComponentView = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->getView();
         }
     }
 
@@ -2210,6 +2244,8 @@ void ODFAEGCreator::onExec() {
                         ppll->setName(name);
                         getRenderComponentManager().addComponent(ppll);
                         dpSelectComponent->addItem(name, 15);
+                        dpSelectComponent->setSelectedItem(name);
+                        selectedComponentView = ppll->getFrameBuffer()->getView();
                     }
                     if (type == "Shadow") {
                         //std::cout<<"load components"<<std::endl;
@@ -2222,6 +2258,8 @@ void ODFAEGCreator::onExec() {
                         ppll->setName(name);
                         getRenderComponentManager().addComponent(ppll);
                         dpSelectComponent->addItem(name, 15);
+                        dpSelectComponent->setSelectedItem(name);
+                        selectedComponentView = ppll->getFrameBuffer()->getView();
                     }
                     if (type == "ReflectRefract") {
                         //std::cout<<"load components"<<std::endl;
@@ -2234,6 +2272,8 @@ void ODFAEGCreator::onExec() {
                         ppll->setName(name);
                         getRenderComponentManager().addComponent(ppll);
                         dpSelectComponent->addItem(name, 15);
+                        dpSelectComponent->setSelectedItem(name);
+                        selectedComponentView = ppll->getFrameBuffer()->getView();
                     }
                     if (type == "Light") {
                         //std::cout<<"load components"<<std::endl;
@@ -2246,6 +2286,8 @@ void ODFAEGCreator::onExec() {
                         ppll->setName(name);
                         getRenderComponentManager().addComponent(ppll);
                         dpSelectComponent->addItem(name, 15);
+                        dpSelectComponent->setSelectedItem(name);
+                        selectedComponentView = ppll->getFrameBuffer()->getView();
                     }
                 }
                 ifs5.close();
