@@ -429,7 +429,7 @@ namespace odfaeg {
                             Entity *w = walls[Wall::TOP_BOTTOM]->clone();
                             w->setPosition(math::Vec3f(pos.x, pos.y, pos.y + walls[Wall::TOP_BOTTOM]->getSize().y * 0.5f));
                             addEntity(w);
-                            if (y == endY - tileSize.y) {
+                            if (getBaseChangementMatrix().isIso2DMatrix() && y == endY - tileSize.y) {
                                 int i = math::Math::random(tGround.size());
                                 Entity *tile = tGround[i]->clone();
                                 tile->setPosition(math::Vec3f(pos.x, pos.y, pos.y + tile->getSize().y * 0.5f));
@@ -444,7 +444,7 @@ namespace odfaeg {
 
                             w->setPosition(math::Vec3f(pos.x, pos.y, pos.y + walls[Wall::RIGHT_LEFT]->getSize().y * 0.5f));
                             addEntity(w);
-                            if (x == endX - tileSize.x) {
+                            if (getBaseChangementMatrix().isIso2DMatrix() && x == endX - tileSize.x) {
                                 int i = math::Math::random(tGround.size());
                                 Entity *tile = tGround[i]->clone();
                                 tile->setPosition(math::Vec3f(pos.x, pos.y, pos.y + tile->getSize().y * 0.5f));
@@ -536,12 +536,12 @@ namespace odfaeg {
                             w->setPosition(math::Vec3f(pos.x, rect.getPosition().y, pos.y));
                             w->setSize(math::Vec3f(w->getSize().x, rect.getSize().z + w->getSize().z, w->getSize().z));
                             addEntity(w);
-                            if (y == endY - tileSize.y) {
+                            /*if (y == endY - tileSize.y) {
                                 int i = math::Math::random(tGround.size());
                                 Entity *tile = tGround[i]->clone();
                                 tile->setPosition(math::Vec3f(pos.x, 0, pos.y));
                                 bt->addTile(tile);
-                            }
+                            }*/
                             gridMap->getGridCellAt(math::Vec3f(w->getPosition().x, w->getPosition().y, w->getPosition().z))->setPassable(false);
                         }
                     } else if ((x == startX || x == endX - tileSize.x) && walls.size() >= 11) {
@@ -551,12 +551,12 @@ namespace odfaeg {
                             w->setPosition(math::Vec3f(pos.x, rect.getPosition().y, pos.y));
                             w->setSize(math::Vec3f(w->getSize().x, rect.getSize().z + w->getSize().z, w->getSize().z));
                             addEntity(w);
-                            if (x == endX - tileSize.x) {
+                            /*if (x == endX - tileSize.x) {
                                 int i = math::Math::random(tGround.size());
                                 Entity *tile = tGround[i]->clone();
                                 tile->setPosition(math::Vec3f(pos.x, 0, pos.y));
                                 bt->addTile(tile);
-                            }
+                            }*/
                             gridMap->getGridCellAt(math::Vec3f(w->getPosition().x, w->getPosition().y, w->getPosition().z))->setPassable(false);
                         }
                     } else {

@@ -46,7 +46,7 @@ namespace odfaeg {
                     * \param sahdowType : the type of the shadow to generate.
                     */
                     Wall (math::Vec3f position, math::Vec3f size, Type type, Light *light, EntityFactory& factory);
-                    void setMesh(Mesh *mesh);
+                    void setMesh(Entity *mesh);
                     void createShadow(Light& light);
                     /**
                     * \fn bool isLeaf() const;

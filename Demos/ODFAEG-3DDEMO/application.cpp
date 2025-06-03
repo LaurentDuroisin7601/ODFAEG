@@ -76,9 +76,9 @@ void MyAppli::onInit() {
     std::vector<Tile*> tGround;
     std::vector<g3d::Wall*> tWall;
     Texture* text = const_cast<Texture*>(tm.getResourceByAlias(GRASS));
-    text->setRepeated(true);
-    text->setSmooth(true);
-    tGround.push_back(new Tile(text, Vec3f(0, 0, 0), Vec3f(50, 0, 50),sf::IntRect(0, 0, 100*20, 100*20), factory));
+    /*text->setRepeated(true);
+    text->setSmooth(true);*/
+    tGround.push_back(new Tile(text, Vec3f(0, 0, 0), Vec3f(50, 0, 50),sf::IntRect(0, 0, 1024, 1024), factory));
     BoundingBox mapZone (-500, 0, -500, 1000, 50, 1000);
     std::cout<<"generate map"<<std::endl;
     getWorld()->generate_3d_map(tGround, tWall, Vec2f(50, 50), mapZone, factory);
@@ -245,8 +245,8 @@ void MyAppli::onUpdate (RenderWindow* window, IEvent& event) {
         if (event.type == IEvent::WINDOW_EVENT && event.window.type == IEvent::WINDOW_EVENT_CLOSED)
         {
             stop();
-            animUpdater->stop();
-            eu->stop();
+            /*animUpdater->stop();
+            eu->stop();*/
         }
         if (event.type == IEvent::WINDOW_EVENT && event.window.type == IEvent::WINDOW_EVENT_RESIZED)
         {

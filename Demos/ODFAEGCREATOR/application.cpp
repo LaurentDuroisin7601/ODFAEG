@@ -21,6 +21,7 @@ Application (vm, title, sf::Style::Resize|sf::Style::Close, ContextSettings(0, 8
     isSelectingPolyhedron = false;
     isSecondClick = false;
     isGeneratingTerrain = false;
+    isGenerating3DTerrain = false;
     dpSelectTexture = nullptr;
     dpSelectEm = nullptr;
     sTextRect = nullptr;
@@ -239,6 +240,9 @@ void ODFAEGCreator::onInit() {
         item46 = new MenuItem(getRenderWindow(), fm.getResourceByAlias(Fonts::Serif), "Generate terrain");
         item46->addMenuItemListener(this);
         getRenderComponentManager().addComponent(item46);
+        item47 = new MenuItem(getRenderWindow(), fm.getResourceByAlias(Fonts::Serif), "Generate 3D terrain");
+        item47->addMenuItemListener(this);
+        getRenderComponentManager().addComponent(item47);
 
         menu4->addMenuItem(item41);
         menu4->addMenuItem(item42);
@@ -246,6 +250,7 @@ void ODFAEGCreator::onInit() {
         menu4->addMenuItem(item44);
         menu4->addMenuItem(item45);
         menu4->addMenuItem(item46);
+        menu4->addMenuItem(item47);
 
         item51 = new MenuItem(getRenderWindow(), fm.getResourceByAlias(Fonts::Serif), "New object");
         Command cmdmom(amom, FastDelegate<bool>(&MenuItem::isMouseOnMenu, item51), FastDelegate<void>(&ODFAEGCreator::onMouseOnMenu, this, item51));
@@ -312,7 +317,7 @@ void ODFAEGCreator::onInit() {
         wApplicationNew->setVisible(false);
         getRenderComponentManager().setEventContextActivated(false, *wApplicationNew);
         //Create map window.
-        wNewMap = new RenderWindow(sf::VideoMode(400, 300), "Create new scene", sf::Style::Default, ContextSettings(0, 0, 0, 3, 0));
+        wNewMap = new RenderWindow(sf::VideoMode(400, 400), "Create new scene", sf::Style::Default, ContextSettings(0, 0, 0, 3, 0));
         Label* labMapName = new Label(*wNewMap, Vec3f(0, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "Map name : ", 15);
         getRenderComponentManager().addComponent(labMapName);
         taMapName = new TextArea(Vec3f(200, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "", *wNewMap);
@@ -324,13 +329,18 @@ void ODFAEGCreator::onInit() {
         getRenderComponentManager().addComponent(dpMapTypeList);
         lMapWidth = new Label(*wNewMap, Vec3f(0, 100, 0), Vec3f(100, 50, 0), fm.getResourceByAlias(Fonts::Serif), "case width : ", 15);
         lMapHeight = new Label(*wNewMap, Vec3f(200, 100, 0), Vec3f(100, 50, 0), fm.getResourceByAlias(Fonts::Serif), "case height : ", 15);
+        lMapDepth = new Label(*wNewMap, Vec3f(0, 200, 0), Vec3f(100, 50, 0), fm.getResourceByAlias(Fonts::Serif), "case depth : ", 15);
+
         getRenderComponentManager().addComponent(lMapWidth);
         getRenderComponentManager().addComponent(lMapHeight);
+        getRenderComponentManager().addComponent(lMapDepth);
         taMapWidth = new TextArea(Vec3f(80, 100, 0), Vec3f(100, 50, 0), fm.getResourceByAlias(Fonts::Serif), "100", *wNewMap);
         taMapHeight = new TextArea(Vec3f(280, 100, 0), Vec3f(100, 50, 0), fm.getResourceByAlias(Fonts::Serif), "50", *wNewMap);
+        taMapDepth = new TextArea(Vec3f(80, 200, 0), Vec3f(100, 50, 0), fm.getResourceByAlias(Fonts::Serif), "0", *wNewMap);
         getRenderComponentManager().addComponent(taMapWidth);
         getRenderComponentManager().addComponent(taMapHeight);
-        bCreateScene = new Button(Vec3f(0, 200, 0), Vec3f(400, 100, 0), fm.getResourceByAlias(Fonts::Serif), "Create scene", 15, *wNewMap);
+        getRenderComponentManager().addComponent(taMapDepth);
+        bCreateScene = new Button(Vec3f(0, 300, 0), Vec3f(400, 100, 0), fm.getResourceByAlias(Fonts::Serif), "Create scene", 15, *wNewMap);
         bCreateScene->addActionListener(this);
         getRenderComponentManager().addComponent(bCreateScene);
         addWindow(wNewMap);
@@ -707,6 +717,72 @@ void ODFAEGCreator::onInit() {
         wGenerateTerrain->setVisible(false);
         addWindow(wGenerateTerrain);
         getRenderComponentManager().setEventContextActivated(false, *wGenerateTerrain);
+
+        wGenerate3DTerrain = new RenderWindow(sf::VideoMode(400, 800), "Generate 3D terrain", sf::Style::Default, ContextSettings(0, 0, 4, 3, 0));
+        Label* lTileWidth3D = new Label(*wGenerate3DTerrain, Vec3f(0, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "Tile width : ", 15);
+        getRenderComponentManager().addComponent(lTileWidth3D);
+        taTileWidth3D = new TextArea(Vec3f(200, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "", *wGenerate3DTerrain);
+        getRenderComponentManager().addComponent(taTileWidth3D);
+
+        Label* lTileHeight3D = new Label(*wGenerate3DTerrain, Vec3f(0, 50, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "Tile height : ", 15);
+        getRenderComponentManager().addComponent(lTileHeight3D);
+        taTileDepth3D = new TextArea(Vec3f(200, 50, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "", *wGenerate3DTerrain);
+        getRenderComponentManager().addComponent(taTileDepth3D);
+
+        Label* lZoneXPos3D = new Label(*wGenerate3DTerrain, Vec3f(0, 100, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "Zone X pos : ", 15);
+        getRenderComponentManager().addComponent(lZoneXPos3D);
+        taZoneXPos3D = new TextArea(Vec3f(200, 100, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "", *wGenerate3DTerrain);
+        getRenderComponentManager().addComponent(taZoneXPos3D);
+
+        Label* lZoneYPos3D = new Label(*wGenerate3DTerrain, Vec3f(0, 150, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "Zone y pos : ", 15);
+        getRenderComponentManager().addComponent(lZoneYPos3D);
+        taZoneYPos3D = new TextArea(Vec3f(200, 150, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "", *wGenerate3DTerrain);
+        getRenderComponentManager().addComponent(taZoneYPos3D);
+
+        Label* lZoneZPos3D = new Label(*wGenerate3DTerrain, Vec3f(0, 200, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "Zone z pos : ", 15);
+        getRenderComponentManager().addComponent(lZoneZPos3D);
+        taZoneZPos3D = new TextArea(Vec3f(200, 200, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "", *wGenerate3DTerrain);
+        getRenderComponentManager().addComponent(taZoneZPos3D);
+
+        Label* lZoneWidth3D = new Label(*wGenerate3DTerrain, Vec3f(0, 250, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "Zone width : ", 15);
+        getRenderComponentManager().addComponent(lZoneWidth3D);
+        taZoneWidth3D = new TextArea(Vec3f(200, 250, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "", *wGenerate3DTerrain);
+        getRenderComponentManager().addComponent(taZoneWidth3D);
+
+        Label* lZoneHeight3D = new Label(*wGenerate3DTerrain, Vec3f(0, 300, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "Zone height : ", 15);
+        getRenderComponentManager().addComponent(lZoneHeight3D);
+        taZoneHeight3D = new TextArea(Vec3f(200, 300, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "", *wGenerate3DTerrain);
+        getRenderComponentManager().addComponent(taZoneHeight3D);
+
+        Label* lZoneDepth3D = new Label(*wGenerate3DTerrain, Vec3f(0, 350, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "Zone depth : ", 15);
+        getRenderComponentManager().addComponent(lZoneDepth3D);
+        taZoneDepth3D = new TextArea(Vec3f(200, 350, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "", *wGenerate3DTerrain);
+        getRenderComponentManager().addComponent(taZoneDepth3D);
+
+        bAddTileGround3D = new Button(Vec3f(0, 450, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "Add tile ground", 15, *wGenerate3DTerrain);
+        bAddTileGround3D->addActionListener(this);
+        getRenderComponentManager().addComponent(bAddTileGround3D);
+
+        dpSelectWallType3D = new DropDownList(*wGenerate3DTerrain, Vec3f(0, 500, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "top bottom", 15);
+        dpSelectWallType3D->addItem("right left", 15);
+        dpSelectWallType3D->addItem("bottom right", 15);
+        dpSelectWallType3D->addItem("top left", 15);
+        dpSelectWallType3D->addItem("top right", 15);
+        dpSelectWallType3D->addItem("bottom left", 15);
+        Command cmdSelectWallTypeDroppeddown3D (FastDelegate<bool>(&DropDownList::isDroppedDown, dpSelectWallType3D), FastDelegate<void>(&ODFAEGCreator::onSelectedWallTypeDroppedDown, this, dpSelectWallType3D));
+        getRenderComponentManager().addComponent(dpSelectWallType3D);
+        dpSelectWallType->getListener().connect("selectWallTypeDroppedDown3D", cmdSelectWallTypeDroppeddown3D);
+        Command cmdSelectWallTypeNotDroppedDown3D(FastDelegate<bool>(&DropDownList::isNotDroppedDown, dpSelectWallType3D), FastDelegate<void>(&ODFAEGCreator::onSelectedWallTypeNotDroppedDown, this, dpSelectWallType3D));
+        dpSelectWallType->getListener().connect("selectWallTypeNotDroppedDown3D", cmdSelectWallTypeNotDroppedDown3D);
+
+        bGenerate3DTerrain = new Button(Vec3f(0, 550, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "Generate terrain", 15, *wGenerate3DTerrain);
+        bGenerate3DTerrain->addActionListener(this);
+        getRenderComponentManager().addComponent(bGenerate3DTerrain);
+
+        wGenerate3DTerrain->setVisible(false);
+        addWindow(wGenerate3DTerrain);
+        getRenderComponentManager().setEventContextActivated(false, *wGenerate3DTerrain);
+
         //Create panel for project files.
         pProjects = new Panel(getRenderWindow(), Vec3f(0, 0, 0), Vec3f(200, 700, 0), 0);
         rootNode = std::make_unique<Node>("projects", pProjects, Vec2f(0.f, 0.015f), Vec2f(1.f / 6.f, 1.f));
@@ -1125,7 +1201,7 @@ Vec3f ODFAEGCreator::getGridCellPos(Vec3f pos) {
     return Vec3f (extends[0][0], extends[1][0], extends[2][0]);
 }
 void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
-    if(&getRenderWindow() == window && event.type == IEvent::KEYBOARD_EVENT && event.keyboard.type == IEvent::KEY_EVENT_PRESSED && event.keyboard.control && event.keyboard.code == IKeyboard::R) {
+    if(&getRenderWindow() == window && event.type == IEvent::KEYBOARD_EVENT && event.keyboard.type == IEvent::KEY_EVENT_PRESSED && isGuiShown && event.keyboard.code == IKeyboard::R) {
         if (selectedObject != nullptr) {
 
             rotationGuismo.setCenterSize(selectedObject->getPosition()+selectedObject->getSize()*0.5f, selectedObject->getSize());
@@ -1134,7 +1210,7 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
             scaleGuismo.setVisible(false);
         }
     }
-    if(&getRenderWindow() == window && event.type == IEvent::KEYBOARD_EVENT && event.keyboard.type == IEvent::KEY_EVENT_PRESSED && event.keyboard.control && event.keyboard.code == IKeyboard::M) {
+    if(&getRenderWindow() == window && event.type == IEvent::KEYBOARD_EVENT && event.keyboard.type == IEvent::KEY_EVENT_PRESSED && isGuiShown && event.keyboard.code == IKeyboard::M) {
         if (selectedObject != nullptr) {
 
             translationGuismo.setCenterSize(selectedObject->getPosition()+selectedObject->getSize()*0.5f, selectedObject->getSize());
@@ -1143,7 +1219,7 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
             scaleGuismo.setVisible(false);
         }
     }
-    if(&getRenderWindow() == window && event.type == IEvent::KEYBOARD_EVENT && event.keyboard.type == IEvent::KEY_EVENT_PRESSED && event.keyboard.control && event.keyboard.code == IKeyboard::S) {
+    if(&getRenderWindow() == window && event.type == IEvent::KEYBOARD_EVENT && event.keyboard.type == IEvent::KEY_EVENT_PRESSED && isGuiShown && event.keyboard.code == IKeyboard::S) {
         if (selectedObject != nullptr) {
 
             scaleGuismo.setCenterSize(selectedObject->getPosition()+selectedObject->getSize()*0.5f, selectedObject->getSize());
@@ -2418,6 +2494,40 @@ void ODFAEGCreator::onExec() {
                     }
                 }
             }
+            std::string path = (fdImport3DModel != nullptr) ? fdImport3DModel->getPathChosen() : "";
+            if (path != "") {
+                if (isGenerating3DTerrain) {
+                    Entity* mesh = modelLoader.loadModel(path, factory);
+                    if (dpSelectWallType->getSelectedItem() == "top bottom") {
+                        std::cout<<"top bottom"<<std::endl;
+                        walls3D[g3d::Wall::TOP_BOTTOM]->setMesh(mesh);
+                    }
+                    else if (dpSelectWallType->getSelectedItem() == "right left") {
+                        std::cout<<"right left"<<std::endl;
+                        walls3D[g3d::Wall::RIGHT_LEFT]->setMesh(mesh);
+                    } else if (dpSelectWallType->getSelectedItem() == "bottom right") {
+                        std::cout<<"bottom right"<<std::endl;
+                        walls3D[g3d::Wall::BOTTOM_RIGHT]->setMesh(mesh);
+                    } else if (dpSelectWallType->getSelectedItem() == "top left") {
+                        std::cout<<"top left"<<std::endl;
+                        walls3D[g3d::Wall::TOP_LEFT]->setMesh(mesh);
+                    } else if (dpSelectWallType->getSelectedItem() == "top right") {
+                        std::cout<<"top right"<<std::endl;
+                        walls3D[g3d::Wall::TOP_RIGHT]->setMesh(mesh);
+                    } else if (dpSelectWallType->getSelectedItem() == "bottom left") {
+                        std::cout<<"bottom left"<<std::endl;
+                        walls3D[g3d::Wall::BOTTOM_LEFT]->setMesh(mesh);
+                    }
+                    g3d::Wall* wall = new g3d::Wall(factory);
+                    wall->setMesh(mesh);
+                    walls3D.push_back(wall);
+                    fdImport3DModel->setVisible(false);
+                    isGenerating3DTerrain = false;
+                    wGenerate3DTerrain->setVisible(true);
+                    getRenderComponentManager().setEventContextActivated(true, *wGenerate3DTerrain);
+                    getRenderComponentManager().setEventContextActivated(false, getRenderWindow());
+                }
+            }
             std::vector<std::string> classes = Class::getClasses(appliname+"\\Scripts");
             for (unsigned int i = 0; i < classes.size(); i++) {
                 Class cl = Class::getClass(classes[i]);
@@ -2637,10 +2747,52 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         ground.push_back(tile);
         displayTileInfos(tile);
     }
-    if (button == bAddWall) {
+    if (button == bAddTileGround3D) {
+        isGenerating3DTerrain = true;
+        wGenerateTerrain->setVisible(false);
+        getRenderComponentManager().setEventContextActivated(false, *wGenerate3DTerrain);
+        getRenderComponentManager().setEventContextActivated(true, getRenderWindow());
+        Tile* tile = factory.make_entity<Tile>(nullptr, Vec3f(0, 0, 0), Vec3f(50, 0, 50),sf::IntRect(0, 0, 50, 50), factory);
+        selectedObject = tile;
+        ground.push_back(tile);
+        displayTileInfos(tile);
+    }
+    if (button == bAddWall3D) {
         isGeneratingTerrain = true;
         wGenerateTerrain->setVisible(false);
         getRenderComponentManager().setEventContextActivated(false, *wGenerateTerrain);
+        getRenderComponentManager().setEventContextActivated(true, getRenderWindow());
+        if (dpSelectWallType->getSelectedItem() == "top bottom") {
+            std::cout<<"top bottom"<<std::endl;
+            g3d::Wall* wall = factory.make_entity<g3d::Wall>(factory);
+            walls3D[g3d::Wall::TOP_BOTTOM] = wall;
+        }
+        else if (dpSelectWallType->getSelectedItem() == "right left") {
+            std::cout<<"right left"<<std::endl;
+            g3d::Wall* wall = factory.make_entity<g3d::Wall>(factory);
+            walls3D[g3d::Wall::RIGHT_LEFT] = wall;
+        } else if (dpSelectWallType->getSelectedItem() == "bottom right") {
+            std::cout<<"bottom right"<<std::endl;
+            g3d::Wall* wall = factory.make_entity<g3d::Wall>(factory);
+            walls3D[g3d::Wall::BOTTOM_RIGHT] = wall;
+        } else if (dpSelectWallType->getSelectedItem() == "top left") {
+            std::cout<<"top left"<<std::endl;
+            g3d::Wall* wall = factory.make_entity<g3d::Wall>(factory);
+            walls3D[g3d::Wall::TOP_LEFT] = wall;
+        } else if (dpSelectWallType->getSelectedItem() == "top right") {
+            std::cout<<"top right"<<std::endl;
+            g3d::Wall* wall = factory.make_entity<g3d::Wall>(factory);
+            walls3D[g3d::Wall::TOP_RIGHT] = wall;
+        } else if (dpSelectWallType->getSelectedItem() == "bottom left") {
+            std::cout<<"bottom left"<<std::endl;
+            g3d::Wall* wall = factory.make_entity<g3d::Wall>(factory);
+            walls3D[g3d::Wall::BOTTOM_LEFT] = wall;
+        }
+    }
+    if (button == bAddWall) {
+        isGeneratingTerrain = true;
+        wGenerateTerrain->setVisible(false);
+        getRenderComponentManager().setEventContextActivated(false, *wGenerate3DTerrain);
         getRenderComponentManager().setEventContextActivated(true, getRenderWindow());
         if (dpSelectWallType->getSelectedItem() == "top bottom") {
             std::cout<<"top bottom"<<std::endl;
@@ -2680,12 +2832,20 @@ void ODFAEGCreator::actionPerformed(Button* button) {
             selectedObject = wall->getChildren()[0];
             displayTileInfos(wall->getChildren()[0]);
         }
+        fdImport3DModel->setVisible(true);
     }
     if (button == bSetTexRect) {
-        isGeneratingTerrain = false;
-        wGenerateTerrain->setVisible(true);
-        getRenderComponentManager().setEventContextActivated(true, *wGenerateTerrain);
-        getRenderComponentManager().setEventContextActivated(false, getRenderWindow());
+        if (isGeneratingTerrain) {
+            isGeneratingTerrain = false;
+            wGenerateTerrain->setVisible(true);
+            getRenderComponentManager().setEventContextActivated(true, *wGenerateTerrain);
+            getRenderComponentManager().setEventContextActivated(false, getRenderWindow());
+        } else if (isGenerating3DTerrain) {
+            isGenerating3DTerrain = false;
+            wGenerate3DTerrain->setVisible(true);
+            getRenderComponentManager().setEventContextActivated(true, *wGenerate3DTerrain);
+            getRenderComponentManager().setEventContextActivated(false, getRenderWindow());
+        }
     }
     if (button->getText() == "Select Area") {
         isSelectingPolyhedron = true;
@@ -2843,7 +3003,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         if (dpMapTypeList->getSelectedItem() == "2D iso") {
             bcm.set2DIsoMatrix();
         }
-        theMap = new Scene(&getRenderComponentManager(), taMapName->getText(), conversionStringInt(taMapWidth->getText()), conversionStringInt(taMapHeight->getText()), 0);
+        theMap = new Scene(&getRenderComponentManager(), taMapName->getText(), conversionStringInt(taMapWidth->getText()), conversionStringInt(taMapHeight->getText()), conversionStringInt(taMapDepth->getText()));
         theMap->setBaseChangementMatrix(bcm);
         getWorld()->addSceneManager(theMap);
         getWorld()->setCurrentSceneManager(taMapName->getText());
@@ -3427,6 +3587,13 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         getRenderComponentManager().setEventContextActivated(false, *wGenerateTerrain);
         getRenderComponentManager().setEventContextActivated(true, getRenderWindow());
     }
+    if (button == bGenerate3DTerrain) {
+        wGenerate3DTerrain->setVisible(false);
+        getWorld()->generate_3d_map(ground, walls3D, Vec2f(conversionStringInt(taTileWidth3D->getText()), conversionStringInt(taTileDepth3D->getText())), BoundingBox(conversionStringInt(taZoneXPos3D->getText()), conversionStringInt(taZoneYPos3D->getText()),conversionStringInt(taZoneZPos3D->getText()),
+                                                                                                                                                            conversionStringInt(taZoneWidth3D->getText()), conversionStringInt(taZoneHeight3D->getText()),conversionStringInt(taZoneDepth3D->getText())), factory);
+        getRenderComponentManager().setEventContextActivated(false, *wGenerate3DTerrain);
+        getRenderComponentManager().setEventContextActivated(true, getRenderWindow());
+    }
 }
 void ODFAEGCreator::updateNb(std::string name, unsigned int nb) {
     nbs.insert(std::make_pair(name, nb));
@@ -3904,6 +4071,20 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
         walls.resize(g2d::Wall::NB_WALL_TYPES, nullptr);
         wGenerateTerrain->setVisible(true);
         getRenderComponentManager().setEventContextActivated(true, *wGenerateTerrain);
+        getRenderComponentManager().setEventContextActivated(false, getRenderWindow());
+     }
+     if (item == item47) {
+        for (unsigned int i = 0; i < ground.size(); i++)
+            if (ground[i] != nullptr)
+                delete ground[i];
+        ground.clear();
+        for (unsigned int i = 0; i < walls3D.size(); i++)
+            if (walls3D[i] != nullptr)
+                delete walls3D[i];
+        walls3D.clear();
+        walls3D.resize(g2d::Wall::NB_WALL_TYPES, nullptr);
+        wGenerate3DTerrain->setVisible(true);
+        getRenderComponentManager().setEventContextActivated(true, *wGenerate3DTerrain);
         getRenderComponentManager().setEventContextActivated(false, getRenderWindow());
      }
      if (item == item61) {
@@ -5193,7 +5374,7 @@ void ODFAEGCreator::displayTileInfos (Entity* tile) {
         pMaterial->addChild(bChooseText);
         bChooseText->setName("CHOOSETEXT");
         bChooseText->addActionListener(this);
-        if (isGeneratingTerrain) {
+        if (isGeneratingTerrain || isGenerating3DTerrain) {
             bSetTexRect = new Button(Vec3f(0, 0, 0), Vec3f(100, 100, 0), fm.getResourceByAlias(Fonts::Serif),"Set tex rect", 15, getRenderWindow());
             bSetTexRect->setParent(pMaterial);
             pMaterial->addChild(bSetTexRect);
@@ -6765,10 +6946,16 @@ void ODFAEGCreator::onSelectedTextureNotDroppedDown (DropDownList* dp) {
         bSetTexRect->setEventContextActivated(true);
 }
 void ODFAEGCreator::onSelectedWallTypeDroppedDown(odfaeg::graphic::gui::DropDownList* dp) {
-    bGenerateTerrain->setEventContextActivated(false);
+    if (dp == dpSelectWallType)
+        bGenerateTerrain->setEventContextActivated(false);
+    else if (dp == dpSelectWallType3D)
+        bGenerate3DTerrain->setEventContextActivated(false);
 }
 void ODFAEGCreator::onSelectedWallTypeNotDroppedDown(odfaeg::graphic::gui::DropDownList* dp) {
-    bGenerateTerrain->setEventContextActivated(true);
+    if (dp == dpSelectWallType)
+        bGenerateTerrain->setEventContextActivated(true);
+    else if (dp == dpSelectWallType3D)
+        bGenerate3DTerrain->setEventContextActivated(true);
 }
 void ODFAEGCreator::onObjectOriginChanged(TextArea* ta) {
     if (ta == taOriginX) {

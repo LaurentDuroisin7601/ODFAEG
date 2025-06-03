@@ -10,7 +10,7 @@ namespace odfaeg {
                 setShadowCenter(math::Vec3f(0, 0, -c));
                 wType = type;
             }
-            void Wall::setMesh(Mesh *mesh) {
+            void Wall::setMesh(Entity *mesh) {
                 std::vector<Entity*> children = getChildren();
                 if (getChildren().size() == 0) {
                     addChild(mesh);

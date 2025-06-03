@@ -141,19 +141,20 @@ class ODFAEGCreator : public odfaeg::core::Application<ODFAEGCreator>,
         odfaeg::graphic::gui::MenuBar* menuBar;
         odfaeg::graphic::gui::Menu *menu1, *menu2, *menu3, *menu4, *menu5, *menu6;
         odfaeg::graphic::gui::MenuItem *item11, *item12, *item13, *item14, *item15, *item16, *item17, *item18, *item19, *item21, *item22, *item23, *item31, *item32, *item33,
-        *item34, *item35, *item36, *item37, *item38, *item39, *item310, *item311, *item41, *item42, *item43, *item44, *item45, *item46, *item51, *item52, *item61;
+        *item34, *item35, *item36, *item37, *item38, *item39, *item310, *item311, *item41, *item42, *item43, *item44, *item45, *item46, *item47, *item51, *item52, *item61;
         odfaeg::core::ResourceCache<> cache;
         odfaeg::graphic::gui::FileDialog* fdTexturePath, *fdProjectPath, *fdImport3DModel;
         odfaeg::graphic::RenderWindow* wApplicationNew, *wNewMap, *wNewComponent, *wNewEntitiesUpdater, *wNewAnimUpdater, *wNewEmitter, *wNewParticleSystemUpdater, *wCreateNewWindow, *wCreateNewObject, *wModifyObject,
-        *wGenerateTerrain, *wDeleteObject;
+        *wGenerateTerrain, *wDeleteObject, *wGenerate3DTerrain;
         odfaeg::graphic::gui::TextArea* ta, *taComponentExpression, *taComponentLayer, *taEntitiesUpdaterName, *taComponentName, *taAnimUpdaterName, *taPSName, *taEmissionRate,
         *taMinLifeTime, *taMaxLifeTime, *taRCPosX, *taRCPosY, *taRCPosZ, *taRCSizeX, *taRCSizeY, *taRCSizeZ, *taDeflX, *taDeflY, *taDeflZ, *taDeflAngle,
         *taRotMin, *taRotMax, *taTexIndexMin, *taTexIndexMax, *taScaleMinX, *taScaleMinY, *taScaleMinZ, *taScaleMaxX, *taScaleMaxY, *taScaleMaxZ, *taColor1, *taColor2,
-        *taParticleSystemUpdaterName, *taTileWidth, *taTileHeight, *taZoneXPos, *taZoneYPos, *taZoneZPos, *taZoneWidth, *taZoneHeight, *taZoneDepth, *taFrameRate;
+        *taParticleSystemUpdaterName, *taTileWidth, *taTileHeight, *taZoneXPos, *taZoneYPos, *taZoneZPos, *taZoneWidth, *taZoneHeight, *taZoneDepth, *taFrameRate,
+        *taTileWidth3D, *taTileDepth3D, *taZoneXPos3D, *taZoneYPos3D, *taZoneZPos3D, *taZoneWidth3D, *taZoneHeight3D, *taZoneDepth3D;
         odfaeg::graphic::gui::DropDownList* dpList, *dpSelectTexture, *dpMapTypeList, *dpComponentType, *dpSelectEm, *dpSelectComponent, *dpSelectParent, *dpSelectAU, *dpSelectPPType, *dpSelectPSU, *dpSelectClass, *dpSelectFunction, *dpSelectMClass,
-        *dpSelectMFunction, *dpSelectRClass, *dpSelectPointerType, *dpSelectViewPerspective, *dpScriptBaseClass, *dpSelectWallType, *dpWallType, *dpChildren, *dpChildrenCV, *dpSelectParentCV;
-        odfaeg::graphic::gui::Label *lWidth, *lHeight, *lMapWidth, *lMapHeight, *lOrigX, *lOrigY, *lOrigZ, *lOrigin, *lParentCV;
-        odfaeg::graphic::gui::TextArea *taWidth, *taHeight, *tScriptEdit, *taMapName, *taMapWidth, *taMapHeight, *taIntensity, *taQuality, *taWindowPos, *taWindowSize, *taWindowTitle, *taWindowName, *taObjectName, *taMObjectName, *taRObjectName, *taSelectExpression, *taNameCV;
+        *dpSelectMFunction, *dpSelectRClass, *dpSelectPointerType, *dpSelectViewPerspective, *dpScriptBaseClass, *dpSelectWallType, *dpWallType, *dpSelectWallType3D, *dpChildren, *dpChildrenCV, *dpSelectParentCV;
+        odfaeg::graphic::gui::Label *lWidth, *lHeight, *lMapWidth, *lMapHeight, *lMapDepth, *lOrigX, *lOrigY, *lOrigZ, *lOrigin, *lParentCV;
+        odfaeg::graphic::gui::TextArea *taWidth, *taHeight, *tScriptEdit, *taMapName, *taMapWidth, *taMapHeight, *taMapDepth, *taIntensity, *taQuality, *taWindowPos, *taWindowSize, *taWindowTitle, *taWindowName, *taObjectName, *taMObjectName, *taRObjectName, *taSelectExpression, *taNameCV;
         odfaeg::graphic::gui::Panel *pProjects, *pScriptsFiles, *pScriptsEdit, *pInfos, *pTransform, *pMaterial, *pShadows, *pCollisions, *pComponent, *pObjectsParameters, *pMObjectsParameters;
         std::string appliname, minAppliname;
         std::string applitype;
@@ -178,7 +179,7 @@ class ODFAEGCreator : public odfaeg::core::Application<ODFAEGCreator>,
         *lGColor, *lBColor, *lAColor, *lTexture, *lTexCoordX, *lTexCoordY, *lTexCoordW, *lTexCoordH, *lTexImage, *lParent, *lTexId;
         odfaeg::graphic::gui::TabPane* tabPane;
         odfaeg::graphic::gui::Button* bChooseText, *bAddTexRect, *bCreateComponent, *bCreateScene, *bCreateEntitiesUpdater, *bCreateAppli, *bCreateAnimUpdater, *bCreateEmitter, *bCreateParticleSystemUpdater, *bCreateWindow, *bCreateObject, *bModifyObject,
-        *bGenerateTerrain, *bRemoveObject, *bAddTileGround, *bAddWall, *bSetTexRect, *bAssignCollisionVolume;
+        *bGenerateTerrain, *bGenerate3DTerrain, *bRemoveObject, *bAddTileGround, *bAddWall, *bAddTileGround3D, *bAddWall3D, *bSetTexRect, *bAssignCollisionVolume;
         odfaeg::graphic::Shape* sTextRect;
         odfaeg::core::StateStack stateStack;
         ODFAEGCreatorStateExecutor se;
@@ -206,10 +207,11 @@ class ODFAEGCreator : public odfaeg::core::Application<ODFAEGCreator>,
         std::vector<odfaeg::physic::BoundingPolyhedron> tmpBps;
         odfaeg::graphic::VertexArray bpLines;
         odfaeg::graphic::VertexArray bpPoints;
-        bool isSelectingPolyhedron, isGeneratingTerrain, isSecondClick;
+        bool isSelectingPolyhedron, isGeneratingTerrain, isGenerating3DTerrain, isSecondClick;
         std::vector<std::string> argsTps;
         std::vector<odfaeg::graphic::Tile*> ground;
         std::vector<odfaeg::graphic::g2d::Wall*> walls;
+        std::vector<odfaeg::graphic::g3d::Wall*> walls3D;
         odfaeg::graphic::g3d::Model loader;
         RotationGuismo rotationGuismo;
         TranslationGuismo translationGuismo;
@@ -218,6 +220,7 @@ class ODFAEGCreator : public odfaeg::core::Application<ODFAEGCreator>,
         bool isMovingXPos, isMovingYPos, isMovingZPos, isScalingX, isScalingY, isScalingZ;
         float prevAngle;
         odfaeg::graphic::View selectedComponentView;
+        odfaeg::graphic::g3d::Model modelLoader;
 };
 #endif
 #endif
