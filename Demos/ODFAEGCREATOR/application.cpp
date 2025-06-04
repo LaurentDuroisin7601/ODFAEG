@@ -1797,7 +1797,9 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
                                     obbVerts[v] = getRenderWindow().mapPixelToCoords(Vec3f(bbVerts[v].x, getRenderWindow().getSize().y-bbVerts[v].y, 0))+Vec3f(getRenderWindow().getView().getSize().x*0.5f, getRenderWindow().getView().getSize().y*0.5f, getRenderWindow().getView().getSize().z*0.5f);
                                 else
                                     obbVerts[v] = getRenderWindow().mapPixelToCoords(Vec3f(bbVerts[v].x, getRenderWindow().getSize().y-bbVerts[v].y, 1))+Vec3f(getRenderWindow().getView().getSize().x*0.5f, getRenderWindow().getView().getSize().y*0.5f, getRenderWindow().getView().getSize().z*0.5f);
-                                //std::cout<<"verts : "<<bbVerts[v]<<obbVerts[v]<<std::endl;
+                                if (obbVerts[v].z < 0.0001) {
+                                    obbVerts[v].z = 0;
+                                }
                             }
                         } else {
                             for (unsigned int v = 0; v < 8; v++) {
@@ -1819,15 +1821,21 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
                 for (unsigned int i = 0; i < entities.size(); i++) {
                     //std::cout<<"type : "<<entities[i]->getType()<<std::endl<<"select pos : "<<rectSelect.getSelectionRect().getPosition()<<"select size : "<<rectSelect.getSelectionRect().getSize()<<"globalbounds pos : "<<entities[i]->getGlobalBounds().getPosition()<<"globalbounds size : "<<entities[i]->getGlobalBounds().getSize()<<std::endl;
                     //std::cout<<rectSelect.getSelectionRect().getPosition()<<rectSelect.getSelectionRect().getSize()<<entities[i]->getGlobalBounds().getPosition()<<entities[i]->getGlobalBounds().getSize();
-                    for (unsigned int v = 0; v < 8; v++) {
-                        std::cout<<"obb vertex : "<<v<<" : "<<selectionBox.getVertices()[v]<<std::endl;
-                    }
-                    std::cout<<"entity global bounds : "<<entities[i]->getGlobalBounds().getPosition()<<entities[i]->getGlobalBounds().getSize()<<std::endl;
+
                     //system("PAUSE");
+                    /*std::vector<Vec3f> vertices = entities[i]->getGlobalBounds().getVertices();
+                    for (unsigned int i = 0; i < vertices.size(); i++) {
+                        std::cout<<"vert : "<<vertices[i]<<std::endl;
+                    }
+                    system("PAUSE");*/
                     CollisionResultSet::Info infos;
                     if (selectionBox.intersects(entities[i]->getGlobalBounds(), infos)) {
-                            std::cout<<"add to selection"<<std::endl;
+                            //std::cout<<"add to selection"<<std::endl;
                         //if (dynamic_cast<Tile*>(entities[i])) {
+
+                            /*for (unsigned int v = 0; v < 8; v++) {
+                                std::cout<<"obb vertex : "<<v<<" : "<<selectionBox.getVertices()[v]<<std::endl;
+                            }*/
 
 
                             rectSelect.addItem(entities[i]);

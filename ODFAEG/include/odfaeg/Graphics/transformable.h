@@ -382,8 +382,10 @@ namespace odfaeg {
 
                 //std::cout<<"transform matrices"<<std::endl;
                 ar(std::ref(tm));
-                if (ar.isInputArchive())
+                if (ar.isInputArchive()) {
+                    recomputeBounds();
                     recomputeBounds2();
+                }
             }
         protected :
             /**

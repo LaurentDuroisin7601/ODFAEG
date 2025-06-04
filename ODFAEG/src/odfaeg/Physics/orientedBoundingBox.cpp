@@ -497,6 +497,7 @@ namespace odfaeg {
             return true;
         }
         bool OrientedBoundingBox::intersects (BoundingBox &bx, CollisionResultSet::Info& info) {
+            //std::cout<<"vertices : "<<bx.getVertices()[0]<<bx.getVertices()[1]<<bx.getVertices()[2]<<std::endl;
             float distMin1, distMin2;
             int ptIndex1, ptIndex2;
             int edgeIndex1, edgeIndex2;
@@ -514,10 +515,10 @@ namespace odfaeg {
             info.nearestEdgeIndex2 = edgeIndex2;
             info.nearestFaceIndex2 = faceIndex2;
             if (ptIndex1 != -1) {
-                return (points[ptIndex1] - center).magnSquared() >= (bx.getVertices()[vertexIndex1] - center).magnSquared();
+                return (points[ptIndex1] - center).magnSquared() < (bx.getVertices()[vertexIndex1] - center).magnSquared();
             }
             if (ptIndex2 != -1) {
-                return (points[ptIndex2] - center).magnSquared() >= (bx.getVertices()[vertexIndex2] - center).magnSquared();
+                return (points[ptIndex2] - center).magnSquared() < (bx.getVertices()[vertexIndex2] - center).magnSquared();
             } else if (flat && bx.isFlat()) {
                 if (faceIndex1 != -1 && faceIndex2 != -1)  {
                     math::Triangle t1(points[faceIndex1*3], points[faceIndex1*3+1], points[faceIndex1*3+2]);
@@ -622,7 +623,6 @@ namespace odfaeg {
                     math::Triangle t2(points[faceIndex1*3], points[faceIndex1*3+2], points[faceIndex1*3+3]);
                     math::Ray r1 (bx.getVertices()[edgeIndex2], bx.getVertices()[(edgeIndex2 % 3 == 2) ? edgeIndex2 - 2 : edgeIndex2 + 1]);
                     math::Ray r2 (bx.getVertices()[(edgeIndex2 % 3 == 2) ? edgeIndex2 - 2 : edgeIndex2 + 1], bx.getVertices()[edgeIndex2]);
-                    std::cout<<"orig : "<<r1.getOrig()<<std::endl;
                     std::cout<<"intersects 2 ? "<<(isPointInside(r1.getOrig())/*
                            || isPointInside(r1.getExt())
                            || (t1.intersects(r1) && t1.intersects(r2))
@@ -636,6 +636,7 @@ namespace odfaeg {
                     math::Triangle t(bx.getVertices()[faceIndex2*3], bx.getVertices()[faceIndex2*3+1], bx.getVertices()[faceIndex2*3+2]);
                     math::Ray r1 (points[edgeIndex1], points[(edgeIndex1 % 3 == 2) ? edgeIndex1 - 2 : edgeIndex1 + 1]);
                     math::Ray r2 (points[(edgeIndex1 % 3 == 2) ? edgeIndex1 - 2 : edgeIndex1 + 1], points[edgeIndex1]);
+                    std::cout<<"face index : "<<faceIndex2<<std::endl;
                     std::cout<<"intersects 3 ? "<<(isPointInside(t.getP1())
                             || isPointInside(t.getP2())
                             || isPointInside(t.getP3())
@@ -1005,7 +1006,7 @@ namespace odfaeg {
             math::Vec3f bpn = (faceBissectors[faceIndex] - center).projOnVector(faceNormals[faceIndex]);
             math::Vec3f d = point - center;
             float p = d.projOnAxis(bpn);
-            std::cout<<"bpn "<<bpn.magnSquared()<<std::endl<<"p : "<<p*p<<std::endl;
+            //std::cout<<"bpn "<<bpn.magnSquared()<<std::endl<<"p : "<<p*p<<std::endl;
             if (p * p > bpn.magnSquared()) {
                 return false;
             }
