@@ -538,31 +538,17 @@ namespace odfaeg {
                 }
                 return false;
             } else if (!flat && !bx.isFlat()) {
-                if (distMin1 < distMin2) {
-                    if (faceIndex1 != -1) {
-                        math::Vec3f bpn = (faceBissectors[faceIndex1] - center).projOnVector(faceNormals[faceIndex1]);
-                        math::Vec3f d = points[vertexIndex1] - center;
-                        float p = d.projOnAxis(bpn);
-                        if (p * p > bpn.magnSquared()) {
-                            return false;
-                        }
-                        return true;
-                    }
-                    math::Vec3f bpn = (edgeBissectors[edgeIndex1] - center).projOnVector(edgeNormals[edgeIndex1]);
-                    math::Vec3f d = points[vertexIndex1] - center;
-                    float p = d.projOnAxis(bpn);
-                    return p * p > bpn.magnSquared();
+                for (unsigned int n = 0; n < faceNormals.size(); n++) {
+                    math::Vec3f normal = faceNormals[n];
+                    if (!math::Computer::overlapThisNormal(points, bx.getVertices(), normal))
+                        return false;
                 }
-                if (faceIndex2 != -1) {
-                    math::Vec3f bpn = (faceBissectors[faceIndex2] - center).projOnVector(faceNormals[faceIndex2]);
-                    math::Vec3f d = points[vertexIndex2] - center;
-                    float p = d.projOnAxis(bpn);
-                    return p * p > bpn.magnSquared();
+                for (unsigned int n = 0; n < bx.getFaceNormals().size(); n++) {
+                    math::Vec3f normal = bx.getFaceNormals()[n];
+                    if (!math::Computer::overlapThisNormal(bx.getVertices(), points, normal))
+                        return false;
                 }
-                math::Vec3f bpn = (edgeBissectors[edgeIndex2] - center).projOnVector(edgeNormals[edgeIndex2]);
-                math::Vec3f d = points[vertexIndex2] - center;
-                float p = d.projOnAxis(bpn);
-                return p * p > bpn.magnSquared();
+                return true;
             } else if (flat && !bx.isFlat()) {
                 if (faceIndex1 != -1 && faceIndex2 != -1)  {
                     math::Triangle t1(points[faceIndex1*3], points[faceIndex1*3+1], points[faceIndex1*3+2]);

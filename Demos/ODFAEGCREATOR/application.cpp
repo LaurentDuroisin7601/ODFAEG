@@ -1794,19 +1794,20 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
                         if(components[i]->getFrameBuffer()->getView().isOrtho()) {
                             for (unsigned int v = 0; v < 8; v++) {
                                 if (v < 4)
-                                    obbVerts[v] = getRenderWindow().mapPixelToCoords(Vec3f(bbVerts[v].x, getRenderWindow().getSize().y-bbVerts[v].y, 0))+Vec3f(getRenderWindow().getView().getSize().x*0.5f, getRenderWindow().getView().getSize().y*0.5f, getRenderWindow().getView().getSize().z*0.5f);
+                                    obbVerts[v] = components[i]->getFrameBuffer()->mapPixelToCoords(Vec3f(bbVerts[v].x, getRenderWindow().getSize().y-bbVerts[v].y, 0))+Vec3f(getRenderWindow().getView().getSize().x*0.5f, getRenderWindow().getView().getSize().y*0.5f, getRenderWindow().getView().getSize().z*0.5f);
                                 else
-                                    obbVerts[v] = getRenderWindow().mapPixelToCoords(Vec3f(bbVerts[v].x, getRenderWindow().getSize().y-bbVerts[v].y, 1))+Vec3f(getRenderWindow().getView().getSize().x*0.5f, getRenderWindow().getView().getSize().y*0.5f, getRenderWindow().getView().getSize().z*0.5f);
+                                    obbVerts[v] = components[i]->getFrameBuffer()->mapPixelToCoords(Vec3f(bbVerts[v].x, getRenderWindow().getSize().y-bbVerts[v].y, 1))+Vec3f(getRenderWindow().getView().getSize().x*0.5f, getRenderWindow().getView().getSize().y*0.5f, getRenderWindow().getView().getSize().z*0.5f);
 
                             }
                         } else {
                             for (unsigned int v = 0; v < 8; v++) {
                                 if (v < 4)
-                                    obbVerts[v] = getRenderWindow().mapPixelToCoords(Vec3f(bbVerts[v].x, getRenderWindow().getSize().y-bbVerts[v].y, 0))+Vec3f(getRenderWindow().getView().getSize().x*0.5f, getRenderWindow().getView().getSize().y*0.5f, getRenderWindow().getView().getSize().z*0.5f);
+                                    obbVerts[v] = components[i]->getFrameBuffer()->mapPixelToCoords(Vec3f(bbVerts[v].x, /*getRenderWindow().getSize().y-*/bbVerts[v].y, 0))/*+Vec3f(getRenderWindow().getView().getSize().x*0.5f, getRenderWindow().getView().getSize().y*0.5f, getRenderWindow().getView().getSize().z*0.5f)*/;
                                 else
-                                    obbVerts[v] = getRenderWindow().mapPixelToCoords(Vec3f(bbVerts[v].x, getRenderWindow().getSize().y-bbVerts[v].y, 1))+Vec3f(getRenderWindow().getView().getSize().x*0.5f, getRenderWindow().getView().getSize().y*0.5f, getRenderWindow().getView().getSize().z*0.5f);
-                                //std::cout<<"verts : "<<bbVerts[v]<<obbVerts[v]<<std::endl;
+                                    obbVerts[v] = components[i]->getFrameBuffer()->mapPixelToCoords(Vec3f(bbVerts[v].x, /*getRenderWindow().getSize().y-*/bbVerts[v].y, 1))/*+Vec3f(getRenderWindow().getView().getSize().x*0.5f, getRenderWindow().getView().getSize().y*0.5f, getRenderWindow().getView().getSize().z*0.5f)*/;
+                                std::cout<<"verts : "<<obbVerts[v]<<std::endl;
                             }
+                            system("PAUSE");
                         }
                     }
                 }
@@ -1828,7 +1829,7 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
                     system("PAUSE");*/
                     CollisionResultSet::Info infos;
                     if (selectionBox.intersects(entities[i]->getGlobalBounds(), infos)) {
-                            //std::cout<<"add to selection"<<std::endl;
+                            std::cout<<"add to selection"<<std::endl;
                         //if (dynamic_cast<Tile*>(entities[i])) {
 
                             /*for (unsigned int v = 0; v < 8; v++) {
