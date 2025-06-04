@@ -76,10 +76,10 @@ Application (vm, title, sf::Style::Resize|sf::Style::Close, ContextSettings(0, 8
     rtc.addSourceFile("../../ODFAEG-master/Demos/ODFAEGCREATOR/rotationGismo");
     rtc.addSourceFile("../../ODFAEG-master/Demos/ODFAEGCREATOR/scaleGuismo");
     rtc.addSourceFile("../../ODFAEG-master/Demos/ODFAEGCREATOR/translationGismo");
-	speed = 40.f;
-    sensivity = 0.1f;
-    oldX = IMouse::getPosition(getRenderWindow()).x;
-    oldY = IMouse::getPosition(getRenderWindow()).y;
+	speed = 10.f;
+    sensivity = 0.5f;
+    /*oldX = IMouse::getPosition(getRenderWindow()).x;
+    oldY = IMouse::getPosition(getRenderWindow()).y;*/
     pluginSourceCode = "";
 
 
@@ -1902,8 +1902,7 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
     if (&getRenderWindow() == window && event.type == IEvent::MOUSE_BUTTON_EVENT && event.mouseButton.type == IEvent::BUTTON_EVENT_RELEASED && event.mouseButton.button == IMouse::Left) {
         isMovingXPos = isMovingYPos = isMovingZPos = isScalingX = isScalingY = isScalingZ = false;
     }
-    oldX = IMouse::getPosition(getRenderWindow()).x;
-    oldY = IMouse::getPosition(getRenderWindow()).y;
+
 
 }
 void ODFAEGCreator::onExec() {
@@ -2631,6 +2630,8 @@ void ODFAEGCreator::onExec() {
         getWorld()->addEntity(model);
     }
     getWorld()->update();
+    oldX = IMouse::getPosition(getRenderWindow()).x;
+    oldY = IMouse::getPosition(getRenderWindow()).y;
 }
 void ODFAEGCreator::showScenes(Label* label) {
     if (rootScenesNode->getNodes().size() > 0 && rootScenesNode->isNodeVisible()) {
