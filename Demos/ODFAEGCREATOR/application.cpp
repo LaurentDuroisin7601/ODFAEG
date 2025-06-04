@@ -1205,6 +1205,21 @@ Vec3f ODFAEGCreator::getGridCellPos(Vec3f pos) {
     return Vec3f (extends[0][0], extends[1][0], extends[2][0]);
 }
 void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
+    if(&getRenderWindow() == window && event.type == IEvent::MOUSE_WHEEL_EVENT && event.mouseWheel.type == IEvent::MOUSE_WHEEL_MOVED && isGuiShown) {
+        if (event.mouseWheel.direction > 0) {
+            selectedObject->changeHeights(rectSelect.getSelectionRect(), -1.f);
+            std::vector<Entity*> objects = rectSelect.getItems();
+            for (unsigned int i = 1; i < objects.size(); i++) {
+                objects[i]->changeHeights(rectSelect.getSelectionRect(), -1.f);
+            }
+        } else {
+            selectedObject->changeHeights(rectSelect.getSelectionRect(), 1.f);
+            std::vector<Entity*> objects = rectSelect.getItems();
+            for (unsigned int i = 1; i < objects.size(); i++) {
+                objects[i]->changeHeights(rectSelect.getSelectionRect(), 1.f);
+            }
+        }
+    }
     if(&getRenderWindow() == window && event.type == IEvent::KEYBOARD_EVENT && event.keyboard.type == IEvent::KEY_EVENT_PRESSED && isGuiShown && event.keyboard.code == IKeyboard::R) {
         if (selectedObject != nullptr) {
 
@@ -1731,19 +1746,19 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
         int relX = (event.mouseMotion.x - oldX) * sensivity;
         int relY = (event.mouseMotion.y - oldY) * sensivity;
         //Rotate the view, (Polar coordinates) but you can also use the lookAt function to look at a point.
-        View view = getRenderWindow().getView();
+        /*View view = getRenderWindow().getView();
         if (!view.isOrtho()) {
-            int teta = view.getTeta() - relX;
-            int phi = view.getPhi() - relY;
+            int teta = view.getTeta() - relY;
+            int phi = view.getPhi() - relX;
             view.rotate(teta, phi);
             getRenderWindow().setView(view);
-        }
+        }*/
         for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
             if (getRenderComponentManager().getRenderComponent(i) != nullptr) {
                 View view = getRenderComponentManager().getRenderComponent(i)->getView();
                 if (!view.isOrtho()) {
-                    int teta = view.getTeta() - relX;
-                    int phi = view.getPhi() - relY;
+                    int teta = view.getTeta() - relY;
+                    int phi = view.getPhi() - relX;
                     view.rotate(teta, phi);
                     getRenderComponentManager().getRenderComponent(i)->setView(view);
                 }
@@ -2326,6 +2341,8 @@ void ODFAEGCreator::onExec() {
                         dpSelectComponent->addItem(name, 15);
                         dpSelectComponent->setSelectedItem(name);
                         selectedComponentView = ppll->getFrameBuffer()->getView();
+                        std::cout<<"set text : "<<expression<<std::endl;
+                        taChangeComponentExpression->setText(expression);
                     }
                     if (type == "Shadow") {
                         //std::cout<<"load components"<<std::endl;
@@ -2340,6 +2357,7 @@ void ODFAEGCreator::onExec() {
                         dpSelectComponent->addItem(name, 15);
                         dpSelectComponent->setSelectedItem(name);
                         selectedComponentView = ppll->getFrameBuffer()->getView();
+                        taChangeComponentExpression->setText(expression);
                     }
                     if (type == "ReflectRefract") {
                         //std::cout<<"load components"<<std::endl;
@@ -2354,6 +2372,7 @@ void ODFAEGCreator::onExec() {
                         dpSelectComponent->addItem(name, 15);
                         dpSelectComponent->setSelectedItem(name);
                         selectedComponentView = ppll->getFrameBuffer()->getView();
+                        taChangeComponentExpression->setText(expression);
                     }
                     if (type == "Light") {
                         //std::cout<<"load components"<<std::endl;
@@ -2368,6 +2387,7 @@ void ODFAEGCreator::onExec() {
                         dpSelectComponent->addItem(name, 15);
                         dpSelectComponent->setSelectedItem(name);
                         selectedComponentView = ppll->getFrameBuffer()->getView();
+                        taChangeComponentExpression->setText(expression);
                     }
                 }
                 ifs5.close();
@@ -6914,7 +6934,7 @@ void ODFAEGCreator::onViewPerspectiveChanged(DropDownList* dp) {
         for (unsigned int i = 0; i < components.size(); i++) {
             if (name == components[i]->getName() && dynamic_cast<HeavyComponent*>(components[i])) {
                 View view(getRenderWindow().getSize().x, getRenderWindow().getSize().y, 90, 1, 1000);
-                view.setConstrains(0, 10);
+                view.setConstrains(80, 0);
                 static_cast<HeavyComponent*>(components[i])->setView(view);
             }
         }

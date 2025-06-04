@@ -22,7 +22,7 @@ namespace odfaeg {
             }
         }
         void EntitySystem::stop() {
-            if (isUsingThread) {
+            if (isUsingThread && running) {
                 running = false;
                 m_thread.join();
             }
@@ -34,7 +34,7 @@ namespace odfaeg {
             return name;
         }
         EntitySystem::~EntitySystem() {
-            //stop();
+            stop();
         }
     }
 }

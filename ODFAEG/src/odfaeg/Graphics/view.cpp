@@ -165,6 +165,7 @@ namespace odfaeg {
             forward = math::Math::toCartesian(math::Math::toRadians(teta), math::Math::toRadians(phi)).normalize();
             left = forward.cross(up).normalize();
             target = position + forward;
+            up = left.cross(forward);
         }
         void View::lookAt(float x, float y, float z, math::Vec3f up) {
             target = math::Vec3f(x, y, z);

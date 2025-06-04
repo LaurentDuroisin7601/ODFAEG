@@ -38,7 +38,7 @@ namespace odfaeg {
                 }
             }
             void Timer::stop() {
-                if (isUsingThread) {
+                if (isUsingThread && running) {
                     running = false;
                     m_thread.join();
                 }
@@ -53,7 +53,7 @@ namespace odfaeg {
                 return name;
             }
             Timer::~Timer() {
-                //stop();
+                stop();
             }
     }
 }

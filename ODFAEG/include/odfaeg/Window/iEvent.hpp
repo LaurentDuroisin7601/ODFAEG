@@ -74,7 +74,7 @@ namespace odfaeg {
                 unsigned int which;
                 int x;
                 int y;
-                unsigned int direction;
+                int direction;
             };
             union {
                 struct WindowEvent window;
