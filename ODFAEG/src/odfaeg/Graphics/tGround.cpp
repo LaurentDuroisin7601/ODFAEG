@@ -24,6 +24,7 @@ namespace odfaeg {
                    heightsChanged = true;
                    if (bx.isPointInside(positions[j])) {
                        getChildren()[i]->getFace(0)->getVertexArray()[j].position.y += delta;
+                       bx.move(math::Vec3f(0, delta, 0));
                    }
                 }
             }
