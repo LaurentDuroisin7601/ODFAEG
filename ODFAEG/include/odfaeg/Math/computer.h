@@ -8,6 +8,7 @@
 #include <vector>
 #include "export.hpp"
 #include "plane.h"
+#include <cmath>
 /**
   *\namespace odfaeg
   * the namespace of the Opensource Development Framework Adapted for Every Games.
@@ -366,8 +367,56 @@ namespace odfaeg {
 
                 return actualPos;
             }
-            static bool overlap(Vec2f v1, Vec2f v2) {
-                return (v1.y >= v2.x) || (v1.x >= v2.y);
+            static bool overlapThisNormal (std::vector<Vec3f> verticesA, std::vector<Vec3f> verticesB, Vec3f normal) {
+                float minA = NAN;
+                float maxA = NAN;
+                for (unsigned int v = 0; v < verticesA.size(); v++) {
+                    math::Vec3f vertex = verticesA[v];
+                    float p = vertex.projOnAxis(normal);
+                    if (std::isnan(minA) || p < minA)
+                        minA = p;
+                    if (std::isnan(maxA) || p > maxA)
+                        maxA = p;
+                }
+                float minB = NAN;
+                float maxB = NAN;
+                for (unsigned int v = 0; v < verticesB.size(); v++) {
+                    math::Vec3f vertex = verticesB[v];
+                    float p = vertex.projOnAxis(normal);
+                    if (std::isnan(minB) || p < minB)
+                        minB = p;
+                    if (std::isnan(maxB) || p > maxB)
+                        maxB = p;
+                }
+                return overlap(minA, maxA, minB, maxB);
+            }
+            static bool overlap(float minA, float maxA, float minB, float maxB) {
+                float minOverlap = NAN;
+                float maxOverlap = NAN;
+
+
+                //If B contain in A
+                if(minA <= minB && minB <= maxA) {
+                    if(std::isnan(minOverlap) || minB < minOverlap)
+                        minOverlap = minB;
+                }
+                if(minA <= maxB && maxB <= maxA) {
+                    if(std::isnan(maxOverlap) || maxB > minOverlap)
+                        maxOverlap = maxB;
+                }
+
+                //If A contain in B
+                if(minB <= minA && minA <= maxB) {
+                    if(std::isnan(minOverlap) || minA < minOverlap)
+                        minOverlap = minA;
+                }
+                if(minB <= maxA && maxA <= maxB) {
+                    if(std::isnan(maxOverlap) || maxA > minOverlap)
+                        maxOverlap = maxA;
+                }
+
+                if(std::isnan(minOverlap) || std::isnan(maxOverlap))return false; //Pas d'intersection
+                else return true;
             }
             static Vec2f projectShapeOnAxis(Vec3f axis, std::vector<Vec3f> vertices) {
                 float min = 0, max = 0;

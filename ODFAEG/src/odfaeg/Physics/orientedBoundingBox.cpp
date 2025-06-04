@@ -502,24 +502,23 @@ namespace odfaeg {
             int ptIndex1, ptIndex2;
             int edgeIndex1, edgeIndex2;
             int faceIndex1, faceIndex2;
-
-            int vertexIndex1 = math::Computer::checkNearestVertexFromShape(center, points, edgeBissectors, edgeNormals, faceBissectors, faceNormals, bx.getVertices(), distMin1, ptIndex1, edgeIndex1, faceIndex1, 4);
+            /* Check the nearest vertex of the polygon 2 from the regions of polygon 2 and give the distance and
+            *  return the point or the face's bissector of the region.
+            */
+            int vertexIndex1 = math::Computer::checkNearestVertexFromShape(center, points, edgeBissectors, edgeNormals, faceBissectors, faceNormals, bx.getVertices(), distMin1, ptIndex1, edgeIndex1, faceIndex1, 3);
             info.nearestVertexIndex1 = vertexIndex1;
             info.nearestPtIndex1 = ptIndex1;
             info.nearestEdgeIndex1 = edgeIndex1;
             info.nearestFaceIndex1 = faceIndex1;
-
-            int vertexIndex2 = math::Computer::checkNearestVertexFromShape(bx.getCenter(), bx.getVertices(), bx.getEdgeBissectors(), bx.getEdgeNormals(), bx.getFaceBissectors(), bx.getFaceNormals(), points, distMin2, ptIndex2, edgeIndex2, faceIndex2, 4);
+            /* Check the nearest vertex of the polygon 1 from the regions of polygon 2 and give the distance and
+            *  return the point or face's bissector of the region.
+            */
+            int vertexIndex2 = math::Computer::checkNearestVertexFromShape(bx.getCenter(), bx.getVertices(), bx.getEdgeBissectors(), bx.getEdgeNormals(), bx.getFaceBissectors(), bx.getFaceNormals(), points, distMin2, ptIndex2, edgeIndex2, faceIndex2, 3);
             info.nearestVertexIndex2 = vertexIndex2;
             info.nearestPtIndex2 = ptIndex2;
             info.nearestEdgeIndex2 = edgeIndex2;
             info.nearestFaceIndex2 = faceIndex2;
-            if (ptIndex1 != -1) {
-                return (points[ptIndex1] - center).magnSquared() < (bx.getVertices()[vertexIndex1] - center).magnSquared();
-            }
-            if (ptIndex2 != -1) {
-                return (points[ptIndex2] - center).magnSquared() < (bx.getVertices()[vertexIndex2] - center).magnSquared();
-            } else if (flat && bx.isFlat()) {
+            if (flat && bx.isFlat()) {
                 if (faceIndex1 != -1 && faceIndex2 != -1)  {
                     math::Triangle t1(points[faceIndex1*3], points[faceIndex1*3+1], points[faceIndex1*3+2]);
                     math::Triangle t2(points[faceIndex1*3], points[faceIndex1*3+1], points[faceIndex1*3+3]);
@@ -602,51 +601,23 @@ namespace odfaeg {
                 }
                 return false;
             } else {
-                if (faceIndex1 != -1 && faceIndex2 != -1)  {
-                    math::Triangle t1(points[faceIndex1*3], points[faceIndex1*3+1], points[faceIndex1*3+2]);
-                    math::Triangle t2(points[faceIndex1*3], points[faceIndex1*3+2], points[faceIndex1*3+3]);
-                    math::Triangle t3(bx.getVertices()[faceIndex2*3], bx.getVertices()[faceIndex2*3+1], bx.getVertices()[faceIndex2*3+2]);
-
-                    std::cout<<"intersects 1 ? "<<(isPointInside(t2.getP1())
-                            || isPointInside(t2.getP2())
-                            || isPointInside(t2.getP3())
-                            || t1.intersects(t3)
-                            || t2.intersects(t3))<<std::endl;
-                    return isPointInside(t2.getP1())
-                            || isPointInside(t2.getP2())
-                            || isPointInside(t2.getP3())
-                            || t1.intersects(t3)
-                            || t2.intersects(t3);
+                BoundingPolyhedron bp;
+                for (unsigned int i = 0; i < points.size(); i++) {
+                    math::Vec3f p1 = points[i];
+                    math::Vec3f p2 = (i + 1 < points.size()) ? points[i+1] : points[0];
+                    bp.addTriangle(math::Vec3f(center.x, center.y, 0), math::Vec3f(p1.x, p1.y, 0), math::Vec3f(p2.x, p2.y, 0));
                 }
-                if (faceIndex1 != -1 && faceIndex2 == -1) {
-                    math::Triangle t1(points[faceIndex1*3], points[faceIndex1*3+1], points[faceIndex1*3+2]);
-                    math::Triangle t2(points[faceIndex1*3], points[faceIndex1*3+2], points[faceIndex1*3+3]);
-                    math::Ray r1 (bx.getVertices()[edgeIndex2], bx.getVertices()[(edgeIndex2 % 3 == 2) ? edgeIndex2 - 2 : edgeIndex2 + 1]);
-                    math::Ray r2 (bx.getVertices()[(edgeIndex2 % 3 == 2) ? edgeIndex2 - 2 : edgeIndex2 + 1], bx.getVertices()[edgeIndex2]);
-                    std::cout<<"intersects 2 ? "<<(isPointInside(r1.getOrig())/*
-                           || isPointInside(r1.getExt())
-                           || (t1.intersects(r1) && t1.intersects(r2))
-                           || (t2.intersects(r1) && t2.intersects(r2))*/)<<std::endl;
-                    return isPointInside(r1.getOrig())
-                           || isPointInside(r1.getExt())
-                           || (t1.intersects(r1) && t1.intersects(r2))
-                           || (t2.intersects(r1) && t2.intersects(r2));
+                for (unsigned int n = 0; n < bp.getEdgeNormals().size(); n++) {
+                    math::Vec3f normal = bp.getEdgeNormals()[n];
+                    if (!math::Computer::overlapThisNormal(bp.getPoints(), bx.getVertices(), normal))
+                        return false;
                 }
-                if (faceIndex1 == -1 && faceIndex2 != -1) {
-                    math::Triangle t(bx.getVertices()[faceIndex2*3], bx.getVertices()[faceIndex2*3+1], bx.getVertices()[faceIndex2*3+2]);
-                    math::Ray r1 (points[edgeIndex1], points[(edgeIndex1 % 3 == 2) ? edgeIndex1 - 2 : edgeIndex1 + 1]);
-                    math::Ray r2 (points[(edgeIndex1 % 3 == 2) ? edgeIndex1 - 2 : edgeIndex1 + 1], points[edgeIndex1]);
-                    std::cout<<"face index : "<<faceIndex2<<std::endl;
-                    std::cout<<"intersects 3 ? "<<(isPointInside(t.getP1())
-                            || isPointInside(t.getP2())
-                            || isPointInside(t.getP3())
-                            || (t.intersects(r1) && t.intersects(r2)))<<std::endl;
-                    return isPointInside(t.getP1())
-                            || isPointInside(t.getP2())
-                            || isPointInside(t.getP3())
-                            || (t.intersects(r1) && t.intersects(r2));
+                for (unsigned int n = 0; n < bx.getEdgeNormals().size(); n++) {
+                    math::Vec3f normal = bx.getEdgeNormals()[n];
+                    if (!math::Computer::overlapThisNormal(bx.getVertices(), bp.getPoints(), normal))
+                        return false;
                 }
-                return false;
+                return true;
             }
         }
         bool OrientedBoundingBox::intersects (OrientedBoundingBox &obx, CollisionResultSet::Info& info) {
