@@ -966,7 +966,31 @@ namespace odfaeg {
             return flat;
         }
         bool OrientedBoundingBox::isPointInside(math::Vec3f point) {
-            return false;
+            float distMin;
+            int index;
+            int edgeIndex, faceIndex;
+            std::vector<math::Vec3f> vertices = {point};
+            //Check the nearest face from the point.
+            int ptIndex = math::Computer::checkNearestVertexFromShape(center, points, edgeBissectors, edgeNormals, faceBissectors, faceNormals, vertices, distMin, index,edgeIndex, faceIndex, 3);
+            if (index != -1) {
+                return (points[index] - center).magnSquared() >= (vertices[ptIndex] - center).magnSquared();
+            }
+            if (flat) {
+                if (faceIndex == -1)
+                    return false;
+                math::Plane p(faceNormals[faceIndex], faceBissectors[faceIndex]);
+                if (p.whichSide(point) == 0)
+                    return true;
+                return false;
+            }
+
+            math::Vec3f bpn = (faceBissectors[faceIndex] - center).projOnVector(faceNormals[faceIndex]);
+            math::Vec3f d = point - center;
+            float p = d.projOnAxis(bpn);
+            if (p * p > bpn.magnSquared()) {
+                return false;
+            }
+            return true;
         }
     }
 }
