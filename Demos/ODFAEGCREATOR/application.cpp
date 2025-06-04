@@ -1207,16 +1207,20 @@ Vec3f ODFAEGCreator::getGridCellPos(Vec3f pos) {
 void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
     if(&getRenderWindow() == window && event.type == IEvent::MOUSE_WHEEL_EVENT && event.mouseWheel.type == IEvent::MOUSE_WHEEL_MOVED && isGuiShown) {
         if (event.mouseWheel.direction > 0) {
-            selectedObject->changeHeights(rectSelect.getSelectionRect(), -1.f);
-            std::vector<Entity*> objects = rectSelect.getItems();
-            for (unsigned int i = 1; i < objects.size(); i++) {
-                objects[i]->changeHeights(rectSelect.getSelectionRect(), -1.f);
+            if (selectedObject != nullptr) {
+                selectedObject->changeHeights(selectionBox, -1.f);
+                std::vector<Entity*> objects = rectSelect.getItems();
+                for (unsigned int i = 1; i < objects.size(); i++) {
+                    objects[i]->changeHeights(selectionBox, -1.f);
+                }
             }
         } else {
-            selectedObject->changeHeights(rectSelect.getSelectionRect(), 1.f);
-            std::vector<Entity*> objects = rectSelect.getItems();
-            for (unsigned int i = 1; i < objects.size(); i++) {
-                objects[i]->changeHeights(rectSelect.getSelectionRect(), 1.f);
+            if (selectedObject != nullptr) {
+                selectedObject->changeHeights(selectionBox, 1.f);
+                std::vector<Entity*> objects = rectSelect.getItems();
+                for (unsigned int i = 1; i < objects.size(); i++) {
+                    objects[i]->changeHeights(selectionBox, 1.f);
+                }
             }
         }
     }
@@ -1773,20 +1777,39 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
 
             rectSelect.getItems().clear();
             BoundingBox box = rectSelect.getSelectionRect();
-            Vec3f savedPos = box.getPosition();
-            Vec3f pos = box.getPosition();
+            std::vector<Vec3f> bbVerts = box.getVertices();
+            std::array<Vec3f, 8> obbVerts;
             if (dpSelectComponent->getSelectedItem() == "MAIN WINDOW") {
-                pos = getRenderWindow().mapPixelToCoords(Vec3f(pos.x, getRenderWindow().getSize().y-pos.y, 0))+getRenderWindow().getView().getSize()*0.5f;
+                for (unsigned int v = 0; v < 8; v++) {
+                    if (v < 4)
+                        obbVerts[v] = getRenderWindow().mapPixelToCoords(Vec3f(bbVerts[v].x, getRenderWindow().getSize().y-bbVerts[v].y, 0))+Vec3f(getRenderWindow().getView().getSize().x*0.5f, getRenderWindow().getView().getSize().y*0.5f, getRenderWindow().getView().getSize().z*0.5f);
+                    else
+                        obbVerts[v] = getRenderWindow().mapPixelToCoords(Vec3f(bbVerts[v].x, getRenderWindow().getSize().y-bbVerts[v].y, 1))+Vec3f(getRenderWindow().getView().getSize().x*0.5f, getRenderWindow().getView().getSize().y*0.5f, getRenderWindow().getView().getSize().z*0.5f);
+                }
             } else {
                 std::string name = dpSelectComponent->getSelectedItem();
                 std::vector<Component*> components = getRenderComponentManager().getRenderComponents();
                 for (unsigned int i = 0; i < components.size(); i++) {
                     if (name == components[i]->getName() && dynamic_cast<HeavyComponent*>(components[i])) {
-                        pos = components[i]->getFrameBuffer()->mapPixelToCoords(Vec3f(pos.x, getRenderWindow().getSize().y-pos.y, 0))+getRenderWindow().getView().getSize()*0.5f;
+                        if(components[i]->getFrameBuffer()->getView().isOrtho()) {
+                            for (unsigned int v = 0; v < 8; v++) {
+                                if (v < 4)
+                                    obbVerts[v] = getRenderWindow().mapPixelToCoords(Vec3f(bbVerts[v].x, getRenderWindow().getSize().y-bbVerts[v].y, 0))+Vec3f(getRenderWindow().getView().getSize().x*0.5f, getRenderWindow().getView().getSize().y*0.5f, getRenderWindow().getView().getSize().z*0.5f);
+                                else
+                                    obbVerts[v] = getRenderWindow().mapPixelToCoords(Vec3f(bbVerts[v].x, getRenderWindow().getSize().y-bbVerts[v].y, 1))+Vec3f(getRenderWindow().getView().getSize().x*0.5f, getRenderWindow().getView().getSize().y*0.5f, getRenderWindow().getView().getSize().z*0.5f);
+                            }
+                        } else {
+                            for (unsigned int v = 0; v < 8; v++) {
+                                if (v < 4)
+                                    obbVerts[v] = getRenderWindow().mapPixelToCoords(Vec3f(bbVerts[v].x, getRenderWindow().getSize().y-bbVerts[v].y, 0));
+                                else
+                                    obbVerts[v] = getRenderWindow().mapPixelToCoords(Vec3f(bbVerts[v].x, getRenderWindow().getSize().y-bbVerts[v].y, 1));
+                            }
+                        }
                     }
                 }
             }
-            rectSelect.setRect(pos.x, pos.y, pos.z, box.getSize().x, box.getSize().y, box.getSize().z);
+            selectionBox = OrientedBoundingBox(obbVerts[0], obbVerts[1], obbVerts[2], obbVerts[3], obbVerts[4], obbVerts[5], obbVerts[6], obbVerts[7]);
             if (getWorld()->getCurrentSceneManager() != nullptr) {
                 //std::cout<<"select get visible entities"<<std::endl;
                 //std::cout<<"get entities"<<std::endl;
@@ -1794,7 +1817,11 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
                 for (unsigned int i = 0; i < entities.size(); i++) {
                     //std::cout<<"type : "<<entities[i]->getType()<<std::endl<<"select pos : "<<rectSelect.getSelectionRect().getPosition()<<"select size : "<<rectSelect.getSelectionRect().getSize()<<"globalbounds pos : "<<entities[i]->getGlobalBounds().getPosition()<<"globalbounds size : "<<entities[i]->getGlobalBounds().getSize()<<std::endl;
                     //std::cout<<rectSelect.getSelectionRect().getPosition()<<rectSelect.getSelectionRect().getSize()<<entities[i]->getGlobalBounds().getPosition()<<entities[i]->getGlobalBounds().getSize();
-                    if (rectSelect.getSelectionRect().intersects(entities[i]->getGlobalBounds())) {
+                    std::cout<<"selection rect : "<<rectSelect.getSelectionRect().getPosition()<<rectSelect.getSelectionRect().getSize()<<std::endl;
+                    std::cout<<"entity global bounds : "<<entities[i]->getGlobalBounds().getPosition()<<entities[i]->getGlobalBounds().getSize()<<std::endl;
+                    CollisionResultSet::Info infos;
+                    if (selectionBox.intersects(entities[i]->getGlobalBounds(), infos)) {
+                            std::cout<<"add to selection"<<std::endl;
                         //if (dynamic_cast<Tile*>(entities[i])) {
 
 
@@ -1838,7 +1865,6 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
                 taBoundingBoxColH->setText(conversionFloatString(selectRect.getSize().y));
                 taBoundingBoxColZ->setText(conversionFloatString(selectRect.getSize().z));
             }
-            rectSelect.setRect(savedPos.x, savedPos.y, savedPos.z, box.getSize().x, box.getSize().y, box.getSize().z);
         }
         if (pScriptsFiles->isPointInside(mousePosition) && sTextRect != nullptr) {
             //std::cout<<"deltas : "<<pMaterial->getDeltas()<<std::endl;

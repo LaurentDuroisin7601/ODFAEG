@@ -163,7 +163,7 @@ namespace odfaeg {
         }
         void View::computeVectorsFromAngles() {
             forward = math::Math::toCartesian(math::Math::toRadians(teta), math::Math::toRadians(phi)).normalize();
-            std::cout<<"forward : "<<forward<<std::endl;
+            //std::cout<<"forward : "<<forward<<std::endl;
             left = forward.cross(up).normalize();
             target = position + forward;
             up = left.cross(forward);

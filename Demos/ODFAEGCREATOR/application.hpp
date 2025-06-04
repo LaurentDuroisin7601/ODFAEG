@@ -37,6 +37,7 @@
 #include "rotationGismo.hpp"
 #include "translationGismo.hpp"
 #include "scaleGismo.hpp"
+#include "odfaeg/Physics/orientedBoundingBox.h"
 class ODFAEGCreator : public odfaeg::core::Application<ODFAEGCreator>,
                       public odfaeg::graphic::gui::MenuItemListener,
                       public odfaeg::graphic::gui::ActionListener {
@@ -221,6 +222,7 @@ class ODFAEGCreator : public odfaeg::core::Application<ODFAEGCreator>,
         float prevAngle;
         odfaeg::graphic::View selectedComponentView;
         odfaeg::graphic::g3d::Model modelLoader;
+        odfaeg::physic::OrientedBoundingBox selectionBox;
 };
 #endif
 #endif

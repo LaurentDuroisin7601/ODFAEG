@@ -196,10 +196,10 @@ namespace odfaeg {
                 edgeBissectors.push_back(b2);
                 edgeBissectors.push_back(b3);
                 edgeBissectors.push_back(b4);
-                faceNormals.push_back(n1);
-                faceNormals.push_back(n2);
-                faceNormals.push_back(n3);
-                faceNormals.push_back(n4);
+                edgeNormals.push_back(n1);
+                edgeNormals.push_back(n2);
+                edgeNormals.push_back(n3);
+                edgeNormals.push_back(n4);
                 faceBissectors.push_back(fb);
                 //Back face.
                 v1 = points[4] - points[5];
@@ -231,10 +231,10 @@ namespace odfaeg {
                 edgeBissectors.push_back(b2);
                 edgeBissectors.push_back(b3);
                 edgeBissectors.push_back(b4);
-                faceNormals.push_back(n1);
-                faceNormals.push_back(n2);
-                faceNormals.push_back(n3);
-                faceNormals.push_back(n4);
+                edgeNormals.push_back(n1);
+                edgeNormals.push_back(n2);
+                edgeNormals.push_back(n3);
+                edgeNormals.push_back(n4);
                 faceBissectors.push_back(fb);
                 //Top face.
                 v1 = points[4] - points[5];
@@ -266,10 +266,10 @@ namespace odfaeg {
                 edgeBissectors.push_back(b2);
                 edgeBissectors.push_back(b3);
                 edgeBissectors.push_back(b4);
-                faceNormals.push_back(n1);
-                faceNormals.push_back(n2);
-                faceNormals.push_back(n3);
-                faceNormals.push_back(n4);
+                edgeNormals.push_back(n1);
+                edgeNormals.push_back(n2);
+                edgeNormals.push_back(n3);
+                edgeNormals.push_back(n4);
                 faceBissectors.push_back(fb);
                 //Bottom face.
                 v1 = points[7] - points[6];
@@ -301,10 +301,10 @@ namespace odfaeg {
                 edgeBissectors.push_back(b2);
                 edgeBissectors.push_back(b3);
                 edgeBissectors.push_back(b4);
-                faceNormals.push_back(n1);
-                faceNormals.push_back(n2);
-                faceNormals.push_back(n3);
-                faceNormals.push_back(n4);
+                edgeNormals.push_back(n1);
+                edgeNormals.push_back(n2);
+                edgeNormals.push_back(n3);
+                edgeNormals.push_back(n4);
                 faceBissectors.push_back(fb);
                 //Left face.
                 v1 = points[1] - points[5];
@@ -336,10 +336,10 @@ namespace odfaeg {
                 edgeBissectors.push_back(b2);
                 edgeBissectors.push_back(b3);
                 edgeBissectors.push_back(b4);
-                faceNormals.push_back(n1);
-                faceNormals.push_back(n2);
-                faceNormals.push_back(n3);
-                faceNormals.push_back(n4);
+                edgeNormals.push_back(n1);
+                edgeNormals.push_back(n2);
+                edgeNormals.push_back(n3);
+                edgeNormals.push_back(n4);
                 faceBissectors.push_back(fb);
                 //Right face.
                 v1 = points[1] - points[5];
@@ -371,10 +371,10 @@ namespace odfaeg {
                 edgeBissectors.push_back(b2);
                 edgeBissectors.push_back(b3);
                 edgeBissectors.push_back(b4);
-                faceNormals.push_back(n1);
-                faceNormals.push_back(n2);
-                faceNormals.push_back(n3);
-                faceNormals.push_back(n4);
+                edgeNormals.push_back(n1);
+                edgeNormals.push_back(n2);
+                edgeNormals.push_back(n3);
+                edgeNormals.push_back(n4);
                 faceBissectors.push_back(fb);
             }
         }
@@ -965,7 +965,7 @@ namespace odfaeg {
         bool OrientedBoundingBox::isFlat() {
             return flat;
         }
-        bool OrientedBoundingBox::isPointInside(math::Vec3f point) { 
+        bool OrientedBoundingBox::isPointInside(math::Vec3f point) {
             return false;
         }
     }

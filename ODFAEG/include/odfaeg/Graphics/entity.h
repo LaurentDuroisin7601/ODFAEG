@@ -10,6 +10,7 @@
 #include "../Core/serialization.h"
 #include <vector>
 #include <glm/glm.hpp>
+#include "../Physics/orientedBoundingBox.h"
 /**
   *\namespace odfaeg
   * the namespace of the Opensource Development Framework Adapted for Every Games.
@@ -439,7 +440,7 @@ namespace odfaeg {
                 virtual std::vector<math::Matrix4f> getFinalBoneMatrices();
                 void decreaseNbEntities();
                 virtual void updateAnimation(float dt);
-                virtual bool changeHeights(physic::BoundingBox bx, float delta);
+                virtual bool changeHeights(physic::OrientedBoundingBox bx, float delta);
                 std::map<std::string, Entity::BoneInfo>& getBoneInfoMap();
                 int& getBoneCount();
             protected :

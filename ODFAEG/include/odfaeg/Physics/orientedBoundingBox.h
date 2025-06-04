@@ -143,10 +143,6 @@ namespace odfaeg {
                     ar(faceNormals);
                     ar(faceBissectors);
                 }
-                const OrientedBoundingBox& operator= (const OrientedBoundingBox& other) {
-                    *this = other;
-                    return *this;
-                }
                 bool onIntersects(BaseInterface &_interface, CollisionResultSet::Info& info) {
                     return _interface.intersects(*this, info);
                 }

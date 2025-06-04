@@ -12,7 +12,7 @@ namespace odfaeg {
             GameObject::copy(bt);
             return bt;
         }
-        bool BigTile::changeHeights(physic::BoundingBox bx, float delta) {
+        bool BigTile::changeHeights(physic::OrientedBoundingBox bx, float delta) {
             bool heightsChanged = false;
             for (unsigned int i = 0; i < getChildren().size(); i++) {
                 math::Vec3f positions[4];
