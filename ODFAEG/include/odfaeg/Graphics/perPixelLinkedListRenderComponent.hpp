@@ -291,7 +291,7 @@ namespace odfaeg {
             Entity* skybox;
             sf::Clock timeClock;
             unsigned int maxModelDataSize, maxMaterialDataSize, maxVboIndirectSize;
-            bool datasReady;
+            bool datasReady, cleared, renderFinished;
 
         };
         #endif

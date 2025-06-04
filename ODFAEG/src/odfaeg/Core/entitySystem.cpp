@@ -34,7 +34,7 @@ namespace odfaeg {
             return name;
         }
         EntitySystem::~EntitySystem() {
-            stop();
+            //stop();
         }
     }
 }

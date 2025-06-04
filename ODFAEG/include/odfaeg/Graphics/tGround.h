@@ -35,8 +35,7 @@ namespace odfaeg {
             */
             Entity* clone();
             bool operator== (Entity &entity);
-            bool getHeights(physic::BoundingBox bx, std::vector<float>& heights);
-            bool changeHeights(physic::BoundingBox bx, std::vector<float> heights);
+            bool changeHeights(physic::BoundingBox bx, float delta);
             /**
             * \fn void addTile (Tile *tile);
             * \brief add a tile.

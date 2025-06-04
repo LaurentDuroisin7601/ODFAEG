@@ -53,7 +53,7 @@ namespace odfaeg {
                 return name;
             }
             Timer::~Timer() {
-                stop();
+                //stop();
             }
     }
 }

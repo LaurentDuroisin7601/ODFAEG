@@ -481,9 +481,9 @@ namespace sorrok {
             /*eu->stop();
             au->stop();*/
             pfire.stop();
-            /*psu->stop();
+            psu->stop();
             au->stop();
-            eu->stop();*/
+            eu->stop();
             std::vector<Entity*> entities = getWorld()->getRootEntities("E_BIGTILE+E_WALL+E_DECOR+E_ANIMATION");
             //std::cout<<"size : "<<entities.size()<<std::endl;
             std::ofstream ofs("FichierDeSerialisation");

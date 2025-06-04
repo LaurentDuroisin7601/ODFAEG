@@ -12,26 +12,8 @@ namespace odfaeg {
             GameObject::copy(bt);
             return bt;
         }
-        bool BigTile::getHeights(physic::BoundingBox bx, std::vector<float>& heights) {
-            bool heightsAdded = false;
-            for (unsigned int i = 0; i < getChildren().size(); i++) {
-                math::Vec3f positions[4];
-                positions[0] = math::Vec3f(getChildren()[i]->getFace(0)->getVertexArray()[0].position.x, getChildren()[i]->getFace(0)->getVertexArray()[0].position.y, getChildren()[i]->getFace(0)->getVertexArray()[0].position.z);
-                positions[1] = math::Vec3f(getChildren()[i]->getFace(0)->getVertexArray()[1].position.x, getChildren()[i]->getFace(0)->getVertexArray()[1].position.y, getChildren()[i]->getFace(0)->getVertexArray()[1].position.z);
-                positions[2] = math::Vec3f(getChildren()[i]->getFace(0)->getVertexArray()[2].position.x, getChildren()[i]->getFace(0)->getVertexArray()[2].position.y, getChildren()[i]->getFace(0)->getVertexArray()[2].position.z);
-                positions[3] = math::Vec3f(getChildren()[i]->getFace(0)->getVertexArray()[3].position.x, getChildren()[i]->getFace(0)->getVertexArray()[3].position.y, getChildren()[i]->getFace(0)->getVertexArray()[3].position.z);
-                for (unsigned int j = 0; j < 4; j++) {
-                   heightsAdded = true;
-                   if (bx.isPointInside(positions[j])) {
-                       heights.push_back(positions[j].y);
-                   }
-                }
-            }
-            return heightsAdded;
-        }
-        bool BigTile::changeHeights(physic::BoundingBox bx, std::vector<float> heights) {
+        bool BigTile::changeHeights(physic::BoundingBox bx, float delta) {
             bool heightsChanged = false;
-            unsigned int heightIndex = 0;
             for (unsigned int i = 0; i < getChildren().size(); i++) {
                 math::Vec3f positions[4];
                 positions[0] = math::Vec3f(getChildren()[i]->getFace(0)->getVertexArray()[0].position.x, getChildren()[i]->getFace(0)->getVertexArray()[0].position.y, getChildren()[i]->getFace(0)->getVertexArray()[0].position.z);
@@ -41,8 +23,7 @@ namespace odfaeg {
                 for (unsigned int j = 0; j < 4; j++) {
                    heightsChanged = true;
                    if (bx.isPointInside(positions[j])) {
-                       getChildren()[i]->getFace(0)->getVertexArray()[j].position.y = heights[heightIndex];
-                       heightIndex++;
+                       getChildren()[i]->getFace(0)->getVertexArray()[j].position.y += delta;
                    }
                 }
             }
