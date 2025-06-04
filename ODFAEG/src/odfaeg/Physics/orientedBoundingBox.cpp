@@ -19,15 +19,8 @@ namespace odfaeg {
             corners[5] = p6;
             corners[6] = p7;
             corners[7] = p8;
-            for (unsigned int i = 0; i < corners.size() - 1; i++) {
-                for (unsigned int j = 1; j < corners.size(); j++) {
-                    if (corners[j].z < corners[i].z) {
-                        float tmp = corners[i].z;
-                        corners[i].z = corners[j].z;
-                        corners[j].z = tmp;
-                    }
-                }
-            }
+            std::sort (corners.begin(), corners.end(), MonFoncteur());
+
             frontCorners[0] = corners[0];
             frontCorners[1] = corners[1];
             frontCorners[2] = corners[2];
@@ -46,9 +39,9 @@ namespace odfaeg {
             depth = store[2][1] - z;
             store = math::Computer::getExtends(frontCorners);
             math::Vec3f position (store[0][0], store[1][0], store[2][0]);
-            int p1Index=0, p2Index=0,  p3Index=0, p4Index, p5Index=0, p6Index = 0, p7Index = 0, p8Index = 8;
+            //int p1Index=0, p2Index=0,  p3Index=0, p4Index, p5Index=0, p6Index = 0, p7Index = 0, p8Index = 8;
             //Check the right order of the points to find the normals of the oriented bounding rectangle.
-            for (unsigned int i = 0; i < 4; i++) {
+            /*for (unsigned int i = 0; i < 4; i++) {
                 if (corners[i].x == position.x)
                     p1Index = i;
                 else if (corners[i].y <= position.y && corners[i].x != store[0][1])
@@ -57,11 +50,13 @@ namespace odfaeg {
                     p4Index = i;
                 else
                     p3Index = i;
-            }
+            }*/
+
             store = math::Computer::getExtends(backCorners);
             position = math::Vec3f (store[0][0], store[1][0], store[2][0]);
             //Check the right order of the points to find the normals of the oriented bounding rectangle.
-            for (unsigned int i = 4; i < 8; i++) {
+            /*for (unsigned int i = 4; i < 8; i++) {
+                std::cout<<(corners[i].y <= position.y && corners[i].x != store[0][1])<<std::endl;
                 if (corners[i].x == position.x)
                     p5Index = i;
                 else if (corners[i].y <= position.y && corners[i].x != store[0][1])
@@ -70,15 +65,21 @@ namespace odfaeg {
                     p7Index = i;
                 else
                     p8Index = i;
+            }*/
+            //std::cout<<"pt index 6 : "<<p6Index<<std::endl;
+            for (unsigned int i = 0 ; i < 8; i++) {
+                points[i] = corners[i];
+                points[i] = corners[i];
+                points[i] = corners[i];
+                points[i] = corners[i];
+                points[i] = corners[i];
+                points[i] = corners[i];
+                points[i] = corners[i];
+                points[i] = corners[i];
             }
-            points[0] = corners[p1Index];
-            points[1] = corners[p2Index];
-            points[2] = corners[p3Index];
-            points[3] = corners[p4Index];
-            points[4] = corners[p5Index];
-            points[5] = corners[p6Index];
-            points[6] = corners[p7Index];
-            points[7] = corners[p8Index];
+            /*for (unsigned int i = 0; i < 8; i++)
+                std::cout<<"points : "<<points[i]<<std::endl;*/
+
             points[8] = points[4];
             points[9] = points[5];
             points[10] = points[1];
@@ -96,6 +97,8 @@ namespace odfaeg {
             points[22] = points[7];
             points[23] = points[3];
             flat = false;
+            center = (points[0] + points[1] + points[2] + points[3]
+                          + points[4] + points[5] + points[6] + points[7]) * 0.125f;
             computeVectors();
         }
         OrientedBoundingBox::OrientedBoundingBox(math::Vec3f p1, math::Vec3f p2, math::Vec3f p3, math::Vec3f p4) {
@@ -563,7 +566,7 @@ namespace odfaeg {
             } else if (flat && !bx.isFlat()) {
                 if (faceIndex1 != -1 && faceIndex2 != -1)  {
                     math::Triangle t1(points[faceIndex1*3], points[faceIndex1*3+1], points[faceIndex1*3+2]);
-                    math::Triangle t2(points[faceIndex1*3], points[faceIndex1*3+1], points[faceIndex1*3+3]);
+                    math::Triangle t2(points[faceIndex1*3], points[faceIndex1*3+2], points[faceIndex1*3+3]);
                     math::Triangle t3(bx.getVertices()[faceIndex2*3], bx.getVertices()[faceIndex2*3+1], bx.getVertices()[faceIndex2*3+2]);
                     return bx.isPointInside(t1.getP1())
                             || bx.isPointInside(t1.getP2())
@@ -576,7 +579,7 @@ namespace odfaeg {
                 }
                 if (faceIndex1 != -1 && faceIndex2 == -1) {
                     math::Triangle t1(points[faceIndex1*3], points[faceIndex1*3+1], points[faceIndex1*3+2]);
-                    math::Triangle t2(points[faceIndex1*3], points[faceIndex1*3+1], points[faceIndex1*3+3]);
+                    math::Triangle t2(points[faceIndex1*3], points[faceIndex1*3+2], points[faceIndex1*3+3]);
                     math::Ray r1 (bx.getVertices()[edgeIndex2], bx.getVertices()[(edgeIndex2 % 3 == 2) ? edgeIndex2 - 2 : edgeIndex2 + 1]);
                     math::Ray r2 (bx.getVertices()[(edgeIndex2 % 3 == 2) ? edgeIndex2 - 2 : edgeIndex2 + 1], bx.getVertices()[edgeIndex2]);
                     return bx.isPointInside(t1.getP1())
@@ -600,8 +603,14 @@ namespace odfaeg {
             } else {
                 if (faceIndex1 != -1 && faceIndex2 != -1)  {
                     math::Triangle t1(points[faceIndex1*3], points[faceIndex1*3+1], points[faceIndex1*3+2]);
-                    math::Triangle t2(points[faceIndex1*3], points[faceIndex1*3+1], points[faceIndex1*3+3]);
+                    math::Triangle t2(points[faceIndex1*3], points[faceIndex1*3+2], points[faceIndex1*3+3]);
                     math::Triangle t3(bx.getVertices()[faceIndex2*3], bx.getVertices()[faceIndex2*3+1], bx.getVertices()[faceIndex2*3+2]);
+
+                    std::cout<<"intersects 1 ? "<<(isPointInside(t2.getP1())
+                            || isPointInside(t2.getP2())
+                            || isPointInside(t2.getP3())
+                            || t1.intersects(t3)
+                            || t2.intersects(t3))<<std::endl;
                     return isPointInside(t2.getP1())
                             || isPointInside(t2.getP2())
                             || isPointInside(t2.getP3())
@@ -610,9 +619,14 @@ namespace odfaeg {
                 }
                 if (faceIndex1 != -1 && faceIndex2 == -1) {
                     math::Triangle t1(points[faceIndex1*3], points[faceIndex1*3+1], points[faceIndex1*3+2]);
-                    math::Triangle t2(points[faceIndex1*3], points[faceIndex1*3+1], points[faceIndex1*3+3]);
+                    math::Triangle t2(points[faceIndex1*3], points[faceIndex1*3+2], points[faceIndex1*3+3]);
                     math::Ray r1 (bx.getVertices()[edgeIndex2], bx.getVertices()[(edgeIndex2 % 3 == 2) ? edgeIndex2 - 2 : edgeIndex2 + 1]);
                     math::Ray r2 (bx.getVertices()[(edgeIndex2 % 3 == 2) ? edgeIndex2 - 2 : edgeIndex2 + 1], bx.getVertices()[edgeIndex2]);
+                    std::cout<<"orig : "<<r1.getOrig()<<std::endl;
+                    std::cout<<"intersects 2 ? "<<(isPointInside(r1.getOrig())/*
+                           || isPointInside(r1.getExt())
+                           || (t1.intersects(r1) && t1.intersects(r2))
+                           || (t2.intersects(r1) && t2.intersects(r2))*/)<<std::endl;
                     return isPointInside(r1.getOrig())
                            || isPointInside(r1.getExt())
                            || (t1.intersects(r1) && t1.intersects(r2))
@@ -622,6 +636,10 @@ namespace odfaeg {
                     math::Triangle t(bx.getVertices()[faceIndex2*3], bx.getVertices()[faceIndex2*3+1], bx.getVertices()[faceIndex2*3+2]);
                     math::Ray r1 (points[edgeIndex1], points[(edgeIndex1 % 3 == 2) ? edgeIndex1 - 2 : edgeIndex1 + 1]);
                     math::Ray r2 (points[(edgeIndex1 % 3 == 2) ? edgeIndex1 - 2 : edgeIndex1 + 1], points[edgeIndex1]);
+                    std::cout<<"intersects 3 ? "<<(isPointInside(t.getP1())
+                            || isPointInside(t.getP2())
+                            || isPointInside(t.getP3())
+                            || (t.intersects(r1) && t.intersects(r2)))<<std::endl;
                     return isPointInside(t.getP1())
                             || isPointInside(t.getP2())
                             || isPointInside(t.getP3())
@@ -904,11 +922,10 @@ namespace odfaeg {
             flat = false;
             computeVectors();
         }
-        void OrientedBoundingBox::move(math::Vec3f v) {
+        void OrientedBoundingBox::move(math::Vec3f t) {
             graphic::TransformMatrix tm;
-            tm.setTranslation(v);
-            tm.setOrigin(center);
-            center = tm.transform(center);
+            center = center + t;
+            tm.setTranslation(center);
             for (unsigned int i = 0; i < points.size(); i++)
                 points[i] = tm.transform(points[i]);
             std::array<std::array<float, 2>, 3> extends = math::Computer::getExtends(points);
@@ -973,20 +990,22 @@ namespace odfaeg {
             //Check the nearest face from the point.
             int ptIndex = math::Computer::checkNearestVertexFromShape(center, points, edgeBissectors, edgeNormals, faceBissectors, faceNormals, vertices, distMin, index,edgeIndex, faceIndex, 3);
             if (index != -1) {
-                return (points[index] - center).magnSquared() >= (vertices[ptIndex] - center).magnSquared();
+                return (points[index] - center).magnSquared() < (vertices[ptIndex] - center).magnSquared();
             }
             if (flat) {
                 if (faceIndex == -1)
                     return false;
                 math::Plane p(faceNormals[faceIndex], faceBissectors[faceIndex]);
-                if (p.whichSide(point) == 0)
+                if (p.whichSide(point) == 0) {
                     return true;
+                }
                 return false;
             }
 
             math::Vec3f bpn = (faceBissectors[faceIndex] - center).projOnVector(faceNormals[faceIndex]);
             math::Vec3f d = point - center;
             float p = d.projOnAxis(bpn);
+            std::cout<<"bpn "<<bpn.magnSquared()<<std::endl<<"p : "<<p*p<<std::endl;
             if (p * p > bpn.magnSquared()) {
                 return false;
             }

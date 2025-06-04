@@ -27,6 +27,13 @@ namespace odfaeg {
           */
         class ODFAEG_PHYSICS_API OrientedBoundingBox : public BoundingVolume {
             public :
+                struct MonFoncteur
+                {
+                   bool operator() (const math::Vec3f & lhs, const math::Vec3f & rhs) const
+                   {
+                      return lhs.z < rhs.z;
+                   }
+                };
                 OrientedBoundingBox() {}
                 /**\fn OrientedBoundingBox (math::Vec3f p1, math::Vec3f p2, math::Vec3f p3, math::Vec3f p4, math::Vec3f p5, math::Vec3f p6, math::Vec3f p7, math::Vec3f p8)
                  * \brief Constructor (instanciate an oriented bounding box with 8 points)

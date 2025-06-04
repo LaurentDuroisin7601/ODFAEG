@@ -194,7 +194,7 @@ namespace odfaeg {
             //Check the nearest face from the point.
             int ptIndex = math::Computer::checkNearestVertexFromShape(center, points, edgeBissectors, edgeNormals, faceBissectors, faceNormals, vertices, distMin, index,edgeIndex, faceIndex, 3);
             if (index != -1) {
-                return (points[index] - center).magnSquared() >= (vertices[ptIndex] - center).magnSquared();
+                return (points[index] - center).magnSquared() < (vertices[ptIndex] - center).magnSquared();
             }
             if (flat) {
                 if (faceIndex == -1)
@@ -206,6 +206,7 @@ namespace odfaeg {
             }
 
             math::Vec3f bpn = (faceBissectors[faceIndex] - center).projOnVector(faceNormals[faceIndex]);
+            std::cout<<"bissector : "<<faceBissectors[faceIndex]<<std::endl;
             math::Vec3f d = point - center;
             float p = d.projOnAxis(bpn);
             if (p * p > bpn.magnSquared()) {
