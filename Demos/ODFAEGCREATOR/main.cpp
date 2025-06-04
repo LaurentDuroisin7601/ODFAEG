@@ -1014,12 +1014,12 @@ int main(int argc, char* argv[])
         window.display();
     }*/
 
-    OrientedBoundingBox obb(Vec3f(12, 132, 0), Vec3f(45, 132, 0), Vec3f(45, 165, 0), Vec3f(12, 165, 0), Vec3f(12, 132, 1800), Vec3f(45, 132, 1800), Vec3f(45, 165, 1800), Vec3f(12, 165, 1800));
+    /*OrientedBoundingBox obb(Vec3f(12, 132, 0), Vec3f(45, 132, 0), Vec3f(45, 165, 0), Vec3f(12, 165, 0), Vec3f(12, 132, 1800), Vec3f(45, 132, 1800), Vec3f(45, 165, 1800), Vec3f(12, 165, 1800));
 
     BoundingBox bb (0, 0, 50, 100, 100, 0);
     CollisionResultSet::Info infos;
     obb.intersects(bb, infos);
-    return 0;
-    /*ODFAEGCreator app(sf::VideoMode(1000,700),"ODFAEG Creator");
-    return app.exec();*/
+    return 0;*/
+    ODFAEGCreator app(sf::VideoMode(1000,700),"ODFAEG Creator");
+    return app.exec();
 }
