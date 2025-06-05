@@ -1080,6 +1080,7 @@ namespace odfaeg {
         math::Vec3f RenderTarget::mapPixelToCoords(const math::Vec3f& point, View& view)
         {
             ViewportMatrix vpm;
+
             vpm.setViewport(math::Vec3f(view.getViewport().getPosition().x, view.getViewport().getPosition().y, 0)
                                         ,math::Vec3f(view.getViewport().getWidth(), view.getViewport().getHeight(), 1));
             math::Vec3f coords = vpm.toNormalizedCoordinates(point);
