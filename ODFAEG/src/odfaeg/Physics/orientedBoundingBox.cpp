@@ -891,9 +891,6 @@ namespace odfaeg {
             x = extends[0][0];
             y = extends[1][0];
             z = extends[2][0];
-            width = extends[0][1] - extends[0][0];
-            height = extends[1][1] - extends[1][0];
-            depth = extends[2][1] - extends[2][0];
             computeVectors();
         }
         void OrientedBoundingBox::scale(math::Vec3f v) {
@@ -942,7 +939,7 @@ namespace odfaeg {
             return flat;
         }
         bool OrientedBoundingBox::isPointInside(math::Vec3f point) {
-            /*float distMin;
+            float distMin;
             int index;
             int edgeIndex, faceIndex;
             std::vector<math::Vec3f> vertices = {point};
@@ -955,12 +952,20 @@ namespace odfaeg {
                 if (faceIndex == -1)
                     return false;
                 math::Plane p(faceNormals[faceIndex], faceBissectors[faceIndex]);
-                if (p.whichSide(point) == 0) {
+                if (p.whichSide(point) == 0)
                     return true;
-                }
                 return false;
-            }*/
-            if (flat) {
+            }
+
+            math::Vec3f bpn = (faceBissectors[faceIndex] - center).projOnVector(faceNormals[faceIndex]);
+            //std::cout<<"bissector : "<<faceBissectors[faceIndex]<<std::endl;
+            math::Vec3f d = point - center;
+            float p = d.projOnAxis(bpn);
+            if (p * p > bpn.magnSquared()) {
+                return false;
+            }
+            return true;
+           /*if (flat) {
                 float minX = - width * 0.5f;
                 float maxX = width * 0.5f;
                 float minY = -height * 0.5f;
@@ -974,7 +979,7 @@ namespace odfaeg {
                         //std::cout<<"p : "<<p<<",minX : "<<minX<<", maxX : "<<maxX<<",x : "<<(minX <= p+epsilon && p-epsilon <= maxX)<<std::endl;
                         if (!(minX <= p+epsilon && p-epsilon <= maxX))
                             return false;
-                    } else if (i == 1) {
+                    } else {
                         //std::cout<<"p : "<<p<<",minY : "<<minY<<", maxY : "<<maxY<<std::endl;
                         if(!(minY <= p+epsilon && p-epsilon <= maxY))
                            return false;
@@ -986,10 +991,11 @@ namespace odfaeg {
             float maxX = width * 0.5f;
             float minY = -height * 0.5f;
             float maxY = height * 0.5f;
-            float minZ = -depth * 0.5f;
+            float minZ = - depth * 0.5f;
             float maxZ = depth * 0.5f;
-            math::Vec3f d = point - center;
+
             const float epsilon = 1e-6f;
+            math::Vec3f d = point - center;
             for (unsigned int i = 0; i < 3; i++) {
                 float p = d.projOnAxis(faceNormals[i]);
                 //std::cout<<"d  :"<<d<<"normal : "<<faceNormals[i]<<std::endl;
@@ -1007,7 +1013,7 @@ namespace odfaeg {
                        return false;
                 }
             }
-            return true;
+            return true;*/
         }
     }
 }

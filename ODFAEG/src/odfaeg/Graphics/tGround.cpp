@@ -18,8 +18,11 @@ namespace odfaeg {
                 if (getChildren()[i]->isSelected()) {
                     for (unsigned int v = 0; v < 4; v++) {
                         math::Vec3f pt (getChildren()[i]->getFace(0)->getVertexArray()[v].position.x, getChildren()[i]->getFace(0)->getVertexArray()[v].position.y, getChildren()[i]->getFace(0)->getVertexArray()[v].position.z);
+                        /*std::cout<<"point : "<<pt<<std::endl;
+                        for (unsigned int j = 0; j < obx.getVertices().size(); j++) {
+                            std::cout<<"vertex : "<<obx.getVertices()[j]<<std::endl;
+                        }*/
                         if (obx.isPointInside(pt)) {
-                            std::cout<<"change vert height"<<std::endl;
                             heightsChanged = true;
                             getChildren()[i]->getFace(0)->getVertexArray()[v].position.y += delta;
                             obx.move(math::Vec3f(0, delta, 0));

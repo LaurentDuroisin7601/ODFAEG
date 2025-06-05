@@ -206,7 +206,7 @@ namespace odfaeg {
             }
 
             math::Vec3f bpn = (faceBissectors[faceIndex] - center).projOnVector(faceNormals[faceIndex]);
-            std::cout<<"bissector : "<<faceBissectors[faceIndex]<<std::endl;
+            //std::cout<<"bissector : "<<faceBissectors[faceIndex]<<std::endl;
             math::Vec3f d = point - center;
             float p = d.projOnAxis(bpn);
             if (p * p > bpn.magnSquared()) {
