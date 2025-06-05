@@ -23,6 +23,7 @@ namespace odfaeg {
                 for (unsigned int j = 0; j < 4; j++) {
                    heightsChanged = true;
                    if (bx.isPointInside(positions[j])) {
+                       std::cout<<"change vertex height"<<std::endl;
                        getChildren()[i]->getFace(0)->getVertexArray()[j].position.y += delta;
                        bx.move(math::Vec3f(0, delta, 0));
                    }

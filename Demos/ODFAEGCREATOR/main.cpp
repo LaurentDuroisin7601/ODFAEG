@@ -1013,10 +1013,11 @@ int main(int argc, char* argv[])
         window.draw(va2, states);
         window.display();
     }*/
-    /*Vec3f point(0, 0, 0);
+    /*Vec3f point(10, 150, 0);
     OrientedBoundingBox obb(Vec3f(1, 141, 0), Vec3f(72, 141, 0), Vec3f(72, 170, 0), Vec3f(13, 170, 0), Vec3f(13, 141, 1800), Vec3f(72, 141, 1800), Vec3f(72, 170, 1800), Vec3f(13, 170, 1800));
     std::cout<<obb.isPointInside(point)<<std::endl;
-    BoundingBox bb (0, 0, 50, 100, 100, 0);
+    return 0;*/
+    /*BoundingBox bb (0, 0, 50, 100, 100, 0);
     CollisionResultSet::Info infos;
     obb.intersects(bb, infos);
     return 0;*/

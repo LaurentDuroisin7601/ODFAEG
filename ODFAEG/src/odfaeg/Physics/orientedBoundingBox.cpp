@@ -34,9 +34,6 @@ namespace odfaeg {
             x = store[0][0];
             y = store[1][0];
             z = store[2][0];
-            width = store[0][1] - x;
-            height = store[1][1] - y;
-            depth = store[2][1] - z;
             store = math::Computer::getExtends(frontCorners);
             math::Vec3f position (store[0][0], store[1][0], store[2][0]);
             //int p1Index=0, p2Index=0,  p3Index=0, p4Index, p5Index=0, p6Index = 0, p7Index = 0, p8Index = 8;
@@ -52,8 +49,6 @@ namespace odfaeg {
                     p3Index = i;
             }*/
 
-            store = math::Computer::getExtends(backCorners);
-            position = math::Vec3f (store[0][0], store[1][0], store[2][0]);
             //Check the right order of the points to find the normals of the oriented bounding rectangle.
             /*for (unsigned int i = 4; i < 8; i++) {
                 std::cout<<(corners[i].y <= position.y && corners[i].x != store[0][1])<<std::endl;
@@ -69,13 +64,7 @@ namespace odfaeg {
             //std::cout<<"pt index 6 : "<<p6Index<<std::endl;
             for (unsigned int i = 0 ; i < 8; i++) {
                 points[i] = corners[i];
-                points[i] = corners[i];
-                points[i] = corners[i];
-                points[i] = corners[i];
-                points[i] = corners[i];
-                points[i] = corners[i];
-                points[i] = corners[i];
-                points[i] = corners[i];
+                std::cout<<"point : "<<points[i]<<std::endl;
             }
             /*for (unsigned int i = 0; i < 8; i++)
                 std::cout<<"points : "<<points[i]<<std::endl;*/
@@ -99,6 +88,7 @@ namespace odfaeg {
             flat = false;
             center = (points[0] + points[1] + points[2] + points[3]
                           + points[4] + points[5] + points[6] + points[7]) * 0.125f;
+            std::cout<<"center : "<<center<<std::endl;
             computeVectors();
         }
         OrientedBoundingBox::OrientedBoundingBox(math::Vec3f p1, math::Vec3f p2, math::Vec3f p3, math::Vec3f p4) {
@@ -128,6 +118,7 @@ namespace odfaeg {
             points[1] = corners[p2Index];
             points[2] = corners[p3Index];
             points[3] = corners[p4Index];
+            center = (points[0] + points[1] + points[2] + points[3]) * 0.25f;
             flat = true;
             computeVectors();
         }
@@ -169,12 +160,12 @@ namespace odfaeg {
                 edgeBissectors.push_back(b4);
                 faceBissectors.push_back(center);
             } else {
-                //Front face.
-                math::Vec3f v1 = points[1] - points[0];
-                math::Vec3f v2 = points[2] - points[1];
-                math::Vec3f v3 = points[3] - points[2];
-                math::Vec3f v4 = points[3] - points[0];
-                math::Vec3f fb = (points[0] + points[1] + points[2] + points[3]) * 0.25f;
+                //Left face.
+                math::Vec3f v1 = points[1] - points[5];
+                math::Vec3f v2 = points[5] - points[6];
+                math::Vec3f v3 = points[6] - points[2];
+                math::Vec3f v4 = points[2] - points[1];
+                math::Vec3f fb = (points[1] + points[2] + points[5] + points[6]) * 0.25f;
                 math::Vec3f n = v1.cross(v2).normalize();
                 if (n.dot2(fb - center) < 0)
                     n = -n;
@@ -183,53 +174,20 @@ namespace odfaeg {
                 math::Vec3f n2 = n.cross(v2).normalize();
                 math::Vec3f n3 = n.cross(v3).normalize();
                 math::Vec3f n4 = n.cross(v4).normalize();
-                math::Vec3f b1 = (points[0] + points[1]) * 0.5f;
+                math::Vec3f b1 = (points[1] + points[5]) * 0.5f;
                 if (n1.dot2(b1 - center) < 0)
                     n1 = -n1;
-                math::Vec3f b2 = (points[1] + points[2]) * 0.5f;
+                math::Vec3f b2 = (points[5] + points[6]) * 0.5f;
                 if (n2.dot2(b2 - center) < 0)
                     n2 = -n2;
-                math::Vec3f b3 = (points[2] + points[3]) * 0.5f;
+                math::Vec3f b3 = (points[6] + points[2]) * 0.5f;
                 if (n3.dot2(b3 - center) < 0)
                     n3 = -n3;
-                math::Vec3f b4 = (points[3] + points[0]) * 0.5f;
+                math::Vec3f b4 = (points[2] + points[1]) * 0.5f;
                 if (n4.dot2(b4 - center) < 0)
                     n4 = -n4;
-                edgeBissectors.push_back(b1);
-                edgeBissectors.push_back(b2);
-                edgeBissectors.push_back(b3);
-                edgeBissectors.push_back(b4);
-                edgeNormals.push_back(n1);
-                edgeNormals.push_back(n2);
-                edgeNormals.push_back(n3);
-                edgeNormals.push_back(n4);
-                faceBissectors.push_back(fb);
-                //Back face.
-                v1 = points[4] - points[5];
-                v2 = points[5] - points[6];
-                v3 = points[6] - points[7];
-                v4 = points[7] - points[4];
-                fb = (points[0] + points[4] + points[5] + points[6]) * 0.25f;
-                n = v1.cross(v2).normalize();
-                if (n.dot2(fb - center) < 0)
-                    n = -n;
-                faceNormals.push_back(n);
-                n1 = n.cross(v1).normalize();
-                n2 = n.cross(v2).normalize();
-                n3 = n.cross(v3).normalize();
-                n4 = n.cross(v4).normalize();
-                b1 = (points[4] + points[5]) * 0.5f;
-                if (n1.dot2(b1 - center) < 0)
-                    n1 = -n1;
-                b2 = (points[5] + points[6]) * 0.5f;
-                if (n2.dot2(b2 - center) < 0)
-                    n2 = -n2;
-                b3 = (points[6] + points[7]) * 0.5f;
-                if (n3.dot2(b3 - center) < 0)
-                    n3 = -n3;
-                b4 = (points[7] + points[4]) * 0.5f;
-                if (n4.dot2(b4 - center) < 0)
-                    n4 = -n4;
+                math::Vec3f faceCenter = (points[1]  + points[2] + points[5] + points[6]) * 0.25f;
+                width = (faceCenter - center).magnitude() * 2;
                 edgeBissectors.push_back(b1);
                 edgeBissectors.push_back(b2);
                 edgeBissectors.push_back(b3);
@@ -246,6 +204,7 @@ namespace odfaeg {
                 v4 = points[0] - points[4];
                 fb = (points[0] + points[1] + points[4] + points[5]) * 0.25f;
                 n = v1.cross(v2).normalize();
+
                 if (n.dot2(fb - center) < 0)
                     n = -n;
                 faceNormals.push_back(n);
@@ -263,6 +222,82 @@ namespace odfaeg {
                 if (n3.dot2(b3 - center) < 0)
                     n3 = -n3;
                 b4 = (points[0] + points[4]) * 0.5f;
+                if (n4.dot2(b4 - center) < 0)
+                    n4 = -n4;
+                faceCenter = (points[0] + points[1] + points[4] + points[5]) * 0.25f;
+                height = (faceCenter - center).magnitude() * 2;
+                edgeBissectors.push_back(b1);
+                edgeBissectors.push_back(b2);
+                edgeBissectors.push_back(b3);
+                edgeBissectors.push_back(b4);
+                edgeNormals.push_back(n1);
+                edgeNormals.push_back(n2);
+                edgeNormals.push_back(n3);
+                edgeNormals.push_back(n4);
+                faceBissectors.push_back(fb);
+                //Front face.
+                v1 = points[1] - points[0];
+                v2 = points[2] - points[1];
+                v3 = points[3] - points[2];
+                v4 = points[3] - points[0];
+                fb = (points[0] + points[1] + points[2] + points[3]) * 0.25f;
+                n = v1.cross(v2).normalize();
+                if (n.dot2(fb - center) < 0)
+                    n = -n;
+                faceNormals.push_back(n);
+                n1 = n.cross(v1).normalize();
+                n2 = n.cross(v2).normalize();
+                n3 = n.cross(v3).normalize();
+                n4 = n.cross(v4).normalize();
+                b1 = (points[0] + points[1]) * 0.5f;
+                if (n1.dot2(b1 - center) < 0)
+                    n1 = -n1;
+                b2 = (points[1] + points[2]) * 0.5f;
+                if (n2.dot2(b2 - center) < 0)
+                    n2 = -n2;
+                b3 = (points[2] + points[3]) * 0.5f;
+                if (n3.dot2(b3 - center) < 0)
+                    n3 = -n3;
+                b4 = (points[3] + points[0]) * 0.5f;
+                if (n4.dot2(b4 - center) < 0)
+                    n4 = -n4;
+                faceCenter = (points[0]  + points[1] + points[2] + points[3]) * 0.25f;
+                depth = (faceCenter - center).magnitude() * 2;
+                edgeBissectors.push_back(b1);
+                edgeBissectors.push_back(b2);
+                edgeBissectors.push_back(b3);
+                edgeBissectors.push_back(b4);
+                edgeNormals.push_back(n1);
+                edgeNormals.push_back(n2);
+                edgeNormals.push_back(n3);
+                edgeNormals.push_back(n4);
+                faceBissectors.push_back(fb);
+                //Right face.
+                v1 = points[1] - points[5];
+                v2 = points[5] - points[6];
+                v3 = points[6] - points[2];
+                v4 = points[2] - points[1];
+                fb = (points[1] + points[2] + points[5] + points[6]) * 0.25f;
+                n = v1.cross(v2).normalize();
+
+                if (n.dot2(fb - center) < 0)
+                    n = -n;
+
+                faceNormals.push_back(n);
+                n1 = n.cross(v1).normalize();
+                n2 = n.cross(v2).normalize();
+                n3 = n.cross(v3).normalize();
+                n4 = n.cross(v4).normalize();
+                b1 = (points[1] + points[5]) * 0.5f;
+                if (n1.dot2(b1 - center) < 0)
+                    n1 = -n1;
+                b2 = (points[5] + points[6]) * 0.5f;
+                if (n2.dot2(b2 - center) < 0)
+                    n2 = -n2;
+                b3 = (points[6] + points[2]) * 0.5f;
+                if (n3.dot2(b3 - center) < 0)
+                    n3 = -n3;
+                b4 = (points[2] + points[1]) * 0.5f;
                 if (n4.dot2(b4 - center) < 0)
                     n4 = -n4;
                 edgeBissectors.push_back(b1);
@@ -309,12 +344,12 @@ namespace odfaeg {
                 edgeNormals.push_back(n3);
                 edgeNormals.push_back(n4);
                 faceBissectors.push_back(fb);
-                //Left face.
-                v1 = points[1] - points[5];
+                //Back face.
+                v1 = points[4] - points[5];
                 v2 = points[5] - points[6];
-                v3 = points[6] - points[2];
-                v4 = points[2] - points[1];
-                fb = (points[1] + points[2] + points[5] + points[6]) * 0.25f;
+                v3 = points[6] - points[7];
+                v4 = points[7] - points[4];
+                fb = (points[0] + points[4] + points[5] + points[6]) * 0.25f;
                 n = v1.cross(v2).normalize();
                 if (n.dot2(fb - center) < 0)
                     n = -n;
@@ -323,16 +358,16 @@ namespace odfaeg {
                 n2 = n.cross(v2).normalize();
                 n3 = n.cross(v3).normalize();
                 n4 = n.cross(v4).normalize();
-                b1 = (points[1] + points[5]) * 0.5f;
+                b1 = (points[4] + points[5]) * 0.5f;
                 if (n1.dot2(b1 - center) < 0)
                     n1 = -n1;
                 b2 = (points[5] + points[6]) * 0.5f;
                 if (n2.dot2(b2 - center) < 0)
                     n2 = -n2;
-                b3 = (points[6] + points[2]) * 0.5f;
+                b3 = (points[6] + points[7]) * 0.5f;
                 if (n3.dot2(b3 - center) < 0)
                     n3 = -n3;
-                b4 = (points[2] + points[1]) * 0.5f;
+                b4 = (points[7] + points[4]) * 0.5f;
                 if (n4.dot2(b4 - center) < 0)
                     n4 = -n4;
                 edgeBissectors.push_back(b1);
@@ -344,41 +379,7 @@ namespace odfaeg {
                 edgeNormals.push_back(n3);
                 edgeNormals.push_back(n4);
                 faceBissectors.push_back(fb);
-                //Right face.
-                v1 = points[1] - points[5];
-                v2 = points[5] - points[6];
-                v3 = points[6] - points[2];
-                v4 = points[2] - points[1];
-                fb = (points[1] + points[2] + points[5] + points[6]) * 0.25f;
-                n = v1.cross(v2).normalize();
-                if (n.dot2(fb - center) < 0)
-                    n = -n;
-                faceNormals.push_back(n);
-                n1 = n.cross(v1).normalize();
-                n2 = n.cross(v2).normalize();
-                n3 = n.cross(v3).normalize();
-                n4 = n.cross(v4).normalize();
-                b1 = (points[1] + points[5]) * 0.5f;
-                if (n1.dot2(b1 - center) < 0)
-                    n1 = -n1;
-                b2 = (points[5] + points[6]) * 0.5f;
-                if (n2.dot2(b2 - center) < 0)
-                    n2 = -n2;
-                b3 = (points[6] + points[2]) * 0.5f;
-                if (n3.dot2(b3 - center) < 0)
-                    n3 = -n3;
-                b4 = (points[2] + points[1]) * 0.5f;
-                if (n4.dot2(b4 - center) < 0)
-                    n4 = -n4;
-                edgeBissectors.push_back(b1);
-                edgeBissectors.push_back(b2);
-                edgeBissectors.push_back(b3);
-                edgeBissectors.push_back(b4);
-                edgeNormals.push_back(n1);
-                edgeNormals.push_back(n2);
-                edgeNormals.push_back(n3);
-                edgeNormals.push_back(n4);
-                faceBissectors.push_back(fb);
+
             }
         }
         bool OrientedBoundingBox::intersects(BoundingSphere &bs, CollisionResultSet::Info& info) {
@@ -941,14 +942,14 @@ namespace odfaeg {
             return flat;
         }
         bool OrientedBoundingBox::isPointInside(math::Vec3f point) {
-            float distMin;
+            /*float distMin;
             int index;
             int edgeIndex, faceIndex;
             std::vector<math::Vec3f> vertices = {point};
             //Check the nearest face from the point.
             int ptIndex = math::Computer::checkNearestVertexFromShape(center, points, edgeBissectors, edgeNormals, faceBissectors, faceNormals, vertices, distMin, index,edgeIndex, faceIndex, 3);
             if (index != -1) {
-                return (points[index] - center).magnSquared() < (vertices[ptIndex] - center).magnSquared();
+                return (points[index] - center).magnSquared() >= (vertices[ptIndex] - center).magnSquared();
             }
             if (flat) {
                 if (faceIndex == -1)
@@ -958,14 +959,31 @@ namespace odfaeg {
                     return true;
                 }
                 return false;
-            }
-
-            math::Vec3f bpn = (faceBissectors[faceIndex] - center).projOnVector(faceNormals[faceIndex]);
+            }*/
+            float minX = - width * 0.5f;
+            float maxX = width * 0.5f;
+            float minY = -height * 0.5f;
+            float maxY = height * 0.5f;
+            float minZ = -depth * 0.5f;
+            float maxZ = depth * 0.5f;
             math::Vec3f d = point - center;
-            float p = d.projOnAxis(bpn);
-            //std::cout<<"bpn "<<bpn.magnSquared()<<std::endl<<"p : "<<p*p<<std::endl;
-            if (p * p > bpn.magnSquared()) {
-                return false;
+            const float epsilon = 1e-6f;
+            for (unsigned int i = 0; i < 3; i++) {
+                float p = d.projOnAxis(faceNormals[i]);
+                //std::cout<<"d  :"<<d<<"normal : "<<faceNormals[i]<<std::endl;
+                if (i == 0) {
+                    //std::cout<<"p : "<<p<<",minX : "<<minX<<", maxX : "<<maxX<<",x : "<<(minX <= p+epsilon && p-epsilon <= maxX)<<std::endl;
+                    if (!(minX <= p+epsilon && p-epsilon <= maxX))
+                        return false;
+                } else if (i == 1) {
+                    //std::cout<<"p : "<<p<<",minY : "<<minY<<", maxY : "<<maxY<<std::endl;
+                    if(!(minY <= p+epsilon && p-epsilon <= maxY))
+                       return false;
+                } else {
+                    //std::cout<<"p : "<<p<<",minZ : "<<minZ<<", maxZ : "<<maxZ<<std::endl;
+                    if(!(minZ <= p+epsilon && p-epsilon <= maxZ))
+                       return false;
+                }
             }
             return true;
         }
