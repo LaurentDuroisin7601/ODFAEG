@@ -12,21 +12,20 @@ namespace odfaeg {
             GameObject::copy(bt);
             return bt;
         }
-        bool BigTile::changeHeights(physic::OrientedBoundingBox& bx, float delta) {
+        bool BigTile::changeHeights(unsigned int ptIdx, float delta) {
             bool heightsChanged = false;
             for (unsigned int i = 0; i < getChildren().size(); i++) {
-                math::Vec3f positions[4];
-                positions[0] = math::Vec3f(getChildren()[i]->getFace(0)->getVertexArray()[0].position.x, getChildren()[i]->getFace(0)->getVertexArray()[0].position.y, getChildren()[i]->getFace(0)->getVertexArray()[0].position.z);
-                positions[1] = math::Vec3f(getChildren()[i]->getFace(0)->getVertexArray()[1].position.x, getChildren()[i]->getFace(0)->getVertexArray()[1].position.y, getChildren()[i]->getFace(0)->getVertexArray()[1].position.z);
-                positions[2] = math::Vec3f(getChildren()[i]->getFace(0)->getVertexArray()[2].position.x, getChildren()[i]->getFace(0)->getVertexArray()[2].position.y, getChildren()[i]->getFace(0)->getVertexArray()[2].position.z);
-                positions[3] = math::Vec3f(getChildren()[i]->getFace(0)->getVertexArray()[3].position.x, getChildren()[i]->getFace(0)->getVertexArray()[3].position.y, getChildren()[i]->getFace(0)->getVertexArray()[3].position.z);
-                for (unsigned int j = 0; j < 4; j++) {
-                   heightsChanged = true;
-                   if (bx.isPointInside(positions[j])) {
-                       std::cout<<"change vertex height"<<std::endl;
-                       getChildren()[i]->getFace(0)->getVertexArray()[j].position.y += delta;
-                       bx.move(math::Vec3f(0, delta, 0));
-                   }
+                if (getChildren()[i]->isSelected()) {
+                    for (unsigned int j = 0; j < getChildren().size(); j++) {
+                        if (getChildren()[i] != getChildren()[j]) {
+                            for (unsigned int v = 0; v < 4; v++) {
+                                if (getChildren()[i]->getFace(0)->getVertexArray()[ptIdx].position == getChildren()[j]->getFace(0)->getVertexArray()[v].position) {
+                                    getChildren()[j]->getFace(0)->getVertexArray()[v].position.y += delta;
+                                }
+                            }
+                        }
+                    }
+                    getChildren()[i]->getFace(0)->getVertexArray()[ptIdx].position.y += delta;
                 }
             }
             return heightsChanged;
