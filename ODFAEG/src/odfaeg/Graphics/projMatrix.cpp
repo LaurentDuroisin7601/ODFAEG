@@ -40,7 +40,7 @@ namespace odfaeg {
             this->f = f;
             invMatrix4f = matrix4f.inverse();
         }
-        void ProjMatrix::setGlPerspectiveMatrix (double aspect, double tanHalFovy, double n, double f) {
+        /*void ProjMatrix::setGlPerspectiveMatrix (double aspect, double tanHalFovy, double n, double f) {
             matrix4f.m11 = 1.0 / (aspect * tanHalFovy);
             matrix4f.m12 = 0;
             matrix4f.m13 = 0;
@@ -69,8 +69,8 @@ namespace odfaeg {
             this->n = n;
             this->f = f;
             invMatrix4f = matrix4f.inverse();
-        }
-        /*void ProjMatrix::setGlPerspectiveMatrix (double l, double r, double b, double t, double n, double f) {
+        }*/
+        void ProjMatrix::setGlPerspectiveMatrix (double l, double r, double b, double t, double n, double f) {
             matrix4f.m11 = (2 * n) / (r - l);
             matrix4f.m12 = 0;
             matrix4f.m13 = (r + l) / (r - l);
@@ -93,8 +93,8 @@ namespace odfaeg {
             this->t = t;
             this->n = n;
             this->f = f;
-            invMatrix4f.inverse();
-        }*/
+            invMatrix4f = matrix4f.inverse();
+        }
         float* ProjMatrix::getGlMatrix () {
             float* matrix = new float[16];
             matrix[0] = matrix4f.m11;
@@ -120,16 +120,13 @@ namespace odfaeg {
         }
         //Projette un vecteur suivant la matrice de projection définie.
         math::Vec3f ProjMatrix::project (math::Vec3f vec3) {
-            math::Matrix4f mat = matrix4f;
-            mat.m22 = -mat.m22;
             return matrix4f * vec3;
         }
         //Déprojette un vecteur suivant la matrice de projection définie.
         math::Vec3f ProjMatrix::unProject (math::Vec3f vec3f) {
-            math::Matrix4f mat = matrix4f;
-            mat.m22 = -mat.m22;
+
             //std::cout<<"inv matrix : "<<matrix4f.inverse()<<std::endl;
-            return matrix4f.inverse() * vec3f;
+            return invMatrix4f * vec3f;
         }
         physic::BoundingBox ProjMatrix::getFrustum() {
             return physic::BoundingBox(l,b,0,(r - l),(t - b), f);
