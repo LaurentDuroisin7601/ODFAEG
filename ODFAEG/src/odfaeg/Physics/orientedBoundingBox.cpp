@@ -882,11 +882,9 @@ namespace odfaeg {
             computeVectors();
         }
         void OrientedBoundingBox::move(math::Vec3f t) {
-            graphic::TransformMatrix tm;
-            center = center + t;
-            tm.setTranslation(center);
+            center += t;
             for (unsigned int i = 0; i < points.size(); i++)
-                points[i] = tm.transform(points[i]);
+                points[i]+= t;
             std::array<std::array<float, 2>, 3> extends = math::Computer::getExtends(points);
             x = extends[0][0];
             y = extends[1][0];
