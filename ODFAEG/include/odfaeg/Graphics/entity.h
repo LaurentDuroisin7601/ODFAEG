@@ -440,7 +440,7 @@ namespace odfaeg {
                 virtual std::vector<math::Matrix4f> getFinalBoneMatrices();
                 void decreaseNbEntities();
                 virtual void updateAnimation(float dt);
-                virtual bool changeHeights(unsigned int ptIdx, float delta);
+                virtual bool changeHeights(physic::OrientedBoundingBox& obx, float delta);
                 std::map<std::string, Entity::BoneInfo>& getBoneInfoMap();
                 int& getBoneCount();
             protected :

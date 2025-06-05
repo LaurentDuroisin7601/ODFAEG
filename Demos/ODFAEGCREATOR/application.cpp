@@ -1206,23 +1206,13 @@ Vec3f ODFAEGCreator::getGridCellPos(Vec3f pos) {
 }
 void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
     if(&getRenderWindow() == window && event.type == IEvent::MOUSE_WHEEL_EVENT && event.mouseWheel.type == IEvent::MOUSE_WHEEL_MOVED && isGuiShown) {
-        int ptIdx=-1;
-        if (IKeyboard::isKeyPressed(IKeyboard::Key::Num4)) {
-            ptIdx = 0;
-        } else if (IKeyboard::isKeyPressed(IKeyboard::Key::Num5)) {
-            ptIdx = 1;
-        } else if (IKeyboard::isKeyPressed(IKeyboard::Key::Num1)) {
-            ptIdx = 2;
-        } else if (IKeyboard::isKeyPressed(IKeyboard::Key::Num2)) {
-            ptIdx = 3;
-        }
         if (event.mouseWheel.direction > 0) {
-            if (selectedObject != nullptr && ptIdx != -1) {
-                selectedObject->getRootEntity()->changeHeights(ptIdx, -1.f);
+            if (selectedObject != nullptr) {
+                selectedObject->getRootEntity()->changeHeights(selectionBox, -1.f);
             }
         } else {
-            if (selectedObject != nullptr && ptIdx != -1) {
-                selectedObject->getRootEntity()->changeHeights(ptIdx, 1.f);
+            if (selectedObject != nullptr) {
+                selectedObject->getRootEntity()->changeHeights(selectionBox, 1.f);
             }
         }
     }

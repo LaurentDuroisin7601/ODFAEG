@@ -12,20 +12,19 @@ namespace odfaeg {
             GameObject::copy(bt);
             return bt;
         }
-        bool BigTile::changeHeights(unsigned int ptIdx, float delta) {
+        bool BigTile::changeHeights(physic::OrientedBoundingBox& obx, float delta) {
             bool heightsChanged = false;
             for (unsigned int i = 0; i < getChildren().size(); i++) {
                 if (getChildren()[i]->isSelected()) {
-                    for (unsigned int j = 0; j < getChildren().size(); j++) {
-                        if (getChildren()[i] != getChildren()[j]) {
-                            for (unsigned int v = 0; v < 4; v++) {
-                                if (getChildren()[i]->getFace(0)->getVertexArray()[ptIdx].position == getChildren()[j]->getFace(0)->getVertexArray()[v].position) {
-                                    getChildren()[j]->getFace(0)->getVertexArray()[v].position.y += delta;
-                                }
-                            }
+                    for (unsigned int v = 0; v < 4; v++) {
+                        math::Vec3f pt (getChildren()[i]->getFace(0)->getVertexArray()[v].position.x, getChildren()[i]->getFace(0)->getVertexArray()[v].position.y, getChildren()[i]->getFace(0)->getVertexArray()[v].position.z);
+                        if (obx.isPointInside(pt)) {
+                            std::cout<<"change vert height"<<std::endl;
+                            heightsChanged = true;
+                            getChildren()[i]->getFace(0)->getVertexArray()[v].position.y += delta;
+                            obx.move(math::Vec3f(0, delta, 0));
                         }
                     }
-                    getChildren()[i]->getFace(0)->getVertexArray()[ptIdx].position.y += delta;
                 }
             }
             return heightsChanged;
