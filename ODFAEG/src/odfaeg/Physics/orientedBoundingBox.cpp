@@ -960,6 +960,28 @@ namespace odfaeg {
                 }
                 return false;
             }*/
+            if (flat) {
+                float minX = - width * 0.5f;
+                float maxX = width * 0.5f;
+                float minY = -height * 0.5f;
+                float maxY = height * 0.5f;
+                math::Vec3f d = point - center;
+                const float epsilon = 1e-6f;
+                for (unsigned int i = 0; i < 2; i++) {
+                    float p = d.projOnAxis(edgeNormals[i]);
+                    //std::cout<<"d  :"<<d<<"normal : "<<faceNormals[i]<<std::endl;
+                    if (i == 0) {
+                        //std::cout<<"p : "<<p<<",minX : "<<minX<<", maxX : "<<maxX<<",x : "<<(minX <= p+epsilon && p-epsilon <= maxX)<<std::endl;
+                        if (!(minX <= p+epsilon && p-epsilon <= maxX))
+                            return false;
+                    } else if (i == 1) {
+                        //std::cout<<"p : "<<p<<",minY : "<<minY<<", maxY : "<<maxY<<std::endl;
+                        if(!(minY <= p+epsilon && p-epsilon <= maxY))
+                           return false;
+                    }
+                }
+                return true;
+            }
             float minX = - width * 0.5f;
             float maxX = width * 0.5f;
             float minY = -height * 0.5f;
