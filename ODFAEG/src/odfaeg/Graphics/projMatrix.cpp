@@ -128,7 +128,7 @@ namespace odfaeg {
         math::Vec3f ProjMatrix::unProject (math::Vec3f vec3f) {
             math::Matrix4f mat = matrix4f;
             mat.m22 = -mat.m22;
-            std::cout<<"inv matrix : "<<matrix4f.inverse()<<std::endl;
+            //std::cout<<"inv matrix : "<<matrix4f.inverse()<<std::endl;
             return matrix4f.inverse() * vec3f;
         }
         physic::BoundingBox ProjMatrix::getFrustum() {

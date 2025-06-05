@@ -1810,7 +1810,7 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
                                     obbVerts[v] = components[i]->getFrameBuffer()->mapPixelToCoords(Vec3f(bbVerts[v].x, /*getRenderWindow().getSize().y-*/bbVerts[v].y, 1))/*+Vec3f(getRenderWindow().getView().getSize().x*0.5f, getRenderWindow().getView().getSize().y*0.5f, getRenderWindow().getView().getSize().z*0.5f)*/;
                                 std::cout<<"obb verts : "<<obbVerts[v]<<std::endl;
                             }
-                            system("PAUSE");
+                            //system("PAUSE");
 
                         }
                     }

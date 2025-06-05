@@ -1083,14 +1083,14 @@ namespace odfaeg {
             vpm.setViewport(math::Vec3f(view.getViewport().getPosition().x, view.getViewport().getPosition().y, 0)
                                         ,math::Vec3f(view.getViewport().getWidth(), view.getViewport().getHeight(), 1));
             math::Vec3f coords = vpm.toNormalizedCoordinates(point);
-            std::cout<<"point : "<<point<<std::endl;
-            std::cout<<"ndc : "<<coords<<std::endl;
+            /*std::cout<<"point : "<<point<<std::endl;
+            std::cout<<"ndc : "<<coords<<std::endl;*/
             coords = view.getProjMatrix().unProject(coords);
-            std::cout<<"unproject : "<<coords<<std::endl;
+            //std::cout<<"unproject : "<<coords<<std::endl;
             coords = coords.normalizeToVec3();
-            std::cout<<"normalized to vec3 : "<<coords<<std::endl;
+            //std::cout<<"normalized to vec3 : "<<coords<<std::endl;
             coords = view.getViewMatrix().inverseTransform(coords);
-            std::cout<<"inverse view : "<<coords<<std::endl;
+            //std::cout<<"inverse view : "<<coords<<std::endl;
             return coords;
         }
 
