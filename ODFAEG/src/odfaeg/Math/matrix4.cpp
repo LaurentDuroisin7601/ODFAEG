@@ -145,7 +145,7 @@ namespace odfaeg {
             float y = m21 * vec.x + m22 * vec.y + m23 * vec.z + m24 * vec.w;
             float z = m31 * vec.x + m32 * vec.y + m33 * vec.z + m34 * vec.w;
             float w = m41 * vec.x + m42 * vec.y + m43 * vec.z + m44 * vec.w;
-            return Vec3f(x, y, z);
+            return Vec3f(x, y, z, w);
         }
         Matrix4f Matrix4f::operator* (float scalar) {
             float m11 = this->m11 * scalar;
@@ -199,7 +199,7 @@ namespace odfaeg {
             float fb6 = m33 * m44 - m34 * m43;
             float det = fa1 * fb6 - fa2 * fb5 + fa3 * fb4 + fa4 * fb3 - fa5 * fb2 + fa6 * fb1;
             if (Math::abs(det) <= 0.f) {
-                return store;
+                throw core::Erreur(0, "this matrix cannot be inverted", 0);
             } else {
                store.m11 = m22 * fb6 - m23 * fb5 + m24 * fb4;
                store.m21 = -m21 * fb6 + m23 * fb3 - m24 * fb2;

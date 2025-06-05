@@ -32,7 +32,7 @@ namespace odfaeg {
                 viewport.m34 = std::abs(size.z) * 0.5f + position.z;
                 viewport.m41 = std::min(position.x, size.x);
                 viewport.m42 = std::min(position.y, size.y);
-                viewport.m43 = std::min(position.y, size.z);
+                viewport.m43 = std::min(position.z, size.z);
                 viewport.m44 = 1.f;
                 viewportUpdated = false;
             }
@@ -54,7 +54,7 @@ namespace odfaeg {
                 viewport.m34 = std::abs(size.z) * 0.5f + position.z;
                 viewport.m41 = std::min(position.x, size.x);
                 viewport.m42 = std::min(position.y, size.y);
-                viewport.m43 = std::min(position.y, size.z);
+                viewport.m43 = std::min(position.z, size.z);
                 viewport.m44 = 1.f;
                 viewportUpdated = false;
             }
@@ -77,7 +77,7 @@ namespace odfaeg {
                 viewport.m34 = std::abs(size.z) * 0.5f + position.z;
                 viewport.m41 = std::min(position.x, size.x);
                 viewport.m42 = std::min(position.y, size.y);
-                viewport.m43 = std::min(position.y, size.z);
+                viewport.m43 = std::min(position.z, size.z);
                 viewport.m44 = 1.f;
                 viewportUpdated = false;
             }

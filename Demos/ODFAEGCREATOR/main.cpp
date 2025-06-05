@@ -1020,7 +1020,14 @@ int main(int argc, char* argv[])
     CollisionResultSet::Info infos;
     obb.intersects(bb, infos);
     return 0;*/
-
+    /*RenderWindow window(sf::VideoMode(800, 600), "test");
+    Vec3f p1(-85, -116, 0);
+    Vec3f p2(-85, -116, 900);
+    View view(window.getSize().x, window.getSize().y, 90, 1, 1000);
+    window.setView(view);
+    std::cout<<window.mapPixelToCoords(Vec3f(p1.x, p1.y, 0))<<std::endl;
+    std::cout<<window.mapPixelToCoords(Vec3f(p2.x, p2.y, 1))<<std::endl;
+    return 0;*/
     ODFAEGCreator app(sf::VideoMode(1000,700),"ODFAEG Creator");
     return app.exec();
 }
