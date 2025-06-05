@@ -1747,24 +1747,26 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
                 }
             }
         }
-        int relX = (event.mouseMotion.x - oldX) * sensivity;
-        int relY = (event.mouseMotion.y - oldY) * sensivity;
-        //Rotate the view, (Polar coordinates) but you can also use the lookAt function to look at a point.
-        /*View view = getRenderWindow().getView();
-        if (!view.isOrtho()) {
-            int teta = view.getTeta() - relY;
-            int phi = view.getPhi() - relX;
-            view.rotate(teta, phi);
-            getRenderWindow().setView(view);
-        }*/
-        for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
-            if (getRenderComponentManager().getRenderComponent(i) != nullptr) {
-                View view = getRenderComponentManager().getRenderComponent(i)->getView();
-                if (!view.isOrtho()) {
-                    int teta = view.getTeta() - relY;
-                    int phi = view.getPhi() - relX;
-                    view.rotate(teta, phi);
-                    getRenderComponentManager().getRenderComponent(i)->setView(view);
+        if (!showRectSelect) {
+            int relX = (event.mouseMotion.x - oldX) * sensivity;
+            int relY = (event.mouseMotion.y - oldY) * sensivity;
+            //Rotate the view, (Polar coordinates) but you can also use the lookAt function to look at a point.
+            /*View view = getRenderWindow().getView();
+            if (!view.isOrtho()) {
+                int teta = view.getTeta() - relY;
+                int phi = view.getPhi() - relX;
+                view.rotate(teta, phi);
+                getRenderWindow().setView(view);
+            }*/
+            for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
+                if (getRenderComponentManager().getRenderComponent(i) != nullptr) {
+                    View view = getRenderComponentManager().getRenderComponent(i)->getView();
+                    if (!view.isOrtho()) {
+                        int teta = view.getTeta() - relY;
+                        int phi = view.getPhi() - relX;
+                        view.rotate(teta, phi);
+                        getRenderComponentManager().getRenderComponent(i)->setView(view);
+                    }
                 }
             }
         }
