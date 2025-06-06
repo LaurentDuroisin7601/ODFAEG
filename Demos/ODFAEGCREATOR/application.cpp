@@ -2405,7 +2405,7 @@ void ODFAEGCreator::onExec() {
                         std::string expression;
                         ia5(expression);
                         //std::cout<<"layer : "<<layer<<std::endl;
-                        PerPixelLinkedListRenderComponent* ppll = new PerPixelLinkedListRenderComponent(getRenderWindow(),layer,expression,ContextSettings(0, 0, 4, 4, 6));
+                        PerPixelLinkedListRenderComponent* ppll = new PerPixelLinkedListRenderComponent(getRenderWindow(),layer,expression,ContextSettings(0, 8, 4, 4, 6));
                         ppll->setName(name);
                         getRenderComponentManager().addComponent(ppll);
                         dpSelectComponent->addItem(name, 15);
@@ -2723,7 +2723,7 @@ void ODFAEGCreator::onExec() {
         } else {
             Vec3f cursorPos = cursor.getPosition() + getRenderWindow().getView().getSize() * 0.5f;
             Vec3f position = getRenderWindow().mapPixelToCoords(Vec3f(cursorPos.x, cursorPos.y, 1), selectedComponentView);
-            std::cout<<"position : "<<position<<std::endl;
+            //std::cout<<"position : "<<position<<std::endl;
             model->setPosition(position);
             std::vector<Entity*> entities = getWorld()->getEntities("E_BIGTILE");
             if (entities.size() > 0) {
@@ -2733,7 +2733,7 @@ void ODFAEGCreator::onExec() {
                 model->setPosition(Vec3f(model->getPosition().x, height, model->getPosition().z));
             }
             selectedObject = model;
-            //model->setSelected(true);
+            model->setSelected(true);
         }
         getWorld()->addEntity(model);
         fdImport3DModel->setVisible(false);

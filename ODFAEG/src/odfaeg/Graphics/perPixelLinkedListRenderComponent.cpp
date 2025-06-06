@@ -2861,6 +2861,7 @@ namespace odfaeg {
 
                 const std::string fragmentShader = R"(#version 460
                                                       #extension GL_ARB_bindless_texture : enable
+                                                      layout(early_fragment_tests) in;
                                                       struct NodeType {
                                                           vec4 color;
                                                           float depth;
@@ -3118,7 +3119,7 @@ namespace odfaeg {
             currentStates.shader = &indirectRenderingShader;
             currentStates.texture = nullptr;
             glCheck(glEnable(GL_STENCIL_TEST));
-            glCheck(glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE));
+            glCheck(glStencilOp(GL_KEEP, GL_REPLACE, GL_REPLACE));
             glStencilFunc(GL_ALWAYS, 1, 0xFF);
             glStencilMask(0xFF);
             for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
@@ -3231,6 +3232,7 @@ namespace odfaeg {
             currentStates.texture = nullptr;
             glCheck(glStencilFunc(GL_NOTEQUAL, 1, 0xFF));
             glCheck(glStencilMask(0x00));
+            glCheck(glDisable(GL_DEPTH_TEST));
             for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                 if (vbBindlessTex[p].getVertexCount() > 0) {
                     glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, modelDataBuffer));
@@ -3247,6 +3249,7 @@ namespace odfaeg {
                 }
             }
             glCheck(glDisable(GL_STENCIL_TEST));
+            glCheck(glEnable(GL_DEPTH_TEST));
         }
         void PerPixelLinkedListRenderComponent::drawSelectedInstancesIndexed() {
             for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {

@@ -147,6 +147,7 @@ void MyAppli::onInit() {
     model->setShadowRotation(90 + angle * 100, Vec3f(1, 0, 0));
     //model->setShadowRotation(angle2 * 150, Vec3f(0, 0, 1));
     model->setShadowCenter(Vec3f(0, 0, -5));
+    model->setSelected(true);
     isOnHeightMap = heightmap->getHeight(Vec2f(animator->getPosition().x, animator->getPosition().z), z);
     //std::cout<<"animator size : "<<animator->getSize()<<std::endl;
     animator->move(Vec3f(0, z, 0));
@@ -164,7 +165,7 @@ void MyAppli::onInit() {
     //frc->setVisible(false);
     ShadowRenderComponent* src = new ShadowRenderComponent(getRenderWindow(), 1, "E_MESH+E_BIGTILE",ContextSettings(0, 0, 4, 4, 6));
     src->setView(view3D);
-    PerPixelLinkedListRenderComponent* frc2 = new PerPixelLinkedListRenderComponent(getRenderWindow(), 0, "E_BIGTILE+E_MESH+E_CUBE+E_BONE_ANIMATION",ContextSettings(0, 0, 4, 4, 6));
+    PerPixelLinkedListRenderComponent* frc2 = new PerPixelLinkedListRenderComponent(getRenderWindow(), 0, "E_BIGTILE+E_MESH+E_CUBE+E_BONE_ANIMATION",ContextSettings(0, 8, 4, 4, 6));
     //frc2->preloadEntitiesOnComponent(getWorld()->getEntities("*"), factory);
     frc2->setView(view3D);
     frc2->loadSkybox(skybox.get());
