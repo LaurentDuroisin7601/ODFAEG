@@ -3119,7 +3119,7 @@ namespace odfaeg {
             currentStates.shader = &indirectRenderingShader;
             currentStates.texture = nullptr;
             glCheck(glEnable(GL_STENCIL_TEST));
-            glCheck(glStencilOp(GL_KEEP, GL_REPLACE, GL_REPLACE));
+            glCheck(glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE));
             glStencilFunc(GL_ALWAYS, 1, 0xFF);
             glStencilMask(0xFF);
             for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
@@ -3194,7 +3194,7 @@ namespace odfaeg {
                     }*/
                     MaterialData material;
                     material.textureIndex = 0;
-                    material.materialType = m_selectedScaleInstance[i].getMaterial().getType();
+                    material.materialType = 0;
                     materials[p].push_back(material);
                     std::vector<TransformMatrix*> tm = m_selectedScaleInstance[i].getTransforms();
                     for (unsigned int j = 0; j < tm.size(); j++) {

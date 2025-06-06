@@ -345,19 +345,20 @@ namespace odfaeg {
             }
             Instance::Instance () {
                 numInstances = 0;
+                material = nullptr;
             }
             Instance::Instance (Material& material, sf::PrimitiveType pType) {
                 primType = pType;
                 numInstances = 0;
                 vertices = VertexArray(pType);
-                this->material = material;
+                this->material = &material;
             }
             void Instance::setPrimitiveType (sf::PrimitiveType pType) {
                 primType = pType;
                 vertices.setPrimitiveType(pType);
             }
             void Instance::setMaterial (Material& mat) {
-                material = mat;
+                material = &mat;
             }
             void Instance::addVertexArray(VertexArray& va, TransformMatrix& tm) {                //std::cout<<"push transform"<<std::endl;
                 va.computeNormals();
@@ -529,7 +530,7 @@ namespace odfaeg {
                 return m_shadowProjMatrix;
             }
             Material& Instance::getMaterial() {
-                return material;
+                return *material;
             }
             sf::PrimitiveType Instance::getPrimitiveType() {
                 return primType;
