@@ -2723,14 +2723,14 @@ void ODFAEGCreator::onExec() {
         } else {
             Vec3f cursorPos = cursor.getPosition() + getRenderWindow().getView().getSize() * 0.5f;
             Vec3f position = getRenderWindow().mapPixelToCoords(Vec3f(cursorPos.x, cursorPos.y, 1), selectedComponentView);
-            //model->setPosition(position);
+            std::cout<<"position : "<<position<<std::endl;
+            model->setPosition(position);
             std::vector<Entity*> entities = getWorld()->getEntities("E_BIGTILE");
             if (entities.size() > 0) {
                 Entity* heightMap = entities[0]->getRootEntity();
                 float height;
                 bool isOnHeightMap = heightMap->getHeight(Vec2f(model->getPosition().x, model->getPosition().z), height);
-                model->move(Vec3f(0, 0, -10));
-                model->move(Vec3f(0, height, 0));
+                model->setPosition(Vec3f(model->getPosition().x, height, model->getPosition().z));
             }
             selectedObject = model;
             //model->setSelected(true);
