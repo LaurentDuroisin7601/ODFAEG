@@ -1124,7 +1124,6 @@ void ODFAEGCreator::onDisplay(RenderWindow* window) {
             window->draw(rotationGuismo);
             window->draw(translationGuismo);
             window->draw(scaleGuismo);
-            window->draw(cursor);
             if (showGrid) {
                 BoundingBox view = selectedComponentView.getViewVolume();
                 cshapes.clear();
@@ -1166,6 +1165,7 @@ void ODFAEGCreator::onDisplay(RenderWindow* window) {
 
         }
         window->setView(defaultView);
+        window->draw(cursor);
         if (isSelectingPolyhedron) {
             window->draw(bpPoints);
             window->draw(bpLines);
@@ -1444,8 +1444,15 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
         } else {
             for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
                 if (getRenderComponentManager().getRenderComponent(i) != nullptr && getRenderComponentManager().getRenderComponent(i)->getName() == dpSelectComponent->getSelectedItem()) {
-                    orig = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(orig.x, getRenderWindow().getSize().y - orig.y, orig.z))+halfWSize;
-                    ext = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(ext.x, getRenderWindow().getSize().y - ext.y, ext.z))+halfWSize;
+                    if(getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->getView().isOrtho()) {
+                        orig = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(orig.x, getRenderWindow().getSize().y - orig.y, orig.z))+halfWSize;
+                        ext = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(ext.x, getRenderWindow().getSize().y - ext.y, ext.z))+halfWSize;
+                    } else {
+                        orig += halfWSize;
+                        orig = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(orig.x, getRenderWindow().getSize().y - orig.y, orig.z));
+                        ext += halfWSize;
+                        ext = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(ext.x, getRenderWindow().getSize().y - ext.y, ext.z));
+                    }
                 }
             }
         }
@@ -1552,9 +1559,14 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
                 ext = getRenderWindow().mapPixelToCoords(Vec3f(ext.x, getRenderWindow().getSize().y-ext.y, ext.z))+halfWSize;
             } else {
                 for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
-                    if (getRenderComponentManager().getRenderComponent(i) != nullptr && getRenderComponentManager().getRenderComponent(i)->getName() == dpSelectComponent->getSelectedItem()) {
+                    if(getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->getView().isOrtho()) {
                         orig = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(orig.x, getRenderWindow().getSize().y - orig.y, orig.z))+halfWSize;
                         ext = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(ext.x, getRenderWindow().getSize().y - ext.y, ext.z))+halfWSize;
+                    } else {
+                        orig += halfWSize;
+                        orig = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(orig.x, getRenderWindow().getSize().y - orig.y, orig.z));
+                        ext += halfWSize;
+                        ext = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(ext.x, getRenderWindow().getSize().y - ext.y, ext.z));
                     }
                 }
             }
@@ -1797,13 +1809,13 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
 
                         } else {
                             for (unsigned int v = 0; v < 8; v++) {
-                                std::cout<<"bb verts : "<<bbVerts[v]<<std::endl;
+                                //std::cout<<"bb verts : "<<bbVerts[v]<<std::endl;
                                 bbVerts[v] += getRenderWindow().getView().getSize()*0.5f;
                                 if (v < 4)
                                     obbVerts[v] = components[i]->getFrameBuffer()->mapPixelToCoords(Vec3f(bbVerts[v].x, getRenderWindow().getSize().y-bbVerts[v].y, 1));
                                 else
                                     obbVerts[v] = components[i]->getFrameBuffer()->mapPixelToCoords(Vec3f(bbVerts[v].x, getRenderWindow().getSize().y-bbVerts[v].y, 0));
-                                std::cout<<"obb verts : "<<obbVerts[v]<<std::endl;
+                                //std::cout<<"obb verts : "<<obbVerts[v]<<std::endl;
                             }
                             //system("PAUSE");
 
@@ -2554,38 +2566,40 @@ void ODFAEGCreator::onExec() {
                     }
                 }
             }
-            std::string path = (fdImport3DModel != nullptr) ? fdImport3DModel->getPathChosen() : "";
-            if (path != "") {
-                if (isGenerating3DTerrain) {
-                    Entity* mesh = modelLoader.loadModel(path, factory);
-                    if (dpSelectWallType->getSelectedItem() == "top bottom") {
-                        std::cout<<"top bottom"<<std::endl;
-                        walls3D[g3d::Wall::TOP_BOTTOM]->setMesh(mesh);
+            if (isGenerating3DTerrain) {
+                std::string path = (fdImport3DModel != nullptr) ? fdImport3DModel->getPathChosen() : "";
+                if (path != "") {
+                    if (isGenerating3DTerrain) {
+                        Entity* mesh = modelLoader.loadModel(path, factory);
+                        if (dpSelectWallType->getSelectedItem() == "top bottom") {
+                            std::cout<<"top bottom"<<std::endl;
+                            walls3D[g3d::Wall::TOP_BOTTOM]->setMesh(mesh);
+                        }
+                        else if (dpSelectWallType->getSelectedItem() == "right left") {
+                            std::cout<<"right left"<<std::endl;
+                            walls3D[g3d::Wall::RIGHT_LEFT]->setMesh(mesh);
+                        } else if (dpSelectWallType->getSelectedItem() == "bottom right") {
+                            std::cout<<"bottom right"<<std::endl;
+                            walls3D[g3d::Wall::BOTTOM_RIGHT]->setMesh(mesh);
+                        } else if (dpSelectWallType->getSelectedItem() == "top left") {
+                            std::cout<<"top left"<<std::endl;
+                            walls3D[g3d::Wall::TOP_LEFT]->setMesh(mesh);
+                        } else if (dpSelectWallType->getSelectedItem() == "top right") {
+                            std::cout<<"top right"<<std::endl;
+                            walls3D[g3d::Wall::TOP_RIGHT]->setMesh(mesh);
+                        } else if (dpSelectWallType->getSelectedItem() == "bottom left") {
+                            std::cout<<"bottom left"<<std::endl;
+                            walls3D[g3d::Wall::BOTTOM_LEFT]->setMesh(mesh);
+                        }
+                        g3d::Wall* wall = new g3d::Wall(factory);
+                        wall->setMesh(mesh);
+                        walls3D.push_back(wall);
+                        fdImport3DModel->setVisible(false);
+                        isGenerating3DTerrain = false;
+                        wGenerate3DTerrain->setVisible(true);
+                        getRenderComponentManager().setEventContextActivated(true, *wGenerate3DTerrain);
+                        getRenderComponentManager().setEventContextActivated(false, getRenderWindow());
                     }
-                    else if (dpSelectWallType->getSelectedItem() == "right left") {
-                        std::cout<<"right left"<<std::endl;
-                        walls3D[g3d::Wall::RIGHT_LEFT]->setMesh(mesh);
-                    } else if (dpSelectWallType->getSelectedItem() == "bottom right") {
-                        std::cout<<"bottom right"<<std::endl;
-                        walls3D[g3d::Wall::BOTTOM_RIGHT]->setMesh(mesh);
-                    } else if (dpSelectWallType->getSelectedItem() == "top left") {
-                        std::cout<<"top left"<<std::endl;
-                        walls3D[g3d::Wall::TOP_LEFT]->setMesh(mesh);
-                    } else if (dpSelectWallType->getSelectedItem() == "top right") {
-                        std::cout<<"top right"<<std::endl;
-                        walls3D[g3d::Wall::TOP_RIGHT]->setMesh(mesh);
-                    } else if (dpSelectWallType->getSelectedItem() == "bottom left") {
-                        std::cout<<"bottom left"<<std::endl;
-                        walls3D[g3d::Wall::BOTTOM_LEFT]->setMesh(mesh);
-                    }
-                    g3d::Wall* wall = new g3d::Wall(factory);
-                    wall->setMesh(mesh);
-                    walls3D.push_back(wall);
-                    fdImport3DModel->setVisible(false);
-                    isGenerating3DTerrain = false;
-                    wGenerate3DTerrain->setVisible(true);
-                    getRenderComponentManager().setEventContextActivated(true, *wGenerate3DTerrain);
-                    getRenderComponentManager().setEventContextActivated(false, getRenderWindow());
                 }
             }
             std::vector<std::string> classes = Class::getClasses(appliname+"\\Scripts");
@@ -2664,6 +2678,13 @@ void ODFAEGCreator::onExec() {
     std::string model3DPath = (fdImport3DModel != nullptr) ? fdImport3DModel->getPathChosen() : "";
     if (model3DPath != "") {
         Entity* model = loader.loadModel(model3DPath, factory);
+        if (selectedComponentView.isOrtho()) {
+            Vec3f position = getRenderWindow().mapPixelToCoords(cursor.getPosition(), selectedComponentView)+getRenderWindow().getView().getSize() * 0.5f;
+            model->setPosition(position);
+        } else {
+            Vec3f position = getRenderWindow().mapPixelToCoords(cursor.getPosition()+getRenderWindow().getView().getSize() * 0.5f, selectedComponentView);
+            model->setPosition(position);
+        }
         getWorld()->addEntity(model);
     }
     getWorld()->update();
