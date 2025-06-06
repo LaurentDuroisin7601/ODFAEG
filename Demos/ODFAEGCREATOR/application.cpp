@@ -2712,7 +2712,11 @@ void ODFAEGCreator::onExec() {
     std::string model3DPath = (fdImport3DModel != nullptr) ? fdImport3DModel->getPathChosen() : "";
     if (model3DPath != "") {
         Entity* model = loader.loadModel(model3DPath, factory);
-
+        for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
+            if (getRenderComponentManager().getRenderComponent(i) != nullptr) {
+                getRenderComponentManager().getRenderComponent(i)->loadTextureIndexes();
+            }
+        }
         if (selectedComponentView.isOrtho()) {
             Vec3f position = getRenderWindow().mapPixelToCoords(Vec3f(cursor.getPosition().x, cursor.getPosition().y, 1), selectedComponentView)+getRenderWindow().getView().getSize() * 0.5f;
             model->setPosition(position);
@@ -2729,7 +2733,7 @@ void ODFAEGCreator::onExec() {
                 model->move(Vec3f(0, height, 0));
             }
             selectedObject = model;
-            model->setSelected(true);
+            //model->setSelected(true);
         }
         getWorld()->addEntity(model);
         fdImport3DModel->setVisible(false);
