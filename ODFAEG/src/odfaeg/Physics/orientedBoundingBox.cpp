@@ -891,19 +891,13 @@ namespace odfaeg {
             z = extends[2][0];
             computeVectors();
         }
-        void OrientedBoundingBox::scale(math::Vec3f v) {
-            graphic::TransformMatrix tm;
-            tm.setScale(v);
-            tm.setOrigin(center);
+        void OrientedBoundingBox::scale(math::Vec3f s) {
             for (unsigned int i = 0; i < points.size(); i++)
-                points[i] = tm.transform(points[i]);
+                points[i] = (points[i] - center) * s + center;
             std::array<std::array<float, 2>, 3> extends = math::Computer::getExtends(points);
             x = extends[0][0];
             y = extends[1][0];
             z = extends[2][0];
-            width = extends[0][1] - extends[0][0];
-            height = extends[1][1] - extends[1][0];
-            depth = extends[2][1] - extends[2][0];
             computeVectors();
         }
         void OrientedBoundingBox::rotate(float angle, math::Vec3f v) {
