@@ -19,7 +19,11 @@ namespace odfaeg {
                     std::cerr << "ERROR::ASSIMP::" << importer.GetErrorString() << std::endl;
                     return emesh;
                 }
+                #ifdef ODFAEG_SYSTEM_WINDOWS
+                directory = path.substr(0, path.find_last_of('\\'));
+                #else
                 directory = path.substr(0, path.find_last_of('/'));
+                #endif
                 processNode(scene->mRootNode, scene, emesh);
                 return emesh;
             }
@@ -150,7 +154,11 @@ namespace odfaeg {
                     aiString str;
                     mat->GetTexture(type, i, &str);
                     bool skip = false;
+                    #ifdef ODFAEG_SYSTEM_WINDOWS
+                    std::string path = directory + "\\" + std::string (str.C_Str());
+                    #else
                     std::string path = directory + "/" + std::string (str.C_Str());
+                    #endif
                     for(unsigned int j = 0; j < tm.getPaths().size(); j++)
                     {
                         if(tm.getPaths()[j] == path)

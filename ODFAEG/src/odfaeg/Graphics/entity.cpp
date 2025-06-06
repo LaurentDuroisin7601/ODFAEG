@@ -309,6 +309,8 @@ namespace odfaeg {
         void Entity::changeVerticesHeights(float h1, float h2, float h3, float h4) {
         }
         bool Entity::getHeight(math::Vec2f point, float& height) {
+            height = 0;
+            std::cout<<"height entity"<<std::endl;
             return false;
         }
         void Entity::reset() {

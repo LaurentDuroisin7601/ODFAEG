@@ -18,6 +18,7 @@ using namespace odfaeg::window;
 ODFAEGCreator::ODFAEGCreator(sf::VideoMode vm, std::string title) :
 Application (vm, title, sf::Style::Resize|sf::Style::Close, ContextSettings(0, 8, 4, 4, 6)), isGuiShown (false), cursor(10), se(this), rtc("create"), rotationGuismo(), translationGuismo(10), scaleGuismo(10) {
     //Command::sname = "modified by process";
+    loader = g3d::Model();
     isSelectingPolyhedron = false;
     isSecondClick = false;
     isGeneratingTerrain = false;
@@ -289,11 +290,12 @@ void ODFAEGCreator::onInit() {
         fdProjectPath->setEventContextActivated(false);
         fdProjectPath->setName("fd open project");
         addWindow(&fdProjectPath->getWindow(), false);
+        getRenderComponentManager().addComponent(fdProjectPath);
         fdImport3DModel = new FileDialog(Vec3f(0, 0, 0), Vec3f(800, 600, 0), fm.getResourceByAlias(Fonts::Serif));
         fdImport3DModel->setVisible(false);
         fdImport3DModel->setEventContextActivated(false);
         addWindow(&fdImport3DModel->getWindow(), false);
-        getRenderComponentManager().addComponent(fdProjectPath);
+        getRenderComponentManager().addComponent(fdImport3DModel);
         wApplicationNew = new RenderWindow(sf::VideoMode(400, 300), "Create ODFAEG Application", sf::Style::Default, ContextSettings(0, 0, 0, 3, 0));
         //New application.
         Label* label = new Label(*wApplicationNew, Vec3f(0, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "Application name : ", 15);
@@ -1777,6 +1779,9 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
                         view.rotate(teta, phi);
                         getRenderComponentManager().getRenderComponent(i)->setView(view);
                     }
+                    if (getRenderComponentManager().getRenderComponent(i)->getName() == taComponentName->getText()) {
+                        selectedComponentView = view;
+                    }
                 }
             }
         }
@@ -1987,6 +1992,9 @@ void ODFAEGCreator::onExec() {
                         cpntView.move(cpntView.getLeft(), speed * getClock("LoopTime").getElapsedTime().asSeconds());
                     getRenderComponentManager().getRenderComponent(i)->setView(cpntView);
                 }
+                if (getRenderComponentManager().getRenderComponent(i)->getName() == taComponentName->getText()) {
+                    selectedComponentView = cpntView;
+                }
             }
         }
     }
@@ -2015,6 +2023,9 @@ void ODFAEGCreator::onExec() {
                     else
                         cpntView.move(cpntView.getLeft(), -speed * getClock("LoopTime").getElapsedTime().asSeconds());
                     getRenderComponentManager().getRenderComponent(i)->setView(cpntView);
+                }
+                if (getRenderComponentManager().getRenderComponent(i)->getName() == taComponentName->getText()) {
+                    selectedComponentView = cpntView;
                 }
             }
         }
@@ -2045,6 +2056,9 @@ void ODFAEGCreator::onExec() {
                         cpntView.move(cpntView.getForward(), -speed * getClock("LoopTime").getElapsedTime().asSeconds());
                     getRenderComponentManager().getRenderComponent(i)->setView(cpntView);
                 }
+                if (getRenderComponentManager().getRenderComponent(i)->getName() == taComponentName->getText()) {
+                    selectedComponentView = cpntView;
+                }
             }
         }
     }
@@ -2074,6 +2088,9 @@ void ODFAEGCreator::onExec() {
                         cpntView.move(cpntView.getForward(), speed * getClock("LoopTime").getElapsedTime().asSeconds());
                     getRenderComponentManager().getRenderComponent(i)->setView(cpntView);
                 }
+                if (getRenderComponentManager().getRenderComponent(i)->getName() == taComponentName->getText()) {
+                    selectedComponentView = cpntView;
+                }
             }
         }
     }
@@ -2082,7 +2099,6 @@ void ODFAEGCreator::onExec() {
             selectedComponentView = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->getView();
         }
     }
-
     std::map<std::string, std::vector<Entity*>>::iterator it;
     std::map<std::string, std::vector<Entity*>>::iterator it2;
     for (it = toAdd.begin(); it != toAdd.end(); it++) {
@@ -2576,7 +2592,7 @@ void ODFAEGCreator::onExec() {
                 std::string path = (fdImport3DModel != nullptr) ? fdImport3DModel->getPathChosen() : "";
                 if (path != "") {
                     if (isGenerating3DTerrain) {
-                        Entity* mesh = modelLoader.loadModel(path, factory);
+                        Entity* mesh = loader.loadModel(path, factory);
                         if (dpSelectWallType->getSelectedItem() == "top bottom") {
                             std::cout<<"top bottom"<<std::endl;
                             walls3D[g3d::Wall::TOP_BOTTOM]->setMesh(mesh);
@@ -2680,22 +2696,46 @@ void ODFAEGCreator::onExec() {
         fdProjectPath->setVisible(false);
         fdProjectPath->setEventContextActivated(false);
         tScriptEdit->setEventContextActivated(true);
+        /*Entity* model = loader.loadModel("tilesets\\mesh_puddingmill\\puddingmill.obj", factory);
+            //model->setPosition(position);
+        std::vector<Entity*> entities = getWorld()->getEntities("E_BIGTILE");
+        if (entities.size() > 0) {
+            Entity* heightMap = entities[0]->getRootEntity();
+            float height;
+            model->move(Vec3f(0, 0, -10));
+            bool isOnHeightMap = heightMap->getHeight(Vec2f(model->getPosition().x, model->getPosition().z), height);
+
+            model->move(Vec3f(0, height, 0));
+        }
+        getWorld()->addEntity(model);*/
     }
     std::string model3DPath = (fdImport3DModel != nullptr) ? fdImport3DModel->getPathChosen() : "";
     if (model3DPath != "") {
         Entity* model = loader.loadModel(model3DPath, factory);
+
         if (selectedComponentView.isOrtho()) {
             Vec3f position = getRenderWindow().mapPixelToCoords(Vec3f(cursor.getPosition().x, cursor.getPosition().y, 1), selectedComponentView)+getRenderWindow().getView().getSize() * 0.5f;
             model->setPosition(position);
         } else {
             Vec3f cursorPos = cursor.getPosition() + getRenderWindow().getView().getSize() * 0.5f;
             Vec3f position = getRenderWindow().mapPixelToCoords(Vec3f(cursorPos.x, cursorPos.y, 1), selectedComponentView);
-            model->setPosition(position);
+            //model->setPosition(position);
+            std::vector<Entity*> entities = getWorld()->getEntities("E_BIGTILE");
+            if (entities.size() > 0) {
+                Entity* heightMap = entities[0]->getRootEntity();
+                float height;
+                bool isOnHeightMap = heightMap->getHeight(Vec2f(model->getPosition().x, model->getPosition().z), height);
+                model->move(Vec3f(0, 0, -10));
+                model->move(Vec3f(0, height, 0));
+            }
+            selectedObject = model;
+            model->setSelected(true);
         }
         getWorld()->addEntity(model);
         fdImport3DModel->setVisible(false);
         fdImport3DModel->setEventContextActivated(false);
     }
+
     getWorld()->update();
     oldX = IMouse::getPosition(getRenderWindow()).x;
     oldY = IMouse::getPosition(getRenderWindow()).y;
@@ -6998,6 +7038,7 @@ void ODFAEGCreator::onViewPerspectiveChanged(DropDownList* dp) {
             if (name == components[i]->getName() && dynamic_cast<HeavyComponent*>(components[i])) {
                 View view(getRenderWindow().getSize().x, getRenderWindow().getSize().y, getRenderWindow().getView().getViewport().getPosition().z, getRenderWindow().getView().getDepth());
                 static_cast<HeavyComponent*>(components[i])->setView(view);
+                selectedComponentView = view;
             }
         }
     } else {
@@ -7005,9 +7046,28 @@ void ODFAEGCreator::onViewPerspectiveChanged(DropDownList* dp) {
         std::vector<Component*> components = getRenderComponentManager().getRenderComponents();
         for (unsigned int i = 0; i < components.size(); i++) {
             if (name == components[i]->getName() && dynamic_cast<HeavyComponent*>(components[i])) {
-                View view(getRenderWindow().getSize().x, getRenderWindow().getSize().y, 90, 1, 1000);
+                View view(getRenderWindow().getSize().x, getRenderWindow().getSize().y, 80, 1, 1000);
                 view.setConstrains(80, 0);
                 static_cast<HeavyComponent*>(components[i])->setView(view);
+                selectedComponentView = view;
+            }
+        }
+    }
+
+    std::vector<Entity*> entities = getWorld()->getEntities("E_BIGTILE");
+    if (entities.size() > 0) {
+        Entity* heightMap = entities[0]->getRootEntity();
+        for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
+            if (getRenderComponentManager().getRenderComponent(i) != nullptr) {
+               if (!getRenderComponentManager().getRenderComponent(i)->getView().isOrtho()) {
+                    View view = getRenderComponentManager().getRenderComponent(i)->getView();
+                    float height;
+                    bool isOnHeightMap = heightMap->getHeight(Vec2f(view.getPosition().x, view.getPosition().z), height);
+                    if (isOnHeightMap) {
+                        view.setCenter(Vec3f(view.getPosition().x, height + 10, view.getPosition().z));
+                        getRenderComponentManager().getRenderComponent(i)->setView(view);
+                    }
+               }
             }
         }
     }

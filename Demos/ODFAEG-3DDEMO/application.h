@@ -42,7 +42,7 @@ private :
     sf::Time timeBeforeStoppingVerticalMotion;
     odfaeg::graphic::EntitiesUpdater *eu;
     odfaeg::core::ResourceCache<> cache;
-    odfaeg::graphic::BigTile* heightmap;
+    odfaeg::graphic::Entity* heightmap;
     unsigned int fpsCounter;
     odfaeg::graphic::View view3D;
     odfaeg::graphic::g3d::Model loader;

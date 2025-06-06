@@ -389,7 +389,13 @@ namespace odfaeg {
                 void update(std::string name="*") {
                     if (name == "*") {
                         for (unsigned int i = 0; i < cache.eus.size(); i++) {
-                            cache.eus[i]->update();
+                            if (cache.eus[i]->isUsingThread) {
+                                //std::cout<<"update"<<std::endl;
+                                cache.eus[i]->needToUpdate();
+                            } else {
+                                //std::cout<<"update"<<std::endl;
+                                cache.eus[i]->update();
+                            }
                         }
                     } else {
                         for (unsigned int i = 0; i < cache.eus.size(); i++) {

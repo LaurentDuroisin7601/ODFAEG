@@ -39,13 +39,14 @@ namespace odfaeg {
             virtual void onUpdate() = 0;
             void setName(std::string name);
             std::string getName();
+            bool isUsingThread;
             virtual ~Timer();
         private :
             sf::Clock clock; /**> A clock use to measure the time elapsed since the last update*/
             sf::Time interval; /**> The time interval between two updates.*/
             std::string name;
             std::thread m_thread;
-            bool running, isUsingThread;
+            bool running;
         };
     }
 }

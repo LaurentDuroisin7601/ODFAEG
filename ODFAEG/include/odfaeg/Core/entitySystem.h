@@ -37,9 +37,10 @@ namespace odfaeg {
             */
             virtual void onUpdate() = 0;
             virtual ~EntitySystem();
+            bool isUsingThread;
         private:
             std::string name;
-            bool m_needToUpdate, running, isUsingThread;
+            bool m_needToUpdate, running;
             std::thread m_thread;
         };
     }

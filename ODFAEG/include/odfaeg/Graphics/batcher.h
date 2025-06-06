@@ -425,7 +425,7 @@ namespace odfaeg {
 
             ~Instance();
         private:
-            Material* material; /**> the material of the instance.*/
+            Material material; /**> the material of the instance.*/
             std::vector<VertexArray*> m_vertexArrays; /**> the vertex arrays of the instance.*/
             std::vector<TransformMatrix*> m_transforms; /**> the transformations of the instance.*/
             std::vector<TransformMatrix*> m_perVaTransforms;

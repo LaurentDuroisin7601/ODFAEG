@@ -3648,6 +3648,16 @@ namespace odfaeg {
                     material.textureIndex = (m_normals[i].getMaterial().getTexture() != nullptr) ? m_normals[i].getMaterial().getTexture()->getId() : 0;
                     material.materialType = m_normals[i].getMaterial().getType();
                     materials[p].push_back(material);
+                    /*for (unsigned int v = 0; v < m_normals[i].getVertexArrays().size(); v++) {
+                        if (m_normals[i].getVertexArrays()[v]->getEntity()->getType() == "E_MESH") {
+                            for (unsigned int n = 0; n < m_normals[i].getVertexArrays()[v]->getVertexCount(); n++) {
+                                std::cout<<"vertex position : "<<(*m_normals[i].getVertexArrays()[v])[n].position.x<<std::endl;
+                                std::cout<<"vertex color : "<<(int) (*m_normals[i].getVertexArrays()[v])[n].color.r<<std::endl;
+                                std::cout<<"vertex tex coords : "<<(*m_normals[i].getVertexArrays()[v])[n].texCoords.x<<std::endl;
+
+                            }
+                        }
+                    }*/
                     for (unsigned int j = 0; j < m_normals[i].getAllVertices().getVertexCount(); j++) {
                         vbBindlessTex[p].append(m_normals[i].getAllVertices()[j]);
                         vertexCount++;

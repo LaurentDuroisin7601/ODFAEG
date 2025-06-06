@@ -221,7 +221,6 @@ class ODFAEGCreator : public odfaeg::core::Application<ODFAEGCreator>,
         bool isMovingXPos, isMovingYPos, isMovingZPos, isScalingX, isScalingY, isScalingZ;
         float prevAngle;
         odfaeg::graphic::View selectedComponentView;
-        odfaeg::graphic::g3d::Model modelLoader;
         odfaeg::physic::OrientedBoundingBox selectionBox;
 };
 #endif

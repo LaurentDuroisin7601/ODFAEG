@@ -98,6 +98,8 @@ namespace odfaeg {
             template <typename Archive>
             void vtserialize(Archive & ar) {
                 GameObject::vtserialize(ar);
+                ar(tileSize);
+                ar(nbTilesPerRow);
             }
         private :
             /** \fn
@@ -106,7 +108,6 @@ namespace odfaeg {
             void recomputeSize();
             math::Vec2f tileSize;
             int nbTilesPerRow;
-            std::vector<Tile*> m_tiles;
         };
     }
 }

@@ -83,7 +83,7 @@ void MyAppli::onInit() {
     std::cout<<"generate map"<<std::endl;
     getWorld()->generate_3d_map(tGround, tWall, Vec2f(50, 50), mapZone, factory);
     std::cout<<"map generated"<<std::endl;
-    heightmap = static_cast<BigTile*>(getWorld()->getEntities("E_BIGTILE")[0]->getRootEntity());
+    heightmap = getWorld()->getEntities("E_BIGTILE")[0]->getRootEntity();
     heightmap->setShadowScale(Vec3f(1, -1, 1));
     float cy;
     bool isOnHeightMap = heightmap->getHeight(Vec2f(10, 10), cy);
@@ -113,10 +113,11 @@ void MyAppli::onInit() {
     getWorld()->addWorker(eu);
 
     loader = g3d::Model();
-    model = loader.loadModel("tilesets/mesh_puddingmill/puddingmill.obj", factory);
+    model = loader.loadModel("tilesets\\mesh_puddingmill\\puddingmill.obj", factory);
+    //model->setSelected(true);
 
-    animatedModel = loader.loadModel("tilesets/vampire/dancing_vampire.dae", factory);
-    g3d::Animation* danceAnimation = new g3d::Animation("tilesets/vampire/dancing_vampire.dae", animatedModel);
+    animatedModel = loader.loadModel("tilesets\\vampire\\dancing_vampire.dae", factory);
+    g3d::Animation* danceAnimation = new g3d::Animation("tilesets\\vampire\\dancing_vampire.dae", animatedModel);
     Entity* animator = factory.make_entity<g3d::Animator>(danceAnimation, factory);
     animator->move(Vec3f(-100, -100, 0));
     animator->setScale(Vec3f(0.1f, 0.1f, 0.1f));
@@ -141,7 +142,7 @@ void MyAppli::onInit() {
     float angle2 = Math::toDegrees(v3.getAngleBetween(v3, v4.cross(v3)));
     angle = (y2 > y) ? angle : -angle;
     angle2 = (y3 > y) ? angle2 : -angle2;
-    model->move(Vec3f(0, y+model->getSize().y*0.5f, 0));
+    model->move(Vec3f(0, y, 0));
     model->setShadowScale(Vec3f(1, -1, 1));
     model->setShadowRotation(90 + angle * 100, Vec3f(1, 0, 0));
     //model->setShadowRotation(angle2 * 150, Vec3f(0, 0, 1));

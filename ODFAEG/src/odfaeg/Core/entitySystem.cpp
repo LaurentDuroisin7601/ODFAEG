@@ -1,4 +1,5 @@
 #include "../../../include/odfaeg/Core/entitySystem.h"
+#include <iostream>
 namespace odfaeg {
     namespace core {
         EntitySystem::EntitySystem(bool usingThread) : isUsingThread(usingThread), m_needToUpdate(false) {

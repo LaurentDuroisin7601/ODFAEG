@@ -1821,6 +1821,7 @@ namespace odfaeg {
                           << std::endl;        }
 
                 #endif
+                glCheck(glDisable(GL_CULL_FACE));
                 // Make sure that extensions are initialized
                 if (GL_ARB_multitexture)
                 {
