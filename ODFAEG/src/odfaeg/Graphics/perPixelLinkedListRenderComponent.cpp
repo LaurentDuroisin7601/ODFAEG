@@ -3994,13 +3994,15 @@ namespace odfaeg {
                         border->decreaseNbEntities();
                     }
                     for (unsigned int j = 0; j <  vEntities[i]->getNbFaces(); j++) {
-                         std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+
                          if (vEntities[i]->getDrawMode() == Entity::INSTANCED && !vEntities[i]->isSelected()) {
+                            std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                             if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0)
                                 batcher.addFace( vEntities[i]->getFace(j));
                             else
                                 batcherIndexed.addFace(vEntities[i]->getFace(j));
                          } else if (vEntities[i]->getDrawMode() == Entity::NORMAL && !vEntities[i]->isSelected()) {
+                             std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                              if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0) {
                                 normalBatcher.addFace( vEntities[i]->getFace(j));
                              } else
@@ -4008,7 +4010,11 @@ namespace odfaeg {
                         } else if (vEntities[i]->getDrawMode() == Entity::INSTANCED && vEntities[i]->isSelected()) {
 
                             if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0) {
-                                selectedInstanceBatcher.addFace(vEntities[i]->getFace(j));
+                                {
+                                    std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                                    selectedInstanceBatcher.addFace(vEntities[i]->getFace(j));
+                                }
+
                            // std::cout<<"remove texture"<<std::endl;
 
                             //std::cout<<"get va"<<std::endl;
@@ -4025,7 +4031,11 @@ namespace odfaeg {
                                 selectedInstanceScaleBatcher.addFace(border->getFace(j));
                            // std::cout<<"face added"<<std::endl;
                              } else {
-                                 selectedInstanceIndexBatcher.addFace(vEntities[i]->getFace(j));
+                                 {
+                                    std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                                    selectedInstanceIndexBatcher.addFace(vEntities[i]->getFace(j));
+                                 }
+
                                // std::cout<<"remove texture"<<std::endl;
 
                             //std::cout<<"get va"<<std::endl;
@@ -4047,8 +4057,11 @@ namespace odfaeg {
                              }
                         } else {
                             if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0) {
+                                {
+                                    std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                                    selectedBatcher.addFace(vEntities[i]->getFace(j));
+                                }
 
-                                selectedBatcher.addFace(vEntities[i]->getFace(j));
                            // std::cout<<"remove texture"<<std::endl;
 
                             //std::cout<<"get va"<<std::endl;
@@ -4068,7 +4081,11 @@ namespace odfaeg {
 
                                // std::cout<<"face added"<<std::endl;
                              } else {
-                                 selectedIndexBatcher.addFace(vEntities[i]->getFace(j));
+                                 {
+                                    std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                                    selectedIndexBatcher.addFace(vEntities[i]->getFace(j));
+                                 }
+
                                // std::cout<<"remove texture"<<std::endl;
 
                             //std::cout<<"get va"<<std::endl;
