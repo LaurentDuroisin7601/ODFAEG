@@ -3163,7 +3163,7 @@ namespace odfaeg {
                     unsigned int p = m_selectedScale[i].getAllVertices().getPrimitiveType();
                     MaterialData material;
                     material.textureIndex = 0;
-                    material.materialType = m_selectedScale[i].getMaterial().getType();
+                    material.materialType = 0;
                     materials[p].push_back(material);
                     TransformMatrix tm;
                     ModelData model;
