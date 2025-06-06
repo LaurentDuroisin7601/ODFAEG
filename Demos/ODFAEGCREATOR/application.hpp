@@ -142,7 +142,7 @@ class ODFAEGCreator : public odfaeg::core::Application<ODFAEGCreator>,
         odfaeg::graphic::gui::MenuBar* menuBar;
         odfaeg::graphic::gui::Menu *menu1, *menu2, *menu3, *menu4, *menu5, *menu6;
         odfaeg::graphic::gui::MenuItem *item11, *item12, *item13, *item14, *item15, *item16, *item17, *item18, *item19, *item21, *item22, *item23, *item31, *item32, *item33,
-        *item34, *item35, *item36, *item37, *item38, *item39, *item310, *item311, *item41, *item42, *item43, *item44, *item45, *item46, *item47, *item51, *item52, *item61;
+        *item34, *item35, *item36, *item37, *item38, *item39, *item310, *item311, *item312, *item41, *item42, *item43, *item44, *item45, *item46, *item47, *item51, *item52, *item61;
         odfaeg::core::ResourceCache<> cache;
         odfaeg::graphic::gui::FileDialog* fdTexturePath, *fdProjectPath, *fdImport3DModel;
         odfaeg::graphic::RenderWindow* wApplicationNew, *wNewMap, *wNewComponent, *wNewEntitiesUpdater, *wNewAnimUpdater, *wNewEmitter, *wNewParticleSystemUpdater, *wCreateNewWindow, *wCreateNewObject, *wModifyObject,

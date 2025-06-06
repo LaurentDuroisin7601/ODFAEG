@@ -41,7 +41,7 @@ Application (vm, title, sf::Style::Resize|sf::Style::Close, ContextSettings(0, 8
     selectedBoundingVolume = nullptr;
     selectedObject = nullptr;
     viewPos = getRenderWindow().getView().getPosition();
-    rtc.addOption("std=c++17");
+    rtc.addOption("std=c++20");
     rtc.addMacro("ODFAEG_STATIC");
     rtc.addIncludeDir("\"C:\\Program Files (x86)\\ODFAEG\\include\"");
     rtc.addIncludeDir("..\\..\\ODFAEG-master\\ODFAEG\\extlibs\\headers");
@@ -211,6 +211,9 @@ void ODFAEGCreator::onInit() {
         item311 = new MenuItem(getRenderWindow(), fm.getResourceByAlias(Fonts::Serif), "Ponctual Light");
         item311->addMenuItemListener(this);
         getRenderComponentManager().addComponent(item311);
+        item312 = new MenuItem(getRenderWindow(), fm.getResourceByAlias(Fonts::Serif), "3D Model");
+        item312->addMenuItemListener(this);
+        getRenderComponentManager().addComponent(item312);
         menu3->addMenuItem(item31);
         menu3->addMenuItem(item32);
         menu3->addMenuItem(item33);
@@ -222,6 +225,7 @@ void ODFAEGCreator::onInit() {
         menu3->addMenuItem(item39);
         menu3->addMenuItem(item310);
         menu3->addMenuItem(item311);
+        menu3->addMenuItem(item312);
         item41 = new MenuItem(getRenderWindow(), fm.getResourceByAlias(Fonts::Serif), "Undo");
         item41->addMenuItemListener(this);
         getRenderComponentManager().addComponent(item41);
@@ -1436,8 +1440,8 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
     if (&getRenderWindow() == window && event.type == IEvent::MOUSE_MOTION_EVENT && IMouse::isButtonPressed(IMouse::Left)) {
         sf::Vector2f mousePos (event.mouseMotion.x, event.mouseMotion.y);
         Vec3f halfWSize(getRenderWindow().getView().getSize().x * 0.5f, getRenderWindow().getView().getSize().y * 0.5f, 0);
-        Vec3f ext(mousePos.x - getRenderWindow().getView().getSize().x * 0.5f, mousePos.y - getRenderWindow().getView().getSize().y * 0.5f, 1);
-        Vec3f orig (mousePos.x - getRenderWindow().getView().getSize().x * 0.5f, mousePos.y - getRenderWindow().getView().getSize().y * 0.5f, 0);
+        Vec3f ext(mousePos.x - getRenderWindow().getView().getSize().x * 0.5f, mousePos.y - getRenderWindow().getView().getSize().y * 0.5f, 0);
+        Vec3f orig (mousePos.x - getRenderWindow().getView().getSize().x * 0.5f, mousePos.y - getRenderWindow().getView().getSize().y * 0.5f, 1);
         if (dpSelectComponent->getSelectedItem() == "MAIN WINDOW") {
             orig = getRenderWindow().mapPixelToCoords(Vec3f(orig.x, getRenderWindow().getSize().y-orig.y, orig.z))+halfWSize;
             ext = getRenderWindow().mapPixelToCoords(Vec3f(ext.x, getRenderWindow().getSize().y-ext.y, ext.z))+halfWSize;
@@ -1551,22 +1555,24 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
         } else {
             sf::Vector2f mousePos (event.mouseButton.x, event.mouseButton.y);
             Vec3f halfWSize(getRenderWindow().getView().getSize().x * 0.5f, getRenderWindow().getView().getSize().y * 0.5f, 0);
-            Vec3f ext(mousePos.x-getRenderWindow().getView().getSize().x * 0.5f, mousePos.y - getRenderWindow().getView().getSize().y * 0.5f, 1);
-            Vec3f orig = Vec3f(mousePos.x-getRenderWindow().getView().getSize().x * 0.5f, mousePos.y - getRenderWindow().getView().getSize().y * 0.5f, 0);
+            Vec3f ext(mousePos.x-getRenderWindow().getView().getSize().x * 0.5f, mousePos.y - getRenderWindow().getView().getSize().y * 0.5f, 0);
+            Vec3f orig = Vec3f(mousePos.x-getRenderWindow().getView().getSize().x * 0.5f, mousePos.y - getRenderWindow().getView().getSize().y * 0.5f, 1);
             //std::cout<<"ray window coords : "<<orig<<ext<<std::endl;
             if (dpSelectComponent->getSelectedItem() == "MAIN WINDOW") {
                 orig = getRenderWindow().mapPixelToCoords(Vec3f(orig.x, getRenderWindow().getSize().y-orig.y, orig.z))+halfWSize;
                 ext = getRenderWindow().mapPixelToCoords(Vec3f(ext.x, getRenderWindow().getSize().y-ext.y, ext.z))+halfWSize;
             } else {
                 for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
-                    if(getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->getView().isOrtho()) {
-                        orig = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(orig.x, getRenderWindow().getSize().y - orig.y, orig.z))+halfWSize;
-                        ext = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(ext.x, getRenderWindow().getSize().y - ext.y, ext.z))+halfWSize;
-                    } else {
-                        orig += halfWSize;
-                        orig = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(orig.x, getRenderWindow().getSize().y - orig.y, orig.z));
-                        ext += halfWSize;
-                        ext = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(ext.x, getRenderWindow().getSize().y - ext.y, ext.z));
+                    if (getRenderComponentManager().getRenderComponent(i) != nullptr && getRenderComponentManager().getRenderComponent(i)->getName() == dpSelectComponent->getSelectedItem()) {
+                        if(getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->getView().isOrtho()) {
+                            orig = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(orig.x, getRenderWindow().getSize().y - orig.y, orig.z))+halfWSize;
+                            ext = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(ext.x, getRenderWindow().getSize().y - ext.y, ext.z))+halfWSize;
+                        } else {
+                            orig += halfWSize;
+                            orig = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(orig.x, getRenderWindow().getSize().y - orig.y, orig.z));
+                            ext += halfWSize;
+                            ext = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(ext.x, getRenderWindow().getSize().y - ext.y, ext.z));
+                        }
                     }
                 }
             }
@@ -2679,13 +2685,16 @@ void ODFAEGCreator::onExec() {
     if (model3DPath != "") {
         Entity* model = loader.loadModel(model3DPath, factory);
         if (selectedComponentView.isOrtho()) {
-            Vec3f position = getRenderWindow().mapPixelToCoords(cursor.getPosition(), selectedComponentView)+getRenderWindow().getView().getSize() * 0.5f;
+            Vec3f position = getRenderWindow().mapPixelToCoords(Vec3f(cursor.getPosition().x, cursor.getPosition().y, 1), selectedComponentView)+getRenderWindow().getView().getSize() * 0.5f;
             model->setPosition(position);
         } else {
-            Vec3f position = getRenderWindow().mapPixelToCoords(cursor.getPosition()+getRenderWindow().getView().getSize() * 0.5f, selectedComponentView);
+            Vec3f cursorPos = cursor.getPosition() + getRenderWindow().getView().getSize() * 0.5f;
+            Vec3f position = getRenderWindow().mapPixelToCoords(Vec3f(cursorPos.x, cursorPos.y, 1), selectedComponentView);
             model->setPosition(position);
         }
         getWorld()->addEntity(model);
+        fdImport3DModel->setVisible(false);
+        fdImport3DModel->setEventContextActivated(false);
     }
     getWorld()->update();
     oldX = IMouse::getPosition(getRenderWindow()).x;
@@ -3955,6 +3964,10 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
         wNewEntitiesUpdater->setVisible(true);
         getRenderComponentManager().setEventContextActivated(true, *wNewEntitiesUpdater);
         tScriptEdit->setEventContextActivated(false);
+    }
+    if (item->getText() == "3D Model") {
+        fdImport3DModel->setVisible(true);
+        fdImport3DModel->setEventContextActivated(true);
     }
     if (item == item15) {
         fdProjectPath->setVisible(true);
