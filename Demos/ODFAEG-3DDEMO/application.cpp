@@ -141,7 +141,7 @@ void MyAppli::onInit() {
     float angle2 = Math::toDegrees(v3.getAngleBetween(v3, v4.cross(v3)));
     angle = (y2 > y) ? angle : -angle;
     angle2 = (y3 > y) ? angle2 : -angle2;
-    model->move(Vec3f(0, y, 0));
+    model->move(Vec3f(0, y+model->getSize().y*0.5f, 0));
     model->setShadowScale(Vec3f(1, -1, 1));
     model->setShadowRotation(90 + angle * 100, Vec3f(1, 0, 0));
     //model->setShadowRotation(angle2 * 150, Vec3f(0, 0, 1));

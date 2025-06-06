@@ -1799,9 +1799,9 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
                             for (unsigned int v = 0; v < 8; v++) {
                                 std::cout<<"bb verts : "<<bbVerts[v]<<std::endl;
                                 if (v < 4)
-                                    obbVerts[v] = components[i]->getFrameBuffer()->mapPixelToCoords(Vec3f(bbVerts[v].x, /*getRenderWindow().getSize().y-*/bbVerts[v].y, 1)) /*/ (getRenderWindow().getView().getSize()*0.5f)*/;
+                                    obbVerts[v] = components[i]->getFrameBuffer()->mapPixelToCoords(Vec3f(bbVerts[v].x, getRenderWindow().getSize().y-bbVerts[v].y, 1)) /*/ (getRenderWindow().getView().getSize()*0.5f)*/;
                                 else
-                                    obbVerts[v] = components[i]->getFrameBuffer()->mapPixelToCoords(Vec3f(bbVerts[v].x, /*getRenderWindow().getSize().y-*/bbVerts[v].y, 0)) /*/ (getRenderWindow().getView().getSize()*0.5f)*/;
+                                    obbVerts[v] = components[i]->getFrameBuffer()->mapPixelToCoords(Vec3f(bbVerts[v].x, getRenderWindow().getSize().y-bbVerts[v].y, 0)) /*/ (getRenderWindow().getView().getSize()*0.5f)*/;
                                 std::cout<<"obb verts : "<<obbVerts[v]<<std::endl;
                             }
                             //system("PAUSE");

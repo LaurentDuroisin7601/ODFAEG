@@ -218,11 +218,15 @@ namespace odfaeg {
         }
         void ViewMatrix::setRotation(float angle) {
             this->angle = angle;
+            needToUpdate3D = true;
+            inverseNeedToUpdate3D = true;
         }
         void ViewMatrix::setAxis(math::Vec3f left, math::Vec3f up, math::Vec3f forward) {
             xAxis = left;
             yAxis = left.cross(forward);
             zAxis = forward;
+            needToUpdate3D = true;
+            inverseNeedToUpdate3D = true;
         }
         void ViewMatrix::combine(math::Matrix4f other) {
             update();
