@@ -565,6 +565,7 @@ namespace odfaeg
         ////////////////////////////////////////////////////////////
         bool RenderTexture::setActive(bool active)
         {
+            if (!isContextActivated)
             if (m_context)
                 return m_impl && m_context->setActive(active);
             else

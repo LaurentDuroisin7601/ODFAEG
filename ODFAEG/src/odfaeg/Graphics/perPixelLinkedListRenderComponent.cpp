@@ -2742,8 +2742,8 @@ namespace odfaeg {
             }
             skybox = nullptr;
             frameBuffer.setActive(false);
-            cleared = false;
             renderFinished = false;
+            cleared = true;
             //getListener().launch();
         }
         void PerPixelLinkedListRenderComponent::loadTextureIndexes() {
@@ -3003,8 +3003,6 @@ namespace odfaeg {
             backgroundColor = color;
         }
         void PerPixelLinkedListRenderComponent::clear() {
-            std::lock_guard<std::recursive_mutex> lock(rec_mutex);
-            cleared = false;
             frameBuffer.setActive();
             frameBuffer.clear(backgroundColor);
             //getWindow().setActive();
@@ -3020,7 +3018,7 @@ namespace odfaeg {
             glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0));
 
             frameBuffer.resetGLStates();
-            cleared = true;
+
 
             //getWindow().resetGLStates();
 
@@ -3516,7 +3514,7 @@ namespace odfaeg {
             {
 
                 std::lock_guard<std::recursive_mutex> lock(rec_mutex);
-                renderFinished = false;
+
 
                 /*if (!datasReady) {
                     //std::cout<<"wait"<<std::endl;
@@ -3545,74 +3543,91 @@ namespace odfaeg {
                     m_selectedInstanceIndexed = selectedInstanceIndexBatcher.getInstances();
                     m_selectedScaleInstanceIndexed = selectedInstanceIndexScaleBatcher.getInstances();
                     m_skyboxInstance = skyboxBatcher.getInstances();
+                    renderFinished = false;
+                    //cv.notify_all();
                 }
             }
-            std::lock_guard<std::recursive_mutex> lock(rec_mutex);
-            if (cleared) {
-                cleared = false;
-                float zNear = view.getViewport().getPosition().z;
-                if (!view.isOrtho())
-                    view.setPerspective(80, view.getViewport().getSize().x / view.getViewport().getSize().y, 0.1f, view.getViewport().getSize().z);
-                math::Matrix4f viewMatrix = view.getViewMatrix().getMatrix().transpose();
-                math::Matrix4f projMatrix = view.getProjMatrix().getMatrix().transpose();
-                viewMatrix = math::Matrix4f(math::Matrix3f(viewMatrix));
+            /*std::unique_lock<std::mutex> lock(mtx);
+            cv.wait(lock, [this]() {return !renderFinished && cleared;});*/
+            //frameBuffer.setActive();
+            /*frameBuffer.clear(backgroundColor);
+            //getWindow().setActive();
+            GLuint zero = 0;
+            glCheck(glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomicBuffer));
+            glCheck(glBufferSubData(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(GLuint), &zero));
+            glCheck(glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, 0));
+            glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, clearBuf));
+            glCheck(glBindTexture(GL_TEXTURE_2D, headPtrTex));
+            glCheck(glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, view.getSize().x, view.getSize().y, GL_RED_INTEGER,
+            GL_UNSIGNED_INT, NULL));
+            glCheck(glBindTexture(GL_TEXTURE_2D, 0));
+            glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0));
 
-                skyboxShader.setParameter("projection", projMatrix);
-                skyboxShader.setParameter("view", viewMatrix);
-                vb.clear();
-                //vb.name = "SKYBOXVB";
-                for (unsigned int i = 0; i < m_skyboxInstance.size(); i++) {
-                    if (m_skyboxInstance[i].getAllVertices().getVertexCount() > 0) {
-                        vb.setPrimitiveType(m_skyboxInstance[i].getAllVertices().getPrimitiveType());
-                        for (unsigned int j = 0; j < m_skyboxInstance[i].getAllVertices().getVertexCount(); j++) {
-                            //if (m_skyboxInstance[i].getAllVertices()[j].position.x != 0 && m_skyboxInstance[i].getAllVertices()[j].position.y != 0 && m_skyboxInstance[i].getAllVertices()[j].position.z != 0);
-                            vb.append(m_skyboxInstance[i].getAllVertices()[j]);
-                        }
+            frameBuffer.resetGLStates();*/
+            float zNear = view.getViewport().getPosition().z;
+            if (!view.isOrtho())
+                view.setPerspective(80, view.getViewport().getSize().x / view.getViewport().getSize().y, 0.1f, view.getViewport().getSize().z);
+            math::Matrix4f viewMatrix = view.getViewMatrix().getMatrix().transpose();
+            math::Matrix4f projMatrix = view.getProjMatrix().getMatrix().transpose();
+            viewMatrix = math::Matrix4f(math::Matrix3f(viewMatrix));
+
+            skyboxShader.setParameter("projection", projMatrix);
+            skyboxShader.setParameter("view", viewMatrix);
+            vb.clear();
+            //vb.name = "SKYBOXVB";
+            for (unsigned int i = 0; i < m_skyboxInstance.size(); i++) {
+                if (m_skyboxInstance[i].getAllVertices().getVertexCount() > 0) {
+                    vb.setPrimitiveType(m_skyboxInstance[i].getAllVertices().getPrimitiveType());
+                    for (unsigned int j = 0; j < m_skyboxInstance[i].getAllVertices().getVertexCount(); j++) {
+                        //if (m_skyboxInstance[i].getAllVertices()[j].position.x != 0 && m_skyboxInstance[i].getAllVertices()[j].position.y != 0 && m_skyboxInstance[i].getAllVertices()[j].position.z != 0);
+                        vb.append(m_skyboxInstance[i].getAllVertices()[j]);
                     }
                 }
-                currentStates.blendMode = sf::BlendAlpha;
-                currentStates.shader = &skyboxShader;
-                currentStates.texture = (skybox == nullptr ) ? nullptr : &static_cast<g3d::Skybox*>(skybox)->getTexture();
-                vb.update();
-                frameBuffer.drawVertexBuffer(vb, currentStates);
-                vb.clear();
-                if (!view.isOrtho())
-                    view.setPerspective(80, view.getViewport().getSize().x / view.getViewport().getSize().y, zNear, view.getViewport().getSize().z);
-                projMatrix = view.getProjMatrix().getMatrix().transpose();
-                viewMatrix = view.getViewMatrix().getMatrix().transpose();
-                indirectRenderingShader.setParameter("projectionMatrix", projMatrix);
-                indirectRenderingShader.setParameter("viewMatrix", viewMatrix);
-
-                drawInstances();
-                drawInstancesIndexed();
-                drawSelectedInstances();
-                drawSelectedInstancesIndexed();
-                //std::cout<<"nb instances : "<<m_normals.size()<<std::endl;
-
-
-                glCheck(glFinish());
-                glCheck(glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT));
-                //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-                vb.clear();
-                //vb.name = "";
-                vb.setPrimitiveType(sf::Quads);
-                Vertex v1 (sf::Vector3f(0, 0, quad.getSize().z));
-                Vertex v2 (sf::Vector3f(quad.getSize().x,0, quad.getSize().z));
-                Vertex v3 (sf::Vector3f(quad.getSize().x, quad.getSize().y, quad.getSize().z));
-                Vertex v4 (sf::Vector3f(0, quad.getSize().y, quad.getSize().z));
-                vb.append(v1);
-                vb.append(v2);
-                vb.append(v3);
-                vb.append(v4);
-                vb.update();
-                math::Matrix4f matrix = quad.getTransform().getMatrix().transpose();
-                perPixelLinkedListP2.setParameter("worldMat", matrix);
-                currentStates.shader = &perPixelLinkedListP2;
-                frameBuffer.drawVertexBuffer(vb, currentStates);
-                glCheck(glFinish());
-                frameBuffer.display();
-                renderFinished = true;
             }
+            currentStates.blendMode = sf::BlendAlpha;
+            currentStates.shader = &skyboxShader;
+            currentStates.texture = (skybox == nullptr ) ? nullptr : &static_cast<g3d::Skybox*>(skybox)->getTexture();
+            vb.update();
+            frameBuffer.drawVertexBuffer(vb, currentStates);
+            vb.clear();
+            if (!view.isOrtho())
+                view.setPerspective(80, view.getViewport().getSize().x / view.getViewport().getSize().y, zNear, view.getViewport().getSize().z);
+            projMatrix = view.getProjMatrix().getMatrix().transpose();
+            viewMatrix = view.getViewMatrix().getMatrix().transpose();
+            indirectRenderingShader.setParameter("projectionMatrix", projMatrix);
+            indirectRenderingShader.setParameter("viewMatrix", viewMatrix);
+
+            drawInstances();
+            drawInstancesIndexed();
+            drawSelectedInstances();
+            drawSelectedInstancesIndexed();
+            //std::cout<<"nb instances : "<<m_normals.size()<<std::endl;
+
+
+            glCheck(glFinish());
+            glCheck(glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT));
+            //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+            vb.clear();
+            //vb.name = "";
+            vb.setPrimitiveType(sf::Quads);
+            Vertex v1 (sf::Vector3f(0, 0, quad.getSize().z));
+            Vertex v2 (sf::Vector3f(quad.getSize().x,0, quad.getSize().z));
+            Vertex v3 (sf::Vector3f(quad.getSize().x, quad.getSize().y, quad.getSize().z));
+            Vertex v4 (sf::Vector3f(0, quad.getSize().y, quad.getSize().z));
+            vb.append(v1);
+            vb.append(v2);
+            vb.append(v3);
+            vb.append(v4);
+            vb.update();
+            math::Matrix4f matrix = quad.getTransform().getMatrix().transpose();
+            perPixelLinkedListP2.setParameter("worldMat", matrix);
+            currentStates.shader = &perPixelLinkedListP2;
+            frameBuffer.drawVertexBuffer(vb, currentStates);
+            glCheck(glFinish());
+            frameBuffer.display();
+            /*renderFinished = true;
+            cv.notify_all();*/
+
 
 
             //glCheck(glMemoryBarrier(GL_ALL_BARRIER_BITS));
@@ -3919,12 +3934,12 @@ namespace odfaeg {
 
             /*target.draw(quad, states);
             glCheck(glFinish());*/
-            std::lock_guard<std::recursive_mutex> lock(rec_mutex);
-            if (renderFinished) {
-                renderFinished = false;
-                frameBufferSprite.setCenter(target.getView().getPosition());
-                target.draw(frameBufferSprite, states);
-            }
+            /*std::unique_lock<std::mutex> lock(mtx);
+            cv.wait(lock, [this](){return renderFinished;});*/
+            frameBufferSprite.setCenter(target.getView().getPosition());
+            target.draw(frameBufferSprite, states);
+            /*cleared = true;
+            cv.notify_all();*/
         }
         int  PerPixelLinkedListRenderComponent::getLayer() {
             return layer;
