@@ -2899,7 +2899,7 @@ namespace odfaeg {
                                                            if (nodeIdx < maxNodes) {
                                                                 uint prevHead = imageAtomicExchange(headPointers, ivec2(gl_FragCoord.xy), nodeIdx);
                                                                 nodes[nodeIdx].color = color;
-                                                                nodes[nodeIdx].depth = (color == vec4(0, 1, 1, 1)) ? 1.0f : gl_FragCoord.z;
+                                                                nodes[nodeIdx].depth = /*(color == vec4(0, 1, 1, 1)) ? 1.0f :*/ gl_FragCoord.z;
                                                                 nodes[nodeIdx].next = prevHead;
                                                                 //fcolor = color;
                                                            }

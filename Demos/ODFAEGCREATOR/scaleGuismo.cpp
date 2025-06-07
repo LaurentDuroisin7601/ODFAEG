@@ -39,24 +39,27 @@ void ScaleGuismo::draw(RenderTarget& target, RenderStates states) {
         target.draw(zScaleRect);
     }
 }
-bool ScaleGuismo::intersectsXRect(Ray ray) {
+bool ScaleGuismo::intersectsXRect(Ray ray, Vec3f& i1) {
     if (visible) {
         CollisionResultSet::Info info;
-        return bbXScaleRect.intersects(ray, true, info);
+        Vec3f i2;
+        return bbXScaleRect.intersectsWhere(ray, i1, i2, info);
     }
     return false;
 }
-bool ScaleGuismo::intersectsYRect(Ray ray) {
+bool ScaleGuismo::intersectsYRect(Ray ray, Vec3f& i1) {
     if (visible) {
         CollisionResultSet::Info info;
-        return bbYScaleRect.intersects(ray, true, info);
+        Vec3f i2;
+        return bbYScaleRect.intersectsWhere(ray, i1, i2, info);
     }
     return false;
 }
-bool ScaleGuismo::intersectsZRect(Ray ray) {
+bool ScaleGuismo::intersectsZRect(Ray ray, Vec3f& i1) {
     if (visible) {
         CollisionResultSet::Info info;
-        return bbZScaleRect.intersects(ray, true, info);
+        Vec3f i2;
+        return bbZScaleRect.intersectsWhere(ray, i1, i2, info);
     }
     return false;
 }

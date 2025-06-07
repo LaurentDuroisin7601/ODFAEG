@@ -1222,7 +1222,7 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
             }
         }
     }
-    if(&getRenderWindow() == window && event.type == IEvent::KEYBOARD_EVENT && event.keyboard.type == IEvent::KEY_EVENT_PRESSED && isGuiShown && event.keyboard.code == IKeyboard::R) {
+    if(&getRenderWindow() == window && event.type == IEvent::KEYBOARD_EVENT && event.keyboard.type == IEvent::KEY_EVENT_PRESSED && isGuiShown && event.keyboard.control && event.keyboard.code == IKeyboard::R) {
         if (selectedObject != nullptr) {
 
             rotationGuismo.setCenterSize(selectedObject->getPosition()+selectedObject->getSize()*0.5f, selectedObject->getSize());
@@ -1231,7 +1231,7 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
             scaleGuismo.setVisible(false);
         }
     }
-    if(&getRenderWindow() == window && event.type == IEvent::KEYBOARD_EVENT && event.keyboard.type == IEvent::KEY_EVENT_PRESSED && isGuiShown && event.keyboard.code == IKeyboard::M) {
+    if(&getRenderWindow() == window && event.type == IEvent::KEYBOARD_EVENT && event.keyboard.type == IEvent::KEY_EVENT_PRESSED && isGuiShown && event.keyboard.control && event.keyboard.code == IKeyboard::M) {
         if (selectedObject != nullptr) {
 
             translationGuismo.setCenterSize(selectedObject->getPosition()+selectedObject->getSize()*0.5f, selectedObject->getSize());
@@ -1240,7 +1240,7 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
             scaleGuismo.setVisible(false);
         }
     }
-    if(&getRenderWindow() == window && event.type == IEvent::KEYBOARD_EVENT && event.keyboard.type == IEvent::KEY_EVENT_PRESSED && isGuiShown && event.keyboard.code == IKeyboard::S) {
+    if(&getRenderWindow() == window && event.type == IEvent::KEYBOARD_EVENT && event.keyboard.type == IEvent::KEY_EVENT_PRESSED && isGuiShown && event.keyboard.control &&  event.keyboard.code == IKeyboard::S) {
         if (selectedObject != nullptr) {
 
             scaleGuismo.setCenterSize(selectedObject->getPosition()+selectedObject->getSize()*0.5f, selectedObject->getSize());
@@ -1454,8 +1454,7 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
                         orig = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(orig.x, getRenderWindow().getSize().y - orig.y, orig.z))+halfWSize;
                         ext = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(ext.x, getRenderWindow().getSize().y - ext.y, ext.z))+halfWSize;
                     } else {
-                        orig += halfWSize;
-                        orig = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(orig.x, getRenderWindow().getSize().y - orig.y, orig.z));
+                        orig = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(0, 0, orig.z));
                         ext += halfWSize;
                         ext = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(ext.x, getRenderWindow().getSize().y - ext.y, ext.z));
                     }
@@ -1473,41 +1472,41 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
             getWorld()->rotateEntity(selectedObject, Math::toDegrees(angle));
             prevAngle = angle;
         }
-        if (isMovingXPos) {
-            float mx = ray.getOrig().x - prevObjectPos.x;
+        if (isMovingXPos && translationGuismo.intersectsXArrow(ray, _near)) {
+            float mx = _near.x - prevObjectPos.x;
             translationGuismo.move(Vec3f(mx, 0, 0));
             getWorld()->moveEntity(selectedObject, mx, 0, 0);
-            prevObjectPos.x = ray.getOrig().x;
+            prevObjectPos.x = _near.x;
         }
-        if (isMovingYPos) {
-            float my = ray.getOrig().y - prevObjectPos.y;
+        if (isMovingYPos && translationGuismo.intersectsYArrow(ray, _near)) {
+            float my = _near.y - prevObjectPos.y;
             translationGuismo.move(Vec3f(0, my, 0));
-            getWorld()->moveEntity(selectedObject, 0, my, 0);
-            prevObjectPos.y = ray.getOrig().y;
+            getWorld()->moveEntity(selectedObject, my, 0, 0);
+            prevObjectPos.y = _near.y;
         }
-        if (isMovingZPos) {
-            float mz = ray.getOrig().z - prevObjectPos.z;
+        if (isMovingZPos && translationGuismo.intersectsZArrow(ray, _near)) {
+            float mz = _near.z - prevObjectPos.z;
             translationGuismo.move(Vec3f(0, 0, mz));
             getWorld()->moveEntity(selectedObject, 0, 0, mz);
-            prevObjectPos.z = ray.getOrig().z;
+            prevObjectPos.z = _near.z;
         }
-        if (isScalingX) {
-            float sx = ray.getOrig().x / prevObjectScale.x;
+        if (isScalingX && scaleGuismo.intersectsXRect(ray, _near)) {
+            float sx = _near.x / prevObjectScale.x;
             getWorld()->scaleEntity(selectedObject, sx, 1, 1);
             scaleGuismo.setCenterSize(selectedObject->getPosition()+selectedObject->getSize()*0.5f, selectedObject->getSize());
-            prevObjectScale.x = ray.getOrig().x;
+            prevObjectScale.x = _near.x;
         }
-        if (isScalingY) {
-            float sy = ray.getOrig().y / prevObjectScale.y;
+        if (isScalingY && scaleGuismo.intersectsYRect(ray, _near)) {
+            float sy = _near.y / prevObjectScale.y;
             getWorld()->scaleEntity(selectedObject, 1, sy, 1);
             scaleGuismo.setCenterSize(selectedObject->getPosition()+selectedObject->getSize()*0.5f, selectedObject->getSize());
-            prevObjectScale.y = ray.getOrig().y;
+            prevObjectScale.y = _near.y;
         }
-        if (isScalingZ) {
-            float sz = ray.getOrig().z / prevObjectScale.z;
+        if (isScalingZ && scaleGuismo.intersectsZRect(ray, _near)) {
+            float sz = _near.z / prevObjectScale.z;
             getWorld()->scaleEntity(selectedObject, 1, 1, sz);
             scaleGuismo.setCenterSize(selectedObject->getPosition()+selectedObject->getSize()*0.5f, selectedObject->getSize());
-            prevObjectScale.z = ray.getOrig().z;
+            prevObjectScale.z = _near.z;
         }
     }
     if (&getRenderWindow() == window && event.type == IEvent::MOUSE_BUTTON_EVENT && event.mouseButton.type == IEvent::BUTTON_EVENT_PRESSED && event.mouseButton.button == IMouse::Left) {
@@ -1570,8 +1569,7 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
                             orig = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(orig.x, getRenderWindow().getSize().y - orig.y, orig.z))+halfWSize;
                             ext = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(ext.x, getRenderWindow().getSize().y - ext.y, ext.z))+halfWSize;
                         } else {
-                            orig += halfWSize;
-                            orig = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(orig.x, getRenderWindow().getSize().y - orig.y, orig.z));
+                            orig = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(0, 0, orig.z));
                             ext += halfWSize;
                             ext = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(ext.x, getRenderWindow().getSize().y - ext.y, ext.z));
                         }
@@ -1586,28 +1584,22 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
                 firstInters = rotationGuismo.getCenter() - firstInters;
                 std::cout<<"first inters : "<<firstInters<<"center : "<<rotationGuismo.getCenter()<<std::endl;
             }
-            if (translationGuismo.intersectsXArrow(ray)) {
-                prevObjectPos.x = ray.getOrig().x;
+            if (translationGuismo.intersectsXArrow(ray, prevObjectPos)) {
                 isMovingXPos = true;
             }
-            if (translationGuismo.intersectsYArrow(ray)) {
-                prevObjectPos.y = ray.getOrig().y;
+            if (translationGuismo.intersectsYArrow(ray, prevObjectPos)) {
                 isMovingYPos = true;
             }
-            if (translationGuismo.intersectsZArrow(ray)) {
-                prevObjectPos.z = ray.getOrig().z;
+            if (translationGuismo.intersectsZArrow(ray, prevObjectPos)) {
                 isMovingZPos = true;
             }
-            if (scaleGuismo.intersectsXRect(ray)) {
-                prevObjectScale.x = ray.getOrig().x;
+            if (scaleGuismo.intersectsXRect(ray, prevObjectScale)) {
                 isScalingX = true;
             }
-            if (scaleGuismo.intersectsYRect(ray)) {
-                prevObjectScale.y = ray.getOrig().y;
+            if (scaleGuismo.intersectsYRect(ray, prevObjectScale)) {
                 isScalingY = true;
             }
-            if (scaleGuismo.intersectsZRect(ray)) {
-                prevObjectScale.z = ray.getOrig().z;
+            if (scaleGuismo.intersectsZRect(ray, prevObjectScale)) {
                 isScalingZ = true;
             }
         }
@@ -2405,7 +2397,7 @@ void ODFAEGCreator::onExec() {
                         std::string expression;
                         ia5(expression);
                         //std::cout<<"layer : "<<layer<<std::endl;
-                        PerPixelLinkedListRenderComponent* ppll = new PerPixelLinkedListRenderComponent(getRenderWindow(),layer,expression,ContextSettings(0, 8, 4, 4, 6));
+                        PerPixelLinkedListRenderComponent* ppll = new PerPixelLinkedListRenderComponent(getRenderWindow(),layer,expression,ContextSettings(24, 8, 4, 4, 6));
                         ppll->setName(name);
                         getRenderComponentManager().addComponent(ppll);
                         dpSelectComponent->addItem(name, 15);
@@ -3167,7 +3159,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         getRenderComponentManager().setEventContextActivated(false, *wNewComponent);
         tScriptEdit->setEventContextActivated(true);
         if (dpComponentType->getSelectedItem() == "LinkedList") {
-            PerPixelLinkedListRenderComponent* ppll = new PerPixelLinkedListRenderComponent(getRenderWindow(),conversionStringInt(taComponentLayer->getText()),taComponentExpression->getText(),ContextSettings(0, 0, 4, 4, 6));
+            PerPixelLinkedListRenderComponent* ppll = new PerPixelLinkedListRenderComponent(getRenderWindow(),conversionStringInt(taComponentLayer->getText()),taComponentExpression->getText(),ContextSettings(24, 8, 4, 4, 6));
             getRenderComponentManager().addComponent(ppll);
             ppll->setName(taComponentName->getText());
             dpSelectComponent->addItem(taComponentName->getText(), 15);
