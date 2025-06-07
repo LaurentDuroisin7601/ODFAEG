@@ -4112,7 +4112,9 @@ namespace odfaeg {
                                 border->setOrigin(root->getSize() * 0.5f);
                                 border->setSize(root->getSize() * 1.1f);
                                 math::Vec3f offset =  root->getSize() - oldSize;
-                                //border->setPosition(root->getPosition() - offset * 0.5f);
+                                if (border->getSize().z > 0) {
+                                    border->setPosition(root->getPosition() - offset * 0.5f);
+                                }
                                 selectedScaleBatcher.addFace(border->getFace(j));
 
                                // std::cout<<"face added"<<std::endl;
