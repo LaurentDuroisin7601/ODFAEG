@@ -2899,7 +2899,7 @@ namespace odfaeg {
                                                            if (nodeIdx < maxNodes) {
                                                                 uint prevHead = imageAtomicExchange(headPointers, ivec2(gl_FragCoord.xy), nodeIdx);
                                                                 nodes[nodeIdx].color = color;
-                                                                nodes[nodeIdx].depth = gl_FragCoord.z;
+                                                                nodes[nodeIdx].depth = (color == vec4(0, 1, 1, 1)) ? 1.0f : gl_FragCoord.z;
                                                                 nodes[nodeIdx].next = prevHead;
                                                                 //fcolor = color;
                                                            }
@@ -3052,8 +3052,11 @@ namespace odfaeg {
 
                     unsigned int p = m_selected[i].getAllVertices().getPrimitiveType();
                     MaterialData material;
-                    material.textureIndex = (m_selected[i].getMaterial().getTexture() != nullptr) ? m_selected[i].getMaterial().getTexture()->getId() : 0;
-                    material.materialType = m_selected[i].getMaterial().getType();
+                    {
+                        std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                        material.textureIndex = (m_selected[i].getMaterial().getTexture() != nullptr) ? m_selected[i].getMaterial().getTexture()->getId() : 0;
+                        material.materialType = m_selected[i].getMaterial().getType();
+                    }
                     materials[p].push_back(material);
 
                     TransformMatrix tm;
@@ -3253,7 +3256,9 @@ namespace odfaeg {
                     vbBindlessTex[p].clear();
                 }
             }
-            glCheck(glEnable(GL_DEPTH_TEST));
+            glStencilMask(0xFF);
+            glStencilFunc(GL_ALWAYS, 0, 0xFF);
+            //glCheck(glEnable(GL_DEPTH_TEST));
             glCheck(glDisable(GL_STENCIL_TEST));
         }
         void PerPixelLinkedListRenderComponent::drawSelectedInstancesIndexed() {
@@ -3507,6 +3512,8 @@ namespace odfaeg {
                     vbBindlessTex[p].clear();
                 }
             }
+            glStencilMask(0xFF);
+            glStencilFunc(GL_ALWAYS, 0, 0xFF);
             glCheck(glDisable(GL_STENCIL_TEST));
         }
         void PerPixelLinkedListRenderComponent::drawNextFrame() {
@@ -3671,8 +3678,11 @@ namespace odfaeg {
                         }*/
                     unsigned int vertexCount = 0;
                     MaterialData material;
-                    material.textureIndex = (m_normals[i].getMaterial().getTexture() != nullptr) ? m_normals[i].getMaterial().getTexture()->getId() : 0;
-                    material.materialType = m_normals[i].getMaterial().getType();
+                    {
+                        std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                        material.textureIndex = (m_normals[i].getMaterial().getTexture() != nullptr) ? m_normals[i].getMaterial().getTexture()->getId() : 0;
+                        material.materialType = m_normals[i].getMaterial().getType();
+                    }
                     materials[p].push_back(material);
                     /*for (unsigned int v = 0; v < m_normals[i].getVertexArrays().size(); v++) {
                         if (m_normals[i].getVertexArrays()[v]->getEntity()->getType() == "E_MESH") {
@@ -3733,8 +3743,11 @@ namespace odfaeg {
                         matrices[p].push_back(modelData);
                     }
                     MaterialData materialData;
-                    materialData.textureIndex = (m_instances[i].getMaterial().getTexture() != nullptr) ? m_instances[i].getMaterial().getTexture()->getId() : 0;
-                    materialData.materialType = m_instances[i].getMaterial().getType();
+                    {
+                        std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                        materialData.textureIndex = (m_instances[i].getMaterial().getTexture() != nullptr) ? m_instances[i].getMaterial().getTexture()->getId() : 0;
+                        materialData.materialType = m_instances[i].getMaterial().getType();
+                    }
                     materials[p].push_back(materialData);
                     unsigned int vertexCount = 0;
                     if (m_instances[i].getVertexArrays().size() > 0) {

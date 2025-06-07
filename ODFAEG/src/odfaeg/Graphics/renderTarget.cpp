@@ -1837,7 +1837,6 @@ namespace odfaeg {
                 glCheck(glDisable(GL_LIGHTING));
 
                 glCheck(glEnable(GL_DEPTH_TEST));
-                glCheck(glDisable(GL_STENCIL_TEST));
 
                 if (enableAlphaTest) {
                     glCheck(glEnable(GL_ALPHA_TEST));
@@ -1846,6 +1845,9 @@ namespace odfaeg {
                 }
                 glCheck(glAlphaFunc(GL_GREATER, 0.f));
                 glCheck(glDepthFunc(GL_ALWAYS));
+                /*glEnable(GL_STENCIL_TEST);
+                glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+                glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);*/
                 if (!enableCubeMap) {
                     glCheck(glEnable(GL_TEXTURE_2D));
                     glCheck(glDisable(GL_TEXTURE_CUBE_MAP));
