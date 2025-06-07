@@ -3204,6 +3204,7 @@ namespace odfaeg {
             alphaBufferSprite = Sprite(alphaBuffer.getTexture(), math::Vec3f(0, 0, 0), math::Vec3f(window.getView().getSize().x, window.getView().getSize().y, 0), sf::IntRect(0, 0, window.getView().getSize().x, window.getView().getSize().y));
             sf::Vector3i resolution ((int) window.getSize().x, (int) window.getSize().y, window.getView().getSize().z);
             settings.depthBits = 24;
+            settings.stencilBits = 8;
             reflectRefractTex.create(window.getView().getSize().x, window.getView().getSize().y, settings);
             reflectRefractTex.setEnableCubeMap(true);
             reflectRefractTexSprite = Sprite(reflectRefractTex.getTexture(), math::Vec3f(0, 0, 0), math::Vec3f(window.getView().getSize().x, window.getView().getSize().y, 0), sf::IntRect(0, 0, window.getView().getSize().x, window.getView().getSize().y));
@@ -4167,6 +4168,7 @@ namespace odfaeg {
             currentStates.blendMode = sf::BlendNone;
             currentStates.shader = &sReflectRefract;
             currentStates.texture = &environmentMap.getTexture();
+            glCheck(glDepthFunc(GL_GREATER));
             for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                 if (vbBindlessTex[p].getVertexCount() > 0) {
                     glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, modelDataBuffer));
@@ -4182,6 +4184,7 @@ namespace odfaeg {
                     vbBindlessTex[p].clear();
                 }
             }
+            glCheck(glDepthFunc(GL_ALWAYS));
         }
         void ReflectRefractRenderComponent::drawNextFrame() {
             if (reflectRefractTex.getSettings().versionMajor >= 4 && reflectRefractTex.getSettings().versionMinor >= 3) {

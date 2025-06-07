@@ -566,7 +566,6 @@ namespace odfaeg {
                         vbBindlessTex[p].clear();
                     }
                 }
-                glCheck(glDisable(GL_STENCIL_TEST));
             }
             void PerPixelLinkedListRenderComponent::drawSelectedInstancesIndexed() {
                 for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {

@@ -618,8 +618,12 @@ namespace odfaeg {
                         DrawArraysIndirectCommand drawArraysIndirectCommand;
                         unsigned int p = m_normals[i].getAllVertices().getPrimitiveType();
                         MaterialData material;
-                        material.textureIndex = (m_normals[i].getMaterial().getTexture() != nullptr) ? m_normals[i].getMaterial().getTexture()->getNativeHandle() : 0;
-                        material.layer = m_normals[i].getMaterial().getLayer();
+                        {
+                            std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                            material.textureIndex = (m_normals[i].getMaterial().getTexture() != nullptr) ? m_normals[i].getMaterial().getTexture()->getNativeHandle() : 0;
+                            material.layer = m_normals[i].getMaterial().getLayer();
+                        }
+
                         materials[p].push_back(material);
                         TransformMatrix tm;
                         ModelData model;

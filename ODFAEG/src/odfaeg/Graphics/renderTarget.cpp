@@ -1162,8 +1162,9 @@ namespace odfaeg {
 
             if (activate(true))
             {
-                if (!m_cache.glStatesSet)
+                if (!m_cache.glStatesSet) {
                     resetGLStates();
+                }
                 // Apply the view
                 if (m_cache.viewChanged)
                     applyCurrentView();
@@ -1836,6 +1837,7 @@ namespace odfaeg {
                 glCheck(glDisable(GL_LIGHTING));
 
                 glCheck(glEnable(GL_DEPTH_TEST));
+                glCheck(glDisable(GL_STENCIL_TEST));
 
                 if (enableAlphaTest) {
                     glCheck(glEnable(GL_ALPHA_TEST));
@@ -1843,7 +1845,7 @@ namespace odfaeg {
                     glCheck(glDisable(GL_ALPHA_TEST));
                 }
                 glCheck(glAlphaFunc(GL_GREATER, 0.f));
-                glCheck(glDepthFunc(GL_GREATER));
+                glCheck(glDepthFunc(GL_ALWAYS));
                 if (!enableCubeMap) {
                     glCheck(glEnable(GL_TEXTURE_2D));
                     glCheck(glDisable(GL_TEXTURE_CUBE_MAP));
@@ -1854,7 +1856,7 @@ namespace odfaeg {
                 glCheck(glEnable(GL_BLEND));
                 glCheck(glClearDepth(0));
                 glCheck(glDepthMask(GL_TRUE));
-                glCheck(glDisable(GL_SCISSOR_TEST));
+                //glCheck(glDisable(GL_SCISSOR_TEST));
                 //glCheck(glClipControl(GL_UPPER_LEFT, GL_ZERO_TO_ONE));
 
                 m_cache.glStatesSet = true;
