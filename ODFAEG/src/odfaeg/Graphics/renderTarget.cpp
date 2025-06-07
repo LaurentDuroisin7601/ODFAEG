@@ -1044,7 +1044,9 @@ namespace odfaeg {
                 applyTexture(nullptr);
                 glCheck(glBindFramebuffer(GL_FRAMEBUFFER, m_framebufferId));
                 glCheck(glClearColor(color.r / 255.f, color.g / 255.f, color.b / 255.f, color.a / 255.f));
+                glCheck(glEnable(GL_STENCIL_TEST));
                 glCheck(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT));
+                glCheck(glDisable(GL_STENCIL_TEST));
             }
         }
 
@@ -1832,6 +1834,7 @@ namespace odfaeg {
                 glCullFace(GL_BACK);
                 glFrontFace(GL_CW);*/
                 glCheck(glDisable(GL_LIGHTING));
+
                 glCheck(glEnable(GL_DEPTH_TEST));
 
                 if (enableAlphaTest) {

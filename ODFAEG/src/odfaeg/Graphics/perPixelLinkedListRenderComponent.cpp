@@ -2676,6 +2676,7 @@ namespace odfaeg {
             quad.move(math::Vec3f(-window.getView().getSize().x * 0.5f, -window.getView().getSize().y * 0.5f, 0));
             maxNodes = 20 * window.getView().getSize().x * window.getView().getSize().y;
             GLint nodeSize = 5 * sizeof(GLfloat) + sizeof(GLuint);
+            //std::cout<<"stencil bits : "<<settings.stencilBits<<std::endl;
             frameBuffer.create(window.getView().getSize().x, window.getView().getSize().y, settings);
             frameBufferSprite = Sprite(frameBuffer.getTexture(), math::Vec3f(0, 0, 0), math::Vec3f(window.getView().getSize().x, window.getView().getSize().y, 0), sf::IntRect(0, 0, window.getView().getSize().x, window.getView().getSize().y));
             frameBuffer.setView(view);
@@ -2892,7 +2893,6 @@ namespace odfaeg {
                                                       }*/
                                                       void main() {
                                                            uint nodeIdx = atomicCounterIncrement(nextNodeCounter);
-                                                           //sampler2D tex = sampler2D(GetTexture(texIndex-1));
                                                            vec4 color = (texIndex != 0) ? frontColor * texture(textures[texIndex-1], fTexCoords.xy) : frontColor;
                                                            if (nodeIdx < maxNodes) {
                                                                 uint prevHead = imageAtomicExchange(headPointers, ivec2(gl_FragCoord.xy), nodeIdx);
@@ -2900,7 +2900,7 @@ namespace odfaeg {
                                                                 nodes[nodeIdx].depth = gl_FragCoord.z;
                                                                 nodes[nodeIdx].next = prevHead;
                                                            }
-                                                           //fcolor = vec4(0, 0, 0, 0);
+                                                           fcolor = vec4(0, 0, 0, 0);
                                                       })";
                  const std::string fragmentShader2 =
                    R"(
@@ -3120,6 +3120,7 @@ namespace odfaeg {
             glCheck(glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE));
             glStencilFunc(GL_ALWAYS, 1, 0xFF);
             glStencilMask(0xFF);
+            glCheck(glDisable(GL_ALPHA_TEST));
             for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                 if (vbBindlessTex[p].getVertexCount() > 0) {
                     glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, modelDataBuffer));
@@ -3135,6 +3136,7 @@ namespace odfaeg {
                     vbBindlessTex[p].clear();
                 }
             }
+            glCheck(glEnable(GL_ALPHA_TEST));
             for (unsigned int i = 0; i < firstIndex.size(); i++) {
                 firstIndex[i] = 0;
             }
