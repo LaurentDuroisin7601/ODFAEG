@@ -312,24 +312,7 @@ namespace odfaeg
         void RenderTexture::clear(const sf::Color& color) {
              //std::cout<<"render texture clear begin command buffer"<<std::endl;
 
-             VkSemaphoreTypeCreateInfo timelineCreateInfo{};
-             timelineCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO;
-             timelineCreateInfo.pNext = nullptr;
-             timelineCreateInfo.semaphoreType = VK_SEMAPHORE_TYPE_TIMELINE;
-             timelineCreateInfo.initialValue = 0;
 
-             VkSemaphoreCreateInfo createInfo;
-             createInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-             createInfo.pNext = &timelineCreateInfo;
-             createInfo.flags = 0;
-
-             for (size_t i = 0; i < getMaxFramesInFlight(); i++) {
-                vkDestroySemaphore(vkDevice.getDevice(), renderFinishedSemaphores[i], nullptr);
-                if (vkCreateSemaphore(vkDevice.getDevice(), &createInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS) {
-
-                    throw core::Erreur(0, "échec de la création des objets de synchronisation pour une frame!", 1);
-                }
-             }
              clearColor = color;
              VkClearColorValue clearValue = {clearColor.r / 255.f, clearColor.g / 255.f, clearColor.b / 255.f, clearColor.a / 255.f};
              VkClearDepthStencilValue clearDepthStencilValue = {
@@ -431,7 +414,7 @@ namespace odfaeg
                 submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2;
                 if (stageMask != VK_PIPELINE_STAGE_2_NONE) {
                     if (isSignalSemaphore) {
-                        const uint64_t signalValue = 1;
+                        const uint64_t signalValue = ++value;
                         timelineInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
                         timelineInfo.semaphore = renderFinishedSemaphores[currentFrame];
                         timelineInfo.value = signalValue;
@@ -440,7 +423,7 @@ namespace odfaeg
                         submitInfo.signalSemaphoreInfoCount = 1;
                         submitInfo.pSignalSemaphoreInfos = &timelineInfo;
                     } else {
-                        const uint64_t waitValue = 1;
+                        const uint64_t waitValue = value;
                         timelineInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
                         timelineInfo.semaphore = renderFinishedSemaphores[currentFrame];
                         timelineInfo.value = waitValue;

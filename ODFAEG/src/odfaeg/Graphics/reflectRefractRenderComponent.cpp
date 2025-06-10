@@ -2102,7 +2102,7 @@ namespace odfaeg {
                     vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 0, nullptr);
                     vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
                     alphaBuffer.beginRenderPass();
-                    alphaBuffer.display();
+                    alphaBuffer.display(true, VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT);
                 } else if (shader == &sLinkedList) {
                     environmentMap.beginRecordCommandBuffers();
 
@@ -2144,7 +2144,7 @@ namespace odfaeg {
                     vkCmdPushConstants(commandBuffers[currentFrame], reflectRefractTex.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][reflectRefractTex.getId()][depthStencilID], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(BuildFrameBufferPC), &buildFrameBufferPC);
                     reflectRefractTex.beginRenderPass();
                     reflectRefractTex.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
-                    reflectRefractTex.display();
+                    reflectRefractTex.display(false, VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT);
                 }
             }
             void ReflectRefractRenderComponent::createCommandBufferVertexBuffer(RenderStates currentStates) {
