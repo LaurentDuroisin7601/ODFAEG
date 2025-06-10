@@ -87,7 +87,7 @@ namespace odfaeg {
             void createRenderPass();
             VkRenderPass getRenderPass(unsigned int renderPassId);
             void clear(const sf::Color& color = sf::Color(0, 0, 0, 255));
-            void display();
+            void display(bool isSignalSemaphore=true, VkPipelineStageFlags2 stageMask=VK_PIPELINE_STAGE_2_NONE);
             /*template<class... Args>
             void encode_checkpoint(Args&&... args)
             {

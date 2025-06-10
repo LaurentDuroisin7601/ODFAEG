@@ -311,6 +311,25 @@ namespace odfaeg
         }
         void RenderTexture::clear(const sf::Color& color) {
              //std::cout<<"render texture clear begin command buffer"<<std::endl;
+
+             VkSemaphoreTypeCreateInfo timelineCreateInfo{};
+             timelineCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO;
+             timelineCreateInfo.pNext = nullptr;
+             timelineCreateInfo.semaphoreType = VK_SEMAPHORE_TYPE_TIMELINE;
+             timelineCreateInfo.initialValue = 0;
+
+             VkSemaphoreCreateInfo createInfo;
+             createInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+             createInfo.pNext = &timelineCreateInfo;
+             createInfo.flags = 0;
+
+             for (size_t i = 0; i < getMaxFramesInFlight(); i++) {
+                vkDestroySemaphore(vkDevice.getDevice(), renderFinishedSemaphores[i], nullptr);
+                if (vkCreateSemaphore(vkDevice.getDevice(), &createInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS) {
+
+                    throw core::Erreur(0, "échec de la création des objets de synchronisation pour une frame!", 1);
+                }
+             }
              clearColor = color;
              VkClearColorValue clearValue = {clearColor.r / 255.f, clearColor.g / 255.f, clearColor.b / 255.f, clearColor.a / 255.f};
              VkClearDepthStencilValue clearDepthStencilValue = {
@@ -396,7 +415,7 @@ namespace odfaeg
         uint32_t RenderTexture::getImageIndex() {
             return imageIndex;
         }
-        void RenderTexture::display() {
+        void RenderTexture::display(bool isSignalSemaphore, VkPipelineStageFlags2 stageMask) {
             if (getCommandBuffers().size() > 0) {
                 //std::cout<<"render texture end command buffer"<<std::endl;
                 vkCmdEndRenderPass(getCommandBuffers()[getCurrentFrame()]);
@@ -406,41 +425,40 @@ namespace odfaeg
                     }
                 //}
                 vkWaitForFences(vkDevice.getDevice(), 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
-                const uint64_t waitValue = value; // Wait until semaphore value is >= 2
-                const uint64_t signalValue = value+1;
 
-                VkTimelineSemaphoreSubmitInfo timelineInfo;
-                timelineInfo.sType = VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO;
-                timelineInfo.pNext = NULL;
-                timelineInfo.waitSemaphoreValueCount = 1;
-                timelineInfo.pWaitSemaphoreValues = &waitValue;
-                timelineInfo.signalSemaphoreValueCount = 1;
-                timelineInfo.pSignalSemaphoreValues = &signalValue;
+                VkSemaphoreSubmitInfo timelineInfo = {};
+                VkSubmitInfo2 submitInfo = {};
+                submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2;
+                if (stageMask != VK_PIPELINE_STAGE_2_NONE) {
+                    if (isSignalSemaphore) {
+                        const uint64_t signalValue = 1;
+                        timelineInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
+                        timelineInfo.semaphore = renderFinishedSemaphores[currentFrame];
+                        timelineInfo.value = signalValue;
+                        timelineInfo.stageMask = stageMask;
 
-
-                VkSubmitInfo submitInfo{};
-                submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-
-
-
-                VkSemaphore waitSemaphores[] = {renderFinishedSemaphores[currentFrame]};
-                VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-                submitInfo.pNext = &timelineInfo;
-                submitInfo.waitSemaphoreCount = 1;
-                submitInfo.pWaitSemaphores = waitSemaphores;
-                submitInfo.pWaitDstStageMask = waitStages;
-                submitInfo.commandBufferCount = 1;
-                submitInfo.pCommandBuffers = &getCommandBuffers()[currentFrame];
-                submitInfo.signalSemaphoreCount = 1;
-                submitInfo.pSignalSemaphores = waitSemaphores;
-
-
+                        submitInfo.signalSemaphoreInfoCount = 1;
+                        submitInfo.pSignalSemaphoreInfos = &timelineInfo;
+                    } else {
+                        const uint64_t waitValue = 1;
+                        timelineInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
+                        timelineInfo.semaphore = renderFinishedSemaphores[currentFrame];
+                        timelineInfo.value = waitValue;
+                        timelineInfo.stageMask = stageMask;
+                        submitInfo.waitSemaphoreInfoCount = 1;
+                        submitInfo.pWaitSemaphoreInfos = &timelineInfo;
+                    }
+                }
+                submitInfo.commandBufferInfoCount = 1;
+                VkCommandBufferSubmitInfo commandSubmitInfo = {};
+                commandSubmitInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO;
+                commandSubmitInfo.commandBuffer = getCommandBuffers()[currentFrame];
+                submitInfo.pCommandBufferInfos = &commandSubmitInfo;
                 vkResetFences(vkDevice.getDevice(), 1, &inFlightFences[currentFrame]);
-                if (vkQueueSubmit(vkDevice.getGraphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS) {
+                if (vkQueueSubmit2(vkDevice.getGraphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS) {
                     throw core::Erreur(0, "échec de l'envoi d'un command buffer!", 1);
                 }
                 vkDeviceWaitIdle(vkDevice.getDevice());
-                value++;
             }
         }
         RenderTexture::~RenderTexture() {

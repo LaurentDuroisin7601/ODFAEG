@@ -223,7 +223,7 @@ int main(int argc, char *argv[]) {
 
 
     VkImage headPtrTextureImage;
-    VkImageCreateInfo imageInfo{};
+    VkImageCreateInfo imageInfo={};
     imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
     imageInfo.imageType = VK_IMAGE_TYPE_3D;
     imageInfo.extent.width = static_cast<uint32_t>(window.getView().getSize().x);
@@ -248,7 +248,7 @@ int main(int argc, char *argv[]) {
     VkMemoryRequirements memRequirements;
     vkGetImageMemoryRequirements(window.getDevice().getDevice(), headPtrTextureImage, &memRequirements);
 
-    VkMemoryAllocateInfo allocInfo{};
+    VkMemoryAllocateInfo allocInfo={};
     allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocInfo.allocationSize = memRequirements.size;
     allocInfo.memoryTypeIndex = findMemoryType(device, memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
@@ -259,7 +259,7 @@ int main(int argc, char *argv[]) {
     }
     vkBindImageMemory(device.getDevice(), headPtrTextureImage, headPtrTextureImageMemory, 0);
     VkImageView headPtrTextureImageView;
-    VkImageViewCreateInfo viewInfo{};
+    VkImageViewCreateInfo viewInfo={};
     viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     viewInfo.image = headPtrTextureImage;
     viewInfo.viewType = VK_IMAGE_VIEW_TYPE_3D;
@@ -273,7 +273,7 @@ int main(int argc, char *argv[]) {
         throw std::runtime_error("failed to create head ptr texture image view!");
     }
     VkSampler headPtrTextureSampler;
-    VkSamplerCreateInfo samplerInfo{};
+    VkSamplerCreateInfo samplerInfo={};
     samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
     samplerInfo.magFilter = VK_FILTER_LINEAR;
     samplerInfo.minFilter = VK_FILTER_LINEAR;
@@ -357,15 +357,15 @@ int main(int argc, char *argv[]) {
         barrier2.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         barrier2.subresourceRange.levelCount = 1;
         barrier2.subresourceRange.layerCount = 1;
-
+        vkCmdPipelineBarrier(rtCubeMap.getCommandBuffers()[0], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 0, nullptr);
         vkCmdPipelineBarrier(rtCubeMap.getCommandBuffers()[0], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier2);
         rtCubeMap.beginRenderPass();
-        rtCubeMap.display();
+        rtCubeMap.display(true, VK_PIPELINE_STAGE_2_CLEAR_BIT);
         unsigned int descriptorId = rtCubeMap.getId() * Shader::getNbShaders() + linkedListShader.getId();
         rtCubeMap.beginRecordCommandBuffers();
         rtCubeMap.beginRenderPass();
         rtCubeMap.drawVertexBuffer(rtCubeMap.getCommandBuffers()[0], 0, vb, 0, states);
-        rtCubeMap.display();
+        rtCubeMap.display(false, VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT);
         window.clear(sf::Color::Black);
         window.display();
     }
