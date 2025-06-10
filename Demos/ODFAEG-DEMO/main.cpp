@@ -304,7 +304,10 @@ int main(int argc, char *argv[]) {
     barrier.subresourceRange.layerCount = 1;
     vkCmdPipelineBarrier(rtCubeMap.getCommandBuffers()[0], VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
     rtCubeMap.beginRenderPass();
-    rtCubeMap.display();
+    rtCubeMap.display(true, VK_PIPELINE_STAGE_2_TRANSFER_BIT);
+    rtCubeMap.beginRecordCommandBuffers();
+    rtCubeMap.beginRenderPass();
+    rtCubeMap.display(false, VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT);
     VkBuffer ubo;
     VkDeviceMemory uboMemory;
     createBuffer(device, sizeof(UniformBufferObject) , VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, ubo, uboMemory);

@@ -224,8 +224,12 @@ namespace odfaeg {
                 barrier3.subresourceRange.levelCount = 1;
                 barrier3.subresourceRange.layerCount = 1;
                 vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier3);
+
                 environmentMap.beginRenderPass();
-                environmentMap.display();
+                environmentMap.display(true, VK_PIPELINE_STAGE_2_TRANSFER_BIT);
+                environmentMap.beginRecordCommandBuffers();
+                environmentMap.beginRenderPass();
+                environmentMap.display(false, VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT);
 
                 RenderStates states;
                 states.shader = &sLinkedList;
