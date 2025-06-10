@@ -800,17 +800,8 @@ void ODFAEGCreator::onInit() {
         pProjects->setBackgroundColor(sf::Color::White);
         pProjects->setBorderThickness(5);
         unsigned int i = 0;
-        Label* lab = new Label(getRenderWindow(), Vec3f(0, 0, 0), Vec3f(200, 35, 0), fm.getResourceByAlias(Fonts::Serif), "Scenes", 15);
-        lab->setBackgroundColor(sf::Color::White);
-        rootScenesNode = new Node ("Scenes", lab, Vec2f(0.f, 0.f), Vec2f(1.f, 0.025f), rootNode.get());
-        lab->setForegroundColor(sf::Color::Red);
-        lab->setParent(pProjects);
-        pProjects->addChild(lab);
-        Action a(Action::EVENT_TYPE::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
-        //std::cout<<"label : "<<lab<<std::endl;
 
-        Command cmd(a, FastDelegate<bool>(&Label::isMouseInside, lab), FastDelegate<void>(&ODFAEGCreator::showScenes, this, lab));
-        lab->getListener().connect("SHOWSCENES", cmd);
+
         //system("PAUSE");
         getRenderComponentManager().addComponent(pProjects);
         pScriptsEdit = new Panel(getRenderWindow(), Vec3f(200, 10, 0), Vec3f(800, 700, 0));
@@ -2215,7 +2206,24 @@ void ODFAEGCreator::onExec() {
                     Action a(Action::EVENT_TYPE::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
                     Command cmd(a, FastDelegate<bool>(&Label::isMouseInside, lab), FastDelegate<void>(&ODFAEGCreator::showProjectsFiles, this, lab));
                     lab->getListener().connect("SHOWPFILES", cmd);
+                    Label* labScene = new Label(getRenderWindow(), Vec3f(0, 0, 0), Vec3f(200, 35, 0), fm.getResourceByAlias(Fonts::Serif), "Scenes", 15);
+                    labScene->setBackgroundColor(sf::Color::White);
+                    Node* rSceneNode = new Node ("Scenes", labScene, Vec2f(0.f, 0.f), Vec2f(1.f, 0.025f), node);
+                    rootScenesNode = rSceneNode;
+                    labScene->setForegroundColor(sf::Color::Red);
+                    labScene->setParent(pProjects);
+                    pProjects->addChild(labScene);
+                    Action a2(Action::EVENT_TYPE::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
+                    //std::cout<<"label : "<<lab<<std::endl;
+
+
                     appliname = line;
+                    Command cmd2(a2, FastDelegate<bool>(&Label::isMouseInside, lab), FastDelegate<void>(&ODFAEGCreator::showScenes, this, labScene));
+                    lab->getListener().connect("SHOWSCENES"+appliname, cmd2);
+                    std::unique_ptr<World> world = std::make_unique<World>();
+                    world->projectName = appliname;
+                    worlds.push_back(std::move(world));
+                    setCurrentWorld(worlds.back().get());
                     openedProjects.push_back(line);
                 }
             }
@@ -2242,7 +2250,7 @@ void ODFAEGCreator::onExec() {
                         fileContent += line2+"\n";
                     }
                     source.close();
-                    cppAppliContent.insert(std::make_pair(line, fileContent));
+                    cppAppliContent.insert(std::make_pair(std::make_pair(appliname, line), fileContent));
                 }
             }
             applis.close();
@@ -2644,7 +2652,7 @@ void ODFAEGCreator::onExec() {
                 source.close();
                 pos = scriptSourceFiles[i].find_last_of("\\");
                 scriptSourceFiles[i].erase(0, pos+1);
-                cppAppliContent.insert(std::make_pair(scriptSourceFiles[i], fileContent));
+                cppAppliContent.insert(std::make_pair(std::make_pair(appliname, scriptSourceFiles[i]), fileContent));
             }
             scriptSourceFiles.clear();
             findFiles(".hpp", scriptSourceFiles, startDir);
@@ -2658,7 +2666,7 @@ void ODFAEGCreator::onExec() {
                 source.close();
                 int pos = scriptSourceFiles[i].find_last_of("\\");
                 scriptSourceFiles[i].erase(0, pos+1);
-                cppAppliContent.insert(std::make_pair(scriptSourceFiles[i], fileContent));
+                cppAppliContent.insert(std::make_pair(std::make_pair(appliname, scriptSourceFiles[i]), fileContent));
             }
 
 
@@ -2731,28 +2739,39 @@ void ODFAEGCreator::onExec() {
         fdImport3DModel->setVisible(false);
         fdImport3DModel->setEventContextActivated(false);
     }
-
-    getWorld()->update();
+    if (getWorld() != nullptr) {
+        getWorld()->update();
+    }
     oldX = IMouse::getPosition(getRenderWindow()).x;
     oldY = IMouse::getPosition(getRenderWindow()).y;
 }
 void ODFAEGCreator::showScenes(Label* label) {
-    if (rootScenesNode->getNodes().size() > 0 && rootScenesNode->isNodeVisible()) {
-        rootScenesNode->hideAllNodes();
-    } else if (rootScenesNode->getNodes().size() > 0 && !rootScenesNode->isNodeVisible()) {
-        rootScenesNode->showAllNodes();
+    Node* node = rootNode->findNode(label);
+    if (node->getNodes().size() > 0 && node->isNodeVisible()) {
+        node->hideAllNodes();
+    } else if (node->getNodes().size() > 0 && !node->isNodeVisible()) {
+        node->showAllNodes();
     }
+    rootScenesNode= node;
 }
 void ODFAEGCreator::showScene(Label* label) {
+    Node* node = rootNode->findNode(label);
+    Node* parent = node->getParent()->getParent();
+    for (unsigned int i = 0; i < worlds.size(); i++) {
+        if (worlds[i]->projectName == static_cast<Label*>(parent->getComponent())->getText()) {
+            setCurrentWorld(worlds[i].get());
+        }
+    }
     getWorld()->setCurrentSceneManager(label->getText());
     isGuiShown = true;
     pScriptsEdit->setVisible(false);
+    rootScenesNode = node->getParent();
 }
 void ODFAEGCreator::showProjectsFiles(Label* label) {
     isGuiShown = false;
     pScriptsEdit->setVisible(true);
     Node* node = rootNode->findNode(label);
-    if (node->getNodes().size() == 0) {
+    if (node->getNodes().size() == 1) {
         FontManager<Fonts>& fm = cache.resourceManager<Font, Fonts>("FontManager");
         std::vector<LightComponent*> children = pProjects->getChildren();
         Label* lHeaders = new Label(getRenderWindow(),Vec3f(0, 0, 0),Vec3f(200,17,0),fm.getResourceByAlias(Fonts::Serif),"headers", 15);
@@ -2777,6 +2796,11 @@ void ODFAEGCreator::showProjectsFiles(Label* label) {
         node->showAllNodes();
     } else {
         node->hideAllNodes();
+    }
+    for (unsigned int i = 0; i < worlds.size(); i++) {
+        if (worlds[i]->projectName == label->getText()) {
+            setCurrentWorld(worlds[i].get());
+        }
     }
 }
 void ODFAEGCreator::showHeadersFiles(Label* label) {
@@ -2841,10 +2865,17 @@ void ODFAEGCreator::showSourcesFiles(Label* label) {
     }
 }
 void ODFAEGCreator::showFileContent(Label* lab) {
+    Node* node = rootNode->findNode(lab);
+    Node* parent = node->getParent()->getParent();
+    for (unsigned int i = 0; i < worlds.size(); i++) {
+        if (worlds[i]->projectName == static_cast<Label*>(parent->getComponent())->getText()) {
+            setCurrentWorld(worlds[i].get());
+        }
+    }
     isGuiShown = false;
     pScriptsEdit->setVisible(true);
-    std::map<std::string, std::string>::iterator it;
-    it = cppAppliContent.find(lab->getText());
+    std::map<std::pair<std::string, std::string>, std::string>::iterator it;
+    it = cppAppliContent.find(std::make_pair(getWorld()->projectName, lab->getText()));
     if (it != cppAppliContent.end()) {
         tScriptEdit->setTextSize(20);
         tScriptEdit->setText(it->second);
@@ -3020,7 +3051,18 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         pProjects->addChild(lab);
         Action a(Action::EVENT_TYPE::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
         Command cmd(a, FastDelegate<bool>(&Label::isMouseInside, lab), FastDelegate<void>(&ODFAEGCreator::showProjectsFiles, this, lab));
-        lab->getListener().connect("SHOWPFILES", cmd);
+        Label* labScene = new Label(getRenderWindow(),Vec3f(0,0,0),Vec3f(200, 17, 0),fm.getResourceByAlias(Fonts::Serif),"Scenes", 15);
+        Node* rSceneNode = new Node("test",labScene,Vec2f(0, 0),Vec2f(1.f, 0.025f),rootNode.get());
+        rootScenesNode = rSceneNode;
+        labScene->getListener().connect("SHOWPFILES", cmd);
+        labScene->setForegroundColor(sf::Color::Red);
+        labScene->setParent(pProjects);
+        pProjects->addChild(labScene);
+        Action a2(Action::EVENT_TYPE::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
+        //std::cout<<"label : "<<lab<<std::endl;
+
+        Command cmd2(a, FastDelegate<bool>(&Label::isMouseInside, labScene), FastDelegate<void>(&ODFAEGCreator::showScenes, this, labScene));
+        labScene->getListener().connect("SHOWSCENES"+appliname, cmd2);
         if (applitype == "Normal") {
             #if defined (ODFAEG_SYSTEM_LINUX)
             std::ofstream header(path+"/"+minAppliname+".hpp");
@@ -3047,7 +3089,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
             oss<<"#endif"<<std::endl;
             header<<oss.str();
             header.close();
-            cppAppliContent.insert(std::make_pair(minAppliname+".hpp", oss.str()));
+            cppAppliContent.insert(std::make_pair(std::make_pair(appliname, minAppliname+".hpp"), oss.str()));
             oss.str("");
             oss.clear();
             #if defined (ODFAEG_SYSTEM_LINUX)
@@ -3079,7 +3121,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
             oss<<"}"<<std::endl;
             source<<oss.str();
             source.close();
-            cppAppliContent.insert(std::make_pair(minAppliname+".cpp", oss.str()));
+            cppAppliContent.insert(std::make_pair(std::make_pair(appliname, minAppliname+".cpp"), oss.str()));
             oss.str("");
             oss.clear();
             std::string width = taWidth->getText();
@@ -3096,11 +3138,15 @@ void ODFAEGCreator::actionPerformed(Button* button) {
             oss<<"}"<<std::endl;
             main<<oss.str();
             main.close();
-            cppAppliContent.insert(std::make_pair("main.cpp", oss.str()));
+            cppAppliContent.insert(std::make_pair(std::make_pair(appliname, "main.cpp"), oss.str()));
             applis<<minAppliname+".hpp"<<std::endl;
             applis<<minAppliname+".cpp"<<std::endl;
             applis<<"main.cpp"<<std::endl;
             applis.close();
+            std::unique_ptr<World> world = std::make_unique<World>();
+            world->projectName = appliname;
+            worlds.push_back(std::move(world));
+            setCurrentWorld(worlds.back().get());
         }
     }
     if (button->getText() == "New texture") {

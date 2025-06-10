@@ -59,6 +59,7 @@ namespace sorrok {
         //odfaeg::graphic::gui::OptionPane* op;
         odfaeg::graphic::VertexArray point;
         odfaeg::graphic::EntityFactory entityFactory;
+        std::unique_ptr<odfaeg::graphic::World> m_world;
     public :
         MyAppli(sf::VideoMode wm, std::string title);
         void gaignedFocus(odfaeg::graphic::gui::TextArea* textArea);

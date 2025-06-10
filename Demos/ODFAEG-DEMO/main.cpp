@@ -20,7 +20,7 @@ using namespace sorrok;
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-/*struct UniformBufferObject {
+struct UniformBufferObject {
     Matrix4f model;
     Matrix4f view;
     Matrix4f proj;
@@ -65,7 +65,7 @@ void compileShaders(Shader& sLinkedList) {
                                           void main() {
                                                uint prevHead = imageLoad(headPointers, ivec3(gl_FragCoord.xy, viewIndex)).r;
                                                if (prevHead == 0)
-                                                    debugPrintfEXT("prevHead: %i\n", prevHead);
+                                                    debugPrintfEXT("prevHead: %i, view index : %i\n", prevHead, viewIndex);
                                                fcolor = frontColor;
                                           })";
     if (!sLinkedList.loadFromMemory(linkedListIndirectRenderingVertexShader, fragmentShader)) {
@@ -203,7 +203,7 @@ void createBuffer(Device& vkDevice, VkDeviceSize size, VkBufferUsageFlags usage,
     }
 
     vkBindBufferMemory(vkDevice.getDevice(), buffer, bufferMemory, 0);
-}*/
+}
 int main(int argc, char *argv[]) {
     /*VkSettup instance;
     Device device(instance);
@@ -326,6 +326,8 @@ int main(int argc, char *argv[]) {
     RenderStates states;
     states.shader = &linkedListShader;
     rtCubeMap.createGraphicPipeline(sf::Triangles, states);
+
+
     while (window.isOpen()) {
         IEvent event;
         while (window.pollEvent(event)) {
@@ -344,23 +346,23 @@ int main(int argc, char *argv[]) {
         subresRange.layerCount = 1;
         //transitionImageLayout(headPtrTextureImage, VK_FORMAT_R32_UINT, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
         vkCmdClearColorImage(rtCubeMap.getCommandBuffers()[0], headPtrTextureImage, VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
-        VkMemoryBarrier barrier = {};
-        barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-        barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-        barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_MEMORY_READ_BIT;
         VkImageMemoryBarrier barrier2 = {};
 
         barrier2.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
         barrier2.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-        barrier2.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_MEMORY_READ_BIT;
+        barrier2.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
         barrier2.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
         barrier2.newLayout = VK_IMAGE_LAYOUT_GENERAL;
         barrier2.image = headPtrTextureImage;
         barrier2.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         barrier2.subresourceRange.levelCount = 1;
         barrier2.subresourceRange.layerCount = 1;
-        vkCmdPipelineBarrier(rtCubeMap.getCommandBuffers()[0], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &barrier, 0, nullptr, 1, &barrier2);
+
+        vkCmdPipelineBarrier(rtCubeMap.getCommandBuffers()[0], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier2);
+        rtCubeMap.beginRenderPass();
+        rtCubeMap.display();
         unsigned int descriptorId = rtCubeMap.getId() * Shader::getNbShaders() + linkedListShader.getId();
+        rtCubeMap.beginRecordCommandBuffers();
         rtCubeMap.beginRenderPass();
         rtCubeMap.drawVertexBuffer(rtCubeMap.getCommandBuffers()[0], 0, vb, 0, states);
         rtCubeMap.display();
