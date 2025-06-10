@@ -2035,7 +2035,7 @@ namespace odfaeg {
                 depthBuffer.beginRenderPass();
                 depthBuffer.display();
                 alphaBuffer.clear(sf::Color::Transparent);
-                alphaBuffer.display();
+                alphaBuffer.display(true, VK_PIPELINE_STAGE_2_CLEAR_BIT);
                 alphaBuffer.beginRecordCommandBuffers();
                 commandBuffers = alphaBuffer.getCommandBuffers();
                 for (unsigned int i = 0; i < commandBuffers.size(); i++) {
@@ -2090,9 +2090,13 @@ namespace odfaeg {
                     //vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 0, nullptr);
 
                     alphaBuffer.beginRenderPass();
+                    alphaBuffer.display(false, VK_PIPELINE_STAGE_2_CLEAR_BIT);
+                    alphaBuffer.beginRecordCommandBuffers();
+                    alphaBuffer.beginRenderPass();
                     vkCmdPushConstants(commandBuffers[currentFrame], alphaBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][alphaBuffer.getId()][depthStencilID], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectRenderingPC), &indirectRenderingPC);
                     vkCmdPushConstants(commandBuffers[currentFrame], alphaBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][alphaBuffer.getId()][depthStencilID], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(BuildAlphaPC), &buildAlphaPC);
                     alphaBuffer.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
+
                     alphaBuffer.display(true, VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT);
                     alphaBuffer.beginRecordCommandBuffers();
                     VkMemoryBarrier memoryBarrier={};
