@@ -199,6 +199,7 @@ namespace odfaeg {
             void draw(const Vertex* vertices, unsigned int vertexCount, sf::PrimitiveType type,
                       RenderStates states = RenderStates::Default);
             void drawIndirect(VkCommandBuffer& cmd, unsigned int i, unsigned int nbIndirectCommands, unsigned int stride, VertexBuffer& vertexBuffer, VkBuffer vboIndirect,unsigned int depthStencilId = 0, RenderStates states = RenderStates::Default);
+            void drawVertexBuffer(VertexBuffer& vb, RenderStates states);
             void drawVertexBuffer(VkCommandBuffer& cmd, unsigned int i,VertexBuffer& vertexBuffer,  unsigned int depthStencilId = 0, RenderStates states = RenderStates::Default);
             /// \brief Return the size of the rendering region of the target
             ///
@@ -265,7 +266,7 @@ namespace odfaeg {
 
             void createCommandPool();
             void createCommandBuffers();
-            void recordCommandBuffers(sf::PrimitiveType type, RenderStates states);
+            void recordCommandBuffers(VertexBuffer& vb, RenderStates states);
             View        m_defaultView; ///< Default view
             View        m_view;  ///< Current view
             Shader defaultShader, defaultShader2;

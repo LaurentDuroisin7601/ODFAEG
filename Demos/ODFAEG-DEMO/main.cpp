@@ -63,6 +63,7 @@ void compileShaders(Shader& sLinkedList) {
                                           layout (location = 3) in flat int viewIndex;
                                           layout(location = 0) out vec4 fcolor;
                                           void main() {
+
                                                uint prevHead = imageLoad(headPointers, ivec3(gl_FragCoord.xy, viewIndex)).r;
                                                if (prevHead == 0)
                                                     debugPrintfEXT("prevHead: %i, view index : %i\n", prevHead, viewIndex);
@@ -107,7 +108,7 @@ void createDescriptorLayoutLinkedList(Device& vkDevice,Shader& shader, RenderTar
     headPtrImageLayoutBinding.pImmutableSamplers = nullptr;
     headPtrImageLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-    std::array<VkDescriptorSetLayoutBinding, 2> bindings = {headPtrImageLayoutBinding, uniformBufferLayoutBinding};
+    std::array<VkDescriptorSetLayoutBinding, 2> bindings = {uniformBufferLayoutBinding, headPtrImageLayoutBinding};
     VkDescriptorSetLayoutCreateInfo layoutInfo{};
     layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
     //layoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR;
@@ -208,17 +209,23 @@ int main(int argc, char *argv[]) {
     /*VkSettup instance;
     Device device(instance);
     RenderWindow window(sf::VideoMode(800, 600), "test vulkan", device);
-    window.getView().move(400, 300, 0);
+    //window.getView().move(400, 300, 0);
     RenderTexture rtCubeMap(device);
     rtCubeMap.createCubeMap(800, 800);
+    RectangleShape quad(Vec3f(window.getView().getSize().x, window.getView().getSize().y, window.getSize().y * 0.5f));
+    quad.move(Vec3f(-window.getView().getSize().x * 0.5f, -window.getView().getSize().y * 0.5f, 0));
     VertexBuffer vb(device);
     vb.setPrimitiveType(sf::Triangles);
-    vb.append(Vertex(sf::Vector3f(0, 0, 0)));
-    vb.append(Vertex(sf::Vector3f(800, 0, 0)));
-    vb.append(Vertex(sf::Vector3f(800, 600, 0)));
-    vb.append(Vertex(sf::Vector3f(0, 0, 0)));
-    vb.append(Vertex(sf::Vector3f(800, 600, 0)));
-    vb.append(Vertex(sf::Vector3f(0, 600, 0)));
+    Vertex v1 (sf::Vector3f(0, 0, quad.getSize().z), sf::Color::Red);
+    Vertex v2 (sf::Vector3f(quad.getSize().x,0, quad.getSize().z), sf::Color::Red);
+    Vertex v3 (sf::Vector3f(quad.getSize().x, quad.getSize().y, quad.getSize().z), sf::Color::Red);
+    Vertex v4 (sf::Vector3f(0, quad.getSize().y, quad.getSize().z), sf::Color::Red);
+    vb.append(v1);
+    vb.append(v2);
+    vb.append(v3);
+    vb.append(v1);
+    vb.append(v3);
+    vb.append(v4);
     vb.update();
 
 
@@ -234,7 +241,7 @@ int main(int argc, char *argv[]) {
     imageInfo.format = VK_FORMAT_R32_UINT;
     imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
     imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    imageInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT;
+    imageInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_STORAGE_BIT;
     imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
     imageInfo.flags = 0; // Optionnel
@@ -292,6 +299,7 @@ int main(int argc, char *argv[]) {
     samplerInfo.mipLodBias = 0.0f;
     samplerInfo.minLod = 0.0f;
     samplerInfo.maxLod = 0.0f;
+    //const_cast<Texture&>(rtCubeMap.getTexture()).toShaderReadOnlyOptimal();
     rtCubeMap.beginRecordCommandBuffers();
     VkImageMemoryBarrier barrier = {};
     barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -303,18 +311,18 @@ int main(int argc, char *argv[]) {
     barrier.subresourceRange.levelCount = 1;
     barrier.subresourceRange.layerCount = 1;
     vkCmdPipelineBarrier(rtCubeMap.getCommandBuffers()[0], VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+    //
     rtCubeMap.beginRenderPass();
-    rtCubeMap.display(true, VK_PIPELINE_STAGE_2_TRANSFER_BIT);
-    rtCubeMap.beginRecordCommandBuffers();
-    rtCubeMap.beginRenderPass();
-    rtCubeMap.display(false, VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT);
+    rtCubeMap.display();
+    //const_cast<Texture&>(rtCubeMap.getTexture()).toColorAttachmentOptimal();
+    //
     VkBuffer ubo;
     VkDeviceMemory uboMemory;
     createBuffer(device, sizeof(UniformBufferObject) , VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, ubo, uboMemory);
     UniformBufferObject uboData;
-    uboData.model = Matrix4f();
-    uboData.view = window.getView().getViewMatrix().getMatrix();
-    uboData.proj = window.getView().getProjMatrix().getMatrix();
+    uboData.view = window.getDefaultView().getViewMatrix().getMatrix();
+    uboData.proj = window.getDefaultView().getProjMatrix().getMatrix();
+    uboData.model = quad.getTransform().getMatrix();
     void* data;
     vkMapMemory(device.getDevice(), uboMemory, 0, sizeof(UniformBufferObject), 0, &data);
     memcpy(data, &uboData, sizeof(UniformBufferObject));
@@ -360,16 +368,19 @@ int main(int argc, char *argv[]) {
         barrier2.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         barrier2.subresourceRange.levelCount = 1;
         barrier2.subresourceRange.layerCount = 1;
-        vkCmdPipelineBarrier(rtCubeMap.getCommandBuffers()[0], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 0, nullptr);
         vkCmdPipelineBarrier(rtCubeMap.getCommandBuffers()[0], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier2);
         rtCubeMap.beginRenderPass();
         rtCubeMap.display(true, VK_PIPELINE_STAGE_2_CLEAR_BIT);
         unsigned int descriptorId = rtCubeMap.getId() * Shader::getNbShaders() + linkedListShader.getId();
         rtCubeMap.beginRecordCommandBuffers();
         rtCubeMap.beginRenderPass();
+        states.shader = &linkedListShader;
         rtCubeMap.drawVertexBuffer(rtCubeMap.getCommandBuffers()[0], 0, vb, 0, states);
         rtCubeMap.display(false, VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT);
-        window.clear(sf::Color::Black);
+        window.clear();
+        states.shader = nullptr;
+        states.transform = quad.getTransform();
+        window.draw(vb, states);
         window.display();
     }
     vkDestroyBuffer(device.getDevice(), ubo, nullptr);

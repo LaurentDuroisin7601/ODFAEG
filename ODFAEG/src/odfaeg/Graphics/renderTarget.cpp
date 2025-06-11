@@ -251,7 +251,6 @@ namespace odfaeg {
         }
         void RenderTarget::draw(const Vertex* vertices, unsigned int vertexCount, sf::PrimitiveType type,
                       RenderStates states) {
-             vertexBuffers[selectedBuffer]->setPrimitiveType(type);
              vertexBuffers[selectedBuffer]->clear();
              for (unsigned int i = 0; i < vertexCount; i++) {
                 vertexBuffers[selectedBuffer]->append(vertices[i]);
@@ -270,6 +269,7 @@ namespace odfaeg {
                 type = sf::Triangles;
                 oldType = sf::Quads;
              }
+             vertexBuffers[selectedBuffer]->setPrimitiveType(type);
              if (states.shader == nullptr) {
                 if (states.texture != nullptr) {
                     states.shader = &defaultShader;
@@ -284,9 +284,29 @@ namespace odfaeg {
              ubo.view = m_view.getViewMatrix().getMatrix()/*.transpose()*/;
              ubo.model = states.transform.getMatrix()/*.transpose()*/;
              updateUniformBuffer(getCurrentFrame(), ubo);
-             recordCommandBuffers(type, states);
+             recordCommandBuffers(*vertexBuffers[selectedBuffer], states);
              if (oldType == sf::Quads)
                 vertexBuffers[selectedBuffer]->clearIndexes();
+             /*std::cout<<"drawn"<<std::endl;
+             system("PAUSE");*/
+
+        }
+        void RenderTarget::drawVertexBuffer(VertexBuffer& vb, RenderStates states) {
+
+             if (states.shader == nullptr) {
+                if (states.texture != nullptr) {
+                    states.shader = &defaultShader;
+                } else {
+                    states.shader = &defaultShader2;
+                }
+             }
+             UniformBufferObject ubo;
+             ubo.proj = m_view.getProjMatrix().getMatrix()/*.transpose()*/;
+             //ubo.proj.m22 *= -1;
+             ubo.view = m_view.getViewMatrix().getMatrix()/*.transpose()*/;
+             ubo.model = states.transform.getMatrix()/*.transpose()*/;
+             updateUniformBuffer(getCurrentFrame(), ubo);
+             recordCommandBuffers(vb, states);
              /*std::cout<<"drawn"<<std::endl;
              system("PAUSE");*/
 
@@ -829,7 +849,7 @@ namespace odfaeg {
             scissor.extent = getSwapchainExtents();
             vkCmdSetScissor(commandBuffers[getCurrentFrame()], 0, 1, &scissor);
         }
-        void RenderTarget::recordCommandBuffers(sf::PrimitiveType type, RenderStates states) {
+        void RenderTarget::recordCommandBuffers(VertexBuffer& vb, RenderStates states) {
             Shader* shader = const_cast<Shader*>(states.shader);
 
 
@@ -847,9 +867,9 @@ namespace odfaeg {
                 else
                     std::cout<<"render pass cmd rt : "<<getRenderPass()<<std::endl;*/
 
-                vkCmdBindPipeline(commandBuffers[getCurrentFrame()], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][0]);
+                vkCmdBindPipeline(commandBuffers[getCurrentFrame()], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vb.getPrimitiveType()][id][0]);
                 //std::cout<<"buffer : "<<this->vertexBuffers[selectedBuffer]->getVertexBuffer()<<std::endl;
-                VkBuffer vertexBuffers[] = {this->vertexBuffers[selectedBuffer]->getVertexBuffer()};
+                VkBuffer vertexBuffers[] = {vb.getVertexBuffer()};
                 VkDeviceSize offsets[] = {0};
                 vkCmdBindVertexBuffers(commandBuffers[getCurrentFrame()], 0, 1, vertexBuffers, offsets);
                 VkDescriptorBufferInfo bufferInfo{};
@@ -881,7 +901,7 @@ namespace odfaeg {
                     descriptorWrites[1].descriptorCount = 1;
                     descriptorWrites[1].pImageInfo = &imageInfo;
 
-                    vkCmdPushDescriptorSetKHR(commandBuffers[getCurrentFrame()], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][0], 0, 2, descriptorWrites.data());
+                    vkCmdPushDescriptorSetKHR(commandBuffers[getCurrentFrame()], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vb.getPrimitiveType()][id][0], 0, 2, descriptorWrites.data());
                 }  else {
                     std::array<VkWriteDescriptorSet, 1> descriptorWrites{};
 
@@ -893,18 +913,18 @@ namespace odfaeg {
                     descriptorWrites[0].descriptorCount = 1;
                     descriptorWrites[0].pBufferInfo = &bufferInfo;
 
-                    vkCmdPushDescriptorSetKHR(commandBuffers[getCurrentFrame()], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][0], 0, 1, descriptorWrites.data());
+                    vkCmdPushDescriptorSetKHR(commandBuffers[getCurrentFrame()], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vb.getPrimitiveType()][id][0], 0, 1, descriptorWrites.data());
                 }
                 applyViewportAndScissor();
 
 
-                if(this->vertexBuffers[selectedBuffer]->getIndicesSize() > 0) {
-                    vkCmdBindIndexBuffer(commandBuffers[getCurrentFrame()], this->vertexBuffers[selectedBuffer]->getIndexBuffer(), 0, VK_INDEX_TYPE_UINT16);
+                if(vb.getIndicesSize() > 0) {
+                    vkCmdBindIndexBuffer(commandBuffers[getCurrentFrame()], vb.getIndexBuffer(), 0, VK_INDEX_TYPE_UINT16);
                 }
-                if(this->vertexBuffers[selectedBuffer]->getIndicesSize() > 0) {
-                    vkCmdDrawIndexed(commandBuffers[getCurrentFrame()], static_cast<uint32_t>(this->vertexBuffers[selectedBuffer]->getIndicesSize()), 1, 0, 0, 0);
+                if(vb.getIndicesSize() > 0) {
+                    vkCmdDrawIndexed(commandBuffers[getCurrentFrame()], static_cast<uint32_t>(vb.getIndicesSize()), 1, 0, 0, 0);
                 } else {
-                    vkCmdDraw(commandBuffers[getCurrentFrame()], static_cast<uint32_t>(this->vertexBuffers[selectedBuffer]->getSize()), 1, 0, 0);
+                    vkCmdDraw(commandBuffers[getCurrentFrame()], static_cast<uint32_t>(vb.getSize()), 1, 0, 0);
                 }
 
 

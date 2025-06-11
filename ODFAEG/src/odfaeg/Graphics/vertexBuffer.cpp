@@ -234,6 +234,9 @@ namespace odfaeg {
                     throw core::Erreur(0, "échec de la création d'une command pool!", 1);
                 }
             }
+            void VertexBuffer::draw(RenderTarget& target, RenderStates states) {
+                target.drawVertexBuffer(*this, states);
+            }
             VertexBuffer::~VertexBuffer() {
                 vkDestroyCommandPool(vkDevice.getDevice(), commandPool, nullptr);
                 if (vertexBuffer != VK_NULL_HANDLE) {

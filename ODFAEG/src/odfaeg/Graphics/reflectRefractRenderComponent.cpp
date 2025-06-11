@@ -193,7 +193,7 @@ namespace odfaeg {
                 compileShaders();
                 reflectRefractTex.beginRecordCommandBuffers();
                 std::vector<VkCommandBuffer> commandBuffers = reflectRefractTex.getCommandBuffers();
-                unsigned int currentFrame =  environmentMap.getCurrentFrame();
+                unsigned int currentFrame =  reflectRefractTex.getCurrentFrame();
                 VkImageMemoryBarrier barrier = {};
                 barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
                 barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
@@ -224,13 +224,15 @@ namespace odfaeg {
                 barrier3.subresourceRange.levelCount = 1;
                 barrier3.subresourceRange.layerCount = 1;
                 vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier3);
-                const_cast<Texture&>(reflectRefractTex.getTexture()).toShaderReadOnlyOptimal();
+
 
                 reflectRefractTex.beginRenderPass();
                 reflectRefractTex.display(true, VK_PIPELINE_STAGE_2_TRANSFER_BIT);
                 reflectRefractTex.beginRecordCommandBuffers();
                 reflectRefractTex.beginRenderPass();
                 reflectRefractTex.display(false, VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT);
+                const_cast<Texture&>(reflectRefractTex.getTexture()).toShaderReadOnlyOptimal();
+                //const_cast<Texture&>(reflectRefractTex.getTexture()).toShaderReadOnlyOptimal();
 
 
                 RenderStates states;
