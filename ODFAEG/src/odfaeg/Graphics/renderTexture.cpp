@@ -48,7 +48,7 @@ namespace odfaeg
             vkDevice.createInstance();
             vkDevice.pickupPhysicalDevice(VK_NULL_HANDLE);
             vkDevice.createLogicalDevice(VK_NULL_HANDLE);
-            m_texture.create(width, height);
+            m_texture.create(width, height, true);
             //if (depthTestEnabled || stencilTestEnabled)
                 getDepthTexture().createDepthTexture(width, height);
             createRenderPass();
@@ -65,7 +65,7 @@ namespace odfaeg
             vkDevice.createInstance();
             vkDevice.pickupPhysicalDevice(VK_NULL_HANDLE);
             vkDevice.createLogicalDevice(VK_NULL_HANDLE);
-            m_texture.createCubeMap(width, height);
+            m_texture.createCubeMap(width, height, true);
             getDepthTexture().createDepthTextureCM(width, height);
             createRenderPass();
             createFramebuffers();
@@ -246,8 +246,8 @@ namespace odfaeg
                     colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
                     colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
                     colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-                    colorAttachment.initialLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                    colorAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                    colorAttachment.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                    colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
                     VkAttachmentDescription depthAttachment{};
                     depthAttachment.format = getDepthTexture().findDepthFormat();
@@ -340,7 +340,7 @@ namespace odfaeg
                     .pNext = nullptr,
                     .srcAccessMask = VK_ACCESS_MEMORY_READ_BIT,
                     .dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
-                    .oldLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                    .oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                     .newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                     .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
                     .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
@@ -353,7 +353,7 @@ namespace odfaeg
                     .srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
                     .dstAccessMask = VK_ACCESS_MEMORY_READ_BIT,
                     .oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                    .newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                    .newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                     .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
                     .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
                     .image = getSwapchainImages()[imageIndex],

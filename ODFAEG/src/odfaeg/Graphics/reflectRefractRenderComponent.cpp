@@ -191,8 +191,8 @@ namespace odfaeg {
                 createSampler();
                 createUniformBuffers();
                 compileShaders();
-                environmentMap.beginRecordCommandBuffers();
-                std::vector<VkCommandBuffer> commandBuffers = environmentMap.getCommandBuffers();
+                reflectRefractTex.beginRecordCommandBuffers();
+                std::vector<VkCommandBuffer> commandBuffers = reflectRefractTex.getCommandBuffers();
                 unsigned int currentFrame =  environmentMap.getCurrentFrame();
                 VkImageMemoryBarrier barrier = {};
                 barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -224,12 +224,14 @@ namespace odfaeg {
                 barrier3.subresourceRange.levelCount = 1;
                 barrier3.subresourceRange.layerCount = 1;
                 vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier3);
+                const_cast<Texture&>(reflectRefractTex.getTexture()).toShaderReadOnlyOptimal();
 
-                environmentMap.beginRenderPass();
-                environmentMap.display(true, VK_PIPELINE_STAGE_2_TRANSFER_BIT);
-                environmentMap.beginRecordCommandBuffers();
-                environmentMap.beginRenderPass();
-                environmentMap.display(false, VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT);
+                reflectRefractTex.beginRenderPass();
+                reflectRefractTex.display(true, VK_PIPELINE_STAGE_2_TRANSFER_BIT);
+                reflectRefractTex.beginRecordCommandBuffers();
+                reflectRefractTex.beginRenderPass();
+                reflectRefractTex.display(false, VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT);
+
 
                 RenderStates states;
                 states.shader = &sLinkedList;
@@ -2053,6 +2055,7 @@ namespace odfaeg {
                 }
                 alphaBuffer.beginRenderPass();
                 alphaBuffer.display();
+                const_cast<Texture&>(reflectRefractTex.getTexture()).toColorAttachmentOptimal();
                 reflectRefractTex.clear(sf::Color::Transparent);
                 reflectRefractTex.display();
             }
@@ -2083,6 +2086,7 @@ namespace odfaeg {
                     depthBuffer.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
                     depthBuffer.display();
                 } else if (shader == &sBuildAlphaBuffer) {
+                    const_cast<Texture&>(depthBuffer.getTexture()).toShaderReadOnlyOptimal();
                     alphaBuffer.beginRecordCommandBuffers();
 
                     std::vector<VkCommandBuffer> commandBuffers = alphaBuffer.getCommandBuffers();
@@ -2111,6 +2115,7 @@ namespace odfaeg {
                     vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
                     alphaBuffer.beginRenderPass();
                     alphaBuffer.display();
+                    const_cast<Texture&>(depthBuffer.getTexture()).toColorAttachmentOptimal();
                 } else if (shader == &sLinkedList) {
                     environmentMap.beginRecordCommandBuffers();
 
@@ -2132,6 +2137,8 @@ namespace odfaeg {
                     environmentMap.beginRenderPass();
                     environmentMap.display();
                 } else {
+                    const_cast<Texture&>(environmentMap.getTexture()).toShaderReadOnlyOptimal();
+                    const_cast<Texture&>(alphaBuffer.getTexture()).toShaderReadOnlyOptimal();
                     reflectRefractTex.beginRecordCommandBuffers();
 
                     std::vector<VkCommandBuffer> commandBuffers = reflectRefractTex.getCommandBuffers();
@@ -2153,6 +2160,8 @@ namespace odfaeg {
                     reflectRefractTex.beginRenderPass();
                     reflectRefractTex.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
                     reflectRefractTex.display(false, VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT);
+                    const_cast<Texture&>(alphaBuffer.getTexture()).toColorAttachmentOptimal();
+                    const_cast<Texture&>(environmentMap.getTexture()).toColorAttachmentOptimal();
                 }
             }
             void ReflectRefractRenderComponent::createCommandBufferVertexBuffer(RenderStates currentStates) {
@@ -3021,6 +3030,7 @@ namespace odfaeg {
                 //reflectRefractTex.display();
             }
             void ReflectRefractRenderComponent::draw(RenderTarget& target, RenderStates states) {
+                const_cast<Texture&>(reflectRefractTex.getTexture()).toShaderReadOnlyOptimal();
                 reflectRefractTexSprite.setCenter(target.getView().getPosition());
                 target.draw(reflectRefractTexSprite, states);
             }

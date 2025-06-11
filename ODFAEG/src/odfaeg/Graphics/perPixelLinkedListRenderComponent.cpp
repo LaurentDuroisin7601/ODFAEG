@@ -153,7 +153,9 @@ namespace odfaeg {
 
             frameBuffer.beginRenderPass();
             frameBuffer.display();
+
             datasReady = false;
+            const_cast<Texture&>(frameBuffer.getTexture()).toShaderReadOnlyOptimal();
 
         }
         void PerPixelLinkedListRenderComponent::createDescriptorsAndPipelines() {
@@ -367,6 +369,7 @@ namespace odfaeg {
 
         }
         void PerPixelLinkedListRenderComponent::clear() {
+            const_cast<Texture&>(frameBuffer.getTexture()).toColorAttachmentOptimal();
             frameBuffer.clear(sf::Color::Transparent);
             //firstDraw = true;
             frameBuffer.display();
@@ -2588,6 +2591,7 @@ namespace odfaeg {
             return view;
         }
         void PerPixelLinkedListRenderComponent::draw(RenderTarget& target, RenderStates states) {
+            const_cast<Texture&>(frameBuffer.getTexture()).toShaderReadOnlyOptimal();
             frameBufferSprite.setCenter(target.getView().getPosition());
             //std::cout<<"view position : "<<view.getPosition()<<std::endl;
             //std::cout<<"sprite position : "<<frameBufferSprite.getCenter()<<std::endl;
