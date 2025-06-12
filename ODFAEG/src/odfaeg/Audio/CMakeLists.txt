@@ -14,7 +14,7 @@ set(SRC
 	
 include_directories(${CMAKE_INCLUDE_PATH})
 link_directories (${CMAKE_LIBRARY_PATH})
-find_package (SFML 2 COMPONENTS window system graphics audio REQUIRED)
+#find_package (SFML 2 COMPONENTS window system graphics audio REQUIRED)
 sfgl_add_library(odfaeg-audio
 				 SOURCES ${SRC})
 if (COMPILER_MSVC)

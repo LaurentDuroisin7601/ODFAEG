@@ -3447,8 +3447,6 @@ namespace odfaeg {
                                                                           layout(std140, binding=0) uniform ALL_TEXTURES {
                                                                               sampler2D textures[200];
                                                                           };
-                                                                          uniform sampler2D texture;
-                                                                          uniform float haveTexture;
                                                                           uniform uint nbLayers;
 
                                                                           layout(binding = 0, rgba32f) coherent uniform image2D depthBuffer;
@@ -3480,7 +3478,6 @@ namespace odfaeg {
                                                                       layout (location = 0) out vec4 fColor;
                                                                       uniform sampler2D texture;
                                                                       uniform sampler2D depthBuffer;
-                                                                      uniform float haveTexture;
                                                                       uniform uint nbLayers;
                                                                       uniform vec3 resolution;
                                                                       in vec4 frontColor;
@@ -3688,8 +3685,6 @@ namespace odfaeg {
                     throw core::Erreur(60, "Error, failed to load build alpha buffer shader", 3);
                 }
                 skyboxShader.setParameter("skybox", Shader::CurrentTexture);
-                sBuildDepthBuffer.setParameter("texture", Shader::CurrentTexture);
-                sBuildAlphaBuffer.setParameter("texture", Shader::CurrentTexture);
                 sBuildAlphaBuffer.setParameter("depthBuffer", depthBuffer.getTexture());
                 sBuildAlphaBuffer.setParameter("resolution", resolution.x, resolution.y, resolution.z);
                 sReflectRefract.setParameter("resolution", resolution.x, resolution.y, resolution.z);

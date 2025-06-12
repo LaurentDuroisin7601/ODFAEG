@@ -519,8 +519,6 @@ namespace odfaeg {
                 math::Matrix4f projMatrix = window.getDefaultView().getProjMatrix().getMatrix().transpose();
                 debugShader.setParameter("projectionMatrix", projMatrix);
                 debugShader.setParameter("viewMatrix", viewMatrix);
-                depthGenShader.setParameter("texture", Shader::CurrentTexture);
-                buildShadowMapShader.setParameter("texture", Shader::CurrentTexture);
                 perPixShadowShader.setParameter("stencilBuffer", stencilBuffer.getTexture());
                 perPixShadowShader.setParameter("depthBuffer", depthBuffer.getTexture());
                 perPixShadowShader.setParameter("texture", Shader::CurrentTexture);

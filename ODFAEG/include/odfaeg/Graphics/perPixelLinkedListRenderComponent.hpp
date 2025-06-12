@@ -263,6 +263,7 @@ namespace odfaeg {
             ~PerPixelLinkedListRenderComponent();
             private :
             void compileShaders();
+            RenderWindow& window;
             RectangleShape quad;
             std::vector<std::pair<std::reference_wrapper<Drawable>, RenderStates>> drawables;
             Batcher batcher, batcherIndexed, normalBatcher, normalBatcherIndexed,
