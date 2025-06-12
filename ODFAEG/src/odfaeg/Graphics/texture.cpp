@@ -794,6 +794,7 @@ namespace odfaeg {
             sampler.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
             sampler.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
             sampler.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+            sampler.unnormalizedCoordinates = VK_FALSE;
             sampler.mipLodBias = 0.0f;
             sampler.compareOp = VK_COMPARE_OP_NEVER;
             sampler.minLod = 0.0f;

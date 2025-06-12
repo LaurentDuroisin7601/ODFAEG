@@ -917,7 +917,7 @@ namespace odfaeg {
                                                                       void main() {
                                                                           vec4 texel = (texIndex != 0) ? frontColor * texture(textures[texIndex-1], fTexCoords.xy) : frontColor;
                                                                           float current_alpha = texel.a;
-                                                                          vec2 position = (gl_FragCoord.xy / pushConsts.resolution.xy);
+                                                                          vec2 position = (gl_FragCoord.xy /*/ pushConsts.resolution.xy*/);
                                                                           vec4 depth = textureLod (depthBuffer, position, 0);
                                                                           beginInvocationInterlockARB();
                                                                           memoryBarrier();
@@ -949,10 +949,10 @@ namespace odfaeg {
                                                                 layout (set = 0, binding = 1) uniform sampler2D alphaBuffer;
                                                                 layout (location = 0) out vec4 fColor;
                                                                 void main () {
-                                                                    vec2 position = (gl_FragCoord.xy / pushConsts.resolution.xy);
+                                                                    vec2 position = (gl_FragCoord.xy /*/ pushConsts.resolution.xy*/);
                                                                     vec4 alpha = textureLod(alphaBuffer, position, 0);
-                                                                    if (alpha.z != 0)
-                                                                        debugPrintfEXT("alpha : %v4f\n", alpha);
+                                                                    /*if (alpha.z != 0)
+                                                                        debugPrintfEXT("alpha : %v4f\n", alpha);*/
                                                                     bool refr = false;
                                                                     float ratio = 1;
                                                                     if (materialType == 1) {

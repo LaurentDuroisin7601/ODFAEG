@@ -206,7 +206,7 @@ void createBuffer(Device& vkDevice, VkDeviceSize size, VkBufferUsageFlags usage,
     vkBindBufferMemory(vkDevice.getDevice(), buffer, bufferMemory, 0);
 }
 int main(int argc, char *argv[]) {
-    /*VkSettup instance;
+    VkSettup instance;
     Device device(instance);
     RenderWindow window(sf::VideoMode(800, 600), "test vulkan", device);
     //window.getView().move(400, 300, 0);
@@ -385,7 +385,7 @@ int main(int argc, char *argv[]) {
     }
     vkDestroyBuffer(device.getDevice(), ubo, nullptr);
 
-    return 0;*/
+    return 0;
     MyAppli app(sf::VideoMode(800, 600), "Test odfaeg");
     return app.exec();
 }
