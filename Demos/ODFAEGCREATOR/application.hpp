@@ -160,7 +160,7 @@ class ODFAEGCreator : public odfaeg::core::Application<ODFAEGCreator>,
         std::string appliname, minAppliname;
         std::string applitype;
         std::string path;
-        std::map<std::string, std::string> cppAppliContent;
+        std::map<std::pair<std::string, std::string>, std::string> cppAppliContent;
         std::vector<std::string> openedProjects;
         std::vector<std::string> textPaths;
         std::vector<odfaeg::graphic::gui::TextArea*> tmpTextAreas;
@@ -222,6 +222,8 @@ class ODFAEGCreator : public odfaeg::core::Application<ODFAEGCreator>,
         float prevAngle;
         odfaeg::graphic::View selectedComponentView;
         odfaeg::physic::OrientedBoundingBox selectionBox;
+        std::vector<std::unique_ptr<odfaeg::graphic::World>> worlds;
+        std::string selectedProject;
 };
 #endif
 #endif

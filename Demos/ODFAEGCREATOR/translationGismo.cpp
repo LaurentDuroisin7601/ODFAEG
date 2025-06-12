@@ -54,24 +54,27 @@ void TranslationGuismo::draw(RenderTarget& target, RenderStates states) {
         target.draw(yArrow);
     }
 }
-bool TranslationGuismo::intersectsXArrow(odfaeg::math::Ray ray) {
+bool TranslationGuismo::intersectsXArrow(Ray ray, Vec3f& i1) {
     if (visible) {
         CollisionResultSet::Info info;
-        return bpXArrow.intersects(ray, true, info);
+        Vec3f i2;
+        return bpXArrow.intersectsWhere(ray, i1, i2, info);
     }
     return false;
 }
-bool TranslationGuismo::intersectsYArrow(odfaeg::math::Ray ray) {
+bool TranslationGuismo::intersectsYArrow(Ray ray, Vec3f& i1) {
     if (visible) {
         CollisionResultSet::Info info;
-        return bpYArrow.intersects(ray, true, info);
+        Vec3f i2;
+        return bpYArrow.intersectsWhere(ray, i1, i2, info);
     }
     return false;
 }
-bool TranslationGuismo::intersectsZArrow(odfaeg::math::Ray ray) {
+bool TranslationGuismo::intersectsZArrow(Ray ray, Vec3f& i1) {
     if (visible) {
         CollisionResultSet::Info info;
-        return bpZArrow.intersects(ray, true, info);
+        Vec3f i2;
+        return bpZArrow.intersectsWhere(ray, i1, i2, info);
     }
     return false;
 }

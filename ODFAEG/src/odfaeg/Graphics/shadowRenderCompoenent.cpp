@@ -616,8 +616,12 @@ namespace odfaeg {
                         DrawArraysIndirectCommand drawArraysIndirectCommand;
                         unsigned int p = m_normals[i].getAllVertices().getPrimitiveType();
                         MaterialData material;
-                        material.textureIndex = (m_normals[i].getMaterial().getTexture() != nullptr) ? m_normals[i].getMaterial().getTexture()->getNativeHandle() : 0;
-                        material.layer = m_normals[i].getMaterial().getLayer();
+                        {
+                            std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                            material.textureIndex = (m_normals[i].getMaterial().getTexture() != nullptr) ? m_normals[i].getMaterial().getTexture()->getNativeHandle() : 0;
+                            material.layer = m_normals[i].getMaterial().getLayer();
+                        }
+
                         materials[p].push_back(material);
                         TransformMatrix tm;
                         ModelData model;
@@ -1227,7 +1231,7 @@ namespace odfaeg {
 
                 for (unsigned int i = 0; i < vEntities.size(); i++) {
                     if ( vEntities[i] != nullptr && vEntities[i]->isLeaf()) {
-                        std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+
                         Entity* entity = vEntities[i]->getRootEntity();
                         math::Vec3f shadowOrigin, shadowCenter, shadowScale(1.f, 1.f, 1.f), shadowRotationAxis, shadowTranslation;
                         float shadowRotationAngle = 0;
@@ -1257,20 +1261,25 @@ namespace odfaeg {
 
                              if(vEntities[i]->getDrawMode() == Entity::INSTANCED) {
                                 if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0) {
+                                    std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                                     batcher.addFace( vEntities[i]->getFace(j));
                                     shadowBatcher.addShadowFace(vEntities[i]->getFace(j),  view.getViewMatrix(), tm);
                                 } else {
+                                    std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                                     batcherIndexed.addFace( vEntities[i]->getFace(j));
                                     shadowBatcherIndexed.addShadowFace(vEntities[i]->getFace(j),  view.getViewMatrix(), tm);
                                 }
                              } else {
                                  if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0) {
+                                    std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                                     normalBatcher.addFace( vEntities[i]->getFace(j));
                                     if (vEntities[i]->getRootEntity()->getType() != "E_BIGTILE") {
+                                        std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                                         normalShadowBatcher.addShadowFace(vEntities[i]->getFace(j), view.getViewMatrix(), tm);
                                         normalStencilBuffer.addFace(vEntities[i]->getFace(j));
                                     }
                                  } else {
+                                    std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                                     normalBatcherIndexed.addFace( vEntities[i]->getFace(j));
                                     normalShadowBatcherIndexed.addShadowFace(vEntities[i]->getFace(j), view.getViewMatrix(), tm);
                                  }

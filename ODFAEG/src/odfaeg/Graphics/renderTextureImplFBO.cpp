@@ -42,7 +42,8 @@ namespace odfaeg {
             ////////////////////////////////////////////////////////////
             RenderTextureImplFBO::RenderTextureImplFBO() :
             m_frameBuffer(0),
-            m_depthBuffer(0)
+            m_depthBuffer(0),
+            m_stencilBuffer(0)
             {
 
             }
@@ -60,6 +61,14 @@ namespace odfaeg {
                         glCheck(glDeleteRenderbuffers(1, &depthBuffer));
                     else
                         glCheck(glDeleteRenderbuffersEXT(1, &depthBuffer));
+                }
+                if (m_stencilBuffer)
+                {
+                    GLuint stencilBuffer = static_cast<GLuint>(m_stencilBuffer);
+                    if (m_versionMajor > 3 || m_versionMajor == 3 && m_versionMinor >= 3)
+                        glCheck(glDeleteRenderbuffers(1, &stencilBuffer));
+                    else
+                        glCheck(glDeleteRenderbuffersEXT(1, &stencilBuffer));
                 }
 
                 // Destroy the frame buffer
@@ -125,14 +134,36 @@ namespace odfaeg {
                     }
                     if (m_versionMajor > 3 || m_versionMajor == 3 && m_versionMinor >= 3) {
                         glCheck(glBindRenderbuffer(GL_RENDERBUFFER, m_depthBuffer));
-                        glCheck(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height));
-                        glCheck(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_depthBuffer));
+                        glCheck(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height));
+                        glCheck(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_depthBuffer));
                     } else {
                         glCheck(glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, m_depthBuffer));
-                        glCheck(glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT, width, height));
-                        glCheck(glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, m_depthBuffer));
+                        glCheck(glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH24_STENCIL8, width, height));
+                        glCheck(glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER_EXT, m_depthBuffer));
                     }
                 }
+                /*if (settings.stencilBits > 0) {
+                    GLuint stencil = 0;
+                    if (m_versionMajor > 3 || m_versionMajor == 3 && m_versionMinor >= 3)
+                        glCheck(glGenRenderbuffers(1, &stencil));
+                    else
+                        glCheck(glGenRenderbuffersEXT(1, &stencil));
+                    m_stencilBuffer = static_cast<unsigned int>(stencil);
+                    if (!m_stencilBuffer)
+                    {
+                        std::cerr << "Impossible to create render texture (failed to create the attached stencil buffer)" << std::endl;
+                        return false;
+                    }
+                    if (m_versionMajor > 3 || m_versionMajor == 3 && m_versionMinor >= 3) {
+                        glCheck(glBindRenderbuffer(GL_RENDERBUFFER, m_stencilBuffer));
+                        glCheck(glRenderbufferStorage(GL_RENDERBUFFER, GL_STENCIL_INDEX, width, height));
+                        glCheck(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_stencilBuffer));
+                    } else {
+                        glCheck(glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, m_stencilBuffer));
+                        glCheck(glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_STENCIL_INDEX, width, height));
+                        glCheck(glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, m_stencilBuffer));
+                    }
+                }*/
                 glCheck(glDrawBuffer(GL_COLOR_ATTACHMENT0_EXT));
                 if (m_versionMajor > 3 || m_versionMajor == 3 && m_versionMinor >= 3) {
                     glCheck(glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, textureId, 0));

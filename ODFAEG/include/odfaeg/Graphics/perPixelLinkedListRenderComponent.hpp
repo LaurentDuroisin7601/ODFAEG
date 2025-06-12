@@ -293,6 +293,8 @@ namespace odfaeg {
             sf::Clock timeClock;
             unsigned int maxModelDataSize, maxMaterialDataSize, maxVboIndirectSize;
             bool datasReady, cleared, renderFinished;
+            std::condition_variable cv;
+            std::mutex mtx;
 
         };
         #endif

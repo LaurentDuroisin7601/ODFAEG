@@ -22,6 +22,8 @@ namespace sorrok {
         day = false;
         sf::Listener::setUpVector(0.f, 0.f, 1.f);
         ps = entityFactory.make_entity<ParticleSystem>(Vec3f(0, 0, 150),Vec3f(100, 100, 0), entityFactory);
+        m_world = std::make_unique<World>();
+        setCurrentWorld(m_world.get());
         //
         //FastDelegate<void> fd(&Allocator<Entity>::allocate<Tile, EntityFactory&>,tile, std::ref(entityFactory));
         EXPORT_CLASS_GUID(BoundingVolumeBoundingBox, BoundingVolume, BoundingBox)
@@ -105,7 +107,7 @@ namespace sorrok {
         std::cout<<"Mouse inside : "<<mousePos.x<<" "<<mousePos.y<<std::endl;
     }
     void MyAppli::onLoad() {
-        std::tuple</*std::reference_wrapper<Device>*/> rArgs = std::make_tuple(/*std::ref(getDevice())*/);
+        std::tuple<std::reference_wrapper<Device>> rArgs = std::make_tuple(std::ref(getDevice()));
         TextureManager<> tm;
         tm.fromFileWithAlias("tilesets/eau.png", "WATER", rArgs);
         tm.fromFileWithAlias("tilesets/herbe.png", "GRASS", rArgs);
@@ -309,12 +311,18 @@ namespace sorrok {
         getWorld()->addEntity(ps);
         View view = getView();
         //view.rotate(0, 0, 20);
-        PerPixelLinkedListRenderComponent *frc1 = new PerPixelLinkedListRenderComponent(getRenderWindow(),0, "E_BIGTILE", ContextSettings(0, 8, 4, 4, 6));
-        PerPixelLinkedListRenderComponent *frc2 = new PerPixelLinkedListRenderComponent(getRenderWindow(), 1, "E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PARTICLES", ContextSettings(0, 8, 4, 4, 6));
+        PerPixelLinkedListRenderComponent *frc1 = new PerPixelLinkedListRenderComponent(getRenderWindow(),0, "E_BIGTILE", ContextSettings(24, 8, 4, 4, 6));
+        PerPixelLinkedListRenderComponent *frc2 = new PerPixelLinkedListRenderComponent(getRenderWindow(), 1, "E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PARTICLES", ContextSettings(24, 8, 4, 4, 6));
 
+<<<<<<< HEAD
         /*ReflectRefractRenderComponent *rrrc = new ReflectRefractRenderComponent(getRenderWindow(), 2, "E_BIGTILE+E_WALL+E_DECOR+E_ANIMATION+E_HERO", ContextSettings(0, 0, 4, 4, 6));
         frc1->createDescriptorsAndPipelines();
         frc2->createDescriptorsAndPipelines();*/
+=======
+        ReflectRefractRenderComponent *rrrc = new ReflectRefractRenderComponent(getRenderWindow(), 2, "E_BIGTILE+E_WALL+E_DECOR+E_ANIMATION+E_HERO", ContextSettings(0, 0, 4, 4, 6));
+        frc1->createDescriptorsAndPipelines();
+        frc2->createDescriptorsAndPipelines();
+>>>>>>> 8cfe7fc80d5da5b78086d4d03e31fc278a5b1a4f
         /*ShadowRenderComponent *src = new ShadowRenderComponent(getRenderWindow(), 3, "E_WALL+E_DECOR+E_ANIMATION+E_HERO", ContextSettings(0, 0, 4, 4, 6));
         LightRenderComponent *lrc = new LightRenderComponent(getRenderWindow(), 4, "E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PONCTUAL_LIGHT", ContextSettings(0, 0, 4, 4, 6));
         //std::cout<<"component created"<<std::endl;
@@ -338,9 +346,15 @@ namespace sorrok {
         lrc->setVisible(false);*/
         getRenderComponentManager().addComponent(frc1);
         getRenderComponentManager().addComponent(frc2);
+<<<<<<< HEAD
         /*getRenderComponentManager().addComponent(rrrc);
         getRenderComponentManager().addComponent(src);
         getRenderComponentManager().addComponent(lrc);
+=======
+        getRenderComponentManager().addComponent(rrrc);
+        /*getRenderComponentManager().addComponent(src);
+        getRenderComponentManager().addComponent(lrc);*/
+>>>>>>> 8cfe7fc80d5da5b78086d4d03e31fc278a5b1a4f
         /*getRenderComponentManager().addComponent(textArea);
         getRenderComponentManager().addComponent(op);*/
 
@@ -420,8 +434,13 @@ namespace sorrok {
         // draw everything here...
         getWorld()->drawOnComponents("E_BIGTILE", 0);
         getWorld()->drawOnComponents("E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PARTICLES", 1);
+<<<<<<< HEAD
         /*getWorld()->drawOnComponents("E_BIGTILE+E_WALL+E_DECOR+E_ANIMATION+E_HERO", 2);
         getWorld()->drawOnComponents("E_WALL+E_DECOR+E_ANIMATION+E_HERO", 3);
+=======
+        getWorld()->drawOnComponents("E_BIGTILE+E_WALL+E_DECOR+E_ANIMATION+E_HERO", 2);
+        /*getWorld()->drawOnComponents("E_WALL+E_DECOR+E_ANIMATION+E_HERO", 3);
+>>>>>>> 8cfe7fc80d5da5b78086d4d03e31fc278a5b1a4f
         getWorld()->drawOnComponents("E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PONCTUAL_LIGHT", 4);*/
 
     }

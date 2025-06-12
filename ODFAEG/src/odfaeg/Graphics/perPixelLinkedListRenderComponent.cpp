@@ -153,7 +153,9 @@ namespace odfaeg {
 
             frameBuffer.beginRenderPass();
             frameBuffer.display();
+
             datasReady = false;
+            const_cast<Texture&>(frameBuffer.getTexture()).toShaderReadOnlyOptimal();
 
         }
         void PerPixelLinkedListRenderComponent::createDescriptorsAndPipelines() {
@@ -367,6 +369,7 @@ namespace odfaeg {
 
         }
         void PerPixelLinkedListRenderComponent::clear() {
+            const_cast<Texture&>(frameBuffer.getTexture()).toColorAttachmentOptimal();
             frameBuffer.clear(sf::Color::Transparent);
             //firstDraw = true;
             frameBuffer.display();
@@ -2588,6 +2591,7 @@ namespace odfaeg {
             return view;
         }
         void PerPixelLinkedListRenderComponent::draw(RenderTarget& target, RenderStates states) {
+            const_cast<Texture&>(frameBuffer.getTexture()).toShaderReadOnlyOptimal();
             frameBufferSprite.setCenter(target.getView().getPosition());
             //std::cout<<"view position : "<<view.getPosition()<<std::endl;
             //std::cout<<"sprite position : "<<frameBufferSprite.getCenter()<<std::endl;
@@ -2677,6 +2681,7 @@ namespace odfaeg {
             quad.move(math::Vec3f(-window.getView().getSize().x * 0.5f, -window.getView().getSize().y * 0.5f, 0));
             maxNodes = 20 * window.getView().getSize().x * window.getView().getSize().y;
             GLint nodeSize = 5 * sizeof(GLfloat) + sizeof(GLuint);
+            //std::cout<<"stencil bits : "<<settings.stencilBits<<std::endl;
             frameBuffer.create(window.getView().getSize().x, window.getView().getSize().y, settings);
             frameBufferSprite = Sprite(frameBuffer.getTexture(), math::Vec3f(0, 0, 0), math::Vec3f(window.getView().getSize().x, window.getView().getSize().y, 0), sf::IntRect(0, 0, window.getView().getSize().x, window.getView().getSize().y));
             frameBuffer.setView(view);
@@ -2742,8 +2747,15 @@ namespace odfaeg {
                 vbBindlessTex[i].setPrimitiveType(static_cast<sf::PrimitiveType>(i));
             }
             skybox = nullptr;
+<<<<<<< HEAD
             /*frameBuffer.setActive(false);
             getListener().launch();*/
+=======
+            frameBuffer.setActive(false);
+            renderFinished = false;
+            cleared = true;
+            //getListener().launch();
+>>>>>>> 8cfe7fc80d5da5b78086d4d03e31fc278a5b1a4f
         }
         void PerPixelLinkedListRenderComponent::loadTextureIndexes() {
             compileShaders();
@@ -2860,7 +2872,8 @@ namespace odfaeg {
 
                 const std::string fragmentShader = R"(#version 460
                                                       #extension GL_ARB_bindless_texture : enable
-                                                      layout(early_fragment_tests) in;
+                                                      //#extension GL_ARB_fragment_shader_interlock : require
+                                                      layout (early_fragment_tests) in;
                                                       struct NodeType {
                                                           vec4 color;
                                                           float depth;
@@ -2868,7 +2881,7 @@ namespace odfaeg {
                                                       };
                                                       layout(binding = 0, offset = 0) uniform atomic_uint nextNodeCounter;
                                                       layout(binding = 0, r32ui) uniform uimage2D headPointers;
-                                                      layout(binding = 0, std430) buffer linkedLists {
+                                                      layout(std430, binding = 0) buffer linkedLists {
                                                           NodeType nodes[];
                                                       };
                                                       layout(std140, binding = 0) uniform ALL_TEXTURES {
@@ -2891,15 +2904,18 @@ namespace odfaeg {
                                                       }*/
                                                       void main() {
                                                            uint nodeIdx = atomicCounterIncrement(nextNodeCounter);
-                                                           //sampler2D tex = sampler2D(GetTexture(texIndex-1));
                                                            vec4 color = (texIndex != 0) ? frontColor * texture(textures[texIndex-1], fTexCoords.xy) : frontColor;
+                                                           //beginInvocationInterlockARB();
                                                            if (nodeIdx < maxNodes) {
                                                                 uint prevHead = imageAtomicExchange(headPointers, ivec2(gl_FragCoord.xy), nodeIdx);
                                                                 nodes[nodeIdx].color = color;
-                                                                nodes[nodeIdx].depth = gl_FragCoord.z;
+                                                                nodes[nodeIdx].depth = /*(color == vec4(0, 1, 1, 1)) ? 1.0f :*/ gl_FragCoord.z;
                                                                 nodes[nodeIdx].next = prevHead;
+                                                                //fcolor = color;
                                                            }
-                                                           //fcolor = vec4(0, 0, 0, 0);
+
+                                                           fcolor = vec4(0, 0, 0, 0);
+                                                           //endInvocationInterlockARB();
                                                       })";
                  const std::string fragmentShader2 =
                    R"(
@@ -2911,7 +2927,7 @@ namespace odfaeg {
                       uint next;
                    };
                    layout(binding = 0, r32ui) uniform uimage2D headPointers;
-                   layout(binding = 0, std430) buffer linkedLists {
+                   layout(std430, binding = 0) buffer linkedLists {
                        NodeType nodes[];
                    };
                    layout(location = 0) out vec4 fcolor;
@@ -3001,7 +3017,10 @@ namespace odfaeg {
             backgroundColor = color;
         }
         void PerPixelLinkedListRenderComponent::clear() {
+<<<<<<< HEAD
 
+=======
+>>>>>>> 8cfe7fc80d5da5b78086d4d03e31fc278a5b1a4f
             //frameBuffer.setActive();
             frameBuffer.clear(backgroundColor);
             //getWindow().setActive();
@@ -3046,8 +3065,11 @@ namespace odfaeg {
 
                     unsigned int p = m_selected[i].getAllVertices().getPrimitiveType();
                     MaterialData material;
-                    material.textureIndex = (m_selected[i].getMaterial().getTexture() != nullptr) ? m_selected[i].getMaterial().getTexture()->getId() : 0;
-                    material.materialType = m_selected[i].getMaterial().getType();
+                    {
+                        std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                        material.textureIndex = (m_selected[i].getMaterial().getTexture() != nullptr) ? m_selected[i].getMaterial().getTexture()->getId() : 0;
+                        material.materialType = m_selected[i].getMaterial().getType();
+                    }
                     materials[p].push_back(material);
 
                     TransformMatrix tm;
@@ -3117,8 +3139,9 @@ namespace odfaeg {
             currentStates.texture = nullptr;
             glCheck(glEnable(GL_STENCIL_TEST));
             glCheck(glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE));
-            glStencilFunc(GL_ALWAYS, 1, 0xFF);
-            glStencilMask(0xFF);
+            glCheck(glStencilFunc(GL_ALWAYS, 1, 0xFF));
+            glCheck(glStencilMask(0xFF));
+            //glCheck(glDisable(GL_ALPHA_TEST));
             for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                 if (vbBindlessTex[p].getVertexCount() > 0) {
                     glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, modelDataBuffer));
@@ -3134,6 +3157,7 @@ namespace odfaeg {
                     vbBindlessTex[p].clear();
                 }
             }
+            //glCheck(glEnable(GL_ALPHA_TEST));
             for (unsigned int i = 0; i < firstIndex.size(); i++) {
                 firstIndex[i] = 0;
             }
@@ -3229,7 +3253,7 @@ namespace odfaeg {
             currentStates.texture = nullptr;
             glCheck(glStencilFunc(GL_NOTEQUAL, 1, 0xFF));
             glCheck(glStencilMask(0x00));
-            glCheck(glDisable(GL_DEPTH_TEST));
+            //glCheck(glDisable(GL_DEPTH_TEST));
             for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                 if (vbBindlessTex[p].getVertexCount() > 0) {
                     glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, modelDataBuffer));
@@ -3245,8 +3269,10 @@ namespace odfaeg {
                     vbBindlessTex[p].clear();
                 }
             }
+            glStencilMask(0xFF);
+            glStencilFunc(GL_ALWAYS, 0, 0xFF);
+            //glCheck(glEnable(GL_DEPTH_TEST));
             glCheck(glDisable(GL_STENCIL_TEST));
-            glCheck(glEnable(GL_DEPTH_TEST));
         }
         void PerPixelLinkedListRenderComponent::drawSelectedInstancesIndexed() {
             for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
@@ -3499,6 +3525,9 @@ namespace odfaeg {
                     vbBindlessTex[p].clear();
                 }
             }
+            glStencilMask(0xFF);
+            glStencilFunc(GL_ALWAYS, 0, 0xFF);
+            glCheck(glDisable(GL_STENCIL_TEST));
         }
         void PerPixelLinkedListRenderComponent::drawNextFrame() {
 
@@ -3513,6 +3542,10 @@ namespace odfaeg {
             {
 
                 std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+<<<<<<< HEAD
+=======
+
+>>>>>>> 8cfe7fc80d5da5b78086d4d03e31fc278a5b1a4f
 
                 /*if (!datasReady) {
                     //std::cout<<"wait"<<std::endl;
@@ -3541,8 +3574,11 @@ namespace odfaeg {
                     m_selectedInstanceIndexed = selectedInstanceIndexBatcher.getInstances();
                     m_selectedScaleInstanceIndexed = selectedInstanceIndexScaleBatcher.getInstances();
                     m_skyboxInstance = skyboxBatcher.getInstances();
+                    renderFinished = false;
+                    //cv.notify_all();
                 }
             }
+<<<<<<< HEAD
 
             /*frameBuffer.clear(backgroundColor);
             //getWindow().setActive();
@@ -3557,6 +3593,24 @@ namespace odfaeg {
             glCheck(glBindTexture(GL_TEXTURE_2D, 0));
             glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0));
 
+=======
+            /*std::unique_lock<std::mutex> lock(mtx);
+            cv.wait(lock, [this]() {return !renderFinished && cleared;});*/
+            //frameBuffer.setActive();
+            /*frameBuffer.clear(backgroundColor);
+            //getWindow().setActive();
+            GLuint zero = 0;
+            glCheck(glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomicBuffer));
+            glCheck(glBufferSubData(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(GLuint), &zero));
+            glCheck(glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, 0));
+            glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, clearBuf));
+            glCheck(glBindTexture(GL_TEXTURE_2D, headPtrTex));
+            glCheck(glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, view.getSize().x, view.getSize().y, GL_RED_INTEGER,
+            GL_UNSIGNED_INT, NULL));
+            glCheck(glBindTexture(GL_TEXTURE_2D, 0));
+            glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0));
+
+>>>>>>> 8cfe7fc80d5da5b78086d4d03e31fc278a5b1a4f
             frameBuffer.resetGLStates();*/
             float zNear = view.getViewport().getPosition().z;
             if (!view.isOrtho())
@@ -3619,10 +3673,16 @@ namespace odfaeg {
             frameBuffer.drawVertexBuffer(vb, currentStates);
             glCheck(glFinish());
             frameBuffer.display();
+<<<<<<< HEAD
             /*frameBufferSprite.setCenter(window.getView().getPosition());
             RenderStates states;
             std::lock_guard<std::recursive_mutex> lock(rec_mutex);
             window.draw(frameBufferSprite, states);*/
+=======
+            /*renderFinished = true;
+            cv.notify_all();*/
+
+>>>>>>> 8cfe7fc80d5da5b78086d4d03e31fc278a5b1a4f
 
 
             //glCheck(glMemoryBarrier(GL_ALL_BARRIER_BITS));
@@ -3658,8 +3718,11 @@ namespace odfaeg {
                         }*/
                     unsigned int vertexCount = 0;
                     MaterialData material;
-                    material.textureIndex = (m_normals[i].getMaterial().getTexture() != nullptr) ? m_normals[i].getMaterial().getTexture()->getId() : 0;
-                    material.materialType = m_normals[i].getMaterial().getType();
+                    {
+                        std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                        material.textureIndex = (m_normals[i].getMaterial().getTexture() != nullptr) ? m_normals[i].getMaterial().getTexture()->getId() : 0;
+                        material.materialType = m_normals[i].getMaterial().getType();
+                    }
                     materials[p].push_back(material);
                     /*for (unsigned int v = 0; v < m_normals[i].getVertexArrays().size(); v++) {
                         if (m_normals[i].getVertexArrays()[v]->getEntity()->getType() == "E_MESH") {
@@ -3720,8 +3783,11 @@ namespace odfaeg {
                         matrices[p].push_back(modelData);
                     }
                     MaterialData materialData;
-                    materialData.textureIndex = (m_instances[i].getMaterial().getTexture() != nullptr) ? m_instances[i].getMaterial().getTexture()->getId() : 0;
-                    materialData.materialType = m_instances[i].getMaterial().getType();
+                    {
+                        std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                        materialData.textureIndex = (m_instances[i].getMaterial().getTexture() != nullptr) ? m_instances[i].getMaterial().getTexture()->getId() : 0;
+                        materialData.materialType = m_instances[i].getMaterial().getType();
+                    }
                     materials[p].push_back(materialData);
                     unsigned int vertexCount = 0;
                     if (m_instances[i].getVertexArrays().size() > 0) {
@@ -3929,9 +3995,18 @@ namespace odfaeg {
 
             /*target.draw(quad, states);
             glCheck(glFinish());*/
+<<<<<<< HEAD
             frameBufferSprite.setCenter(target.getView().getPosition());
             target.draw(frameBufferSprite, states);
 
+=======
+            /*std::unique_lock<std::mutex> lock(mtx);
+            cv.wait(lock, [this](){return renderFinished;});*/
+            frameBufferSprite.setCenter(target.getView().getPosition());
+            target.draw(frameBufferSprite, states);
+            /*cleared = true;
+            cv.notify_all();*/
+>>>>>>> 8cfe7fc80d5da5b78086d4d03e31fc278a5b1a4f
         }
         int  PerPixelLinkedListRenderComponent::getLayer() {
             return layer;
@@ -4057,7 +4132,7 @@ namespace odfaeg {
                                 border->setOrigin(root->getSize() * 0.5f);
                                 border->setSize(root->getSize() * 1.1f);
                                 math::Vec3f offset =  root->getSize() - oldSize;
-                                border->setPosition(root->getPosition() - offset * 0.5f);
+                                //border->setPosition(root->getPosition() - offset * 0.5f);
 
                                // std::cout<<"add to batcher"<<std::endl;
                                 selectedInstanceIndexScaleBatcher.addFace(border->getFace(j));
@@ -4083,7 +4158,9 @@ namespace odfaeg {
                                 border->setOrigin(root->getSize() * 0.5f);
                                 border->setSize(root->getSize() * 1.1f);
                                 math::Vec3f offset =  root->getSize() - oldSize;
-                                border->setPosition(root->getPosition() - offset * 0.5f);
+                                if (border->getSize().z > 0) {
+                                    border->setPosition(root->getPosition() - offset * 0.5f);
+                                }
                                 selectedScaleBatcher.addFace(border->getFace(j));
 
                                // std::cout<<"face added"<<std::endl;

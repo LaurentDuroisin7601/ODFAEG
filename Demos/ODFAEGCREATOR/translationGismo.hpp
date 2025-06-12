@@ -9,9 +9,9 @@ public :
     TranslationGuismo(float arrowSize);
     void setCenterSize(odfaeg::math::Vec3f center, odfaeg::math::Vec3f size);
     void draw(odfaeg::graphic::RenderTarget& target, odfaeg::graphic::RenderStates states);
-    bool intersectsXArrow(odfaeg::math::Ray ray);
-    bool intersectsYArrow(odfaeg::math::Ray ray);
-    bool intersectsZArrow(odfaeg::math::Ray ray);
+    bool intersectsXArrow(odfaeg::math::Ray ray, odfaeg::math::Vec3f& i1);
+    bool intersectsYArrow(odfaeg::math::Ray ray, odfaeg::math::Vec3f& i1);
+    bool intersectsZArrow(odfaeg::math::Ray ray, odfaeg::math::Vec3f& i1);
     void move(odfaeg::math::Vec3f t);
     void setVisible(bool visible);
 private :

@@ -18,6 +18,12 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < nodes.size(); i++)
                     nodes[i]->affiche();
             }
+            Node* Node::getParent() {
+                return parent;
+            }
+            LightComponent* Node::getComponent() {
+                return component;
+            }
             Node* Node::findNode(LightComponent* component) {
                 if (this->component == component) {
                     return this;

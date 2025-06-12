@@ -10,10 +10,12 @@ namespace odfaeg {
                 void addNode (Node* component);
                 std::vector<Node*> getNodes();
                 Node* getRootNode();
+                Node* getParent();
                 bool isNodeVisible();
                 void showAllNodes();
                 void hideAllNodes();
                 void deleteAllNodes();
+                LightComponent* getComponent();
                 Node* findNode (LightComponent* component);
                 void addOtherComponent(LightComponent* component, math::Vec2f relSize);
                 void affiche();

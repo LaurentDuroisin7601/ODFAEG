@@ -800,17 +800,8 @@ void ODFAEGCreator::onInit() {
         pProjects->setBackgroundColor(sf::Color::White);
         pProjects->setBorderThickness(5);
         unsigned int i = 0;
-        Label* lab = new Label(getRenderWindow(), Vec3f(0, 0, 0), Vec3f(200, 35, 0), fm.getResourceByAlias(Fonts::Serif), "Scenes", 15);
-        lab->setBackgroundColor(sf::Color::White);
-        rootScenesNode = new Node ("Scenes", lab, Vec2f(0.f, 0.f), Vec2f(1.f, 0.025f), rootNode.get());
-        lab->setForegroundColor(sf::Color::Red);
-        lab->setParent(pProjects);
-        pProjects->addChild(lab);
-        Action a(Action::EVENT_TYPE::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
-        //std::cout<<"label : "<<lab<<std::endl;
 
-        Command cmd(a, FastDelegate<bool>(&Label::isMouseInside, lab), FastDelegate<void>(&ODFAEGCreator::showScenes, this, lab));
-        lab->getListener().connect("SHOWSCENES", cmd);
+
         //system("PAUSE");
         getRenderComponentManager().addComponent(pProjects);
         pScriptsEdit = new Panel(getRenderWindow(), Vec3f(200, 10, 0), Vec3f(800, 700, 0));
@@ -1222,7 +1213,7 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
             }
         }
     }
-    if(&getRenderWindow() == window && event.type == IEvent::KEYBOARD_EVENT && event.keyboard.type == IEvent::KEY_EVENT_PRESSED && isGuiShown && event.keyboard.code == IKeyboard::R) {
+    if(&getRenderWindow() == window && event.type == IEvent::KEYBOARD_EVENT && event.keyboard.type == IEvent::KEY_EVENT_PRESSED && isGuiShown && event.keyboard.control && event.keyboard.code == IKeyboard::R) {
         if (selectedObject != nullptr) {
 
             rotationGuismo.setCenterSize(selectedObject->getPosition()+selectedObject->getSize()*0.5f, selectedObject->getSize());
@@ -1231,7 +1222,7 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
             scaleGuismo.setVisible(false);
         }
     }
-    if(&getRenderWindow() == window && event.type == IEvent::KEYBOARD_EVENT && event.keyboard.type == IEvent::KEY_EVENT_PRESSED && isGuiShown && event.keyboard.code == IKeyboard::M) {
+    if(&getRenderWindow() == window && event.type == IEvent::KEYBOARD_EVENT && event.keyboard.type == IEvent::KEY_EVENT_PRESSED && isGuiShown && event.keyboard.control && event.keyboard.code == IKeyboard::M) {
         if (selectedObject != nullptr) {
 
             translationGuismo.setCenterSize(selectedObject->getPosition()+selectedObject->getSize()*0.5f, selectedObject->getSize());
@@ -1240,7 +1231,7 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
             scaleGuismo.setVisible(false);
         }
     }
-    if(&getRenderWindow() == window && event.type == IEvent::KEYBOARD_EVENT && event.keyboard.type == IEvent::KEY_EVENT_PRESSED && isGuiShown && event.keyboard.code == IKeyboard::S) {
+    if(&getRenderWindow() == window && event.type == IEvent::KEYBOARD_EVENT && event.keyboard.type == IEvent::KEY_EVENT_PRESSED && isGuiShown && event.keyboard.control &&  event.keyboard.code == IKeyboard::S) {
         if (selectedObject != nullptr) {
 
             scaleGuismo.setCenterSize(selectedObject->getPosition()+selectedObject->getSize()*0.5f, selectedObject->getSize());
@@ -1454,8 +1445,7 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
                         orig = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(orig.x, getRenderWindow().getSize().y - orig.y, orig.z))+halfWSize;
                         ext = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(ext.x, getRenderWindow().getSize().y - ext.y, ext.z))+halfWSize;
                     } else {
-                        orig += halfWSize;
-                        orig = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(orig.x, getRenderWindow().getSize().y - orig.y, orig.z));
+                        orig = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(0, 0, orig.z));
                         ext += halfWSize;
                         ext = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(ext.x, getRenderWindow().getSize().y - ext.y, ext.z));
                     }
@@ -1473,41 +1463,41 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
             getWorld()->rotateEntity(selectedObject, Math::toDegrees(angle));
             prevAngle = angle;
         }
-        if (isMovingXPos) {
-            float mx = ray.getOrig().x - prevObjectPos.x;
+        if (isMovingXPos && translationGuismo.intersectsXArrow(ray, _near)) {
+            float mx = _near.x - prevObjectPos.x;
             translationGuismo.move(Vec3f(mx, 0, 0));
             getWorld()->moveEntity(selectedObject, mx, 0, 0);
-            prevObjectPos.x = ray.getOrig().x;
+            prevObjectPos.x = _near.x;
         }
-        if (isMovingYPos) {
-            float my = ray.getOrig().y - prevObjectPos.y;
+        if (isMovingYPos && translationGuismo.intersectsYArrow(ray, _near)) {
+            float my = _near.y - prevObjectPos.y;
             translationGuismo.move(Vec3f(0, my, 0));
-            getWorld()->moveEntity(selectedObject, 0, my, 0);
-            prevObjectPos.y = ray.getOrig().y;
+            getWorld()->moveEntity(selectedObject, my, 0, 0);
+            prevObjectPos.y = _near.y;
         }
-        if (isMovingZPos) {
-            float mz = ray.getOrig().z - prevObjectPos.z;
+        if (isMovingZPos && translationGuismo.intersectsZArrow(ray, _near)) {
+            float mz = _near.z - prevObjectPos.z;
             translationGuismo.move(Vec3f(0, 0, mz));
             getWorld()->moveEntity(selectedObject, 0, 0, mz);
-            prevObjectPos.z = ray.getOrig().z;
+            prevObjectPos.z = _near.z;
         }
-        if (isScalingX) {
-            float sx = ray.getOrig().x / prevObjectScale.x;
+        if (isScalingX && scaleGuismo.intersectsXRect(ray, _near)) {
+            float sx = _near.x / prevObjectScale.x;
             getWorld()->scaleEntity(selectedObject, sx, 1, 1);
             scaleGuismo.setCenterSize(selectedObject->getPosition()+selectedObject->getSize()*0.5f, selectedObject->getSize());
-            prevObjectScale.x = ray.getOrig().x;
+            prevObjectScale.x = _near.x;
         }
-        if (isScalingY) {
-            float sy = ray.getOrig().y / prevObjectScale.y;
+        if (isScalingY && scaleGuismo.intersectsYRect(ray, _near)) {
+            float sy = _near.y / prevObjectScale.y;
             getWorld()->scaleEntity(selectedObject, 1, sy, 1);
             scaleGuismo.setCenterSize(selectedObject->getPosition()+selectedObject->getSize()*0.5f, selectedObject->getSize());
-            prevObjectScale.y = ray.getOrig().y;
+            prevObjectScale.y = _near.y;
         }
-        if (isScalingZ) {
-            float sz = ray.getOrig().z / prevObjectScale.z;
+        if (isScalingZ && scaleGuismo.intersectsZRect(ray, _near)) {
+            float sz = _near.z / prevObjectScale.z;
             getWorld()->scaleEntity(selectedObject, 1, 1, sz);
             scaleGuismo.setCenterSize(selectedObject->getPosition()+selectedObject->getSize()*0.5f, selectedObject->getSize());
-            prevObjectScale.z = ray.getOrig().z;
+            prevObjectScale.z = _near.z;
         }
     }
     if (&getRenderWindow() == window && event.type == IEvent::MOUSE_BUTTON_EVENT && event.mouseButton.type == IEvent::BUTTON_EVENT_PRESSED && event.mouseButton.button == IMouse::Left) {
@@ -1570,8 +1560,7 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
                             orig = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(orig.x, getRenderWindow().getSize().y - orig.y, orig.z))+halfWSize;
                             ext = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(ext.x, getRenderWindow().getSize().y - ext.y, ext.z))+halfWSize;
                         } else {
-                            orig += halfWSize;
-                            orig = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(orig.x, getRenderWindow().getSize().y - orig.y, orig.z));
+                            orig = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(0, 0, orig.z));
                             ext += halfWSize;
                             ext = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(ext.x, getRenderWindow().getSize().y - ext.y, ext.z));
                         }
@@ -1586,28 +1575,22 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
                 firstInters = rotationGuismo.getCenter() - firstInters;
                 std::cout<<"first inters : "<<firstInters<<"center : "<<rotationGuismo.getCenter()<<std::endl;
             }
-            if (translationGuismo.intersectsXArrow(ray)) {
-                prevObjectPos.x = ray.getOrig().x;
+            if (translationGuismo.intersectsXArrow(ray, prevObjectPos)) {
                 isMovingXPos = true;
             }
-            if (translationGuismo.intersectsYArrow(ray)) {
-                prevObjectPos.y = ray.getOrig().y;
+            if (translationGuismo.intersectsYArrow(ray, prevObjectPos)) {
                 isMovingYPos = true;
             }
-            if (translationGuismo.intersectsZArrow(ray)) {
-                prevObjectPos.z = ray.getOrig().z;
+            if (translationGuismo.intersectsZArrow(ray, prevObjectPos)) {
                 isMovingZPos = true;
             }
-            if (scaleGuismo.intersectsXRect(ray)) {
-                prevObjectScale.x = ray.getOrig().x;
+            if (scaleGuismo.intersectsXRect(ray, prevObjectScale)) {
                 isScalingX = true;
             }
-            if (scaleGuismo.intersectsYRect(ray)) {
-                prevObjectScale.y = ray.getOrig().y;
+            if (scaleGuismo.intersectsYRect(ray, prevObjectScale)) {
                 isScalingY = true;
             }
-            if (scaleGuismo.intersectsZRect(ray)) {
-                prevObjectScale.z = ray.getOrig().z;
+            if (scaleGuismo.intersectsZRect(ray, prevObjectScale)) {
                 isScalingZ = true;
             }
         }
@@ -2223,7 +2206,24 @@ void ODFAEGCreator::onExec() {
                     Action a(Action::EVENT_TYPE::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
                     Command cmd(a, FastDelegate<bool>(&Label::isMouseInside, lab), FastDelegate<void>(&ODFAEGCreator::showProjectsFiles, this, lab));
                     lab->getListener().connect("SHOWPFILES", cmd);
+                    Label* labScene = new Label(getRenderWindow(), Vec3f(0, 0, 0), Vec3f(200, 35, 0), fm.getResourceByAlias(Fonts::Serif), "Scenes", 15);
+                    labScene->setBackgroundColor(sf::Color::White);
+                    Node* rSceneNode = new Node ("Scenes", labScene, Vec2f(0.f, 0.f), Vec2f(1.f, 0.025f), node);
+                    rootScenesNode = rSceneNode;
+                    labScene->setForegroundColor(sf::Color::Red);
+                    labScene->setParent(pProjects);
+                    pProjects->addChild(labScene);
+                    Action a2(Action::EVENT_TYPE::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
+                    //std::cout<<"label : "<<lab<<std::endl;
+
+
                     appliname = line;
+                    Command cmd2(a2, FastDelegate<bool>(&Label::isMouseInside, lab), FastDelegate<void>(&ODFAEGCreator::showScenes, this, labScene));
+                    lab->getListener().connect("SHOWSCENES"+appliname, cmd2);
+                    std::unique_ptr<World> world = std::make_unique<World>();
+                    world->projectName = appliname;
+                    worlds.push_back(std::move(world));
+                    setCurrentWorld(worlds.back().get());
                     openedProjects.push_back(line);
                 }
             }
@@ -2250,7 +2250,7 @@ void ODFAEGCreator::onExec() {
                         fileContent += line2+"\n";
                     }
                     source.close();
-                    cppAppliContent.insert(std::make_pair(line, fileContent));
+                    cppAppliContent.insert(std::make_pair(std::make_pair(appliname, line), fileContent));
                 }
             }
             applis.close();
@@ -2405,7 +2405,7 @@ void ODFAEGCreator::onExec() {
                         std::string expression;
                         ia5(expression);
                         //std::cout<<"layer : "<<layer<<std::endl;
-                        PerPixelLinkedListRenderComponent* ppll = new PerPixelLinkedListRenderComponent(getRenderWindow(),layer,expression,ContextSettings(0, 8, 4, 4, 6));
+                        PerPixelLinkedListRenderComponent* ppll = new PerPixelLinkedListRenderComponent(getRenderWindow(),layer,expression,ContextSettings(24, 8, 4, 4, 6));
                         ppll->setName(name);
                         getRenderComponentManager().addComponent(ppll);
                         dpSelectComponent->addItem(name, 15);
@@ -2652,7 +2652,7 @@ void ODFAEGCreator::onExec() {
                 source.close();
                 pos = scriptSourceFiles[i].find_last_of("\\");
                 scriptSourceFiles[i].erase(0, pos+1);
-                cppAppliContent.insert(std::make_pair(scriptSourceFiles[i], fileContent));
+                cppAppliContent.insert(std::make_pair(std::make_pair(appliname, scriptSourceFiles[i]), fileContent));
             }
             scriptSourceFiles.clear();
             findFiles(".hpp", scriptSourceFiles, startDir);
@@ -2666,7 +2666,7 @@ void ODFAEGCreator::onExec() {
                 source.close();
                 int pos = scriptSourceFiles[i].find_last_of("\\");
                 scriptSourceFiles[i].erase(0, pos+1);
-                cppAppliContent.insert(std::make_pair(scriptSourceFiles[i], fileContent));
+                cppAppliContent.insert(std::make_pair(std::make_pair(appliname, scriptSourceFiles[i]), fileContent));
             }
 
 
@@ -2739,28 +2739,39 @@ void ODFAEGCreator::onExec() {
         fdImport3DModel->setVisible(false);
         fdImport3DModel->setEventContextActivated(false);
     }
-
-    getWorld()->update();
+    if (getWorld() != nullptr) {
+        getWorld()->update();
+    }
     oldX = IMouse::getPosition(getRenderWindow()).x;
     oldY = IMouse::getPosition(getRenderWindow()).y;
 }
 void ODFAEGCreator::showScenes(Label* label) {
-    if (rootScenesNode->getNodes().size() > 0 && rootScenesNode->isNodeVisible()) {
-        rootScenesNode->hideAllNodes();
-    } else if (rootScenesNode->getNodes().size() > 0 && !rootScenesNode->isNodeVisible()) {
-        rootScenesNode->showAllNodes();
+    Node* node = rootNode->findNode(label);
+    if (node->getNodes().size() > 0 && node->isNodeVisible()) {
+        node->hideAllNodes();
+    } else if (node->getNodes().size() > 0 && !node->isNodeVisible()) {
+        node->showAllNodes();
     }
+    rootScenesNode= node;
 }
 void ODFAEGCreator::showScene(Label* label) {
+    Node* node = rootNode->findNode(label);
+    Node* parent = node->getParent()->getParent();
+    for (unsigned int i = 0; i < worlds.size(); i++) {
+        if (worlds[i]->projectName == static_cast<Label*>(parent->getComponent())->getText()) {
+            setCurrentWorld(worlds[i].get());
+        }
+    }
     getWorld()->setCurrentSceneManager(label->getText());
     isGuiShown = true;
     pScriptsEdit->setVisible(false);
+    rootScenesNode = node->getParent();
 }
 void ODFAEGCreator::showProjectsFiles(Label* label) {
     isGuiShown = false;
     pScriptsEdit->setVisible(true);
     Node* node = rootNode->findNode(label);
-    if (node->getNodes().size() == 0) {
+    if (node->getNodes().size() == 1) {
         FontManager<Fonts>& fm = cache.resourceManager<Font, Fonts>("FontManager");
         std::vector<LightComponent*> children = pProjects->getChildren();
         Label* lHeaders = new Label(getRenderWindow(),Vec3f(0, 0, 0),Vec3f(200,17,0),fm.getResourceByAlias(Fonts::Serif),"headers", 15);
@@ -2785,6 +2796,11 @@ void ODFAEGCreator::showProjectsFiles(Label* label) {
         node->showAllNodes();
     } else {
         node->hideAllNodes();
+    }
+    for (unsigned int i = 0; i < worlds.size(); i++) {
+        if (worlds[i]->projectName == label->getText()) {
+            setCurrentWorld(worlds[i].get());
+        }
     }
 }
 void ODFAEGCreator::showHeadersFiles(Label* label) {
@@ -2849,10 +2865,17 @@ void ODFAEGCreator::showSourcesFiles(Label* label) {
     }
 }
 void ODFAEGCreator::showFileContent(Label* lab) {
+    Node* node = rootNode->findNode(lab);
+    Node* parent = node->getParent()->getParent();
+    for (unsigned int i = 0; i < worlds.size(); i++) {
+        if (worlds[i]->projectName == static_cast<Label*>(parent->getComponent())->getText()) {
+            setCurrentWorld(worlds[i].get());
+        }
+    }
     isGuiShown = false;
     pScriptsEdit->setVisible(true);
-    std::map<std::string, std::string>::iterator it;
-    it = cppAppliContent.find(lab->getText());
+    std::map<std::pair<std::string, std::string>, std::string>::iterator it;
+    it = cppAppliContent.find(std::make_pair(getWorld()->projectName, lab->getText()));
     if (it != cppAppliContent.end()) {
         tScriptEdit->setTextSize(20);
         tScriptEdit->setText(it->second);
@@ -3028,7 +3051,18 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         pProjects->addChild(lab);
         Action a(Action::EVENT_TYPE::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
         Command cmd(a, FastDelegate<bool>(&Label::isMouseInside, lab), FastDelegate<void>(&ODFAEGCreator::showProjectsFiles, this, lab));
-        lab->getListener().connect("SHOWPFILES", cmd);
+        Label* labScene = new Label(getRenderWindow(),Vec3f(0,0,0),Vec3f(200, 17, 0),fm.getResourceByAlias(Fonts::Serif),"Scenes", 15);
+        Node* rSceneNode = new Node("test",labScene,Vec2f(0, 0),Vec2f(1.f, 0.025f),rootNode.get());
+        rootScenesNode = rSceneNode;
+        labScene->getListener().connect("SHOWPFILES", cmd);
+        labScene->setForegroundColor(sf::Color::Red);
+        labScene->setParent(pProjects);
+        pProjects->addChild(labScene);
+        Action a2(Action::EVENT_TYPE::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
+        //std::cout<<"label : "<<lab<<std::endl;
+
+        Command cmd2(a, FastDelegate<bool>(&Label::isMouseInside, labScene), FastDelegate<void>(&ODFAEGCreator::showScenes, this, labScene));
+        labScene->getListener().connect("SHOWSCENES"+appliname, cmd2);
         if (applitype == "Normal") {
             #if defined (ODFAEG_SYSTEM_LINUX)
             std::ofstream header(path+"/"+minAppliname+".hpp");
@@ -3055,7 +3089,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
             oss<<"#endif"<<std::endl;
             header<<oss.str();
             header.close();
-            cppAppliContent.insert(std::make_pair(minAppliname+".hpp", oss.str()));
+            cppAppliContent.insert(std::make_pair(std::make_pair(appliname, minAppliname+".hpp"), oss.str()));
             oss.str("");
             oss.clear();
             #if defined (ODFAEG_SYSTEM_LINUX)
@@ -3087,7 +3121,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
             oss<<"}"<<std::endl;
             source<<oss.str();
             source.close();
-            cppAppliContent.insert(std::make_pair(minAppliname+".cpp", oss.str()));
+            cppAppliContent.insert(std::make_pair(std::make_pair(appliname, minAppliname+".cpp"), oss.str()));
             oss.str("");
             oss.clear();
             std::string width = taWidth->getText();
@@ -3104,11 +3138,15 @@ void ODFAEGCreator::actionPerformed(Button* button) {
             oss<<"}"<<std::endl;
             main<<oss.str();
             main.close();
-            cppAppliContent.insert(std::make_pair("main.cpp", oss.str()));
+            cppAppliContent.insert(std::make_pair(std::make_pair(appliname, "main.cpp"), oss.str()));
             applis<<minAppliname+".hpp"<<std::endl;
             applis<<minAppliname+".cpp"<<std::endl;
             applis<<"main.cpp"<<std::endl;
             applis.close();
+            std::unique_ptr<World> world = std::make_unique<World>();
+            world->projectName = appliname;
+            worlds.push_back(std::move(world));
+            setCurrentWorld(worlds.back().get());
         }
     }
     if (button->getText() == "New texture") {
@@ -3167,7 +3205,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         getRenderComponentManager().setEventContextActivated(false, *wNewComponent);
         tScriptEdit->setEventContextActivated(true);
         if (dpComponentType->getSelectedItem() == "LinkedList") {
-            PerPixelLinkedListRenderComponent* ppll = new PerPixelLinkedListRenderComponent(getRenderWindow(),conversionStringInt(taComponentLayer->getText()),taComponentExpression->getText(),ContextSettings(0, 0, 4, 4, 6));
+            PerPixelLinkedListRenderComponent* ppll = new PerPixelLinkedListRenderComponent(getRenderWindow(),conversionStringInt(taComponentLayer->getText()),taComponentExpression->getText(),ContextSettings(24, 8, 4, 4, 6));
             getRenderComponentManager().addComponent(ppll);
             ppll->setName(taComponentName->getText());
             dpSelectComponent->addItem(taComponentName->getText(), 15);

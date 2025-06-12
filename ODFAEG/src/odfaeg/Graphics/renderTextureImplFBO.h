@@ -91,6 +91,7 @@ namespace odfaeg {
                 ////////////////////////////////////////////////////////////
                 unsigned int m_frameBuffer; ///< OpenGL frame buffer object
                 unsigned int m_depthBuffer; ///< Optional depth buffer attached to the frame buffer
+                unsigned int m_stencilBuffer;
                 unsigned int m_versionMajor, m_versionMinor;
             };
         }

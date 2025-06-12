@@ -462,6 +462,7 @@ namespace odfaeg {
                         return currentEntityManager->physicallyBasedComputePos(entity, oldCenter, size, velocity, climbCapacity);
                     }
                 }
+                std::string projectName;
             private :
                 Cache cache;
                 graphic::SceneManager* currentEntityManager; /**> holds the current entity manager.*/

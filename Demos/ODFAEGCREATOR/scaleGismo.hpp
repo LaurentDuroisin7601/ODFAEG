@@ -8,9 +8,9 @@ public :
     ScaleGuismo (float rectSize);
     void setCenterSize(odfaeg::math::Vec3f center, odfaeg::math::Vec3f size);
     void draw(odfaeg::graphic::RenderTarget& target, odfaeg::graphic::RenderStates states);
-    bool intersectsXRect(odfaeg::math::Ray ray);
-    bool intersectsYRect(odfaeg::math::Ray ray);
-    bool intersectsZRect(odfaeg::math::Ray ray);
+    bool intersectsXRect(odfaeg::math::Ray ray, odfaeg::math::Vec3f& i1);
+    bool intersectsYRect(odfaeg::math::Ray ray, odfaeg::math::Vec3f& i1);
+    bool intersectsZRect(odfaeg::math::Ray ray, odfaeg::math::Vec3f& i1);
     void scale(odfaeg::math::Vec3f s);
     void setVisible(bool visible);
 private:

@@ -35,6 +35,8 @@ namespace odfaeg {
             };
             struct ModelData {
                 math::Matrix4f worldMat;
+                alignas(16) unsigned int baseInstance;
+                alignas(16) unsigned int instanceCount;
             };
             struct MaterialData {
                 unsigned int textureIndex;
@@ -165,8 +167,8 @@ namespace odfaeg {
             VkBuffer modelDataBuffer, materialDataBuffer, modelDataStagingBuffer, materialDataStagingBuffer;
             VkDeviceMemory modelDataStagingBufferMemory, materialDataStagingBufferMemory;
             VkDeviceSize maxVboIndirectSize, maxModelDataSize, maxMaterialDataSize;
-            VkBuffer vboIndirect, vboIndirectStagingBuffer;
-            VkDeviceMemory vboIndirectMemory, vboIndirectStagingBufferMemory;
+            VkBuffer vboIndirect, vboIndirectStagingBuffer, vboCount;
+            VkDeviceMemory vboIndirectMemory, vboIndirectStagingBufferMemory, vboCountMemory;
             std::vector<VkBuffer> uniformBuffer;
             std::vector<VkDeviceMemory> uniformBufferMemory;
             std::vector<VkBuffer> linkedListShaderStorageBuffers;

@@ -53,6 +53,7 @@ namespace odfaeg {
                 listener = std::make_unique<Listener>();
                 eventContextActivated = true;
                 nbEntities = nbEntitiesTypes = nbComponents = nbMaterials = 0;
+                world = nullptr;
             }
             /** \fn Application()
             *   \brief create a console odfaeg application.
@@ -67,6 +68,10 @@ namespace odfaeg {
                 addClock(timeClock, "TimeClock");
                 eventContextActivated = true;
                 nbEntities = nbEntitiesTypes = nbComponents = nbMaterials = 0;
+                world = nullptr;
+            }
+            void setCurrentWorld(graphic::World* world) {
+                this->world = world;
             }
             unsigned int getNbMaterials() {
                 return nbMaterials;
@@ -224,7 +229,7 @@ namespace odfaeg {
                         }
                     }
                 }
-                world.updateTimers();
+                //world.updateTimers();
             }
             /**
             * \fn void onLoad()
@@ -327,7 +332,7 @@ namespace odfaeg {
             void onDisconnected(network::User* user) {
             }
             graphic::World* getWorld() {
-                return &world;
+                return world;
             }
             window::Device& getDevice() {
                 return vkDevice;
@@ -362,7 +367,7 @@ namespace odfaeg {
             static sf::Clock timeClk;
             /*std::thread rendering_thread;
             std::recursive_rec_mutex rec_rec_mutex;*/
-            graphic::World world;
+            graphic::World* world;
             unsigned int nbEntities, nbEntitiesTypes, nbComponents, nbMaterials;
             std::vector<graphic::Material*> materials;
             std::vector<graphic::Material*> sameMaterials;
@@ -401,6 +406,7 @@ namespace odfaeg {
                 listener = std::make_unique<Listener>();
                 eventContextActivated = true;
                 nbEntities = nbEntitiesTypes = nbComponents = nbMaterials = 0;
+                world = nullptr;
             }
             /** \fn Application()
             *   \brief create a console odfaeg application.
@@ -414,6 +420,7 @@ namespace odfaeg {
                 addClock(timeClock, "TimeClock");
                 eventContextActivated = true;
                 nbEntities = nbEntitiesTypes = nbComponents = nbMaterials = 0;
+                world = nullptr;
             }
             unsigned int getNbMaterials() {
                 return nbMaterials;
@@ -681,7 +688,7 @@ namespace odfaeg {
             virtual void onDisconnected(network::User* user) {
             }
             graphic::World* getWorld() {
-                return &world;
+                return world;
             }
             virtual ~Application() {
                 stop();
@@ -695,6 +702,9 @@ namespace odfaeg {
             }
             ResourceCache<T>& getResourceCache() {
                 return resourceCache;
+            }
+            void setCurrentWorld(graphic::World* world) {
+                this->world = world;
             }
             /** > a pointer to the current odfaeg application*/
             static Application<A, T>* app;
@@ -712,7 +722,7 @@ namespace odfaeg {
             static sf::Clock timeClk;
             /*std::thread rendering_thread;
             std::recursive_rec_mutex rec_rec_mutex;*/
-            graphic::World world;
+            graphic::World* world;
             unsigned int nbEntities, nbEntitiesTypes, nbComponents, nbMaterials;
             std::vector<graphic::Material*> materials;
             std::vector<graphic::Material*> sameMaterials;

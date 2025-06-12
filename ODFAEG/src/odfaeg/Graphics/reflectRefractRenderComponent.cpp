@@ -75,6 +75,8 @@ namespace odfaeg {
                 core::Command cmd(signal, slot);
                 getListener().connect("UPDATE", cmd);
 
+
+
                 AtomicCounterSSBO counter;
                 for (unsigned int i = 0; i < 6; i++) {
                     counter.count[i] = 0;
@@ -102,6 +104,17 @@ namespace odfaeg {
                 }
                 vkDestroyBuffer(vkDevice.getDevice(), stagingBuffer, nullptr);
                 vkFreeMemory(vkDevice.getDevice(), stagingBufferMemory, nullptr);
+                uint32_t count = 6;
+                bufferSize = sizeof(uint32_t);
+                createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+                vkMapMemory(vkDevice.getDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
+                memcpy(data, &count, (size_t) bufferSize);
+                vkUnmapMemory(vkDevice.getDevice(), stagingBufferMemory);
+                createBuffer(bufferSize, VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vboCount, vboCountMemory);
+                copyBuffer(stagingBuffer, vboCount, bufferSize);
+                vkDestroyBuffer(vkDevice.getDevice(), stagingBuffer, nullptr);
+                vkFreeMemory(vkDevice.getDevice(), stagingBufferMemory, nullptr);
+
                 VkImageCreateInfo imageInfo{};
                 imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
                 imageInfo.imageType = VK_IMAGE_TYPE_3D;
@@ -191,9 +204,9 @@ namespace odfaeg {
                 createSampler();
                 createUniformBuffers();
                 compileShaders();
-                environmentMap.beginRecordCommandBuffers();
-                std::vector<VkCommandBuffer> commandBuffers = environmentMap.getCommandBuffers();
-                unsigned int currentFrame =  environmentMap.getCurrentFrame();
+                reflectRefractTex.beginRecordCommandBuffers();
+                std::vector<VkCommandBuffer> commandBuffers = reflectRefractTex.getCommandBuffers();
+                unsigned int currentFrame =  reflectRefractTex.getCurrentFrame();
                 VkImageMemoryBarrier barrier = {};
                 barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
                 barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
@@ -224,8 +237,16 @@ namespace odfaeg {
                 barrier3.subresourceRange.levelCount = 1;
                 barrier3.subresourceRange.layerCount = 1;
                 vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier3);
-                environmentMap.beginRenderPass();
-                environmentMap.display();
+
+
+                reflectRefractTex.beginRenderPass();
+                reflectRefractTex.display(true, VK_PIPELINE_STAGE_2_TRANSFER_BIT);
+                reflectRefractTex.beginRecordCommandBuffers();
+                reflectRefractTex.beginRenderPass();
+                reflectRefractTex.display(false, VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT);
+                const_cast<Texture&>(reflectRefractTex.getTexture()).toShaderReadOnlyOptimal();
+                //const_cast<Texture&>(reflectRefractTex.getTexture()).toShaderReadOnlyOptimal();
+
 
                 RenderStates states;
                 states.shader = &sLinkedList;
@@ -735,7 +756,6 @@ namespace odfaeg {
                                                                      }
                                                                      )";
                 const std::string linkedListIndirectRenderingVertexShader = R"(#version 460
-                                                               #extension GL_EXT_multiview : enable
                                                                #extension GL_EXT_debug_printf : enable
                                                                layout (location = 0) in vec3 position;
                                                                layout (location = 1) in vec4 color;
@@ -743,6 +763,8 @@ namespace odfaeg {
                                                                layout (location = 3) in vec3 normals;
                                                                struct ModelData {
                                                                    mat4 modelMatrix;
+                                                                   uint baseInstance;
+                                                                   uint instanceCount;
                                                                };
                                                                struct MaterialData {
                                                                    uint textureIndex;
@@ -769,28 +791,20 @@ namespace odfaeg {
                                                                layout (location = 4) out flat int viewIndex;
                                                                void main() {
                                                                     gl_PointSize = 2.0f;
-                                                                    MaterialData material = materialDatas[gl_DrawID];
+
                                                                     ModelData model = modelDatas[gl_InstanceIndex];
+                                                                    viewIndex = (gl_InstanceIndex - model.baseInstance) / model.instanceCount;
+                                                                    MaterialData material = materialDatas[gl_DrawID/6];
                                                                     uint textureIndex = material.textureIndex;
                                                                     gl_Position = vec4(position, 1.f) * model.modelMatrix * datas[gl_ViewIndex].viewMatrix * datas[gl_ViewIndex].projectionMatrix;
                                                                     fTexCoords = texCoords;
                                                                     frontColor = color;
                                                                     texIndex = textureIndex;
                                                                     normal = normals;
-                                                                    viewIndex = gl_ViewIndex;
-                                                                    /*vec4 row1 = model.modelMatrix[0];
-                                                                    vec4 row2 = model.modelMatrix[1];
-                                                                    vec4 row3 = model.modelMatrix[2];
-                                                                    vec4 row4 = model.modelMatrix[3];
-                                                                    debugPrintfEXT("r1 : %v4f\n", row1);
-                                                                    debugPrintfEXT("r2 : %v4f\n", row2);
-                                                                    debugPrintfEXT("r3 : %v4f\n", row3);
-                                                                    debugPrintfEXT("r4 : %v4f\n", row4);*/
-                                                                    //debugPrintfEXT("position : %v4f\n", gl_Position);
+
                                                                }
                                                                )";
                 const std::string  linkedListVertexShader2 = R"(#version 460
-                                                                #extension GL_EXT_multiview : enable
                                                                 #extension GL_EXT_debug_printf : enable
                                                                 layout (location = 0) in vec3 position;
                                                                 layout (location = 1) in vec4 color;
@@ -812,7 +826,7 @@ namespace odfaeg {
                                                                     frontColor = color;
                                                                     fTexCoords = texCoords;
                                                                     normal = normals;
-                                                                    viewIndex = gl_ViewIndex;
+                                                                    viewIndex = gl_InstanceIndex;
                                                                     //debugPrintfEXT("view index : %i\n", gl_ViewIndex);
                                                                 })";
                 const std::string perPixReflectRefractIndirectRenderingVertexShader = R"(#version 460
@@ -909,7 +923,7 @@ namespace odfaeg {
                                                                       void main() {
                                                                           vec4 texel = (texIndex != 0) ? frontColor * texture(textures[texIndex-1], fTexCoords.xy) : frontColor;
                                                                           float current_alpha = texel.a;
-                                                                          vec2 position = (gl_FragCoord.xy / pushConsts.resolution.xy);
+                                                                          vec2 position = (gl_FragCoord.xy /*/ pushConsts.resolution.xy*/);
                                                                           vec4 depth = textureLod (depthBuffer, position, 0);
                                                                           beginInvocationInterlockARB();
                                                                           memoryBarrier();
@@ -941,8 +955,10 @@ namespace odfaeg {
                                                                 layout (set = 0, binding = 1) uniform sampler2D alphaBuffer;
                                                                 layout (location = 0) out vec4 fColor;
                                                                 void main () {
-                                                                    vec2 position = (gl_FragCoord.xy / pushConsts.resolution.xy);
+                                                                    vec2 position = (gl_FragCoord.xy /*/ pushConsts.resolution.xy*/);
                                                                     vec4 alpha = textureLod(alphaBuffer, position, 0);
+                                                                    /*if (alpha.z != 0)
+                                                                        debugPrintfEXT("alpha : %v4f\n", alpha);*/
                                                                     bool refr = false;
                                                                     float ratio = 1;
                                                                     if (materialType == 1) {
@@ -994,7 +1010,7 @@ namespace odfaeg {
                                                       layout (location = 4) in flat int viewIndex;
                                                       layout(location = 0) out vec4 fcolor;
                                                       void main() {
-                                                           uint nodeIdx = atomicAdd(count[viewIndex], 1)+1;
+                                                           uint nodeIdx = atomicAdd(count[viewIndex], 1);
                                                            vec4 texel = (texIndex != 0) ? frontColor * texture(textures[texIndex-1], fTexCoords.xy) : frontColor;
                                                            if (nodeIdx < maxNodes) {
                                                                 uint prevHead = imageAtomicExchange(headPointers, ivec3(gl_FragCoord.xy, viewIndex), nodeIdx);
@@ -1034,7 +1050,7 @@ namespace odfaeg {
                       NodeType frags[MAX_FRAGMENTS];
                       int count = 0;
                       uint n = imageLoad(headPointers, ivec3(gl_FragCoord.xy, viewIndex)).r;
-                      while(n != 0 && count < MAX_FRAGMENTS) {
+                      while(n != 0xffffffffu && count < MAX_FRAGMENTS) {
                            frags[count] = nodes[n+maxNodes*viewIndex];
                            n = frags[count].next/*+maxNodes*viewIndex*/;
                            count++;
@@ -2033,7 +2049,7 @@ namespace odfaeg {
                 depthBuffer.beginRenderPass();
                 depthBuffer.display();
                 alphaBuffer.clear(sf::Color::Transparent);
-                alphaBuffer.display();
+                alphaBuffer.display(true, VK_PIPELINE_STAGE_2_CLEAR_BIT);
                 alphaBuffer.beginRecordCommandBuffers();
                 commandBuffers = alphaBuffer.getCommandBuffers();
                 for (unsigned int i = 0; i < commandBuffers.size(); i++) {
@@ -2047,6 +2063,7 @@ namespace odfaeg {
                 }
                 alphaBuffer.beginRenderPass();
                 alphaBuffer.display();
+                const_cast<Texture&>(reflectRefractTex.getTexture()).toColorAttachmentOptimal();
                 reflectRefractTex.clear(sf::Color::Transparent);
                 reflectRefractTex.display();
             }
@@ -2077,6 +2094,7 @@ namespace odfaeg {
                     depthBuffer.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
                     depthBuffer.display();
                 } else if (shader == &sBuildAlphaBuffer) {
+                    const_cast<Texture&>(depthBuffer.getTexture()).toShaderReadOnlyOptimal();
                     alphaBuffer.beginRecordCommandBuffers();
 
                     std::vector<VkCommandBuffer> commandBuffers = alphaBuffer.getCommandBuffers();
@@ -2085,21 +2103,27 @@ namespace odfaeg {
                     buildAlphaPC.resolution = resolution;
                     /*vkCmdResetEvent(commandBuffers[currentFrame], events[currentFrame],  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
                     vkCmdSetEvent(commandBuffers[currentFrame], events[currentFrame],  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);*/
-                    vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 0, nullptr);
-                    VkMemoryBarrier memoryBarrier;
-                    memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-                    memoryBarrier.pNext = VK_NULL_HANDLE;
-                    memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-                    memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+                    //vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 0, nullptr);
 
-
-
-                    vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
+                    alphaBuffer.beginRenderPass();
+                    alphaBuffer.display(false, VK_PIPELINE_STAGE_2_CLEAR_BIT);
+                    alphaBuffer.beginRecordCommandBuffers();
                     alphaBuffer.beginRenderPass();
                     vkCmdPushConstants(commandBuffers[currentFrame], alphaBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][alphaBuffer.getId()][depthStencilID], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectRenderingPC), &indirectRenderingPC);
                     vkCmdPushConstants(commandBuffers[currentFrame], alphaBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][alphaBuffer.getId()][depthStencilID], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(BuildAlphaPC), &buildAlphaPC);
                     alphaBuffer.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
+
+                    alphaBuffer.display(true, VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT);
+                    alphaBuffer.beginRecordCommandBuffers();
+                    VkMemoryBarrier memoryBarrier={};
+                    memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+                    memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+                    memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+                    vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 0, nullptr);
+                    vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
+                    alphaBuffer.beginRenderPass();
                     alphaBuffer.display();
+                    const_cast<Texture&>(depthBuffer.getTexture()).toColorAttachmentOptimal();
                 } else if (shader == &sLinkedList) {
                     environmentMap.beginRecordCommandBuffers();
 
@@ -2108,7 +2132,7 @@ namespace odfaeg {
 
                     //vkCmdWaitEvents(commandBuffers[currentFrame], 1, &events[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
                     environmentMap.beginRenderPass();
-                    environmentMap.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
+                    environmentMap.drawIndirectCount(commandBuffers[currentFrame], currentFrame, nbIndirectCommands*6, stride, vbBindlessTex[p], vboIndirect, vboCount, depthStencilID,currentStates);
                     environmentMap.display();
                     environmentMap.beginRecordCommandBuffers();
                     VkMemoryBarrier memoryBarrier;
@@ -2121,18 +2145,20 @@ namespace odfaeg {
                     environmentMap.beginRenderPass();
                     environmentMap.display();
                 } else {
+                    const_cast<Texture&>(environmentMap.getTexture()).toShaderReadOnlyOptimal();
+                    const_cast<Texture&>(alphaBuffer.getTexture()).toShaderReadOnlyOptimal();
                     reflectRefractTex.beginRecordCommandBuffers();
 
                     std::vector<VkCommandBuffer> commandBuffers = reflectRefractTex.getCommandBuffers();
                     unsigned int currentFrame = reflectRefractTex.getCurrentFrame();
                     buildFrameBufferPC.resolution = resolution;
 
-                    //vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 0, nullptr);
+                    vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 0, nullptr);
                     VkMemoryBarrier memoryBarrier;
                     memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
                     memoryBarrier.pNext = VK_NULL_HANDLE;
-                    memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-                    memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+                    memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+                    memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
                     //vkCmdWaitEvents(commandBuffers[currentFrame], 1, &events[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
 
@@ -2141,7 +2167,9 @@ namespace odfaeg {
                     vkCmdPushConstants(commandBuffers[currentFrame], reflectRefractTex.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][reflectRefractTex.getId()][depthStencilID], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(BuildFrameBufferPC), &buildFrameBufferPC);
                     reflectRefractTex.beginRenderPass();
                     reflectRefractTex.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
-                    reflectRefractTex.display();
+                    reflectRefractTex.display(false, VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT);
+                    const_cast<Texture&>(alphaBuffer.getTexture()).toColorAttachmentOptimal();
+                    const_cast<Texture&>(environmentMap.getTexture()).toColorAttachmentOptimal();
                 }
             }
             void ReflectRefractRenderComponent::createCommandBufferVertexBuffer(RenderStates currentStates) {
@@ -2168,7 +2196,7 @@ namespace odfaeg {
 
                 //std::cout<<"ids : "<<shader->getId() * (Batcher::nbPrimitiveTypes - 1) + vb.getPrimitiveType()<<","<<environmentMap.getId()<<","<<NODEPTHNOSTENCIL<<std::endl;
                 environmentMap.beginRenderPass();
-                environmentMap.drawVertexBuffer(commandBuffers[currentFrame], currentFrame, vb, NODEPTHNOSTENCIL, currentStates);
+                environmentMap.drawVertexBuffer(commandBuffers[currentFrame], currentFrame, vb, NODEPTHNOSTENCIL, currentStates, 6);
                 environmentMap.display();
 
             }
@@ -2536,6 +2564,8 @@ namespace odfaeg {
                         ModelData model;
                         TransformMatrix tm;
                         model.worldMat = tm.getMatrix().transpose();
+                        model.baseInstance = baseInstance[p];
+                        model.instanceCount = 1;
                         modelDatas[p].push_back(model);
                         unsigned int vertexCount = 0;
                         for (unsigned int j = 0; j < m_normals[i].getAllVertices().getVertexCount(); j++) {
@@ -2564,6 +2594,8 @@ namespace odfaeg {
                             tm[j]->update();
                             ModelData model;
                             model.worldMat = tm[j]->getMatrix()/*.transpose()*/;
+                            model.baseInstance = baseInstance[p];
+                            model.instanceCount = tm.size();
                             modelDatas[p].push_back(model);
                         }
 
@@ -2933,7 +2965,7 @@ namespace odfaeg {
                                     environmentMap.display();
                                     environmentMap.beginRecordCommandBuffers();
                                     VkClearColorValue clearColor;
-                                    clearColor.uint32[0] = 0;
+                                    clearColor.uint32[0] = 0xffffffff;
                                     std::vector<VkCommandBuffer> commandBuffers = environmentMap.getCommandBuffers();
                                     unsigned int currentFrame = environmentMap.getCurrentFrame();
                                     VkImageSubresourceRange subresRange = {};
@@ -3010,6 +3042,7 @@ namespace odfaeg {
                 //reflectRefractTex.display();
             }
             void ReflectRefractRenderComponent::draw(RenderTarget& target, RenderStates states) {
+                const_cast<Texture&>(reflectRefractTex.getTexture()).toShaderReadOnlyOptimal();
                 reflectRefractTexSprite.setCenter(target.getView().getPosition());
                 target.draw(reflectRefractTexSprite, states);
             }
@@ -3102,7 +3135,8 @@ namespace odfaeg {
                 vkDestroyImageView(vkDevice.getDevice(), alphaTextureImageView, nullptr);
                 vkDestroyImage(vkDevice.getDevice(), alphaTextureImage, nullptr);
                 vkFreeMemory(vkDevice.getDevice(), alphaTextureImageMemory, nullptr);
-
+                vkDestroyBuffer(vkDevice.getDevice(), vboCount, nullptr);
+                vkFreeMemory(vkDevice.getDevice(), vboCountMemory, nullptr);
                 for (size_t i = 0; i < counterShaderStorageBuffers.size(); i++) {
                     if (counterShaderStorageBuffers[i] != VK_NULL_HANDLE) {
                         vkDestroyBuffer(vkDevice.getDevice(), counterShaderStorageBuffers[i], nullptr);
@@ -3204,6 +3238,7 @@ namespace odfaeg {
             alphaBufferSprite = Sprite(alphaBuffer.getTexture(), math::Vec3f(0, 0, 0), math::Vec3f(window.getView().getSize().x, window.getView().getSize().y, 0), sf::IntRect(0, 0, window.getView().getSize().x, window.getView().getSize().y));
             sf::Vector3i resolution ((int) window.getSize().x, (int) window.getSize().y, window.getView().getSize().z);
             settings.depthBits = 24;
+            settings.stencilBits = 8;
             reflectRefractTex.create(window.getView().getSize().x, window.getView().getSize().y, settings);
             reflectRefractTex.setEnableCubeMap(true);
             reflectRefractTexSprite = Sprite(reflectRefractTex.getTexture(), math::Vec3f(0, 0, 0), math::Vec3f(window.getView().getSize().x, window.getView().getSize().y, 0), sf::IntRect(0, 0, window.getView().getSize().x, window.getView().getSize().y));
@@ -4162,6 +4197,7 @@ namespace odfaeg {
             currentStates.blendMode = sf::BlendNone;
             currentStates.shader = &sReflectRefract;
             currentStates.texture = &environmentMap.getTexture();
+            glCheck(glDepthFunc(GL_GREATER));
             for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                 if (vbBindlessTex[p].getVertexCount() > 0) {
                     glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, modelDataBuffer));
@@ -4177,6 +4213,7 @@ namespace odfaeg {
                     vbBindlessTex[p].clear();
                 }
             }
+            glCheck(glDepthFunc(GL_ALWAYS));
         }
         void ReflectRefractRenderComponent::drawNextFrame() {
             if (reflectRefractTex.getSettings().versionMajor >= 4 && reflectRefractTex.getSettings().versionMinor >= 3) {

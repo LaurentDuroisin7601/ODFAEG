@@ -48,7 +48,7 @@ namespace odfaeg
             vkDevice.createInstance();
             vkDevice.pickupPhysicalDevice(VK_NULL_HANDLE);
             vkDevice.createLogicalDevice(VK_NULL_HANDLE);
-            m_texture.create(width, height);
+            m_texture.create(width, height, true);
             //if (depthTestEnabled || stencilTestEnabled)
                 getDepthTexture().createDepthTexture(width, height);
             createRenderPass();
@@ -65,7 +65,7 @@ namespace odfaeg
             vkDevice.createInstance();
             vkDevice.pickupPhysicalDevice(VK_NULL_HANDLE);
             vkDevice.createLogicalDevice(VK_NULL_HANDLE);
-            m_texture.createCubeMap(width, height);
+            m_texture.createCubeMap(width, height, true);
             getDepthTexture().createDepthTextureCM(width, height);
             createRenderPass();
             createFramebuffers();
@@ -195,8 +195,8 @@ namespace odfaeg
                     colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
                     colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
                     colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-                    colorAttachment.initialLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                    colorAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                    colorAttachment.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                    colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
                     VkAttachmentReference colorAttachmentRef{};
                     colorAttachmentRef.attachment = 0;
@@ -227,14 +227,14 @@ namespace odfaeg
                     renderPassInfo.dependencyCount = 1;
                     renderPassInfo.pDependencies = &dependency;
 
-                    if (isCubeMap) {
+                    /*if (isCubeMap) {
                         const uint32_t viewMask = 0b00111111;
                         VkRenderPassMultiviewCreateInfo multiviewInfo{};
                         multiviewInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO;
                         multiviewInfo.subpassCount = 1;
                         multiviewInfo.pViewMasks = &viewMask;
                         renderPassInfo.pNext = &multiviewInfo;
-                    }
+                    }*/
                     if (vkCreateRenderPass(vkDevice.getDevice(), &renderPassInfo, nullptr, &renderPasses[0]) != VK_SUCCESS) {
                         throw core::Erreur(0, "failed to create render pass!", 1);
                     }
@@ -246,8 +246,8 @@ namespace odfaeg
                     colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
                     colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
                     colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-                    colorAttachment.initialLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                    colorAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                    colorAttachment.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                    colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
                     VkAttachmentDescription depthAttachment{};
                     depthAttachment.format = getDepthTexture().findDepthFormat();
@@ -291,17 +291,15 @@ namespace odfaeg
                     renderPassInfo.dependencyCount = 1;
                     renderPassInfo.pDependencies = &dependency;
 
-                    if (isCubeMap) {
+                    /*if (isCubeMap) {
                         const uint32_t viewMask = 0b00111111;
                         //const uint32_t correlationMask = 0b00111111;
                         VkRenderPassMultiviewCreateInfo multiviewInfo{};
                         multiviewInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO;
                         multiviewInfo.subpassCount = 1;
                         multiviewInfo.pViewMasks = &viewMask;
-                        /*multiviewInfo.correlationMaskCount = 1;
-                        multiviewInfo.pCorrelationMasks = &correlationMask;*/
                         renderPassInfo.pNext = &multiviewInfo;
-                    }
+                    }*/
                     if (vkCreateRenderPass(vkDevice.getDevice(), &renderPassInfo, nullptr, &renderPasses[1]) != VK_SUCCESS) {
                         throw core::Erreur(0, "failed to create render pass!", 1);
                     }
@@ -311,6 +309,8 @@ namespace odfaeg
         }
         void RenderTexture::clear(const sf::Color& color) {
              //std::cout<<"render texture clear begin command buffer"<<std::endl;
+
+
              clearColor = color;
              VkClearColorValue clearValue = {clearColor.r / 255.f, clearColor.g / 255.f, clearColor.b / 255.f, clearColor.a / 255.f};
              VkClearDepthStencilValue clearDepthStencilValue = {
@@ -338,7 +338,7 @@ namespace odfaeg
                     .pNext = nullptr,
                     .srcAccessMask = VK_ACCESS_MEMORY_READ_BIT,
                     .dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
-                    .oldLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                    .oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                     .newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                     .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
                     .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
@@ -351,7 +351,7 @@ namespace odfaeg
                     .srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
                     .dstAccessMask = VK_ACCESS_MEMORY_READ_BIT,
                     .oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                    .newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                    .newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                     .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
                     .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
                     .image = getSwapchainImages()[imageIndex],
@@ -396,7 +396,7 @@ namespace odfaeg
         uint32_t RenderTexture::getImageIndex() {
             return imageIndex;
         }
-        void RenderTexture::display() {
+        void RenderTexture::display(bool isSignalSemaphore, VkPipelineStageFlags2 stageMask) {
             if (getCommandBuffers().size() > 0) {
                 //std::cout<<"render texture end command buffer"<<std::endl;
                 vkCmdEndRenderPass(getCommandBuffers()[getCurrentFrame()]);
@@ -406,41 +406,40 @@ namespace odfaeg
                     }
                 //}
                 vkWaitForFences(vkDevice.getDevice(), 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
-                const uint64_t waitValue = value; // Wait until semaphore value is >= 2
-                const uint64_t signalValue = value+1;
 
-                VkTimelineSemaphoreSubmitInfo timelineInfo;
-                timelineInfo.sType = VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO;
-                timelineInfo.pNext = NULL;
-                timelineInfo.waitSemaphoreValueCount = 1;
-                timelineInfo.pWaitSemaphoreValues = &waitValue;
-                timelineInfo.signalSemaphoreValueCount = 1;
-                timelineInfo.pSignalSemaphoreValues = &signalValue;
+                VkSemaphoreSubmitInfo timelineInfo = {};
+                VkSubmitInfo2 submitInfo = {};
+                submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2;
+                if (stageMask != VK_PIPELINE_STAGE_2_NONE) {
+                    if (isSignalSemaphore) {
+                        const uint64_t signalValue = ++value;
+                        timelineInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
+                        timelineInfo.semaphore = renderFinishedSemaphores[currentFrame];
+                        timelineInfo.value = signalValue;
+                        timelineInfo.stageMask = stageMask;
 
-
-                VkSubmitInfo submitInfo{};
-                submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-
-
-
-                VkSemaphore waitSemaphores[] = {renderFinishedSemaphores[currentFrame]};
-                VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT};
-                submitInfo.pNext = &timelineInfo;
-                submitInfo.waitSemaphoreCount = 1;
-                submitInfo.pWaitSemaphores = waitSemaphores;
-                submitInfo.pWaitDstStageMask = waitStages;
-                submitInfo.commandBufferCount = 1;
-                submitInfo.pCommandBuffers = &getCommandBuffers()[currentFrame];
-                submitInfo.signalSemaphoreCount = 1;
-                submitInfo.pSignalSemaphores = waitSemaphores;
-
-
+                        submitInfo.signalSemaphoreInfoCount = 1;
+                        submitInfo.pSignalSemaphoreInfos = &timelineInfo;
+                    } else {
+                        const uint64_t waitValue = value;
+                        timelineInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
+                        timelineInfo.semaphore = renderFinishedSemaphores[currentFrame];
+                        timelineInfo.value = waitValue;
+                        timelineInfo.stageMask = stageMask;
+                        submitInfo.waitSemaphoreInfoCount = 1;
+                        submitInfo.pWaitSemaphoreInfos = &timelineInfo;
+                    }
+                }
+                submitInfo.commandBufferInfoCount = 1;
+                VkCommandBufferSubmitInfo commandSubmitInfo = {};
+                commandSubmitInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO;
+                commandSubmitInfo.commandBuffer = getCommandBuffers()[currentFrame];
+                submitInfo.pCommandBufferInfos = &commandSubmitInfo;
                 vkResetFences(vkDevice.getDevice(), 1, &inFlightFences[currentFrame]);
-                if (vkQueueSubmit(vkDevice.getGraphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS) {
+                if (vkQueueSubmit2(vkDevice.getGraphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS) {
                     throw core::Erreur(0, "échec de l'envoi d'un command buffer!", 1);
                 }
                 vkDeviceWaitIdle(vkDevice.getDevice());
-                value++;
             }
         }
         RenderTexture::~RenderTexture() {
@@ -565,6 +564,7 @@ namespace odfaeg
         ////////////////////////////////////////////////////////////
         bool RenderTexture::setActive(bool active)
         {
+            if (!isContextActivated)
             if (m_context)
                 return m_impl && m_context->setActive(active);
             else

@@ -19,6 +19,7 @@
 #include "../../../include/odfaeg/Window/iGlResource.hpp"
 #include "vbo.h"
 #include "vertexArray.h"
+#include "drawable.h"
 /**
   *\namespace odfaeg
   * the namespace of the Opensource Development Framework Adapted for Every Games.
@@ -27,7 +28,7 @@ namespace odfaeg {
     namespace graphic {
         #ifdef VULKAN
         class RenderTarget;
-        class ODFAEG_GRAPHICS_API VertexBuffer {
+        class ODFAEG_GRAPHICS_API VertexBuffer : public Drawable {
         public :
             VertexBuffer(window::Device& vkDevice);
 
@@ -55,6 +56,7 @@ namespace odfaeg {
             sf::PrimitiveType getPrimitiveType() const;
             void update();
             Vertex& operator [](unsigned int index);
+            void draw(RenderTarget& target, RenderStates states);
             ~VertexBuffer();
         private :
             VertexBuffer(const VertexBuffer& vb);
