@@ -64,7 +64,7 @@ namespace odfaeg {
                 reflectRefractTexSprite = Sprite(reflectRefractTex.getTexture(), math::Vec3f(0, 0, 0), math::Vec3f(window.getView().getSize().x, window.getView().getSize().y, 0), sf::IntRect(0, 0, window.getView().getSize().x, window.getView().getSize().y));
                 linkedListShaderStorageBuffers.resize(reflectRefractTex.getMaxFramesInFlight());
                 linkedListShaderStorageBuffersMemory.resize(reflectRefractTex.getMaxFramesInFlight());
-                maxNodes = 20 * window.getView().getSize().x * window.getView().getSize().y;;
+                maxNodes = 20 * squareSize * squareSize;;
                 unsigned int nodeSize = 5  * sizeof(float) + sizeof(unsigned int);
                 VkDeviceSize bufferSize = maxNodes * nodeSize * 6;
                 for (unsigned int i = 0; i < environmentMap.getMaxFramesInFlight(); i++) {
