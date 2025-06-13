@@ -56,8 +56,9 @@ namespace odfaeg
             createSyncObjects();
             m_size.x = width;
             m_size.y = height;
-            RenderTarget::initialize();
             currentFrame = imageIndex = 0;
+            RenderTarget::initialize();
+
             return true;
         }
         bool RenderTexture::createCubeMap(unsigned int width, unsigned int height) {
@@ -72,8 +73,9 @@ namespace odfaeg
             createSyncObjects();
             m_size.x = width;
             m_size.y = height;
-            RenderTarget::initialize();
             currentFrame = imageIndex = 0;
+            RenderTarget::initialize();
+
 
             return true;
         }
@@ -250,7 +252,7 @@ namespace odfaeg
                     colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
                     VkAttachmentDescription depthAttachment{};
-                    depthAttachment.format = getDepthTexture().findDepthFormat();
+                    depthAttachment.format = getDepthTexture().getFormat();
                     depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
                     depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
                     depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -282,19 +284,18 @@ namespace odfaeg
                     renderPassInfo.subpassCount = 1;
                     renderPassInfo.pSubpasses = &subpass;
                     VkSubpassDependency dependency{};
-                    dependency.srcSubpass = /*(isCubeMap) ? 0 : */VK_SUBPASS_EXTERNAL;
+                    dependency.srcSubpass = (isCubeMap) ? 0 : VK_SUBPASS_EXTERNAL;
                     dependency.dstSubpass = 0;
                     dependency.srcStageMask =  VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
                     dependency.srcAccessMask = 0;
                     dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
                     dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-                    dependency.dependencyFlags = /*(isCubeMap) ? VK_DEPENDENCY_BY_REGION_BIT | VK_DEPENDENCY_VIEW_LOCAL_BIT :*/ 0;
+                    dependency.dependencyFlags = (isCubeMap) ? VK_DEPENDENCY_BY_REGION_BIT | VK_DEPENDENCY_VIEW_LOCAL_BIT : 0;
                     renderPassInfo.dependencyCount = 1;
                     renderPassInfo.pDependencies = &dependency;
 
                     if (isCubeMap) {
                         const uint32_t viewMask = 0b00111111;
-                        //const uint32_t correlationMask = 0b00111111;
                         VkRenderPassMultiviewCreateInfo multiviewInfo{};
                         multiviewInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO;
                         multiviewInfo.subpassCount = 1;

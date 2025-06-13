@@ -301,9 +301,9 @@ namespace odfaeg {
             for (VkFormat format : candidates) {
                 VkFormatProperties props;
                 vkGetPhysicalDeviceFormatProperties(vkDevice.getPhysicalDevice(), format, &props);
-                if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features) {
+                if (hasStencilComponent(format) && tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features) {
                     return format;
-                } else if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features) {
+                } else if (hasStencilComponent(format) && tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features) {
                     return format;
                 }
             }
@@ -311,7 +311,7 @@ namespace odfaeg {
         }
         VkFormat Texture::findDepthFormat() {
             return findSupportedFormat(
-                {VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
+                {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
                 VK_IMAGE_TILING_OPTIMAL,
                 VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
             );
@@ -775,12 +775,15 @@ namespace odfaeg {
             view.viewType = VK_IMAGE_VIEW_TYPE_CUBE;
             // Cube map view type
             view.format = format;
-            view.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+            view.subresourceRange.aspectMask = aspectFlags;
             // 6 array layers (faces)
+            view.subresourceRange.baseMipLevel = 0;
+            view.subresourceRange.baseArrayLayer = 0;
             view.subresourceRange.layerCount = 6;
             // Set number of mip levels
             view.subresourceRange.levelCount = 1;
             view.image = textureImage;
+            imageAspectFlags = aspectFlags;
             if(vkCreateImageView(vkDevice.getDevice(), &view, nullptr, &textureImageView) != VK_SUCCESS) {
                 throw core::Erreur(0, "Failed to create image view!", 1);
             }

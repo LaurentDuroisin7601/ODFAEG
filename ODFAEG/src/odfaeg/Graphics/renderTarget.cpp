@@ -185,9 +185,6 @@ namespace odfaeg {
              if (!vkCmdPushDescriptorSetKHR) {
                 throw core::Erreur(0, "Could not get a valid function pointer for vkCmdPushDescriptorSetKHR", 1);
              }
-             if (!vkCmdPushDescriptorSetKHR) {
-                throw odfaeg::core::Erreur(0, "Could not get a valid function pointer for vkCmdPushDescriptorSetKHR", 1);
-             }
         }
         void RenderTarget::clearDepth() {
         }
@@ -846,6 +843,7 @@ namespace odfaeg {
             renderPassInfo.framebuffer = (depthTestEnabled || stencilTestEnabled) ? getSwapchainFrameBuffers(1)[getImageIndex()] : getSwapchainFrameBuffers(0)[getImageIndex()];
             renderPassInfo.renderArea.offset = {0, 0};
             renderPassInfo.renderArea.extent = getSwapchainExtents();
+            //std::cout<<"render pass : "<<(m_view.getViewport().getSize().x == 800 && m_view.getViewport().getSize().y == 800)<<std::endl;
 
             VkClearValue clrColor = {clearColor.r / 255.f,clearColor.g / 255.f, clearColor.b / 255.f, clearColor.a / 255.f};
             renderPassInfo.clearValueCount = 1;
@@ -862,6 +860,7 @@ namespace odfaeg {
             viewport.height = -(float)  m_view.getViewport().getSize().y;
             viewport.minDepth = 0.0f;
             viewport.maxDepth = 1.0f;
+            //std::cout<<(m_view.getViewport().getSize().x == 800 && m_view.getViewport().getSize().y == 800)<<std::endl;
             vkCmdSetViewport(commandBuffers[getCurrentFrame()], 0, 1, &viewport);
 
             VkRect2D scissor{};

@@ -115,12 +115,12 @@ namespace odfaeg {
                 vkFreeMemory(vkDevice.getDevice(), stagingBufferMemory, nullptr);
                 VkImageCreateInfo imageInfo{};
                 imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-                imageInfo.imageType = VK_IMAGE_TYPE_3D;
-                imageInfo.extent.width = static_cast<uint32_t>(window.getView().getSize().x);
-                imageInfo.extent.height = static_cast<uint32_t>(window.getView().getSize().y);
-                imageInfo.extent.depth = 6;
+                imageInfo.imageType = VK_IMAGE_TYPE_2D;
+                imageInfo.extent.width = static_cast<uint32_t>(squareSize);
+                imageInfo.extent.height = static_cast<uint32_t>(squareSize);
+                imageInfo.extent.depth = 1;
                 imageInfo.mipLevels = 1;
-                imageInfo.arrayLayers = 1;
+                imageInfo.arrayLayers = 6;
                 imageInfo.format = VK_FORMAT_R32_UINT;
                 imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
                 imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -213,7 +213,7 @@ namespace odfaeg {
                 barrier.image = headPtrTextureImage;
                 barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
                 barrier.subresourceRange.levelCount = 1;
-                barrier.subresourceRange.layerCount = 1;
+                barrier.subresourceRange.layerCount = 6;
                 vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
                 VkImageMemoryBarrier barrier2 = {};
                 barrier2.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -745,11 +745,11 @@ namespace odfaeg {
             void ReflectRefractRenderComponent::compileShaders() {
                 const std::string clearHeadptrComputeShaderCode = R"(#version 460
                                                                      layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
-                                                                     layout(binding = 0, r32ui) uniform uimage3D headPtr;
+                                                                     layout(binding = 0, r32ui) uniform uimage2DArray headPtr;
                                                                      void main() {
                                                                         ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
                                                                         int layer = int(gl_GlobalInvocationID.z);
-                                                                        imageStore(headPtr, ivec3(texelCoord, layer), uvec4(0xFFFFFFFF));
+                                                                        imageStore(headPtr, ivec3(texelCoord, layer), uvec4(0xFFFFFFFFu));
                                                                      }
                                                                      )";
                 const std::string indirectRenderingVertexShader = R"(#version 460
@@ -829,15 +829,13 @@ namespace odfaeg {
                                                                layout (location = 1) out vec2 fTexCoords;
                                                                layout (location = 2) out uint texIndex;
                                                                layout (location = 3) out vec3 normal;
-                                                               layout (location = 4) out flat int viewIndex;
                                                                void main() {
                                                                     gl_PointSize = 2.0f;
                                                                     MaterialData material = materialDatas[gl_DrawID];
                                                                     ModelData model = modelDatas[gl_InstanceIndex];
-                                                                    viewIndex = gl_ViewIndex;
 
                                                                     uint textureIndex = material.textureIndex;
-                                                                    gl_Position = vec4(position, 1.f) * model.modelMatrix * datas[viewIndex].viewMatrix * datas[viewIndex].projectionMatrix;
+                                                                    gl_Position = vec4(position, 1.f) * model.modelMatrix * datas[gl_ViewIndex].viewMatrix * datas[gl_ViewIndex].projectionMatrix;
                                                                     fTexCoords = texCoords;
                                                                     frontColor = color;
                                                                     texIndex = textureIndex;
@@ -861,14 +859,12 @@ namespace odfaeg {
                                                                 layout (location = 0) out vec4 frontColor;
                                                                 layout (location = 1) out vec2 fTexCoords;
                                                                 layout (location = 2) out vec3 normal;
-                                                                layout (location = 3) out flat int viewIndex;
                                                                 void main () {
                                                                     gl_Position = vec4(position, 1.f) * pushConsts.worldMat * pushConsts.viewMatrix * pushConsts.projectionMatrix;
                                                                     gl_PointSize = 2.0f;
                                                                     frontColor = color;
                                                                     fTexCoords = texCoords;
                                                                     normal = normals;
-                                                                    viewIndex = gl_ViewIndex;
                                                                     //debugPrintfEXT("view index : %i\n", gl_ViewIndex);
                                                                 })";
                 const std::string perPixReflectRefractIndirectRenderingVertexShader = R"(#version 460
@@ -1030,6 +1026,7 @@ namespace odfaeg {
                                                               )";
                 const std::string fragmentShader = R"(#version 460
                                                       #extension GL_EXT_nonuniform_qualifier : enable
+                                                      #extension GL_EXT_multiview : enable
                                                       #extension GL_EXT_debug_printf : enable
                                                       struct NodeType {
                                                           vec4 color;
@@ -1040,7 +1037,7 @@ namespace odfaeg {
                                                           uint count[6];
                                                           uint maxNodes;
                                                       };
-                                                      layout(set = 0, binding = 1, r32ui) uniform coherent uimage3D headPointers;
+                                                      layout(set = 0, binding = 1, r32ui) uniform coherent uimage2DArray headPointers;
                                                       layout(set = 0, binding = 2) buffer linkedLists {
                                                           NodeType nodes[];
                                                       };
@@ -1049,17 +1046,16 @@ namespace odfaeg {
                                                       layout (location = 1) in vec2 fTexCoords;
                                                       layout (location = 2) in flat uint texIndex;
                                                       layout (location = 3) in vec3 normal;
-                                                      layout (location = 4) in flat int viewIndex;
                                                       layout(location = 0) out vec4 fcolor;
                                                       void main() {
-                                                           uint nodeIdx = atomicAdd(count[viewIndex], 1);
+                                                           uint nodeIdx = atomicAdd(count[gl_ViewIndex], 1);
                                                            vec4 texel = (texIndex != 0) ? frontColor * texture(textures[texIndex-1], fTexCoords.xy) : frontColor;
                                                            if (nodeIdx < maxNodes) {
-                                                                uint prevHead = imageAtomicExchange(headPointers, ivec3(gl_FragCoord.xy, viewIndex), nodeIdx);
-                                                                //uint prevHead = imageLoad(headPointers, ivec3(gl_FragCoord.xy, viewIndex)).r;
-                                                                nodes[nodeIdx+viewIndex*maxNodes].color = texel;
-                                                                nodes[nodeIdx+viewIndex*maxNodes].depth = gl_FragCoord.z;
-                                                                nodes[nodeIdx+viewIndex*maxNodes].next = prevHead;
+                                                                uint prevHead = imageAtomicExchange(headPointers, ivec3(gl_FragCoord.xy, gl_ViewIndex), nodeIdx);
+                                                                //uint prevHead = imageLoad(headPointers, ivec3(gl_FragCoord.xy, gl_ViewIndex)).r;
+                                                                nodes[nodeIdx+gl_ViewIndex*maxNodes].color = texel;
+                                                                nodes[nodeIdx+gl_ViewIndex*maxNodes].depth = gl_FragCoord.z;
+                                                                nodes[nodeIdx+gl_ViewIndex*maxNodes].next = prevHead;
                                                                 /*if (prevHead == 0)
                                                                    debugPrintfEXT("error");*/
                                                            }
@@ -1070,6 +1066,7 @@ namespace odfaeg {
                    #version 460
                    #define MAX_FRAGMENTS 20
                    #extension GL_EXT_debug_printf : enable
+                   #extension GL_EXT_multiview : enable
                    struct NodeType {
                       vec4 color;
                       float depth;
@@ -1079,7 +1076,7 @@ namespace odfaeg {
                       uint count[6];
                       uint maxNodes;
                    };
-                   layout(set = 0, binding = 1, r32ui) uniform uimage3D headPointers;
+                   layout(set = 0, binding = 1, r32ui) uniform uimage2DArray headPointers;
                    layout(set = 0, binding = 2) buffer linkedLists {
                        NodeType nodes[];
                    };
@@ -1087,13 +1084,12 @@ namespace odfaeg {
                    layout (location = 0) in vec4 frontColor;
                    layout (location = 1) in vec2 fTexCoords;
                    layout (location = 2) in vec3 normal;
-                   layout (location = 3) in flat int viewIndex;
                    void main() {
                       NodeType frags[MAX_FRAGMENTS];
                       int count = 0;
-                      uint n = imageLoad(headPointers, ivec3(gl_FragCoord.xy, viewIndex)).r;
+                      uint n = imageLoad(headPointers, ivec3(gl_FragCoord.xy, gl_ViewIndex)).r;
                       while(n != 0xffffffffu && count < MAX_FRAGMENTS) {
-                           frags[count] = nodes[n+maxNodes*viewIndex];
+                           frags[count] = nodes[n+maxNodes*gl_ViewIndex];
                            n = frags[count].next/*+maxNodes*viewIndex*/;
                            count++;
                       }
@@ -1146,13 +1142,13 @@ namespace odfaeg {
                 VkImageViewCreateInfo viewInfo{};
                 viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
                 viewInfo.image = headPtrTextureImage;
-                viewInfo.viewType = VK_IMAGE_VIEW_TYPE_3D;
+                viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
                 viewInfo.format = VK_FORMAT_R32_UINT;
                 viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
                 viewInfo.subresourceRange.baseMipLevel = 0;
                 viewInfo.subresourceRange.levelCount = 1;
                 viewInfo.subresourceRange.baseArrayLayer = 0;
-                viewInfo.subresourceRange.layerCount = 1;
+                viewInfo.subresourceRange.layerCount = 6;
                 if (vkCreateImageView(vkDevice.getDevice(), &viewInfo, nullptr, &headPtrTextureImageView) != VK_SUCCESS) {
                     throw std::runtime_error("failed to create head ptr texture image view!");
                 }
@@ -2231,19 +2227,16 @@ namespace odfaeg {
                     unsigned int currentFrame = environmentMap.getCurrentFrame();
 
                     //vkCmdWaitEvents(commandBuffers[currentFrame], 1, &events[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
-                    environmentMap.beginRenderPass();
-                    environmentMap.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
-                    environmentMap.display();
-                    environmentMap.beginRecordCommandBuffers();
-                    VkMemoryBarrier memoryBarrier;
+                    /*VkMemoryBarrier memoryBarrier={};
                     memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-                    memoryBarrier.pNext = VK_NULL_HANDLE;
                     memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
                     memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
                     //vkCmdWaitEvents(commandBuffers[currentFrame], 1, &events[currentFrame], VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
-                    vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
+                    vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);*/
                     environmentMap.beginRenderPass();
+                    environmentMap.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
                     environmentMap.display(false, computeSemaphore);
+
                 } else {
                     const_cast<Texture&>(environmentMap.getTexture()).toShaderReadOnlyOptimal();
                     const_cast<Texture&>(alphaBuffer.getTexture()).toShaderReadOnlyOptimal();
