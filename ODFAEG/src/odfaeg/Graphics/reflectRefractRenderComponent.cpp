@@ -746,10 +746,15 @@ namespace odfaeg {
                 const std::string clearHeadptrComputeShaderCode = R"(#version 460
                                                                      layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
                                                                      layout(binding = 0, r32ui) uniform uimage2DArray headPtr;
+                                                                     layout(binding = 1) buffer CounterSSBO {
+                                                                        uint count[6];
+                                                                        uint maxNodes;
+                                                                     };
                                                                      void main() {
                                                                         ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
                                                                         int layer = int(gl_GlobalInvocationID.z);
                                                                         imageStore(headPtr, ivec3(texelCoord, layer), uvec4(0xFFFFFFFFu));
+                                                                        count[layer] = 0;
                                                                      }
                                                                      )";
                 const std::string indirectRenderingVertexShader = R"(#version 460
@@ -1246,9 +1251,11 @@ namespace odfaeg {
                 }
             }
             void ReflectRefractRenderComponent::createComputeDescriptorPool() {
-                std::array<VkDescriptorPoolSize, 1> poolSizes;
-                poolSizes[0].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                std::array<VkDescriptorPoolSize, 2> poolSizes;
+                poolSizes[0].type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
                 poolSizes[0].descriptorCount = 1;
+                poolSizes[1].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                poolSizes[1].descriptorCount = 1;
                 VkDescriptorPoolCreateInfo poolInfo{};
                 poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
                 poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
@@ -1409,7 +1416,14 @@ namespace odfaeg {
                 headPtrImageLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
                 headPtrImageLayoutBinding.pImmutableSamplers = nullptr;
                 headPtrImageLayoutBinding.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
-                std::array<VkDescriptorSetLayoutBinding, 1> bindings = {headPtrImageLayoutBinding};
+
+                VkDescriptorSetLayoutBinding counterLayoutBinding{};
+                counterLayoutBinding.binding = 1;
+                counterLayoutBinding.descriptorCount = 1;
+                counterLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                counterLayoutBinding.pImmutableSamplers = nullptr;
+                counterLayoutBinding.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
+                std::array<VkDescriptorSetLayoutBinding, 2> bindings = {headPtrImageLayoutBinding, counterLayoutBinding};
                 VkDescriptorSetLayoutCreateInfo layoutInfo{};
                 layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
                 //layoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR;
@@ -1695,7 +1709,7 @@ namespace odfaeg {
                 if (vkAllocateDescriptorSets(vkDevice.getDevice(), &allocInfo, &cpDescriptorSet) != VK_SUCCESS) {
                     throw std::runtime_error("echec de l'allocation d'un set de descripteurs!");
                 }
-                std::array<VkWriteDescriptorSet, 1> descriptorWrites{};
+                std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
                 VkDescriptorImageInfo headPtrDescriptorImageInfo;
                 headPtrDescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
                 headPtrDescriptorImageInfo.imageView = headPtrTextureImageView;
@@ -1708,6 +1722,19 @@ namespace odfaeg {
                 descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
                 descriptorWrites[0].descriptorCount = 1;
                 descriptorWrites[0].pImageInfo = &headPtrDescriptorImageInfo;
+
+                 VkDescriptorBufferInfo counterStorageBufferInfoLastFrame{};
+                counterStorageBufferInfoLastFrame.buffer = counterShaderStorageBuffers[0];
+                counterStorageBufferInfoLastFrame.offset = 0;
+                counterStorageBufferInfoLastFrame.range = sizeof(AtomicCounterSSBO);
+
+                descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                descriptorWrites[1].dstSet = cpDescriptorSet;
+                descriptorWrites[1].dstBinding = 1;
+                descriptorWrites[1].dstArrayElement = 0;
+                descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                descriptorWrites[1].descriptorCount = 1;
+                descriptorWrites[1].pBufferInfo = &counterStorageBufferInfoLastFrame;
                 vkUpdateDescriptorSets(vkDevice.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
             }
             void ReflectRefractRenderComponent::allocateDescriptorSets(RenderStates states) {
@@ -3058,9 +3085,7 @@ namespace odfaeg {
                                     vkResetFences(vkDevice.getDevice(), 1, &computeFence);
                                     VkCommandBuffer cmd = beginSingleTimeCommands();
 
-                                    for (unsigned int j = 0; j < 6; j++) {
-                                        vkCmdFillBuffer(cmd, counterShaderStorageBuffers[environmentMap.getCurrentFrame()], j*sizeof(uint32_t), sizeof(uint32_t), 0);
-                                    }
+
 
                                     /*vkCmdResetEvent(commandBuffers[currentFrame], events[currentFrame],  VK_PIPELINE_STAGE_TRANSFER_BIT);
                                     vkCmdSetEvent(commandBuffers[currentFrame], events[currentFrame],  VK_PIPELINE_STAGE_TRANSFER_BIT);*/
@@ -3071,7 +3096,7 @@ namespace odfaeg {
                                     vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
                                     vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, computePipeline);
                                     vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, computePipelineLayout, 0, 1, &cpDescriptorSet, 0, nullptr);
-                                    vkCmdDispatch(cmd, view.getSize().x, view.getSize().y, 6);
+                                    vkCmdDispatch(cmd, squareSize, squareSize, 6);
                                     VkMemoryBarrier memoryBarrier2 = {};
                                     memoryBarrier2.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
                                     memoryBarrier2.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
