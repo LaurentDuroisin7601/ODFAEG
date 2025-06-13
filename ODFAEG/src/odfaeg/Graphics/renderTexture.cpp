@@ -174,7 +174,7 @@ namespace odfaeg
                         framebufferInfo.pAttachments = attachments.data();
                         framebufferInfo.width = getSwapchainExtents().width;
                         framebufferInfo.height = getSwapchainExtents().height;
-                        framebufferInfo.layers = 1;;
+                        framebufferInfo.layers = 1;
 
 
                         if (vkCreateFramebuffer(vkDevice.getDevice(), &framebufferInfo, nullptr, &swapChainFramebuffers[j][i]) != VK_SUCCESS) {
@@ -282,12 +282,13 @@ namespace odfaeg
                     renderPassInfo.subpassCount = 1;
                     renderPassInfo.pSubpasses = &subpass;
                     VkSubpassDependency dependency{};
-                    dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+                    dependency.srcSubpass = /*(isCubeMap) ? 0 : */VK_SUBPASS_EXTERNAL;
                     dependency.dstSubpass = 0;
                     dependency.srcStageMask =  VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
                     dependency.srcAccessMask = 0;
                     dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
                     dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+                    dependency.dependencyFlags = /*(isCubeMap) ? VK_DEPENDENCY_BY_REGION_BIT | VK_DEPENDENCY_VIEW_LOCAL_BIT :*/ 0;
                     renderPassInfo.dependencyCount = 1;
                     renderPassInfo.pDependencies = &dependency;
 
@@ -298,8 +299,6 @@ namespace odfaeg
                         multiviewInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO;
                         multiviewInfo.subpassCount = 1;
                         multiviewInfo.pViewMasks = &viewMask;
-                        /*multiviewInfo.correlationMaskCount = 1;
-                        multiviewInfo.pCorrelationMasks = &correlationMask;*/
                         renderPassInfo.pNext = &multiviewInfo;
                     }
                     if (vkCreateRenderPass(vkDevice.getDevice(), &renderPassInfo, nullptr, &renderPasses[1]) != VK_SUCCESS) {
@@ -398,7 +397,7 @@ namespace odfaeg
         uint32_t RenderTexture::getImageIndex() {
             return imageIndex;
         }
-        void RenderTexture::display(bool isSignalSemaphore, VkPipelineStageFlags2 stageMask) {
+        void RenderTexture::display(bool isSignalSemaphore, VkSemaphore semaphore) {
             if (getCommandBuffers().size() > 0) {
                 //std::cout<<"render texture end command buffer"<<std::endl;
                 vkCmdEndRenderPass(getCommandBuffers()[getCurrentFrame()]);
@@ -409,36 +408,25 @@ namespace odfaeg
                 //}
                 vkWaitForFences(vkDevice.getDevice(), 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
-                VkSemaphoreSubmitInfo timelineInfo = {};
-                VkSubmitInfo2 submitInfo = {};
-                submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2;
-                if (stageMask != VK_PIPELINE_STAGE_2_NONE) {
-                    if (isSignalSemaphore) {
-                        const uint64_t signalValue = ++value;
-                        timelineInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
-                        timelineInfo.semaphore = renderFinishedSemaphores[currentFrame];
-                        timelineInfo.value = signalValue;
-                        timelineInfo.stageMask = stageMask;
 
-                        submitInfo.signalSemaphoreInfoCount = 1;
-                        submitInfo.pSignalSemaphoreInfos = &timelineInfo;
+                VkSubmitInfo submitInfo = {};
+                submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+                if (semaphore != VK_NULL_HANDLE) {
+                    if (isSignalSemaphore) {
+
+                        submitInfo.signalSemaphoreCount = 1;
+                        submitInfo.pSignalSemaphores = &semaphore;
                     } else {
-                        const uint64_t waitValue = value;
-                        timelineInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
-                        timelineInfo.semaphore = renderFinishedSemaphores[currentFrame];
-                        timelineInfo.value = waitValue;
-                        timelineInfo.stageMask = stageMask;
-                        submitInfo.waitSemaphoreInfoCount = 1;
-                        submitInfo.pWaitSemaphoreInfos = &timelineInfo;
+                        VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT};
+                        submitInfo.pWaitDstStageMask = waitStages;
+                        submitInfo.waitSemaphoreCount = 1;
+                        submitInfo.pWaitSemaphores = &semaphore;
                     }
                 }
-                submitInfo.commandBufferInfoCount = 1;
-                VkCommandBufferSubmitInfo commandSubmitInfo = {};
-                commandSubmitInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO;
-                commandSubmitInfo.commandBuffer = getCommandBuffers()[currentFrame];
-                submitInfo.pCommandBufferInfos = &commandSubmitInfo;
+                submitInfo.commandBufferCount = 1;
+                submitInfo.pCommandBuffers = &getCommandBuffers()[currentFrame];
                 vkResetFences(vkDevice.getDevice(), 1, &inFlightFences[currentFrame]);
-                if (vkQueueSubmit2(vkDevice.getGraphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS) {
+                if (vkQueueSubmit(vkDevice.getGraphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS) {
                     throw core::Erreur(0, "échec de l'envoi d'un command buffer!", 1);
                 }
                 vkDeviceWaitIdle(vkDevice.getDevice());

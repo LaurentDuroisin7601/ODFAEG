@@ -18,6 +18,7 @@ namespace odfaeg {
              descriptorSetLayout(window.getDescriptorSetLayout()),
              sBuildDepthBuffer(window.getDevice()), sBuildAlphaBuffer(window.getDevice()), sReflectRefract(window.getDevice()), sLinkedList(window.getDevice()),
              sLinkedList2(window.getDevice()), skyboxShader(window.getDevice()),
+             clearHeadptrComputeShader(window.getDevice()),
              vkDevice(window.getDevice()),
              descriptorPool(window.getDescriptorPool()),
              descriptorSets(window.getDescriptorSet())
@@ -100,6 +101,16 @@ namespace odfaeg {
                     createBuffer(bufferSize, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, counterShaderStorageBuffers[i], counterShaderStorageBuffersMemory[i]);
                     copyBuffer(stagingBuffer, counterShaderStorageBuffers[i], bufferSize);
                 }
+                vkDestroyBuffer(vkDevice.getDevice(), stagingBuffer, nullptr);
+                vkFreeMemory(vkDevice.getDevice(), stagingBufferMemory, nullptr);
+                createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+                uint32_t count = 6;
+                bufferSize = sizeof(uint32_t);
+                vkMapMemory(vkDevice.getDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
+                memcpy(data, &count, (size_t)bufferSize);
+                vkUnmapMemory(vkDevice.getDevice(), stagingBufferMemory);
+                createBuffer(bufferSize, VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vboCount, vboCountMemory);
+                copyBuffer(stagingBuffer, vboCount, bufferSize);
                 vkDestroyBuffer(vkDevice.getDevice(), stagingBuffer, nullptr);
                 vkFreeMemory(vkDevice.getDevice(), stagingBufferMemory, nullptr);
                 VkImageCreateInfo imageInfo{};
@@ -227,10 +238,8 @@ namespace odfaeg {
 
 
                 reflectRefractTex.beginRenderPass();
-                reflectRefractTex.display(true, VK_PIPELINE_STAGE_2_TRANSFER_BIT);
-                reflectRefractTex.beginRecordCommandBuffers();
-                reflectRefractTex.beginRenderPass();
-                reflectRefractTex.display(false, VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT);
+                reflectRefractTex.display();
+
                 const_cast<Texture&>(reflectRefractTex.getTexture()).toShaderReadOnlyOptimal();
                 //const_cast<Texture&>(reflectRefractTex.getTexture()).toShaderReadOnlyOptimal();
 
@@ -257,6 +266,9 @@ namespace odfaeg {
                 createDescriptorPool(states);
                 createDescriptorSetLayout(states);
                 allocateDescriptorSets(states);
+                createComputeDescriptorPool();
+                createComputeDescriptorSetLayout();
+                createComputeDescriptorSet();
 
                 std::vector<std::vector<std::vector<VkPipelineLayoutCreateInfo>>>& pipelineLayoutInfo = reflectRefractTex.getPipelineLayoutCreateInfo();
                 std::vector<std::vector<std::vector<VkPipelineDepthStencilStateCreateInfo>>>& depthStencilCreateInfo = reflectRefractTex.getDepthStencilCreateInfo();
@@ -489,6 +501,7 @@ namespace odfaeg {
                         }
                     }
                 }
+                createComputePipeline();
                 for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
                     vbBindlessTex[i].setPrimitiveType(static_cast<sf::PrimitiveType>(i));
                 }
@@ -504,7 +517,38 @@ namespace odfaeg {
                 vkCmdPushDescriptorSetKHR = (PFN_vkCmdPushDescriptorSetKHR)vkGetDeviceProcAddr(vkDevice.getDevice(), "vkCmdPushDescriptorSetKHR");
                 skybox = nullptr;
                 datasReady = false;
+                VkSemaphoreCreateInfo semaphoreInfo{};
+                semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
+                VkFenceCreateInfo fenceInfo{};
+                fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+                fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+                if (vkCreateSemaphore(vkDevice.getDevice(), &semaphoreInfo, nullptr, &computeSemaphore) != VK_SUCCESS ||
+                    vkCreateFence(vkDevice.getDevice(), &fenceInfo, nullptr, &computeFence) != VK_SUCCESS) {
+                    throw std::runtime_error("failed to create compute synchronization objects for a frame!");
+                }
+            }
+            void ReflectRefractRenderComponent::createComputePipeline() {
+                clearHeadptrComputeShader.createComputeShaderModule();
+                VkShaderModule computeShaderModule = clearHeadptrComputeShader.getComputeShaderModule();
+                VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
+                pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+                pipelineLayoutInfo.setLayoutCount = 1;
+                pipelineLayoutInfo.pSetLayouts = &cpDescriptorSetLayout;
+                if (vkCreatePipelineLayout(vkDevice.getDevice(), &pipelineLayoutInfo, nullptr, &computePipelineLayout) != VK_SUCCESS) {
+                    std::runtime_error("Failed to create compute pipeline layout!");
+                }
+                VkComputePipelineCreateInfo pipelineInfo = {};
+                pipelineInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
+                pipelineInfo.stage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+                pipelineInfo.stage.stage = VK_SHADER_STAGE_COMPUTE_BIT;
+                pipelineInfo.stage.module = computeShaderModule;
+                pipelineInfo.stage.pName = "main";
+                pipelineInfo.layout = computePipelineLayout;
+                if(vkCreateComputePipelines(vkDevice.getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &computePipeline) != VK_SUCCESS) {
+                    std::runtime_error("Failed to create compute pipeline!");
+                }
+                clearHeadptrComputeShader.cleanupComputeShaderModule();
             }
             VkCommandBuffer ReflectRefractRenderComponent::beginSingleTimeCommands() {
                 VkCommandBufferAllocateInfo allocInfo{};
@@ -533,8 +577,10 @@ namespace odfaeg {
                 submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
                 submitInfo.commandBufferCount = 1;
                 submitInfo.pCommandBuffers = &commandBuffer;
+                submitInfo.signalSemaphoreCount = 1;
+                submitInfo.pSignalSemaphores = &computeSemaphore;
 
-                vkQueueSubmit(vkDevice.getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
+                vkQueueSubmit(vkDevice.getGraphicsQueue(), 1, &submitInfo, computeFence);
                 vkQueueWaitIdle(vkDevice.getGraphicsQueue());
 
                 vkFreeCommandBuffers(vkDevice.getDevice(), commandPool, 1, &commandBuffer);
@@ -697,6 +743,15 @@ namespace odfaeg {
                 vkFreeCommandBuffers(vkDevice.getDevice(), commandPool, 1, &commandBuffer);
             }
             void ReflectRefractRenderComponent::compileShaders() {
+                const std::string clearHeadptrComputeShaderCode = R"(#version 460
+                                                                     layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+                                                                     layout(binding = 0, r32ui) uniform uimage3D headPtr;
+                                                                     void main() {
+                                                                        ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
+                                                                        int layer = int(gl_GlobalInvocationID.z);
+                                                                        imageStore(headPtr, ivec3(texelCoord, layer), uvec4(0xFFFFFFFF));
+                                                                     }
+                                                                     )";
                 const std::string indirectRenderingVertexShader = R"(#version 460
                                                                      layout (location = 0) in vec3 position;
                                                                      layout (location = 1) in vec4 color;
@@ -779,22 +834,15 @@ namespace odfaeg {
                                                                     gl_PointSize = 2.0f;
                                                                     MaterialData material = materialDatas[gl_DrawID];
                                                                     ModelData model = modelDatas[gl_InstanceIndex];
+                                                                    viewIndex = gl_ViewIndex;
+
                                                                     uint textureIndex = material.textureIndex;
-                                                                    gl_Position = vec4(position, 1.f) * model.modelMatrix * datas[gl_ViewIndex].viewMatrix * datas[gl_ViewIndex].projectionMatrix;
+                                                                    gl_Position = vec4(position, 1.f) * model.modelMatrix * datas[viewIndex].viewMatrix * datas[viewIndex].projectionMatrix;
                                                                     fTexCoords = texCoords;
                                                                     frontColor = color;
                                                                     texIndex = textureIndex;
                                                                     normal = normals;
-                                                                    viewIndex = gl_ViewIndex;
-                                                                    /*vec4 row1 = model.modelMatrix[0];
-                                                                    vec4 row2 = model.modelMatrix[1];
-                                                                    vec4 row3 = model.modelMatrix[2];
-                                                                    vec4 row4 = model.modelMatrix[3];
-                                                                    debugPrintfEXT("r1 : %v4f\n", row1);
-                                                                    debugPrintfEXT("r2 : %v4f\n", row2);
-                                                                    debugPrintfEXT("r3 : %v4f\n", row3);
-                                                                    debugPrintfEXT("r4 : %v4f\n", row4);*/
-                                                                    //debugPrintfEXT("position : %v4f\n", gl_Position);
+
                                                                }
                                                                )";
                 const std::string  linkedListVertexShader2 = R"(#version 460
@@ -1004,16 +1052,16 @@ namespace odfaeg {
                                                       layout (location = 4) in flat int viewIndex;
                                                       layout(location = 0) out vec4 fcolor;
                                                       void main() {
-                                                           uint nodeIdx = atomicAdd(count[viewIndex], 1)+1;
+                                                           uint nodeIdx = atomicAdd(count[viewIndex], 1);
                                                            vec4 texel = (texIndex != 0) ? frontColor * texture(textures[texIndex-1], fTexCoords.xy) : frontColor;
                                                            if (nodeIdx < maxNodes) {
                                                                 uint prevHead = imageAtomicExchange(headPointers, ivec3(gl_FragCoord.xy, viewIndex), nodeIdx);
-                                                                uint value = imageLoad(headPointers, ivec3(gl_FragCoord.xy, viewIndex)).r;
+                                                                //uint prevHead = imageLoad(headPointers, ivec3(gl_FragCoord.xy, viewIndex)).r;
                                                                 nodes[nodeIdx+viewIndex*maxNodes].color = texel;
                                                                 nodes[nodeIdx+viewIndex*maxNodes].depth = gl_FragCoord.z;
                                                                 nodes[nodeIdx+viewIndex*maxNodes].next = prevHead;
-                                                                /*if (value == 0)
-                                                                    debugPrintfEXT("value : %i, view index : %i\n", value, viewIndex);*/
+                                                                /*if (prevHead == 0)
+                                                                   debugPrintfEXT("error");*/
                                                            }
                                                            fcolor = vec4(0, 0, 0, 0);
                                                       })";
@@ -1044,7 +1092,7 @@ namespace odfaeg {
                       NodeType frags[MAX_FRAGMENTS];
                       int count = 0;
                       uint n = imageLoad(headPointers, ivec3(gl_FragCoord.xy, viewIndex)).r;
-                      while(n != 0 && count < MAX_FRAGMENTS) {
+                      while(n != 0xffffffffu && count < MAX_FRAGMENTS) {
                            frags[count] = nodes[n+maxNodes*viewIndex];
                            n = frags[count].next/*+maxNodes*viewIndex*/;
                            count++;
@@ -1071,7 +1119,7 @@ namespace odfaeg {
                         debugPrintfEXT("count : %v4f\n", color);*/
                       fcolor = color;
                    })";
-                   if (!sBuildDepthBuffer.loadFromMemory(indirectRenderingVertexShader, buildDepthBufferFragmentShader)) {
+                    if (!sBuildDepthBuffer.loadFromMemory(indirectRenderingVertexShader, buildDepthBufferFragmentShader)) {
                         throw core::Erreur(50, "Error, failed to load build depth buffer shader", 3);
                     }
                     if (!sReflectRefract.loadFromMemory(perPixReflectRefractIndirectRenderingVertexShader, buildFramebufferShader)) {
@@ -1085,6 +1133,9 @@ namespace odfaeg {
                     }
                     if (!sBuildAlphaBuffer.loadFromMemory(indirectRenderingVertexShader,buildAlphaBufferFragmentShader)) {
                         throw core::Erreur(60, "Error, failed to load build alpha buffer shader", 3);
+                    }
+                    if (!clearHeadptrComputeShader.loadFromMemory(clearHeadptrComputeShaderCode)) {
+                        throw core::Erreur(50, "Error, failed to load clear headptr shader", 3);
                     }
                     math::Matrix4f viewMatrix = getWindow().getDefaultView().getViewMatrix().getMatrix()/*.transpose()*/;
                     math::Matrix4f projMatrix = getWindow().getDefaultView().getProjMatrix().getMatrix()/*.transpose()*/;
@@ -1196,6 +1247,19 @@ namespace odfaeg {
                 samplerInfo3.maxLod = 0.0f;
                 if (vkCreateSampler(vkDevice.getDevice(), &samplerInfo3, nullptr, &alphaTextureSampler) != VK_SUCCESS) {
                     throw std::runtime_error("failed to create texture sampler!");
+                }
+            }
+            void ReflectRefractRenderComponent::createComputeDescriptorPool() {
+                std::array<VkDescriptorPoolSize, 1> poolSizes;
+                poolSizes[0].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                poolSizes[0].descriptorCount = 1;
+                VkDescriptorPoolCreateInfo poolInfo{};
+                poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+                poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+                poolInfo.pPoolSizes = poolSizes.data();
+                poolInfo.maxSets = 1;
+                if (vkCreateDescriptorPool(vkDevice.getDevice(), &poolInfo, nullptr, &cpDescriptorPool) != VK_SUCCESS) {
+                    throw std::runtime_error("echec de la creation de la pool de descripteurs!");
                 }
             }
             void ReflectRefractRenderComponent::createDescriptorPool(RenderStates states) {
@@ -1340,6 +1404,24 @@ namespace odfaeg {
                     if (vkCreateDescriptorPool(vkDevice.getDevice(), &poolInfo, nullptr, &descriptorPool[descriptorId]) != VK_SUCCESS) {
                         throw std::runtime_error("echec de la creation de la pool de descripteurs!");
                     }
+                }
+            }
+            void ReflectRefractRenderComponent::createComputeDescriptorSetLayout() {
+                VkDescriptorSetLayoutBinding headPtrImageLayoutBinding{};
+                headPtrImageLayoutBinding.binding = 0;
+                headPtrImageLayoutBinding.descriptorCount = 1;
+                headPtrImageLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+                headPtrImageLayoutBinding.pImmutableSamplers = nullptr;
+                headPtrImageLayoutBinding.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
+                std::array<VkDescriptorSetLayoutBinding, 1> bindings = {headPtrImageLayoutBinding};
+                VkDescriptorSetLayoutCreateInfo layoutInfo{};
+                layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+                //layoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR;
+                layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());;
+                layoutInfo.pBindings = bindings.data();
+
+                if (vkCreateDescriptorSetLayout(vkDevice.getDevice(), &layoutInfo, nullptr, &cpDescriptorSetLayout) != VK_SUCCESS) {
+                    throw std::runtime_error("failed to create descriptor set layout!");
                 }
             }
             void ReflectRefractRenderComponent::createDescriptorSetLayout(RenderStates states) {
@@ -1606,6 +1688,31 @@ namespace odfaeg {
                         throw std::runtime_error("failed to create descriptor set layout!");
                     }
                 }
+            }
+            void ReflectRefractRenderComponent::createComputeDescriptorSet() {
+                std::vector<VkDescriptorSetLayout> layouts(1, cpDescriptorSetLayout);
+                VkDescriptorSetAllocateInfo allocInfo{};
+                allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+                allocInfo.descriptorPool = cpDescriptorPool;
+                allocInfo.descriptorSetCount = 1;
+                allocInfo.pSetLayouts = layouts.data();
+                if (vkAllocateDescriptorSets(vkDevice.getDevice(), &allocInfo, &cpDescriptorSet) != VK_SUCCESS) {
+                    throw std::runtime_error("echec de l'allocation d'un set de descripteurs!");
+                }
+                std::array<VkWriteDescriptorSet, 1> descriptorWrites{};
+                VkDescriptorImageInfo headPtrDescriptorImageInfo;
+                headPtrDescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+                headPtrDescriptorImageInfo.imageView = headPtrTextureImageView;
+                headPtrDescriptorImageInfo.sampler = headPtrTextureSampler;
+
+                descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                descriptorWrites[0].dstSet = cpDescriptorSet;
+                descriptorWrites[0].dstBinding = 0;
+                descriptorWrites[0].dstArrayElement = 0;
+                descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+                descriptorWrites[0].descriptorCount = 1;
+                descriptorWrites[0].pImageInfo = &headPtrDescriptorImageInfo;
+                vkUpdateDescriptorSets(vkDevice.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
             }
             void ReflectRefractRenderComponent::allocateDescriptorSets(RenderStates states) {
                 Shader* shader = const_cast<Shader*>(states.shader);
@@ -2043,7 +2150,7 @@ namespace odfaeg {
                 depthBuffer.beginRenderPass();
                 depthBuffer.display();
                 alphaBuffer.clear(sf::Color::Transparent);
-                alphaBuffer.display(true, VK_PIPELINE_STAGE_2_CLEAR_BIT);
+                alphaBuffer.display();
                 alphaBuffer.beginRecordCommandBuffers();
                 commandBuffers = alphaBuffer.getCommandBuffers();
                 for (unsigned int i = 0; i < commandBuffers.size(); i++) {
@@ -2089,7 +2196,7 @@ namespace odfaeg {
                     depthBuffer.display();
                 } else if (shader == &sBuildAlphaBuffer) {
                     const_cast<Texture&>(depthBuffer.getTexture()).toShaderReadOnlyOptimal();
-                    alphaBuffer.beginRecordCommandBuffers();
+
 
                     std::vector<VkCommandBuffer> commandBuffers = alphaBuffer.getCommandBuffers();
                     unsigned int currentFrame = alphaBuffer.getCurrentFrame();
@@ -2099,15 +2206,14 @@ namespace odfaeg {
                     vkCmdSetEvent(commandBuffers[currentFrame], events[currentFrame],  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);*/
                     //vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 0, nullptr);
 
-                    alphaBuffer.beginRenderPass();
-                    alphaBuffer.display(false, VK_PIPELINE_STAGE_2_CLEAR_BIT);
+
                     alphaBuffer.beginRecordCommandBuffers();
                     alphaBuffer.beginRenderPass();
                     vkCmdPushConstants(commandBuffers[currentFrame], alphaBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][alphaBuffer.getId()][depthStencilID], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectRenderingPC), &indirectRenderingPC);
                     vkCmdPushConstants(commandBuffers[currentFrame], alphaBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][alphaBuffer.getId()][depthStencilID], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(BuildAlphaPC), &buildAlphaPC);
                     alphaBuffer.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
 
-                    alphaBuffer.display(true, VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT);
+                    alphaBuffer.display();
                     alphaBuffer.beginRecordCommandBuffers();
                     VkMemoryBarrier memoryBarrier={};
                     memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
@@ -2132,12 +2238,12 @@ namespace odfaeg {
                     VkMemoryBarrier memoryBarrier;
                     memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
                     memoryBarrier.pNext = VK_NULL_HANDLE;
-                    memoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-                    memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_MEMORY_READ_BIT;
-                    vkCmdWaitEvents(commandBuffers[currentFrame], 1, &events[currentFrame], VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
-                    //vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
+                    memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+                    memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+                    //vkCmdWaitEvents(commandBuffers[currentFrame], 1, &events[currentFrame], VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
+                    vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
                     environmentMap.beginRenderPass();
-                    environmentMap.display();
+                    environmentMap.display(false, computeSemaphore);
                 } else {
                     const_cast<Texture&>(environmentMap.getTexture()).toShaderReadOnlyOptimal();
                     const_cast<Texture&>(alphaBuffer.getTexture()).toShaderReadOnlyOptimal();
@@ -2161,7 +2267,7 @@ namespace odfaeg {
                     vkCmdPushConstants(commandBuffers[currentFrame], reflectRefractTex.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][reflectRefractTex.getId()][depthStencilID], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(BuildFrameBufferPC), &buildFrameBufferPC);
                     reflectRefractTex.beginRenderPass();
                     reflectRefractTex.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
-                    reflectRefractTex.display(false, VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT);
+                    reflectRefractTex.display();
                     const_cast<Texture&>(alphaBuffer.getTexture()).toColorAttachmentOptimal();
                     const_cast<Texture&>(environmentMap.getTexture()).toColorAttachmentOptimal();
                 }
@@ -2568,7 +2674,8 @@ namespace odfaeg {
                         drawArraysIndirectCommand.firstIndex = firstIndex[p];
                         drawArraysIndirectCommand.baseInstance = baseInstance[p];
                         drawArraysIndirectCommand.instanceCount = 1;
-                        drawArraysIndirectCommands[p].push_back(drawArraysIndirectCommand);
+                        //for (unsigned int d = 0; d < 6; d++)
+                            drawArraysIndirectCommands[p].push_back(drawArraysIndirectCommand);
                         firstIndex[p] += vertexCount;
                         baseInstance[p] += 1;
                     }
@@ -2606,7 +2713,8 @@ namespace odfaeg {
                         drawArraysIndirectCommand.firstIndex = firstIndex[p];
                         drawArraysIndirectCommand.baseInstance = baseInstance[p];
                         drawArraysIndirectCommand.instanceCount = tm.size();
-                        drawArraysIndirectCommands[p].push_back(drawArraysIndirectCommand);
+                        //for (unsigned int d = 0; d < 6; d++)
+                            drawArraysIndirectCommands[p].push_back(drawArraysIndirectCommand);
                         firstIndex[p] += vertexCount;
                         baseInstance[p] += tm.size();
                     }
@@ -2953,30 +3061,31 @@ namespace odfaeg {
                                     }
                                     environmentMap.clear(sf::Color::Transparent);
                                     environmentMap.display();
-                                    environmentMap.beginRecordCommandBuffers();
-                                    VkClearColorValue clearColor;
-                                    clearColor.uint32[0] = 0;
-                                    std::vector<VkCommandBuffer> commandBuffers = environmentMap.getCommandBuffers();
-                                    unsigned int currentFrame = environmentMap.getCurrentFrame();
-                                    VkImageSubresourceRange subresRange = {};
-                                    subresRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-                                    subresRange.levelCount = 1;
-                                    subresRange.layerCount = 1;
-
-                                    //transitionImageLayout(headPtrTextureImage, VK_FORMAT_R32_UINT, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-                                    vkCmdClearColorImage(commandBuffers[currentFrame], headPtrTextureImage, VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
+                                    vkWaitForFences(vkDevice.getDevice(), 1, &computeFence, VK_TRUE, UINT64_MAX);
+                                    vkResetFences(vkDevice.getDevice(), 1, &computeFence);
+                                    VkCommandBuffer cmd = beginSingleTimeCommands();
 
                                     for (unsigned int j = 0; j < 6; j++) {
-                                        vkCmdFillBuffer(commandBuffers[currentFrame], counterShaderStorageBuffers[currentFrame], j*sizeof(uint32_t), sizeof(uint32_t), 0);
+                                        vkCmdFillBuffer(cmd, counterShaderStorageBuffers[environmentMap.getCurrentFrame()], j*sizeof(uint32_t), sizeof(uint32_t), 0);
                                     }
 
-                                    vkCmdResetEvent(commandBuffers[currentFrame], events[currentFrame],  VK_PIPELINE_STAGE_TRANSFER_BIT);
-                                    vkCmdSetEvent(commandBuffers[currentFrame], events[currentFrame],  VK_PIPELINE_STAGE_TRANSFER_BIT);
-                                    //vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
-                                        //transitionImageLayout(headPtrTextureImage, VK_FORMAT_R32_UINT, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL);
+                                    /*vkCmdResetEvent(commandBuffers[currentFrame], events[currentFrame],  VK_PIPELINE_STAGE_TRANSFER_BIT);
+                                    vkCmdSetEvent(commandBuffers[currentFrame], events[currentFrame],  VK_PIPELINE_STAGE_TRANSFER_BIT);*/
+                                    VkMemoryBarrier memoryBarrier = {};
+                                    memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+                                    memoryBarrier.srcAccessMask = 0;
+			                        memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+                                    vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
+                                    vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, computePipeline);
+                                    vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, computePipelineLayout, 0, 1, &cpDescriptorSet, 0, nullptr);
+                                    vkCmdDispatch(cmd, view.getSize().x, view.getSize().y, 6);
+                                    VkMemoryBarrier memoryBarrier2 = {};
+                                    memoryBarrier2.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+                                    memoryBarrier2.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+			                        memoryBarrier2.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			                        vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier2, 0, nullptr, 0, nullptr);
+                                    endSingleTimeCommands(cmd);
 
-                                    environmentMap.beginRenderPass();
-                                    environmentMap.display();
                                     /*vb.clear();
                                     //vb.name = "SKYBOXVB";
                                     for (unsigned int i = 0; i < m_skyboxInstance.size(); i++) {
@@ -3106,6 +3215,12 @@ namespace odfaeg {
             }
             ReflectRefractRenderComponent::~ReflectRefractRenderComponent() {
                 vkDestroyCommandPool(vkDevice.getDevice(), commandPool, nullptr);
+                vkDestroyDescriptorPool(vkDevice.getDevice(), cpDescriptorPool, nullptr);
+                vkDestroyDescriptorSetLayout(vkDevice.getDevice(), cpDescriptorSetLayout, nullptr);
+                vkDestroyPipelineLayout(vkDevice.getDevice(), computePipelineLayout, nullptr);
+                vkDestroyPipeline(vkDevice.getDevice(), computePipeline, nullptr);
+                vkDestroyFence(vkDevice.getDevice(), computeFence, nullptr);
+                vkDestroySemaphore(vkDevice.getDevice(), computeSemaphore, nullptr);
 
                 for (unsigned int i = 0; i < events.size(); i++) {
                     vkDestroyEvent(vkDevice.getDevice(), events[i], nullptr);
@@ -3125,7 +3240,8 @@ namespace odfaeg {
                 vkDestroyImageView(vkDevice.getDevice(), alphaTextureImageView, nullptr);
                 vkDestroyImage(vkDevice.getDevice(), alphaTextureImage, nullptr);
                 vkFreeMemory(vkDevice.getDevice(), alphaTextureImageMemory, nullptr);
-
+                vkDestroyBuffer(vkDevice.getDevice(), vboCount, nullptr);
+                vkFreeMemory(vkDevice.getDevice(), vboCountMemory, nullptr);
                 for (size_t i = 0; i < counterShaderStorageBuffers.size(); i++) {
                     if (counterShaderStorageBuffers[i] != VK_NULL_HANDLE) {
                         vkDestroyBuffer(vkDevice.getDevice(), counterShaderStorageBuffers[i], nullptr);

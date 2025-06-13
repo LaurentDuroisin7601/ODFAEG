@@ -157,11 +157,15 @@ namespace odfaeg {
             bool loadFromFile(const std::string& vertexFileName, const std::string& fragmentFileName, const std::string& geometryFileName);
             bool loadFromMemory(const std::string& vertexShader, const std::string& fragmentShader, const std::string& geometryShader);
             bool loadFromStream(sf::InputStream& vertexShaderStream, sf::InputStream& fragmentShaderStream, sf::InputStream& geometryShaderStream);
+            bool loadFromMemory(const std::string& computeShaderCode);
             void createShaderModules();
+            void createComputeShaderModule();
             void cleanupShaderModules();
+            void cleanupComputeShaderModule();
             VkShaderModule getVertexShaderModule();
             VkShaderModule getFragmentShaderModule();
             VkShaderModule getGeometryShaderModule();
+            VkShaderModule getComputeShaderModule();
             unsigned int getId();
             static unsigned int getNbShaders();
             bool contains(Shader& shader);
@@ -190,12 +194,14 @@ namespace odfaeg {
             ///
             ////////////////////////////////////////////////////////////
             bool compile(const char* vertexShaderCode, const char* fragmentShaderCode, const char* geometryShaderCode=nullptr);
+            bool compile(const char* computeShaderCode);
             bool isCompiled;
             std::string vertexShaderCode, fragmentShaderCode, geometryShaderCode;
-            VkShaderModule vertexShaderModule, fragmentShaderModule, geometryShaderModule;
+            VkShaderModule vertexShaderModule, fragmentShaderModule, geometryShaderModule, computeShaderModule;
             std::vector<uint32_t> spvVertexShaderCode;
             std::vector<uint32_t> spvGeometryShaderCode;
             std::vector<uint32_t> spvFragmentShaderCode;
+            std::vector<uint32_t> spvComputeShaderCode;
             window::Device& vkDevice;
             static unsigned int nbShaders;
             unsigned int id;

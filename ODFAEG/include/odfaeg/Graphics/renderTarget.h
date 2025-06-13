@@ -198,9 +198,10 @@ namespace odfaeg {
             ////////////////////////////////////////////////////////////
             void draw(const Vertex* vertices, unsigned int vertexCount, sf::PrimitiveType type,
                       RenderStates states = RenderStates::Default);
+            void drawIndirectCount(VkCommandBuffer& cmd, unsigned int i, unsigned int nbIndirectCommands, unsigned int stride, VertexBuffer& vertexBuffer, VkBuffer vboIndirect, VkBuffer vboCount, unsigned int depthStencilId = 0, RenderStates states = RenderStates::Default);
             void drawIndirect(VkCommandBuffer& cmd, unsigned int i, unsigned int nbIndirectCommands, unsigned int stride, VertexBuffer& vertexBuffer, VkBuffer vboIndirect,unsigned int depthStencilId = 0, RenderStates states = RenderStates::Default);
             void drawVertexBuffer(VertexBuffer& vb, RenderStates states);
-            void drawVertexBuffer(VkCommandBuffer& cmd, unsigned int i,VertexBuffer& vertexBuffer,  unsigned int depthStencilId = 0, RenderStates states = RenderStates::Default);
+            void drawVertexBuffer(VkCommandBuffer& cmd, unsigned int i,VertexBuffer& vertexBuffer,  unsigned int depthStencilId = 0, RenderStates states = RenderStates::Default, unsigned int instanceCount = 1);
             /// \brief Return the size of the rendering region of the target
             ///
             /// \return Size in pixels
@@ -235,6 +236,7 @@ namespace odfaeg {
             void beginRenderPass();
             std::vector<VkCommandBuffer>& getCommandBuffers();
             std::string m_name;
+            virtual const int getMaxFramesInFlight() = 0;
 
         protected :
 
@@ -245,7 +247,7 @@ namespace odfaeg {
             virtual VkExtent2D getSwapchainExtents() = 0;
             virtual VkFormat getSwapchainImageFormat() = 0;
             virtual std::vector<VkImage> getSwapchainImages() = 0;
-            virtual const int getMaxFramesInFlight() = 0;
+
             Texture& getDepthTexture();
 
             sf::Color clearColor;

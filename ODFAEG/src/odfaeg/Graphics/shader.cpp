@@ -101,7 +101,7 @@ namespace odfaeg {
         unsigned int Shader::nbShaders = 0;
         std::vector<Shader*> Shader::shaders = std::vector<Shader*>();
         std::vector<Shader*> Shader::sameShaders= std::vector<Shader*>();
-        Shader::Shader(window::Device& vkDevice) : vkDevice(vkDevice), geometryShaderModule(nullptr) {
+        Shader::Shader(window::Device& vkDevice) : vkDevice(vkDevice), geometryShaderModule(nullptr), computeShaderModule(nullptr) {
             id = 0;
             isCompiled = false;
             shaders.push_back(this);
@@ -261,6 +261,23 @@ namespace odfaeg {
             // Compile the shader program
             return compile(&vertexShader[0], &fragmentShader[0], &geometryShader[0]);
         }
+        bool Shader::loadFromMemory(const std::string& computeShaderCode) {
+            return compile(computeShaderCode.c_str());
+        }
+        bool Shader::compile(const char* computeShaderCode) {
+            shaderc::Compiler compiler;
+            shaderc::CompileOptions options;
+            options.SetOptimizationLevel(shaderc_optimization_level_size);
+            shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(computeShaderCode, shaderc_glsl_compute_shader, "shader_src", options);
+            if (module.GetCompilationStatus() != shaderc_compilation_status_success) {
+                std::cerr << "Failed to compile compute shader :  "<<module.GetErrorMessage();
+                return false;
+            } else {
+                spvComputeShaderCode = {module.cbegin(), module.cend()};
+            }
+            isCompiled = true;
+            return true;
+        }
         ////////////////////////////////////////////////////////////
         bool Shader::compile(const char* vertexShaderCode, const char* fragmentShaderCode, const char* geometryShaderCode) {
             shaderc::Compiler compiler;
@@ -319,11 +336,25 @@ namespace odfaeg {
                 }
             }
         }
+        void Shader::createComputeShaderModule() {
+            VkShaderModuleCreateInfo createVSInfo{};
+            createVSInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+            createVSInfo.codeSize = 4*spvComputeShaderCode.size();
+            createVSInfo.pCode = spvComputeShaderCode.data();
+            if (vkCreateShaderModule(vkDevice.getDevice(), &createVSInfo, nullptr, &computeShaderModule) != VK_SUCCESS) {
+                throw core::Erreur (0, "Failed to create compute shader module", 1);
+            }
+        }
         void Shader::cleanupShaderModules() {
             vkDestroyShaderModule(vkDevice.getDevice(), vertexShaderModule, nullptr);
             vkDestroyShaderModule(vkDevice.getDevice(), fragmentShaderModule, nullptr);
             if (geometryShaderModule != nullptr) {
                 vkDestroyShaderModule(vkDevice.getDevice(), geometryShaderModule, nullptr);
+            }
+        }
+        void Shader::cleanupComputeShaderModule() {
+            if (computeShaderModule != nullptr) {
+                vkDestroyShaderModule(vkDevice.getDevice(), computeShaderModule, nullptr);
             }
         }
         VkShaderModule Shader::getVertexShaderModule() {
@@ -334,6 +365,9 @@ namespace odfaeg {
         }
         VkShaderModule Shader::getGeometryShaderModule() {
             return geometryShaderModule;
+        }
+        VkShaderModule Shader::getComputeShaderModule() {
+            return computeShaderModule;
         }
         Shader::~Shader() {
         }

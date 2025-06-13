@@ -311,6 +311,26 @@ namespace odfaeg {
              system("PAUSE");*/
 
         }
+        void RenderTarget::drawIndirectCount(VkCommandBuffer& cmd, unsigned int i, unsigned int nbIndirectCommands, unsigned int stride, VertexBuffer& vertexBuffer, VkBuffer vboIndirect, VkBuffer vboCount, unsigned int depthStencilId, RenderStates states) {
+            Shader* shader = const_cast<Shader*>(states.shader);
+            //std::cout<<"draw indirect depth stencil id :"<<depthStencilId<<std::endl;
+            unsigned int descriptorId = id * shader->getNbShaders() + shader->getId();
+            vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vertexBuffer.getPrimitiveType()][id][depthStencilId]);
+            VkBuffer vertexBuffers[] = {vertexBuffer.getVertexBuffer()};
+            VkDeviceSize offsets[] = {0, 0};
+            vkCmdBindVertexBuffers(cmd, 0, 1, vertexBuffers, offsets);
+            vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vertexBuffer.getPrimitiveType()][id][depthStencilId], 0, 1, &descriptorSets[descriptorId][getCurrentFrame()], 0, nullptr);
+
+            applyViewportAndScissor();
+            if(vertexBuffer.getIndicesSize() > 0) {
+                vkCmdBindIndexBuffer(cmd, vertexBuffer.getIndexBuffer(), 0, VK_INDEX_TYPE_UINT16);
+            }
+            if(vertexBuffer.getIndicesSize() > 0) {
+                vkCmdDrawIndexedIndirectCount(cmd, vboIndirect, 0, vboCount, 0, nbIndirectCommands, stride);
+            } else {
+                vkCmdDrawIndirectCount(cmd, vboIndirect, 0, vboCount, 0, nbIndirectCommands, stride);
+            }
+        }
         void RenderTarget::drawIndirect(VkCommandBuffer& cmd, unsigned int i, unsigned int nbIndirectCommands, unsigned int stride, VertexBuffer& vertexBuffer, VkBuffer vboIndirect, unsigned int depthStencilId, RenderStates states) {
             Shader* shader = const_cast<Shader*>(states.shader);
             //std::cout<<"draw indirect depth stencil id :"<<depthStencilId<<std::endl;
@@ -331,7 +351,7 @@ namespace odfaeg {
                 vkCmdDrawIndirect(cmd, vboIndirect, 0, nbIndirectCommands, stride);
             }
         }
-        void RenderTarget::drawVertexBuffer(VkCommandBuffer& cmd, unsigned int i, VertexBuffer& vertexBuffer, unsigned int depthStencilId, RenderStates states) {
+        void RenderTarget::drawVertexBuffer(VkCommandBuffer& cmd, unsigned int i, VertexBuffer& vertexBuffer, unsigned int depthStencilId, RenderStates states, unsigned int instanceCount) {
             //std::cout<<"vertex stencil id :"<<depthStencilId<<std::endl;
             Shader* shader = const_cast<Shader*>(states.shader);
             unsigned int descriptorId = id * shader->getNbShaders() + shader->getId();
@@ -348,9 +368,9 @@ namespace odfaeg {
                 vkCmdBindIndexBuffer(cmd, vertexBuffer.getIndexBuffer(), 0, VK_INDEX_TYPE_UINT16);
             }
             if(vertexBuffer.getIndicesSize() > 0) {
-                vkCmdDrawIndexed(cmd, static_cast<uint32_t>(vertexBuffer.getIndicesSize()), 1, 0, 0, 0);
+                vkCmdDrawIndexed(cmd, static_cast<uint32_t>(vertexBuffer.getIndicesSize()), instanceCount, 0, 0, 0);
             } else {
-                vkCmdDraw(cmd, static_cast<uint32_t>(vertexBuffer.getSize()), 1, 0, 0);
+                vkCmdDraw(cmd, static_cast<uint32_t>(vertexBuffer.getSize()), instanceCount, 0, 0);
             }
         }
 

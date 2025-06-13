@@ -48,7 +48,7 @@ void compileShaders(Shader& sLinkedList) {
                                                                     fTexCoords = texCoords;
                                                                     frontColor = color;
                                                                     normal = normals;
-                                                                    viewIndex = gl_ViewIndex;
+                                                                    viewIndex = 0;
                                                                }
                                                                )";
 
@@ -66,8 +66,8 @@ void compileShaders(Shader& sLinkedList) {
 
                                                uint prevHead = imageLoad(headPointers, ivec3(gl_FragCoord.xy, viewIndex)).r;
                                                if (prevHead == 0)
-                                                    debugPrintfEXT("prevHead: %i, view index : %i\n", prevHead, viewIndex);
-                                               fcolor = frontColor;
+                                                    debugPrintfEXT("erreur");
+
                                           })";
     if (!sLinkedList.loadFromMemory(linkedListIndirectRenderingVertexShader, fragmentShader)) {
         throw Erreur(58, "Error, failed to load per pixel linked list shader", 3);
@@ -85,7 +85,7 @@ void createDescriptorPoolLinkedList(Device& vkDevice, Shader& shader, RenderTarg
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
     poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
     poolInfo.pPoolSizes = poolSizes.data();
-    poolInfo.maxSets = 1;
+    poolInfo.maxSets = target.getMaxFramesInFlight();
     unsigned int descriptorId = target.getId() * Shader::getNbShaders() + shader.getId();
     if (vkCreateDescriptorPool(vkDevice.getDevice(), &poolInfo, nullptr, &descriptorPool[descriptorId]) != VK_SUCCESS) {
         throw std::runtime_error("echec de la creation de la pool de descripteurs!");
@@ -126,13 +126,13 @@ void allocateDescriptorSets(Device& vkDevice, Shader& shader, RenderTarget &targ
     descriptorSets.resize(Shader::getNbShaders()*RenderTarget::getNbRenderTargets());
     unsigned int descriptorId = target.getId() * Shader::getNbShaders() + shader.getId();
     for (unsigned int i = 0; i < descriptorSets.size(); i++) {
-        descriptorSets[i].resize(1);
+        descriptorSets[i].resize(target.getMaxFramesInFlight());
     }
-    std::vector<VkDescriptorSetLayout> layouts(1, descriptorSetLayout[descriptorId]);
+    std::vector<VkDescriptorSetLayout> layouts(target.getMaxFramesInFlight(), descriptorSetLayout[descriptorId]);
     VkDescriptorSetAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     allocInfo.descriptorPool = descriptorPool[descriptorId];
-    allocInfo.descriptorSetCount = 1;
+    allocInfo.descriptorSetCount = target.getMaxFramesInFlight();
     allocInfo.pSetLayouts = layouts.data();
     if (vkAllocateDescriptorSets(vkDevice.getDevice(), &allocInfo, descriptorSets[descriptorId].data()) != VK_SUCCESS) {
         throw std::runtime_error("echec de l'allocation d'un set de descripteurs!");
@@ -141,34 +141,36 @@ void allocateDescriptorSets(Device& vkDevice, Shader& shader, RenderTarget &targ
 void createDescriptorSets(Device& vkDevice, Shader& shader, RenderTarget& target, VkImage& headPtrTextureImage, VkImageView& headPtrTextureImageView, VkSampler& headPtrTextureSampler, VkBuffer ubo) {
     unsigned int descriptorId = target.getId() * Shader::getNbShaders() + shader.getId();
     std::vector<std::vector<VkDescriptorSet>>& descriptorSets = target.getDescriptorSet();
-    std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
+    for (unsigned int i = 0; i < target.getMaxFramesInFlight(); i++) {
+        std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
 
-    VkDescriptorBufferInfo bufferInfo{};
-    bufferInfo.buffer = ubo;
-    bufferInfo.offset = 0;
-    bufferInfo.range = sizeof(UniformBufferObject);
+        VkDescriptorBufferInfo bufferInfo{};
+        bufferInfo.buffer = ubo;
+        bufferInfo.offset = 0;
+        bufferInfo.range = sizeof(UniformBufferObject);
 
-    descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptorWrites[0].dstSet = descriptorSets[descriptorId][0];
-    descriptorWrites[0].dstBinding = 0;
-    descriptorWrites[0].dstArrayElement = 0;
-    descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    descriptorWrites[0].descriptorCount = 1;
-    descriptorWrites[0].pBufferInfo = &bufferInfo;
+        descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        descriptorWrites[0].dstSet = descriptorSets[descriptorId][i];
+        descriptorWrites[0].dstBinding = 0;
+        descriptorWrites[0].dstArrayElement = 0;
+        descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        descriptorWrites[0].descriptorCount = 1;
+        descriptorWrites[0].pBufferInfo = &bufferInfo;
 
-    VkDescriptorImageInfo headPtrDescriptorImageInfo;
-    headPtrDescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
-    headPtrDescriptorImageInfo.imageView = headPtrTextureImageView;
-    headPtrDescriptorImageInfo.sampler = headPtrTextureSampler;
+        VkDescriptorImageInfo headPtrDescriptorImageInfo;
+        headPtrDescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+        headPtrDescriptorImageInfo.imageView = headPtrTextureImageView;
+        headPtrDescriptorImageInfo.sampler = headPtrTextureSampler;
 
-    descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    descriptorWrites[1].dstSet = descriptorSets[descriptorId][0];
-    descriptorWrites[1].dstBinding = 1;
-    descriptorWrites[1].dstArrayElement = 0;
-    descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-    descriptorWrites[1].descriptorCount = 1;
-    descriptorWrites[1].pImageInfo = &headPtrDescriptorImageInfo;
-    vkUpdateDescriptorSets(vkDevice.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+        descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        descriptorWrites[1].dstSet = descriptorSets[descriptorId][i];
+        descriptorWrites[1].dstBinding = 1;
+        descriptorWrites[1].dstArrayElement = 0;
+        descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+        descriptorWrites[1].descriptorCount = 1;
+        descriptorWrites[1].pImageInfo = &headPtrDescriptorImageInfo;
+        vkUpdateDescriptorSets(vkDevice.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+    }
 }
 uint32_t findMemoryType(Device& vkDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties) {
     VkPhysicalDeviceMemoryProperties memProperties;
@@ -206,7 +208,7 @@ void createBuffer(Device& vkDevice, VkDeviceSize size, VkBufferUsageFlags usage,
     vkBindBufferMemory(vkDevice.getDevice(), buffer, bufferMemory, 0);
 }
 int main(int argc, char *argv[]) {
-    VkSettup instance;
+    /*VkSettup instance;
     Device device(instance);
     RenderWindow window(sf::VideoMode(800, 600), "test vulkan", device);
     //window.getView().move(400, 300, 0);
@@ -233,9 +235,7 @@ int main(int argc, char *argv[]) {
     VkImageCreateInfo imageInfo={};
     imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
     imageInfo.imageType = VK_IMAGE_TYPE_3D;
-    imageInfo.extent.width = static_cast<uint32_t>(window.getView().getSize().x);
-    imageInfo.extent.height = static_cast<uint32_t>(window.getView().getSize().y);
-    imageInfo.extent.depth = 6;
+    imageInfo.extent = {static_cast<uint32_t>(window.getView().getSize().x), static_cast<uint32_t>(window.getView().getSize().y), 6};
     imageInfo.mipLevels = 1;
     imageInfo.arrayLayers = 1;
     imageInfo.format = VK_FORMAT_R32_UINT;
@@ -300,9 +300,10 @@ int main(int argc, char *argv[]) {
     samplerInfo.minLod = 0.0f;
     samplerInfo.maxLod = 0.0f;
     //const_cast<Texture&>(rtCubeMap.getTexture()).toShaderReadOnlyOptimal();
-    rtCubeMap.beginRecordCommandBuffers();
+
     VkImageMemoryBarrier barrier = {};
     barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    barrier.srcAccessMask = 0;
     barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
     barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
@@ -310,10 +311,12 @@ int main(int argc, char *argv[]) {
     barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
     barrier.subresourceRange.levelCount = 1;
     barrier.subresourceRange.layerCount = 1;
+
+    rtCubeMap.beginRecordCommandBuffers();
     vkCmdPipelineBarrier(rtCubeMap.getCommandBuffers()[0], VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
-    //
     rtCubeMap.beginRenderPass();
     rtCubeMap.display();
+
     //const_cast<Texture&>(rtCubeMap.getTexture()).toColorAttachmentOptimal();
     //
     VkBuffer ubo;
@@ -337,6 +340,9 @@ int main(int argc, char *argv[]) {
     RenderStates states;
     states.shader = &linkedListShader;
     rtCubeMap.createGraphicPipeline(sf::Triangles, states);
+    //window.createGraphicPipeline(sf::Triangles, states);
+
+
 
 
     while (window.isOpen()) {
@@ -346,8 +352,7 @@ int main(int argc, char *argv[]) {
                 window.close();
             }
         }
-        rtCubeMap.clear(sf::Color::Transparent);
-        rtCubeMap.display();
+
         rtCubeMap.beginRecordCommandBuffers();
         VkClearColorValue clearColor;
         clearColor.uint32[0] = 0xffffffff;
@@ -370,22 +375,17 @@ int main(int argc, char *argv[]) {
         barrier2.subresourceRange.layerCount = 1;
         vkCmdPipelineBarrier(rtCubeMap.getCommandBuffers()[0], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier2);
         rtCubeMap.beginRenderPass();
-        rtCubeMap.display(true, VK_PIPELINE_STAGE_2_CLEAR_BIT);
+        rtCubeMap.display();
         unsigned int descriptorId = rtCubeMap.getId() * Shader::getNbShaders() + linkedListShader.getId();
-        rtCubeMap.beginRecordCommandBuffers();
-        rtCubeMap.beginRenderPass();
+        rtCubeMap.clear();
         states.shader = &linkedListShader;
         rtCubeMap.drawVertexBuffer(rtCubeMap.getCommandBuffers()[0], 0, vb, 0, states);
-        rtCubeMap.display(false, VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT);
-        window.clear();
-        states.shader = nullptr;
-        states.transform = quad.getTransform();
-        window.draw(vb, states);
-        window.display();
+        rtCubeMap.display();
+
     }
     vkDestroyBuffer(device.getDevice(), ubo, nullptr);
 
-    return 0;
+    return 0;*/
     MyAppli app(sf::VideoMode(800, 600), "Test odfaeg");
     return app.exec();
 }

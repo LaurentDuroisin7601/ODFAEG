@@ -494,6 +494,7 @@ namespace odfaeg {
             RenderTarget::initialize();
             createSyncObjects();
             currentFrame = 0;
+            imageIndex = 0;
         }
 
 

@@ -127,6 +127,10 @@ namespace odfaeg {
             VkCommandBuffer beginSingleTimeCommands();
             void endSingleTimeCommands(VkCommandBuffer commandBuffer);
             void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+            void createComputeDescriptorPool();
+            void createComputeDescriptorSetLayout();
+            void createComputeDescriptorSet();
+            void createComputePipeline();
             void createDescriptorPool(RenderStates states);
             void createDescriptorSetLayout(RenderStates states);
             void createDescriptorSets(RenderStates states);
@@ -150,7 +154,7 @@ namespace odfaeg {
             std::vector<Entity*> visibleEntities;
             Entity* skybox;
             RenderTexture depthBuffer, alphaBuffer, reflectRefractTex, environmentMap;
-            Shader sBuildDepthBuffer, sBuildAlphaBuffer, sReflectRefract, sLinkedList, sLinkedList2, skyboxShader;
+            Shader clearHeadptrComputeShader, sBuildDepthBuffer, sBuildAlphaBuffer, sReflectRefract, sLinkedList, sLinkedList2, skyboxShader;
             View view;
             std::string expression;
             bool update;
@@ -165,8 +169,8 @@ namespace odfaeg {
             VkBuffer modelDataBuffer, materialDataBuffer, modelDataStagingBuffer, materialDataStagingBuffer;
             VkDeviceMemory modelDataStagingBufferMemory, materialDataStagingBufferMemory;
             VkDeviceSize maxVboIndirectSize, maxModelDataSize, maxMaterialDataSize;
-            VkBuffer vboIndirect, vboIndirectStagingBuffer;
-            VkDeviceMemory vboIndirectMemory, vboIndirectStagingBufferMemory;
+            VkBuffer vboIndirect, vboIndirectStagingBuffer, vboCount;
+            VkDeviceMemory vboIndirectMemory, vboIndirectStagingBufferMemory, vboCountMemory;
             std::vector<VkBuffer> uniformBuffer;
             std::vector<VkDeviceMemory> uniformBufferMemory;
             std::vector<VkBuffer> linkedListShaderStorageBuffers;
@@ -205,6 +209,13 @@ namespace odfaeg {
             UniformBufferObject ubo;
             bool needToUpdateDS, datasReady;
             std::vector<VkEvent> events;
+            VkPipeline computePipeline;
+            VkPipelineLayout computePipelineLayout;
+            VkDescriptorPool cpDescriptorPool;
+            VkDescriptorSetLayout cpDescriptorSetLayout;
+            VkDescriptorSet cpDescriptorSet;
+            VkFence computeFence;
+            VkSemaphore computeSemaphore;
         };
         #else
         class ODFAEG_GRAPHICS_API ReflectRefractRenderComponent : public HeavyComponent {
