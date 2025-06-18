@@ -1,0 +1,156 @@
+#ifndef VIEW_MATRIX
+#define VIEW_MATRIX
+#include "../Math/vec4.h"
+#include "../Math/vec2f.h"
+#include "../Math/matrix4.h"
+#include "../Math/matrix3.h"
+#include "../Math/maths.h"
+#include "../BoundingAreas/boundingRectangle.h"
+/**
+  *\namespace odfaeg
+  * the namespace of the Opensource Development Framework Adapted for Every Games.
+  */
+namespace odfaeg {
+/**
+  * \file viewMatrix.h
+  * \class ViewMatrix
+  * \brief Manage a view matrix
+  * \author Duroisin.L
+  * \version 1.0
+  * \date 1/02/2014
+  *
+  * This class defines a view matrix, who's used to convert world coordinates into view coordinates.
+  */
+class ViewMatrix {
+    private :
+        Matrix4f matrix4f; /**< the 3D view matrix */
+        Matrix3f matrix3f; /**< the 2D view matrix */
+        Matrix4f invMat4f; /**< the 3D inverssed view matrix */
+        Matrix3f invMat3f; /**< the 2D inverssed view matrix */
+        Vec3f t3d; /**< the 3D translation vector */
+        Vec2f t2d; /** < the 2D translation vector */
+        Vec3f s3d; /** < the 3D scale vector*/
+        Vec2f s2d; /** < the 2D scale vector*/
+        Vec3f r3d; /** < the 3D rotation vector*/
+        float r2d; /** < the 2d rotation vector*/
+        Vec3f o3d; /** < the 3D origin*/
+        Vec2f o2d; /** < the 2D origin*/
+        bool needToUpdate2D; /**< determine if the 2D matrix need to be update.*/
+        bool inverseNeedToUpdate2D; /**< determine if the 2D inversed matrix need to be update.*/
+        bool needToUpdate3D; /**< determine if the 3D matrix need to be update.*/
+        bool inverseNeedToUpdate3D; /**< determine if the 3D inversed matrix need to be update.*/
+        Vec3f forward, left, up;
+    public :
+    /** \fn ViewMatrix()
+    *   \brief constructor. (defines the identity matrix)
+    */
+    ViewMatrix();
+    /** \fn reset2D()
+    *   \brief set the 2D identity matrix.
+    */
+    void reset2D ();
+    /** \fn reset3D()
+    *   \brief set the 3D identity matrix.
+    */
+    void reset3D ();
+    /** \fn setTranslation (const Vec3f trans)
+    *   \brief set the 3D translation vector.
+    */
+    void setTranslation (const Vec3f trans);
+    /** \fn setScale (const Vec3f scale)
+    *   \brief set the 3D scale vector.
+    */
+    void setScale (const Vec3f scale);
+    /** \fn setScale (float sx, float sy)
+    *   \brief set the 2D scale.
+    */
+    void setScale (float sx, float sy);
+    /** \fn setTranslation (float dx, float dy)
+    *   \brief set the 2D translation.
+    */
+    void setTranslation (int dx, int dy);
+    /** \fn setRotation (const Vec3f)
+    *   \brief set the 3D rotation
+    *   unlikely the TransformMatrix class, rotations are performed successively here around the x, y and z axis.
+    *   This function takes the three rotations angles between the x, y and z axis.
+    *   by example Vec3f (PI, PI*0.5f, 2PI) will perform a rotation of PI around the x axis, than a rotation of
+    PI*0.5f around the y axis, and finally a rotation of 2PI around the z axis. (A counter clock wise rotation
+                                                                                 because angles values are positif)
+    *  Be carefull because these two rotations are different : (PI, PI*0.5f, 2PI);(PI*0.5f,PI,2PI)
+    *  So, the rotation order is important!
+    *   \param Vec3f the rotation angles. (given in radians)
+    */
+    void setRotation (const Vec3f angles);
+    /** \fn setRotation (int angle)
+    *   \brief set the angle of the 2D rotation.
+    *   \param the angle of the rotation.
+    */
+    void setRotation (int angle);
+    /** \fn void setOrigin (Vec3f)
+    *   \brief set the origin of the 3D view matrix.
+    *   \param the origin of the view matrix.
+    */
+    void setOrigin(Vec3f origin);
+    /** \fn void setOrigin (Vec3f)
+    *   \brief set the origin of the 2D view matrix.
+    *   \param the origin of the view matrix.
+    */
+    void setOrigin(Vec2f origin);
+    /** \fn Vec3f transform (const Vec3f vec3)
+    *   \brief convert a 3D vector with world coordinates to a 3D vector with view coordinates
+    *   \return the  vector of view coordinates.
+    */
+    Vec3f transform (const Vec3f vec3);
+    /** \fn Vec2f transform (const Vec2f vec2)
+    *   \brief convert a 2D vector with world coordinates to a 2D vector with view coordinates
+    *   \return the  vector of view coordinates.
+    */
+    Vec2f transform (const Vec2f vec2);
+    /** \fn void combine.
+    *   \brief combine the view matrix with another view matrix.
+    *   \param Matrix3f the other view matrix.
+    */
+    void combine(Matrix3f matrix3f);
+    /** \fn Vec3f inverseTransform (const Vec3f vec3)
+    *   \brief convert a 3D vector with view coordinates to a 3D vector with world coordinates
+    *   \return the  vector of world coordinates.
+    */
+    Vec3f inverseTransform (const Vec3f vec3);
+    /** \fn Vec2f inverseTransform (const Vec2f vec2)
+    *   \brief convert a 2D vector with view coordinates to a 2D vector with world coordinates
+    *   \return the  vector of world coordinates.
+    */
+    Vec2f inverseTransform (const Vec2f vec2);
+    /** \fn Matrix3f get2DMatrix()
+    *   \brief return the 2D view matrix
+    *   \return the 2D view matrix.
+    */
+    Matrix3f get2DMatrix ();
+    /** \fn Matrix3f get3DMatrix()
+    *   \brief return the 3D view matrix
+    *   \return the 3D view matrix.
+    */
+    Matrix4f get3DMatrix ();
+    /** \fn float* getGlMatrix()
+    *   \brief return an array with the view matrix elements to pass it to opengl.
+    *   \return an array with the matrix elements.
+    */
+    float* getLookAtGlMatrix();
+    float* getTransformGlMatrix();
+    /**
+    *  \fn BoundingRectangle transformRect(BoundingRectangle)
+    *  \brief recompute the bounding rectangle of the view.
+    *  \return the resulting bounding rectangle.
+    */
+    Vec3f get3DScale() {
+        return s3d;
+    }
+    void setAxis(Vec3f left, Vec3f up, Vec3f forward) {
+        this->left = left;
+        this->forward = forward;
+        this->up = up;
+    }
+};
+}
+#endif
+

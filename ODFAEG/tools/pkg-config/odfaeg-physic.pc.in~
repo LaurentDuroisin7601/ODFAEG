@@ -1,0 +1,11 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib@LIB_SUFFIX@
+includedir=${prefix}/include
+Name: ODFAEG-physic
+Description: The Simple and Fast Game Library, physics module.
+URL: http://lolilolight.github.io
+Version: @VERSION_MAJOR@.@VERSION_MINOR@.@VERSION_PATCH@
+Requires: odfaeg-core odfaeg-math
+Libs: -L${libdir} -odfaeg-physic
+Cflags: -I${includedir}

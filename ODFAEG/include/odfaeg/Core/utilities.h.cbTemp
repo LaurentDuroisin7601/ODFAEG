@@ -1,0 +1,14 @@
+#ifndef UTILITIES
+#define UTILITIES
+#include <string>
+#include <vector>
+#include <sstream>
+
+namespace sfgl {
+std::vector<std::string> split (const std::string &chaine, const std::string &separator);
+float conversionStringFloat(std::string str);
+int conversionStringInt(std::string str);
+std::string conversionFloatString(float f);
+std::string conversionIntString(int i);
+}
+#endif

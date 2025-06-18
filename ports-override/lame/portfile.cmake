@@ -1,0 +1,1 @@
+vcpkg_fail_port_install(ON_TARGET "android" "Lame doit être compilé manuellement pour Android")
