@@ -216,6 +216,8 @@ namespace odfaeg {
             VkDescriptorSet cpDescriptorSet;
             VkFence computeFence;
             VkSemaphore computeSemaphore;
+            std::vector<VkSemaphore> renderFinishedSemaphore;
+            RenderWindow& window;
         };
         #else
         class ODFAEG_GRAPHICS_API ReflectRefractRenderComponent : public HeavyComponent {
@@ -333,6 +335,7 @@ namespace odfaeg {
             math::Vec3f ups[6];
             std::vector<Entity*> rootEntities;
             bool datasReady;
+
         };
         #endif
     }

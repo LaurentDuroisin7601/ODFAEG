@@ -127,7 +127,7 @@ namespace odfaeg {
         if (p % 2 == 0) return false;
         BigInt i (3, true, p.base);
         for (; i*i <= p; i+= 2) {
-            //std::cout<<"i : "<<i<<std::endl;
+            ////std::cout<<"i : "<<i<<std::endl;
             if (p % i == 0)
                 return false;
         }
@@ -220,7 +220,7 @@ namespace odfaeg {
         return *this;
     }
     int BigInt::comparaison (const BigInt &b) const {
-        /*std::cout<<"sizes : "<<chiffres.size()<<" "<<b.chiffres.size()<<std::endl;
+        /*//std::cout<<"sizes : "<<chiffres.size()<<" "<<b.chiffres.size()<<std::endl;
         std::string s;
         std::cin>>s;*/
         if (positif && !b.positif)
@@ -574,7 +574,7 @@ namespace odfaeg {
             if (e % two == one)
                 result = result * bs % mod;
             e /= two;
-            //std::cout<<"e : "<<e<<"base : "<<bs<<"result : "<<result<<std::endl;
+            ////std::cout<<"e : "<<e<<"base : "<<bs<<"result : "<<result<<std::endl;
             bs = bs * bs % mod;
         }
         return result;*/
@@ -783,14 +783,14 @@ namespace odfaeg {
         unsigned int k = 1;
         BigInt zero(0, true, n.base);
         BigInt one(1, true, n.base);
-        //std::cout<<"cond 1 : "<<(n1 % (BigInt(1 << (k + 2), true, n.base)) == zero)<<std::endl;
+        ////std::cout<<"cond 1 : "<<(n1 % (BigInt(1 << (k + 2), true, n.base)) == zero)<<std::endl;
         while (n1 % (BigInt(1 << (k + 2), true, n.base)) == zero) {
             k += 2;
             m >>= 2;
         }
         for (unsigned int i = 0; i < 10; i++) {
             BigInt a = genRandom(nbBits, n.base);
-            //std::cout<<"a : "<<a<<" a >= n ?"<<(a >= n)<<std::endl;
+            ////std::cout<<"a : "<<a<<" a >= n ?"<<(a >= n)<<std::endl;
             while (a >= n) {
                 a = genRandom(nbBits, n.base);
             }
@@ -814,18 +814,18 @@ namespace odfaeg {
         int k = 10;
         while (k) {
             k--;
-            std::cout<<"k : "<<k<<std::endl;
+            //std::cout<<"k : "<<k<<std::endl;
             BigInt a = genRandom(nbBits, 2);
             if (a.modOfPow(d, n2) != BigInt(1, true, 2)) {
                 while (s) {
                     s--;
-                    std::cout<<"d : "<<d<<std::endl<<"s : "<<s<<std::endl<<"d<<s : "<<(d<<s)<<std::endl;
+                    //std::cout<<"d : "<<d<<std::endl<<"s : "<<s<<std::endl<<"d<<s : "<<(d<<s)<<std::endl;
                     if (a.modOfPow(d<<s, n2) != n2 - BigInt(1, true, 2))
                         return false;
                 }
             }
         }
-        std::cout<<"true"<<std::endl;
+        //std::cout<<"true"<<std::endl;
         return true;*/
     }
     bool BigInt::isMersennePrime(const BigInt& p, unsigned int base) {

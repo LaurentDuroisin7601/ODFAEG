@@ -9,6 +9,7 @@ namespace odfaeg {
             HeavyComponent(window, math::Vec3f(window.getView().getPosition().x(), window.getView().getPosition().y(), layer),
                           math::Vec3f(window.getView().getSize().x(), window.getView().getSize().y(), 0),
                           math::Vec3f(window.getView().getSize().x() + window.getView().getSize().x() * 0.5f, window.getView().getPosition().y() + window.getView().getSize().y() * 0.5f, layer)),
+            window(window),
             view(window.getView()),
             expression(expression),
             depthBuffer(window.getDevice()), alphaBuffer(window.getDevice()), environmentMap(window.getDevice()), reflectRefractTex(window.getDevice()),
@@ -327,7 +328,7 @@ namespace odfaeg {
                            depthStencilCreateInfo[sLinkedList2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][NODEPTHNOSTENCIL].front = {};
                            depthStencilCreateInfo[sLinkedList2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][NODEPTHNOSTENCIL].back = {};
                            environmentMap.createGraphicPipeline(static_cast<PrimitiveType>(i), states, NODEPTHNOSTENCIL, NBDEPTHSTENCIL);
-                           //std::cout<<"pipeline ids : "<<sLinkedList2.getId() * (Batcher::nbPrimitiveTypes - 1) + i<<","<<environmentMap.getId()<<","<<NODEPTHNOSTENCIL<<std::endl;
+                           ////std::cout<<"pipeline ids : "<<sLinkedList2.getId() * (Batcher::nbPrimitiveTypes - 1) + i<<","<<environmentMap.getId()<<","<<NODEPTHNOSTENCIL<<std::endl;
                         } else {
                            VkPushConstantRange push_constant;
                            //this push constant range starts at the beginning
@@ -533,6 +534,12 @@ namespace odfaeg {
                     vkCreateFence(vkDevice.getDevice(), &fenceInfo, nullptr, &computeFence) != VK_SUCCESS) {
                     throw std::runtime_error("failed to create compute synchronization objects for a frame!");
                 }
+                renderFinishedSemaphore.resize(RenderWindow::MAX_FRAMES_IN_FLIGHT);
+                for (unsigned int i = 0; i < RenderWindow::MAX_FRAMES_IN_FLIGHT; i++) {
+                    if (vkCreateSemaphore(vkDevice.getDevice(), &semaphoreInfo, nullptr, &renderFinishedSemaphore[i]) != VK_SUCCESS) {
+                        throw std::runtime_error("failed to create compute synchronization objects for a frame!");
+                    }
+                }
             }
             void ReflectRefractRenderComponent::createComputePipeline() {
                 clearHeadptrComputeShader.createComputeShaderModule();
@@ -669,7 +676,7 @@ namespace odfaeg {
                 uniformBufferMemory.resize(environmentMap.getMaxFramesInFlight());
                 for (size_t i = 0; i < environmentMap.getMaxFramesInFlight(); i++) {
                     createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffer[i], uniformBufferMemory[i]);
-                    //std::cout<<"uniform buffer : "<<ubos[i]<<std::endl;
+                    ////std::cout<<"uniform buffer : "<<ubos[i]<<std::endl;
                 }
             }
             void ReflectRefractRenderComponent::updateUniformBuffer(uint32_t currentImage, UniformBufferObject ubo) {
@@ -1276,7 +1283,7 @@ namespace odfaeg {
                     unsigned int descriptorId = environmentMap.getId() * shader->getNbShaders() + shader->getId();
                     if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorPool.size())
                         descriptorPool.resize(shader->getNbShaders()*environmentMap.getNbRenderTargets());
-                    //std::cout<<"ppll descriptor id : "<<environmentMap.getId()<<","<<shader->getId()<<","<<environmentMap.getId() * shader->getNbShaders() + shader->getId()<<std::endl;
+                    ////std::cout<<"ppll descriptor id : "<<environmentMap.getId()<<","<<shader->getId()<<","<<environmentMap.getId() * shader->getNbShaders() + shader->getId()<<std::endl;
                     std::vector<Texture*> allTextures = Texture::getAllTextures();
                     std::array<VkDescriptorPoolSize, 7> poolSizes;
                     poolSizes[0].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
@@ -1445,7 +1452,7 @@ namespace odfaeg {
                     if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorSetLayout.size())
                         descriptorSetLayout.resize(shader->getNbShaders()*environmentMap.getNbRenderTargets());
                     unsigned int descriptorId = environmentMap.getId() * shader->getNbShaders() + shader->getId();
-                    //std::cout<<"ppll descriptor id : "<<descriptorId<<std::endl;
+                    ////std::cout<<"ppll descriptor id : "<<descriptorId<<std::endl;
                     std::vector<Texture*> allTextures = Texture::getAllTextures();
                     VkDescriptorSetLayoutBinding counterLayoutBinding{};
                     counterLayoutBinding.binding = 0;
@@ -1514,7 +1521,7 @@ namespace odfaeg {
                     if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorSetLayout.size())
                         descriptorSetLayout.resize(shader->getNbShaders()*environmentMap.getNbRenderTargets());
                     unsigned int descriptorId = environmentMap.getId() * shader->getNbShaders() + shader->getId();
-                    //std::cout<<"ppll descriptor id : "<<descriptorId<<std::endl;
+                    ////std::cout<<"ppll descriptor id : "<<descriptorId<<std::endl;
                     std::vector<Texture*> allTextures = Texture::getAllTextures();
                     VkDescriptorSetLayoutBinding counterLayoutBinding{};
                     counterLayoutBinding.binding = 0;
@@ -1555,7 +1562,7 @@ namespace odfaeg {
                     if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorSetLayout.size())
                         descriptorSetLayout.resize(shader->getNbShaders()*depthBuffer.getNbRenderTargets());
                     unsigned int descriptorId = depthBuffer.getId() * shader->getNbShaders() + shader->getId();
-                    //std::cout<<"ppll descriptor id : "<<descriptorId<<std::endl;
+                    ////std::cout<<"ppll descriptor id : "<<descriptorId<<std::endl;
                     std::vector<Texture*> allTextures = Texture::getAllTextures();
                     VkDescriptorSetLayoutBinding samplerLayoutBinding{};
                     samplerLayoutBinding.binding = 0;
@@ -2212,7 +2219,7 @@ namespace odfaeg {
                 }
                 Shader* shader = const_cast<Shader*>(currentStates.shader);
                 if (shader == &sBuildDepthBuffer) {
-                    //std::cout<<"draw on db"<<std::endl;
+                    ////std::cout<<"draw on db"<<std::endl;
                     depthBuffer.beginRecordCommandBuffers();
                     depthBuffer.beginRenderPass();
                     std::vector<VkCommandBuffer> commandBuffers = depthBuffer.getCommandBuffers();
@@ -2292,7 +2299,7 @@ namespace odfaeg {
                     vkCmdPushConstants(commandBuffers[currentFrame], reflectRefractTex.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][reflectRefractTex.getId()][depthStencilID], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(BuildFrameBufferPC), &buildFrameBufferPC);
                     reflectRefractTex.beginRenderPass();
                     reflectRefractTex.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
-                    reflectRefractTex.display();
+                    reflectRefractTex.display(true, renderFinishedSemaphore[window.getCurrentFrame()]);
                     const_cast<Texture&>(alphaBuffer.getTexture()).toColorAttachmentOptimal();
                     const_cast<Texture&>(environmentMap.getTexture()).toColorAttachmentOptimal();
                 }
@@ -2319,7 +2326,7 @@ namespace odfaeg {
                 vkCmdPushConstants(commandBuffers[currentFrame], environmentMap.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + vb.getPrimitiveType()][environmentMap.getId()][NODEPTHNOSTENCIL], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(LinkedList2PC), &linkedList2PC);
 
 
-                //std::cout<<"ids : "<<shader->getId() * (Batcher::nbPrimitiveTypes - 1) + vb.getPrimitiveType()<<","<<environmentMap.getId()<<","<<NODEPTHNOSTENCIL<<std::endl;
+                ////std::cout<<"ids : "<<shader->getId() * (Batcher::nbPrimitiveTypes - 1) + vb.getPrimitiveType()<<","<<environmentMap.getId()<<","<<NODEPTHNOSTENCIL<<std::endl;
                 environmentMap.beginRenderPass();
                 environmentMap.drawVertexBuffer(commandBuffers[currentFrame], currentFrame, vb, NODEPTHNOSTENCIL, currentStates);
                 environmentMap.display();
@@ -2381,7 +2388,7 @@ namespace odfaeg {
                             model.worldMat = tm[j]->getMatrix()/*.transpose()*/;
                             modelDatas[p].push_back(model);
                         }
-                        //std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
+                        ////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
                         unsigned int vertexCount = 0;
 
                         if (m_reflInstances[i].getVertexArrays().size() > 0) {
@@ -2417,7 +2424,7 @@ namespace odfaeg {
                     if (vbBindlessTex[p].getVertexCount() > 0) {
                         vbBindlessTex[p].update();
                         VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
-                        //std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
+                        ////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
                         if (bufferSize > maxModelDataSize) {
                             if (modelDataStagingBuffer != nullptr) {
                                 vkDestroyBuffer(vkDevice.getDevice(), modelDataStagingBuffer, nullptr);
@@ -2516,7 +2523,7 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < m_normals.size(); i++) {
                     if (m_normals[i].getAllVertices().getVertexCount() > 0) {
                         DrawArraysIndirectCommand drawArraysIndirectCommand;
-                        //std::cout<<"layer : "<<layer<<" nb layers : "<<Entity::getNbLayers()<<std::endl;
+                        ////std::cout<<"layer : "<<layer<<" nb layers : "<<Entity::getNbLayers()<<std::endl;
                         unsigned int p = m_normals[i].getAllVertices().getPrimitiveType();
                         MaterialData material;
                         material.textureIndex = (m_normals[i].getMaterial().getTexture() != nullptr) ? m_normals[i].getMaterial().getTexture()->getId() : 0;
@@ -3011,7 +3018,7 @@ namespace odfaeg {
                 }
             }
             void ReflectRefractRenderComponent::drawNextFrame() {
-                //std::cout<<"draw next frame"<<std::endl;
+                ////std::cout<<"draw next frame"<<std::endl;
                 {
                     std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                     if (datasReady) {
@@ -3060,7 +3067,7 @@ namespace odfaeg {
                                     if (entity->getSize().y() > squareSize) {
                                         scale.y = entity->getSize().y() / squareSize;
                                     }*/
-                                    //std::cout<<"scale : "<<scale<<"position : "<<entity->getPosition()<<std::endl;
+                                    ////std::cout<<"scale : "<<scale<<"position : "<<entity->getPosition()<<std::endl;
                                     //reflectView.setScale(scale.x, scale.y, scale.z);
                                     if (entity->getType() != "E_BIGTILE")
                                         reflectView.setCenter(entity->getPosition()+entity->getSize()*0.5f);
@@ -3122,7 +3129,7 @@ namespace odfaeg {
                                         if (m_skyboxInstance[i].getAllVertices().getVertexCount() > 0) {
                                             vb.setPrimitiveType(m_skyboxInstance[i].getAllVertices().getPrimitiveType());
                                             for (unsigned int j = 0; j < m_skyboxInstance[i].getAllVertices().getVertexCount(); j++) {
-                                                //std::cout<<"append"<<std::endl;
+                                                ////std::cout<<"append"<<std::endl;
                                                 vb.append(m_skyboxInstance[i].getAllVertices()[j]);
                                             }
                                         }
@@ -3171,6 +3178,7 @@ namespace odfaeg {
                 //reflectRefractTex.display();
             }
             void ReflectRefractRenderComponent::draw(RenderTarget& target, RenderStates states) {
+                window.setSemaphore(renderFinishedSemaphore);
                 const_cast<Texture&>(reflectRefractTex.getTexture()).toShaderReadOnlyOptimal();
                 reflectRefractTexSprite.setCenter(target.getView().getPosition());
                 target.draw(reflectRefractTexSprite, states);
@@ -3217,13 +3225,13 @@ namespace odfaeg {
 
                 for (unsigned int i = 0; i < vEntities.size(); i++) {
                     if ( vEntities[i] != nullptr && vEntities[i]->isLeaf()) {
-                        //std::cout<<"add entity"<<std::endl;
+                        ////std::cout<<"add entity"<<std::endl;
                         for (unsigned int j = 0; j <  vEntities[i]->getNbFaces(); j++) {
                             std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                             if (vEntities[i]->getFace(j)->getMaterial().isReflectable() || vEntities[i]->getFace(j)->getMaterial().isRefractable()) {
 
                                 if (vEntities[i]->getDrawMode() == Entity::INSTANCED) {
-                                    //std::cout<<"add refl face"<<std::endl;
+                                    ////std::cout<<"add refl face"<<std::endl;
                                     reflBatcher.addFace( vEntities[i]->getFace(j));
                                 } else {
                                     reflNormalBatcher.addFace(vEntities[i]->getFace(j));
@@ -3278,12 +3286,12 @@ namespace odfaeg {
                         vkFreeMemory(vkDevice.getDevice(), counterShaderStorageBuffersMemory[i], nullptr);
                     }
                 }
-                std::cout<<"counter ssbo destroyed"<<std::endl;
+                //std::cout<<"counter ssbo destroyed"<<std::endl;
                 for (unsigned int i = 0; i < linkedListShaderStorageBuffers.size(); i++) {
                     vkDestroyBuffer(vkDevice.getDevice(), linkedListShaderStorageBuffers[i], nullptr);
                     vkFreeMemory(vkDevice.getDevice(), linkedListShaderStorageBuffersMemory[i], nullptr);
                 }
-                std::cout<<"linked list ssbo destroyed"<<std::endl;
+                //std::cout<<"linked list ssbo destroyed"<<std::endl;
                 for (size_t i = 0; i < modelDataShaderStorageBuffers.size(); i++) {
                     vkDestroyBuffer(vkDevice.getDevice(), modelDataShaderStorageBuffers[i], nullptr);
                     vkFreeMemory(vkDevice.getDevice(), modelDataShaderStorageBuffersMemory[i], nullptr);
@@ -3292,7 +3300,7 @@ namespace odfaeg {
                     vkDestroyBuffer(vkDevice.getDevice(), modelDataStagingBuffer, nullptr);
                     vkFreeMemory(vkDevice.getDevice(), modelDataStagingBufferMemory, nullptr);
                 }
-                std::cout<<"model data ssbo destroyed"<<std::endl;
+                //std::cout<<"model data ssbo destroyed"<<std::endl;
                 for (size_t i = 0; i < materialDataShaderStorageBuffers.size(); i++) {
                     vkDestroyBuffer(vkDevice.getDevice(), materialDataShaderStorageBuffers[i], nullptr);
                     vkFreeMemory(vkDevice.getDevice(), materialDataShaderStorageBuffersMemory[i], nullptr);
@@ -3309,12 +3317,12 @@ namespace odfaeg {
                     vkDestroyBuffer(vkDevice.getDevice(), vboIndirectStagingBuffer, nullptr);
                     vkFreeMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory, nullptr);
                 }
-                std::cout<<"material data ssbo destroyed"<<std::endl;
+                //std::cout<<"material data ssbo destroyed"<<std::endl;
                 if (vboIndirect != VK_NULL_HANDLE) {
                     vkDestroyBuffer(vkDevice.getDevice(),vboIndirect, nullptr);
                     vkFreeMemory(vkDevice.getDevice(), vboIndirectMemory, nullptr);
                 }
-                std::cout<<"indirect vbo destroyed"<<std::endl;
+                //std::cout<<"indirect vbo destroyed"<<std::endl;
             }
         #else
         ReflectRefractRenderComponent::ReflectRefractRenderComponent (RenderWindow& window, int layer, std::string expression, window::ContextSettings settings) :
@@ -3883,7 +3891,7 @@ namespace odfaeg {
                 GLuint64 handle_texture = allTextures[i]->getTextureHandle();
                 allTextures[i]->makeTextureResident(handle_texture);
                 allSamplers.tex[i].handle = handle_texture;
-                //std::cout<<"add texture i : "<<i<<" id : "<<allTextures[i]->getNativeHandle()<<std::endl;
+                ////std::cout<<"add texture i : "<<i<<" id : "<<allTextures[i]->getNativeHandle()<<std::endl;
             }
             sBuildDepthBuffer.setParameter("textureMatrix", textureMatrices);
             sBuildAlphaBuffer.setParameter("textureMatrix", textureMatrices);
@@ -3891,7 +3899,7 @@ namespace odfaeg {
 
 
 
-            //std::cout<<"ubid : "<<ubid<<std::endl;
+            ////std::cout<<"ubid : "<<ubid<<std::endl;
             backgroundColor = Color::Transparent;
             glCheck(glGenBuffers(1, &ubo));
             glCheck(glBindBuffer(GL_UNIFORM_BUFFER, ubo));
@@ -3911,7 +3919,7 @@ namespace odfaeg {
             glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, modelDataBuffer));
             glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, materialDataBuffer));
             reflectRefractTex.setActive();
-            //std::cout<<"size : "<<sizeof(Samplers)<<" "<<alignof (alignas(16) uint64_t[200])<<std::endl;
+            ////std::cout<<"size : "<<sizeof(Samplers)<<" "<<alignof (alignas(16) uint64_t[200])<<std::endl;
 
             /*glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo2));
             glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo3));*/
@@ -3932,7 +3940,7 @@ namespace odfaeg {
                 GLuint64 handle_texture = allTextures[i]->getTextureHandle();
                 allTextures[i]->makeTextureResident(handle_texture);
                 allSamplers.tex[i].handle = handle_texture;
-                //std::cout<<"add texture i : "<<i<<" id : "<<allTextures[i]->getNativeHandle()<<std::endl;
+                ////std::cout<<"add texture i : "<<i<<" id : "<<allTextures[i]->getNativeHandle()<<std::endl;
             }
             glCheck(glBindBuffer(GL_UNIFORM_BUFFER, ubo));
             glCheck(glBufferData(GL_UNIFORM_BUFFER, sizeof(Samplers),allSamplers.tex, GL_STATIC_DRAW));
@@ -4067,7 +4075,7 @@ namespace odfaeg {
             for (unsigned int i = 0; i < m_normals.size(); i++) {
                 if (m_normals[i].getAllVertices().getVertexCount() > 0) {
                     DrawArraysIndirectCommand drawArraysIndirectCommand;
-                    //std::cout<<"layer : "<<layer<<" nb layers : "<<Entity::getNbLayers()<<std::endl;
+                    ////std::cout<<"layer : "<<layer<<" nb layers : "<<Entity::getNbLayers()<<std::endl;
                     unsigned int p = m_normals[i].getAllVertices().getPrimitiveType();
                     MaterialData material;
                     material.textureIndex = (m_normals[i].getMaterial().getTexture() != nullptr) ? m_normals[i].getMaterial().getTexture()->getNativeHandle() : 0;
@@ -4417,7 +4425,7 @@ namespace odfaeg {
                                     if (entity->getSize().y() > squareSize) {
                                         scale.y = entity->getSize().y() / squareSize;
                                     }*/
-                                    //std::cout<<"scale : "<<scale<<"position : "<<entity->getPosition()<<std::endl;
+                                    ////std::cout<<"scale : "<<scale<<"position : "<<entity->getPosition()<<std::endl;
                                     //reflectView.setScale(scale.x, scale.y, scale.z);
                                     if (entity->getFaces().size() > 0 && !entity->getFaces()[0].getMaterial().getType() == Material::WATER)
                                         reflectView.setCenter(entity->getPosition()+entity->getSize()*0.5f);
@@ -4476,7 +4484,7 @@ namespace odfaeg {
                                         if (m_skyboxInstance[i].getAllVertices().getVertexCount() > 0) {
                                             vb.setPrimitiveType(m_skyboxInstance[i].getAllVertices().getPrimitiveType());
                                             for (unsigned int j = 0; j < m_skyboxInstance[i].getAllVertices().getVertexCount(); j++) {
-                                                //std::cout<<"append"<<std::endl;
+                                                ////std::cout<<"append"<<std::endl;
                                                 vb.append(m_skyboxInstance[i].getAllVertices()[j]);
                                             }
                                         }
@@ -4560,7 +4568,7 @@ namespace odfaeg {
                         if (vEntities[i]->getFace(j)->getMaterial().isReflectable() || vEntities[i]->getFace(j)->getMaterial().isRefractable()) {
 
                             if (vEntities[i]->getDrawMode() == Entity::INSTANCED) {
-                                //std::cout<<"add refl face"<<std::endl;
+                                ////std::cout<<"add refl face"<<std::endl;
                                 reflBatcher.addFace( vEntities[i]->getFace(j));
                             } else {
                                 reflNormalBatcher.addFace(vEntities[i]->getFace(j));
@@ -4623,7 +4631,7 @@ namespace odfaeg {
         }
         void ReflectRefractRenderComponent::pushEvent(window::IEvent event, RenderWindow& rw) {
             if (event.type == window::IEvent::WINDOW_EVENT && event.window.type == window::IEvent::WINDOW_EVENT_RESIZED && &getWindow() == &rw && isAutoResized()) {
-                std::cout<<"recompute size"<<std::endl;
+                //std::cout<<"recompute size"<<std::endl;
                 recomputeSize();
                 getListener().pushEvent(event);
                 getView().reset(physic::BoundingBox(getView().getViewport().getPosition().x(), getView().getViewport().getPosition().y, getView().getViewport().getPosition().z, event.window.data1, event.window.data2, getView().getViewport().getDepth()));

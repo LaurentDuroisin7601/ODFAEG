@@ -47,13 +47,13 @@ namespace odfaeg {
             bool isIso2DMatrix();
             template <typename Archive>
             void serialize(Archive &ar) {
-                //std::cout<<"read matrix 2f"<<std::endl;
+                ////std::cout<<"read matrix 2f"<<std::endl;
                 ar(matrix4f);
-                //std::cout<<"read inv matrix 2f"<<std::endl;
+                ////std::cout<<"read inv matrix 2f"<<std::endl;
                 ar(invMatrix4f);
-                //std::cout<<"is 2D iso matrix"<<std::endl;
+                ////std::cout<<"is 2D iso matrix"<<std::endl;
                 ar(iso2DMatrix);
-                //std::cout<<"end read"<<std::endl;
+                ////std::cout<<"end read"<<std::endl;
             }
         private :
             math::Matrix4f matrix4f; /** > the base changement matrix.*/

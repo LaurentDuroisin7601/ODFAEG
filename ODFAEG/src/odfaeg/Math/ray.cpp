@@ -83,7 +83,7 @@ namespace odfaeg {
 
             if (dc.dot(da.cross(db)) != 0.f) // lines are not coplanar
                 return -1;
-            //std::cout<<dc.cross(db).dot2(da.cross(db))<<std::endl;
+            ////std::cout<<dc.cross(db).dot2(da.cross(db))<<std::endl;
             float s = dc.cross(db).dot(da.cross(db)) / da.cross(db).magnSquared();
             float t = dc.cross(da).dot(da.cross(db)) / da.cross(db).magnSquared();
             if (s <= 0 && s >= 1 && t >= 0 && t <= 1)

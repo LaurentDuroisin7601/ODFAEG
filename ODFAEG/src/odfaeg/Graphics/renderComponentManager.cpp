@@ -67,8 +67,11 @@ namespace odfaeg {
                 if (it->second->getComponentType() == 0 && it->second->isVisible()) {
                     for (unsigned int i = 0; i < windows.size(); i++) {
                         if (windows[i] == &it->second->getWindow()) {
-                            windows[i]->clearDepth();
+
                             it->second->getWindow().draw(*it->second.get());
+                            it->second->getWindow().submit();
+                            it->second->getWindow().beginRecordCommandBuffers();
+                            it->second->getWindow().beginRenderPass();
                         }
                     }
                 }
@@ -224,7 +227,7 @@ namespace odfaeg {
            //core::Command::clearEventsStack();
         }
         RenderComponentManager::~RenderComponentManager() {
-            std::cout<<"rcm desrtructor"<<std::endl;
+            //std::cout<<"rcm desrtructor"<<std::endl;
 
         }
     }

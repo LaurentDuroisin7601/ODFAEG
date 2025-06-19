@@ -121,13 +121,13 @@ namespace odfaeg {
                                    getSize().z());
             std::vector<math::Vec3f> vertices = viewVolume.getVertices();
             for (unsigned int i = 0; i < vertices.size(); i++) {
-                //std::cout<<"vertices : "<<vertices[i]<<std::endl;
+                ////std::cout<<"vertices : "<<vertices[i]<<std::endl;
                 vertices[i] = getViewMatrix().inverseTransform(vertices[i]);
-                //std::cout<<"transformed vertices : "<<vertices[i]<<std::endl;
+                ////std::cout<<"transformed vertices : "<<vertices[i]<<std::endl;
             }
             std::array<std::array<float, 2>, 3> extends = math::Computer::getExtends(vertices);
             viewVolume = physic::BoundingBox(extends[0][0], extends[1][0], extends[2][0], extends[0][1] - extends[0][0], extends[1][1] - extends[1][0],extends[2][1] - extends[2][0]);
-            //std::cout<<"view volume : "<<viewVolume.getSize()<<std::endl;
+            ////std::cout<<"view volume : "<<viewVolume.getSize()<<std::endl;
             return viewVolume;
         }
         math::Vec3f View::getScale() {
@@ -163,7 +163,7 @@ namespace odfaeg {
         }
         void View::computeVectorsFromAngles() {
             forward = math::Math::toCartesian(math::Math::toRadians(teta), math::Math::toRadians(phi)).normalize();
-            //std::cout<<"forward : "<<forward<<std::endl;
+            ////std::cout<<"forward : "<<forward<<std::endl;
             left = forward.cross(up).normalize();
             target = position + forward;
             up = left.cross(forward);

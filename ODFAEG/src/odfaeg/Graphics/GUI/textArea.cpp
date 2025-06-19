@@ -79,7 +79,7 @@ namespace odfaeg {
                     }
                 }
                 if (currentIndex2 > currentIndex) {
-                    //std::cout<<"set selected text : "<<currentIndex<<","<<currentIndex2<<std::endl;
+                    ////std::cout<<"set selected text : "<<currentIndex<<","<<currentIndex2<<std::endl;
                     text.setSelected(currentIndex, currentIndex2);
                 }
             }

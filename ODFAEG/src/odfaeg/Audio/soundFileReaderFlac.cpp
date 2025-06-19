@@ -186,7 +186,7 @@ namespace odfaeg {
             ////////////////////////////////////////////////////////////
             bool SoundFileReaderFlac::check(std::istream& stream)
             {
-                std::cout<<"check flag"<<std::endl;
+                //std::cout<<"check flag"<<std::endl;
                 // Create a decoder
                 FLAC__StreamDecoder* decoder = FLAC__stream_decoder_new();
                 if (!decoder)

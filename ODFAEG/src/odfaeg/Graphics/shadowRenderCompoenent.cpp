@@ -552,7 +552,7 @@ namespace odfaeg {
                     if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorSetLayout.size())
                         descriptorSetLayout.resize(shader->getNbShaders()*depthBuffer.getNbRenderTargets());
                     unsigned int descriptorId = depthBuffer.getId() * shader->getNbShaders() + shader->getId();
-                    //std::cout<<"ppll descriptor id : "<<descriptorId<<std::endl;
+                    ////std::cout<<"ppll descriptor id : "<<descriptorId<<std::endl;
                     std::vector<Texture*> allTextures = Texture::getAllTextures();
                     VkDescriptorSetLayoutBinding samplerLayoutBinding{};
                     samplerLayoutBinding.binding = 0;
@@ -1765,7 +1765,7 @@ namespace odfaeg {
                     GLuint64 handle_texture = allTextures[i]->getTextureHandle();
                     allTextures[i]->makeTextureResident(handle_texture);
                     allSamplers.tex[i].handle = handle_texture;
-                    //std::cout<<"add texture i : "<<i<<" id : "<<allTextures[i]->getNativeHandle()<<std::endl;
+                    ////std::cout<<"add texture i : "<<i<<" id : "<<allTextures[i]->getNativeHandle()<<std::endl;
                 }
                 buildShadowMapShader.setParameter("textureMatrix", textureMatrices);
                 depthGenShader.setParameter("textureMatrix", textureMatrices);
@@ -1792,7 +1792,7 @@ namespace odfaeg {
                 glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, modelDataBuffer));
                 glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, materialDataBuffer));
                 alphaBuffer.setActive(false);
-                //std::cout<<"size : "<<sizeof(Samplers)<<" "<<alignof (alignas(16) uint64_t[200])<<std::endl;
+                ////std::cout<<"size : "<<sizeof(Samplers)<<" "<<alignof (alignas(16) uint64_t[200])<<std::endl;
 
                 /*glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo2));
                 glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo3));*/
@@ -1812,7 +1812,7 @@ namespace odfaeg {
                     GLuint64 handle_texture = allTextures[i]->getTextureHandle();
                     allTextures[i]->makeTextureResident(handle_texture);
                     allSamplers.tex[i].handle = handle_texture;
-                    //std::cout<<"add texture i : "<<i<<" id : "<<allTextures[i]->getNativeHandle()<<std::endl;
+                    ////std::cout<<"add texture i : "<<i<<" id : "<<allTextures[i]->getNativeHandle()<<std::endl;
                 }
                 glCheck(glBindBuffer(GL_UNIFORM_BUFFER, ubo));
                 glCheck(glBufferData(GL_UNIFORM_BUFFER, sizeof(Samplers),allSamplers.tex, GL_STATIC_DRAW));
@@ -2471,12 +2471,12 @@ namespace odfaeg {
                             shadowOrigin = entity->getPosition();
                             shadowTranslation = entity->getPosition() + shadowCenter;
                             /*if (entity->getType() == "E_WALL") {
-                                std::cout<<"shadow center : "<<shadowCenter<<std::endl;
-                                std::cout<<"shadow scale : "<<shadowScale<<std::endl;
-                                std::cout<<"shadow rotation axis : "<<shadowRotationAxis<<std::endl;
-                                std::cout<<"shadow rotation angle : "<<shadowRotationAngle<<std::endl;
-                                std::cout<<"shadow origin : "<<shadowOrigin<<std::endl;
-                                std::cout<<"shadow translation : "<<shadowTranslation<<std::endl;
+                                //std::cout<<"shadow center : "<<shadowCenter<<std::endl;
+                                //std::cout<<"shadow scale : "<<shadowScale<<std::endl;
+                                //std::cout<<"shadow rotation axis : "<<shadowRotationAxis<<std::endl;
+                                //std::cout<<"shadow rotation angle : "<<shadowRotationAngle<<std::endl;
+                                //std::cout<<"shadow origin : "<<shadowOrigin<<std::endl;
+                                //std::cout<<"shadow translation : "<<shadowTranslation<<std::endl;
                             }*/
                         //}
                         TransformMatrix tm;

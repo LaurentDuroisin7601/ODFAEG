@@ -38,13 +38,13 @@ namespace odfaeg {
                 typename vector<EntityId>::iterator it;
                 for (it = entitiesInside.begin(); it != entitiesInside.end();) {
                     if (entity == *it) {
-                        //std::cout<<"remove entity : "<<it->get()<<std::endl;
-                        //std::cout<<"old size : "<<entitiesInside.size()<<std::endl;
+                        ////std::cout<<"remove entity : "<<it->get()<<std::endl;
+                        ////std::cout<<"old size : "<<entitiesInside.size()<<std::endl;
                         it = entitiesInside.erase(it);
                         /*for (unsigned int i = 0; i < entitiesInside.size(); i++) {
-                            std::cout<<"entity inside : "<<entitiesInside[i].get()<<std::endl;
+                            //std::cout<<"entity inside : "<<entitiesInside[i].get()<<std::endl;
                         }*/
-                        //std::cout<<"new size : "<<entitiesInside.size()<<std::endl;
+                        ////std::cout<<"new size : "<<entitiesInside.size()<<std::endl;
                         return true;
                     } else
                         it++;

@@ -177,28 +177,28 @@ namespace odfaeg {
                             ar(cellDepth);
                             gridMap = new GridMap(cellWidth, cellHeight, cellDepth);
                             BaseChangementMatrix bcm;
-                            //std::cout<<"read bcm"<<std::endl;
+                            ////std::cout<<"read bcm"<<std::endl;
                             ar(bcm);
-                            //std::cout<<"bcm read"<<std::endl;
+                            ////std::cout<<"bcm read"<<std::endl;
                             setBaseChangementMatrix(bcm);
                             std::vector<Entity*> entities;
-                            //std::cout<<"read entities"<<std::endl;
+                            ////std::cout<<"read entities"<<std::endl;
                             ar(entities);
-                            //std::cout<<"size : "<<entities.size()<<std::endl;
+                            ////std::cout<<"size : "<<entities.size()<<std::endl;
                             for (unsigned int i = 0; i < entities.size(); i++) {
-                                //std::cout<<"add entity"<<std::endl;
+                                ////std::cout<<"add entity"<<std::endl;
                                 addEntity(entities[i]);
                             }
                             unsigned int size;
                             ar(size);
-                            //std::cout<<"cases maps : "<<std::endl;
+                            ////std::cout<<"cases maps : "<<std::endl;
                             for (unsigned int i = 0; i < size; i++) {
                                 math::Vec3f center;
                                 ar(center);
-                                //std::cout<<"center : "<<center<<std::endl;
+                                ////std::cout<<"center : "<<center<<std::endl;
                                 bool isPassable;
                                 ar(isPassable);
-                                //std::cout<<"passable : "<<isPassable<<std::endl;
+                                ////std::cout<<"passable : "<<isPassable<<std::endl;
                                 CellMap* cell = getGridCellAt(center);
                                 if (cell != nullptr) {
                                     cell->setPassable(isPassable);

@@ -46,7 +46,7 @@ namespace odfaeg {
                     setSize(math::Vec3f(nsx, nsy, 0.f));
                     setPosition(math::Vec3f(npx, npy, getPosition().z()));
                     /*if (getName() == "LFILE") {
-                        std::cout<<"set position : "<<this<<std::endl;
+                        //std::cout<<"set position : "<<this<<std::endl;
                     }*/
                     if (getSize().x() > psx)
                         setSize(math::Vec3f(psx, getSize().y(), 0));
@@ -69,21 +69,21 @@ namespace odfaeg {
                     glCheck(glGetIntegerv(GL_SCISSOR_BOX, values));
                     GLboolean sctest;
                     glGetBooleanv(GL_SCISSOR_TEST, &sctest);
-                    std::cout<<"scissor test activated ? "<<(int) sctest<<std::endl;
+                    //std::cout<<"scissor test activated ? "<<(int) sctest<<std::endl;
                     for (unsigned int i = 0; i < 4; i++)
-                        std::cout<<"value : "<<values[i]<<std::endl;
+                        //std::cout<<"value : "<<values[i]<<std::endl;
                 }*/
                 std::multimap<int, LightComponent*, std::greater<int>> sortedChildren;
                 for (unsigned int i = 0; i < children.size(); i++) {
                     /*if (children[i]->getName() == "LFILE") {
-                        std::cout<<"set position : "<<children[i]->getPosition()<<std::endl;
+                        //std::cout<<"set position : "<<children[i]->getPosition()<<std::endl;
                     }*/
                     sortedChildren.insert(std::make_pair(children[i]->getPriority(), children[i].get()));
                 }
                 std::multimap<int, LightComponent*, std::greater<int>>::iterator it;
                 for (it = sortedChildren.begin(); it != sortedChildren.end(); it++) {
                     /*if (it->second->getName() == "LFILE") {
-                        std::cout<<"position : "<<it->second<<std::endl;
+                        //std::cout<<"position : "<<it->second<<std::endl;
                     }*/
                     if (it->second->isVisible()
                         && it->second->getPosition().x() + it->second->getSize().x() >= getPosition().x()

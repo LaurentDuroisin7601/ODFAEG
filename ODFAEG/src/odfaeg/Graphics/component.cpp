@@ -10,7 +10,7 @@ namespace odfaeg {
         priority(priority),
         eventPriority(eventPriority),
         window(window) {
-            //std::cout<<"create component"<<std::endl;
+            ////std::cout<<"create component"<<std::endl;
             activateEventContext = true;
             visible = true;
             id = -1;
@@ -25,7 +25,7 @@ namespace odfaeg {
             this->activateEventContext = activateEventContext;
             if (!activateEventContext) {
                 /*if (name == "TEXCOORDY")
-                    std::cout<<"clear tex coord y event stack"<<std::endl;*/
+                    //std::cout<<"clear tex coord y event stack"<<std::endl;*/
                 getListener().clearEventsStack();
             }
             onEventContextActivated(activateEventContext);
@@ -65,7 +65,7 @@ namespace odfaeg {
         void Component::loadTextureIndexes() {
         }
         Component::~Component() {
-            std::cout<<"destructor component"<<std::endl;
+            //std::cout<<"destructor component"<<std::endl;
 
         }
     }

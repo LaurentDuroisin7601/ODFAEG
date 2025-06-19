@@ -155,8 +155,8 @@ namespace odfaeg {
             core::Clock timeClock;
             std::vector<unsigned int> pipelineIds;
             std::vector<VkEvent> events;
-
-
+            std::vector<VkSemaphore> renderFinishedSemaphore;
+            RenderWindow& window;
         };
         #else
         class ODFAEG_GRAPHICS_API PerPixelLinkedListRenderComponent : public HeavyComponent {

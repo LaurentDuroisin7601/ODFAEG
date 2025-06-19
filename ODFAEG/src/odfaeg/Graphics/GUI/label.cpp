@@ -36,7 +36,7 @@ namespace odfaeg {
                 rect.setPosition(getPosition());
                 //text.setSize(getSize());
                 rect.setSize(getSize());
-                //std::cout<<"sizes : "<<text.getSize()/*<<rect.getSize()*/;
+                ////std::cout<<"sizes : "<<text.getSize()/*<<rect.getSize()*/;
                 target.draw(rect);
                 target.draw(text);
             }

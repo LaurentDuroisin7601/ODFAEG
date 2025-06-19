@@ -37,7 +37,7 @@ namespace odfaeg {
         {
             alCheck(alGenSources(1, &m_source));
             alCheck(alSourcei(m_source, AL_BUFFER, 0));
-            //std::cout<<"source : "<<m_source<<std::endl;
+            ////std::cout<<"source : "<<m_source<<std::endl;
         }
 
 

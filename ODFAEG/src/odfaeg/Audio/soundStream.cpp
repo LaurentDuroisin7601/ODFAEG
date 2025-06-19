@@ -331,7 +331,7 @@ namespace odfaeg {
                 alCheck(alGetSourcei(m_source, AL_BUFFERS_PROCESSED, &nbProcessed));
 
 
-                std::cout<<"nb proceed : "<<nbProcessed<<std::endl;
+                ////std::cout<<"nb proceed : "<<nbProcessed<<std::endl;
 
                 while (nbProcessed--)
                 {
@@ -458,7 +458,7 @@ namespace odfaeg {
                 ALsizei size = static_cast<ALsizei>(data.sampleCount) * sizeof(std::int16_t);
                 alCheck(alBufferData(buffer, m_format, data.samples, size, m_sampleRate));
                 alGetBufferi(buffer, AL_SIZE, &size);
-                //std::cout<<"sample count : "<<data.sampleCount<<std::endl;
+                ////std::cout<<"sample count : "<<data.sampleCount<<std::endl;
 
 
 

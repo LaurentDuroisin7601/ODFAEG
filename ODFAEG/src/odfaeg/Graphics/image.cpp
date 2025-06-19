@@ -17,17 +17,21 @@ namespace odfaeg {
         {
             std::istream* stream = static_cast<std::istream*>(user);
             stream->read(data, size);
-            return stream->tellg();
+            return stream->gcount();
         }
         void skip(void* user, int size)
         {
             std::istream* stream = static_cast<std::istream*>(user);
-            stream->seekg(stream->tellg() + size, stream->cur);
+            stream->seekg(stream->tellg() + size, stream->beg);
         }
         int eof(void* user)
         {
             std::istream* stream = static_cast<std::istream*>(user);
-            return stream->tellg() >= stream->end;
+            unsigned int offset = stream->tellg();
+            stream->seekg(0, std::ios::end);
+            unsigned int size = stream->tellg();
+            stream->seekg(offset, std::ios::beg);
+            return stream->tellg() >= size;
         }
 
         ////////////////////////////////////////////////////////////
@@ -86,8 +90,10 @@ namespace odfaeg {
         ////////////////////////////////////////////////////////////
         void Image::create(unsigned int width, unsigned int height, const std::uint8_t* pixels)
         {
+
             if (pixels && width && height)
             {
+
                 // Create a new pixel buffer first for exception safety's sake
                 std::vector<std::uint8_t> newPixels(pixels, pixels + width * height * 4);
 
@@ -136,10 +142,16 @@ namespace odfaeg {
                         m_pixels.resize(width * height * 4);
                         memcpy(&m_pixels[0], ptr, m_pixels.size());
                     }
+                    /*bool empty = true;
+                    for (unsigned int i = 0; i < width * height; i++) {
+                        if (m_pixels[i*4] != 0 || m_pixels[i*4+1] != 0 || m_pixels[i*4+2] != 0 || m_pixels[i*4+3]!=0)
+                            empty = false;
 
+                    }
+                    //std::cout<<"empty : "<<empty<<std::endl;*/
                     // Free the loaded pixels (they are now in our own pixel buffer)
                     stbi_image_free(ptr);
-
+                    //saveToFile(filename);
                     return true;
                 }
                 else

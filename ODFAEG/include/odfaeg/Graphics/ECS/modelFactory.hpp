@@ -40,7 +40,7 @@ namespace odfaeg {
                     v2.texCoords = math::Vec2f(subRect.left + subRect.width, subRect.top);
                     v3.texCoords = math::Vec2f(subRect.left + subRect.width, subRect.top + subRect.height);
                     v4.texCoords = math::Vec2f(subRect.left, subRect.top + subRect.height);
-                    //std::cout<<"tex coords : "<<v2.texCoords.x()<<" "<<v2.texCoords.y()<<std::endl;
+                    ////std::cout<<"tex coords : "<<v2.texCoords.x()<<" "<<v2.texCoords.y()<<std::endl;
                     //v1.color = v2.color = v3.color = v4.color = color;
 
 

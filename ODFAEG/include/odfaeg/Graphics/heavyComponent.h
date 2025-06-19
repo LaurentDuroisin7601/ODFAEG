@@ -9,7 +9,7 @@ namespace odfaeg {
             public :
             HeavyComponent(RenderWindow& window, math::Vec3f position, math::Vec3f size, math::Vec3f origin) :
                 Component(window, position, size, origin, position.z()) {
-                    //std::cout<<"create heavy component"<<std::endl;
+                    ////std::cout<<"create heavy component"<<std::endl;
                 }
             void recomputeSize() {
                 float sx, sy, npx, npy, nsx, nsy;

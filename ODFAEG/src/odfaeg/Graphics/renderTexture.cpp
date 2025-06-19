@@ -310,7 +310,7 @@ namespace odfaeg
 
         }
         void RenderTexture::clear(const Color& color) {
-             //std::cout<<"render texture clear begin command buffer"<<std::endl;
+             ////std::cout<<"render texture clear begin command buffer"<<std::endl;
 
 
              clearColor = color;
@@ -400,7 +400,7 @@ namespace odfaeg
         }
         void RenderTexture::display(bool isSignalSemaphore, VkSemaphore semaphore) {
             if (getCommandBuffers().size() > 0) {
-                //std::cout<<"render texture end command buffer"<<std::endl;
+                ////std::cout<<"render texture end command buffer"<<std::endl;
                 vkCmdEndRenderPass(getCommandBuffers()[getCurrentFrame()]);
                 //for (unsigned int i = 0; i < getCommandBuffers().size(); i++) {
                     if (vkEndCommandBuffer(getCommandBuffers()[currentFrame]) != VK_SUCCESS) {
@@ -414,7 +414,7 @@ namespace odfaeg
                 submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
                 if (semaphore != VK_NULL_HANDLE) {
                     if (isSignalSemaphore) {
-
+                        //std::cout<<"offscreen signal semaphore : "<<semaphore<<std::endl;
                         submitInfo.signalSemaphoreCount = 1;
                         submitInfo.pSignalSemaphores = &semaphore;
                     } else {
@@ -435,7 +435,7 @@ namespace odfaeg
         }
         RenderTexture::~RenderTexture() {
             //RenderTarget::cleanup();
-            std::cout<<"destroy render texture"<<std::endl;
+            //std::cout<<"destroy render texture"<<std::endl;
             for (unsigned int j = 0; j < 2; j++) {
                 for (size_t i = 0; i < swapChainFramebuffers[j].size(); i++) {
                     vkDestroyFramebuffer(vkDevice.getDevice(), swapChainFramebuffers[j][i], nullptr);
@@ -510,7 +510,7 @@ namespace odfaeg
             }
             else
             {
-                std::cout<<"FBO not avalaible"<<std::endl;
+                //std::cout<<"FBO not avalaible"<<std::endl;
                 // Use default implementation
                 m_impl = new priv::RenderTextureImplDefault;
             }

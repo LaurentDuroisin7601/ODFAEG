@@ -79,13 +79,13 @@ namespace odfaeg {
                 const Texture* getTexture() const;
                 template <typename Archive>
                 void serialize(Archive &ar) {
-                    //std::cout<<"mat rect height : "<<rect.height<<std::endl;
+                    ////std::cout<<"mat rect height : "<<rect.height<<std::endl;
                     ar(texRect.left);
                     ar(texRect.top);
                     ar(texRect.width);
                     ar(texRect.height);
                     ar(texId);
-                    //std::cout<<"mat tex id : "<<texId<<std::endl;
+                    ////std::cout<<"mat tex id : "<<texId<<std::endl;
 
                 }
             };
@@ -196,11 +196,11 @@ namespace odfaeg {
             template <typename Archive>
             void serialize(Archive & ar) {
                 ar(texInfos);
-                //std::cout<<"color a : "<<color.a<<std::endl;
+                ////std::cout<<"color a : "<<color.a<<std::endl;
                 ar(specularIntensity);
-                //std::cout<<"specular intensity "<<specularIntensity<<std::endl;
+                ////std::cout<<"specular intensity "<<specularIntensity<<std::endl;
                 ar(specularPower);
-                //std::cout<<"specular power : "<<specularPower<<std::endl;
+                ////std::cout<<"specular power : "<<specularPower<<std::endl;
                 ar(reflectable);
                 ar(refractable);
                 ar(refractionFactor);
@@ -318,25 +318,25 @@ namespace odfaeg {
             template <typename Archive>
             void serialize (Archive & ar) {
                 /*for (unsigned int j= 0; j< m_vertices.getVertexCount(); j++) {
-                    std::cout<<m_vertices[j].position.x<<","<<m_vertices[j].position.y<<","<<m_vertices[j].position.z<<std::endl;
+                    //std::cout<<m_vertices[j].position.x<<","<<m_vertices[j].position.y<<","<<m_vertices[j].position.z<<std::endl;
                 }
-                std::cout<<"prim type : "<<m_vertices.getPrimitiveType()<<std::endl;
+                //std::cout<<"prim type : "<<m_vertices.getPrimitiveType()<<std::endl;
                 std::vector<math::Vec3f> locals = m_vertices.getLocals();
-                std::cout<<"locals : ";
+                //std::cout<<"locals : ";
                 for (unsigned int l = 0; l < locals.size(); l++) {
-                    std::cout<<locals[l]<<std::endl;
+                    //std::cout<<locals[l]<<std::endl;
                 }
-                std::cout<<"indexes : "<<std::endl;
+                //std::cout<<"indexes : "<<std::endl;
                 std::vector<unsigned int> indexes = m_vertices.getIndexes();
                 for (unsigned int j = 0; j < indexes.size(); j++) {
-                    std::cout<<"index  : "<<indexes[j]<<std::endl;
+                    //std::cout<<"index  : "<<indexes[j]<<std::endl;
                 } */
                 ar(m_vertices);
-                //std::cout<<"vertices"<<std::endl;
+                ////std::cout<<"vertices"<<std::endl;
                 ar(m_material);
-                //std::cout<<"material"<<std::endl;
+                ////std::cout<<"material"<<std::endl;
                 ar(transform);
-                //std::cout<<"transform"<<std::endl;
+                ////std::cout<<"transform"<<std::endl;
             }
             bool operator== (Face& other);
             bool operator!= (Face& other);

@@ -79,7 +79,7 @@ namespace odfaeg{
             ////////////////////////////////////////////////////////////
             bool SoundFileReaderOgg::check(std::istream& stream)
             {
-                std::cout<<"check ogg"<<std::endl;
+                //std::cout<<"check ogg"<<std::endl;
                 OggVorbis_File file;
                 if (ov_test_callbacks(&stream, &file, NULL, 0, callbacks) == 0)
                 {

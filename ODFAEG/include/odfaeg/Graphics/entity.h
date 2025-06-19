@@ -48,10 +48,10 @@ namespace odfaeg {
                 std::pair<int, std::string> updateTypes(std::string sType) {
                     int iType = getIntOfType(sType);
                     /*if (sType == "E_WALL")
-                        std::cout<<"i type : "<<iType<<std::endl;*/
+                        //std::cout<<"i type : "<<iType<<std::endl;*/
                     if (iType == -1) {
                         /*if (sType == "E_WALL")
-                            std::cout<<"i type  : "<<nbEntitiesTypes<<std::endl;*/
+                            //std::cout<<"i type  : "<<nbEntitiesTypes<<std::endl;*/
                         std::pair<int, std::string> type = std::pair<int, std::string> (nbEntitiesTypes, sType);
                         types.insert(type);
                         nbEntitiesTypes++;
@@ -59,7 +59,7 @@ namespace odfaeg {
                     } else {
                         std::map<int, std::string>::iterator it = types.find(iType);
                         /*if (it->second == "E_WALL")
-                            std::cout<<"i type : "<<it->first<<std::endl;*/
+                            //std::cout<<"i type : "<<it->first<<std::endl;*/
                         return *it;
                     }
                 }
@@ -358,14 +358,14 @@ namespace odfaeg {
                 //void setTypeInt(int iType);
                 template <typename Archive>
                 void vtserialize(Archive & ar) {
-                    //std::cout<<"already serialized : "<<alreadySerialized<<std::endl;
+                    ////std::cout<<"already serialized : "<<alreadySerialized<<std::endl;
                     Transformable::serialize(ar);
                     ar(type.first);
-                    //std::cout<<"type first : "<<type.first<<std::endl;
+                    ////std::cout<<"type first : "<<type.first<<std::endl;
                     ar(type.second);
                     /*if (type.second == "E_WALL")
-                        std::cout<<"i type : "<<type.first<<std::endl;*/
-                    //std::cout<<"entity id : "<<getId()<<std::endl<<"Transform matrix : "<<getTransform().getMatrix()<<std::endl;
+                        //std::cout<<"i type : "<<type.first<<std::endl;*/
+                    ////std::cout<<"entity id : "<<getId()<<std::endl<<"Transform matrix : "<<getTransform().getMatrix()<<std::endl;
                     if (ar.isInputArchive()) {
                         type = factory.updateTypes(type.second);
                     }

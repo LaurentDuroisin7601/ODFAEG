@@ -49,7 +49,7 @@ namespace odfaeg {
                 int endY = (y + globalBounds.getHeight());
                 int endZ = (z + globalBounds.getDepth());
                 bool added = false;
-                //std::cout<<"global bounds : "<<globalBounds.getPosition()<<globalBounds.getSize()<<std::endl;
+                ////std::cout<<"global bounds : "<<globalBounds.getPosition()<<globalBounds.getSize()<<std::endl;
                 /*std::array<math::Vec2f, 4> pos;
                 pos[0] = math::Vec2f(x, y);
                 pos[1] = math::Vec2f(x, y + endY);
@@ -67,8 +67,8 @@ namespace odfaeg {
                         cm->addEntity(entity);
                     }
                 }*/
-                //std::cout<<"offsets : "<<offsetX<<","<<offsetY<<","<<offsetZ<<std::endl<<"start : "<<x<<","<<y<<","<<z<<std::endl<<"ends : "<<endX<<","<<endY<<","<<endZ<<std::endl;
-                //std::cout<<"add entity : "<<entity->getType()<<std::endl<<x<<","<<y<<","<<z<<","<<endX<<","<<endY<<","<<endZ<<std::endl;
+                ////std::cout<<"offsets : "<<offsetX<<","<<offsetY<<","<<offsetZ<<std::endl<<"start : "<<x<<","<<y<<","<<z<<std::endl<<"ends : "<<endX<<","<<endY<<","<<endZ<<std::endl;
+                ////std::cout<<"add entity : "<<entity->getType()<<std::endl<<x<<","<<y<<","<<z<<","<<endX<<","<<endY<<","<<endZ<<std::endl;
                 for (int i = x; i <= endX; i+= offsetX) {
                     for (int j = y; j <= endY; j+= offsetY)  {
                         for (int k = z; k <= endZ; k+= offsetZ) {
@@ -76,29 +76,29 @@ namespace odfaeg {
                             math::Vec3f pos (i, j, k);
 
                             if (!(containsEntity(entity, pos))) {
-                                //std::cout<<"get cell map"<<std::endl;
+                                ////std::cout<<"get cell map"<<std::endl;
                                 Cell *cm = getGridCellAt(pos);
-                                //std::cout<<"create cell map"<<std::endl;
+                                ////std::cout<<"create cell map"<<std::endl;
                                 if (cm == nullptr) {
-                                    //std::cout<<"create cell map"<<std::endl;
+                                    ////std::cout<<"create cell map"<<std::endl;
                                     createCell(pos);
                                     cm = getGridCellAt(pos);
                                 }
                                 added = true;
                                 cm->addEntity(entity);
                                 /*if (entity->getType() == "E_BIGTILE")
-                                  std::cout<<cm->getCoords()<<std::endl;*/
-                                //std::cout<<"entity added"<<std::endl;
+                                  //std::cout<<cm->getCoords()<<std::endl;*/
+                                ////std::cout<<"entity added"<<std::endl;
                                 /*if (entity->getRootType() == "E_WALL") {
                                     int indice = (math::Math::abs(minX) + cm->getCoords().x())
                                     + (math::Math::abs(minY) + cm->getCoords().y()) * nbCellsPerRow + (math::Math::abs(minZ) + cm->getCoords().z()) * nbCellsPerCol;
-                                    std::cout<<"add wall at : "<<pos<<cm->getCoords()<<minX<<std::endl<<"miny : "<<minY<<std::endl<<"minz : "<<minZ<<std::endl<<"nb Cells per row : "<<nbCellsPerRow<<std::endl<<"nb Cells per col : "<<nbCellsPerCol<<std::endl<<"index : "<<indice<<std::endl;
+                                    //std::cout<<"add wall at : "<<pos<<cm->getCoords()<<minX<<std::endl<<"miny : "<<minY<<std::endl<<"minz : "<<minZ<<std::endl<<"nb Cells per row : "<<nbCellsPerRow<<std::endl<<"nb Cells per col : "<<nbCellsPerCol<<std::endl<<"index : "<<indice<<std::endl;
                                 }*/
                                 /*if (i == x && j == y && k == z && entity->getType() == "E_TILE") {*/
 
                                     /*int indice = (math::Math::abs(minX) + cm->getCoords().x())
                                                         + (math::Math::abs(minY) + cm->getCoords().y()) * nbCellsPerRow + (math::Math::abs(minZ) + cm->getCoords().z()) * nbCellsPerCol;
-                                    std::cout<<"add entity mins : "<<pos<<std::endl<<minX<<","<<minY<<","<<minZ<<std::endl<<"maxs : "<<maxX<<","<<maxY<<","<<maxZ<<std::endl<<"nb Cells : "<<nbCellsPerRow<<","<<nbCellsPerCol<<std::endl<<"coords : "<<cm->getCoords()<<std::endl;*/
+                                    //std::cout<<"add entity mins : "<<pos<<std::endl<<minX<<","<<minY<<","<<minZ<<std::endl<<"maxs : "<<maxX<<","<<maxY<<","<<maxZ<<std::endl<<"nb Cells : "<<nbCellsPerRow<<","<<nbCellsPerCol<<std::endl<<"coords : "<<cm->getCoords()<<std::endl;*/
 
 
 
@@ -107,11 +107,11 @@ namespace odfaeg {
 
                             }
                         }
-                        //std::cout<<"leave k"<<std::endl;
+                        ////std::cout<<"leave k"<<std::endl;
                     }
-                    //std::cout<<"leave j"<<std::endl;
+                    ////std::cout<<"leave j"<<std::endl;
                 }
-                //std::cout<<"entity added : "<<std::endl;
+                ////std::cout<<"entity added : "<<std::endl;
                 return added;
             }
 
@@ -161,9 +161,9 @@ namespace odfaeg {
             }*/
 
             void Grid::createCell (math::Vec3f &point) {
-                //std::cout<<"point : "<<point<<std::endl;
+                ////std::cout<<"point : "<<point<<std::endl;
                 math::Vec3f coordsCaseP = getCoordinatesAt(point);
-                //std::cout<<"coords caseP : "<<coordsCaseP<<std::endl;
+                ////std::cout<<"coords caseP : "<<coordsCaseP<<std::endl;
 
                 /*minX = (coordsCaseP.x() < minX) ? coordsCaseP.x() : minX;
                 minY = (coordsCaseP.y() < minY) ? coordsCaseP.y() : minY;
@@ -200,7 +200,7 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < 8; i++) {
                     v[i] = bm.changeOfBase(v[i]);
                     /*if (i < 4)
-                        std::cout<<"point "<<i<<" : "<<v[i]<<std::endl;*/
+                        //std::cout<<"point "<<i<<" : "<<v[i]<<std::endl;*/
                 }
 
                 //Face de devant.
@@ -221,7 +221,7 @@ namespace odfaeg {
                 //Face du dessous.
                 bp.addTriangle(v[3], v[7], v[6]);
                 bp.addTriangle(v[3], v[2], v[6]);
-                //std::cout<<"center : "<<bp->getCenter()<<std::endl;
+                ////std::cout<<"center : "<<bp->getCenter()<<std::endl;
                 Cell *cell = new Cell(bp, coordsCaseP, componentMapping);
                 cells.push_back(cell);
                 checkExts();
@@ -230,14 +230,14 @@ namespace odfaeg {
                 nbCellsPerRow = (cellWidth > 0) ? math::Math::abs(minX) + maxX + 1 : 1;
                 nbCellsPerCol = (cellHeight > 0) ? math::Math::abs(minY) + maxY + 1 : 1;
                 int nbCellsPerDepth = (cellDepth > 0) ? math::Math::abs(minZ) + maxZ + 1 : 1;
-                //std::cout<<"nbCellsPerRow : "<<nbCellsPerRow<<std::endl<<"nbCellsPerCol : "<<nbCellsPerCol<<"nb Cells per depth"<<nbCellsPerDepth<<std::endl;
+                ////std::cout<<"nbCellsPerRow : "<<nbCellsPerRow<<std::endl<<"nbCellsPerCol : "<<nbCellsPerCol<<"nb Cells per depth"<<nbCellsPerDepth<<std::endl;
                 unsigned int newSize = nbCellsPerCol * nbCellsPerRow * nbCellsPerDepth;
-                //std::cout<<"min z : "<<minZ<<std::endl;
+                ////std::cout<<"min z : "<<minZ<<std::endl;
                 int indice = (math::Math::abs(minX) + coordsCaseP.x())
                              + (math::Math::abs(minY) + coordsCaseP.y()) * nbCellsPerRow + (math::Math::abs(minZ) + coordsCaseP.z()) * nbCellsPerCol;
-                //std::cout<<"create cell map at indice : "<<indice<<std::endl;
+                ////std::cout<<"create cell map at indice : "<<indice<<std::endl;
                 if (newSize > cells.size()) {
-                    //std::cout<<"resize vector! : "<<newSize<<std::endl;
+                    ////std::cout<<"resize vector! : "<<newSize<<std::endl;
                     vector<Cell*> tmpCells = cells;
                     cells.clear();
                     cells.resize(newSize);
@@ -247,12 +247,12 @@ namespace odfaeg {
                             math::Vec3f coords = tmpCells[i]->getCoords();
                             int newInd = (math::Math::abs(minX) + coords.x())
                                          + (math::Math::abs(minY) + coords.y()) * nbCellsPerRow + (math::Math::abs(minZ) + coords.z()) * nbCellsPerCol;
-                            //std::cout<<"new ind  : "<<newInd<<std::endl;
+                            ////std::cout<<"new ind  : "<<newInd<<std::endl;
                             cells[newInd] = tmpCells[i];
                         }
                     }
                 } else if (newSize < cells.size()) {
-                    //std::cout<<"resize vector! : "<<newSize<<std::endl;
+                    ////std::cout<<"resize vector! : "<<newSize<<std::endl;
                     vector<Cell*> tmpCells = cells;
                     cells.clear();
                     cells.resize(newSize);
@@ -262,12 +262,12 @@ namespace odfaeg {
                             math::Vec3f coords = tmpCells[i]->getCoords();
                             int newInd = (math::Math::abs(minX) + coords.x())
                                          + (math::Math::abs(minY) + coords.y()) * nbCellsPerRow + (math::Math::abs(minZ) + coords.z()) * nbCellsPerCol;
-                            //std::cout<<"new ind  : "<<newInd<<std::endl;
+                            ////std::cout<<"new ind  : "<<newInd<<std::endl;
                             cells[newInd] = tmpCells[i];
                         }
                     }
                 }
-                //std::cout<<"ind : "<<indice<<std::endl;
+                ////std::cout<<"ind : "<<indice<<std::endl;
                 cells[indice] = cell;
                 //system("PAUSE");
             }
@@ -291,7 +291,7 @@ namespace odfaeg {
                             math::Vec3f coords = getCoordinatesAt(pos);
                             int indice = (math::Math::abs(minX) + coords.x())
                                         + (math::Math::abs(minY) + coords.y()) * nbCellsPerRow + (math::Math::abs(minZ) + coords.z()) * nbCellsPerCol;
-                            //std::cout<<"remove entity indice : "<<indice<<std::endl<<"mins : "<<std::endl<<minX<<","<<minY<<","<<minZ<<std::endl<<"maxs : "<<maxX<<","<<maxY<<","<<maxZ<<std::endl<<"nb Cells : "<<nbCellsPerRow<<","<<nbCellsPerCol<<std::endl<<"coords : "<<coords<<"size : "<<cells.size()<<std::endl;
+                            ////std::cout<<"remove entity indice : "<<indice<<std::endl<<"mins : "<<std::endl<<minX<<","<<minY<<","<<minZ<<std::endl<<"maxs : "<<maxX<<","<<maxY<<","<<maxZ<<std::endl<<"nb Cells : "<<nbCellsPerRow<<","<<nbCellsPerCol<<std::endl<<"coords : "<<coords<<"size : "<<cells.size()<<std::endl;
                             if (cm != nullptr) {
                               /*if (i == x && j == y && k == z && entity->getType() == "E_TILE") {
                                   int indice = (math::Math::abs(minX) + cm->getCoords().x())
@@ -312,7 +312,7 @@ namespace odfaeg {
 
                 for (unsigned int i = 0; i < cells.size(); i++) {
                     if (cells[i] != nullptr && cells[i]==cell) {
-                        //std::cout<<"delete cell : "<<cells[i]->getCoords()<<std::endl;
+                        ////std::cout<<"delete cell : "<<cells[i]->getCoords()<<std::endl;
                         delete cells[i];
                         cells[i] = nullptr;
                     }
@@ -327,7 +327,7 @@ namespace odfaeg {
                 unsigned int newSize = nbCellsPerCol * nbCellsPerRow * nbCellsPerDepth;
 
                 if (newSize < cells.size()) {
-                    //std::cout<<"new size : "<<newSize<<std::endl;
+                    ////std::cout<<"new size : "<<newSize<<std::endl;
                     vector<Cell*> tmpcells = cells;
                     cells.clear();
                     cells.resize(newSize);
@@ -340,7 +340,7 @@ namespace odfaeg {
                         }
                     }
                 } else if (newSize > cells.size()) {
-                    //std::cout<<"new size : "<<newSize<<std::endl;
+                    ////std::cout<<"new size : "<<newSize<<std::endl;
                     vector<Cell*> tmpcells = cells;
                     cells.clear();
                     cells.resize(newSize);
@@ -548,7 +548,7 @@ namespace odfaeg {
             Cell* Grid::getGridCellAt (math::Vec3f point) {
                 math::Vec3f coordsCaseP = getCoordinatesAt(point);
                 unsigned int indice = (math::Math::abs(minX) + coordsCaseP.x()) + (math::Math::abs(minY) + coordsCaseP.y()) * nbCellsPerRow + (math::Math::abs(minZ) + coordsCaseP.z()) * nbCellsPerCol;
-                //std::cout<<"get cell map at "<<point<<coordsCaseP<<minX<<std::endl<<"miny : "<<minY<<std::endl<<"minz : "<<minZ<<std::endl<<"nb Cells per row : "<<nbCellsPerRow<<std::endl<<"nb Cells per col : "<<nbCellsPerCol<<std::endl<<indice<<std::endl;
+                ////std::cout<<"get cell map at "<<point<<coordsCaseP<<minX<<std::endl<<"miny : "<<minY<<std::endl<<"minz : "<<minZ<<std::endl<<"nb Cells per row : "<<nbCellsPerRow<<std::endl<<"nb Cells per col : "<<nbCellsPerCol<<std::endl<<indice<<std::endl;
                 if (indice >= 0 && indice < cells.size()) {
                     return cells[indice];
                 }
@@ -556,9 +556,9 @@ namespace odfaeg {
             }
 
             math::Vec3f Grid::getCoordinatesAt(math::Vec3f &point) {
-                //std::cout<<"get coordinates at, point : "<<point<<std::endl;
+                ////std::cout<<"get coordinates at, point : "<<point<<std::endl;
                 math::Vec3f p = bm.unchangeOfBase(point);
-                //std::cout<<"p : "<<p<<std::endl;
+                ////std::cout<<"p : "<<p<<std::endl;
                 math::Vec3f f;
                 if (cellWidth > 0)
                     f[0] = (int) p.x() / cellWidth;
@@ -578,7 +578,7 @@ namespace odfaeg {
                     f[1]--;
                 if (p.z() <= 0 && cellDepth > 0)
                     f[2]--;
-                //std::cout<<"coordinates at : "<<point<<f<<std::endl;
+                ////std::cout<<"coordinates at : "<<point<<f<<std::endl;
                 return f;
             }
 
@@ -586,7 +586,7 @@ namespace odfaeg {
                 return cells;
             }
             void Grid::checkExts () {
-                //std::cout<<"mins : "<<minX<<","<<minY<<","<<minZ<<std::endl<<"maxs : "<<maxX<<","<<maxY<<","<<maxZ<<std::endl;
+                ////std::cout<<"mins : "<<minX<<","<<minY<<","<<minZ<<std::endl<<"maxs : "<<maxX<<","<<maxY<<","<<maxZ<<std::endl;
                 minX = minY = minZ = std::numeric_limits<int>::max();
                 maxX = maxY = maxZ = std::numeric_limits<int>::min();
                 unsigned int nbCells=0;
@@ -594,7 +594,7 @@ namespace odfaeg {
                     if (cells[i] != nullptr) {
                         math::Vec3f point = cells[i]->getCellVolume().getCenter();
                         math::Vec3f coordsCaseP = getCoordinatesAt(point);
-                        //std::cout<<"coordsCaseP : "<<coordsCaseP<<std::endl;
+                        ////std::cout<<"coordsCaseP : "<<coordsCaseP<<std::endl;
                         minX = (coordsCaseP.x() < minX) ? coordsCaseP.x() : minX;
                         minY = (coordsCaseP.y() < minY) ? coordsCaseP.y() : minY;
                         minZ = (coordsCaseP.z() < minZ) ? coordsCaseP.z() : minZ;
@@ -607,7 +607,7 @@ namespace odfaeg {
                 if (nbCells == 0) {
                     minX = minY = minZ = maxX = maxY = maxZ = 0;
                 }
-                //std::cout<<"mins : "<<minX<<","<<minY<<","<<minZ<<std::endl<<"maxs : "<<maxX<<","<<maxY<<","<<maxZ<<std::endl;
+                ////std::cout<<"mins : "<<minX<<","<<minY<<","<<minZ<<std::endl<<"maxs : "<<maxX<<","<<maxY<<","<<maxZ<<std::endl;
                 //system("PAUSE");
             }
 

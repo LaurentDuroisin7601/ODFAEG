@@ -14,7 +14,7 @@ namespace odfaeg {
                 return nodeVisible;
             }
             void Node::affiche() {
-                std::cout<<component->getRelPosition().y()<<std::endl;
+                //std::cout<<component->getRelPosition().y()<<std::endl;
                 for (unsigned int i = 0; i < nodes.size(); i++)
                     nodes[i]->affiche();
             }

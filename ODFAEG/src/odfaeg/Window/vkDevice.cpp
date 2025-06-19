@@ -275,7 +275,7 @@ namespace odfaeg {
             return presentQueue;
         }
         Device::~Device() {
-            std::cout<<"destory device"<<std::endl;
+            //std::cout<<"destory device"<<std::endl;
             vkDestroyDevice(device, nullptr);
         }
         void Device::createInstance() {

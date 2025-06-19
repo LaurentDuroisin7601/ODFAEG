@@ -164,8 +164,8 @@ namespace odfaeg {
                         Vec3f dir2 = (actualPos - path[currentPathIndex]).normalize();
                         float d1 = (path[currentPathIndex+1] - path[currentPathIndex]).magnitude();
                         float d2 = (actualPos - path[currentPathIndex]).magnitude();
-                        /*std::cout<<"dir 1 : "<<dir1<<" dir 2 : "<<dir2<<" d1 : "<<d1<<" d2 : "<<d2<<std::endl;
-                        std::cout<<"angle : "<<Math::abs(Math::toDegrees(dir1.getAngleBetween(dir2, dir1.cross(dir2))))<<std::endl;*/
+                        /*//std::cout<<"dir 1 : "<<dir1<<" dir 2 : "<<dir2<<" d1 : "<<d1<<" d2 : "<<d2<<std::endl;
+                        //std::cout<<"angle : "<<Math::abs(Math::toDegrees(dir1.getAngleBetween(dir2, dir1.cross(dir2))))<<std::endl;*/
                         //If the number of point is greater than 2, we need to check on which segment of the path our actual position is.
                         //If the directions are not the same it means that the point is not on this segment of the path.
                         while (currentPathIndex < path.size() - 1 && !dir2.isNulVector() && !(Math::abs(Math::toDegrees(dir1.getAngleBetween(dir2, dir1.cross(dir2)))) >= 1 && d2 < d1)) {
@@ -177,11 +177,11 @@ namespace odfaeg {
                                 dir2 = (actualPos - path[currentPathIndex]).normalize();
                                 d1 = (path[currentPathIndex+1] - path[currentPathIndex]).magnitude();
                                 d2 = (actualPos - path[currentPathIndex]).magnitude();
-                               /* std::cout<<"dir 1 : "<<dir1<<" dir 2 : "<<dir2<<" d1 : "<<d1<<" d2 : "<<d2<<std::endl;
-                                std::cout<<"angle : "<<Math::abs(Math::toDegrees(dir1.getAngleBetween(dir2, dir1.cross(dir2))))<<std::endl;*/
+                               /* //std::cout<<"dir 1 : "<<dir1<<" dir 2 : "<<dir2<<" d1 : "<<d1<<" d2 : "<<d2<<std::endl;
+                                //std::cout<<"angle : "<<Math::abs(Math::toDegrees(dir1.getAngleBetween(dir2, dir1.cross(dir2))))<<std::endl;*/
                             }
                         }
-                        //std::cout<<"current index path : "<<currentPathIndex<<"size : "<<path.size()<<std::endl;
+                        ////std::cout<<"current index path : "<<currentPathIndex<<"size : "<<path.size()<<std::endl;
                        /*std::string str;
                         std::cin>>str;*/
                         //Our actual position is not on the path so we return our actual position.
@@ -198,9 +198,9 @@ namespace odfaeg {
                             d2 = (nextPos - path[currentPathIndex]).magnitude();
                             float aDot = Math::abs(dir1.dot(dir2));
 
-                            //std::cout<<"actual pos : "<<actualPos<<"next pos : "<<nextPos<<"path : "<<path[currentPathIndex]<<std::endl;
-                            //std::cout<<"actual pos : "<<actualPos<<" next pos : "<<nextPos<<std::endl;
-                            //std::cout<<"actual pos : "<<actualPos<<"next pos : "<<nextPos<<"dir 1 : "<<dir1<<"dir 2 : "<<dir2<<"d1 : "<<d1<<"d2 : "<<d2<<std::endl;
+                            ////std::cout<<"actual pos : "<<actualPos<<"next pos : "<<nextPos<<"path : "<<path[currentPathIndex]<<std::endl;
+                            ////std::cout<<"actual pos : "<<actualPos<<" next pos : "<<nextPos<<std::endl;
+                            ////std::cout<<"actual pos : "<<actualPos<<"next pos : "<<nextPos<<"dir 1 : "<<dir1<<"dir 2 : "<<dir2<<"d1 : "<<d1<<"d2 : "<<d2<<std::endl;
                             /*If the actual position is not on the same segment of the path than the final position, we need to check on which segment of the path our next position"ll be.
                             * If the distance between the two points of the segment is shorter than the distance between the next position and the first point of the path, it means that
                             * the next position is not on this segment of the path.
@@ -214,19 +214,19 @@ namespace odfaeg {
                                     dir1 = (path[currentPathIndex+1] - path[currentPathIndex]).normalize();
                                     nextPos = path[currentPathIndex] + dir1 * (d2 - d1) * aDot;
 
-                                    //std::cout<<"next pos : "<<nextPos<<"dir 1 : "<<dir1<<" dir 2 : "<<dir2<<" d1 : "<<d1<<" d2 : "<<d2<<"d2 - d1 : "<<d2 - d1<<" dot : "<<dot<<std::endl;
+                                    ////std::cout<<"next pos : "<<nextPos<<"dir 1 : "<<dir1<<" dir 2 : "<<dir2<<" d1 : "<<d1<<" d2 : "<<d2<<"d2 - d1 : "<<d2 - d1<<" dot : "<<dot<<std::endl;
 
                                     dir2 = (nextPos - path[currentPathIndex]).normalize();
                                     aDot = Math::abs(dir1.dot(dir2));
                                     d1 = (path[currentPathIndex+1] - path[currentPathIndex]).magnitude();
                                     d2 = (nextPos - path[currentPathIndex]).magnitude();
-                                    //std::cout<<"dir 1 : "<<dir1<<" dir 2 : "<<dir2<<" d1 : "<<d1<<" d2 : "<<d2<<"d2 - d1 : "<<d2 - d1<<std::endl;
+                                    ////std::cout<<"dir 1 : "<<dir1<<" dir 2 : "<<dir2<<" d1 : "<<d1<<" d2 : "<<d2<<"d2 - d1 : "<<d2 - d1<<std::endl;
                                     /*std::string ok;
                                     std::cin>>ok;*/
                                 }
                             }
 
-                            //std::cout<<"next pos : "<<nextPos<<" current path index : "<<currentPathIndex<<"size : "<<path.size()<<std::endl;
+                            ////std::cout<<"next pos : "<<nextPos<<" current path index : "<<currentPathIndex<<"size : "<<path.size()<<std::endl;
                             //If we reach the last point of the path it means that we are at the end of the path, otherwise we return the next position.
                             return (currentPathIndex == path.size() - 1)  ? path[currentPathIndex] : nextPos;
                         }
@@ -270,11 +270,11 @@ namespace odfaeg {
                         Vec2f dir2 = (actualPos - path[currentPathIndex]).normalize();
                         float d1 = (path[currentPathIndex+1] - path[currentPathIndex]).magnitude();
                         float d2 = (actualPos - path[currentPathIndex]).magnitude();
-                        /*std::cout<<"dir 1 : "<<dir1<<" dir 2 : "<<dir2<<" d1 : "<<d1<<" d2 : "<<d2<<std::endl;
-                        std::cout<<"angle : "<<Math::abs(Math::toDegrees(dir1.getAngleBetween(dir2, dir1.cross(dir2))))<<std::endl;*/
+                        /*//std::cout<<"dir 1 : "<<dir1<<" dir 2 : "<<dir2<<" d1 : "<<d1<<" d2 : "<<d2<<std::endl;
+                        //std::cout<<"angle : "<<Math::abs(Math::toDegrees(dir1.getAngleBetween(dir2, dir1.cross(dir2))))<<std::endl;*/
                         //If the number of point is greater than 2, we need to check on which segment of the path our actual position is.
                         //If the directions are not the same it means that the point is not on this segment of the path.
-                        //std::cout<<"pos : "<<actualPos<<"null vector ? "<<dir2.isNulVector()<<std::endl<<"d1 : "<<d1<<std::endl<<"d2 : "<<d2<<std::endl<<"angle : "<<Math::toDegrees(dir1.getAngleBetween(dir2))<<std::endl;
+                        ////std::cout<<"pos : "<<actualPos<<"null vector ? "<<dir2.isNulVector()<<std::endl<<"d1 : "<<d1<<std::endl<<"d2 : "<<d2<<std::endl<<"angle : "<<Math::toDegrees(dir1.getAngleBetween(dir2))<<std::endl;
                         while (currentPathIndex < path.size() - 1 && !dir2.isNulVector() && !(Math::abs(Math::toDegrees(dir1.getAngleBetween(dir2))) <= 1 && d2 < d1)) {
                             //We need to check if the actual position is on the next segment of the path.
                             currentPathIndex++;
@@ -284,11 +284,11 @@ namespace odfaeg {
                                 dir2 = (actualPos - path[currentPathIndex]).normalize();
                                 d1 = (path[currentPathIndex+1] - path[currentPathIndex]).magnitude();
                                 d2 = (actualPos - path[currentPathIndex]).magnitude();
-                                /*std::cout<<"dir 1 : "<<dir1<<" dir 2 : "<<dir2<<" d1 : "<<d1<<" d2 : "<<d2<<std::endl;
-                                std::cout<<"angle : "<<Math::abs(Math::toDegrees(dir1.getAngleBetween(dir2, dir1.cross(dir2))))<<std::endl;*/
+                                /*//std::cout<<"dir 1 : "<<dir1<<" dir 2 : "<<dir2<<" d1 : "<<d1<<" d2 : "<<d2<<std::endl;
+                                //std::cout<<"angle : "<<Math::abs(Math::toDegrees(dir1.getAngleBetween(dir2, dir1.cross(dir2))))<<std::endl;*/
                             }
                         }
-                        //std::cout<<"current index path : "<<currentPathIndex<<"size : "<<path.size()<<std::endl;
+                        ////std::cout<<"current index path : "<<currentPathIndex<<"size : "<<path.size()<<std::endl;
                        /*std::string str;
                         std::cin>>str;*/
                         //Our actual position is not on the path so we return our actual position.
@@ -305,9 +305,9 @@ namespace odfaeg {
                             d2 = (nextPos - path[currentPathIndex]).magnitude();
                             float aDot = Math::abs(dir1.dot(dir2));
 
-                            //std::cout<<"actual pos : "<<actualPos<<"next pos : "<<nextPos<<"path : "<<path[currentPathIndex]<<std::endl;
-                            //std::cout<<"actual pos : "<<actualPos<<" next pos : "<<nextPos<<std::endl;
-                            //std::cout<<"actual pos : "<<actualPos<<"next pos : "<<nextPos<<"dir 1 : "<<dir1<<"dir 2 : "<<dir2<<"d1 : "<<d1<<"d2 : "<<d2<<std::endl;
+                            ////std::cout<<"actual pos : "<<actualPos<<"next pos : "<<nextPos<<"path : "<<path[currentPathIndex]<<std::endl;
+                            ////std::cout<<"actual pos : "<<actualPos<<" next pos : "<<nextPos<<std::endl;
+                            ////std::cout<<"actual pos : "<<actualPos<<"next pos : "<<nextPos<<"dir 1 : "<<dir1<<"dir 2 : "<<dir2<<"d1 : "<<d1<<"d2 : "<<d2<<std::endl;
                             /*If the actual position is not on the same segment of the path than the final position, we need to check on which segment of the path our next position"ll be.
                             * If the distance between the two points of the segment is shorter than the distance between the next position and the first point of the path, it means that
                             * the next position is not on this segment of the path.
@@ -321,19 +321,19 @@ namespace odfaeg {
                                     dir1 = (path[currentPathIndex+1] - path[currentPathIndex]).normalize();
                                     nextPos = path[currentPathIndex] + dir1 * (d2 - d1) * aDot;
 
-                                    //std::cout<<"next pos : "<<nextPos<<"dir 1 : "<<dir1<<" dir 2 : "<<dir2<<" d1 : "<<d1<<" d2 : "<<d2<<"d2 - d1 : "<<d2 - d1<<" dot : "<<aDot<<std::endl;
+                                    ////std::cout<<"next pos : "<<nextPos<<"dir 1 : "<<dir1<<" dir 2 : "<<dir2<<" d1 : "<<d1<<" d2 : "<<d2<<"d2 - d1 : "<<d2 - d1<<" dot : "<<aDot<<std::endl;
 
                                     dir2 = (nextPos - path[currentPathIndex]).normalize();
                                     aDot = Math::abs(dir1.dot(dir2));
                                     d1 = (path[currentPathIndex+1] - path[currentPathIndex]).magnitude();
                                     d2 = (nextPos - path[currentPathIndex]).magnitude();
-                                    //std::cout<<"dir 1 : "<<dir1<<" dir 2 : "<<dir2<<" d1 : "<<d1<<" d2 : "<<d2<<"d2 - d1 : "<<d2 - d1<<std::endl;
+                                    ////std::cout<<"dir 1 : "<<dir1<<" dir 2 : "<<dir2<<" d1 : "<<d1<<" d2 : "<<d2<<"d2 - d1 : "<<d2 - d1<<std::endl;
                                     /*std::string ok;
                                     std::cin>>ok;*/
                                 }
                             }
 
-                            //std::cout<<"next pos : "<<nextPos<<" current path index : "<<currentPathIndex<<"size : "<<path.size()<<std::endl;
+                            ////std::cout<<"next pos : "<<nextPos<<" current path index : "<<currentPathIndex<<"size : "<<path.size()<<std::endl;
                             //If we reach the last point of the path it means that we are at the end of the path, otherwise we return the next position.
                             return (currentPathIndex == path.size() - 1)  ? path[currentPathIndex] : nextPos;
                         }

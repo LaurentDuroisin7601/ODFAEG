@@ -49,14 +49,14 @@ namespace odfaeg {
             typename vector<std::unique_ptr<Entity>>::iterator it;
             for (it = entityInside.begin(); it != entityInside.end();) {
                 if (entity == it->get()) {
-                    //std::cout<<"remove entity : "<<it->get()<<std::endl;
-                    //std::cout<<"old size : "<<entityInside.size()<<std::endl;
+                    ////std::cout<<"remove entity : "<<it->get()<<std::endl;
+                    ////std::cout<<"old size : "<<entityInside.size()<<std::endl;
                     it->release();
                     it = entityInside.erase(it);
                     /*for (unsigned int i = 0; i < entityInside.size(); i++) {
-                        std::cout<<"entity inside : "<<entityInside[i].get()<<std::endl;
+                        //std::cout<<"entity inside : "<<entityInside[i].get()<<std::endl;
                     }*/
-                    //std::cout<<"new size : "<<entityInside.size()<<std::endl;
+                    ////std::cout<<"new size : "<<entityInside.size()<<std::endl;
                     return true;
                 } else
                     it++;
@@ -68,13 +68,13 @@ namespace odfaeg {
             typename vector<std::unique_ptr<Entity>>::iterator it;
             for (it = entityInside.begin(); it != entityInside.end();) {
                 if (entity == it->get()) {
-                    //std::cout<<"remove entity : "<<it->get()<<std::endl;
-                    //std::cout<<"old size : "<<entityInside.size()<<std::endl;
+                    ////std::cout<<"remove entity : "<<it->get()<<std::endl;
+                    ////std::cout<<"old size : "<<entityInside.size()<<std::endl;
                     it = entityInside.erase(it);
                     /*for (unsigned int i = 0; i < entityInside.size(); i++) {
-                        std::cout<<"entity inside : "<<entityInside[i].get()<<std::endl;
+                        //std::cout<<"entity inside : "<<entityInside[i].get()<<std::endl;
                     }*/
-                    //std::cout<<"new size : "<<entityInside.size()<<std::endl;
+                    ////std::cout<<"new size : "<<entityInside.size()<<std::endl;
                     return true;
                 } else
                     it++;

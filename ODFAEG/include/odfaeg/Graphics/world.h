@@ -389,10 +389,10 @@ namespace odfaeg {
                     if (name == "*") {
                         for (unsigned int i = 0; i < cache.eus.size(); i++) {
                             if (cache.eus[i]->isUsingThread) {
-                                //std::cout<<"update"<<std::endl;
+                                ////std::cout<<"update"<<std::endl;
                                 cache.eus[i]->needToUpdate();
                             } else {
-                                //std::cout<<"update"<<std::endl;
+                                ////std::cout<<"update"<<std::endl;
                                 cache.eus[i]->update();
                             }
                         }
@@ -417,7 +417,7 @@ namespace odfaeg {
                 std::vector<Entity*> getEntitiesInRect(physic::BoundingBox rect, std::string expression) {
 
                     if (currentEntityManager != nullptr) {
-                        std::cout<<"get entities in box "<<currentEntityManager<<std::endl;
+                        //std::cout<<"get entities in box "<<currentEntityManager<<std::endl;
                         return currentEntityManager->getEntitiesInBox(rect, expression);
                     }
                     return std::vector<Entity*>();

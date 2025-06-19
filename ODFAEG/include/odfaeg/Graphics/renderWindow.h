@@ -58,7 +58,10 @@ namespace odfaeg
             window::Device& getDevice();
             void clear(const Color& color = Color(0, 0, 0, 255));
             uint32_t getImageIndex();
+            void setSemaphore(std::vector<VkSemaphore> semaphore);
+            static const int MAX_FRAMES_IN_FLIGHT = 2;
             virtual ~RenderWindow();
+            void submit(bool lastSubmit = false);
 
         protected:
             VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
@@ -91,9 +94,12 @@ namespace odfaeg
             VkSurfaceKHR getSurface();
             const int getMaxFramesInFlight();
 
+
+
         private :
+            bool firstSubmit;
             uint32_t imageIndex;
-            const int MAX_FRAMES_IN_FLIGHT = 2;
+
             void createSurface();
             void createSwapChain();
             void createImageViews();
@@ -111,6 +117,7 @@ namespace odfaeg
             std::vector<VkImageView> swapChainImageViews;
             std::vector<VkSemaphore> imageAvailableSemaphores;
             std::vector<VkSemaphore> renderFinishedSemaphores;
+            std::vector<VkSemaphore> semaphore;
             std::vector<VkFence> inFlightFences;
             std::vector<VkFence> imagesInFlight;
             std::vector<VkRenderPass> renderPasses;

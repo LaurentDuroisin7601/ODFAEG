@@ -267,7 +267,7 @@ namespace odfaeg {
 
             VkFenceCreateInfo fenceInfo{};
             fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-            fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
 
             for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
                 if (vkCreateSemaphore(vkDevice.getDevice(), &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS ||
@@ -306,9 +306,10 @@ namespace odfaeg {
             return renderPasses[renderPassId];
         }
         void RenderWindow::clear(const Color& color) {
-             vkWaitForFences(vkDevice.getDevice(), 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
+
 
              vkAcquireNextImageKHR(vkDevice.getDevice(), swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+             firstSubmit = true;
              clearColor = color;
              VkClearColorValue clearValue  = {clearColor.r / 255.f, clearColor.g / 255.f, clearColor.b / 255.f, clearColor.a / 255.f};
              VkClearDepthStencilValue clearDepthStencilValue = {
@@ -396,36 +397,66 @@ namespace odfaeg {
         uint32_t RenderWindow::getImageIndex() {
             return imageIndex;
         }
-        void RenderWindow::drawVulkanFrame() {
+        void RenderWindow::setSemaphore(std::vector<VkSemaphore> semaphore) {
+            this->semaphore = semaphore;
+        }
+        void RenderWindow::submit(bool lastSubmit) {
             if (getCommandBuffers().size() > 0) {
-                //for (unsigned int i = 0; i < getCommandBuffers().size(); i++) {
-                    vkCmdEndRenderPass(getCommandBuffers()[getCurrentFrame()]);
-                    if (vkEndCommandBuffer(getCommandBuffers()[currentFrame]) != VK_SUCCESS) {
-                        throw core::Erreur(0, "failed to record command buffer!", 1);
-                    }
-                //}
+                vkCmdEndRenderPass(getCommandBuffers()[getCurrentFrame()]);
+                if (vkEndCommandBuffer(getCommandBuffers()[currentFrame]) != VK_SUCCESS) {
+                    throw core::Erreur(0, "failed to record command buffer!", 1);
+                }
 
-                // Vérifier si une frame précédente est en train d'utiliser cette image (il y a une fence à attendre)
-                vkResetFences(vkDevice.getDevice(), 1, &inFlightFences[currentFrame]);
-
+                ////std::cout<<"current frame : "<<currentFrame<<std::endl;
                 VkSubmitInfo submitInfo{};
                 submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-                VkSemaphore waitSemaphores[] = {imageAvailableSemaphores[currentFrame]};
-                VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-                submitInfo.waitSemaphoreCount = 1;
-                submitInfo.pWaitSemaphores = waitSemaphores;
-                submitInfo.pWaitDstStageMask = waitStages;
+                std::vector<VkSemaphore> waitSemaphores;
+                if (firstSubmit)
+                    waitSemaphores.push_back(imageAvailableSemaphores[currentFrame]);
+                if (semaphore.size() != 0) {
+                    ////std::cout<<"wait semaphore : "<<semaphore[currentFrame]<<std::endl;
+                    waitSemaphores.push_back(semaphore[currentFrame]);
+                }
+                std::vector<VkPipelineStageFlags> waitStages;
+                if (firstSubmit)
+                    waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT); // pour imageAvailable
+                if (semaphore.size() != 0) {
+                    waitStages.push_back(VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT); // pour la sync personnalisée
+                }
+                submitInfo.waitSemaphoreCount = waitSemaphores.size();
+                submitInfo.pWaitSemaphores = waitSemaphores.data();
+                submitInfo.pWaitDstStageMask = waitStages.data();
                 submitInfo.commandBufferCount = 1;
                 submitInfo.pCommandBuffers = &getCommandBuffers()[currentFrame];
                 VkSemaphore signalSemaphores[] = {renderFinishedSemaphores[currentFrame]};
-                submitInfo.signalSemaphoreCount = 1;
-                submitInfo.pSignalSemaphores = signalSemaphores;
-                vkResetFences(vkDevice.getDevice(), 1, &inFlightFences[currentFrame]);
+                if (lastSubmit) {
+                    submitInfo.signalSemaphoreCount = 1;
+                    submitInfo.pSignalSemaphores = signalSemaphores;
+                } else {
+                    submitInfo.signalSemaphoreCount = 0;
+                    submitInfo.pSignalSemaphores = nullptr;
+                }
+                firstSubmit = false;
 
                 if (vkQueueSubmit(vkDevice.getGraphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS) {
                     throw core::Erreur(0, "échec de l'envoi d'un command buffer!", 1);
                 }
+                vkWaitForFences(vkDevice.getDevice(), 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
+                vkResetFences(vkDevice.getDevice(), 1, &inFlightFences[currentFrame]);
+                semaphore.clear();
+
+
+            }
+        }
+        void RenderWindow::drawVulkanFrame() {
+            if (getCommandBuffers().size() > 0) {
+                //for (unsigned int i = 0; i < getCommandBuffers().size(); i++) {
+
+                //}
+
+                // Vérifier si une frame précédente est en train d'utiliser cette image (il y a une fence à attendre)
+                VkSemaphore signalSemaphores[] = {renderFinishedSemaphores[currentFrame]};
                 VkPresentInfoKHR presentInfo{};
                 presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
@@ -465,7 +496,7 @@ namespace odfaeg {
         RenderWindow::~RenderWindow()
         {
             //RenderTarget::cleanup();
-            std::cout<<"destroy window"<<std::endl;
+            //std::cout<<"destroy window"<<std::endl;
             cleanup();
         }
         ////////////////////////////////////////////////////////////

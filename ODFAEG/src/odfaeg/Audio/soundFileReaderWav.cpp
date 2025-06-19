@@ -49,7 +49,7 @@ namespace
         unsigned char bytes[sizeof(value)];
         stream.read(reinterpret_cast<char*>(bytes), sizeof(bytes));
         if (stream.gcount() != sizeof(bytes)) {
-            //std::cout<<"decode false : "<<stream.gcount()<<","<<bytes[0]<<","<<bytes[1]<<std::endl;
+            ////std::cout<<"decode false : "<<stream.gcount()<<","<<bytes[0]<<","<<bytes[1]<<std::endl;
             return false;
         }
 
@@ -364,7 +364,7 @@ namespace odfaeg {
 
                         // Store the start and end position of samples in the file
                         m_dataStart = subChunkStart;
-                        //std::cout<<"sample count : "<<m_dataStart<<","<<info.sampleCount<<","<<m_bytesPerSample<<std::endl;
+                        ////std::cout<<"sample count : "<<m_dataStart<<","<<info.sampleCount<<","<<m_bytesPerSample<<std::endl;
                         m_dataEnd = m_dataStart + info.sampleCount * m_bytesPerSample;
 
                         dataChunkFound = true;

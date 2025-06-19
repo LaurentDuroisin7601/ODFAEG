@@ -82,7 +82,7 @@ namespace odfaeg {
             math::Ray tRay (orig, ext);
             math::Vec3f mtu;
             BoundingSphere bs(math::Vec3f(0, 0, 0), 1);
-            //std::cout<<"t ray : "<<tRay.getOrig()<<tRay.getExt()<<std::endl;
+            ////std::cout<<"t ray : "<<tRay.getOrig()<<tRay.getExt()<<std::endl;
             if (!bs.intersects(tRay, segment, info)) {
 
                 return false;
@@ -99,7 +99,7 @@ namespace odfaeg {
             math::Ray tRay (orig, ext);
             math::Vec3f i1, i2;
             BoundingSphere bs(math::Vec3f(0, 0, 0), 1);
-            //std::cout<<"t ray : "<<tRay.getOrig()<<tRay.getExt()<<std::endl;
+            ////std::cout<<"t ray : "<<tRay.getOrig()<<tRay.getExt()<<std::endl;
             if (!bs.intersectsWhere(tRay, i1, i2, info)) {
 
                 return false;

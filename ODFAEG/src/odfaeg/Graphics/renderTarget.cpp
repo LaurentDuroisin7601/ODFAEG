@@ -132,6 +132,7 @@ namespace odfaeg {
                                                         )";
             const std::string defaultFragmentShader = R"(#version 450
                                                           #extension GL_ARB_separate_shader_objects : enable
+                                                          #extension GL_EXT_debug_printf : enable
                                                           layout(binding = 1) uniform sampler2D texSampler;
                                                           layout(location = 0) in vec4 fragColor;
                                                           layout(location = 1) in vec2 fragTexCoord;
@@ -139,6 +140,7 @@ namespace odfaeg {
                                                           layout(location = 0) out vec4 outColor;
                                                           void main() {
                                                              outColor = textureLod(texSampler, fragTexCoord, 0) * fragColor;
+                                                             //debugPrintfEXT("out color : %v4f", outColor);
                                                           })";
              const std::string defaultFragmentShader2 = R"(#version 450
                                                           #extension GL_ARB_separate_shader_objects : enable
@@ -152,11 +154,11 @@ namespace odfaeg {
              if (!defaultShader.loadFromMemory(defaultVertexShader, defaultFragmentShader)) {
                   throw core::Erreur (0, "Failed to load default shader", 1);
              }
-             //std::cout<<"size : "<<Shader::getNbShaders()<<std::endl;
+             ////std::cout<<"size : "<<Shader::getNbShaders()<<std::endl;
              if (!defaultShader2.loadFromMemory(defaultVertexShader, defaultFragmentShader2)) {
                   throw core::Erreur (0, "Failed to load default shader 2", 1);
              }
-             //std::cout<<"size : "<<Shader::getNbShaders()<<std::endl;
+             ////std::cout<<"size : "<<Shader::getNbShaders()<<std::endl;
 
              createCommandPool();
              createCommandBuffers();
@@ -253,7 +255,7 @@ namespace odfaeg {
              vertexBuffers[selectedBuffer]->clear();
              for (unsigned int i = 0; i < vertexCount; i++) {
                 vertexBuffers[selectedBuffer]->append(vertices[i]);
-                //std::cout<<"vertex : "<<vertices[i].position.x<<std::endl;
+                ////std::cout<<"vertex : "<<vertices[i].position.x<<std::endl;
              }
              PrimitiveType oldType;
              if (type == Quads) {
@@ -286,7 +288,7 @@ namespace odfaeg {
              recordCommandBuffers(*vertexBuffers[selectedBuffer], states);
              if (oldType == Quads)
                 vertexBuffers[selectedBuffer]->clearIndexes();
-             /*std::cout<<"drawn"<<std::endl;
+             /*//std::cout<<"drawn"<<std::endl;
              system("PAUSE");*/
 
         }
@@ -306,13 +308,13 @@ namespace odfaeg {
              ubo.model = states.transform.getMatrix()/*.transpose()*/;
              updateUniformBuffer(getCurrentFrame(), ubo);
              recordCommandBuffers(vb, states);
-             /*std::cout<<"drawn"<<std::endl;
+             /*//std::cout<<"drawn"<<std::endl;
              system("PAUSE");*/
 
         }
         void RenderTarget::drawIndirectCount(VkCommandBuffer& cmd, unsigned int i, unsigned int nbIndirectCommands, unsigned int stride, VertexBuffer& vertexBuffer, VkBuffer vboIndirect, VkBuffer vboCount, unsigned int depthStencilId, RenderStates states) {
             Shader* shader = const_cast<Shader*>(states.shader);
-            //std::cout<<"draw indirect depth stencil id :"<<depthStencilId<<std::endl;
+            ////std::cout<<"draw indirect depth stencil id :"<<depthStencilId<<std::endl;
             unsigned int descriptorId = id * shader->getNbShaders() + shader->getId();
             vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vertexBuffer.getPrimitiveType()][id][depthStencilId]);
             VkBuffer vertexBuffers[] = {vertexBuffer.getVertexBuffer()};
@@ -332,7 +334,7 @@ namespace odfaeg {
         }
         void RenderTarget::drawIndirect(VkCommandBuffer& cmd, unsigned int i, unsigned int nbIndirectCommands, unsigned int stride, VertexBuffer& vertexBuffer, VkBuffer vboIndirect, unsigned int depthStencilId, RenderStates states) {
             Shader* shader = const_cast<Shader*>(states.shader);
-            //std::cout<<"draw indirect depth stencil id :"<<depthStencilId<<std::endl;
+            ////std::cout<<"draw indirect depth stencil id :"<<depthStencilId<<std::endl;
             unsigned int descriptorId = id * shader->getNbShaders() + shader->getId();
             vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vertexBuffer.getPrimitiveType()][id][depthStencilId]);
             VkBuffer vertexBuffers[] = {vertexBuffer.getVertexBuffer()};
@@ -351,14 +353,14 @@ namespace odfaeg {
             }
         }
         void RenderTarget::drawVertexBuffer(VkCommandBuffer& cmd, unsigned int i, VertexBuffer& vertexBuffer, unsigned int depthStencilId, RenderStates states, unsigned int instanceCount) {
-            //std::cout<<"vertex stencil id :"<<depthStencilId<<std::endl;
+            ////std::cout<<"vertex stencil id :"<<depthStencilId<<std::endl;
             Shader* shader = const_cast<Shader*>(states.shader);
             unsigned int descriptorId = id * shader->getNbShaders() + shader->getId();
             vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vertexBuffer.getPrimitiveType()][id][depthStencilId]);
             VkBuffer vertexBuffers[] = {vertexBuffer.getVertexBuffer()};
             VkDeviceSize offsets[] = {0};
             vkCmdBindVertexBuffers(cmd, 0, 1, vertexBuffers, offsets);
-            /*std::cout<<"draw pipeline id : "<<shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vertexBuffer.getPrimitiveType()<<","<<id<<","<<depthStencilId<<std::endl;
+            /*//std::cout<<"draw pipeline id : "<<shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vertexBuffer.getPrimitiveType()<<","<<id<<","<<depthStencilId<<std::endl;
             system("PAUSE");*/
             vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vertexBuffer.getPrimitiveType()][id][depthStencilId], 0, 1, &descriptorSets[descriptorId][getCurrentFrame()], 0, nullptr);
 
@@ -539,14 +541,14 @@ namespace odfaeg {
             }
 
             unsigned int descriptorId = id * shader->getNbShaders() + shader->getId();
-            //std::cout<<"rt dl size : "<<descriptorSetLayout.size()<<std::endl;
-            /*std::cout<<"descriptor id : "<<descriptorId<<std::endl;*/
-            //std::cout<<"pipeline id : "<<pipelineId<<std::endl;
+            ////std::cout<<"rt dl size : "<<descriptorSetLayout.size()<<std::endl;
+            /*//std::cout<<"descriptor id : "<<descriptorId<<std::endl;*/
+            ////std::cout<<"pipeline id : "<<pipelineId<<std::endl;
 
 
             /*for (unsigned int i = 0; i < pipelinesId.size(); i++) {
                 if (pipelinesId[i] == pipelineId) {
-                    std::cout<<"Erreur"<<std::endl;
+                    //std::cout<<"Erreur"<<std::endl;
                     system("PAUSE");
                 }
             }
@@ -698,7 +700,7 @@ namespace odfaeg {
             if (vkCreatePipelineLayout(vkDevice.getDevice(), &pipelineLayoutInfo[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId], nullptr, &pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId]) != VK_SUCCESS) {
                 throw core::Erreur(0, "failed to create pipeline layout!", 1);
             }
-            //std::cout<<"pipeline layout : "<<pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId]<<std::endl;
+            ////std::cout<<"pipeline layout : "<<pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId]<<std::endl;
 
             depthStencil[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId].sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
             depthStencil[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId].depthTestEnable = (depthTestEnabled) ? VK_TRUE : VK_FALSE;
@@ -723,9 +725,9 @@ namespace odfaeg {
             pipelineInfo.pDynamicState = &dynamicState;
             pipelineInfo.layout = pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId];
             /*if (getSurface() != VK_NULL_HANDLE)
-                std::cout<<"render pass ppl rw : "<<getRenderPass()<<std::endl;
+                //std::cout<<"render pass ppl rw : "<<getRenderPass()<<std::endl;
             else
-                std::cout<<"render pass ppl rt : "<<getRenderPass()<<std::endl;*/
+                //std::cout<<"render pass ppl rt : "<<getRenderPass()<<std::endl;*/
             pipelineInfo.renderPass = (depthTestEnabled || stencilTestEnabled) ? getRenderPass(1) : getRenderPass(0);
             pipelineInfo.subpass = 0;
             pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
@@ -759,7 +761,7 @@ namespace odfaeg {
 
             for (size_t i = 0; i < getMaxFramesInFlight(); i++) {
                 createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, ubos[i], ubosMemory[i]);
-                //std::cout<<"uniform buffer : "<<ubos[i]<<std::endl;
+                ////std::cout<<"uniform buffer : "<<ubos[i]<<std::endl;
             }
             uniformBuffers.push_back(ubos);
             uniformBuffersMemory.push_back(ubosMemory);
@@ -821,16 +823,16 @@ namespace odfaeg {
                 throw core::Erreur(0, "failed to allocate command buffers!", 1);
             }
             /*if (m_name == "depthBuffer")
-                std::cout<<"allocate cmd : "<<commandBuffers.size()<<std::endl;*/
+                //std::cout<<"allocate cmd : "<<commandBuffers.size()<<std::endl;*/
         }
         void RenderTarget::beginRecordCommandBuffers() {
             /*if (m_name == "depthBuffer")
-                std::cout<<"render texture begin command buffer"<<std::endl;*/
+                //std::cout<<"render texture begin command buffer"<<std::endl;*/
             //for (unsigned int i = 0; i < getCommandBuffers().size(); i++) {
                 VkCommandBufferBeginInfo beginInfo{};
                 beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
                 /*if (m_name == "depthBuffer")
-                    std::cout<<"begin cmd : "<<commandBuffers.size()<<std::endl;*/
+                    //std::cout<<"begin cmd : "<<commandBuffers.size()<<std::endl;*/
                 if (vkBeginCommandBuffer(getCommandBuffers()[getCurrentFrame()], &beginInfo) != VK_SUCCESS) {
 
                     throw core::Erreur(0, "failed to begin recording command buffer!", 1);
@@ -845,7 +847,7 @@ namespace odfaeg {
             renderPassInfo.framebuffer = (depthTestEnabled || stencilTestEnabled) ? getSwapchainFrameBuffers(1)[getImageIndex()] : getSwapchainFrameBuffers(0)[getImageIndex()];
             renderPassInfo.renderArea.offset = {0, 0};
             renderPassInfo.renderArea.extent = getSwapchainExtents();
-            //std::cout<<"render pass : "<<(m_view.getViewport().getSize().x == 800 && m_view.getViewport().getSize().y == 800)<<std::endl;
+            ////std::cout<<"render pass : "<<(m_view.getViewport().getSize().x == 800 && m_view.getViewport().getSize().y == 800)<<std::endl;
 
             VkClearValue clrColor = {clearColor.r / 255.f,clearColor.g / 255.f, clearColor.b / 255.f, clearColor.a / 255.f};
             renderPassInfo.clearValueCount = 1;
@@ -862,7 +864,7 @@ namespace odfaeg {
             viewport.height = -(float)  m_view.getViewport().getSize().y();
             viewport.minDepth = 0.0f;
             viewport.maxDepth = 1.0f;
-            //std::cout<<(m_view.getViewport().getSize().x == 800 && m_view.getViewport().getSize().y == 800)<<std::endl;
+            ////std::cout<<(m_view.getViewport().getSize().x == 800 && m_view.getViewport().getSize().y == 800)<<std::endl;
             vkCmdSetViewport(commandBuffers[getCurrentFrame()], 0, 1, &viewport);
 
             VkRect2D scissor{};
@@ -884,12 +886,12 @@ namespace odfaeg {
 
 
                 /*if (getSurface() != VK_NULL_HANDLE)
-                    std::cout<<"render pass cmd rw : "<<getRenderPass()<<std::endl;
+                    //std::cout<<"render pass cmd rw : "<<getRenderPass()<<std::endl;
                 else
-                    std::cout<<"render pass cmd rt : "<<getRenderPass()<<std::endl;*/
+                    //std::cout<<"render pass cmd rt : "<<getRenderPass()<<std::endl;*/
 
                 vkCmdBindPipeline(commandBuffers[getCurrentFrame()], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vb.getPrimitiveType()][id][0]);
-                //std::cout<<"buffer : "<<this->vertexBuffers[selectedBuffer]->getVertexBuffer()<<std::endl;
+                ////std::cout<<"buffer : "<<this->vertexBuffers[selectedBuffer]->getVertexBuffer()<<std::endl;
                 VkBuffer vertexBuffers[] = {vb.getVertexBuffer()};
                 VkDeviceSize offsets[] = {0};
                 vkCmdBindVertexBuffers(commandBuffers[getCurrentFrame()], 0, 1, vertexBuffers, offsets);
@@ -964,7 +966,7 @@ namespace odfaeg {
             return *depthTexture;
         }
         void RenderTarget::cleanup() {
-            std::cout<<"destroy command buffers : "<<m_name<<std::endl;
+            //std::cout<<"destroy command buffers : "<<m_name<<std::endl;
             if (commandBuffers.size() > 0) {
                 vkFreeCommandBuffers(vkDevice.getDevice(), commandPool, commandBuffers.size(), commandBuffers.data());
                 vkDestroyCommandPool(vkDevice.getDevice(), commandPool, nullptr);
@@ -1123,17 +1125,17 @@ namespace odfaeg {
         math::Vec3f RenderTarget::mapPixelToCoords(const math::Vec3f& point, View& view)
         {
             ViewportMatrix vpm;
-            //std::cout<<"point : "<<point<<std::endl;
+            ////std::cout<<"point : "<<point<<std::endl;
             vpm.setViewport(math::Vec3f(view.getViewport().getPosition().x, view.getViewport().getPosition().y, 0)
                                         ,math::Vec3f(view.getViewport().getWidth(), view.getViewport().getHeight(), 1));
             math::Vec3f coords = vpm.toNormalizedCoordinates(point);
-            //std::cout<<"ndc : "<<coords<<std::endl;
+            ////std::cout<<"ndc : "<<coords<<std::endl;
             coords = view.getProjMatrix().unProject(coords);
-            //std::cout<<"unproject : "<<coords<<std::endl;
+            ////std::cout<<"unproject : "<<coords<<std::endl;
             coords = coords.normalizeToVec3();
-            //std::cout<<"normalized to vec3 : "<<coords<<std::endl;
+            ////std::cout<<"normalized to vec3 : "<<coords<<std::endl;
             coords = view.getViewMatrix().inverseTransform(coords);
-            //std::cout<<"inverse view : "<<coords<<std::endl;
+            ////std::cout<<"inverse view : "<<coords<<std::endl;
             return coords;
         }
 
@@ -1617,7 +1619,7 @@ namespace odfaeg {
                                                    GL_TRIANGLE_STRIP, GL_TRIANGLE_FAN, GL_QUADS};
                 GLenum mode = modes[type];
                 // Draw the primitives
-                //std::cout<<"frame buffer id : "<<m_framebufferId<<std::endl;
+                ////std::cout<<"frame buffer id : "<<m_framebufferId<<std::endl;
                 glBindFramebuffer(GL_FRAMEBUFFER, m_framebufferId);
                 glDrawArrays(mode, 0, vertexCount);
                 glDisableClientState(GL_COLOR_ARRAY);
@@ -1697,7 +1699,7 @@ namespace odfaeg {
                             glCheck(glDisableVertexAttribArray(9));
                             glCheck(glBindBuffer(GL_ARRAY_BUFFER, 0));
                         }
-                        //std::cout<<"vbo texture index buffer : "<<vertexBuffer.vboTextureIndexesBuffer<<std::endl;
+                        ////std::cout<<"vbo texture index buffer : "<<vertexBuffer.vboTextureIndexesBuffer<<std::endl;
                         glCheck(glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer.vboTextureIndexesBuffer));
 
                         glCheck(glVertexAttribIPointer(4, 1, GL_UNSIGNED_INT,GL_FALSE,sizeof(GLuint),(GLvoid*) 0));*/
@@ -1776,8 +1778,8 @@ namespace odfaeg {
                     glCheck(glDrawElements(mode, vertexBuffer.m_indexes.size(), GL_UNSIGNED_INT, (GLvoid*) 0));
                     glCheck(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
                 } else {
-                    //std::cout<<"draw arrays"<<std::endl;
-                    //std::cout<<"frame buffer id : "<<m_framebufferId<<std::endl;
+                    ////std::cout<<"draw arrays"<<std::endl;
+                    ////std::cout<<"frame buffer id : "<<m_framebufferId<<std::endl;
                     glCheck(glBindFramebuffer(GL_FRAMEBUFFER, m_framebufferId));
                     glCheck(glDrawArrays(mode, 0, vertexBuffer.getVertexCount()));
                 }
@@ -1923,7 +1925,7 @@ namespace odfaeg {
         void RenderTarget::initialize(unsigned int framebufferId)
         {
             m_framebufferId = framebufferId;
-            //std::cout<<"version : "<<m_versionMajor<<"."<<m_versionMinor<<std::endl;
+            ////std::cout<<"version : "<<m_versionMajor<<"."<<m_versionMinor<<std::endl;
             if (m_versionMajor > 3 || m_versionMajor == 3 && m_versionMinor >= 3) {
                 GLuint vaoID;
                 glCheck(glGenVertexArrays(1, &vaoID));

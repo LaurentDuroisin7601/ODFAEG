@@ -44,7 +44,7 @@ namespace odfaeg {
             if (trigger == nullptr && action != nullptr)
             {
                 /*if (action->name == "SkillCombined")
-                    std::cout<<"skill action triggered ? "<<std::endl;*/
+                    //std::cout<<"skill action triggered ? "<<std::endl;*/
                 return action->isTriggered();
             }
             if (trigger != nullptr && action != nullptr) {
@@ -83,7 +83,7 @@ namespace odfaeg {
                     containsEvent = true;
             }
             if (!containsEvent) {
-                //std::cout<<"push event!"<<std::endl;
+                ////std::cout<<"push event!"<<std::endl;
                 events.push_back(event);
             }*/
         }

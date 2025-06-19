@@ -10,7 +10,7 @@ namespace odfaeg {
             rw(sf::VideoMode(size.x, size.y), "File Dialog", sf::Style::Default, window::ContextSettings(0, 0, 0, 3, 0)),
             LightComponent (rw, position, size, size * 0.5),
             font(font) {
-                std::cout<<"position : "<<getPosition()<<std::endl;
+                //std::cout<<"position : "<<getPosition()<<std::endl;
                 rw.setPosition(sf::Vector2i(position.x, position.y));
                 pTop = new Panel (rw, position, size);
                 pBottom = new Panel (rw, position, size);

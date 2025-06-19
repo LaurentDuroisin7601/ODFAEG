@@ -480,13 +480,13 @@ namespace odfaeg {
             template<class O, class... ArgU>
             R operator()(O* o, ArgU&&... arg) const
             {
-                //std::cout<<"class : "<<typeid(C).name()<<std::endl<<"object derived : "<<typeid(o).name()<<std::endl<<"address : "<<o<<std::endl;
+                ////std::cout<<"class : "<<typeid(C).name()<<std::endl<<"object derived : "<<typeid(o).name()<<std::endl<<"address : "<<o<<std::endl;
                 (o->*pfunc)(std::forward<ArgU>(arg)...);
             }
             template<class O, class... ArgU>
             R operator()(O o, ArgU&&... arg) const
             {
-                //std::cout<<"class : "<<typeid(C).name()<<std::endl<<"object derived : "<<typeid(o).name()<<std::endl<<"address : "<<o<<std::endl;
+                ////std::cout<<"class : "<<typeid(C).name()<<std::endl<<"object derived : "<<typeid(o).name()<<std::endl<<"address : "<<o<<std::endl;
                 (o.*pfunc)(std::forward<ArgU>(arg)...);
             }
 
@@ -520,7 +520,7 @@ namespace odfaeg {
             template<class O, class... ArgU>
             R operator()(O* o, ArgU&&... arg) const
             {
-                //std::cout<<"class : "<<typeid(C).name()<<std::endl<<"object derived : "<<typeid(o).name()<<std::endl<<"address : "<<o<<std::endl;
+                ////std::cout<<"class : "<<typeid(C).name()<<std::endl<<"object derived : "<<typeid(o).name()<<std::endl<<"address : "<<o<<std::endl;
                 if(dynamic_cast<C*>(o))
                     return (dynamic_cast<C*>(o)->*pfunc)(std::forward<ArgU>(arg)...);
                 throw Erreur(0, "Invalid cast : types are nor polymorphic!", 1);
@@ -528,7 +528,7 @@ namespace odfaeg {
             template<class O, class... ArgU>
             R operator()(O& o, ArgU&&... arg) const
             {
-                //std::cout<<"class : "<<typeid(C).name()<<std::endl<<"object derived : "<<typeid(o).name()<<std::endl<<"address : "<<o<<std::endl;
+                ////std::cout<<"class : "<<typeid(C).name()<<std::endl<<"object derived : "<<typeid(o).name()<<std::endl<<"address : "<<o<<std::endl;
                 if(dynamic_cast<C&>(o))
                     return (dynamic_cast<C&>(o).*pfunc)(std::forward<ArgU>(arg)...);
                 throw Erreur(0, "Invalid cast : types are nor polymorphic!", 1);
@@ -904,7 +904,7 @@ namespace odfaeg {
             template<class O, class... ArgU, class = typename std::enable_if<std::is_base_of<O, C>::value>::type>
             R operator()(O* o, ArgU&&... arg) const
             {
-                //std::cout<<"address : "<<o<<std::endl;
+                ////std::cout<<"address : "<<o<<std::endl;
                 if(dynamic_cast<C*>(o))
                     return (dynamic_cast<C*>(o)->*pfunc)(std::forward<ArgU>(arg)...);
                 throw std::runtime_error("Invalid cast : types are nor polymorphic!");
@@ -912,7 +912,7 @@ namespace odfaeg {
             template<class O, class... ArgU>
             R operator()(O o, ArgU&&... arg) const
             {
-                //std::cout<<"address : "<<o<<std::endl;
+                ////std::cout<<"address : "<<o<<std::endl;
                 return (o.*pfunc)(std::forward<ArgU>(arg)...);
             }
         private:
@@ -1059,7 +1059,7 @@ namespace odfaeg {
            data.storage_size = rhs.data.storage_size;
            data.params_size  = rhs.data.params_size;
            name = rhs.name;
-           //std::cout<<"FastDelegate(FastDelegate& rhs) : "<<data.params_deleter<<" : "<<name<<std::endl;
+           ////std::cout<<"FastDelegate(FastDelegate& rhs) : "<<data.params_deleter<<" : "<<name<<std::endl;
           }
 
 
@@ -1082,7 +1082,7 @@ namespace odfaeg {
             data.storage_size = rhs.data.storage_size;
             data.params_size  = rhs.data.params_size;
             name = rhs.name;
-            //std::cout<<"FastDelegate(const FastDelegate& rhs) : "<<data.storage<<" : "<<name<<std::endl;
+            ////std::cout<<"FastDelegate(const FastDelegate& rhs) : "<<data.storage<<" : "<<name<<std::endl;
         }
 
 
@@ -1103,7 +1103,7 @@ namespace odfaeg {
             data.storage_size = rhs.data.storage_size;
             data.params_size  = rhs.data.params_size;
             name = rhs.name;
-            //std::cout<<"FastDelegate(FastDelegate&& rhs) : "<<data.storage<<" : "<<rhs.name<<std::endl;
+            ////std::cout<<"FastDelegate(FastDelegate&& rhs) : "<<data.storage<<" : "<<rhs.name<<std::endl;
         }
 
         FastDelegate& operator=(FastDelegate& rhs)
@@ -1124,7 +1124,7 @@ namespace odfaeg {
             data.storage_size = rhs.data.storage_size;
             data.params_size = rhs.data.params_size;
             name = rhs.name;
-            //std::cout<<"operator= (FastDelegate&) : "<<data.storage<<" : "<<name<<std::endl;
+            ////std::cout<<"operator= (FastDelegate&) : "<<data.storage<<" : "<<name<<std::endl;
             return *this;
         }
         FastDelegate& operator=(const FastDelegate& rhs)
@@ -1145,7 +1145,7 @@ namespace odfaeg {
             data.storage_size = rhs.data.storage_size;
             data.params_size = rhs.data.params_size;
             name = rhs.name;
-            //std::cout<<"operator= (const FastDelegate&) : "<<data.storage<<" : "<<name<<std::endl;
+            ////std::cout<<"operator= (const FastDelegate&) : "<<data.storage<<" : "<<name<<std::endl;
             return *this;
         }
 
@@ -1165,7 +1165,7 @@ namespace odfaeg {
             data.storage_size = rhs.data.storage_size;
             data.params_size  = rhs.data.params_size;
             name = rhs.name;
-            //std::cout<<"operator=(FastDelegate&&) : "<<data.params_deleter<<" : "<<name<<std::endl;
+            ////std::cout<<"operator=(FastDelegate&&) : "<<data.params_deleter<<" : "<<name<<std::endl;
             return *this;
         }
           template<typename... Args>
@@ -1174,7 +1174,7 @@ namespace odfaeg {
           }
           template<typename... Args>
           void setParams(Args&&... args) {
-            //std::cout<<"set params  : "<<data.storage<<" : "<<name<<std::endl;
+            ////std::cout<<"set params  : "<<data.storage<<" : "<<name<<std::endl;
             if (data.storage) {
                 using storage_t = DelegateStorage<DynamicFunction<R(ToStore_t<Args>...)>, ArgType_t<Args>...>;
                 auto& storage = *static_cast<storage_t*>(data.storage);
@@ -1193,7 +1193,7 @@ namespace odfaeg {
                 data.params_deleter(data.params);
             }
             if (data.storage_deleter) {
-                //std::cout<<"delete storage : "<<data.storage<<" : "<<name<<std::endl;
+                ////std::cout<<"delete storage : "<<data.storage<<" : "<<name<<std::endl;
                 data.storage_deleter(data.storage);
             }
           }
@@ -1203,13 +1203,13 @@ namespace odfaeg {
           {
               assert(!data.params);
               using params_t = LateParameters<ph<Ints, ArgType_t<Args>>...>;
-              //std::cout<<"param deleter adr : "<<&params_t::deleter<<","<<data.params_deleter<<std::endl;
+              ////std::cout<<"param deleter adr : "<<&params_t::deleter<<","<<data.params_deleter<<std::endl;
               if (&params_t::deleter == data.params_deleter) {
                 data.params = new params_t{std::forward<Args>(args)...};
                 data.params_size = sizeof(params_t);
               }
               else {
-                std::cout<<"error ! "<<std::endl;
+                //std::cout<<"error ! "<<std::endl;
                 throw std::runtime_error("bad parameter(s)");
               }
           }

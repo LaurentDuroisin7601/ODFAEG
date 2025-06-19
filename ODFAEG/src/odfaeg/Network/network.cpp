@@ -92,9 +92,9 @@ namespace odfaeg {
             std::string request="";
             timeoutClk.restart();
             std::vector<std::pair<User*, std::string>>::iterator it;
-            //std::cout<<"get last request"<<std::endl;
+            ////std::cout<<"get last request"<<std::endl;
             while (request == "" && timeoutClk.getElapsedTime().asSeconds() < timeOut.asSeconds()) {
-                //std::cout<<"check messages"<<std::endl;
+                ////std::cout<<"check messages"<<std::endl;
                 //srv.checkMessages();
                 if (requests.size() > 0) {
                     it = requests.begin();

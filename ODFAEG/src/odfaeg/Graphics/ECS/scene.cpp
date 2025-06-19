@@ -279,7 +279,7 @@ namespace odfaeg {
                                 /*std::vector<EntityId> children = componentMapping.getChildren(clonedWall);
                                 for (unsigned int i = 0; i < children.size(); i++) {
                                     if (componentMapping.getComponent<MeshComponent>(children[i]) != nullptr)
-                                        std::cout<<"mesh component"<<std::endl;
+                                        //std::cout<<"mesh component"<<std::endl;
                                 }*/
                                 MoveSystem moveSystem;
                                 auto transform = componentMapping.getComponent<TransformComponent>(clonedWall);
@@ -376,10 +376,10 @@ namespace odfaeg {
                                     Cell* cell = getGridCellAt(math::Vec3f(transform->center.x(), transform->center.y(), 0));
                                     /*for (unsigned l = 0; l < cell->getEntitiesInside().size(); l++) {
                                         if (componentMapping.getComponent<EntityInfoComponent>(cell->getEntitiesInside()[l])->groupName == "E_TILE") {
-                                            std::cout<<"entities : "<<tile<<" "<<cell->getEntitiesInside()[l]<<std::endl;
+                                            //std::cout<<"entities : "<<tile<<" "<<cell->getEntitiesInside()[l]<<std::endl;
                                             for (unsigned int n = 0; n < componentMapping.getComponent<MeshComponent>(cell->getEntitiesInside()[l])->faces.size(); n++) {
-                                               std::cout<<"adress : "<<&componentMapping.getComponent<MeshComponent>(cell->getEntitiesInside()[l])->faces[n].getTransformMatrix()<<std::endl;
-                                               std::cout<<"transform matrix : "<<componentMapping.getComponent<MeshComponent>(cell->getEntitiesInside()[l])->faces[n].getTransformMatrix().getMatrix()<<std::endl;
+                                               //std::cout<<"adress : "<<&componentMapping.getComponent<MeshComponent>(cell->getEntitiesInside()[l])->faces[n].getTransformMatrix()<<std::endl;
+                                               //std::cout<<"transform matrix : "<<componentMapping.getComponent<MeshComponent>(cell->getEntitiesInside()[l])->faces[n].getTransformMatrix().getMatrix()<<std::endl;
 
                                             }
                                         }
@@ -442,7 +442,7 @@ namespace odfaeg {
             }
             bool Scene::addEntity(EntityId entity) {
                 /*if (componentMapping.getComponent<MeshComponent>(entity) && componentMapping.getComponent<EntityInfoComponent>(componentMapping.getRoot(entity)))
-                    std::cout<<"add wall"<<std::endl;*/
+                    //std::cout<<"add wall"<<std::endl;*/
                 if (componentMapping.getComponent<AnimationComponent>(entity)) {
                     addEntity(componentMapping.getComponent<AnimationComponent>(entity)->interpolatedFrame);
                 } else {
@@ -460,10 +460,10 @@ namespace odfaeg {
                     }
                 }
                 /*if(componentMapping.getComponent<MeshComponent>(entity) != nullptr && componentMapping.getComponent<TransformComponent>(entity) != nullptr && componentMapping.getComponent<EntityInfoComponent>(entity) != nullptr && componentMapping.getComponent<EntityInfoComponent>(componentMapping.getRoot(entity))->groupName == "E_WALL")
-                    std::cout<<"add tile wall"<<std::endl;*/
+                    //std::cout<<"add tile wall"<<std::endl;*/
                 if (componentMapping.getComponent<TransformComponent>(entity) != nullptr) {
                     /*if (componentMapping.getComponent<MeshComponent>(entity) != nullptr && componentMapping.getComponent<EntityInfoComponent>(componentMapping.getRoot(entity))->groupName == "E_WALL")
-                        std::cout<<"add wall tile!"<<std::endl;*/
+                        //std::cout<<"add wall tile!"<<std::endl;*/
                     if (!gridMap->addEntity(componentMapping.getComponent<TransformComponent>(entity)->globalBounds, entity))
                         return false;
                 } else {
@@ -498,7 +498,7 @@ namespace odfaeg {
                     }
                 }
                 if (componentMapping.getParent(entity) != entt::null) {
-                    //std::cout<<"remove entity : "<<entity->getType()<<std::endl;
+                    ////std::cout<<"remove entity : "<<entity->getType()<<std::endl;
                     gridMap->removeEntity(componentMapping.getComponent<TransformComponent>(entity)->globalBounds, entity);
                 }
                 std::vector<Face> faces = componentMapping.getComponent<MeshComponent>(entity)->faces;
@@ -563,7 +563,7 @@ namespace odfaeg {
                         for (unsigned int i = 0; i < visibleEntities.size(); i++) {
                             //visibleEntities[i].resize(core::Application::app->getNbEntities(), nullptr);
                             visibleEntities[i].resize(componentMapping.getEntityFactory().getNbEntities(), entt::null);
-                            //std::cout<<"vector "<<i<<" resized : "<<factory.getNbEntities()<<std::endl;
+                            ////std::cout<<"vector "<<i<<" resized : "<<factory.getNbEntities()<<std::endl;
                         }
                         int x = view.getPosition().x();
                         int y = view.getPosition().y();
@@ -848,7 +848,7 @@ namespace odfaeg {
                     }
                     return entities;
                 }
-                //std::cout<<"get visible entities"<<std::endl;
+                ////std::cout<<"get visible entities"<<std::endl;
                 vector<string> types = core::split(type, "+");
                 for (unsigned int t = 0; t < types.size(); t++) {
                     //unsigned int type = core::Application::app->getIntOfType(types[t]);
@@ -872,7 +872,7 @@ namespace odfaeg {
 
 
                                     /*if (componentMapping.getComponent<MeshComponent>(visibleEntitiesType[i]) != nullptr && componentMapping.getComponent<EntityInfoComponent>(cm.getRoot(visibleEntitiesType[i]))->groupName == "E_WALL")
-                                        std::cout<<"get visible entity add wall"<<std::endl;*/
+                                        //std::cout<<"get visible entity add wall"<<std::endl;*/
                                     entities.push_back(visibleEntitiesType[i]);
                                 }
                             }

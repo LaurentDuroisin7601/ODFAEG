@@ -25,7 +25,7 @@ namespace odfaeg {
         }
         void ParticleSystemUpdater::onUpdate () {
             for (unsigned int i = 0; i < particleSystems.size(); i++) {
-                //std::cout<<"update particle"<<std::endl;
+                ////std::cout<<"update particle"<<std::endl;
                 particleSystems[i]->update(timeClock.getElapsedTime());
                 particleSystems[i]->update();
                 timeClock.restart();

@@ -47,7 +47,7 @@ namespace odfaeg {
             for (unsigned int i = 0; i < libraries.size(); i++) {
                 command += "-l"+libraries[i]+" ";
             }
-            //std::cout<<"command : "<<command<<std::endl;
+            ////std::cout<<"command : "<<command<<std::endl;
             system(command.c_str());*/
             command = "g++ -shared -o "+outputDir+"\\"+funcName+".dll";
             for (unsigned int s = 0; s < sourceFiles.size(); s++) {
@@ -106,7 +106,7 @@ namespace odfaeg {
             for (unsigned int i = 0; i < libraries.size(); i++) {
                 command += "-l"+libraries[i]+" ";
             }
-            //std::cout<<"command : "<<command<<std::endl;
+            ////std::cout<<"command : "<<command<<std::endl;
             system(command.c_str());*/
             command = "g++ -o "+outputDir+"\\"+funcName+".exe";
             for (unsigned int s = 0; s < sourceFiles.size(); s++) {
