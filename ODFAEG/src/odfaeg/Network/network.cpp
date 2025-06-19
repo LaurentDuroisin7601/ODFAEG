@@ -3,7 +3,7 @@
 #include "../../../include/odfaeg/Network/srkserveur.h"
 namespace odfaeg {
     namespace network {
-        using namespace sf;
+
         using namespace std;
         SrkClient& Network::cli = Network::getCliInstance();
         SrkServer& Network::srv = Network::getSrvInstance();
@@ -206,7 +206,7 @@ namespace odfaeg {
             cliEncryptedPacket<<response;
             user.getTcpSocket().send(cliEncryptedPacket);
         }
-        User* Network::getUser(sf::TcpSocket& socket) {
+        User* Network::getUser(TcpSocket& socket) {
             for (unsigned int i = 0; i < users.size(); i++) {
                 if (&users[i]->getTcpSocket() == &socket) {
                     return users[i];

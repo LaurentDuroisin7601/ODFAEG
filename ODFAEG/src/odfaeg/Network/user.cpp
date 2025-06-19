@@ -5,7 +5,6 @@
 namespace odfaeg {
     namespace network {
         using namespace std;
-        using namespace sf;
         User::User (TcpSocket &socketTCP, UdpSocket &socketUDP) : clientTCP(socketTCP), clientUDP(socketUDP) {
             hasPbKey = hasPbKeyRsa = certifiate = cliPbKeyReceived = hasPbIv = false;
             address = socketTCP.getRemoteAddress();

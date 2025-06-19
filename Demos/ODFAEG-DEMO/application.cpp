@@ -20,7 +20,7 @@ namespace sorrok {
         getView().move(0, 300, 0);
         addClock(Clock(), "FPS");
         day = false;
-        sf::Listener::setUpVector(0.f, 0.f, 1.f);
+        audio::Listener::setUpVector(0.f, 0.f, 1.f);
         ps = entityFactory.make_entity<ParticleSystem>(Vec3f(0, 0, 150),Vec3f(100, 100, 0), entityFactory);
         m_world = std::make_unique<World>();
         setCurrentWorld(m_world.get());
@@ -46,7 +46,7 @@ namespace sorrok {
                 if (actualKey != previousKey) {
                     Vec2f dir(0, -1);
                     caracter->setDir(dir);
-                    sf::Listener::setDirection(dir.x(), dir.y(), 0);
+                    audio::Listener::setDirection(dir.x(), dir.y(), 0);
                 }
                 caracter->setMoving(true);
                 caracter->setIsMovingFromKeyboard(true);
@@ -56,7 +56,7 @@ namespace sorrok {
                 if (actualKey != previousKey) {
                     Vec2f dir(-1, 0);
                     caracter->setDir(dir);
-                    sf::Listener::setDirection(dir.x(), dir.y(), 0);
+                    audio::Listener::setDirection(dir.x(), dir.y(), 0);
                 }
                 caracter->setMoving(true);
                 caracter->setIsMovingFromKeyboard(true);
@@ -66,7 +66,7 @@ namespace sorrok {
                 if (actualKey != previousKey) {
                     Vec2f dir(0, 1);
                     caracter->setDir(dir);
-                    sf::Listener::setDirection(dir.x(), dir.y(), 0);
+                    audio::Listener::setDirection(dir.x(), dir.y(), 0);
                 }
                 caracter->setMoving(true);
                 caracter->setIsMovingFromKeyboard(true);
@@ -76,7 +76,7 @@ namespace sorrok {
                 if (actualKey != previousKey) {
                     Vec2f dir(1, 0);
                     caracter->setDir(dir);
-                    sf::Listener::setDirection(dir.x(), dir.y(), 0);
+                    audio::Listener::setDirection(dir.x(), dir.y(), 0);
                 }
                 caracter->setIsMovingFromKeyboard(true);
                 caracter->setMoving(true);
@@ -415,7 +415,7 @@ namespace sorrok {
         pfire.setMinDistance(200);
         pfire.setAttenuation(10.f);
         pfire.play(true);
-        sf::Listener::setPosition(caracter->getCenter().x(), caracter->getCenter().y(), 0);
+        audio::Listener::setPosition(caracter->getCenter().x(), caracter->getCenter().y(), 0);
         std::cout<<"appli initialised"<<std::endl;
     }
     void MyAppli::onRender(RenderComponentManager *cm) {
@@ -520,7 +520,7 @@ namespace sorrok {
         }
     }
     void MyAppli::onExec () {
-        sf::Int64 t = getClock("LoopTime").getElapsedTime().asMicroseconds();
+        std::int64_t t = getClock("LoopTime").getElapsedTime().asMicroseconds();
         if (caracter->isMoving()) {
             if (!player.isPlaying()) {
                 player.play(true);
@@ -544,7 +544,7 @@ namespace sorrok {
                 Vec3f d = newPos - getView().getPosition();
                 //getView().move(d.x(), d.y(), d.y());
                 getWorld()->moveEntity(caracter, d.x(), d.y(), d.y());
-                sf::Listener::setPosition(newPos.x(), newPos.y(), 0);
+                audio::Listener::setPosition(newPos.x(), newPos.y(), 0);
                 //World::update("EntitiesUpdater");
             } else {
 
@@ -566,8 +566,8 @@ namespace sorrok {
                 }
                 //getView().move(d.x(), d.y(), d.y());
                 actualPos = Vec2f(caracter->getCenter().x(), caracter->getCenter().y());
-                sf::Listener::setDirection(dir.x(), dir.y(), 0);
-                sf::Listener::setPosition(actualPos.x(), actualPos.y(), 0);
+                audio::Listener::setDirection(dir.x(), dir.y(), 0);
+                audio::Listener::setPosition(actualPos.x(), actualPos.y(), 0);
                 if (actualPos.computeDist(caracter->getPath()[caracter->getPath().size() - 1]) <= 1.f) {
                     caracter->setMoving(false);
                     if (player.isPlaying())

@@ -1,7 +1,7 @@
 #include "../../../include/odfaeg/Graphics/tGround.h"
 namespace odfaeg {
     namespace graphic {
-        using namespace sf;
+
         BigTile::BigTile (math::Vec3f pos, EntityFactory& factory, math::Vec2f tileSize, int nbTilesPerRow)
         : GameObject (pos, math::Vec3f (0, 0, 0), math::Vec3f (0, 0, 0), "E_BIGTILE", factory),
         tileSize(tileSize), nbTilesPerRow(nbTilesPerRow) {

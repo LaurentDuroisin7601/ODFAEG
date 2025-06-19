@@ -1,8 +1,8 @@
 #include "../../../include/odfaeg/Window/iMouse.hpp"
 #include "../../../include/odfaeg/Window/window.hpp"
-#if defined (SFML)
-#include "../../../include/odfaeg/Window/SFML/sfmlMouse.hpp"
-#include "../../../include/odfaeg/Window/SFML/sfmlWindowImpl.hpp"
+#if defined (ODFAEG)
+#include "../../../include/odfaeg/Window/ODFAEG/sfmlMouse.hpp"
+#include "../../../include/odfaeg/Window/ODFAEG/sfmlWindowImpl.hpp"
 #else
 #if defined (ODFAEG_SYSTEM_LINUX)
 #include "../../../include/odfaeg/Window/Linux/x11Mouse.hpp"
@@ -13,8 +13,8 @@
 namespace odfaeg {
     namespace window {
         bool IMouse::isButtonPressed (Button button) {
-            #if defined(SFML)
-                return SFMLMouse::isButtonPressed(button);;
+            #if defined(ODFAEG)
+                return ODFAEGMouse::isButtonPressed(button);;
             #else
             #if defined (ODFAEG_SYSTEM_LINUX)
                 return X11Mouse::isButtonPressed(button);
@@ -24,8 +24,8 @@ namespace odfaeg {
             #endif
         }
         math::Vector2i IMouse::getPosition() {
-            #if defined(SFML)
-                return SFMLMouse::getPosition();
+            #if defined(ODFAEG)
+                return ODFAEGMouse::getPosition();
             #else
             #if defined (ODFAEG_SYSTEM_LINUX)
                 return X11Mouse::getPosition();
@@ -35,8 +35,8 @@ namespace odfaeg {
             #endif
         }
         math::Vector2i IMouse::getPosition(const Window& window) {
-            #if defined (SFML)
-                return SFMLMouse::getPosition(static_cast<const SFMLWindowImpl&>(*window.getImpl()));
+            #if defined (ODFAEG)
+                return ODFAEGMouse::getPosition(static_cast<const ODFAEGWindowImpl&>(*window.getImpl()));
             #else
             #if defined (ODFAEG_SYSTEM_LINUX)
                 return X11Mouse::getPosition(static_cast<const X11Window&>(*window.getImpl()));

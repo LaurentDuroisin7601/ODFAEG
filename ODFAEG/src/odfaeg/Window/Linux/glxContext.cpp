@@ -3,7 +3,7 @@
 #include "../../../../include/odfaeg/Window/Linux/glxContext.hpp"
 #include "../../../../include/odfaeg/Window/contextImpl.hpp"
 #include "../../../../include/odfaeg/Window/Linux/display.hpp"
-#include <SFML/Window/VideoMode.hpp>
+#include <ODFAEG/Window/VideoMode.hpp>
 #include <cstring>
 #include <iostream>
 typedef GLXContext (*glXCreateContextAttribsARBProc)(::Display*, GLXFBConfig, GLXContext, Bool, const int*);
@@ -45,7 +45,7 @@ namespace
 }
 namespace odfaeg {
     namespace window {
-        using namespace sf;
+
         ////////////////////////////////////////////////////////////
         void ensureExtensionsInit(::Display* display, int screen)
         {

@@ -2,7 +2,7 @@
 #include <iostream>
 namespace odfaeg {
     namespace window {
-        using namespace sf;
+
         typedef std::map<std::string, Atom> AtomMap;
         ::Display* Display::sharedDisplay = nullptr;
         unsigned int Display::referenceCount = 0;

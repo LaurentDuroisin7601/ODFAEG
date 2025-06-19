@@ -1,6 +1,5 @@
 #ifndef NETWORK
 #define NETWORK
-#include <SFML/Network.hpp>
 #include "client.h"
 #include "user.h"
 #include "export.hpp"
@@ -39,7 +38,7 @@ namespace odfaeg {
                 * \param useThread : use a thread to get messages from the server ?
                 * \param useSecurisedConnexion : use an SSL connexion. (For the tcp protocol)
                 */
-                static bool startCli (int portTCP, int portUDP, sf::IpAddress, bool useSecuredConnexion = true);
+                static bool startCli (int portTCP, int portUDP, IpAddress, bool useSecuredConnexion = true);
                 /**
                 * \fn bool startSrv (int portTCP, int portUDP, bool useThread = false)
                 * \brief start the server.
@@ -59,15 +58,15 @@ namespace odfaeg {
                 * \param tcpSocket : the tcp socket to add.
                 * \param udpSocket : the udp socket to add.
                 */
-                static void addUser(sf::TcpSocket& tcpSocket, sf::UdpSocket& udpSocket);
+                static void addUser(TcpSocket& tcpSocket, UdpSocket& udpSocket);
                 /**
                 * \fn User* getUser(sf::IpAddress address)
                 * \brief get a user from the network with the given up address.
                 * \param the ip address of the user.
                 * \return a pointer to the user (null if the user isn't connected)
                 */
-                static User* getUser(sf::TcpSocket& socket);
-                static User* getUser(sf::IpAddress address, short unsigned int remoteUDPPort);
+                static User* getUser(TcpSocket& socket);
+                static User* getUser(IpAddress address, short unsigned int remoteUDPPort);
                 static std::vector<User*> getUsers();
                 /**
                 * \fn void removeUser(sf::IpAddress address)
@@ -75,7 +74,7 @@ namespace odfaeg {
                 * \param address : the ip address of the user to remove.
                 */
                 template <typename A, typename T>
-                static void removeUser(sf::TcpSocket& socket);
+                static void removeUser(TcpSocket& socket);
                 /**
                 * \fn void sendPbKeyRsa(User& user)
                 * \brief send the public key to the user for the rsa encryption.
@@ -103,21 +102,21 @@ namespace odfaeg {
                 */
                 static void addResponse (std::string response);
                 /**
-                * \fn void sendTcpPacket (sf::Packet& packet)
+                * \fn void sendTcpPacket (Packet& packet)
                 * \brief send a packet over the network (using the tcp protocol), if the application is a client,
                 * the packet is send to the server, if the application is a server, the packet is send to each clients
                 * connected to the server.
                 * \param packet : the packet to send.
                 */
-                static void sendTcpPacket (sf::Packet& packet);
+                static void sendTcpPacket (Packet& packet);
                 /**
-                * \fn void sendUdpPacket (sf::Packet& packet)
+                * \fn void sendUdpPacket (Packet& packet)
                 * \brief send a packet over the network (using the udp protocol), if the application is a client,
                 * the packet is send to the server, if the application is a server, the packet is send to each clients
                 * connected to the server.
                 * \param packet : the packet to send.
                 */
-                static void sendUdpPacket (sf::Packet& packet);
+                static void sendUdpPacket (Packet& packet);
                 /**
                 * \fn bool hasResponse()
                 * \brief if there is a response in the queue.
@@ -162,17 +161,17 @@ namespace odfaeg {
                 * \param address : the ip address of the user.
                 * \return if the user have the public key. (for aes encryption)
                 */
-                static bool hasPbKey(sf::TcpSocket& socket);
-                static bool hasPbIv(sf::TcpSocket& socket);
+                static bool hasPbKey(TcpSocket& socket);
+                static bool hasPbIv(TcpSocket& socket);
                 /**
                 * \fn bool hasPbKeyRsa(sf::IpAddress address)
                 * \brief if the user have the public key. (for rsa encryption)
                 * \param address : the ip address of the user.
                 * \return if the user have the public key. (for aes encryption)
                 */
-                static bool hasPbKeyRsa(sf::TcpSocket& socket);
-                static bool isCliPbKeyReceived(sf::TcpSocket& socket);
-                static bool isAuthenticClient(sf::TcpSocket& socket);
+                static bool hasPbKeyRsa(TcpSocket& socket);
+                static bool isCliPbKeyReceived(TcpSocket& socket);
+                static bool isAuthenticClient(TcpSocket& socket);
                 /**
                 * \fn bool getResponse(std::string tag, std::string &response)
                 * \brief get a response with the given tag.
@@ -206,7 +205,7 @@ namespace odfaeg {
                 * \brief get the time interval between two pings.
                 * \return the time interval between two pings.
                 */
-                static sf::Int64 getTimeBtw2Pings() {
+                static std::uint64_t getTimeBtw2Pings() {
                     return timeBtw2Pings;
                 }
                 /**
@@ -226,7 +225,7 @@ namespace odfaeg {
                 static core::Clock& getTimeBtw2SyncClk() {
                     return timeBtw2SyncClk;
                 }
-                static sf::Int64 getTimeBtw2Sync() {
+                static std::uint64_t getTimeBtw2Sync() {
                     return timeBtw2Sync;
                 }
                 static void setCertifiateClientMess(std::string mess);
@@ -247,7 +246,7 @@ namespace odfaeg {
                 static bool isServer;
         };
         template <typename A, typename T>
-        void Network::removeUser(sf::TcpSocket& socket) {
+        void Network::removeUser(TcpSocket& socket) {
             std::vector<User*>::iterator it;
             for (it = users.begin(); it != users.end();) {
                 if (&(*it)->getTcpSocket() == &socket) {

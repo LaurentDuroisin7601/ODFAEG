@@ -11,7 +11,7 @@ namespace odfaeg {
             /*If this is an ODFAEG Application and if we call functions from a shared lib (like ODFAEGCreator), we prefer to avoid to use
             static variables which leads to problems because they haven't the expected values when there are used in an executable and in a shared lib.
             So global variables are stored as member variables of the application class which contains everything.
-            But if this is a simple application which just draw things on a render window like SFML applications, we can use static variables rather than
+            But if this is a simple application which just draw things on a render window like ODFAEG applications, we can use static variables rather than
             having a factory class to store global variables as member variables in this case.*/
             /*if (core::Application::app != nullptr) {
                 id = core::Application::app->getUniqueId()-1;

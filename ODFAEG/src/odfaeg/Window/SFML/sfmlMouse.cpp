@@ -1,7 +1,7 @@
-#include "../../../../include/odfaeg/Window/SFML/sfmlMouse.hpp"
+#include "../../../../include/odfaeg/Window/ODFAEG/sfmlMouse.hpp"
 namespace odfaeg {
     namespace window {
-        sf::Mouse::Button SFMLMouse::odfaegToSfButton(IMouse::Button button) {
+        sf::Mouse::Button ODFAEGMouse::odfaegToSfButton(IMouse::Button button) {
             switch (button) {
                 case IMouse::Left : return sf::Mouse::Left;       ///< The left mouse button
                 case IMouse::Right : return sf::Mouse::Right;      ///< The right mouse button
@@ -10,7 +10,7 @@ namespace odfaeg {
                 case IMouse::XButton2 : return sf::Mouse::XButton2;   ///< The second extra mouse button
             }
         }
-        IMouse::Button SFMLMouse::sfToODFAEGButton(sf::Mouse::Button button) {
+        IMouse::Button ODFAEGMouse::sfToODFAEGButton(sf::Mouse::Button button) {
             switch (button) {
                 case sf::Mouse::Left : return IMouse::Left;       ///< The left mouse button
                 case sf::Mouse::Right : return IMouse::Right;      ///< The right mouse button
@@ -19,13 +19,13 @@ namespace odfaeg {
                 case sf::Mouse::XButton2 : return IMouse::XButton2;   ///< The second extra mouse button
             }
         }
-        bool SFMLMouse::isButtonPressed(IMouse::Button button) {
+        bool ODFAEGMouse::isButtonPressed(IMouse::Button button) {
             return sf::Mouse::isButtonPressed(odfaegToSfButton(button));
         }
-        sf::Vector2i SFMLMouse::getPosition() {
+        sf::Vector2i ODFAEGMouse::getPosition() {
             return sf::Mouse::getPosition();
         }
-        sf::Vector2i SFMLMouse::getPosition(const SFMLWindowImpl& window) {
+        sf::Vector2i ODFAEGMouse::getPosition(const ODFAEGWindowImpl& window) {
             return sf::Mouse::getPosition(window);
         }
     }

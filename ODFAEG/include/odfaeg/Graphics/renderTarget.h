@@ -18,11 +18,11 @@
 
 ////////////////////////////////////////////////////////////
 //
-// /!\ Important : this class is a modification of the circle shape class of the SFML
+// /!\ Important : this class is a modification of the circle shape class of the ODFAEG
 // that I've adapted for odfaeg with 3D vertices.
-// Here is the license and the author of the SFML library.
+// Here is the license and the author of the ODFAEG library.
 //
-// SFML - Simple and Fast Multimedia Library
+// ODFAEG - Simple and Fast Multimedia Library
 // Copyright (C) 2007-2013 Laurent Gomila (laurent.gom@gmail.com)
 //
 // This software is provided 'as-is', without any express or implied warranty.
@@ -509,11 +509,11 @@ namespace odfaeg {
              ////////////////////////////////////////////////////////////
             /// \brief Save the current OpenGL render states and matrices
             ///
-            /// This function can be used when you mix SFML drawing
+            /// This function can be used when you mix ODFAEG drawing
             /// and direct OpenGL rendering. Combined with PopGLStates,
             /// it ensures that:
-            /// \li SFML's internal states are not messed up by your OpenGL code
-            /// \li your OpenGL states are not modified by a call to a SFML function
+            /// \li ODFAEG's internal states are not messed up by your OpenGL code
+            /// \li your OpenGL states are not modified by a call to a ODFAEG function
             ///
             /// More specifically, it must be used around code that
             /// calls Draw functions. Example:
@@ -554,10 +554,10 @@ namespace odfaeg {
             ////////////////////////////////////////////////////////////
             /// \brief Reset the internal OpenGL states so that the target is ready for drawing
             ///
-            /// This function can be used when you mix SFML drawing
+            /// This function can be used when you mix ODFAEG drawing
             /// and direct OpenGL rendering, if you choose not to use
             /// pushGLStates/popGLStates. It makes sure that all OpenGL
-            /// states needed by SFML are set, so that subsequent draw()
+            /// states needed by ODFAEG are set, so that subsequent draw()
             /// calls will work as expected.
             ///
             /// Example:
@@ -667,7 +667,7 @@ namespace odfaeg {
                 bool      viewChanged; ///< Has the current view changed since last draw?
                 bool vboPointerSets;
                 BlendMode lastBlendMode; ///< Cached blending mode
-                sf::Uint64    lastTextureId; ///< Cached texture
+                sf::std:::uint64_t    lastTextureId; ///< Cached texture
                 bool      useVertexCache; ///< Did we previously use the vertex cache?
                 Vertex vertexCache[VertexCacheSize]; ///< Pre-transformed vertices cache
                 VertexBuffer* lastVboBuffer;

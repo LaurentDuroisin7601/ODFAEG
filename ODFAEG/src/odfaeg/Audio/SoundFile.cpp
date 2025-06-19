@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////
 //
-// SFML - Simple and Fast Multimedia Library
+// ODFAEG - Simple and Fast Multimedia Library
 // Copyright (C) 2007-2013 Laurent Gomila (laurent.gom@gmail.com)
 //
 // This software is provided 'as-is', without any express or implied warranty.
@@ -25,12 +25,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SoundFile.hpp"
-#include <SFML/System/InputStream.hpp>
-#include <SFML/System/Err.hpp>
+#include "soundFile.hpp"
 #include <cstring>
 #include <cctype>
-using namespace sf;
+#include <iostream>
+
 
 namespace
 {
@@ -46,6 +45,8 @@ namespace
 
 namespace odfaeg
 {
+
+
     namespace audio {
         namespace priv
         {
@@ -102,7 +103,7 @@ namespace odfaeg
                 m_file = sf_open(filename.c_str(), SFM_READ, &fileInfo);
                 if (!m_file)
                 {
-                    err() << "Failed to open sound file \"" << filename << "\" (" << sf_strerror(m_file) << ")" << std::endl;
+                    std::cerr << "Failed to open sound file \"" << filename << "\" (" << sf_strerror(m_file) << ")" << std::endl;
                     return false;
                 }
 
@@ -138,7 +139,7 @@ namespace odfaeg
                 m_file = sf_open_virtual(&io, SFM_READ, &fileInfo, &m_memory);
                 if (!m_file)
                 {
-                    err() << "Failed to open sound file from memory (" << sf_strerror(m_file) << ")" << std::endl;
+                    std::cerr << "Failed to open sound file from memory (" << sf_strerror(m_file) << ")" << std::endl;
                     return false;
                 }
 
@@ -150,7 +151,7 @@ namespace odfaeg
 
 
             ////////////////////////////////////////////////////////////
-            bool SoundFile::openRead(InputStream& stream)
+            bool SoundFile::openRead(std::istream& stream)
             {
                 // If the file is already opened, first close it
                 if (m_file)
@@ -165,10 +166,11 @@ namespace odfaeg
 
                 // Initialize the stream data
                 m_stream.source = &stream;
-                m_stream.size = stream.getSize();
+                stream.seekg(0, stream.end);
+                m_stream.size = stream.tellg();
 
                 // Make sure that the stream's reading position is at the beginning
-                stream.seek(0);
+                stream.seekg(0, stream.beg);
 
                 // Open the sound file
                 SF_INFO fileInfo;
@@ -176,7 +178,7 @@ namespace odfaeg
                 m_file = sf_open_virtual(&io, SFM_READ, &fileInfo, &m_stream);
                 if (!m_file)
                 {
-                    err() << "Failed to open sound file from stream (" << sf_strerror(m_file) << ")" << std::endl;
+                    std::cerr << "Failed to open sound file from stream (" << sf_strerror(m_file) << ")" << std::endl;
                     return false;
                 }
 
@@ -199,7 +201,7 @@ namespace odfaeg
                 if (format == -1)
                 {
                     // Error : unrecognized extension
-                    err() << "Failed to create sound file \"" << filename << "\" (unknown format)" << std::endl;
+                    std::cerr << "Failed to create sound file \"" << filename << "\" (unknown format)" << std::endl;
                     return false;
                 }
 
@@ -213,7 +215,7 @@ namespace odfaeg
                 m_file = sf_open(filename.c_str(), SFM_WRITE, &fileInfos);
                 if (!m_file)
                 {
-                    err() << "Failed to create sound file \"" << filename << "\" (" << sf_strerror(m_file) << ")" << std::endl;
+                    std::cerr << "Failed to create sound file \"" << filename << "\" (" << sf_strerror(m_file) << ")" << std::endl;
                     return false;
                 }
 
@@ -227,7 +229,7 @@ namespace odfaeg
 
 
             ////////////////////////////////////////////////////////////
-            std::size_t SoundFile::read(Int16* data, std::size_t sampleCount)
+            std::size_t SoundFile::read(std::int16_t* data, std::size_t sampleCount)
             {
                 if (m_file && data && sampleCount)
                     return static_cast<std::size_t>(sf_read_short(m_file, data, sampleCount));
@@ -237,7 +239,7 @@ namespace odfaeg
 
 
             ////////////////////////////////////////////////////////////
-            void SoundFile::write(const Int16* data, std::size_t sampleCount)
+            void SoundFile::write(const std::int16_t* data, std::size_t sampleCount)
             {
                 if (m_file && data && sampleCount)
                 {
@@ -386,12 +388,13 @@ namespace odfaeg
             sf_count_t SoundFile::Stream::read(void* ptr, sf_count_t count, void* userData)
             {
                 Stream* stream = static_cast<Stream*>(userData);
-                Int64 position = stream->source->tell();
+                std::int64_t position = stream->source->tellg();
                 if (position != -1)
                 {
                     if (count > stream->size - position)
                         count = stream->size - position;
-                    return stream->source->read(reinterpret_cast<char*>(ptr), count);
+                    stream->source->read(reinterpret_cast<char*>(ptr), count);
+                    return stream->source->tellg();
                 }
                 else
                 {
@@ -406,11 +409,12 @@ namespace odfaeg
                 Stream* stream = static_cast<Stream*>(userData);
                 switch (whence)
                 {
-                    case SEEK_SET : return stream->source->seek(offset);
-                    case SEEK_CUR : return stream->source->seek(stream->source->tell() + offset);
-                    case SEEK_END : return stream->source->seek(stream->size - offset);
-                    default       : return stream->source->seek(0);
+                    case SEEK_SET : stream->source->seekg(offset, stream->source->beg);
+                    case SEEK_CUR : stream->source->seekg(stream->source->tellg() + offset, stream->source->beg);
+                    case SEEK_END : stream->source->seekg(stream->size - offset, stream->source->beg);
+                    default       : stream->source->seekg(0, stream->source->beg);
                 }
+                return stream->source->tellg();
             }
 
 
@@ -418,7 +422,7 @@ namespace odfaeg
             sf_count_t SoundFile::Stream::tell(void* userData)
             {
                 Stream* stream = static_cast<Stream*>(userData);
-                return stream->source->tell();
+                return stream->source->tellg();
             }
         }
 

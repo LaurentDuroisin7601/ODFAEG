@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////
 //
-// SFML - Simple and Fast Multimedia Library
+// ODFAEG - Simple and Fast Multimedia Library
 // Copyright (C) 2007-2013 Laurent Gomila (laurent.gom@gmail.com)
 //
 // This software is provided 'as-is', without any express or implied warranty.
@@ -32,7 +32,7 @@
 #include "../../../include/odfaeg/Graphics/renderTexture.h"
 #ifndef VULKAN
 
-#include <SFML/OpenGL.hpp>
+#include <ODFAEG/OpenGL.hpp>
 #include "glCheck.h"
 #include "renderTextureImplFBO.h"
 #include "renderTextureImplDefault.h"

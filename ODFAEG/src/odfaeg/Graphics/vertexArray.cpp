@@ -6,7 +6,7 @@
 #include <string.h>
 namespace odfaeg {
     namespace graphic {
-        using namespace sf;
+
         ////////////////////////////////////////////////////////////
         VertexArray::VertexArray() :
         m_vertices     (),

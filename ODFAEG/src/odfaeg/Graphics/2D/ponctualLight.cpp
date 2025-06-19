@@ -8,7 +8,7 @@ namespace odfaeg {
             /*Crée une lumière de position poistion, suivant la direction dir, de rayon radius,
              et d'intensité intensity, de type Type*/
             using namespace std;
-            using namespace sf;
+
             //Crée une lumière avec sa position, son intensité et son type.
             PonctualLight::PonctualLight (math::Vec3f center, float r1, float r2, float r3, float intensity, Color color, int quality, EntityFactory& factory, Entity *parent) :
                 EntityLight (center, color, r1, r2, r3, height, "E_PONCTUAL_LIGHT", factory, "", parent) {
@@ -60,7 +60,7 @@ namespace odfaeg {
             void PonctualLight::addTriangle (VertexArray *triangle) {
                 //A faire sur la render texture.
                 //triangle->SetBlendMode(Blend::Add);
-                //Plus nécessaire avec la SFML 2.0.
+                //Plus nécessaire avec la ODFAEG 2.0.
                 /*triangle->EnableFill(true);
                 triangle->EnableOutline(false);*/
                 Material material;

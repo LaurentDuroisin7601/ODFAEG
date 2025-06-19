@@ -1,10 +1,11 @@
 #ifndef ODFAEG_STREAM_HPP
 #define ODFAEG_STREAM_HPP
-#include <SFML/Audio.hpp>
 #include <vector>
 #include <string>
 #include "export.hpp"
 #include "../Core/time.h"
+#include "soundStream.hpp"
+#include "soundBuffer.hpp"
 namespace odfaeg {
     namespace audio {
         namespace priv {
@@ -18,7 +19,7 @@ namespace odfaeg {
         * \version 1.0
         * \date 1/02/2014
         */
-        class ODFAEG_AUDIO_API Stream : public sf::SoundStream
+        class ODFAEG_AUDIO_API Stream : public SoundStream
         {
         public:
             /**
@@ -26,7 +27,7 @@ namespace odfaeg {
             *\brief load a sound from a sound buffer and extract sampler.
             *\param sf::SoundBuffer buffer : the sound buffer.
             */
-            void load(const sf::SoundBuffer& buffer);
+            void load(const SoundBuffer& buffer);
             /**
             *\fn bool openFromFile(const std::string& file)
             *\brief open a file to read a music.
@@ -48,7 +49,7 @@ namespace odfaeg {
             *\param sf::InputStream& stream : the input stream.
             *\return true if the file is successfully opened false otherwise.
             */
-            bool openFromStream(sf::InputStream& stream);
+            bool openFromStream(std::istream& stream);
             /**\fn bool isFinished()
             *\brief check if the stream has finished to be read.
             *\return true is the stream has finished to be read, false otherwise.
@@ -65,11 +66,11 @@ namespace odfaeg {
             *\brief get samples.
             *\return sf::Int16* pointer to samples.
             */
-            const sf::Int16* getSamples();
+            const std::int16_t* getSamples();
         private:
             /**
             *\fn bool onGetData(Chunk& data);
-            *\brief redefines the onGetData function of the sf::SoundStream to pass the samples data to the SFML sound stream.
+            *\brief redefines the onGetData function of the sf::SoundStream to pass the samples data to the ODFAEG sound stream.
             *\return true if we haven't passed every samples, false otherwise.
             */
             virtual bool onGetData(Chunk& data);
@@ -78,16 +79,16 @@ namespace odfaeg {
             *\brief redefines the onSeek function of the sf::SoundStream to read from the time passed.
             *\param core::Time timeOffset : the offset time.
             */
-            virtual void onSeek(sf::Time timeOffset);
+            virtual void onSeek(core::Time timeOffset);
             /**\fn void initialize()
             *  \brief perform some initialisations.
             */
             void initialize();
             priv::SoundFile* m_file; /**> the soundfile to get the music samples.*/
-            sf::Time m_duration; /**> the duration of the stream.*/
-            std::vector<sf::Int16> m_samples; /**>the samples.*/
+            core::Time m_duration; /**> the duration of the stream.*/
+            std::vector<std::int16_t> m_samples; /**>the samples.*/
             std::size_t m_currentSample; /**>The current sample which'll be read.*/
-            sf::Mutex m_rec_mutex; /**>Mutex to protect samples data because sounds are played with a thread.*/
+            std::mutex m_rec_mutex; /**>Mutex to protect samples data because sounds are played with a thread.*/
         };
     }
 }

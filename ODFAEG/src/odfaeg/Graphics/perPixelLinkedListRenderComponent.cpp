@@ -931,6 +931,7 @@ namespace odfaeg {
                                                                 frontColor = color;
                                                                 texIndex = textureIndex;
                                                                 normal = normals;
+
                                                             }
                                                             )";
                 const std::string  simpleVertexShader = R"(#version 460
@@ -1080,8 +1081,13 @@ namespace odfaeg {
                         }*/
                     unsigned int vertexCount = 0;
                     MaterialData material;
-                    material.textureIndex = (m_normals[i].getMaterial().getTexture() != nullptr) ? m_normals[i].getMaterial().getTexture()->getId() : 0;
-                    material.materialType = m_normals[i].getMaterial().getType();
+                    {
+                        std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                        material.textureIndex = (m_normals[i].getMaterial().getTexture() != nullptr) ? m_normals[i].getMaterial().getTexture()->getId() : 0;
+                        material.materialType = m_normals[i].getMaterial().getType();
+
+                    }
+
                     materialDatas[p].push_back(material);
                     for (unsigned int j = 0; j < m_normals[i].getAllVertices().getVertexCount(); j++) {
                         vbBindlessTex[p].append(m_normals[i].getAllVertices()[j]);
@@ -1123,8 +1129,11 @@ namespace odfaeg {
                         modelDatas[p].push_back(modelData);
                     }
                     MaterialData materialData;
-                    materialData.textureIndex = (m_instances[i].getMaterial().getTexture() != nullptr) ? m_instances[i].getMaterial().getTexture()->getId() : 0;
-                    materialData.materialType = m_instances[i].getMaterial().getType();
+                    {
+                        std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                        materialData.textureIndex = (m_instances[i].getMaterial().getTexture() != nullptr) ? m_instances[i].getMaterial().getTexture()->getId() : 0;
+                        materialData.materialType = m_instances[i].getMaterial().getType();
+                    }
                     materialDatas[p].push_back(materialData);
                     unsigned int vertexCount = 0;
                     if (m_instances[i].getVertexArrays().size() > 0) {

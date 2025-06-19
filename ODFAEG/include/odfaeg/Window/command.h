@@ -15,7 +15,7 @@ namespace odfaeg
         * \class Command
         * \brief This class manage a command : a command must have an action or a trigger function or both to trigger.
         * this class then can check if a command is triggered, and call the slot function which is linked to the command.
-        * this class can also have a list of triggered SFML events, and the parameters of the command can be changed.
+        * this class can also have a list of triggered ODFAEG events, and the parameters of the command can be changed.
         * If the parameters are changed, the slot function'll be called with the new command's parameters as arguments.
         * \author Duroisin.L
         * \version 1.0
@@ -124,7 +124,7 @@ namespace odfaeg
             FastDelegate<void> slot;
             /** < the trigger mapped to the command.*/
             std::unique_ptr<FastDelegate<bool>> trigger;
-            /** < the SFML events generated.*/
+            /** < the ODFAEG events generated.*/
             //static std::vector<window::IEvent> events;
             std::string name;
 

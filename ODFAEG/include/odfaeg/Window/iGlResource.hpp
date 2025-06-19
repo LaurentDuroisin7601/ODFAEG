@@ -1,9 +1,9 @@
 #ifndef ODFAEG_IGLRESOURCE_HPP
 #define ODFAEG_IGLRESOURCE_HPP
 #include "../../../include/odfaeg/config.hpp"
-#ifdef SFML
+#ifdef ODFAEG
 #include "export.hpp"
-#include <SFML/Window/GlResource.hpp>
+#include <ODFAEG/Window/GlResource.hpp>
 typedef sf::GlResource GLResourceType;
 #else
 #include "glResource.hpp"

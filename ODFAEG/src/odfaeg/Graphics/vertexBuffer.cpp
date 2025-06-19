@@ -3,13 +3,13 @@
 #include "../../../include/odfaeg/Graphics/renderTarget.h"
 #ifndef VULKAN
 #include "GL/glew.h"
-#include <SFML/OpenGL.hpp>
+#include <ODFAEG/OpenGL.hpp>
 #include "glCheck.h"
 #endif
 #include <string.h>
 namespace odfaeg {
     namespace graphic {
-        using namespace sf;
+
         #ifdef VULKAN
             VertexBuffer::VertexBuffer(window::Device& vkDevice) : vkDevice(vkDevice),
             needToUpdateVertexBuffer(false), needToUpdateIndexBuffer(false), vertexBuffer(VK_NULL_HANDLE), indexBuffer(VK_NULL_HANDLE),

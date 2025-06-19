@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////
 //
-// SFML - Simple and Fast Multimedia Library
+// ODFAEG - Simple and Fast Multimedia Library
 // Copyright (C) 2007-2013 Laurent Gomila (laurent.gom@gmail.com)
 //
 // This software is provided 'as-is', without any express or implied warranty.
@@ -30,11 +30,11 @@
 ////////////////////////////////////////////////////////////
 #include "../../../include/odfaeg/config.hpp"
 
-#ifdef SFML_OPENGL_ES
+#ifdef ODFAEG_OPENGL_ES
 
-    #include <SFML/OpenGL.hpp>
+    #include <ODFAEG/OpenGL.hpp>
 
-#ifdef SFML_SYSTEM_ANDROID
+#ifdef ODFAEG_SYSTEM_ANDROID
     // Hack to make transparency working on some Android devices
     #define GLEXT_blend_func_separate              false
     #define GLEXT_blend_equation_separate          false
@@ -75,7 +75,7 @@
 #else
 
     #include <GL/glew.h>
-    #include <SFML/OpenGL.hpp>
+    #include <ODFAEG/OpenGL.hpp>
 
     #define GLEXT_blend_func_separate              GLEW_EXT_blend_func_separate
     #define GLEXT_blend_equation_separate          GLEW_EXT_blend_equation_separate
@@ -128,4 +128,4 @@ void ensureExtensionsInit();
 } // namespace sf
 
 
-#endif // SFML_GLEXTENSIONS_HPP
+#endif // ODFAEG_GLEXTENSIONS_HPP

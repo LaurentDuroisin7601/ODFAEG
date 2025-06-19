@@ -2,35 +2,32 @@
 namespace odfaeg {
     namespace core {
         const Time Time::zero = Time();
-        Time seconds (long int amount) {
+        Time seconds (float amount) {
             Time time;
-            time.time = std::chrono::time_point<std::chrono::high_resolution_clock>(std::chrono::seconds(amount));
+            time.time = std::chrono::time_point<std::chrono::high_resolution_clock, std::chrono::duration<float>>(std::chrono::duration<float>(amount));
             return time;
         }
         Time milliseconds (std::int32_t amount) {
             Time time;
-            time.time = std::chrono::time_point<std::chrono::high_resolution_clock>(std::chrono::milliseconds(amount));
+            time.time = std::chrono::time_point<std::chrono::high_resolution_clock, std::chrono::duration<float>>(std::chrono::duration<float>(amount / 1000.));
             return time;
         }
         Time microseconds (std::int64_t amount) {
             Time time;
-            time.time = std::chrono::time_point<std::chrono::high_resolution_clock>(std::chrono::microseconds(amount));
+            time.time = std::chrono::time_point<std::chrono::high_resolution_clock, std::chrono::duration<float>>(std::chrono::duration<float>(amount / 1'000'000.f));
             return time;
         }
         Time::Time() {
             time = std::chrono::time_point<std::chrono::high_resolution_clock>(std::chrono::microseconds(0));
         }
         float Time::asSeconds() {
-            const std::chrono::high_resolution_clock::duration since_epoch = time.time_since_epoch();
-            return std::chrono::duration<float>(since_epoch).count();
+            return time.time_since_epoch().count();
         }
         std::int32_t Time::asMilliseconds() {
-            const std::chrono::high_resolution_clock::duration since_epoch = time.time_since_epoch();
-            return std::chrono::duration_cast<std::chrono::milliseconds>(since_epoch).count();
+            return time.time_since_epoch().count() * 1000.f;
         }
         std::int64_t Time::asMicroseconds() {
-            const std::chrono::high_resolution_clock::duration since_epoch = time.time_since_epoch();
-            return std::chrono::duration_cast<std::chrono::microseconds>(since_epoch).count();
+            return time.time_since_epoch().count() * 1'000'000.f;
         }
         bool operator== (Time left, Time right) {
             return left.time == right.time;
@@ -51,56 +48,50 @@ namespace odfaeg {
             return left.time >= right.time;
         }
         Time operator- (Time right) {
-            Time time;
-            time.time = std::chrono::high_resolution_clock::time_point(-right.time.time_since_epoch());
+            Time time = milliseconds(-right.asMilliseconds());
             return time;
         }
         Time operator+ (Time left, Time right) {
-            Time time;
-            time.time = std::chrono::high_resolution_clock::time_point(right.time.time_since_epoch() + left.time.time_since_epoch());
+            Time time = milliseconds(right.asMilliseconds() + left.asMilliseconds());
             return time;
         }
         Time& operator+= (Time& left, Time right) {
-            left.time = std::chrono::high_resolution_clock::time_point(right.time.time_since_epoch() + left.time.time_since_epoch());
+            left = milliseconds(right.asMilliseconds() + left.asMilliseconds());
             return left;
         }
         Time operator- (Time left, Time right) {
-            Time time;
-            time.time = std::chrono::high_resolution_clock::time_point(left.time.time_since_epoch() - right.time.time_since_epoch());
+            Time time = milliseconds(left.asMilliseconds() - right.asMilliseconds());
             return time;
         }
         Time& operator-= (Time& left, Time right) {
-            left.time = std::chrono::high_resolution_clock::time_point(left.time.time_since_epoch() - right.time.time_since_epoch());
+            left = milliseconds(left.asMilliseconds() - right.asMilliseconds());
             return left;
         }
         Time operator* (Time left, std::int64_t real) {
-            Time time;
-            time.time = std::chrono::high_resolution_clock::time_point(left.time.time_since_epoch() * real);
+            Time time = milliseconds(left.asMilliseconds() * real);
             return time;
         }
         Time& operator*= (Time& left, std::int64_t real) {
-            left.time = std::chrono::high_resolution_clock::time_point(left.time.time_since_epoch() * real);
+            left = milliseconds(left.asMilliseconds() / real);
             return left;
         }
         float operator/ (Time left, Time right) {
-            return left.time.time_since_epoch() / right.time.time_since_epoch();
+            return left.asMilliseconds() / right.asMilliseconds();
         }
         Time operator/ (Time left, std::int64_t real) {
-            Time time;
-            time.time = std::chrono::high_resolution_clock::time_point(left.time.time_since_epoch() / real);
+            Time time = milliseconds(left.asMilliseconds() / real);
             return time;
         }
         Time& operator/= (Time& left, std::int64_t real) {
-            left.time = std::chrono::high_resolution_clock::time_point(left.time.time_since_epoch() / real);
+            left = milliseconds(left.asMilliseconds() / real);
             return left;
         }
         Time operator% (Time left, std::int64_t real) {
-            Time time;
-            time.time = std::chrono::high_resolution_clock::time_point(left.time.time_since_epoch() % real);
+            Time time = milliseconds(left.asMilliseconds() * real);
             return time;
         }
         Time& operator%= (Time& left, std::int64_t real) {
-            left.time = std::chrono::high_resolution_clock::time_point(left.time.time_since_epoch() % real);
+            left = milliseconds(left.asMilliseconds() % real);
             return left;
         }
     }

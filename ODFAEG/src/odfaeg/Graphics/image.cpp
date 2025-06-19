@@ -16,13 +16,8 @@ namespace odfaeg {
         int read(void* user, char* data, int size)
         {
             std::istream* stream = static_cast<std::istream*>(user);
-            data = new char[size];
-            unsigned int s = 0;
-            while (!stream->eof()) {
-                (*stream)>>data[s];
-                s++;
-            }
-            return (s > 0);
+            stream->read(data, size);
+            return stream->tellg();
         }
         void skip(void* user, int size)
         {

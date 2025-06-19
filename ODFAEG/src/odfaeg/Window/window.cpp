@@ -1,6 +1,6 @@
 #include "../../../include/odfaeg/Window/window.hpp"
 
-using namespace sf;
+
 namespace odfaeg {
     namespace window {
         Window::Window() :

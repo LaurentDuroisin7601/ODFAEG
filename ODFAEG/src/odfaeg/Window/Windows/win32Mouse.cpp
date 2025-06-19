@@ -13,7 +13,7 @@
 #include "../../../../include/odfaeg/Window/Windows/win32Mouse.hpp"
 namespace odfaeg {
     namespace window {
-        using namespace sf;
+
         ////////////////////////////////////////////////////////////
         bool Win32Mouse::isButtonPressed(IMouse::Button button)
         {

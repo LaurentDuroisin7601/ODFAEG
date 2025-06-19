@@ -2,13 +2,13 @@
 #define ODFAEG_X11WINDOW
 #include "../contextSettings.hpp"
 #include "../iEvent.hpp"
-#include <SFML/Window/WindowHandle.hpp>
-#include <SFML/System/String.hpp>
-#include <SFML/System/Vector2.hpp>
+#include <ODFAEG/Window/WindowHandle.hpp>
+#include <ODFAEG/System/String.hpp>
+#include <ODFAEG/System/Vector2.hpp>
 #include <deque>
 #include <queue>
 #include "../iWindow.hpp"
-#include <SFML/Window/VideoMode.hpp>
+#include <ODFAEG/Window/VideoMode.hpp>
 #include <X11/extensions/Xrandr.h>
 namespace odfaeg {
     namespace window {
@@ -203,7 +203,7 @@ namespace odfaeg {
             XIC        m_inputContext; ///< Input context used to get Unicode input in our window
             std::deque<XEvent> m_xevents;
             std::queue<IEvent> m_ievents;
-            bool               m_isExternal;     ///< Tell whether the window has been created externally or by SFML
+            bool               m_isExternal;     ///< Tell whether the window has been created externally or by ODFAEG
             int                m_oldVideoMode;   ///< Video mode in use before we switch to fullscreen
             RRCrtc             m_oldRRCrtc;      ///< RRCrtc in use before we switch to fullscreen
             ::Cursor           m_hiddenCursor;   ///< As X11 doesn't provide cursor hiding, we must create a transparent one

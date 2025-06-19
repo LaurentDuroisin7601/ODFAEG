@@ -1,6 +1,6 @@
 #include "../../../include/odfaeg/Audio/player.h"
 #include <iostream>
-using namespace sf;
+
 namespace odfaeg {
     namespace audio {
         Player::Player() {
@@ -48,7 +48,7 @@ namespace odfaeg {
             stream->setPosition(x, y, z);
         }
         void Player::setPosition(math::Vec3f position) {
-            stream->setPosition(sf::Vector3f(position.x(), position.y(), position.z()));
+            stream->setPosition(math::Vec3f(position.x(), position.y(), position.z()));
         }
         void Player::setRelativeToListener(bool relative) {
             stream->setRelativeToListener(relative);
@@ -66,7 +66,7 @@ namespace odfaeg {
             return stream->getVolume();
         }
         math::Vec3f Player::getPosition() const {
-            return math::Vec3f(stream->getPosition().x, stream->getPosition().y, stream->getPosition().z) ;
+            return math::Vec3f(stream->getPosition().x(), stream->getPosition().y(), stream->getPosition().z()) ;
         }
         bool Player::isRelativeToListener() const {
             return stream->isRelativeToListener();

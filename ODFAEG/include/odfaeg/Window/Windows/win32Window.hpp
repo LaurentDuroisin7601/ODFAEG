@@ -232,12 +232,12 @@ namespace odfaeg {
             void grabCursor(bool grabbed);
 
             ////////////////////////////////////////////////////////////
-            /// \brief Convert a Win32 virtual key code to a SFML key code
+            /// \brief Convert a Win32 virtual key code to a ODFAEG key code
             ///
             /// \param key   Virtual key code to convert
             /// \param flags Additional flags
             ///
-            /// \return SFML key code corresponding to the key
+            /// \return ODFAEG key code corresponding to the key
             ///
             ////////////////////////////////////////////////////////////
             static IKeyboard::Key virtualKeyCodeToODFAEG(WPARAM key, LPARAM flags);

@@ -28,7 +28,7 @@ namespace odfaeg {
             *\brief construct player and initialize the stream with the given sound buffer.
             *\param sf::SoundBuffer& soundBuffer : the sound buffer.
             */
-            Player (sf::SoundBuffer& soundBuffer);
+            Player (SoundBuffer& soundBuffer);
             /** \fn void setAudioStream(Stream* stream)
             *\brief set the audio stream.
             *\param Stream* stream : pointer to the audio stream.

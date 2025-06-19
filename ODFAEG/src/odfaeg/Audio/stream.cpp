@@ -1,14 +1,14 @@
 #include "../../../include/odfaeg/Audio/stream.h"
-#include "SoundFile.hpp"
-using namespace sf;
+#include "soundFile.hpp"
+
 namespace odfaeg {
     namespace audio {
-        void Stream::load(const sf::SoundBuffer& buffer)
+        void Stream::load(const SoundBuffer& buffer)
         {
             m_file = nullptr;
             // extract the audio samples from the sound buffer to our own container
-            m_samples.assign(buffer.getSamples(), buffer.getSamples() + buffer.getSampleCount());
 
+            m_samples.assign(buffer.getSamples(), buffer.getSamples() + buffer.getSampleCount());
             // reset the current playing position
             m_currentSample = 0;
 
@@ -52,7 +52,7 @@ namespace odfaeg {
 
 
         ////////////////////////////////////////////////////////////
-        bool Stream::openFromStream(InputStream& stream)
+        bool Stream::openFromStream(std::istream& stream)
         {
             m_file = new priv::SoundFile();
             // First stop the music if it was already running
@@ -69,7 +69,7 @@ namespace odfaeg {
         }
         bool Stream::onGetData(Chunk& data)
         {
-            Lock lock(m_rec_mutex);
+            //std::lock_guard<std::mutex> lock(m_rec_mutex);
             if (m_file == nullptr) {
                 // number of samples to stream every time the function is called;
                 // in a more robust implementation, it would rather be a fixed
@@ -85,12 +85,14 @@ namespace odfaeg {
                     // end not reached: stream the samples and continue
                     data.sampleCount = samplesToStream;
                     m_currentSample += samplesToStream;
+
                     return true;
                 }
                 else
                 {
                     // end of stream reached: stream the remaining samples and stop playback
                     data.sampleCount = m_samples.size() - m_currentSample;
+
                     m_currentSample = m_samples.size();
                     return false;
                 }
@@ -99,6 +101,7 @@ namespace odfaeg {
                 data.samples     = &m_samples[0];
                 data.sampleCount = m_file->read(&m_samples[0], m_samples.size());
 
+
                 // Check if we have reached the end of the audio file
                 return data.sampleCount == m_samples.size();
             }
@@ -106,7 +109,7 @@ namespace odfaeg {
         bool Stream::isFinished() {
             return m_currentSample == m_samples.size() - 1;
         }
-        void Stream::onSeek(sf::Time timeOffset)
+        void Stream::onSeek(core::Time timeOffset)
         {
             // compute the corresponding sample index according to the sample rate and channel count
             m_currentSample = static_cast<std::size_t>(timeOffset.asSeconds() * getSampleRate() * getChannelCount());
@@ -117,7 +120,7 @@ namespace odfaeg {
         void Stream::initialize()
         {
             // Compute the music duration
-            m_duration = sf::seconds(static_cast<float>(m_file->getSampleCount()) / m_file->getSampleRate() / m_file->getChannelCount());
+            m_duration = core::seconds(static_cast<float>(m_file->getSampleCount()) / m_file->getSampleRate() / m_file->getChannelCount());
 
             // Resize the internal buffer so that it can contain 1 second of audio samples
             m_samples.resize(m_file->getSampleRate() * m_file->getChannelCount());
@@ -125,7 +128,7 @@ namespace odfaeg {
             // Initialize the stream
             SoundStream::initialize(m_file->getChannelCount(), m_file->getSampleRate());
         }
-        const sf::Int16* Stream::getSamples() {
+        const std::int16_t* Stream::getSamples() {
             return &m_samples[0];
         }
     }

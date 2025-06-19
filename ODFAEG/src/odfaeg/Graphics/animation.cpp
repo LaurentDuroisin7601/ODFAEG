@@ -1,7 +1,7 @@
 #include "../../../include/odfaeg/Graphics/anim.h"
 namespace odfaeg {
     namespace graphic {
-        using namespace sf;
+
         using namespace std;
         Anim::Anim(EntityFactory& factory) : AnimatedEntity (math::Vec3f(0, 0, 0), math::Vec3f(0, 0, 0), math::Vec3f(0, 0, 0), "E_ANIMATION", factory, "", nullptr) {
             currentFrameIndex = 0;

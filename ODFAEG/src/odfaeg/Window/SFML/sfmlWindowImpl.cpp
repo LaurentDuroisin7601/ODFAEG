@@ -1,27 +1,27 @@
-#include "../../../../include/odfaeg/Window/SFML/sfmlWindowImpl.hpp"
-#include "../../../../include/odfaeg/Window/SFML/sfmlKeyboard.hpp"
-#include "../../../../include/odfaeg/Window/SFML/sfmlMouse.hpp"
+#include "../../../../include/odfaeg/Window/ODFAEG/sfmlWindowImpl.hpp"
+#include "../../../../include/odfaeg/Window/ODFAEG/sfmlKeyboard.hpp"
+#include "../../../../include/odfaeg/Window/ODFAEG/sfmlMouse.hpp"
 namespace odfaeg {
     namespace window {
-        SFMLWindowImpl::SFMLWindowImpl() : sf::Window() {
+        ODFAEGWindowImpl::ODFAEGWindowImpl() : sf::Window() {
             m_settings = ContextSettings(0, 0, 0, 0, 0);
         }
-        SFMLWindowImpl::SFMLWindowImpl(sf::VideoMode mode, const core::String& title, sf::Uint32 style, const ContextSettings& settings) :
+        ODFAEGWindowImpl::ODFAEGWindowImpl(sf::VideoMode mode, const core::String& title, sf::Uint32 style, const ContextSettings& settings) :
         sf::Window (mode, title, style, sf::ContextSettings(settings.depthBits, settings.stencilBits, settings.antiAliasingLevel, settings.versionMajor, settings.versionMinor)) {
             m_settings = ContextSettings(settings.depthBits, settings.stencilBits, settings.antiAliasingLevel, settings.versionMajor, settings.versionMinor);
         }
-        void SFMLWindowImpl::create (sf::VideoMode mode, const core::String& title, sf::Uint32 style, const ContextSettings& settings) {
+        void ODFAEGWindowImpl::create (sf::VideoMode mode, const core::String& title, sf::Uint32 style, const ContextSettings& settings) {
             sf::Window::create (mode, title, style, sf::ContextSettings(settings.depthBits, settings.stencilBits, settings.antiAliasingLevel, settings.versionMajor, settings.versionMinor));
             m_settings = ContextSettings(settings.depthBits, settings.stencilBits, settings.antiAliasingLevel, settings.versionMajor, settings.versionMinor);
         }
-        void SFMLWindowImpl::create (sf::WindowHandle handle, const ContextSettings& settings) {
+        void ODFAEGWindowImpl::create (sf::WindowHandle handle, const ContextSettings& settings) {
             sf::Window::create (handle, sf::ContextSettings(settings.depthBits, settings.stencilBits, settings.antiAliasingLevel, settings.versionMajor, settings.versionMinor));
             m_settings = ContextSettings(settings.depthBits, settings.stencilBits, settings.antiAliasingLevel, settings.versionMajor, settings.versionMinor);
         }
-        bool SFMLWindowImpl::isOpen() const {
+        bool ODFAEGWindowImpl::isOpen() const {
             return sf::Window::isOpen();
         }
-        bool SFMLWindowImpl::pollEvent(IEvent& event) {
+        bool ODFAEGWindowImpl::pollEvent(IEvent& event) {
             sf::Event sfevent;
             if (sf::Window::pollEvent(sfevent)) {
                 if (sfevent.type == sf::Event::Closed) {
@@ -45,21 +45,21 @@ namespace odfaeg {
                 } else if (sfevent.type == sf::Event::KeyPressed) {
                     event.type = IEvent::KEYBOARD_EVENT;
                     event.keyboard.type = IEvent::KEY_EVENT_PRESSED;
-                    event.keyboard.code = SFMLKeyboard::sfToODFAEGKey(sfevent.key.code);
+                    event.keyboard.code = ODFAEGKeyboard::sfToODFAEGKey(sfevent.key.code);
                 } else if (sfevent.type == sf::Event::KeyReleased) {
                     event.type = IEvent::KEYBOARD_EVENT;
                     event.keyboard.type = IEvent::KEY_EVENT_RELEASED;
-                    event.keyboard.code = SFMLKeyboard::sfToODFAEGKey(sfevent.key.code);
+                    event.keyboard.code = ODFAEGKeyboard::sfToODFAEGKey(sfevent.key.code);
                 } else if (sfevent.type == sf::Event::MouseButtonPressed) {
                     event.type = IEvent::MOUSE_BUTTON_EVENT;
                     event.mouseButton.type = IEvent::BUTTON_EVENT_PRESSED;
-                    event.mouseButton.button = SFMLMouse::sfToODFAEGButton(sfevent.mouseButton.button);
+                    event.mouseButton.button = ODFAEGMouse::sfToODFAEGButton(sfevent.mouseButton.button);
                     event.mouseButton.x = sfevent.mouseButton.x;
                     event.mouseButton.y = sfevent.mouseButton.y;
                 } else if (sfevent.type == sf::Event::MouseButtonReleased) {
                     event.type = IEvent::MOUSE_BUTTON_EVENT;
                     event.mouseButton.type = IEvent::BUTTON_EVENT_RELEASED;
-                    event.mouseButton.button = SFMLMouse::sfToODFAEGButton(sfevent.mouseButton.button);
+                    event.mouseButton.button = ODFAEGMouse::sfToODFAEGButton(sfevent.mouseButton.button);
                     event.mouseButton.x = sfevent.mouseButton.x;
                     event.mouseButton.y = sfevent.mouseButton.y;
                 } else if (sfevent.type == sf::Event::MouseWheelMoved) {
@@ -76,10 +76,10 @@ namespace odfaeg {
             }
             return false;
         }
-        bool SFMLWindowImpl::filterEvent(const IEvent& event) {
+        bool ODFAEGWindowImpl::filterEvent(const IEvent& event) {
             return true;
         }
-        bool SFMLWindowImpl::waitEvent(IEvent& event) {
+        bool ODFAEGWindowImpl::waitEvent(IEvent& event) {
             sf::Event sfevent;
             if (sf::Window::waitEvent(sfevent)) {
                 if (sfevent.type == sf::Event::Closed) {
@@ -103,21 +103,21 @@ namespace odfaeg {
                 } else if (sfevent.type == sf::Event::KeyPressed) {
                     event.type = IEvent::KEYBOARD_EVENT;
                     event.keyboard.type = IEvent::KEY_EVENT_PRESSED;
-                    event.keyboard.code = SFMLKeyboard::sfToODFAEGKey(sfevent.key.code);
+                    event.keyboard.code = ODFAEGKeyboard::sfToODFAEGKey(sfevent.key.code);
                 } else if (sfevent.type == sf::Event::KeyReleased) {
                     event.type = IEvent::KEYBOARD_EVENT;
                     event.keyboard.type = IEvent::KEY_EVENT_RELEASED;
-                    event.keyboard.code = SFMLKeyboard::sfToODFAEGKey(sfevent.key.code);
+                    event.keyboard.code = ODFAEGKeyboard::sfToODFAEGKey(sfevent.key.code);
                 } else if (sfevent.type == sf::Event::MouseButtonPressed) {
                     event.type = IEvent::MOUSE_BUTTON_EVENT;
                     event.mouseButton.type = IEvent::BUTTON_EVENT_PRESSED;
-                    event.mouseButton.button = SFMLMouse::sfToODFAEGButton(sfevent.mouseButton.button);
+                    event.mouseButton.button = ODFAEGMouse::sfToODFAEGButton(sfevent.mouseButton.button);
                     event.mouseButton.x = sfevent.mouseButton.x;
                     event.mouseButton.y = sfevent.mouseButton.y;
                 }  else if (sfevent.type == sf::Event::MouseButtonReleased) {
                     event.type = IEvent::MOUSE_BUTTON_EVENT;
                     event.mouseButton.type = IEvent::BUTTON_EVENT_RELEASED;
-                    event.mouseButton.button = SFMLMouse::sfToODFAEGButton(sfevent.mouseButton.button);
+                    event.mouseButton.button = ODFAEGMouse::sfToODFAEGButton(sfevent.mouseButton.button);
                     event.mouseButton.x = sfevent.mouseButton.x;
                     event.mouseButton.y = sfevent.mouseButton.y;
                 } else if (sfevent.type == sf::Event::MouseWheelMoved) {
@@ -134,25 +134,25 @@ namespace odfaeg {
             }
             return false;
         }
-        void SFMLWindowImpl::close() {
+        void ODFAEGWindowImpl::close() {
             sf::Window::close();
         }
-        void SFMLWindowImpl::setVisible(bool visible) {
+        void ODFAEGWindowImpl::setVisible(bool visible) {
             sf::Window::setVisible(visible);
         }
-        sf::Vector2i SFMLWindowImpl::getPosition() const {
+        sf::Vector2i ODFAEGWindowImpl::getPosition() const {
             return sf::Window::getPosition();
         }
-        void SFMLWindowImpl::setPosition(const sf::Vector2i& position) {
+        void ODFAEGWindowImpl::setPosition(const sf::Vector2i& position) {
             sf::Window::setPosition(position);
         }
-        sf::Vector2u SFMLWindowImpl::getSize() const {
+        sf::Vector2u ODFAEGWindowImpl::getSize() const {
             return sf::Window::getSize();
         }
-        void SFMLWindowImpl::setSize(const sf::Vector2u& size) {
+        void ODFAEGWindowImpl::setSize(const sf::Vector2u& size) {
             sf::Window::setSize(size);
         }
-        void SFMLWindowImpl::setTitle(const core::String& title) {
+        void ODFAEGWindowImpl::setTitle(const core::String& title) {
             sf::Window::setTitle(title);
         }
         ////////////////////////////////////////////////////////////
@@ -172,7 +172,7 @@ namespace odfaeg {
         /// \see setTitle
         ///
         ////////////////////////////////////////////////////////////
-        void SFMLWindowImpl::setIcon(unsigned int width, unsigned int height, const sf::Uint8* pixels) {
+        void ODFAEGWindowImpl::setIcon(unsigned int width, unsigned int height, const sf::Uint8* pixels) {
             sf::Window::setIcon(width, height, pixels);
         }
         ////////////////////////////////////////////////////////////
@@ -183,7 +183,7 @@ namespace odfaeg {
         /// \param visible True to show the mouse cursor, false to hide it
         ///
         ////////////////////////////////////////////////////////////
-        void SFMLWindowImpl::setMouseCursorVisible(bool visible) {
+        void ODFAEGWindowImpl::setMouseCursorVisible(bool visible) {
             sf::Window::setMouseCursorVisible(visible);
         }
 
@@ -198,7 +198,7 @@ namespace odfaeg {
         /// \param grabbed True to enable, false to disable
         ///
         ////////////////////////////////////////////////////////////
-        void SFMLWindowImpl::setMouseCursorGrabbed(bool grabbed) {
+        void ODFAEGWindowImpl::setMouseCursorGrabbed(bool grabbed) {
             sf::Window::setMouseCursorGrabbed(grabbed);
         }
 
@@ -219,7 +219,7 @@ namespace odfaeg {
         /// \see sf::Cursor::loadFromPixels
         ///
         ////////////////////////////////////////////////////////////
-        void SFMLWindowImpl::setMouseCursor(const sf::Cursor& cursor) {
+        void ODFAEGWindowImpl::setMouseCursor(const sf::Cursor& cursor) {
             sf::Window::setMouseCursor(cursor);
         }
 
@@ -235,7 +235,7 @@ namespace odfaeg {
         /// \param enabled True to enable, false to disable
         ///
         ////////////////////////////////////////////////////////////
-        void SFMLWindowImpl::setKeyRepeatEnabled(bool enabled) {
+        void ODFAEGWindowImpl::setKeyRepeatEnabled(bool enabled) {
             sf::Window::setKeyRepeatEnabled(enabled);
         }
         ////////////////////////////////////////////////////////////
@@ -244,7 +244,7 @@ namespace odfaeg {
         /// If a limit is set, the window will use a small delay after
         /// each call to display() to ensure that the current frame
         /// lasted long enough to match the framerate limit.
-        /// SFML will try to match the given limit as much as it can,
+        /// ODFAEG will try to match the given limit as much as it can,
         /// but since it internally uses sf::sleep, whose precision
         /// depends on the underlying OS, the results may be a little
         /// unprecise as well (for example, you can get 65 FPS when
@@ -253,7 +253,7 @@ namespace odfaeg {
         /// \param limit Framerate limit, in frames per seconds (use 0 to disable limit)
         ///
         ////////////////////////////////////////////////////////////
-        void SFMLWindowImpl::setFramerateLimit(unsigned int limit) {
+        void ODFAEGWindowImpl::setFramerateLimit(unsigned int limit) {
             sf::Window::setFramerateLimit(limit);
         }
 
@@ -268,7 +268,7 @@ namespace odfaeg {
         /// \param threshold New threshold, in the range [0, 100]
         ///
         ////////////////////////////////////////////////////////////
-        void SFMLWindowImpl::setJoystickThreshold(float threshold) {
+        void ODFAEGWindowImpl::setJoystickThreshold(float threshold) {
             sf::Window::setJoystickThreshold(threshold);
         }
 
@@ -302,7 +302,7 @@ namespace odfaeg {
         /// \see hasFocus
         ///
         ////////////////////////////////////////////////////////////
-        void SFMLWindowImpl::requestFocus() {
+        void ODFAEGWindowImpl::requestFocus() {
             sf::Window::requestFocus();
         }
 
@@ -317,7 +317,7 @@ namespace odfaeg {
         /// \see requestFocus
         ///
         ////////////////////////////////////////////////////////////
-        bool SFMLWindowImpl::hasFocus() const {
+        bool ODFAEGWindowImpl::hasFocus() const {
             return sf::Window::hasFocus();
         }
          ////////////////////////////////////////////////////////////
@@ -326,28 +326,28 @@ namespace odfaeg {
         /// The type of the returned handle is sf::WindowHandle,
         /// which is a typedef to the handle type defined by the OS.
         /// You shouldn't need to use this function, unless you have
-        /// very specific stuff to implement that SFML doesn't support,
+        /// very specific stuff to implement that ODFAEG doesn't support,
         /// or implement a temporary workaround until a bug is fixed.
         ///
         /// \return System handle of the window
         ///
         ////////////////////////////////////////////////////////////
-        sf::WindowHandle SFMLWindowImpl::getSystemHandle() const {
+        sf::WindowHandle ODFAEGWindowImpl::getSystemHandle() const {
             return sf::Window::getSystemHandle();
         }
-        void SFMLWindowImpl::destroy() {
+        void ODFAEGWindowImpl::destroy() {
             sf::Window::close();
         }
-        bool SFMLWindowImpl::setActive(bool active) {
+        bool ODFAEGWindowImpl::setActive(bool active) {
             return sf::Window::setActive(active);
         }
-        void SFMLWindowImpl::setVerticalSyncEnabled(bool enabled) {
+        void ODFAEGWindowImpl::setVerticalSyncEnabled(bool enabled) {
             sf::Window::setVerticalSyncEnabled(enabled);
         }
-        void SFMLWindowImpl::display() {
+        void ODFAEGWindowImpl::display() {
             sf::Window::display();
         }
-        const ContextSettings& SFMLWindowImpl::getSettings() const {
+        const ContextSettings& ODFAEGWindowImpl::getSettings() const {
             return m_settings;
         }
     }

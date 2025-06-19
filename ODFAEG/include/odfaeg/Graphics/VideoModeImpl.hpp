@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////
 //
-// SFML - Simple and Fast Multimedia Library
+// ODFAEG - Simple and Fast Multimedia Library
 // Copyright (C) 2007-2013 Laurent Gomila (laurent.gom@gmail.com)
 //
 // This software is provided 'as-is', without any express or implied warranty.
@@ -22,13 +22,13 @@
 //
 ////////////////////////////////////////////////////////////
 
-#ifndef SFML_VIDEOMODEIMPL_HPP
-#define SFML_VIDEOMODEIMPL_HPP
+#ifndef ODFAEG_VIDEOMODEIMPL_HPP
+#define ODFAEG_VIDEOMODEIMPL_HPP
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/VideoMode.hpp>
+#include <ODFAEG/Window/VideoMode.hpp>
 
 
 namespace sf
@@ -65,4 +65,4 @@ public :
 } // namespace sf
 
 
-#endif // SFML_VIDEOMODEIMPL_HPP
+#endif // ODFAEG_VIDEOMODEIMPL_HPP

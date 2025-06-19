@@ -1,7 +1,7 @@
-#include "../../../../include/odfaeg/Window/SFML/sfmlKeyboard.hpp"
+#include "../../../../include/odfaeg/Window/ODFAEG/sfmlKeyboard.hpp"
 namespace odfaeg {
     namespace window {
-        IKeyboard::Key SFMLKeyboard::sfToODFAEGKey(sf::Keyboard::Key key) {
+        IKeyboard::Key ODFAEGKeyboard::sfToODFAEGKey(sf::Keyboard::Key key) {
             switch(key) {
                 case sf::Keyboard::Unknown : return IKeyboard::Unknown;
                 case sf::Keyboard::A : return IKeyboard::A;
@@ -107,7 +107,7 @@ namespace odfaeg {
                 case sf::Keyboard::Pause : return IKeyboard::Pause;        ///< The Pause key
             }
         }
-        sf::Keyboard::Key SFMLKeyboard::odfaegToSfKey(IKeyboard::Key key) {
+        sf::Keyboard::Key ODFAEGKeyboard::odfaegToSfKey(IKeyboard::Key key) {
             switch(key) {
                 case IKeyboard::Unknown : return sf::Keyboard::Unknown;
                 case IKeyboard::A : return sf::Keyboard::A;
@@ -213,7 +213,7 @@ namespace odfaeg {
                 case IKeyboard::Pause : return sf::Keyboard::Pause;        ///< The Pause key
             }
         }
-        bool SFMLKeyboard::isKeyPressed(IKeyboard::Key key) {
+        bool ODFAEGKeyboard::isKeyPressed(IKeyboard::Key key) {
             return sf::Keyboard::isKeyPressed(odfaegToSfKey(key));
         }
     }

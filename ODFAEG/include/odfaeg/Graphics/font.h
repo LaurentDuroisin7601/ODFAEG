@@ -1,11 +1,11 @@
 ////////////////////////////////////////////////////////////
 //
-// /!\ Important : this class is a modification of the circle shape class of the SFML
+// /!\ Important : this class is a modification of the circle shape class of the ODFAEG
 // that I've adapted for odfaeg with 3D vertices.
-// Here is the license and the author of the SFML library.
+// Here is the license and the author of the ODFAEG library.
 //
 //
-// SFML - Simple and Fast Multimedia Library
+// ODFAEG - Simple and Fast Multimedia Library
 // Copyright (C) 2007-2014 Laurent Gomila (laurent.gom@gmail.com)
 //
 // This software is provided 'as-is', without any express or implied warranty.
@@ -102,7 +102,7 @@ namespace odfaeg
                 /// fonts installed on the user's system, thus you can't
                 /// load them directly.
                 ///
-                /// \warning SFML cannot preload all the font data in this
+                /// \warning ODFAEG cannot preload all the font data in this
                 /// function, so the file has to remain accessible until
                 /// the sf::Font object loads a new font or is destroyed.
                 ///
@@ -121,7 +121,7 @@ namespace odfaeg
                 /// The supported font formats are: TrueType, Type 1, CFF,
                 /// OpenType, SFNT, X11 PCF, Windows FNT, BDF, PFR and Type 42.
                 ///
-                /// \warning SFML cannot preload all the font data in this
+                /// \warning ODFAEG cannot preload all the font data in this
                 /// function, so the buffer pointed by \a data has to remain
                 /// valid until the sf::Font object loads a new font or
                 /// is destroyed.
@@ -141,11 +141,11 @@ namespace odfaeg
                 ///
                 /// The supported font formats are: TrueType, Type 1, CFF,
                 /// OpenType, SFNT, X11 PCF, Windows FNT, BDF, PFR and Type 42.
-                /// Warning: SFML cannot preload all the font data in this
+                /// Warning: ODFAEG cannot preload all the font data in this
                 /// function, so the contents of \a stream have to remain
                 /// valid as long as the font is used.
                 ///
-                /// \warning SFML cannot preload all the font data in this
+                /// \warning ODFAEG cannot preload all the font data in this
                 /// function, so the stream has to remain accessible until
                 /// the sf::Font object loads a new font or is destroyed.
                 ///
@@ -360,7 +360,7 @@ namespace odfaeg
                 mutable PageTable          m_pages;       ///< Table containing the glyphs pages by character size
                 mutable std::vector<std::uint8_t> m_pixelBuffer; ///< Pixel buffer holding a glyph's pixels before being written to the texture
                 window::Device& vkDevice;
-            #ifdef SFML_SYSTEM_ANDROID
+            #ifdef ODFAEG_SYSTEM_ANDROID
             void*                      m_stream; ///< Asset file streamer (if loaded from file)
             #endif
         };
@@ -417,7 +417,7 @@ namespace odfaeg
                 /// fonts installed on the user's system, thus you can't
                 /// load them directly.
                 ///
-                /// \warning SFML cannot preload all the font data in this
+                /// \warning ODFAEG cannot preload all the font data in this
                 /// function, so the file has to remain accessible until
                 /// the sf::Font object loads a new font or is destroyed.
                 ///
@@ -436,7 +436,7 @@ namespace odfaeg
                 /// The supported font formats are: TrueType, Type 1, CFF,
                 /// OpenType, SFNT, X11 PCF, Windows FNT, BDF, PFR and Type 42.
                 ///
-                /// \warning SFML cannot preload all the font data in this
+                /// \warning ODFAEG cannot preload all the font data in this
                 /// function, so the buffer pointed by \a data has to remain
                 /// valid until the sf::Font object loads a new font or
                 /// is destroyed.
@@ -456,11 +456,11 @@ namespace odfaeg
                 ///
                 /// The supported font formats are: TrueType, Type 1, CFF,
                 /// OpenType, SFNT, X11 PCF, Windows FNT, BDF, PFR and Type 42.
-                /// Warning: SFML cannot preload all the font data in this
+                /// Warning: ODFAEG cannot preload all the font data in this
                 /// function, so the contents of \a stream have to remain
                 /// valid as long as the font is used.
                 ///
-                /// \warning SFML cannot preload all the font data in this
+                /// \warning ODFAEG cannot preload all the font data in this
                 /// function, so the stream has to remain accessible until
                 /// the sf::Font object loads a new font or is destroyed.
                 ///
@@ -676,7 +676,7 @@ namespace odfaeg
                 Info                       m_info;        ///< Information about the font
                 mutable PageTable          m_pages;       ///< Table containing the glyphs pages by character size
                 mutable std::vector<std::uint8_t> m_pixelBuffer; ///< Pixel buffer holding a glyph's pixels before being written to the texture
-            #ifdef SFML_SYSTEM_ANDROID
+            #ifdef ODFAEG_SYSTEM_ANDROID
             void*                      m_stream; ///< Asset file streamer (if loaded from file)
             #endif
         };
@@ -685,7 +685,7 @@ namespace odfaeg
 } // namespace sf
 
 
-#endif // SFML_FONT_HPP
+#endif // ODFAEG_FONT_HPP
 
 
 ////////////////////////////////////////////////////////////

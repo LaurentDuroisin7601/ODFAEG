@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////
 //
-// SFML - Simple and Fast Multimedia Library
+// ODFAEG - Simple and Fast Multimedia Library
 // Copyright (C) 2007-2013 Laurent Gomila (laurent.gom@gmail.com)
 //
 // This software is provided 'as-is', without any express or implied warranty.
@@ -29,7 +29,7 @@
 #include "../../../include/odfaeg/Graphics/renderTarget.h"
 #include "../../../include/odfaeg/Graphics/texture.h"
 #include "../../../include/odfaeg/Math/maths.h"
-using namespace sf;
+
 
 namespace
 {

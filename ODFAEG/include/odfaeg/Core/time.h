@@ -7,7 +7,7 @@ namespace odfaeg {
         class ODFAEG_CORE_API Time {
             public :
                 friend class Clock;
-                friend Time seconds (long int amount);
+                friend Time seconds (float amount);
                 friend Time milliseconds (std::int32_t amount);
                 friend Time microseconds (std::int64_t amount);
                 friend bool 	operator== (Time left, Time right);
@@ -36,10 +36,10 @@ namespace odfaeg {
                 std::int64_t asMicroseconds();
                 static const Time zero;
             private :
-                std::chrono::high_resolution_clock::time_point time;
+                std::chrono::time_point<std::chrono::high_resolution_clock, std::chrono::duration<float>> time;
         };
-        Time seconds (long int amount);
-        Time millisconds (std::int32_t amount);
+        Time seconds (float amount);
+        Time milliseconds (std::int32_t amount);
         Time microseconds (std::int64_t amount);
         bool 	operator== (Time left, Time right);
         bool 	operator!= (Time left, Time right);

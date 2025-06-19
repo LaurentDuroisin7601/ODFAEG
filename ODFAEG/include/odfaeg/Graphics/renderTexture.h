@@ -1,10 +1,10 @@
 ////////////////////////////////////////////////////////////
 //
-// /!\ Important : this class is a modification of the circle shape class of the SFML
+// /!\ Important : this class is a modification of the circle shape class of the ODFAEG
 // that I've adapted for odfaeg with 3D vertices.
-// Here is the license and the author of the SFML library.
+// Here is the license and the author of the ODFAEG library.
 //
-// SFML - Simple and Fast Multimedia Library
+// ODFAEG - Simple and Fast Multimedia Library
 // Copyright (C) 2007-2013 Laurent Gomila (laurent.gom@gmail.com)
 //
 // This software is provided 'as-is', without any express or implied warranty.
@@ -293,7 +293,7 @@ namespace odfaeg {
 } // namespace sf
 
 
-#endif // SFML_RENDERTEXTURE_HPP
+#endif // ODFAEG_RENDERTEXTURE_HPP
 
 
 ////////////////////////////////////////////////////////////
@@ -316,7 +316,7 @@ namespace odfaeg {
 ///
 /// \code
 /// // Create a new render-window
-/// sf::RenderWindow window(sf::VideoMode(800, 600), "SFML window");
+/// sf::RenderWindow window(sf::VideoMode(800, 600), "ODFAEG window");
 ///
 /// // Create a new render-texture
 /// sf::RenderTexture texture;
@@ -354,7 +354,7 @@ namespace odfaeg {
 ///
 /// Like sf::RenderWindow, sf::RenderTexture is still able to render direct
 /// OpenGL stuff. It is even possible to mix together OpenGL calls
-/// and regular SFML drawing commands. If you need a depth buffer for
+/// and regular ODFAEG drawing commands. If you need a depth buffer for
 /// 3D rendering, don't forget to request it when calling RenderTexture::create.
 ///
 /// \see sf::RenderTarget, sf::RenderWindow, sf::View, sf::Texture

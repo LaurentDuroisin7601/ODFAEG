@@ -1,6 +1,5 @@
 #ifndef CLIENT
 #define CLIENT
-#include <SFML/Network.hpp>
 #include <iostream>
 #include "encryptedPacket.h"
 #include "symEncPacket.h"
@@ -9,6 +8,11 @@
 #include <thread>
 #include "export.hpp"
 #include "../Core/clock.h"
+#include "ipaddress.hpp"
+#include "tcpsocket.hpp"
+#include "updsocket.hpp"
+#include "socketselector.hpp"
+
 /**
   *\namespace odfaeg
   * the namespace of the Opensource Development Framework Adapted for Every Games.
@@ -39,7 +43,7 @@ namespace odfaeg {
                 */
                 bool isRunning ();
                 /**
-                * \fn bool startCli(int portTCP, int portUDP, sf::IpAddress adress, bool useThread = false, bool useSecuredConnexion = false)
+                * \fn bool startCli(int portTCP, int portUDP, IpAddress adress, bool useThread = false, bool useSecuredConnexion = false)
                 * \brief try to connect to the server with the given ports and ipaddress and start the client. (return false if it fails)
                 * \param portTCP : the port's number used to connect to the server for the TCP protocol.
                 * \param portUDP : the port's number used to connect to the server for the UDP protocol.
@@ -47,21 +51,21 @@ namespace odfaeg {
                 * \param useSecuredConnexion : tell if the client must use an SSL connection or not. (For the TCP protocol)
                 * \return if the client is connected.
                 */
-                bool startCli(int portTCP, int portUDP, sf::IpAddress adress, bool useSecuredConnexion = true);
+                bool startCli(int portTCP, int portUDP, IpAddress adress, bool useSecuredConnexion = true);
                 /**
-                * \fn void sendTCPPacket(sf::Packet& packet)
+                * \fn void sendTCPPacket(Packet& packet)
                 * \brief send a packet with the tcp protocol.
                 * \param packet : the packet to send.
                 */
-                void sendTCPPacket(sf::Packet &packet);
+                void sendTCPPacket(Packet &packet);
                 /**
-                * \fn void sendTCPPacket(sf::Packet& packet)
+                * \fn void sendTCPPacket(Packet& packet)
                 * \brief send a packet with the udp protocol.
                 * \param packet : the packet to send.
                 */
-                void sendUDPPacket(sf::Packet &packet);
+                void sendUDPPacket(Packet &packet);
                 /**
-                * \fn void sendUDPPacket(sf::Packet& packet)
+                * \fn void sendUDPPacket(Packet& packet)
                 * \brief send a packet with the udp protocol.
                 * \param packet : the packet to send.
                 */
@@ -78,11 +82,11 @@ namespace odfaeg {
                 */
                 void getPublicKey();
                 bool running; /**> if the client is running, and if the client is using a thread.*/
-                sf::TcpSocket clientTCP; /**>The tcp socket of the client.*/
-                sf::UdpSocket clientUDP; /**>The udp socket of the client.*/
-                sf::SocketSelector selector; /**>The selector.*/
+                TcpSocket clientTCP; /**>The tcp socket of the client.*/
+                UdpSocket clientUDP; /**>The udp socket of the client.*/
+                SocketSelector selector; /**>The selector.*/
                 short unsigned int remotePortUDP; /**>the remote udp port.*/
-                sf::IpAddress srvAddress; /**> the ip address of the server.*/
+                IpAddress srvAddress; /**> the ip address of the server.*/
                 bool useSecuredConnexion; /**>if the client is using an SSL connection.*/
                 core::Clock clock;
         };

@@ -1,7 +1,7 @@
 #include "../../../include/odfaeg/Window/context.hpp"
 #include "../../../include/odfaeg/Window/contextImpl.hpp"
-#if defined (SFML)
-#include <SFML/Window/Context.hpp>
+#if defined (ODFAEG)
+#include <ODFAEG/Window/Context.hpp>
 #endif // defined
 namespace odfaeg {
     namespace window {
@@ -52,7 +52,7 @@ namespace odfaeg {
         ////////////////////////////////////////////////////////////
         GlFunctionPointer Context::getFunction(const char* name)
         {
-            #if defined (SFML)
+            #if defined (ODFAEG)
                 return sf::Context::getFunction(name);
             #else
                 return ContextImpl::getFunction(name);
@@ -61,7 +61,7 @@ namespace odfaeg {
         ////////////////////////////////////////////////////////////
         bool Context::isExtensionAvailable(const char* name)
         {
-            #if defined (SFML)
+            #if defined (ODFAEG)
                 return sf::Context::isExtensionAvailable(name);
             #else
                 return ContextImpl::isExtensionAvalaible(name);

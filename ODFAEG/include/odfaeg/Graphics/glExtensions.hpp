@@ -8,9 +8,9 @@
 
 #ifdef ODFAEG_OPENGL_ES
 
-    #include <SFML/OpenGL.hpp>
+    #include <ODFAEG/OpenGL.hpp>
 
-    // SFML requires at a bare minimum OpenGL ES 1.0 capability
+    // ODFAEG requires at a bare minimum OpenGL ES 1.0 capability
     // Some extensions only incorporated by 2.0 are also required
     // OpenGL ES 1.0 is defined relative to OpenGL 1.3
     // OpenGL ES 1.1 is defined relative to OpenGL 1.5
@@ -58,7 +58,7 @@
     // The following extensions are optional.
 
     // Core since 2.0 - OES_blend_func_separate
-    #ifdef SFML_SYSTEM_ANDROID
+    #ifdef ODFAEG_SYSTEM_ANDROID
         // Hack to make transparency working on some Android devices
         #define GLEXT_blend_func_separate                 false
     #else
@@ -67,7 +67,7 @@
     #define GLEXT_glBlendFuncSeparate                 glBlendFuncSeparateOES
 
     // Core since 2.0 - OES_blend_equation_separate
-    #ifdef SFML_SYSTEM_ANDROID
+    #ifdef ODFAEG_SYSTEM_ANDROID
         // Hack to make transparency working on some Android devices
         #define GLEXT_blend_equation_separate             false
     #else
@@ -125,7 +125,7 @@
 
     #include "glLoader.hpp"
 
-    // SFML requires at a bare minimum OpenGL 1.1 capability
+    // ODFAEG requires at a bare minimum OpenGL 1.1 capability
     // All functionality beyond that is optional
     // and has to be checked for prior to use
 

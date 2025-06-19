@@ -18,15 +18,15 @@ namespace odfaeg {
         /**
           * \file action.h
           * \class Action
-          * \brief Link SFML events to odfaeg actions.
+          * \brief Link ODFAEG events to odfaeg actions.
           * \author Duroisin.L
           * \version 1.0
           * \date 1/02/2014
-          * Link one or more SFML Events to ACTIONS, and determine when the action is triggered.
+          * Link one or more ODFAEG Events to ACTIONS, and determine when the action is triggered.
           * The window::IEvents are stored into the leafs of a BSP tree structure.
           * It means that combined actions contains two children :
-            -The first action child is linked to the first SFML event.
-            -The second action child is linked to the second SFML event.
+            -The first action child is linked to the first ODFAEG event.
+            -The second action child is linked to the second ODFAEG event.
             -The combined actions contains also a pointer to a function who determine when the combined action is triggered.
             by exemple the xor function return true if one of the two action's children is triggered. (not both)
           */

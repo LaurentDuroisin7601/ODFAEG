@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////
 //
-// SFML - Simple and Fast Multimedia Library
+// ODFAEG - Simple and Fast Multimedia Library
 // Copyright (C) 2007-2013 Laurent Gomila (laurent.gom@gmail.com)
 //
 // This software is provided 'as-is', without any express or implied warranty.
@@ -71,4 +71,4 @@ namespace odfaeg {
 
 
 
-#endif // SFML_GLCHECK_HPP
+#endif // ODFAEG_GLCHECK_HPP

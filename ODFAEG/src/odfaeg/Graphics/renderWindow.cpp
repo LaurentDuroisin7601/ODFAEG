@@ -7,7 +7,7 @@
 
 namespace odfaeg {
     namespace graphic {
-        using namespace sf;
+
         #ifdef VULKAN
         ////////////////////////////////////////////////////////////
         RenderWindow::RenderWindow(window::VideoMode mode, const core::String& title, window::Device& vkDevice, std::uint32_t style,  const window::ContextSettings& settings) : RenderTarget(vkDevice), vkDevice(vkDevice)
@@ -603,7 +603,7 @@ namespace odfaeg {
                 int width = static_cast<int>(getSize().x);
                 int height = static_cast<int>(getSize().y);
 
-                // copy rows one by one and flip them (OpenGL's origin is bottom while SFML's origin is top)
+                // copy rows one by one and flip them (OpenGL's origin is bottom while ODFAEG's origin is top)
                 std::vector<Uint8> pixels(width * height * 4);
                 for (int i = 0; i < height; ++i)
                 {

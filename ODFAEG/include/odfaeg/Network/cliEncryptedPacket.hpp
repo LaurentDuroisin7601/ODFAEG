@@ -1,12 +1,12 @@
 #ifndef CLIENCPACKET
 #define CLIENCPACKET
-#include <SFML/Network.hpp>
 #include "rsa.h"
 #include "export.hpp"
+#include "packet.hpp"
 namespace odfaeg {
     namespace network {
         class SrkClient;
-        class ODFAEG_NETWORK_API CliEncryptedPacket : public sf::Packet {
+        class ODFAEG_NETWORK_API CliEncryptedPacket : public Packet {
             public :
                 static Rsa& getRsa();
                 static int getCertificate(unsigned char** out);

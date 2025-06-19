@@ -3,7 +3,7 @@
 namespace odfaeg {
     namespace network {
         using namespace std;
-        using namespace sf;
+
         Rsa& CliEncryptedPacket::rsa = CliEncryptedPacket::getRsa();
         bool CliEncryptedPacket::isSrvRunning = false;
         void CliEncryptedPacket::setServerRunning (bool srvRunning) {

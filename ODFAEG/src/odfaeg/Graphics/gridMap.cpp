@@ -2,7 +2,7 @@
 namespace odfaeg {
     namespace graphic {
         using namespace std;
-        using namespace sf;
+
 
 
         //Ajoute une tile.

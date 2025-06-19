@@ -50,7 +50,7 @@
 #if !defined(GL_CONTEXT_COMPATIBILITY_PROFILE_BIT)
     #define GL_CONTEXT_COMPATIBILITY_PROFILE_BIT 0x00000002
 #endif
-using namespace sf;
+
 namespace odfaeg {
     namespace window {
         std::vector<std::string> ContextImpl::extensions = std::vector<std::string>();

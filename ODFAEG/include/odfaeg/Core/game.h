@@ -3,8 +3,8 @@
 #include "any.h"
 #include "erreur.h"
 #include "../../../include/odfaeg/Core/resourceManager.h"
-#include <SFML/System.hpp>
-#include <SFML/Graphics.hpp>
+#include <ODFAEG/System.hpp>
+#include <ODFAEG/Graphics.hpp>
 #include "export.hpp"
 namespace odfaeg {
 class Application;

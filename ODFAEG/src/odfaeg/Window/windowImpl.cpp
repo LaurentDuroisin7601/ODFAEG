@@ -1,6 +1,6 @@
 #include "../../../include/odfaeg/Window/windowImpl.hpp"
 #include <thread>
-using namespace sf;
+
 namespace
 {
     const odfaeg::window::WindowImpl* fullscreenWindow = nullptr;

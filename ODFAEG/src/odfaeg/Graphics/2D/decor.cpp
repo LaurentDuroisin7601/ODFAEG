@@ -2,7 +2,7 @@
 namespace odfaeg {
     namespace graphic {
         namespace g2d {
-            using namespace sf;
+
             Decor::Decor (Tile *t, Light *light, EntityFactory& factory) : Model(t->getPosition(), t->getSize(), t->getSize() * 0.5f, factory, "E_DECOR") {
                 addChild(t);
                 t->setParent(this);

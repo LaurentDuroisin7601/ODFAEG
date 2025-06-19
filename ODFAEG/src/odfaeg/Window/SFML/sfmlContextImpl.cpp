@@ -1,24 +1,24 @@
-#include "../../../../include/odfaeg/Window/SFML/sfmlContextImpl.hpp"
+#include "../../../../include/odfaeg/Window/ODFAEG/sfmlContextImpl.hpp"
 #include <iostream>
 namespace odfaeg {
     namespace window {
-        bool SFMLContextImpl::setActive(bool active) {
+        bool ODFAEGContextImpl::setActive(bool active) {
             if (context) {
                 return context->setActive(active);
             }
             return false;
         }
-        void SFMLContextImpl::create(IContext* sharedContext) {
+        void ODFAEGContextImpl::create(IContext* sharedContext) {
             m_settings = ContextSettings (0, 0, 0, 0, 0);
         }
-        void SFMLContextImpl::create(sf::WindowHandle handle, const ContextSettings& settings, IContext* sharedContext, unsigned int bitsPerPixel) {
+        void ODFAEGContextImpl::create(sf::WindowHandle handle, const ContextSettings& settings, IContext* sharedContext, unsigned int bitsPerPixel) {
             m_settings = settings;
         }
-        void SFMLContextImpl::create(const ContextSettings& settings, unsigned int width, unsigned int height, IContext* sharedContext) {
+        void ODFAEGContextImpl::create(const ContextSettings& settings, unsigned int width, unsigned int height, IContext* sharedContext) {
             context = new sf::Context(sf::ContextSettings(settings.depthBits, settings.stencilBits, settings.antiAliasingLevel, settings.versionMajor, settings.versionMinor), width, height);
             m_settings = settings;
         }
-        const ContextSettings& SFMLContextImpl::getSettings() const {
+        const ContextSettings& ODFAEGContextImpl::getSettings() const {
             if (context) {
                 return m_settings;
             } else {
@@ -26,12 +26,12 @@ namespace odfaeg {
                 return empty;
             }
         }
-        void SFMLContextImpl::display() {
+        void ODFAEGContextImpl::display() {
 
         }
-        void SFMLContextImpl::initialize(const ContextSettings& settings) {
+        void ODFAEGContextImpl::initialize(const ContextSettings& settings) {
         }
-        void SFMLContextImpl::setVerticalSyncEnabled(bool enabled) {
+        void ODFAEGContextImpl::setVerticalSyncEnabled(bool enabled) {
 
         }
     }

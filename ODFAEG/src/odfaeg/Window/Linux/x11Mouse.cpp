@@ -2,7 +2,7 @@
 #include "../../../../include/odfaeg/Window/Linux/display.hpp"
 namespace odfaeg {
     namespace window {
-        using namespace sf;
+
         ////////////////////////////////////////////////////////////
         bool X11Mouse::isButtonPressed(IMouse::Button button)
         {

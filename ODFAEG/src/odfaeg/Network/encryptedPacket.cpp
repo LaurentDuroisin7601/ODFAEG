@@ -3,7 +3,6 @@
 namespace odfaeg {
     namespace network {
         using namespace std;
-        using namespace sf;
         Rsa& EncryptedPacket::rsa = EncryptedPacket::getRsa();
         bool EncryptedPacket::isSrvRunning = false;
         void EncryptedPacket::setServerRunning (bool serverRunning) {

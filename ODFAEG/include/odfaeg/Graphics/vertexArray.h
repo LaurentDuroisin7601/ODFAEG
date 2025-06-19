@@ -223,7 +223,7 @@ namespace odfaeg {
     }
 } // namespace sf
 
-#endif // SFML_VERTEXARRAY_HPP
+#endif // ODFAEG_VERTEXARRAY_HPP
 
 
 ////////////////////////////////////////////////////////////

@@ -1,12 +1,12 @@
 #ifndef SRKSERVEUR_H
 #define SRKSERVEUR_H
-#include<SFML/Network.hpp>
 #include <thread>
 #include <vector>
 #include "encryptedPacket.h"
 #include "cliEncryptedPacket.hpp"
 #include "export.hpp"
 #include "network.h"
+#include "tcplistener.hpp"
 
 /**
   *\namespace odfaeg
@@ -34,11 +34,11 @@ namespace odfaeg {
                 */
                 SrkServer();
                 /**
-                * \fn sf::TcpListener& getListner() const
+                * \fn TcpListener& getListner() const
                 * \brief get the listener used to accept connections. (for the tcp protocol)
                 * \return the listener.
                 */
-                const sf::TcpListener& getListner() const;
+                const TcpListener& getListner() const;
                 /**
                 * \fn  bool isRunning();
                 * \brief if the server is running.
@@ -66,13 +66,13 @@ namespace odfaeg {
                 void checkMessages() {
                     //std::cout<<"check messages"<<std::endl;
                     if (running) {
-                        std::vector<sf::TcpSocket*>::iterator it;
+                        std::vector<TcpSocket*>::iterator it;
                         if (Network::getTimeBtw2PingsClk().getElapsedTime().asMicroseconds() >= Network::getTimeBtw2Pings()) {
                             for (it = clients.begin(); it != clients.end();it++) {
-                                sf::TcpSocket& client = **it;
+                                TcpSocket& client = **it;
                                 User* user = Network::getUser(client);
                                 if (user != nullptr && user->getRemotePortUDP()) {
-                                    sf::Packet packet;
+                                    Packet packet;
                                     packet<<"PING";
                                     user->getPingClock().restart();
                                     user->sendUdpPacket(packet);
@@ -82,11 +82,11 @@ namespace odfaeg {
                         }
                         if (Network::getTimeBtw2SyncClk().getElapsedTime().asMicroseconds() >= Network::getTimeBtw2Sync()) {
                             for (it = clients.begin(); it != clients.end();it++) {
-                                sf::TcpSocket& client = **it;
+                                TcpSocket& client = **it;
                                 User* user = Network::getUser(client);
                                 if (user != nullptr && user->getRemotePortUDP()) {
-                                    sf::Packet packet;
-                                    sf::Int64 lastSrvTime = clock.getElapsedTime().asMicroseconds();
+                                    Packet packet;
+                                    std::int64_t lastSrvTime = clock.getElapsedTime().asMicroseconds();
                                     packet<<"GET_TIME*"+core::conversionLongString(lastSrvTime);
                                     user->setLastSrvTime(lastSrvTime);
                                     user->sendUdpPacket(packet);
@@ -94,10 +94,10 @@ namespace odfaeg {
                             }
                             Network::getTimeBtw2SyncClk().restart();
                         }
-                        if (selector.wait(sf::milliseconds(10))) {
+                        if (selector.wait(core::milliseconds(10))) {
                             if (selector.isReady(listener)) {
-                                sf::TcpSocket *client = new sf::TcpSocket();
-                                if (listener.accept(*client) == sf::Socket::Done) {
+                                TcpSocket *client = new TcpSocket();
+                                if (listener.accept(*client) == Socket::Done) {
                                     std::cout<<"client connected!"<<std::endl;
                                     selector.add(*client);
                                     clients.push_back(client);
@@ -108,7 +108,7 @@ namespace odfaeg {
                             }
                             for (it = clients.begin(); it != clients.end();it++) {
 
-                                sf::TcpSocket& client = **it;
+                                TcpSocket& client = **it;
                                 if (selector.isReady(client)) {
                                     //std::cout<<"ready"<<std::endl;
                                     User* user = Network::getUser(client);
@@ -120,8 +120,8 @@ namespace odfaeg {
                                     //std::cout<<"user get"<<std::endl;
                                     if (!authentic && !cliPbKeyReceived && !pbKeyRsaSend && !pbKeySend && !pbIvSend && user != nullptr &&
                                         (!user->getRemotePortUDP() || !user->isUsingSecuredConnexion())) {
-                                        sf::Packet packet;
-                                        if (client.receive(packet) == sf::Socket::Done) {
+                                        Packet packet;
+                                        if (client.receive(packet) == Socket::Done) {
                                             //std::cout<<"packet received"<<std::endl;
                                             std::string request;
                                             packet>>request;
@@ -148,7 +148,7 @@ namespace odfaeg {
                                     }
                                     if (!authentic && cliPbKeyReceived && !pbKeyRsaSend && !pbKeySend && !pbIvSend && user != nullptr && user->getRemotePortUDP() && user->isUsingSecuredConnexion()) {
                                         CliEncryptedPacket packet;
-                                        if (client.receive(packet) == sf::Socket::Done) {
+                                        if (client.receive(packet) == Socket::Done) {
                                             //std::cout<<"packet received send client certifiate message"<<std::endl;
                                             std::string request;
                                             packet>>request;
@@ -167,7 +167,7 @@ namespace odfaeg {
                                     }
                                     if (authentic && cliPbKeyReceived && !pbKeyRsaSend && !pbKeySend && !pbIvSend &&  user != nullptr && user->getRemotePortUDP() && user->isUsingSecuredConnexion()) {
                                         CliEncryptedPacket cliEncryptedPacket;
-                                        if (client.receive(cliEncryptedPacket) == sf::Socket::Done) {
+                                        if (client.receive(cliEncryptedPacket) == Socket::Done) {
                                             //std::cout<<"packet received send pb key rsa"<<std::endl;
                                             std::string request;
                                             cliEncryptedPacket>>request;
@@ -191,7 +191,7 @@ namespace odfaeg {
                                     }
                                     if (authentic && cliPbKeyReceived && pbKeyRsaSend && !pbKeySend && !pbIvSend && user != nullptr && user->getRemotePortUDP() && user->isUsingSecuredConnexion()) {
                                         EncryptedPacket packet;
-                                        if (client.receive(packet) == sf::Socket::Done) {
+                                        if (client.receive(packet) == Socket::Done) {
                                             //std::cout<<"packet received set pb key"<<std::endl;
                                             std::string request;
                                             packet>>request;
@@ -210,7 +210,7 @@ namespace odfaeg {
                                     }
                                     if (authentic && cliPbKeyReceived && pbKeySend && pbKeyRsaSend && !pbIvSend && user != nullptr && user->getRemotePortUDP() && user->isUsingSecuredConnexion()) {
                                         EncryptedPacket packet;
-                                        if (client.receive(packet) == sf::Socket::Done) {
+                                        if (client.receive(packet) == Socket::Done) {
                                             //std::cout<<"packet received set iv"<<std::endl;
                                             std::string request;
                                             packet>>request;
@@ -231,7 +231,7 @@ namespace odfaeg {
                                     if (authentic && cliPbKeyReceived && pbKeySend && pbIvSend && pbKeyRsaSend && user != nullptr && user->getRemotePortUDP() && user->isUsingSecuredConnexion()) {
                                         //std::cout<<"sym enc packet"<<std::endl;
                                         SymEncPacket packet;
-                                        if (client.receive(packet) == sf::Socket::Done) {
+                                        if (client.receive(packet) == Socket::Done) {
                                             //std::cout<<"packet received sym enc packet"<<std::endl;
                                             std::string request;
                                             packet>>request;
@@ -251,11 +251,11 @@ namespace odfaeg {
                             }
                             //std::cout<<"end tcp"<<std::endl;
                             if (selector.isReady(udpSocket)) {
-                                sf::Packet packet;
+                                Packet packet;
                                 std::string request;
-                                sf::IpAddress sender;
+                                IpAddress sender;
                                 short unsigned int port;
-                                if (udpSocket.receive(packet, sender, port) == sf::Socket::Done) {
+                                if (udpSocket.receive(packet, sender, port) == Socket::Done) {
                                     packet>>request;
                                     User* user = Network::getUser(sender, port);
                                     if (user != nullptr) {
@@ -263,9 +263,9 @@ namespace odfaeg {
                                         if (infos[0] == "PONG") {
                                             user->addPingTime(user->getPingClock().getElapsedTime().asMicroseconds() * 0.5f);
                                         } else if (infos[0] == "SET_TIME") {
-                                            sf::Int64 cliTime = core::conversionStringLong(infos[1]);
-                                            sf::Int64 srvTime = clock.getElapsedTime().asMicroseconds();
-                                            sf::Int64 syncTime = cliTime + (srvTime - user->getLastSrvTime()) * 0.5f;
+                                            std::int64_t cliTime = core::conversionStringLong(infos[1]);
+                                            std::int64_t srvTime = clock.getElapsedTime().asMicroseconds();
+                                            std::int64_t syncTime = cliTime + (srvTime - user->getLastSrvTime()) * 0.5f;
                                             user->setClientTime(syncTime);
                                         } else {
                                             Network::addRequest(user, request);
@@ -290,15 +290,15 @@ namespace odfaeg {
                 */
                 bool running; /**> if the thread is running, and if we use a thread.*/
                 /**
-                * \fn void removeClient (sf::TcpSocket* socket);
+                * \fn void removeClient (TcpSocket* socket);
                 * \brief remove a client from the server.
                 * \param socket : the socket of the client to remove.
                 */
-                void removeClient (sf::TcpSocket* socket);
-                std::vector<sf::TcpSocket*> clients; /**> The list of the clients connected to the server.*/
-                sf::SocketSelector selector; /**> The selector.*/
-                sf::TcpListener  listener; /**> The listener used to accept new connections.*/
-                sf::UdpSocket udpSocket; /**> The udp socket.*/
+                void removeClient (TcpSocket* socket);
+                std::vector<TcpSocket*> clients; /**> The list of the clients connected to the server.*/
+                SocketSelector selector; /**> The selector.*/
+                TcpListener  listener; /**> The listener used to accept new connections.*/
+                UdpSocket udpSocket; /**> The udp socket.*/
                 core::Clock clock;
         };
     }

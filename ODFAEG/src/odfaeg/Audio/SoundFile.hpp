@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////
 //
-// SFML - Simple and Fast Multimedia Library
+// ODFAEG - Simple and Fast Multimedia Library
 // Copyright (C) 2007-2013 Laurent Gomila (laurent.gom@gmail.com)
 //
 // This software is provided 'as-is', without any express or implied warranty.
@@ -28,9 +28,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/System/NonCopyable.hpp>
-#include <SFML/System/Time.hpp>
-#include <SFML/System/InputStream.hpp>
+
 #include <sndfile.h>
 #include <string>
 #include "../../../include/odfaeg/Core/time.h"
@@ -45,7 +43,7 @@ namespace odfaeg
             /// \brief Provide read and write access to sound files
             ///
             ////////////////////////////////////////////////////////////
-            class SoundFile : sf::NonCopyable
+            class SoundFile
             {
             public :
 
@@ -114,7 +112,7 @@ namespace odfaeg
                 /// \return True if the file was successfully opened
                 ///
                 ////////////////////////////////////////////////////////////
-                bool openRead(sf::InputStream& stream);
+                bool openRead(std::istream& stream);
 
                 ////////////////////////////////////////////////////////////
                 /// \brief a the sound file for writing
@@ -137,7 +135,7 @@ namespace odfaeg
                 /// \return Number of samples actually read (may be less than \a sampleCount)
                 ///
                 ////////////////////////////////////////////////////////////
-                std::size_t read(sf::Int16* data, std::size_t sampleCount);
+                std::size_t read(std::int16_t* data, std::size_t sampleCount);
 
                 ////////////////////////////////////////////////////////////
                 /// \brief Write audio samples to the file
@@ -146,7 +144,7 @@ namespace odfaeg
                 /// \param sampleCount Number of samples to write
                 ///
                 ////////////////////////////////////////////////////////////
-                void write(const sf::Int16* data, std::size_t sampleCount);
+                void write(const std::int16_t* data, std::size_t sampleCount);
 
                 ////////////////////////////////////////////////////////////
                 /// \brief Change the current read position in the file
@@ -201,8 +199,8 @@ namespace odfaeg
                 ////////////////////////////////////////////////////////////
                 struct Stream
                 {
-                    sf::InputStream* source;
-                    sf::Int64 size;
+                    std::istream* source;
+                    std::int64_t size;
 
                     static sf_count_t getLength(void* user);
                     static sf_count_t read(void* ptr, sf_count_t count, void* user);
@@ -227,4 +225,4 @@ namespace odfaeg
 } // namespace sf
 
 
-#endif // SFML_SOUNDFILE_HPP
+#endif // ODFAEG_SOUNDFILE_HPP

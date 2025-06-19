@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////
 //
-// SFML - Simple and Fast Multimedia Library
+// ODFAEG - Simple and Fast Multimedia Library
 // Copyright (C) 2007-2013 Laurent Gomila (laurent.gom@gmail.com)
 //
 // This software is provided 'as-is', without any express or implied warranty.
@@ -31,10 +31,10 @@
 #include "../../../include/odfaeg/Graphics/texture.h"
 #include "glCheck.h"
 #include <GL/glew.h>
-#include <SFML/OpenGL.hpp>
-#include <SFML/System/Err.hpp>
+#include <ODFAEG/OpenGL.hpp>
+#include <ODFAEG/System/Err.hpp>
 #include <iostream>
-using namespace sf;
+
 namespace odfaeg {
     namespace graphic {
         namespace priv

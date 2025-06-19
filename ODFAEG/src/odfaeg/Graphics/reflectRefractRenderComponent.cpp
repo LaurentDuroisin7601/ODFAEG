@@ -2684,8 +2684,11 @@ namespace odfaeg {
                         DrawArraysIndirectCommand drawArraysIndirectCommand;
                         unsigned int p = m_normals[i].getAllVertices().getPrimitiveType();
                         MaterialData material;
-                        material.textureIndex = (m_normals[i].getMaterial().getTexture() != nullptr) ? m_normals[i].getMaterial().getTexture()->getId() : 0;
-                        materialDatas[p].push_back(material);
+                        {
+                            std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                            material.textureIndex = (m_normals[i].getMaterial().getTexture() != nullptr) ? m_normals[i].getMaterial().getTexture()->getId() : 0;
+                            materialDatas[p].push_back(material);
+                        }
                         ModelData model;
                         TransformMatrix tm;
                         model.worldMat = tm.getMatrix().transpose();
@@ -2709,9 +2712,13 @@ namespace odfaeg {
 
                     if (m_instances[i].getAllVertices().getVertexCount() > 0) {
                         DrawArraysIndirectCommand drawArraysIndirectCommand;
-                        unsigned int p = m_instances[i].getAllVertices().getPrimitiveType();MaterialData material;
-                        material.textureIndex = (m_instances[i].getMaterial().getTexture() != nullptr) ? m_instances[i].getMaterial().getTexture()->getId() : 0;
-                        material.layer = m_instances[i].getMaterial().getLayer();
+                        unsigned int p = m_instances[i].getAllVertices().getPrimitiveType();
+                        MaterialData material;
+                        {
+                            std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                            material.textureIndex = (m_instances[i].getMaterial().getTexture() != nullptr) ? m_instances[i].getMaterial().getTexture()->getId() : 0;
+                            material.layer = m_instances[i].getMaterial().getLayer();
+                        }
                         materialDatas[p].push_back(material);
                         std::vector<TransformMatrix*> tm = m_instances[i].getTransforms();
                         for (unsigned int j = 0; j < tm.size(); j++) {

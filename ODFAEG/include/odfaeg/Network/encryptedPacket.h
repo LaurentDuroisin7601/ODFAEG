@@ -1,8 +1,8 @@
 #ifndef ENCRYPTED_PACKET
 #define ENCRYPTED_PACKET
-#include <SFML/Network.hpp>
 #include "rsa.h"
 #include "export.hpp"
+#include "packet.hpp"
 /**
   *\namespace odfaeg
   * the namespace of the Opensource Development Framework Adapted for Every Games.
@@ -19,7 +19,7 @@ namespace odfaeg {
           *
           */
         class SrkClient;
-        class ODFAEG_NETWORK_API EncryptedPacket : public sf::Packet {
+        class ODFAEG_NETWORK_API EncryptedPacket : public Packet {
             public :
                 static Rsa& getRsa();
                 static int getCertificate(unsigned char** out);

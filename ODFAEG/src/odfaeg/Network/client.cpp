@@ -4,7 +4,7 @@
 #include "../../../include/odfaeg/Network/application.h"
 namespace odfaeg {
     namespace network {
-        using namespace sf;
+
         using namespace std;
         SrkClient::SrkClient () {
             running = false;
@@ -40,7 +40,7 @@ namespace odfaeg {
                 }
                 if (!certifiate && certifiateMessageSend && !pbKeyRsaReceived && !pbKeyReceived && !pbIvReceived) {
                     CliEncryptedPacket cliEncryptedPacket;
-                    if (clientTCP.receive(cliEncryptedPacket) == sf::Socket::Done) {
+                    if (clientTCP.receive(cliEncryptedPacket) == Socket::Done) {
                         std::string response;
                         cliEncryptedPacket>>response;
                         cliEncryptedPacket.clear();
@@ -159,7 +159,7 @@ namespace odfaeg {
             if (running) {
                 short unsigned int port;
                 IpAddress address;
-                if (selector.wait(microseconds(1))) {
+                if (selector.wait(core::microseconds(1))) {
                      if (selector.isReady(clientTCP)) {
                         if (useSecuredConnexion) {
                             SymEncPacket packet;
@@ -194,7 +194,7 @@ namespace odfaeg {
                                     Network::sendUdpPacket(packet);
                                 } else if (message.find("GET_TIME") != std::string::npos) {
                                     packet.clear();
-                                    sf::Int64 time = clock.getElapsedTime().asMicroseconds();
+                                    std::int64_t time = clock.getElapsedTime().asMicroseconds();
                                     message = "SET_TIME*"+core::conversionLongString(time);
                                     packet<<message;
                                     Network::sendUdpPacket(packet);

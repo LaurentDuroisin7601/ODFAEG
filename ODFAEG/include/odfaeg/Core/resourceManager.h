@@ -705,8 +705,10 @@ namespace odfaeg {
         class Shader;
     }
 }
-namespace sf {
-    class SoundBuffer;
+namespace odfaeg {
+    namespace audio {
+        class SoundBuffer;
+    }
 }
 ////////////////
 namespace odfaeg {
@@ -714,7 +716,7 @@ namespace odfaeg {
         template <typename I=std::string> using TextureManager = ResourceManager<odfaeg::graphic::Texture, I>;
         template <typename I=std::string> using ShaderManager = ResourceManager<odfaeg::graphic::Shader, I>;
         template <typename I=std::string> using FontManager = ResourceManager<odfaeg::graphic::Font, I>;
-        template <typename I=std::string> using SoundBufferManager = ResourceManager<sf::SoundBuffer, I>;
+        template <typename I=std::string> using SoundBufferManager = ResourceManager<odfaeg::audio::SoundBuffer, I>;
     }
 }
 

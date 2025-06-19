@@ -4,8 +4,8 @@
 #ifdef  VULKAN
 #include "../vkSettup.hpp"
 #include "../iWindow.hpp"
-#include <SFML/System.hpp>
-#include <SFML/Window.hpp>
+#include <ODFAEG/System.hpp>
+#include <ODFAEG/Window.hpp>
 #include "../../Core/erreur.h"
 #include <glfw/glfw3.h>
 #include <queue>
@@ -110,7 +110,7 @@ namespace odfaeg {
             /// If a limit is set, the window will use a small delay after
             /// each call to display() to ensure that the current frame
             /// lasted long enough to match the framerate limit.
-            /// SFML will try to match the given limit as much as it can,
+            /// ODFAEG will try to match the given limit as much as it can,
             /// but since it internally uses sf::sleep, whose precision
             /// depends on the underlying OS, the results may be a little
             /// unprecise as well (for example, you can get 65 FPS when
@@ -184,7 +184,7 @@ namespace odfaeg {
             /// The type of the returned handle is sf::WindowHandle,
             /// which is a typedef to the handle type defined by the OS.
             /// You shouldn't need to use this function, unless you have
-            /// very specific stuff to implement that SFML doesn't support,
+            /// very specific stuff to implement that ODFAEG doesn't support,
             /// or implement a temporary workaround until a bug is fixed.
             ///
             /// \return System handle of the window

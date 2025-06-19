@@ -1,10 +1,10 @@
 ////////////////////////////////////////////////////////////
 //
-// /!\ Important : this class is a modification of the circle shape class of the SFML
+// /!\ Important : this class is a modification of the circle shape class of the ODFAEG
 // that I've adapted for odfaeg with 3D vertices.
-// Here is the license and the author of the SFML library.
+// Here is the license and the author of the ODFAEG library.
 //
-// SFML - Simple and Fast Multimedia Library
+// ODFAEG - Simple and Fast Multimedia Library
 // Copyright (C) 2007-2013 Laurent Gomila (laurent.gom@gmail.com)
 //
 // This software is provided 'as-is', without any express or implied warranty.
@@ -636,7 +636,7 @@ namespace odfaeg {
             /// \brief Bind a shader for rendering
             ///
             /// This function is not part of the graphics API, it mustn't be
-            /// used when drawing SFML entities. It must be used only if you
+            /// used when drawing ODFAEG entities. It must be used only if you
             /// mix sf::Shader with OpenGL code.
             ///
             /// \code
@@ -727,7 +727,7 @@ namespace odfaeg {
 } // namespace sf
 
 
-#endif // SFML_SHADER_HPP
+#endif // ODFAEG_SHADER_HPP
 
 
 ////////////////////////////////////////////////////////////
@@ -749,7 +749,7 @@ namespace odfaeg {
 /// Shaders are written in GLSL, which is a C-like
 /// language dedicated to OpenGL shaders. You'll probably
 /// need to learn its basics before writing your own shaders
-/// for SFML.
+/// for ODFAEG.
 ///
 /// Like any C/C++ program, a shader has its own variables
 /// that you can set from your C++ application. sf::Shader
@@ -803,7 +803,7 @@ namespace odfaeg {
 ///
 /// Shaders can also be used to apply global post-effects to the
 /// current contents of the target (like the old sf::PostFx class
-/// in SFML 1). This can be done in two different ways:
+/// in ODFAEG 1). This can be done in two different ways:
 /// \li draw everything to a sf::RenderTexture, then draw it to
 ///     the main target using the shader
 /// \li draw everything directly to the main target, then use

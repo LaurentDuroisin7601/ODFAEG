@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////
 //
-// SFML - Simple and Fast Multimedia Library
+// ODFAEG - Simple and Fast Multimedia Library
 // Copyright (C) 2007-2013 Laurent Gomila (laurent.gom@gmail.com)
 //
 // This software is provided 'as-is', without any express or implied warranty.
@@ -34,11 +34,11 @@
 #ifndef VULKAN
 #include "glCheck.h"
 #include <GL/glew.h>
-#include <SFML/OpenGL.hpp>
+#include <ODFAEG/OpenGL.hpp>
 #else
 #include <shaderc/shaderc.hpp>
 #endif // VULKAN
-using namespace sf;
+
 
 namespace
 {
@@ -83,11 +83,7 @@ namespace
             unsigned int size = stream.tellg();
             stream.seekg(0, stream.beg);
             buffer.resize(size);
-            size = 0;
-            while (!stream.eof()) {
-                stream>>buffer[size];
-                size++;
-            }
+            stream.read(buffer.data(), size);
             return (size > 0);
     }
 }

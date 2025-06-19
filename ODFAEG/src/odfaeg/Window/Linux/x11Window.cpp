@@ -1,4 +1,4 @@
-#include <SFML/Window/WindowStyle.hpp>
+#include <ODFAEG/Window/WindowStyle.hpp>
 #include "../../../../include/odfaeg/Window/Linux/x11Window.hpp"
 #include <iostream>
 #include <chrono>
@@ -424,7 +424,7 @@ namespace {
 }
 namespace odfaeg {
     namespace window {
-        using namespace sf;
+
         X11Window::X11Window() :
         m_window         (0),
         m_screen         (0),
@@ -996,9 +996,9 @@ namespace odfaeg {
         ////////////////////////////////////////////////////////////
         void X11Window::requestFocus()
         {
-            // Focus is only stolen among SFML windows, not between applications
-            // Check the global list of windows to find out whether an SFML window has the focus
-            // Note: can't handle console and other non-SFML windows belonging to the application.
+            // Focus is only stolen among ODFAEG windows, not between applications
+            // Check the global list of windows to find out whether an ODFAEG window has the focus
+            // Note: can't handle console and other non-ODFAEG windows belonging to the application.
             bool sfmlWindowFocused = false;
 
             {
@@ -1026,7 +1026,7 @@ namespace odfaeg {
 
             if (sfmlWindowFocused && windowViewable)
             {
-                // Another SFML window of this application has the focus and the current window is viewable:
+                // Another ODFAEG window of this application has the focus and the current window is viewable:
                 // steal focus (i.e. bring window to the front and give it input focus)
                 grabFocus();
             }
@@ -1618,7 +1618,7 @@ namespace odfaeg {
                 // Try each KeySym index (modifier group) until we get a match
                 for (int i = 0; i < 4; ++i)
                 {
-                    // Get the SFML keyboard code from the keysym of the key that has been pressed
+                    // Get the ODFAEG keyboard code from the keysym of the key that has been pressed
                     key = keysymToODFAEG(XLookupKeysym(&xevent.xkey, i));
 
                     if (key != IKeyboard::Unknown)
@@ -1694,7 +1694,7 @@ namespace odfaeg {
                 // Try each KeySym index (modifier group) until we get a match
                 for (int i = 0; i < 4; ++i)
                 {
-                    // Get the SFML keyboard code from the keysym of the key that has been pressed
+                    // Get the ODFAEG keyboard code from the keysym of the key that has been pressed
                     key = keysymToODFAEG(XLookupKeysym(&xevent.xkey, i));
 
                     if (key != IKeyboard::Unknown)

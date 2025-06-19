@@ -1,10 +1,10 @@
-#ifndef ODFAEG_SFML_CONTEXT_IMPL_HPP
-#define ODFAEG_SFML_CONTEXT_IMPL_HPP
-#include <SFML/Window/Context.hpp>
+#ifndef ODFAEG_ODFAEG_CONTEXT_IMPL_HPP
+#define ODFAEG_ODFAEG_CONTEXT_IMPL_HPP
+#include <ODFAEG/Window/Context.hpp>
 #include "../iContext.hpp"
 namespace odfaeg {
     namespace window {
-        class ODFAEG_WINDOW_API SFMLContextImpl : public IContext {
+        class ODFAEG_WINDOW_API ODFAEGContextImpl : public IContext {
         public :
             void create(IContext* sharedContext=nullptr);
             bool setActive(bool active);

@@ -1,11 +1,12 @@
 #ifndef ODFAEG_USER_HPP
 #define ODFAEG_USER_HPP
-#include <SFML/Network.hpp>
 #include "../Core/utilities.h"
 #include "export.hpp"
 
 #include <condition_variable>
 #include "../Core/clock.h"
+#include "tcpsocket.hpp"
+#include "updsocket.hpp"
 /**
   *\namespace odfaeg
   * the namespace of the Opensource Development Framework Adapted for Every Games.
@@ -26,7 +27,7 @@ namespace odfaeg {
                 * \fn User(sf::TcpSocket &socketTCP, sf::UdpSocket &socketUDP)
                 * \brief constructor.
                 */
-                User(sf::TcpSocket &socketTCP, sf::UdpSocket &socketUDP);
+                User(TcpSocket &socketTCP, UdpSocket &socketUDP);
                 void setChannel(int channel);
                 /**
                 * \fn void setRemotePortUDP (short unsigned int port)
@@ -47,15 +48,15 @@ namespace odfaeg {
                 */
                 short unsigned int getRemotePortUDP ();
                 /**
-                * \fn void sendTcpPacket(sf::Packet &packet)
-                * \brief send a sf::Packet to the client using the tcp protocol.
+                * \fn void sendTcpPacket(Packet &packet)
+                * \brief send a Packet to the client using the tcp protocol.
                 */
-                void sendTcpPacket(sf::Packet &packet);
+                void sendTcpPacket(Packet &packet);
                 /**
-                * \fn void sendUdpPacket(sf::Packet &packet)
-                * \brief send a sf::Packet to the client using the udp protocol.
+                * \fn void sendUdpPacket(Packet &packet)
+                * \brief send a Packet to the client using the udp protocol.
                 */
-                void sendUdpPacket(sf::Packet &packet);
+                void sendUdpPacket(Packet &packet);
                 /**
                 * \fn bool hPbKey()
                 * \brief if the user have a public key for aes encryption.
@@ -116,19 +117,19 @@ namespace odfaeg {
                 * \brief get the ip address of the user.
                 * \return the ip address of the user.
                 */
-                sf::IpAddress getIpAddress ();
+                IpAddress getIpAddress ();
                 /**
                 * \fn sf::TcpSocket& getTcpSocket()
                 * \brief get the tcp socket of the user.
                 * \return the tcp socket of the user.
                 */
-                sf::TcpSocket& getTcpSocket();
+                TcpSocket& getTcpSocket();
                  /**
                 * \fn sf::UdpSocket& getUdpSocket()
                 * \brief get the udp socket of the user.
                 * \return the udp socket of the user.
                 */
-                sf::UdpSocket& getUdpSocket();
+                UdpSocket& getUdpSocket();
                 /**
                 * \fn core::Clock& getPingClock()
                 * \brief get clock with measure the ping.
@@ -152,9 +153,9 @@ namespace odfaeg {
                 virtual ~User ();
             private :
                 bool useSecuredConnexion; /**> Use an SSL connection ?*/
-                sf::TcpSocket &clientTCP; /**> The tcp socket.*/
-                sf::UdpSocket &clientUDP; /**> The udp socket.*/
-                sf::IpAddress address; /**> The ip address of the user. */
+                TcpSocket &clientTCP; /**> The tcp socket.*/
+                UdpSocket &clientUDP; /**> The udp socket.*/
+                IpAddress address; /**> The ip address of the user. */
                 short unsigned int remotePortUDP; /**> the remote upd port.*/
                 bool hasPbKey, hasPbIv, hasPbKeyRsa, certifiate, cliPbKeyReceived; /**> Have a public key for the rsa and for the aes encryption . */
                 std::vector<std::int64_t> pings; /**> The n last pings stored to make the average.*/

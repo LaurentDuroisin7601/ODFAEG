@@ -3,8 +3,8 @@
 #include <X11/Xlib.h>
 #include <string>
 #include <map>
-#include <SFML/System/Mutex.hpp>
-#include <SFML/System/Lock.hpp>
+#include <ODFAEG/System/Mutex.hpp>
+#include <ODFAEG/System/Lock.hpp>
 #include <cassert>
 #include "../export.hpp"
 /**

@@ -4,7 +4,7 @@
 //#include "../../../include/odfaeg/Graphics/glExtensions.hpp"
 #ifndef VULKAN
 #include <GL/glew.h>
-#include <SFML/OpenGL.hpp>
+#include <ODFAEG/OpenGL.hpp>
 #include "glCheck.h"
 #endif
 
@@ -71,7 +71,7 @@ namespace
 }
 namespace odfaeg {
     namespace graphic {
-        using namespace sf;
+
         #ifdef VULKAN
         unsigned int RenderTarget::nbBuffers = 0;
         std::vector<VertexBuffer*> RenderTarget::vertexBuffers =  std::vector<VertexBuffer*>();
@@ -1176,7 +1176,7 @@ namespace odfaeg {
                     applyBlendMode(states.blendMode);
 
                 // Apply the texture
-                sf::Uint64 textureId = states.texture ? states.texture->getNativeHandle() : 0;
+                sf::std:::uint64_t textureId = states.texture ? states.texture->getNativeHandle() : 0;
                 if (textureId != m_cache.lastTextureId)
                     applyTexture(states.texture);
                 // Apply the shader
@@ -1214,7 +1214,7 @@ namespace odfaeg {
                     applyBlendMode(states.blendMode);
 
                 // Apply the texture
-                sf::Uint64 textureId = states.texture ? states.texture->getNativeHandle() : 0;
+                sf::std:::uint64_t textureId = states.texture ? states.texture->getNativeHandle() : 0;
                 if (textureId != m_cache.lastTextureId)
                     applyTexture(states.texture);
                 // Apply the shader
@@ -1417,7 +1417,7 @@ namespace odfaeg {
                     applyBlendMode(states.blendMode);
 
                 // Apply the texture
-                sf::Uint64 textureId = states.texture ? states.texture->getNativeHandle() : 0;
+                sf::std:::uint64_t textureId = states.texture ? states.texture->getNativeHandle() : 0;
                 if (textureId != m_cache.lastTextureId)
                     applyTexture(states.texture);
                 // Apply the shader
@@ -1558,7 +1558,7 @@ namespace odfaeg {
                     applyBlendMode(states.blendMode);
 
                 // Apply the texture
-                sf::Uint64 textureId = states.texture ? states.texture->getNativeHandle() : 0;
+                sf::std:::uint64_t textureId = states.texture ? states.texture->getNativeHandle() : 0;
                 if (textureId != m_cache.lastTextureId)
                     applyTexture(states.texture);
                 // Apply the shader
@@ -1646,7 +1646,7 @@ namespace odfaeg {
                     applyBlendMode(states.blendMode);
 
                 // Apply the texture
-                sf::Uint64 textureId = states.texture ? states.texture->getNativeHandle() : 0;
+                sf::std:::uint64_t textureId = states.texture ? states.texture->getNativeHandle() : 0;
                 if (textureId != m_cache.lastTextureId)
                     applyTexture(states.texture);
                 // Apply the shader
@@ -1904,7 +1904,7 @@ namespace odfaeg {
 
                 m_cache.glStatesSet = true;
 
-                // Apply the default SFML states
+                // Apply the default ODFAEG states
                 applyBlendMode(BlendAlpha);
                 TransformMatrix tm;
                 applyTransform(tm);

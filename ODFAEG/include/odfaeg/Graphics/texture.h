@@ -1,10 +1,10 @@
 ////////////////////////////////////////////////////////////
 //
-// /!\ Important : this class is a modification of the circle shape class of the SFML
+// /!\ Important : this class is a modification of the circle shape class of the ODFAEG
 // that I've adapted for odfaeg with 3D vertices.
-// Here is the license and the author of the SFML library.
+// Here is the license and the author of the ODFAEG library.
 //
-// SFML - Simple and Fast Multimedia Library
+// ODFAEG - Simple and Fast Multimedia Library
 // Copyright (C) 2007-2013 Laurent Gomila (laurent.gom@gmail.com)
 //
 // This software is provided 'as-is', without any express or implied warranty.
@@ -527,7 +527,7 @@ namespace odfaeg
             /// \brief Bind a texture for rendering
             ///
             /// This function is not part of the graphics API, it mustn't be
-            /// used when drawing SFML entities. It must be used only if you
+            /// used when drawing ODFAEG entities. It must be used only if you
             /// mix sf::Texture with OpenGL code.
             ///
             /// \code
@@ -546,7 +546,7 @@ namespace odfaeg
             /// must be in range [0 .. 1], which is the default way of handling
             /// texture coordinates with OpenGL. If Pixels, they must be given
             /// in pixels (range [0 .. size]). This mode is used internally by
-            /// the graphics classes of SFML, it makes the definition of texture
+            /// the graphics classes of ODFAEG, it makes the definition of texture
             /// coordinates more intuitive for the high-level API, users don't need
             /// to compute normalized values.
             ///
@@ -637,7 +637,7 @@ namespace odfaeg
             bool         m_isSmooth;      ///< Status of the smooth filter
             bool         m_isRepeated;    ///< Is the texture in repeat mode?
             mutable bool m_pixelsFlipped; ///< To work around the inconsistency in Y orientation
-            sf::Uint64       m_cacheId;       ///< Unique number that identifies the texture to the render target's cache
+            sf::std:::uint64_t       m_cacheId;       ///< Unique number that identifies the texture to the render target's cache
             bool m_isCubeMap;
             std::string m_name;
             bool textureResident;
@@ -648,7 +648,7 @@ namespace odfaeg
         #endif
     }
 } // namespace sf
-#endif // SFML_TEXTURE_HPP
+#endif // ODFAEG_TEXTURE_HPP
 
 ////////////////////////////////////////////////////////////
 /// \class sf::Texture

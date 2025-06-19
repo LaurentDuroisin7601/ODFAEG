@@ -35,7 +35,7 @@
 
 namespace
 {
-    unsigned int               windowCount      = 0; // Windows owned by SFML
+    unsigned int               windowCount      = 0; // Windows owned by ODFAEG
     unsigned int               handleCount      = 0; // All window handles
     const wchar_t*             className        = L"ODFAEG_Window";
     odfaeg::window::Win32Window* fullscreenWindow = NULL;
@@ -99,7 +99,7 @@ namespace
 }
 namespace odfaeg {
     namespace window {
-        using namespace sf;
+
         Win32Window::Win32Window() :
         m_handle          (NULL),
         m_callback        (0),

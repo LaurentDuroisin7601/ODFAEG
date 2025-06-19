@@ -26,10 +26,32 @@ set(SRC
 	${INCROOT}/application.h
 	${SRCROOT}/application.cpp
 	${INCROOT}/ECS/application.hpp
-	${SRCROOT}/ECS/application.cpp)	
+	${SRCROOT}/ECS/application.cpp
+	${INCROOT}/packet.hpp
+	${SRCROOT}/packet.cpp
+	${INCROOT}/socket.hpp
+	${SRCROOT}/socket.cpp
+	${INCROOT}/http.hpp
+	${SRCROOT}/http.cpp
+	${INCROOT}/ipaddress.hpp
+	${SRCROOT}/ipaddress.cpp
+	${INCROOT}/socketselector.hpp
+	${SRCROOT}/socketselector.cpp
+	${INCROOT}/tcpsocket.hpp
+	${SRCROOT}/tcpsocket.cpp
+	${INCROOT}/tcplistener.hpp
+	${SRCROOT}/tcplistener.cpp
+	${INCROOT}/updsocket.hpp
+	${SRCROOT}/updsocket.cpp
+	)
+        if (WIN32)
+        set(PLATEFORM_SRC
+        ${INCROOT}/Windows/socketImpl.hpp
+	${SRCROOT}/Windows/socketImpl.cpp)
+        endif()	
 #find_package (OpenSSL 1 REQUIRED)
 include_directories(${CMAKE_INCLUDE_PATH} ${OPENSSL_INCLUDE_DIR})
 link_directories(${CMAKE_LIBRARY_PATH})
 sfgl_add_library(odfaeg-network
-			 SOURCES ${SRC})
+			 SOURCES ${SRC} ${PLATEFORM_SRC})
 target_link_libraries (odfaeg-network odfaeg-graphics odfaeg-window odfaeg-physics odfaeg-math odfaeg-core sfml-network sfml-audio sfml-graphics sfml-window sfml-system libssl libcrypto)

@@ -3,7 +3,7 @@
 #include "../../../include/odfaeg/openGL.hpp"
 namespace odfaeg {
     namespace graphic {
-        using namespace sf;
+
         View::View () : viewport(0, 0, 0, 2, 2, 1), depth(1) {
             setPerspective(-1, 1, -1, 1, 0, 1);
             up = math::Vec3f(0, 1, 0);

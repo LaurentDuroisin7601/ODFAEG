@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////
 //
-// SFML - Simple and Fast Multimedia Library
+// ODFAEG - Simple and Fast Multimedia Library
 // Copyright (C) 2007-2013 Laurent Gomila (laurent.gom@gmail.com)
 //
 // This software is provided 'as-is', without any express or implied warranty.
@@ -29,9 +29,9 @@
 #ifndef VULKAN
 #include "glCheck.h"
 #include "textureSaver.h"
-#include <SFML/System/Err.hpp>
+#include <ODFAEG/System/Err.hpp>
 
-using namespace sf;
+
 namespace odfaeg {
     namespace graphic {
         namespace priv

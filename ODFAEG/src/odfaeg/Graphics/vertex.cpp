@@ -2,7 +2,7 @@
 
 namespace odfaeg {
     namespace graphic {
-        using namespace sf;
+
         Vertex::Vertex() :
         position (0, 0, 0),
         color    (255, 255, 255),

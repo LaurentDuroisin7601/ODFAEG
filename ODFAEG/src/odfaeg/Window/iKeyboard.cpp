@@ -1,6 +1,6 @@
 #include "../../../include/odfaeg/Window/iKeyboard.hpp"
-#if defined (SFML)
-#include "../../../include/odfaeg/Window/SFML/sfmlKeyboard.hpp"
+#if defined (ODFAEG)
+#include "../../../include/odfaeg/Window/ODFAEG/sfmlKeyboard.hpp"
 #else
 #if defined (ODFAEG_SYSTEM_LINUX)
 #include "../../../include/odfaeg/Window/Linux/x11Keyboard.hpp"
@@ -11,8 +11,8 @@
 namespace odfaeg {
     namespace window {
         bool IKeyboard::isKeyPressed(Key key) {
-            #if defined (SFML)
-                return SFMLKeyboard::isKeyPressed(key);
+            #if defined (ODFAEG)
+                return ODFAEGKeyboard::isKeyPressed(key);
             #else
             #if defined(ODFAEG_SYSTEM_LINUX)
                 return X11Keyboard::isKeyPressed(key);

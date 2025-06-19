@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////
 //
-// SFML - Simple and Fast Multimedia Library
+// ODFAEG - Simple and Fast Multimedia Library
 // Copyright (C) 2007-2013 Laurent Gomila (laurent.gom@gmail.com)
 //
 // This software is provided 'as-is', without any express or implied warranty.
@@ -30,7 +30,7 @@
 ////////////////////////////////////////////////////////////
 #include "../../../include/odfaeg/config.hpp"
 #ifndef VULKAN
-#include <SFML/System/NonCopyable.hpp>
+#include <ODFAEG/System/NonCopyable.hpp>
 #include "../../../include/odfaeg/Window/contextSettings.hpp"
 namespace odfaeg
 {
@@ -82,4 +82,4 @@ namespace odfaeg
 #endif
 
 
-#endif // SFML_RENDERTEXTUREIMPL_HPP
+#endif // ODFAEG_RENDERTEXTUREIMPL_HPP

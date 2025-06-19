@@ -4,11 +4,11 @@
 //
 ////////////////////////////////////////////////////////////
 //
-// /!\ Important : this class is a modification of the circle shape class of the SFML
+// /!\ Important : this class is a modification of the circle shape class of the ODFAEG
 // that I've adapted for odfaeg with 3D vertices.
-// Here is the license and the author of the SFML library.
+// Here is the license and the author of the ODFAEG library.
 //
-// SFML - Simple and Fast Multimedia Library
+// ODFAEG - Simple and Fast Multimedia Library
 // Copyright (C) 2007-2013 Laurent Gomila (laurent.gom@gmail.com)
 //
 // This software is provided 'as-is', without any express or implied warranty.
@@ -159,7 +159,7 @@ namespace odfaeg
             ////////////////////////////////////////////////////////////
             /// \brief Construct the window from an existing control
             ///
-            /// Use this constructor if you want to create an SFML
+            /// Use this constructor if you want to create an ODFAEG
             /// rendering area into an already existing control.
             ///
             /// The fourth parameter is an optional structure specifying
@@ -245,5 +245,5 @@ namespace odfaeg
 } // namespace odfaeg
 
 
-#endif // SFML_RENDERWINDOW_HPP
+#endif // ODFAEG_RENDERWINDOW_HPP
 

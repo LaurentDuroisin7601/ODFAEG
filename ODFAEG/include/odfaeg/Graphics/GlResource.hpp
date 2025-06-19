@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////
 //
-// SFML - Simple and Fast Multimedia Library
+// ODFAEG - Simple and Fast Multimedia Library
 // Copyright (C) 2007-2013 Laurent Gomila (laurent.gom@gmail.com)
 //
 // This software is provided 'as-is', without any express or implied warranty.
@@ -28,7 +28,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/Export.hpp>
+#include <ODFAEG/Window/Export.hpp>
 
 
 namespace odfaeg
@@ -63,7 +63,7 @@ protected :
 } // namespace sf
 
 
-#endif // SFML_GLRESOURCE_HPP
+#endif // ODFAEG_GLRESOURCE_HPP
 
 ////////////////////////////////////////////////////////////
 /// \class sf::GlResource

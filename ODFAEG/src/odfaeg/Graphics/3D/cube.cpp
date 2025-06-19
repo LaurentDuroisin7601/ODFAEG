@@ -2,7 +2,7 @@
 namespace odfaeg {
     namespace graphic {
         namespace g3d {
-            using namespace sf;
+
             Cube::Cube (math::Vec3f position, float w, float h, float d, Color color, EntityFactory& factory) : GameObject(position,math::Vec3f(w, h, d),math::Vec3f(w*0.5f,h*0.5f,d*0.5f),"E_CUBE", factory) {
                 m_color = color;
                 //Droite.

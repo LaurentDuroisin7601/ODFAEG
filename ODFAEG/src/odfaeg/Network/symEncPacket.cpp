@@ -3,7 +3,6 @@
 namespace odfaeg {
     namespace network {
         using namespace std;
-        using namespace sf;
         AES_ENC SymEncPacket::aes = AES_ENC();
         const void* SymEncPacket::onSend (size_t& dataSize) {
             unsigned char* buffer;

@@ -3,7 +3,6 @@
 
 namespace odfaeg {
     namespace network {
-        using namespace sf;
         using namespace std;
 
         SrkServer::SrkServer()

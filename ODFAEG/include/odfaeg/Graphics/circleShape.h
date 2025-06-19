@@ -1,10 +1,10 @@
 ////////////////////////////////////////////////////////////
 //
-// /!\ Important : this class is a modification of the circle shape class of the SFML
+// /!\ Important : this class is a modification of the circle shape class of the ODFAEG
 // that I've adapted for odfaeg with 3D vertices.
-// Here is the license and the author of the SFML library.
+// Here is the license and the author of the ODFAEG library.
 //
-// SFML - Simple and Fast Multimedia Library
+// ODFAEG - Simple and Fast Multimedia Library
 // Copyright (C) 2007-2013 Laurent Gomila (laurent.gom@gmail.com)
 //
 // This software is provided 'as-is', without any express or implied warranty.
@@ -122,7 +122,7 @@ namespace odfaeg
 }
 
 
-#endif // SFML_CIRCLSHAPE_HPP
+#endif // ODFAEG_CIRCLSHAPE_HPP
 
 //////////////////////////////////////////////////////
 

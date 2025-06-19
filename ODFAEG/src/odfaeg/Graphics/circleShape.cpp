@@ -1,5 +1,5 @@
 #include "../../../include/odfaeg/Graphics/circleShape.h"
-using namespace sf;
+
 namespace odfaeg {
     namespace graphic {
             ////////////////////////////////////////////////////////////

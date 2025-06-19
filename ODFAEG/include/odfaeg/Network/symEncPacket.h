@@ -1,11 +1,11 @@
 #ifndef SYM_ENC_PACKET
 #define SYM_ENC_PACKET
-#include <SFML/Network.hpp>
 #include "aes.h"
 #include "export.hpp"
+#include "packet.hpp"
 namespace odfaeg {
     namespace network {
-        class ODFAEG_NETWORK_API SymEncPacket : public sf::Packet {
+        class ODFAEG_NETWORK_API SymEncPacket : public Packet {
             public :
                 static char* getKey() {
                     return aes.ossl_getKey();

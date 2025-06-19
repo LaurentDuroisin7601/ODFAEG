@@ -1,5 +1,5 @@
 #include "../../../include/odfaeg/Graphics/sprite.h"
-using namespace sf;
+
 namespace odfaeg {
     namespace graphic {
         ////////////////////////////////////////////////////////////

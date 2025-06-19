@@ -1,10 +1,10 @@
 #include "../../../../include/odfaeg/Graphics/ECS/shadowRenderComponent.hpp"
 #ifndef VULKAN
-#include <SFML/OpenGL.hpp>
+#include <ODFAEG/OpenGL.hpp>
 #include "../glCheck.h"
 #endif
 #include <memory.h>
-using namespace sf;
+
 using namespace std;
 namespace odfaeg {
     namespace graphic {

@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////
 //
-// SFML - Simple and Fast Multimedia Library
+// ODFAEG - Simple and Fast Multimedia Library
 // Copyright (C) 2007-2014 Laurent Gomila (laurent.gom@gmail.com)
 //
 // This software is provided 'as-is', without any express or implied warranty.
@@ -39,7 +39,7 @@
 #ifdef VULKAN
 
 #endif // VULKAN
-using namespace sf;
+
 namespace
 {
     // FreeType callbacks that operate on a sf::InputStream
@@ -100,7 +100,7 @@ namespace odfaeg
         m_refCount (NULL),
         m_info     ()
         {
-            #ifdef SFML_SYSTEM_ANDROID
+            #ifdef ODFAEG_SYSTEM_ANDROID
                 m_stream = NULL;
             #endif
         }
@@ -118,7 +118,7 @@ namespace odfaeg
         m_pages      (copy.m_pages),
         m_pixelBuffer(copy.m_pixelBuffer)
         {
-            #ifdef SFML_SYSTEM_ANDROID
+            #ifdef ODFAEG_SYSTEM_ANDROID
                 m_stream = NULL;
             #endif
 
@@ -135,7 +135,7 @@ namespace odfaeg
         {
             cleanup();
 
-            #ifdef SFML_SYSTEM_ANDROID
+            #ifdef ODFAEG_SYSTEM_ANDROID
 
             if (m_stream)
                 delete (priv::ResourceStream*)m_stream;
@@ -147,7 +147,7 @@ namespace odfaeg
         ////////////////////////////////////////////////////////////
         bool Font::loadFromFile(const std::string& filename)
         {
-            #ifndef SFML_SYSTEM_ANDROID
+            #ifndef ODFAEG_SYSTEM_ANDROID
 
             // Cleanup the previous resources
             cleanup();
@@ -359,7 +359,7 @@ namespace odfaeg
             GlyphTable& glyphs = m_pages[characterSize]->glyphs;
 
             // Build the key by combining the glyph index (based on code point), bold flag, and outline thickness
-            Uint64 key = combine(outlineThickness, bold, FT_Get_Char_Index(static_cast<FT_Face>(m_face), codePoint));
+            std::uint64_t key = combine(outlineThickness, bold, FT_Get_Char_Index(static_cast<FT_Face>(m_face), codePoint));
 
             // Search the glyph into the cache
             GlyphTable::const_iterator it = glyphs.find(key);
@@ -490,7 +490,7 @@ namespace odfaeg
             std::swap(m_pages,       temp.m_pages);
             std::swap(m_pixelBuffer, temp.m_pixelBuffer);
 
-            #ifdef SFML_SYSTEM_ANDROID
+            #ifdef ODFAEG_SYSTEM_ANDROID
                 std::swap(m_stream, temp.m_stream);
             #endif
 
@@ -843,7 +843,7 @@ namespace odfaeg
         m_refCount (NULL),
         m_info     ()
         {
-            #ifdef SFML_SYSTEM_ANDROID
+            #ifdef ODFAEG_SYSTEM_ANDROID
                 m_stream = NULL;
             #endif
         }
@@ -860,7 +860,7 @@ namespace odfaeg
         m_pages      (copy.m_pages),
         m_pixelBuffer(copy.m_pixelBuffer)
         {
-            #ifdef SFML_SYSTEM_ANDROID
+            #ifdef ODFAEG_SYSTEM_ANDROID
                 m_stream = NULL;
             #endif
 
@@ -877,7 +877,7 @@ namespace odfaeg
         {
             cleanup();
 
-            #ifdef SFML_SYSTEM_ANDROID
+            #ifdef ODFAEG_SYSTEM_ANDROID
 
             if (m_stream)
                 delete (priv::ResourceStream*)m_stream;
@@ -889,7 +889,7 @@ namespace odfaeg
         ////////////////////////////////////////////////////////////
         bool Font::loadFromFile(const std::string& filename)
         {
-            #ifndef SFML_SYSTEM_ANDROID
+            #ifndef ODFAEG_SYSTEM_ANDROID
 
             // Cleanup the previous resources
             cleanup();
@@ -1101,7 +1101,7 @@ namespace odfaeg
             GlyphTable& glyphs = m_pages[characterSize].glyphs;
 
             // Build the key by combining the glyph index (based on code point), bold flag, and outline thickness
-            Uint64 key = combine(outlineThickness, bold, FT_Get_Char_Index(static_cast<FT_Face>(m_face), codePoint));
+            std:::uint64_t key = combine(outlineThickness, bold, FT_Get_Char_Index(static_cast<FT_Face>(m_face), codePoint));
 
             // Search the glyph into the cache
             GlyphTable::const_iterator it = glyphs.find(key);
@@ -1230,7 +1230,7 @@ namespace odfaeg
             std::swap(m_pages,       temp.m_pages);
             std::swap(m_pixelBuffer, temp.m_pixelBuffer);
 
-            #ifdef SFML_SYSTEM_ANDROID
+            #ifdef ODFAEG_SYSTEM_ANDROID
                 std::swap(m_stream, temp.m_stream);
             #endif
 

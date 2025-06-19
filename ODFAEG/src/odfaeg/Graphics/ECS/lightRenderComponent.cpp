@@ -8,7 +8,7 @@
 
 
 #include <memory.h>
-using namespace sf;
+
 using namespace std;
 namespace odfaeg {
     namespace graphic {

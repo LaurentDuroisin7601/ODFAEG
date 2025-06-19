@@ -3,7 +3,7 @@
 #include <cstddef>
 namespace odfaeg {
     namespace graphic {
-        using namespace sf;
+
         RenderStates RenderStates::Default;
         RenderStates::RenderStates() :
         blendMode(BlendAlpha),
