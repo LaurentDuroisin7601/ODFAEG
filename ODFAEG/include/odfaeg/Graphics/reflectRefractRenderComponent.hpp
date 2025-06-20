@@ -217,6 +217,7 @@ namespace odfaeg {
             VkFence computeFence;
             VkSemaphore computeSemaphore;
             std::vector<VkSemaphore> renderFinishedSemaphore;
+            std::vector<VkSemaphore> clearFinishedSemaphore;
             RenderWindow& window;
         };
         #else

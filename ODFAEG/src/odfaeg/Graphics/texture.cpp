@@ -93,6 +93,7 @@ namespace odfaeg {
                 }
             }
             nbTextures++;
+
         }
         Texture::Texture (Texture&& tex) : vkDevice(tex.vkDevice),
         textureImage(std::exchange(tex.textureImage, nullptr)),
@@ -106,8 +107,11 @@ namespace odfaeg {
         }
         bool Texture::create(uint32_t texWidth, uint32_t texHeight, bool FBOAttachment) {
             createImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
-            if (FBOAttachment)
-                transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+            if (FBOAttachment) {
+                VkCommandBuffer cmd = beginSingleTimeCommands();
+                transitionImageLayout(cmd, textureImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+                endSingleTimeCommands(cmd);
+            }
             createTextureImageView(VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
             createTextureSampler();
             isFBOTexture = FBOAttachment;
@@ -117,7 +121,9 @@ namespace odfaeg {
             VkFormat depthFormat = findDepthFormat();
             createImage(texWidth, texHeight, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT /*| VK_IMAGE_USAGE_SAMPLED_BIT*/, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
             ////std::cout<<"dt address : "<<textureImage<<std::endl;
-            transitionImageLayout(textureImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED,  VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+            VkCommandBuffer cmd = beginSingleTimeCommands();
+            transitionImageLayout(cmd, textureImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED,  VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+            endSingleTimeCommands(cmd);
             createTextureImageView(depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
             createTextureSampler();
             return true;
@@ -127,7 +133,9 @@ namespace odfaeg {
             VkFormat depthFormat = findDepthFormat();
             createImage(texWidth, texHeight, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT /*| VK_IMAGE_USAGE_SAMPLED_BIT*/, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
             ////std::cout<<"dt address : "<<textureImage<<std::endl;
-            transitionImageLayout(textureImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED,  VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+            VkCommandBuffer cmd = beginSingleTimeCommands();
+            transitionImageLayout(cmd, textureImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED,  VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+            endSingleTimeCommands(cmd);
             createTextureImageView(depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
             createTextureSampler();
             return true;
@@ -179,9 +187,11 @@ namespace odfaeg {
             vkMapMemory(vkDevice.getDevice(), stagingBufferMemory, 0, imageSize, 0, &data);
             memcpy(data, pixels, static_cast<size_t>(imageSize));
             vkUnmapMemory(vkDevice.getDevice(), stagingBufferMemory);
-            transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+            VkCommandBuffer cmd = beginSingleTimeCommands();
+            transitionImageLayout(cmd, textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
             copyBufferToImage(stagingBuffer, textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight),static_cast<uint32_t>(x), static_cast<uint32_t>(y));
-            transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+            transitionImageLayout(cmd, textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+            endSingleTimeCommands(cmd);
 
             vkDestroyBuffer(vkDevice.getDevice(), stagingBuffer, nullptr);
             vkFreeMemory(vkDevice.getDevice(), stagingBufferMemory, nullptr);
@@ -206,9 +216,14 @@ namespace odfaeg {
             vkMapMemory(vkDevice.getDevice(), stagingBufferMemory, 0, imageSize, 0, &data);
             memcpy(data, pixels, static_cast<size_t>(imageSize));
             vkUnmapMemory(vkDevice.getDevice(), stagingBufferMemory);
-            transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+            VkCommandBuffer cmd = beginSingleTimeCommands();
+            transitionImageLayout(cmd, textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+            endSingleTimeCommands(cmd);
             copyBufferToImage(stagingBuffer, textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight),static_cast<uint32_t>(x), static_cast<uint32_t>(y));
-            transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+            cmd = beginSingleTimeCommands();
+            transitionImageLayout(cmd, textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+            endSingleTimeCommands(cmd);
+
 
             vkDestroyBuffer(vkDevice.getDevice(), stagingBuffer, nullptr);
             vkFreeMemory(vkDevice.getDevice(), stagingBufferMemory, nullptr);
@@ -356,16 +371,15 @@ namespace odfaeg {
 
             endSingleTimeCommands(commandBuffer);
         }
-        void Texture::toShaderReadOnlyOptimal() {
+        void Texture::toShaderReadOnlyOptimal(VkCommandBuffer cmd) {
             if (isFBOTexture)
-                transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+                transitionImageLayout(cmd, textureImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
         }
-        void Texture::toColorAttachmentOptimal() {
+        void Texture::toColorAttachmentOptimal(VkCommandBuffer cmd) {
             if (isFBOTexture)
-                transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+                transitionImageLayout(cmd, textureImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
         }
-        void Texture::transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout) {
-            VkCommandBuffer commandBuffer = beginSingleTimeCommands();
+        void Texture::transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout) {
             imageLayout = newLayout;
             VkImageMemoryBarrier barrier{};
             barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -464,7 +478,6 @@ namespace odfaeg {
             1, &barrier
             );
 
-            endSingleTimeCommands(commandBuffer);
         }
         void Texture::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t x, uint32_t y, uint32_t face) {
             VkCommandBuffer commandBuffer = beginSingleTimeCommands();
@@ -631,13 +644,14 @@ namespace odfaeg {
             blitInfo.filter = VK_FILTER_LINEAR;
             blitInfo.regionCount = 1;
             blitInfo.pRegions = &blitRegion;
-            transitionImageLayout(texture.textureImage, m_format, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-            transitionImageLayout(textureImage, m_format, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-            VkCommandBuffer  commandBuffer = beginSingleTimeCommands();
-            vkCmdBlitImage2(commandBuffer, &blitInfo);
-            endSingleTimeCommands(commandBuffer);
-            transitionImageLayout(texture.textureImage, m_format, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-            transitionImageLayout(textureImage, m_format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+            VkCommandBuffer cmd = beginSingleTimeCommands();
+            transitionImageLayout(cmd, texture.textureImage, m_format, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+            transitionImageLayout(cmd, textureImage, m_format, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+
+            vkCmdBlitImage2(cmd, &blitInfo);
+            transitionImageLayout(cmd, texture.textureImage, m_format, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+            transitionImageLayout(cmd, textureImage, m_format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+            endSingleTimeCommands(cmd);
         }
         void Texture::setSmooth(bool smooth) {
             m_isSmooth = smooth;
@@ -722,8 +736,11 @@ namespace odfaeg {
         bool Texture::createCubeMap (unsigned int width, unsigned int height, bool FBOAttachment) {
             isCubeMap = true;
             createCubeMapImage(width, height, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
-            if (FBOAttachment)
-                transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+            if (FBOAttachment) {
+                VkCommandBuffer cmd = beginSingleTimeCommands();
+                transitionImageLayout(cmd, textureImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+                endSingleTimeCommands(cmd);
+            }
             createCubeMapTextureImageView(VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
             createCubeMapTextureImageSampler();
             isFBOTexture = FBOAttachment;

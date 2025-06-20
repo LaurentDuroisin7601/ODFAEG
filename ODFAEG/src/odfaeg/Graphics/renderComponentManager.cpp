@@ -67,11 +67,9 @@ namespace odfaeg {
                 if (it->second->getComponentType() == 0 && it->second->isVisible()) {
                     for (unsigned int i = 0; i < windows.size(); i++) {
                         if (windows[i] == &it->second->getWindow()) {
-
                             it->second->getWindow().draw(*it->second.get());
                             it->second->getWindow().submit();
                             it->second->getWindow().beginRecordCommandBuffers();
-                            it->second->getWindow().beginRenderPass();
                         }
                     }
                 }

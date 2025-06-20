@@ -399,11 +399,14 @@ namespace odfaeg {
                 vkCmdPipelineBarrier(getCommandBuffers()[currentFrame], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &depthStencilToClearBarrier);
                 vkCmdClearDepthStencilImage(getCommandBuffers()[currentFrame], getDepthTexture().getImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearDepthStencilValue, 1, &imageRange2);
                 vkCmdPipelineBarrier(getCommandBuffers()[currentFrame], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &clearToDepthStencilBarrier);
-                beginRenderPass();
+
                 /*if (vkEndCommandBuffer(commandBuffers[currentFrame]) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to record command buffer!", 1);
                 }*/
              //}
+        }
+        void RenderWindow::endRenderPass() {
+            vkCmdEndRenderPass(getCommandBuffers()[getCurrentFrame()]);
         }
         uint32_t RenderWindow::getImageIndex() {
             return imageIndex;
@@ -413,7 +416,6 @@ namespace odfaeg {
         }
         void RenderWindow::submit(bool lastSubmit) {
             if (getCommandBuffers().size() > 0) {
-                vkCmdEndRenderPass(getCommandBuffers()[getCurrentFrame()]);
                 if (vkEndCommandBuffer(getCommandBuffers()[currentFrame]) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to record command buffer!", 1);
                 }

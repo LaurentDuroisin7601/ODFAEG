@@ -93,8 +93,8 @@ namespace odfaeg
             static std::vector<Texture*> getAllTextures();
             VkFormat findDepthFormat();
             void setCoordinatesType(CoordinateType ct);
-            void toShaderReadOnlyOptimal();
-            void toColorAttachmentOptimal();
+            void toShaderReadOnlyOptimal(VkCommandBuffer cmd);
+            void toColorAttachmentOptimal(VkCommandBuffer cmd);
             ~Texture();
         private :
 
@@ -106,7 +106,7 @@ namespace odfaeg
             VkCommandBuffer beginSingleTimeCommands();
             void endSingleTimeCommands(VkCommandBuffer commandBuffer);
             void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
-            void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+            void transitionImageLayout(VkCommandBuffer cmd, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
             void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t x, uint32_t y, uint32_t face=0);
             void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
             void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);

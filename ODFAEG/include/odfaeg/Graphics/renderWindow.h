@@ -62,6 +62,7 @@ namespace odfaeg
             static const int MAX_FRAMES_IN_FLIGHT = 2;
             virtual ~RenderWindow();
             void submit(bool lastSubmit = false);
+            void endRenderPass();
 
         protected:
             VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);

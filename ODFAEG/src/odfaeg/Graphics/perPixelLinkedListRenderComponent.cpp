@@ -150,9 +150,7 @@ namespace odfaeg {
             barrier.subresourceRange.levelCount = 1;
             barrier.subresourceRange.layerCount = 1;
             vkCmdPipelineBarrier(frameBuffer.getCommandBuffers()[currentFrame], VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
-
-
-            frameBuffer.beginRenderPass();
+            const_cast<Texture&>(frameBuffer.getTexture()).toShaderReadOnlyOptimal(frameBuffer.getCommandBuffers()[frameBuffer.getCurrentFrame()]);
             frameBuffer.display();
             VkSemaphoreCreateInfo semaphoreInfo{};
             semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -171,7 +169,7 @@ namespace odfaeg {
                 ////std::cout<<"create semaphore : "<<i<<","<<renderFinishedSemaphore[i]<<std::endl;
             }
 
-            const_cast<Texture&>(frameBuffer.getTexture()).toShaderReadOnlyOptimal();
+
             datasReady = false;
 
 
@@ -387,11 +385,12 @@ namespace odfaeg {
 
         }
         void PerPixelLinkedListRenderComponent::clear() {
-            const_cast<Texture&>(frameBuffer.getTexture()).toColorAttachmentOptimal();
-            frameBuffer.clear(Color::Transparent);
-            //firstDraw = true;
-            frameBuffer.display();
             frameBuffer.beginRecordCommandBuffers();
+            const_cast<Texture&>(frameBuffer.getTexture()).toColorAttachmentOptimal(frameBuffer.getCommandBuffers()[frameBuffer.getCurrentFrame()]);
+            frameBuffer.display();
+            frameBuffer.clear(Color::Transparent);
+
+            //firstDraw = true;
             unsigned int currentFrame = frameBuffer.getCurrentFrame();
             VkClearColorValue clearColor;
             clearColor.uint32[0] = 0xffffffff;
@@ -410,9 +409,6 @@ namespace odfaeg {
                 vkCmdPipelineBarrier(frameBuffer.getCommandBuffers()[i], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
 
             }
-            frameBuffer.beginRenderPass();
-            frameBuffer.display(true, clearFinishedSemaphore[frameBuffer.getCurrentFrame()]);
-
         }
         VkCommandBuffer PerPixelLinkedListRenderComponent::beginSingleTimeCommands() {
             VkCommandBufferAllocateInfo allocInfo{};
@@ -2314,7 +2310,7 @@ namespace odfaeg {
                 needToUpdateDS = false;
             }
             unsigned int currentFrame = frameBuffer.getCurrentFrame();
-            frameBuffer.beginRecordCommandBuffers();
+
 
             /*VkCommandBufferInheritanceInfo inheritanceInfo;
             inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
@@ -2339,20 +2335,20 @@ namespace odfaeg {
             std::vector<Texture*> allTextures = Texture::getAllTextures();
             vkCmdResetEvent(frameBuffer.getCommandBuffers()[currentFrame], events[currentFrame],  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
             vkCmdSetEvent(frameBuffer.getCommandBuffers()[currentFrame], events[currentFrame],  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
-            frameBuffer.beginRenderPass();
+
 
             vkCmdPushConstants(frameBuffer.getCommandBuffers()[currentFrame], frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][frameBuffer.getId()][depthStencilID], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectDrawPushConsts), &indirectDrawPushConsts);
 
-
+            frameBuffer.beginRenderPass();
 
             frameBuffer.drawIndirect(frameBuffer.getCommandBuffers()[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
-
+            frameBuffer.endRenderPass();
 
 
             /*frameBuffer.beginRecordCommandBuffers();
             frameBuffer.beginRenderPass();
             vkCmdExecuteCommands(frameBuffer.getCommandBuffers()[currentFrame], static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());*/
-            frameBuffer.display(false, clearFinishedSemaphore[frameBuffer.getCurrentFrame()]);
+            frameBuffer.display();
 
         }
         void PerPixelLinkedListRenderComponent::createCommandBufferVertexBuffer(RenderStates currentStates) {
@@ -2446,7 +2442,7 @@ namespace odfaeg {
             /*frameBuffer.beginRecordCommandBuffers();
             frameBuffer.beginRenderPass();
             vkCmdExecuteCommands(frameBuffer.getCommandBuffers()[currentFrame], static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());*/
-
+            frameBuffer.endRenderPass();
             frameBuffer.display(true, renderFinishedSemaphore[window.getCurrentFrame()]);
 
 
@@ -2621,13 +2617,17 @@ namespace odfaeg {
             return view;
         }
         void PerPixelLinkedListRenderComponent::draw(RenderTarget& target, RenderStates states) {
-
-            window.setSemaphore(renderFinishedSemaphore);
-            const_cast<Texture&>(frameBuffer.getTexture()).toShaderReadOnlyOptimal();
+            if (&target == &window)
+                window.setSemaphore(renderFinishedSemaphore);
+            const_cast<Texture&>(frameBuffer.getTexture()).toShaderReadOnlyOptimal(window.getCommandBuffers()[window.getCurrentFrame()]);
             frameBufferSprite.setCenter(target.getView().getPosition());
             ////std::cout<<"view position : "<<view.getPosition()<<std::endl;
             ////std::cout<<"sprite position : "<<frameBufferSprite.getCenter()<<std::endl;
+            if (&target == &window)
+                window.beginRenderPass();
             target.draw(frameBufferSprite, states);
+            if (&target == &window)
+                window.endRenderPass();
         }
         std::vector<Entity*> PerPixelLinkedListRenderComponent::getEntities() {
             return visibleEntities;

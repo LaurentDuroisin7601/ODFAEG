@@ -244,10 +244,11 @@ namespace odfaeg {
                 vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier3);
 
 
-                reflectRefractTex.beginRenderPass();
-                reflectRefractTex.display();
 
-                const_cast<Texture&>(reflectRefractTex.getTexture()).toShaderReadOnlyOptimal();
+
+
+                const_cast<Texture&>(reflectRefractTex.getTexture()).toShaderReadOnlyOptimal(reflectRefractTex.getCommandBuffers()[reflectRefractTex.getCurrentFrame()]);
+                reflectRefractTex.display();
                 //const_cast<Texture&>(reflectRefractTex.getTexture()).toShaderReadOnlyOptimal();
 
 
@@ -537,6 +538,12 @@ namespace odfaeg {
                 renderFinishedSemaphore.resize(RenderWindow::MAX_FRAMES_IN_FLIGHT);
                 for (unsigned int i = 0; i < RenderWindow::MAX_FRAMES_IN_FLIGHT; i++) {
                     if (vkCreateSemaphore(vkDevice.getDevice(), &semaphoreInfo, nullptr, &renderFinishedSemaphore[i]) != VK_SUCCESS) {
+                        throw std::runtime_error("failed to create compute synchronization objects for a frame!");
+                    }
+                }
+                clearFinishedSemaphore.resize(reflectRefractTex.getMaxFramesInFlight());
+                for (unsigned int i = 0; i < reflectRefractTex.getMaxFramesInFlight(); i++) {
+                    if (vkCreateSemaphore(vkDevice.getDevice(), &semaphoreInfo, nullptr, &clearFinishedSemaphore[i]) != VK_SUCCESS) {
                         throw std::runtime_error("failed to create compute synchronization objects for a frame!");
                     }
                 }
@@ -2165,8 +2172,6 @@ namespace odfaeg {
             }
             void ReflectRefractRenderComponent::clear() {
                 depthBuffer.clear(Color::Transparent);
-                depthBuffer.display();
-                depthBuffer.beginRecordCommandBuffers();
                 std::vector<VkCommandBuffer> commandBuffers = depthBuffer.getCommandBuffers();
                 VkClearColorValue clearColor = {0.f, 0.f, 0.f, 0.f};
                 VkImageSubresourceRange subresRange = {};
@@ -2182,11 +2187,7 @@ namespace odfaeg {
                     memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
                     vkCmdPipelineBarrier(commandBuffers[i], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
                 }
-                depthBuffer.beginRenderPass();
-                depthBuffer.display();
                 alphaBuffer.clear(Color::Transparent);
-                alphaBuffer.display();
-                alphaBuffer.beginRecordCommandBuffers();
                 commandBuffers = alphaBuffer.getCommandBuffers();
                 for (unsigned int i = 0; i < commandBuffers.size(); i++) {
                     vkCmdClearColorImage(commandBuffers[i], alphaTextureImage, VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
@@ -2197,11 +2198,11 @@ namespace odfaeg {
                     memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
                     vkCmdPipelineBarrier(commandBuffers[i], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
                 }
-                alphaBuffer.beginRenderPass();
-                alphaBuffer.display();
-                const_cast<Texture&>(reflectRefractTex.getTexture()).toColorAttachmentOptimal();
-                reflectRefractTex.clear(Color::Transparent);
+                reflectRefractTex.beginRecordCommandBuffers();
+                const_cast<Texture&>(reflectRefractTex.getTexture()).toColorAttachmentOptimal(reflectRefractTex.getCommandBuffers()[reflectRefractTex.getCurrentFrame()]);
                 reflectRefractTex.display();
+                reflectRefractTex.clear(Color::Transparent);
+
             }
             void ReflectRefractRenderComponent::createCommandBuffersIndirect(unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, DepthStencilID depthStencilID, RenderStates currentStates) {
                 if (needToUpdateDS) {
@@ -2220,17 +2221,17 @@ namespace odfaeg {
                 Shader* shader = const_cast<Shader*>(currentStates.shader);
                 if (shader == &sBuildDepthBuffer) {
                     ////std::cout<<"draw on db"<<std::endl;
-                    depthBuffer.beginRecordCommandBuffers();
-                    depthBuffer.beginRenderPass();
                     std::vector<VkCommandBuffer> commandBuffers = depthBuffer.getCommandBuffers();
                     unsigned int currentFrame = depthBuffer.getCurrentFrame();
                     buildDepthPC.nbLayers = GameObject::getNbLayers();
                     vkCmdPushConstants(commandBuffers[currentFrame], depthBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][depthBuffer.getId()][depthStencilID], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectRenderingPC), &indirectRenderingPC);
                     vkCmdPushConstants(commandBuffers[currentFrame], depthBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][depthBuffer.getId()][depthStencilID], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(BuildDepthPC), &buildDepthPC);
+                    depthBuffer.beginRenderPass();
                     depthBuffer.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
+                    depthBuffer.endRenderPass();
                     depthBuffer.display();
                 } else if (shader == &sBuildAlphaBuffer) {
-                    const_cast<Texture&>(depthBuffer.getTexture()).toShaderReadOnlyOptimal();
+                    const_cast<Texture&>(depthBuffer.getTexture()).toShaderReadOnlyOptimal(alphaBuffer.getCommandBuffers()[alphaBuffer.getCurrentFrame()]);
 
 
                     std::vector<VkCommandBuffer> commandBuffers = alphaBuffer.getCommandBuffers();
@@ -2242,44 +2243,42 @@ namespace odfaeg {
                     //vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 0, nullptr);
 
 
-                    alphaBuffer.beginRecordCommandBuffers();
-                    alphaBuffer.beginRenderPass();
+
                     vkCmdPushConstants(commandBuffers[currentFrame], alphaBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][alphaBuffer.getId()][depthStencilID], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectRenderingPC), &indirectRenderingPC);
                     vkCmdPushConstants(commandBuffers[currentFrame], alphaBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][alphaBuffer.getId()][depthStencilID], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(BuildAlphaPC), &buildAlphaPC);
-                    alphaBuffer.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
-
-                    alphaBuffer.display();
-                    alphaBuffer.beginRecordCommandBuffers();
                     VkMemoryBarrier memoryBarrier={};
                     memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
                     memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
                     memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-                    vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 0, nullptr);
-                    vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
+                    //vkCmdWaitEvents(commandBuffers[currentFrame], 1, &events[currentFrame], VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
+                    vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
                     alphaBuffer.beginRenderPass();
+                    alphaBuffer.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
+                    alphaBuffer.endRenderPass();
+                    const_cast<Texture&>(depthBuffer.getTexture()).toColorAttachmentOptimal(alphaBuffer.getCommandBuffers()[alphaBuffer.getCurrentFrame()]);
                     alphaBuffer.display();
-                    const_cast<Texture&>(depthBuffer.getTexture()).toColorAttachmentOptimal();
                 } else if (shader == &sLinkedList) {
-                    environmentMap.beginRecordCommandBuffers();
+
 
                     std::vector<VkCommandBuffer> commandBuffers = environmentMap.getCommandBuffers();
                     unsigned int currentFrame = environmentMap.getCurrentFrame();
 
                     //vkCmdWaitEvents(commandBuffers[currentFrame], 1, &events[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
-                    /*VkMemoryBarrier memoryBarrier={};
+                    VkMemoryBarrier memoryBarrier={};
                     memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
                     memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
                     memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
                     //vkCmdWaitEvents(commandBuffers[currentFrame], 1, &events[currentFrame], VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
-                    vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);*/
+                    vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
                     environmentMap.beginRenderPass();
                     environmentMap.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
+                    environmentMap.endRenderPass();
                     environmentMap.display(false, computeSemaphore);
 
                 } else {
-                    const_cast<Texture&>(environmentMap.getTexture()).toShaderReadOnlyOptimal();
-                    const_cast<Texture&>(alphaBuffer.getTexture()).toShaderReadOnlyOptimal();
-                    reflectRefractTex.beginRecordCommandBuffers();
+                    const_cast<Texture&>(environmentMap.getTexture()).toShaderReadOnlyOptimal(reflectRefractTex.getCommandBuffers()[reflectRefractTex.getCurrentFrame()]);
+                    const_cast<Texture&>(alphaBuffer.getTexture()).toShaderReadOnlyOptimal(reflectRefractTex.getCommandBuffers()[reflectRefractTex.getCurrentFrame()]);
+
 
                     std::vector<VkCommandBuffer> commandBuffers = reflectRefractTex.getCommandBuffers();
                     unsigned int currentFrame = reflectRefractTex.getCurrentFrame();
@@ -2299,9 +2298,11 @@ namespace odfaeg {
                     vkCmdPushConstants(commandBuffers[currentFrame], reflectRefractTex.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][reflectRefractTex.getId()][depthStencilID], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(BuildFrameBufferPC), &buildFrameBufferPC);
                     reflectRefractTex.beginRenderPass();
                     reflectRefractTex.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
+                    reflectRefractTex.endRenderPass();
+
+                    const_cast<Texture&>(alphaBuffer.getTexture()).toColorAttachmentOptimal(reflectRefractTex.getCommandBuffers()[reflectRefractTex.getCurrentFrame()]);
+                    const_cast<Texture&>(environmentMap.getTexture()).toColorAttachmentOptimal(reflectRefractTex.getCommandBuffers()[reflectRefractTex.getCurrentFrame()]);
                     reflectRefractTex.display(true, renderFinishedSemaphore[window.getCurrentFrame()]);
-                    const_cast<Texture&>(alphaBuffer.getTexture()).toColorAttachmentOptimal();
-                    const_cast<Texture&>(environmentMap.getTexture()).toColorAttachmentOptimal();
                 }
             }
             void ReflectRefractRenderComponent::createCommandBufferVertexBuffer(RenderStates currentStates) {
@@ -2329,6 +2330,7 @@ namespace odfaeg {
                 ////std::cout<<"ids : "<<shader->getId() * (Batcher::nbPrimitiveTypes - 1) + vb.getPrimitiveType()<<","<<environmentMap.getId()<<","<<NODEPTHNOSTENCIL<<std::endl;
                 environmentMap.beginRenderPass();
                 environmentMap.drawVertexBuffer(commandBuffers[currentFrame], currentFrame, vb, NODEPTHNOSTENCIL, currentStates);
+                environmentMap.endRenderPass();
                 environmentMap.display();
 
             }
@@ -3099,7 +3101,7 @@ namespace odfaeg {
 
                                     }
                                     environmentMap.clear(Color::Transparent);
-                                    environmentMap.display();
+                                    //environmentMap.display();
                                     vkWaitForFences(vkDevice.getDevice(), 1, &computeFence, VK_TRUE, UINT64_MAX);
                                     vkResetFences(vkDevice.getDevice(), 1, &computeFence);
                                     VkCommandBuffer cmd = beginSingleTimeCommands();
@@ -3178,10 +3180,15 @@ namespace odfaeg {
                 //reflectRefractTex.display();
             }
             void ReflectRefractRenderComponent::draw(RenderTarget& target, RenderStates states) {
-                window.setSemaphore(renderFinishedSemaphore);
-                const_cast<Texture&>(reflectRefractTex.getTexture()).toShaderReadOnlyOptimal();
+                if (&target == &window)
+                    window.setSemaphore(renderFinishedSemaphore);
+                const_cast<Texture&>(reflectRefractTex.getTexture()).toShaderReadOnlyOptimal(window.getCommandBuffers()[window.getCurrentFrame()]);
                 reflectRefractTexSprite.setCenter(target.getView().getPosition());
+                if (&target == &window)
+                    window.beginRenderPass();
                 target.draw(reflectRefractTexSprite, states);
+                if (&target == &window)
+                    window.endRenderPass();
             }
             std::string ReflectRefractRenderComponent::getExpression() {
                 return expression;

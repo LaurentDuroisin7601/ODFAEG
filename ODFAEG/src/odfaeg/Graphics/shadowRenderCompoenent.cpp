@@ -185,9 +185,8 @@ namespace odfaeg {
                 barrier3.subresourceRange.levelCount = 1;
                 barrier3.subresourceRange.layerCount = 1;
                 vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier3);
-                shadowMap.beginRenderPass();
                 shadowMap.display();
-                const_cast<Texture&>(shadowMap.getTexture()).toShaderReadOnlyOptimal();
+                const_cast<Texture&>(shadowMap.getTexture()).toShaderReadOnlyOptimal(shadowMap.getCommandBuffers()[shadowMap.getCurrentFrame()]);
                 //createDescriptorsAndPipelines();
              }
              void ShadowRenderComponent::compileShaders() {
