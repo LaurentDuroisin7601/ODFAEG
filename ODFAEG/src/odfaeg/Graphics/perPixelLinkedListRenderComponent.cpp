@@ -2283,7 +2283,7 @@ namespace odfaeg {
             vb.append(v4);
             vb.update();
             math::Matrix4f matrix = quad.getTransform().getMatrix()/*.transpose()*/;
-            std::cout<<"world mat : "<<matrix<<std::endl;
+            //std::cout<<"world mat : "<<matrix<<std::endl;
             ppll2PushConsts.worldMat = toVulkanMatrix(matrix);
             //system("PAUSE");
             RenderStates currentStates;
