@@ -163,6 +163,13 @@ namespace odfaeg {
                 }
                 ////std::cout<<"create semaphore : "<<i<<","<<renderFinishedSemaphore[i]<<std::endl;
             }
+            clearFinishedSemaphore.resize(frameBuffer.getMaxFramesInFlight());
+            for (size_t i = 0; i < frameBuffer.getMaxFramesInFlight(); i++) {
+                if (vkCreateSemaphore(vkDevice.getDevice(), &semaphoreInfo, nullptr, &clearFinishedSemaphore[i]) != VK_SUCCESS) {
+                    throw std::runtime_error("failed to create semaphore");
+                }
+                ////std::cout<<"create semaphore : "<<i<<","<<renderFinishedSemaphore[i]<<std::endl;
+            }
 
             const_cast<Texture&>(frameBuffer.getTexture()).toShaderReadOnlyOptimal();
             datasReady = false;
@@ -404,7 +411,7 @@ namespace odfaeg {
 
             }
             frameBuffer.beginRenderPass();
-            frameBuffer.display();
+            frameBuffer.display(true, clearFinishedSemaphore[frameBuffer.getCurrentFrame()]);
 
         }
         VkCommandBuffer PerPixelLinkedListRenderComponent::beginSingleTimeCommands() {
@@ -2345,7 +2352,7 @@ namespace odfaeg {
             /*frameBuffer.beginRecordCommandBuffers();
             frameBuffer.beginRenderPass();
             vkCmdExecuteCommands(frameBuffer.getCommandBuffers()[currentFrame], static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());*/
-            frameBuffer.display();
+            frameBuffer.display(false, clearFinishedSemaphore[frameBuffer.getCurrentFrame()]);
 
         }
         void PerPixelLinkedListRenderComponent::createCommandBufferVertexBuffer(RenderStates currentStates) {

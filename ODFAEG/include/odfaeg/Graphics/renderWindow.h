@@ -117,6 +117,7 @@ namespace odfaeg
             std::vector<VkImageView> swapChainImageViews;
             std::vector<VkSemaphore> imageAvailableSemaphores;
             std::vector<VkSemaphore> renderFinishedSemaphores;
+            std::vector<VkSemaphore> timelineSemaphores;
             std::vector<VkSemaphore> semaphore;
             std::vector<VkFence> inFlightFences;
             std::vector<VkFence> imagesInFlight;

@@ -268,6 +268,17 @@ namespace odfaeg {
             VkFenceCreateInfo fenceInfo{};
             fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 
+            VkSemaphoreTypeCreateInfo timelineCreateInfo{};
+            timelineCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO;
+            timelineCreateInfo.pNext = nullptr;
+            timelineCreateInfo.semaphoreType = VK_SEMAPHORE_TYPE_TIMELINE;
+            timelineCreateInfo.initialValue = 0;
+
+            VkSemaphoreCreateInfo createInfo;
+            createInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+            createInfo.pNext = &timelineCreateInfo;
+            createInfo.flags = 0;
+
 
             for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
                 if (vkCreateSemaphore(vkDevice.getDevice(), &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS ||

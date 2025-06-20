@@ -156,6 +156,7 @@ namespace odfaeg {
             std::vector<unsigned int> pipelineIds;
             std::vector<VkEvent> events;
             std::vector<VkSemaphore> renderFinishedSemaphore;
+            std::vector<VkSemaphore> clearFinishedSemaphore;
             RenderWindow& window;
         };
         #else

@@ -85,7 +85,6 @@ namespace odfaeg
 
             VkFenceCreateInfo fenceInfo{};
             fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-            fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
             VkSemaphoreTypeCreateInfo timelineCreateInfo{};
             timelineCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO;
             timelineCreateInfo.pNext = nullptr;
@@ -96,6 +95,7 @@ namespace odfaeg
             createInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
             createInfo.pNext = &timelineCreateInfo;
             createInfo.flags = 0;
+
 
             for (size_t i = 0; i < getMaxFramesInFlight(); i++) {
                 if (vkCreateFence(vkDevice.getDevice(), &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS
@@ -407,30 +407,58 @@ namespace odfaeg
                         throw core::Erreur(0, "failed to record command buffer!", 1);
                     }
                 //}
-                vkWaitForFences(vkDevice.getDevice(), 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
+
+
+                std::vector<uint64_t> waitValues;
+                std::vector<uint64_t> signalValues;
+
+
+                std::vector<VkSemaphore> waitSemaphores;
+                std::vector<VkSemaphore> signalSemaphores;
+                std::vector<VkPipelineStageFlags> waitStages;
+                waitSemaphores.push_back(renderFinishedSemaphores[currentFrame]);
+                signalSemaphores.push_back(renderFinishedSemaphores[currentFrame]);
+                waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+                waitValues.push_back(value);
+                signalValues.push_back(value+1);
 
 
                 VkSubmitInfo submitInfo = {};
                 submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
                 if (semaphore != VK_NULL_HANDLE) {
                     if (isSignalSemaphore) {
+                        signalSemaphores.push_back(semaphore);
+                        signalValues.push_back(value);
                         //std::cout<<"offscreen signal semaphore : "<<semaphore<<std::endl;
-                        submitInfo.signalSemaphoreCount = 1;
-                        submitInfo.pSignalSemaphores = &semaphore;
                     } else {
-                        VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT};
-                        submitInfo.pWaitDstStageMask = waitStages;
-                        submitInfo.waitSemaphoreCount = 1;
-                        submitInfo.pWaitSemaphores = &semaphore;
+                        waitSemaphores.push_back(semaphore);
+                        waitStages.push_back(VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
+                        waitValues.push_back(value+1);
                     }
                 }
+                VkTimelineSemaphoreSubmitInfo timelineInfo = {};
+                timelineInfo.sType = VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO;
+                timelineInfo.waitSemaphoreValueCount=waitValues.size();
+                timelineInfo.pWaitSemaphoreValues = waitValues.data();
+                timelineInfo.signalSemaphoreValueCount=signalValues.size();
+                timelineInfo.pSignalSemaphoreValues = signalValues.data();
+                submitInfo.pNext = &timelineInfo;
+                submitInfo.signalSemaphoreCount = signalSemaphores.size();
+                submitInfo.pSignalSemaphores = signalSemaphores.data();
+                submitInfo.pWaitDstStageMask = waitStages.data();
+                submitInfo.waitSemaphoreCount = waitSemaphores.size();
+                submitInfo.pWaitSemaphores = waitSemaphores.data();
                 submitInfo.commandBufferCount = 1;
                 submitInfo.pCommandBuffers = &getCommandBuffers()[currentFrame];
-                vkResetFences(vkDevice.getDevice(), 1, &inFlightFences[currentFrame]);
+
                 if (vkQueueSubmit(vkDevice.getGraphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS) {
                     throw core::Erreur(0, "échec de l'envoi d'un command buffer!", 1);
                 }
                 vkDeviceWaitIdle(vkDevice.getDevice());
+
+                vkWaitForFences(vkDevice.getDevice(), 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
+                vkResetFences(vkDevice.getDevice(), 1, &inFlightFences[currentFrame]);
+                value++;
             }
         }
         RenderTexture::~RenderTexture() {

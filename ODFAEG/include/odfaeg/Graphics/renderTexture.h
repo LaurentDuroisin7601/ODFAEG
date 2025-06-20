@@ -286,6 +286,7 @@ namespace odfaeg {
             window::ContextSettings  m_settings;
             unsigned int m_atomicBuffer, m_linkedListBuffer, m_headPtrTex, m_clearBuff;
             bool isContextActivated;
+
         };
         #endif
     }
