@@ -1,0 +1,143 @@
+#include "application.h"
+#include "odfaeg/Graphics/graphics.hpp"
+#include "odfaeg/Audio/audio.hpp"
+#include "odfaeg/Math/math.hpp"
+#include "hero.hpp"
+
+
+
+#include "odfaeg/Graphics/renderWindow.h"
+#include "odfaeg/Graphics/font.h"
+#include "odfaeg/Graphics/text.h"
+#include "odfaeg/Graphics/sprite.h"
+#include "odfaeg/Graphics/rectangleShape.h"
+#include "odfaeg/Window/iEvent.hpp"
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <array>
+#include <iostream>
+#include <math.h>
+#include <functional>
+using namespace odfaeg::core;
+using namespace odfaeg::math;
+using namespace odfaeg::physic;
+using namespace odfaeg::graphic;
+using namespace odfaeg::window;
+using namespace odfaeg::audio;
+using namespace sorrok;
+//Make index sequences from an offset.
+template <typename T, unsigned int R, unsigned int C>
+        class Mat {
+            private :
+            std::array<std::array<T, R>, C> data;
+            /**
+              * \fn Matrix4f()
+              * \brief constructor. (Construct the identity matrix)
+            */
+            public :
+            Mat () {}
+            /**
+            * \fn Matrix4f (float, float, float, float, float, float, float, float, float, float, float, float, float, float)
+            * \brief  constructor.(Construct a matrix with the given elements)
+            * \param m11 the first element of the first row of the matrix.
+            * \param m12 the second element of the first row of the matrix.
+            * \param m13 the thirst element of the first row of the matrix.
+            * \param m14 the fourth element of the first row of the matrix.
+            * \param m21 the first element of the second row of the matrix.
+            * \param m22 the second element of the second row of the matrix.
+            * \param m23 the thirst element of the second row of the matrix.
+            * \param m24 the fourth element of the second row of the matrix.
+            * \param m31 the first element of the thirst row of the matrix.
+            * \param m32 the second element of the thirst row of the matrix.
+            * \param m33 the thirst element of the thirst row of the matrix.
+            * \param m34 the fourth element of the thirst row of the matrix.
+            * \param m41 the fourth element of the first row of the matrix.
+            * \param m42 the fourth element of the second row of the matrix.
+            * \param m43 the fourth element of the thirst row of the matrix.
+            * \param m44 the fourth element of the fourth row of the matrix.
+            */
+            template <typename... Args,
+            typename First = std::tuple_element_t<0, std::tuple<Args...>>,
+            typename = std::enable_if_t<!std::is_same_v<First, Mat<T, C, R>>>>
+            Mat (Args... args) {
+                std::cout<<"set args"<<std::endl;
+                set(args...);
+            }
+            template <unsigned int R2, unsigned int C2>
+            Mat (const Mat<T, R2, C2> &other) {
+                zero();
+                unsigned int M = std::min(R, R2);
+                unsigned int N = std::min(C, C2);
+                std::cout<<"M : "<<M<<","<<"N : "<<N<<std::endl;
+                for (unsigned int i = 0; i < M; i++) {
+                    for (unsigned int j = 0; j < N; j++) {
+                        data[i][j] = other[i][j];
+                    }
+                }
+            }
+            template <typename... Args, unsigned int RI=0>
+            void set(Args... args) {
+                const int n = sizeof...(Args);
+                static_assert(n == R*C, "Invalid number of arguments for matrix type");
+                std::tuple<Args...> tp = std::make_tuple(args...);
+                //std::cout<<"set : "<<std::endl;
+                setRow(tp, std::make_index_sequence<C>());
+            }
+            template <unsigned int RI=0, unsigned int N = 0, typename TP, size_t... CI, class = std::enable_if_t<RI < R - 1>>
+            void setRow(TP tp, std::index_sequence<CI...> seq) {
+                data[RI] = {{std::get<CI>(tp)...}};
+                setRow<RI+1, N+1>(tp, typename offset_sequence<(RI + 1-N) * C, std::index_sequence<CI...>>::type() );
+
+            }
+            template <unsigned int RI, unsigned int N, typename TP, size_t... CI, class... D, class = std::enable_if_t<RI == R-1>>
+            void setRow(TP tp, std::index_sequence<CI...> seq) {
+                data[RI] = {{std::get<CI>(tp)...}};
+            }
+            /**
+            * \fn zero()
+            * \brief set the null matrix.
+            */
+            void zero () {
+                for (unsigned int i = 0; i < R; i++) {
+                    for (unsigned int j = 0; j < C; j++) {
+                        data[i][j] = 0;
+                    }
+                }
+            }
+        };
+int main(int argc, char *argv[]) {
+    ::Mat<float, 4, 4> mat(0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+    ::Mat<float, 4, 4> other(mat);
+   /* VkSettup instance;
+    Device device(instance);
+    RenderWindow window(VideoMode(800, 600), "test", device);
+    Texture texture(device);
+    texture.loadFromFile("tilesets/eau.png");
+    Sprite sprite(texture, Vec3f(-400, -300, 0), Vec3f(100, 50, 0), IntRect(0, 0, 100, 50));
+    RenderTexture rt(device);
+    rt.create(800,600);
+    rt.clear();
+    rt.beginRenderPass();
+    rt.draw(sprite);
+    rt.endRenderPass();
+    rt.display();
+    Sprite sprite2(rt.getTexture(), Vec3f(0, 0, 0), Vec3f(800, 600, 0), IntRect(0, 0, 800, 600));
+    while (window.isOpen()) {
+        window.clear();
+        window.beginRenderPass();
+        window.draw(sprite2);
+        window.endRenderPass();
+        window.submit(true);
+        window.display();
+    }*/
+
+
+
+    MyAppli app(VideoMode(800, 600), "Test odfaeg");
+    return app.exec();
+}
+
+
+
+

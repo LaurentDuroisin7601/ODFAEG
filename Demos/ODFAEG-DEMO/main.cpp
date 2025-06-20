@@ -26,9 +26,9 @@ using namespace odfaeg::graphic;
 using namespace odfaeg::window;
 using namespace odfaeg::audio;
 using namespace sorrok;
-//Make index sequences from an offset.
 
 int main(int argc, char *argv[]) {
+
    /* VkSettup instance;
     Device device(instance);
     RenderWindow window(VideoMode(800, 600), "test", device);

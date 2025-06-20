@@ -42,13 +42,24 @@ namespace odfaeg {
             *  \param y : the y coordinate.
             *  \param z : the z coordinate.
             */
-            template<class... Args, typename = std::enable_if_t<(std::is_arithmetic_v<Args> && ...)>>
+            template<class... Args, typename = std::enable_if_t<(std::is_arithmetic_v<Args> && ...)>,
+            typename First = std::tuple_element_t<0, std::tuple<Args...>>,
+            typename = std::enable_if_t<
+              sizeof...(Args) != 1 || !std::is_same_v<VecN<T, N>, std::decay_t<First>>>>
             VecN(Args... args)
             {
                 set(args...);
             }
+            VecN(const VecN<T, N>& other) {
+                for (unsigned int i = 0; i < N; i++) {
+                    data[i] = other[i];
+                }
+            }
             template <unsigned int N2>
             VecN(VecN<T, N2> other) {
+                for (unsigned int i = 0; i < N; i++) {
+                    data[i] = 0;
+                }
                 unsigned int M = std::min(N, N2);
                 for (unsigned int i = 0; i < M; i++) {
                     data[i] = other[i];
@@ -192,6 +203,12 @@ namespace odfaeg {
                     result[i] = data[i] / scalar;
                 }
                 return result;
+            }
+            VecN<T, N>& operator= (const VecN<T, N> &other) {
+                for (unsigned int i = 0; i < N; i++) {
+                    data[i] = other[i];
+                }
+                return *this;
             }
             template <unsigned int N2>
             VecN<T, N>& operator= (const VecN<T, N2> &other) {

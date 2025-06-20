@@ -21,6 +21,7 @@ namespace odfaeg {
           *
           * Manage a 3D matrix who is used to perform 3D transformations and projections.
           */
+
         template <typename T, unsigned int R, unsigned int C>
         class Mat {
             private :
@@ -51,20 +52,31 @@ namespace odfaeg {
             * \param m43 the fourth element of the thirst row of the matrix.
             * \param m44 the fourth element of the fourth row of the matrix.
             */
-            template <typename... Args>
+            template <typename... Args,
+            typename First = std::tuple_element_t<0, std::tuple<Args...>>,
+            typename = std::enable_if_t<
+              sizeof...(Args) != 1 || !std::is_same_v<Mat<T, R, C>, std::decay_t<First>>>>
             Mat (Args... args) {
                 set(args...);
             }
+
+            Mat (const Mat<T, R, C> &other) {
+                zero();
+
+                for (unsigned int i = 0; i < R; i++) {
+                    for (unsigned int j = 0; j < C; j++) {
+                        data[i][j] = other.data[i][j];
+                    }
+                }
+            }
             template <unsigned int R2, unsigned int C2>
-            Mat (const Mat<T, R2, C2> &other) {
+            Mat(const Mat<T, R2, C2>& other) {
                 zero();
                 unsigned int M = std::min(R, R2);
                 unsigned int N = std::min(C, C2);
-                for (unsigned int i = 0; i < M; i++) {
-                    for (unsigned int j = 0; j < N; j++) {
-                        data[i][j] = other[i][j];
-                    }
-                }
+                for (unsigned int i = 0; i < M; ++i)
+                    for (unsigned int j = 0; j < N; ++j)
+                        data[i][j] = other.data[i][j];
             }
             /**
             * \fn setM4f (float, float, float, float, float, float, float, float, float, float, float, float, float, float, float, float, flaot)
@@ -286,6 +298,15 @@ namespace odfaeg {
             * \brief set the matrix elements from the other matrix elements and return a reference to this matrix.
             * \param a refenrence to the current matrix.
             */
+            Mat<T, R, C>& operator= (const Mat<T, R, C> &other) {
+                zero();
+                for (unsigned int i = 0; i < R; i++) {
+                    for (unsigned int j = 0; j < C; j++) {
+                        data[i][j] = other.data[i][j];
+                    }
+                }
+                return *this;
+            }
             template <unsigned int R2, unsigned int C2>
             Mat<T, R, C>& operator= (const Mat<T, R2, C2> &other) {
                 zero();
