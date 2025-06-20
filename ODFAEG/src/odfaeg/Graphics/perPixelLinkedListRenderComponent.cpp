@@ -171,8 +171,7 @@ namespace odfaeg {
 
 
             datasReady = false;
-
-
+            isSomethingDrawn = false;
         }
         void PerPixelLinkedListRenderComponent::createDescriptorsAndPipelines() {
             RenderStates states;
@@ -1050,6 +1049,8 @@ namespace odfaeg {
                                                         //color = mix (color, frags[i].color, frags[i].color.a);
 
                                                       }
+                                                      /*if (color.r != 0 || color.g != 0 || color.b != 0 || color.a != 0)
+                                                      debugPrintfEXT("color : %v4f", color);*/
                                                       fcolor = color;
                                                    })";
             if (!indirectRenderingShader.loadFromMemory(indirectDrawVertexShader, fragmentShader)) {
@@ -2304,7 +2305,7 @@ namespace odfaeg {
             }*/
         }
         void PerPixelLinkedListRenderComponent::createCommandBuffersIndirect(unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, DepthStencilID depthStencilID, RenderStates currentStates) {
-
+            //std::cout<<"draw indirect"<<std::endl;
             if (needToUpdateDS) {
                 createDescriptorSets(p, currentStates);
                 needToUpdateDS = false;
@@ -2349,10 +2350,11 @@ namespace odfaeg {
             frameBuffer.beginRenderPass();
             vkCmdExecuteCommands(frameBuffer.getCommandBuffers()[currentFrame], static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());*/
             frameBuffer.display();
-
+            isSomethingDrawn = true;
         }
         void PerPixelLinkedListRenderComponent::createCommandBufferVertexBuffer(RenderStates currentStates) {
-            frameBuffer.beginRecordCommandBuffers();
+            if (isSomethingDrawn)
+                frameBuffer.beginRecordCommandBuffers();
 
             unsigned int currentFrame = frameBuffer.getCurrentFrame();
             /*VkCommandBufferInheritanceInfo inheritanceInfo;
@@ -2444,9 +2446,7 @@ namespace odfaeg {
             vkCmdExecuteCommands(frameBuffer.getCommandBuffers()[currentFrame], static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());*/
             frameBuffer.endRenderPass();
             frameBuffer.display(true, renderFinishedSemaphore[window.getCurrentFrame()]);
-
-
-
+            isSomethingDrawn = false;
         }
         bool PerPixelLinkedListRenderComponent::loadEntitiesOnComponent(std::vector<Entity*> vEntities) {
             {

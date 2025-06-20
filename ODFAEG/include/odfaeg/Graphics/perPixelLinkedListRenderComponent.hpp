@@ -158,6 +158,7 @@ namespace odfaeg {
             std::vector<VkSemaphore> renderFinishedSemaphore;
             std::vector<VkSemaphore> clearFinishedSemaphore;
             RenderWindow& window;
+            bool isSomethingDrawn;
         };
         #else
         class ODFAEG_GRAPHICS_API PerPixelLinkedListRenderComponent : public HeavyComponent {
