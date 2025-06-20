@@ -918,10 +918,10 @@ namespace odfaeg {
                                                                 uint textureIndex;
                                                                 uint materialType;
                                                             };
-                                                            layout(set = 0, binding = 4) buffer modelData {
+                                                            layout(std430, set = 0, binding = 4) buffer modelData {
                                                                 ModelData modelDatas[];
                                                             };
-                                                            layout(set = 0, binding = 5) buffer materialData {
+                                                            layout(std430, set = 0, binding = 5) buffer materialData {
                                                                 MaterialData materialDatas[];
                                                             };
                                                             layout(location = 0) out vec4 frontColor;
@@ -976,12 +976,12 @@ namespace odfaeg {
                                                           float depth;
                                                           uint next;
                                                       };
-                                                      layout(set = 0, binding = 0) buffer CounterSSBO {
+                                                      layout(std430, set = 0, binding = 0) buffer CounterSSBO {
                                                           uint count;
                                                           uint maxNodes;
                                                       };
                                                       layout(set = 0, binding = 1, r32ui) uniform coherent uimage2D headPointers;
-                                                      layout(set = 0, binding = 2) buffer LinkedLists {
+                                                      layout(std430, set = 0, binding = 2) buffer LinkedLists {
                                                           NodeType nodes[];
                                                       };
                                                       layout(set = 0, binding = 3) uniform sampler2D textures[];
@@ -1012,7 +1012,7 @@ namespace odfaeg {
                                                       uint next;
                                                    };
                                                    layout(set = 0, binding = 0, r32ui) uniform uimage2D headPointers;
-                                                   layout(set = 0, binding = 1) buffer linkedLists {
+                                                   layout(std430, set = 0, binding = 1) buffer linkedLists {
                                                        NodeType nodes[];
                                                    };
                                                    layout(location = 0) in vec4 frontColor;
@@ -1063,8 +1063,9 @@ namespace odfaeg {
 
             math::Matrix4f viewMatrix = getWindow().getDefaultView().getViewMatrix().getMatrix()/*.transpose()*/;
             math::Matrix4f projMatrix = getWindow().getDefaultView().getProjMatrix().getMatrix()/*.transpose()*/;
-            ppll2PushConsts.viewMatrix = viewMatrix;
-            ppll2PushConsts.projMatrix = projMatrix;
+            ppll2PushConsts.viewMatrix = toVulkanMatrix(viewMatrix);
+            ppll2PushConsts.projMatrix = toVulkanMatrix(projMatrix);
+
             //ppll2PushConsts.projMatrix.m22 *= -1;
             indirectDrawPushConsts.resolution = resolution;
         }
@@ -1110,7 +1111,7 @@ namespace odfaeg {
                     }
                     TransformMatrix tm;
                     ModelData modelData;
-                    modelData.worldMat = tm.getMatrix()/*.transpose()*/;
+                    modelData.worldMat = toVulkanMatrix(tm.getMatrix())/*.transpose()*/;
 
                     modelDatas[p].push_back(modelData);
 
@@ -1140,7 +1141,7 @@ namespace odfaeg {
                     for (unsigned int j = 0; j < tm.size(); j++) {
                         tm[j]->update();
                         ModelData modelData;
-                        modelData.worldMat = tm[j]->getMatrix()/*.transpose()*/;
+                        modelData.worldMat = toVulkanMatrix(tm[j]->getMatrix())/*.transpose()*/;
                         modelDatas[p].push_back(modelData);
                     }
                     MaterialData materialData;
@@ -1298,7 +1299,7 @@ namespace odfaeg {
 
                     TransformMatrix tm;
                     ModelData modelData;
-                    modelData.worldMat = tm.getMatrix()/*.transpose()*/;
+                    modelData.worldMat = toVulkanMatrix(tm.getMatrix())/*.transpose()*/;
                     modelDatas[p].push_back(modelData);
                     unsigned int indexCount = 0, vertexCount = 0;
                     for (unsigned int j = 0; j < m_normalsIndexed[i].getAllVertices().getVertexCount(); j++) {
@@ -1338,7 +1339,7 @@ namespace odfaeg {
                     for (unsigned int j = 0; j < tm.size(); j++) {
                         tm[j]->update();
                         ModelData model;
-                        model.worldMat = tm[j]->getMatrix()/*.transpose()*/;
+                        model.worldMat = toVulkanMatrix(tm[j]->getMatrix())/*.transpose()*/;
                         modelDatas[p].push_back(model);
                     }
 
@@ -1501,7 +1502,7 @@ namespace odfaeg {
                     }
                     TransformMatrix tm;
                     ModelData modelData;
-                    modelData.worldMat = tm.getMatrix()/*.transpose()*/;
+                    modelData.worldMat = toVulkanMatrix(tm.getMatrix())/*.transpose()*/;
                     modelDatas[p].push_back(modelData);
 
                     drawArraysIndirectCommand.count = vertexCount;
@@ -1530,7 +1531,7 @@ namespace odfaeg {
                     for (unsigned int j = 0; j < tm.size(); j++) {
                         tm[j]->update();
                         ModelData modelData;
-                        modelData.worldMat = tm[j]->getMatrix()/*.transpose()*/;
+                        modelData.worldMat = toVulkanMatrix(tm[j]->getMatrix())/*.transpose()*/;
                         modelDatas[p].push_back(modelData);
                     }
                     MaterialData materialData;
@@ -1683,7 +1684,7 @@ namespace odfaeg {
                     materialDatas[p].push_back(material);
                     TransformMatrix tm;
                     ModelData model;
-                    model.worldMat = tm.getMatrix()/*.transpose()*/;
+                    model.worldMat = toVulkanMatrix(tm.getMatrix())/*.transpose()*/;
                     modelDatas[p].push_back(model);
 
                     unsigned int vertexCount = 0;
@@ -1714,7 +1715,7 @@ namespace odfaeg {
                     for (unsigned int j = 0; j < tm.size(); j++) {
                         tm[j]->update();
                         ModelData model;
-                        model.worldMat = tm[j]->getMatrix()/*.transpose()*/;
+                        model.worldMat = toVulkanMatrix(tm[j]->getMatrix())/*.transpose()*/;
                         modelDatas[p].push_back(model);
                     }
                     unsigned int vertexCount = 0;
@@ -1861,7 +1862,7 @@ namespace odfaeg {
 
                     TransformMatrix tm;
                     ModelData model;
-                    model.worldMat = tm.getMatrix()/*.transpose()*/;
+                    model.worldMat = toVulkanMatrix(tm.getMatrix())/*.transpose()*/;
                     modelDatas[p].push_back(model);
                     unsigned int vertexCount = 0, indexCount = 0;
                     for (unsigned int j = 0; j < m_selectedIndexed[i].getAllVertices().getVertexCount(); j++) {
@@ -1897,7 +1898,7 @@ namespace odfaeg {
                     for (unsigned int j = 0; j < tm.size(); j++) {
                         tm[j]->update();
                         ModelData model;
-                        model.worldMat = tm[j]->getMatrix()/*.transpose()*/;
+                        model.worldMat = toVulkanMatrix(tm[j]->getMatrix())/*.transpose()*/;
                         modelDatas[p].push_back(model);
                     }
                     unsigned int indexCount = 0, vertexCount = 0;
@@ -2050,7 +2051,7 @@ namespace odfaeg {
 
                     TransformMatrix tm;
                     ModelData model;
-                    model.worldMat = tm.getMatrix().transpose();
+                    model.worldMat = toVulkanMatrix(tm.getMatrix())/*.transpose()*/;
                     modelDatas[p].push_back(model);
 
                     unsigned int indexCount = 0, vertexCount = 0;
@@ -2090,7 +2091,7 @@ namespace odfaeg {
                     for (unsigned int j = 0; j < tm.size(); j++) {
                         tm[j]->update();
                         ModelData model;
-                        model.worldMat = tm[j]->getMatrix().transpose();
+                        model.worldMat = toVulkanMatrix(tm[j]->getMatrix())/*.transpose()*/;
                         modelDatas[p].push_back(model);
                     }
                     unsigned int indexCount = 0, vertexCount = 0;
@@ -2255,8 +2256,8 @@ namespace odfaeg {
             vb.clear();*/
             math::Matrix4f projMatrix = view.getProjMatrix().getMatrix()/*.transpose()*/;
             math::Matrix4f viewMatrix = view.getViewMatrix().getMatrix()/*.transpose()*/;
-            indirectDrawPushConsts.projMatrix = projMatrix;
-            indirectDrawPushConsts.viewMatrix = viewMatrix;
+            indirectDrawPushConsts.projMatrix = toVulkanMatrix(projMatrix);
+            indirectDrawPushConsts.viewMatrix = toVulkanMatrix(viewMatrix);
             //indirectDrawPushConsts.projMatrix.m22 *= -1;
 
 
@@ -2282,7 +2283,9 @@ namespace odfaeg {
             vb.append(v4);
             vb.update();
             math::Matrix4f matrix = quad.getTransform().getMatrix()/*.transpose()*/;
-            ppll2PushConsts.worldMat = matrix;
+            std::cout<<"world mat : "<<matrix<<std::endl;
+            ppll2PushConsts.worldMat = toVulkanMatrix(matrix);
+            //system("PAUSE");
             RenderStates currentStates;
             currentStates.shader = &perPixelLinkedListP2;
             currentStates.blendMode = BlendNone;
@@ -2418,8 +2421,8 @@ namespace odfaeg {
                 VkMemoryBarrier memoryBarrier;
                 memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
                 memoryBarrier.pNext = VK_NULL_HANDLE;
-                memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-                memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+                memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+                memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
                 //vkCmdWaitEvents(frameBuffer.getCommandBuffers()[currentFrame], 1, &events[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
 

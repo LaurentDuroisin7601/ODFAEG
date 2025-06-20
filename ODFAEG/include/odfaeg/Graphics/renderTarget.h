@@ -252,17 +252,27 @@ namespace odfaeg {
 
             Color clearColor;
             bool depthTestEnabled, stencilTestEnabled;
+            struct alignas(16) GLMatrix4f {
+                float data[16]; // row-major ou column-major, selon ton convention
+            };
 
         private :
+            GLMatrix4f toVulkanMatrix(const math::Matrix4f& mat) {
+                GLMatrix4f flat;
+                for (int col = 0; col < 4; ++col)
+                    for (int row = 0; row < 4; ++row)
+                        flat.data[col * 4 + row] = mat[col][row];
+                return flat;
+            }
             void applyViewportAndScissor();
             PFN_vkCmdPushDescriptorSetKHR vkCmdPushDescriptorSetKHR{ VK_NULL_HANDLE };
             void createUniformBuffers();
             void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
             uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
             struct UniformBufferObject {
-                alignas(16) math::Matrix4f model;
-                alignas(16) math::Matrix4f view;
-                alignas(16) math::Matrix4f proj;
+                GLMatrix4f model;
+                GLMatrix4f view;
+                GLMatrix4f proj;
             };
             void updateUniformBuffer(uint32_t imageIndex, UniformBufferObject ubo);
 

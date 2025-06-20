@@ -57,6 +57,7 @@ namespace odfaeg {
             }
             template <unsigned int R2, unsigned int C2>
             Mat (const Mat<T, R2, C2> &other) {
+                zero();
                 unsigned int M = std::min(R, R2);
                 unsigned int N = std::min(C, C2);
                 for (unsigned int i = 0; i < M; i++) {
@@ -287,6 +288,7 @@ namespace odfaeg {
             */
             template <unsigned int R2, unsigned int C2>
             Mat<T, R, C>& operator= (const Mat<T, R2, C2> &other) {
+                zero();
                 unsigned int M = std::min(R, R2);
                 unsigned int N = std::min(C, C2);
                 for (unsigned int i = 0; i < M; i++) {

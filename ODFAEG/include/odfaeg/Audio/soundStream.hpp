@@ -31,9 +31,10 @@
 #include "export.hpp"
 #include "soundSource.hpp"
 #include <thread>
-#include "../Core/time.h"
+#include "../Core/clock.h"
 #include <mutex>
 #include <cstdlib>
+#include <windows.h>
 
 
 namespace odfaeg
@@ -178,6 +179,9 @@ namespace odfaeg
             ///
             ////////////////////////////////////////////////////////////
             bool getLoop() const;
+            static DWORD WINAPI streamDataThunk(LPVOID param);
+            void streamData();
+            core::Clock clock;
 
         protected:
 
@@ -252,6 +256,7 @@ namespace odfaeg
             ////////////////////////////////////////////////////////////
             virtual std::int64_t onLoop();
 
+
         private:
 
             ////////////////////////////////////////////////////////////
@@ -261,7 +266,7 @@ namespace odfaeg
             /// only when the sound is stopped.
             ///
             ////////////////////////////////////////////////////////////
-            void streamData();
+
 
             ////////////////////////////////////////////////////////////
             /// \brief Fill a new buffer with audio samples, and append
@@ -307,7 +312,7 @@ namespace odfaeg
             ////////////////////////////////////////////////////////////
             // Member data
             ////////////////////////////////////////////////////////////
-            std::thread        m_thread;                   ///< Thread running the background tasks
+            //std::thread        m_thread;                   ///< Thread running the background tasks
             mutable std::mutex m_threadMutex;              ///< Thread mutex
             Status        m_threadStartState;         ///< State the thread starts in (Playing, Paused, Stopped)
             bool          m_isStreaming;              ///< Streaming state (true = playing, false = stopped)

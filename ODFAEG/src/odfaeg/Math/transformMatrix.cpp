@@ -27,6 +27,7 @@ namespace odfaeg {
             return entityId;
         }
         float* TransformMatrix::getGlMatrix () {
+            update();
             float* matrix = new float[16];
             update();
             matrix[0] = matrix4f[0][0];
@@ -122,21 +123,22 @@ namespace odfaeg {
                 float angle;
                 angle = math::Math::toRadians(r3d);
                 matrix4f[0][0] = (r3dAxis.x() * r3dAxis.x() * (1 - math::Math::cosinus(angle)) + math::Math::cosinus(angle)) * s3d.x();
-                matrix4f[0][1] = (r3dAxis.x() * r3dAxis.y() * (1 - math::Math::cosinus(angle)) - r3dAxis.z() * math::Math::sinus(angle));
-                matrix4f[0][2] = (r3dAxis.x() * r3dAxis.z() * (1 - math::Math::cosinus(angle)) + r3dAxis.y() * math::Math::sinus(angle));
+                matrix4f[0][1] = (r3dAxis.x() * r3dAxis.y() * (1 - math::Math::cosinus(angle)) - r3dAxis.z() * math::Math::sinus(angle)) * s3d.y();
+                matrix4f[0][2] = (r3dAxis.x() * r3dAxis.z() * (1 - math::Math::cosinus(angle)) + r3dAxis.y() * math::Math::sinus(angle)) * s3d.z();
                 matrix4f[0][3] = -o3d.x() * matrix4f[0][0] - o3d.y() * matrix4f[0][1] - o3d.z() * matrix4f[0][2] + t3d.x();
-                matrix4f[1][0] = (r3dAxis.y() * r3dAxis.x() * (1 - math::Math::cosinus(angle)) + r3dAxis.z() * math::Math::sinus(angle));
+                matrix4f[1][0] = (r3dAxis.y() * r3dAxis.x() * (1 - math::Math::cosinus(angle)) + r3dAxis.z() * math::Math::sinus(angle)) * s3d.x();
                 matrix4f[1][1] = (r3dAxis.y() * r3dAxis.y() * (1 - math::Math::cosinus(angle)) + math::Math::cosinus(angle)) * s3d.y();
-                matrix4f[1][2] = (r3dAxis.y() * r3dAxis.z() * (1 - math::Math::cosinus(angle)) - r3dAxis.x() * math::Math::sinus(angle));
+                matrix4f[1][2] = (r3dAxis.y() * r3dAxis.z() * (1 - math::Math::cosinus(angle)) - r3dAxis.x() * math::Math::sinus(angle)) * s3d.z();
                 matrix4f[1][3] = -o3d.x() * matrix4f[1][0] - o3d.y() * matrix4f[1][1] - o3d.z() * matrix4f[1][2] + t3d.y();
-                matrix4f[2][0] = (r3dAxis.z() * r3dAxis.x() * (1 - math::Math::cosinus(angle)) - r3dAxis.y() * math::Math::sinus(angle));
-                matrix4f[2][1] = (r3dAxis.z() * r3dAxis.y() * (1 - math::Math::cosinus(angle)) + r3dAxis.x() * math::Math::sinus(angle));
+                matrix4f[2][0] = (r3dAxis.z() * r3dAxis.x() * (1 - math::Math::cosinus(angle)) - r3dAxis.y() * math::Math::sinus(angle)) * s3d.x();
+                matrix4f[2][1] = (r3dAxis.z() * r3dAxis.y() * (1 - math::Math::cosinus(angle)) + r3dAxis.x() * math::Math::sinus(angle)) * s3d.y();
                 matrix4f[2][2] = (r3dAxis.z() * r3dAxis.z() * (1 - math::Math::cosinus(angle)) + math::Math::cosinus(angle)) * s3d.z();
                 matrix4f[2][3] = -o3d.x() * matrix4f[2][0] - o3d.y() * matrix4f[2][1] - o3d.z() * matrix4f[2][2] + t3d.z();
                 matrix4f[3][0] = 0;
                 matrix4f[3][1] = 0;
                 matrix4f[3][2] = 0;
                 matrix4f[3][3] = 1;
+                //std::cout<<"matrix : "<<matrix4f<<std::endl;
                 needToUpdate3D = false;
             }
         }

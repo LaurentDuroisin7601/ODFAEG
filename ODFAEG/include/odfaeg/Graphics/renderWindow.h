@@ -98,6 +98,7 @@ namespace odfaeg
 
 
         private :
+
             bool firstSubmit;
             uint32_t imageIndex;
 

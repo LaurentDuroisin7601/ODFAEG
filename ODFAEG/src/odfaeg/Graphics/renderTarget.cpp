@@ -280,10 +280,10 @@ namespace odfaeg {
              }
              vertexBuffers[selectedBuffer]->update();
              UniformBufferObject ubo;
-             ubo.proj = m_view.getProjMatrix().getMatrix()/*.transpose()*/;
+             ubo.proj = toVulkanMatrix(m_view.getProjMatrix().getMatrix())/*.transpose()*/;
              //ubo.proj.m22 *= -1;
-             ubo.view = m_view.getViewMatrix().getMatrix()/*.transpose()*/;
-             ubo.model = states.transform.getMatrix()/*.transpose()*/;
+             ubo.view = toVulkanMatrix(m_view.getViewMatrix().getMatrix())/*.transpose()*/;
+             ubo.model = toVulkanMatrix(states.transform.getMatrix())/*.transpose()*/;
              updateUniformBuffer(getCurrentFrame(), ubo);
              recordCommandBuffers(*vertexBuffers[selectedBuffer], states);
              if (oldType == Quads)
@@ -302,10 +302,10 @@ namespace odfaeg {
                 }
              }
              UniformBufferObject ubo;
-             ubo.proj = m_view.getProjMatrix().getMatrix()/*.transpose()*/;
+             ubo.proj = toVulkanMatrix(m_view.getProjMatrix().getMatrix())/*.transpose()*/;
              //ubo.proj.m22 *= -1;
-             ubo.view = m_view.getViewMatrix().getMatrix()/*.transpose()*/;
-             ubo.model = states.transform.getMatrix()/*.transpose()*/;
+             ubo.view = toVulkanMatrix(m_view.getViewMatrix().getMatrix())/*.transpose()*/;
+             ubo.model = toVulkanMatrix(states.transform.getMatrix())/*.transpose()*/;
              updateUniformBuffer(getCurrentFrame(), ubo);
              recordCommandBuffers(vb, states);
              /*//std::cout<<"drawn"<<std::endl;

@@ -67,7 +67,7 @@ namespace odfaeg {
             }
 
             // Wait for the thread to terminate
-            m_thread.join();
+
         }
 
 
@@ -77,6 +77,7 @@ namespace odfaeg {
             m_channelCount = channelCount;
             m_sampleRate = sampleRate;
             m_samplesProcessed = 0;
+
             m_isStreaming = false;
 
             // Deduce the format from the number of channels
@@ -130,9 +131,24 @@ namespace odfaeg {
             // Start updating the stream in a separate thread to avoid blocking the application
             m_isStreaming = true;
             m_threadStartState = Playing;
-            m_thread = std::thread(&SoundStream::streamData, this);
-        }
 
+
+           HANDLE hThread = CreateThread(
+               nullptr, 0,
+               streamDataThunk,
+               this,
+               0,
+               nullptr
+           );
+
+            // Changer la priorité et l'affinité
+           SetThreadPriority(hThread, THREAD_PRIORITY_HIGHEST);
+           SetThreadAffinityMask(hThread, 1ull << 2);
+        }
+        DWORD WINAPI SoundStream::streamDataThunk(LPVOID param) {
+            static_cast<SoundStream*>(param)->streamData();
+            return 0;
+        }
 
         ////////////////////////////////////////////////////////////
         void SoundStream::pause()
@@ -161,7 +177,7 @@ namespace odfaeg {
             }
 
             // Wait for the thread to terminate
-            m_thread.join();
+            //m_thread.join();
 
             // Move to the beginning
             onSeek(core::Time::zero);
@@ -220,7 +236,17 @@ namespace odfaeg {
 
             m_isStreaming = true;
             m_threadStartState = oldStatus;
-            m_thread = std::thread(&SoundStream::streamData, this);
+            HANDLE hThread = CreateThread(
+               nullptr, 0,
+               streamDataThunk,
+               this,
+               0,
+               nullptr
+           );
+
+            // Changer la priorité et l'affinité
+           SetThreadPriority(hThread, THREAD_PRIORITY_HIGHEST);
+           SetThreadAffinityMask(hThread, 1ull << 2);
         }
 
 
@@ -287,6 +313,7 @@ namespace odfaeg {
 
             // Fill the queue
             requestStop = fillQueue();
+
             // Play the sound
             alCheck(alSourcePlay(m_source));
 
@@ -329,6 +356,8 @@ namespace odfaeg {
                 // Get the number of buffers that have been processed (i.e. ready for reuse)
                 ALint nbProcessed = 0;
                 alCheck(alGetSourcei(m_source, AL_BUFFERS_PROCESSED, &nbProcessed));
+
+                //std::cout<<"nb proceed : "<<nbProcessed<<std::endl;
 
 
                 ////std::cout<<"nb proceed : "<<nbProcessed<<std::endl;
@@ -390,8 +419,11 @@ namespace odfaeg {
                 }
 
                 // Leave some time for the other threads if the stream is still playing
-                if (SoundSource::getStatus() != Stopped)
-                    std::this_thread::sleep_for(std::chrono::duration<std::uint64_t>(core::milliseconds(10).asMilliseconds()));
+                if (SoundSource::getStatus() != Stopped) {
+                    /*std::cout<<"temps écoulé : "<<clock.getElapsedTime().asMilliseconds()<<std::endl;
+                    clock.restart();*/
+                    std::this_thread::sleep_for(std::chrono::duration<uint32_t, std::milli>(10));
+                }
             }
 
             // Stop the playback
@@ -457,8 +489,7 @@ namespace odfaeg {
                 // Fill the buffer
                 ALsizei size = static_cast<ALsizei>(data.sampleCount) * sizeof(std::int16_t);
                 alCheck(alBufferData(buffer, m_format, data.samples, size, m_sampleRate));
-                alGetBufferi(buffer, AL_SIZE, &size);
-                ////std::cout<<"sample count : "<<data.sampleCount<<std::endl;
+
 
 
 
@@ -468,6 +499,7 @@ namespace odfaeg {
             }
             else
             {
+
                 // If we get here, we most likely ran out of retries
                 requestStop = true;
             }
@@ -481,10 +513,12 @@ namespace odfaeg {
         {
             // Fill and enqueue all the available buffers
             bool requestStop = false;
+
             for (int i = 0; (i < BufferCount) && !requestStop; ++i)
             {
                 // Since no sound has been loaded yet, we can't schedule loop seeks preemptively,
                 // So if we start on EOF or Loop End, we let fillAndPushBuffer() adjust the sample count
+
                 if (fillAndPushBuffer(i, (i == 0)))
                     requestStop = true;
             }

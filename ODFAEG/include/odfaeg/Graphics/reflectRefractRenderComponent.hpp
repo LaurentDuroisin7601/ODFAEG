@@ -17,6 +17,9 @@ namespace odfaeg {
         #ifdef VULKAN
         class ODFAEG_GRAPHICS_API ReflectRefractRenderComponent : public HeavyComponent {
             public :
+            struct GLMatrix4f {
+                float data[16];
+            };
             enum DepthStencilID {
                 NODEPTHNOSTENCIL, DEPTHNOSTENCIL, NBDEPTHSTENCIL
             };
@@ -34,7 +37,7 @@ namespace odfaeg {
                     unsigned instance_base;
             };
             struct ModelData {
-                math::Matrix4f worldMat;
+                GLMatrix4f worldMat;
             };
             struct MaterialData {
                 unsigned int textureIndex;
@@ -46,13 +49,13 @@ namespace odfaeg {
                 unsigned int maxNodeCount;
             };
             struct IndirectRenderingPC  {
-                math::Matrix4f projMatrix;
-                math::Matrix4f viewMatrix;
+                GLMatrix4f projMatrix;
+                GLMatrix4f viewMatrix;
             };
             struct LinkedList2PC  {
-                math::Matrix4f projMatrix;
-                math::Matrix4f viewMatrix;
-                math::Matrix4f worldMat;
+                GLMatrix4f projMatrix;
+                GLMatrix4f viewMatrix;
+                GLMatrix4f worldMat;
             };
             struct BuildDepthPC {
                 unsigned int nbLayers;
@@ -66,8 +69,8 @@ namespace odfaeg {
                 math::Vec4f resolution;
             };
             struct MatricesData {
-                math::Matrix4f projMatrix;
-                math::Matrix4f viewMatrix;
+                GLMatrix4f projMatrix;
+                GLMatrix4f viewMatrix;
             };
             struct UniformBufferObject {
                 MatricesData matrices[6];
@@ -123,6 +126,13 @@ namespace odfaeg {
             ~ReflectRefractRenderComponent();
             void onVisibilityChanged(bool visible) {}
             private :
+            GLMatrix4f toVulkanMatrix(const math::Matrix4f& mat) {
+                GLMatrix4f flat;
+                for (int col = 0; col < 4; ++col)
+                    for (int row = 0; row < 4; ++row)
+                        flat.data[col * 4 + row] = mat[col][row];
+                return flat;
+            }
             void createCommandPool();
             VkCommandBuffer beginSingleTimeCommands();
             void endSingleTimeCommands(VkCommandBuffer commandBuffer);

@@ -22,6 +22,9 @@ namespace odfaeg {
             enum DepthStencilID {
                 NODEPTHNOSTENCIL, NODEPTHSTENCIL, NODEPTHSTENCILOUTLINE, NBDEPTHSTENCIL
             };
+            struct alignas(16) GLMatrix4f {
+                float data[16]; // row-major ou column-major, selon ton convention
+            };
             struct DrawArraysIndirectCommand {
                 unsigned int  count;
                 unsigned int  instanceCount;
@@ -36,26 +39,26 @@ namespace odfaeg {
                     unsigned instance_base;
             };
             struct ModelData {
-                math::Matrix4f worldMat;
+                GLMatrix4f worldMat;
             };
             struct MaterialData {
                 unsigned int textureIndex;
                 unsigned int materialType;
             };
-            struct AtomicCounterSSBO {
+            struct alignas(8) AtomicCounterSSBO {
                 unsigned int count;
                 unsigned int maxNodeCount;
             };
             struct IndirectDrawPushConsts {
-                math::Matrix4f projMatrix;
-                math::Matrix4f viewMatrix;
+                GLMatrix4f projMatrix;
+                GLMatrix4f viewMatrix;
                 math::Vec4f resolution;
                 float time;
             };
             struct Ppll2PushConsts {
-                math::Matrix4f projMatrix;
-                math::Matrix4f viewMatrix;
-                math::Matrix4f worldMat;
+                GLMatrix4f projMatrix;
+                GLMatrix4f viewMatrix;
+                GLMatrix4f worldMat;
             };
             PerPixelLinkedListRenderComponent (RenderWindow& window, int layer, std::string expression, window::ContextSettings settings);
             void createDescriptorsAndPipelines();
@@ -73,6 +76,13 @@ namespace odfaeg {
             std::vector<Entity*> getEntities();
             virtual ~PerPixelLinkedListRenderComponent();
             private :
+            GLMatrix4f toVulkanMatrix(const math::Matrix4f& mat) {
+                GLMatrix4f flat;
+                for (int col = 0; col < 4; ++col)
+                    for (int row = 0; row < 4; ++row)
+                        flat.data[col * 4 + row] = mat[col][row];
+                return flat;
+            }
             void createCommandPool();
             void createHeadPtrImageView();
             void createHeadPtrSampler();

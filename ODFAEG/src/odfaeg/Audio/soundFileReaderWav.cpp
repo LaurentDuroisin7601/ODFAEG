@@ -284,6 +284,7 @@ namespace odfaeg {
                             return false;
                         info.channelCount = channelCount;
 
+
                         // Sample rate
                         std::uint32_t sampleRate = 0;
                         if (!decode(*m_stream, sampleRate))
