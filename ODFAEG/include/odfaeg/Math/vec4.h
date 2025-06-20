@@ -34,7 +34,11 @@ namespace odfaeg {
             *  \brief default constructror.
             * construct a null vector (with 0, 0, 0 as coordinates)
             */
-            VecN () {}
+            VecN () {
+                for (unsigned int i = 0; i < N; i++) {
+                    data[i] = 0;
+                }
+            }
             /**\fn Vec2f(float x, float y, float)
             *  \brief constructror.
             * construct a vector with the given coordinates.

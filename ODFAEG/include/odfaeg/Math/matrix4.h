@@ -31,7 +31,7 @@ namespace odfaeg {
               * \brief constructor. (Construct the identity matrix)
             */
             public :
-            Mat () {}
+            Mat () {zero();}
             /**
             * \fn Matrix4f (float, float, float, float, float, float, float, float, float, float, float, float, float, float)
             * \brief  constructor.(Construct a matrix with the given elements)
@@ -65,7 +65,7 @@ namespace odfaeg {
 
                 for (unsigned int i = 0; i < R; i++) {
                     for (unsigned int j = 0; j < C; j++) {
-                        data[i][j] = other.data[i][j];
+                        data[i][j] = other[i][j];
                     }
                 }
             }
@@ -76,7 +76,7 @@ namespace odfaeg {
                 unsigned int N = std::min(C, C2);
                 for (unsigned int i = 0; i < M; ++i)
                     for (unsigned int j = 0; j < N; ++j)
-                        data[i][j] = other.data[i][j];
+                        data[i][j] = other[i][j];
             }
             /**
             * \fn setM4f (float, float, float, float, float, float, float, float, float, float, float, float, float, float, float, float, flaot)
@@ -302,7 +302,7 @@ namespace odfaeg {
                 zero();
                 for (unsigned int i = 0; i < R; i++) {
                     for (unsigned int j = 0; j < C; j++) {
-                        data[i][j] = other.data[i][j];
+                        data[i][j] = other[i][j];
                     }
                 }
                 return *this;
