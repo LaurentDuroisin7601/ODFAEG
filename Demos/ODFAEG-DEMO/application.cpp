@@ -107,7 +107,7 @@ namespace sorrok {
         std::cout<<"Mouse inside : "<<mousePos.x()<<" "<<mousePos.y()<<std::endl;
     }
     void MyAppli::onLoad() {
-        std::tuple<std::reference_wrapper<Device>> rArgs = std::make_tuple(std::ref(getDevice()));
+        std::tuple</*std::reference_wrapper<Device>*/> rArgs = std::make_tuple(/*std::ref(getDevice())*/);
 
         TextureManager<> tm;
         tm.fromFileWithAlias("tilesets/eau.png", "WATER", rArgs);
@@ -317,8 +317,8 @@ namespace sorrok {
         PerPixelLinkedListRenderComponent *frc2 = new PerPixelLinkedListRenderComponent(getRenderWindow(), 1, "E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PARTICLES", ContextSettings(24, 8, 4, 4, 6));
 
         ReflectRefractRenderComponent *rrrc = new ReflectRefractRenderComponent(getRenderWindow(), 2, "E_BIGTILE+E_WALL+E_DECOR+E_ANIMATION+E_HERO", ContextSettings(0, 0, 4, 4, 6));
-        frc1->createDescriptorsAndPipelines();
-        frc2->createDescriptorsAndPipelines();
+        /*frc1->createDescriptorsAndPipelines();
+        frc2->createDescriptorsAndPipelines();*/
         /*ShadowRenderComponent *src = new ShadowRenderComponent(getRenderWindow(), 3, "E_WALL+E_DECOR+E_ANIMATION+E_HERO", ContextSettings(0, 0, 4, 4, 6));
         LightRenderComponent *lrc = new LightRenderComponent(getRenderWindow(), 4, "E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PONCTUAL_LIGHT", ContextSettings(0, 0, 4, 4, 6));
         //std::cout<<"component created"<<std::endl;

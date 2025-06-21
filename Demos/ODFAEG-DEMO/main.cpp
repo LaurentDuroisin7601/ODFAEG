@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
     /*VkSettup instance;
     Device device(instance);*/
 
-    /*RenderWindow window(VideoMode(800, 600), "test", Style::Default, ContextSettings(0, 0, 4, 4, 6));
+    RenderWindow window(VideoMode(800, 600), "test", Style::Default, ContextSettings(0, 0, 4, 4, 6));
     std::cout<<"window"<<std::endl;
     Texture texture;
     texture.loadFromFile("tilesets/eau.png");
@@ -53,7 +53,7 @@ int main(int argc, char *argv[]) {
         //window.endRenderPass();
         //window.submit(true);
         window.display();
-    }*/
+    }
 
 
 

@@ -348,9 +348,9 @@ namespace odfaeg {
                 matrix[9] = data[2][1];
                 matrix[10] = data[2][2];
                 matrix[11] = data[2][3];
-                matrix[12] = data[3][3];
-                matrix[13] = data[3][3];
-                matrix[14] = data[3][3];
+                matrix[12] = data[3][0];
+                matrix[13] = data[3][1];
+                matrix[14] = data[3][2];
                 matrix[15] = data[3][3];
                 return matrix;
             }
