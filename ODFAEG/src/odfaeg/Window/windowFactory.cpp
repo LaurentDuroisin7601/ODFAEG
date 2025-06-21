@@ -1,5 +1,5 @@
 #include "../../../include/odfaeg/Window/windowFactory.hpp"
-#if defined(ODFAEG)
+#if defined(SFML)
 #include "../../../include/odfaeg/Window/ODFAEG/sfmlWindowImpl.hpp"
 typedef odfaeg::window::ODFAEGWindowImpl WindowType;
 #elif defined(SDL)
@@ -18,7 +18,16 @@ typedef odfaeg::window::WindowImpl WindowType;
 namespace odfaeg {
     namespace window {
         IWindow* WindowFactory::create() {
-            return new WindowType();
+            //
+            try {
+                IWindow* window = new WindowType();
+                std::cout << "create factory" << std::endl;
+                return window;
+            } catch (const std::bad_alloc& e) {
+                std::cerr << "Exception : " << e.what() << std::endl;
+            } catch (...) {
+                std::cerr << "Exception inconnue pendant new WindowType()" << std::endl;
+            }
         }
     }
 }

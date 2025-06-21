@@ -6,6 +6,7 @@
 #include "wglExtensions.hpp"
 namespace odfaeg {
     namespace window {
+
         ////////////////////////////////////////////////////////////
         /// \brief Windows (WGL) implementation of OpenGL contexts
         ///

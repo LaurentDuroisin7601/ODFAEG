@@ -17,9 +17,19 @@ typedef odfaeg::window::WglContext ContextImplType;
 #include <set>
 namespace odfaeg {
     namespace window {
+        class ThreadLocalContext {
+        public:
+            static ContextImplType*& get() {
+                thread_local ContextImplType* ctx = nullptr;
+                if (!ctx)
+                    ctx = new ContextImplType(); // ou via ThreadLocalContext::get()
+                return ctx;
+            }
+        };
         class ODFAEG_WINDOW_API ContextImpl : public ContextImplType {
             public :
                 ContextImpl();
+
                 static void initResource();
                 static void cleanupResource();
                 static GlFunctionPointer getFunction(const char* name);
@@ -39,6 +49,7 @@ namespace odfaeg {
                 static void releaseTransientContext();*/
                 void checkSettings(const ContextSettings& settings);
                 ~ContextImpl();
+                static IContext* sharedContext;
             private :
                 bool parseVersionString(const char* version, const char* prefix, unsigned int &major, unsigned int &minor);
                 void initialize(const ContextSettings& requestedSettings);
@@ -46,9 +57,9 @@ namespace odfaeg {
                 static unsigned int resourceCount;
                 static std::vector<std::string> extensions;
                 static unsigned int nbContexts;
-                static IContext* sharedContext;
+
                 static odfaeg::window::ContextImpl* current_ContextImpl;
-                static std::mutex rec_mutex;
+                static std::recursive_mutex rec_mutex;
                 // This structure contains all the state necessary to
                 // track TransientContext usage
                 // This per-thread variable tracks if and how a transient

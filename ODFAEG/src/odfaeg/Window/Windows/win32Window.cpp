@@ -100,7 +100,7 @@ namespace
 namespace odfaeg {
     namespace window {
 
-        Win32Window::Win32Window() :
+        Win32Window::Win32Window() : IWindow(),
         m_handle          (NULL),
         m_callback        (0),
         m_cursorVisible   (true), // might need to call GetCursorInfo
@@ -115,6 +115,7 @@ namespace odfaeg {
         m_cursorGrabbed   (false),
         m_opened(false),
         m_destroyed(true) {
+            std::cout<<"create win32 window"<<std::endl;
 
         }
         ////////////////////////////////////////////////////////////
@@ -155,6 +156,7 @@ namespace odfaeg {
         m_opened(false),
         m_destroyed(true)
         {
+
             create(mode, title, style, settings);
         }
         void Win32Window::create(WindowHandle handle, const ContextSettings& settings) {
@@ -177,6 +179,7 @@ namespace odfaeg {
             m_destroyed = false;
         }
         void Win32Window::create (VideoMode mode, const core::String& title, std::uint32_t style, const ContextSettings& settings) {
+            std::cout<<"create win32 window"<<std::endl;
             m_fullscreen = (style & Style::Fullscreen) != 0;
             m_cursorGrabbed = m_fullscreen;
             m_lastSize = math::Vector2u(mode.width, mode.height);
@@ -409,14 +412,14 @@ namespace odfaeg {
 
 
         ////////////////////////////////////////////////////////////
-        void Win32Window::setIcon(unsigned int width, unsigned int height, const Uint8* pixels)
+        void Win32Window::setIcon(unsigned int width, unsigned int height, const std::uint8_t* pixels)
         {
             // First destroy the previous one
             if (m_icon)
                 DestroyIcon(m_icon);
 
             // Windows wants BGRA pixels: swap red and blue channels
-            std::vector<Uint8> iconPixels(width * height * 4);
+            std::vector<std::uint8_t> iconPixels(width * height * 4);
             for (std::size_t i = 0; i < iconPixels.size() / 4; ++i)
             {
                 iconPixels[i * 4 + 0] = pixels[i * 4 + 2];

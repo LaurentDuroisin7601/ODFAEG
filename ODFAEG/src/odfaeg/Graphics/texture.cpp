@@ -612,18 +612,18 @@ namespace odfaeg {
             };
             VkImageBlit2 blitRegion{ .sType = VK_STRUCTURE_TYPE_IMAGE_BLIT_2, .pNext = nullptr };
 
-            blitRegion.srcOffsets[0].x = x;
-            blitRegion.srcOffsets[0].y = y;
+            blitRegion.srcOffsets[0].x() = x;
+            blitRegion.srcOffsets[0].y() = y;
             blitRegion.srcOffsets[0].z = 0;
-            blitRegion.srcOffsets[1].x = texture.m_size.x();
-            blitRegion.srcOffsets[1].y = texture.m_size.y();
+            blitRegion.srcOffsets[1].x() = texture.m_size.x();
+            blitRegion.srcOffsets[1].y() = texture.m_size.y();
             blitRegion.srcOffsets[1].z = 1;
 
-            blitRegion.dstOffsets[0].x = x;
-            blitRegion.dstOffsets[0].y = y;
+            blitRegion.dstOffsets[0].x() = x;
+            blitRegion.dstOffsets[0].y() = y;
             blitRegion.dstOffsets[0].z = 0;
-            blitRegion.dstOffsets[1].x = m_size.x();
-            blitRegion.dstOffsets[1].y = m_size.y();
+            blitRegion.dstOffsets[1].x() = m_size.x();
+            blitRegion.dstOffsets[1].y() = m_size.y();
             blitRegion.dstOffsets[1].z = 1;
 
             blitRegion.srcSubresource.aspectMask = imageAspectFlags;
@@ -979,7 +979,7 @@ namespace odfaeg {
         {
             if (copy.m_texture)
             {
-                if (create(copy.getSize().x, copy.getSize().y))
+                if (create(copy.getSize().x(), copy.getSize().y()))
                 {
                     update(copy);
 
@@ -989,7 +989,7 @@ namespace odfaeg {
                 }
                 else
                 {
-                    err() << "Failed to copy texture, failed to create new texture" << std::endl;
+                    std::cerr << "Failed to copy texture, failed to create new texture" << std::endl;
                 }
             }
             nbTextures++;
@@ -1027,27 +1027,27 @@ namespace odfaeg {
             // Check if texture parameters are valid before creating it
             if ((width == 0) || (height == 0))
             {
-                err() << "Failed to create texture, invalid size (" << width << "x" << height << ")" << std::endl;
+                std::cerr << "Failed to create texture, invalid size (" << width << "x" << height << ")" << std::endl;
                 return false;
             }
 
             // Compute the internal texture dimensions depending on NPOT textures support
-            Vector2u actualSize(getValidSize(width), getValidSize(height));
+            math::Vector2u actualSize(getValidSize(width), getValidSize(height));
 
             // Check the maximum texture size
             unsigned int maxSize = getMaximumSize();
-            if ((actualSize.x > maxSize) || (actualSize.y > maxSize))
+            if ((actualSize.x() > maxSize) || (actualSize.y() > maxSize))
             {
-                err() << "Failed to create texture, its internal size is too high "
-                      << "(" << actualSize.x << "x" << actualSize.y << ", "
+                std::cerr << "Failed to create texture, its internal size is too high "
+                      << "(" << actualSize.x() << "x" << actualSize.y() << ", "
                       << "maximum is " << maxSize << "x" << maxSize << ")"
                       << std::endl;
                 return false;
             }
 
             // All the validity checks passed, we can store the new texture settings
-            m_size.x        = width;
-            m_size.y        = height;
+            m_size.x()        = width;
+            m_size.y()        = height;
             m_actualSize    = actualSize;
             m_pixelsFlipped = false;
             //ensureGlContext();
@@ -1066,7 +1066,7 @@ namespace odfaeg {
 
             // Initialize the texture
             glCheck(glBindTexture(GL_TEXTURE_2D, m_texture));
-            glCheck(glTexImage2D(GL_TEXTURE_2D, 0, precision, m_actualSize.x, m_actualSize.y, 0, format, type, NULL));
+            glCheck(glTexImage2D(GL_TEXTURE_2D, 0, precision, m_actualSize.x(), m_actualSize.y(), 0, format, type, NULL));
             glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, m_isRepeated ? GL_REPEAT : GL_CLAMP_TO_EDGE));
             glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, m_isRepeated ? GL_REPEAT : GL_CLAMP_TO_EDGE));
             glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, m_isSmooth ? GL_LINEAR : GL_NEAREST));
@@ -1083,26 +1083,26 @@ namespace odfaeg {
             // Check if texture parameters are valid before creating it
             if ((width == 0) || (height == 0))
             {
-                err() << "Failed to create texture, invalid size (" << width << "x" << height << ")" << std::endl;
+                std::cerr << "Failed to create texture, invalid size (" << width << "x" << height << ")" << std::endl;
                 return false;
             }
 
             // Compute the internal texture dimensions depending on NPOT textures support
-            Vector2u actualSize(getValidSize(width), getValidSize(height));
+            math::Vector2u actualSize(getValidSize(width), getValidSize(height));
 
             // Check the maximum texture size
             unsigned int maxSize = getMaximumSize();
-            if ((actualSize.x > maxSize) || (actualSize.y > maxSize))
+            if ((actualSize.x() > maxSize) || (actualSize.y() > maxSize))
             {
-                err() << "Failed to create texture, its internal size is too high "
-                      << "(" << actualSize.x << "x" << actualSize.y << ", "
+                std::cerr << "Failed to create texture, its internal size is too high "
+                      << "(" << actualSize.x() << "x" << actualSize.y() << ", "
                       << "maximum is " << maxSize << "x" << maxSize << ")"
                       << std::endl;
                 return false;
             }
             // All the validity checks passed, we can store the new texture settings
-            m_size.x        = width;
-            m_size.y        = height;
+            m_size.x()        = width;
+            m_size.y()        = height;
             m_actualSize    = actualSize;
             m_pixelsFlipped = false;
             if (!m_texture)
@@ -1138,26 +1138,26 @@ namespace odfaeg {
             // Check if texture parameters are valid before creating it
             if ((width == 0) || (height == 0))
             {
-                err() << "Failed to create texture, invalid size (" << width << "x" << height << ")" << std::endl;
+                std::cerr << "Failed to create texture, invalid size (" << width << "x" << height << ")" << std::endl;
                 return false;
             }
 
             // Compute the internal texture dimensions depending on NPOT textures support
-            Vector2u actualSize(getValidSize(width), getValidSize(height));
+            math::Vector2u actualSize(getValidSize(width), getValidSize(height));
 
             // Check the maximum texture size
             unsigned int maxSize = getMaximumSize();
-            if ((actualSize.x > maxSize) || (actualSize.y > maxSize))
+            if ((actualSize.x() > maxSize) || (actualSize.y() > maxSize))
             {
-                err() << "Failed to create texture, its internal size is too high "
-                      << "(" << actualSize.x << "x" << actualSize.y << ", "
+                std::cerr << "Failed to create texture, its internal size is too high "
+                      << "(" << actualSize.x() << "x" << actualSize.y() << ", "
                       << "maximum is " << maxSize << "x" << maxSize << ")"
                       << std::endl;
                 return false;
             }
             // All the validity checks passed, we can store the new texture settings
-            m_size.x        = width;
-            m_size.y        = height;
+            m_size.x()        = width;
+            m_size.y()        = height;
             m_actualSize    = actualSize;
             m_pixelsFlipped = false;
             if (!m_texture)
@@ -1208,7 +1208,7 @@ namespace odfaeg {
 
 
         ////////////////////////////////////////////////////////////
-        bool Texture::loadFromStream(InputStream& stream, const IntRect& area)
+        bool Texture::loadFromStream(std::istream& stream, const IntRect& area)
         {
             Image image;
             return image.loadFromStream(stream) && loadFromImage(image, area);
@@ -1219,8 +1219,8 @@ namespace odfaeg {
         bool Texture::loadFromImage(const Image& image, const IntRect& area)
         {
             // Retrieve the image size
-            int width = static_cast<int>(image.getSize().x);
-            int height = static_cast<int>(image.getSize().y);
+            int width = static_cast<int>(image.getSize().x());
+            int height = static_cast<int>(image.getSize().y());
 
             // Load the entire image if the source area is either empty or contains the whole image
             if (area.width == 0 || (area.height == 0) ||
@@ -1228,7 +1228,7 @@ namespace odfaeg {
             {
                 ////std::cout<<"width  : "<<width<<" height : "<<height<<std::endl;
                 // Load the entire image
-                if (create(image.getSize().x, image.getSize().y))
+                if (create(image.getSize().x(), image.getSize().y()))
                 {
                     update(image);
 
@@ -1258,7 +1258,7 @@ namespace odfaeg {
                     priv::TextureSaver save;
 
                     // Copy the pixels to the texture, row by row
-                    const Uint8* pixels = image.getPixelsPtr() + 4 * (rectangle.left + (width * rectangle.top));
+                    const std::uint8_t* pixels = image.getPixelsPtr() + 4 * (rectangle.left + (width * rectangle.top));
                     glCheck(glBindTexture(GL_TEXTURE_2D, m_texture));
                     for (int i = 0; i < rectangle.height; ++i)
                     {
@@ -1284,14 +1284,14 @@ namespace odfaeg {
 
 
         ////////////////////////////////////////////////////////////
-        Vector2u Texture::getSize() const
+        math::Vector2u Texture::getSize() const
         {
             return m_size;
         }
 
 
         ////////////////////////////////////////////////////////////
-        Image Texture::copyToImage() const
+        Image Texture::copyToImage()
         {
             // Easy case: empty texture
             if (!m_texture)
@@ -1303,14 +1303,14 @@ namespace odfaeg {
             priv::TextureSaver save;
 
             // Create an array of pixels
-            std::vector<Uint8> pixels(m_size.x * m_size.y * 4);
+            std::vector<std::uint8_t> pixels(m_size.x() * m_size.y() * 4);
 
             if ((m_size == m_actualSize) && !m_pixelsFlipped)
             {
                 // Texture is not padded nor flipped, we can use a direct copy
                 glCheck(glBindTexture(GL_TEXTURE_2D, m_texture));
                 glCheck(glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, &pixels[0]));
-                for (unsigned int i = 0; i < m_size.x * m_size.y * 4; i++)
+                //for (unsigned int i = 0; i < m_size.x() * m_size.y() * 4; i++)
                     //std::cout<<"pixel : "<<(int) pixels[i]<<std::endl;
             }
             else
@@ -1318,24 +1318,24 @@ namespace odfaeg {
                 // Texture is either padded or flipped, we have to use a slower algorithm
 
                 // All the pixels will first be copied to a temporary array
-                std::vector<Uint8> allPixels(m_actualSize.x * m_actualSize.y * 4);
+                std::vector<std::uint8_t> allPixels(m_actualSize.x() * m_actualSize.y() * 4);
                 glCheck(glBindTexture(GL_TEXTURE_2D, m_texture));
                 glCheck(glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, &allPixels[0]));
 
                 // Then we copy the useful pixels from the temporary array to the final one
-                const Uint8* src = &allPixels[0];
-                Uint8* dst = &pixels[0];
-                int srcPitch = m_actualSize.x * 4;
-                int dstPitch = m_size.x * 4;
+                const std::uint8_t* src = &allPixels[0];
+                std::uint8_t* dst = &pixels[0];
+                int srcPitch = m_actualSize.x() * 4;
+                int dstPitch = m_size.x() * 4;
 
                 // Handle the case where source pixels are flipped vertically
                 if (m_pixelsFlipped)
                 {
-                    src += srcPitch * (m_size.y - 1);
+                    src += srcPitch * (m_size.y() - 1);
                     srcPitch = -srcPitch;
                 }
 
-                for (unsigned int i = 0; i < m_size.y; ++i)
+                for (unsigned int i = 0; i < m_size.y(); ++i)
                 {
                     std::memcpy(dst, src, dstPitch);
                     src += srcPitch;
@@ -1345,25 +1345,25 @@ namespace odfaeg {
 
             // Create the image
             Image image;
-            image.create(m_size.x, m_size.y, &pixels[0]);
+            image.create(m_size.x(), m_size.y(), &pixels[0]);
 
             return image;
         }
 
 
         ////////////////////////////////////////////////////////////
-        void Texture::update(const Uint8* pixels)
+        void Texture::update(const std::uint8_t* pixels)
         {
             // Update the whole texture
-            update(pixels, m_size.x, m_size.y, 0, 0);
+            update(pixels, m_size.x(), m_size.y(), 0, 0);
         }
 
 
         ////////////////////////////////////////////////////////////
-        void Texture::update(const Uint8* pixels, unsigned int width, unsigned int height, unsigned int x, unsigned int y)
+        void Texture::update(const std::uint8_t* pixels, unsigned int width, unsigned int height, unsigned int x, unsigned int y)
         {
-            assert(x + width <= m_size.x);
-            assert(y + height <= m_size.y);
+            assert(x + width <= m_size.x());
+            assert(y + height <= m_size.y());
 
             if (pixels && m_texture)
             {
@@ -1388,14 +1388,14 @@ namespace odfaeg {
         void Texture::update(const Image& image)
         {
             // Update the whole texture
-            update(image.getPixelsPtr(), image.getSize().x, image.getSize().y, 0, 0);
+            update(image.getPixelsPtr(), image.getSize().x(), image.getSize().y(), 0, 0);
         }
 
 
         ////////////////////////////////////////////////////////////
         void Texture::update(const Image& image, unsigned int x, unsigned int y)
         {
-            update(image.getPixelsPtr(), image.getSize().x, image.getSize().y, x, y);
+            update(image.getPixelsPtr(), image.getSize().x(), image.getSize().y(), x, y);
         }
 
 
@@ -1409,8 +1409,8 @@ namespace odfaeg {
         ////////////////////////////////////////////////////////////
         void Texture::update(window::Window& window, unsigned int x, unsigned int y)
         {
-            assert(x + window.getSize().x <= m_size.x);
-            assert(y + window.getSize().y <= m_size.y);
+            assert(x + window.getSize().x() <= m_size.x());
+            assert(y + window.getSize().y() <= m_size.y());
 
             if (m_texture && window.setActive(true))
             {
@@ -1419,7 +1419,7 @@ namespace odfaeg {
 
                 // Copy pixels from the back-buffer to the texture
                 glCheck(glBindTexture(GL_TEXTURE_2D, m_texture));
-                glCheck(glCopyTexSubImage2D(GL_TEXTURE_2D, 0, x, y, 0, 0, window.getSize().x, window.getSize().y));
+                glCheck(glCopyTexSubImage2D(GL_TEXTURE_2D, 0, x, y, 0, 0, window.getSize().x(), window.getSize().y()));
                 m_pixelsFlipped = true;
                 m_cacheId = getUniqueId();
             }
@@ -1509,15 +1509,15 @@ namespace odfaeg {
                     // setup scale factors that convert the range [0 .. size] to [0 .. 1]
                     if (coordinateType == Pixels)
                     {
-                        matrix[0] = 1.f / texture->m_actualSize.x;
-                        matrix[5] = 1.f / texture->m_actualSize.y;
+                        matrix[0] = 1.f / texture->m_actualSize.x();
+                        matrix[5] = 1.f / texture->m_actualSize.y();
                     }
 
                     // If pixels are flipped we must invert the Y axis
                     if (texture->m_pixelsFlipped)
                     {
                         matrix[5] = -matrix[5];
-                        matrix[13] = static_cast<float>(texture->m_size.y / texture->m_actualSize.y);
+                        matrix[13] = static_cast<float>(texture->m_size.y() / texture->m_actualSize.y());
                     }
 
                     // Load the matrix
@@ -1540,10 +1540,10 @@ namespace odfaeg {
                        0.f, 1.f, 0.f, 0.f,
                        0.f, 0.f, 1.f, 0.f,
                        0.f, 0.f, 0.f, 1.f);
-            matrix.m11 = 1.f / m_actualSize.x;
-            matrix.m22 = 1.f / m_actualSize.y;
+            matrix[0][0] = 1.f / m_actualSize.x();
+            matrix[1][1] = 1.f / m_actualSize.y();
             /*if (m_name == "CUBE") {
-                //std::cout<<"actual size : "<<m_actualSize.x<<","<<m_actualSize.y<<std::endl;
+                //std::cout<<"actual size : "<<m_actualSize.x()<<","<<m_actualSize.y()<<std::endl;
             }*/
            /* if (m_pixelsFlipped)
             {
@@ -1605,21 +1605,21 @@ namespace odfaeg {
         }
         void Texture::clear() {
             glCheck(glBindTexture(GL_TEXTURE_2D, m_texture));
-            glCheck(glTexSubImage2D(GL_TEXTURE_2D, m_precision, 0, 0, m_size.x, m_size.y, m_format,
+            glCheck(glTexSubImage2D(GL_TEXTURE_2D, m_precision, 0, 0, m_size.x(), m_size.y(), m_format,
             m_type, NULL));
         }
         void Texture::onSave(std::vector<std::uint8_t>& vPixels) {
             glCheck(glBindTexture(GL_TEXTURE_2D, m_texture));
-            const std::size_t size = 4 * m_size.x * m_size.y;
+            const std::size_t size = 4 * m_size.x() * m_size.y();
             std::uint8_t* pixels = new std::uint8_t[size];
             glCheck(glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels));
             vPixels.assign(pixels, pixels + size);
         }
         void Texture::onLoad(std::vector<std::uint8_t>& vPixels) {
             std::uint8_t* pixels = &vPixels[0];
-            create(m_size.x, m_size.y);
+            create(m_size.x(), m_size.y());
             glCheck(glBindTexture(GL_TEXTURE_2D, m_texture));
-            glCheck(glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_size.x, m_size.y, GL_RGBA, GL_UNSIGNED_BYTE, pixels));
+            glCheck(glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_size.x(), m_size.y(), GL_RGBA, GL_UNSIGNED_BYTE, pixels));
             glCheck(glFlush());
         }
         const Image& Texture::getImage() const {
@@ -1635,7 +1635,7 @@ namespace odfaeg {
             m_name = name;
         }
         ////////////////////////////////////////////////////////////
-        void Texture::update(const Texture& texture)
+        void Texture::update(Texture texture)
         {
             // Update the whole texture
             update(texture, 0, 0);
@@ -1643,7 +1643,7 @@ namespace odfaeg {
 
 
         ////////////////////////////////////////////////////////////
-        void Texture::update(const Texture& texture, unsigned int x, unsigned int y)
+        void Texture::update(Texture texture, unsigned int x, unsigned int y)
         {
             GLint readFramebuffer = 0;
             GLint drawFramebuffer = 0;
@@ -1659,7 +1659,7 @@ namespace odfaeg {
 
             if (!sourceFrameBuffer || !destFrameBuffer)
             {
-                err() << "Cannot copy texture, failed to create a frame buffer object" << std::endl;
+                std::cerr << "Cannot copy texture, failed to create a frame buffer object" << std::endl;
                 return;
             }
 
@@ -1682,14 +1682,14 @@ namespace odfaeg {
             {
                 // Blit the texture contents from the source to the destination texture
                 glCheck(glBlitFramebuffer(
-                    0, texture.m_pixelsFlipped ? texture.m_size.y : 0, texture.m_size.x, texture.m_pixelsFlipped ? 0 : texture.m_size.y, // Source rectangle, flip y if source is flipped
-                    x, y, x + texture.m_size.x, y + texture.m_size.y, // Destination rectangle
+                    0, texture.m_pixelsFlipped ? texture.m_size.y() : 0, texture.m_size.x(), texture.m_pixelsFlipped ? 0 : texture.m_size.y(), // Source rectangle, flip y if source is flipped
+                    x, y, x + texture.m_size.x(), y + texture.m_size.y(), // Destination rectangle
                     GL_COLOR_BUFFER_BIT, GL_NEAREST
                 ));
             }
             else
             {
-                err() << "Cannot copy texture, failed to link texture to frame buffer" << std::endl;
+                std::cerr << "Cannot copy texture, failed to link texture to frame buffer" << std::endl;
             }
 
             // Restore previously bound framebuffers
@@ -1714,8 +1714,8 @@ namespace odfaeg {
             glCheck(glFlush());
 
             return;
-            assert(x + texture.m_size.x <= m_size.x);
-            assert(y + texture.m_size.y <= m_size.y);
+            assert(x + texture.m_size.x() <= m_size.x());
+            assert(y + texture.m_size.y() <= m_size.y());
 
             if (!m_texture || !texture.m_texture)
                 return;
@@ -1724,8 +1724,8 @@ namespace odfaeg {
         ////////////////////////////////////////////////////////////
         void Texture::setNativeHandle(unsigned int handle, unsigned int width, unsigned int height) {
             m_texture = handle;
-            m_actualSize.x = width;
-            m_actualSize.y = height;
+            m_actualSize.x() = width;
+            m_actualSize.y() = height;
         }
         unsigned int Texture::getId() const {
             return id;

@@ -14,50 +14,50 @@ namespace odfaeg {
     namespace graphic {
 
         LightRenderComponent::LightRenderComponent (RenderWindow& window, int layer, std::string expression,window::ContextSettings settings) :
-                    HeavyComponent(window, math::Vec3f(window.getView().getPosition().x, window.getView().getPosition().y, layer),
-                                  math::Vec3f(window.getView().getSize().x, window.getView().getSize().y, 0),
-                                  math::Vec3f(window.getView().getSize().x + window.getView().getSize().x * 0.5f, window.getView().getPosition().y + window.getView().getSize().y * 0.5f, layer)),
+                    HeavyComponent(window, math::Vec3f(window.getView().getPosition().x(), window.getView().getPosition().y(), layer),
+                                  math::Vec3f(window.getView().getSize().x(), window.getView().getSize().y(), 0),
+                                  math::Vec3f(window.getView().getSize().x() + window.getView().getSize().x() * 0.5f, window.getView().getPosition().y() + window.getView().getSize().y() * 0.5f, layer)),
                     view(window.getView()),
                     expression(expression),
-                    quad(math::Vec3f(window.getView().getSize().x, window.getView().getSize().y, window.getSize().y * 0.5f)) {
+                    quad(math::Vec3f(window.getView().getSize().x(), window.getView().getSize().y(), window.getSize().y() * 0.5f)) {
                     update = false;
                     datasReady = false;
-                    quad.move(math::Vec3f(-window.getView().getSize().x * 0.5f, -window.getView().getSize().y * 0.5f, 0));
-                    sf::Vector3i resolution ((int) window.getSize().x, (int) window.getSize().y, window.getView().getSize().z);
+                    quad.move(math::Vec3f(-window.getView().getSize().x() * 0.5f, -window.getView().getSize().y() * 0.5f, 0));
+                    math::Vec4f resolution ((int) window.getSize().x(), (int) window.getSize().y(), window.getView().getSize().z(), 1);
                     //settings.depthBits = 24;
-                    depthBuffer.create(resolution.x, resolution.y,settings);
+                    depthBuffer.create(resolution.x(), resolution.y(),settings);
                     glCheck(glGenTextures(1, &depthTex));
                     glCheck(glBindTexture(GL_TEXTURE_2D, depthTex));
-                    glCheck(glTexStorage2D(GL_TEXTURE_2D,1,GL_RGBA32F,window.getView().getSize().x, window.getView().getSize().y));
+                    glCheck(glTexStorage2D(GL_TEXTURE_2D,1,GL_RGBA32F,window.getView().getSize().x(), window.getView().getSize().y()));
                     glCheck(glBindImageTexture(0, depthTex, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F));
                     glCheck(glBindTexture(GL_TEXTURE_2D, 0));
-                    std::vector<GLfloat> depthClearBuf(window.getView().getSize().x*window.getView().getSize().y*4, 0);
+                    std::vector<GLfloat> depthClearBuf(window.getView().getSize().x()*window.getView().getSize().y()*4, 0);
                     glCheck(glGenBuffers(1, &clearBuf));
                     glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, clearBuf));
                     glCheck(glBufferData(GL_PIXEL_UNPACK_BUFFER, depthClearBuf.size() * sizeof(GLfloat),
                     &depthClearBuf[0], GL_STATIC_COPY));
                     glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0));
 
-                    lightDepthBuffer.create(resolution.x, resolution.y,settings);
+                    lightDepthBuffer.create(resolution.x(), resolution.y(),settings);
                     glCheck(glGenTextures(1, &lightDepthTex));
                     glCheck(glBindTexture(GL_TEXTURE_2D, lightDepthTex));
-                    glCheck(glTexStorage2D(GL_TEXTURE_2D,1,GL_RGBA32F,window.getView().getSize().x, window.getView().getSize().y));
+                    glCheck(glTexStorage2D(GL_TEXTURE_2D,1,GL_RGBA32F,window.getView().getSize().x(), window.getView().getSize().y()));
                     glCheck(glBindImageTexture(0, lightDepthTex, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F));
                     glCheck(glBindTexture(GL_TEXTURE_2D, 0));
-                    std::vector<GLfloat> lDepthClearBuf(window.getView().getSize().x*window.getView().getSize().y*4, 0);
+                    std::vector<GLfloat> lDepthClearBuf(window.getView().getSize().x()*window.getView().getSize().y()*4, 0);
                     glCheck(glGenBuffers(1, &clearBuf2));
                     glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, clearBuf2));
                     glCheck(glBufferData(GL_PIXEL_UNPACK_BUFFER, lDepthClearBuf.size() * sizeof(GLfloat),
                     &lDepthClearBuf[0], GL_STATIC_COPY));
                     glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0));
                     settings.depthBits = 0;
-                    alphaBuffer.create(resolution.x, resolution.y,settings);
+                    alphaBuffer.create(resolution.x(), resolution.y(),settings);
                     glCheck(glGenTextures(1, &alphaTex));
                     glCheck(glBindTexture(GL_TEXTURE_2D, alphaTex));
-                    glCheck(glTexStorage2D(GL_TEXTURE_2D,1,GL_RGBA32F,window.getView().getSize().x, window.getView().getSize().y));
+                    glCheck(glTexStorage2D(GL_TEXTURE_2D,1,GL_RGBA32F,window.getView().getSize().x(), window.getView().getSize().y()));
                     glCheck(glBindImageTexture(0, alphaTex, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F));
                     glCheck(glBindTexture(GL_TEXTURE_2D, 0));
-                    std::vector<GLfloat> lAlphaClearBuf(window.getView().getSize().x*window.getView().getSize().y*4, 0);
+                    std::vector<GLfloat> lAlphaClearBuf(window.getView().getSize().x()*window.getView().getSize().y()*4, 0);
                     glCheck(glGenBuffers(1, &clearBuf3));
                     glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, clearBuf3));
                     glCheck(glBufferData(GL_PIXEL_UNPACK_BUFFER, lAlphaClearBuf.size() * sizeof(GLfloat),
@@ -65,19 +65,19 @@ namespace odfaeg {
                     glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0));
 
 
-                    specularTexture.create(resolution.x, resolution.y,settings);
-                    bumpTexture.create(resolution.x, resolution.y,settings);
-                    lightMap.create(resolution.x, resolution.y,settings);
-                    normalMap.create(resolution.x, resolution.y,settings);
+                    specularTexture.create(resolution.x(), resolution.y(),settings);
+                    bumpTexture.create(resolution.x(), resolution.y(),settings);
+                    lightMap.create(resolution.x(), resolution.y(),settings);
+                    normalMap.create(resolution.x(), resolution.y(),settings);
                     normalMap.setView(window.getView());
                     depthBuffer.setView(window.getView());
                     specularTexture.setView(window.getView());
                     bumpTexture.setView(window.getView());
                     lightMap.setView(window.getView());
-                    lightMapTile = Sprite(lightMap.getTexture(), math::Vec3f(0, 0, 0), math::Vec3f(window.getView().getSize().x, window.getView().getSize().y, 0), IntRect(0, 0, window.getView().getSize().x, window.getView().getSize().y));
-                    depthBufferTile = Sprite(depthBuffer.getTexture(), math::Vec3f(0, 0, 0), math::Vec3f(window.getView().getSize().x, window.getView().getSize().y, 0), IntRect(0, 0, window.getView().getSize().x, window.getView().getSize().y));
-                    specularBufferTile = Sprite(specularTexture.getTexture(), math::Vec3f(0, 0, 0), math::Vec3f(window.getView().getSize().x, window.getView().getSize().y, 0), IntRect(0, 0, window.getView().getSize().x, window.getView().getSize().y));
-                    bumpMapTile = Sprite(bumpTexture.getTexture(), math::Vec3f(0, 0, 0), math::Vec3f(window.getView().getSize().x, window.getView().getSize().y, 0), IntRect(0, 0, window.getView().getSize().x, window.getView().getSize().y));
+                    lightMapTile = Sprite(lightMap.getTexture(), math::Vec3f(0, 0, 0), math::Vec3f(window.getView().getSize().x(), window.getView().getSize().y(), 0), IntRect(0, 0, window.getView().getSize().x(), window.getView().getSize().y()));
+                    depthBufferTile = Sprite(depthBuffer.getTexture(), math::Vec3f(0, 0, 0), math::Vec3f(window.getView().getSize().x(), window.getView().getSize().y(), 0), IntRect(0, 0, window.getView().getSize().x(), window.getView().getSize().y()));
+                    specularBufferTile = Sprite(specularTexture.getTexture(), math::Vec3f(0, 0, 0), math::Vec3f(window.getView().getSize().x(), window.getView().getSize().y(), 0), IntRect(0, 0, window.getView().getSize().x(), window.getView().getSize().y()));
+                    bumpMapTile = Sprite(bumpTexture.getTexture(), math::Vec3f(0, 0, 0), math::Vec3f(window.getView().getSize().x(), window.getView().getSize().y(), 0), IntRect(0, 0, window.getView().getSize().x(), window.getView().getSize().y()));
 
 
                     core::FastDelegate<bool> signal (&LightRenderComponent::needToUpdate, this);
@@ -91,14 +91,14 @@ namespace odfaeg {
                     lightMap.setActive(true);
                     glCheck(glGenTextures(1, &frameBufferTex));
                     glCheck(glBindTexture(GL_TEXTURE_2D, frameBufferTex));
-                    glCheck(glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA32F, window.getView().getSize().x, window.getView().getSize().y));
+                    glCheck(glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA32F, window.getView().getSize().x(), window.getView().getSize().y()));
                     glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
                     glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
                     glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
                     glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
                     glCheck(glBindImageTexture(0, frameBufferTex, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F));
                     glCheck(glBindTexture(GL_TEXTURE_2D, 0));
-                    std::vector<GLfloat> texClearBuf(window.getView().getSize().x*window.getView().getSize().y*4, 0);
+                    std::vector<GLfloat> texClearBuf(window.getView().getSize().x()*window.getView().getSize().y()*4, 0);
                     glCheck(glGenBuffers(1, &clearBuf4));
                     glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, clearBuf4));
                     glCheck(glBufferData(GL_PIXEL_UNPACK_BUFFER, texClearBuf.size() * sizeof(GLfloat),
@@ -122,7 +122,7 @@ namespace odfaeg {
                                                                     layout(rgba32f, binding = 0) uniform image2D img_output;
                                                                     layout(location = 0) out vec4 fcolor;
                                                                     void main() {
-                                                                        fcolor = imageLoad(img_output, ivec2(gl_FragCoord.xy));
+                                                                        fcolor = imageLoad(img_output, ivec2(gl_FragCoord.x()y));
                                                                     })";
                         const std::string indirectRenderingVertexShader = R"(#version 460
                                                                              layout (location = 0) in vec3 position;
@@ -159,7 +159,7 @@ namespace odfaeg {
                                                                                  uint textureIndex = material.textureIndex;
                                                                                  uint l = material.layer;
                                                                                  gl_Position = projectionMatrix * viewMatrix * model.modelMatrix * vec4(position, 1.f);
-                                                                                 fTexCoords = (textureIndex != 0) ? (textureMatrix[textureIndex-1] * vec4(texCoords, 1.f, 1.f)).xy : texCoords;
+                                                                                 fTexCoords = (textureIndex != 0) ? (textureMatrix[textureIndex-1] * vec4(texCoords, 1.f, 1.f)).x()y : texCoords;
                                                                                  frontColor = color;
                                                                                  texIndex = textureIndex;
                                                                                  layer = l;
@@ -244,13 +244,13 @@ namespace odfaeg {
                                                                                          MaterialData material = materialDatas[gl_DrawID];
                                                                                          uint l = material.layer;
                                                                                          gl_Position = projectionMatrix * viewMatrix * model.modelMatrix * vec4(position, 1.f);
-                                                                                         fTexCoords = (textureMatrix * vec4(texCoords, 1.f, 1.f)).xy;
+                                                                                         fTexCoords = (textureMatrix * vec4(texCoords, 1.f, 1.f)).x()y;
                                                                                          frontColor = color;
                                                                                          layer = l;
-                                                                                         vec4 coords = vec4(material.lightCenter.xyz, 1);
+                                                                                         vec4 coords = vec4(material.lightCenter.x()yz, 1);
                                                                                          coords = projectionMatrix * viewMatrix * model.modelMatrix * coords;
                                                                                          if (coords.w == 0)
-                                                                                             coords.w = resolution.z * 0.5;
+                                                                                             coords.w = resolution.z() * 0.5;
                                                                                          coords = coords / coords.w;
                                                                                          coords = viewportMatrix * coords;
                                                                                          coords.w = material.lightCenter.w;
@@ -273,13 +273,13 @@ namespace odfaeg {
                                                                           layout(binding = 0, rgba32f) uniform image2D depthBuffer;
                                                                           layout (location = 0) out vec4 fColor;
                                                                           void main () {
-                                                                              vec4 texel = (texIndex != 0) ? frontColor * texture2D(textures[texIndex-1], fTexCoords.xy) : frontColor;
-                                                                              float z = gl_FragCoord.z;
+                                                                              vec4 texel = (texIndex != 0) ? frontColor * texture2D(textures[texIndex-1], fTexCoords.x()y) : frontColor;
+                                                                              float z = gl_FragCoord.z();
                                                                               float l = layer;
                                                                               beginInvocationInterlockARB();
-                                                                              vec4 depth = imageLoad(depthBuffer,ivec2(gl_FragCoord.xy));
-                                                                              if (/*l > depth.y || l == depth.y &&*/ z > depth.z) {
-                                                                                imageStore(depthBuffer,ivec2(gl_FragCoord.xy),vec4(0,l,z,texel.a));
+                                                                              vec4 depth = imageLoad(depthBuffer,ivec2(gl_FragCoord.x()y));
+                                                                              if (/*l > depth.y() || l == depth.y() &&*/ z > depth.z()) {
+                                                                                imageStore(depthBuffer,ivec2(gl_FragCoord.x()y),vec4(0,l,z,texel.a));
                                                                                 memoryBarrier();
                                                                                 fColor = vec4(0, l, z, texel.a);
                                                                               } else {
@@ -305,16 +305,16 @@ namespace odfaeg {
                                                                       in flat uint texIndex;
                                                                       in flat uint layer;
                                                                       void main() {
-                                                                          vec4 texel = (texIndex != 0) ? frontColor * texture2D(textures[texIndex-1], fTexCoords.xy) : frontColor;
+                                                                          vec4 texel = (texIndex != 0) ? frontColor * texture2D(textures[texIndex-1], fTexCoords.x()y) : frontColor;
                                                                           float current_alpha = texel.a;
-                                                                          vec2 position = (gl_FragCoord.xy / resolution.xy);
+                                                                          vec2 position = (gl_FragCoord.x()y / resolution.x()y);
                                                                           vec4 depth = texture2D (lightDepthBuffer, position);
                                                                           beginInvocationInterlockARB();
-                                                                          vec4 alpha = imageLoad(alphaBuffer,ivec2(gl_FragCoord.xy));
+                                                                          vec4 alpha = imageLoad(alphaBuffer,ivec2(gl_FragCoord.x()y));
                                                                           float l = layer;
-                                                                          float z = gl_FragCoord.z;
-                                                                          if (/*l > depth.y || l == depth.y &&*/ depth.z >= z && current_alpha > alpha.a) {
-                                                                              imageStore(alphaBuffer,ivec2(gl_FragCoord.xy),vec4(0, l, z, current_alpha));
+                                                                          float z = gl_FragCoord.z();
+                                                                          if (/*l > depth.y() || l == depth.y() &&*/ depth.z() >= z && current_alpha > alpha.a) {
+                                                                              imageStore(alphaBuffer,ivec2(gl_FragCoord.x()y),vec4(0, l, z, current_alpha));
                                                                               memoryBarrier();
                                                                               fColor = vec4(0, l, z, current_alpha);
                                                                           } else {
@@ -340,18 +340,18 @@ namespace odfaeg {
                                                                      uniform vec3 resolution;
                                                                      layout (location = 0) out vec4 fColor;
                                                                      void main() {
-                                                                        vec4 texel = (texIndex != 0) ? frontColor * texture2D(textures[texIndex-1], fTexCoords.xy) : frontColor;
-                                                                        vec4 depth = texture2D(depthBuffer, (gl_FragCoord.xy / resolution.xy));
-                                                                        vec4 specular = texture2D(specularBuffer,(gl_FragCoord.xy / resolution.xy));
+                                                                        vec4 texel = (texIndex != 0) ? frontColor * texture2D(textures[texIndex-1], fTexCoords.x()y) : frontColor;
+                                                                        vec4 depth = texture2D(depthBuffer, (gl_FragCoord.x()y / resolution.x()y));
+                                                                        vec4 specular = texture2D(specularBuffer,(gl_FragCoord.x()y / resolution.x()y));
                                                                         vec4 colors[2];
                                                                         colors[1] = texel * frontColor;
                                                                         colors[0] = frontColor;
                                                                         bool b = (texIndex != 0);
                                                                         vec4 color = colors[int(b)];
-                                                                        float z = gl_FragCoord.z;
-                                                                        float intensity = (maxM != 0.f) ? specular.x / maxM : 0.f;
-                                                                        float power = (maxP != 0.f) ? specular.y / maxP : 0.f;
-                                                                        if (/*layer > depth.y || layer == depth.y &&*/ z > depth.z)
+                                                                        float z = gl_FragCoord.z();
+                                                                        float intensity = (maxM != 0.f) ? specular.x() / maxM : 0.f;
+                                                                        float power = (maxP != 0.f) ? specular.y() / maxP : 0.f;
+                                                                        if (/*layer > depth.y() || layer == depth.y() &&*/ z > depth.z())
                                                                             fColor = vec4(intensity, power, z, color.a);
                                                                         else
                                                                             fColor = specular;
@@ -372,11 +372,11 @@ namespace odfaeg {
 
                                                                  layout (location = 0) out vec4 fColor;
                                                                  void main() {
-                                                                     vec4 color = (texIndex != 0) ? texture2D(textures[texIndex-1], fTexCoords.xy) : vec4(0, 0, 0, 0);
-                                                                     vec2 position = gl_FragCoord.xy / resolution.xy;
+                                                                     vec4 color = (texIndex != 0) ? texture2D(textures[texIndex-1], fTexCoords.x()y) : vec4(0, 0, 0, 0);
+                                                                     vec2 position = gl_FragCoord.x()y / resolution.x()y;
                                                                      vec4 depth = texture2D(depthBuffer, position);
                                                                      vec4 bump = texture2D(bumpMap, position);
-                                                                     if (/*layer > depth.y || layer == depth.y &&*/ gl_FragCoord.z > depth.z) {
+                                                                     if (/*layer > depth.y() || layer == depth.y() &&*/ gl_FragCoord.z() > depth.z()) {
                                                                         fColor = color;
                                                                      } else {
                                                                         fColor = bump;
@@ -403,28 +403,28 @@ namespace odfaeg {
                                                                  /*Functions to debug, draw numbers to the image,
                                                       draw a vertical ligne*/
                                                       void drawVLine (ivec2 position, int width, int nbPixels, vec4 color) {
-                                                          int startY = position.y;
-                                                          int startX = position.x;
-                                                          while (position.y < startY + nbPixels) {
-                                                             while (position.x < startX + width) {
+                                                          int startY = position.y();
+                                                          int startX = position.x();
+                                                          while (position.y() < startY + nbPixels) {
+                                                             while (position.x() < startX + width) {
                                                                 imageStore(img_output, position, color);
-                                                                position.x++;
+                                                                position.x()++;
                                                              }
-                                                             position.y++;
-                                                             position.x = startX;
+                                                             position.y()++;
+                                                             position.x() = startX;
                                                           }
                                                       }
                                                       /*Draw an horizontal line*/
                                                       void drawHLine (ivec2 position, int height, int nbPixels, vec4 color) {
-                                                          int startY = position.y;
-                                                          int startX = position.x;
-                                                          while (position.y > startY - height) {
-                                                             while (position.x < startX + nbPixels) {
+                                                          int startY = position.y();
+                                                          int startX = position.x();
+                                                          while (position.y() > startY - height) {
+                                                             while (position.x() < startX + nbPixels) {
                                                                 imageStore(img_output, position, color);
-                                                                position.x++;
+                                                                position.x()++;
                                                              }
-                                                             position.y--;
-                                                             position.x = startX;
+                                                             position.y()--;
+                                                             position.x() = startX;
                                                           }
                                                       }
                                                       /*Draw digits.*/
@@ -433,64 +433,64 @@ namespace odfaeg {
                                                           if (digit == 0) {
                                                               drawVLine(position, digitSize / 2, nbPixels, color);
                                                               drawHLine(position, digitSize, nbPixels, color);
-                                                              drawHLine(ivec2(position.x + digitSize / 2 - nbPixels, position.y), digitSize, nbPixels, color);
-                                                              drawVLine(ivec2(position.x, position.y - digitSize + nbPixels), digitSize / 2, nbPixels, color);
+                                                              drawHLine(ivec2(position.x() + digitSize / 2 - nbPixels, position.y()), digitSize, nbPixels, color);
+                                                              drawVLine(ivec2(position.x(), position.y() - digitSize + nbPixels), digitSize / 2, nbPixels, color);
                                                           } else if (digit == 1) {
-                                                              drawHLine(ivec2(position.x + digitSize / 2 - nbPixels, position.y), digitSize, nbPixels, color);
+                                                              drawHLine(ivec2(position.x() + digitSize / 2 - nbPixels, position.y()), digitSize, nbPixels, color);
                                                           } else if (digit == 2) {
                                                               drawVLine(position, digitSize / 2, nbPixels, color);
-                                                              drawHLine(ivec2(position.x, position.y), digitSize / 2 + nbPixels / 2, nbPixels, color);
-                                                              drawVLine(ivec2(position.x, position.y - digitSize / 2 + nbPixels / 2), digitSize / 2, nbPixels, color);
-                                                              drawHLine(ivec2(position.x + digitSize / 2 - nbPixels, position.y - digitSize / 2 + nbPixels / 2), digitSize / 2 + nbPixels / 2, nbPixels, color);
-                                                              drawVLine(ivec2(position.x, position.y - digitSize + nbPixels), digitSize / 2, nbPixels, color);
+                                                              drawHLine(ivec2(position.x(), position.y()), digitSize / 2 + nbPixels / 2, nbPixels, color);
+                                                              drawVLine(ivec2(position.x(), position.y() - digitSize / 2 + nbPixels / 2), digitSize / 2, nbPixels, color);
+                                                              drawHLine(ivec2(position.x() + digitSize / 2 - nbPixels, position.y() - digitSize / 2 + nbPixels / 2), digitSize / 2 + nbPixels / 2, nbPixels, color);
+                                                              drawVLine(ivec2(position.x(), position.y() - digitSize + nbPixels), digitSize / 2, nbPixels, color);
                                                           } else if (digit == 3) {
-                                                              drawHLine(ivec2(position.x + digitSize / 2 - nbPixels, position.y), digitSize, nbPixels, color);
+                                                              drawHLine(ivec2(position.x() + digitSize / 2 - nbPixels, position.y()), digitSize, nbPixels, color);
                                                               drawVLine(position, digitSize / 2, nbPixels, color);
-                                                              drawVLine(ivec2(position.x, position.y - digitSize / 2 + nbPixels / 2), digitSize / 2, nbPixels, color);
-                                                              drawVLine(ivec2(position.x, position.y - digitSize + nbPixels), digitSize / 2, nbPixels, color);
+                                                              drawVLine(ivec2(position.x(), position.y() - digitSize / 2 + nbPixels / 2), digitSize / 2, nbPixels, color);
+                                                              drawVLine(ivec2(position.x(), position.y() - digitSize + nbPixels), digitSize / 2, nbPixels, color);
                                                           } else if (digit == 4) {
-                                                              drawHLine(ivec2(position.x, position.y - digitSize / 2), digitSize / 2 + nbPixels / 2, nbPixels, color);
-                                                              drawHLine(ivec2(position.x + digitSize / 2 - nbPixels, position.y), digitSize, nbPixels, color);
-                                                              drawVLine(ivec2(position.x, position.y - digitSize / 2 + nbPixels / 2), digitSize / 2, nbPixels, color);
+                                                              drawHLine(ivec2(position.x(), position.y() - digitSize / 2), digitSize / 2 + nbPixels / 2, nbPixels, color);
+                                                              drawHLine(ivec2(position.x() + digitSize / 2 - nbPixels, position.y()), digitSize, nbPixels, color);
+                                                              drawVLine(ivec2(position.x(), position.y() - digitSize / 2 + nbPixels / 2), digitSize / 2, nbPixels, color);
                                                           } else if (digit == 5) {
                                                               drawVLine(position, digitSize / 2, nbPixels, color);
-                                                              drawHLine(ivec2(position.x, position.y - digitSize / 2 + nbPixels / 2), digitSize / 2 + nbPixels / 2, nbPixels, color);
-                                                              drawVLine(ivec2(position.x, position.y - digitSize / 2 + nbPixels / 2), digitSize / 2, nbPixels, color);
-                                                              drawHLine(ivec2(position.x + digitSize / 2 - nbPixels, position.y), digitSize / 2 + nbPixels / 2, nbPixels, color);
-                                                              drawVLine(ivec2(position.x, position.y - digitSize + nbPixels), digitSize / 2, nbPixels, color);
+                                                              drawHLine(ivec2(position.x(), position.y() - digitSize / 2 + nbPixels / 2), digitSize / 2 + nbPixels / 2, nbPixels, color);
+                                                              drawVLine(ivec2(position.x(), position.y() - digitSize / 2 + nbPixels / 2), digitSize / 2, nbPixels, color);
+                                                              drawHLine(ivec2(position.x() + digitSize / 2 - nbPixels, position.y()), digitSize / 2 + nbPixels / 2, nbPixels, color);
+                                                              drawVLine(ivec2(position.x(), position.y() - digitSize + nbPixels), digitSize / 2, nbPixels, color);
                                                           } else if (digit == 6) {
                                                               drawVLine(position, digitSize / 2, nbPixels, color);
-                                                              drawHLine(ivec2(position.x + digitSize / 2 - nbPixels, position.y), digitSize, nbPixels, color);
-                                                              drawVLine(ivec2(position.x, position.y - digitSize / 2 + nbPixels / 2), digitSize / 2, nbPixels, color);
+                                                              drawHLine(ivec2(position.x() + digitSize / 2 - nbPixels, position.y()), digitSize, nbPixels, color);
+                                                              drawVLine(ivec2(position.x(), position.y() - digitSize / 2 + nbPixels / 2), digitSize / 2, nbPixels, color);
                                                               drawHLine(position, digitSize / 2 + nbPixels / 2, nbPixels, color);
-                                                              drawVLine(ivec2(position.x, position.y - digitSize + nbPixels), digitSize / 2, nbPixels, color);
+                                                              drawVLine(ivec2(position.x(), position.y() - digitSize + nbPixels), digitSize / 2, nbPixels, color);
                                                           } else if (digit == 7) {
-                                                              drawVLine(ivec2(position.x, position.y - digitSize + nbPixels), digitSize / 2, nbPixels, color);
-                                                              drawHLine(ivec2(position.x + digitSize / 2 - nbPixels, position.y), digitSize, nbPixels, color);
+                                                              drawVLine(ivec2(position.x(), position.y() - digitSize + nbPixels), digitSize / 2, nbPixels, color);
+                                                              drawHLine(ivec2(position.x() + digitSize / 2 - nbPixels, position.y()), digitSize, nbPixels, color);
                                                           } else if (digit == 8) {
                                                               drawHLine(position, digitSize, nbPixels, color);
-                                                              drawHLine(ivec2(position.x + digitSize / 2 - nbPixels, position.y), digitSize, nbPixels, color);
+                                                              drawHLine(ivec2(position.x() + digitSize / 2 - nbPixels, position.y()), digitSize, nbPixels, color);
                                                               drawVLine(position, digitSize / 2, nbPixels, color);
-                                                              drawVLine(ivec2(position.x, position.y - digitSize / 2 + nbPixels / 2), digitSize / 2, nbPixels, color);
-                                                              drawVLine(ivec2(position.x, position.y - digitSize + nbPixels), digitSize / 2, nbPixels, color);
+                                                              drawVLine(ivec2(position.x(), position.y() - digitSize / 2 + nbPixels / 2), digitSize / 2, nbPixels, color);
+                                                              drawVLine(ivec2(position.x(), position.y() - digitSize + nbPixels), digitSize / 2, nbPixels, color);
                                                           } else if (digit == 9) {
                                                               drawVLine(position, digitSize / 2, nbPixels, color);
-                                                              drawHLine(ivec2(position.x + digitSize / 2 - nbPixels, position.y), digitSize, nbPixels, color);
-                                                              drawVLine(ivec2(position.x, position.y - digitSize / 2 + nbPixels / 2), digitSize / 2, nbPixels, color);
-                                                              drawHLine(ivec2(position.x, position.y - digitSize / 2 + nbPixels / 2), digitSize / 2 + nbPixels / 2, nbPixels, color);
-                                                              drawVLine(ivec2(position.x, position.y - digitSize + nbPixels), digitSize / 2, nbPixels, color);
+                                                              drawHLine(ivec2(position.x() + digitSize / 2 - nbPixels, position.y()), digitSize, nbPixels, color);
+                                                              drawVLine(ivec2(position.x(), position.y() - digitSize / 2 + nbPixels / 2), digitSize / 2, nbPixels, color);
+                                                              drawHLine(ivec2(position.x(), position.y() - digitSize / 2 + nbPixels / 2), digitSize / 2 + nbPixels / 2, nbPixels, color);
+                                                              drawVLine(ivec2(position.x(), position.y() - digitSize + nbPixels), digitSize / 2, nbPixels, color);
                                                           }
                                                       }
                                                       void drawSquare(ivec2 position, int size, vec4 color) {
-                                                          int startY = position.y;
-                                                          int startX = position.x;
-                                                          while (position.y > startY - size) {
-                                                             while (position.x < startX + size) {
+                                                          int startY = position.y();
+                                                          int startX = position.x();
+                                                          while (position.y() > startY - size) {
+                                                             while (position.x() < startX + size) {
                                                                 imageStore(img_output, position, color);
-                                                                position.x++;
+                                                                position.x()++;
                                                              }
-                                                             position.y--;
-                                                             position.x = startX;
+                                                             position.y()--;
+                                                             position.x() = startX;
                                                           }
                                                       }
                                                       void drawPunt(ivec2 position, int nbPixels, vec4 color) {
@@ -502,8 +502,8 @@ namespace odfaeg {
                                                           int digitSpacing = nbPixels * 6;
                                                           if (number < 0) {
                                                              number = -number;
-                                                             drawVLine(ivec2(position.x, position.y - digitSize / 2 + nbPixels / 2), digitSize / 2, nbPixels, color);
-                                                             position.x += digitSpacing;
+                                                             drawVLine(ivec2(position.x(), position.y() - digitSize / 2 + nbPixels / 2), digitSize / 2, nbPixels, color);
+                                                             position.x() += digitSpacing;
                                                           }
                                                           int pe = int(number);
                                                           int n = 0;
@@ -522,18 +522,18 @@ namespace odfaeg {
                                                           for (int i = n-1; i >= 0; i--) {
                                                              drawDigit(position, nbPixels, color, rpe[i]);
                                                              //drawDigit(position, nbPixels, color,n-i-1);
-                                                             position.x += digitSpacing;
+                                                             position.x() += digitSpacing;
                                                           }
                                                           double rest = fract(number);
                                                           if (rest > 0) {
                                                               drawPunt(position, nbPixels, color);
-                                                              position.x += digitSpacing;
+                                                              position.x() += digitSpacing;
                                                               do {
                                                                  rest *= 10;
                                                                  int digit = int(rest);
                                                                  rest -= digit;
                                                                  drawDigit(position, nbPixels, color, digit);
-                                                                 position.x += digitSpacing;
+                                                                 position.x() += digitSpacing;
                                                               } while (rest != 0);
                                                           }
                                                           return position;
@@ -543,7 +543,7 @@ namespace odfaeg {
                                                           for (uint i = 0; i < 4; i++) {
                                                              for (uint j = 0; j < 4; j++) {
                                                                 position = print(position, nbPixels, color, matrix[i][j]);
-                                                                position.x += numberSpacing;
+                                                                position.x() += numberSpacing;
                                                              }
                                                           }
                                                           return position;
@@ -552,47 +552,47 @@ namespace odfaeg {
                                                           int numberSpacing = 10;
                                                           for (uint i = 0; i < 4; i++) {
                                                             position = print(position, nbPixels, color, vector[i]);
-                                                            position.x += numberSpacing;
+                                                            position.x() += numberSpacing;
                                                           }
                                                           return position;
                                                       }
 
                                                                  void main () {
-                                                                     vec2 position = (gl_FragCoord.xy / resolution.xy);
-                                                                     vec2 invPosition = vec2(position.x, 1 - position.y);
+                                                                     vec2 position = (gl_FragCoord.x()y / resolution.x()y);
+                                                                     vec2 invPosition = vec2(position.x(), 1 - position.y());
                                                                      vec4 depth = texture2D(depthTexture, position);
                                                                      vec4 invDepth = texture2D (depthTexture, invPosition);
                                                                      vec4 alpha = texture2D(alphaMap, position);
-                                                                     float s01 = textureOffset(depthTexture, position, off.xy).z;
-                                                                     float s21 = textureOffset(depthTexture, position, off.zy).z;
-                                                                     float s10 = textureOffset(depthTexture, position, off.yx).z;
-                                                                     float s12 = textureOffset(depthTexture, position, off.yz).z;
-                                                                     vec3 va = normalize (vec3(size.xy, s21 - s01));
-                                                                     vec3 vb = normalize (vec3(size.yx, s12 - s10));
+                                                                     float s01 = textureOffset(depthTexture, position, off.x()y).z();
+                                                                     float s21 = textureOffset(depthTexture, position, off.z()y).z();
+                                                                     float s10 = textureOffset(depthTexture, position, off.y()x).z();
+                                                                     float s12 = textureOffset(depthTexture, position, off.y()z).z();
+                                                                     vec3 va = normalize (vec3(size.x()y, s21 - s01));
+                                                                     vec3 vb = normalize (vec3(size.y()x, s12 - s10));
                                                                      vec3 normal = vec3(cross(va, vb));
                                                                      vec4 bump = texture2D(bumpMap, position);
                                                                      vec4 specularInfos = texture2D(specularTexture, position);
-                                                                     vec3 sLightPos = vec3 (lightPos.x, lightPos.y, -lightPos.z * (gl_DepthRange.far - gl_DepthRange.near));
+                                                                     vec3 sLightPos = vec3 (lightPos.x(), lightPos.y(), -lightPos.z() * (gl_DepthRange.far - gl_DepthRange.near));
                                                                      float radius = lightPos.w;
-                                                                     vec3 pixPos = vec3 (gl_FragCoord.x, gl_FragCoord.y, -depth.z * (gl_DepthRange.far - gl_DepthRange.near));
+                                                                     vec3 pixPos = vec3 (gl_FragCoord.x(), gl_FragCoord.y(), -depth.z() * (gl_DepthRange.far - gl_DepthRange.near));
                                                                      vec4 lightMapColor = texture2D(lightMap, position);
-                                                                     vec3 viewPos = vec3(resolution.x * 0.5f, resolution.y * 0.5f, 0);
-                                                                     float z = gl_FragCoord.z;
+                                                                     vec3 viewPos = vec3(resolution.x() * 0.5f, resolution.y() * 0.5f, 0);
+                                                                     float z = gl_FragCoord.z();
                                                                      vec3 vertexToLight = sLightPos - pixPos;
-                                                                     if (bump.x != 0 || bump.y != 0 || bump.z != 0) {
-                                                                         vec3 tmpNormal = (normal.xyz);
-                                                                         vec3 tangeant = normalize (vec3(size.xy, s21 - s01));
-                                                                         vec3 binomial = normalize (vec3(size.yx, s12 - s10));
-                                                                         normal.x = dot(bump.xyz, tangeant);
-                                                                         normal.y = dot(bump.xyz, binomial);
-                                                                         normal.z = dot(bump.xyz, tmpNormal);
+                                                                     if (bump.x() != 0 || bump.y() != 0 || bump.z() != 0) {
+                                                                         vec3 tmpNormal = (normal.x()yz);
+                                                                         vec3 tangeant = normalize (vec3(size.x()y, s21 - s01));
+                                                                         vec3 binomial = normalize (vec3(size.y()x, s12 - s10));
+                                                                         normal.x() = dot(bump.x()yz, tangeant);
+                                                                         normal.y() = dot(bump.x()yz, binomial);
+                                                                         normal.z() = dot(bump.x()yz, tmpNormal);
                                                                      }
-                                                                     if (/*layer > depth.y || layer == depth.y &&*/ z > depth.z) {
+                                                                     if (/*layer > depth.y() || layer == depth.y() &&*/ z > depth.z()) {
                                                                          vec4 specularColor = vec4(0, 0, 0, 0);
                                                                          float attenuation = 1.f - length(vertexToLight) / radius;
                                                                          vec3 pixToView = pixPos - viewPos;
-                                                                         float normalLength = dot(normal.xyz, vertexToLight);
-                                                                         vec3 lightReflect = vertexToLight + 2 * (normal.xyz * normalLength - vertexToLight);
+                                                                         float normalLength = dot(normal.x()yz, vertexToLight);
+                                                                         vec3 lightReflect = vertexToLight + 2 * (normal.x()yz * normalLength - vertexToLight);
                                                                          float m = specularInfos.r;
                                                                          float p = specularInfos.g;
                                                                          float specularFactor = dot(normalize(pixToView), normalize(lightReflect));
@@ -600,9 +600,9 @@ namespace odfaeg {
                                                                          if (specularFactor > 0) {
                                                                              specularColor = vec4(lightColor.rgb, 1) * m * specularFactor;
                                                                          }
-                                                                         if (normal.x != 0 || normal.y != 0 || normal.z != 0 && vertexToLight.z > 0.f) {
-                                                                             vec3 dirToLight = normalize(vertexToLight.xyz);
-                                                                             float nDotl = max(dot (dirToLight, normal.xyz), 0.0);
+                                                                         if (normal.x() != 0 || normal.y() != 0 || normal.z() != 0 && vertexToLight.z() > 0.f) {
+                                                                             vec3 dirToLight = normalize(vertexToLight.x()yz);
+                                                                             float nDotl = max(dot (dirToLight, normal.x()yz), 0.0);
                                                                              attenuation *= nDotl;
 
                                                                          }
@@ -629,17 +629,17 @@ namespace odfaeg {
 
                         if (!lightMapGenerator.loadFromMemory(perPixLightingIndirectRenderingVertexShader, perPixLightingFragmentShader))
                             throw core::Erreur(54, "Failed to load light map generator shader", 0);
-                        bumpTextureGenerator.setParameter("resolution", resolution.x, resolution.y, resolution.z);
+                        bumpTextureGenerator.setParameter("resolution", resolution.x(), resolution.y(), resolution.z());
                         bumpTextureGenerator.setParameter("depthBuffer", depthBuffer.getTexture());
                         bumpTextureGenerator.setParameter("bumpMap", bumpTexture.getTexture());
 
-                        specularTextureGenerator.setParameter("resolution", resolution.x, resolution.y, resolution.z);
+                        specularTextureGenerator.setParameter("resolution", resolution.x(), resolution.y(), resolution.z());
                         specularTextureGenerator.setParameter("depthBuffer", depthBuffer.getTexture());
                         specularTextureGenerator.setParameter("specularBuffer", specularTexture.getTexture());
 
                         buildAlphaBufferGenerator.setParameter("lightDepthBuffer", lightDepthBuffer.getTexture());
 
-                        lightMapGenerator.setParameter("resolution", resolution.x, resolution.y, resolution.z);
+                        lightMapGenerator.setParameter("resolution", resolution.x(), resolution.y(), resolution.z());
                         lightMapGenerator.setParameter("depthTexture", depthBuffer.getTexture());
                         lightMapGenerator.setParameter("alphaMap", alphaBuffer.getTexture());
                         lightMapGenerator.setParameter("specularTexture",specularTexture.getTexture());
@@ -692,7 +692,7 @@ namespace odfaeg {
                         glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, materialDataBuffer));
 
                         for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
-                            vbBindlessTex[i].setPrimitiveType(static_cast<sf::PrimitiveType>(i));
+                            vbBindlessTex[i].setPrimitiveType(static_cast<PrimitiveType>(i));
                         }
                     }
 
@@ -702,7 +702,7 @@ namespace odfaeg {
                     //std::cout<<"recompute size"<<std::endl;
                     recomputeSize();
                     getListener().pushEvent(event);
-                    getView().reset(physic::BoundingBox(getView().getViewport().getPosition().x, getView().getViewport().getPosition().y, getView().getViewport().getPosition().z, event.window.data1, event.window.data2, getView().getViewport().getDepth()));
+                    getView().reset(physic::BoundingBox(getView().getViewport().getPosition().x(), getView().getViewport().getPosition().y(), getView().getViewport().getPosition().z(), event.window.data1, event.window.data2, getView().getViewport().getDepth()));
                 }
             }
             bool LightRenderComponent::needToUpdate() {
@@ -732,27 +732,27 @@ namespace odfaeg {
 
              glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, clearBuf));
              glCheck(glBindTexture(GL_TEXTURE_2D, depthTex));
-             glCheck(glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, view.getSize().x, view.getSize().y, GL_RGBA,
+             glCheck(glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, view.getSize().x(), view.getSize().y(), GL_RGBA,
              GL_FLOAT, NULL));
              glCheck(glBindTexture(GL_TEXTURE_2D, 0));
              glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0));
              lightDepthBuffer.clear(Color::Transparent);
              glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, clearBuf2));
              glCheck(glBindTexture(GL_TEXTURE_2D, lightDepthTex));
-             glCheck(glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, view.getSize().x, view.getSize().y, GL_RGBA,
+             glCheck(glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, view.getSize().x(), view.getSize().y(), GL_RGBA,
              GL_FLOAT, NULL));
              glCheck(glBindTexture(GL_TEXTURE_2D, 0));
              glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0));
              alphaBuffer.clear(Color::Transparent);
              glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, clearBuf3));
              glCheck(glBindTexture(GL_TEXTURE_2D, alphaTex));
-             glCheck(glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, view.getSize().x, view.getSize().y, GL_RGBA,
+             glCheck(glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, view.getSize().x(), view.getSize().y(), GL_RGBA,
              GL_FLOAT, NULL));
              glCheck(glBindTexture(GL_TEXTURE_2D, 0));
              glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0));
              glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, clearBuf4));
              glCheck(glBindTexture(GL_TEXTURE_2D, frameBufferTex));
-             glCheck(glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, view.getSize().x, view.getSize().y, GL_RGBA,
+             glCheck(glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, view.getSize().x(), view.getSize().y(), GL_RGBA,
              GL_FLOAT, NULL));
              glCheck(glBindTexture(GL_TEXTURE_2D, 0));
              glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0));
@@ -883,7 +883,7 @@ namespace odfaeg {
                 }
             }
             RenderStates states;
-            states.blendMode = sf::BlendNone;
+            states.blendMode = BlendNone;
             states.shader = &depthBufferGenerator;
             for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                 if (vbBindlessTex[p].getVertexCount() > 0) {
@@ -924,7 +924,7 @@ namespace odfaeg {
                     material.layer = m_light_instances[i].getMaterial().getLayer();
                     material.lightCenter = m_light_instances[i].getMaterial().getLightCenter();
                     Color c = m_light_instances[i].getMaterial().getLightColor();
-                    material.lightColor = math::Vec3f(1.f / 255.f * c.r, 1.f / 255.f * c.g, 1.f / 255.f * c.b, 1.f / 255.f * c.a);
+                    material.lightColor = math::Vec4f(1.f / 255.f * c.r, 1.f / 255.f * c.g, 1.f / 255.f * c.b, 1.f / 255.f * c.a);
                     materials[p].push_back(material);
                     ModelData model;
                     TransformMatrix tm;
@@ -945,7 +945,7 @@ namespace odfaeg {
                 }
             }
             RenderStates states;
-            states.blendMode = sf::BlendAdd;
+            states.blendMode = BlendAdd;
             states.shader = &lightMapGenerator;
             states.texture = nullptr;
             for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
@@ -968,11 +968,11 @@ namespace odfaeg {
             debugShader.setParameter("viewMatrix", viewMatrix);
             glCheck(glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT));
             vb.clear();
-            vb.setPrimitiveType(sf::Quads);
-            Vertex v1 (math::Vec3f(0, 0, quad.getSize().z));
-            Vertex v2 (math::Vec3f(quad.getSize().x,0, quad.getSize().z));
-            Vertex v3 (math::Vec3f(quad.getSize().x, quad.getSize().y, quad.getSize().z));
-            Vertex v4 (math::Vec3f(0, quad.getSize().y, quad.getSize().z));
+            vb.setPrimitiveType(Quads);
+            Vertex v1 (math::Vec3f(0, 0, quad.getSize().z()));
+            Vertex v2 (math::Vec3f(quad.getSize().x(),0, quad.getSize().z()));
+            Vertex v3 (math::Vec3f(quad.getSize().x(), quad.getSize().y(), quad.getSize().z()));
+            Vertex v4 (math::Vec3f(0, quad.getSize().y(), quad.getSize().z()));
             vb.append(v1);
             vb.append(v2);
             vb.append(v3);
@@ -980,7 +980,7 @@ namespace odfaeg {
             vb.update();
             math::Matrix4f matrix = quad.getTransform().getMatrix().transpose();
             debugShader.setParameter("worldMat", matrix);
-            states.blendMode = sf::BlendNone;
+            states.blendMode = BlendNone;
             states.shader = &debugShader;
             lightMap.drawVertexBuffer(vb, states);
             glCheck(glFinish());*/
@@ -1065,7 +1065,7 @@ namespace odfaeg {
                 }
             }
             RenderStates states;
-            states.blendMode = sf::BlendNone;
+            states.blendMode = BlendNone;
             states.shader = &depthBufferGenerator;
             states.texture = nullptr;
             for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
@@ -1179,7 +1179,7 @@ namespace odfaeg {
                     baseInstance[p] += tm.size();
                 }
             }
-            states.blendMode = sf::BlendNone;
+            states.blendMode = BlendNone;
             states.shader = &bumpTextureGenerator;
             states.texture = nullptr;
             for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
@@ -1278,7 +1278,7 @@ namespace odfaeg {
                     baseInstance[p] += tm.size();
                 }
             }
-            states.blendMode = sf::BlendNone;
+            states.blendMode = BlendNone;
             states.shader = &specularTextureGenerator;
             states.texture = nullptr;
             for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
@@ -1303,7 +1303,7 @@ namespace odfaeg {
         void LightRenderComponent::drawNextFrame() {
             update = false;
             physic::BoundingBox viewArea = view.getViewVolume();
-            math::Vec3f position (viewArea.getPosition().x,viewArea.getPosition().y, view.getPosition().z);
+            math::Vec3f position (viewArea.getPosition().x(),viewArea.getPosition().y(), view.getPosition().z());
             math::Vec3f size (viewArea.getWidth(), viewArea.getHeight(), 0);
 
             if (lightMap.getSettings().versionMajor >= 3 && lightMap.getSettings().versionMinor >= 3) {
@@ -1320,7 +1320,7 @@ namespace odfaeg {
                    }
                     //glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo));
                     if (!view.isOrtho())
-                        view.setPerspective(80, view.getViewport().getSize().x / view.getViewport().getSize().y, 0.1, view.getViewport().getSize().z);
+                        view.setPerspective(80, view.getViewport().getSize().x() / view.getViewport().getSize().y(), 0.1, view.getViewport().getSize().z());
                     math::Matrix4f viewMatrix = view.getViewMatrix().getMatrix().transpose();
                     math::Matrix4f projMatrix = view.getProjMatrix().getMatrix().transpose();
                     depthBufferGenerator.setParameter("projectionMatrix", projMatrix);
@@ -1341,7 +1341,7 @@ namespace odfaeg {
                             }
                             vb.update();
                             RenderStates states;
-                            states.blendMode = sf::BlendNone;
+                            states.blendMode = BlendNone;
                             states.shader = &depthBufferNormalGenerator;
                             lightDepthBuffer.drawVertexBuffer(vb, states);
                         }
@@ -1376,7 +1376,7 @@ namespace odfaeg {
                     normalMap.display();*/
                     /*RenderStates states;
                     states.shader = &lightMapGenerator;
-                    states.blendMode = sf::BlendAdd;
+                    states.blendMode = BlendAdd;
                     lightMapGenerator.setParameter("projectionMatrix", projMatrix);
                     lightMapGenerator.setParameter("viewMatrix", viewMatrix);
                     lightMapGenerator.setParameter("viewportMatrix", lightMap.getViewportMatrix(&lightMap.getView()).getMatrix().transpose());
@@ -1396,9 +1396,9 @@ namespace odfaeg {
                                 ////std::cout<<"add light : "<<el<<std::endl;
                                 math::Vec3f center = getWindow().mapCoordsToPixel(el->getCenter() - el->getSize()*0.5f, view);
                                 //std::cout<<"light center : "<<center<<std::endl;
-                                center.w = el->getSize().x * 0.5f;
+                                center.w = el->getSize().x() * 0.5f;
                                 ////std::cout<<"center : "<<center<<std::endl;
-                                /*lightMapGenerator.setParameter("lightPos", center.x, center.y, center.z, center.w);
+                                /*lightMapGenerator.setParameter("lightPos", center.x(), center.y(), center.z(), center.w);
                                 lightMapGenerator.setParameter("lightColor", el->getColor().r, el->getColor().g,el->getColor().b,el->getColor().a);
                                 lightMap.drawVertexBuffer(vb, states);
                             }
@@ -1413,14 +1413,14 @@ namespace odfaeg {
         }
         void LightRenderComponent::draw(RenderTarget& target, RenderStates states) {
             lightMapTile.setCenter(target.getView().getPosition());
-            states.blendMode = sf::BlendMultiply;
+            states.blendMode = BlendMultiply;
             target.draw(lightMapTile, states);
         }
         View& LightRenderComponent::getView() {
             return view;
         }
         int LightRenderComponent::getLayer() {
-            return getPosition().z;
+            return getPosition().z();
         }
         RenderTexture* LightRenderComponent::getFrameBuffer() {
             return &lightMap;

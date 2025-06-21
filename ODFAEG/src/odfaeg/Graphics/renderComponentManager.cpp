@@ -68,8 +68,10 @@ namespace odfaeg {
                     for (unsigned int i = 0; i < windows.size(); i++) {
                         if (windows[i] == &it->second->getWindow()) {
                             it->second->getWindow().draw(*it->second.get());
+                            #ifdef VULKAN
                             it->second->getWindow().submit();
                             it->second->getWindow().beginRecordCommandBuffers();
+                            #endif
                         }
                     }
                 }

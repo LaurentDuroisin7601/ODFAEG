@@ -5,13 +5,13 @@ namespace odfaeg {
             #ifdef VULKAN
             #else
             OptionPane::OptionPane(math::Vec3f position, math::Vec3f size, const Font* font, core::String t, TYPE type) :
-                rw (sf::VideoMode(size.x, size.y), "Option Pane", sf::Style::Default, window::ContextSettings(3, 0, 0, 0, 0)),
+                rw (window::VideoMode(size.x(), size.y()), "Option Pane", window::Style::Default, window::ContextSettings(3, 0, 0, 0, 0)),
                 LightComponent (rw, position, size, size * 0.5f),
                 type(type) {
-                rw.getView().move(size.x * 0.5f, size.y * 0.5f, size.z * 0.5f);
+                rw.getView().move(size.x() * 0.5f, size.y() * 0.5f, size.z() * 0.5f);
                 if (type == CONFIRMATION_DIALOG) {
-                    yes = new Button(math::Vec2f(size.x / 100 * 70, size.y - 100), math::Vec2f(100, 50), font, "Yes", 15, rw);
-                    no = new Button(math::Vec2f(size.x / 100 * 10, size.y - 100), math::Vec2f(100, 50), font, "No", 15, rw);
+                    yes = new Button(math::Vec2f(size.x() / 100 * 70, size.y() - 100), math::Vec2f(100, 50), font, "Yes", 15, rw);
+                    no = new Button(math::Vec2f(size.x() / 100 * 10, size.y() - 100), math::Vec2f(100, 50), font, "No", 15, rw);
                     core::FastDelegate<bool> trigger1(&Button::isMouseInButton, yes);
                     core::FastDelegate<bool> trigger2(&Button::isMouseInButton, no);
                     core::FastDelegate<void> slot1(&OptionPane::onYesOption, this);
@@ -29,12 +29,12 @@ namespace odfaeg {
                     core::Command cmd (a, slot);
                     getListener().connect("ONENTER", cmd);
                 }
-                rw.setPosition(sf::Vector2i(position.x, position.y));
+                rw.setPosition(math::Vector2i(position.x(), position.y()));
                 option = UNDEFINED;
                 text.setFont(*font);
                 text.setString(t.toAnsiString());
                 text.setColor(Color::Black);
-                text.setPosition(math::Vec3f(10, 10, position.z));
+                text.setPosition(math::Vec3f(10, 10, position.z()));
                 text.setSize(size);
                 backgroundColor = Color::White;
                 rw.clear(backgroundColor);

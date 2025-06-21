@@ -11,7 +11,7 @@ namespace
 {
     // Some drivers are bugged and don't track the current HDC/HGLRC properly
     // In order to deactivate successfully, we need to track it ourselves as well
-    odfaeg::window::WglContext* currentContext = nullptr;
+    thread_local odfaeg::window::WglContext* currentContext = nullptr;
 }
 
 namespace odfaeg {
@@ -156,8 +156,9 @@ namespace odfaeg {
         ////////////////////////////////////////////////////////////
         GlFunctionPointer WglContext::getFunction(const char* name)
         {
+            std::cout<<"get proc address : "<<std::endl;
             GlFunctionPointer address = reinterpret_cast<GlFunctionPointer>(wglGetProcAddress(reinterpret_cast<LPCSTR>(name)));
-
+            std::cout<<"address : "<<address<<std::endl;
             if (address)
             {
                 // Test whether the returned value is a valid error code
@@ -171,7 +172,7 @@ namespace odfaeg {
 
             if (!module)
                 module = GetModuleHandleA("OpenGL32.dll");
-
+            std::cout<<"module : "<<module<<std::endl;
             if (module)
                 return reinterpret_cast<GlFunctionPointer>(GetProcAddress(module, reinterpret_cast<LPCSTR>(name)));
 

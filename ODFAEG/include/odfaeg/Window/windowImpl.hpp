@@ -14,6 +14,7 @@ typedef odfaeg::window::Win32Window WindowImplType;
 #include "../Core/clock.h"
 namespace odfaeg {
     namespace window {
+
         class ODFAEG_WINDOW_API WindowImpl : public WindowImplType, GLResource {
         public :
             WindowImpl ();

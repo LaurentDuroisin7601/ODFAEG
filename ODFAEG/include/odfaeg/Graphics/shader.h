@@ -205,7 +205,7 @@ namespace odfaeg {
         /// \brief Shader class (vertex and fragment)
         ///
         ////////////////////////////////////////////////////////////
-        class ODFAEG_GRAPHICS_API Shader : sf::NonCopyable, window::IGLResource
+        class ODFAEG_GRAPHICS_API Shader : window::IGLResource
         {
         public :
 
@@ -348,7 +348,7 @@ namespace odfaeg {
             /// \see loadFromFile, loadFromMemory
             ///
             ////////////////////////////////////////////////////////////
-            bool loadFromStream(sf::InputStream& stream, Type type);
+            bool loadFromStream(std::istream& stream, Type type);
 
             ////////////////////////////////////////////////////////////
             /// \brief Load both the vertex and fragment shaders from custom streams
@@ -369,8 +369,8 @@ namespace odfaeg {
             /// \see loadFromFile, loadFromMemory
             ///
             ////////////////////////////////////////////////////////////
-            bool loadFromStream(sf::InputStream& vertexShaderStream, sf::InputStream& fragmentShaderStream);
-            bool loadFromStream(sf::InputStream& vertexShaderStream, sf::InputStream& fragmentShaderStream, sf::InputStream& geometryShaderStream);
+            bool loadFromStream(std::istream& vertexShaderStream, std::istream& fragmentShaderStream);
+            bool loadFromStream(std::istream& vertexShaderStream, std::istream& fragmentShaderStream, std::istream& geometryShaderStream);
             ////////////////////////////////////////////////////////////
             /// \brief Bind a vertex attribute of the shader.
             /// The vertex attribute value's location is defined in the C code with the function glVertexAttributePointer.

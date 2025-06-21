@@ -19,6 +19,7 @@ namespace odfaeg {
     namespace window {
         class ODFAEG_WINDOW_API IWindow {
         public :
+            IWindow() {}
             virtual void create (VideoMode mode, const core::String& title, std::uint32_t style, const ContextSettings& settings) = 0;
             virtual void create (WindowHandle handle, const ContextSettings& settings) = 0;
             virtual bool isOpen() const = 0;

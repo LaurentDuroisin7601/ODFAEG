@@ -9,24 +9,24 @@ namespace odfaeg {
                 #ifdef VULKAN
                 #else
                 PerPixelLinkedListRenderComponent::PerPixelLinkedListRenderComponent(RenderWindow& window, int layer, std::string expression,  ComponentMapping& componentMapping, window::ContextSettings settings) :
-                HeavyComponent(window, math::Vec3f(window.getView().getPosition().x, window.getView().getPosition().y, layer),
-                              math::Vec3f(window.getView().getSize().x, window.getView().getSize().y, 0),
-                              math::Vec3f(window.getView().getSize().x + window.getView().getSize().x * 0.5f, window.getView().getPosition().y + window.getView().getSize().y * 0.5f, layer)),
+                HeavyComponent(window, math::Vec3f(window.getView().getPosition().x(), window.getView().getPosition().y(), layer),
+                              math::Vec3f(window.getView().getSize().x(), window.getView().getSize().y(), 0),
+                              math::Vec3f(window.getView().getSize().x() + window.getView().getSize().x() * 0.5f, window.getView().getPosition().y() + window.getView().getSize().y() * 0.5f, layer)),
                 view(window.getView()),
                 expression(expression),
-                quad(math::Vec3f(window.getView().getSize().x, window.getView().getSize().y, window.getSize().y * 0.5f)),
+                quad(math::Vec3f(window.getView().getSize().x(), window.getView().getSize().y(), window.getSize().y() * 0.5f)),
                 layer(layer),
                 componentMapping(componentMapping) {
                 if (!(settings.versionMajor >= 4 && settings.versionMinor >= 6))
                     throw core::Erreur(53, "opengl version not supported for this renderer type");
                 ////std::cout<<"move quad"<<std::endl;
-                quad.move(math::Vec3f(-window.getView().getSize().x * 0.5f, -window.getView().getSize().y * 0.5f, 0));
-                maxNodes = 20 * window.getView().getSize().x * window.getView().getSize().y;
+                quad.move(math::Vec3f(-window.getView().getSize().x() * 0.5f, -window.getView().getSize().y() * 0.5f, 0));
+                maxNodes = 20 * window.getView().getSize().x() * window.getView().getSize().y();
                 GLint nodeSize = 5 * sizeof(GLfloat) + sizeof(GLuint);
-                frameBuffer.create(window.getView().getSize().x, window.getView().getSize().y, settings);
-                frameBufferSprite = Sprite(frameBuffer.getTexture(), math::Vec3f(0, 0, 0), math::Vec3f(window.getView().getSize().x, window.getView().getSize().y, 0), IntRect(0, 0, window.getView().getSize().x, window.getView().getSize().y));
+                frameBuffer.create(window.getView().getSize().x(), window.getView().getSize().y(), settings);
+                frameBufferSprite = Sprite(frameBuffer.getTexture(), math::Vec3f(0, 0, 0), math::Vec3f(window.getView().getSize().x(), window.getView().getSize().y(), 0), IntRect(0, 0, window.getView().getSize().x(), window.getView().getSize().y()));
                 frameBuffer.setView(view);
-                resolution = sf::Vector3i((int) window.getSize().x, (int) window.getSize().y, window.getView().getSize().z);
+                resolution = math::Vec3f((int) window.getSize().x(), (int) window.getSize().y(), window.getView().getSize().z());
                 //window.setActive();
                 glCheck(glGenBuffers(1, &atomicBuffer));
                 glCheck(glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomicBuffer));
@@ -38,10 +38,10 @@ namespace odfaeg {
                 glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0));
                 glCheck(glGenTextures(1, &headPtrTex));
                 glCheck(glBindTexture(GL_TEXTURE_2D, headPtrTex));
-                glCheck(glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32UI, window.getView().getSize().x, window.getView().getSize().y));
+                glCheck(glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32UI, window.getView().getSize().x(), window.getView().getSize().y()));
                 glCheck(glBindImageTexture(0, headPtrTex, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32UI));
                 glCheck(glBindTexture(GL_TEXTURE_2D, 0));
-                std::vector<GLuint> headPtrClearBuf(window.getView().getSize().x*window.getView().getSize().y, 0xffffffff);
+                std::vector<GLuint> headPtrClearBuf(window.getView().getSize().x()*window.getView().getSize().y(), 0xffffffff);
                 glCheck(glGenBuffers(1, &clearBuf));
                 glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, clearBuf));
                 glCheck(glBufferData(GL_PIXEL_UNPACK_BUFFER, headPtrClearBuf.size() * sizeof(GLuint),
@@ -85,7 +85,7 @@ namespace odfaeg {
                 glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, materialDataBuffer));
 
                 for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
-                    vbBindlessTex[i].setPrimitiveType(static_cast<sf::PrimitiveType>(i));
+                    vbBindlessTex[i].setPrimitiveType(static_cast<PrimitiveType>(i));
                 }
                 skybox = entt::null;
             }
@@ -152,12 +152,12 @@ namespace odfaeg {
                                                                     float xOff = 0;
                                                                     float yOff = 0;
                                                                     if (materialData.materialType == 1) {
-                                                                        yOff = 0.05*sin(position.x*12+time*FPI)*resolution.y;
-                                                                        xOff = 0.025*cos(position.x*12+time*FPI)*resolution.x;
+                                                                        yOff = 0.05*sin(position.x()*12+time*FPI)*resolution.y();
+                                                                        xOff = 0.025*cos(position.x()*12+time*FPI)*resolution.x();
                                                                     }
                                                                     uint textureIndex =  materialData.textureIndex;
-                                                                    gl_Position = projectionMatrix * viewMatrix * modelData.modelMatrix * vec4((position.x - xOff), (position.y + yOff), position.z, 1.f);
-                                                                    fTexCoords = (textureIndex != 0) ? (textureMatrix[textureIndex-1] * vec4(texCoords, 1.f, 1.f)).xy : texCoords;
+                                                                    gl_Position = projectionMatrix * viewMatrix * modelData.modelMatrix * vec4((position.x() - xOff), (position.y() + yOff), position.z(), 1.f);
+                                                                    fTexCoords = (textureIndex != 0) ? (textureMatrix[textureIndex-1] * vec4(texCoords, 1.f, 1.f)).x()y : texCoords;
                                                                     frontColor = color;
                                                                     texIndex = textureIndex;
                                                                 }
@@ -209,17 +209,17 @@ namespace odfaeg {
                                                           {
                                                               uint index_corrected = index / 2;
                                                               if (index % 2 == 0)
-                                                                  return maps[index_corrected].xy;
-                                                              return maps[index_corrected].zw;
+                                                                  return maps[index_corrected].x()y;
+                                                              return maps[index_corrected].z()w;
                                                           }*/
                                                           void main() {
                                                                uint nodeIdx = atomicCounterIncrement(nextNodeCounter);
                                                                //sampler2D tex = sampler2D(GetTexture(texIndex-1));
-                                                               vec4 color = (texIndex != 0) ? frontColor * texture(textures[texIndex-1], fTexCoords.xy) : frontColor;
+                                                               vec4 color = (texIndex != 0) ? frontColor * texture(textures[texIndex-1], fTexCoords.x()y) : frontColor;
                                                                if (nodeIdx < maxNodes) {
-                                                                    uint prevHead = imageAtomicExchange(headPointers, ivec2(gl_FragCoord.xy), nodeIdx);
+                                                                    uint prevHead = imageAtomicExchange(headPointers, ivec2(gl_FragCoord.x()y), nodeIdx);
                                                                     nodes[nodeIdx].color = color;
-                                                                    nodes[nodeIdx].depth = gl_FragCoord.z;
+                                                                    nodes[nodeIdx].depth = gl_FragCoord.z();
                                                                     nodes[nodeIdx].next = prevHead;
                                                                }
                                                                //fcolor = vec4(0, 0, 0, 0);
@@ -241,7 +241,7 @@ namespace odfaeg {
                        void main() {
                           NodeType frags[MAX_FRAGMENTS];
                           int count = 0;
-                          uint n = imageLoad(headPointers, ivec2(gl_FragCoord.xy)).r;
+                          uint n = imageLoad(headPointers, ivec2(gl_FragCoord.x()y)).r;
                           while( n != 0xffffffffu && count < MAX_FRAGMENTS) {
                                frags[count] = nodes[n];
                                n = frags[count].next;
@@ -315,7 +315,7 @@ namespace odfaeg {
                        skyboxShader.setParameter("skybox", Shader::CurrentTexture);
                        indirectRenderingShader.setParameter("maxNodes", maxNodes);
                        indirectRenderingShader.setParameter("currentTex", Shader::CurrentTexture);
-                       indirectRenderingShader.setParameter("resolution", resolution.x, resolution.y, resolution.z);
+                       indirectRenderingShader.setParameter("resolution", resolution.x(), resolution.y(), resolution.z());
                        math::Matrix4f viewMatrix = getWindow().getDefaultView().getViewMatrix().getMatrix().transpose();
                        math::Matrix4f projMatrix = getWindow().getDefaultView().getProjMatrix().getMatrix().transpose();
                        perPixelLinkedListP2.setParameter("viewMatrix", viewMatrix);
@@ -334,7 +334,7 @@ namespace odfaeg {
                 glCheck(glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, 0));
                 glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, clearBuf));
                 glCheck(glBindTexture(GL_TEXTURE_2D, headPtrTex));
-                glCheck(glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, view.getSize().x, view.getSize().y, GL_RED_INTEGER,
+                glCheck(glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, view.getSize().x(), view.getSize().y(), GL_RED_INTEGER,
                 GL_UNSIGNED_INT, NULL));
                 glCheck(glBindTexture(GL_TEXTURE_2D, 0));
                 glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0));
@@ -434,7 +434,7 @@ namespace odfaeg {
 
                     }
                 }
-                currentStates.blendMode = sf::BlendNone;
+                currentStates.blendMode = BlendNone;
                 currentStates.shader = &indirectRenderingShader;
                 currentStates.texture = nullptr;
                 glCheck(glEnable(GL_STENCIL_TEST));
@@ -546,7 +546,7 @@ namespace odfaeg {
 
                     }
                 }
-                currentStates.blendMode = sf::BlendNone;
+                currentStates.blendMode = BlendNone;
                 currentStates.shader = &indirectRenderingShader;
                 currentStates.texture = nullptr;
                 glCheck(glStencilFunc(GL_NOTEQUAL, 1, 0xFF));
@@ -673,7 +673,7 @@ namespace odfaeg {
                         ////std::cout<<"entity : "<<m_instances[i].getVertexArrays()[0]->getEntity()->getRootEntity()->getType()<<std::endl;
                     }
                 }
-                currentStates.blendMode = sf::BlendNone;
+                currentStates.blendMode = BlendNone;
                 currentStates.shader = &indirectRenderingShader;
                 currentStates.texture = nullptr;
                 glCheck(glEnable(GL_STENCIL_TEST));
@@ -798,7 +798,7 @@ namespace odfaeg {
                         ////std::cout<<"entity : "<<m_instances[i].getVertexArrays()[0]->getEntity()->getRootEntity()->getType()<<std::endl;
                     }
                 }
-                currentStates.blendMode = sf::BlendNone;
+                currentStates.blendMode = BlendNone;
                 currentStates.shader = &indirectRenderingShader;
                 currentStates.texture = nullptr;
                 glCheck(glStencilFunc(GL_NOTEQUAL, 1, 0xFF));
@@ -827,9 +827,9 @@ namespace odfaeg {
                 glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, linkedListBuffer));*/
                 ////std::cout<<"draw nex frame"<<std::endl;
                 //basicView.setPerspective(-1, 1, -1, 1, 0, 1);
-                float zNear = view.getViewport().getPosition().z;
+                float zNear = view.getViewport().getPosition().z();
                 if (!view.isOrtho())
-                    view.setPerspective(80, view.getViewport().getSize().x / view.getViewport().getSize().y, 0.1f, view.getViewport().getSize().z);
+                    view.setPerspective(80, view.getViewport().getSize().x() / view.getViewport().getSize().y(), 0.1f, view.getViewport().getSize().z());
                 math::Matrix4f viewMatrix = view.getViewMatrix().getMatrix().transpose();
                 math::Matrix4f projMatrix = view.getProjMatrix().getMatrix().transpose();
                 viewMatrix = math::Matrix4f(math::Matrix3f(viewMatrix));
@@ -842,19 +842,19 @@ namespace odfaeg {
                     if (m_skyboxInstance[i].getAllVertices().getVertexCount() > 0) {
                         vb.setPrimitiveType(m_skyboxInstance[i].getAllVertices().getPrimitiveType());
                         for (unsigned int j = 0; j < m_skyboxInstance[i].getAllVertices().getVertexCount(); j++) {
-                            //if (m_skyboxInstance[i].getAllVertices()[j].position.x != 0 && m_skyboxInstance[i].getAllVertices()[j].position.y != 0 && m_skyboxInstance[i].getAllVertices()[j].position.z != 0);
+                            //if (m_skyboxInstance[i].getAllVertices()[j].position.x() != 0 && m_skyboxInstance[i].getAllVertices()[j].position.y() != 0 && m_skyboxInstance[i].getAllVertices()[j].position.z() != 0);
                             vb.append(m_skyboxInstance[i].getAllVertices()[j]);
                         }
                     }
                 }
-                currentStates.blendMode = sf::BlendAlpha;
+                currentStates.blendMode = BlendAlpha;
                 currentStates.shader = &skyboxShader;
                 currentStates.texture = (skybox == entt::null ) ? nullptr : componentMapping.getComponent<MeshComponent>(skybox)->faces[0].getMaterial().getTexture();
                 vb.update();
                 frameBuffer.drawVertexBuffer(vb, currentStates);
                 vb.clear();
                 if (!view.isOrtho())
-                    view.setPerspective(80, view.getViewport().getSize().x / view.getViewport().getSize().y, zNear, view.getViewport().getSize().z);
+                    view.setPerspective(80, view.getViewport().getSize().x() / view.getViewport().getSize().y(), zNear, view.getViewport().getSize().z());
                 projMatrix = view.getProjMatrix().getMatrix().transpose();
                 viewMatrix = view.getViewMatrix().getMatrix().transpose();
                 indirectRenderingShader.setParameter("projectionMatrix", projMatrix);
@@ -872,11 +872,11 @@ namespace odfaeg {
                 //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
                 vb.clear();
                 //vb.name = "";
-                vb.setPrimitiveType(sf::Quads);
-                Vertex v1 (math::Vec3f(0, 0, quad.getSize().z));
-                Vertex v2 (math::Vec3f(quad.getSize().x,0, quad.getSize().z));
-                Vertex v3 (math::Vec3f(quad.getSize().x, quad.getSize().y, quad.getSize().z));
-                Vertex v4 (math::Vec3f(0, quad.getSize().y, quad.getSize().z));
+                vb.setPrimitiveType(Quads);
+                Vertex v1 (math::Vec3f(0, 0, quad.getSize().z()));
+                Vertex v2 (math::Vec3f(quad.getSize().x(),0, quad.getSize().z()));
+                Vertex v3 (math::Vec3f(quad.getSize().x(), quad.getSize().y(), quad.getSize().z()));
+                Vertex v4 (math::Vec3f(0, quad.getSize().y(), quad.getSize().z()));
                 vb.append(v1);
                 vb.append(v2);
                 vb.append(v3);
@@ -918,7 +918,7 @@ namespace odfaeg {
 
                         unsigned int p = m_normals[i].getAllVertices().getPrimitiveType();
                         /*if (m_normals[i].getVertexArrays()[0]->getEntity()->getRootType() == "E_MONSTER") {
-                                //std::cout<<"tex coords : "<<(*m_normals[i].getVertexArrays()[0])[0].texCoords.x<<","<<(*m_normals[i].getVertexArrays()[0])[0].texCoords.y<<std::endl;
+                                //std::cout<<"tex coords : "<<(*m_normals[i].getVertexArrays()[0])[0].texCoords.x()<<","<<(*m_normals[i].getVertexArrays()[0])[0].texCoords.y()<<std::endl;
                             }*/
                         unsigned int vertexCount = 0;
                         MaterialData material;
@@ -944,7 +944,7 @@ namespace odfaeg {
                         /*for (unsigned int j = 0; j < m_normals[i].getVertexArrays().size(); j++) {
                             if (m_normals[i].getVertexArrays()[j]->getEntity() != nullptr && m_normals[i].getVertexArrays()[j]->getEntity()->getRootType() == "E_HERO") {
                                 for (unsigned int n = 0; n < m_normals[i].getVertexArrays()[j]->getVertexCount(); n++)
-                                    //std::cout<<"position hero : "<<(*m_normals[i].getVertexArrays()[j])[n].position.x<<","<<(*m_normals[i].getVertexArrays()[j])[n].position.y<<","<<(*m_normals[i].getVertexArrays()[j])[n].position.z<<std::endl;
+                                    //std::cout<<"position hero : "<<(*m_normals[i].getVertexArrays()[j])[n].position.x()<<","<<(*m_normals[i].getVertexArrays()[j])[n].position.y()<<","<<(*m_normals[i].getVertexArrays()[j])[n].position.z()<<std::endl;
                             }
                         }*/
                     }
@@ -993,7 +993,7 @@ namespace odfaeg {
                     }
                 }
                 RenderStates currentStates;
-                currentStates.blendMode = sf::BlendNone;
+                currentStates.blendMode = BlendNone;
                 currentStates.shader = &indirectRenderingShader;
                 currentStates.texture = nullptr;
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
@@ -1039,7 +1039,7 @@ namespace odfaeg {
 
                         unsigned int p = m_normalsIndexed[i].getAllVertices().getPrimitiveType();
                         /*if (m_normals[i].getVertexArrays()[0]->getEntity()->getRootType() == "E_MONSTER") {
-                                //std::cout<<"tex coords : "<<(*m_normals[i].getVertexArrays()[0])[0].texCoords.x<<","<<(*m_normals[i].getVertexArrays()[0])[0].texCoords.y<<std::endl;
+                                //std::cout<<"tex coords : "<<(*m_normals[i].getVertexArrays()[0])[0].texCoords.x()<<","<<(*m_normals[i].getVertexArrays()[0])[0].texCoords.y()<<std::endl;
                             }*/
                         MaterialData material;
                         material.textureIndex = (m_normalsIndexed[i].getMaterial().getTexture() != nullptr) ? m_normalsIndexed[i].getMaterial().getTexture()->getId() : 0;
@@ -1121,7 +1121,7 @@ namespace odfaeg {
                         ////std::cout<<"entity : "<<m_instances[i].getVertexArrays()[0]->getEntity()->getRootEntity()->getType()<<std::endl;
                     }
                 }
-                currentStates.blendMode = sf::BlendNone;
+                currentStates.blendMode = BlendNone;
                 currentStates.shader = &indirectRenderingShader;
                 currentStates.texture = nullptr;
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
@@ -1352,7 +1352,7 @@ namespace odfaeg {
                     //std::cout<<"recompute size"<<std::endl;
                     recomputeSize();
                     getListener().pushEvent(event);
-                    getView().reset(physic::BoundingBox(getView().getViewport().getPosition().x, getView().getViewport().getPosition().y, getView().getViewport().getPosition().z, event.window.data1, event.window.data2, getView().getViewport().getDepth()));
+                    getView().reset(physic::BoundingBox(getView().getViewport().getPosition().x(), getView().getViewport().getPosition().y(), getView().getViewport().getPosition().z(), event.window.data1, event.window.data2, getView().getViewport().getDepth()));
                 }
             }
             const Texture& PerPixelLinkedListRenderComponent::getFrameBufferTexture() {

@@ -29,7 +29,7 @@
 #ifndef VULKAN
 #include "glCheck.h"
 #include "textureSaver.h"
-#include <ODFAEG/System/Err.hpp>
+
 
 
 namespace odfaeg {

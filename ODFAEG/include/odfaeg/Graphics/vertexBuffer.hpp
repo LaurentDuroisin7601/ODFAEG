@@ -113,7 +113,7 @@ namespace odfaeg {
             /// \param vertexCount Initial number of vertices in the array
             ///
             ////////////////////////////////////////////////////////////
-            explicit VertexBuffer(sf::PrimitiveType type, unsigned int vertexCount = 0, Entity* entity = nullptr);
+            explicit VertexBuffer(PrimitiveType type, unsigned int vertexCount = 0, Entity* entity = nullptr);
             Entity* getEntity();
             void setEntity(Entity* entity);
             ////////////////////////////////////////////////////////////
@@ -222,7 +222,7 @@ namespace odfaeg {
             /// \param type Type of primitive
             ///
             ////////////////////////////////////////////////////////////
-            void setPrimitiveType(sf::PrimitiveType type);
+            void setPrimitiveType(PrimitiveType type);
 
             ////////////////////////////////////////////////////////////
             /// \brief Get the type of primitives drawn by the vertex array
@@ -230,9 +230,9 @@ namespace odfaeg {
             /// \return Primitive type
             ///
             ////////////////////////////////////////////////////////////
-            sf::PrimitiveType getPrimitiveType() const;
+            PrimitiveType getPrimitiveType() const;
             physic::BoundingBox getBounds();
-            bool operator== (const VertexBuffer &other) const;
+            bool operator== (const VertexBuffer &other);
             void updateVBOBuffer();
             void transform(TransformMatrix tm);
             template <typename Archive>
@@ -271,7 +271,7 @@ namespace odfaeg {
             std::vector<Vertex> m_vertices;      ///< Vertices contained in the array
 
 
-            sf::PrimitiveType       m_primitiveType; ///< Type of primitives to draw
+            PrimitiveType       m_primitiveType; ///< Type of primitives to draw
             unsigned int oldVerticesSize, oldIndexesSize, oldMaterialTypeSize, oldLayerSize, oldSpecularSize, oldLightInfosSize;
             bool needToUpdateVertexBuffer, needToUpdateIndexBuffer, needToUpdateMaterialTypeBuffer, needToUpdateLayersBuffer,
             needToUpdateSpecularBuffer, needToUpdateLightInfos;

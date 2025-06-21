@@ -7,7 +7,7 @@ using namespace odfaeg::graphic;
 using namespace odfaeg::window;
 using namespace odfaeg::network;
 MyAppli::MyAppli(Vec2f size, std::string title) :
-    Application(sf::VideoMode(size.x, size.y), title, sf::Style::Default, ContextSettings(24, 0, 4, 3, 0)),
+    Application(VideoMode(size.x(), size.y()), title, Style::Default, ContextSettings(24, 0, 4, 3, 0)),
     view3D(size.x, size.y, 80, 1, 1000) {
     //In perspective projection the x and y coordinates of the view are always between -1 and 1 with opengl.
 

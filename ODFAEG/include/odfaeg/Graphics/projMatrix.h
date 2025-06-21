@@ -36,20 +36,9 @@ namespace odfaeg {
                 * \brief reset the projection matrix.
                 */
                 void reset ();
-                /**
-                * \fn Vec2f project(Vec2f vec2)
-                * \brief project the vector from the 2D projection matrix and return the resulting vector.
-                * \param Vec2f the vector to be projected.
-                * \return the resulting vector.
-                */
-                math::Vec2f project (math::Vec2f vec2);
-                /**
-                * \fn Vec2f unProject(Vec2f vec2)
-                * \brief unproject a vector from the 2D projection matrix and return the resulting vector.
-                * \param the vector to be projected.
-                * \return the resulting vector.
-                */
-                math::Vec2f unProject(math::Vec2f vec2);
+
+
+
                 /**
                 * \fn Vec3f project(Vec3f vec3)
                 * \brief project a 3D vector from the 3D projection matrix and return the resulting vector.

@@ -7,11 +7,11 @@ namespace odfaeg {
             #ifdef VULKAN
             #else
             FileDialog::FileDialog(math::Vec3f position, math::Vec3f size, const Font* font) :
-            rw(sf::VideoMode(size.x, size.y), "File Dialog", sf::Style::Default, window::ContextSettings(0, 0, 0, 3, 0)),
+            rw(window::VideoMode(size.x(), size.y()), "File Dialog", window::Style::Default, window::ContextSettings(0, 0, 0, 3, 0)),
             LightComponent (rw, position, size, size * 0.5),
             font(font) {
                 //std::cout<<"position : "<<getPosition()<<std::endl;
-                rw.setPosition(sf::Vector2i(position.x, position.y));
+                rw.setPosition(math::Vector2i(position.x(), position.y()));
                 pTop = new Panel (rw, position, size);
                 pBottom = new Panel (rw, position, size);
                 pDirectories = new Panel (rw, position, size);

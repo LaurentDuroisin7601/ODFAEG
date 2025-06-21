@@ -9,7 +9,7 @@ namespace odfaeg {
 
         }
         ////////////////////////////////////////////////////////////
-        Window::Window(VideoMode mode, const core::String& title, Uint32 style, const ContextSettings& settings) :
+        Window::Window(VideoMode mode, const core::String& title, std::uint32_t style, const ContextSettings& settings) :
         m_window         (NULL)
         {
             create(mode, title, style, settings);
@@ -20,11 +20,14 @@ namespace odfaeg {
         {
             create(handle, settings);
         }////////////////////////////////////////////////////////////
-        void Window::create(VideoMode mode, const core::String& title, Uint32 style, const ContextSettings& settings)
+        void Window::create(VideoMode mode, const core::String& title, std::uint32_t style, const ContextSettings& settings)
         {
 
+
             m_window = WindowFactory::create();
+            std::cout<<"factory create"<<std::endl;
             m_window->create(mode, title, style, settings);
+            std::cout<<"window created"<<std::endl;
             // Perform common initializations
             initialize();
         }
@@ -115,7 +118,7 @@ namespace odfaeg {
 
 
         ////////////////////////////////////////////////////////////
-        void Window::setIcon(unsigned int width, unsigned int height, const Uint8* pixels)
+        void Window::setIcon(unsigned int width, unsigned int height, const std::uint8_t* pixels)
         {
             if (m_window)
                 m_window->setIcon(width, height, pixels);

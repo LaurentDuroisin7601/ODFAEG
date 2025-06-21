@@ -57,10 +57,12 @@ namespace odfaeg {
         unsigned int ContextImpl::nbContexts = 0;
         unsigned int ContextImpl::resourceCount = 0;
         std::uint64_t ContextImpl::id = 1;
-        std::mutex ContextImpl::rec_mutex = std::mutex();
-        ContextImpl* ContextImpl::current_ContextImpl(nullptr);
+        std::recursive_mutex ContextImpl::rec_mutex = std::recursive_mutex();
+        ContextImpl* ContextImpl::current_ContextImpl = nullptr;
         //sf::ThreadLocalPtr<ContextImpl::TransientContext> ContextImpl::transientContext(nullptr);
+
         IContext* ContextImpl::sharedContext = nullptr;
+
         //std::set<std::pair<ContextDestroyCallback, void*>> ContextImpl::contextDestroyCallbacks = std::set<std::pair<ContextDestroyCallback, void*>>();
         // Helper to parse OpenGL version strings
         bool ContextImpl::parseVersionString(const char* version, const char* prefix, unsigned int &major, unsigned int &minor)
@@ -82,13 +84,17 @@ namespace odfaeg {
             return false;
         }
         void ContextImpl::initResource() {
+            std::cout<<"init resource"<<std::endl;
             // Protect from concurrent access
-            std::lock_guard<std::mutex> lock(rec_mutex);
+            std::lock_guard<std::recursive_mutex> lock(rec_mutex);
             if (nbContexts == 0) {
-                sharedContext = new ContextImplType();
+                sharedContext = ThreadLocalContext::get();
+
                 ContextSettings settings;
+
                 sharedContext->create(settings, 1, 1);
                 sharedContext->setActive(true);
+
                 // Load our extensions vector
                 extensions.clear();
 
@@ -98,6 +104,7 @@ namespace odfaeg {
 
                 if (glGetError() == GL_INVALID_ENUM)
                 {
+
                     // Try to load the < 3.0 way
                     const char* extensionString = reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS));
 
@@ -114,9 +121,13 @@ namespace odfaeg {
                 }
                 else
                 {
+
                     // Try to load the >= 3.0 way
+                    //std::cout<<"create shared"<<std::endl;
                     glGetStringiFuncType glGetStringiFunc = NULL;
                     glGetStringiFunc = reinterpret_cast<glGetStringiFuncType>(getFunction("glGetStringi"));
+                    std::cout<<"create shared"<<std::endl;
+
 
                     if (glGetStringiFunc)
                     {
@@ -127,6 +138,7 @@ namespace odfaeg {
                         {
                             for (unsigned int i = 0; i < static_cast<unsigned int>(numExtensions); ++i)
                             {
+
                                 const char* extensionString = reinterpret_cast<const char*>(glGetStringiFunc(GL_EXTENSIONS, i));
 
                                 extensions.push_back(extensionString);
@@ -134,9 +146,11 @@ namespace odfaeg {
                         }
                     }
                 }
+
                 sharedContext->setActive(false);
             }
             nbContexts++;
+            std::cout<<"resource init"<<std::endl;
         }
         void ContextImpl::cleanupResource() {
             nbContexts--;
@@ -225,7 +239,7 @@ namespace odfaeg {
         bool ContextImpl::setActive(bool active) {
             if (active) {
                 if (this != current_ContextImpl) {
-                    std::lock_guard<std::mutex> lock(rec_mutex);
+                    std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                     if (ContextImplType::setActive(true)) {
                         current_ContextImpl = this;
 
@@ -289,9 +303,9 @@ namespace odfaeg {
         GlFunctionPointer ContextImpl::getFunction(const char* name)
         {
             #if !defined(ODFAEG_OPENGL_ES)
-
-                std::lock_guard<std::mutex> lock(rec_mutex);
-
+                std::cout<<"get func"<<std::endl;
+                std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                std::cout<<"get func"<<std::endl;
                 return ContextImplType::getFunction(name);
 
             #else
@@ -470,7 +484,7 @@ namespace odfaeg {
 
                             if (strstr(extensionString, "GL_ARB_compatibility"))
                             {
-                                m_settings.attributeFlags &= ~static_cast<Uint32>(ContextSettings::Core);
+                                m_settings.attributeFlags &= ~static_cast<std::uint32_t>(ContextSettings::Core);
                                 break;
                             }
                         }

@@ -164,7 +164,7 @@ namespace odfaeg
             /// \param settings Additional settings for the underlying OpenGL context
             ///
             ////////////////////////////////////////////////////////////
-            RenderWindow(sf::VideoMode mode, const core::String& title, sf::Uint32 style = sf::Style::Default, const window::ContextSettings& settings = window::ContextSettings());
+            RenderWindow(window::VideoMode mode, const core::String& title, std::uint32_t style = window::Style::Default, const window::ContextSettings& settings = window::ContextSettings());
 
             ////////////////////////////////////////////////////////////
             /// \brief Construct the window from an existing control
@@ -181,7 +181,7 @@ namespace odfaeg
             /// \param settings Additional settings for the underlying OpenGL context
             ///
             ////////////////////////////////////////////////////////////
-            explicit RenderWindow(sf::WindowHandle handle, const window::ContextSettings& settings = window::ContextSettings());
+            explicit RenderWindow(window::WindowHandle handle, const window::ContextSettings& settings = window::ContextSettings());
 
             ////////////////////////////////////////////////////////////
             /// \brief Destructor
@@ -216,7 +216,7 @@ namespace odfaeg
             /// \return Image containing the captured contents
             ///
             ////////////////////////////////////////////////////////////
-            sf::Image capture();
+            Image capture();
         protected:
 
             ////////////////////////////////////////////////////////////

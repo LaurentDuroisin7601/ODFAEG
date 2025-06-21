@@ -7,9 +7,11 @@ namespace
 }
 namespace odfaeg {
     namespace window {
-        WindowImpl::WindowImpl()
+        WindowImpl::WindowImpl() : WindowImplType()
         {
+            std::cout<<"impl : "<<std::endl;
             m_frameTimeLimit = core::Time::zero;
+
         }
         ////////////////////////////////////////////////////////////
         void WindowImpl::create(VideoMode mode, const core::String& title, std::uint32_t style, const ContextSettings& settings)

@@ -405,7 +405,7 @@ namespace odfaeg {
             /// \see mapCoordsToPixel
             ///
             ////////////////////////////////////////////////////////////
-            math::Vec3f mapPixelToCoords(const math::Vec3f& point);
+            math::Vec4f mapPixelToCoords(const math::Vec4f& point);
 
             ////////////////////////////////////////////////////////////
             /// \brief Convert a point from target coordinates to world coordinates
@@ -436,7 +436,7 @@ namespace odfaeg {
             /// \see mapCoordsToPixel
             ///
             ////////////////////////////////////////////////////////////
-            math::Vec3f mapPixelToCoords(const math::Vec3f& point, View& view);
+            math::Vec4f mapPixelToCoords(const math::Vec4f& point, View& view);
 
             ////////////////////////////////////////////////////////////
             /// \brief Convert a point from world coordinates to target
@@ -456,7 +456,7 @@ namespace odfaeg {
             /// \see mapPixelToCoords
             ///
             ////////////////////////////////////////////////////////////
-            math::Vec3f mapCoordsToPixel(const math::Vec3f& point);
+            math::Vec4f mapCoordsToPixel(const math::Vec4f& point);
 
             ////////////////////////////////////////////////////////////
             /// \brief Convert a point from world coordinates to target coordinates
@@ -483,7 +483,7 @@ namespace odfaeg {
             /// \see mapPixelToCoords
             ///
             ////////////////////////////////////////////////////////////
-            math::Vec3f mapCoordsToPixel(const math::Vec3f& point, View& view);
+            math::Vec4f mapCoordsToPixel(const math::Vec4f& point, View& view);
             void drawInstanced(VertexBuffer& vertexBuffer, enum PrimitiveType type, unsigned int start, unsigned int nb, unsigned int nbInstances, RenderStates states, unsigned int vboMatrix1=0, unsigned int vboMatrix2=0);
 
             ////////////////////////////////////////////////////////////
@@ -677,7 +677,7 @@ namespace odfaeg {
                 bool      viewChanged; ///< Has the current view changed since last draw?
                 bool vboPointerSets;
                 BlendMode lastBlendMode; ///< Cached blending mode
-                sf::std:::uint64_t    lastTextureId; ///< Cached texture
+                std::uint64_t    lastTextureId; ///< Cached texture
                 bool      useVertexCache; ///< Did we previously use the vertex cache?
                 Vertex vertexCache[VertexCacheSize]; ///< Pre-transformed vertices cache
                 VertexBuffer* lastVboBuffer;

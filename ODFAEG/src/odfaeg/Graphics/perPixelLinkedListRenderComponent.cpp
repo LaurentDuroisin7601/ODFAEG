@@ -2700,9 +2700,9 @@ namespace odfaeg {
         }
         #else
         PerPixelLinkedListRenderComponent::PerPixelLinkedListRenderComponent(RenderWindow& window, int layer, std::string expression, window::ContextSettings settings) :
-            HeavyComponent(window, math::Vec3f(window.getView().getPosition().x(), window.getView().getPosition().y, layer),
+            HeavyComponent(window, math::Vec3f(window.getView().getPosition().x(), window.getView().getPosition().y(), layer),
                           math::Vec3f(window.getView().getSize().x(), window.getView().getSize().y(), 0),
-                          math::Vec3f(window.getView().getSize().x() + window.getView().getSize().x() * 0.5f, window.getView().getPosition().y + window.getView().getSize().y() * 0.5f, layer)),
+                          math::Vec3f(window.getView().getSize().x() + window.getView().getSize().x() * 0.5f, window.getView().getPosition().y() + window.getView().getSize().y() * 0.5f, layer)),
             view(window.getView()),
             expression(expression),
             quad(math::Vec3f(window.getView().getSize().x(), window.getView().getSize().y(), window.getSize().y() * 0.5f)),
@@ -2719,7 +2719,7 @@ namespace odfaeg {
             frameBuffer.create(window.getView().getSize().x(), window.getView().getSize().y(), settings);
             frameBufferSprite = Sprite(frameBuffer.getTexture(), math::Vec3f(0, 0, 0), math::Vec3f(window.getView().getSize().x(), window.getView().getSize().y(), 0), IntRect(0, 0, window.getView().getSize().x(), window.getView().getSize().y()));
             frameBuffer.setView(view);
-            resolution = sf::Vector3i((int) window.getSize().x(), (int) window.getSize().y(), window.getView().getSize().z());
+            resolution = math::Vec3f((int) window.getSize().x(), (int) window.getSize().y(), window.getView().getSize().z());
             //window.setActive();
             glCheck(glGenBuffers(1, &atomicBuffer));
             glCheck(glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomicBuffer));
@@ -3037,7 +3037,7 @@ namespace odfaeg {
                    skyboxShader.setParameter("skybox", Shader::CurrentTexture);
                    indirectRenderingShader.setParameter("maxNodes", maxNodes);
                    indirectRenderingShader.setParameter("currentTex", Shader::CurrentTexture);
-                   indirectRenderingShader.setParameter("resolution", resolution.x, resolution.y, resolution.z);
+                   indirectRenderingShader.setParameter("resolution", resolution.x(), resolution.y(), resolution.z());
                    math::Matrix4f viewMatrix = getWindow().getDefaultView().getViewMatrix().getMatrix().transpose();
                    math::Matrix4f projMatrix = getWindow().getDefaultView().getProjMatrix().getMatrix().transpose();
                    perPixelLinkedListP2.setParameter("viewMatrix", viewMatrix);
@@ -3618,7 +3618,7 @@ namespace odfaeg {
             glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0));
 
             frameBuffer.resetGLStates();*/
-            float zNear = view.getViewport().getPosition().z;
+            float zNear = view.getViewport().getPosition().z();
             if (!view.isOrtho())
                 view.setPerspective(80, view.getViewport().getSize().x() / view.getViewport().getSize().y(), 0.1f, view.getViewport().getSize().z());
             math::Matrix4f viewMatrix = view.getViewMatrix().getMatrix().transpose();
@@ -3638,7 +3638,7 @@ namespace odfaeg {
                     }
                 }
             }
-            currentStates.blendMode = sf::BlendAlpha;
+            currentStates.blendMode = BlendAlpha;
             currentStates.shader = &skyboxShader;
             currentStates.texture = (skybox == nullptr ) ? nullptr : &static_cast<g3d::Skybox*>(skybox)->getTexture();
             vb.update();
@@ -3663,7 +3663,7 @@ namespace odfaeg {
             //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
             vb.clear();
             //vb.name = "";
-            vb.setPrimitiveType(sf::Quads);
+            vb.setPrimitiveType(Quads);
             Vertex v1 (math::Vec3f(0, 0, quad.getSize().z()));
             Vertex v2 (math::Vec3f(quad.getSize().x(),0, quad.getSize().z()));
             Vertex v3 (math::Vec3f(quad.getSize().x(), quad.getSize().y(), quad.getSize().z()));
@@ -4204,7 +4204,7 @@ namespace odfaeg {
                 //std::cout<<"recompute size"<<std::endl;
                 recomputeSize();
                 getListener().pushEvent(event);
-                getView().reset(physic::BoundingBox(getView().getViewport().getPosition().x(), getView().getViewport().getPosition().y, getView().getViewport().getPosition().z, event.window.data1, event.window.data2, getView().getViewport().getDepth()));
+                getView().reset(physic::BoundingBox(getView().getViewport().getPosition().x(), getView().getViewport().getPosition().y(), getView().getViewport().getPosition().z(), event.window.data1, event.window.data2, getView().getViewport().getDepth()));
             }
         }
         const Texture& PerPixelLinkedListRenderComponent::getFrameBufferTexture() {

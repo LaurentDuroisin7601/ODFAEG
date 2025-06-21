@@ -69,13 +69,13 @@ namespace odfaeg {
                     vertex.position[2] = mesh->mVertices[i].z;
                     if (mesh->mTextureCoords[0])
                     {
-                        vertex.texCoords[0] = mesh->mTextureCoords[0][i].x * mat.getTexture()->getSize().x;
-                        vertex.texCoords[1] = mesh->mTextureCoords[0][i].y * mat.getTexture()->getSize().y;
+                        vertex.texCoords[0] = mesh->mTextureCoords[0][i].x * mat.getTexture()->getSize().x();
+                        vertex.texCoords[1] = mesh->mTextureCoords[0][i].y * mat.getTexture()->getSize().y();
                     } else {
                         vertex.texCoords = math::Vec2f(0, 0);
                     }
                     vertices.push_back(vertex);
-                    verts.push_back(math::Vec3f(vertex.position.x, vertex.position.y, vertex.position.z));
+                    verts.push_back(math::Vec3f(vertex.position.x(), vertex.position.y(), vertex.position.z()));
                 }
                 extractBoneWeightForVertices(vertices, mesh, scene, emesh);
 
@@ -83,7 +83,7 @@ namespace odfaeg {
 
                 for(unsigned int i = 0; i < mesh->mNumFaces; i++)
                 {
-                    VertexArray va(sf::Triangles, 0, emesh);
+                    VertexArray va(Triangles, 0, emesh);
                     aiFace face = mesh->mFaces[i];
                     for(unsigned int j = 0; j < face.mNumIndices; j++) {
                         va.append(vertices[face.mIndices[j]]);

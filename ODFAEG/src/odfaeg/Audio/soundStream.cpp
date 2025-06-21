@@ -131,24 +131,11 @@ namespace odfaeg {
             // Start updating the stream in a separate thread to avoid blocking the application
             m_isStreaming = true;
             m_threadStartState = Playing;
+            m_thread = std::thread(&streamData, this);
 
 
-           HANDLE hThread = CreateThread(
-               nullptr, 0,
-               streamDataThunk,
-               this,
-               0,
-               nullptr
-           );
-
-            // Changer la priorité et l'affinité
-           SetThreadPriority(hThread, THREAD_PRIORITY_HIGHEST);
-           SetThreadAffinityMask(hThread, 1ull << 2);
         }
-        DWORD WINAPI SoundStream::streamDataThunk(LPVOID param) {
-            static_cast<SoundStream*>(param)->streamData();
-            return 0;
-        }
+
 
         ////////////////////////////////////////////////////////////
         void SoundStream::pause()
@@ -236,17 +223,7 @@ namespace odfaeg {
 
             m_isStreaming = true;
             m_threadStartState = oldStatus;
-            HANDLE hThread = CreateThread(
-               nullptr, 0,
-               streamDataThunk,
-               this,
-               0,
-               nullptr
-           );
-
-            // Changer la priorité et l'affinité
-           SetThreadPriority(hThread, THREAD_PRIORITY_HIGHEST);
-           SetThreadAffinityMask(hThread, 1ull << 2);
+            m_thread = std::thread(&streamData, this);
         }
 
 
@@ -318,6 +295,8 @@ namespace odfaeg {
             alCheck(alSourcePlay(m_source));
 
 
+
+
             {
                 std::lock_guard<std::mutex> lock(m_threadMutex);
 
@@ -356,7 +335,7 @@ namespace odfaeg {
                 // Get the number of buffers that have been processed (i.e. ready for reuse)
                 ALint nbProcessed = 0;
                 alCheck(alGetSourcei(m_source, AL_BUFFERS_PROCESSED, &nbProcessed));
-
+                std::cout<<"nb processed : "<<nbProcessed<<std::endl;
                 //std::cout<<"nb proceed : "<<nbProcessed<<std::endl;
 
 

@@ -21,9 +21,9 @@ namespace odfaeg {
             #ifndef VULKAN
             VertexArray va(Quads, 4, this);
             Vertex v1(math::Vec3f(0, 0, 0), color);
-            Vertex v2(math::Vec3f(size.x, 0, 0), color);
-            Vertex v3(math::Vec3f(size.x, size.y, size.z), color);
-            Vertex v4(math::Vec3f(0, size.y, size.z), color);
+            Vertex v2(math::Vec3f(size.x(), 0, 0), color);
+            Vertex v3(math::Vec3f(size.x(), size.y(), size.z()), color);
+            Vertex v4(math::Vec3f(0, size.y(), size.z()), color);
             v1.texCoords = math::Vec2f(subRect.left, subRect.top);
             v2.texCoords = math::Vec2f(subRect.left + subRect.width, subRect.top);
             v3.texCoords = math::Vec2f(subRect.left + subRect.width, subRect.top + subRect.height);

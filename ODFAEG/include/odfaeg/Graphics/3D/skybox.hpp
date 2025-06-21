@@ -38,7 +38,7 @@ namespace odfaeg {
             #else
             class ODFAEG_GRAPHICS_API Skybox : public GameObject {
                 public :
-                Skybox  (std::vector<sf::Image> skyboxImages, EntityFactory& factory);
+                Skybox  (std::vector<Image> skyboxImages, EntityFactory& factory);
                 void onDraw (RenderTarget& target, RenderStates states);
                 Texture& getTexture();
                 bool isAnimated() const {
@@ -62,7 +62,7 @@ namespace odfaeg {
                 Entity* clone();
                 private :
                 Texture skyboxCM;
-                std::vector<sf::Image> skyboxImgs;
+                std::vector<Image> skyboxImgs;
             };
             #endif
         }

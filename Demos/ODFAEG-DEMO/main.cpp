@@ -29,28 +29,9 @@ using namespace sorrok;
 
 int main(int argc, char *argv[]) {
 
-   /* VkSettup instance;
-    Device device(instance);
-    RenderWindow window(VideoMode(800, 600), "test", device);
-    Texture texture(device);
-    texture.loadFromFile("tilesets/eau.png");
-    Sprite sprite(texture, Vec3f(-400, -300, 0), Vec3f(100, 50, 0), IntRect(0, 0, 100, 50));
-    RenderTexture rt(device);
-    rt.create(800,600);
-    rt.clear();
-    rt.beginRenderPass();
-    rt.draw(sprite);
-    rt.endRenderPass();
-    rt.display();
-    Sprite sprite2(rt.getTexture(), Vec3f(0, 0, 0), Vec3f(800, 600, 0), IntRect(0, 0, 800, 600));
-    while (window.isOpen()) {
-        window.clear();
-        window.beginRenderPass();
-        window.draw(sprite2);
-        window.endRenderPass();
-        window.submit(true);
-        window.display();
-    }*/
+    /*VkSettup instance;
+    Device device(instance);*/
+
 
 
 

@@ -111,8 +111,8 @@ namespace odfaeg {
                 return skybox;
             }
             #else
-            Skybox::Skybox(std::vector<sf::Image> skyboxImages, EntityFactory& factory) : GameObject(math::Vec3f(0, 0, 0),math::Vec3f(2, 2, 2),math::Vec3f(1,1,1),"E_SKYBOX", factory) {
-                skyboxCM.createCubeMap(skyboxImages[0].getSize().x, skyboxImages[0].getSize().y, skyboxImages);
+            Skybox::Skybox(std::vector<Image> skyboxImages, EntityFactory& factory) : GameObject(math::Vec3f(0, 0, 0),math::Vec3f(2, 2, 2),math::Vec3f(1,1,1),"E_SKYBOX", factory) {
+                skyboxCM.createCubeMap(skyboxImages[0].getSize().x(), skyboxImages[0].getSize().y(), skyboxImages);
                 //Droite.
                 VertexArray va1(Quads, 4, this);
                 Vertex v1(math::Vec3f(1, -1, -1));

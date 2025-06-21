@@ -133,7 +133,7 @@ namespace odfaeg {
                 std::string expression;
                 bool update;
                 GLuint maxNodes;
-                sf::Vector3i resolution;
+                math::Vec3f resolution;
                 unsigned int atomicBuffer, linkedListBuffer, clearBuf, headPtrTex, modelDataBuffer, materialDataBuffer, ubo, vboIndirect;
                 Sprite frameBufferSprite;
                 VertexBuffer vb;

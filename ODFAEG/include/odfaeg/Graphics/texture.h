@@ -196,7 +196,7 @@ namespace odfaeg
             ////////////////////////////////////////////////////////////
             bool create(unsigned int width, unsigned int height, unsigned int precision = 0x8058, unsigned int format = 0x1908, unsigned int type = 0x1401);
             bool createCubeMap (unsigned int width, unsigned int height);
-            bool createCubeMap(unsigned int width, unsigned int height, std::vector<sf::Image> images);
+            bool createCubeMap(unsigned int width, unsigned int height, std::vector<Image> images);
             void clear();
             ////////////////////////////////////////////////////////////
             /// \brief Load the texture from a file on disk
@@ -290,7 +290,7 @@ namespace odfaeg
             /// \see loadFromFile, loadFromMemory, loadFromImage
             ///
             ////////////////////////////////////////////////////////////
-            bool loadFromStream(sf::InputStream& stream, const IntRect& area = IntRect());
+            bool loadFromStream(std::istream& stream, const IntRect& area = IntRect());
 
             ////////////////////////////////////////////////////////////
             /// \brief Load the texture from an image
@@ -314,7 +314,7 @@ namespace odfaeg
             /// \see loadFromFile, loadFromMemory
             ///
             ////////////////////////////////////////////////////////////
-            bool loadFromImage(const sf::Image& image, const IntRect& area = IntRect());
+            bool loadFromImage(const Image& image, const IntRect& area = IntRect());
 
             ////////////////////////////////////////////////////////////
             /// \brief Return the size of the texture
@@ -337,7 +337,7 @@ namespace odfaeg
             /// \see loadFromImage
             ///
             ////////////////////////////////////////////////////////////
-            sf::Image copyToImage() const;
+            Image copyToImage();
 
             ////////////////////////////////////////////////////////////
             /// \brief Update the whole texture from an array of pixels
@@ -397,7 +397,7 @@ namespace odfaeg
             /// \param image Image to copy to the texture
             ///
             ////////////////////////////////////////////////////////////
-            void update(const sf::Image& image);
+            void update(const Image& image);
 
             ////////////////////////////////////////////////////////////
             /// \brief Update a part of the texture from an image
@@ -414,7 +414,7 @@ namespace odfaeg
             /// \param y     Y offset in the texture where to copy the source image
             ///
             ////////////////////////////////////////////////////////////
-            void update(const sf::Image& image, unsigned int x, unsigned int y);
+            void update(const Image& image, unsigned int x, unsigned int y);
 
             ////////////////////////////////////////////////////////////
             /// \brief Update the texture from the contents of a window
@@ -592,14 +592,14 @@ namespace odfaeg
             }
             void setNativeHandle(unsigned int handle, unsigned int width, unsigned int height);
             math::Matrix4f getTextureMatrix() const;
-            const sf::Image& getImage() const;
+            const Image& getImage() const;
             void onLoad(std::vector<std::uint8_t>& pixels);
             void onSave(std::vector<std::uint8_t>& pixels);
             unsigned int getNativeHandle() const;
             bool isCubemap();
             void setName(std::string name);
-            void update(const Texture& texture);
-            void update(const Texture& texture, unsigned int x, unsigned int y);
+            void update(Texture texture);
+            void update(Texture texture, unsigned int x, unsigned int y);
             void swap(Texture& texture);
             uint64_t getTextureHandle();
             void makeTextureResident(uint64_t handle_texture);
@@ -629,7 +629,7 @@ namespace odfaeg
             ////////////////////////////////////////////////////////////
             // Member data
             ////////////////////////////////////////////////////////////
-            sf::Image        m_image;
+            Image        m_image;
             IntRect  m_area;
             math::Vector2u m_size;          ///< Public texture size
             math::Vector2u m_actualSize;    ///< Actual texture size (can be greater than public size because of padding)
@@ -637,7 +637,7 @@ namespace odfaeg
             bool         m_isSmooth;      ///< Status of the smooth filter
             bool         m_isRepeated;    ///< Is the texture in repeat mode?
             mutable bool m_pixelsFlipped; ///< To work around the inconsistency in Y orientation
-            sf::std:::uint64_t       m_cacheId;       ///< Unique number that identifies the texture to the render target's cache
+            std::uint64_t       m_cacheId;       ///< Unique number that identifies the texture to the render target's cache
             bool m_isCubeMap;
             std::string m_name;
             bool textureResident;

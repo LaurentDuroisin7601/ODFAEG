@@ -42,7 +42,7 @@
 
 namespace
 {
-    // FreeType callbacks that operate on a sf::InputStream
+    // FreeType callbacks that operate on a std::istream
     unsigned long read(FT_Stream rec, unsigned long offset, unsigned char* buffer, unsigned long count)
     {
         std::istream* stream = static_cast<std::istream*>(rec->descriptor.pointer);
@@ -352,7 +352,7 @@ namespace odfaeg
 
 
         ////////////////////////////////////////////////////////////
-        const Glyph& Font::getGlyph(Uint32 codePoint, unsigned int characterSize, bool bold, float outlineThickness) const
+        const Glyph& Font::getGlyph(std::uint32_t codePoint, unsigned int characterSize, bool bold, float outlineThickness) const
         {
             // Get the page corresponding to the character size
 
@@ -378,7 +378,7 @@ namespace odfaeg
 
 
         ////////////////////////////////////////////////////////////
-        float Font::getKerning(Uint32 first, Uint32 second, unsigned int characterSize) const
+        float Font::getKerning(std::uint32_t first, std::uint32_t second, unsigned int characterSize) const
         {
             // Special case where first or second is 0 (null character)
             if (first == 0 || second == 0)
@@ -398,10 +398,10 @@ namespace odfaeg
 
                 // X advance is already in pixels for bitmap fonts
                 if (!FT_IS_SCALABLE(face))
-                    return static_cast<float>(kerning.x);
+                    return static_cast<float>(kerning.x());
 
                 // Return the X advance
-                return static_cast<float>(kerning.x) / static_cast<float>(1 << 6);
+                return static_cast<float>(kerning.x()) / static_cast<float>(1 << 6);
             }
             else
             {
@@ -541,12 +541,12 @@ namespace odfaeg
                 delete m_pages[i];
             }
             m_pages.clear();
-            std::vector<Uint8>().swap(m_pixelBuffer);
+            std::vector<std::uint8_t>().swap(m_pixelBuffer);
         }
 
 
         ////////////////////////////////////////////////////////////
-        Glyph Font::loadGlyph(Uint32 codePoint, unsigned int characterSize, bool bold, float outlineThickness) const
+        Glyph Font::loadGlyph(std::uint32_t codePoint, unsigned int characterSize, bool bold, float outlineThickness) const
         {
             // The glyph to return
             Glyph glyph;
@@ -645,8 +645,8 @@ namespace odfaeg
                 // Resize the pixel buffer to the new size and fill it with transparent white pixels
                 m_pixelBuffer.resize(width * height * 4);
 
-                Uint8* current = &m_pixelBuffer[0];
-                Uint8* end = current + width * height * 4;
+                std::uint8_t* current = &m_pixelBuffer[0];
+                std::uint8_t* end = current + width * height * 4;
 
                 while (current != end)
                 {
@@ -657,7 +657,7 @@ namespace odfaeg
                 }
 
                 // Extract the glyph's pixels from the bitmap
-                const Uint8* pixels = bitmap.buffer;
+                const std::uint8_t* pixels = bitmap.buffer;
                 if (bitmap.pixel_mode == FT_PIXEL_MODE_MONO)
                 {
                     // Pixels are 1 bit monochrome values
@@ -718,7 +718,7 @@ namespace odfaeg
                     continue;
 
                 // Check if there's enough horizontal space left in the row
-                if (width > page.texture.getSize().x() - it->width)
+                if (width > page.texture.getSize().x()() - it->width)
                     continue;
 
                 // Make sure that this new row is the best found so far
@@ -736,7 +736,7 @@ namespace odfaeg
             {
 
                 int rowHeight = height + height / 10;
-                while ((page.nextRow + rowHeight >= page.texture.getSize().y()) || (width >= page.texture.getSize().x()))
+                while ((page.nextRow + rowHeight >= page.texture.getSize().y()) || (width >= page.texture.getSize().x()()))
                 {
                     // Not enough space: resize the texture if possible
                     unsigned int textureWidth  = page.texture.getSize().x();
@@ -782,7 +782,7 @@ namespace odfaeg
             // only when necessary to avoid killing performances
 
             FT_Face face = static_cast<FT_Face>(m_face);
-            FT_UShort currentSize = face->size->metrics.x_ppem;
+            FT_UShort currentSize = face->size->metrics.x()_ppem;
 
             if (currentSize != characterSize)
             {
@@ -1009,7 +1009,7 @@ namespace odfaeg
 
 
         ////////////////////////////////////////////////////////////
-        bool Font::loadFromStream(InputStream& stream)
+        bool Font::loadFromStream(std::istream& stream)
         {
             // Cleanup the previous resources
             cleanup();
@@ -1027,13 +1027,15 @@ namespace odfaeg
             m_library = library;
 
             // Make sure that the stream's reading position is at the beginning
-            stream.seek(0);
+            stream.seekg(0, std::ios::end);
+            unsigned int size = stream.tellg();
+            stream.seekg(0, std::ios::beg);
 
             // Prepare a wrapper for our stream, that we'll pass to FreeType callbacks
             FT_StreamRec* rec = new FT_StreamRec;
             std::memset(rec, 0, sizeof(*rec));
             rec->base               = NULL;
-            rec->size               = static_cast<unsigned long>(stream.getSize());
+            rec->size               = static_cast<unsigned long>(size);
             rec->pos                = 0;
             rec->descriptor.pointer = &stream;
             rec->read               = &read;
@@ -1094,14 +1096,14 @@ namespace odfaeg
 
 
         ////////////////////////////////////////////////////////////
-        const Glyph& Font::getGlyph(Uint32 codePoint, unsigned int characterSize, bool bold, float outlineThickness) const
+        const Glyph& Font::getGlyph(std::uint32_t codePoint, unsigned int characterSize, bool bold, float outlineThickness) const
         {
             // Get the page corresponding to the character size
 
             GlyphTable& glyphs = m_pages[characterSize].glyphs;
 
             // Build the key by combining the glyph index (based on code point), bold flag, and outline thickness
-            std:::uint64_t key = combine(outlineThickness, bold, FT_Get_Char_Index(static_cast<FT_Face>(m_face), codePoint));
+            std::uint64_t key = combine(outlineThickness, bold, FT_Get_Char_Index(static_cast<FT_Face>(m_face), codePoint));
 
             // Search the glyph into the cache
             GlyphTable::const_iterator it = glyphs.find(key);
@@ -1120,7 +1122,7 @@ namespace odfaeg
 
 
         ////////////////////////////////////////////////////////////
-        float Font::getKerning(Uint32 first, Uint32 second, unsigned int characterSize) const
+        float Font::getKerning(std::uint32_t first, std::uint32_t second, unsigned int characterSize) const
         {
             // Special case where first or second is 0 (null character)
             if (first == 0 || second == 0)
@@ -1278,12 +1280,12 @@ namespace odfaeg
             m_streamRec = NULL;
             m_refCount  = NULL;
             m_pages.clear();
-            std::vector<Uint8>().swap(m_pixelBuffer);
+            std::vector<std::uint8_t>().swap(m_pixelBuffer);
         }
 
 
         ////////////////////////////////////////////////////////////
-        Glyph Font::loadGlyph(Uint32 codePoint, unsigned int characterSize, bool bold, float outlineThickness) const
+        Glyph Font::loadGlyph(std::uint32_t codePoint, unsigned int characterSize, bool bold, float outlineThickness) const
         {
             // The glyph to return
             Glyph glyph;
@@ -1382,8 +1384,8 @@ namespace odfaeg
                 // Resize the pixel buffer to the new size and fill it with transparent white pixels
                 m_pixelBuffer.resize(width * height * 4);
 
-                Uint8* current = &m_pixelBuffer[0];
-                Uint8* end = current + width * height * 4;
+                std::uint8_t* current = &m_pixelBuffer[0];
+                std::uint8_t* end = current + width * height * 4;
 
                 while (current != end)
                 {
@@ -1394,7 +1396,7 @@ namespace odfaeg
                 }
 
                 // Extract the glyph's pixels from the bitmap
-                const Uint8* pixels = bitmap.buffer;
+                const std::uint8_t* pixels = bitmap.buffer;
                 if (bitmap.pixel_mode == FT_PIXEL_MODE_MONO)
                 {
                     // Pixels are 1 bit monochrome values
@@ -1455,7 +1457,7 @@ namespace odfaeg
                     continue;
 
                 // Check if there's enough horizontal space left in the row
-                if (width > page.texture.getSize().x - it->width)
+                if (width > page.texture.getSize().x() - it->width)
                     continue;
 
                 // Make sure that this new row is the best found so far
@@ -1471,11 +1473,11 @@ namespace odfaeg
             if (!row)
             {
                 int rowHeight = height + height / 10;
-                while ((page.nextRow + rowHeight >= page.texture.getSize().y) || (width >= page.texture.getSize().x))
+                while ((page.nextRow + rowHeight >= page.texture.getSize().y()) || (width >= page.texture.getSize().x()))
                 {
                     // Not enough space: resize the texture if possible
-                    unsigned int textureWidth  = page.texture.getSize().x;
-                    unsigned int textureHeight = page.texture.getSize().y;
+                    unsigned int textureWidth  = page.texture.getSize().x();
+                    unsigned int textureHeight = page.texture.getSize().y();
                     if ((textureWidth * 2 <= Texture::getMaximumSize()) && (textureHeight * 2 <= Texture::getMaximumSize()))
                     {
                         // Make the texture 2 times bigger
@@ -1555,7 +1557,7 @@ namespace odfaeg
         nextRow(3)
         {
             // Make sure that the texture is initialized by default
-            sf::Image image;
+            Image image;
             image.create(128, 128, Color(255, 255, 255, 0));
 
             // Reserve a 2x2 white square for texturing underlines

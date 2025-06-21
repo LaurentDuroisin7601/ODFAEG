@@ -601,9 +601,10 @@ namespace odfaeg {
         }
 
         ////////////////////////////////////////////////////////////
-        RenderWindow::RenderWindow(VideoMode mode, const String& title, Uint32 style, const window::ContextSettings& settings)
+        RenderWindow::RenderWindow(window::VideoMode mode, const core::String& title, std::uint32_t style, const window::ContextSettings& settings)
         {
             // Don't call the base class constructor because it contains virtual function calls
+
             create(mode, title, style, settings);
         }
 
@@ -611,7 +612,7 @@ namespace odfaeg {
 
 
         ////////////////////////////////////////////////////////////
-        RenderWindow::RenderWindow(WindowHandle handle, const window::ContextSettings& settings)
+        RenderWindow::RenderWindow(window::WindowHandle handle, const window::ContextSettings& settings)
         {
             // Don't call the base class constructor because it contains virtual function calls
             create(handle, settings);
@@ -633,7 +634,7 @@ namespace odfaeg {
 
 
         ////////////////////////////////////////////////////////////
-        Vector2u RenderWindow::getSize() const
+        math::Vector2u RenderWindow::getSize() const
         {
             return Window::getSize();
         }
@@ -644,14 +645,14 @@ namespace odfaeg {
             Image image;
             if (setActive())
             {
-                int width = static_cast<int>(getSize().x);
-                int height = static_cast<int>(getSize().y);
+                int width = static_cast<int>(getSize().x());
+                int height = static_cast<int>(getSize().y());
 
                 // copy rows one by one and flip them (OpenGL's origin is bottom while ODFAEG's origin is top)
-                std::vector<Uint8> pixels(width * height * 4);
+                std::vector<std::uint8_t> pixels(width * height * 4);
                 for (int i = 0; i < height; ++i)
                 {
-                    Uint8* ptr = &pixels[i * width * 4];
+                    std::uint8_t* ptr = &pixels[i * width * 4];
                     glCheck(glReadPixels(0, height - i - 1, width, 1, GL_RGBA, GL_UNSIGNED_BYTE, ptr));
                 }
 

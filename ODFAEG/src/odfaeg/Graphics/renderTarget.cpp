@@ -1116,19 +1116,20 @@ namespace odfaeg {
         {
             return m_defaultView;
         }
-        math::Vec3f RenderTarget::mapPixelToCoords(const math::Vec3f& point)
+        math::Vec4f RenderTarget::mapPixelToCoords(const math::Vec4f& point)
         {
             return mapPixelToCoords(point, getView());
         }
 
 
-        math::Vec3f RenderTarget::mapPixelToCoords(const math::Vec3f& point, View& view)
+        math::Vec4f RenderTarget::mapPixelToCoords(const math::Vec4f& point, View& view)
         {
+            point[3] = 1;
             ViewportMatrix vpm;
             ////std::cout<<"point : "<<point<<std::endl;
-            vpm.setViewport(math::Vec3f(view.getViewport().getPosition().x, view.getViewport().getPosition().y, 0)
+            vpm.setViewport(math::Vec3f(view.getViewport().getPosition().x(), view.getViewport().getPosition().y(), 0)
                                         ,math::Vec3f(view.getViewport().getWidth(), view.getViewport().getHeight(), 1));
-            math::Vec3f coords = vpm.toNormalizedCoordinates(point);
+            math::Vec4f coords = vpm.toNormalizedCoordinates(point);
             ////std::cout<<"ndc : "<<coords<<std::endl;
             coords = view.getProjMatrix().unProject(coords);
             ////std::cout<<"unproject : "<<coords<<std::endl;
@@ -1139,33 +1140,32 @@ namespace odfaeg {
             return coords;
         }
 
-        math::Vec3f RenderTarget::mapCoordsToPixel(const math::Vec3f& point)
+        math::Vec4f RenderTarget::mapCoordsToPixel(const math::Vec4f& point)
         {
             return mapCoordsToPixel(point, getView());
         }
 
 
-        math::Vec3f RenderTarget::mapCoordsToPixel(const math::Vec3f& point, View& view) {
+        math::Vec4f RenderTarget::mapCoordsToPixel(const math::Vec4f& point, View& view) {
+            point[3] = 1;
             ViewportMatrix vpm;
-            vpm.setViewport(math::Vec3f(view.getViewport().getPosition().x, view.getViewport().getPosition().y, 0),
+            vpm.setViewport(math::Vec3f(view.getViewport().getPosition().x(), view.getViewport().getPosition().y(), 0),
             math::Vec3f(view.getViewport().getWidth(), view.getViewport().getHeight(), 1));
-            math::Vec3f coords = view.getViewMatrix().transform(point);
+            math::Vec4f coords = view.getViewMatrix().transform(point);
             coords = view.getProjMatrix().project(coords);
 
-            if (coords.w == 0) {
-                coords.w = view.getSize().z * 0.5;
-            }
+
             coords = coords.normalizeToVec3();
             coords = vpm.toViewportCoordinates(coords);
             return coords;
         }
         ViewportMatrix RenderTarget::getViewportMatrix(View* view) {
             ViewportMatrix vpm;
-            vpm.setViewport(math::Vec3f(view->getViewport().getPosition().x, view->getViewport().getPosition().y, 0),
+            vpm.setViewport(math::Vec3f(view->getViewport().getPosition().x(), view->getViewport().getPosition().y(), 0),
             math::Vec3f(view->getViewport().getWidth(), view->getViewport().getHeight(), 1));
             return vpm;
         }
-        void RenderTarget::drawVBOBindlessIndirect(sf::PrimitiveType type, unsigned int nbIndirectCommands, RenderStates states, unsigned int vboIndirect) {
+        void RenderTarget::drawVBOBindlessIndirect(PrimitiveType type, unsigned int nbIndirectCommands, RenderStates states, unsigned int vboIndirect) {
             if (activate(true))
             {
                 if (!m_cache.glStatesSet)
@@ -1178,7 +1178,7 @@ namespace odfaeg {
                     applyBlendMode(states.blendMode);
 
                 // Apply the texture
-                sf::std:::uint64_t textureId = states.texture ? states.texture->getNativeHandle() : 0;
+                std::uint64_t textureId = states.texture ? states.texture->getNativeHandle() : 0;
                 if (textureId != m_cache.lastTextureId)
                     applyTexture(states.texture);
                 // Apply the shader
@@ -1198,7 +1198,7 @@ namespace odfaeg {
             applyTexture(nullptr);
             applyShader(nullptr);
          }
-         void RenderTarget::drawIndirect(VertexBuffer& vertexBuffer, sf::PrimitiveType type, unsigned int nbIndirectCommands, RenderStates states, unsigned int vboIndirect, unsigned int vboMatrix1, unsigned int vboMatrix2) {
+         void RenderTarget::drawIndirect(VertexBuffer& vertexBuffer, PrimitiveType type, unsigned int nbIndirectCommands, RenderStates states, unsigned int vboIndirect, unsigned int vboMatrix1, unsigned int vboMatrix2) {
             if (vertexBuffer.getVertexCount() == 0) {
                 return;
             }
@@ -1216,7 +1216,7 @@ namespace odfaeg {
                     applyBlendMode(states.blendMode);
 
                 // Apply the texture
-                sf::std:::uint64_t textureId = states.texture ? states.texture->getNativeHandle() : 0;
+                std::uint64_t textureId = states.texture ? states.texture->getNativeHandle() : 0;
                 if (textureId != m_cache.lastTextureId)
                     applyTexture(states.texture);
                 // Apply the shader
@@ -1402,7 +1402,7 @@ namespace odfaeg {
             applyTexture(nullptr);
             applyShader(nullptr);
         }
-        void RenderTarget::drawInstanced(VertexBuffer& vertexBuffer, enum sf::PrimitiveType type, unsigned int start, unsigned int nb, unsigned int nbInstances, RenderStates states, unsigned int vboMatrix1, unsigned int vboMatrix2) {
+        void RenderTarget::drawInstanced(VertexBuffer& vertexBuffer, enum PrimitiveType type, unsigned int start, unsigned int nb, unsigned int nbInstances, RenderStates states, unsigned int vboMatrix1, unsigned int vboMatrix2) {
             if (vertexBuffer.getVertexCount() == 0) {
                 return;
             }
@@ -1419,7 +1419,7 @@ namespace odfaeg {
                     applyBlendMode(states.blendMode);
 
                 // Apply the texture
-                sf::std:::uint64_t textureId = states.texture ? states.texture->getNativeHandle() : 0;
+                std::uint64_t textureId = states.texture ? states.texture->getNativeHandle() : 0;
                 if (textureId != m_cache.lastTextureId)
                     applyTexture(states.texture);
                 // Apply the shader
@@ -1560,7 +1560,7 @@ namespace odfaeg {
                     applyBlendMode(states.blendMode);
 
                 // Apply the texture
-                sf::std:::uint64_t textureId = states.texture ? states.texture->getNativeHandle() : 0;
+                std::uint64_t textureId = states.texture ? states.texture->getNativeHandle() : 0;
                 if (textureId != m_cache.lastTextureId)
                     applyTexture(states.texture);
                 // Apply the shader
@@ -1575,10 +1575,10 @@ namespace odfaeg {
                     {
 
                         Vertex& vertex = m_cache.vertexCache[i];
-                        math::Vec3f pos (vertices[i].position.x, vertices[i].position.y, vertices[i].position.z);
+                        math::Vec3f pos (vertices[i].position.x(), vertices[i].position.y(), vertices[i].position.z());
                         math::Vec3f finalpos = states.transform.transform(pos);
 
-                        vertex.position = math::Vec3f(finalpos.x, finalpos.y, finalpos.z);
+                        vertex.position = math::Vec3f(finalpos.x(), finalpos.y(), finalpos.z());
                         vertex.color = vertices[i].color;
                         vertex.texCoords = vertices[i].texCoords;
                     }
@@ -1648,7 +1648,7 @@ namespace odfaeg {
                     applyBlendMode(states.blendMode);
 
                 // Apply the texture
-                sf::std:::uint64_t textureId = states.texture ? states.texture->getNativeHandle() : 0;
+                std::uint64_t textureId = states.texture ? states.texture->getNativeHandle() : 0;
                 if (textureId != m_cache.lastTextureId)
                     applyTexture(states.texture);
                 // Apply the shader
@@ -1862,7 +1862,7 @@ namespace odfaeg {
                 GLenum error = glGetError();
                 if (error != GL_NO_ERROR)
                 {
-                    err() << "OpenGL error (" << error << ") detected in user code, "
+                    std::cerr << "OpenGL error (" << error << ") detected in user code, "
                           << "you should check for errors with glGetError()"
                           << std::endl;        }
 
@@ -1933,8 +1933,8 @@ namespace odfaeg {
             }
 
             // Setup the default and current views
-            m_defaultView = View (static_cast<float>(getSize().x), static_cast<float>(getSize().y), -static_cast<float>(getSize().y) - 200, static_cast<float>(getSize().y)+200);
-            m_defaultView.reset(physic::BoundingBox(0, 0, -static_cast<float>(getSize().y) - 200,static_cast<float>(getSize().x), static_cast<float>(getSize().y),static_cast<float>(getSize().y)+200));
+            m_defaultView = View (static_cast<float>(getSize().x()), static_cast<float>(getSize().y()), -static_cast<float>(getSize().y()) - 200, static_cast<float>(getSize().y())+200);
+            m_defaultView.reset(physic::BoundingBox(0, 0, -static_cast<float>(getSize().y()) - 200,static_cast<float>(getSize().x()), static_cast<float>(getSize().y()),static_cast<float>(getSize().y())+200));
             m_view = m_defaultView;
 
             // Set GL states only on first draw, so that we don't pollute user's states
@@ -1948,7 +1948,7 @@ namespace odfaeg {
         {
             // Set the viewport
             physic::BoundingBox viewport = getView().getViewport();
-            glCheck(glViewport(viewport.getPosition().x, viewport.getPosition().y, viewport.getWidth(), viewport.getHeight()));
+            glCheck(glViewport(viewport.getPosition().x(), viewport.getPosition().y(), viewport.getWidth(), viewport.getHeight()));
             // Set the projection matrix
             glCheck(glMatrixMode(GL_PROJECTION));
             //float* projMatrix = getView().getProjMatrix().getGlMatrix();

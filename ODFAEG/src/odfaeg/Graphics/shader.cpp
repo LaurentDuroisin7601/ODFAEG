@@ -505,7 +505,7 @@ namespace odfaeg {
 
 
         ////////////////////////////////////////////////////////////
-        bool Shader::loadFromStream(InputStream& stream, Type type)
+        bool Shader::loadFromStream(std::istream& stream, Type type)
         {
             // Read the shader code from the stream
             std::vector<char> shader;
@@ -528,7 +528,7 @@ namespace odfaeg {
 
 
         ////////////////////////////////////////////////////////////
-        bool Shader::loadFromStream(InputStream& vertexShaderStream, InputStream& fragmentShaderStream)
+        bool Shader::loadFromStream(std::istream& vertexShaderStream, std::istream& fragmentShaderStream)
         {
             // Read the vertex shader code from the stream
             std::vector<char> vertexShader;
@@ -550,7 +550,7 @@ namespace odfaeg {
             return compile(&vertexShader[0], &fragmentShader[0], NULL, NULL);
         }
         ////////////////////////////////////////////////////////////
-        bool Shader::loadFromStream(InputStream& vertexShaderStream, InputStream& fragmentShaderStream, InputStream& geometryShaderStream)
+        bool Shader::loadFromStream(std::istream& vertexShaderStream, std::istream& fragmentShaderStream, std::istream& geometryShaderStream)
         {
             // Read the vertex shader code from the stream
             std::vector<char> vertexShader;
@@ -729,16 +729,16 @@ namespace odfaeg {
 
 
         ////////////////////////////////////////////////////////////
-        void Shader::setParameter(const std::string& name, const Vector2f& v)
+        void Shader::setParameter(const std::string& name, const math::Vec2f& v)
         {
-            setParameter(name, v.x, v.y);
+            setParameter(name, v.x(), v.y());
         }
 
 
         ////////////////////////////////////////////////////////////
-        void Shader::setParameter(const std::string& name, const Vector3f& v)
+        void Shader::setParameter(const std::string& name, const math::Vec3f& v)
         {
-            setParameter(name, v.x, v.y, v.z);
+            setParameter(name, v.x(), v.y(), v.z());
         }
 
         ////////////////////////////////////////////////////////////

@@ -12,7 +12,7 @@ using namespace odfaeg::audio;
 using namespace odfaeg::window;
 namespace sorrok {
     MyAppli::MyAppli(VideoMode wm, std::string title) : Application<MyAppli> (wm, title, Style::Default, ContextSettings(0, 0, 4, 4, 6)) {
-
+        std::cout<<"constructor"<<std::endl;
         running = false;
         actualKey = IKeyboard::Key::Unknown;
         previousKey = IKeyboard::Key::Unknown;
@@ -107,7 +107,8 @@ namespace sorrok {
         std::cout<<"Mouse inside : "<<mousePos.x()<<" "<<mousePos.y()<<std::endl;
     }
     void MyAppli::onLoad() {
-        std::tuple<std::reference_wrapper<Device>> rArgs = std::make_tuple(std::ref(getDevice()));
+        std::tuple</*std::reference_wrapper<Device>*/> rArgs = std::make_tuple(/*std::ref(getDevice())*/);
+
         TextureManager<> tm;
         tm.fromFileWithAlias("tilesets/eau.png", "WATER", rArgs);
         tm.fromFileWithAlias("tilesets/herbe.png", "GRASS", rArgs);
@@ -136,6 +137,7 @@ namespace sorrok {
         rc.addResourceManager(fm, "FontManager");
     }
     void MyAppli::onInit () {
+
         if (day)
             g2d::AmbientLight::getAmbientLight().setColor(Color::White);
         TextureManager<> &tm = getResourceCache().resourceManager<Texture, std::string>("TextureManager");
@@ -315,8 +317,8 @@ namespace sorrok {
         PerPixelLinkedListRenderComponent *frc2 = new PerPixelLinkedListRenderComponent(getRenderWindow(), 1, "E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PARTICLES", ContextSettings(24, 8, 4, 4, 6));
 
         ReflectRefractRenderComponent *rrrc = new ReflectRefractRenderComponent(getRenderWindow(), 2, "E_BIGTILE+E_WALL+E_DECOR+E_ANIMATION+E_HERO", ContextSettings(0, 0, 4, 4, 6));
-        frc1->createDescriptorsAndPipelines();
-        frc2->createDescriptorsAndPipelines();
+        /*frc1->createDescriptorsAndPipelines();
+        frc2->createDescriptorsAndPipelines();*/
         /*ShadowRenderComponent *src = new ShadowRenderComponent(getRenderWindow(), 3, "E_WALL+E_DECOR+E_ANIMATION+E_HERO", ContextSettings(0, 0, 4, 4, 6));
         LightRenderComponent *lrc = new LightRenderComponent(getRenderWindow(), 4, "E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PONCTUAL_LIGHT", ContextSettings(0, 0, 4, 4, 6));
         //std::cout<<"component created"<<std::endl;

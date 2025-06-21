@@ -32,7 +32,6 @@
 #include "glCheck.h"
 #include <GL/glew.h>
 #include <ODFAEG/OpenGL.hpp>
-#include <ODFAEG/System/Err.hpp>
 #include <iostream>
 
 namespace odfaeg {

@@ -34,7 +34,6 @@
 #include "../Core/clock.h"
 #include <mutex>
 #include <cstdlib>
-#include <windows.h>
 
 
 namespace odfaeg
@@ -179,7 +178,6 @@ namespace odfaeg
             ///
             ////////////////////////////////////////////////////////////
             bool getLoop() const;
-            static DWORD WINAPI streamDataThunk(LPVOID param);
             void streamData();
             core::Clock clock;
 
@@ -323,6 +321,7 @@ namespace odfaeg
             bool          m_loop;                     ///< Loop flag (true to loop, false to play once)
             std::uint64_t        m_samplesProcessed;         ///< Number of buffers processed since beginning of the stream
             std::int64_t         m_bufferSeeks[BufferCount]; ///< If buffer is an "end buffer", holds next seek position, else NoLoop. For play offset calculation.
+            std::thread m_thread;
         };
     }
 

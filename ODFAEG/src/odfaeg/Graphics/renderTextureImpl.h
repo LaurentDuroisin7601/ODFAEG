@@ -30,7 +30,6 @@
 ////////////////////////////////////////////////////////////
 #include "../../../include/odfaeg/config.hpp"
 #ifndef VULKAN
-#include <ODFAEG/System/NonCopyable.hpp>
 #include "../../../include/odfaeg/Window/contextSettings.hpp"
 namespace odfaeg
 {
@@ -41,7 +40,7 @@ namespace odfaeg
             /// \brief Abstract base class for render-texture implementations
             ///
             ////////////////////////////////////////////////////////////
-            class RenderTextureImpl : sf::NonCopyable
+            class RenderTextureImpl
             {
             public :
 

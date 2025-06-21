@@ -38,8 +38,8 @@ private :
     int oldX, oldY;
     bool verticalMotionActive;
     int verticalMotionDirection;
-    sf::Clock clock, clock2;
-    sf::Time timeBeforeStoppingVerticalMotion;
+    odfaeg::core::Clock clock, clock2;
+    odfaeg::core::Time timeBeforeStoppingVerticalMotion;
     odfaeg::graphic::EntitiesUpdater *eu;
     odfaeg::core::ResourceCache<> cache;
     odfaeg::graphic::Entity* heightmap;
