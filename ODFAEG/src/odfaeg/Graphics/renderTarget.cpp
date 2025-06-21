@@ -1544,6 +1544,21 @@ namespace odfaeg {
                                 PrimitiveType type, RenderStates states)
         {
             // Nothing to draw?
+            std::vector<GlVertex> glVerts(vertexCount);
+            for (unsigned int i = 0; i < vertexCount; i++) {
+                glVerts[i].position[0] = vertices[i].position[0];
+                glVerts[i].position[1] = vertices[i].position[1];
+                glVerts[i].position[2] = vertices[i].position[2];
+                glVerts[i].color[0] = vertices[i].color.r;
+                glVerts[i].color[1] = vertices[i].color.g;
+                glVerts[i].color[2] = vertices[i].color.b;
+                glVerts[i].color[3] = vertices[i].color.a;
+                glVerts[i].texCoords[0] = vertices[i].texCoords[0];
+                glVerts[i].texCoords[1] = vertices[i].texCoords[1];
+                glVerts[i].normal[0] = vertices[i].normal[0];
+                glVerts[i].normal[1] = vertices[i].normal[1];
+                glVerts[i].normal[1] = vertices[i].normal[1];
+            }
             if (!vertices || (vertexCount == 0))
                 return;
 
@@ -1600,20 +1615,28 @@ namespace odfaeg {
                         vertices = nullptr;
                 }
                 if (vertices) {
-                    const char* data = reinterpret_cast<const char*>(vertices);
+                        /*std::cout << "offset position:  " << offsetof(Vertex, position) << std::endl;
+std::cout << "offset color:     " << offsetof(Vertex, color) << std::endl;
+std::cout << "offset texCoords: " << offsetof(Vertex, texCoords) << std::endl;
+std::cout << "offset normal:    " << offsetof(Vertex, normal) << std::endl;*/
+                    const char* data = reinterpret_cast<const char*>(glVerts.data());
                     glEnableClientState(GL_COLOR_ARRAY);
                     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
                     glEnableClientState(GL_VERTEX_ARRAY);
-                    glVertexPointer(3, GL_FLOAT, sizeof(Vertex), data + 0 );
-                    glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(Vertex), data + 12);
-                    glTexCoordPointer(2, GL_FLOAT, sizeof(Vertex), data + 16);
+                    glEnableClientState(GL_NORMAL_ARRAY);
+                    glVertexPointer(3, GL_FLOAT, sizeof(GlVertex), reinterpret_cast<const void*>(data + 0) );
+                    glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(GlVertex), reinterpret_cast<const void*>(data + 12));
+                    glTexCoordPointer(2, GL_FLOAT, sizeof(GlVertex), reinterpret_cast<const void*>(data + 16));
+                    glNormalPointer(GL_FLOAT, sizeof(GlVertex), reinterpret_cast<const void*>(data + 24));
                     glDisableClientState(GL_COLOR_ARRAY);
                     glDisableClientState(GL_TEXTURE_COORD_ARRAY);
                     glDisableClientState(GL_VERTEX_ARRAY);
+                    glDisableClientState(GL_NORMAL_ARRAY);
                 }
                 glEnableClientState(GL_COLOR_ARRAY);
                 glEnableClientState(GL_TEXTURE_COORD_ARRAY);
                 glEnableClientState(GL_VERTEX_ARRAY);
+                glEnableClientState(GL_NORMAL_ARRAY);
                 // Find the OpenGL primitive type
                 static const GLenum modes[] = {GL_POINTS, GL_LINES, GL_LINE_STRIP, GL_TRIANGLES,
                                                    GL_TRIANGLE_STRIP, GL_TRIANGLE_FAN, GL_QUADS};
@@ -1622,10 +1645,11 @@ namespace odfaeg {
                 ////std::cout<<"frame buffer id : "<<m_framebufferId<<std::endl;
                 glBindFramebuffer(GL_FRAMEBUFFER, m_framebufferId);
                 glDrawArrays(mode, 0, vertexCount);
-                glDisableClientState(GL_COLOR_ARRAY);
+                /*glDisableClientState(GL_COLOR_ARRAY);
                 glDisableClientState(GL_TEXTURE_COORD_ARRAY);
                 glDisableClientState(GL_VERTEX_ARRAY);
-                m_cache.useVertexCache = useVertexCache;
+                glDisableClientState(GL_NORMAL_ARRAY);
+                m_cache.useVertexCache = useVertexCache;*/
             }
             applyTexture(nullptr);
             applyShader(nullptr);

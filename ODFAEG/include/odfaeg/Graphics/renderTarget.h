@@ -682,6 +682,14 @@ namespace odfaeg {
                 Vertex vertexCache[VertexCacheSize]; ///< Pre-transformed vertices cache
                 VertexBuffer* lastVboBuffer;
             };
+            struct GlVertex {
+                float position[3];
+                std::uint8_t color[4];
+                float texCoords[2];
+                float normal[3];
+                int boneIDs[MAX_BONE_INFLUENCE];
+                float weights[MAX_BONE_INFLUENCE];
+            };
 
              ////////////////////////////////////////////////////////////
             // Member data

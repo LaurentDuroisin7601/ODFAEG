@@ -398,10 +398,10 @@ namespace odfaeg
 
                 // X advance is already in pixels for bitmap fonts
                 if (!FT_IS_SCALABLE(face))
-                    return static_cast<float>(kerning.x());
+                    return static_cast<float>(kerning.x);
 
                 // Return the X advance
-                return static_cast<float>(kerning.x()) / static_cast<float>(1 << 6);
+                return static_cast<float>(kerning.x) / static_cast<float>(1 << 6);
             }
             else
             {
@@ -718,7 +718,7 @@ namespace odfaeg
                     continue;
 
                 // Check if there's enough horizontal space left in the row
-                if (width > page.texture.getSize().x()() - it->width)
+                if (width > page.texture.getSize().x() - it->width)
                     continue;
 
                 // Make sure that this new row is the best found so far
@@ -736,7 +736,7 @@ namespace odfaeg
             {
 
                 int rowHeight = height + height / 10;
-                while ((page.nextRow + rowHeight >= page.texture.getSize().y()) || (width >= page.texture.getSize().x()()))
+                while ((page.nextRow + rowHeight >= page.texture.getSize().y()) || (width >= page.texture.getSize().x()))
                 {
                     // Not enough space: resize the texture if possible
                     unsigned int textureWidth  = page.texture.getSize().x();
@@ -782,7 +782,7 @@ namespace odfaeg
             // only when necessary to avoid killing performances
 
             FT_Face face = static_cast<FT_Face>(m_face);
-            FT_UShort currentSize = face->size->metrics.x()_ppem;
+            FT_UShort currentSize = face->size->metrics.x_ppem;
 
             if (currentSize != characterSize)
             {

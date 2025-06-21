@@ -612,18 +612,18 @@ namespace odfaeg {
             };
             VkImageBlit2 blitRegion{ .sType = VK_STRUCTURE_TYPE_IMAGE_BLIT_2, .pNext = nullptr };
 
-            blitRegion.srcOffsets[0].x() = x;
-            blitRegion.srcOffsets[0].y() = y;
+            blitRegion.srcOffsets[0].x = x;
+            blitRegion.srcOffsets[0].y = y;
             blitRegion.srcOffsets[0].z = 0;
-            blitRegion.srcOffsets[1].x() = texture.m_size.x();
-            blitRegion.srcOffsets[1].y() = texture.m_size.y();
+            blitRegion.srcOffsets[1].x = texture.m_size.x();
+            blitRegion.srcOffsets[1].y = texture.m_size.y();
             blitRegion.srcOffsets[1].z = 1;
 
-            blitRegion.dstOffsets[0].x() = x;
-            blitRegion.dstOffsets[0].y() = y;
+            blitRegion.dstOffsets[0].x = x;
+            blitRegion.dstOffsets[0].y = y;
             blitRegion.dstOffsets[0].z = 0;
-            blitRegion.dstOffsets[1].x() = m_size.x();
-            blitRegion.dstOffsets[1].y() = m_size.y();
+            blitRegion.dstOffsets[1].x = m_size.x();
+            blitRegion.dstOffsets[1].y = m_size.y();
             blitRegion.dstOffsets[1].z = 1;
 
             blitRegion.srcSubresource.aspectMask = imageAspectFlags;
