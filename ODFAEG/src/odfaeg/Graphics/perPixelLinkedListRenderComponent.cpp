@@ -122,7 +122,7 @@ namespace odfaeg {
             getListener().connect("UPDATE", cmd);
             skybox = nullptr;
 
-            createDescriptorsAndPipelines();
+            //createDescriptorsAndPipelines();
 
             vkCmdPushDescriptorSetKHR = (PFN_vkCmdPushDescriptorSetKHR)vkGetDeviceProcAddr(vkDevice.getDevice(), "vkCmdPushDescriptorSetKHR");
             if (!vkCmdPushDescriptorSetKHR) {
@@ -187,16 +187,22 @@ namespace odfaeg {
             states.shader = &indirectRenderingShader;
             std::vector<std::vector<std::vector<VkPipelineLayoutCreateInfo>>>& pipelineLayoutInfo = frameBuffer.getPipelineLayoutCreateInfo();
             std::vector<std::vector<std::vector<VkPipelineDepthStencilStateCreateInfo>>>& depthStencilCreateInfo = frameBuffer.getDepthStencilCreateInfo();
-            pipelineLayoutInfo.resize((Batcher::nbPrimitiveTypes - 1) * indirectRenderingShader.getNbShaders());
-            depthStencilCreateInfo.resize((Batcher::nbPrimitiveTypes - 1) * indirectRenderingShader.getNbShaders());
-            for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * indirectRenderingShader.getNbShaders(); i++) {
-                pipelineLayoutInfo[i].resize(frameBuffer.getNbRenderTargets());
-                depthStencilCreateInfo[i].resize(frameBuffer.getNbRenderTargets());
+            if ((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders() > pipelineLayoutInfo.size()) {
+                pipelineLayoutInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
+                depthStencilCreateInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
             }
-            for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * indirectRenderingShader.getNbShaders(); i++) {
+            for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
+                if (frameBuffer.getNbRenderTargets() > pipelineLayoutInfo[i].size()) {
+                    pipelineLayoutInfo[i].resize(frameBuffer.getNbRenderTargets());
+                    depthStencilCreateInfo[i].resize(frameBuffer.getNbRenderTargets());
+                }
+            }
+            for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
                 for (unsigned int j = 0; j < frameBuffer.getNbRenderTargets(); j++) {
-                    pipelineLayoutInfo[i][j].resize(NBDEPTHSTENCIL);
-                    depthStencilCreateInfo[i][j].resize(NBDEPTHSTENCIL);
+                    if (NBDEPTHSTENCIL > pipelineLayoutInfo[i][j].size()) {
+                        pipelineLayoutInfo[i][j].resize(NBDEPTHSTENCIL);
+                        depthStencilCreateInfo[i][j].resize(NBDEPTHSTENCIL);
+                    }
                 }
             }
             frameBuffer.enableDepthTest(true);

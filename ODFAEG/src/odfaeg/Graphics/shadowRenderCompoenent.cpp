@@ -58,6 +58,8 @@ namespace odfaeg {
 
                 compileShaders();
                 VkDeviceSize size = sizeof(ShadowUBO);
+                shadowUBO.resize(shadowMap.getMaxFramesInFlight());
+                shadowUBOMemory.resize(shadowMap.getMaxFramesInFlight());
                 for (unsigned int i = 0; i < shadowMap.getMaxFramesInFlight(); i++) {
                     createBuffer(size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, shadowUBO[i], shadowUBOMemory[i]);
                 }
@@ -153,7 +155,7 @@ namespace odfaeg {
                 if (vkAllocateMemory(window.getDevice().getDevice(), &allocInfo, nullptr, &stencilTextureImageMemory) != VK_SUCCESS) {
                     throw std::runtime_error("echec de l'allocation de la memoire d'une image!");
                 }
-                vkBindImageMemory(window.getDevice().getDevice(), alphaTextureImage, alphaTextureImageMemory, 0);
+                vkBindImageMemory(window.getDevice().getDevice(), stencilTextureImage, stencilTextureImageMemory, 0);
                 createImageView();
                 createSampler();
 
@@ -190,9 +192,10 @@ namespace odfaeg {
                 barrier3.subresourceRange.levelCount = 1;
                 barrier3.subresourceRange.layerCount = 1;
                 vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier3);
-                shadowMap.display();
+
                 const_cast<Texture&>(shadowMap.getTexture()).toShaderReadOnlyOptimal(shadowMap.getCommandBuffers()[shadowMap.getCurrentFrame()]);
-                createDescriptorsAndPipelines();
+                shadowMap.display();
+                //createDescriptorsAndPipelines();
                 VkSemaphoreCreateInfo semaphoreInfo{};
                 semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
                 renderFinishedSemaphore.resize(RenderWindow::MAX_FRAMES_IN_FLIGHT);
@@ -201,6 +204,7 @@ namespace odfaeg {
                         throw std::runtime_error("failed to create compute synchronization objects for a frame!");
                     }
                 }
+                isSomethingDrawn = false;
              }
              void ShadowRenderComponent::compileShaders() {
                 const std::string indirectRenderingVertexShader = R"(#version 460
@@ -232,6 +236,7 @@ namespace odfaeg {
                                                                  layout (location = 3) out uint layer;
                                                                  layout (location = 4) out vec3 normal;
                                                                  void main() {
+                                                                    gl_PointSize = 2.0f;
                                                                     ModelData model = modelDatas[gl_InstanceIndex];
                                                                     MaterialData material = materialDatas[gl_DrawID];
                                                                     uint textureIndex = material.textureIndex;
@@ -282,8 +287,9 @@ namespace odfaeg {
                                                               layout(set = 0, binding = 1, rgba32f) uniform coherent image2D alphaBuffer;
                                                               layout (location = 0) out vec4 fColor;
                                                               layout (set = 0, binding = 2) uniform sampler2D depthBuffer;
+                                                              layout (set = 0, binding = 3) uniform sampler2D stencilBuffer;
                                                               layout (push_constant) uniform PushConsts {
-                                                                    layout uint nbLayers;
+                                                                    uint nbLayers;
                                                               } pushConsts;
                                                               layout (location = 0) in vec2 fTexCoords;
                                                               layout (location = 1) in vec4 frontColor;
@@ -299,7 +305,7 @@ namespace odfaeg {
                                                                   vec4 alpha = imageLoad(alphaBuffer,ivec2(gl_FragCoord.xy));
                                                                   vec3 projCoords = shadowCoords.xyz / shadowCoords.w;
                                                                   projCoords = projCoords * 0.5 + 0.5;
-                                                                  vec4 stencil = texture2D (stencilBuffer, projCoords.xy);
+                                                                  vec4 stencil = texture (stencilBuffer, projCoords.xy);
                                                                   float l = layer;
                                                                   float z = gl_FragCoord.z;
                                                                   if (/*l > stencil.y || l == stencil.y &&*/ stencil.z > projCoords.z && depth.z > z && current_alpha > alpha.a) {
@@ -313,10 +319,8 @@ namespace odfaeg {
                                                               }
                                                               )";
             const std::string buildShadowMapFragmentShader = R"(#version 460
-                                                                #extension GL_ARB_bindless_texture : enable
                                                                 #extension GL_ARB_fragment_shader_interlock : require
-                                                                in vec4 frontColor;
-                                                                in vec2 fTexCoords;
+                                                                #extension GL_EXT_nonuniform_qualifier : enable
 
                                                                 layout(set = 0, binding = 0) uniform sampler2D textures[];
                                                                 layout (location = 0) in vec2 fTexCoords;
@@ -375,7 +379,8 @@ namespace odfaeg {
                                                                  layout (location = 4) out vec3 normal;
                                                                  layout (location = 5) out vec4 shadowCoords;
                                                                  void main() {
-                                                                    ModelData model = modelDatas[gl_BaseInstance + gl_InstanceID];
+                                                                    gl_PointSize = 2.0f;
+                                                                    ModelData model = modelDatas[gl_InstanceIndex];
                                                                     MaterialData material = materialDatas[gl_DrawID];
                                                                     uint textureIndex = material.textureIndex;
                                                                     uint l = material.layer;
@@ -389,12 +394,13 @@ namespace odfaeg {
                                                                  }
                                                                  )";
                 const std::string perPixShadowFragmentShader = R"(#version 460
-                                                                  #extension GL_ARB_bindless_texture : enable
-                                                                  in vec4 shadowCoords;
-                                                                  in vec4 frontColor;
-                                                                  in vec2 fTexCoords;
-                                                                  in flat uint texIndex;
-                                                                  in flat uint layer;
+                                                                  #extension GL_EXT_nonuniform_qualifier : enable
+                                                                  layout (location = 0) in vec2 fTexCoords;
+                                                                  layout (location = 1) in vec4 frontColor;
+                                                                  layout (location = 2) in flat uint texIndex;
+                                                                  layout (location = 3) in flat uint layer;
+                                                                  layout (location = 4) in vec3 normal;
+                                                                  layout (location = 5) in vec4 shadowCoords;
                                                                   layout(set = 0, binding = 0) uniform sampler2D textures[];
                                                                   layout (binding = 1) uniform sampler2D stencilBuffer;
                                                                   layout (binding = 2) uniform sampler2D depthBuffer;
@@ -485,16 +491,22 @@ namespace odfaeg {
                 createDescriptorSetLayout(states);
                 std::vector<std::vector<std::vector<VkPipelineLayoutCreateInfo>>>& pipelineLayoutInfo = shadowMap.getPipelineLayoutCreateInfo();
                 std::vector<std::vector<std::vector<VkPipelineDepthStencilStateCreateInfo>>>& depthStencilCreateInfo = shadowMap.getDepthStencilCreateInfo();
-                pipelineLayoutInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
-                depthStencilCreateInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
+                if ((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders() > pipelineLayoutInfo.size()) {
+                    pipelineLayoutInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
+                    depthStencilCreateInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
+                }
                 for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
-                    pipelineLayoutInfo[i].resize(shadowMap.getNbRenderTargets());
-                    depthStencilCreateInfo[i].resize(shadowMap.getNbRenderTargets());
+                    if (shadowMap.getNbRenderTargets() > pipelineLayoutInfo[i].size()) {
+                        pipelineLayoutInfo[i].resize(shadowMap.getNbRenderTargets());
+                        depthStencilCreateInfo[i].resize(shadowMap.getNbRenderTargets());
+                    }
                 }
                 for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
                     for (unsigned int j = 0; j < shadowMap.getNbRenderTargets(); j++) {
-                        pipelineLayoutInfo[i][j].resize(NBDEPTHSTENCIL);
-                        depthStencilCreateInfo[i][j].resize(NBDEPTHSTENCIL);
+                        if (NBDEPTHSTENCIL > pipelineLayoutInfo[i][j].size()) {
+                            pipelineLayoutInfo[i][j].resize(NBDEPTHSTENCIL);
+                            depthStencilCreateInfo[i][j].resize(NBDEPTHSTENCIL);
+                        }
                     }
                 }
                 stencilBuffer.enableDepthTest(true);
@@ -538,6 +550,7 @@ namespace odfaeg {
                         if (j == 0) {
                             VkPushConstantRange push_constant;
                             //this push constant range takes up the size of a MeshPushConstants struct
+                            push_constant.offset = 0;
                             push_constant.size = sizeof(LayerPC);
                             //this push constant range is accessible only in the vertex shader
                             push_constant.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -629,7 +642,7 @@ namespace odfaeg {
                     if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorPool.size())
                         descriptorPool.resize(shader->getNbShaders()*alphaBuffer.getNbRenderTargets());
                     unsigned int descriptorId = alphaBuffer.getId() * shader->getNbShaders() + shader->getId();
-                    std::array<VkDescriptorPoolSize, 6> poolSizes;
+                    std::array<VkDescriptorPoolSize, 7> poolSizes;
                     std::vector<Texture*> allTextures = Texture::getAllTextures();
                     poolSizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
                     poolSizes[0].descriptorCount = static_cast<uint32_t>(alphaBuffer.getMaxFramesInFlight() * allTextures.size());
@@ -637,12 +650,14 @@ namespace odfaeg {
                     poolSizes[1].descriptorCount = static_cast<uint32_t>(alphaBuffer.getMaxFramesInFlight());
                     poolSizes[2].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
                     poolSizes[2].descriptorCount = static_cast<uint32_t>(alphaBuffer.getMaxFramesInFlight());
-                    poolSizes[3].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                    poolSizes[3].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
                     poolSizes[3].descriptorCount = static_cast<uint32_t>(alphaBuffer.getMaxFramesInFlight());
                     poolSizes[4].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
                     poolSizes[4].descriptorCount = static_cast<uint32_t>(alphaBuffer.getMaxFramesInFlight());
-                    poolSizes[5].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+                    poolSizes[5].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
                     poolSizes[5].descriptorCount = static_cast<uint32_t>(alphaBuffer.getMaxFramesInFlight());
+                    poolSizes[6].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+                    poolSizes[6].descriptorCount = static_cast<uint32_t>(alphaBuffer.getMaxFramesInFlight());
 
                     if (descriptorPool[descriptorId] != nullptr) {
                         vkDestroyDescriptorPool(vkDevice.getDevice(), descriptorPool[descriptorId], nullptr);
@@ -795,6 +810,13 @@ namespace odfaeg {
                     sampler2LayoutBinding.pImmutableSamplers = nullptr;
                     sampler2LayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
+                    VkDescriptorSetLayoutBinding sampler3LayoutBinding{};
+                    sampler3LayoutBinding.binding = 3;
+                    sampler3LayoutBinding.descriptorCount = 1;
+                    sampler3LayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                    sampler3LayoutBinding.pImmutableSamplers = nullptr;
+                    sampler3LayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
                     VkDescriptorSetLayoutBinding modelDataLayoutBinding{};
                     modelDataLayoutBinding.binding = 4;
                     modelDataLayoutBinding.descriptorCount = 1;
@@ -816,7 +838,7 @@ namespace odfaeg {
                     uboLayoutBinding.pImmutableSamplers = nullptr;
                     uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
-                    std::array<VkDescriptorSetLayoutBinding, 6> bindings = {samplerLayoutBinding, headPtrImageLayoutBinding, sampler2LayoutBinding, modelDataLayoutBinding, materialDataLayoutBinding, uboLayoutBinding};
+                    std::array<VkDescriptorSetLayoutBinding, 7> bindings = {samplerLayoutBinding, headPtrImageLayoutBinding, sampler2LayoutBinding, sampler3LayoutBinding, modelDataLayoutBinding, materialDataLayoutBinding, uboLayoutBinding};
 
                     if (descriptorSetLayout[descriptorId] != nullptr) {
                         vkDestroyDescriptorSetLayout(vkDevice.getDevice(), descriptorSetLayout[descriptorId], nullptr);
@@ -1090,7 +1112,7 @@ namespace odfaeg {
                                 descriptorImageInfos[j].imageView = allTextures[j]->getImageView();
                                 descriptorImageInfos[j].sampler = allTextures[j]->getSampler();
                             }
-                            std::array<VkWriteDescriptorSet, 6> descriptorWrites{};
+                            std::array<VkWriteDescriptorSet, 7> descriptorWrites{};
                             descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                             descriptorWrites[0].dstSet = descriptorSets[descriptorId][i];
                             descriptorWrites[0].dstBinding = 0;
@@ -1125,44 +1147,52 @@ namespace odfaeg {
                             descriptorWrites[2].descriptorCount = 1;
                             descriptorWrites[2].pImageInfo = &descriptorImageInfo;
 
+                            descriptorWrites[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                            descriptorWrites[3].dstSet = descriptorSets[descriptorId][i];
+                            descriptorWrites[3].dstBinding = 3;
+                            descriptorWrites[3].dstArrayElement = 0;
+                            descriptorWrites[3].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                            descriptorWrites[3].descriptorCount = 1;
+                            descriptorWrites[3].pImageInfo = &descriptorImageInfo;
+
                             VkDescriptorBufferInfo modelDataStorageBufferInfoLastFrame{};
                             modelDataStorageBufferInfoLastFrame.buffer = modelDataShaderStorageBuffers[i];
                             modelDataStorageBufferInfoLastFrame.offset = 0;
                             modelDataStorageBufferInfoLastFrame.range = maxModelDataSize;
 
-                            descriptorWrites[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                            descriptorWrites[3].dstSet = descriptorSets[descriptorId][i];
-                            descriptorWrites[3].dstBinding = 4;
-                            descriptorWrites[3].dstArrayElement = 0;
-                            descriptorWrites[3].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-                            descriptorWrites[3].descriptorCount = 1;
-                            descriptorWrites[3].pBufferInfo = &modelDataStorageBufferInfoLastFrame;
+                            descriptorWrites[4].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                            descriptorWrites[4].dstSet = descriptorSets[descriptorId][i];
+                            descriptorWrites[4].dstBinding = 4;
+                            descriptorWrites[4].dstArrayElement = 0;
+                            descriptorWrites[4].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                            descriptorWrites[4].descriptorCount = 1;
+                            descriptorWrites[4].pBufferInfo = &modelDataStorageBufferInfoLastFrame;
 
                             VkDescriptorBufferInfo materialDataStorageBufferInfoLastFrame{};
                             materialDataStorageBufferInfoLastFrame.buffer = materialDataShaderStorageBuffers[i];
                             materialDataStorageBufferInfoLastFrame.offset = 0;
                             materialDataStorageBufferInfoLastFrame.range = maxMaterialDataSize;
 
-                            descriptorWrites[4].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                            descriptorWrites[4].dstSet = descriptorSets[descriptorId][i];
-                            descriptorWrites[4].dstBinding = 5;
-                            descriptorWrites[4].dstArrayElement = 0;
-                            descriptorWrites[4].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-                            descriptorWrites[4].descriptorCount = 1;
-                            descriptorWrites[4].pBufferInfo = &materialDataStorageBufferInfoLastFrame;
+                            descriptorWrites[5].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                            descriptorWrites[5].dstSet = descriptorSets[descriptorId][i];
+                            descriptorWrites[5].dstBinding = 5;
+                            descriptorWrites[5].dstArrayElement = 0;
+                            descriptorWrites[5].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                            descriptorWrites[5].descriptorCount = 1;
+                            descriptorWrites[5].pBufferInfo = &materialDataStorageBufferInfoLastFrame;
 
                             VkDescriptorBufferInfo uboInfoLastFrame{};
                             uboInfoLastFrame.buffer = shadowUBO[i];
                             uboInfoLastFrame.offset = 0;
                             uboInfoLastFrame.range = sizeof(ShadowUBO);
 
-                            descriptorWrites[5].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                            descriptorWrites[5].dstSet = descriptorSets[descriptorId][i];
-                            descriptorWrites[5].dstBinding = 6;
-                            descriptorWrites[5].dstArrayElement = 0;
-                            descriptorWrites[5].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-                            descriptorWrites[5].descriptorCount = 1;
-                            descriptorWrites[5].pBufferInfo = &uboInfoLastFrame;
+                            descriptorWrites[6].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                            descriptorWrites[6].dstSet = descriptorSets[descriptorId][i];
+                            descriptorWrites[6].dstBinding = 6;
+                            descriptorWrites[6].dstArrayElement = 0;
+                            descriptorWrites[6].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+                            descriptorWrites[6].descriptorCount = 1;
+                            descriptorWrites[6].pBufferInfo = &uboInfoLastFrame;
 
 
                             vkUpdateDescriptorSets(vkDevice.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
@@ -2613,6 +2643,7 @@ namespace odfaeg {
                     const_cast<Texture&>(stencilBuffer.getTexture()).toColorAttachmentOptimal(shadowMap.getCommandBuffers()[shadowMap.getCurrentFrame()]);
                     shadowMap.display(true, renderFinishedSemaphore[window.getCurrentFrame()]);
                 }
+                isSomethingDrawn = true;
             }
             void ShadowRenderComponent::createCommandPool() {
                 window::Device::QueueFamilyIndices queueFamilyIndices = vkDevice.findQueueFamilies(vkDevice.getPhysicalDevice(), VK_NULL_HANDLE);
@@ -2714,6 +2745,13 @@ namespace odfaeg {
                 }
                 drawInstanced();
                 drawInstancedIndexed();
+                if (!isSomethingDrawn) {
+                    depthBuffer.display();
+                    alphaBuffer.display();
+                    stencilBuffer.display();
+                    shadowMap.display(true, renderFinishedSemaphore[window.getCurrentFrame()]);
+                    isSomethingDrawn = false;
+                }
 
 
                 /*glCheck(glFinish());
@@ -2865,8 +2903,10 @@ namespace odfaeg {
                 datasReady = true;
                 return true;
             }
-
-
+            std::vector<Entity*> ShadowRenderComponent::getEntities() {
+                return visibleEntities;
+            }
+            ShadowRenderComponent::~ShadowRenderComponent() {}
         #else
             ShadowRenderComponent::ShadowRenderComponent (RenderWindow& window, int layer, std::string expression,window::ContextSettings settings) :
             HeavyComponent(window, math::Vec3f(window.getView().getPosition().x(), window.getView().getPosition().y(), layer),

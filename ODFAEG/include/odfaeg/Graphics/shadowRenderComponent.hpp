@@ -84,6 +84,7 @@ namespace odfaeg {
                 RenderTexture* getFrameBuffer();
                 void createDescriptorsAndPipelines();
                 ~ShadowRenderComponent();
+                bool isSomethingDrawn;
             private :
                 std::vector<VkSemaphore> renderFinishedSemaphore;
                 RenderWindow& window;

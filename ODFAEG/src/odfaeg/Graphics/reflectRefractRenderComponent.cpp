@@ -251,7 +251,10 @@ namespace odfaeg {
                 reflectRefractTex.display();
                 //const_cast<Texture&>(reflectRefractTex.getTexture()).toShaderReadOnlyOptimal();
 
-                createDescriptorsAndPipelines();
+                //createDescriptorsAndPipelines();
+                createComputeDescriptorPool();
+                createComputeDescriptorSetLayout();
+                createComputeDescriptorSet();
 
                 createComputePipeline();
                 for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
@@ -315,22 +318,26 @@ namespace odfaeg {
                 createDescriptorPool(states);
                 createDescriptorSetLayout(states);
                 allocateDescriptorSets(states);
-                createComputeDescriptorPool();
-                createComputeDescriptorSetLayout();
-                createComputeDescriptorSet();
+
 
                 std::vector<std::vector<std::vector<VkPipelineLayoutCreateInfo>>>& pipelineLayoutInfo = reflectRefractTex.getPipelineLayoutCreateInfo();
                 std::vector<std::vector<std::vector<VkPipelineDepthStencilStateCreateInfo>>>& depthStencilCreateInfo = reflectRefractTex.getDepthStencilCreateInfo();
-                pipelineLayoutInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
-                depthStencilCreateInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
+                if ((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders() > pipelineLayoutInfo.size()) {
+                    pipelineLayoutInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
+                    depthStencilCreateInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
+                }
                 for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
-                    pipelineLayoutInfo[i].resize(reflectRefractTex.getNbRenderTargets());
-                    depthStencilCreateInfo[i].resize(reflectRefractTex.getNbRenderTargets());
+                    if (reflectRefractTex.getNbRenderTargets() > pipelineLayoutInfo[i].size()) {
+                        pipelineLayoutInfo[i].resize(reflectRefractTex.getNbRenderTargets());
+                        depthStencilCreateInfo[i].resize(reflectRefractTex.getNbRenderTargets());
+                    }
                 }
                 for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
                     for (unsigned int j = 0; j < reflectRefractTex.getNbRenderTargets(); j++) {
-                        pipelineLayoutInfo[i][j].resize(NBDEPTHSTENCIL);
-                        depthStencilCreateInfo[i][j].resize(NBDEPTHSTENCIL);
+                        if (NBDEPTHSTENCIL > pipelineLayoutInfo[i][j].size()) {
+                            pipelineLayoutInfo[i][j].resize(NBDEPTHSTENCIL);
+                            depthStencilCreateInfo[i][j].resize(NBDEPTHSTENCIL);
+                        }
                     }
                 }
                 environmentMap.enableDepthTest(true);
