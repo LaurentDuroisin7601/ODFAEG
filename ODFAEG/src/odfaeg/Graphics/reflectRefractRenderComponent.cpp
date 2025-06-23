@@ -251,7 +251,48 @@ namespace odfaeg {
                 reflectRefractTex.display();
                 //const_cast<Texture&>(reflectRefractTex.getTexture()).toShaderReadOnlyOptimal();
 
+                createDescriptorsAndPipelines();
 
+                createComputePipeline();
+                for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
+                    vbBindlessTex[i].setPrimitiveType(static_cast<PrimitiveType>(i));
+                }
+                for (unsigned int i = 0; i < reflectRefractTex.getMaxFramesInFlight(); i++) {
+                    VkEventCreateInfo eventInfo = {};
+                    eventInfo.sType = VK_STRUCTURE_TYPE_EVENT_CREATE_INFO;
+                    eventInfo.pNext = NULL;
+                    eventInfo.flags = 0;
+                    VkEvent event;
+                    vkCreateEvent(vkDevice.getDevice(), &eventInfo, NULL, &event);
+                    events.push_back(event);
+                }
+                vkCmdPushDescriptorSetKHR = (PFN_vkCmdPushDescriptorSetKHR)vkGetDeviceProcAddr(vkDevice.getDevice(), "vkCmdPushDescriptorSetKHR");
+                skybox = nullptr;
+                datasReady = false;
+                VkSemaphoreCreateInfo semaphoreInfo{};
+                semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+                VkFenceCreateInfo fenceInfo{};
+                fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+                fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+                if (vkCreateSemaphore(vkDevice.getDevice(), &semaphoreInfo, nullptr, &computeSemaphore) != VK_SUCCESS ||
+                    vkCreateFence(vkDevice.getDevice(), &fenceInfo, nullptr, &computeFence) != VK_SUCCESS) {
+                    throw std::runtime_error("failed to create compute synchronization objects for a frame!");
+                }
+                renderFinishedSemaphore.resize(RenderWindow::MAX_FRAMES_IN_FLIGHT);
+                for (unsigned int i = 0; i < RenderWindow::MAX_FRAMES_IN_FLIGHT; i++) {
+                    if (vkCreateSemaphore(vkDevice.getDevice(), &semaphoreInfo, nullptr, &renderFinishedSemaphore[i]) != VK_SUCCESS) {
+                        throw std::runtime_error("failed to create compute synchronization objects for a frame!");
+                    }
+                }
+                clearFinishedSemaphore.resize(reflectRefractTex.getMaxFramesInFlight());
+                for (unsigned int i = 0; i < reflectRefractTex.getMaxFramesInFlight(); i++) {
+                    if (vkCreateSemaphore(vkDevice.getDevice(), &semaphoreInfo, nullptr, &clearFinishedSemaphore[i]) != VK_SUCCESS) {
+                        throw std::runtime_error("failed to create compute synchronization objects for a frame!");
+                    }
+                }
+            }
+            void ReflectRefractRenderComponent::createDescriptorsAndPipelines() {
                 RenderStates states;
                 states.shader = &sLinkedList;
                 createDescriptorPool(states);
@@ -507,44 +548,6 @@ namespace odfaeg {
                             depthStencilCreateInfo[sReflectRefract.getId() * (Batcher::nbPrimitiveTypes - 1)+i][reflectRefractTex.getId()][DEPTHNOSTENCIL].back = {};
                             reflectRefractTex.createGraphicPipeline(static_cast<PrimitiveType>(i), states, DEPTHNOSTENCIL, NBDEPTHSTENCIL);
                         }
-                    }
-                }
-                createComputePipeline();
-                for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
-                    vbBindlessTex[i].setPrimitiveType(static_cast<PrimitiveType>(i));
-                }
-                for (unsigned int i = 0; i < reflectRefractTex.getMaxFramesInFlight(); i++) {
-                    VkEventCreateInfo eventInfo = {};
-                    eventInfo.sType = VK_STRUCTURE_TYPE_EVENT_CREATE_INFO;
-                    eventInfo.pNext = NULL;
-                    eventInfo.flags = 0;
-                    VkEvent event;
-                    vkCreateEvent(vkDevice.getDevice(), &eventInfo, NULL, &event);
-                    events.push_back(event);
-                }
-                vkCmdPushDescriptorSetKHR = (PFN_vkCmdPushDescriptorSetKHR)vkGetDeviceProcAddr(vkDevice.getDevice(), "vkCmdPushDescriptorSetKHR");
-                skybox = nullptr;
-                datasReady = false;
-                VkSemaphoreCreateInfo semaphoreInfo{};
-                semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-
-                VkFenceCreateInfo fenceInfo{};
-                fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-                fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-                if (vkCreateSemaphore(vkDevice.getDevice(), &semaphoreInfo, nullptr, &computeSemaphore) != VK_SUCCESS ||
-                    vkCreateFence(vkDevice.getDevice(), &fenceInfo, nullptr, &computeFence) != VK_SUCCESS) {
-                    throw std::runtime_error("failed to create compute synchronization objects for a frame!");
-                }
-                renderFinishedSemaphore.resize(RenderWindow::MAX_FRAMES_IN_FLIGHT);
-                for (unsigned int i = 0; i < RenderWindow::MAX_FRAMES_IN_FLIGHT; i++) {
-                    if (vkCreateSemaphore(vkDevice.getDevice(), &semaphoreInfo, nullptr, &renderFinishedSemaphore[i]) != VK_SUCCESS) {
-                        throw std::runtime_error("failed to create compute synchronization objects for a frame!");
-                    }
-                }
-                clearFinishedSemaphore.resize(reflectRefractTex.getMaxFramesInFlight());
-                for (unsigned int i = 0; i < reflectRefractTex.getMaxFramesInFlight(); i++) {
-                    if (vkCreateSemaphore(vkDevice.getDevice(), &semaphoreInfo, nullptr, &clearFinishedSemaphore[i]) != VK_SUCCESS) {
-                        throw std::runtime_error("failed to create compute synchronization objects for a frame!");
                     }
                 }
             }
@@ -2229,7 +2232,6 @@ namespace odfaeg {
                     depthBuffer.beginRenderPass();
                     depthBuffer.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
                     depthBuffer.endRenderPass();
-                    depthBuffer.display();
                 } else if (shader == &sBuildAlphaBuffer) {
                     const_cast<Texture&>(depthBuffer.getTexture()).toShaderReadOnlyOptimal(alphaBuffer.getCommandBuffers()[alphaBuffer.getCurrentFrame()]);
 
@@ -2256,7 +2258,7 @@ namespace odfaeg {
                     alphaBuffer.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
                     alphaBuffer.endRenderPass();
                     const_cast<Texture&>(depthBuffer.getTexture()).toColorAttachmentOptimal(alphaBuffer.getCommandBuffers()[alphaBuffer.getCurrentFrame()]);
-                    alphaBuffer.display();
+
                 } else if (shader == &sLinkedList) {
 
 
@@ -2273,7 +2275,6 @@ namespace odfaeg {
                     environmentMap.beginRenderPass();
                     environmentMap.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
                     environmentMap.endRenderPass();
-                    environmentMap.display(false, computeSemaphore);
 
                 } else {
                     const_cast<Texture&>(environmentMap.getTexture()).toShaderReadOnlyOptimal(reflectRefractTex.getCommandBuffers()[reflectRefractTex.getCurrentFrame()]);
@@ -2302,7 +2303,7 @@ namespace odfaeg {
 
                     const_cast<Texture&>(alphaBuffer.getTexture()).toColorAttachmentOptimal(reflectRefractTex.getCommandBuffers()[reflectRefractTex.getCurrentFrame()]);
                     const_cast<Texture&>(environmentMap.getTexture()).toColorAttachmentOptimal(reflectRefractTex.getCommandBuffers()[reflectRefractTex.getCurrentFrame()]);
-                    reflectRefractTex.display(true, renderFinishedSemaphore[window.getCurrentFrame()]);
+
                 }
             }
             void ReflectRefractRenderComponent::createCommandBufferVertexBuffer(RenderStates currentStates) {
@@ -3039,7 +3040,9 @@ namespace odfaeg {
                 indirectRenderingPC.viewMatrix = toVulkanMatrix(viewMatrix);
 
                 drawDepthReflInst();
+                depthBuffer.display();
                 drawAlphaInst();
+                alphaBuffer.display();
 
                 View reflectView;
                 if (view.isOrtho()) {
@@ -3049,6 +3052,7 @@ namespace odfaeg {
                 }
                 rootEntities.clear();
                 for (unsigned int t = 0; t < 2; t++) {
+
                     std::vector<Instance> instances = (t == 0) ? m_reflInstances : m_reflNormals;
                     for (unsigned int n = 0; n < instances.size(); n++) {
                         if (instances[n].getAllVertices().getVertexCount() > 0) {
@@ -3150,6 +3154,7 @@ namespace odfaeg {
                                     }
                                     updateUniformBuffer(environmentMap.getCurrentFrame(), ubo);
                                     drawEnvReflInst();
+                                    environmentMap.display(false, computeSemaphore);
                                     vb.clear();
                                     vb.setPrimitiveType(Triangles);
                                     Vertex v1 (math::Vec3f(0, 0, quad.getSize().z()));
@@ -3171,12 +3176,14 @@ namespace odfaeg {
 
                                     buildFrameBufferPC.cameraPos = math::Vec4f(view.getPosition().x(), view.getPosition().y(), view.getPosition().z(), 1);
                                     drawReflInst(entity);
+
                                 }
                             }
                         }
 
                     }
                 }
+                reflectRefractTex.display(true, renderFinishedSemaphore[window.getCurrentFrame()]);
                 //reflectRefractTex.display();
             }
             void ReflectRefractRenderComponent::draw(RenderTarget& target, RenderStates states) {

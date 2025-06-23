@@ -2705,7 +2705,7 @@ namespace odfaeg {
                           math::Vec3f(window.getView().getSize().x() + window.getView().getSize().x() * 0.5f, window.getView().getPosition().y() + window.getView().getSize().y() * 0.5f, layer)),
             view(window.getView()),
             expression(expression),
-            quad(math::Vec3f(window.getView().getSize().x(), window.getView().getSize().y(), window.getSize().y() * 0.5f)),
+            quad(math::Vec3f(window.getView().getSize().x(), window.getView().getSize().y(), 0)),
             layer(layer) {
             maxModelDataSize = maxMaterialDataSize = maxVboIndirectSize = 0;
             if (!(settings.versionMajor >= 4 && settings.versionMinor >= 6))
@@ -2716,12 +2716,13 @@ namespace odfaeg {
             maxNodes = 20 * window.getView().getSize().x() * window.getView().getSize().y();
             GLint nodeSize = 5 * sizeof(GLfloat) + sizeof(GLuint);
             ////std::cout<<"stencil bits : "<<settings.stencilBits<<std::endl;
+
             frameBuffer.create(window.getView().getSize().x(), window.getView().getSize().y(), settings);
             frameBufferSprite = Sprite(frameBuffer.getTexture(), math::Vec3f(0, 0, 0), math::Vec3f(window.getView().getSize().x(), window.getView().getSize().y(), 0), IntRect(0, 0, window.getView().getSize().x(), window.getView().getSize().y()));
             frameBuffer.setView(view);
             resolution = math::Vec3f((int) window.getSize().x(), (int) window.getSize().y(), window.getView().getSize().z());
             //window.setActive();
-            glCheck(glGenBuffers(1, &atomicBuffer));
+            /*glCheck(glGenBuffers(1, &atomicBuffer));
             glCheck(glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomicBuffer));
             glCheck(glBufferData(GL_ATOMIC_COUNTER_BUFFER, sizeof(GLuint), nullptr, GL_DYNAMIC_DRAW));
             glCheck(glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, 0));
@@ -2739,7 +2740,7 @@ namespace odfaeg {
             glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, clearBuf));
             glCheck(glBufferData(GL_PIXEL_UNPACK_BUFFER, headPtrClearBuf.size() * sizeof(GLuint),
             &headPtrClearBuf[0], GL_STATIC_COPY));
-            glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0));
+            glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0));*/
             ////std::cout<<"buffers : "<<atomicBuffer<<" "<<linkedListBuffer<<" "<<headPtrTex<<" "<<clearBuf<<std::endl;
             core::FastDelegate<bool> signal (&PerPixelLinkedListRenderComponent::needToUpdate, this);
             core::FastDelegate<void> slot (&PerPixelLinkedListRenderComponent::drawNextFrame, this);
@@ -2747,12 +2748,12 @@ namespace odfaeg {
             getListener().connect("UPDATE", cmd);
 
 
-            glCheck(glGenBuffers(1, &modelDataBuffer));
+            /*glCheck(glGenBuffers(1, &modelDataBuffer));
             glCheck(glGenBuffers(1, &materialDataBuffer));
-            glCheck(glGenBuffers(1, &vboIndirect));
+            glCheck(glGenBuffers(1, &vboIndirect));*/
             compileShaders();
 
-            std::vector<Texture*> allTextures = Texture::getAllTextures();
+           /* std::vector<Texture*> allTextures = Texture::getAllTextures();
             Samplers allSamplers{};
             std::vector<math::Matrix4f> textureMatrices;
             for (unsigned int i = 0; i < allTextures.size(); i++) {
@@ -2781,7 +2782,7 @@ namespace odfaeg {
                 vbBindlessTex[i].setPrimitiveType(static_cast<PrimitiveType>(i));
             }
             skybox = nullptr;
-            frameBuffer.setActive(false);
+            frameBuffer.setActive(false);*/
             renderFinished = false;
             cleared = true;
             //getListener().launch();
@@ -2933,7 +2934,7 @@ namespace odfaeg {
                                                       }*/
                                                       void main() {
                                                            uint nodeIdx = atomicCounterIncrement(nextNodeCounter);
-                                                           vec4 color = (texIndex != 0) ? frontColor * texture(textures[texIndex-1], fTexCoords.xy) : frontColor;
+                                                           vec4 color = /*(texIndex != 0) ? frontColor * texture(textures[texIndex-1], fTexCoords.xy) :*/ frontColor;
                                                            //beginInvocationInterlockARB();
                                                            if (nodeIdx < maxNodes) {
                                                                 uint prevHead = imageAtomicExchange(headPointers, ivec2(gl_FragCoord.xy), nodeIdx);
@@ -2950,7 +2951,7 @@ namespace odfaeg {
                    R"(
                    #version 460
                    #define MAX_FRAGMENTS 20
-                   struct NodeType {
+                   /*struct NodeType {
                       vec4 color;
                       float depth;
                       uint next;
@@ -2958,10 +2959,10 @@ namespace odfaeg {
                    layout(binding = 0, r32ui) uniform uimage2D headPointers;
                    layout(std430, binding = 0) buffer linkedLists {
                        NodeType nodes[];
-                   };
+                   };*/
                    layout(location = 0) out vec4 fcolor;
                    void main() {
-                      NodeType frags[MAX_FRAGMENTS];
+                      /*NodeType frags[MAX_FRAGMENTS];
                       int count = 0;
                       uint n = imageLoad(headPointers, ivec2(gl_FragCoord.xy)).r;
                       while( n != 0xffffffffu && count < MAX_FRAGMENTS) {
@@ -2969,44 +2970,8 @@ namespace odfaeg {
                            n = frags[count].next;
                            count++;
                       }
-                      //merge sort
-                      /*int i, j1, j2, k;
-                      int a, b, c;
-                      int step = 1;
-                      NodeType leftArray[MAX_FRAGMENTS/2]; //for merge sort
-                      //NodeType fgs[2];
-                      while (step <= count)
-                      {
-                          i = 0;
-                          while (i < count - step)
-                          {
-                              ////////////////////////////////////////////////////////////////////////
-                              //merge(step, i, i + step, min(i + step + step, count));
-                              a = i;
-                              b = i + step;
-                              c = (i + step + step) >= count ? count : (i + step + step);
-                              for (k = 0; k < step; k++)
-                                  leftArray[k] = frags[a + k];
-                              j1 = 0;
-                              j2 = 0;
-                              for (k = a; k < c; k++)
-                              {
 
-                                  if (b + j1 >= c || (j2 < step && leftArray[j2].depth > frags[b + j1].depth))
-                                      frags[k] = leftArray[j2++];
-                                  else
-                                      frags[k] = frags[b + j1++];
-                                  //bool idx = (b + j1 >= c || (j2 < step && leftArray[j2].depth > frags[b + j1].depth));
-                                  //fgs[1] = leftArray[j2++];
-                                  //fgs[0] = frags[b + j1++];
-                                  //frags[k] = fgs[int(idx)];
-                              }
-                              ////////////////////////////////////////////////////////////////////////
-                              i += 2 * step;
-                          }
-                          step *= 2;
-                      }*/
-                      //Insertion sort.
+
                       for (int i = 0; i < count - 1; i++) {
                         for (int j = i + 1; j > 0; j--) {
                             if (frags[j - 1].depth > frags[j].depth) {
@@ -3022,26 +2987,28 @@ namespace odfaeg {
                         color.rgb = frags[i].color.rgb * frags[i].color.a + color.rgb * (1 - frags[i].color.a);
                         color.a = frags[i].color.a + color.a * (1 - frags[i].color.a);
                         //color = mix (color, frags[i].color, frags[i].color.a);
-                      }
-                      fcolor = color;
+                      }*/
+                      fcolor = vec4(1, 0, 0, 1);
                    })";
-                   if (!skyboxShader.loadFromMemory(skyboxVertexShader, skyboxFragmentShader)) {
+                   /*if (!skyboxShader.loadFromMemory(skyboxVertexShader, skyboxFragmentShader)) {
                         throw core::Erreur(53, "Failed to load skybox shader");
-                   }
+                   }*/
                    if (!perPixelLinkedListP2.loadFromMemory(simpleVertexShader, fragmentShader2)) {
                         throw core::Erreur(55, "Failed to load per pixel linked list pass 2 shader");
                    }
-                   if (!indirectRenderingShader.loadFromMemory(indirectDrawVertexShader, fragmentShader)) {
+                   /*if (!indirectRenderingShader.loadFromMemory(indirectDrawVertexShader, fragmentShader)) {
                        throw core::Erreur(57, "Failed to load indirect rendering shader");
-                   }
-                   skyboxShader.setParameter("skybox", Shader::CurrentTexture);
+                   }*/
+                   /*skyboxShader.setParameter("skybox", Shader::CurrentTexture);
                    indirectRenderingShader.setParameter("maxNodes", maxNodes);
                    indirectRenderingShader.setParameter("currentTex", Shader::CurrentTexture);
-                   indirectRenderingShader.setParameter("resolution", resolution.x(), resolution.y(), resolution.z());
+                   indirectRenderingShader.setParameter("resolution", resolution.x(), resolution.y(), resolution.z());*/
                    math::Matrix4f viewMatrix = getWindow().getDefaultView().getViewMatrix().getMatrix().transpose();
                    math::Matrix4f projMatrix = getWindow().getDefaultView().getProjMatrix().getMatrix().transpose();
                    perPixelLinkedListP2.setParameter("viewMatrix", viewMatrix);
                    perPixelLinkedListP2.setParameter("projectionMatrix", projMatrix);
+                   std::cout<<"view matrix : "<<viewMatrix<<std::endl;
+                   std::cout<<"projection matrix : "<<projMatrix<<std::endl;
         }
         void PerPixelLinkedListRenderComponent::setBackgroundColor(Color color) {
             backgroundColor = color;
@@ -3050,7 +3017,7 @@ namespace odfaeg {
             //frameBuffer.setActive();
             frameBuffer.clear(backgroundColor);
             //getWindow().setActive();
-            GLuint zero = 0;
+            /*GLuint zero = 0;
             glCheck(glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomicBuffer));
             glCheck(glBufferSubData(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(GLuint), &zero));
             glCheck(glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, 0));
@@ -3059,9 +3026,9 @@ namespace odfaeg {
             glCheck(glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, view.getSize().x(), view.getSize().y(), GL_RED_INTEGER,
             GL_UNSIGNED_INT, NULL));
             glCheck(glBindTexture(GL_TEXTURE_2D, 0));
-            glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0));
+            glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0));*/
 
-            frameBuffer.resetGLStates();
+            //frameBuffer.resetGLStates();
 
 
             //getWindow().resetGLStates();
@@ -3567,17 +3534,10 @@ namespace odfaeg {
 
             {
 
-                std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                /*std::lock_guard<std::recursive_mutex> lock(rec_mutex);
 
 
-                /*if (!datasReady) {
-                    ////std::cout<<"wait"<<std::endl;
-                    cv.wait(lock, [this] { return datasReady; });
 
-
-                }
-                datasReady = false;
-                cv.notify_all();*/
                 if(datasReady) {
                     datasReady = false;
 
@@ -3599,7 +3559,7 @@ namespace odfaeg {
                     m_skyboxInstance = skyboxBatcher.getInstances();
                     renderFinished = false;
                     //cv.notify_all();
-                }
+                }*/
             }
             /*std::unique_lock<std::mutex> lock(mtx);
             cv.wait(lock, [this]() {return !renderFinished && cleared;});*/
@@ -3618,7 +3578,7 @@ namespace odfaeg {
             glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0));
 
             frameBuffer.resetGLStates();*/
-            float zNear = view.getViewport().getPosition().z();
+            /*float zNear = view.getViewport().getPosition().z();
             if (!view.isOrtho())
                 view.setPerspective(80, view.getViewport().getSize().x() / view.getViewport().getSize().y(), 0.1f, view.getViewport().getSize().z());
             math::Matrix4f viewMatrix = view.getViewMatrix().getMatrix().transpose();
@@ -3651,33 +3611,35 @@ namespace odfaeg {
             indirectRenderingShader.setParameter("projectionMatrix", projMatrix);
             indirectRenderingShader.setParameter("viewMatrix", viewMatrix);
 
-            drawInstances();
+            /*drawInstances();
             drawInstancesIndexed();
             drawSelectedInstances();
-            drawSelectedInstancesIndexed();
+            drawSelectedInstancesIndexed();*/
             ////std::cout<<"nb instances : "<<m_normals.size()<<std::endl;
 
 
-            glCheck(glFinish());
-            glCheck(glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT));
+            /*glCheck(glFinish());
+            glCheck(glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT));*/
             //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
             vb.clear();
             //vb.name = "";
             vb.setPrimitiveType(Quads);
-            Vertex v1 (math::Vec3f(0, 0, quad.getSize().z()));
-            Vertex v2 (math::Vec3f(quad.getSize().x(),0, quad.getSize().z()));
-            Vertex v3 (math::Vec3f(quad.getSize().x(), quad.getSize().y(), quad.getSize().z()));
-            Vertex v4 (math::Vec3f(0, quad.getSize().y(), quad.getSize().z()));
+            Vertex v1 (math::Vec3f(0, 0, 0));
+            Vertex v2 (math::Vec3f(quad.getSize().x(),0, 0));
+            Vertex v3 (math::Vec3f(quad.getSize().x(), quad.getSize().y(), 0));
+            Vertex v4 (math::Vec3f(0, quad.getSize().y(), 0));
             vb.append(v1);
             vb.append(v2);
             vb.append(v3);
             vb.append(v4);
             vb.update();
+
             math::Matrix4f matrix = quad.getTransform().getMatrix().transpose();
+            std::cout<<"world mat : "<<matrix<<std::endl;
             perPixelLinkedListP2.setParameter("worldMat", matrix);
             currentStates.shader = &perPixelLinkedListP2;
             frameBuffer.drawVertexBuffer(vb, currentStates);
-            glCheck(glFinish());
+            //glCheck(glFinish());
             frameBuffer.display();
             /*renderFinished = true;
             cv.notify_all();*/
@@ -3996,6 +3958,7 @@ namespace odfaeg {
             glCheck(glFinish());*/
             /*std::unique_lock<std::mutex> lock(mtx);
             cv.wait(lock, [this](){return renderFinished;});*/
+
             frameBufferSprite.setCenter(target.getView().getPosition());
             target.draw(frameBufferSprite, states);
             /*cleared = true;
@@ -4031,7 +3994,7 @@ namespace odfaeg {
         }
         bool PerPixelLinkedListRenderComponent::loadEntitiesOnComponent(std::vector<Entity*> vEntities) {
 
-            {
+            /*{
                 std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                 datasReady = false;
 
@@ -4190,7 +4153,7 @@ namespace odfaeg {
             }
 
             ////std::cout<<"instances added"<<std::endl;
-            visibleEntities = vEntities;
+            visibleEntities = vEntities;*/
             update = true;
             std::lock_guard<std::recursive_mutex> lock(rec_mutex);
             datasReady = true;

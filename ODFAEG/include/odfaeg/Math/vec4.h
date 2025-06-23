@@ -2,6 +2,7 @@
 #define VEC4
 #include <iostream>
 #include "maths.h"
+#include <array>
 
 #include "../../../include/odfaeg/Core/erreur.h"
 #include "../Core/serialization.h"

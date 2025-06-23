@@ -112,9 +112,10 @@ namespace odfaeg {
                 setRow<RI+1, N+1>(tp, typename core::offset_sequence<(RI + 1-N) * C, std::index_sequence<CI...>>::type() );
 
             }
-            template <unsigned int RI, unsigned int N, typename TP, size_t... CI, class... D, class = std::enable_if_t<RI == R-1>>
+            template <unsigned int RI, unsigned int N, typename TP, size_t... CI, class... D, class = std::enable_if_t<RI == R - 1>>
             void setRow(TP tp, std::index_sequence<CI...> seq) {
                 data[RI] = {{std::get<CI>(tp)...}};
+
             }
             /**
             * \fn zero()
@@ -358,7 +359,7 @@ namespace odfaeg {
                 Mat<T, R, C> result;
                 for (unsigned int i = 0; i < R; i++) {
                     for (unsigned int j = 0; j < C; j++) {
-                        result.data[j][i] = data[i][j];
+                        result.data[i][j] = data[j][i];
                     }
                 }
                 return result;

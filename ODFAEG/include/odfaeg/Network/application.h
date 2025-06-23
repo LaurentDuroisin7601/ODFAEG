@@ -540,19 +540,21 @@ namespace odfaeg {
                     }
                     static_cast<A*>(this)->onRender(componentManager.get());
                     componentManager->clearComponents();
-                    componentManager->clearECSComponents();
+                    //componentManager->clearECSComponents();
                     componentManager->updateComponents();
                     if (eventContextActivated) {
                        listener->processEvents();
                     }
-                    componentManager->updateECSComponents();
+
                     componentManager->drawRenderComponents();
-                    componentManager->drawECSComponents();
+                    //componentManager->drawECSComponents();
 
                     static_cast<A*>(this)->onDisplay(windows[0].first);
                     componentManager->drawGuiComponents();
-                    for (unsigned int i = 0; i < windows.size(); i++)
+                    for (unsigned int i = 0; i < windows.size(); i++) {
+                        //std::cout<<"display"<<std::endl;
                         windows[i].first->display();
+                    }
                 }
             }
             void setEventContextActivated(bool eventContextActivated) {

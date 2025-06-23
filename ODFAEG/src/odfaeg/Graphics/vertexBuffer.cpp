@@ -873,17 +873,35 @@ namespace odfaeg {
         }
         void VertexBuffer::update() {
             if (!m_vertices.empty()) {
+                std::vector<GlVertex> glVerts(m_vertices.size());
+                for (unsigned int i = 0; i < m_vertices.size(); i++) {
+                    //std::cout<<"position : "<<m_vertices[i].position<<std::endl;
+                    glVerts[i].position.x = m_vertices[i].position[0];
+                    glVerts[i].position.y = m_vertices[i].position[1];
+                    glVerts[i].position.z = m_vertices[i].position[2];
+                    glVerts[i].color.r = m_vertices[i].color.r;
+                    glVerts[i].color.g = m_vertices[i].color.g;
+                    glVerts[i].color.b = m_vertices[i].color.b;
+                    glVerts[i].color.a = m_vertices[i].color.a;
+                    glVerts[i].texCoords.x = m_vertices[i].texCoords[0];
+                    glVerts[i].texCoords.y = m_vertices[i].texCoords[1];
+                    glVerts[i].normal.x = m_vertices[i].normal[0];
+                    glVerts[i].normal.y = m_vertices[i].normal[1];
+                    glVerts[i].normal.z = m_vertices[i].normal[2];
+                }
+
                 //computeNormals();
                 if (GLEW_ARB_vertex_buffer_object) {
                     if (needToUpdateVertexBuffer) {
 
                         if (vboVertexBuffer == 0) {
-
                             GLuint vbo;
                             glCheck(glGenBuffers(1, &vbo));
                             vboVertexBuffer = static_cast<unsigned int>(vbo);
+
                         }
                         if (oldVerticesSize != m_vertices.size()) {
+
 
                             glCheck(glBindBuffer(GL_ARRAY_BUFFER, vboVertexBuffer));
                             glCheck(glBufferData(GL_ARRAY_BUFFER, m_vertices.size() * sizeof(Vertex), &m_vertices[0], GL_DYNAMIC_DRAW));
@@ -895,7 +913,7 @@ namespace odfaeg {
                             glCheck(glBindBuffer(GL_ARRAY_BUFFER, vboVertexBuffer));
                             pos_vbo = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
                             if (pos_vbo != nullptr) {
-                                memcpy(pos_vbo,&m_vertices[0],  m_vertices.size() * sizeof(Vertex));
+                                memcpy(pos_vbo,&m_vertices[0], m_vertices.size() * sizeof(Vertex));
                                 glCheck(glUnmapBuffer(GL_ARRAY_BUFFER));
                                 pos_vbo = nullptr;
                             }

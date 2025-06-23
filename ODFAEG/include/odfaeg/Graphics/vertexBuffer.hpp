@@ -26,6 +26,7 @@
 namespace odfaeg {
     namespace graphic {
         #ifdef VULKAN
+
         class RenderTarget;
         class ODFAEG_GRAPHICS_API VertexBuffer : public Drawable {
         public :
@@ -85,6 +86,23 @@ namespace odfaeg {
         class ODFAEG_GRAPHICS_API VertexBuffer : public Drawable, public window::IGLResource
         {
            public :
+            struct Vector3f {
+                float x, y, z;
+            };
+            struct Vector2f {
+                float x, y;
+            };
+            struct GlVertex {
+                Vector3f position;
+                Color color;
+                Vector2f texCoords;
+                Vector3f normal;
+                //bone indexes which will influence this vertex
+                int m_BoneIDs[MAX_BONE_INFLUENCE];
+                //weights from each bone
+                float m_Weights[MAX_BONE_INFLUENCE];
+
+            };
             struct LightInfos {
                 math::Vec3f center;
                 Color color;

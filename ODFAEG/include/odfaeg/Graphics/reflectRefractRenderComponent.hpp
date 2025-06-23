@@ -78,6 +78,7 @@ namespace odfaeg {
             };
             ReflectRefractRenderComponent (RenderWindow& window, int layer, std::string expression, window::ContextSettings settings);
             void loadTextureIndexes();
+            void createDescriptorsAndPipelines();
             std::vector<Entity*> getEntities();
             bool loadEntitiesOnComponent(std::vector<Entity*> visibleEntities);
             void loadSkybox(Entity* skybox);
@@ -229,6 +230,7 @@ namespace odfaeg {
             std::vector<VkSemaphore> renderFinishedSemaphore;
             std::vector<VkSemaphore> clearFinishedSemaphore;
             RenderWindow& window;
+            bool isSomethingDrawn;
         };
         #else
         class ODFAEG_GRAPHICS_API ReflectRefractRenderComponent : public HeavyComponent {

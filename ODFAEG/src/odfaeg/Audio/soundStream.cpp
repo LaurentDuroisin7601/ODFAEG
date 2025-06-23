@@ -62,7 +62,7 @@ namespace odfaeg {
 
             // Request the thread to terminate
             {
-                std::lock_guard<std::mutex> lock(m_threadMutex);
+                std::lock_guard<std::recursive_mutex> lock(m_threadMutex);
                 m_isStreaming = false;
             }
 
@@ -107,7 +107,7 @@ namespace odfaeg {
             Status threadStartState = Stopped;
 
             {
-                std::lock_guard<std::mutex> lock(m_threadMutex);
+                std::lock_guard<std::recursive_mutex> lock(m_threadMutex);
 
                 isStreaming = m_isStreaming;
                 threadStartState = m_threadStartState;
@@ -117,7 +117,7 @@ namespace odfaeg {
             if (isStreaming && (threadStartState == Paused))
             {
                 // If the sound is paused, resume it
-                std::lock_guard<std::mutex> lock(m_threadMutex);
+                std::lock_guard<std::recursive_mutex> lock(m_threadMutex);
                 m_threadStartState = Playing;
                 alCheck(alSourcePlay(m_source));
                 return;
@@ -142,7 +142,7 @@ namespace odfaeg {
         {
             // Handle pause() being called before the thread has started
             {
-                std::lock_guard<std::mutex> lock(m_threadMutex);
+                std::lock_guard<std::recursive_mutex> lock(m_threadMutex);
 
                 if (!m_isStreaming)
                     return;
@@ -159,7 +159,7 @@ namespace odfaeg {
         {
             // Request the thread to terminate
             {
-                std::lock_guard<std::mutex> lock(m_threadMutex);
+                std::lock_guard<std::recursive_mutex> lock(m_threadMutex);
                 m_isStreaming = false;
             }
 
@@ -193,7 +193,7 @@ namespace odfaeg {
             // To compensate for the lag between play() and alSourceplay()
             if (status == Stopped)
             {
-                std::lock_guard<std::mutex> lock(m_threadMutex);
+                std::lock_guard<std::recursive_mutex> lock(m_threadMutex);
 
                 if (m_isStreaming)
                     status = m_threadStartState;
@@ -273,7 +273,7 @@ namespace odfaeg {
             bool requestStop = false;
 
             {
-                std::lock_guard<std::mutex> lock(m_threadMutex);
+                std::lock_guard<std::recursive_mutex> lock(m_threadMutex);
 
                 // Check if the thread was launched Stopped
                 if (m_threadStartState == Stopped)
@@ -298,7 +298,7 @@ namespace odfaeg {
 
 
             {
-                std::lock_guard<std::mutex> lock(m_threadMutex);
+                std::lock_guard<std::recursive_mutex> lock(m_threadMutex);
 
                 // Check if the thread was launched Paused
                 if (m_threadStartState == Paused)
@@ -309,7 +309,7 @@ namespace odfaeg {
             {
 
                 {
-                    std::lock_guard<std::mutex> lock(m_threadMutex);
+                    std::lock_guard<std::recursive_mutex> lock(m_threadMutex);
                     if (!m_isStreaming)
                         break;
                 }
@@ -325,7 +325,7 @@ namespace odfaeg {
                     else
                     {
                         // End streaming
-                        std::lock_guard<std::mutex> lock(m_threadMutex);
+                        std::lock_guard<std::recursive_mutex> lock(m_threadMutex);
                         m_isStreaming = false;
                     }
                 }
@@ -378,7 +378,7 @@ namespace odfaeg {
                                   << "and initialize() has been called correctly" << std::endl;
 
                             // Abort streaming (exit main loop)
-                            std::lock_guard<std::mutex> lock(m_threadMutex);
+                            std::lock_guard<std::recursive_mutex> lock(m_threadMutex);
                             m_isStreaming = false;
                             requestStop = true;
                             break;

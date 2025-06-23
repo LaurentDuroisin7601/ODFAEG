@@ -43,6 +43,23 @@ namespace odfaeg {
                     unsigned int textureIndex;
                     unsigned int layer;
                 };
+                struct IndirectRenderingPC {
+                    math::Matrix4f projectionMatrix;
+                    math::Matrix4f viewMatrix;
+                };
+                struct LightIndirectRenderingPC {
+                    math::Matrix4f projectionMatrix;
+                    math::Matrix4f viewMatrix;
+                };
+                struct LayerPC {
+                    unsigned int nbLayers;
+                };
+                struct ShadowUBO {
+                    math::Matrix4f projectionMatrix;
+                    math::Matrix4f viewMatrix;
+                    math::Matrix4f lprojectionMatrix;
+                    math::Matrix4f lviewMatrix;
+                };
                 ShadowRenderComponent (RenderWindow& window, int layer, std::string expression,window::ContextSettings settings = window::ContextSettings(0, 0, 4, 3, 0));
                 void loadTextureIndexes();
                 void drawNextFrame();
@@ -59,10 +76,6 @@ namespace odfaeg {
                 bool needToUpdate();
                 View& getView();
                 int getLayer();
-                const Texture& getStencilBufferTexture();
-                const Texture& getShadowMapTexture();
-                Sprite& getFrameBufferTile ();
-                Sprite& getDepthBufferTile();
                 void setExpression(std::string expression);
                 std::string getExpression();
                 void setView(View view);
@@ -72,6 +85,14 @@ namespace odfaeg {
                 void createDescriptorsAndPipelines();
                 ~ShadowRenderComponent();
             private :
+                std::vector<VkSemaphore> renderFinishedSemaphore;
+                RenderWindow& window;
+                LayerPC layerPC;
+                IndirectRenderingPC indirectRenderingPC;
+                LightIndirectRenderingPC lightIndirectRenderingPC;
+                VkCommandPool commandPool;
+                ShadowUBO shadowUBODatas;
+                void createCommandPool();
                 uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
                 void createDescriptorPool(RenderStates states);
                 void createDescriptorSetLayout(RenderStates states);
@@ -112,6 +133,8 @@ namespace odfaeg {
                 std::vector<VkDeviceMemory> modelDataShaderStorageBuffersMemory;
                 std::vector<VkBuffer> materialDataShaderStorageBuffers;
                 std::vector<VkDeviceMemory> materialDataShaderStorageBuffersMemory;
+                std::vector<VkBuffer> shadowUBO;
+                std::vector<VkDeviceMemory> shadowUBOMemory;
                 VkImage depthTextureImage;
                 VkImageView depthTextureImageView;
                 VkSampler depthTextureSampler;
@@ -128,6 +151,8 @@ namespace odfaeg {
                 VertexBuffer vb, vb2;
                 std::array<VertexBuffer ,Batcher::nbPrimitiveTypes> vbBindlessTex;
                 RectangleShape quad;
+                std::array<std::vector<ModelData>, Batcher::nbPrimitiveTypes> modelDatas;
+                std::array<std::vector<MaterialData>, Batcher::nbPrimitiveTypes> materialDatas;
         };
 
         #else

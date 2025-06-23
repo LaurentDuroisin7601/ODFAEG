@@ -1230,6 +1230,9 @@ namespace odfaeg {
                         glCheck(glEnableVertexAttribArray(0));
                         glCheck(glEnableVertexAttribArray(1));
                         glCheck(glEnableVertexAttribArray(2));
+                        glCheck(glEnableVertexAttribArray(3));
+                        glCheck(glEnableVertexAttribArray(4));
+                        glCheck(glEnableVertexAttribArray(5));
                         glCheck(glVertexAttribPointer(0, 3,GL_FLOAT,GL_FALSE,sizeof(Vertex), (GLvoid*) 0));
                         glCheck(glVertexAttribPointer(1, 4,GL_UNSIGNED_BYTE,GL_TRUE,sizeof(Vertex),(GLvoid*) 12));
                         glCheck(glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*) 16));
@@ -1619,7 +1622,7 @@ namespace odfaeg {
 std::cout << "offset color:     " << offsetof(Vertex, color) << std::endl;
 std::cout << "offset texCoords: " << offsetof(Vertex, texCoords) << std::endl;
 std::cout << "offset normal:    " << offsetof(Vertex, normal) << std::endl;*/
-                    const char* data = reinterpret_cast<const char*>(glVerts.data());
+                    const char* data = reinterpret_cast<const char*>(&glVerts[0]);
                     glEnableClientState(GL_COLOR_ARRAY);
                     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
                     glEnableClientState(GL_VERTEX_ARRAY);
@@ -1678,19 +1681,35 @@ std::cout << "offset normal:    " << offsetof(Vertex, normal) << std::endl;*/
                 // Apply the shader
                 if (states.shader)
                     applyShader(states.shader);
+                applyTransform(states.transform);
                 if (m_versionMajor > 3 || m_versionMajor == 3 && m_versionMinor >= 3)
                     glCheck(glBindVertexArray(m_vao));
                 if (m_cache.lastVboBuffer != &vertexBuffer) {
+                    std::cout<<"versions : "<<m_versionMajor<<","<<m_versionMinor<<std::endl;
                     if (m_versionMajor > 3 || m_versionMajor == 3 && m_versionMinor >= 3) {
                         glCheck(glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer.vboVertexBuffer));
                         glCheck(glEnableVertexAttribArray(0));
                         glCheck(glEnableVertexAttribArray(1));
                         glCheck(glEnableVertexAttribArray(2));
+                        glCheck(glEnableVertexAttribArray(3));
+                        glCheck(glEnableVertexAttribArray(4));
+                        glCheck(glEnableVertexAttribArray(5));
                         glCheck(glVertexAttribPointer(0, 3,GL_FLOAT,GL_FALSE,sizeof(Vertex), (GLvoid*) 0));
                         glCheck(glVertexAttribPointer(1, 4,GL_UNSIGNED_BYTE,GL_TRUE,sizeof(Vertex),(GLvoid*) 12));
                         glCheck(glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*) 16));
                         glCheck(glEnableVertexAttribArray(3));
                         glCheck(glVertexAttribPointer(3, 3, GL_FLOAT, GL_TRUE, sizeof(Vertex), (GLvoid*) 24));
+                        glCheck(glEnableVertexAttribArray(4));
+                        glCheck(glVertexAttribIPointer(4, 4, GL_INT, sizeof(Vertex), (void*)offsetof(Vertex, m_BoneIDs)));
+                        glCheck(glEnableVertexAttribArray(5));
+                        glCheck(glVertexAttribPointer(5, 4,  GL_FLOAT, GL_FALSE, sizeof(Vertex),(void*)offsetof(Vertex, m_Weights)));
+                        glCheck(glDisableVertexAttribArray(0));
+                        glCheck(glDisableVertexAttribArray(1));
+                        glCheck(glDisableVertexAttribArray(2));
+                        glCheck(glDisableVertexAttribArray(3));
+                        glCheck(glDisableVertexAttribArray(4));
+                        glCheck(glDisableVertexAttribArray(5));
+                        glCheck(glBindBuffer(GL_ARRAY_BUFFER, 0));
                         /*glCheck(glEnableVertexAttribArray(4));
                         if (vertexBuffer.vboMaterialType != 0) {
                             glCheck(glEnableVertexAttribArray(5));
@@ -1731,6 +1750,8 @@ std::cout << "offset normal:    " << offsetof(Vertex, normal) << std::endl;*/
                         glCheck(glDisableVertexAttribArray(1));
                         glCheck(glDisableVertexAttribArray(2));
                         glCheck(glDisableVertexAttribArray(3));
+                        glCheck(glDisableVertexAttribArray(4));
+                        glCheck(glDisableVertexAttribArray(5));
                        /* glCheck(glDisableVertexAttribArray(4));
                         if (vertexBuffer.vboMaterialType != 0) {
                             glCheck(glDisableVertexAttribArray(5));
@@ -1748,6 +1769,7 @@ std::cout << "offset normal:    " << offsetof(Vertex, normal) << std::endl;*/
 
                         glCheck(glBindBuffer(GL_ARRAY_BUFFER, 0));
                     } else {
+
                         glCheck(glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer.vboVertexBuffer));
                         glCheck(glEnableClientState(GL_COLOR_ARRAY));
                         glCheck(glEnableClientState(GL_TEXTURE_COORD_ARRAY));
@@ -1756,7 +1778,6 @@ std::cout << "offset normal:    " << offsetof(Vertex, normal) << std::endl;*/
                         glCheck(glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(Vertex), (GLvoid*) 12));
                         glCheck(glTexCoordPointer(2, GL_FLOAT, sizeof(Vertex),(GLvoid*) 16));
                         glCheck(glEnableClientState(GL_NORMAL_ARRAY));
-                        glCheck(glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer.vboNormalBuffer));
                         glCheck(glNormalPointer(GL_FLOAT, sizeof(math::Vec3f), (GLvoid*) 0));
                         glCheck(glDisableClientState(GL_COLOR_ARRAY));
                         glCheck(glDisableClientState(GL_TEXTURE_COORD_ARRAY));
@@ -1771,6 +1792,8 @@ std::cout << "offset normal:    " << offsetof(Vertex, normal) << std::endl;*/
                     glCheck(glEnableVertexAttribArray(1));
                     glCheck(glEnableVertexAttribArray(2));
                     glCheck(glEnableVertexAttribArray(3));
+                    glCheck(glEnableVertexAttribArray(4));
+                    glCheck(glEnableVertexAttribArray(5));
                     /*glCheck(glEnableVertexAttribArray(4));
                     if (vertexBuffer.vboMaterialType != 0) {
                         glCheck(glEnableVertexAttribArray(5));
@@ -1805,13 +1828,17 @@ std::cout << "offset normal:    " << offsetof(Vertex, normal) << std::endl;*/
                     ////std::cout<<"draw arrays"<<std::endl;
                     ////std::cout<<"frame buffer id : "<<m_framebufferId<<std::endl;
                     glCheck(glBindFramebuffer(GL_FRAMEBUFFER, m_framebufferId));
+                    glCheck(glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer.vboVertexBuffer));
                     glCheck(glDrawArrays(mode, 0, vertexBuffer.getVertexCount()));
+                    glCheck(glBindBuffer(GL_ARRAY_BUFFER, 0));
                 }
                 if (m_versionMajor > 3 || m_versionMajor == 3 && m_versionMinor >= 3) {
                     glCheck(glDisableVertexAttribArray(0));
                     glCheck(glDisableVertexAttribArray(1));
                     glCheck(glDisableVertexAttribArray(2));
                     glCheck(glDisableVertexAttribArray(3));
+                    glCheck(glDisableVertexAttribArray(4));
+                    glCheck(glDisableVertexAttribArray(5));
                     /*glCheck(glDisableVertexAttribArray(4));
                     if (vertexBuffer.vboMaterialType != 0) {
                         glCheck(glDisableVertexAttribArray(5));

@@ -67,6 +67,7 @@ namespace odfaeg {
                 if (it->second->getComponentType() == 0 && it->second->isVisible()) {
                     for (unsigned int i = 0; i < windows.size(); i++) {
                         if (windows[i] == &it->second->getWindow()) {
+                            std::cout<<"draw on window"<<std::endl;
                             it->second->getWindow().draw(*it->second.get());
                             #ifdef VULKAN
                             it->second->getWindow().submit();
@@ -209,9 +210,11 @@ namespace odfaeg {
            std::multimap<int, Component*, std::greater<int>>::iterator it;
            for (it = eventComponents.begin(); it != eventComponents.end(); it++) {
                if (it->second->isEventContextActivated() && it->second->isVisible()) {
-                   if (!it->second->getListener().isUsingThread())
+                   if (!it->second->getListener().isUsingThread()) {
+
                        it->second->processEvents();
-                   it->second->recomputeSize();
+                   }
+                   //it->second->recomputeSize();
                }
            }
            //core::Command::clearEventsStack();
