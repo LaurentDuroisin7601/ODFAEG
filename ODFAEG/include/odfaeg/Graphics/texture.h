@@ -95,6 +95,7 @@ namespace odfaeg
             void setCoordinatesType(CoordinateType ct);
             void toShaderReadOnlyOptimal(VkCommandBuffer cmd);
             void toColorAttachmentOptimal(VkCommandBuffer cmd);
+            math::Matrix4f getTextureMatrix() const;
             ~Texture();
         private :
 

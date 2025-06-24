@@ -336,6 +336,8 @@ namespace odfaeg {
             Shader* shader = const_cast<Shader*>(states.shader);
             ////std::cout<<"draw indirect depth stencil id :"<<depthStencilId<<std::endl;
             unsigned int descriptorId = id * shader->getNbShaders() + shader->getId();
+            /*std::cout<<"ids : "<<shader->getId()* (Batcher::nbPrimitiveTypes - 1)+vertexBuffer.getPrimitiveType()<<","<<id<<","<<depthStencilId<<std::endl;
+            std::cout<<"pipeline : "<<graphicsPipeline.size()<<std::endl;*/
             vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vertexBuffer.getPrimitiveType()][id][depthStencilId]);
             VkBuffer vertexBuffers[] = {vertexBuffer.getVertexBuffer()};
             VkDeviceSize offsets[] = {0, 0};

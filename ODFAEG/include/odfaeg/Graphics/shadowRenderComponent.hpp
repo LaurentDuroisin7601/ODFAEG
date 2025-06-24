@@ -52,7 +52,11 @@ namespace odfaeg {
                     math::Matrix4f viewMatrix;
                 };
                 struct LayerPC {
+                    math::Vec4f resolution;
                     unsigned int nbLayers;
+                };
+                struct ResolutionPC {
+                    math::Vec4f resolution;
                 };
                 struct ShadowUBO {
                     math::Matrix4f projectionMatrix;
@@ -89,6 +93,7 @@ namespace odfaeg {
                 std::vector<VkSemaphore> renderFinishedSemaphore;
                 RenderWindow& window;
                 LayerPC layerPC;
+                ResolutionPC resolutionPC;
                 IndirectRenderingPC indirectRenderingPC;
                 LightIndirectRenderingPC lightIndirectRenderingPC;
                 VkCommandPool commandPool;

@@ -37,6 +37,7 @@ namespace odfaeg {
                 createCommandPool();
                 depthBuffer.create(window.getView().getSize().x(), window.getView().getSize().y());
                 depthBuffer.setView(view);
+                math::Vec4f resolution(window.getView().getSize().x(), window.getView().getSize().y(),window.getView().getSize().z(), 1);
 
                 depthBufferTile = Sprite(depthBuffer.getTexture(), math::Vec3f(0, 0, 0), math::Vec3f(window.getView().getSize().x(), window.getView().getSize().y(), 0), IntRect(0, 0, window.getView().getSize().x(), window.getView().getSize().y()));
                 alphaBuffer.create(window.getView().getSize().x(), window.getView().getSize().y());
@@ -61,7 +62,7 @@ namespace odfaeg {
                 shadowUBO.resize(shadowMap.getMaxFramesInFlight());
                 shadowUBOMemory.resize(shadowMap.getMaxFramesInFlight());
                 for (unsigned int i = 0; i < shadowMap.getMaxFramesInFlight(); i++) {
-                    createBuffer(size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, shadowUBO[i], shadowUBOMemory[i]);
+                    createBuffer(size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, shadowUBO[i], shadowUBOMemory[i]);
                 }
                 VkImageCreateInfo imageInfo{};
                 imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -204,7 +205,12 @@ namespace odfaeg {
                         throw std::runtime_error("failed to create compute synchronization objects for a frame!");
                     }
                 }
+                for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
+                    vbBindlessTex[i].setPrimitiveType(static_cast<PrimitiveType>(i));
+                }
                 isSomethingDrawn = false;
+                resolutionPC.resolution = resolution;
+                layerPC.resolution = resolution;
              }
              void ShadowRenderComponent::compileShaders() {
                 const std::string indirectRenderingVertexShader = R"(#version 460
@@ -258,7 +264,8 @@ namespace odfaeg {
                                                                   layout (location = 3) in flat uint layer;
                                                                   layout (location = 4) in vec3 normal;
                                                                   layout (push_constant) uniform PushConsts {
-                                                                     layout (offset = 128) uint nbLayers;
+                                                                     layout (offset = 128) vec4 resolution;
+                                                                     layout (offset = 144) uint nbLayers;
                                                                   } pushConsts;
                                                                   layout(set = 0, binding = 0) uniform sampler2D textures[];
                                                                   layout(set = 0, binding = 1, rgba32f) uniform coherent image2D depthBuffer;
@@ -283,13 +290,15 @@ namespace odfaeg {
              const std::string buildAlphaBufferFragmentShader = R"(#version 460
                                                               #extension GL_EXT_nonuniform_qualifier : enable
                                                               #extension GL_ARB_fragment_shader_interlock : require
+                                                              #extension GL_EXT_debug_printf : enable
                                                               layout(set = 0, binding = 0) uniform sampler2D textures[];
                                                               layout(set = 0, binding = 1, rgba32f) uniform coherent image2D alphaBuffer;
                                                               layout (location = 0) out vec4 fColor;
                                                               layout (set = 0, binding = 2) uniform sampler2D depthBuffer;
                                                               layout (set = 0, binding = 3) uniform sampler2D stencilBuffer;
                                                               layout (push_constant) uniform PushConsts {
-                                                                    uint nbLayers;
+                                                                  vec4 resolution;
+                                                                  uint nbLayers;
                                                               } pushConsts;
                                                               layout (location = 0) in vec2 fTexCoords;
                                                               layout (location = 1) in vec4 frontColor;
@@ -300,12 +309,12 @@ namespace odfaeg {
                                                               void main() {
                                                                   vec4 texel = (texIndex != 0) ? frontColor * texture(textures[texIndex-1], fTexCoords.xy) : frontColor;
                                                                   float current_alpha = texel.a;
-                                                                  vec4 depth = texture(depthBuffer, gl_FragCoord.xy);
+                                                                  vec4 depth = textureLod(depthBuffer, gl_FragCoord.xy, 0);
                                                                   beginInvocationInterlockARB();
                                                                   vec4 alpha = imageLoad(alphaBuffer,ivec2(gl_FragCoord.xy));
                                                                   vec3 projCoords = shadowCoords.xyz / shadowCoords.w;
                                                                   projCoords = projCoords * 0.5 + 0.5;
-                                                                  vec4 stencil = texture (stencilBuffer, projCoords.xy);
+                                                                  vec4 stencil = textureLod (stencilBuffer, projCoords.xy * pushConsts.resolution.xy, 0);
                                                                   float l = layer;
                                                                   float z = gl_FragCoord.z;
                                                                   if (/*l > stencil.y || l == stencil.y &&*/ stencil.z > projCoords.z && depth.z > z && current_alpha > alpha.a) {
@@ -328,6 +337,11 @@ namespace odfaeg {
                                                                 layout (location = 2) in flat uint texIndex;
                                                                 layout (location = 3) in flat uint layer;
                                                                 layout (location = 4) in vec3 normal;
+                                                                layout (push_constant) uniform PushConsts {
+                                                                     layout (offset = 128) vec4 resolution;
+                                                                     layout (offset = 144) uint nbLayers;
+                                                                } pushConsts;
+
                                                                 layout(binding = 1, rgba32f) uniform coherent image2D stencilBuffer;
                                                                 layout (location = 0) out vec4 fColor;
                                                                 void main() {
@@ -348,6 +362,7 @@ namespace odfaeg {
                                                                 }
                                                             )";
                 const std::string perPixShadowIndirectRenderingVertexShader = R"(#version 460
+
                                                                  layout (location = 0) in vec3 position;
                                                                  layout (location = 1) in vec4 color;
                                                                  layout (location = 2) in vec2 texCoords;
@@ -384,8 +399,8 @@ namespace odfaeg {
                                                                     MaterialData material = materialDatas[gl_DrawID];
                                                                     uint textureIndex = material.textureIndex;
                                                                     uint l = material.layer;
-                                                                    gl_Position = vec4(position, 1.f) * model.modelMatrix * ubo.viewMatrix * ubo.projectionMatrix;
-                                                                    shadowCoords = vec4(position, 1) * model.shadowProjMatrix * ubo.lviewMatrix * ubo.lprojectionMatrix;
+                                                                    gl_Position = vec4(position, 1.f) * model.modelMatrix * model.shadowProjMatrix * ubo.viewMatrix * ubo.projectionMatrix;
+                                                                    shadowCoords = vec4(position, 1.f) * model.modelMatrix * model.shadowProjMatrix * ubo.lviewMatrix * ubo.lprojectionMatrix;
                                                                     fTexCoords = texCoords;
                                                                     frontColor = color;
                                                                     texIndex = textureIndex;
@@ -395,12 +410,16 @@ namespace odfaeg {
                                                                  )";
                 const std::string perPixShadowFragmentShader = R"(#version 460
                                                                   #extension GL_EXT_nonuniform_qualifier : enable
+                                                                  #extension GL_EXT_debug_printf : enable
                                                                   layout (location = 0) in vec2 fTexCoords;
                                                                   layout (location = 1) in vec4 frontColor;
                                                                   layout (location = 2) in flat uint texIndex;
                                                                   layout (location = 3) in flat uint layer;
                                                                   layout (location = 4) in vec3 normal;
                                                                   layout (location = 5) in vec4 shadowCoords;
+                                                                  layout (push_constant) uniform PushConsts {
+                                                                       vec4 resolution;
+                                                                  } pushConsts;
                                                                   layout(set = 0, binding = 0) uniform sampler2D textures[];
                                                                   layout (binding = 1) uniform sampler2D stencilBuffer;
                                                                   layout (binding = 2) uniform sampler2D depthBuffer;
@@ -410,14 +429,14 @@ namespace odfaeg {
                                                                   layout (location = 0) out vec4 fColor;
 
                                                                 void main() {
-                                                                    vec4 alpha = texture(alphaBuffer, gl_FragCoord.xy);
-                                                                    vec4 depth = texture(depthBuffer, gl_FragCoord.xy);
+                                                                    vec4 alpha = textureLod(alphaBuffer, gl_FragCoord.xy, 0);
+                                                                    vec4 depth = textureLod(depthBuffer, gl_FragCoord.xy, 0);
                                                                     vec4 texel = (texIndex != 0) ? frontColor * texture(textures[texIndex-1], fTexCoords) : frontColor;
 
                                                                     float color = texel.a;
                                                                     vec3 projCoords = shadowCoords.xyz / shadowCoords.w;
                                                                     projCoords = projCoords * 0.5 + 0.5;
-                                                                    vec4 stencil = texture (stencilBuffer, projCoords.xy);
+                                                                    vec4 stencil = textureLod(stencilBuffer, projCoords.xy * pushConsts.resolution.xy, 0);
                                                                     float z = gl_FragCoord.z;
                                                                     vec4 visibility;
                                                                     uint l = layer;
@@ -430,6 +449,7 @@ namespace odfaeg {
                                                                     } else {
                                                                         visibility = vec4 (1, 1, 1, 1);
                                                                     }
+                                                                    debugPrintfEXT("visibility : %v4f", visibility);
                                                                     fColor = visibility;
                                                                   }
                                                                   )";
@@ -489,6 +509,7 @@ namespace odfaeg {
                 states.shader = &perPixShadowShader;
                 createDescriptorPool(states);
                 createDescriptorSetLayout(states);
+                allocateDescriptorSets(states);
                 std::vector<std::vector<std::vector<VkPipelineLayoutCreateInfo>>>& pipelineLayoutInfo = shadowMap.getPipelineLayoutCreateInfo();
                 std::vector<std::vector<std::vector<VkPipelineDepthStencilStateCreateInfo>>>& depthStencilCreateInfo = shadowMap.getDepthStencilCreateInfo();
                 if ((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders() > pipelineLayoutInfo.size()) {
@@ -554,6 +575,7 @@ namespace odfaeg {
                             push_constant.size = sizeof(LayerPC);
                             //this push constant range is accessible only in the vertex shader
                             push_constant.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
                             pipelineLayoutInfo[sBuildAlphaBufferShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][NODEPTHNOSTENCIL].pPushConstantRanges = &push_constant;
                             pipelineLayoutInfo[sBuildAlphaBufferShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][NODEPTHNOSTENCIL].pushConstantRangeCount = 1;
                            depthStencilCreateInfo[sBuildAlphaBufferShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][NODEPTHNOSTENCIL].depthCompareOp = VK_COMPARE_OP_ALWAYS;
@@ -591,6 +613,7 @@ namespace odfaeg {
                            depthStencilCreateInfo[buildShadowMapShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][stencilBuffer.getId()][NODEPTHNOSTENCIL].front = {};
                            depthStencilCreateInfo[buildShadowMapShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][stencilBuffer.getId()][NODEPTHNOSTENCIL].back = {};
                            stencilBuffer.createGraphicPipeline(static_cast<PrimitiveType>(i), states, NODEPTHNOSTENCIL, NBDEPTHSTENCIL);
+                           //std::cout<<"pipeline layout : "<<stencilBuffer.getPipelineLayout()[buildShadowMapShader.getId() * (Batcher::nbPrimitiveTypes - 1) + i][stencilBuffer.getId()][j]<<std::endl;
                         }
                     }
                 }
@@ -599,6 +622,15 @@ namespace odfaeg {
                 for (unsigned int j = 0; j < NBDEPTHSTENCIL; j++) {
                     for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
                         if (j == 0) {
+                           VkPushConstantRange push_constant;
+                            //this push constant range starts at the beginning
+                           push_constant.offset = 0;
+                            //this push constant range takes up the size of a MeshPushConstants struct
+                           push_constant.size = sizeof(ResolutionPC);
+                            //this push constant range is accessible only in the vertex shader
+                           push_constant.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+                           pipelineLayoutInfo[perPixShadowShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][shadowMap.getId()][NODEPTHNOSTENCIL].pPushConstantRanges = &push_constant;
+                           pipelineLayoutInfo[perPixShadowShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][shadowMap.getId()][NODEPTHNOSTENCIL].pushConstantRangeCount = 1;
                            depthStencilCreateInfo[perPixShadowShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][shadowMap.getId()][NODEPTHNOSTENCIL].depthCompareOp = VK_COMPARE_OP_ALWAYS;
                            depthStencilCreateInfo[perPixShadowShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][shadowMap.getId()][NODEPTHNOSTENCIL].front = {};
                            depthStencilCreateInfo[perPixShadowShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][shadowMap.getId()][NODEPTHNOSTENCIL].back = {};
@@ -1311,7 +1343,7 @@ namespace odfaeg {
 
                         descriptorWrites[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                         descriptorWrites[3].dstSet = descriptorSets[descriptorId][i];
-                        descriptorWrites[3].dstBinding = 2;
+                        descriptorWrites[3].dstBinding = 3;
                         descriptorWrites[3].dstArrayElement = 0;
                         descriptorWrites[3].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
                         descriptorWrites[3].descriptorCount = 1;
@@ -1539,8 +1571,8 @@ namespace odfaeg {
                         materialDatas[p].push_back(material);
                         TransformMatrix tm;
                         ModelData model;
-                        model.worldMat = tm.getMatrix().transpose();
-                        model.shadowProjMat = tm.getMatrix().transpose();
+                        model.worldMat = tm.getMatrix()/*.transpose()*/;
+                        model.shadowProjMat = tm.getMatrix()/*.transpose()*/;
                         modelDatas[p].push_back(model);
                         unsigned int vertexCount = 0;
                         for (unsigned int j = 0; j < m_normals[i].getAllVertices().getVertexCount(); j++) {
@@ -1568,9 +1600,9 @@ namespace odfaeg {
                         for (unsigned int j = 0; j < tm.size(); j++) {
                             tm[j]->update();
                             ModelData model;
-                            model.worldMat = tm[j]->getMatrix().transpose();
+                            model.worldMat = tm[j]->getMatrix()/*.transpose()*/;
                             TransformMatrix tm;
-                            model.shadowProjMat = tm.getMatrix().transpose();
+                            model.shadowProjMat = tm.getMatrix()/*.transpose()*/;
                             modelDatas[p].push_back(model);
                         }
                         unsigned int vertexCount = 0;
@@ -1783,6 +1815,7 @@ namespace odfaeg {
                 }
                 for (unsigned int i = 0; i < m_shadow_normals.size(); i++) {
                     if (m_shadow_normals[i].getAllVertices().getVertexCount() > 0) {
+
                         DrawArraysIndirectCommand drawArraysIndirectCommand;
                         unsigned int p = m_shadow_normals[i].getAllVertices().getPrimitiveType();
                         MaterialData material;
@@ -1791,8 +1824,8 @@ namespace odfaeg {
                         materialDatas[p].push_back(material);
                         TransformMatrix tm;
                         ModelData model;
-                        model.worldMat = tm.getMatrix().transpose();
-                        model.shadowProjMat = tm.getMatrix().transpose();
+                        model.worldMat = tm.getMatrix()/*.transpose()*/;
+                        model.shadowProjMat = tm.getMatrix()/*.transpose()*/;
                         modelDatas[p].push_back(model);
                         unsigned int vertexCount = 0;
                         for (unsigned int j = 0; j < m_shadow_normals[i].getAllVertices().getVertexCount(); j++) {
@@ -1822,8 +1855,8 @@ namespace odfaeg {
                             tm[j]->update();
                             tm2[j].update();
                             ModelData model;
-                            model.worldMat = tm[j]->getMatrix().transpose();
-                            model.shadowProjMat = tm2[j].getMatrix().transpose();
+                            model.worldMat = tm[j]->getMatrix()/*.transpose()*/;
+                            model.shadowProjMat = tm2[j].getMatrix()/*.transpose()*/;
                             modelDatas[p].push_back(model);
                         }
                         unsigned int vertexCount=0;
@@ -2564,6 +2597,7 @@ namespace odfaeg {
                 }
                 Shader* shader = const_cast<Shader*>(currentStates.shader);
                 if (shader == &depthGenShader) {
+
                     ////std::cout<<"draw on db"<<std::endl;
                     std::vector<VkCommandBuffer> commandBuffers = depthBuffer.getCommandBuffers();
                     unsigned int currentFrame = depthBuffer.getCurrentFrame();
@@ -2587,7 +2621,8 @@ namespace odfaeg {
 
 
 
-                    vkCmdPushConstants(commandBuffers[currentFrame], alphaBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][alphaBuffer.getId()][depthStencilID], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(LayerPC), &layerPC);
+                    vkCmdPushConstants(commandBuffers[currentFrame], alphaBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][alphaBuffer.getId()][depthStencilID], VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(LayerPC), &layerPC);
+
 
                     VkMemoryBarrier memoryBarrier={};
                     memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
@@ -2607,7 +2642,10 @@ namespace odfaeg {
                     unsigned int currentFrame = stencilBuffer.getCurrentFrame();
 
                     //vkCmdWaitEvents(commandBuffers[currentFrame], 1, &events[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
-                    vkCmdPushConstants(commandBuffers[currentFrame], stencilBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][alphaBuffer.getId()][depthStencilID], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(LightIndirectRenderingPC), &lightIndirectRenderingPC);
+                    vkCmdPushConstants(commandBuffers[currentFrame], stencilBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][stencilBuffer.getId()][depthStencilID], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(LightIndirectRenderingPC), &lightIndirectRenderingPC);
+                    vkCmdPushConstants(commandBuffers[currentFrame], stencilBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][stencilBuffer.getId()][depthStencilID], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(LayerPC), &layerPC);
+                    /*std::cout<<"pipeline layout : "<<stencilBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][stencilBuffer.getId()][depthStencilID]<<std::endl;
+                    system("PAUSE");*/
                     stencilBuffer.beginRenderPass();
                     stencilBuffer.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
                     stencilBuffer.endRenderPass();
@@ -2633,7 +2671,7 @@ namespace odfaeg {
                     //vkCmdWaitEvents(commandBuffers[currentFrame], 1, &events[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
 
                     vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
-
+                    vkCmdPushConstants(commandBuffers[currentFrame], shadowMap.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][shadowMap.getId()][depthStencilID], VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(ResolutionPC), &resolutionPC);
                     shadowMap.beginRenderPass();
                     shadowMap.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
                     shadowMap.endRenderPass();
@@ -2684,6 +2722,7 @@ namespace odfaeg {
                     memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
                     vkCmdPipelineBarrier(commandBuffers[i], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
                 }
+                stencilBuffer.clear(Color::Transparent);
                 shadowMap.beginRecordCommandBuffers();
                 const_cast<Texture&>(shadowMap.getTexture()).toColorAttachmentOptimal(shadowMap.getCommandBuffers()[shadowMap.getCurrentFrame()]);
                 shadowMap.display();
@@ -2717,15 +2756,15 @@ namespace odfaeg {
                 lightView.lookAt(target.x(), target.y(), target.z());
                 stencilBuffer.setView(lightView);
                 depthBuffer.setView(view);
-                math::Matrix4f lviewMatrix = lightView.getViewMatrix().getMatrix().transpose();
-                math::Matrix4f lprojMatrix = lightView.getProjMatrix().getMatrix().transpose();
+                math::Matrix4f lviewMatrix = lightView.getViewMatrix().getMatrix()/*.transpose()*/;
+                math::Matrix4f lprojMatrix = lightView.getProjMatrix().getMatrix()/*.transpose()*/;
                 lightIndirectRenderingPC.projectionMatrix = lprojMatrix;
                 lightIndirectRenderingPC.viewMatrix = lviewMatrix;
                 float zNear = view.getViewport().getPosition().z();
                 if (!view.isOrtho())
                     view.setPerspective(80, view.getViewport().getSize().x() / view.getViewport().getSize().y(), zNear * 0.5f, view.getViewport().getSize().z());
-                math::Matrix4f viewMatrix = view.getViewMatrix().getMatrix().transpose();
-                math::Matrix4f projMatrix = view.getProjMatrix().getMatrix().transpose();
+                math::Matrix4f viewMatrix = view.getViewMatrix().getMatrix()/*.transpose()*/;
+                math::Matrix4f projMatrix = view.getProjMatrix().getMatrix()/*.transpose()*/;
                 indirectRenderingPC.projectionMatrix = projMatrix;
                 indirectRenderingPC.viewMatrix = viewMatrix;
                 if (!view.isOrtho())
@@ -2736,7 +2775,7 @@ namespace odfaeg {
                 shadowUBODatas.viewMatrix = viewMatrix;
                 shadowUBODatas.lprojectionMatrix = lprojMatrix;
                 shadowUBODatas.lviewMatrix = lviewMatrix;
-                VkDeviceSize bufferSize = sizeof(ShadowUBO);
+                VkDeviceSize bufferSize = sizeof(shadowUBODatas);
                 void* data;
                 for (unsigned int i = 0; i < shadowMap.getMaxFramesInFlight(); i++) {
                     vkMapMemory(vkDevice.getDevice(), shadowUBOMemory[i], 0, bufferSize, 0, &data);

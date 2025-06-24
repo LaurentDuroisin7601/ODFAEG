@@ -335,7 +335,7 @@ namespace odfaeg {
                 // Get the number of buffers that have been processed (i.e. ready for reuse)
                 ALint nbProcessed = 0;
                 alCheck(alGetSourcei(m_source, AL_BUFFERS_PROCESSED, &nbProcessed));
-                std::cout<<"nb processed : "<<nbProcessed<<std::endl;
+                //std::cout<<"nb processed : "<<nbProcessed<<std::endl;
                 //std::cout<<"nb proceed : "<<nbProcessed<<std::endl;
 
 

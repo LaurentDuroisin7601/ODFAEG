@@ -931,6 +931,23 @@ namespace odfaeg {
                 throw core::Erreur(0, "échec de la création d'une command pool!", 1);
             }
         }
+        math::Matrix4f Texture::getTextureMatrix() const {
+            math::Matrix4f matrix(1.f, 0.f, 0.f, 0.f,
+                       0.f, 1.f, 0.f, 0.f,
+                       0.f, 0.f, 1.f, 0.f,
+                       0.f, 0.f, 0.f, 1.f);
+            matrix[0][0] = 1.f / m_size.x();
+            matrix[1][1] = 1.f / m_size.y();
+            /*if (m_name == "CUBE") {
+                //std::cout<<"actual size : "<<m_actualSize.x()<<","<<m_actualSize.y()<<std::endl;
+            }*/
+           /* if (m_pixelsFlipped)
+            {
+                matrix.m22 = -matrix.m22;
+                matrix.m42 = 1.f;
+            }*/
+            return matrix;
+        }
         Texture::~Texture() {
             vkDestroyCommandPool(vkDevice.getDevice(), commandPool, nullptr);
             //std::cout<<"destroy texture"<<std::endl;
