@@ -5,7 +5,7 @@
 #include "odfaeg/Graphics/perPixelLinkedListRenderComponent.hpp"
 #include "odfaeg/Graphics/shadowRenderComponent.hpp"
 #include "odfaeg/Graphics/lightRenderComponent.hpp"
-#include "odfaeg/Graphics/fastRenderComponent.hpp"
+
 #include "odfaeg/Graphics/reflectRefractRenderComponent.hpp"
 #include "odfaeg/Network/application.h"
 #include "odfaeg/Graphics/convexShape.h"

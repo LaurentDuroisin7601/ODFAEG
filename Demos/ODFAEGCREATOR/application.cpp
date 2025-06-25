@@ -2214,12 +2214,33 @@ void ODFAEGCreator::onExec() {
                     labScene->setParent(pProjects);
                     pProjects->addChild(labScene);
                     Action a2(Action::EVENT_TYPE::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
+
+                    FontManager<Fonts>& fm = cache.resourceManager<Font, Fonts>("FontManager");
+                    std::vector<LightComponent*> children = pProjects->getChildren();
+                    Label* lHeaders = new Label(getRenderWindow(),Vec3f(0, 0, 0),Vec3f(200,17,0),fm.getResourceByAlias(Fonts::Serif),"headers", 15);
+                    Label* lSources = new Label(getRenderWindow(),Vec3f(0, 0,0),Vec3f(200,17,0),fm.getResourceByAlias(Fonts::Serif),"sources", 15);
+                    lHeaders->setBackgroundColor(sf::Color::White);
+                    lSources->setBackgroundColor(sf::Color::White);
+                    lHeaders->setParent(pProjects);
+                    Node* hNode = new Node ("headers", lHeaders, Vec2f(0, 0), Vec2f(1.f, 0.025f), node);
+                    pProjects->addChild(lHeaders);
+                    lSources->setParent(pProjects);
+                    Node* sNode = new Node("sources",lSources,Vec2f(0, 0), Vec2f(1.f, 0.025f), node);
+                    pProjects->addChild(lSources);
+                    lHeaders->setForegroundColor(sf::Color::Green);
+                    lSources->setForegroundColor(sf::Color::Green);
+                    pProjects->setAutoResized(true);
+                    Action a3(Action::EVENT_TYPE::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
+                    Command cmd1(a3, FastDelegate<bool>(&Label::isMouseInside, lHeaders), FastDelegate<void>(&ODFAEGCreator::showHeadersFiles, this, lHeaders));
+                    lHeaders->getListener().connect("SHOWHFILES", cmd1);
+                    Command cmd2(a3, FastDelegate<bool>(&Label::isMouseInside, lSources), FastDelegate<void>(&ODFAEGCreator::showSourcesFiles, this, lSources));
+                    lSources->getListener().connect("SHOWSFILES", cmd2);
                     //std::cout<<"label : "<<lab<<std::endl;
 
 
                     appliname = line;
-                    Command cmd2(a2, FastDelegate<bool>(&Label::isMouseInside, lab), FastDelegate<void>(&ODFAEGCreator::showScenes, this, labScene));
-                    lab->getListener().connect("SHOWSCENES"+appliname, cmd2);
+                    Command cmd3(a2, FastDelegate<bool>(&Label::isMouseInside, lab), FastDelegate<void>(&ODFAEGCreator::showScenes, this, labScene));
+                    lab->getListener().connect("SHOWSCENES"+appliname, cmd3);
                     std::unique_ptr<World> world = std::make_unique<World>();
                     world->projectName = appliname;
                     worlds.push_back(std::move(world));
@@ -2771,28 +2792,7 @@ void ODFAEGCreator::showProjectsFiles(Label* label) {
     isGuiShown = false;
     pScriptsEdit->setVisible(true);
     Node* node = rootNode->findNode(label);
-    if (node->getNodes().size() == 1) {
-        FontManager<Fonts>& fm = cache.resourceManager<Font, Fonts>("FontManager");
-        std::vector<LightComponent*> children = pProjects->getChildren();
-        Label* lHeaders = new Label(getRenderWindow(),Vec3f(0, 0, 0),Vec3f(200,17,0),fm.getResourceByAlias(Fonts::Serif),"headers", 15);
-        Label* lSources = new Label(getRenderWindow(),Vec3f(0, 0,0),Vec3f(200,17,0),fm.getResourceByAlias(Fonts::Serif),"sources", 15);
-        lHeaders->setBackgroundColor(sf::Color::White);
-        lSources->setBackgroundColor(sf::Color::White);
-        lHeaders->setParent(pProjects);
-        Node* hNode = new Node ("headers", lHeaders, Vec2f(0, 0), Vec2f(1.f, 0.025f), node);
-        pProjects->addChild(lHeaders);
-        lSources->setParent(pProjects);
-        Node* sNode = new Node("sources",lSources,Vec2f(0, 0), Vec2f(1.f, 0.025f), node);
-        pProjects->addChild(lSources);
-        lHeaders->setForegroundColor(sf::Color::Green);
-        lSources->setForegroundColor(sf::Color::Green);
-        pProjects->setAutoResized(true);
-        Action a(Action::EVENT_TYPE::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
-        Command cmd1(a, FastDelegate<bool>(&Label::isMouseInside, lHeaders), FastDelegate<void>(&ODFAEGCreator::showHeadersFiles, this, lHeaders));
-        lHeaders->getListener().connect("SHOWHFILES", cmd1);
-        Command cmd2(a, FastDelegate<bool>(&Label::isMouseInside, lSources), FastDelegate<void>(&ODFAEGCreator::showSourcesFiles, this, lSources));
-        lSources->getListener().connect("SHOWSFILES", cmd2);
-    } else if (!node->isNodeVisible()) {
+    if (!node->isNodeVisible()) {
         node->showAllNodes();
     } else {
         node->hideAllNodes();

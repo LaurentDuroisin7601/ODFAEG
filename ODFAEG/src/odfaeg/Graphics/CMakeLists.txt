@@ -251,7 +251,7 @@ source_group("Vulkan" FILES ${SRC_VULKAN})
 #find_package(Vulkan REQUIRED)
 
 #find_package(Freetype REQUIRED)
-include_directories(${CMAKE_INCLUDE_PATH} ${FREETYPE_INCLUDE_DIRS})
+include_directories(${CMAKE_INCLUDE_PATH} ${FREETYPE_INCLUDE_DIRS} ${SFML_INCLUDE_DIR})
 link_directories(${CMAKE_LIBRARY_PATH})
 
 sfgl_add_library(odfaeg-graphics

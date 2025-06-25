@@ -84,7 +84,7 @@ ${INCROOT}/Windows/win32Mouse.hpp
 ${SRCROOT}/Windows/win32Mouse.cpp
 )
 endif()
-include_directories(${CMAKE_INCLUDE_PATH} ${FREETYPE_INCLUDE_DIRS})
+include_directories(${CMAKE_INCLUDE_PATH} ${FREETYPE_INCLUDE_DIRS} ${SFML_INCLUDE_DIR})
 link_directories(${CMAKE_LIBRARY_PATH})
 
 sfgl_add_library(odfaeg-window

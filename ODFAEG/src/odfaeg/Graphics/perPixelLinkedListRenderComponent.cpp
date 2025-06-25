@@ -2747,15 +2747,15 @@ namespace odfaeg {
                 vbBindlessTex[i].setPrimitiveType(static_cast<sf::PrimitiveType>(i));
             }
             skybox = nullptr;
-<<<<<<< HEAD
+
             /*frameBuffer.setActive(false);
             getListener().launch();*/
-=======
+
             frameBuffer.setActive(false);
             renderFinished = false;
             cleared = true;
             //getListener().launch();
->>>>>>> 8cfe7fc80d5da5b78086d4d03e31fc278a5b1a4f
+
         }
         void PerPixelLinkedListRenderComponent::loadTextureIndexes() {
             compileShaders();
@@ -3017,10 +3017,7 @@ namespace odfaeg {
             backgroundColor = color;
         }
         void PerPixelLinkedListRenderComponent::clear() {
-<<<<<<< HEAD
 
-=======
->>>>>>> 8cfe7fc80d5da5b78086d4d03e31fc278a5b1a4f
             //frameBuffer.setActive();
             frameBuffer.clear(backgroundColor);
             //getWindow().setActive();
@@ -3542,10 +3539,7 @@ namespace odfaeg {
             {
 
                 std::lock_guard<std::recursive_mutex> lock(rec_mutex);
-<<<<<<< HEAD
-=======
 
->>>>>>> 8cfe7fc80d5da5b78086d4d03e31fc278a5b1a4f
 
                 /*if (!datasReady) {
                     //std::cout<<"wait"<<std::endl;
@@ -3578,7 +3572,7 @@ namespace odfaeg {
                     //cv.notify_all();
                 }
             }
-<<<<<<< HEAD
+
 
             /*frameBuffer.clear(backgroundColor);
             //getWindow().setActive();
@@ -3673,16 +3667,16 @@ namespace odfaeg {
             frameBuffer.drawVertexBuffer(vb, currentStates);
             glCheck(glFinish());
             frameBuffer.display();
-<<<<<<< HEAD
+
             /*frameBufferSprite.setCenter(window.getView().getPosition());
             RenderStates states;
             std::lock_guard<std::recursive_mutex> lock(rec_mutex);
             window.draw(frameBufferSprite, states);*/
-=======
+
             /*renderFinished = true;
             cv.notify_all();*/
 
->>>>>>> 8cfe7fc80d5da5b78086d4d03e31fc278a5b1a4f
+
 
 
             //glCheck(glMemoryBarrier(GL_ALL_BARRIER_BITS));
@@ -3995,18 +3989,18 @@ namespace odfaeg {
 
             /*target.draw(quad, states);
             glCheck(glFinish());*/
-<<<<<<< HEAD
+
             frameBufferSprite.setCenter(target.getView().getPosition());
             target.draw(frameBufferSprite, states);
 
-=======
+
             /*std::unique_lock<std::mutex> lock(mtx);
             cv.wait(lock, [this](){return renderFinished;});*/
             frameBufferSprite.setCenter(target.getView().getPosition());
             target.draw(frameBufferSprite, states);
             /*cleared = true;
             cv.notify_all();*/
->>>>>>> 8cfe7fc80d5da5b78086d4d03e31fc278a5b1a4f
+
         }
         int  PerPixelLinkedListRenderComponent::getLayer() {
             return layer;

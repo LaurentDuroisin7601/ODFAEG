@@ -44,6 +44,7 @@ MyAppli::MyAppli(Vec2f size, std::string title) :
         skyboxImgs.push_back(img);
     }
     skybox = std::make_unique<g3d::Skybox>(skyboxImgs, factory);
+    m_world = std::make_unique<World>();
 }
 void MyAppli::onLoad() {
     TextureManager<TEXTURES> tm;
@@ -70,6 +71,7 @@ void MyAppli::onInit() {
     BaseChangementMatrix bcm;
     //bcm.set3DMatrix();
     theMap->setBaseChangementMatrix(bcm);
+    setCurrentWorld(m_world.get());
     getWorld()->addSceneManager(theMap);
     getWorld()->setCurrentSceneManager("Map test");
 

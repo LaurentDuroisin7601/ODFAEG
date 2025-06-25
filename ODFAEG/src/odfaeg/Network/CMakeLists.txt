@@ -28,7 +28,7 @@ set(SRC
 	${INCROOT}/ECS/application.hpp
 	${SRCROOT}/ECS/application.cpp)	
 #find_package (OpenSSL 1 REQUIRED)
-include_directories(${CMAKE_INCLUDE_PATH} ${OPENSSL_INCLUDE_DIR})
+include_directories(${CMAKE_INCLUDE_PATH} ${OPENSSL_INCLUDE_DIR} ${SFML_INCLUDE_DIR})
 link_directories(${CMAKE_LIBRARY_PATH})
 sfgl_add_library(odfaeg-network
 			 SOURCES ${SRC})
