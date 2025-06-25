@@ -1,6 +1,7 @@
 #ifndef ODFAEG_BLEND_MODE_HPP
 #define ODFAEG_BLEND_MODE_HPP
 #include "export.hpp"
+#include <vector>
 namespace odfaeg {
     namespace graphic {
         struct ODFAEG_GRAPHICS_API BlendMode
@@ -73,6 +74,9 @@ namespace odfaeg {
             BlendMode(Factor colorSourceFactor, Factor colorDestinationFactor,
                       Equation colorBlendEquation, Factor alphaSourceFactor,
                       Factor alphaDestinationFactor, Equation alphaBlendEquation);
+            BlendMode(const BlendMode& copy);
+            ~BlendMode();
+            void updateIds();
 
             ////////////////////////////////////////////////////////////
             // Member Data
@@ -83,6 +87,15 @@ namespace odfaeg {
             Factor   alphaSrcFactor; ///< Source blending factor for the alpha channel
             Factor   alphaDstFactor; ///< Destination blending factor for the alpha channel
             Equation alphaEquation;  ///< Blending equation for the alpha channel
+            unsigned int id;
+            static unsigned int nbBlendModes;
+        private :
+            void countNbBlendMode();
+
+            bool contains(BlendMode& blendMode);
+
+            static std::vector<BlendMode*> blendModes;
+            static std::vector<BlendMode*> sameBlendModes;
         };
 
         ////////////////////////////////////////////////////////////

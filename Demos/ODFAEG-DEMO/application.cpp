@@ -320,10 +320,12 @@ namespace sorrok {
 
         //rrrc->createDescriptorsAndPipelines();
         ShadowRenderComponent *src = new ShadowRenderComponent(getRenderWindow(), 3, "E_WALL+E_DECOR+E_ANIMATION+E_HERO", ContextSettings(0, 0, 4, 4, 6));
+        getRenderWindow().createDescriptorsAndPipelines();
         frc1->createDescriptorsAndPipelines();
         frc2->createDescriptorsAndPipelines();
         rrrc->createDescriptorsAndPipelines();
         src->createDescriptorsAndPipelines();
+
 
         /*LightRenderComponent *lrc = new LightRenderComponent(getRenderWindow(), 4, "E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PONCTUAL_LIGHT", ContextSettings(0, 0, 4, 4, 6));
         //std::cout<<"component created"<<std::endl;
@@ -341,10 +343,10 @@ namespace sorrok {
         op->setVisible(false);
         op->setEventContextActivated(false);*/
         //frc1->setVisible(false);
-        /*frc2->setVisible(false);
-        rrrc->setVisible(false);
-        /*src->setVisible(false);
-        lrc->setVisible(false);*/
+        //frc2->setVisible(false);
+        //rrrc->setVisible(false);
+        //src->setVisible(false);
+        //lrc->setVisible(false);
         getRenderComponentManager().addComponent(frc1);
         getRenderComponentManager().addComponent(frc2);
         getRenderComponentManager().addComponent(rrrc);

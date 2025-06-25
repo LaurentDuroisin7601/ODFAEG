@@ -319,7 +319,16 @@ namespace odfaeg {
                 createDescriptorSetLayout(states);
                 allocateDescriptorSets(states);
 
-
+                BlendMode none = BlendNone;
+                BlendMode alpha = BlendAlpha;
+                BlendMode add = BlendAdd;
+                BlendMode multiply = BlendMultiply;
+                none.updateIds();
+                std::vector<BlendMode> blendModes;
+                blendModes.push_back(none);
+                blendModes.push_back(alpha);
+                blendModes.push_back(add);
+                blendModes.push_back(multiply);
                 std::vector<std::vector<std::vector<VkPipelineLayoutCreateInfo>>>& pipelineLayoutInfo = reflectRefractTex.getPipelineLayoutCreateInfo();
                 std::vector<std::vector<std::vector<VkPipelineDepthStencilStateCreateInfo>>>& depthStencilCreateInfo = reflectRefractTex.getDepthStencilCreateInfo();
                 if ((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders() > pipelineLayoutInfo.size()) {
@@ -334,9 +343,9 @@ namespace odfaeg {
                 }
                 for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
                     for (unsigned int j = 0; j < reflectRefractTex.getNbRenderTargets(); j++) {
-                        if (NBDEPTHSTENCIL > pipelineLayoutInfo[i][j].size()) {
-                            pipelineLayoutInfo[i][j].resize(NBDEPTHSTENCIL);
-                            depthStencilCreateInfo[i][j].resize(NBDEPTHSTENCIL);
+                        if (NBDEPTHSTENCIL*none.nbBlendModes > pipelineLayoutInfo[i][j].size()) {
+                            pipelineLayoutInfo[i][j].resize(NBDEPTHSTENCIL*none.nbBlendModes);
+                            depthStencilCreateInfo[i][j].resize(NBDEPTHSTENCIL*none.nbBlendModes);
                         }
                     }
                 }
@@ -345,215 +354,235 @@ namespace odfaeg {
                 alphaBuffer.enableDepthTest(true);
                 reflectRefractTex.enableDepthTest(true);
                 states.shader = &sLinkedList;
-                for (unsigned int j = 0; j < NBDEPTHSTENCIL; j++) {
-                    for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
-                        if (j == 0) {
-                           depthStencilCreateInfo[sLinkedList.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][NODEPTHNOSTENCIL].depthCompareOp = VK_COMPARE_OP_ALWAYS;
-                           depthStencilCreateInfo[sLinkedList.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][NODEPTHNOSTENCIL].front = {};
-                           depthStencilCreateInfo[sLinkedList.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][NODEPTHNOSTENCIL].back = {};
-                           environmentMap.createGraphicPipeline(static_cast<PrimitiveType>(i), states, NODEPTHNOSTENCIL, NBDEPTHSTENCIL);
-                        } else {
-                           depthStencilCreateInfo[sLinkedList.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][DEPTHNOSTENCIL].depthCompareOp = VK_COMPARE_OP_GREATER;
-                           depthStencilCreateInfo[sLinkedList.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][DEPTHNOSTENCIL].front = {};
-                           depthStencilCreateInfo[sLinkedList.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][DEPTHNOSTENCIL].back = {};
-                           environmentMap.createGraphicPipeline(static_cast<PrimitiveType>(i), states, DEPTHNOSTENCIL, NBDEPTHSTENCIL);
+                for (unsigned int b = 0; b < blendModes.size(); b++) {
+                    states.blendMode = blendModes[b];
+                    states.blendMode.updateIds();
+                    for (unsigned int j = 0; j < NBDEPTHSTENCIL; j++) {
+                        for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
+                            if (j == 0) {
+                               depthStencilCreateInfo[sLinkedList.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
+                               depthStencilCreateInfo[sLinkedList.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = {};
+                               depthStencilCreateInfo[sLinkedList.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {};
+                               environmentMap.createGraphicPipeline(static_cast<PrimitiveType>(i), states, NODEPTHNOSTENCIL, NBDEPTHSTENCIL);
+                            } else {
+                               depthStencilCreateInfo[sLinkedList.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][DEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_GREATER;
+                               depthStencilCreateInfo[sLinkedList.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][DEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = {};
+                               depthStencilCreateInfo[sLinkedList.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][DEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {};
+                               environmentMap.createGraphicPipeline(static_cast<PrimitiveType>(i), states, DEPTHNOSTENCIL, NBDEPTHSTENCIL);
+                            }
                         }
                     }
                 }
                 states.shader = &sLinkedList2;
-                for (unsigned int j = 0; j < NBDEPTHSTENCIL; j++) {
-                    for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
-                        if (j == 0) {
-                           VkPushConstantRange push_constant;
-                           //this push constant range starts at the beginning
-                           push_constant.offset = 0;
-                           //this push constant range takes up the size of a MeshPushConstants struct
-                           push_constant.size = sizeof(LinkedList2PC);
-                           //this push constant range is accessible only in the vertex shader
-                           push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-                           pipelineLayoutInfo[sLinkedList2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][NODEPTHNOSTENCIL].pPushConstantRanges = &push_constant;
-                           pipelineLayoutInfo[sLinkedList2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][NODEPTHNOSTENCIL].pushConstantRangeCount = 1;
-                           depthStencilCreateInfo[sLinkedList2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][NODEPTHNOSTENCIL].depthCompareOp = VK_COMPARE_OP_ALWAYS;
-                           depthStencilCreateInfo[sLinkedList2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][NODEPTHNOSTENCIL].front = {};
-                           depthStencilCreateInfo[sLinkedList2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][NODEPTHNOSTENCIL].back = {};
-                           environmentMap.createGraphicPipeline(static_cast<PrimitiveType>(i), states, NODEPTHNOSTENCIL, NBDEPTHSTENCIL);
-                           ////std::cout<<"pipeline ids : "<<sLinkedList2.getId() * (Batcher::nbPrimitiveTypes - 1) + i<<","<<environmentMap.getId()<<","<<NODEPTHNOSTENCIL<<std::endl;
-                        } else {
-                           VkPushConstantRange push_constant;
-                           //this push constant range starts at the beginning
-                           push_constant.offset = 0;
-                           //this push constant range takes up the size of a MeshPushConstants struct
-                           push_constant.size = sizeof(LinkedList2PC);
-                           //this push constant range is accessible only in the vertex shader
-                           push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-                           pipelineLayoutInfo[sLinkedList2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][DEPTHNOSTENCIL].pPushConstantRanges = &push_constant;
-                           pipelineLayoutInfo[sLinkedList2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][DEPTHNOSTENCIL].pushConstantRangeCount = 1;
-                           depthStencilCreateInfo[sLinkedList2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][DEPTHNOSTENCIL].depthCompareOp = VK_COMPARE_OP_GREATER;
-                           depthStencilCreateInfo[sLinkedList2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][DEPTHNOSTENCIL].front = {};
-                           depthStencilCreateInfo[sLinkedList2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][DEPTHNOSTENCIL].back = {};
-                           environmentMap.createGraphicPipeline(static_cast<PrimitiveType>(i), states, DEPTHNOSTENCIL, NBDEPTHSTENCIL);
+                for (unsigned int b = 0; b < blendModes.size(); b++) {
+                    states.blendMode = blendModes[b];
+                    states.blendMode.updateIds();
+                    for (unsigned int j = 0; j < NBDEPTHSTENCIL; j++) {
+                        for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
+                            if (j == 0) {
+                               VkPushConstantRange push_constant;
+                               //this push constant range starts at the beginning
+                               push_constant.offset = 0;
+                               //this push constant range takes up the size of a MeshPushConstants struct
+                               push_constant.size = sizeof(LinkedList2PC);
+                               //this push constant range is accessible only in the vertex shader
+                               push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+                               pipelineLayoutInfo[sLinkedList2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = &push_constant;
+                               pipelineLayoutInfo[sLinkedList2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 1;
+                               depthStencilCreateInfo[sLinkedList2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
+                               depthStencilCreateInfo[sLinkedList2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = {};
+                               depthStencilCreateInfo[sLinkedList2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {};
+                               environmentMap.createGraphicPipeline(static_cast<PrimitiveType>(i), states, NODEPTHNOSTENCIL, NBDEPTHSTENCIL);
+                               ////std::cout<<"pipeline ids : "<<sLinkedList2.getId() * (Batcher::nbPrimitiveTypes - 1) + i<<","<<environmentMap.getId()<<","<<NODEPTHNOSTENCIL<<std::endl;
+                            } else {
+                               VkPushConstantRange push_constant;
+                               //this push constant range starts at the beginning
+                               push_constant.offset = 0;
+                               //this push constant range takes up the size of a MeshPushConstants struct
+                               push_constant.size = sizeof(LinkedList2PC);
+                               //this push constant range is accessible only in the vertex shader
+                               push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+                               pipelineLayoutInfo[sLinkedList2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][DEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = &push_constant;
+                               pipelineLayoutInfo[sLinkedList2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][DEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 1;
+                               depthStencilCreateInfo[sLinkedList2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][DEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_GREATER;
+                               depthStencilCreateInfo[sLinkedList2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][DEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = {};
+                               depthStencilCreateInfo[sLinkedList2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][DEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {};
+                               environmentMap.createGraphicPipeline(static_cast<PrimitiveType>(i), states, DEPTHNOSTENCIL, NBDEPTHSTENCIL);
+                            }
                         }
                     }
                 }
                 states.shader = &sBuildDepthBuffer;
-                for (unsigned int j = 0; j < NBDEPTHSTENCIL; j++) {
-                    for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
-                        if (j == 0) {
-                            std::array<VkPushConstantRange, 2> push_constants;
-                            VkPushConstantRange push_constant;
-                            //this push constant range starts at the beginning
-                            push_constant.offset = 0;
-                            //this push constant range takes up the size of a MeshPushConstants struct
-                            push_constant.size = sizeof(IndirectRenderingPC);
-                            //this push constant range is accessible only in the vertex shader
-                            push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-                            push_constants[0] = push_constant;
-                            VkPushConstantRange push_constant2;
-                            //this push constant range starts at the beginning
-                            push_constant2.offset = 128;
-                            //this push constant range takes up the size of a MeshPushConstants struct
-                            push_constant2.size = sizeof(BuildDepthPC);
-                            //this push constant range is accessible only in the vertex shader
-                            push_constant2.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-                            push_constants[1] = push_constant2;
-                            pipelineLayoutInfo[sBuildDepthBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][NODEPTHNOSTENCIL].pPushConstantRanges = push_constants.data();
-                            pipelineLayoutInfo[sBuildDepthBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][NODEPTHNOSTENCIL].pushConstantRangeCount = 2;
-                            depthStencilCreateInfo[sBuildDepthBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][NODEPTHNOSTENCIL].depthCompareOp = VK_COMPARE_OP_ALWAYS;
-                            depthStencilCreateInfo[sBuildDepthBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][NODEPTHNOSTENCIL].front = {};
-                            depthStencilCreateInfo[sBuildDepthBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][NODEPTHNOSTENCIL].back = {};
-                            depthBuffer.createGraphicPipeline(static_cast<PrimitiveType>(i), states, NODEPTHNOSTENCIL, NBDEPTHSTENCIL);
-                        } else {
-                            std::array<VkPushConstantRange, 2> push_constants;
-                            VkPushConstantRange push_constant;
-                            //this push constant range starts at the beginning
-                            push_constant.offset = 0;
-                            //this push constant range takes up the size of a MeshPushConstants struct
-                            push_constant.size = sizeof(IndirectRenderingPC);
-                            //this push constant range is accessible only in the vertex shader
-                            push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-                            push_constants[0] = push_constant;
-                            VkPushConstantRange push_constant2;
-                            //this push constant range starts at the beginning
-                            push_constant2.offset = 128;
-                            //this push constant range takes up the size of a MeshPushConstants struct
-                            push_constant2.size = sizeof(BuildDepthPC);
-                            //this push constant range is accessible only in the vertex shader
-                            push_constant2.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-                            push_constants[1] = push_constant2;
-                            pipelineLayoutInfo[sBuildDepthBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][DEPTHNOSTENCIL].pPushConstantRanges = push_constants.data();
-                            pipelineLayoutInfo[sBuildDepthBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][DEPTHNOSTENCIL].pushConstantRangeCount = 2;
-                            depthStencilCreateInfo[sBuildDepthBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][DEPTHNOSTENCIL].depthCompareOp = VK_COMPARE_OP_ALWAYS;
-                            depthStencilCreateInfo[sBuildDepthBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][DEPTHNOSTENCIL].front = {};
-                            depthStencilCreateInfo[sBuildDepthBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][DEPTHNOSTENCIL].back = {};
-                            depthBuffer.createGraphicPipeline(static_cast<PrimitiveType>(i), states, DEPTHNOSTENCIL, NBDEPTHSTENCIL);
+                for (unsigned int b = 0; b < blendModes.size(); b++) {
+                    states.blendMode = blendModes[b];
+                    states.blendMode.updateIds();
+                    for (unsigned int j = 0; j < NBDEPTHSTENCIL; j++) {
+                        for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
+                            if (j == 0) {
+                                std::array<VkPushConstantRange, 2> push_constants;
+                                VkPushConstantRange push_constant;
+                                //this push constant range starts at the beginning
+                                push_constant.offset = 0;
+                                //this push constant range takes up the size of a MeshPushConstants struct
+                                push_constant.size = sizeof(IndirectRenderingPC);
+                                //this push constant range is accessible only in the vertex shader
+                                push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+                                push_constants[0] = push_constant;
+                                VkPushConstantRange push_constant2;
+                                //this push constant range starts at the beginning
+                                push_constant2.offset = 128;
+                                //this push constant range takes up the size of a MeshPushConstants struct
+                                push_constant2.size = sizeof(BuildDepthPC);
+                                //this push constant range is accessible only in the vertex shader
+                                push_constant2.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+                                push_constants[1] = push_constant2;
+                                pipelineLayoutInfo[sBuildDepthBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = push_constants.data();
+                                pipelineLayoutInfo[sBuildDepthBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 2;
+                                depthStencilCreateInfo[sBuildDepthBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
+                                depthStencilCreateInfo[sBuildDepthBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = {};
+                                depthStencilCreateInfo[sBuildDepthBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {};
+                                depthBuffer.createGraphicPipeline(static_cast<PrimitiveType>(i), states, NODEPTHNOSTENCIL, NBDEPTHSTENCIL);
+                            } else {
+                                std::array<VkPushConstantRange, 2> push_constants;
+                                VkPushConstantRange push_constant;
+                                //this push constant range starts at the beginning
+                                push_constant.offset = 0;
+                                //this push constant range takes up the size of a MeshPushConstants struct
+                                push_constant.size = sizeof(IndirectRenderingPC);
+                                //this push constant range is accessible only in the vertex shader
+                                push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+                                push_constants[0] = push_constant;
+                                VkPushConstantRange push_constant2;
+                                //this push constant range starts at the beginning
+                                push_constant2.offset = 128;
+                                //this push constant range takes up the size of a MeshPushConstants struct
+                                push_constant2.size = sizeof(BuildDepthPC);
+                                //this push constant range is accessible only in the vertex shader
+                                push_constant2.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+                                push_constants[1] = push_constant2;
+                                pipelineLayoutInfo[sBuildDepthBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][DEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = push_constants.data();
+                                pipelineLayoutInfo[sBuildDepthBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][DEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 2;
+                                depthStencilCreateInfo[sBuildDepthBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][DEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
+                                depthStencilCreateInfo[sBuildDepthBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][DEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = {};
+                                depthStencilCreateInfo[sBuildDepthBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][DEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {};
+                                depthBuffer.createGraphicPipeline(static_cast<PrimitiveType>(i), states, DEPTHNOSTENCIL, NBDEPTHSTENCIL);
+                            }
                         }
                     }
                 }
-                states.shader = &sBuildAlphaBuffer;
-                for (unsigned int j = 0; j < NBDEPTHSTENCIL; j++) {
-                    for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
-                        if (j == 0) {
-                            std::array<VkPushConstantRange, 2> push_constants;
-                            VkPushConstantRange push_constant;
-                            //this push constant range starts at the beginning
-                            push_constant.offset = 0;
-                            //this push constant range takes up the size of a MeshPushConstants struct
-                            push_constant.size = sizeof(IndirectRenderingPC);
-                            //this push constant range is accessible only in the vertex shader
-                            push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-                            push_constants[0] = push_constant;
-                            VkPushConstantRange push_constant2;
-                            //this push constant range starts at the beginning
-                            push_constant2.offset = 128;
-                            //this push constant range takes up the size of a MeshPushConstants struct
-                            push_constant2.size = sizeof(BuildAlphaPC);
-                            //this push constant range is accessible only in the vertex shader
-                            push_constant2.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-                            push_constants[1] = push_constant2;
-                            pipelineLayoutInfo[sBuildAlphaBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][NODEPTHNOSTENCIL].pPushConstantRanges = push_constants.data();
-                            pipelineLayoutInfo[sBuildAlphaBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][NODEPTHNOSTENCIL].pushConstantRangeCount = 2;
-                            depthStencilCreateInfo[sBuildAlphaBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][NODEPTHNOSTENCIL].depthCompareOp = VK_COMPARE_OP_ALWAYS;
-                            depthStencilCreateInfo[sBuildAlphaBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][NODEPTHNOSTENCIL].front = {};
-                            depthStencilCreateInfo[sBuildAlphaBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][NODEPTHNOSTENCIL].back = {};
-                            alphaBuffer.createGraphicPipeline(static_cast<PrimitiveType>(i), states, NODEPTHNOSTENCIL, NBDEPTHSTENCIL);
-                        } else {
-                            std::array<VkPushConstantRange, 2> push_constants;
-                            VkPushConstantRange push_constant;
-                            //this push constant range starts at the beginning
-                            push_constant.offset = 0;
-                            //this push constant range takes up the size of a MeshPushConstants struct
-                            push_constant.size = sizeof(IndirectRenderingPC);
-                            //this push constant range is accessible only in the vertex shader
-                            push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-                            push_constants[0] = push_constant;
-                            VkPushConstantRange push_constant2;
-                            //this push constant range starts at the beginning
-                            push_constant2.offset = 128;
-                            //this push constant range takes up the size of a MeshPushConstants struct
-                            push_constant2.size = sizeof(BuildAlphaPC);
-                            //this push constant range is accessible only in the vertex shader
-                            push_constant2.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-                            push_constants[1] = push_constant2;
-                            pipelineLayoutInfo[sBuildAlphaBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][DEPTHNOSTENCIL].pPushConstantRanges = push_constants.data();
-                            pipelineLayoutInfo[sBuildAlphaBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][DEPTHNOSTENCIL].pushConstantRangeCount = 2;
-                            depthStencilCreateInfo[sBuildAlphaBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][DEPTHNOSTENCIL].depthCompareOp = VK_COMPARE_OP_ALWAYS;
-                            depthStencilCreateInfo[sBuildAlphaBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][DEPTHNOSTENCIL].front = {};
-                            depthStencilCreateInfo[sBuildAlphaBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][DEPTHNOSTENCIL].back = {};
-                            alphaBuffer.createGraphicPipeline(static_cast<PrimitiveType>(i), states, DEPTHNOSTENCIL, NBDEPTHSTENCIL);
+                for (unsigned int b = 0; b < blendModes.size(); b++) {
+                    states.blendMode = blendModes[b];
+                    states.blendMode.updateIds();
+                    states.shader = &sBuildAlphaBuffer;
+                    for (unsigned int j = 0; j < NBDEPTHSTENCIL; j++) {
+                        for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
+                            if (j == 0) {
+                                std::array<VkPushConstantRange, 2> push_constants;
+                                VkPushConstantRange push_constant;
+                                //this push constant range starts at the beginning
+                                push_constant.offset = 0;
+                                //this push constant range takes up the size of a MeshPushConstants struct
+                                push_constant.size = sizeof(IndirectRenderingPC);
+                                //this push constant range is accessible only in the vertex shader
+                                push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+                                push_constants[0] = push_constant;
+                                VkPushConstantRange push_constant2;
+                                //this push constant range starts at the beginning
+                                push_constant2.offset = 128;
+                                //this push constant range takes up the size of a MeshPushConstants struct
+                                push_constant2.size = sizeof(BuildAlphaPC);
+                                //this push constant range is accessible only in the vertex shader
+                                push_constant2.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+                                push_constants[1] = push_constant2;
+                                pipelineLayoutInfo[sBuildAlphaBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = push_constants.data();
+                                pipelineLayoutInfo[sBuildAlphaBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 2;
+                                depthStencilCreateInfo[sBuildAlphaBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
+                                depthStencilCreateInfo[sBuildAlphaBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = {};
+                                depthStencilCreateInfo[sBuildAlphaBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {};
+                                alphaBuffer.createGraphicPipeline(static_cast<PrimitiveType>(i), states, NODEPTHNOSTENCIL, NBDEPTHSTENCIL);
+                            } else {
+                                std::array<VkPushConstantRange, 2> push_constants;
+                                VkPushConstantRange push_constant;
+                                //this push constant range starts at the beginning
+                                push_constant.offset = 0;
+                                //this push constant range takes up the size of a MeshPushConstants struct
+                                push_constant.size = sizeof(IndirectRenderingPC);
+                                //this push constant range is accessible only in the vertex shader
+                                push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+                                push_constants[0] = push_constant;
+                                VkPushConstantRange push_constant2;
+                                //this push constant range starts at the beginning
+                                push_constant2.offset = 128;
+                                //this push constant range takes up the size of a MeshPushConstants struct
+                                push_constant2.size = sizeof(BuildAlphaPC);
+                                //this push constant range is accessible only in the vertex shader
+                                push_constant2.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+                                push_constants[1] = push_constant2;
+                                pipelineLayoutInfo[sBuildAlphaBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][DEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = push_constants.data();
+                                pipelineLayoutInfo[sBuildAlphaBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][DEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 2;
+                                depthStencilCreateInfo[sBuildAlphaBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][DEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
+                                depthStencilCreateInfo[sBuildAlphaBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][DEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = {};
+                                depthStencilCreateInfo[sBuildAlphaBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][DEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {};
+                                alphaBuffer.createGraphicPipeline(static_cast<PrimitiveType>(i), states, DEPTHNOSTENCIL, NBDEPTHSTENCIL);
+                            }
                         }
                     }
                 }
-                states.shader = &sReflectRefract;
-                for (unsigned int j = 0; j < NBDEPTHSTENCIL; j++) {
-                    for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
-                        if (j == 0) {
-                            std::array<VkPushConstantRange, 2> push_constants;
-                            VkPushConstantRange push_constant;
-                            //this push constant range starts at the beginning
-                            push_constant.offset = 0;
-                            //this push constant range takes up the size of a MeshPushConstants struct
-                            push_constant.size = sizeof(IndirectRenderingPC);
-                            //this push constant range is accessible only in the vertex shader
-                            push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-                            push_constants[0] = push_constant;
-                            VkPushConstantRange push_constant2;
-                            //this push constant range starts at the beginning
-                            push_constant2.offset = 128;
-                            //this push constant range takes up the size of a MeshPushConstants struct
-                            push_constant2.size = sizeof(BuildFrameBufferPC);
-                            //this push constant range is accessible only in the vertex shader
-                            push_constant2.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-                            push_constants[1] = push_constant2;
-                            pipelineLayoutInfo[sReflectRefract.getId() * (Batcher::nbPrimitiveTypes - 1)+i][reflectRefractTex.getId()][NODEPTHNOSTENCIL].pPushConstantRanges = push_constants.data();
-                            pipelineLayoutInfo[sReflectRefract.getId() * (Batcher::nbPrimitiveTypes - 1)+i][reflectRefractTex.getId()][NODEPTHNOSTENCIL].pushConstantRangeCount = 2;
-                            depthStencilCreateInfo[sReflectRefract.getId() * (Batcher::nbPrimitiveTypes - 1)+i][reflectRefractTex.getId()][NODEPTHNOSTENCIL].depthCompareOp = VK_COMPARE_OP_ALWAYS;
-                            depthStencilCreateInfo[sReflectRefract.getId() * (Batcher::nbPrimitiveTypes - 1)+i][reflectRefractTex.getId()][NODEPTHNOSTENCIL].front = {};
-                            depthStencilCreateInfo[sReflectRefract.getId() * (Batcher::nbPrimitiveTypes - 1)+i][reflectRefractTex.getId()][NODEPTHNOSTENCIL].back = {};
-                            reflectRefractTex.createGraphicPipeline(static_cast<PrimitiveType>(i), states, NODEPTHNOSTENCIL, NBDEPTHSTENCIL);
-                        } else {
-                            std::array<VkPushConstantRange, 2> push_constants;
-                            VkPushConstantRange push_constant;
-                            //this push constant range starts at the beginning
-                            push_constant.offset = 0;
-                            //this push constant range takes up the size of a MeshPushConstants struct
-                            push_constant.size = sizeof(IndirectRenderingPC);
-                            //this push constant range is accessible only in the vertex shader
-                            push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-                            push_constants[0] = push_constant;
-                            VkPushConstantRange push_constant2;
-                            //this push constant range starts at the beginning
-                            push_constant2.offset = 128;
-                            //this push constant range takes up the size of a MeshPushConstants struct
-                            push_constant2.size = sizeof(BuildFrameBufferPC);
-                            //this push constant range is accessible only in the vertex shader
-                            push_constant2.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-                            push_constants[1] = push_constant2;
-                            pipelineLayoutInfo[sReflectRefract.getId() * (Batcher::nbPrimitiveTypes - 1)+i][reflectRefractTex.getId()][DEPTHNOSTENCIL].pPushConstantRanges = push_constants.data();
-                            pipelineLayoutInfo[sReflectRefract.getId() * (Batcher::nbPrimitiveTypes - 1)+i][reflectRefractTex.getId()][DEPTHNOSTENCIL].pushConstantRangeCount = 2;
-                            depthStencilCreateInfo[sReflectRefract.getId() * (Batcher::nbPrimitiveTypes - 1)+i][reflectRefractTex.getId()][DEPTHNOSTENCIL].depthCompareOp = VK_COMPARE_OP_ALWAYS;
-                            depthStencilCreateInfo[sReflectRefract.getId() * (Batcher::nbPrimitiveTypes - 1)+i][reflectRefractTex.getId()][DEPTHNOSTENCIL].front = {};
-                            depthStencilCreateInfo[sReflectRefract.getId() * (Batcher::nbPrimitiveTypes - 1)+i][reflectRefractTex.getId()][DEPTHNOSTENCIL].back = {};
-                            reflectRefractTex.createGraphicPipeline(static_cast<PrimitiveType>(i), states, DEPTHNOSTENCIL, NBDEPTHSTENCIL);
+                for (unsigned int b = 0; b < blendModes.size(); b++) {
+                    states.blendMode = blendModes[b];
+                    states.blendMode.updateIds();
+                    states.shader = &sReflectRefract;
+                    for (unsigned int j = 0; j < NBDEPTHSTENCIL; j++) {
+                        for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
+                            if (j == 0) {
+                                std::array<VkPushConstantRange, 2> push_constants;
+                                VkPushConstantRange push_constant;
+                                //this push constant range starts at the beginning
+                                push_constant.offset = 0;
+                                //this push constant range takes up the size of a MeshPushConstants struct
+                                push_constant.size = sizeof(IndirectRenderingPC);
+                                //this push constant range is accessible only in the vertex shader
+                                push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+                                push_constants[0] = push_constant;
+                                VkPushConstantRange push_constant2;
+                                //this push constant range starts at the beginning
+                                push_constant2.offset = 128;
+                                //this push constant range takes up the size of a MeshPushConstants struct
+                                push_constant2.size = sizeof(BuildFrameBufferPC);
+                                //this push constant range is accessible only in the vertex shader
+                                push_constant2.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+                                push_constants[1] = push_constant2;
+                                pipelineLayoutInfo[sReflectRefract.getId() * (Batcher::nbPrimitiveTypes - 1)+i][reflectRefractTex.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = push_constants.data();
+                                pipelineLayoutInfo[sReflectRefract.getId() * (Batcher::nbPrimitiveTypes - 1)+i][reflectRefractTex.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 2;
+                                depthStencilCreateInfo[sReflectRefract.getId() * (Batcher::nbPrimitiveTypes - 1)+i][reflectRefractTex.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
+                                depthStencilCreateInfo[sReflectRefract.getId() * (Batcher::nbPrimitiveTypes - 1)+i][reflectRefractTex.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = {};
+                                depthStencilCreateInfo[sReflectRefract.getId() * (Batcher::nbPrimitiveTypes - 1)+i][reflectRefractTex.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {};
+                                reflectRefractTex.createGraphicPipeline(static_cast<PrimitiveType>(i), states, NODEPTHNOSTENCIL, NBDEPTHSTENCIL);
+                            } else {
+                                std::array<VkPushConstantRange, 2> push_constants;
+                                VkPushConstantRange push_constant;
+                                //this push constant range starts at the beginning
+                                push_constant.offset = 0;
+                                //this push constant range takes up the size of a MeshPushConstants struct
+                                push_constant.size = sizeof(IndirectRenderingPC);
+                                //this push constant range is accessible only in the vertex shader
+                                push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+                                push_constants[0] = push_constant;
+                                VkPushConstantRange push_constant2;
+                                //this push constant range starts at the beginning
+                                push_constant2.offset = 128;
+                                //this push constant range takes up the size of a MeshPushConstants struct
+                                push_constant2.size = sizeof(BuildFrameBufferPC);
+                                //this push constant range is accessible only in the vertex shader
+                                push_constant2.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+                                push_constants[1] = push_constant2;
+                                pipelineLayoutInfo[sReflectRefract.getId() * (Batcher::nbPrimitiveTypes - 1)+i][reflectRefractTex.getId()][DEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = push_constants.data();
+                                pipelineLayoutInfo[sReflectRefract.getId() * (Batcher::nbPrimitiveTypes - 1)+i][reflectRefractTex.getId()][DEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 2;
+                                depthStencilCreateInfo[sReflectRefract.getId() * (Batcher::nbPrimitiveTypes - 1)+i][reflectRefractTex.getId()][DEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
+                                depthStencilCreateInfo[sReflectRefract.getId() * (Batcher::nbPrimitiveTypes - 1)+i][reflectRefractTex.getId()][DEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = {};
+                                depthStencilCreateInfo[sReflectRefract.getId() * (Batcher::nbPrimitiveTypes - 1)+i][reflectRefractTex.getId()][DEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {};
+                                reflectRefractTex.createGraphicPipeline(static_cast<PrimitiveType>(i), states, DEPTHNOSTENCIL, NBDEPTHSTENCIL);
+                            }
                         }
                     }
                 }
@@ -2229,13 +2258,14 @@ namespace odfaeg {
                     needToUpdateDS = false;
                 }
                 Shader* shader = const_cast<Shader*>(currentStates.shader);
+                currentStates.blendMode.updateIds();
                 if (shader == &sBuildDepthBuffer) {
                     ////std::cout<<"draw on db"<<std::endl;
                     std::vector<VkCommandBuffer> commandBuffers = depthBuffer.getCommandBuffers();
                     unsigned int currentFrame = depthBuffer.getCurrentFrame();
                     buildDepthPC.nbLayers = GameObject::getNbLayers();
-                    vkCmdPushConstants(commandBuffers[currentFrame], depthBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][depthBuffer.getId()][depthStencilID], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectRenderingPC), &indirectRenderingPC);
-                    vkCmdPushConstants(commandBuffers[currentFrame], depthBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][depthBuffer.getId()][depthStencilID], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(BuildDepthPC), &buildDepthPC);
+                    vkCmdPushConstants(commandBuffers[currentFrame], depthBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][depthBuffer.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectRenderingPC), &indirectRenderingPC);
+                    vkCmdPushConstants(commandBuffers[currentFrame], depthBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][depthBuffer.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(BuildDepthPC), &buildDepthPC);
                     depthBuffer.beginRenderPass();
                     depthBuffer.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
                     depthBuffer.endRenderPass();
@@ -2253,8 +2283,8 @@ namespace odfaeg {
 
 
 
-                    vkCmdPushConstants(commandBuffers[currentFrame], alphaBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][alphaBuffer.getId()][depthStencilID], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectRenderingPC), &indirectRenderingPC);
-                    vkCmdPushConstants(commandBuffers[currentFrame], alphaBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][alphaBuffer.getId()][depthStencilID], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(BuildAlphaPC), &buildAlphaPC);
+                    vkCmdPushConstants(commandBuffers[currentFrame], alphaBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][alphaBuffer.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectRenderingPC), &indirectRenderingPC);
+                    vkCmdPushConstants(commandBuffers[currentFrame], alphaBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][alphaBuffer.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(BuildAlphaPC), &buildAlphaPC);
                     VkMemoryBarrier memoryBarrier={};
                     memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
                     memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
@@ -2302,8 +2332,8 @@ namespace odfaeg {
                     //vkCmdWaitEvents(commandBuffers[currentFrame], 1, &events[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
 
                     vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
-                    vkCmdPushConstants(commandBuffers[currentFrame], reflectRefractTex.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][reflectRefractTex.getId()][depthStencilID], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectRenderingPC), &indirectRenderingPC);
-                    vkCmdPushConstants(commandBuffers[currentFrame], reflectRefractTex.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][reflectRefractTex.getId()][depthStencilID], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(BuildFrameBufferPC), &buildFrameBufferPC);
+                    vkCmdPushConstants(commandBuffers[currentFrame], reflectRefractTex.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][reflectRefractTex.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectRenderingPC), &indirectRenderingPC);
+                    vkCmdPushConstants(commandBuffers[currentFrame], reflectRefractTex.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][reflectRefractTex.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(BuildFrameBufferPC), &buildFrameBufferPC);
                     reflectRefractTex.beginRenderPass();
                     reflectRefractTex.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
                     reflectRefractTex.endRenderPass();
@@ -2317,6 +2347,7 @@ namespace odfaeg {
                 environmentMap.beginRecordCommandBuffers();
                 Shader* shader = const_cast<Shader*>(currentStates.shader);
                 unsigned int currentFrame = environmentMap.getCurrentFrame();
+                currentStates.blendMode.updateIds();
                 std::vector<VkCommandBuffer> commandBuffers = environmentMap.getCommandBuffers();
                 /*vkCmdResetEvent(commandBuffers[currentFrame], events[currentFrame],  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
                 vkCmdSetEvent(commandBuffers[currentFrame], events[currentFrame],  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);*/
@@ -2332,7 +2363,7 @@ namespace odfaeg {
 
 
                 vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
-                vkCmdPushConstants(commandBuffers[currentFrame], environmentMap.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + vb.getPrimitiveType()][environmentMap.getId()][NODEPTHNOSTENCIL], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(LinkedList2PC), &linkedList2PC);
+                vkCmdPushConstants(commandBuffers[currentFrame], environmentMap.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + vb.getPrimitiveType()][environmentMap.getId()][NODEPTHNOSTENCIL*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(LinkedList2PC), &linkedList2PC);
 
 
                 ////std::cout<<"ids : "<<shader->getId() * (Batcher::nbPrimitiveTypes - 1) + vb.getPrimitiveType()<<","<<environmentMap.getId()<<","<<NODEPTHNOSTENCIL<<std::endl;
@@ -3200,6 +3231,7 @@ namespace odfaeg {
                 reflectRefractTexSprite.setCenter(target.getView().getPosition());
                 if (&target == &window)
                     window.beginRenderPass();
+                states.blendMode = BlendAlpha;
                 target.draw(reflectRefractTexSprite, states);
                 if (&target == &window)
                     window.endRenderPass();

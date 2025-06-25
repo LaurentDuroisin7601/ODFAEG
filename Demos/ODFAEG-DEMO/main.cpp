@@ -287,61 +287,23 @@ class RCM {
 int main(int argc, char *argv[]) {
 
     /*VkSettup instance;
-    Device device(instance);*/
+    Device device(instance);
 
-    /*RenderWindow window(VideoMode(800, 600), "test", Style::Default, ContextSettings(0, 0, 4, 4, 6));
+    RenderWindow window(VideoMode(800, 600), "test", device, Style::Default, ContextSettings(0, 0, 4, 4, 6));
     RenderComponentManager rcm(window);
-
-    //window.getView().move(400, 300, 0);
-    Component* component = new PerPixelLinkedListRenderComponent(window, 0, "", ContextSettings(0, 0, 4, 4, 6));
-    std::vector<Entity*> entities;
-    component->loadEntitiesOnComponent(entities);
-    rcm.addComponent(component);
-    /*std::multimap<int, std::unique_ptr<Component>, std::greater<int>> components;
-    std::multimap<int, Component*, std::greater<int>> eventComponents;
-    std::unique_ptr<Component> ptr;
-    ptr.reset(component);
-    components.insert(std::make_pair(component->getPriority(), std::move(ptr)));
-    eventComponents.insert(std::make_pair(component->getEventPriority(), component));*/
-
-    /*std::vector<RenderWindow*> windows;
-    windows.push_back(&window);*/
-    /*while (window.isOpen()) {
-        window.clear();
-        /*std::multimap<int, std::unique_ptr<Component>, std::greater<int>>::reverse_iterator rit;
-        for (rit = components.rbegin(); rit != components.rend(); rit++) {
-               if (rit->second->getComponentType() == 0 && rit->second->isVisible()) {
-                   rit->second->clear();
-                   //it->second->recomputeSize();
-               }
-           }
-        std::multimap<int, Component*, std::greater<int>>::iterator it;
-        for (it = eventComponents.begin(); it != eventComponents.end(); it++) {
-               if (it->second->isEventContextActivated() && it->second->isVisible()) {
-                   if (!it->second->getListener().isUsingThread()) {
-
-                       it->second->processEvents();
-                   }
-                   //it->second->recomputeSize();
-               }
-           }
-
-           for (rit = components.rbegin(); rit != components.rend(); rit++) {
-               if (rit->second->getComponentType() == 0 && rit->second->isVisible()) {
-                   windows[0]->draw(*rit->second.get());
-                   //it->second->recomputeSize();
-               }
-           }*/
-
-        //window.beginRenderPass();
-
-        //window.endRenderPass();
-        //window.submit(true);
-       /* rcm.clearComponents();
-        rcm.updateComponents();
-        rcm.drawRenderComponents();
+    Texture texture(device);
+    texture.loadFromFile("tilesets/eau.png");
+    Sprite sprite(texture, Vec3f(0, 0, 0), Vec3f(100, 50, 0), IntRect(0, 0, 100, 50));
+    window.createDescriptorsAndPipelines();
+    while(window.isOpen()) {
+        window.clear(Color::Black);
+        window.beginRenderPass();
+        window.draw(sprite);
+        window.endRenderPass();
+        window.submit(true);
         window.display();
     }*/
+
 
 
 

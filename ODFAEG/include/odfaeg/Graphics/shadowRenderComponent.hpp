@@ -22,6 +22,9 @@ namespace odfaeg {
                 enum DepthStencilID {
                     NODEPTHNOSTENCIL, NBDEPTHSTENCIL
                 };
+                struct alignas(16) GLMatrix4f {
+                    float data[16]; // row-major ou column-major, selon ton convention
+                };
                 struct DrawArraysIndirectCommand {
                     unsigned int  count;
                     unsigned int  instanceCount;
@@ -59,10 +62,10 @@ namespace odfaeg {
                     math::Vec4f resolution;
                 };
                 struct ShadowUBO {
-                    math::Matrix4f projectionMatrix;
-                    math::Matrix4f viewMatrix;
-                    math::Matrix4f lprojectionMatrix;
-                    math::Matrix4f lviewMatrix;
+                    GLMatrix4f projectionMatrix;
+                    GLMatrix4f viewMatrix;
+                    GLMatrix4f lprojectionMatrix;
+                    GLMatrix4f lviewMatrix;
                 };
                 ShadowRenderComponent (RenderWindow& window, int layer, std::string expression,window::ContextSettings settings = window::ContextSettings(0, 0, 4, 3, 0));
                 void loadTextureIndexes();
@@ -89,7 +92,15 @@ namespace odfaeg {
                 void createDescriptorsAndPipelines();
                 ~ShadowRenderComponent();
                 bool isSomethingDrawn;
+
             private :
+                GLMatrix4f toVulkanMatrix(const math::Matrix4f& mat) {
+                    GLMatrix4f flat;
+                    for (int col = 0; col < 4; ++col)
+                        for (int row = 0; row < 4; ++row)
+                            flat.data[col * 4 + row] = mat[col][row];
+                    return flat;
+                }
                 std::vector<VkSemaphore> renderFinishedSemaphore;
                 RenderWindow& window;
                 LayerPC layerPC;

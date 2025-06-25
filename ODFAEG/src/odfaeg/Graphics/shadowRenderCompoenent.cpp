@@ -313,7 +313,8 @@ namespace odfaeg {
                                                                   beginInvocationInterlockARB();
                                                                   vec4 alpha = imageLoad(alphaBuffer,ivec2(gl_FragCoord.xy));
                                                                   vec3 projCoords = shadowCoords.xyz / shadowCoords.w;
-                                                                  projCoords = projCoords * 0.5 + 0.5;
+                                                                  projCoords.xy = projCoords.xy * 0.5 + 0.5;
+                                                                  projCoords.y = 1.0 - projCoords.y;
                                                                   vec4 stencil = textureLod (stencilBuffer, projCoords.xy * pushConsts.resolution.xy, 0);
                                                                   float l = layer;
                                                                   float z = gl_FragCoord.z;
@@ -354,6 +355,7 @@ namespace odfaeg {
                                                                     if (/*l > alpha.y || l == alpha.y &&*/ z > alpha.z) {
                                                                         imageStore(stencilBuffer,ivec2(gl_FragCoord.xy),vec4(0, l, z, current_alpha));
                                                                         memoryBarrier();
+                                                                        if (current_alpha < 0.01) discard;
                                                                         fColor = vec4(0, l, z, current_alpha);
                                                                     } else {
                                                                         fColor = alpha;
@@ -362,7 +364,7 @@ namespace odfaeg {
                                                                 }
                                                             )";
                 const std::string perPixShadowIndirectRenderingVertexShader = R"(#version 460
-
+                                                                                #extension GL_EXT_debug_printf : enable
                                                                  layout (location = 0) in vec3 position;
                                                                  layout (location = 1) in vec4 color;
                                                                  layout (location = 2) in vec2 texCoords;
@@ -406,6 +408,14 @@ namespace odfaeg {
                                                                     texIndex = textureIndex;
                                                                     layer = l;
                                                                     normal = normals;
+                                                                    vec4 row1 = ubo.projectionMatrix[0];
+                                                                    vec4 row2 = ubo.projectionMatrix[1];
+                                                                    vec4 row3 = ubo.projectionMatrix[2];
+                                                                    vec4 row4 = ubo.projectionMatrix[3];
+                                                                    /*debugPrintfEXT("view raw 1 : %v4f", row1);
+                                                                    debugPrintfEXT("view raw 2 : %v4f", row2);
+                                                                    debugPrintfEXT("view raw 3 : %v4f", row3);
+                                                                    debugPrintfEXT("view raw 4 : %v4f", row4);*/
                                                                  }
                                                                  )";
                 const std::string perPixShadowFragmentShader = R"(#version 460
@@ -435,7 +445,8 @@ namespace odfaeg {
 
                                                                     float color = texel.a;
                                                                     vec3 projCoords = shadowCoords.xyz / shadowCoords.w;
-                                                                    projCoords = projCoords * 0.5 + 0.5;
+                                                                    projCoords.xy = projCoords.xy * 0.5 + 0.5;
+                                                                    projCoords.y = 1.0 - projCoords.y;
                                                                     vec4 stencil = textureLod(stencilBuffer, projCoords.xy * pushConsts.resolution.xy, 0);
                                                                     float z = gl_FragCoord.z;
                                                                     vec4 visibility;
@@ -449,7 +460,8 @@ namespace odfaeg {
                                                                     } else {
                                                                         visibility = vec4 (1, 1, 1, 1);
                                                                     }
-                                                                    debugPrintfEXT("visibility : %v4f", visibility);
+                                                                    //debugPrintfEXT("visibility : %v4f", visibility);
+                                                                    if (color < 0.01) discard;
                                                                     fColor = visibility;
                                                                   }
                                                                   )";
@@ -510,6 +522,16 @@ namespace odfaeg {
                 createDescriptorPool(states);
                 createDescriptorSetLayout(states);
                 allocateDescriptorSets(states);
+                BlendMode none = BlendNone;
+                BlendMode alpha = BlendAlpha;
+                BlendMode add = BlendAdd;
+                BlendMode multiply = BlendMultiply;
+                none.updateIds();
+                std::vector<BlendMode> blendModes;
+                blendModes.push_back(none);
+                blendModes.push_back(alpha);
+                blendModes.push_back(add);
+                blendModes.push_back(multiply);
                 std::vector<std::vector<std::vector<VkPipelineLayoutCreateInfo>>>& pipelineLayoutInfo = shadowMap.getPipelineLayoutCreateInfo();
                 std::vector<std::vector<std::vector<VkPipelineDepthStencilStateCreateInfo>>>& depthStencilCreateInfo = shadowMap.getDepthStencilCreateInfo();
                 if ((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders() > pipelineLayoutInfo.size()) {
@@ -524,9 +546,9 @@ namespace odfaeg {
                 }
                 for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
                     for (unsigned int j = 0; j < shadowMap.getNbRenderTargets(); j++) {
-                        if (NBDEPTHSTENCIL > pipelineLayoutInfo[i][j].size()) {
-                            pipelineLayoutInfo[i][j].resize(NBDEPTHSTENCIL);
-                            depthStencilCreateInfo[i][j].resize(NBDEPTHSTENCIL);
+                        if (NBDEPTHSTENCIL * none.nbBlendModes > pipelineLayoutInfo[i][j].size()) {
+                            pipelineLayoutInfo[i][j].resize(NBDEPTHSTENCIL * none.nbBlendModes);
+                            depthStencilCreateInfo[i][j].resize(NBDEPTHSTENCIL* none.nbBlendModes);
                         }
                     }
                 }
@@ -535,106 +557,120 @@ namespace odfaeg {
                 alphaBuffer.enableDepthTest(true);
                 shadowMap.enableDepthTest(true);
                 states.shader = &depthGenShader;
-                for (unsigned int j = 0; j < NBDEPTHSTENCIL; j++) {
-                    for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
-                        if (j == 0) {
-                            std::array<VkPushConstantRange, 2> push_constants;
-                            VkPushConstantRange push_constant;
-                            //this push constant range starts at the beginning
-                            push_constant.offset = 0;
-                            //this push constant range takes up the size of a MeshPushConstants struct
-                            push_constant.size = sizeof(IndirectRenderingPC);
-                            //this push constant range is accessible only in the vertex shader
-                            push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-                            push_constants[0] = push_constant;
-                            VkPushConstantRange push_constant2;
-                            //this push constant range starts at the beginning
-                            push_constant2.offset = 128;
-                            //this push constant range takes up the size of a MeshPushConstants struct
-                            push_constant2.size = sizeof(LayerPC);
-                            //this push constant range is accessible only in the vertex shader
-                            push_constant2.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-                            push_constants[1] = push_constant2;
-                            pipelineLayoutInfo[depthGenShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][NODEPTHNOSTENCIL].pPushConstantRanges = push_constants.data();
-                            pipelineLayoutInfo[depthGenShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][NODEPTHNOSTENCIL].pushConstantRangeCount = 2;
-                           depthStencilCreateInfo[depthGenShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][NODEPTHNOSTENCIL].depthCompareOp = VK_COMPARE_OP_ALWAYS;
-                           depthStencilCreateInfo[depthGenShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][NODEPTHNOSTENCIL].front = {};
-                           depthStencilCreateInfo[depthGenShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][NODEPTHNOSTENCIL].back = {};
-                           depthBuffer.createGraphicPipeline(static_cast<PrimitiveType>(i), states, NODEPTHNOSTENCIL, NBDEPTHSTENCIL);
+
+                for (unsigned int b = 0; b < blendModes.size(); b++) {
+                    states.blendMode = blendModes[b];
+                    states.blendMode.updateIds();
+                    for (unsigned int j = 0; j < NBDEPTHSTENCIL; j++) {
+                        for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
+                            if (j == 0) {
+                                std::array<VkPushConstantRange, 2> push_constants;
+                                VkPushConstantRange push_constant;
+                                //this push constant range starts at the beginning
+                                push_constant.offset = 0;
+                                //this push constant range takes up the size of a MeshPushConstants struct
+                                push_constant.size = sizeof(IndirectRenderingPC);
+                                //this push constant range is accessible only in the vertex shader
+                                push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+                                push_constants[0] = push_constant;
+                                VkPushConstantRange push_constant2;
+                                //this push constant range starts at the beginning
+                                push_constant2.offset = 128;
+                                //this push constant range takes up the size of a MeshPushConstants struct
+                                push_constant2.size = sizeof(LayerPC);
+                                //this push constant range is accessible only in the vertex shader
+                                push_constant2.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+                                push_constants[1] = push_constant2;
+                                pipelineLayoutInfo[depthGenShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = push_constants.data();
+                                pipelineLayoutInfo[depthGenShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 2;
+                               depthStencilCreateInfo[depthGenShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
+                               depthStencilCreateInfo[depthGenShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = {};
+                               depthStencilCreateInfo[depthGenShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {};
+                               depthBuffer.createGraphicPipeline(static_cast<PrimitiveType>(i), states, NODEPTHNOSTENCIL, NBDEPTHSTENCIL);
+                            }
                         }
                     }
                 }
+                for (unsigned int b = 0; b < blendModes.size(); b++) {
+                    states.blendMode = blendModes[b];
+                    states.blendMode.updateIds();
+                    states.shader = &sBuildAlphaBufferShader;
+                    for (unsigned int j = 0; j < NBDEPTHSTENCIL; j++) {
+                        for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
+                            if (j == 0) {
+                                VkPushConstantRange push_constant;
+                                //this push constant range takes up the size of a MeshPushConstants struct
+                                push_constant.offset = 0;
+                                push_constant.size = sizeof(LayerPC);
+                                //this push constant range is accessible only in the vertex shader
+                                push_constant.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-                states.shader = &sBuildAlphaBufferShader;
-                for (unsigned int j = 0; j < NBDEPTHSTENCIL; j++) {
-                    for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
-                        if (j == 0) {
-                            VkPushConstantRange push_constant;
-                            //this push constant range takes up the size of a MeshPushConstants struct
-                            push_constant.offset = 0;
-                            push_constant.size = sizeof(LayerPC);
-                            //this push constant range is accessible only in the vertex shader
-                            push_constant.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-
-                            pipelineLayoutInfo[sBuildAlphaBufferShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][NODEPTHNOSTENCIL].pPushConstantRanges = &push_constant;
-                            pipelineLayoutInfo[sBuildAlphaBufferShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][NODEPTHNOSTENCIL].pushConstantRangeCount = 1;
-                           depthStencilCreateInfo[sBuildAlphaBufferShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][NODEPTHNOSTENCIL].depthCompareOp = VK_COMPARE_OP_ALWAYS;
-                           depthStencilCreateInfo[sBuildAlphaBufferShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][NODEPTHNOSTENCIL].front = {};
-                           depthStencilCreateInfo[sBuildAlphaBufferShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][NODEPTHNOSTENCIL].back = {};
-                           alphaBuffer.createGraphicPipeline(static_cast<PrimitiveType>(i), states, NODEPTHNOSTENCIL, NBDEPTHSTENCIL);
+                                pipelineLayoutInfo[sBuildAlphaBufferShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = &push_constant;
+                                pipelineLayoutInfo[sBuildAlphaBufferShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 1;
+                               depthStencilCreateInfo[sBuildAlphaBufferShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
+                               depthStencilCreateInfo[sBuildAlphaBufferShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = {};
+                               depthStencilCreateInfo[sBuildAlphaBufferShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {};
+                               alphaBuffer.createGraphicPipeline(static_cast<PrimitiveType>(i), states, NODEPTHNOSTENCIL, NBDEPTHSTENCIL);
+                            }
                         }
                     }
                 }
-
-                states.shader = &buildShadowMapShader;
-                for (unsigned int j = 0; j < NBDEPTHSTENCIL; j++) {
-                    for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
-                        if (j == 0) {
-                             std::array<VkPushConstantRange, 2> push_constants;
-                            VkPushConstantRange push_constant;
-                            //this push constant range starts at the beginning
-                            push_constant.offset = 0;
-                            //this push constant range takes up the size of a MeshPushConstants struct
-                            push_constant.size = sizeof(LightIndirectRenderingPC);
-                            //this push constant range is accessible only in the vertex shader
-                            push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-                            push_constants[0] = push_constant;
-                            VkPushConstantRange push_constant2;
-                            //this push constant range starts at the beginning
-                            push_constant2.offset = 128;
-                            //this push constant range takes up the size of a MeshPushConstants struct
-                            push_constant2.size = sizeof(LayerPC);
-                            //this push constant range is accessible only in the vertex shader
-                            push_constant2.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-                            push_constants[1] = push_constant2;
-                            pipelineLayoutInfo[buildShadowMapShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][stencilBuffer.getId()][NODEPTHNOSTENCIL].pPushConstantRanges = push_constants.data();
-                            pipelineLayoutInfo[buildShadowMapShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][stencilBuffer.getId()][NODEPTHNOSTENCIL].pushConstantRangeCount = 2;
-                           depthStencilCreateInfo[buildShadowMapShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][stencilBuffer.getId()][NODEPTHNOSTENCIL].depthCompareOp = VK_COMPARE_OP_ALWAYS;
-                           depthStencilCreateInfo[buildShadowMapShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][stencilBuffer.getId()][NODEPTHNOSTENCIL].front = {};
-                           depthStencilCreateInfo[buildShadowMapShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][stencilBuffer.getId()][NODEPTHNOSTENCIL].back = {};
-                           stencilBuffer.createGraphicPipeline(static_cast<PrimitiveType>(i), states, NODEPTHNOSTENCIL, NBDEPTHSTENCIL);
-                           //std::cout<<"pipeline layout : "<<stencilBuffer.getPipelineLayout()[buildShadowMapShader.getId() * (Batcher::nbPrimitiveTypes - 1) + i][stencilBuffer.getId()][j]<<std::endl;
+                for (unsigned int b = 0; b < blendModes.size(); b++) {
+                    states.blendMode = blendModes[b];
+                    states.blendMode.updateIds();
+                    states.shader = &buildShadowMapShader;
+                    for (unsigned int j = 0; j < NBDEPTHSTENCIL; j++) {
+                        for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
+                            if (j == 0) {
+                                 std::array<VkPushConstantRange, 2> push_constants;
+                                VkPushConstantRange push_constant;
+                                //this push constant range starts at the beginning
+                                push_constant.offset = 0;
+                                //this push constant range takes up the size of a MeshPushConstants struct
+                                push_constant.size = sizeof(LightIndirectRenderingPC);
+                                //this push constant range is accessible only in the vertex shader
+                                push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+                                push_constants[0] = push_constant;
+                                VkPushConstantRange push_constant2;
+                                //this push constant range starts at the beginning
+                                push_constant2.offset = 128;
+                                //this push constant range takes up the size of a MeshPushConstants struct
+                                push_constant2.size = sizeof(LayerPC);
+                                //this push constant range is accessible only in the vertex shader
+                                push_constant2.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+                                push_constants[1] = push_constant2;
+                                pipelineLayoutInfo[buildShadowMapShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][stencilBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = push_constants.data();
+                                pipelineLayoutInfo[buildShadowMapShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][stencilBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 2;
+                               depthStencilCreateInfo[buildShadowMapShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][stencilBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
+                               depthStencilCreateInfo[buildShadowMapShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][stencilBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = {};
+                               depthStencilCreateInfo[buildShadowMapShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][stencilBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {};
+                               stencilBuffer.createGraphicPipeline(static_cast<PrimitiveType>(i), states, NODEPTHNOSTENCIL, NBDEPTHSTENCIL);
+                               //std::cout<<"pipeline layout : "<<stencilBuffer.getPipelineLayout()[buildShadowMapShader.getId() * (Batcher::nbPrimitiveTypes - 1) + i][stencilBuffer.getId()][j]<<std::endl;
+                            }
                         }
                     }
                 }
-
-                states.shader = &perPixShadowShader;
-                for (unsigned int j = 0; j < NBDEPTHSTENCIL; j++) {
-                    for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
-                        if (j == 0) {
-                           VkPushConstantRange push_constant;
-                            //this push constant range starts at the beginning
-                           push_constant.offset = 0;
-                            //this push constant range takes up the size of a MeshPushConstants struct
-                           push_constant.size = sizeof(ResolutionPC);
-                            //this push constant range is accessible only in the vertex shader
-                           push_constant.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-                           pipelineLayoutInfo[perPixShadowShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][shadowMap.getId()][NODEPTHNOSTENCIL].pPushConstantRanges = &push_constant;
-                           pipelineLayoutInfo[perPixShadowShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][shadowMap.getId()][NODEPTHNOSTENCIL].pushConstantRangeCount = 1;
-                           depthStencilCreateInfo[perPixShadowShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][shadowMap.getId()][NODEPTHNOSTENCIL].depthCompareOp = VK_COMPARE_OP_ALWAYS;
-                           depthStencilCreateInfo[perPixShadowShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][shadowMap.getId()][NODEPTHNOSTENCIL].front = {};
-                           depthStencilCreateInfo[perPixShadowShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][shadowMap.getId()][NODEPTHNOSTENCIL].back = {};
-                           shadowMap.createGraphicPipeline(static_cast<PrimitiveType>(i), states, NODEPTHNOSTENCIL, NBDEPTHSTENCIL);
+                for (unsigned int b = 0; b < blendModes.size(); b++) {
+                    states.blendMode = blendModes[b];
+                    states.blendMode.updateIds();
+                    states.shader = &perPixShadowShader;
+                    for (unsigned int j = 0; j < NBDEPTHSTENCIL; j++) {
+                        for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
+                            if (j == 0) {
+                               VkPushConstantRange push_constant;
+                                //this push constant range starts at the beginning
+                               push_constant.offset = 0;
+                                //this push constant range takes up the size of a MeshPushConstants struct
+                               push_constant.size = sizeof(ResolutionPC);
+                                //this push constant range is accessible only in the vertex shader
+                               push_constant.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+                               pipelineLayoutInfo[perPixShadowShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][shadowMap.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = &push_constant;
+                               pipelineLayoutInfo[perPixShadowShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][shadowMap.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 1;
+                               depthStencilCreateInfo[perPixShadowShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][shadowMap.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
+                               depthStencilCreateInfo[perPixShadowShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][shadowMap.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = {};
+                               depthStencilCreateInfo[perPixShadowShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][shadowMap.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {};
+                               shadowMap.createGraphicPipeline(static_cast<PrimitiveType>(i), states, NODEPTHNOSTENCIL, NBDEPTHSTENCIL);
+                            }
                         }
                     }
                 }
@@ -2595,6 +2631,7 @@ namespace odfaeg {
                     currentStates.shader = shader;
                     needToUpdateDS = false;
                 }
+                currentStates.blendMode.updateIds();
                 Shader* shader = const_cast<Shader*>(currentStates.shader);
                 if (shader == &depthGenShader) {
 
@@ -2602,8 +2639,8 @@ namespace odfaeg {
                     std::vector<VkCommandBuffer> commandBuffers = depthBuffer.getCommandBuffers();
                     unsigned int currentFrame = depthBuffer.getCurrentFrame();
                     layerPC.nbLayers = GameObject::getNbLayers();
-                    vkCmdPushConstants(commandBuffers[currentFrame], depthBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][depthBuffer.getId()][depthStencilID], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectRenderingPC), &indirectRenderingPC);
-                    vkCmdPushConstants(commandBuffers[currentFrame], depthBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][depthBuffer.getId()][depthStencilID], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(LayerPC), &layerPC);
+                    vkCmdPushConstants(commandBuffers[currentFrame], depthBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][depthBuffer.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectRenderingPC), &indirectRenderingPC);
+                    vkCmdPushConstants(commandBuffers[currentFrame], depthBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][depthBuffer.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(LayerPC), &layerPC);
                     depthBuffer.beginRenderPass();
                     depthBuffer.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
                     depthBuffer.endRenderPass();
@@ -2621,7 +2658,7 @@ namespace odfaeg {
 
 
 
-                    vkCmdPushConstants(commandBuffers[currentFrame], alphaBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][alphaBuffer.getId()][depthStencilID], VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(LayerPC), &layerPC);
+                    vkCmdPushConstants(commandBuffers[currentFrame], alphaBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][alphaBuffer.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(LayerPC), &layerPC);
 
 
                     VkMemoryBarrier memoryBarrier={};
@@ -2642,8 +2679,8 @@ namespace odfaeg {
                     unsigned int currentFrame = stencilBuffer.getCurrentFrame();
 
                     //vkCmdWaitEvents(commandBuffers[currentFrame], 1, &events[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
-                    vkCmdPushConstants(commandBuffers[currentFrame], stencilBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][stencilBuffer.getId()][depthStencilID], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(LightIndirectRenderingPC), &lightIndirectRenderingPC);
-                    vkCmdPushConstants(commandBuffers[currentFrame], stencilBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][stencilBuffer.getId()][depthStencilID], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(LayerPC), &layerPC);
+                    vkCmdPushConstants(commandBuffers[currentFrame], stencilBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][stencilBuffer.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(LightIndirectRenderingPC), &lightIndirectRenderingPC);
+                    vkCmdPushConstants(commandBuffers[currentFrame], stencilBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][stencilBuffer.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(LayerPC), &layerPC);
                     /*std::cout<<"pipeline layout : "<<stencilBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][stencilBuffer.getId()][depthStencilID]<<std::endl;
                     system("PAUSE");*/
                     stencilBuffer.beginRenderPass();
@@ -2671,7 +2708,7 @@ namespace odfaeg {
                     //vkCmdWaitEvents(commandBuffers[currentFrame], 1, &events[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
 
                     vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
-                    vkCmdPushConstants(commandBuffers[currentFrame], shadowMap.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][shadowMap.getId()][depthStencilID], VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(ResolutionPC), &resolutionPC);
+                    vkCmdPushConstants(commandBuffers[currentFrame], shadowMap.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][shadowMap.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(ResolutionPC), &resolutionPC);
                     shadowMap.beginRenderPass();
                     shadowMap.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
                     shadowMap.endRenderPass();
@@ -2726,7 +2763,7 @@ namespace odfaeg {
                 shadowMap.beginRecordCommandBuffers();
                 const_cast<Texture&>(shadowMap.getTexture()).toColorAttachmentOptimal(shadowMap.getCommandBuffers()[shadowMap.getCurrentFrame()]);
                 shadowMap.display();
-                shadowMap.clear(Color::Transparent);
+                shadowMap.clear(Color::White);
             }
             void ShadowRenderComponent::drawNextFrame() {
                 //glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo));
@@ -2769,12 +2806,12 @@ namespace odfaeg {
                 indirectRenderingPC.viewMatrix = viewMatrix;
                 if (!view.isOrtho())
                     view.setPerspective(80, view.getViewport().getSize().x() / view.getViewport().getSize().y(), zNear, view.getViewport().getSize().z());
-                viewMatrix = view.getViewMatrix().getMatrix().transpose();
-                projMatrix = view.getProjMatrix().getMatrix().transpose();
-                shadowUBODatas.projectionMatrix = projMatrix;
-                shadowUBODatas.viewMatrix = viewMatrix;
-                shadowUBODatas.lprojectionMatrix = lprojMatrix;
-                shadowUBODatas.lviewMatrix = lviewMatrix;
+                viewMatrix = view.getViewMatrix().getMatrix()/*.transpose()*/;
+                projMatrix = view.getProjMatrix().getMatrix()/*.transpose()*/;
+                shadowUBODatas.projectionMatrix = toVulkanMatrix(projMatrix);
+                shadowUBODatas.viewMatrix = toVulkanMatrix(viewMatrix);
+                shadowUBODatas.lprojectionMatrix = toVulkanMatrix(lprojMatrix);
+                shadowUBODatas.lviewMatrix = toVulkanMatrix(lviewMatrix);
                 VkDeviceSize bufferSize = sizeof(shadowUBODatas);
                 void* data;
                 for (unsigned int i = 0; i < shadowMap.getMaxFramesInFlight(); i++) {
@@ -2851,6 +2888,7 @@ namespace odfaeg {
                 shadowTile.setCenter(target.getView().getPosition());
                 if (&target == &window)
                     window.beginRenderPass();
+                states.blendMode = BlendMultiply;
                 target.draw(shadowTile, states);
                 if (&target == &window)
                     window.endRenderPass();
