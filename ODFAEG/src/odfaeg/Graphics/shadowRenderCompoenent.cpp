@@ -278,6 +278,7 @@ namespace odfaeg {
                                                                       beginInvocationInterlockARB();
                                                                       vec4 depth = imageLoad(depthBuffer,ivec2(gl_FragCoord.xy));
                                                                       if (/*l > depth.y || l == depth.y &&*/ z > depth.z) {
+                                                                        if (texel.a < 0.1) discard;
                                                                         fColor = vec4(0, l, z, texel.a);
                                                                         imageStore(depthBuffer,ivec2(gl_FragCoord.xy),vec4(0,l,z,texel.a));
                                                                         memoryBarrier();
@@ -321,6 +322,7 @@ namespace odfaeg {
                                                                   if (/*l > stencil.y || l == stencil.y &&*/ stencil.z > projCoords.z && depth.z > z && current_alpha > alpha.a) {
                                                                       imageStore(alphaBuffer,ivec2(gl_FragCoord.xy),vec4(0, l, z, current_alpha));
                                                                       memoryBarrier();
+
                                                                       fColor = vec4(0, 1, z, current_alpha);
                                                                   } else {
                                                                       fColor = alpha;
@@ -431,9 +433,9 @@ namespace odfaeg {
                                                                        vec4 resolution;
                                                                   } pushConsts;
                                                                   layout(set = 0, binding = 0) uniform sampler2D textures[];
-                                                                  layout (binding = 1) uniform sampler2D stencilBuffer;
-                                                                  layout (binding = 2) uniform sampler2D depthBuffer;
-                                                                  layout (binding = 3) uniform sampler2D alphaBuffer;
+                                                                  layout (binding = 1) uniform sampler2D depthBuffer;
+                                                                  layout (binding = 2) uniform sampler2D alphaBuffer;
+                                                                  layout (binding = 3) uniform sampler2D stencilBuffer;
 
 
                                                                   layout (location = 0) out vec4 fColor;
