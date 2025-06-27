@@ -238,6 +238,7 @@ namespace odfaeg {
             std::vector<VkCommandBuffer>& getCommandBuffers();
             std::string m_name;
             virtual const int getMaxFramesInFlight() = 0;
+            ViewportMatrix getViewportMatrix(View* view);
 
         protected :
 

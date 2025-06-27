@@ -119,6 +119,7 @@ namespace odfaeg {
                                    getSize().x(),
                                    getSize().y(),
                                    getSize().z());
+            //std::cout<<"view volume : "<<viewVolume.getPosition()<<viewVolume.getSize()<<std::endl;
             std::vector<math::Vec3f> vertices = viewVolume.getVertices();
             for (unsigned int i = 0; i < vertices.size(); i++) {
                 ////std::cout<<"vertices : "<<vertices[i]<<std::endl;

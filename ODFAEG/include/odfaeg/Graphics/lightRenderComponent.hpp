@@ -30,6 +30,7 @@ namespace odfaeg {
           */
         #ifdef VULKAN
         class ODFAEG_GRAPHICS_API LightRenderComponent : public HeavyComponent {
+                public :
                 enum DepthStencilID {
                     NODEPTHNOSTENCIL, NBDEPTHSTENCIL
                 };
@@ -57,7 +58,20 @@ namespace odfaeg {
                     math::Vec4f lightCenter;
                     math::Vec4f lightColor;
                 };
+                struct IndirectRenderingPC {
+                    math::Matrix4f projMatrix;
+                    math::Matrix4f viewMatrix;
+                };
+                struct LightIndirectRenderingPC {
+                    math::Matrix4f projMatrix;
+                    math::Matrix4f viewMatrix;
+                    math::Matrix4f viewportMatrix;
+                };
+                struct LayerPC {
+                    unsigned int nbLayers;
+                };
                 LightRenderComponent (RenderWindow& window, int layer, std::string expression,window::ContextSettings settings = window::ContextSettings(0, 0, 4, 3, 0));
+                void createDescriptorsAndPipelines();
                 void loadTextureIndexes();
                 void onVisibilityChanged(bool visible);
                 void pushEvent(window::IEvent event, RenderWindow& rw);
@@ -140,6 +154,9 @@ namespace odfaeg {
                 std::array<std::vector<ModelData>, Batcher::nbPrimitiveTypes> modelDatas;
                 std::array<std::vector<MaterialData>, Batcher::nbPrimitiveTypes> materialDatas;
                 window::Device& vkDevice;
+                IndirectRenderingPC indirectRenderingPC;
+                LightIndirectRenderingPC lightIndirectRenderingPC;
+                LayerPC layerPC;
         };
         #else
         class ODFAEG_GRAPHICS_API LightRenderComponent : public HeavyComponent {

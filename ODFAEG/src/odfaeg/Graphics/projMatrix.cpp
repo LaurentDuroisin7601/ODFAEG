@@ -16,9 +16,15 @@ namespace odfaeg {
             matrix4f[0][2] = 0;
             matrix4f[0][3] = -((r + l) / (r - l));
             matrix4f[1][0] = 0;
+            #ifndef VULKAN
             matrix4f[1][1] = -2 / (t - b);
             matrix4f[1][2] = 0;
             matrix4f[1][3] = -((t + b) / (t - b));
+            #else
+            matrix4f[1][1] = 2 / (t - b);
+            matrix4f[1][2] = 0;
+            matrix4f[1][3] = ((t + b) / (t - b));
+            #endif
             matrix4f[2][0] = 0;
             matrix4f[2][1] = 0;
             #ifndef VULKAN

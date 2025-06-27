@@ -901,9 +901,9 @@ namespace odfaeg {
         void RenderTarget::applyViewportAndScissor() {
             VkViewport viewport{};
             viewport.x = m_view.getViewport().getPosition().x();
-            viewport.y = (float) m_view.getViewport().getSize().y() - m_view.getViewport().getPosition().y();
+            viewport.y = m_view.getViewport().getPosition().y();
             viewport.width = m_view.getViewport().getSize().x();
-            viewport.height = -(float)  m_view.getViewport().getSize().y();
+            viewport.height = m_view.getViewport().getSize().y();
             viewport.minDepth = 0.0f;
             viewport.maxDepth = 1.0f;
             ////std::cout<<(m_view.getViewport().getSize().x == 800 && m_view.getViewport().getSize().y == 800)<<std::endl;
@@ -1091,6 +1091,12 @@ namespace odfaeg {
             vkDestroyCommandPool(vkDevice.getDevice(), this->commandPool, 0);
             this->commandBuffers = commandBuffers;
             this->commandPool = commandPool;
+        }
+        ViewportMatrix RenderTarget::getViewportMatrix(View* view) {
+            ViewportMatrix vpm;
+            vpm.setViewport(math::Vec3f(view->getViewport().getPosition().x(), view->getViewport().getPosition().y(), 0),
+            math::Vec3f(view->getViewport().getWidth(), view->getViewport().getHeight(), 1));
+            return vpm;
         }
         #else
         ////////////////////////////////////////////////////////////

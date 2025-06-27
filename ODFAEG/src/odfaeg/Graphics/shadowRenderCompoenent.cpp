@@ -196,7 +196,7 @@ namespace odfaeg {
 
                 const_cast<Texture&>(shadowMap.getTexture()).toShaderReadOnlyOptimal(shadowMap.getCommandBuffers()[shadowMap.getCurrentFrame()]);
                 shadowMap.display();
-                //createDescriptorsAndPipelines();
+
                 VkSemaphoreCreateInfo semaphoreInfo{};
                 semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
                 renderFinishedSemaphore.resize(RenderWindow::MAX_FRAMES_IN_FLIGHT);
@@ -315,7 +315,7 @@ namespace odfaeg {
                                                                   vec4 alpha = imageLoad(alphaBuffer,ivec2(gl_FragCoord.xy));
                                                                   vec3 projCoords = shadowCoords.xyz / shadowCoords.w;
                                                                   projCoords.xy = projCoords.xy * 0.5 + 0.5;
-                                                                  projCoords.y = 1.0 - projCoords.y;
+                                                                  //projCoords.y = 1.0 - projCoords.y;
                                                                   vec4 stencil = textureLod (stencilBuffer, projCoords.xy * pushConsts.resolution.xy, 0);
                                                                   float l = layer;
                                                                   float z = gl_FragCoord.z;
@@ -448,7 +448,7 @@ namespace odfaeg {
                                                                     float color = texel.a;
                                                                     vec3 projCoords = shadowCoords.xyz / shadowCoords.w;
                                                                     projCoords.xy = projCoords.xy * 0.5 + 0.5;
-                                                                    projCoords.y = 1.0 - projCoords.y;
+                                                                    //projCoords.y = 1.0 - projCoords.y;
                                                                     vec4 stencil = textureLod(stencilBuffer, projCoords.xy * pushConsts.resolution.xy, 0);
                                                                     float z = gl_FragCoord.z;
                                                                     vec4 visibility;
