@@ -19,6 +19,7 @@ namespace odfaeg {
                 frameBuffer.create(window.getView().getSize().x, window.getView().getSize().y, settings);
                 frameBufferSprite = Sprite(frameBuffer.getTexture(), math::Vec3f(0, 0, 0), math::Vec3f(window.getView().getSize().x, window.getView().getSize().y, 0), sf::IntRect(0, 0, window.getView().getSize().x, window.getView().getSize().y));
                 frameBuffer.setView(view);
+
                 sf::Vector3i resolution ((int) window.getSize().x, (int) window.getSize().y, window.getView().getSize().z);
                 GLuint maxNodes = 20 * window.getView().getSize().x * window.getView().getSize().y;
                 GLint nodeSize = 5 * sizeof(GLfloat) + sizeof(GLuint);
@@ -35,6 +36,16 @@ namespace odfaeg {
                 glCheck(glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32UI, window.getView().getSize().x, window.getView().getSize().y));
                 glCheck(glBindImageTexture(0, headPtrTex, 0, GL_FALSE, 0, GL_READ_WRITE, GL_R32UI));
                 glCheck(glBindTexture(GL_TEXTURE_2D, 0));
+                /*glCheck(glGenTextures(1, &historyColorBuffer));
+                glCheck(glBindTexture(GL_TEXTURE_2D, historyColorBuffer));
+                glCheck(glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA32F, window.getView().getSize().x, window.getView().getSize().y));
+                glCheck(glBindImageTexture(0, headPtrTex, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F));
+                glCheck(glBindTexture(GL_TEXTURE_2D, 0));
+                glCheck(glGenTextures(1, &historyNormalDepthBuffer));
+                glCheck(glBindTexture(GL_TEXTURE_2D, historyNormalDepthBuffer));
+                glCheck(glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA32F, window.getView().getSize().x, window.getView().getSize().y));
+                glCheck(glBindImageTexture(0, headPtrTex, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F));
+                glCheck(glBindTexture(GL_TEXTURE_2D, 0));*/
                 std::vector<GLuint> headPtrClearBuf(window.getView().getSize().x*window.getView().getSize().y, 0xffffffff);
                 glCheck(glGenBuffers(1, &clearBuf2));
                 glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, clearBuf2));
@@ -71,13 +82,13 @@ namespace odfaeg {
                                                         uniform mat4 projectionMatrix;
                                                         uniform mat4 viewMatrix;
                                                         uniform mat4 worldMat;
-                                                        uniform mat4 textureMatrix;
+                                                        /*uniform mat4 textureMatrix;
                                                         out vec2 fTexCoords;
-                                                        out vec4 frontColor;
+                                                        out vec4 frontColor;*/
                                                         void main () {
                                                             gl_Position = projectionMatrix * viewMatrix * worldMat * vec4(position, 1.f);
-                                                            fTexCoords = (textureMatrix * vec4(texCoords, 1.f, 1.f)).xy;
-                                                            frontColor = color;
+                                                            /*fTexCoords = (textureMatrix * vec4(texCoords, 1.f, 1.f)).xy;
+                                                            frontColor = color;*/
                                                         })";
                 std::string quadFragmentShader = R"(#version 460
                                                     #define MAX_FRAGMENTS 20
@@ -85,14 +96,18 @@ namespace odfaeg {
                                                           vec4 color;
                                                           float depth;
                                                           uint next;
+                                                          //vec3 normal;
                                                         };
                                                         layout(binding = 0, r32ui) uniform uimage2D headPointers;
+                                                        layout(rgba32f, binding = 1) uniform image2D img_output;
                                                         layout(binding = 0, std430) buffer linkedLists {
                                                            NodeType nodes[];
                                                         };
-                                                        uniform sampler2D texture;
-                                                        in vec4 frontColor;
-                                                        in vec2 fTexCoords;
+                                                        /*layout(binding = 1, rgba32f) uniform image2D historyColorBuffer;
+                                                        layout(binding = 2, rgba32f) uniform image2D historyNormalDepthBuffer;*/
+                                                        //uniform sampler2D texture;
+                                                        /*in vec4 frontColor;
+                                                        in vec2 fTexCoords;*/
                                                         //layout(origin_upper_left) in vec4 gl_FragCoord;
                                                         layout (location = 0) out vec4 fcolor;
                                                         void main() {
@@ -138,12 +153,15 @@ namespace odfaeg {
                                                                   step *= 2;
                                                               }
                                                               vec4 color = vec4(0, 0, 0, 0);
-                                                              for( int i = count - 1; i >= 0; i--)
+                                                              vec4 normalDepth;
+                                                              for( int i = 0; i < count; i++)
                                                               {
                                                                 color.rgb = frags[i].color.rgb * frags[i].color.a + color.rgb * (1 - frags[i].color.a);
                                                                 color.a = frags[i].color.a + color.a * (1 - frags[i].color.a);
-
+                                                                //normalDepth = vec4(frags[i].normal, frags[i].depth);
                                                               }
+                                                              /*imageStore(historyColorBuffer, ivec2(gl_FragCoord.xy), color);
+                                                              imageStore(historyNormalDepthBuffer, ivec2(gl_FragCoord.xy), normalDepth);*/
                                                               fcolor = color;
                                                         }
                                                     )";
@@ -154,8 +172,10 @@ namespace odfaeg {
                                                           vec4 color;
                                                           float depth;
                                                           uint next;
+                                                          //vec3 normal;
                                                       };
                                                       struct Triangle {
+                                                          mat4 prevTransform;
                                                           mat4 transform;
                                                           mat4 textureMatrix;
                                                           vec4 position[3];
@@ -165,6 +185,7 @@ namespace odfaeg {
                                                           uint textureIndex;
                                                           uint refractReflect;
                                                           float ratio;
+                                                          float padding;
                                                       };
                                                       struct Light {
                                                           vec4 center;
@@ -182,7 +203,7 @@ namespace odfaeg {
                                                           vec3 ext;
                                                       };
                                                       layout(local_size_x = 1, local_size_y = 1) in;
-                                                      layout(rgba32f, binding = 1) uniform image2D img_output;
+
                                                       layout(std140, binding = 0) uniform ALL_TEXTURES {
                                                           sampler2D textures[200];
                                                       };
@@ -194,9 +215,12 @@ namespace odfaeg {
                                                       };
                                                       layout(binding = 0, offset = 0) uniform atomic_uint nextNodeCounter;
                                                       layout(binding = 0, r32ui) uniform uimage2D headPointers;
+                                                      layout(binding = 1, rgba32f) uniform image2D img_output;
                                                       layout(binding = 0, std430) buffer linkedLists {
                                                           NodeType nodes[];
                                                       };
+                                                      /*layout(binding = 1, rgba32f) uniform image2D historyColorBuffer;
+                                                      layout(binding = 2, rgba32f) uniform image2D historyNormalDepthBuffer;*/
                                                       uniform uint maxNodes;
                                                       uniform uint nbLights;
                                                       uniform uint nbTriangles;
@@ -205,9 +229,13 @@ namespace odfaeg {
                                                       uniform mat4 viewMatrix;
                                                       uniform mat4 projMatrix;
                                                       uniform mat4 viewportMatrix;
+                                                      uniform mat4 prevViewMatrix;
+                                                      uniform mat4 prevProjMatrix;
                                                       uniform uint tindex;
                                                       uniform uint x;
                                                       uniform uint y;
+
+                                                      uniform uint firstFrame;
                                                       vec4 castReflectionRay(Pixel currentPixel, uint triangle);
                                                       vec4 castRefractionRay(Pixel currentPixel, uint triangle);
                                                       /*Functions to debug, draw numbers to the image,
@@ -367,83 +395,7 @@ namespace odfaeg {
                                                           return position;
                                                       }
                                                       bool intersects(Ray ray, vec4[3] positions, inout vec4 intersection, inout float u, inout float v) {
-                                                         /*vec3 r = ray.origin - ray.ext;
-                                                         vec3 u = (positions[1] - positions[0]).xyz;
-                                                         vec3 v = (positions[2] - positions[0]).xyz;
-                                                         vec3 n = cross(u, v);
-                                                         vec3 p1 = positions[0].xyz;
-                                                         vec3 otr = ray.origin - p1;
-                                                         vec3 point;
-                                                         if (dot(n, r) == 0)
-                                                            return false;
-                                                         point.x = dot(n, otr) / dot(n, r);
-                                                         point.y = dot(cross(-otr, u), r) / dot(n, r);
-                                                         point.z = dot(cross(-v, otr), r) / dot(n, r);
 
-                                                         if (0 <= point.x
-                                                               && 0 <= point.y && point.y <= 1
-                                                               &&  0 <= point.z && point.z <= 1
-                                                               && point.y + point.z <= 1) {
-                                                               intersection.x = p1.x + u.x * point.z + v.x * point.y;
-                                                               intersection.y = p1.y + u.y * point.z + v.y * point.y;
-                                                               intersection.z = p1.z + u.z * point.z + v.z * point.y;
-
-
-                                                               return true;
-                                                         }
-
-                                                         intersection = vec4(0, 0, 0);
-
-
-
-                                                         return false;*/
-                                                         /*intersection = vec4(0, 0, 0, 0);
-                                                         vec3 v0v1 = (positions[1] - positions[0]).xyz;
-                                                         vec3 v0v2 = (positions[2] - positions[0]).xyz;
-                                                         vec3 v0 = positions[0].xyz;
-                                                         float wv0 = positions[0].w;
-                                                         vec3 v1 = positions[1].xyz;
-                                                         float wv1 = positions[1].w;
-                                                         vec3 v2 = positions[2].xyz;
-                                                         float wv2 = positions[2].w;
-                                                         vec3 n = cross(v0v1, v0v2);
-                                                         float denom = dot(n, n);
-                                                         float ndotRayDirection = dot(n, ray.dir);
-                                                         if (abs(ndotRayDirection) < 0.0000001)
-                                                            return false;
-                                                         float d = dot(n, v0);
-                                                         float t = (dot(n, ray.origin) + d) / ndotRayDirection;
-                                                         if (t < 0)
-                                                            return false;
-                                                         vec3 p = ray.origin + t * ray.dir;
-
-
-                                                         vec3 c;
-                                                         vec3 edge0 = v1 - v0;
-                                                         vec3 vp0 = p - v0;
-                                                         c = cross(edge0, vp0);
-
-
-
-                                                         if (dot(n, c) < 0)
-                                                            return false;
-                                                         vec3 edge1 = v2 - v1;
-                                                         vec3 vp1 = p - v1;
-                                                         c = cross(edge1, vp1);
-
-                                                         if ((u = dot(n, c)) < 0)
-                                                            return false;
-                                                         vec3 edge2 = v0 - v2;
-                                                         vec3 vp2 = p - v2;
-                                                         c = cross(edge2, vp2);
-                                                         if ((v = dot(n, c)) < 0)
-                                                            return false;
-                                                        u /= denom;
-                                                        v /= denom;
-
-                                                        intersection = vec4(p, 1);
-                                                        intersection.w = u * wv0 + v * wv1 + (1-u-v) * wv2;
-                                                        return true;*/
                                                         //Möller Trumbore.
                                                         vec3 v0v1 = (positions[1] - positions[0]).xyz;
                                                         vec3 v0v2 = (positions[2] - positions[0]).xyz;
@@ -490,12 +442,7 @@ namespace odfaeg {
                                                       }*/
                                                       Pixel interpolate(Triangle triangle, vec3 p, float u, float v) {
                                                            Pixel pixel;
-                                                           /*vec3 p1 = triangle.position[0].xyz;
-                                                           vec3 p2 = triangle.position[1].xyz;
-                                                           vec3 p3 = triangle.position[2].xyz;
-                                                           float d = (p2.y - p3.y) * (p.x - p3.x) + (p3.x - p2.x) * (p.y - p3.y);
-                                                           float u = ((p2.y - p3.y) * (p.x - p3.x) + (p3.x - p2.x) * (p.y - p3.y)) / d;
-                                                           float v = ((p3.y - p1.y) * (p.x - p3.x) + (p1.x - p3.x) * (p.y - p3.y)) / d;*/
+
                                                            float w = 1 - u - v;
                                                            pixel.position = p;
                                                            vec3 r = vec3(triangle.color[0].r, triangle.color[1].r, triangle.color[2].r);
@@ -510,15 +457,9 @@ namespace odfaeg {
                                                            vec2 tc2 = (triangle.textureMatrix * triangle.texCoords[1]).xy;
                                                            vec2 tc3 = (triangle.textureMatrix * triangle.texCoords[2]).xy;)" R"(pixel.texCoords = vec2(tc1.x * u + tc2.x * v + tc3.x * w,
                                                                                   tc1.y * u + tc2.y * v + tc3.y * w);
-                                                           if (pixel.texCoords.x < 0)
-                                                               pixel.texCoords.x = 0;
-                                                           else if (pixel.texCoords.x > 1)
-                                                               pixel.texCoords.x = fract(pixel.texCoords.x);
-                                                           if (pixel.texCoords.y < 0)
-                                                               pixel.texCoords.y = 0;
-                                                           else if (pixel.texCoords.y > 1)
-                                                               pixel.texCoords.y = fract(pixel.texCoords.y);
-                                                           //sampler2D tex = sampler2D(GetTexture(triangle.textureIndex-1));
+                                                           pixel.texCoords = clamp(pixel.texCoords, 0.0, 1.0);
+
+
                                                            pixel.color = (triangle.textureIndex > 0) ? color * texture(textures[triangle.textureIndex-1], pixel.texCoords) : color;
                                                            return pixel;
                                                       }
@@ -713,58 +654,88 @@ namespace odfaeg {
                                                           vec4 pixel = vec4(1.0, 0.0, 0.0, 1.0);
                                                           ivec2 pixel_coords = ivec2(gl_GlobalInvocationID.xy);
                                                           Ray ray;
-                                                          ray.origin = vec3(pixel_coords.xy, 0);
-                                                          ray.ext = vec3 (pixel_coords.xy, 1);
+                                                          ray.origin = vec3(pixel_coords.xy, 0.99);
+                                                          ray.ext = vec3 (pixel_coords.xy, 0);
                                                           ray.dir = ray.ext - ray.origin;
                                                           Pixel depthPixels[MAX_FRAGMENTS];
                                                           Pixel currentPixel;
                                                           int count = 0;
+                                                          // print(ivec2(0, 600), 5, vec4(1, 0, 0, 1),vec4(nbTriangles, 0, 0, 1));
+                                                          for (unsigned int i = 0; i < nbTriangles; i++) {
+                                                               Triangle tri = triangles[i];
+                                                               for (uint j = 0; j < 3; j++) {
+                                                                    vec4 t = projMatrix * viewMatrix * triangles[i].transform * triangles[i].position[j];
+                                                                    //float tmp = t.w;
+                                                                    if (t.w != 0) {
+                                                                        t /= t.w;
+                                                                    }
+                                                                    tri.position[j] = viewportMatrix * t;
+                                                                    //tri.position[j].w = tmp;
+                                                               }
+                                                               /*vec4 prevNDC = prevProjMatrix * prevViewMatrix * triangles[i].prevTransform * triangles[i].position[j];
+                                                               prevNDC = prevNDC * 0.5 + 0.5;
+                                                               float prevDepth = imageLoad(historyDepthBuffer, pixel_coords).w;
+                                                               if (!firstFrame && prevNDC.x / prevNDC.w <= 1 && prevNDC.y / prevNDC.y <= 1
+                                                                   && prevNDC.x / prevNDC.w >= 0 && prevNDC.y / prevNDC.y >= 0
+                                                                   && tri.position[j].z <= prevNDC.z) {
+                                                                    nodeIdx =
+                                                                    uint prevHead = imageAtomicExchange(headPointers, pixel_coords, nodeIdx);
+                                                                    nodes[nodeIdx].color = imageLoad(historyColorBuffer, pixel_coords);
+                                                                    nodes[nodeIdx].depth = imageLoad(historyDepthBuffer, pixel_coords).w;
+                                                                    nodes[nodeIdx].normal = imageLoad(historyDepthBuffer, pixel_coords).xyz;
+                                                                    nodes[nodeIdx].next = prevHead;
+                                                               } else {*/
+                                                                   /*float averageDepth = (tri.position[0].z + tri.position[1].z + tri.position[2].z) / 3.0;
+                                                                   if (averageDepth < 0.015) {
+                                                                       continue; // trop proche de la caméra
+                                                                   }*/
+                                                                   vec4 intersection;
+                                                                   float u, v;
+                                                                   vec2 minBounds = min(min(tri.position[0].xy, tri.position[1].xy), tri.position[2].xy);
+                                                                   vec2 maxBounds = max(max(tri.position[0].xy, tri.position[1].xy), tri.position[2].xy);
 
-                                                           Triangle tri = triangles[gl_GlobalInvocationID.z];
-                                                           for (uint j = 0; j < 3; j++) {
-                                                                vec4 t = projMatrix * viewMatrix * triangles[gl_GlobalInvocationID.z].transform * triangles[gl_GlobalInvocationID.z].position[j];
-                                                                float tmp = t.w;
-                                                                if (t.w != 0) {
-                                                                    t /= t.w;
-                                                                }
-                                                                tri.position[j] = viewportMatrix * t;
-                                                                tri.position[j].w = tmp;
-                                                           }
+                                                                   /*if (pixel_coords.x < minBounds.x || pixel_coords.x > maxBounds.x ||
+                                                                        pixel_coords.y < minBounds.y || pixel_coords.y > maxBounds.y) {
+                                                                        return; // Ce pixel ne peut toucher ce triangle
+                                                                   }*/
+                                                                   if (intersects(ray, tri.position, intersection, u, v)
+                                                                       && intersection.x >= 0 && intersection.x < resolution.x
+                                                                       && intersection.y >= 0 && intersection.y < resolution.y) {
+                                                                       /*if (intersection.w < 0.4) {
+                                                                            return;
+                                                                       }*/
 
-                                                           vec4 intersection;
-                                                           float u, v;
-                                                           if (intersects(ray, tri.position, intersection, u, v)
-                                                               && intersection.x >= 0 && intersection.x < resolution.x
-                                                               && intersection.y >= 0 && intersection.y < resolution.y
-                                                               && intersection.w >= 50) {
+                                                                       currentPixel = interpolate(tri, intersection.xyz, u, v);
+                                                                       /*vec4 shadowLightColor = computeLightAndShadow (currentPixel, triangles[i].normal, i);
+                                                                       vec4 reflectRefractColor=vec4(1, 1, 1, 1);
+                                                                       if (triangles[i].refractReflect == 1) {
+                                                                           reflectRefractColor = castReflectionRay(currentPixel, i);
+                                                                       }
+                                                                       if (triangles[i].refractReflect == 2) {
+                                                                           reflectRefractColor = castRefractionRay(currentPixel, i);
+                                                                       }
+                                                                       if (triangles[i].refractReflect == 3) {
+                                                                           vec4 reflectColor = castReflectionRay(currentPixel, i);
+                                                                           vec4 refractColor = castRefractionRay(currentPixel, i);
+                                                                           reflectRefractColor = reflectColor * refractColor;
+                                                                       }
+                                                                       currentPixel.color = currentPixel.color * reflectRefractColor * shadowLightColor;
+                                                                       depthPixels[count] = currentPixel;
+                                                                       if (count < MAX_FRAGMENTS)
+                                                                           count++;
+                                                                       vec4 color = blendAlpha (depthPixels, count);*/
+                                                                       uint nodeIdx = atomicCounterIncrement(nextNodeCounter);
+                                                                       if (nodeIdx < maxNodes) {
+                                                                           uint prevHead = imageAtomicExchange(headPointers, pixel_coords, nodeIdx);
+                                                                           nodes[nodeIdx].color = currentPixel.color;
+                                                                           nodes[nodeIdx].depth = intersection.z;
+                                                                           nodes[nodeIdx].next = prevHead;
+                                                                           //nodes[nodeIdx].normal = tri.normal;
+                                                                       }
 
-                                                               currentPixel = interpolate(tri, intersection.xyz, u, v);
-                                                               /*vec4 shadowLightColor = computeLightAndShadow (currentPixel, triangles[i].normal, i);
-                                                               vec4 reflectRefractColor=vec4(1, 1, 1, 1);
-                                                               if (triangles[i].refractReflect == 1) {
-                                                                   reflectRefractColor = castReflectionRay(currentPixel, i);
-                                                               }
-                                                               if (triangles[i].refractReflect == 2) {
-                                                                   reflectRefractColor = castRefractionRay(currentPixel, i);
-                                                               }
-                                                               if (triangles[i].refractReflect == 3) {
-                                                                   vec4 reflectColor = castReflectionRay(currentPixel, i);
-                                                                   vec4 refractColor = castRefractionRay(currentPixel, i);
-                                                                   reflectRefractColor = reflectColor * refractColor;
-                                                               }
-                                                               currentPixel.color = currentPixel.color * reflectRefractColor * shadowLightColor;
-                                                               depthPixels[count] = currentPixel;
-                                                               if (count < MAX_FRAGMENTS)
-                                                                   count++;
-                                                               vec4 color = blendAlpha (depthPixels, count);*/
-                                                               uint nodeIdx = atomicCounterIncrement(nextNodeCounter);
-                                                               if (nodeIdx < maxNodes) {
-                                                                   uint prevHead = imageAtomicExchange(headPointers, pixel_coords, nodeIdx);
-                                                                   nodes[nodeIdx].color = currentPixel.color;
-                                                                   nodes[nodeIdx].depth = -intersection.w;
-                                                                   nodes[nodeIdx].next = prevHead;
-                                                               }
-                                                               //imageStore(img_output, pixel_coords, currentPixel.color);
+                                                                       //imageStore(img_output, pixel_coords, currentPixel.color);
+                                                                    }
+                                                               //}
                                                            }
                                                       }
                                                       )";
@@ -781,8 +752,8 @@ namespace odfaeg {
                     quadShader.setParameter("viewMatrix", viewMatrix);
                     quadShader.setParameter("projectionMatrix", projMatrix);
                     quadShader.setParameter("worldMat", quad.getTransform().getMatrix().transpose());
-                    quadShader.setParameter("texture", Shader::CurrentTexture);
-                    quadShader.setParameter("textureMatrix", external.getTextureMatrix());
+                    /*quadShader.setParameter("texture", Shader::CurrentTexture);
+                    quadShader.setParameter("textureMatrix", external.getTextureMatrix());*/
 
                     std::vector<Texture*> allTextures = Texture::getAllTextures();
                     Samplers allSamplers{};
@@ -804,6 +775,8 @@ namespace odfaeg {
                     glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, linkedListBuffer));
                     glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, trianglesSSBO));
                     glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, lightsSSBO));
+                    dataReady = false;
+                    firstFrame = true;
             }
             void RaytracingRenderComponent::setBackgroundColor(sf::Color color) {
                 backgroundColor = color;
@@ -911,51 +884,70 @@ namespace odfaeg {
                         if (intersects)
                             break;
                     }*/
-                    glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, trianglesSSBO));
-                    glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, triangles.size() * sizeof(Triangle), NULL, GL_DYNAMIC_COPY));
-                    GLvoid* p = nullptr;
-                    glCheck(p = glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_WRITE_ONLY));
-                    memcpy(p, triangles.data(), triangles.size() * sizeof(Triangle));
+                    if (dataReady) {
+                        glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, trianglesSSBO));
+                        glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, triangles.size() * sizeof(Triangle), triangles.data(), GL_DYNAMIC_DRAW));
+                        /*GLvoid* p = nullptr;
+                        glCheck(p = glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_WRITE_ONLY));
+                        memcpy(p, triangles.data(), triangles.size() * sizeof(Triangle));
 
 
 
-                    glCheck(glUnmapBuffer(GL_SHADER_STORAGE_BUFFER));
-                    glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, lightsSSBO));
-                    glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, lights.size() * sizeof(Light), NULL, GL_DYNAMIC_DRAW));
-                    GLvoid* p2 = nullptr;
-                    glCheck(p2 = glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_WRITE_ONLY));
-                    memcpy(p2, lights.data(), lights.size() * sizeof(Light));
-                    glCheck(glUnmapBuffer(GL_SHADER_STORAGE_BUFFER));
-                    glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0));
+                        glCheck(glUnmapBuffer(GL_SHADER_STORAGE_BUFFER));*/
+                        glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, lightsSSBO));
+                        glCheck(glBufferData(GL_SHADER_STORAGE_BUFFER, lights.size() * sizeof(Light), lights.data(), GL_DYNAMIC_DRAW));
+                        /*GLvoid* p2 = nullptr;
+                        glCheck(p2 = glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_WRITE_ONLY));
+                        memcpy(p2, lights.data(), lights.size() * sizeof(Light));
+                        glCheck(glUnmapBuffer(GL_SHADER_STORAGE_BUFFER));
+                        glCheck(glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0));*/
+                        unsigned int nbTriangles = triangles.size();
+                        unsigned int nbLights = lights.size();
+
+                        rayComputeShader.setParameter("nbTriangles", nbTriangles);
+                        rayComputeShader.setParameter("nbLights", nbLights);
+                        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+                        dataReady = false;
+                    }
                     math::Matrix4f viewMatrix = view.getViewMatrix().getMatrix().transpose();
                     math::Matrix4f projMatrix = view.getProjMatrix().getMatrix().transpose();
+                    math::Matrix4f prevViewMatrix = prevView.getViewMatrix().getMatrix().transpose();
+                    math::Matrix4f prevProjMatrix = prevView.getProjMatrix().getMatrix().transpose();
                     ViewportMatrix vpm;
                     vpm.setViewport(math::Vec3f(view.getViewport().getPosition().x, view.getViewport().getPosition().y, 0),
                     math::Vec3f(view.getViewport().getWidth(), view.getViewport().getHeight(), 1));
                     math::Matrix4f viewportMatrix = vpm.getMatrix().transpose();
                     rayComputeShader.setParameter("viewMatrix", viewMatrix);
                     rayComputeShader.setParameter("projMatrix", projMatrix);
+                    /*rayComputeShader.setParameter("prevViewMatrix", prevViewMatrix);
+                    rayComputeShader.setParameter("prevProjMatrix", prevProjMatrix);*/
                     rayComputeShader.setParameter("viewportMatrix", viewportMatrix);
-                    unsigned int nbTriangles = triangles.size();
-                    unsigned int nbLights = lights.size();
-                    rayComputeShader.setParameter("nbTriangles", nbTriangles);
-                    rayComputeShader.setParameter("nbLights", nbLights);
+                    //rayComputeShader.setParameter("firstFrame", (unsigned int) firstFrame);
+
                     Shader::bind(&rayComputeShader);
-                    glCheck(glDispatchCompute(view.getSize().x, view.getSize().y, triangles.size()));
+                    glCheck(glDispatchCompute(view.getSize().x, view.getSize().y, 1));
                     glCheck(glFinish());
                     // make sure writing to image has finished before read
-                    glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-
+                    glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+                    /*glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, clearBuf2));
+                    glCheck(glBindTexture(GL_TEXTURE_2D, historyColorBuffer));
+                    glCheck(glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, view.getSize().x, view.getSize().y, GL_RED_INTEGER,
+                    GL_UNSIGNED_INT, NULL));
+                    glCheck(glBindTexture(GL_TEXTURE_2D, historyNormalDepthBuffer));
+                    glCheck(glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, view.getSize().x, view.getSize().y, GL_RED_INTEGER,
+                    GL_UNSIGNED_INT, NULL));
+                    glCheck(glBindTexture(GL_TEXTURE_2D, 0));
+                    glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0));*/
                     RenderStates states;
                     states.shader = &quadShader;
-                    states.transform = quad.getTransform();
-                    states.texture = &external;
+                    /*states.transform = quad.getTransform();
+                    states.texture = &external;*/
                     vb.clear();
                     vb.setPrimitiveType(sf::Quads);
-                    Vertex v1 (sf::Vector3f(0, 0, quad.getSize().z), sf::Color::White,sf::Vector2f(0, 0));
-                    Vertex v2 (sf::Vector3f(quad.getSize().x,0, quad.getSize().z), sf::Color::White,sf::Vector2f(quad.getSize().x, 0));
-                    Vertex v3 (sf::Vector3f(quad.getSize().x, quad.getSize().y, quad.getSize().z),sf::Color::White,sf::Vector2f(quad.getSize().x, quad.getSize().y));
-                    Vertex v4 (sf::Vector3f(0, quad.getSize().y, quad.getSize().z), sf::Color::White,sf::Vector2f(0, quad.getSize().y));
+                    Vertex v1 (sf::Vector3f(0, 0, quad.getSize().z)/*, sf::Color::White,sf::Vector2f(0, 0)*/);
+                    Vertex v2 (sf::Vector3f(quad.getSize().x,0, quad.getSize().z)/*, sf::Color::White,sf::Vector2f(quad.getSize().x, 0)*/);
+                    Vertex v3 (sf::Vector3f(quad.getSize().x, quad.getSize().y, quad.getSize().z)/*,sf::Color::White,sf::Vector2f(quad.getSize().x, quad.getSize().y)*/);
+                    Vertex v4 (sf::Vector3f(0, quad.getSize().y, quad.getSize().z)/*, sf::Color::White,sf::Vector2f(0, quad.getSize().y)*/);
                     vb.append(v1);
                     vb.append(v2);
                     vb.append(v3);
@@ -964,10 +956,18 @@ namespace odfaeg {
                     frameBuffer.drawVertexBuffer(vb, states);
                     glCheck(glFinish());
                     frameBuffer.display();
+                    firstFrame = false;
                 }
+            }
+            void RaytracingRenderComponent::loadTextureIndexes() {
             }
             bool RaytracingRenderComponent::loadEntitiesOnComponent(std::vector<Entity*> vEntities) {
                 //std::cout<<"load entities on component"<<std::endl;
+                /*for (unsigned int i = 0; i < triangles.size(); i++) {
+                    triangles[i].prevTransform = triangles[i].transform;
+                }*/
+
+                dataReady = false;
                 triangles.clear();
                 lights.clear();
                 Light ambientLight;
@@ -978,9 +978,12 @@ namespace odfaeg {
                 lights.push_back(ambientLight);
                 unsigned int nbVertices =0;
                 for (unsigned int e = 0; e < vEntities.size(); e++) {
-                    if ( vEntities[e]->isLeaf()) {
+
+                    if ( vEntities[e] != nullptr && vEntities[e]->isLeaf()) {
+
                         if (!vEntities[e]->isLight()) {
                             for (unsigned int j = 0; j <  vEntities[e]->getNbFaces(); j++) {
+
                                 Material material = vEntities[e]->getFace(j)->getMaterial();
                                 VertexArray va = vEntities[e]->getFace(j)->getVertexArray();
                                 unsigned int size = 0;
@@ -1075,7 +1078,7 @@ namespace odfaeg {
                                         triangle.colours[1] = math::Vec3f(va[i*3+1].color.r / 255.f,va[i*3+1].color.g / 255.f,va[i*3+1].color.b / 255.f, va[i*3+1].color.a / 255.f);
                                         triangle.colours[2] = math::Vec3f(va[i*3+2].color.r / 255.f,va[i*3+2].color.g / 255.f,va[i*3+2].color.b / 255.f, va[i*3+2].color.a / 255.f);
                                         triangle.texCoords[0] = math::Vec3f(va[i*3].texCoords.x, va[i*3].texCoords.y, 0, 0);
-                                        triangle.texCoords[1] = math::Vec3f(va[i*3+1].texCoords.x, va[i*3+2].texCoords.y, 0, 0);
+                                        triangle.texCoords[1] = math::Vec3f(va[i*3+1].texCoords.x, va[i*3+1].texCoords.y, 0, 0);
                                         triangle.texCoords[2] = math::Vec3f(va[i*3+2].texCoords.x, va[i*3+2].texCoords.y, 0, 0);
 
                                         math::Vec3f v1(va[i*3].position.x, va[i*3].position.y, va[i*3].position.z);
@@ -1100,6 +1103,7 @@ namespace odfaeg {
                                             triangle.refractReflect = 3;
                                         triangles.push_back(triangle);
                                     } else if (va.getPrimitiveType() == sf::PrimitiveType::TriangleStrip) {
+                                        std::cout<<"triangle strip"<<std::endl;
                                         if (i == 0) {
                                             Triangle triangle;
                                             triangle.positions[0] = math::Vec3f(va[i*3].position.x,va[i*3].position.y,va[i*3].position.z);
@@ -1168,6 +1172,7 @@ namespace odfaeg {
                                             triangles.push_back(triangle);
                                         }
                                     } else if (va.getPrimitiveType() == sf::TriangleFan) {
+                                        std::cout<<"triangle fan"<<std::endl;
                                         if (i == 0) {
                                             Triangle triangle;
                                             triangle.positions[0] = math::Vec3f(va[i*3].position.x,va[i*3].position.y,va[i*3].position.z);;
@@ -1249,6 +1254,7 @@ namespace odfaeg {
                     }
                 }
                 update = true;
+                dataReady = true;
                 return true;
             }
             void RaytracingRenderComponent::draw(RenderTarget& target, RenderStates states) {
@@ -1270,6 +1276,7 @@ namespace odfaeg {
                 //drawables.insert(std::make_pair(drawable, states));
             }
             void RaytracingRenderComponent::setView(View view) {
+                prevView = this->view;
                 frameBuffer.setView(view);
                 sf::Vector3i resolution ((int) view.getSize().x, (int) view.getSize().y, view.getSize().z);
                 rayComputeShader.setParameter("resolution", resolution.x, resolution.y, resolution.z);

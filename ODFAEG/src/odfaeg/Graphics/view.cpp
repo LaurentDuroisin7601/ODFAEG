@@ -26,21 +26,17 @@ namespace odfaeg {
         View::View (double width, double height, double zNear, double zFar) : viewport(0, 0, zNear, width, height, zFar), depth(zFar) {
 
             setPerspective(-width * 0.5f, width * 0.5f, -height * 0.5f, height * 0.5f, zNear, zFar);
-            this->up = math::Vec3f(0, 1, 0);
-            position = math::Vec3f (0, 0, 0);
-            math::Vec3f upToXYPlane(up.x, up.y, 0);
-            teta = upToXYPlane.getAngleBetween(math::Vec3f::yAxis, math::Vec3f::yAxis);
-            math::Vec3f upToYZPlane(0, up.y, math::Math::abs(up.z));
-            phi = upToYZPlane.getAngleBetween(math::Vec3f::zAxis, math::Vec3f::zAxis);
-            gamma = 0;
-            forward = math::Math::toCartesian(teta, phi).normalize();
-            left = forward.cross(up).normalize();
-            up = left.cross(forward);
-            target = position + forward;
-            viewMatrix.setScale(math::Vec3f(1.f, 1.f, 1.f));
+            this->position = math::Vec3f(0.f, 0.f, 0.f);
+            this->forward = math::Vec3f(0.f, 0.f, -1.f);  // vers -Z
+            this->up = math::Vec3f(0.f, 1.f, 0.f);        // Y en haut
+            this->left = forward.cross(up).normalize();   // X vers la gauche
+            this->up = left.cross(forward).normalize();   // recalcule up pour ortho
+            this->target = position + forward;
+
             viewMatrix.setAxis(left, up, forward);
             viewMatrix.setOrigin(position);
-            lockTeta = lockPhi = 0;
+            teta = math::Math::toDegrees(math::Math::atang2(forward.x, forward.z));         // rotation horizontale autour de Y
+            phi  = math::Math::toDegrees(math::Math::asinus(forward.y));
             viewUpdated = true;
             flipX = false;
             flipY = true;
@@ -119,15 +115,22 @@ namespace odfaeg {
                                    getSize().x,
                                    getSize().y,
                                    getSize().z);
+            /*if (!isOrtho())
+                    std::cout<<"matrix : "<<getViewMatrix().getMatrix()<<std::endl;*/
+            //std::cout<<"view volume : "<<viewVolume.getPosition()<<viewVolume.getSize()<<std::endl;
             std::vector<math::Vec3f> vertices = viewVolume.getVertices();
             for (unsigned int i = 0; i < vertices.size(); i++) {
-                //std::cout<<"vertices : "<<vertices[i]<<std::endl;
+                /*if (!isOrtho())
+                    std::cout<<"vertices : "<<vertices[i]<<std::endl;*/
                 vertices[i] = getViewMatrix().inverseTransform(vertices[i]);
-                //std::cout<<"transformed vertices : "<<vertices[i]<<std::endl;
+                /*if (!isOrtho())
+                    std::cout<<"transformed vertices : "<<vertices[i]<<std::endl;*/
             }
             std::array<std::array<float, 2>, 3> extends = math::Computer::getExtends(vertices);
+            /*if (!isOrtho())
+                std::cout<<"extends : "<<extends[0][0]<<","<<extends[0][1]<<std::endl;*/
             viewVolume = physic::BoundingBox(extends[0][0], extends[1][0], extends[2][0], extends[0][1] - extends[0][0], extends[1][1] - extends[1][0],extends[2][1] - extends[2][0]);
-            //std::cout<<"view volume : "<<viewVolume.getSize()<<std::endl;
+            //std::cout<<"transfomed view volume : "<<viewVolume.getPosition()<<viewVolume.getSize()<<std::endl;
             return viewVolume;
         }
         math::Vec3f View::getScale() {
@@ -166,7 +169,7 @@ namespace odfaeg {
             //std::cout<<"forward : "<<forward<<std::endl;
             left = forward.cross(up).normalize();
             target = position + forward;
-            up = left.cross(forward);
+            up = left.cross(forward).normalize();
         }
         void View::lookAt(float x, float y, float z, math::Vec3f up) {
             target = math::Vec3f(x, y, z);
@@ -188,6 +191,7 @@ namespace odfaeg {
                 left = forward.cross(math::Vec3f(0, 0, 1)).normalize();
             else
                 left = forward.cross(up).normalize();
+            up = left.cross(forward).normalize();
             viewMatrix.setAxis(left, up, forward);
             viewUpdated = true;
         }

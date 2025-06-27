@@ -222,9 +222,10 @@ namespace odfaeg {
             inverseNeedToUpdate3D = true;
         }
         void ViewMatrix::setAxis(math::Vec3f left, math::Vec3f up, math::Vec3f forward) {
-            xAxis = left;
-            yAxis = left.cross(forward);
-            zAxis = forward;
+            xAxis = left.normalize();
+            yAxis = up.normalize();
+            zAxis = forward.normalize();
+            //std::cout<<"axis : "<<xAxis<<" "<<yAxis<<" "<<zAxis<<std::endl;
             needToUpdate3D = true;
             inverseNeedToUpdate3D = true;
         }

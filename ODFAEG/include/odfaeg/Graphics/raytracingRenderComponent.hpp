@@ -19,6 +19,7 @@ namespace odfaeg {
         class ODFAEG_GRAPHICS_API RaytracingRenderComponent : public HeavyComponent {
         public :
             struct Triangle {
+                math::Matrix4f prevTransform;
                 math::Matrix4f transform;
                 math::Matrix4f textureMatrix;
                 math::Vec3f positions[3];
@@ -27,8 +28,8 @@ namespace odfaeg {
                 math::Vec3f normal;
                 uint32_t textureIndex;
                 uint32_t refractReflect;
-                alignas (8) float ratio;
-                //float padding;
+                float ratio;
+                float padding;
             };
             struct Light {
                 math::Vec3f center;
@@ -105,6 +106,7 @@ namespace odfaeg {
             View& getView();
             const Texture& getFrameBufferTexture();
             RenderTexture* getFrameBuffer();
+            void loadTextureIndexes();
             ~RaytracingRenderComponent();
         private :
             VertexBuffer vb;
@@ -112,17 +114,18 @@ namespace odfaeg {
             sf::Color backgroundColor; /**> The background color.*/
             odfaeg::graphic::RenderTexture frameBuffer;
             Sprite frameBufferSprite;
-            unsigned int frameBufferTex, trianglesSSBO, lightsSSBO, clearBuf, ubo;
+            unsigned int frameBufferTex, trianglesSSBO, lightsSSBO, clearBuf, ubo, historyColorBuffer, historyNormalDepthBuffer;
             unsigned int atomicBuffer, linkedListBuffer, headPtrTex, clearBuf2;
             odfaeg::graphic::Shader rayComputeShader, quadShader;
             std::vector<Triangle> triangles;
             std::vector<Light> lights;
-            bool update;
+            bool update, dataReady, firstFrame;
             std::string expression;
             int layer;
             std::vector<odfaeg::graphic::Entity*> visibleEntities;
-            View view;
+            View view, prevView;
             Texture external;
+
         };
         #endif
     }

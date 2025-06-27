@@ -728,14 +728,17 @@ namespace odfaeg {
             addEntity(entity);
         }
         void Scene::checkVisibleEntities(EntityFactory& factory) {
+            //std::cout<<"check visible entities"<<std::endl;
             for (unsigned int c = 0; c < frcm->getNbComponents() + 1; c++) {
                 if (c == frcm->getNbComponents() || c < frcm->getNbComponents() && frcm->getRenderComponent(c) != nullptr) {
-                    physic::BoundingBox view;
+                    View view;
+                    physic::BoundingBox viewVolume;
                     if (c == frcm->getNbComponents())
-                        view = frcm->getWindow().getView().getViewVolume();
+                        view = frcm->getWindow().getView();
                     else
-                        view = frcm->getRenderComponent(c)->getView().getViewVolume();
-
+                        view = frcm->getRenderComponent(c)->getView();
+                    viewVolume = view.getViewVolume();
+                    //std::cout<<"view volume : "<<viewVolume.getPosition()<<viewVolume.getSize()<<std::endl;
                     visibleEntities.clear();
                     //visibleEntities.resize(core::Application::app->getNbEntitiesTypes());
                     visibleEntities.resize(factory.getNbEntitiesTypes());
@@ -743,13 +746,13 @@ namespace odfaeg {
                         //visibleEntities[i].resize(core::Application::app->getNbEntities(), nullptr);
                         visibleEntities[i].resize(factory.getNbEntities(), nullptr);
                     }
-                    int x = view.getPosition().x;
-                    int y = view.getPosition().y;
-                    int z = view.getPosition().z;
-                    int endX = view.getPosition().x + view.getWidth();
-                    int endY = view.getPosition().y + view.getHeight()+100;
-                    int endZ = (gridMap->getCellDepth() > 0) ? view.getPosition().z + view.getDepth()+100 : z;
-                    physic::BoundingBox bx (x, y, z, endX-view.getPosition().x, endY-view.getPosition().y, endZ-view.getPosition().z);
+                    int x = viewVolume.getPosition().x;
+                    int y = viewVolume.getPosition().y;
+                    int z = viewVolume.getPosition().z;
+                    int endX = viewVolume.getPosition().x + viewVolume.getWidth();
+                    int endY = viewVolume.getPosition().y + viewVolume.getHeight()+100;
+                    int endZ = (gridMap->getCellDepth() > 0) ? viewVolume.getPosition().z + viewVolume.getDepth()+100 : z;
+                    //physic::BoundingBox bx (x, y, z, endX-view.getPosition().x, endY-view.getPosition().y, endZ-view.getPosition().z);
 
                     for (int i = x; i <= endX; i+=gridMap->getOffsetX()) {
                         for (int j = y; j <= endY; j+=gridMap->getOffsetY()) {
@@ -760,7 +763,10 @@ namespace odfaeg {
                                     for (unsigned int n = 0; n < cell->getNbEntitiesInside(); n++) {
                                        Entity* entity = cell->getEntityInside(n);
                                        if (visibleEntities[entity->getRootTypeInt()][entity->getId()] == nullptr) {
-                                            visibleEntities[entity->getRootTypeInt()][entity->getId()] = entity;
+                                            math::Vec3f entityToView = entity->getCenter() - view.getPosition();
+                                            //std::cout<<"forward : "<<view.getForward()<<std::endl;
+                                            if (entityToView.dot(view.getForward()) <= 0)
+                                                visibleEntities[entity->getRootTypeInt()][entity->getId()] = entity;
                                        }
 
                                     }
@@ -1060,6 +1066,7 @@ namespace odfaeg {
                 return entities;
             }
             vector<string> types = core::split(expression, "+");
+            //std::cout<<"add visible entity : "<<expression<<std::endl;
             for (unsigned int t = 0; t < types.size(); t++) {
 
                 unsigned int typeInt = factory.getIntOfType(types[t]);
@@ -1077,6 +1084,7 @@ namespace odfaeg {
 
                         if (visibleEntitiesType[i] != nullptr && found) {
                             Entity* ba = visibleEntitiesType[i]->getRootEntity();
+
                             if (ba->getBoneAnimationIndex() == visibleEntitiesType[i]->getBoneIndex()) {
                                 /*if (visibleEntitiesType[i]->getType() == "E_ANIMATION")
                                     //std::cout<<"add animation"<<visibleEntitiesType[i]->getCurrentFrame()->getType()<<std::endl;*/

@@ -111,7 +111,7 @@ void MyAppli::onInit() {
     ps->addEmitter(emitter);
     g3d::PonctualLight* light = new g3d::PonctualLight(Vec3f(0, 25, 10), 200, 200, 200, 255, sf::Color::Yellow, 16, factory);
     getWorld()->addEntity(light);
-    eu = new EntitiesUpdater(factory, *getWorld());
+    eu = new EntitiesUpdater(factory, *getWorld(), false);
     getWorld()->addWorker(eu);
 
     loader = g3d::Model();
@@ -149,7 +149,7 @@ void MyAppli::onInit() {
     model->setShadowRotation(90 + angle * 100, Vec3f(1, 0, 0));
     //model->setShadowRotation(angle2 * 150, Vec3f(0, 0, 1));
     model->setShadowCenter(Vec3f(0, 0, -5));
-    model->setSelected(true);
+    //model->setSelected(true);
     isOnHeightMap = heightmap->getHeight(Vec2f(animator->getPosition().x, animator->getPosition().z), z);
     //std::cout<<"animator size : "<<animator->getSize()<<std::endl;
     animator->move(Vec3f(0, z, 0));
@@ -161,12 +161,14 @@ void MyAppli::onInit() {
     //std::cout<<"matrix : "<<model->getMatrix()<<std::endl;
     getWorld()->addEntity(model);
 
-    /*PerPixelLinkedListRenderComponent* frc = new PerPixelLinkedListRenderComponent(getRenderWindow(), 0, "E_CUBE", ContextSettings(0, 0, 4, 4, 6));
-    frc->setView(view3D);*/
+    PerPixelLinkedListRenderComponent* frc = new PerPixelLinkedListRenderComponent(getRenderWindow(), 0, "E_CUBE", ContextSettings(0, 0, 4, 4, 6));
+    frc->setView(view3D);
 
     //frc->setVisible(false);
     ShadowRenderComponent* src = new ShadowRenderComponent(getRenderWindow(), 1, "E_MESH+E_BIGTILE",ContextSettings(24, 0, 4, 4, 6));
     src->setView(view3D);
+    /*RaytracingRenderComponent* rtrc = new RaytracingRenderComponent(getRenderWindow(), 0, "E_MESH+E_BIGTILE", ContextSettings(0, 0, 4, 4, 6));
+    rtrc->setView(view3D);*/
     PerPixelLinkedListRenderComponent* frc2 = new PerPixelLinkedListRenderComponent(getRenderWindow(), 0, "E_BIGTILE+E_MESH+E_CUBE+E_BONE_ANIMATION",ContextSettings(24, 8, 4, 4, 6));
     //frc2->preloadEntitiesOnComponent(getWorld()->getEntities("*"), factory);
     frc2->setView(view3D);
@@ -184,7 +186,7 @@ void MyAppli::onInit() {
     /*rrrc->setVisible(false);
     src->setVisible(false);
     lrc->setVisible(false);*/
-
+    //getRenderComponentManager().addComponent(rtrc);
     getRenderComponentManager().addComponent(frc2);
     getRenderComponentManager().addComponent(src);
     getRenderComponentManager().addComponent(rrrc);
@@ -210,12 +212,12 @@ void MyAppli::onInit() {
     animUpdater = new AnimUpdater();
     animUpdater->addBoneAnim(animator);
     getWorld()->addTimer(animUpdater);
-    eu->needToUpdate();
-    //getWorld()->update();
+    //eu->needToUpdate();
+    getWorld()->update();
 }
 void MyAppli::onRender(RenderComponentManager* frcm) {
     //getWorld()->drawOnComponents("E_CUBE", 0);
-    getWorld()->drawOnComponents("E_MESH+E_BIGTILE", 1);
+    getWorld()->drawOnComponents("E_MESH+E_BIGTILE", 0);
     getWorld()->drawOnComponents("E_BIGTILE+E_MESH+E_CUBE+E_BONE_ANIMATION", 0);
     getWorld()->drawOnComponents("E_CUBE+E_BIGTILE+E_MESH", 2);
     getWorld()->drawOnComponents("E_PONCTUAL_LIGHT+E_BIGTILE", 3);
@@ -383,7 +385,7 @@ void MyAppli::onExec() {
         getRenderWindow().setView(view);*/
 
     }
-    eu->needToUpdate();
+    getWorld()->update();
     //getWorld()->update();
     /*ps->update(clock.getElapsedTime());
     animUpdater->update();*/
