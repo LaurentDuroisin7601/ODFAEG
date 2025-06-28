@@ -326,6 +326,7 @@ namespace sorrok {
         frc2->createDescriptorsAndPipelines();
         rrrc->createDescriptorsAndPipelines();
         src->createDescriptorsAndPipelines();
+        lrc->createDescriptorsAndPipelines();
 
 
 

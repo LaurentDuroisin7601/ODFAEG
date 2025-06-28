@@ -75,6 +75,10 @@ namespace odfaeg {
                     float near;
                     float far;
                 };
+                struct MaxSpecPC {
+                    float maxP;
+                    float maxM;
+                };
                 LightRenderComponent (RenderWindow& window, int layer, std::string expression,window::ContextSettings settings = window::ContextSettings(0, 0, 4, 3, 0));
                 void createDescriptorsAndPipelines();
                 void loadTextureIndexes() {}
@@ -163,6 +167,7 @@ namespace odfaeg {
                 LightIndirectRenderingPC lightIndirectRenderingPC;
                 LayerPC layerPC;
                 ResolutionPC resolutionPC;
+                MaxSpecPC maxSpecPC;
         };
         #else
         class ODFAEG_GRAPHICS_API LightRenderComponent : public HeavyComponent {
