@@ -160,6 +160,7 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
                     vbBindlessTex[i].setPrimitiveType(static_cast<PrimitiveType>(i));
                 }
+                resolutionPC.resolution = resolution;
             }
             void LightRenderComponent::compileShaders() {
                 const std::string indirectRenderingVertexShader = R"(#version 460
@@ -199,7 +200,7 @@ namespace odfaeg {
                                                                                  MaterialData material = materialDatas[gl_DrawID];
                                                                                  uint textureIndex = material.textureIndex;
                                                                                  uint l = material.layer;
-                                                                                 gl_Position = vec4(position, 1.f) * model.modelMatrix * pushConsts.viewMatrix, pushConsts.projMatrix;
+                                                                                 gl_Position = vec4(position, 1.f) * model.modelMatrix * pushConsts.viewMatrix, pushConsts.projectionMatrix;
                                                                                  fTexCoords = texCoords;
                                                                                  frontColor = color;
                                                                                  texIndex = textureIndex;
@@ -259,6 +260,7 @@ namespace odfaeg {
                                                                                       layout (push_constant)uniform PushConsts {
                                                                                          mat4 projectionMatrix;
                                                                                          layout (offset = 64) mat4 viewMatrix;
+                                                                                         layout (offset = 128) mat4 viewportMatrix;
                                                                                      } pushConsts;
                                                                                       struct ModelData {
                                                                                          mat4 modelMatrix;
@@ -280,22 +282,23 @@ namespace odfaeg {
                                                                                       layout (location = 0) out vec2 fTexCoords;
                                                                                       layout (location = 1) out vec4 frontColor;
                                                                                       layout (location = 2) out uint texIndex;
-                                                                                      layout (location = 3) out vec3 normal;
-                                                                                      layout (location = 4) out vec4 lightPos;
-                                                                                      layout (location = 5) out vec4 lightColor;
+                                                                                      layout (location = 3) out uint layer;
+                                                                                      layout (location = 4) out vec3 normal;
+                                                                                      layout (location = 5) out vec4 lightPos;
+                                                                                      layout (location = 6) out vec4 lightColor;
                                                                                       void main() {
-                                                                                         ModelData model = modelDatas[gl_BaseInstance + gl_InstanceID];
+                                                                                         ModelData model = modelDatas[gl_InstanceIndex];
                                                                                          MaterialData material = materialDatas[gl_DrawID];
                                                                                          uint l = material.layer;
-                                                                                         gl_Position = projectionMatrix * viewMatrix * model.modelMatrix * vec4(position, 1.f);
-                                                                                         fTexCoords = (textureMatrix * vec4(texCoords, 1.f, 1.f)).x()y;
+                                                                                         gl_Position = vec4(position, 1.f) * model.modelMatrix * pushConsts.viewMatrix * pushConsts.projectionMatrix;
+                                                                                         fTexCoords = texCoords;
                                                                                          frontColor = color;
                                                                                          layer = l;
                                                                                          vec4 coords = vec4(material.lightCenter.xyz, 1);
-                                                                                         coords = coords * model.modelMatrix * viewMatrix * projectionMatrix;
+                                                                                         coords = coords * model.modelMatrix * pushConsts.viewMatrix * pushConsts.projectionMatrix;
 
                                                                                          coords = coords / coords.w;
-                                                                                         coords = viewportMatrix * coords;
+                                                                                         coords = pushConsts.viewportMatrix * coords;
                                                                                          coords.w = material.lightCenter.w;
                                                                                          lightPos = coords;
                                                                                          lightColor = material.lightColor;
@@ -304,16 +307,17 @@ namespace odfaeg {
 
                         const std::string depthGenFragShader = R"(#version 460
                                                                           #extension GL_ARB_fragment_shader_interlock : require
+                                                                          #extension GL_EXT_nonuniform_qualifier : enable
                                                                           layout (location = 0) in vec2 fTexCoords;
                                                                           layout (location = 1) in vec4 frontColor;
-                                                                          layout (location = 2) in uint texIndex;
-                                                                          layout (location = 3) in uint layer;
+                                                                          layout (location = 2) in flat uint texIndex;
+                                                                          layout (location = 3) in flat uint layer;
                                                                           layout (location = 4) in vec3 normal;
                                                                           layout(set = 0, binding = 0) uniform sampler2D textures[];
                                                                           layout(set = 0, binding = 1, rgba32f) uniform coherent image2D depthBuffer;
                                                                           layout (location = 0) out vec4 fColor;
                                                                           layout (push_constant) uniform PushConsts {
-                                                                              layout (offset 128) uint nbLayers;
+                                                                              layout (offset = 128) uint nbLayers;
                                                                           } pushConsts;
                                                                           void main () {
                                                                               vec4 texel = (texIndex != 0) ? frontColor * texture(textures[texIndex-1], fTexCoords.xy) : frontColor;
@@ -321,8 +325,8 @@ namespace odfaeg {
                                                                               float l = layer;
                                                                               beginInvocationInterlockARB();
                                                                               vec4 depth = imageLoad(depthBuffer,ivec2(gl_FragCoord.xy));
-                                                                              if (/*l > depth.y() || l == depth.y() &&*/ z > depth.z()) {
-                                                                                imageStore(depthBuffer,ivec2(gl_FragCoord.x()y),vec4(0,l,z,texel.a));
+                                                                              if (/*l > depth.y() || l == depth.y() &&*/ z > depth.z) {
+                                                                                imageStore(depthBuffer,ivec2(gl_FragCoord.xy),vec4(0,l,z,texel.a));
                                                                                 memoryBarrier();
                                                                                 fColor = vec4(0, l, z, texel.a);
                                                                               } else {
@@ -333,27 +337,28 @@ namespace odfaeg {
                                                                         )";
                         const std::string buildAlphaBufferFragmentShader = R"(#version 460
                                                                       #extension GL_ARB_fragment_shader_interlock : require
-                                                                      layout(set = 0, binding = 0) uniform sampler2D textures[];
-                                                                      layout(binding = 0) uniform coherent image2D alphaBuffer;
-                                                                      layout (location = 0) out vec4 fColor;
-                                                                      layout(set = 0, binding = 1) uniform sampler2D depthBuffer;
+                                                                      #extension GL_EXT_nonuniform_qualifier : enable
                                                                       layout (location = 0) in vec2 fTexCoords;
                                                                       layout (location = 1) in vec4 frontColor;
-                                                                      layout (location = 2) in uint texIndex;
-                                                                      layout (location = 3) in uint layer;
+                                                                      layout (location = 2) in flat uint texIndex;
+                                                                      layout (location = 3) in flat uint layer;
                                                                       layout (location = 4) in vec3 normal;
+                                                                      layout(set = 0, binding = 1) uniform sampler2D depthBuffer;
+                                                                      layout(set = 0, binding = 0) uniform sampler2D textures[];
+                                                                      layout(binding = 0, rgba32f) uniform coherent image2D alphaBuffer;
+                                                                      layout (location = 0) out vec4 fColor;
                                                                       layout (push_constant) uniform PushConsts {
-                                                                          layout (offset 128) uint nbLayers;
+                                                                          layout (offset = 128) uint nbLayers;
                                                                       } pushConsts;
                                                                       void main() {
                                                                           vec4 texel = (texIndex != 0) ? frontColor * texture(textures[texIndex-1], fTexCoords.xy) : frontColor;
                                                                           float current_alpha = texel.a;
-                                                                          vec4 depth = texture2D (lightDepthBuffer, position);
+                                                                          vec4 depth = texture (depthBuffer, gl_FragCoord.xy);
                                                                           beginInvocationInterlockARB();
                                                                           vec4 alpha = imageLoad(alphaBuffer,ivec2(gl_FragCoord.xy));
                                                                           float l = layer;
                                                                           float z = gl_FragCoord.z;
-                                                                          if (/*l > depth.y() || l == depth.y() &&*/ depth.z() >= z && current_alpha > alpha.a) {
+                                                                          if (/*l > depth.y() || l == depth.y() &&*/ depth.z >= z && current_alpha > alpha.a) {
                                                                               imageStore(alphaBuffer,ivec2(gl_FragCoord.xy),vec4(0, l, z, current_alpha));
                                                                               memoryBarrier();
                                                                               fColor = vec4(0, l, z, current_alpha);
@@ -364,46 +369,47 @@ namespace odfaeg {
                                                                       }
                                                                       )";
                         const std::string specularGenFragShader = R"(#version 460
-                                                                     layout(set = 0, binding = 0) uniform sampler2D textures[];
+                                                                     #extension GL_EXT_nonuniform_qualifier : enable
                                                                      layout (location = 0) in vec2 fTexCoords;
                                                                      layout (location = 1) in vec4 frontColor;
-                                                                     layout (location = 2) in uint texIndex;
-                                                                     layout (location = 3) in uint layer;
+                                                                     layout (location = 2) in flat uint texIndex;
+                                                                     layout (location = 3) in flat uint layer;
                                                                      layout (location = 4) in vec3 normal;
                                                                      layout (location = 5) in vec2 specular;
                                                                      layout (push_constant) uniform PushConsts {
                                                                          float maxP;
                                                                          float maxM;
                                                                      } pushConsts;
+                                                                     layout(set = 0, binding = 0) uniform sampler2D textures[];
                                                                      layout(set = 0, binding = 1) uniform sampler2D depthBuffer;
                                                                      layout (location = 0) out vec4 fColor;
                                                                      void main() {
                                                                         vec4 texel = (texIndex != 0) ? frontColor * texture(textures[texIndex-1], fTexCoords.xy) : frontColor;
                                                                         vec4 depth = texture(depthBuffer, gl_FragCoord.xy);
                                                                         float z = gl_FragCoord.z;
-                                                                        float intensity = (pushConsts.maxM != 0.f) ? specular.x / maxM : 0.f;
-                                                                        float power = (pushConsts.maxP != 0.f) ? specular.y / maxP : 0.f;
-                                                                        if (/*layer > depth.y() || layer == depth.y() &&*/ z > depth.z())
-                                                                            fColor = vec4(intensity, power, z, color.a);
+                                                                        float intensity = (pushConsts.maxM != 0.f) ? specular.x / pushConsts.maxM : 0.f;
+                                                                        float power = (pushConsts.maxP != 0.f) ? specular.y / pushConsts.maxP : 0.f;
+                                                                        if (/*layer > depth.y || layer == depth.y &&*/ z > depth.z)
+                                                                            fColor = vec4(intensity, power, z, texel.a);
                                                                         else
-                                                                            fColor = specular;
+                                                                            fColor = vec4(specular.x, specular.y, 0, 1);
                                                                      }
                                                                   )";
                         const std::string bumpGenFragShader =    R"(#version 460
+                                                                    #extension GL_EXT_nonuniform_qualifier : enable
                                                                  layout(set = 0, binding = 0) uniform sampler2D textures[];
                                                                  layout (location = 0) in vec2 fTexCoords;
                                                                  layout (location = 1) in vec4 frontColor;
-                                                                 layout (location = 2) in uint texIndex;
-                                                                 layout (location = 3) in uint layer;
+                                                                 layout (location = 2) in flat uint texIndex;
+                                                                 layout (location = 3) in flat uint layer;
                                                                  layout (location = 4) in vec3 normal;
                                                                  layout(set = 0, binding = 1) uniform sampler2D depthBuffer;
                                                                  layout(set = 0, binding = 2) uniform sampler2D bumpMap;
-
                                                                  layout (location = 0) out vec4 fColor;
                                                                  void main() {
                                                                      vec4 color = (texIndex != 0) ? texture(textures[texIndex-1], fTexCoords.xy) : vec4(0, 0, 0, 0);
                                                                      vec4 depth = texture(depthBuffer, gl_FragCoord.xy);
-                                                                     vec4 bump = texture2D(bumpMap, gl_FragCoord.xy);
+                                                                     vec4 bump = texture(bumpMap, gl_FragCoord.xy);
                                                                      if (/*layer > depth.y() || layer == depth.y() &&*/ gl_FragCoord.z > depth.z) {
                                                                         fColor = color;
                                                                      } else {
@@ -412,41 +418,44 @@ namespace odfaeg {
                                                                  }
                                                                  )";
                         const std::string perPixLightingFragmentShader =  R"(#version 460
+                                                                             #extension GL_EXT_nonuniform_qualifier : enable
                                                                  layout (location = 0) in vec2 fTexCoords;
                                                                  layout (location = 1) in vec4 frontColor;
-                                                                 layout (location = 2) in uint texIndex;
-                                                                 layout (location = 3) in uint layer;
+                                                                 layout (location = 2) in flat uint texIndex;
+                                                                 layout (location = 3) in flat uint layer;
                                                                  layout (location = 4) in vec3 normal;
                                                                  layout (location = 5) in flat vec4 lightColor;
                                                                  layout (location = 6) in flat vec4 lightPos;
                                                                  const vec2 size = vec2(2.0,0.0);
                                                                  const ivec3 off = ivec3(-1,0,1);
-                                                                 layout(set = 0, binding = 0) uniform sampler2D depthBuffer;
+                                                                 layout(set = 0, binding = 0) uniform sampler2D depthTexture;
                                                                  layout(set = 0, binding = 1) uniform sampler2D bumpMap;
                                                                  layout(set = 0, binding = 2) uniform sampler2D specularTexture;
                                                                  layout(set = 0, binding = 3) uniform sampler2D alphaMap;
                                                                  layout(set = 0, binding = 6) uniform sampler2D lightMap;
                                                                  layout (location = 0) out vec4 fColor;
+                                                                 layout (push_constant) uniform PushConsts {
+                                                                     layout (offset = 128) vec4 resolution;
+                                                                     layout (offset = 144) float near;
+                                                                     layout (offset = 148) float far;
+                                                                 } pushConsts;
                                                          void main () {
-                                                             vec2 position = (gl_FragCoord.xy);
-                                                             vec2 invPosition = vec2(position.x, 1 - position.y);
-                                                             vec4 depth = texture(depthTexture, position);
-                                                             vec4 invDepth = texture (depthTexture, invPosition);
-                                                             vec4 alpha = texture(alphaMap, position);
-                                                             float s01 = textureOffset(depthTexture, position, off.xy).z;
-                                                             float s21 = textureOffset(depthTexture, position, off.zy).z;
-                                                             float s10 = textureOffset(depthTexture, position, off.yx).z;
-                                                             float s12 = textureOffset(depthTexture, position, off.yz).z;
-                                                             vec3 va = normalize (vec3(size.x()y, s21 - s01));
-                                                             vec3 vb = normalize (vec3(size.y()x, s12 - s10));
+                                                             vec4 depth = texture(depthTexture, gl_FragCoord.xy);
+                                                             vec4 alpha = texture(alphaMap, gl_FragCoord.xy);
+                                                             float s01 = textureOffset(depthTexture, gl_FragCoord.xy, off.xy).z;
+                                                             float s21 = textureOffset(depthTexture, gl_FragCoord.xy, off.zy).z;
+                                                             float s10 = textureOffset(depthTexture, gl_FragCoord.xy, off.yx).z;
+                                                             float s12 = textureOffset(depthTexture, gl_FragCoord.xy, off.yz).z;
+                                                             vec3 va = normalize (vec3(size.xy, s21 - s01));
+                                                             vec3 vb = normalize (vec3(size.yx, s12 - s10));
                                                              vec3 normal = vec3(cross(va, vb));
-                                                             vec4 bump = texture(bumpMap, position);
-                                                             vec4 specularInfos = texture(specularTexture, position);
-                                                             vec3 sLightPos = vec3 (lightPos.x(), lightPos.y(), -lightPos.z * (gl_DepthRange.far - gl_DepthRange.near));
+                                                             vec4 bump = texture(bumpMap, gl_FragCoord.xy);
+                                                             vec4 specularInfos = texture(specularTexture, gl_FragCoord.xy);
+                                                             vec3 sLightPos = vec3 (lightPos.x, lightPos.y, -lightPos.z * (pushConsts.far - pushConsts.near));
                                                              float radius = lightPos.w;
-                                                             vec3 pixPos = vec3 (gl_FragCoord.x, gl_FragCoord.y, -depth.z * (gl_DepthRange.far - gl_DepthRange.near));
-                                                             vec4 lightMapColor = texture2D(lightMap, position);
-                                                             vec3 viewPos = vec3(resolution.x * 0.5f, resolution.y * 0.5f, 0);
+                                                             vec3 pixPos = vec3 (gl_FragCoord.x, gl_FragCoord.y, -depth.z * (pushConsts.far - pushConsts.near));
+                                                             vec4 lightMapColor = texture(lightMap, gl_FragCoord.xy);
+                                                             vec3 viewPos = vec3(pushConsts.resolution.x * 0.5f, pushConsts.resolution.y * 0.5f, 0);
                                                              float z = gl_FragCoord.z;
                                                              vec3 vertexToLight = sLightPos - pixPos;
                                                              if (bump.x != 0 || bump.y != 0 || bump.z != 0) {
@@ -494,6 +503,121 @@ namespace odfaeg {
 
                         if (!lightMapGenerator.loadFromMemory(perPixLightingIndirectRenderingVertexShader, perPixLightingFragmentShader))
                             throw core::Erreur(54, "Failed to load light map generator shader", 0);
+            }
+            void LightRenderComponent::createCommandPool() {
+                window::Device::QueueFamilyIndices queueFamilyIndices = vkDevice.findQueueFamilies(vkDevice.getPhysicalDevice(), VK_NULL_HANDLE);
+
+                VkCommandPoolCreateInfo poolInfo{};
+                poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+                poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
+                poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT; // Optionel
+                if (vkCreateCommandPool(vkDevice.getDevice(), &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {
+                    throw core::Erreur(0, "échec de la création d'une command pool!", 1);
+                }
+            }
+            uint32_t LightRenderComponent::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
+                VkPhysicalDeviceMemoryProperties memProperties;
+                vkGetPhysicalDeviceMemoryProperties(vkDevice.getPhysicalDevice(), &memProperties);
+                for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
+                    if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
+                        return i;
+                    }
+                }
+                throw std::runtime_error("aucun type de memoire ne satisfait le buffer!");
+            }
+            void LightRenderComponent::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory) {
+                VkBufferCreateInfo bufferInfo{};
+                bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+                bufferInfo.size = size;
+                bufferInfo.usage = usage;
+                bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+                if (vkCreateBuffer(vkDevice.getDevice(), &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
+                    throw std::runtime_error("failed to create buffer!");
+                }
+
+                VkMemoryRequirements memRequirements;
+                vkGetBufferMemoryRequirements(vkDevice.getDevice(), buffer, &memRequirements);
+
+                VkMemoryAllocateInfo allocInfo{};
+                allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+                allocInfo.allocationSize = memRequirements.size;
+                allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
+
+                if (vkAllocateMemory(vkDevice.getDevice(), &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
+                    throw std::runtime_error("failed to allocate buffer memory!");
+                }
+
+                vkBindBufferMemory(vkDevice.getDevice(), buffer, bufferMemory, 0);
+
+            }
+            void LightRenderComponent::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) {
+                VkCommandBufferAllocateInfo allocInfo{};
+                allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+                allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+                allocInfo.commandPool = commandPool;
+                allocInfo.commandBufferCount = 1;
+
+                VkCommandBuffer commandBuffer;
+                vkAllocateCommandBuffers(vkDevice.getDevice(), &allocInfo, &commandBuffer);
+
+                VkCommandBufferBeginInfo beginInfo{};
+                beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+                beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+                vkBeginCommandBuffer(commandBuffer, &beginInfo);
+
+                    VkBufferCopy copyRegion{};
+                    copyRegion.size = size;
+                    vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+
+                vkEndCommandBuffer(commandBuffer);
+
+                VkSubmitInfo submitInfo{};
+                submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+                submitInfo.commandBufferCount = 1;
+                submitInfo.pCommandBuffers = &commandBuffer;
+
+                vkQueueSubmit(vkDevice.getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
+                vkQueueWaitIdle(vkDevice.getGraphicsQueue());
+
+                vkFreeCommandBuffers(vkDevice.getDevice(), commandPool, 1, &commandBuffer);
+            }
+            void LightRenderComponent::clear() {
+                depthBuffer.clear(Color::Transparent);
+                std::vector<VkCommandBuffer> commandBuffers = depthBuffer.getCommandBuffers();
+                VkClearColorValue clearColor = {0.f, 0.f, 0.f, 0.f};
+                VkImageSubresourceRange subresRange = {};
+                subresRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                subresRange.levelCount = 1;
+                subresRange.layerCount = 1;
+                for (unsigned int i = 0; i < commandBuffers.size(); i++) {
+                    vkCmdClearColorImage(commandBuffers[i], depthTextureImage, VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
+                    VkMemoryBarrier memoryBarrier;
+                    memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+                    memoryBarrier.pNext = VK_NULL_HANDLE;
+                    memoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                    memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+                    vkCmdPipelineBarrier(commandBuffers[i], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
+                }
+                alphaBuffer.clear(Color::Transparent);
+                commandBuffers = alphaBuffer.getCommandBuffers();
+                for (unsigned int i = 0; i < commandBuffers.size(); i++) {
+                    vkCmdClearColorImage(commandBuffers[i], alphaTextureImage, VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
+                    VkMemoryBarrier memoryBarrier;
+                    memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+                    memoryBarrier.pNext = VK_NULL_HANDLE;
+                    memoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                    memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+                    vkCmdPipelineBarrier(commandBuffers[i], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
+                }
+                specularTexture.clear(Color::Transparent);
+                bumpTexture.clear(Color::Transparent);
+                lightMap.beginRecordCommandBuffers();
+                const_cast<Texture&>(lightMap.getTexture()).toColorAttachmentOptimal(lightMap.getCommandBuffers()[lightMap.getCurrentFrame()]);
+                lightMap.display();
+                Color ambientColor = g2d::AmbientLight::getAmbientLight().getColor();
+                lightMap.clear(ambientColor);
             }
             void LightRenderComponent::createImageView() {
                 VkImageViewCreateInfo viewInfo{};
@@ -713,15 +837,26 @@ namespace odfaeg {
                     for (unsigned int j = 0; j < NBDEPTHSTENCIL; j++) {
                         for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
                             if (j == 0) {
+                                std::array<VkPushConstantRange, 2> push_constants;
                                 VkPushConstantRange push_constant;
-                                //this push constant range takes up the size of a MeshPushConstants struct
+                                //this push constant range starts at the beginning
                                 push_constant.offset = 0;
-                                push_constant.size = sizeof(IndirectRenderingPC);
+                                //this push constant range takes up the size of a MeshPushConstants struct
+                                push_constant.size = sizeof(LightIndirectRenderingPC);
                                 //this push constant range is accessible only in the vertex shader
-                                push_constant.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+                                push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+                                push_constants[0] = push_constant;
+                                VkPushConstantRange push_constant2;
+                                //this push constant range starts at the beginning
+                                push_constant2.offset = 128;
+                                //this push constant range takes up the size of a MeshPushConstants struct
+                                push_constant2.size = sizeof(ResolutionPC);
+                                //this push constant range is accessible only in the vertex shader
+                                push_constant2.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+                                push_constants[1] = push_constant2;
 
-                                pipelineLayoutInfo[bumpTextureGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][bumpTexture.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = &push_constant;
-                                pipelineLayoutInfo[bumpTextureGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][bumpTexture.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 1;
+                                pipelineLayoutInfo[bumpTextureGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][bumpTexture.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = push_constants.data();
+                                pipelineLayoutInfo[bumpTextureGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][bumpTexture.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 2;
                                depthStencilCreateInfo[bumpTextureGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][bumpTexture.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
                                depthStencilCreateInfo[bumpTextureGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][bumpTexture.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = {};
                                depthStencilCreateInfo[bumpTextureGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][bumpTexture.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {};
@@ -2017,6 +2152,7 @@ namespace odfaeg {
 
                 vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
                 vkCmdPushConstants(commandBuffers[currentFrame], lightMap.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][lightMap.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(LightIndirectRenderingPC), &lightIndirectRenderingPC);
+                vkCmdPushConstants(commandBuffers[currentFrame], lightMap.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][lightMap.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(ResolutionPC), &resolutionPC);
                 lightMap.beginRenderPass();
                 lightMap.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
                 lightMap.endRenderPass();
@@ -2643,6 +2779,91 @@ namespace odfaeg {
                     createCommandBuffersIndirect(p, drawArraysIndirectCommands[p].size(), sizeof(DrawArraysIndirectCommand), NODEPTHNOSTENCIL, currentStates);
                 }
             }
+        }
+        void LightRenderComponent::draw(RenderTarget& target, RenderStates states) {
+            if (&target == &window)
+                window.setSemaphore(renderFinishedSemaphore);
+            const_cast<Texture&>(lightMap.getTexture()).toShaderReadOnlyOptimal(window.getCommandBuffers()[window.getCurrentFrame()]);
+            lightMapTile.setCenter(target.getView().getPosition());
+            if (&target == &window)
+                window.beginRenderPass();
+            states.blendMode = BlendMultiply;
+            target.draw(lightMapTile, states);
+            if (&target == &window)
+                window.endRenderPass();
+        }
+        bool LightRenderComponent::loadEntitiesOnComponent(std::vector<Entity*> vEntities)
+        {
+            {
+                std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                datasReady = false;
+                batcher.clear();
+                normalBatcher.clear();
+                lightBatcher.clear();
+            }
+
+            for (unsigned int i = 0; i < vEntities.size(); i++) {
+
+                if (vEntities[i] != nullptr && vEntities[i]->isLeaf()) {
+                    std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                    if (vEntities[i]->isLight()) {
+                        for (unsigned int j = 0; j <  vEntities[i]->getNbFaces(); j++) {
+                            lightBatcher.addFace(vEntities[i]->getFace(j));
+                        }
+                    } else {
+                        for (unsigned int j = 0; j <  vEntities[i]->getNbFaces(); j++) {
+                            if (vEntities[i]->getDrawMode() == Entity::INSTANCED)
+                                batcher.addFace(vEntities[i]->getFace(j));
+                            else
+                                normalBatcher.addFace(vEntities[i]->getFace(j));
+                        }
+                    }
+                }
+            }
+
+            visibleEntities = vEntities;
+            update = true;
+            std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+            datasReady = true;
+            return true;
+        }
+        void LightRenderComponent::setView(View view){
+            this->view = view;
+            depthBuffer.setView(view);
+            specularTexture.setView(view);
+            bumpTexture.setView(view);
+            lightMap.setView(view);
+            lightDepthBuffer.setView(view);
+        }
+        void LightRenderComponent::setExpression(std::string expression) {
+            update = true;
+            this->expression = expression;
+        }
+        std::string LightRenderComponent::getExpression() {
+            return expression;
+        }
+        bool LightRenderComponent::needToUpdate() {
+            return update;
+        }
+        void LightRenderComponent::onVisibilityChanged (bool visible) {
+
+        }
+        std::vector<Entity*> LightRenderComponent::getEntities() {
+            return visibleEntities;
+        }
+        View& LightRenderComponent::getView() {
+            return view;
+        }
+        int LightRenderComponent::getLayer() {
+            return getPosition().z();
+        }
+        RenderTexture* LightRenderComponent::getFrameBuffer() {
+            return &lightMap;
+        }
+        void LightRenderComponent::pushEvent(window::IEvent event, RenderWindow& rw) {
+
+        }
+        LightRenderComponent::~LightRenderComponent() {
         }
         #else
         LightRenderComponent::LightRenderComponent (RenderWindow& window, int layer, std::string expression,window::ContextSettings settings) :

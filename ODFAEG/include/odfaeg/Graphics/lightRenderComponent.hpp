@@ -70,9 +70,14 @@ namespace odfaeg {
                 struct LayerPC {
                     unsigned int nbLayers;
                 };
+                struct ResolutionPC {
+                    math::Vec4f resolution;
+                    float near;
+                    float far;
+                };
                 LightRenderComponent (RenderWindow& window, int layer, std::string expression,window::ContextSettings settings = window::ContextSettings(0, 0, 4, 3, 0));
                 void createDescriptorsAndPipelines();
-                void loadTextureIndexes();
+                void loadTextureIndexes() {}
                 void onVisibilityChanged(bool visible);
                 void pushEvent(window::IEvent event, RenderWindow& rw);
                 bool needToUpdate();
@@ -157,6 +162,7 @@ namespace odfaeg {
                 IndirectRenderingPC indirectRenderingPC;
                 LightIndirectRenderingPC lightIndirectRenderingPC;
                 LayerPC layerPC;
+                ResolutionPC resolutionPC;
         };
         #else
         class ODFAEG_GRAPHICS_API LightRenderComponent : public HeavyComponent {
