@@ -2197,6 +2197,8 @@ namespace odfaeg {
             lightIndirectRenderingPC.projMatrix = projMatrix;
             lightIndirectRenderingPC.viewMatrix = viewMatrix;
             lightIndirectRenderingPC.viewportMatrix = lightMap.getViewportMatrix(&lightMap.getView()).getMatrix();
+            resolutionPC.near = view.getViewport().getPosition().z();
+            resolutionPC.far = view.getViewport().getSize().z();
 
 
 
