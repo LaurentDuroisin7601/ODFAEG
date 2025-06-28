@@ -431,12 +431,12 @@ namespace odfaeg
                 if (semaphore != VK_NULL_HANDLE) {
                     if (isSignalSemaphore) {
                         signalSemaphores.push_back(semaphore);
-                        signalValues.push_back(value);
+                        signalValues.push_back(0);
                         //std::cout<<"offscreen signal semaphore : "<<semaphore<<std::endl;
                     } else {
                         waitSemaphores.push_back(semaphore);
                         waitStages.push_back(VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
-                        waitValues.push_back(value+1);
+                        waitValues.push_back(0);
                     }
                 }
                 VkTimelineSemaphoreSubmitInfo timelineInfo = {};

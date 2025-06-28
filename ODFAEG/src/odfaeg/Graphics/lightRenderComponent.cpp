@@ -163,6 +163,7 @@ namespace odfaeg {
                 resolutionPC.resolution = resolution;
                 needToUpdateDS = false;
                 isSomethingDrawn = false;
+                update = true;
             }
             void LightRenderComponent::compileShaders() {
                 const std::string indirectRenderingVertexShader = R"(#version 460
@@ -2952,7 +2953,7 @@ namespace odfaeg {
             }
 
             visibleEntities = vEntities;
-            update = true;
+
             std::lock_guard<std::recursive_mutex> lock(rec_mutex);
             datasReady = true;
             return true;

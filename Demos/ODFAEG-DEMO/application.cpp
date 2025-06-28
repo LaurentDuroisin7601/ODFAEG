@@ -320,13 +320,13 @@ namespace sorrok {
 
         //rrrc->createDescriptorsAndPipelines();
         ShadowRenderComponent *src = new ShadowRenderComponent(getRenderWindow(), 3, "E_WALL+E_DECOR+E_ANIMATION+E_HERO", ContextSettings(0, 0, 4, 4, 6));
-        LightRenderComponent *lrc = new LightRenderComponent(getRenderWindow(), 4, "E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PONCTUAL_LIGHT", ContextSettings(0, 0, 4, 4, 6));
+        /*LightRenderComponent *lrc = new LightRenderComponent(getRenderWindow(), 4, "E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PONCTUAL_LIGHT", ContextSettings(0, 0, 4, 4, 6));*/
         getRenderWindow().createDescriptorsAndPipelines();
         frc1->createDescriptorsAndPipelines();
         frc2->createDescriptorsAndPipelines();
         rrrc->createDescriptorsAndPipelines();
         src->createDescriptorsAndPipelines();
-        lrc->createDescriptorsAndPipelines();
+        /*lrc->createDescriptorsAndPipelines();*/
 
 
 
@@ -353,7 +353,7 @@ namespace sorrok {
         getRenderComponentManager().addComponent(frc2);
         getRenderComponentManager().addComponent(rrrc);
         getRenderComponentManager().addComponent(src);
-        getRenderComponentManager().addComponent(lrc);
+        /*getRenderComponentManager().addComponent(lrc);*/
         /*getRenderComponentManager().addComponent(textArea);
         getRenderComponentManager().addComponent(op);*/
 
@@ -435,7 +435,7 @@ namespace sorrok {
         getWorld()->drawOnComponents("E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PARTICLES", 1);
         getWorld()->drawOnComponents("E_BIGTILE+E_WALL+E_DECOR+E_ANIMATION+E_HERO", 2);
         getWorld()->drawOnComponents("E_WALL+E_DECOR+E_ANIMATION+E_HERO", 3);
-        getWorld()->drawOnComponents("E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PONCTUAL_LIGHT", 4);
+        /*getWorld()->drawOnComponents("E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PONCTUAL_LIGHT", 4);*/
 
     }
     void MyAppli::onDisplay(RenderWindow* window) {

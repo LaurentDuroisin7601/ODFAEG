@@ -294,6 +294,7 @@ namespace odfaeg {
                         throw std::runtime_error("failed to create compute synchronization objects for a frame!");
                     }
                 }
+                update = true;
             }
             void ReflectRefractRenderComponent::createDescriptorsAndPipelines() {
                 RenderStates states;
@@ -3314,7 +3315,6 @@ namespace odfaeg {
                         }
                     }
                 }
-                update = true;
                 std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                 datasReady = true;
                 return true;
