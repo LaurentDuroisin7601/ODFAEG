@@ -2269,6 +2269,7 @@ namespace odfaeg {
                     depthBuffer.beginRenderPass();
                     depthBuffer.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
                     depthBuffer.endRenderPass();
+                    depthBuffer.display();
                 } else if (shader == &sBuildAlphaBuffer) {
                     const_cast<Texture&>(depthBuffer.getTexture()).toShaderReadOnlyOptimal(alphaBuffer.getCommandBuffers()[alphaBuffer.getCurrentFrame()]);
 
@@ -2295,6 +2296,7 @@ namespace odfaeg {
                     alphaBuffer.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
                     alphaBuffer.endRenderPass();
                     const_cast<Texture&>(depthBuffer.getTexture()).toColorAttachmentOptimal(alphaBuffer.getCommandBuffers()[alphaBuffer.getCurrentFrame()]);
+                    alphaBuffer.display();
 
                 } else if (shader == &sLinkedList) {
 
@@ -2312,6 +2314,7 @@ namespace odfaeg {
                     environmentMap.beginRenderPass();
                     environmentMap.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
                     environmentMap.endRenderPass();
+                    environmentMap.display();
 
                 } else {
                     const_cast<Texture&>(environmentMap.getTexture()).toShaderReadOnlyOptimal(reflectRefractTex.getCommandBuffers()[reflectRefractTex.getCurrentFrame()]);
@@ -2340,10 +2343,13 @@ namespace odfaeg {
 
                     const_cast<Texture&>(alphaBuffer.getTexture()).toColorAttachmentOptimal(reflectRefractTex.getCommandBuffers()[reflectRefractTex.getCurrentFrame()]);
                     const_cast<Texture&>(environmentMap.getTexture()).toColorAttachmentOptimal(reflectRefractTex.getCommandBuffers()[reflectRefractTex.getCurrentFrame()]);
+                    reflectRefractTex.display(true, renderFinishedSemaphore[window.getCurrentFrame()]);
 
                 }
+                isSomethingDrawn = true;
             }
             void ReflectRefractRenderComponent::createCommandBufferVertexBuffer(RenderStates currentStates) {
+
                 environmentMap.beginRecordCommandBuffers();
                 Shader* shader = const_cast<Shader*>(currentStates.shader);
                 unsigned int currentFrame = environmentMap.getCurrentFrame();
@@ -3078,9 +3084,11 @@ namespace odfaeg {
                 indirectRenderingPC.viewMatrix = toVulkanMatrix(viewMatrix);
 
                 drawDepthReflInst();
-                depthBuffer.display();
+                if (!isSomethingDrawn)
+                    depthBuffer.display();
                 drawAlphaInst();
-                alphaBuffer.display();
+                if (!isSomethingDrawn)
+                    alphaBuffer.display();
 
                 View reflectView;
                 if (view.isOrtho()) {
@@ -3142,7 +3150,7 @@ namespace odfaeg {
                                             reflectView.setPerspective(80, view.getViewport().getSize().x() / view.getViewport().getSize().y(), zNear, view.getViewport().getSize().z());
 
                                     }
-                                    environmentMap.clear(Color::Transparent);
+
                                     //environmentMap.display();
                                     vkWaitForFences(vkDevice.getDevice(), 1, &computeFence, VK_TRUE, UINT64_MAX);
                                     vkResetFences(vkDevice.getDevice(), 1, &computeFence);
@@ -3191,8 +3199,12 @@ namespace odfaeg {
                                         ubo.matrices[f] = matrices;
                                     }
                                     updateUniformBuffer(environmentMap.getCurrentFrame(), ubo);
-                                    drawEnvReflInst();
+                                    environmentMap.clear(Color::Transparent);
                                     environmentMap.display(false, computeSemaphore);
+                                    environmentMap.beginRecordCommandBuffers();
+                                    drawEnvReflInst();
+
+
                                     vb.clear();
                                     vb.setPrimitiveType(Triangles);
                                     Vertex v1 (math::Vec3f(0, 0, quad.getSize().z()));
@@ -3221,7 +3233,10 @@ namespace odfaeg {
 
                     }
                 }
-                reflectRefractTex.display(true, renderFinishedSemaphore[window.getCurrentFrame()]);
+                if (!isSomethingDrawn) {
+                    reflectRefractTex.display(true, renderFinishedSemaphore[window.getCurrentFrame()]);
+                }
+                isSomethingDrawn  = false;
                 //reflectRefractTex.display();
             }
             void ReflectRefractRenderComponent::draw(RenderTarget& target, RenderStates states) {

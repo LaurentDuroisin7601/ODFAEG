@@ -161,6 +161,8 @@ namespace odfaeg {
                     vbBindlessTex[i].setPrimitiveType(static_cast<PrimitiveType>(i));
                 }
                 resolutionPC.resolution = resolution;
+                needToUpdateDS = false;
+                isSomethingDrawn = false;
             }
             void LightRenderComponent::compileShaders() {
                 const std::string indirectRenderingVertexShader = R"(#version 460
@@ -443,9 +445,9 @@ namespace odfaeg {
                                                                  layout(set = 0, binding = 6) uniform sampler2D lightMap;
                                                                  layout (location = 0) out vec4 fColor;
                                                                  layout (push_constant) uniform PushConsts {
-                                                                     layout (offset = 128) vec4 resolution;
-                                                                     layout (offset = 144) float near;
-                                                                     layout (offset = 148) float far;
+                                                                     layout (offset = 192) vec4 resolution;
+                                                                     layout (offset = 208) float near;
+                                                                     layout (offset = 212) float far;
                                                                  } pushConsts;
                                                          void main () {
                                                              vec4 depth = textureLod(depthTexture, gl_FragCoord.xy, 0);
@@ -940,7 +942,7 @@ namespace odfaeg {
                                 push_constants[0] = push_constant;
                                 VkPushConstantRange push_constant2;
                                 //this push constant range starts at the beginning
-                                push_constant2.offset = 128;
+                                push_constant2.offset = 192;
                                 //this push constant range takes up the size of a MeshPushConstants struct
                                 push_constant2.size = sizeof(ResolutionPC);
                                 //this push constant range is accessible only in the vertex shader
@@ -1533,8 +1535,8 @@ namespace odfaeg {
 
                         VkDescriptorImageInfo headPtrDescriptorImageInfo;
                         headPtrDescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                        headPtrDescriptorImageInfo.imageView = specularTexture.getTexture().getImageView();
-                        headPtrDescriptorImageInfo.sampler = specularTexture.getTexture().getSampler();
+                        headPtrDescriptorImageInfo.imageView = depthBuffer.getTexture().getImageView();
+                        headPtrDescriptorImageInfo.sampler = depthBuffer.getTexture().getSampler();
 
                         descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                         descriptorWrites[1].dstSet = descriptorSets[descriptorId][i];
@@ -2161,6 +2163,7 @@ namespace odfaeg {
                     depthBuffer.beginRenderPass();
                     depthBuffer.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
                     depthBuffer.endRenderPass();
+                    depthBuffer.display();
                 } else {
                     std::vector<VkCommandBuffer> commandBuffers = lightDepthBuffer.getCommandBuffers();
                     unsigned int currentFrame = lightDepthBuffer.getCurrentFrame();
@@ -2170,6 +2173,7 @@ namespace odfaeg {
                     lightDepthBuffer.beginRenderPass();
                     lightDepthBuffer.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
                     lightDepthBuffer.endRenderPass();
+                    lightDepthBuffer.display();
                 }
 
             } else if (shader == &buildAlphaBufferGenerator) {
@@ -2198,10 +2202,11 @@ namespace odfaeg {
                 alphaBuffer.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
                 alphaBuffer.endRenderPass();
                 const_cast<Texture&>(depthBuffer.getTexture()).toColorAttachmentOptimal(alphaBuffer.getCommandBuffers()[alphaBuffer.getCurrentFrame()]);
+                alphaBuffer.display();
 
             } else if (shader == &specularTextureGenerator) {
 
-
+                const_cast<Texture&>(depthBuffer.getTexture()).toShaderReadOnlyOptimal(specularTexture.getCommandBuffers()[specularTexture.getCurrentFrame()]);
                 std::vector<VkCommandBuffer> commandBuffers = specularTexture.getCommandBuffers();
                 unsigned int currentFrame = specularTexture.getCurrentFrame();
 
@@ -2213,10 +2218,12 @@ namespace odfaeg {
                 specularTexture.beginRenderPass();
                 specularTexture.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
                 specularTexture.endRenderPass();
+                const_cast<Texture&>(depthBuffer.getTexture()).toColorAttachmentOptimal(specularTexture.getCommandBuffers()[specularTexture.getCurrentFrame()]);
+                specularTexture.display();
 
 
             } else if (shader == &bumpTextureGenerator) {
-
+                const_cast<Texture&>(depthBuffer.getTexture()).toShaderReadOnlyOptimal(bumpTexture.getCommandBuffers()[bumpTexture.getCurrentFrame()]);
                 std::vector<VkCommandBuffer> commandBuffers = bumpTexture.getCommandBuffers();
                 unsigned int currentFrame = bumpTexture.getCurrentFrame();
 
@@ -2228,6 +2235,9 @@ namespace odfaeg {
                 bumpTexture.beginRenderPass();
                 bumpTexture.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
                 bumpTexture.endRenderPass();
+
+                const_cast<Texture&>(depthBuffer.getTexture()).toColorAttachmentOptimal(bumpTexture.getCommandBuffers()[bumpTexture.getCurrentFrame()]);
+                bumpTexture.display();
 
             } else {
                 const_cast<Texture&>(specularTexture.getTexture()).toShaderReadOnlyOptimal(lightMap.getCommandBuffers()[lightMap.getCurrentFrame()]);
@@ -2251,17 +2261,20 @@ namespace odfaeg {
 
                 vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
                 vkCmdPushConstants(commandBuffers[currentFrame], lightMap.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][lightMap.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(LightIndirectRenderingPC), &lightIndirectRenderingPC);
-                vkCmdPushConstants(commandBuffers[currentFrame], lightMap.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][lightMap.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(ResolutionPC), &resolutionPC);
+                vkCmdPushConstants(commandBuffers[currentFrame], lightMap.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][lightMap.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_FRAGMENT_BIT, 192, sizeof(ResolutionPC), &resolutionPC);
                 lightMap.beginRenderPass();
                 lightMap.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
                 lightMap.endRenderPass();
+
 
                 const_cast<Texture&>(alphaBuffer.getTexture()).toColorAttachmentOptimal(lightMap.getCommandBuffers()[lightMap.getCurrentFrame()]);
                 const_cast<Texture&>(bumpTexture.getTexture()).toColorAttachmentOptimal(lightMap.getCommandBuffers()[lightMap.getCurrentFrame()]);
                 const_cast<Texture&>(depthBuffer.getTexture()).toColorAttachmentOptimal(lightMap.getCommandBuffers()[lightMap.getCurrentFrame()]);
                 const_cast<Texture&>(specularTexture.getTexture()).toColorAttachmentOptimal(lightMap.getCommandBuffers()[lightMap.getCurrentFrame()]);
+                lightMap.display(true, renderFinishedSemaphore[window.getCurrentFrame()]);
 
             }
+            isSomethingDrawn = true;
         }
         void LightRenderComponent::drawNextFrame() {
             update = false;
@@ -2293,12 +2306,15 @@ namespace odfaeg {
             maxSpecPC.maxP = 1;
 
             drawDepthLightInstances();
-            lightDepthBuffer.display();
+            if (!isSomethingDrawn)
+                lightDepthBuffer.display();
             drawInstances();
-            depthBuffer.display();
-            alphaBuffer.display();
-            specularTexture.display();
-            bumpTexture.display();
+            if (!isSomethingDrawn) {
+                depthBuffer.display();
+                alphaBuffer.display();
+                specularTexture.display();
+                bumpTexture.display();
+            }
 
             //drawNormals();
 
@@ -2311,7 +2327,9 @@ namespace odfaeg {
 
 
             drawLightInstances();
-            lightMap.display(true, renderFinishedSemaphore[window.getCurrentFrame()]);
+            if (!isSomethingDrawn)
+                lightMap.display(true, renderFinishedSemaphore[window.getCurrentFrame()]);
+            isSomethingDrawn = false;
 
         }
         void LightRenderComponent::drawInstances() {

@@ -145,7 +145,7 @@ namespace odfaeg {
                 Shader buildAlphaBufferGenerator;
                 View view; /**> the view of the component.*/
                 std::string expression;
-                bool update, datasReady, needToUpdateDS;
+                bool update, datasReady, needToUpdateDS, isSomethingDrawn;
 
                 std::array<VertexBuffer ,Batcher::nbPrimitiveTypes> vbBindlessTex;
                 VertexBuffer vb;
