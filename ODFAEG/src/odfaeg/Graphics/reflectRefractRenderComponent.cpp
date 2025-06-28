@@ -1326,9 +1326,9 @@ namespace odfaeg {
             void ReflectRefractRenderComponent::createDescriptorPool(RenderStates states) {
                 Shader* shader = const_cast<Shader*>(states.shader);
                 if (shader == &sLinkedList) {
-                    unsigned int descriptorId = environmentMap.getId() * shader->getNbShaders() + shader->getId();
-                    if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorPool.size())
-                        descriptorPool.resize(shader->getNbShaders()*environmentMap.getNbRenderTargets());
+                    unsigned int descriptorId = shader->getId();
+                    if (shader->getNbShaders() > descriptorPool.size())
+                        descriptorPool.resize(shader->getNbShaders());
                     ////std::cout<<"ppll descriptor id : "<<environmentMap.getId()<<","<<shader->getId()<<","<<environmentMap.getId() * shader->getNbShaders() + shader->getId()<<std::endl;
                     std::vector<Texture*> allTextures = Texture::getAllTextures();
                     std::array<VkDescriptorPoolSize, 7> poolSizes;
@@ -1361,8 +1361,8 @@ namespace odfaeg {
                     }
                 } else if (shader == &sLinkedList2) {
                     if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorPool.size())
-                        descriptorPool.resize(shader->getNbShaders()*environmentMap.getNbRenderTargets());
-                    unsigned int descriptorId = environmentMap.getId() * shader->getNbShaders() + shader->getId();
+                        descriptorPool.resize(shader->getNbShaders());
+                    unsigned int descriptorId = shader->getId();
                     std::array<VkDescriptorPoolSize, 3> poolSizes;
                     poolSizes[0].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
                     poolSizes[0].descriptorCount = static_cast<uint32_t>(environmentMap.getMaxFramesInFlight());
@@ -1386,7 +1386,7 @@ namespace odfaeg {
                 } else if (shader == &sBuildDepthBuffer) {
                     if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorPool.size())
                         descriptorPool.resize(shader->getNbShaders()*depthBuffer.getNbRenderTargets());
-                    unsigned int descriptorId = depthBuffer.getId() * shader->getNbShaders() + shader->getId();
+                    unsigned int descriptorId = shader->getId();
                     std::array<VkDescriptorPoolSize, 4> poolSizes;
                     std::vector<Texture*> allTextures = Texture::getAllTextures();
                     poolSizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -1413,7 +1413,7 @@ namespace odfaeg {
                 } else if (shader == &sBuildAlphaBuffer) {
                     if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorPool.size())
                         descriptorPool.resize(shader->getNbShaders()*alphaBuffer.getNbRenderTargets());
-                    unsigned int descriptorId = alphaBuffer.getId() * shader->getNbShaders() + shader->getId();
+                    unsigned int descriptorId = shader->getId();
                     std::array<VkDescriptorPoolSize, 5> poolSizes;
                     std::vector<Texture*> allTextures = Texture::getAllTextures();
                     poolSizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -1442,7 +1442,7 @@ namespace odfaeg {
                 } else {
                     if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorPool.size())
                         descriptorPool.resize(shader->getNbShaders()*reflectRefractTex.getNbRenderTargets());
-                    unsigned int descriptorId = reflectRefractTex.getId() * shader->getNbShaders() + shader->getId();
+                    unsigned int descriptorId = shader->getId();
                     std::array<VkDescriptorPoolSize, 4> poolSizes;
                     poolSizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
                     poolSizes[0].descriptorCount = static_cast<uint32_t>(reflectRefractTex.getMaxFramesInFlight());
@@ -1495,9 +1495,9 @@ namespace odfaeg {
             void ReflectRefractRenderComponent::createDescriptorSetLayout(RenderStates states) {
                 Shader* shader = const_cast<Shader*>(states.shader);
                 if (shader == &sLinkedList) {
-                    if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorSetLayout.size())
-                        descriptorSetLayout.resize(shader->getNbShaders()*environmentMap.getNbRenderTargets());
-                    unsigned int descriptorId = environmentMap.getId() * shader->getNbShaders() + shader->getId();
+                    if (shader->getNbShaders() > descriptorSetLayout.size())
+                        descriptorSetLayout.resize(shader->getNbShaders());
+                    unsigned int descriptorId = shader->getId();
                     ////std::cout<<"ppll descriptor id : "<<descriptorId<<std::endl;
                     std::vector<Texture*> allTextures = Texture::getAllTextures();
                     VkDescriptorSetLayoutBinding counterLayoutBinding{};
@@ -1564,9 +1564,9 @@ namespace odfaeg {
                         throw std::runtime_error("failed to create descriptor set layout!");
                     }
                 } else if (shader == &sLinkedList2) {
-                    if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorSetLayout.size())
-                        descriptorSetLayout.resize(shader->getNbShaders()*environmentMap.getNbRenderTargets());
-                    unsigned int descriptorId = environmentMap.getId() * shader->getNbShaders() + shader->getId();
+                    if (shader->getNbShaders() > descriptorSetLayout.size())
+                        descriptorSetLayout.resize(shader->getNbShaders());
+                    unsigned int descriptorId = shader->getId();
                     ////std::cout<<"ppll descriptor id : "<<descriptorId<<std::endl;
                     std::vector<Texture*> allTextures = Texture::getAllTextures();
                     VkDescriptorSetLayoutBinding counterLayoutBinding{};
@@ -1605,9 +1605,9 @@ namespace odfaeg {
                         throw std::runtime_error("failed to create descriptor set layout!");
                     }
                 } else if (shader == &sBuildDepthBuffer) {
-                    if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorSetLayout.size())
-                        descriptorSetLayout.resize(shader->getNbShaders()*depthBuffer.getNbRenderTargets());
-                    unsigned int descriptorId = depthBuffer.getId() * shader->getNbShaders() + shader->getId();
+                    if (shader->getNbShaders() > descriptorSetLayout.size())
+                        descriptorSetLayout.resize(shader->getNbShaders());
+                    unsigned int descriptorId = shader->getId();
                     ////std::cout<<"ppll descriptor id : "<<descriptorId<<std::endl;
                     std::vector<Texture*> allTextures = Texture::getAllTextures();
                     VkDescriptorSetLayoutBinding samplerLayoutBinding{};
@@ -1654,9 +1654,9 @@ namespace odfaeg {
                         throw std::runtime_error("failed to create descriptor set layout!");
                     }
                 } else if (shader == &sBuildAlphaBuffer) {
-                    if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorSetLayout.size())
-                        descriptorSetLayout.resize(shader->getNbShaders()*alphaBuffer.getNbRenderTargets());
-                    unsigned int descriptorId = alphaBuffer.getId() * shader->getNbShaders() + shader->getId();
+                    if (shader->getNbShaders() > descriptorSetLayout.size())
+                        descriptorSetLayout.resize(shader->getNbShaders());
+                    unsigned int descriptorId = shader->getId();
                     std::vector<Texture*> allTextures = Texture::getAllTextures();
                     VkDescriptorSetLayoutBinding samplerLayoutBinding{};
                     samplerLayoutBinding.binding = 0;
@@ -1709,9 +1709,9 @@ namespace odfaeg {
                         throw std::runtime_error("failed to create descriptor set layout!");
                     }
                 } else {
-                    if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorSetLayout.size())
-                        descriptorSetLayout.resize(shader->getNbShaders()*reflectRefractTex.getNbRenderTargets());
-                    unsigned int descriptorId = reflectRefractTex.getId() * shader->getNbShaders() + shader->getId();
+                    if (shader->getNbShaders() > descriptorSetLayout.size())
+                        descriptorSetLayout.resize(shader->getNbShaders());
+                    unsigned int descriptorId = shader->getId();
                     VkDescriptorSetLayoutBinding samplerLayoutBinding{};
                     samplerLayoutBinding.binding = 0;
                     samplerLayoutBinding.descriptorCount = 1;
@@ -1798,9 +1798,9 @@ namespace odfaeg {
             void ReflectRefractRenderComponent::allocateDescriptorSets(RenderStates states) {
                 Shader* shader = const_cast<Shader*>(states.shader);
                 if (shader == &sLinkedList || shader == &sLinkedList2) {
-                    if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorSets.size())
-                        descriptorSets.resize(shader->getNbShaders()*environmentMap.getNbRenderTargets());
-                    unsigned int descriptorId = environmentMap.getId() * shader->getNbShaders() + shader->getId();
+                    if (shader->getNbShaders() > descriptorSets.size())
+                        descriptorSets.resize(shader->getNbShaders());
+                    unsigned int descriptorId = shader->getId();
                     for (unsigned int i = 0; i < descriptorSets.size(); i++) {
                         descriptorSets[i].resize(environmentMap.getMaxFramesInFlight());
                     }
@@ -1814,9 +1814,9 @@ namespace odfaeg {
                         throw std::runtime_error("echec de l'allocation d'un set de descripteurs!");
                     }
                 } else if (shader == &sBuildDepthBuffer) {
-                    if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorSets.size())
-                        descriptorSets.resize(shader->getNbShaders()*depthBuffer.getNbRenderTargets());
-                    unsigned int descriptorId = depthBuffer.getId() * shader->getNbShaders() + shader->getId();
+                    if (shader->getNbShaders() > descriptorSets.size())
+                        descriptorSets.resize(shader->getNbShaders());
+                    unsigned int descriptorId = shader->getId();
                     for (unsigned int i = 0; i < descriptorSets.size(); i++) {
                         descriptorSets[i].resize(depthBuffer.getMaxFramesInFlight());
                     }
@@ -1830,9 +1830,9 @@ namespace odfaeg {
                         throw std::runtime_error("echec de l'allocation d'un set de descripteurs!");
                     }
                 } else if (shader == &sBuildAlphaBuffer) {
-                    if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorSets.size())
-                        descriptorSets.resize(shader->getNbShaders()*alphaBuffer.getNbRenderTargets());
-                    unsigned int descriptorId = alphaBuffer.getId() * shader->getNbShaders() + shader->getId();
+                    if (shader->getNbShaders() > descriptorSets.size())
+                        descriptorSets.resize(shader->getNbShaders());
+                    unsigned int descriptorId = shader->getId();
                     for (unsigned int i = 0; i < descriptorSets.size(); i++) {
                         descriptorSets[i].resize(alphaBuffer.getMaxFramesInFlight());
                     }
@@ -1846,9 +1846,9 @@ namespace odfaeg {
                         throw std::runtime_error("echec de l'allocation d'un set de descripteurs!");
                     }
                 } else {
-                    if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorSets.size())
-                        descriptorSets.resize(shader->getNbShaders()*reflectRefractTex.getNbRenderTargets());
-                    unsigned int descriptorId = reflectRefractTex.getId() * shader->getNbShaders() + shader->getId();
+                    if (shader->getNbShaders() > descriptorSets.size())
+                        descriptorSets.resize(shader->getNbShaders());
+                    unsigned int descriptorId = shader->getId();
                     for (unsigned int i = 0; i < descriptorSets.size(); i++) {
                         descriptorSets[i].resize(reflectRefractTex.getMaxFramesInFlight());
                     }
@@ -1867,7 +1867,7 @@ namespace odfaeg {
                 Shader* shader = const_cast<Shader*>(states.shader);
                 if (shader == &sLinkedList) {
                     std::vector<Texture*> allTextures = Texture::getAllTextures();
-                    unsigned int descriptorId = environmentMap.getId() * shader->getNbShaders() + shader->getId();
+                    unsigned int descriptorId = shader->getId();
                     for (size_t i = 0; i < environmentMap.getMaxFramesInFlight(); i++) {
                         std::vector<VkDescriptorImageInfo>	descriptorImageInfos;
                         descriptorImageInfos.resize(allTextures.size());
@@ -1969,7 +1969,7 @@ namespace odfaeg {
                         vkUpdateDescriptorSets(vkDevice.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
                     }
                 } else if (shader == &sLinkedList2) {
-                    unsigned int descriptorId = environmentMap.getId() * shader->getNbShaders() + shader->getId();
+                    unsigned int descriptorId = shader->getId();
                     for (size_t i = 0; i < environmentMap.getMaxFramesInFlight(); i++) {
                         std::array<VkWriteDescriptorSet, 3> descriptorWrites{};
 
@@ -2016,7 +2016,7 @@ namespace odfaeg {
                     }
                 } else if (shader == &sBuildDepthBuffer) {
                        std::vector<Texture*> allTextures = Texture::getAllTextures();
-                       unsigned int descriptorId = depthBuffer.getId() * shader->getNbShaders() + shader->getId();
+                       unsigned int descriptorId = shader->getId();
                        for (size_t i = 0; i < depthBuffer.getMaxFramesInFlight(); i++) {
                             std::vector<VkDescriptorImageInfo>	descriptorImageInfos;
                             descriptorImageInfos.resize(allTextures.size());
@@ -2077,7 +2077,7 @@ namespace odfaeg {
                        }
                 } else if (shader == &sBuildAlphaBuffer) {
                         std::vector<Texture*> allTextures = Texture::getAllTextures();
-                        unsigned int descriptorId = alphaBuffer.getId() * shader->getNbShaders() + shader->getId();
+                        unsigned int descriptorId = shader->getId();
                         for (size_t i = 0; i < alphaBuffer.getMaxFramesInFlight(); i++) {
                             std::vector<VkDescriptorImageInfo>	descriptorImageInfos;
                             descriptorImageInfos.resize(allTextures.size());
@@ -2150,7 +2150,7 @@ namespace odfaeg {
                             vkUpdateDescriptorSets(vkDevice.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
                     }
                 } else {
-                    unsigned int descriptorId = reflectRefractTex.getId() * shader->getNbShaders() + shader->getId();
+                    unsigned int descriptorId = shader->getId();
                     for (size_t i = 0; i < reflectRefractTex.getMaxFramesInFlight(); i++) {
                         VkDescriptorImageInfo   descriptorImageInfo;
                         descriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;

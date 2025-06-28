@@ -543,9 +543,9 @@ namespace odfaeg {
         }
         void PerPixelLinkedListRenderComponent::createDescriptorPool(RenderStates states) {
             Shader* shader = const_cast<Shader*>(states.shader);
-            if (shader->getNbShaders()*frameBuffer.getNbRenderTargets() > descriptorPool.size())
-                descriptorPool.resize(shader->getNbShaders()*frameBuffer.getNbRenderTargets());
-            unsigned int descriptorId = frameBuffer.getId() * shader->getNbShaders() + shader->getId();
+            if (shader->getNbShaders() > descriptorPool.size())
+                descriptorPool.resize(shader->getNbShaders());
+            unsigned int descriptorId = shader->getId();
             ////std::cout<<"ppll descriptor id : "<<frameBuffer.getId()<<","<<shader->getId()<<","<<frameBuffer.getId() * shader->getNbShaders() + shader->getId()<<std::endl;
             std::vector<Texture*> allTextures = Texture::getAllTextures();
             std::array<VkDescriptorPoolSize, 6> poolSizes;
@@ -576,9 +576,9 @@ namespace odfaeg {
         }
         void PerPixelLinkedListRenderComponent::createDescriptorSetLayout(RenderStates states) {
             Shader* shader = const_cast<Shader*>(states.shader);
-            if (shader->getNbShaders()*frameBuffer.getNbRenderTargets() > descriptorSetLayout.size())
-                descriptorSetLayout.resize(shader->getNbShaders()*frameBuffer.getNbRenderTargets());
-            unsigned int descriptorId = frameBuffer.getId() * shader->getNbShaders() + shader->getId();
+            if (shader->getNbShaders() > descriptorSetLayout.size())
+                descriptorSetLayout.resize(shader->getNbShaders());
+            unsigned int descriptorId = shader->getId();
             ////std::cout<<"ppll descriptor id : "<<descriptorId<<std::endl;
             std::vector<Texture*> allTextures = Texture::getAllTextures();
             VkDescriptorSetLayoutBinding counterLayoutBinding{};
@@ -640,9 +640,9 @@ namespace odfaeg {
         }
         void PerPixelLinkedListRenderComponent::allocateDescriptorSets(RenderStates states) {
             Shader* shader = const_cast<Shader*>(states.shader);
-            if (shader->getNbShaders()*frameBuffer.getNbRenderTargets() > descriptorSets.size())
-                descriptorSets.resize(shader->getNbShaders()*frameBuffer.getNbRenderTargets());
-            unsigned int descriptorId = frameBuffer.getId() * shader->getNbShaders() + shader->getId();
+            if (shader->getNbShaders() > descriptorSets.size())
+                descriptorSets.resize(shader->getNbShaders());
+            unsigned int descriptorId = shader->getId();
             for (unsigned int i = 0; i < descriptorSets.size(); i++) {
                 descriptorSets[i].resize(frameBuffer.getMaxFramesInFlight());
             }
@@ -660,7 +660,7 @@ namespace odfaeg {
             Shader* shader = const_cast<Shader*>(states.shader);
             std::vector<Texture*> allTextures = Texture::getAllTextures();
 
-            unsigned int descriptorId = frameBuffer.getId() * shader->getNbShaders() + shader->getId();
+            unsigned int descriptorId = shader->getId();
             for (size_t i = 0; i < frameBuffer.getMaxFramesInFlight(); i++) {
                 std::vector<VkDescriptorImageInfo>	descriptorImageInfos;
                 descriptorImageInfos.resize(allTextures.size());
@@ -751,9 +751,9 @@ namespace odfaeg {
         }
         void PerPixelLinkedListRenderComponent::createDescriptorPool2(RenderStates states) {
             Shader* shader = const_cast<Shader*>(states.shader);
-            if (shader->getNbShaders()*frameBuffer.getNbRenderTargets() > descriptorPool.size())
-                descriptorPool.resize(shader->getNbShaders()*frameBuffer.getNbRenderTargets());
-            unsigned int descriptorId = frameBuffer.getId() * shader->getNbShaders() + shader->getId();
+            if (shader->getNbShaders() > descriptorPool.size())
+                descriptorPool.resize(shader->getNbShaders());
+            unsigned int descriptorId =  shader->getId();
             std::array<VkDescriptorPoolSize, 2> poolSizes{};
             poolSizes[0].type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
             poolSizes[0].descriptorCount = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight());
@@ -776,9 +776,9 @@ namespace odfaeg {
         }
         void PerPixelLinkedListRenderComponent::createDescriptorSetLayout2(RenderStates states) {
             Shader* shader = const_cast<Shader*>(states.shader);
-            if (shader->getNbShaders()*frameBuffer.getNbRenderTargets() > descriptorSetLayout.size())
-                descriptorSetLayout.resize(shader->getNbShaders()*frameBuffer.getNbRenderTargets());
-            unsigned int descriptorId = frameBuffer.getId() * shader->getNbShaders() + shader->getId();
+            if (shader->getNbShaders() > descriptorSetLayout.size())
+                descriptorSetLayout.resize(shader->getNbShaders());
+            unsigned int descriptorId = shader->getId();
             VkDescriptorSetLayoutBinding headPtrImageLayoutBinding;
             headPtrImageLayoutBinding.binding = 0;
             headPtrImageLayoutBinding.descriptorCount = 1;
@@ -810,9 +810,9 @@ namespace odfaeg {
         }
         void PerPixelLinkedListRenderComponent::allocateDescriptorSets2(RenderStates states) {
             Shader* shader = const_cast<Shader*>(states.shader);
-            if (shader->getNbShaders()*frameBuffer.getNbRenderTargets() > descriptorSets.size())
-                descriptorSets.resize(shader->getNbShaders()*frameBuffer.getNbRenderTargets());
-            unsigned int descriptorId = frameBuffer.getId() * shader->getNbShaders() + shader->getId();
+            if (shader->getNbShaders() > descriptorSets.size())
+                descriptorSets.resize(shader->getNbShaders());
+            unsigned int descriptorId = shader->getId();
             for (unsigned int i = 0; i < descriptorSets.size(); i++) {
                 descriptorSets[i].resize(frameBuffer.getMaxFramesInFlight());
             }
@@ -830,7 +830,7 @@ namespace odfaeg {
         void PerPixelLinkedListRenderComponent::createDescriptorSets2(RenderStates states) {
             Shader* shader = const_cast<Shader*>(states.shader);
 
-            unsigned int descriptorId = frameBuffer.getId() * shader->getNbShaders() + shader->getId();
+            unsigned int descriptorId = shader->getId();
             for (size_t i = 0; i < frameBuffer.getMaxFramesInFlight(); i++) {
 
                 std::array<VkWriteDescriptorSet, 2> descriptorWrites{};

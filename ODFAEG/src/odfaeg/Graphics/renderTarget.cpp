@@ -337,7 +337,7 @@ namespace odfaeg {
         void RenderTarget::drawIndirectCount(VkCommandBuffer& cmd, unsigned int i, unsigned int nbIndirectCommands, unsigned int stride, VertexBuffer& vertexBuffer, VkBuffer vboIndirect, VkBuffer vboCount, unsigned int depthStencilId, RenderStates states) {
             Shader* shader = const_cast<Shader*>(states.shader);
             ////std::cout<<"draw indirect depth stencil id :"<<depthStencilId<<std::endl;
-            unsigned int descriptorId = id * shader->getNbShaders() + shader->getId();
+            unsigned int descriptorId = shader->getId();
             vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vertexBuffer.getPrimitiveType()][id][depthStencilId]);
             VkBuffer vertexBuffers[] = {vertexBuffer.getVertexBuffer()};
             VkDeviceSize offsets[] = {0, 0};
@@ -360,7 +360,7 @@ namespace odfaeg {
             unsigned int blendModeId = states.blendMode.id;
             unsigned int nbBlendMode = states.blendMode.nbBlendModes;
             ////std::cout<<"draw indirect depth stencil id :"<<depthStencilId<<std::endl;
-            unsigned int descriptorId = id * shader->getNbShaders() + shader->getId();
+            unsigned int descriptorId = shader->getId();
             /*std::cout<<"ids : "<<shader->getId()* (Batcher::nbPrimitiveTypes - 1)+vertexBuffer.getPrimitiveType()<<","<<id<<","<<depthStencilId<<std::endl;
             std::cout<<"pipeline : "<<graphicsPipeline.size()<<std::endl;*/
             vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vertexBuffer.getPrimitiveType()][id][depthStencilId*nbBlendMode+blendModeId]);
@@ -385,7 +385,7 @@ namespace odfaeg {
             Shader* shader = const_cast<Shader*>(states.shader);
             unsigned int blendModeId = states.blendMode.id;
             unsigned int nbBlendMode = states.blendMode.nbBlendModes;
-            unsigned int descriptorId = id * shader->getNbShaders() + shader->getId();
+            unsigned int descriptorId = shader->getId();
             vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vertexBuffer.getPrimitiveType()][id][depthStencilId*nbBlendMode+blendModeId]);
             VkBuffer vertexBuffers[] = {vertexBuffer.getVertexBuffer()};
             VkDeviceSize offsets[] = {0};
@@ -409,7 +409,7 @@ namespace odfaeg {
         void RenderTarget::createDescriptorSetLayout(RenderStates states) {
             Shader* shader = const_cast<Shader*>(states.shader);
             descriptorSetLayout.resize(shader->getNbShaders() * nbRenderTargets);
-            unsigned int descriptorId = id * shader->getNbShaders() + shader->getId();
+            unsigned int descriptorId = shader->getId();
             if (states.shader == &defaultShader) {
                 VkDescriptorSetLayoutBinding uboLayoutBinding{};
                 uboLayoutBinding.binding = 0;
@@ -462,7 +462,7 @@ namespace odfaeg {
 
             Shader* shader = const_cast<Shader*>(states.shader);
             descriptorPool.resize(shader->getNbShaders()*nbRenderTargets);
-            unsigned int descriptorId = id * shader->getNbShaders() + shader->getId();
+            unsigned int descriptorId = shader->getId();
             if (states.shader == &defaultShader) {
                 std::array<VkDescriptorPoolSize, 2> poolSizes{};
                 poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -575,7 +575,7 @@ namespace odfaeg {
                 }
             }
 
-            unsigned int descriptorId = id * shader->getNbShaders() + shader->getId();
+            unsigned int descriptorId = shader->getId();
 
 
             ////std::cout<<"rt dl size : "<<descriptorSetLayout.size()<<std::endl;

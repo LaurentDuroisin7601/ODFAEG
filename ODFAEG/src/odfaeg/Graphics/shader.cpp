@@ -96,9 +96,9 @@ namespace odfaeg {
         std::vector<Shader*> Shader::shaders = std::vector<Shader*>();
         std::vector<Shader*> Shader::sameShaders= std::vector<Shader*>();
         Shader::Shader(window::Device& vkDevice) : vkDevice(vkDevice), geometryShaderModule(nullptr), computeShaderModule(nullptr) {
-            id = 0;
+            id = nbShaders;
             isCompiled = false;
-            shaders.push_back(this);
+            nbShaders++;
         }
         bool Shader::operator==(const Shader& shader) const {
             return (vertexShaderCode == shader.vertexShaderCode) && (fragmentShaderCode == shader.fragmentShaderCode);
@@ -302,7 +302,7 @@ namespace odfaeg {
                 }
             }
             isCompiled = true;
-            updateIds();
+            //updateIds();
             return true;
         }
         void Shader::createShaderModules() {

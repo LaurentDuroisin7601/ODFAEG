@@ -114,7 +114,7 @@ namespace odfaeg {
                 void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
                 void createImageView();
                 void createSampler();
-                void createCommandBuffersIndirect(unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, DepthStencilID depthStencilID, RenderStates currentStates);
+                void createCommandBuffersIndirect(unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, DepthStencilID depthStencilID, RenderStates currentStates, bool lightDepth=false);
                 VkBuffer modelDataBuffer, materialDataBuffer, modelDataStagingBuffer, materialDataStagingBuffer;
                 VkDeviceMemory modelDataStagingBufferMemory, materialDataStagingBufferMemory;
                 VkDeviceSize maxVboIndirectSize, maxModelDataSize, maxMaterialDataSize;

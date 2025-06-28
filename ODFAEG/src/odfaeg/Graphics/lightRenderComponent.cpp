@@ -361,7 +361,7 @@ namespace odfaeg {
                                                                       void main() {
                                                                           vec4 texel = (texIndex != 0) ? frontColor * texture(textures[texIndex-1], fTexCoords.xy) : frontColor;
                                                                           float current_alpha = texel.a;
-                                                                          vec4 depth = texture (depthBuffer, gl_FragCoord.xy);
+                                                                          vec4 depth = textureLod(depthBuffer, gl_FragCoord.xy, 0);
                                                                           beginInvocationInterlockARB();
                                                                           vec4 alpha = imageLoad(alphaBuffer,ivec2(gl_FragCoord.xy));
                                                                           float l = layer;
@@ -393,7 +393,7 @@ namespace odfaeg {
                                                                      layout (location = 0) out vec4 fColor;
                                                                      void main() {
                                                                         vec4 texel = (texIndex != 0) ? frontColor * texture(textures[texIndex-1], fTexCoords.xy) : frontColor;
-                                                                        vec4 depth = texture(depthBuffer, gl_FragCoord.xy);
+                                                                        vec4 depth = textureLod(depthBuffer, gl_FragCoord.xy, 0);
                                                                         float z = gl_FragCoord.z;
                                                                         float intensity = (pushConsts.maxM != 0.f) ? specular.x / pushConsts.maxM : 0.f;
                                                                         float power = (pushConsts.maxP != 0.f) ? specular.y / pushConsts.maxP : 0.f;
@@ -416,8 +416,8 @@ namespace odfaeg {
                                                                  layout (location = 0) out vec4 fColor;
                                                                  void main() {
                                                                      vec4 color = (texIndex != 0) ? texture(textures[texIndex-1], fTexCoords.xy) : vec4(0, 0, 0, 0);
-                                                                     vec4 depth = texture(depthBuffer, gl_FragCoord.xy);
-                                                                     vec4 bump = texture(bumpMap, gl_FragCoord.xy);
+                                                                     vec4 depth = textureLod(depthBuffer, gl_FragCoord.xy, 0);
+                                                                     vec4 bump = textureLod(bumpMap, gl_FragCoord.xy, 0);
                                                                      if (/*layer > depth.y() || layer == depth.y() &&*/ gl_FragCoord.z > depth.z) {
                                                                         fColor = color;
                                                                      } else {
@@ -448,8 +448,8 @@ namespace odfaeg {
                                                                      layout (offset = 148) float far;
                                                                  } pushConsts;
                                                          void main () {
-                                                             vec4 depth = texture(depthTexture, gl_FragCoord.xy);
-                                                             vec4 alpha = texture(alphaMap, gl_FragCoord.xy);
+                                                             vec4 depth = textureLod(depthTexture, gl_FragCoord.xy, 0);
+                                                             vec4 alpha = textureLod(alphaMap, gl_FragCoord.xy, 0);
                                                              float s01 = textureOffset(depthTexture, gl_FragCoord.xy, off.xy).z;
                                                              float s21 = textureOffset(depthTexture, gl_FragCoord.xy, off.zy).z;
                                                              float s10 = textureOffset(depthTexture, gl_FragCoord.xy, off.yx).z;
@@ -457,12 +457,12 @@ namespace odfaeg {
                                                              vec3 va = normalize (vec3(size.xy, s21 - s01));
                                                              vec3 vb = normalize (vec3(size.yx, s12 - s10));
                                                              vec3 normal = vec3(cross(va, vb));
-                                                             vec4 bump = texture(bumpMap, gl_FragCoord.xy);
-                                                             vec4 specularInfos = texture(specularTexture, gl_FragCoord.xy);
+                                                             vec4 bump = textureLod(bumpMap, gl_FragCoord.xy, 0);
+                                                             vec4 specularInfos = textureLod(specularTexture, gl_FragCoord.xy, 0);
                                                              vec3 sLightPos = vec3 (lightPos.x, lightPos.y, -lightPos.z * (pushConsts.far - pushConsts.near));
                                                              float radius = lightPos.w;
                                                              vec3 pixPos = vec3 (gl_FragCoord.x, gl_FragCoord.y, -depth.z * (pushConsts.far - pushConsts.near));
-                                                             vec4 lightMapColor = texture(lightMap, gl_FragCoord.xy);
+                                                             vec4 lightMapColor = textureLod(lightMap, gl_FragCoord.xy, 0);
                                                              vec3 viewPos = vec3(pushConsts.resolution.x * 0.5f, pushConsts.resolution.y * 0.5f, 0);
                                                              float z = gl_FragCoord.z;
                                                              vec3 vertexToLight = sLightPos - pixPos;
@@ -592,6 +592,8 @@ namespace odfaeg {
                 vkFreeCommandBuffers(vkDevice.getDevice(), commandPool, 1, &commandBuffer);
             }
             void LightRenderComponent::clear() {
+
+                lightDepthBuffer.clear(Color::Transparent);
                 depthBuffer.clear(Color::Transparent);
                 std::vector<VkCommandBuffer> commandBuffers = depthBuffer.getCommandBuffers();
                 VkClearColorValue clearColor = {0.f, 0.f, 0.f, 0.f};
@@ -754,6 +756,7 @@ namespace odfaeg {
                 }
                 specularTexture.enableDepthTest(true);
                 depthBuffer.enableDepthTest(true);
+                lightDepthBuffer.enableDepthTest(true);
                 alphaBuffer.enableDepthTest(true);
                 bumpTexture.enableDepthTest(true);
                 states.shader = &depthBufferGenerator;
@@ -786,6 +789,39 @@ namespace odfaeg {
                                depthStencilCreateInfo[depthBufferGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = {};
                                depthStencilCreateInfo[depthBufferGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {};
                                depthBuffer.createGraphicPipeline(static_cast<PrimitiveType>(i), states, NODEPTHNOSTENCIL, NBDEPTHSTENCIL);
+                            }
+                        }
+                    }
+                }
+                for (unsigned int b = 0; b < blendModes.size(); b++) {
+                    states.blendMode = blendModes[b];
+                    states.blendMode.updateIds();
+                    for (unsigned int j = 0; j < NBDEPTHSTENCIL; j++) {
+                        for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
+                            if (j == 0) {
+                                std::array<VkPushConstantRange, 2> push_constants;
+                                VkPushConstantRange push_constant;
+                                //this push constant range starts at the beginning
+                                push_constant.offset = 0;
+                                //this push constant range takes up the size of a MeshPushConstants struct
+                                push_constant.size = sizeof(IndirectRenderingPC);
+                                //this push constant range is accessible only in the vertex shader
+                                push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+                                push_constants[0] = push_constant;
+                                VkPushConstantRange push_constant2;
+                                //this push constant range starts at the beginning
+                                push_constant2.offset = 128;
+                                //this push constant range takes up the size of a MeshPushConstants struct
+                                push_constant2.size = sizeof(LayerPC);
+                                //this push constant range is accessible only in the vertex shader
+                                push_constant2.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+                                push_constants[1] = push_constant2;
+                                pipelineLayoutInfo[depthBufferGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][lightDepthBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = push_constants.data();
+                                pipelineLayoutInfo[depthBufferGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][lightDepthBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 2;
+                               depthStencilCreateInfo[depthBufferGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][lightDepthBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
+                               depthStencilCreateInfo[depthBufferGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][lightDepthBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = {};
+                               depthStencilCreateInfo[depthBufferGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][lightDepthBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {};
+                               lightDepthBuffer.createGraphicPipeline(static_cast<PrimitiveType>(i), states, NODEPTHNOSTENCIL, NBDEPTHSTENCIL);
                             }
                         }
                     }
@@ -927,7 +963,7 @@ namespace odfaeg {
                 if (shader == &depthBufferGenerator) {
                     if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorPool.size())
                         descriptorPool.resize(shader->getNbShaders()*depthBuffer.getNbRenderTargets());
-                    unsigned int descriptorId = depthBuffer.getId() * shader->getNbShaders() + shader->getId();
+                    unsigned int descriptorId = shader->getId();
                     std::array<VkDescriptorPoolSize, 4> poolSizes;
                     std::vector<Texture*> allTextures = Texture::getAllTextures();
                     poolSizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -951,10 +987,11 @@ namespace odfaeg {
                     if (vkCreateDescriptorPool(vkDevice.getDevice(), &poolInfo, nullptr, &descriptorPool[descriptorId]) != VK_SUCCESS) {
                         throw std::runtime_error("echec de la creation de la pool de descripteurs!");
                     }
+
                 } else if (shader == &buildAlphaBufferGenerator) {
                     if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorPool.size())
                         descriptorPool.resize(shader->getNbShaders()*alphaBuffer.getNbRenderTargets());
-                    unsigned int descriptorId = alphaBuffer.getId() * shader->getNbShaders() + shader->getId();
+                    unsigned int descriptorId = shader->getId();
                     std::array<VkDescriptorPoolSize, 5> poolSizes;
                     std::vector<Texture*> allTextures = Texture::getAllTextures();
                     poolSizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -983,7 +1020,7 @@ namespace odfaeg {
                 } else if (shader == &specularTextureGenerator) {
                     if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorPool.size())
                         descriptorPool.resize(shader->getNbShaders()*specularTexture.getNbRenderTargets());
-                    unsigned int descriptorId = specularTexture.getId() * shader->getNbShaders() + shader->getId();
+                    unsigned int descriptorId = shader->getId();
                     std::array<VkDescriptorPoolSize, 4> poolSizes;
                     std::vector<Texture*> allTextures = Texture::getAllTextures();
                     poolSizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -1005,7 +1042,7 @@ namespace odfaeg {
                 } else if (shader == &bumpTextureGenerator) {
                     if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorPool.size())
                         descriptorPool.resize(shader->getNbShaders()*bumpTexture.getNbRenderTargets());
-                    unsigned int descriptorId = bumpTexture.getId() * shader->getNbShaders() + shader->getId();
+                    unsigned int descriptorId = shader->getId();
                     std::array<VkDescriptorPoolSize, 5> poolSizes;
                     std::vector<Texture*> allTextures = Texture::getAllTextures();
                     poolSizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -1030,7 +1067,7 @@ namespace odfaeg {
                 } else {
                     if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorPool.size())
                         descriptorPool.resize(shader->getNbShaders()*lightMap.getNbRenderTargets());
-                    unsigned int descriptorId = lightMap.getId() * shader->getNbShaders() + shader->getId();
+                    unsigned int descriptorId = shader->getId();
                     std::array<VkDescriptorPoolSize, 7> poolSizes;
                     poolSizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
                     poolSizes[0].descriptorCount = static_cast<uint32_t>(lightMap.getMaxFramesInFlight());
@@ -1061,7 +1098,7 @@ namespace odfaeg {
                 if (shader == &depthBufferGenerator) {
                     if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorSetLayout.size())
                         descriptorSetLayout.resize(shader->getNbShaders()*depthBuffer.getNbRenderTargets());
-                    unsigned int descriptorId = depthBuffer.getId() * shader->getNbShaders() + shader->getId();
+                    unsigned int descriptorId = shader->getId();
                     std::vector<Texture*> allTextures = Texture::getAllTextures();
                     VkDescriptorSetLayoutBinding samplerLayoutBinding{};
                     samplerLayoutBinding.binding = 0;
@@ -1109,7 +1146,7 @@ namespace odfaeg {
                 } else if (shader == &buildAlphaBufferGenerator) {
                     if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorSetLayout.size())
                         descriptorSetLayout.resize(shader->getNbShaders()*alphaBuffer.getNbRenderTargets());
-                    unsigned int descriptorId = alphaBuffer.getId() * shader->getNbShaders() + shader->getId();
+                    unsigned int descriptorId = shader->getId();
                     std::vector<Texture*> allTextures = Texture::getAllTextures();
                     VkDescriptorSetLayoutBinding samplerLayoutBinding{};
                     samplerLayoutBinding.binding = 0;
@@ -1164,7 +1201,7 @@ namespace odfaeg {
                 } else if (shader == &specularTextureGenerator) {
                     if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorSetLayout.size())
                         descriptorSetLayout.resize(shader->getNbShaders()*specularTexture.getNbRenderTargets());
-                    unsigned int descriptorId = specularTexture.getId() * shader->getNbShaders() + shader->getId();
+                    unsigned int descriptorId = shader->getId();
                     std::vector<Texture*> allTextures = Texture::getAllTextures();
                     VkDescriptorSetLayoutBinding samplerLayoutBinding{};
                     samplerLayoutBinding.binding = 0;
@@ -1212,7 +1249,7 @@ namespace odfaeg {
                 } else if (shader == &bumpTextureGenerator) {
                     if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorSetLayout.size())
                         descriptorSetLayout.resize(shader->getNbShaders()*bumpTexture.getNbRenderTargets());
-                    unsigned int descriptorId = bumpTexture.getId() * shader->getNbShaders() + shader->getId();
+                    unsigned int descriptorId = shader->getId();
                     std::vector<Texture*> allTextures = Texture::getAllTextures();
                     VkDescriptorSetLayoutBinding samplerLayoutBinding{};
                     samplerLayoutBinding.binding = 0;
@@ -1267,7 +1304,7 @@ namespace odfaeg {
                 } else {
                     if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorSetLayout.size())
                         descriptorSetLayout.resize(shader->getNbShaders()*lightMap.getNbRenderTargets());
-                    unsigned int descriptorId = lightMap.getId() * shader->getNbShaders() + shader->getId();
+                    unsigned int descriptorId = shader->getId();
                     VkDescriptorSetLayoutBinding samplerLayoutBinding{};
                     samplerLayoutBinding.binding = 0;
                     samplerLayoutBinding.descriptorCount = 1;
@@ -1338,7 +1375,7 @@ namespace odfaeg {
                 Shader* shader = const_cast<Shader*>(states.shader);
                 if (shader == &depthBufferGenerator) {
                     std::vector<Texture*> allTextures = Texture::getAllTextures();
-                   unsigned int descriptorId = depthBuffer.getId() * shader->getNbShaders() + shader->getId();
+                   unsigned int descriptorId = shader->getId();
                    for (size_t i = 0; i < depthBuffer.getMaxFramesInFlight(); i++) {
                         std::vector<VkDescriptorImageInfo>	descriptorImageInfos;
                         descriptorImageInfos.resize(allTextures.size());
@@ -1399,7 +1436,7 @@ namespace odfaeg {
                    }
                 } else if (shader == &buildAlphaBufferGenerator) {
                         std::vector<Texture*> allTextures = Texture::getAllTextures();
-                        unsigned int descriptorId = alphaBuffer.getId() * shader->getNbShaders() + shader->getId();
+                        unsigned int descriptorId = shader->getId();
                         for (size_t i = 0; i < alphaBuffer.getMaxFramesInFlight(); i++) {
                             std::vector<VkDescriptorImageInfo>	descriptorImageInfos;
                             descriptorImageInfos.resize(allTextures.size());
@@ -1408,7 +1445,7 @@ namespace odfaeg {
                                 descriptorImageInfos[j].imageView = allTextures[j]->getImageView();
                                 descriptorImageInfos[j].sampler = allTextures[j]->getSampler();
                             }
-                            std::array<VkWriteDescriptorSet, 6> descriptorWrites{};
+                            std::array<VkWriteDescriptorSet, 5> descriptorWrites{};
                             descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                             descriptorWrites[0].dstSet = descriptorSets[descriptorId][i];
                             descriptorWrites[0].dstBinding = 0;
@@ -1443,39 +1480,32 @@ namespace odfaeg {
                             descriptorWrites[2].descriptorCount = 1;
                             descriptorWrites[2].pImageInfo = &descriptorImageInfo;
 
-                            descriptorWrites[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                            descriptorWrites[3].dstSet = descriptorSets[descriptorId][i];
-                            descriptorWrites[3].dstBinding = 3;
-                            descriptorWrites[3].dstArrayElement = 0;
-                            descriptorWrites[3].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                            descriptorWrites[3].descriptorCount = 1;
-                            descriptorWrites[3].pImageInfo = &descriptorImageInfo;
 
                             VkDescriptorBufferInfo modelDataStorageBufferInfoLastFrame{};
                             modelDataStorageBufferInfoLastFrame.buffer = modelDataShaderStorageBuffers[i];
                             modelDataStorageBufferInfoLastFrame.offset = 0;
                             modelDataStorageBufferInfoLastFrame.range = maxModelDataSize;
 
-                            descriptorWrites[4].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                            descriptorWrites[4].dstSet = descriptorSets[descriptorId][i];
-                            descriptorWrites[4].dstBinding = 4;
-                            descriptorWrites[4].dstArrayElement = 0;
-                            descriptorWrites[4].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-                            descriptorWrites[4].descriptorCount = 1;
-                            descriptorWrites[4].pBufferInfo = &modelDataStorageBufferInfoLastFrame;
+                            descriptorWrites[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                            descriptorWrites[3].dstSet = descriptorSets[descriptorId][i];
+                            descriptorWrites[3].dstBinding = 4;
+                            descriptorWrites[3].dstArrayElement = 0;
+                            descriptorWrites[3].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                            descriptorWrites[3].descriptorCount = 1;
+                            descriptorWrites[3].pBufferInfo = &modelDataStorageBufferInfoLastFrame;
 
                             VkDescriptorBufferInfo materialDataStorageBufferInfoLastFrame{};
                             materialDataStorageBufferInfoLastFrame.buffer = materialDataShaderStorageBuffers[i];
                             materialDataStorageBufferInfoLastFrame.offset = 0;
                             materialDataStorageBufferInfoLastFrame.range = maxMaterialDataSize;
 
-                            descriptorWrites[5].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                            descriptorWrites[5].dstSet = descriptorSets[descriptorId][i];
-                            descriptorWrites[5].dstBinding = 5;
-                            descriptorWrites[5].dstArrayElement = 0;
-                            descriptorWrites[5].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-                            descriptorWrites[5].descriptorCount = 1;
-                            descriptorWrites[5].pBufferInfo = &materialDataStorageBufferInfoLastFrame;
+                            descriptorWrites[4].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                            descriptorWrites[4].dstSet = descriptorSets[descriptorId][i];
+                            descriptorWrites[4].dstBinding = 5;
+                            descriptorWrites[4].dstArrayElement = 0;
+                            descriptorWrites[4].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                            descriptorWrites[4].descriptorCount = 1;
+                            descriptorWrites[4].pBufferInfo = &materialDataStorageBufferInfoLastFrame;
 
 
 
@@ -1483,7 +1513,7 @@ namespace odfaeg {
                     }
                 } else if (shader == &specularTextureGenerator) {
                     std::vector<Texture*> allTextures = Texture::getAllTextures();
-                    unsigned int descriptorId = specularTexture.getId() * shader->getNbShaders() + shader->getId();
+                    unsigned int descriptorId = shader->getId();
                     for (size_t i = 0; i < specularTexture.getMaxFramesInFlight(); i++) {
                         std::vector<VkDescriptorImageInfo>	descriptorImageInfos;
                         descriptorImageInfos.resize(allTextures.size());
@@ -1508,7 +1538,7 @@ namespace odfaeg {
 
                         descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                         descriptorWrites[1].dstSet = descriptorSets[descriptorId][i];
-                        descriptorWrites[1].dstBinding = 0;
+                        descriptorWrites[1].dstBinding = 1;
                         descriptorWrites[1].dstArrayElement = 0;
                         descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
                         descriptorWrites[1].descriptorCount = 1;
@@ -1544,7 +1574,7 @@ namespace odfaeg {
                     }
                 } else if (shader == &bumpTextureGenerator) {
                     std::vector<Texture*> allTextures = Texture::getAllTextures();
-                    unsigned int descriptorId = bumpTexture.getId() * shader->getNbShaders() + shader->getId();
+                    unsigned int descriptorId = shader->getId();
                     for (size_t i = 0; i < bumpTexture.getMaxFramesInFlight(); i++) {
                         std::vector<VkDescriptorImageInfo>	descriptorImageInfos;
                         descriptorImageInfos.resize(allTextures.size());
@@ -1617,7 +1647,7 @@ namespace odfaeg {
                         vkUpdateDescriptorSets(vkDevice.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
                     }
                 } else {
-                    unsigned int descriptorId = lightMap.getId() * shader->getNbShaders() + shader->getId();
+                    unsigned int descriptorId = shader->getId();
                     for (size_t i = 0; i < lightMap.getMaxFramesInFlight(); i++) {
                         std::array<VkWriteDescriptorSet, 7> descriptorWrites{};
                         VkDescriptorImageInfo headPtrDescriptorImageInfo;
@@ -1717,9 +1747,9 @@ namespace odfaeg {
             void LightRenderComponent::allocateDescriptorSets(RenderStates states) {
                 Shader* shader = const_cast<Shader*>(states.shader);
                 if (shader == &depthBufferGenerator) {
-                    if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorSets.size())
-                        descriptorSets.resize(shader->getNbShaders()*depthBuffer.getNbRenderTargets());
-                    unsigned int descriptorId = depthBuffer.getId() * shader->getNbShaders() + shader->getId();
+                    if (shader->getNbShaders() > descriptorSets.size())
+                        descriptorSets.resize(shader->getNbShaders());
+                    unsigned int descriptorId = shader->getId();
                     for (unsigned int i = 0; i < descriptorSets.size(); i++) {
                         descriptorSets[i].resize(depthBuffer.getMaxFramesInFlight());
                     }
@@ -1733,9 +1763,9 @@ namespace odfaeg {
                         throw std::runtime_error("echec de l'allocation d'un set de descripteurs!");
                     }
                 } else if (shader == &buildAlphaBufferGenerator) {
-                    if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorSets.size())
-                        descriptorSets.resize(shader->getNbShaders()*alphaBuffer.getNbRenderTargets());
-                    unsigned int descriptorId = alphaBuffer.getId() * shader->getNbShaders() + shader->getId();
+                    if (shader->getNbShaders() > descriptorSets.size())
+                        descriptorSets.resize(shader->getNbShaders());
+                    unsigned int descriptorId = shader->getId();
                     for (unsigned int i = 0; i < descriptorSets.size(); i++) {
                         descriptorSets[i].resize(alphaBuffer.getMaxFramesInFlight());
                     }
@@ -1750,9 +1780,9 @@ namespace odfaeg {
                     }
 
             } else if (shader == &specularTextureGenerator) {
-                if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorSets.size())
-                    descriptorSets.resize(shader->getNbShaders()*specularTexture.getNbRenderTargets());
-                unsigned int descriptorId = specularTexture.getId() * shader->getNbShaders() + shader->getId();
+                if (shader->getNbShaders() > descriptorSets.size())
+                    descriptorSets.resize(shader->getNbShaders());
+                unsigned int descriptorId =  shader->getId();
                 for (unsigned int i = 0; i < descriptorSets.size(); i++) {
                     descriptorSets[i].resize(specularTexture.getMaxFramesInFlight());
                 }
@@ -1766,9 +1796,9 @@ namespace odfaeg {
                     throw std::runtime_error("echec de l'allocation d'un set de descripteurs!");
                 }
             } else if (shader == &bumpTextureGenerator) {
-                if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorSets.size())
-                    descriptorSets.resize(shader->getNbShaders()*bumpTexture.getNbRenderTargets());
-                unsigned int descriptorId = bumpTexture.getId() * shader->getNbShaders() + shader->getId();
+                if (shader->getNbShaders() > descriptorSets.size())
+                    descriptorSets.resize(shader->getNbShaders());
+                unsigned int descriptorId = shader->getId();
                 for (unsigned int i = 0; i < descriptorSets.size(); i++) {
                     descriptorSets[i].resize(bumpTexture.getMaxFramesInFlight());
                 }
@@ -1782,9 +1812,9 @@ namespace odfaeg {
                     throw std::runtime_error("echec de l'allocation d'un set de descripteurs!");
                 }
             } else {
-                if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorSets.size())
-                    descriptorSets.resize(shader->getNbShaders()*lightMap.getNbRenderTargets());
-                unsigned int descriptorId = lightMap.getId() * shader->getNbShaders() + shader->getId();
+                if (shader->getNbShaders() > descriptorSets.size())
+                    descriptorSets.resize(shader->getNbShaders());
+                unsigned int descriptorId = shader->getId();
                 for (unsigned int i = 0; i < descriptorSets.size(); i++) {
                     descriptorSets[i].resize(lightMap.getMaxFramesInFlight());
                 }
@@ -1925,7 +1955,7 @@ namespace odfaeg {
                     vkUnmapMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory);
                     copyBuffer(vboIndirectStagingBuffer, vboIndirect, bufferSize);
                     //createDescriptorSets(p, currentStates);
-                    createCommandBuffersIndirect(p, drawArraysIndirectCommands[p].size(), sizeof(DrawArraysIndirectCommand), NODEPTHNOSTENCIL, currentStates);
+                    createCommandBuffersIndirect(p, drawArraysIndirectCommands[p].size(), sizeof(DrawArraysIndirectCommand), NODEPTHNOSTENCIL, currentStates, true);
                 }
             }
         }
@@ -2100,7 +2130,7 @@ namespace odfaeg {
                 }
             }
         }
-        void LightRenderComponent::createCommandBuffersIndirect(unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, DepthStencilID depthStencilID, RenderStates currentStates) {
+        void LightRenderComponent::createCommandBuffersIndirect(unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, DepthStencilID depthStencilID, RenderStates currentStates, bool lightDepth) {
 
             if (needToUpdateDS) {
                 Shader* shader = const_cast<Shader*>(currentStates.shader);
@@ -2122,15 +2152,26 @@ namespace odfaeg {
             if (shader == &depthBufferGenerator) {
 
                 ////std::cout<<"draw on db"<<std::endl;
-                std::vector<VkCommandBuffer> commandBuffers = depthBuffer.getCommandBuffers();
-                unsigned int currentFrame = depthBuffer.getCurrentFrame();
-                layerPC.nbLayers = GameObject::getNbLayers();
-                vkCmdPushConstants(commandBuffers[currentFrame], depthBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][depthBuffer.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectRenderingPC), &indirectRenderingPC);
-                vkCmdPushConstants(commandBuffers[currentFrame], depthBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][depthBuffer.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(LayerPC), &layerPC);
-                depthBuffer.beginRenderPass();
-                depthBuffer.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
-                depthBuffer.endRenderPass();
-                depthBuffer.display();
+                if (!lightDepth) {
+                    std::vector<VkCommandBuffer> commandBuffers = depthBuffer.getCommandBuffers();
+                    unsigned int currentFrame = depthBuffer.getCurrentFrame();
+                    layerPC.nbLayers = GameObject::getNbLayers();
+                    vkCmdPushConstants(commandBuffers[currentFrame], depthBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][depthBuffer.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectRenderingPC), &indirectRenderingPC);
+                    vkCmdPushConstants(commandBuffers[currentFrame], depthBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][depthBuffer.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(LayerPC), &layerPC);
+                    depthBuffer.beginRenderPass();
+                    depthBuffer.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
+                    depthBuffer.endRenderPass();
+                } else {
+                    std::vector<VkCommandBuffer> commandBuffers = lightDepthBuffer.getCommandBuffers();
+                    unsigned int currentFrame = lightDepthBuffer.getCurrentFrame();
+                    layerPC.nbLayers = GameObject::getNbLayers();
+                    vkCmdPushConstants(commandBuffers[currentFrame], lightDepthBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][lightDepthBuffer.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectRenderingPC), &indirectRenderingPC);
+                    vkCmdPushConstants(commandBuffers[currentFrame], lightDepthBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][lightDepthBuffer.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(LayerPC), &layerPC);
+                    lightDepthBuffer.beginRenderPass();
+                    lightDepthBuffer.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
+                    lightDepthBuffer.endRenderPass();
+                }
+
             } else if (shader == &buildAlphaBufferGenerator) {
                 const_cast<Texture&>(depthBuffer.getTexture()).toShaderReadOnlyOptimal(alphaBuffer.getCommandBuffers()[alphaBuffer.getCurrentFrame()]);
 
@@ -2143,7 +2184,7 @@ namespace odfaeg {
                 //vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 0, nullptr);
 
 
-                vkCmdPushConstants(commandBuffers[currentFrame], alphaBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][alphaBuffer.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(IndirectRenderingPC), &indirectRenderingPC);
+                vkCmdPushConstants(commandBuffers[currentFrame], alphaBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][alphaBuffer.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectRenderingPC), &indirectRenderingPC);
                 vkCmdPushConstants(commandBuffers[currentFrame], alphaBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][alphaBuffer.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(LayerPC), &layerPC);
 
 
@@ -2157,7 +2198,7 @@ namespace odfaeg {
                 alphaBuffer.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
                 alphaBuffer.endRenderPass();
                 const_cast<Texture&>(depthBuffer.getTexture()).toColorAttachmentOptimal(alphaBuffer.getCommandBuffers()[alphaBuffer.getCurrentFrame()]);
-                alphaBuffer.display();
+
             } else if (shader == &specularTextureGenerator) {
 
 
@@ -2166,13 +2207,13 @@ namespace odfaeg {
 
                 //vkCmdWaitEvents(commandBuffers[currentFrame], 1, &events[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
                 vkCmdPushConstants(commandBuffers[currentFrame], specularTexture.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][specularTexture.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectRenderingPC), &indirectRenderingPC);
-                vkCmdPushConstants(commandBuffers[currentFrame], specularTexture.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][specularTexture.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 128, sizeof(MaxSpecPC), &maxSpecPC);
+                vkCmdPushConstants(commandBuffers[currentFrame], specularTexture.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][specularTexture.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(MaxSpecPC), &maxSpecPC);
                 /*std::cout<<"pipeline layout : "<<stencilBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][stencilBuffer.getId()][depthStencilID]<<std::endl;
                 system("PAUSE");*/
                 specularTexture.beginRenderPass();
                 specularTexture.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
                 specularTexture.endRenderPass();
-                specularTexture.display();
+
 
             } else if (shader == &bumpTextureGenerator) {
 
@@ -2187,7 +2228,7 @@ namespace odfaeg {
                 bumpTexture.beginRenderPass();
                 bumpTexture.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
                 bumpTexture.endRenderPass();
-                bumpTexture.display();
+
             } else {
                 const_cast<Texture&>(specularTexture.getTexture()).toShaderReadOnlyOptimal(lightMap.getCommandBuffers()[lightMap.getCurrentFrame()]);
                 const_cast<Texture&>(bumpTexture.getTexture()).toShaderReadOnlyOptimal(lightMap.getCommandBuffers()[lightMap.getCurrentFrame()]);
@@ -2209,7 +2250,7 @@ namespace odfaeg {
                 //vkCmdWaitEvents(commandBuffers[currentFrame], 1, &events[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
 
                 vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
-                vkCmdPushConstants(commandBuffers[currentFrame], lightMap.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][lightMap.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(LightIndirectRenderingPC), &lightIndirectRenderingPC);
+                vkCmdPushConstants(commandBuffers[currentFrame], lightMap.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][lightMap.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(LightIndirectRenderingPC), &lightIndirectRenderingPC);
                 vkCmdPushConstants(commandBuffers[currentFrame], lightMap.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][lightMap.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(ResolutionPC), &resolutionPC);
                 lightMap.beginRenderPass();
                 lightMap.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
@@ -2219,7 +2260,7 @@ namespace odfaeg {
                 const_cast<Texture&>(bumpTexture.getTexture()).toColorAttachmentOptimal(lightMap.getCommandBuffers()[lightMap.getCurrentFrame()]);
                 const_cast<Texture&>(depthBuffer.getTexture()).toColorAttachmentOptimal(lightMap.getCommandBuffers()[lightMap.getCurrentFrame()]);
                 const_cast<Texture&>(specularTexture.getTexture()).toColorAttachmentOptimal(lightMap.getCommandBuffers()[lightMap.getCurrentFrame()]);
-                lightMap.display(true, renderFinishedSemaphore[window.getCurrentFrame()]);
+
             }
         }
         void LightRenderComponent::drawNextFrame() {
@@ -2252,8 +2293,15 @@ namespace odfaeg {
             maxSpecPC.maxP = 1;
 
             drawDepthLightInstances();
-            //drawNormals();
+            lightDepthBuffer.display();
             drawInstances();
+            depthBuffer.display();
+            alphaBuffer.display();
+            specularTexture.display();
+            bumpTexture.display();
+
+            //drawNormals();
+
             lightIndirectRenderingPC.projMatrix = projMatrix;
             lightIndirectRenderingPC.viewMatrix = viewMatrix;
             lightIndirectRenderingPC.viewportMatrix = lightMap.getViewportMatrix(&lightMap.getView()).getMatrix();
@@ -2263,6 +2311,7 @@ namespace odfaeg {
 
 
             drawLightInstances();
+            lightMap.display(true, renderFinishedSemaphore[window.getCurrentFrame()]);
 
         }
         void LightRenderComponent::drawInstances() {
@@ -2347,6 +2396,7 @@ namespace odfaeg {
             currentStates.blendMode = BlendNone;
             currentStates.shader = &depthBufferGenerator;
             currentStates.texture = nullptr;
+
             for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                 if (vbBindlessTex[p].getVertexCount() > 0) {
                     vbBindlessTex[p].update();
