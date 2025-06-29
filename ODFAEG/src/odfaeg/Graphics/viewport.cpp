@@ -28,8 +28,13 @@ namespace odfaeg {
                 viewport[1][3] = std::abs(size.y()) * 0.5f + position.y();
                 viewport[2][0] = 0.f;
                 viewport[2][1] = 0.f;
+                #ifndef VULKAN
                 viewport[2][2] = std::abs(size.z()) * 0.5f;
                 viewport[2][3] = std::abs(size.z()) * 0.5f + position.z();
+                #else
+                viewport[2][2] = 1.0f;
+                viewport[2][3] = 0.0f;
+                #endif
                 viewport[3][0] = std::min(position.x(), size.x());
                 viewport[3][1] = std::min(position.y(), size.y());
                 viewport[3][2] = std::min(position.z(), size.z());

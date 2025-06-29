@@ -111,7 +111,7 @@ namespace odfaeg {
                 uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
                 void createDescriptorPool(RenderStates states);
                 void createDescriptorSetLayout(RenderStates states);
-                void createDescriptorSets(RenderStates states);
+                void createDescriptorSets(RenderStates states, bool lightDepth = false);
                 void allocateDescriptorSets(RenderStates states);
                 void compileShaders();
                 void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
@@ -156,9 +156,10 @@ namespace odfaeg {
                 std::vector<VkSemaphore> renderFinishedSemaphore;
                 RenderWindow& window;
                 VkCommandPool commandPool;
-                VkImage depthTextureImage;
-                VkImageView depthTextureImageView;
-                VkSampler depthTextureSampler;
+                VkImage lightDepthTextureImage;
+                VkImageView lightDepthTextureImageView;
+                VkSampler lightDepthTextureSampler;
+                VkDeviceMemory lightDepthTextureImageMemory;
                 VkImage depthTextureImage;
                 VkImageView depthTextureImageView;
                 VkSampler depthTextureSampler;

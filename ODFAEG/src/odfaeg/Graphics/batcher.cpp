@@ -397,8 +397,8 @@ namespace odfaeg {
                         v.m_BoneIDs[b] = va[i].m_BoneIDs[b];
                         v.m_Weights[b] = va[i].m_Weights[b];
                     }
-                    /*if (va.getEntity()->getType() == "E_SKYBOX")
-                    //std::cout<<"normal : "<<v.normal.x<<","<<v.normal.y<<","<<v.normal.z<<std::endl;*/
+                    /*if (va.getEntity()->getType() == "E_PONCTUAL_LIGHT")
+                        std::cout<<"position : "<<t<<std::endl;*/
                     //#endif // VULKAN
 
 

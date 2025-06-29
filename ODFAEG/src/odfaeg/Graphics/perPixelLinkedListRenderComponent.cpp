@@ -1205,7 +1205,7 @@ namespace odfaeg {
                         material.materialType = m_instances[i].getMaterial().getType();
                         material.uvScale = (m_instances[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_instances[i].getMaterial().getTexture()->getSize().x(), 1.f / m_instances[i].getMaterial().getTexture()->getSize().y()): math::Vec2f(0, 0);
                         material.uvOffset = math::Vec2f(0, 0);
-                        std::cout<<"texture matrix : "<<m_instances[i].getMaterial().getTexture()->getTextureMatrix()<<std::endl;
+                        //std::cout<<"texture matrix : "<<m_instances[i].getMaterial().getTexture()->getTextureMatrix()<<std::endl;
                     }
                     materialDatas[p].push_back(material);
                     unsigned int vertexCount = 0;

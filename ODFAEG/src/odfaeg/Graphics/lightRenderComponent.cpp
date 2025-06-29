@@ -122,6 +122,35 @@ namespace odfaeg {
                     throw std::runtime_error("echec de l'allocation de la memoire d'une image!");
                 }
                 vkBindImageMemory(window.getDevice().getDevice(), alphaTextureImage, alphaTextureImageMemory, 0);
+                VkImageCreateInfo imageInfo3{};
+                imageInfo3.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+                imageInfo3.imageType = VK_IMAGE_TYPE_2D;
+                imageInfo3.extent.width = static_cast<uint32_t>(window.getView().getSize().x());
+                imageInfo3.extent.height = static_cast<uint32_t>(window.getView().getSize().y());
+                imageInfo3.extent.depth = 1;
+                imageInfo3.mipLevels = 1;
+                imageInfo3.arrayLayers = 1;
+                imageInfo3.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+                imageInfo3.tiling = VK_IMAGE_TILING_OPTIMAL;
+                imageInfo3.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+                imageInfo3.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT;
+                imageInfo3.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+                imageInfo3.samples = VK_SAMPLE_COUNT_1_BIT;
+                imageInfo3.flags = 0; // Optionnel
+                if (vkCreateImage(window.getDevice().getDevice(), &imageInfo3, nullptr, &lightDepthTextureImage) != VK_SUCCESS) {
+                    throw std::runtime_error("echec de la creation d'une image!");
+                }
+
+
+                vkGetImageMemoryRequirements(window.getDevice().getDevice(), lightDepthTextureImage, &memRequirements);
+
+
+                allocInfo.allocationSize = memRequirements.size;
+                allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+                if (vkAllocateMemory(window.getDevice().getDevice(), &allocInfo, nullptr, &lightDepthTextureImageMemory) != VK_SUCCESS) {
+                    throw std::runtime_error("echec de l'allocation de la memoire d'une image!");
+                }
+                vkBindImageMemory(window.getDevice().getDevice(), lightDepthTextureImage, lightDepthTextureImageMemory, 0);
                 createImageView();
                 createSampler();
                 lightMap.beginRecordCommandBuffers();
@@ -147,6 +176,16 @@ namespace odfaeg {
                 barrier2.subresourceRange.levelCount = 1;
                 barrier2.subresourceRange.layerCount = 1;
                 vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier2);
+                VkImageMemoryBarrier barrier3 = {};
+                barrier3.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+                barrier3.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                barrier3.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+                barrier3.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+                barrier3.image = lightDepthTextureImage;
+                barrier3.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                barrier3.subresourceRange.levelCount = 1;
+                barrier3.subresourceRange.layerCount = 1;
+                vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier3);
                 const_cast<Texture&>(lightMap.getTexture()).toShaderReadOnlyOptimal(lightMap.getCommandBuffers()[lightMap.getCurrentFrame()]);
                 lightMap.display();
 
@@ -209,7 +248,7 @@ namespace odfaeg {
                                                                                  uint textureIndex = material.textureIndex;
                                                                                  uint l = material.layer;
                                                                                  gl_Position = pushConsts.projectionMatrix * pushConsts.viewMatrix * model.modelMatrix * vec4(position, 1.f);
-                                                                                 fTexCoords = texCoords * material.uvScale + material.uvOffset;;
+                                                                                 fTexCoords = texCoords * material.uvScale + material.uvOffset;
                                                                                  frontColor = color;
                                                                                  texIndex = textureIndex;
                                                                                  layer = l;
@@ -318,7 +357,7 @@ namespace odfaeg {
                                                                                          coords = coords / coords.w;
                                                                                          coords = pushConsts.viewportMatrix * coords;
                                                                                          coords.w = material.lightCenter.w;
-                                                                                         //debugPrintfEXT("values : %v4f", coords);
+                                                                                         //debugPrintfEXT("values : %v4f, %v4f", coords, gl_Position);
                                                                                          lightPos = coords;
                                                                                          lightColor = material.lightColor;
 
@@ -348,6 +387,7 @@ namespace odfaeg {
                                                                               beginInvocationInterlockARB();
                                                                               vec4 depth = imageLoad(depthBuffer,ivec2(gl_FragCoord.xy));
                                                                               if (/*l > depth.y() || l == depth.y() &&*/ z > depth.z) {
+                                                                                if (texel.a < 0.1) discard;
                                                                                 imageStore(depthBuffer,ivec2(gl_FragCoord.xy),vec4(0,l,z,texel.a));
                                                                                 memoryBarrier();
                                                                                 fColor = vec4(0, l, z, texel.a);
@@ -480,13 +520,13 @@ namespace odfaeg {
                                                              vec3 normal = vec3(cross(va, vb));
                                                              vec4 bump = texture(bumpMap, gl_FragCoord.xy / pushConsts.resolution.xy);
                                                              vec4 specularInfos = texture(specularTexture, gl_FragCoord.xy / pushConsts.resolution.xy);
-                                                             vec3 sLightPos = vec3 (lightPos.x, lightPos.y,lightPos.z);
+                                                             float pixelViewZ = pushConsts.near + gl_FragCoord.z * (pushConsts.far - pushConsts.near);
+                                                             float lightViewZ = pushConsts.near + lightPos.z * (pushConsts.far - pushConsts.near);
+                                                             //debugPrintfEXT("values : %f, %f, %f, %f", pixelViewZ, lightViewZ, pushConsts.near, pushConsts.far);
+                                                             vec3 sLightPos = vec3 (lightPos.x, lightPos.y,lightViewZ);
                                                              float radius = lightPos.w;
-                                                             float z = gl_FragCoord.z;
-                                                             vec3 pixPos = vec3 (gl_FragCoord.x, gl_FragCoord.y, gl_FragCoord.z);
-
+                                                             vec3 pixPos = vec3 (gl_FragCoord.x, gl_FragCoord.y, pixelViewZ);
                                                              vec3 viewPos = vec3(pushConsts.resolution.x * 0.5f, pushConsts.resolution.y * 0.5f, 0);
-
                                                              vec3 vertexToLight = sLightPos - pixPos;
 
                                                              if (bump.x != 0 || bump.y != 0 || bump.z != 0) {
@@ -497,10 +537,11 @@ namespace odfaeg {
                                                                  normal.y = dot(bump.xyz, binomial);
                                                                  normal.z = dot(bump.xyz, tmpNormal);
                                                              }
-                                                             if (/*layer > depth.y || layer == depth.y &&*/ z > depth.z) {
+                                                             //debugPrintfEXT("depth : %f", depth.z);
+                                                             if (/*layer > depth.y || layer == depth.y &&*/ gl_FragCoord.z > depth.z) {
                                                                  vec4 specularColor = vec4(0, 0, 0, 0);
                                                                  float attenuation = 1.f - length(vertexToLight) / radius;
-                                                                 debugPrintfEXT("values : %v3f, %v3f %f %f", sLightPos, pixPos, length(vertexToLight), attenuation);
+
                                                                  vec3 pixToView = pixPos - viewPos;
                                                                  float normalLength = dot(normal.xyz, vertexToLight);
                                                                  vec3 lightReflect = vertexToLight + 2 * (normal.xyz * normalLength - vertexToLight);
@@ -514,11 +555,12 @@ namespace odfaeg {
                                                                  if (normal.x != 0 || normal.y != 0 || normal.z != 0 && vertexToLight.z > 0.f) {
                                                                      vec3 dirToLight = normalize(vertexToLight.xyz);
                                                                      float nDotl = max(dot (dirToLight, normal.xyz), 0.0);
-                                                                     //debugPrintfEXT("dirToLight : %v3f, %v3f, %f", dirToLight, normal, nDotl);
-                                                                     //attenuation *= nDotl;
+
+                                                                     attenuation *= nDotl;
+                                                                     //debugPrintfEXT("dirToLight : %v3f, %v3f, %f", dirToLight, normal, attenuation);
 
                                                                  }
-                                                                 fColor = vec4(lightColor.rgb, 1) * max(0.0f, attenuation) + specularColor /** (1 - alpha.a)*/;
+                                                                 fColor = vec4(lightColor.rgb, 1) * max(0.0f, attenuation) + specularColor * (1 - alpha.a);
                                                              }
                                                          }
                                                      )";
@@ -617,13 +659,23 @@ namespace odfaeg {
             void LightRenderComponent::clear() {
 
                 lightDepthBuffer.clear(Color::Transparent);
-                depthBuffer.clear(Color::Transparent);
-                std::vector<VkCommandBuffer> commandBuffers = depthBuffer.getCommandBuffers();
+                std::vector<VkCommandBuffer> commandBuffers = lightDepthBuffer.getCommandBuffers();
                 VkClearColorValue clearColor = {0.f, 0.f, 0.f, 0.f};
                 VkImageSubresourceRange subresRange = {};
                 subresRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
                 subresRange.levelCount = 1;
                 subresRange.layerCount = 1;
+                for (unsigned int i = 0; i < commandBuffers.size(); i++) {
+                    vkCmdClearColorImage(commandBuffers[i], depthTextureImage, VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
+                    VkMemoryBarrier memoryBarrier;
+                    memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+                    memoryBarrier.pNext = VK_NULL_HANDLE;
+                    memoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                    memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+                    vkCmdPipelineBarrier(commandBuffers[i], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
+                }
+                depthBuffer.clear(Color::Transparent);
+                commandBuffers = depthBuffer.getCommandBuffers();
                 for (unsigned int i = 0; i < commandBuffers.size(); i++) {
                     vkCmdClearColorImage(commandBuffers[i], depthTextureImage, VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
                     VkMemoryBarrier memoryBarrier;
@@ -679,6 +731,19 @@ namespace odfaeg {
                 if (vkCreateImageView(vkDevice.getDevice(), &viewInfo2, nullptr, &alphaTextureImageView) != VK_SUCCESS) {
                     throw std::runtime_error("failed to create head ptr texture image view!");
                 }
+                VkImageViewCreateInfo viewInfo3{};
+                viewInfo3.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+                viewInfo3.image = lightDepthTextureImage;
+                viewInfo3.viewType = VK_IMAGE_VIEW_TYPE_2D;
+                viewInfo3.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+                viewInfo3.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                viewInfo3.subresourceRange.baseMipLevel = 0;
+                viewInfo3.subresourceRange.levelCount = 1;
+                viewInfo3.subresourceRange.baseArrayLayer = 0;
+                viewInfo3.subresourceRange.layerCount = 1;
+                if (vkCreateImageView(vkDevice.getDevice(), &viewInfo3, nullptr, &lightDepthTextureImageView) != VK_SUCCESS) {
+                    throw std::runtime_error("failed to create head ptr texture image view!");
+                }
             }
             void LightRenderComponent::createSampler() {
                 VkSamplerCreateInfo samplerInfo{};
@@ -722,6 +787,27 @@ namespace odfaeg {
                 samplerInfo2.minLod = 0.0f;
                 samplerInfo2.maxLod = 0.0f;
                 if (vkCreateSampler(vkDevice.getDevice(), &samplerInfo2, nullptr, &alphaTextureSampler) != VK_SUCCESS) {
+                    throw std::runtime_error("failed to create texture sampler!");
+                }
+                VkSamplerCreateInfo samplerInfo3{};
+                samplerInfo3.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+                samplerInfo3.magFilter = VK_FILTER_LINEAR;
+                samplerInfo3.minFilter = VK_FILTER_LINEAR;
+                samplerInfo3.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+                samplerInfo3.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+                samplerInfo3.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+                samplerInfo3.anisotropyEnable = VK_TRUE;
+                vkGetPhysicalDeviceProperties(vkDevice.getPhysicalDevice(), &properties);
+                samplerInfo3.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
+                samplerInfo3.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+                samplerInfo3.unnormalizedCoordinates = VK_FALSE;
+                samplerInfo3.compareEnable = VK_FALSE;
+                samplerInfo3.compareOp = VK_COMPARE_OP_ALWAYS;
+                samplerInfo3.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+                samplerInfo3.mipLodBias = 0.0f;
+                samplerInfo3.minLod = 0.0f;
+                samplerInfo3.maxLod = 0.0f;
+                if (vkCreateSampler(vkDevice.getDevice(), &samplerInfo3, nullptr, &lightDepthTextureSampler) != VK_SUCCESS) {
                     throw std::runtime_error("failed to create texture sampler!");
                 }
             }
@@ -1396,7 +1482,7 @@ namespace odfaeg {
                     }
                 }
             }
-            void LightRenderComponent::createDescriptorSets(RenderStates states) {
+            void LightRenderComponent::createDescriptorSets(RenderStates states, bool lightDepth) {
                 Shader* shader = const_cast<Shader*>(states.shader);
                 if (shader == &depthBufferGenerator) {
                     std::vector<Texture*> allTextures = Texture::getAllTextures();
@@ -1418,19 +1504,33 @@ namespace odfaeg {
                         descriptorWrites[0].descriptorCount = allTextures.size();
                         descriptorWrites[0].pImageInfo = descriptorImageInfos.data();
 
-                        VkDescriptorImageInfo headPtrDescriptorImageInfo;
-                        headPtrDescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
-                        headPtrDescriptorImageInfo.imageView = depthTextureImageView;
-                        headPtrDescriptorImageInfo.sampler = depthTextureSampler;
+                        if (!lightDepth) {
+                            VkDescriptorImageInfo headPtrDescriptorImageInfo;
+                            headPtrDescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+                            headPtrDescriptorImageInfo.imageView = depthTextureImageView;
+                            headPtrDescriptorImageInfo.sampler = depthTextureSampler;
 
-                        descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                        descriptorWrites[1].dstSet = descriptorSets[descriptorId][i];
-                        descriptorWrites[1].dstBinding = 1;
-                        descriptorWrites[1].dstArrayElement = 0;
-                        descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-                        descriptorWrites[1].descriptorCount = 1;
-                        descriptorWrites[1].pImageInfo = &headPtrDescriptorImageInfo;
+                            descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                            descriptorWrites[1].dstSet = descriptorSets[descriptorId][i];
+                            descriptorWrites[1].dstBinding = 1;
+                            descriptorWrites[1].dstArrayElement = 0;
+                            descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+                            descriptorWrites[1].descriptorCount = 1;
+                            descriptorWrites[1].pImageInfo = &headPtrDescriptorImageInfo;
+                        } else {
+                            VkDescriptorImageInfo headPtrDescriptorImageInfo;
+                            headPtrDescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+                            headPtrDescriptorImageInfo.imageView = lightDepthTextureImageView;
+                            headPtrDescriptorImageInfo.sampler = lightDepthTextureSampler;
 
+                            descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                            descriptorWrites[1].dstSet = descriptorSets[descriptorId][i];
+                            descriptorWrites[1].dstBinding = 1;
+                            descriptorWrites[1].dstArrayElement = 0;
+                            descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+                            descriptorWrites[1].descriptorCount = 1;
+                            descriptorWrites[1].pImageInfo = &headPtrDescriptorImageInfo;
+                        }
                         VkDescriptorBufferInfo modelDataStorageBufferInfoLastFrame{};
                         modelDataStorageBufferInfoLastFrame.buffer = modelDataShaderStorageBuffers[i];
                         modelDataStorageBufferInfoLastFrame.offset = 0;
@@ -1677,7 +1777,7 @@ namespace odfaeg {
                         std::array<VkWriteDescriptorSet, 6> descriptorWrites{};
                         VkDescriptorImageInfo headPtrDescriptorImageInfo;
                         headPtrDescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                        headPtrDescriptorImageInfo.imageView = specularTexture.getTexture().getImageView();
+                        headPtrDescriptorImageInfo.imageView = depthBuffer.getTexture().getImageView();
                         headPtrDescriptorImageInfo.sampler = depthBuffer.getTexture().getSampler();
 
                         descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -2040,8 +2140,8 @@ namespace odfaeg {
                     material.layer = m_light_instances[i].getMaterial().getLayer();
                     material.lightCenter = m_light_instances[i].getMaterial().getLightCenter();
                     TransformMatrix modelMatrix;
-
-                    /*std::cout<<"light center screen : "<<lightMap.mapCoordsToPixel(modelMatrix.transform(material.lightCenter))<<std::endl;
+                    /*std::cout<<"light center : "<<material.lightCenter<<std::endl;
+                    std::cout<<"light center screen : "<<lightMap.mapCoordsToPixel(modelMatrix.transform(material.lightCenter))<<std::endl;
                     system("PAUSE");*/
 
                     Color c = m_light_instances[i].getMaterial().getLightColor();
@@ -2156,8 +2256,6 @@ namespace odfaeg {
 
             if (needToUpdateDS) {
                 Shader* shader = const_cast<Shader*>(currentStates.shader);
-                currentStates.shader = &depthBufferGenerator;
-                createDescriptorSets(currentStates);
                 currentStates.shader = &buildAlphaBufferGenerator;
                 createDescriptorSets(currentStates);
                 currentStates.shader = &specularTextureGenerator;
@@ -2175,6 +2273,7 @@ namespace odfaeg {
 
                 ////std::cout<<"draw on db"<<std::endl;
                 if (!lightDepth) {
+                    createDescriptorSets(currentStates, false);
                     std::vector<VkCommandBuffer> commandBuffers = depthBuffer.getCommandBuffers();
                     unsigned int currentFrame = depthBuffer.getCurrentFrame();
                     layerPC.nbLayers = GameObject::getNbLayers();
@@ -2185,6 +2284,7 @@ namespace odfaeg {
                     depthBuffer.endRenderPass();
                     depthBuffer.display();
                 } else {
+                    createDescriptorSets(currentStates, true);
                     std::vector<VkCommandBuffer> commandBuffers = lightDepthBuffer.getCommandBuffers();
                     unsigned int currentFrame = lightDepthBuffer.getCurrentFrame();
                     layerPC.nbLayers = GameObject::getNbLayers();
@@ -2344,8 +2444,7 @@ namespace odfaeg {
 
             resolutionPC.near = view.getViewport().getPosition().z();
             resolutionPC.far = view.getViewport().getSize().z();
-            std::cout<<"near : "<<resolutionPC.near<<", far : "<<resolutionPC.far<<std::endl;
-            system("PAUSE");
+
 
 
 
