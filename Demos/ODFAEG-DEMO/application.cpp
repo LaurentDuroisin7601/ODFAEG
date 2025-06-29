@@ -396,7 +396,7 @@ namespace sorrok {
         light1->setLayer(1);
         g2d::PonctualLight* light2 = entityFactory.make_entity<g2d::PonctualLight>(Vec3f(50, 160, 160), 100, 50, 0, 255, Color::Yellow, 16, entityFactory);
         light2->setLayer(1);
-        getWorld()->addEntity(light1);
+        //getWorld()->addEntity(light1);
         getWorld()->addEntity(light2);
         //getView().move(d.x() * 0.5f, d.y() * 0.5f, 0);
         getWorld()->addEntity(caracter);

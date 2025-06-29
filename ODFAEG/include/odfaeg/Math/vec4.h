@@ -397,9 +397,9 @@ namespace odfaeg {
             VecN<T, N> normalizeToVec3 () const {
                 static_assert(4 <= N, "Invalid number of arguments for vector type");
                 VecN<T, N> result;
-                if (data[4] != 0) {
+                if (data[3] != 0) {
                     for (unsigned int i = 0; i < 3; i++) {
-                        result[i] = data[i] / data[4];
+                        result[i] = data[i] / data[3];
                     }
                     return result;
                 }

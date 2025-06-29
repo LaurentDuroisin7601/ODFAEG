@@ -47,6 +47,7 @@ namespace odfaeg {
                 specularTexture.setView(view);
                 lightMap.create(window.getView().getSize().x(), window.getView().getSize().y());
                 lightMap.setView(view);
+                lightMapTile = Sprite(lightMap.getTexture(), math::Vec3f(0, 0, 0), math::Vec3f(window.getView().getSize().x(), window.getView().getSize().y(), 0), IntRect(0, 0, window.getView().getSize().x(), window.getView().getSize().y()));
                 lightDepthBuffer.create(window.getView().getSize().x(), window.getView().getSize().y());
                 lightDepthBuffer.setView(view);
                 core::FastDelegate<bool> signal (&LightRenderComponent::needToUpdate, this);
@@ -207,7 +208,7 @@ namespace odfaeg {
                                                                                  MaterialData material = materialDatas[gl_DrawID];
                                                                                  uint textureIndex = material.textureIndex;
                                                                                  uint l = material.layer;
-                                                                                 gl_Position = vec4(position, 1.f) * model.modelMatrix * pushConsts.viewMatrix, pushConsts.projectionMatrix;
+                                                                                 gl_Position = pushConsts.projectionMatrix * pushConsts.viewMatrix * model.modelMatrix * vec4(position, 1.f);
                                                                                  fTexCoords = texCoords * material.uvScale + material.uvOffset;;
                                                                                  frontColor = color;
                                                                                  texIndex = textureIndex;
@@ -256,7 +257,7 @@ namespace odfaeg {
                                                                                          MaterialData material = materialDatas[gl_DrawID];
                                                                                          uint textureIndex = material.textureIndex;
                                                                                          uint l = material.layer;
-                                                                                         gl_Position = vec4(position, 1.f) * model.modelMatrix * pushConsts.viewMatrix * pushConsts.projectionMatrix;
+                                                                                         gl_Position = pushConsts.projectionMatrix * pushConsts.viewMatrix * model.modelMatrix * vec4(position, 1.f);
                                                                                          fTexCoords = texCoords * material.uvScale + material.uvOffset;
                                                                                          frontColor = color;
                                                                                          texIndex = textureIndex;
@@ -266,6 +267,7 @@ namespace odfaeg {
                                                                                      }
                                                                                      )";
                         const std::string perPixLightingIndirectRenderingVertexShader = R"(#version 460
+                                                                                           #extension GL_EXT_debug_printf : enable
                                                                                       layout (location = 0) in vec3 position;
                                                                                       layout (location = 1) in vec4 color;
                                                                                       layout (location = 2) in vec2 texCoords;
@@ -306,18 +308,20 @@ namespace odfaeg {
                                                                                          ModelData model = modelDatas[gl_InstanceIndex];
                                                                                          MaterialData material = materialDatas[gl_DrawID];
                                                                                          uint l = material.layer;
-                                                                                         gl_Position = vec4(position, 1.f) * model.modelMatrix * pushConsts.viewMatrix * pushConsts.projectionMatrix;
+                                                                                         gl_Position = pushConsts.projectionMatrix * pushConsts.viewMatrix * model.modelMatrix * vec4(position, 1.f);
                                                                                          fTexCoords = texCoords * material.uvScale + material.uvOffset;
                                                                                          frontColor = color;
                                                                                          layer = l;
                                                                                          vec4 coords = vec4(material.lightCenter.xyz, 1);
-                                                                                         coords = coords * model.modelMatrix * pushConsts.viewMatrix * pushConsts.projectionMatrix;
+                                                                                         coords = pushConsts.projectionMatrix * pushConsts.viewMatrix * model.modelMatrix * coords;
 
                                                                                          coords = coords / coords.w;
                                                                                          coords = pushConsts.viewportMatrix * coords;
                                                                                          coords.w = material.lightCenter.w;
+                                                                                         //debugPrintfEXT("values : %v4f", coords);
                                                                                          lightPos = coords;
                                                                                          lightColor = material.lightColor;
+
                                                                                          normal = normals;
                                                                                       }
                                                                                       )";
@@ -325,6 +329,7 @@ namespace odfaeg {
                         const std::string depthGenFragShader = R"(#version 460
                                                                           #extension GL_ARB_fragment_shader_interlock : require
                                                                           #extension GL_EXT_nonuniform_qualifier : enable
+
                                                                           layout (location = 0) in vec2 fTexCoords;
                                                                           layout (location = 1) in vec4 frontColor;
                                                                           layout (location = 2) in flat uint texIndex;
@@ -443,13 +448,14 @@ namespace odfaeg {
                                                                  )";
                         const std::string perPixLightingFragmentShader =  R"(#version 460
                                                                              #extension GL_EXT_nonuniform_qualifier : enable
+                                                                             #extension GL_EXT_debug_printf : enable
                                                                  layout (location = 0) in vec2 fTexCoords;
                                                                  layout (location = 1) in vec4 frontColor;
                                                                  layout (location = 2) in flat uint texIndex;
                                                                  layout (location = 3) in flat uint layer;
                                                                  layout (location = 4) in vec3 normal;
-                                                                 layout (location = 5) in flat vec4 lightColor;
-                                                                 layout (location = 6) in flat vec4 lightPos;
+                                                                 layout (location = 5) in flat vec4 lightPos;
+                                                                 layout (location = 6) in flat vec4 lightColor;
                                                                  const vec2 size = vec2(2.0,0.0);
                                                                  const ivec3 off = ivec3(-1,0,1);
                                                                  layout(set = 0, binding = 0) uniform sampler2D depthTexture;
@@ -474,12 +480,15 @@ namespace odfaeg {
                                                              vec3 normal = vec3(cross(va, vb));
                                                              vec4 bump = texture(bumpMap, gl_FragCoord.xy / pushConsts.resolution.xy);
                                                              vec4 specularInfos = texture(specularTexture, gl_FragCoord.xy / pushConsts.resolution.xy);
-                                                             vec3 sLightPos = vec3 (lightPos.x, lightPos.y, -lightPos.z * (pushConsts.far - pushConsts.near));
+                                                             vec3 sLightPos = vec3 (lightPos.x, lightPos.y,lightPos.z);
                                                              float radius = lightPos.w;
-                                                             vec3 pixPos = vec3 (gl_FragCoord.x, gl_FragCoord.y, -depth.z * (pushConsts.far - pushConsts.near));
-                                                             vec3 viewPos = vec3(pushConsts.resolution.x * 0.5f, pushConsts.resolution.y * 0.5f, 0);
                                                              float z = gl_FragCoord.z;
+                                                             vec3 pixPos = vec3 (gl_FragCoord.x, gl_FragCoord.y, gl_FragCoord.z);
+
+                                                             vec3 viewPos = vec3(pushConsts.resolution.x * 0.5f, pushConsts.resolution.y * 0.5f, 0);
+
                                                              vec3 vertexToLight = sLightPos - pixPos;
+
                                                              if (bump.x != 0 || bump.y != 0 || bump.z != 0) {
                                                                  vec3 tmpNormal = (normal.xyz);
                                                                  vec3 tangeant = normalize (vec3(size.xy, s21 - s01));
@@ -491,6 +500,7 @@ namespace odfaeg {
                                                              if (/*layer > depth.y || layer == depth.y &&*/ z > depth.z) {
                                                                  vec4 specularColor = vec4(0, 0, 0, 0);
                                                                  float attenuation = 1.f - length(vertexToLight) / radius;
+                                                                 debugPrintfEXT("values : %v3f, %v3f %f %f", sLightPos, pixPos, length(vertexToLight), attenuation);
                                                                  vec3 pixToView = pixPos - viewPos;
                                                                  float normalLength = dot(normal.xyz, vertexToLight);
                                                                  vec3 lightReflect = vertexToLight + 2 * (normal.xyz * normalLength - vertexToLight);
@@ -504,10 +514,11 @@ namespace odfaeg {
                                                                  if (normal.x != 0 || normal.y != 0 || normal.z != 0 && vertexToLight.z > 0.f) {
                                                                      vec3 dirToLight = normalize(vertexToLight.xyz);
                                                                      float nDotl = max(dot (dirToLight, normal.xyz), 0.0);
-                                                                     attenuation *= nDotl;
+                                                                     //debugPrintfEXT("dirToLight : %v3f, %v3f, %f", dirToLight, normal, nDotl);
+                                                                     //attenuation *= nDotl;
 
                                                                  }
-                                                                 fColor = vec4(lightColor.rgb, 1) * max(0.0f, attenuation) + specularColor * (1 - alpha.a);
+                                                                 fColor = vec4(lightColor.rgb, 1) * max(0.0f, attenuation) + specularColor /** (1 - alpha.a)*/;
                                                              }
                                                          }
                                                      )";
@@ -2028,6 +2039,11 @@ namespace odfaeg {
                     material.textureIndex = 0;
                     material.layer = m_light_instances[i].getMaterial().getLayer();
                     material.lightCenter = m_light_instances[i].getMaterial().getLightCenter();
+                    TransformMatrix modelMatrix;
+
+                    /*std::cout<<"light center screen : "<<lightMap.mapCoordsToPixel(modelMatrix.transform(material.lightCenter))<<std::endl;
+                    system("PAUSE");*/
+
                     Color c = m_light_instances[i].getMaterial().getLightColor();
                     material.lightColor = math::Vec4f(1.f / 255.f * c.r, 1.f / 255.f * c.g, 1.f / 255.f * c.b, 1.f / 255.f * c.a);
                     materialDatas[p].push_back(material);
@@ -2301,8 +2317,8 @@ namespace odfaeg {
             //glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo));
             if (!view.isOrtho())
                 view.setPerspective(80, view.getViewport().getSize().x() / view.getViewport().getSize().y(), 0.1, view.getViewport().getSize().z());
-            math::Matrix4f viewMatrix = view.getViewMatrix().getMatrix()/*.transpose()*/;
-            math::Matrix4f projMatrix = view.getProjMatrix().getMatrix()/*.transpose()*/;
+            math::Matrix4f viewMatrix = view.getViewMatrix().getMatrix().transpose();
+            math::Matrix4f projMatrix = view.getProjMatrix().getMatrix().transpose();
             indirectRenderingPC.projMatrix = projMatrix;
             indirectRenderingPC.viewMatrix = viewMatrix;
             layerPC.nbLayers = GameObject::getNbLayers();
@@ -2324,9 +2340,12 @@ namespace odfaeg {
 
             lightIndirectRenderingPC.projMatrix = projMatrix;
             lightIndirectRenderingPC.viewMatrix = viewMatrix;
-            lightIndirectRenderingPC.viewportMatrix = lightMap.getViewportMatrix(&lightMap.getView()).getMatrix();
+            lightIndirectRenderingPC.viewportMatrix = lightMap.getViewportMatrix(&lightMap.getView()).getMatrix().transpose();
+
             resolutionPC.near = view.getViewport().getPosition().z();
             resolutionPC.far = view.getViewport().getSize().z();
+            std::cout<<"near : "<<resolutionPC.near<<", far : "<<resolutionPC.far<<std::endl;
+            system("PAUSE");
 
 
 
@@ -3246,10 +3265,9 @@ namespace odfaeg {
                                                                                          fTexCoords = (textureMatrix * vec4(texCoords, 1.f, 1.f)).x()y;
                                                                                          frontColor = color;
                                                                                          layer = l;
-                                                                                         vec4 coords = vec4(material.lightCenter.x()yz, 1);
+                                                                                         vec4 coords = vec4(material.lightCenter.xyz, 1);
                                                                                          coords = projectionMatrix * viewMatrix * model.modelMatrix * coords;
-                                                                                         if (coords.w == 0)
-                                                                                             coords.w = resolution.z() * 0.5;
+
                                                                                          coords = coords / coords.w;
                                                                                          coords = viewportMatrix * coords;
                                                                                          coords.w = material.lightCenter.w;

@@ -12,8 +12,8 @@ namespace odfaeg {
             //Crée une lumière avec sa position, son intensité et son type.
             PonctualLight::PonctualLight (math::Vec3f center, float r1, float r2, float r3, float intensity, Color color, int quality, EntityFactory& factory, Entity *parent) :
                 EntityLight (center, color, r1, r2, r3, height, "E_PONCTUAL_LIGHT", factory, "", parent) {
-                this->littleRadius = r1;
-                this->bigRadius = r2;
+                this->littleRadius = r2;
+                this->bigRadius = r1;
                 this->quality = quality;
                 this->intensity = intensity;
                 this->color.r = color.r * intensity / 255;
@@ -64,7 +64,8 @@ namespace odfaeg {
                 /*triangle->EnableFill(true);
                 triangle->EnableOutline(false);*/
                 Material material;
-                math::Vec3f center = getCenter() - getSize()*0.5f;
+                math::Vec4f center = getCenter() - getSize()*0.5f;
+                center[3] = bigRadius;
                 material.setLightInfos(center,getColor());
                 Face face (*triangle,material,getTransform());
                 addFace(face);

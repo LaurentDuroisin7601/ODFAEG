@@ -115,8 +115,8 @@ namespace odfaeg {
             * \param text : the texture coordinates.
             */
             void addTexture (const Texture* texture, IntRect texRect = IntRect(0, 0, 0, 0));
-            void setLightInfos (math::Vec3f lightCenter, Color lightColor);
-            math::Vec3f getLightCenter();
+            void setLightInfos (math::Vec4f lightCenter, Color lightColor);
+            math::Vec4f getLightCenter();
             Color getLightColor();
             void setTexRect(IntRect texRect, int texUnit = 0);
             /**
@@ -232,7 +232,7 @@ namespace odfaeg {
             static std::vector<Material*> materials;
             static std::vector<Material*> sameMaterials;
             bool reflectable, refractable;
-            math::Vec3f lightCenter;
+            math::Vec4f lightCenter;
             Color lightColor;
             Type type;
 

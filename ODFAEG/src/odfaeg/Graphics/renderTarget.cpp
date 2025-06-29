@@ -253,10 +253,15 @@ namespace odfaeg {
             ViewportMatrix vpm;
             vpm.setViewport(math::Vec3f(view.getViewport().getPosition().x(), view.getViewport().getPosition().y(), 0),
             math::Vec3f(view.getViewport().getWidth(), view.getViewport().getHeight(), 1));
+            //std::cout<<"viewport matrix : "<<vpm.getMatrix()<<std::endl;
             math::Vec4f coords = view.getViewMatrix().transform(point);
+            //std::cout<<"view matrix : "<<view.getViewMatrix().getMatrix()<<std::endl<<coords<<std::endl;
             coords = view.getProjMatrix().project(coords);
+            //std::cout<<"projection matrix : "<<view.getProjMatrix().getMatrix()<<std::endl<<coords<<std::endl;
             coords = coords.normalizeToVec3();
+            //std::cout<<"n coords : "<<coords<<std::endl;
             coords = vpm.toViewportCoordinates(coords);
+            //std::cout<<"vp coords : "<<coords<<std::endl;
             return coords;
         }
         void RenderTarget::draw(Drawable& drawable, RenderStates states)

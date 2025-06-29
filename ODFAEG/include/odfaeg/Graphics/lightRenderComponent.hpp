@@ -50,7 +50,7 @@ namespace odfaeg {
                 struct ModelData {
                     math::Matrix4f worldMat;
                 };
-                struct MaterialData {
+                struct alignas(16) MaterialData {
                     math::Vec2f uvScale;
                     math::Vec2f uvOffset;
                     unsigned int textureIndex;
@@ -156,6 +156,9 @@ namespace odfaeg {
                 std::vector<VkSemaphore> renderFinishedSemaphore;
                 RenderWindow& window;
                 VkCommandPool commandPool;
+                VkImage depthTextureImage;
+                VkImageView depthTextureImageView;
+                VkSampler depthTextureSampler;
                 VkImage depthTextureImage;
                 VkImageView depthTextureImageView;
                 VkSampler depthTextureSampler;

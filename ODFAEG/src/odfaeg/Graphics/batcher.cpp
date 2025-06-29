@@ -94,12 +94,12 @@ namespace odfaeg {
                 materials.push_back(this);
                 return *this;
             }
-            void Material::setLightInfos(math::Vec3f center, Color color) {
+            void Material::setLightInfos(math::Vec4f center, Color color) {
                 lightCenter = center;
                 lightColor = color;
                 updateIds();
             }
-            math::Vec3f Material::getLightCenter() {
+            math::Vec4f Material::getLightCenter() {
                 return lightCenter;
             }
             Color Material::getLightColor() {
