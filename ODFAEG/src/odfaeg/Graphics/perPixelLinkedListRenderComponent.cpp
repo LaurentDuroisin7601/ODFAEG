@@ -555,12 +555,12 @@ namespace odfaeg {
             poolSizes[1].descriptorCount = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight());
             poolSizes[2].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
             poolSizes[2].descriptorCount = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight());
-            poolSizes[3].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-            poolSizes[3].descriptorCount = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight() * allTextures.size());
+            poolSizes[3].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+            poolSizes[3].descriptorCount = 1;
             poolSizes[4].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
             poolSizes[4].descriptorCount = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight());
-            poolSizes[5].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-            poolSizes[5].descriptorCount = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight());
+            poolSizes[5].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            poolSizes[5].descriptorCount = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight() * allTextures.size());
 
             if (descriptorPool[descriptorId] != nullptr) {
                 vkDestroyDescriptorPool(vkDevice.getDevice(), descriptorPool[descriptorId], nullptr);
@@ -602,34 +602,46 @@ namespace odfaeg {
             linkedListLayoutBinding.pImmutableSamplers = nullptr;
             linkedListLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-            VkDescriptorSetLayoutBinding samplerLayoutBinding{};
-            samplerLayoutBinding.binding = 3;
-            samplerLayoutBinding.descriptorCount = allTextures.size();
-            samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-            samplerLayoutBinding.pImmutableSamplers = nullptr;
-            samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+            std::vector<VkDescriptorBindingFlags> bindingFlags(6, 0); // 6 bindings, flags par défaut à 0
+            bindingFlags[5] = VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
+                  VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT; // seulement pour sampler[]
+
+            VkDescriptorSetLayoutBindingFlagsCreateInfo bindingFlagsInfo{};
+            bindingFlagsInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
+            bindingFlagsInfo.bindingCount = static_cast<uint32_t>(bindingFlags.size());
+            bindingFlagsInfo.pBindingFlags = bindingFlags.data();
 
             VkDescriptorSetLayoutBinding modelDataLayoutBinding{};
-            modelDataLayoutBinding.binding = 4;
+            modelDataLayoutBinding.binding = 3;
             modelDataLayoutBinding.descriptorCount = 1;
             modelDataLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
             modelDataLayoutBinding.pImmutableSamplers = nullptr;
             modelDataLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
             VkDescriptorSetLayoutBinding materialDataLayoutBinding{};
-            materialDataLayoutBinding.binding = 5;
+            materialDataLayoutBinding.binding = 4;
             materialDataLayoutBinding.descriptorCount = 1;
             materialDataLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
             materialDataLayoutBinding.pImmutableSamplers = nullptr;
             materialDataLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
+            VkDescriptorSetLayoutBinding samplerLayoutBinding{};
+            samplerLayoutBinding.binding = 5;
+            samplerLayoutBinding.descriptorCount = allTextures.size();
+            samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            samplerLayoutBinding.pImmutableSamplers = nullptr;
+            samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+
+
             if (descriptorSetLayout[descriptorId] != nullptr) {
                 vkDestroyDescriptorSetLayout(vkDevice.getDevice(), descriptorSetLayout[descriptorId], nullptr);
             }
 
-            std::array<VkDescriptorSetLayoutBinding, 6> bindings = {counterLayoutBinding, headPtrImageLayoutBinding, linkedListLayoutBinding, samplerLayoutBinding, modelDataLayoutBinding, materialDataLayoutBinding};
+            std::array<VkDescriptorSetLayoutBinding, 6> bindings = {counterLayoutBinding, headPtrImageLayoutBinding, linkedListLayoutBinding, modelDataLayoutBinding, materialDataLayoutBinding, samplerLayoutBinding};
             VkDescriptorSetLayoutCreateInfo layoutInfo{};
             layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+            layoutInfo.pNext = &bindingFlagsInfo;
             //layoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR;
             layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());;
             layoutInfo.pBindings = bindings.data();
@@ -646,9 +658,17 @@ namespace odfaeg {
             for (unsigned int i = 0; i < descriptorSets.size(); i++) {
                 descriptorSets[i].resize(frameBuffer.getMaxFramesInFlight());
             }
+            std::vector<Texture*> allTextures = Texture::getAllTextures();
+            std::vector<uint32_t> variableCounts(frameBuffer.getMaxFramesInFlight(), static_cast<uint32_t>(allTextures.size()));
+
+            VkDescriptorSetVariableDescriptorCountAllocateInfo variableCountInfo{};
+            variableCountInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO;
+            variableCountInfo.descriptorSetCount = static_cast<uint32_t>(variableCounts.size());;
+            variableCountInfo.pDescriptorCounts = variableCounts.data();
             std::vector<VkDescriptorSetLayout> layouts(frameBuffer.getMaxFramesInFlight(), descriptorSetLayout[descriptorId]);
             VkDescriptorSetAllocateInfo allocInfo{};
             allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+            allocInfo.pNext = &variableCountInfo;
             allocInfo.descriptorPool = descriptorPool[descriptorId];
             allocInfo.descriptorSetCount = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight());
             allocInfo.pSetLayouts = layouts.data();
@@ -711,19 +731,23 @@ namespace odfaeg {
                 descriptorWrites[2].descriptorCount = 1;
                 descriptorWrites[2].pBufferInfo = &linkedListStorageBufferInfoLastFrame;
 
+                VkDescriptorBufferInfo modelDataStorageBufferInfoLastFrame{};
+                modelDataStorageBufferInfoLastFrame.buffer = modelDataShaderStorageBuffers[i];
+                modelDataStorageBufferInfoLastFrame.offset = 0;
+                modelDataStorageBufferInfoLastFrame.range = maxModelDataSize;
 
                 descriptorWrites[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                 descriptorWrites[3].dstSet = descriptorSets[descriptorId][i];
                 descriptorWrites[3].dstBinding = 3;
                 descriptorWrites[3].dstArrayElement = 0;
-                descriptorWrites[3].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                descriptorWrites[3].descriptorCount = allTextures.size();
-                descriptorWrites[3].pImageInfo = descriptorImageInfos.data();
+                descriptorWrites[3].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                descriptorWrites[3].descriptorCount = 1;
+                descriptorWrites[3].pBufferInfo = &modelDataStorageBufferInfoLastFrame;
 
-                VkDescriptorBufferInfo modelDataStorageBufferInfoLastFrame{};
-                modelDataStorageBufferInfoLastFrame.buffer = modelDataShaderStorageBuffers[i];
-                modelDataStorageBufferInfoLastFrame.offset = 0;
-                modelDataStorageBufferInfoLastFrame.range = maxModelDataSize;
+                VkDescriptorBufferInfo materialDataStorageBufferInfoLastFrame{};
+                materialDataStorageBufferInfoLastFrame.buffer = materialDataShaderStorageBuffers[i];
+                materialDataStorageBufferInfoLastFrame.offset = 0;
+                materialDataStorageBufferInfoLastFrame.range = maxMaterialDataSize;
 
                 descriptorWrites[4].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                 descriptorWrites[4].dstSet = descriptorSets[descriptorId][i];
@@ -731,20 +755,15 @@ namespace odfaeg {
                 descriptorWrites[4].dstArrayElement = 0;
                 descriptorWrites[4].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
                 descriptorWrites[4].descriptorCount = 1;
-                descriptorWrites[4].pBufferInfo = &modelDataStorageBufferInfoLastFrame;
-
-                VkDescriptorBufferInfo materialDataStorageBufferInfoLastFrame{};
-                materialDataStorageBufferInfoLastFrame.buffer = materialDataShaderStorageBuffers[i];
-                materialDataStorageBufferInfoLastFrame.offset = 0;
-                materialDataStorageBufferInfoLastFrame.range = maxMaterialDataSize;
+                descriptorWrites[4].pBufferInfo = &materialDataStorageBufferInfoLastFrame;
 
                 descriptorWrites[5].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                 descriptorWrites[5].dstSet = descriptorSets[descriptorId][i];
                 descriptorWrites[5].dstBinding = 5;
                 descriptorWrites[5].dstArrayElement = 0;
-                descriptorWrites[5].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-                descriptorWrites[5].descriptorCount = 1;
-                descriptorWrites[5].pBufferInfo = &materialDataStorageBufferInfoLastFrame;
+                descriptorWrites[5].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                descriptorWrites[5].descriptorCount = allTextures.size();
+                descriptorWrites[5].pImageInfo = descriptorImageInfos.data();
 
                 vkUpdateDescriptorSets(vkDevice.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
             }
@@ -941,13 +960,16 @@ namespace odfaeg {
                                                                 mat4 modelMatrix;
                                                             };
                                                             struct MaterialData {
+                                                                vec2 uvScale;
+                                                                vec2 uvOffset;
                                                                 uint textureIndex;
                                                                 uint materialType;
+                                                                uint _padding[2];
                                                             };
-                                                            layout(std430, set = 0, binding = 4) buffer modelData {
+                                                            layout(std430, set = 0, binding = 3) buffer modelData {
                                                                 ModelData modelDatas[];
                                                             };
-                                                            layout(std430, set = 0, binding = 5) buffer materialData {
+                                                            layout(std430, set = 0, binding = 4) buffer materialData {
                                                                 MaterialData materialDatas[];
                                                             };
                                                             layout(location = 0) out vec4 frontColor;
@@ -966,10 +988,11 @@ namespace odfaeg {
                                                                 }
                                                                 uint textureIndex =  materialData.textureIndex;
                                                                 gl_Position = vec4((position.x - xOff), (position.y + yOff), position.z, 1.f) * modelData.modelMatrix * pushConsts.viewMatrix * pushConsts.projectionMatrix;
-                                                                fTexCoords = texCoords;
+                                                                fTexCoords = texCoords * materialData.uvScale + materialData.uvOffset;
                                                                 frontColor = color;
                                                                 texIndex = textureIndex;
                                                                 normal = normals;
+
 
                                                             }
                                                             )";
@@ -991,6 +1014,7 @@ namespace odfaeg {
                                                             gl_PointSize = 2.0f;
                                                             frontColor = color;
                                                             fTexCoords = texCoords;
+
                                                             normal = normals;
                                                         })";
                 const std::string fragmentShader = R"(#version 460
@@ -1010,21 +1034,23 @@ namespace odfaeg {
                                                       layout(std430, set = 0, binding = 2) buffer LinkedLists {
                                                           NodeType nodes[];
                                                       };
-                                                      layout(set = 0, binding = 3) uniform sampler2D textures[];
+                                                      layout(set = 0, binding = 5) uniform sampler2D textures[];
                                                       layout(location = 0) in vec4 frontColor;
                                                       layout(location = 1) in vec2 fTexCoords;
                                                       layout(location = 2) in flat uint texIndex;
                                                       layout(location = 3) in vec3 normal;
                                                       void main() {
                                                            uint nodeIdx = atomicAdd(count, 1);
-                                                           vec4 color = (texIndex != 0) ? frontColor * textureLod(textures[texIndex-1], fTexCoords.xy, 0) : frontColor;
+                                                           vec4 color = (texIndex != 0) ? frontColor * texture(textures[texIndex-1], fTexCoords.xy) : frontColor;
+                                                           //debugPrintfEXT("sampled texel = %f, %f", fTexCoords.x, fTexCoords.y);
                                                            if (nodeIdx < maxNodes) {
                                                                 uint prevHead = imageAtomicExchange(headPointers, ivec2(gl_FragCoord.xy), nodeIdx);
                                                                 nodes[nodeIdx].color = color;
                                                                 nodes[nodeIdx].depth = gl_FragCoord.z;
                                                                 nodes[nodeIdx].next = prevHead;
-                                                                //debugPrintfEXT("prev head : %i, next : %i, node Idx : %i\n", prevHead, nodes[nodeIdx].next, nodeIdx);
+
                                                            }
+
                                                       })";
                  const std::string fragmentShader2 =
                                                    R"(
@@ -1127,7 +1153,9 @@ namespace odfaeg {
                         std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                         material.textureIndex = (m_normals[i].getMaterial().getTexture() != nullptr) ? m_normals[i].getMaterial().getTexture()->getId() : 0;
                         material.materialType = m_normals[i].getMaterial().getType();
-
+                        material.uvScale = (m_normals[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_normals[i].getMaterial().getTexture()->getSize().x(), 1.f / m_normals[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
+                        material.uvOffset = math::Vec2f(0, 0);
+                        std::cout<<"texture matrix : "<<m_normals[i].getMaterial().getTexture()->getTextureMatrix()<<std::endl;
                     }
 
                     materialDatas[p].push_back(material);
@@ -1170,13 +1198,16 @@ namespace odfaeg {
                         modelData.worldMat = toVulkanMatrix(tm[j]->getMatrix())/*.transpose()*/;
                         modelDatas[p].push_back(modelData);
                     }
-                    MaterialData materialData;
+                    MaterialData material;
                     {
                         std::lock_guard<std::recursive_mutex> lock(rec_mutex);
-                        materialData.textureIndex = (m_instances[i].getMaterial().getTexture() != nullptr) ? m_instances[i].getMaterial().getTexture()->getId() : 0;
-                        materialData.materialType = m_instances[i].getMaterial().getType();
+                        material.textureIndex = (m_instances[i].getMaterial().getTexture() != nullptr) ? m_instances[i].getMaterial().getTexture()->getId() : 0;
+                        material.materialType = m_instances[i].getMaterial().getType();
+                        material.uvScale = (m_instances[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_instances[i].getMaterial().getTexture()->getSize().x(), 1.f / m_instances[i].getMaterial().getTexture()->getSize().y()): math::Vec2f(0, 0);
+                        material.uvOffset = math::Vec2f(0, 0);
+                        std::cout<<"texture matrix : "<<m_instances[i].getMaterial().getTexture()->getTextureMatrix()<<std::endl;
                     }
-                    materialDatas[p].push_back(materialData);
+                    materialDatas[p].push_back(material);
                     unsigned int vertexCount = 0;
                     if (m_instances[i].getVertexArrays().size() > 0) {
                         Entity* entity = m_instances[i].getVertexArrays()[0]->getEntity();
@@ -1321,6 +1352,8 @@ namespace odfaeg {
                     MaterialData material;
                     material.textureIndex = (m_normalsIndexed[i].getMaterial().getTexture() != nullptr) ? m_normalsIndexed[i].getMaterial().getTexture()->getId() : 0;
                     material.materialType = m_normalsIndexed[i].getMaterial().getType();
+                    material.uvScale = (m_normalsIndexed[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_normalsIndexed[i].getMaterial().getTexture()->getSize().x(), 1.f / m_normalsIndexed[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
+                    material.uvOffset = math::Vec2f(0, 0);
                     materialDatas[p].push_back(material);
 
                     TransformMatrix tm;
@@ -1359,6 +1392,8 @@ namespace odfaeg {
                     MaterialData material;
                     material.textureIndex = (m_instancesIndexed[i].getMaterial().getTexture() != nullptr) ? m_instancesIndexed[i].getMaterial().getTexture()->getId() : 0;
                     material.materialType = m_instancesIndexed[i].getMaterial().getType();
+                    material.uvScale = (m_instancesIndexed[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_instancesIndexed[i].getMaterial().getTexture()->getSize().x(), 1.f / m_instancesIndexed[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
+                    material.uvOffset = math::Vec2f(0, 0);
                     materialDatas[p].push_back(material);
 
                     std::vector<TransformMatrix*> tm = m_instancesIndexed[i].getTransforms();
@@ -1514,13 +1549,13 @@ namespace odfaeg {
 
                     unsigned int p = m_selected[i].getAllVertices().getPrimitiveType();
 
-                    /*if (m_selecteds[i].getVertexArrays()[0]->getEntity()->getRootType() == "E_MONSTER") {
-                            //std::cout<<"tex coords : "<<(*m_selecteds[i].getVertexArrays()[0])[0].texCoords.x<<","<<(*m_selecteds[i].getVertexArrays()[0])[0].texCoords.y<<std::endl;
-                        }*/
+
                     unsigned int vertexCount = 0;
                     MaterialData material;
                     material.textureIndex = (m_selected[i].getMaterial().getTexture() != nullptr) ? m_selected[i].getMaterial().getTexture()->getId() : 0;
                     material.materialType = m_selected[i].getMaterial().getType();
+                    material.uvScale = (m_selected[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_selected[i].getMaterial().getTexture()->getSize().x(), 1.f / m_selected[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
+                    material.uvOffset = math::Vec2f(0, 0);
                     materialDatas[p].push_back(material);
                     for (unsigned int j = 0; j < m_selected[i].getAllVertices().getVertexCount(); j++) {
                         vbBindlessTex[p].append(m_selected[i].getAllVertices()[j]);
@@ -1538,12 +1573,7 @@ namespace odfaeg {
                     drawArraysIndirectCommands[p].push_back(drawArraysIndirectCommand);
                     firstIndex[p] += vertexCount;
                     baseInstance[p] += 1;
-                    /*for (unsigned int j = 0; j < m_selecteds[i].getVertexArrays().size(); j++) {
-                        if (m_selecteds[i].getVertexArrays()[j]->getEntity() != nullptr && m_selecteds[i].getVertexArrays()[j]->getEntity()->getRootType() == "E_HERO") {
-                            for (unsigned int n = 0; n < m_selecteds[i].getVertexArrays()[j]->getVertexCount(); n++)
-                                //std::cout<<"position hero : "<<(*m_selecteds[i].getVertexArrays()[j])[n].position.x<<","<<(*m_selecteds[i].getVertexArrays()[j])[n].position.y<<","<<(*m_selecteds[i].getVertexArrays()[j])[n].position.z<<std::endl;
-                        }
-                    }*/
+
                 }
             }
             for (unsigned int i = 0; i < m_selectedInstance.size(); i++) {
@@ -1560,10 +1590,12 @@ namespace odfaeg {
                         modelData.worldMat = toVulkanMatrix(tm[j]->getMatrix())/*.transpose()*/;
                         modelDatas[p].push_back(modelData);
                     }
-                    MaterialData materialData;
-                    materialData.textureIndex = (m_selectedInstance[i].getMaterial().getTexture() != nullptr) ? m_selectedInstance[i].getMaterial().getTexture()->getId() : 0;
-                    materialData.materialType = m_selectedInstance[i].getMaterial().getType();
-                    materialDatas[p].push_back(materialData);
+                    MaterialData material;
+                    material.textureIndex = (m_selectedInstance[i].getMaterial().getTexture() != nullptr) ? m_selectedInstance[i].getMaterial().getTexture()->getId() : 0;
+                    material.materialType = m_selectedInstance[i].getMaterial().getType();
+                    material.uvScale = (m_selectedInstance[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_selectedInstance[i].getMaterial().getTexture()->getSize().x(), 1.f / m_selectedInstance[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
+                    material.uvOffset = math::Vec2f(0, 0);
+                    materialDatas[p].push_back(material);
                     unsigned int vertexCount = 0;
                     if (m_selectedInstance[i].getVertexArrays().size() > 0) {
                         Entity* entity = m_selectedInstance[i].getVertexArrays()[0]->getEntity();
@@ -1699,14 +1731,13 @@ namespace odfaeg {
                 if (m_selectedScale[i].getAllVertices().getVertexCount() > 0) {
                     DrawArraysIndirectCommand drawArraysIndirectCommand;
                     ////std::cout<<"next frame draw normal"<<std::endl;
-                    /*if (core::Application::app != nullptr) {
-                        float time = core::Application::getTimeClk().getElapsedTime().asSeconds();
-                        perPixelLinkedList2.setParameter("time", time);
-                    }*/
+
                     unsigned int p = m_selectedScale[i].getAllVertices().getPrimitiveType();
                     MaterialData material;
                     material.textureIndex = 0;
                     material.materialType = m_selectedScale[i].getMaterial().getType();
+                    material.uvScale = (m_selectedScale[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_selectedScale[i].getMaterial().getTexture()->getSize().x(), 1.f / m_selectedScale[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
+                    material.uvOffset = math::Vec2f(0, 0);
                     materialDatas[p].push_back(material);
                     TransformMatrix tm;
                     ModelData model;
@@ -1736,6 +1767,8 @@ namespace odfaeg {
                     MaterialData material;
                     material.textureIndex = 0;
                     material.materialType = m_selectedScaleInstance[i].getMaterial().getType();
+                    material.uvScale = (m_selectedScaleInstance[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_selectedScaleInstance[i].getMaterial().getTexture()->getSize().x(), 1.f / m_selectedScaleInstance[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
+                    material.uvOffset = math::Vec2f(0, 0);
                     materialDatas[p].push_back(material);
                     std::vector<TransformMatrix*> tm = m_selectedScaleInstance[i].getTransforms();
                     for (unsigned int j = 0; j < tm.size(); j++) {
@@ -1884,6 +1917,8 @@ namespace odfaeg {
                     MaterialData material;
                     material.textureIndex = (m_selectedIndexed[i].getMaterial().getTexture() != nullptr) ? m_selectedIndexed[i].getMaterial().getTexture()->getId() : 0;
                     material.materialType = m_selectedIndexed[i].getMaterial().getType();
+                    material.uvScale = (m_selectedIndexed[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_selectedIndexed[i].getMaterial().getTexture()->getSize().x(), 1.f / m_selectedIndexed[i].getMaterial().getTexture()->getSize().y()): math::Vec2f(0, 0);
+                    material.uvOffset = math::Vec2f(0, 0);
                     materialDatas[p].push_back(material);
 
                     TransformMatrix tm;
@@ -1919,6 +1954,8 @@ namespace odfaeg {
                     MaterialData material;
                     material.textureIndex = (m_selectedInstanceIndexed[i].getMaterial().getTexture() != nullptr) ? m_selectedInstanceIndexed[i].getMaterial().getTexture()->getId() : 0;
                     material.materialType = m_selectedInstanceIndexed[i].getMaterial().getType();
+                    material.uvScale = (m_selectedInstanceIndexed[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_selectedInstanceIndexed[i].getMaterial().getTexture()->getSize().x(), 1.f / m_selectedInstanceIndexed[i].getMaterial().getTexture()->getSize().y()): math::Vec2f(0, 0);
+                    material.uvOffset = math::Vec2f(0, 0);
                     materialDatas[p].push_back(material);
                     std::vector<TransformMatrix*> tm = m_selectedInstanceIndexed[i].getTransforms();
                     for (unsigned int j = 0; j < tm.size(); j++) {
@@ -2073,6 +2110,8 @@ namespace odfaeg {
                     MaterialData material;
                     material.textureIndex = 0;
                     material.materialType = m_selectedScaleIndexed[i].getMaterial().getType();
+                    material.uvScale = (m_selectedScaleIndexed[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_selectedScaleIndexed[i].getMaterial().getTexture()->getSize().x(), 1.f / m_selectedScaleIndexed[i].getMaterial().getTexture()->getSize().y()): math::Vec2f(0, 0);
+                    material.uvOffset = math::Vec2f(0, 0);
                     materialDatas[p].push_back(material);
 
                     TransformMatrix tm;
@@ -2105,13 +2144,12 @@ namespace odfaeg {
                 if (m_selectedScaleInstanceIndexed[i].getAllVertices().getVertexCount() > 0) {
                     DrawElementsIndirectCommand drawElementsIndirectCommand;
                     unsigned int p = m_selectedScaleInstanceIndexed[i].getAllVertices().getPrimitiveType();
-                    /*if (core::Application::app != nullptr) {
-                        float time = core::Application::getTimeClk().getElapsedTime().asSeconds();
-                        perPixelLinkedList.setParameter("time", time);
-                    }*/
+
                     MaterialData material;
                     material.textureIndex = 0;
                     material.materialType = m_selectedScaleInstanceIndexed[i].getMaterial().getType();
+                    material.uvScale = (m_selectedScaleInstanceIndexed[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_selectedScaleInstanceIndexed[i].getMaterial().getTexture()->getSize().x(), 1.f / m_selectedScaleInstanceIndexed[i].getMaterial().getTexture()->getSize().y()): math::Vec2f(0, 0);
+                    material.uvOffset = math::Vec2f(0, 0);
                     materialDatas[p].push_back(material);
                     std::vector<TransformMatrix*> tm = m_selectedScaleInstanceIndexed[i].getTransforms();
                     for (unsigned int j = 0; j < tm.size(); j++) {

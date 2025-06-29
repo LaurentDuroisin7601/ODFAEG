@@ -64,7 +64,7 @@ namespace odfaeg {
         #ifdef VULKAN
         std::vector<Texture*> Texture::allTextures = std::vector<Texture*>();
         unsigned int Texture::nbTextures = 0;
-        Texture::Texture(window::Device& vkDevice) : vkDevice(vkDevice), id(0), textureImage(nullptr), textureImageView(nullptr), m_cacheId (getUniqueId()), ct(UNORM), isCubeMap(false), isFBOTexture(false) {
+        Texture::Texture(window::Device& vkDevice) : vkDevice(vkDevice), id(0), textureImage(nullptr), textureImageView(nullptr), m_cacheId (getUniqueId()), ct(NORM), isCubeMap(false), isFBOTexture(false) {
             createCommandPool();
         }
         Texture::Texture(const Texture& copy) :
@@ -580,8 +580,8 @@ namespace odfaeg {
             samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
             samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
             samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-            samplerInfo.anisotropyEnable = VK_FALSE;
-            samplerInfo.unnormalizedCoordinates = VK_TRUE;
+            samplerInfo.anisotropyEnable = VK_TRUE;
+            samplerInfo.unnormalizedCoordinates = VK_FALSE;
             VkPhysicalDeviceProperties properties{};
             vkGetPhysicalDeviceProperties(vkDevice.getPhysicalDevice(), &properties);
             samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;

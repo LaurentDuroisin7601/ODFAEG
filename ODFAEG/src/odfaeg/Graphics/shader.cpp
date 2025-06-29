@@ -261,7 +261,6 @@ namespace odfaeg {
         bool Shader::compile(const char* computeShaderCode) {
             shaderc::Compiler compiler;
             shaderc::CompileOptions options;
-            options.SetOptimizationLevel(shaderc_optimization_level_size);
             shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(computeShaderCode, shaderc_glsl_compute_shader, "shader_src", options);
             if (module.GetCompilationStatus() != shaderc_compilation_status_success) {
                 std::cerr << "Failed to compile compute shader :  "<<module.GetErrorMessage();
@@ -276,7 +275,6 @@ namespace odfaeg {
         bool Shader::compile(const char* vertexShaderCode, const char* fragmentShaderCode, const char* geometryShaderCode) {
             shaderc::Compiler compiler;
             shaderc::CompileOptions options;
-            options.SetOptimizationLevel(shaderc_optimization_level_size);
             shaderc::SpvCompilationResult module =
             compiler.CompileGlslToSpv(vertexShaderCode, shaderc_glsl_vertex_shader, "shader_src", options);
             if (module.GetCompilationStatus() != shaderc_compilation_status_success) {

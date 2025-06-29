@@ -435,7 +435,7 @@ namespace odfaeg {
                 if (firstSubmit)
                     waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT); // pour imageAvailable
                 if (semaphore.size() != 0) {
-                    std::cout<<"wait frame : "<<currentFrame<<std::endl;
+                    //std::cout<<"wait frame : "<<currentFrame<<std::endl;
                     waitStages.push_back(VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT); // pour la sync personnalisée
                 }
                 submitInfo.waitSemaphoreCount = waitSemaphores.size();
@@ -483,7 +483,7 @@ namespace odfaeg {
                 presentInfo.pResults = nullptr; // Optionnel
                 vkQueuePresentKHR(vkDevice.getPresentQueue(), &presentInfo);
                 currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
-                std::cout<<"current frame : "<<currentFrame<<std::endl;
+                //std::cout<<"current frame : "<<currentFrame<<std::endl;
                 vkDeviceWaitIdle(vkDevice.getDevice());
             }
         }

@@ -275,6 +275,7 @@ namespace odfaeg {
                 GLMatrix4f model;
                 GLMatrix4f view;
                 GLMatrix4f proj;
+                GLMatrix4f textureMatrix;
             };
             void updateUniformBuffer(uint32_t imageIndex, UniformBufferObject ubo);
 

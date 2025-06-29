@@ -42,9 +42,12 @@ namespace odfaeg {
                     math::Matrix4f worldMat;
                     math::Matrix4f shadowProjMat;
                 };
-                struct MaterialData {
+                struct alignas(16) MaterialData {
+                    math::Vec2f uvScale;
+                    math::Vec2f uvOffset;
                     unsigned int textureIndex;
                     unsigned int layer;
+                    uint32_t _padding[2];
                 };
                 struct IndirectRenderingPC {
                     math::Matrix4f projectionMatrix;

@@ -39,10 +39,13 @@ namespace odfaeg {
             struct ModelData {
                 GLMatrix4f worldMat;
             };
-            struct MaterialData {
+            struct alignas(16) MaterialData {
+                math::Vec2f uvScale;
+                math::Vec2f uvOffset;
                 unsigned int textureIndex;
                 unsigned int layer;
                 unsigned int materialType;
+                uint32_t padding;
             };
             struct AtomicCounterSSBO {
                 unsigned int count[6];

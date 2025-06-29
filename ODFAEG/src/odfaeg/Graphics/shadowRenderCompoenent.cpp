@@ -228,8 +228,11 @@ namespace odfaeg {
                                                                     mat4 shadowProjMatrix;
                                                                  };
                                                                  struct MaterialData {
+                                                                     vec2 uvScale;
+                                                                     vec2 uvOffset;
                                                                      uint textureIndex;
                                                                      uint layer;
+                                                                     uint _padding[2];
                                                                  };
                                                                  layout(binding = 4) buffer modelData {
                                                                      ModelData modelDatas[];
@@ -249,7 +252,7 @@ namespace odfaeg {
                                                                     uint textureIndex = material.textureIndex;
                                                                     uint l = material.layer;
                                                                     gl_Position = vec4(position, 1.f) * model.modelMatrix * pushConsts.viewMatrix * pushConsts.projectionMatrix;
-                                                                    fTexCoords = texCoords;
+                                                                    fTexCoords = texCoords * material.uvScale + material.uvOffset;
                                                                     frontColor = color;
                                                                     texIndex = textureIndex;
                                                                     layer = l;
@@ -311,13 +314,13 @@ namespace odfaeg {
                                                               void main() {
                                                                   vec4 texel = (texIndex != 0) ? frontColor * texture(textures[texIndex-1], fTexCoords.xy) : frontColor;
                                                                   float current_alpha = texel.a;
-                                                                  vec4 depth = textureLod(depthBuffer, gl_FragCoord.xy, 0);
+                                                                  vec4 depth = texture(depthBuffer, gl_FragCoord.xy / pushConsts.resolution.xy);
                                                                   beginInvocationInterlockARB();
-                                                                  vec4 alpha = imageLoad(alphaBuffer,ivec2(gl_FragCoord.xy));
+                                                                  vec4 alpha = imageLoad(alphaBuffer, ivec2(gl_FragCoord.xy));
                                                                   vec3 projCoords = shadowCoords.xyz / shadowCoords.w;
                                                                   projCoords.xy = projCoords.xy * 0.5 + 0.5;
                                                                   //projCoords.y = 1.0 - projCoords.y;
-                                                                  vec4 stencil = textureLod (stencilBuffer, projCoords.xy * pushConsts.resolution.xy, 0);
+                                                                  vec4 stencil = texture (stencilBuffer, projCoords.xy);
                                                                   float l = layer;
                                                                   float z = gl_FragCoord.z;
                                                                   if (/*l > stencil.y || l == stencil.y &&*/ stencil.z > projCoords.z && depth.z > z && current_alpha > alpha.a) {
@@ -379,12 +382,16 @@ namespace odfaeg {
                                                                      mat4 lviewMatrix;
                                                                  } ubo;
                                                                  struct ModelData {
+                                                                    mat4 textureMatrix;
                                                                     mat4 modelMatrix;
                                                                     mat4 shadowProjMatrix;
                                                                  };
                                                                  struct MaterialData {
+                                                                     vec2 uvScale;
+                                                                     vec2 uvOffset;
                                                                      uint textureIndex;
                                                                      uint layer;
+                                                                     uint _padding[2];
                                                                  };
                                                                  layout(binding = 4) buffer modelData {
                                                                      ModelData modelDatas[];
@@ -406,7 +413,7 @@ namespace odfaeg {
                                                                     uint l = material.layer;
                                                                     gl_Position = vec4(position, 1.f) * model.modelMatrix * model.shadowProjMatrix * ubo.viewMatrix * ubo.projectionMatrix;
                                                                     shadowCoords = vec4(position, 1.f) * model.modelMatrix * model.shadowProjMatrix * ubo.lviewMatrix * ubo.lprojectionMatrix;
-                                                                    fTexCoords = texCoords;
+                                                                    fTexCoords = texCoords * material.uvScale + material.uvOffset;
                                                                     frontColor = color;
                                                                     texIndex = textureIndex;
                                                                     layer = l;
@@ -442,15 +449,15 @@ namespace odfaeg {
                                                                   layout (location = 0) out vec4 fColor;
 
                                                                 void main() {
-                                                                    vec4 alpha = textureLod(alphaBuffer, gl_FragCoord.xy, 0);
-                                                                    vec4 depth = textureLod(depthBuffer, gl_FragCoord.xy, 0);
+                                                                    vec4 alpha = texture(alphaBuffer, gl_FragCoord.xy / pushConsts.resolution.xy, 0);
+                                                                    vec4 depth = texture(depthBuffer, gl_FragCoord.xy / pushConsts.resolution.xy, 0);
                                                                     vec4 texel = (texIndex != 0) ? frontColor * texture(textures[texIndex-1], fTexCoords) : frontColor;
 
                                                                     float color = texel.a;
                                                                     vec3 projCoords = shadowCoords.xyz / shadowCoords.w;
                                                                     projCoords.xy = projCoords.xy * 0.5 + 0.5;
                                                                     //projCoords.y = 1.0 - projCoords.y;
-                                                                    vec4 stencil = textureLod(stencilBuffer, projCoords.xy * pushConsts.resolution.xy, 0);
+                                                                    vec4 stencil = texture(stencilBuffer, projCoords.xy, 0);
                                                                     float z = gl_FragCoord.z;
                                                                     vec4 visibility;
                                                                     uint l = layer;
@@ -1605,6 +1612,8 @@ namespace odfaeg {
                             std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                             material.textureIndex = (m_normals[i].getMaterial().getTexture() != nullptr) ? m_normals[i].getMaterial().getTexture()->getId() : 0;
                             material.layer = m_normals[i].getMaterial().getLayer();
+                            material.uvScale = (m_normals[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_normals[i].getMaterial().getTexture()->getSize().x(), 1.f / m_normals[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
+                            material.uvOffset = math::Vec2f(0, 0);
                         }
 
                         materialDatas[p].push_back(material);
@@ -1634,6 +1643,8 @@ namespace odfaeg {
                         MaterialData material;
                         material.textureIndex = (m_instances[i].getMaterial().getTexture() != nullptr) ? m_instances[i].getMaterial().getTexture()->getId() : 0;
                         material.layer = m_instances[i].getMaterial().getLayer();
+                        material.uvScale = (m_instances[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_instances[i].getMaterial().getTexture()->getSize().x(), 1.f / m_instances[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
+                        material.uvOffset = math::Vec2f(0, 0);
                         materialDatas[p].push_back(material);
                         std::vector<TransformMatrix*> tm = m_instances[i].getTransforms();
                         for (unsigned int j = 0; j < tm.size(); j++) {
@@ -1860,6 +1871,8 @@ namespace odfaeg {
                         MaterialData material;
                         material.textureIndex = (m_shadow_normals[i].getMaterial().getTexture() != nullptr) ? m_shadow_normals[i].getMaterial().getTexture()->getId() : 0;
                         material.layer = m_shadow_normals[i].getMaterial().getLayer();
+                        material.uvScale = (m_shadow_normals[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_shadow_normals[i].getMaterial().getTexture()->getSize().x(), 1.f / m_shadow_normals[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
+                        material.uvOffset = math::Vec2f(0, 0);
                         materialDatas[p].push_back(material);
                         TransformMatrix tm;
                         ModelData model;
@@ -1885,8 +1898,10 @@ namespace odfaeg {
                         DrawArraysIndirectCommand drawArraysIndirectCommand;
                         unsigned int p = m_shadow_instances[i].getAllVertices().getPrimitiveType();
                         MaterialData material;
-                        material.textureIndex = (m_shadow_normals[i].getMaterial().getTexture() != nullptr) ? m_shadow_normals[i].getMaterial().getTexture()->getId() : 0;
-                        material.layer = m_shadow_normals[i].getMaterial().getLayer();
+                        material.textureIndex = (m_shadow_instances[i].getMaterial().getTexture() != nullptr) ? m_shadow_instances[i].getMaterial().getTexture()->getId() : 0;
+                        material.layer = m_shadow_instances[i].getMaterial().getLayer();
+                        material.uvScale = (m_shadow_instances[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_shadow_instances[i].getMaterial().getTexture()->getSize().x(), 1.f / m_shadow_instances[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
+                        material.uvOffset = math::Vec2f(0, 0);
                         materialDatas[p].push_back(material);
                         std::vector<TransformMatrix*> tm = m_shadow_instances[i].getTransforms();
                         std::vector<TransformMatrix> tm2 = m_shadow_instances[i].getShadowProjMatrix();
@@ -2113,6 +2128,8 @@ namespace odfaeg {
                         MaterialData material;
                         material.textureIndex = (m_normalsIndexed[i].getMaterial().getTexture() != nullptr) ? m_normalsIndexed[i].getMaterial().getTexture()->getId() : 0;
                         material.layer = m_normalsIndexed[i].getMaterial().getLayer();
+                        material.uvScale = (m_normalsIndexed[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_normalsIndexed[i].getMaterial().getTexture()->getSize().x(), 1.f / m_normalsIndexed[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
+                        material.uvOffset = math::Vec2f(0, 0);
                         materialDatas[p].push_back(material);
                         TransformMatrix tm;
                         ModelData model;
@@ -2144,8 +2161,10 @@ namespace odfaeg {
                         DrawElementsIndirectCommand drawElementsIndirectCommand;
                         unsigned int p = m_instancesIndexed[i].getAllVertices().getPrimitiveType();
                         MaterialData material;
-                        material.textureIndex = (m_normalsIndexed[i].getMaterial().getTexture() != nullptr) ? m_normalsIndexed[i].getMaterial().getTexture()->getId() : 0;
-                        material.layer = m_normalsIndexed[i].getMaterial().getLayer();
+                        material.textureIndex = (m_instancesIndexed[i].getMaterial().getTexture() != nullptr) ? m_instancesIndexed[i].getMaterial().getTexture()->getId() : 0;
+                        material.uvScale = (m_instancesIndexed[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_instancesIndexed[i].getMaterial().getTexture()->getSize().x(), 1.f / m_instancesIndexed[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
+                        material.uvOffset = math::Vec2f(0, 0);
+                        material.layer = m_instancesIndexed[i].getMaterial().getLayer();
                         materialDatas[p].push_back(material);
                         std::vector<TransformMatrix*> tm = m_instancesIndexed[i].getTransforms();
                         for (unsigned int j = 0; j < tm.size(); j++) {
@@ -2379,6 +2398,8 @@ namespace odfaeg {
                         MaterialData material;
                         material.textureIndex = (m_shadow_normalsIndexed[i].getMaterial().getTexture() != nullptr) ? m_shadow_normalsIndexed[i].getMaterial().getTexture()->getId() : 0;
                         material.layer = m_shadow_normalsIndexed[i].getMaterial().getLayer();
+                        material.uvScale = (m_shadow_normalsIndexed[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_shadow_normalsIndexed[i].getMaterial().getTexture()->getSize().x(), 1.f / m_shadow_normalsIndexed[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
+                        material.uvOffset = math::Vec2f(0, 0);
                         materialDatas[p].push_back(material);
                         TransformMatrix tm;
                         ModelData model;
@@ -2412,6 +2433,8 @@ namespace odfaeg {
                         MaterialData material;
                         material.textureIndex = (m_shadow_instances_indexed[i].getMaterial().getTexture() != nullptr) ? m_shadow_instances_indexed[i].getMaterial().getTexture()->getId() : 0;
                         material.layer = m_shadow_instances_indexed[i].getMaterial().getLayer();
+                        material.uvScale = (m_shadow_instances_indexed[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_shadow_instances[i].getMaterial().getTexture()->getSize().x(), 1.f / m_shadow_instances_indexed[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
+                        material.uvOffset = math::Vec2f(0, 0);
                         materialDatas[p].push_back(material);
                         std::vector<TransformMatrix*> tm = m_shadow_instances_indexed[i].getTransforms();
                         std::vector<TransformMatrix> tm2 = m_shadow_instances_indexed[i].getShadowProjMatrix();

@@ -111,6 +111,7 @@ namespace odfaeg {
                                                             mat4 model;
                                                             mat4 view;
                                                             mat4 proj;
+                                                            mat4 textureMatrix;
                                                         } ubo;
                                                         layout(location = 0) in vec3 inPosition;
                                                         layout(location = 1) in vec4 inColor;
@@ -126,7 +127,7 @@ namespace odfaeg {
                                                             gl_PointSize = 2.0f;
                                                             gl_Position =  vec4(inPosition, 1.0) * ubo.model * ubo.view * ubo.proj;
                                                             fragColor = inColor;
-                                                            fragTexCoord = inTexCoord;
+                                                            fragTexCoord = (vec4(inTexCoord.xy, 0, 1) * ubo.textureMatrix).xy;
                                                             normal = normals;
                                                         }
                                                         )";
@@ -139,7 +140,7 @@ namespace odfaeg {
                                                           layout(location = 2) in vec3 normal;
                                                           layout(location = 0) out vec4 outColor;
                                                           void main() {
-                                                             outColor = textureLod(texSampler, fragTexCoord, 0) * fragColor;
+                                                             outColor = texture(texSampler, fragTexCoord) * fragColor;
                                                              //debugPrintfEXT("out color : %v4f", outColor);
                                                           })";
              const std::string defaultFragmentShader2 = R"(#version 450
@@ -306,6 +307,11 @@ namespace odfaeg {
              //ubo.proj.m22 *= -1;
              ubo.view = toVulkanMatrix(m_view.getViewMatrix().getMatrix())/*.transpose()*/;
              ubo.model = toVulkanMatrix(states.transform.getMatrix())/*.transpose()*/;
+             if (states.texture != nullptr)
+                ubo.textureMatrix = toVulkanMatrix(states.texture->getTextureMatrix());
+             else
+                ubo.textureMatrix = toVulkanMatrix(math::Matrix4f());
+
              updateUniformBuffer(getCurrentFrame(), ubo);
              recordCommandBuffers(*vertexBuffers[selectedBuffer], states);
              if (oldType == Quads)
@@ -328,6 +334,10 @@ namespace odfaeg {
              //ubo.proj.m22 *= -1;
              ubo.view = toVulkanMatrix(m_view.getViewMatrix().getMatrix())/*.transpose()*/;
              ubo.model = toVulkanMatrix(states.transform.getMatrix())/*.transpose()*/;
+             if (states.texture != nullptr)
+                ubo.textureMatrix = toVulkanMatrix(states.texture->getTextureMatrix());
+             else
+                ubo.textureMatrix = toVulkanMatrix(math::Matrix4f());
              updateUniformBuffer(getCurrentFrame(), ubo);
              recordCommandBuffers(vb, states);
              /*//std::cout<<"drawn"<<std::endl;
