@@ -1790,8 +1790,8 @@ namespace odfaeg {
 
                         VkDescriptorImageInfo headPtrDescriptorImageInfo2;
                         headPtrDescriptorImageInfo2.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                        headPtrDescriptorImageInfo2.imageView = specularTexture.getTexture().getImageView();
-                        headPtrDescriptorImageInfo2.sampler =  specularTexture.getTexture().getSampler();
+                        headPtrDescriptorImageInfo2.imageView = bumpTexture.getTexture().getImageView();
+                        headPtrDescriptorImageInfo2.sampler =  bumpTexture.getTexture().getSampler();
 
                         descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                         descriptorWrites[1].dstSet = descriptorSets[descriptorId][i];
@@ -1803,8 +1803,8 @@ namespace odfaeg {
 
                         VkDescriptorImageInfo headPtrDescriptorImageInfo3;
                         headPtrDescriptorImageInfo3.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                        headPtrDescriptorImageInfo3.imageView = bumpTexture.getTexture().getImageView();
-                        headPtrDescriptorImageInfo3.sampler = bumpTexture.getTexture().getSampler();
+                        headPtrDescriptorImageInfo3.imageView = specularTexture.getTexture().getImageView();
+                        headPtrDescriptorImageInfo3.sampler = specularTexture.getTexture().getSampler();
 
                         descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                         descriptorWrites[2].dstSet = descriptorSets[descriptorId][i];
