@@ -51,6 +51,8 @@ namespace odfaeg {
                     math::Matrix4f worldMat;
                 };
                 struct MaterialData {
+                    math::Vec2f uvScale;
+                    math::Vec2f uvOffset;
                     unsigned int textureIndex;
                     unsigned int layer;
                     float specularIntensity;
@@ -68,6 +70,7 @@ namespace odfaeg {
                     math::Matrix4f viewportMatrix;
                 };
                 struct LayerPC {
+                    math::Vec4f resolution;
                     unsigned int nbLayers;
                 };
                 struct ResolutionPC {
@@ -76,6 +79,7 @@ namespace odfaeg {
                     float far;
                 };
                 struct MaxSpecPC {
+                    math::Vec4f resolution;
                     float maxP;
                     float maxM;
                 };

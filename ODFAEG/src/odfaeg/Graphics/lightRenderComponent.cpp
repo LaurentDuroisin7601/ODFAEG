@@ -161,6 +161,7 @@ namespace odfaeg {
                     vbBindlessTex[i].setPrimitiveType(static_cast<PrimitiveType>(i));
                 }
                 resolutionPC.resolution = resolution;
+                layerPC.resolution = resolution;
                 needToUpdateDS = false;
                 isSomethingDrawn = false;
                 update = true;
@@ -176,6 +177,8 @@ namespace odfaeg {
                                                                                 mat4 modelMatrix;
                                                                              };
                                                                              struct MaterialData {
+                                                                                vec2 uvScale;
+                                                                                vec2 uvOffset;
                                                                                 uint textureIndex;
                                                                                 uint layer;
                                                                                 float specularIntensity;
@@ -205,7 +208,7 @@ namespace odfaeg {
                                                                                  uint textureIndex = material.textureIndex;
                                                                                  uint l = material.layer;
                                                                                  gl_Position = vec4(position, 1.f) * model.modelMatrix * pushConsts.viewMatrix, pushConsts.projectionMatrix;
-                                                                                 fTexCoords = texCoords;
+                                                                                 fTexCoords = texCoords * material.uvScale + material.uvOffset;;
                                                                                  frontColor = color;
                                                                                  texIndex = textureIndex;
                                                                                  layer = l;
@@ -222,6 +225,8 @@ namespace odfaeg {
                                                                                         mat4 modelMatrix;
                                                                                      };
                                                                                      struct MaterialData {
+                                                                                        vec2 uvScale;
+                                                                                        vec2 uvOffset;
                                                                                         uint textureIndex;
                                                                                         uint layer;
                                                                                         float specularIntensity;
@@ -252,7 +257,7 @@ namespace odfaeg {
                                                                                          uint textureIndex = material.textureIndex;
                                                                                          uint l = material.layer;
                                                                                          gl_Position = vec4(position, 1.f) * model.modelMatrix * pushConsts.viewMatrix * pushConsts.projectionMatrix;
-                                                                                         fTexCoords = texCoords;
+                                                                                         fTexCoords = texCoords * material.uvScale + material.uvOffset;
                                                                                          frontColor = color;
                                                                                          texIndex = textureIndex;
                                                                                          layer = l;
@@ -274,6 +279,8 @@ namespace odfaeg {
                                                                                          mat4 modelMatrix;
                                                                                       };
                                                                                       struct MaterialData {
+                                                                                         vec2 uvScale;
+                                                                                         vec2 uvOffset;
                                                                                          uint textureIndex;
                                                                                          uint layer;
                                                                                          float specularIntensity;
@@ -300,7 +307,7 @@ namespace odfaeg {
                                                                                          MaterialData material = materialDatas[gl_DrawID];
                                                                                          uint l = material.layer;
                                                                                          gl_Position = vec4(position, 1.f) * model.modelMatrix * pushConsts.viewMatrix * pushConsts.projectionMatrix;
-                                                                                         fTexCoords = texCoords;
+                                                                                         fTexCoords = texCoords * material.uvScale + material.uvOffset;
                                                                                          frontColor = color;
                                                                                          layer = l;
                                                                                          vec4 coords = vec4(material.lightCenter.xyz, 1);
@@ -359,12 +366,13 @@ namespace odfaeg {
 
                                                                       layout (location = 0) out vec4 fColor;
                                                                       layout (push_constant) uniform PushConsts {
-                                                                          layout (offset = 128) uint nbLayers;
+                                                                          layout (offset = 128) vec4 resolution;
+                                                                          layout (offset = 144) uint nbLayers;
                                                                       } pushConsts;
                                                                       void main() {
                                                                           vec4 texel = (texIndex != 0) ? frontColor * texture(textures[texIndex-1], fTexCoords.xy) : frontColor;
                                                                           float current_alpha = texel.a;
-                                                                          vec4 depth = textureLod(depthBuffer, gl_FragCoord.xy, 0);
+                                                                          vec4 depth = texture(depthBuffer, gl_FragCoord.xy / pushConsts.resolution.xy);
                                                                           beginInvocationInterlockARB();
                                                                           vec4 alpha = imageLoad(alphaBuffer,ivec2(gl_FragCoord.xy));
                                                                           float l = layer;
@@ -388,15 +396,16 @@ namespace odfaeg {
                                                                      layout (location = 4) in vec3 normal;
                                                                      layout (location = 5) in vec2 specular;
                                                                      layout (push_constant) uniform PushConsts {
-                                                                         layout (offset = 128) float maxP;
-                                                                         layout (offset = 132) float maxM;
+                                                                         layout (offset = 128) vec4 resolution;
+                                                                         layout (offset = 144) float maxM;
+                                                                         layout (offset = 148) float maxP;
                                                                      } pushConsts;
                                                                      layout(set = 0, binding = 0) uniform sampler2D textures[];
                                                                      layout(set = 0, binding = 1) uniform sampler2D depthBuffer;
                                                                      layout (location = 0) out vec4 fColor;
                                                                      void main() {
                                                                         vec4 texel = (texIndex != 0) ? frontColor * texture(textures[texIndex-1], fTexCoords.xy) : frontColor;
-                                                                        vec4 depth = textureLod(depthBuffer, gl_FragCoord.xy, 0);
+                                                                        vec4 depth = texture(depthBuffer, gl_FragCoord.xy / pushConsts.resolution.xy);
                                                                         float z = gl_FragCoord.z;
                                                                         float intensity = (pushConsts.maxM != 0.f) ? specular.x / pushConsts.maxM : 0.f;
                                                                         float power = (pushConsts.maxP != 0.f) ? specular.y / pushConsts.maxP : 0.f;
@@ -416,11 +425,15 @@ namespace odfaeg {
                                                                  layout (location = 4) in vec3 normal;
                                                                  layout(set = 0, binding = 1) uniform sampler2D depthBuffer;
                                                                  layout(set = 0, binding = 2) uniform sampler2D bumpMap;
+                                                                 layout (push_constant) uniform PushConsts {
+                                                                    layout (offset = 128) vec4 resolution;
+                                                                    layout (offset = 144) uint nbLayers;
+                                                                 } pushConsts;
                                                                  layout (location = 0) out vec4 fColor;
                                                                  void main() {
                                                                      vec4 color = (texIndex != 0) ? texture(textures[texIndex-1], fTexCoords.xy) : vec4(0, 0, 0, 0);
-                                                                     vec4 depth = textureLod(depthBuffer, gl_FragCoord.xy, 0);
-                                                                     vec4 bump = textureLod(bumpMap, gl_FragCoord.xy, 0);
+                                                                     vec4 depth = texture(depthBuffer, gl_FragCoord.xy / pushConsts.resolution.xy);
+                                                                     vec4 bump = texture(bumpMap, gl_FragCoord.xy / pushConsts.resolution.xy, 0);
                                                                      if (/*layer > depth.y() || layer == depth.y() &&*/ gl_FragCoord.z > depth.z) {
                                                                         fColor = color;
                                                                      } else {
@@ -443,7 +456,6 @@ namespace odfaeg {
                                                                  layout(set = 0, binding = 1) uniform sampler2D bumpMap;
                                                                  layout(set = 0, binding = 2) uniform sampler2D specularTexture;
                                                                  layout(set = 0, binding = 3) uniform sampler2D alphaMap;
-                                                                 layout(set = 0, binding = 6) uniform sampler2D lightMap;
                                                                  layout (location = 0) out vec4 fColor;
                                                                  layout (push_constant) uniform PushConsts {
                                                                      layout (offset = 192) vec4 resolution;
@@ -451,21 +463,20 @@ namespace odfaeg {
                                                                      layout (offset = 212) float far;
                                                                  } pushConsts;
                                                          void main () {
-                                                             vec4 depth = textureLod(depthTexture, gl_FragCoord.xy, 0);
-                                                             vec4 alpha = textureLod(alphaMap, gl_FragCoord.xy, 0);
-                                                             float s01 = textureOffset(depthTexture, gl_FragCoord.xy, off.xy).z;
-                                                             float s21 = textureOffset(depthTexture, gl_FragCoord.xy, off.zy).z;
-                                                             float s10 = textureOffset(depthTexture, gl_FragCoord.xy, off.yx).z;
-                                                             float s12 = textureOffset(depthTexture, gl_FragCoord.xy, off.yz).z;
+                                                             vec4 depth = texture(depthTexture, gl_FragCoord.xy / pushConsts.resolution.xy);
+                                                             vec4 alpha = texture(alphaMap, gl_FragCoord.xy / pushConsts.resolution.xy);
+                                                             float s01 = textureOffset(depthTexture, gl_FragCoord.xy / pushConsts.resolution.xy, off.xy).z;
+                                                             float s21 = textureOffset(depthTexture, gl_FragCoord.xy / pushConsts.resolution.xy, off.zy).z;
+                                                             float s10 = textureOffset(depthTexture, gl_FragCoord.xy / pushConsts.resolution.xy, off.yx).z;
+                                                             float s12 = textureOffset(depthTexture, gl_FragCoord.xy / pushConsts.resolution.xy, off.yz).z;
                                                              vec3 va = normalize (vec3(size.xy, s21 - s01));
                                                              vec3 vb = normalize (vec3(size.yx, s12 - s10));
                                                              vec3 normal = vec3(cross(va, vb));
-                                                             vec4 bump = textureLod(bumpMap, gl_FragCoord.xy, 0);
-                                                             vec4 specularInfos = textureLod(specularTexture, gl_FragCoord.xy, 0);
+                                                             vec4 bump = texture(bumpMap, gl_FragCoord.xy / pushConsts.resolution.xy);
+                                                             vec4 specularInfos = texture(specularTexture, gl_FragCoord.xy / pushConsts.resolution.xy);
                                                              vec3 sLightPos = vec3 (lightPos.x, lightPos.y, -lightPos.z * (pushConsts.far - pushConsts.near));
                                                              float radius = lightPos.w;
                                                              vec3 pixPos = vec3 (gl_FragCoord.x, gl_FragCoord.y, -depth.z * (pushConsts.far - pushConsts.near));
-                                                             vec4 lightMapColor = textureLod(lightMap, gl_FragCoord.xy, 0);
                                                              vec3 viewPos = vec3(pushConsts.resolution.x * 0.5f, pushConsts.resolution.y * 0.5f, 0);
                                                              float z = gl_FragCoord.z;
                                                              vec3 vertexToLight = sLightPos - pixPos;
@@ -497,8 +508,6 @@ namespace odfaeg {
 
                                                                  }
                                                                  fColor = vec4(lightColor.rgb, 1) * max(0.0f, attenuation) + specularColor * (1 - alpha.a);
-                                                             } else {
-                                                                 fColor = lightMapColor;
                                                              }
                                                          }
                                                      )";
@@ -906,6 +915,7 @@ namespace odfaeg {
                     for (unsigned int j = 0; j < NBDEPTHSTENCIL; j++) {
                         for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
                             if (j == 0) {
+                                std::array<VkPushConstantRange, 2> push_constants;
                                 VkPushConstantRange push_constant;
                                 //this push constant range starts at the beginning
                                 push_constant.offset = 0;
@@ -913,10 +923,19 @@ namespace odfaeg {
                                 push_constant.size = sizeof(IndirectRenderingPC);
                                 //this push constant range is accessible only in the vertex shader
                                 push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+                                push_constants[0] = push_constant;
+                                VkPushConstantRange push_constant2;
+                                //this push constant range starts at the beginning
+                                push_constant2.offset = 128;
+                                //this push constant range takes up the size of a MeshPushConstants struct
+                                push_constant2.size = sizeof(LayerPC);
+                                //this push constant range is accessible only in the vertex shader
+                                push_constant2.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+                                push_constants[1] = push_constant2;
 
 
-                                pipelineLayoutInfo[bumpTextureGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][bumpTexture.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = &push_constant;
-                                pipelineLayoutInfo[bumpTextureGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][bumpTexture.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 1;
+                                pipelineLayoutInfo[bumpTextureGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][bumpTexture.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = push_constants.data();
+                                pipelineLayoutInfo[bumpTextureGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][bumpTexture.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 2;
                                depthStencilCreateInfo[bumpTextureGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][bumpTexture.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
                                depthStencilCreateInfo[bumpTextureGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][bumpTexture.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = {};
                                depthStencilCreateInfo[bumpTextureGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][bumpTexture.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {};
@@ -1071,7 +1090,7 @@ namespace odfaeg {
                     if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorPool.size())
                         descriptorPool.resize(shader->getNbShaders()*lightMap.getNbRenderTargets());
                     unsigned int descriptorId = shader->getId();
-                    std::array<VkDescriptorPoolSize, 7> poolSizes;
+                    std::array<VkDescriptorPoolSize, 6> poolSizes;
                     poolSizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
                     poolSizes[0].descriptorCount = static_cast<uint32_t>(lightMap.getMaxFramesInFlight());
                     poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -1084,8 +1103,6 @@ namespace odfaeg {
                     poolSizes[4].descriptorCount = static_cast<uint32_t>(lightMap.getMaxFramesInFlight());
                     poolSizes[5].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
                     poolSizes[5].descriptorCount = static_cast<uint32_t>(lightMap.getMaxFramesInFlight());
-                    poolSizes[6].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                    poolSizes[6].descriptorCount = static_cast<uint32_t>(lightMap.getMaxFramesInFlight());
                     VkDescriptorPoolCreateInfo poolInfo{};
                     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
                     poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
@@ -1350,14 +1367,8 @@ namespace odfaeg {
                     materialDataLayoutBinding.pImmutableSamplers = nullptr;
                     materialDataLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
-                    VkDescriptorSetLayoutBinding samplerLayoutBinding5{};
-                    samplerLayoutBinding5.binding = 6;
-                    samplerLayoutBinding5.descriptorCount = 1;
-                    samplerLayoutBinding5.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                    samplerLayoutBinding5.pImmutableSamplers = nullptr;
-                    samplerLayoutBinding5.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-                    std::array<VkDescriptorSetLayoutBinding, 7> bindings = {samplerLayoutBinding, samplerLayoutBinding2, samplerLayoutBinding3, samplerLayoutBinding4, modelDataLayoutBinding, materialDataLayoutBinding, samplerLayoutBinding5};
+                    std::array<VkDescriptorSetLayoutBinding, 6> bindings = {samplerLayoutBinding, samplerLayoutBinding2, samplerLayoutBinding3, samplerLayoutBinding4, modelDataLayoutBinding, materialDataLayoutBinding};
 
                     if (descriptorSetLayout[descriptorId] != nullptr) {
                         vkDestroyDescriptorSetLayout(vkDevice.getDevice(), descriptorSetLayout[descriptorId], nullptr);
@@ -1652,7 +1663,7 @@ namespace odfaeg {
                 } else {
                     unsigned int descriptorId = shader->getId();
                     for (size_t i = 0; i < lightMap.getMaxFramesInFlight(); i++) {
-                        std::array<VkWriteDescriptorSet, 7> descriptorWrites{};
+                        std::array<VkWriteDescriptorSet, 6> descriptorWrites{};
                         VkDescriptorImageInfo headPtrDescriptorImageInfo;
                         headPtrDescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                         headPtrDescriptorImageInfo.imageView = specularTexture.getTexture().getImageView();
@@ -1731,18 +1742,6 @@ namespace odfaeg {
                         descriptorWrites[5].descriptorCount = 1;
                         descriptorWrites[5].pBufferInfo = &materialDataStorageBufferInfoLastFrame;
 
-                        VkDescriptorImageInfo headPtrDescriptorImageInfo5;
-                        headPtrDescriptorImageInfo5.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                        headPtrDescriptorImageInfo5.imageView = lightMap.getTexture().getImageView();
-                        headPtrDescriptorImageInfo5.sampler =  lightMap.getTexture().getSampler();
-
-                        descriptorWrites[6].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                        descriptorWrites[6].dstSet = descriptorSets[descriptorId][i];
-                        descriptorWrites[6].dstBinding = 6;
-                        descriptorWrites[6].dstArrayElement = 0;
-                        descriptorWrites[6].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                        descriptorWrites[6].descriptorCount = 1;
-                        descriptorWrites[6].pImageInfo = &headPtrDescriptorImageInfo5;
                         vkUpdateDescriptorSets(vkDevice.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
                     }
                 }
@@ -1855,6 +1854,8 @@ namespace odfaeg {
                     material.textureIndex = 0;
                     material.layer = m_light_instances[i].getMaterial().getLayer();
                     material.lightCenter = m_light_instances[i].getMaterial().getLightCenter();
+                    material.uvScale = math::Vec2f(0, 0);
+                    material.uvOffset = math::Vec2f(0, 0);
                     Color c = m_light_instances[i].getMaterial().getLightColor();
                     material.lightColor = math::Vec4f(1.f / 255.f * c.r, 1.f / 255.f * c.g, 1.f / 255.f * c.b, 1.f / 255.f * c.a);
                     materialDatas[p].push_back(material);
@@ -1987,6 +1988,8 @@ namespace odfaeg {
                     material.lightCenter = m_light_instances[i].getMaterial().getLightCenter();
                     Color c = m_light_instances[i].getMaterial().getLightColor();
                     material.lightColor = math::Vec4f(1.f / 255.f * c.r, 1.f / 255.f * c.g, 1.f / 255.f * c.b, 1.f / 255.f * c.a);
+                    material.uvScale = math::Vec2f(0, 0);
+                    material.uvOffset = math::Vec2f(0, 0);
                     materialDatas[p].push_back(material);
                     ModelData model;
                     TransformMatrix tm;
@@ -2230,7 +2233,7 @@ namespace odfaeg {
 
                 //vkCmdWaitEvents(commandBuffers[currentFrame], 1, &events[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
                 vkCmdPushConstants(commandBuffers[currentFrame], bumpTexture.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][bumpTexture.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectRenderingPC), &indirectRenderingPC);
-
+                vkCmdPushConstants(commandBuffers[currentFrame], bumpTexture.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][bumpTexture.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(LayerPC), &layerPC);
                 /*std::cout<<"pipeline layout : "<<stencilBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][stencilBuffer.getId()][depthStencilID]<<std::endl;
                 system("PAUSE");*/
                 bumpTexture.beginRenderPass();
@@ -2354,6 +2357,8 @@ namespace odfaeg {
                     MaterialData material;
                     material.textureIndex = (m_normals[i].getMaterial().getTexture() != nullptr) ? m_normals[i].getMaterial().getTexture()->getId() : 0;
                     material.layer = m_normals[i].getMaterial().getLayer();
+                    material.uvScale = (m_normals[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_normals[i].getMaterial().getTexture()->getSize().x(), 1.f / m_normals[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
+                    material.uvOffset = math::Vec2f(0, 0);
                     materialDatas[p].push_back(material);
                     ModelData model;
                     TransformMatrix tm;
@@ -2381,6 +2386,8 @@ namespace odfaeg {
                     MaterialData material;
                     material.textureIndex = (m_instances[i].getMaterial().getTexture() != nullptr) ? m_instances[i].getMaterial().getTexture()->getId() : 0;
                     material.layer = m_instances[i].getMaterial().getLayer();
+                    material.uvScale = (m_instances[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_instances[i].getMaterial().getTexture()->getSize().x(), 1.f / m_instances[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
+                    material.uvOffset = math::Vec2f(0, 0);
                     materialDatas[p].push_back(material);
                     std::vector<TransformMatrix*> tm = m_instances[i].getTransforms();
                     for (unsigned int j = 0; j < tm.size(); j++) {
@@ -2604,6 +2611,8 @@ namespace odfaeg {
                     MaterialData material;
                     material.textureIndex = (m_normals[i].getMaterial().getBumpTexture() != nullptr) ? m_normals[i].getMaterial().getBumpTexture()->getId() : 0;
                     material.layer = m_normals[i].getMaterial().getLayer();
+                    material.uvScale = (m_normals[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_normals[i].getMaterial().getTexture()->getSize().x(), 1.f / m_normals[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
+                    material.uvOffset = math::Vec2f(0, 0);
                     materialDatas[p].push_back(material);
                     ModelData model;
                     TransformMatrix tm;
@@ -2630,6 +2639,8 @@ namespace odfaeg {
                     MaterialData material;
                     material.textureIndex = (m_instances[i].getMaterial().getBumpTexture() != nullptr) ? m_instances[i].getMaterial().getBumpTexture()->getId() : 0;
                     material.layer = m_instances[i].getMaterial().getLayer();
+                    material.uvScale = (m_instances[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_instances[i].getMaterial().getTexture()->getSize().x(), 1.f / m_instances[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
+                    material.uvOffset = math::Vec2f(0, 0);
                     materialDatas[p].push_back(material);
                     std::vector<TransformMatrix*> tm = m_instances[i].getTransforms();
                     for (unsigned int j = 0; j < tm.size(); j++) {
@@ -2766,6 +2777,8 @@ namespace odfaeg {
                     MaterialData material;
                     material.textureIndex = (m_normals[i].getMaterial().getTexture() != nullptr) ? m_normals[i].getMaterial().getTexture()->getId() : 0;
                     material.layer = m_normals[i].getMaterial().getLayer();
+                    material.uvScale = (m_normals[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_normals[i].getMaterial().getTexture()->getSize().x(), 1.f / m_normals[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
+                    material.uvOffset = math::Vec2f(0, 0);
                     material.specularIntensity = m_normals[i].getMaterial().getSpecularIntensity();
                     material.specularPower = m_normals[i].getMaterial().getSpecularPower();
                     materialDatas[p].push_back(material);
@@ -2794,6 +2807,8 @@ namespace odfaeg {
                     MaterialData material;
                     material.textureIndex = (m_instances[i].getMaterial().getBumpTexture() != nullptr) ? m_instances[i].getMaterial().getBumpTexture()->getId() : 0;
                     material.layer = m_instances[i].getMaterial().getLayer();
+                    material.uvScale = (m_instances[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_instances[i].getMaterial().getTexture()->getSize().x(), 1.f / m_instances[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
+                    material.uvOffset = math::Vec2f(0, 0);
                     material.specularIntensity = m_instances[i].getMaterial().getSpecularIntensity();
                     material.specularPower = m_instances[i].getMaterial().getSpecularPower();
                     materialDatas[p].push_back(material);
