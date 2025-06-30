@@ -148,16 +148,22 @@ namespace odfaeg {
             ///
             bool loadFromFile(const std::string& vertexFileName, const std::string& fragmentFileName, const std::string& geometryFileName);
             bool loadFromMemory(const std::string& vertexShader, const std::string& fragmentShader, const std::string& geometryShader);
+            bool loadRaytracingFromMemory(const std::string& raygenShader, const std::string& raymissShader, const std::string& rayhitShader);
             bool loadFromStream(std::istream& vertexShaderStream, std::istream& fragmentShaderStream, std::istream& geometryShaderStream);
             bool loadFromMemory(const std::string& computeShaderCode);
             void createShaderModules();
             void createComputeShaderModule();
+            void createRaytracingShaderModules();
             void cleanupShaderModules();
             void cleanupComputeShaderModule();
+            void cleanupRaytracingShaderModules();
             VkShaderModule getVertexShaderModule();
             VkShaderModule getFragmentShaderModule();
             VkShaderModule getGeometryShaderModule();
             VkShaderModule getComputeShaderModule();
+            VkShaderModule getRaygenShaderModule();
+            VkShaderModule getRaymissShaderModule();
+            VkShaderModule getRayhitShaderModule();
             unsigned int getId();
             static unsigned int getNbShaders();
             bool contains(Shader& shader);
@@ -187,13 +193,18 @@ namespace odfaeg {
             ////////////////////////////////////////////////////////////
             bool compile(const char* vertexShaderCode, const char* fragmentShaderCode, const char* geometryShaderCode=nullptr);
             bool compile(const char* computeShaderCode);
+            bool compileRaytracing(const char* raygenShaderCode, const char* raymissShaderCode, const char* rayhitShaderCode=nullptr);
             bool isCompiled;
             std::string vertexShaderCode, fragmentShaderCode, geometryShaderCode;
-            VkShaderModule vertexShaderModule, fragmentShaderModule, geometryShaderModule, computeShaderModule;
+            VkShaderModule vertexShaderModule, fragmentShaderModule, geometryShaderModule, computeShaderModule,
+            raygenShaderModule, raymissShaderModule, rayhitShaderModule;
             std::vector<uint32_t> spvVertexShaderCode;
             std::vector<uint32_t> spvGeometryShaderCode;
             std::vector<uint32_t> spvFragmentShaderCode;
             std::vector<uint32_t> spvComputeShaderCode;
+            std::vector<uint32_t> spvRaygenShaderCode;
+            std::vector<uint32_t> spvRaymissShaderCode;
+            std::vector<uint32_t> spvRayhitShaderCode;
             window::Device& vkDevice;
             static unsigned int nbShaders;
             unsigned int id;

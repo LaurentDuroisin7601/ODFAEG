@@ -172,6 +172,9 @@ namespace odfaeg {
             fragmentShaderCode = fragmentShader;
             return compile(vertexShader.c_str(), fragmentShader.c_str());
         }
+        bool Shader::loadRaytracingFromMemoy(const std::string& raygenShader, const std::string& raymissShader, const std::string& rayhitShader) {
+            return compileRaytracing(raygenShader.c_str(), raymissShader.c_str(), rayhitShader.c_str());
+        }
         ////////////////////////////////////////////////////////////
         bool Shader::loadFromStream(std::istream& vertexShaderStream, std::istream& fragmentShaderStream)
         {
@@ -303,6 +306,35 @@ namespace odfaeg {
             //updateIds();
             return true;
         }
+        bool Shader::compileRaytracing(const char* raygenShaderCode, const char* raymissShaderCode, const char* rayhitShaderCode) {
+            shaderc::Compiler compiler;
+            shaderc::CompileOptions options;
+            shaderc::SpvCompilationResult module =
+            compiler.CompileGlslToSpv(vertexShaderCode, shaderc_glsl_raygen_shader, "shader_src", options);
+            if (module.GetCompilationStatus() != shaderc_compilation_status_success) {
+                std::cerr << "Failed to compile raygen shader :  "<<module.GetErrorMessage();
+                return false;
+            } else {
+                spvRaygenShaderCode = {module.cbegin(), module.cend()};
+            }
+            module = compiler.CompileGlslToSpv(fragmentShaderCode, shaderc_glsl_raymiss_shader, "shader_src", options);
+            if (module.GetCompilationStatus() != shaderc_compilation_status_success) {
+                std::cerr << "Failed to compile raymiss shader :  "<<module.GetErrorMessage();
+                return false;
+            } else {
+                spvRaymissShaderCode = {module.cbegin(), module.cend()};
+            }
+            module = compiler.CompileGlslToSpv(geometryShaderCode, shaderc_glsl_rayhit_shader, "shader_src", options);
+            if (module.GetCompilationStatus() != shaderc_compilation_status_success) {
+                std::cerr << "Failed to compile rayhit shader :  "<<module.GetErrorMessage();
+                return false;
+            } else {
+                spvRayhitShaderCode = {module.cbegin(), module.cend()};
+            }
+            isCompiled = true;
+            //updateIds();
+            return true;
+        }
         void Shader::createShaderModules() {
             VkShaderModuleCreateInfo createVSInfo{};
             createVSInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -337,6 +369,29 @@ namespace odfaeg {
                 throw core::Erreur (0, "Failed to create compute shader module", 1);
             }
         }
+        void Shader::createRaytracingShaderModules() {
+            VkShaderModuleCreateInfo createRGInfo{};
+            createRGInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+            createRGInfo.codeSize = 4*spvRaygenShaderCode.size();
+            createRGInfo.pCode = spvRaygenShaderCode.data();
+            if (vkCreateShaderModule(vkDevice.getDevice(), &createRGInfo, nullptr, &raygenShaderModule) != VK_SUCCESS) {
+                throw core::Erreur (0, "Failed to create raygen shader module", 1);
+            }
+            VkShaderModuleCreateInfo createRMInfo{};
+            createRMInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+            createRMInfo.codeSize = 4*spvFragmentShaderCode.size();
+            createRMInfo.pCode = spvFragmentShaderCode.data();
+            if (vkCreateShaderModule(vkDevice.getDevice(), &createRMInfo, nullptr, &raymisstShaderModule) != VK_SUCCESS) {
+                throw core::Erreur (0, "Failed to create raymiss shader module", 1);
+            }
+            VkShaderModuleCreateInfo createRHInfo{};
+            createRHInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+            createRHInfo.codeSize = 4*spvGeometryShaderCode.size();
+            createRHInfo.pCode = spvGeometryShaderCode.data();
+            if (vkCreateShaderModule(vkDevice.getDevice(), &createRHInfo, nullptr, &rayhitShaderModule) != VK_SUCCESS) {
+                throw core::Erreur (0, "Failed to create rayhit shader module", 1);
+            }
+        }
         void Shader::cleanupShaderModules() {
             vkDestroyShaderModule(vkDevice.getDevice(), vertexShaderModule, nullptr);
             vkDestroyShaderModule(vkDevice.getDevice(), fragmentShaderModule, nullptr);
@@ -349,6 +404,11 @@ namespace odfaeg {
                 vkDestroyShaderModule(vkDevice.getDevice(), computeShaderModule, nullptr);
             }
         }
+        void Shader::cleanupRaytracingShaderModules() {
+            vkDestroyShaderModule(vkDevice.getDevice(), raygenShaderModule, nullptr);
+            vkDestroyShaderModule(vkDevice.getDevice(), raymissShaderModule, nullptr);
+            vkDestroyShaderModule(vkDevice.getDevice(), rayhitShaderModule, nullptr);
+        }        }
         VkShaderModule Shader::getVertexShaderModule() {
             return vertexShaderModule;
         }
@@ -357,6 +417,15 @@ namespace odfaeg {
         }
         VkShaderModule Shader::getGeometryShaderModule() {
             return geometryShaderModule;
+        }
+        VkShaderModule Shader::getRaygenShaderModule() {
+            return raygenShaderModule;
+        }
+        VkShaderModule Shader::getRaymissShaderModule() {
+            return raymissShaderModule;
+        }
+        VkShaderModule Shader::getRayhitShaderModule() {
+            return rayhitShaderModule;
         }
         VkShaderModule Shader::getComputeShaderModule() {
             return computeShaderModule;

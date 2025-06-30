@@ -7,6 +7,1172 @@
 namespace odfaeg {
     namespace graphic {
         #ifdef VULKAN
+        RaytracingRenderComponent (RenderWindow& window, int layer, std::string expression, window::ContextSettings settings) : HeavyComponent(window, math::Vec3f(window.getView().getPosition().x, window.getView().getPosition().y, layer),
+                          math::Vec3f(window.getView().getSize().x, window.getView().getSize().y, 0),
+                          math::Vec3f(window.getView().getSize().x + window.getView().getSize().x * 0.5f, window.getView().getPosition().y + window.getView().getSize().y * 0.5f, layer)),
+            view(window.getView()),
+            expression(expression),
+            vkDevice(window.getDevice());
+            layer(layer),
+            window(window) {
+
+        }
+        RayTracingScratchBuffer RaytracingRenderComponent::createScratchBuffer(VkDeviceSize size) {
+            RayTracingScratchBuffer scratchBuffer{};
+
+            VkBufferCreateInfo bufferCreateInfo{};
+            bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+            bufferCreateInfo.size = size;
+            bufferCreateInfo.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
+            if (vkCreateBuffer(vkDevice.getDevice(), &bufferCreateInfo, nullptr, &scratchBuffer.handle) != VK_SUCCESS) {
+                throw std::runtime_error("failed to create scratch buffer");
+            }
+
+            VkMemoryRequirements memoryRequirements{};
+            vkGetBufferMemoryRequirements(vkDevice.getDevice(), scratchBuffer.handle, &memoryRequirements);
+
+            VkMemoryAllocateFlagsInfo memoryAllocateFlagsInfo{};
+            memoryAllocateFlagsInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO;
+            memoryAllocateFlagsInfo.flags = VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT_KHR;
+
+            VkMemoryAllocateInfo memoryAllocateInfo = {};
+            memoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+            memoryAllocateInfo.pNext = &memoryAllocateFlagsInfo;
+            memoryAllocateInfo.allocationSize = memoryRequirements.size;
+            memoryAllocateInfo.memoryTypeIndex = findMemoryType(memoryRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+            if(vkAllocateMemory(vkDevice.getDevice(), &memoryAllocateInfo, nullptr, &scratchBuffer.memory) != VK_SUCCESS) {
+                throw std::runtime_error("failed to allocate scratch buffer memory");
+            }
+            if(vkBindBufferMemory(vkDevice.getDevice(), scratchBuffer.handle, scratchBuffer.memory, 0)) {
+                throw std::runtime_error("failed to bind scratch buffer memory");
+            }
+
+            VkBufferDeviceAddressInfoKHR bufferDeviceAddressInfo{};
+            bufferDeviceAddressInfo.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
+            bufferDeviceAddressInfo.buffer = scratchBuffer.handle;
+            scratchBuffer.deviceAddress = vkGetBufferDeviceAddressKHR(device, &bufferDeviceAddressInfo);
+
+            return scratchBuffer;
+        }
+        uint32_t PerPixelLinkedListRenderComponent::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
+            VkPhysicalDeviceMemoryProperties memProperties;
+            vkGetPhysicalDeviceMemoryProperties(vkDevice.getPhysicalDevice(), &memProperties);
+            for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
+                if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
+                    return i;
+                }
+            }
+            throw std::runtime_error("aucun type de memoire ne satisfait le buffer!");
+        }
+        void RayTracingRenderComponent::deleteScratchBuffer(RayTracingScratchBuffer& scratchBuffer) {
+            if (scratchBuffer.memory != VK_NULL_HANDLE) {
+			vkFreeMemory(device, scratchBuffer.memory, nullptr);
+            }
+            if (scratchBuffer.handle != VK_NULL_HANDLE) {
+                vkDestroyBuffer(device, scratchBuffer.handle, nullptr);
+            }
+        }
+        void RayTracingRenderComponent::createAccelerationStructureBuffer(AccelerationStructure &accelerationStructure, VkAccelerationStructureBuildSizesInfoKHR buildSizeInfo)
+        {
+            VkBufferCreateInfo bufferCreateInfo{};
+            bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+            bufferCreateInfo.size = buildSizeInfo.accelerationStructureSize;
+            bufferCreateInfo.usage = VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_STORAGE_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
+            if(vkCreateBuffer(vkDevice.getDevice(), &bufferCreateInfo, nullptr, &accelerationStructure.buffer) != VK_SUCCESS) {
+                throw std::runtime_error("failed to create acceleration structure buffer!");
+            }
+            VkMemoryRequirements memoryRequirements{};
+            vkGetBufferMemoryRequirements(vkDevice.getDevice(), accelerationStructure.buffer, &memoryRequirements);
+            VkMemoryAllocateFlagsInfo memoryAllocateFlagsInfo{};
+            memoryAllocateFlagsInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO;
+            memoryAllocateFlagsInfo.flags = VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT_KHR;
+            VkMemoryAllocateInfo memoryAllocateInfo{};
+            memoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+            memoryAllocateInfo.pNext = &memoryAllocateFlagsInfo;
+            memoryAllocateInfo.allocationSize = memoryRequirements.size;
+            memoryAllocateInfo.memoryTypeIndex = findMemoryType(memoryRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+            if(vkAllocateMemory(vkDevice.getDevice(), &memoryAllocateInfo, nullptr, &accelerationStructure.memory) != VK_SUCCESS) {
+                throw std::runtime_error("failed to allocate memory for acceleration structure buffer!");
+            }
+            if(vkBindBufferMemory(vkDevice.getDevice(), accelerationStructure.buffer, accelerationStructure.memory, 0) != VK_SUCCESS) {
+                throw std::runtime_error("failed to bind memory for acceleration structure buffer!");
+            }
+        }
+        void RayTracingRenderComponent::createStorageImage()
+        {
+            VkImageCreateInfo image = {};
+            image.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+            image.imageType = VK_IMAGE_TYPE_2D;
+            image.format = window.getSwapchainImageFormat();
+            image.extent.width = window.getSize().x();
+            image.extent.height = window.getSize().y();
+            image.extent.depth = 1;
+            image.mipLevels = 1;
+            image.arrayLayers = 1;
+            image.samples = VK_SAMPLE_COUNT_1_BIT;
+            image.tiling = VK_IMAGE_TILING_OPTIMAL;
+            image.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_STORAGE_BIT;
+            image.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            if(vkCreateImage(vkDevice.getDevice(), &image, nullptr, &storageImage.image) != VK_SUCCESS) {
+                throw std::runtime_error("failed to create storage image!");
+            }
+            VkMemoryRequirements memReqs;
+            vkGetImageMemoryRequirements(vkDevice.getDevice() storageImage.image, &memReqs);
+            VkMemoryAllocateInfo memoryAllocateInfo = {};
+            memoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+            memoryAllocateInfo.allocationSize = memReqs.size;
+            memoryAllocateInfo.memoryTypeIndex = findMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+            if(vkAllocateMemory(vkDevice.getDevice(), &memoryAllocateInfo, nullptr, &storageImage.memory) != VK_SUCCESS) {
+                throw std::runtime_error("failed to allocate memory for storage image!");
+            }
+            if(vkBindImageMemory(vkDevice.getDevice(), storageImage.image, storageImage.memory, 0) != VK_SUCCESS) {
+                throw std::runtime_error("failed to bind memory for storage image!");
+            }
+
+            VkImageViewCreateInfo colorImageView = {};
+            colorImageView.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+            colorImageView.viewType = VK_IMAGE_VIEW_TYPE_2D;
+            colorImageView.format = window.getSwapchainImageFormat();
+            colorImageView.subresourceRange = {};
+            colorImageView.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            colorImageView.subresourceRange.baseMipLevel = 0;
+            colorImageView.subresourceRange.levelCount = 1;
+            colorImageView.subresourceRange.baseArrayLayer = 0;
+            colorImageView.subresourceRange.layerCount = 1;
+            colorImageView.image = storageImage.image;
+            VK_CHECK_RESULT(vkCreateImageView(vkDevice.getDevice(), &colorImageView, nullptr, &storageImage.view));
+
+            VkCommandBufferAllocateInfo allocInfo{};
+            allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+            allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+
+            allocInfo.commandPool = commandPool;
+            allocInfo.commandBufferCount = 1;
+
+            VkCommandBuffer commandBuffer;
+            vkAllocateCommandBuffers(vkDevice.getDevice(), &allocInfo, &commandBuffer);
+
+            VkCommandBufferBeginInfo beginInfo{};
+            beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+            beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+            vkBeginCommandBuffer(commandBuffer, &beginInfo);
+            VkImageMemoryBarrier barrier = {};
+            barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            barrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+            barrier.image = storageImage.image;
+            barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            barrier.subresourceRange.levelCount = 1;
+            barrier.subresourceRange.layerCount = 1;
+            vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+            vkEndCommandBuffer(commandBuffer);
+
+            VkSubmitInfo submitInfo{};
+            submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+            submitInfo.commandBufferCount = 1;
+            submitInfo.pCommandBuffers = &commandBuffer;
+
+            vkQueueSubmit(vkDevice.getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
+            vkQueueWaitIdle(vkDevice.getGraphicsQueue());
+
+            vkFreeCommandBuffers(vkDevice.getDevice(), commandPool, 1, &commandBuffer);
+        }
+        uint64_t RayTracingRenderComponent::getBufferDeviceAddress(VkBuffer buffer)
+        {
+            VkBufferDeviceAddressInfoKHR bufferDeviceAI{};
+            bufferDeviceAI.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
+            bufferDeviceAI.buffer = buffer;
+            return vkGetBufferDeviceAddressKHR(device, &bufferDeviceAI);
+        }
+        void RayTracingRenderComponent::createTrianglesBuffers() {
+            VkDeviceSize bufferSize = triangles.size() * sizeof(Triangle);
+            if (bufferSize > maxTriangleBufferSize) {
+                if (triangleStagingBuffer != nullptr) {
+                    vkDestroyBuffer(vkDevice.getDevice(), triangleStagingBuffer, nullptr);
+                    vkFreeMemory(vkDevice.getDevice(), triangleStagingBufferMemory, nullptr);
+                }
+                createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, triangleStagingBuffer, triangleStagingBufferMemory);
+
+                vkDestroyBuffer(vkDevice.getDevice(), triangleBuffer, nullptr);
+                vkFreeMemory(vkDevice.getDevice(), triangleBufferMemory, nullptr);
+                createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, triangleBuffer, triangleBufferMemory);
+                maxTriangleBufferSize = bufferSize;
+                needToUpdateDS  = true;
+            }
+            void* data;
+            vkMapMemory(vkDevice.getDevice(), triangleBufferMemory, 0, bufferSize, 0, &data);
+            memcpy(data, triangles.data(), (size_t)bufferSize);
+            vkUnmapMemory(vkDevice.getDevice(), triangleBufferMemory);
+            copyBuffer(triangleStagingBuffer, triangleBuffer, bufferSize);
+            bufferSize = trianglesOffsets.size() * sizeof(TriangleOffset);
+            if (bufferSize > maxTriangleOffsetBufferSize) {
+                if (triangleOffsetStagingBuffer != nullptr) {
+                    vkDestroyBuffer(vkDevice.getDevice(), triangleOffsetStagingBuffer, nullptr);
+                    vkFreeMemory(vkDevice.getDevice(), triangleOffsetStagingBufferMemory, nullptr);
+                }
+                createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, triangleOffsetStagingBuffer, triangleOffsetStagingBufferMemory);
+
+                vkDestroyBuffer(vkDevice.getDevice(), triangleOffsetBuffer, nullptr);
+                vkFreeMemory(vkDevice.getDevice(), triangleOffsetBufferMemory, nullptr);
+                createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, triangleOffsetBuffer, triangleOffsetBufferMemory);
+                maxTriangleOffsetBufferSize = bufferSize;
+                needToUpdateDS  = true;
+            }
+            vkMapMemory(vkDevice.getDevice(), triangleOffsetBufferMemory, 0, bufferSize, 0, &data);
+            memcpy(data, trianglesOffsets.data(), (size_t)bufferSize);
+            vkUnmapMemory(vkDevice.getDevice(), triangleOffsetBufferMemory);
+            copyBuffer(triangleOffsetStagingBuffer, triangleOffsetBuffer, bufferSize);
+        }
+        void RayTracingRenderComponent::createBottomLevelAccelerationStructure()
+        {
+            trianglesOffsets.clear();
+            bottomLevelASs.clear();
+            uint32_t offset = 0;
+            for (unsigned int i = 0; i < m_normals.size(); i++) {
+                if (m_normals[i].getAllVertices().getVertexCount() > 0) {
+                    TriangleOffset trianglOffset;
+                    triangleOffset.offset = offset;
+                    trianglesOffsets.push_back(offset);
+                    std::vector<Vertex> triangles;
+                    std::vector<uint32_t> indexes;
+                    VertexArray va = m_normals[i].getAllVertices();
+                    unsigned int size = 0;
+                    if (va.getPrimitiveType() == PrimitiveType::Quads) {
+                        size = va.getVertexCount() / 4;
+                    } else if (va.getPrimitiveType() == PrimitiveType::Triangles) {
+                        size = va.getVertexCount() / 3;
+                    } else if (va.getPrimitiveType() == PrimitiveType::TriangleStrip || va.getPrimitiveType() == PrimitiveType::TriangleFan) {
+                        size = va.getVertexCount() - 2;
+                    }
+                    for (unsigned int i = 0; i < size; i++) {
+                        if (va.getPrimitiveType() == PrimitiveType::Quads) {
+                            for (unsigned int n = 0; n < 2; n++) {
+                                if (n == 0) {
+                                    Vertex triangle;
+                                    triangle.positions[0] = math::Vec3f(va[i*4].position.x,va[i*4].position.y,va[i*4].position.z);
+                                    triangle.positions[1] = math::Vec3f(va[i*4+1].position.x,va[i*4+1].position.y,va[i*4+1].position.z);
+                                    triangle.positions[2] = math::Vec3f(va[i*4+2].position.x,va[i*4+2].position.y,va[i*4+2].position.z);
+                                    indexes.push_back(i*4);
+                                    indexes.push_back(i*4+1);
+                                    indexes.push_back(i*4+2);
+                                    triangles.push_back(triangle);
+                                    offset++;
+                                } else {
+                                    Vertex triangle;
+                                    triangle.positions[0] = math::Vec3f(va[i*4].position.x,va[i*4].position.y,va[i*4].position.z);
+                                    triangle.positions[1] = math::Vec3f(va[i*4+2].position.x,va[i*4+2].position.y,va[i*4+2].position.z);
+                                    triangle.positions[2] =  math::Vec3f(va[i*4+3].position.x,va[i*4+3].position.y,va[i*4+3].position.z);
+                                    indexes.push_back(i*4);
+                                    indexes.push_back(i*4+2);
+                                    indexes.push_back(i*4+3);
+                                    triangles.push_back(triangle);
+                                    offset++;
+                                }
+                            }
+                        } else if (va.getPrimitiveType() == PrimitiveType::Triangles) {
+                            Vertex triangle;
+                            triangle.positions[0] = math::Vec3f(va[i*3].position.x,va[i*3].position.y,va[i*3].position.z);
+                            triangle.positions[1] = math::Vec3f(va[i*3+1].position.x,va[i*3+1].position.y,va[i*3+1].position.z);
+                            triangle.positions[2] = math::Vec3f(va[i*3+2].position.x,va[i*3+2].position.y,va[i*3+2].position.z);
+                            triangles.push_back(triangle);
+                            indexes.push_back(i*3);
+                            indexes.push_back(i*3+1);
+                            indexes.push_back(i*3+2);
+                            offset++;
+                        } else if (va.getPrimitiveType() == PrimitiveType::TriangleStrip) {
+                            if (i == 0) {
+                                Vertex triangle;
+                                triangle.positions[0] = math::Vec3f(va[i*3].position.x,va[i*3].position.y,va[i*3].position.z);
+                                triangle.positions[1] = math::Vec3f(va[i*3+1].position.x,va[i*3+1].position.y,va[i*3+1].position.z);
+                                triangle.positions[2] = math::Vec3f(va[i*3+2].position.x,va[i*3+2].position.y,va[i*3+2].position.z);
+                                triangles.push_back(triangle);
+                                indexes.push_back(i*3);
+                                indexes.push_back(i*3+1);
+                                indexes.push_back(i*3+2);
+                                offset++;
+                            } else {
+                                Vertex triangle;
+                                triangle.positions[0] = math::Vec3f(va[i].position.x,va[i].position.y,va[i].position.z);;
+                                triangle.positions[1] = math::Vec3f(va[i+1].position.x,va[i+1].position.y,va[i+1].position.z);
+                                triangle.positions[2] = math::Vec3f(va[i+2].position.x,va[i+2].position.y,va[i+2].position.z);
+                                triangles.push_back(triangle);
+                                indexes.push_back(i);
+                                indexes.push_back(i+1);
+                                indexes.push_back(i+2);
+                                offset++;
+                            }
+                        } else if (va.getPrimitiveType() == TriangleFan) {
+                            if (i == 0) {
+                                Vertex triangle;
+                                triangle.positions[0] = math::Vec3f(va[i*3].position.x,va[i*3].position.y,va[i*3].position.z);;
+                                triangle.positions[1] = math::Vec3f(va[i*3+1].position.x,va[i*3+1].position.y,va[i*3+1].position.z);
+                                triangle.positions[2] = math::Vec3f(va[i*3+2].position.x,va[i*3+2].position.y,va[i*3+2].position.z);
+                                triangles.push_back(triangle);
+                                indexes.push_back(i*3);
+                                indexes.push_back(i*3+1);
+                                indexes.push_back(i*3+2);
+                                offset++;
+                            } else {
+                                Vertex triangle;
+                                triangle.positions[0] = math::Vec3f(va[0].position.x,va[0].position.y,va[0].position.z);
+                                triangle.positions[1] = math::Vec3f(va[i+1].position.x,va[i+1].position.y,va[i+1].position.z);
+                                triangle.positions[2] = math::Vec3f(va[i+2].position.x,va[i+2].position.y,va[i+2].position.z);
+                                triangles.push_back(triangle);
+                                indexes.push_back(0);
+                                indexes.push_back(i+1);
+                                indexes.push_back(i+2);
+                                offset++;
+                            }
+                        }
+                    }
+                }
+                VkTransformMatrixKHR transformMatrix = {
+                    1.0f, 0.0f, 0.0f, 0.0f,
+                    0.0f, 1.0f, 0.0f, 0.0f,
+                    0.0f, 0.0f, 1.0f, 0.0f
+                };
+                VkDeviceSize bufferSize = triangles.size() * sizeof(Triangle);
+                if (bufferSize > maxVertexBufferSize) {
+                    if (vertexStagingBuffer != nullptr) {
+                        vkDestroyBuffer(vkDevice.getDevice(), vertexStagingBuffer, nullptr);
+                        vkFreeMemory(vkDevice.getDevice(), vertexStagingBufferMemory, nullptr);
+                    }
+                    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, vertexStagingBuffer, vertexStagingBufferMemory);
+
+                    vkDestroyBuffer(vkDevice.getDevice(), vertexBuffer, nullptr);
+                    vkFreeMemory(vkDevice.getDevice(), vertexBufferMemory, nullptr);
+                    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
+                    maxVertexBufferSize = bufferSize;
+                }
+                void* data;
+                vkMapMemory(vkDevice.getDevice(), vertexBufferMemory, 0, bufferSize, 0, &data);
+                memcpy(data, triangles.data(), (size_t)bufferSize);
+                vkUnmapMemory(vkDevice.getDevice(), vertexBufferMemory);
+                copyBuffer(vertexStagingBuffer, vertexBuffer, bufferSize);
+                bufferSize = indexes.size() * sizeof(uint32_t);
+                if (bufferSize > maxIndexBufferSize) {
+                    if (indexStagingBuffer != nullptr) {
+                        vkDestroyBuffer(vkDevice.getDevice(), indexStagingBuffer, nullptr);
+                        vkFreeMemory(vkDevice.getDevice(), indexStagingBufferMemory, nullptr);
+                    }
+                    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, indexStagingBuffer, indexStagingBufferMemory);
+
+                    vkDestroyBuffer(vkDevice.getDevice(), indexBuffer, nullptr);
+                    vkFreeMemory(vkDevice.getDevice(), indexBufferMemory, nullptr);
+                    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
+                    maxVertexBufferSize = bufferSize;
+                }
+                vkMapMemory(vkDevice.getDevice(), indexBufferMemory, 0, bufferSize, 0, &data);
+                memcpy(data, indexes.data(), (size_t)bufferSize);
+                vkUnmapMemory(vkDevice.getDevice(), indexBufferMemory);
+                copyBuffer(vertexStagingBuffer, indexBuffer, bufferSize);
+                bufferSize = sizeof(VkTransformMatrixKHR);
+                if (bufferSize > maxTransfomBufferSize) {
+                    if (transformStagingBuffer != nullptr) {
+                        vkDestroyBuffer(vkDevice.getDevice(), transformStagingBuffer, nullptr);
+                        vkFreeMemory(vkDevice.getDevice(), transformStagingBufferMemory, nullptr);
+                    }
+                    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, transformStagingBuffer, transformStagingBufferMemory);
+
+                    vkDestroyBuffer(vkDevice.getDevice(), transformBuffer, nullptr);
+                    vkFreeMemory(vkDevice.getDevice(), transformBufferMemory, nullptr);
+                    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, transformBuffer, transformBufferMemory);
+                    maxTransformBufferSize = bufferSize;
+                }
+                vkMapMemory(vkDevice.getDevice(), transformBufferMemory, 0, bufferSize, 0, &data);
+                memcpy(data, &transformMatrix, (size_t)bufferSize);
+                vkUnmapMemory(vkDevice.getDevice(), transformBufferMemory);
+                copyBuffer(transformStagingBuffer, transformBuffer, bufferSize);
+                VkDeviceOrHostAddressConstKHR vertexBufferDeviceAddress{};
+                VkDeviceOrHostAddressConstKHR indexBufferDeviceAddress{};
+                VkDeviceOrHostAddressConstKHR transformBufferDeviceAddress{};
+
+                vertexBufferDeviceAddress.deviceAddress = getBufferDeviceAddress(vertexBuffer);
+                indexBufferDeviceAddress.deviceAddress = getBufferDeviceAddress(indexBuffer);
+                transformBufferDeviceAddress.deviceAddress = getBufferDeviceAddress(transformBuffer);
+
+                // Build
+                VkAccelerationStructureGeometryKHR accelerationStructureGeometry{};
+                accelerationStructureGeometry.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_KHR;
+                accelerationStructureGeometry.flags = VK_GEOMETRY_OPAQUE_BIT_KHR;
+                accelerationStructureGeometry.geometryType = VK_GEOMETRY_TYPE_TRIANGLES_KHR;
+                accelerationStructureGeometry.geometry.triangles.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_TRIANGLES_DATA_KHR;
+                accelerationStructureGeometry.geometry.triangles.vertexFormat = VK_FORMAT_R32G32B32_SFLOAT;
+                accelerationStructureGeometry.geometry.triangles.vertexData = vertexBufferDeviceAddress;
+                accelerationStructureGeometry.geometry.triangles.maxVertex = 2;
+                accelerationStructureGeometry.geometry.triangles.vertexStride = sizeof(Vertex);
+                accelerationStructureGeometry.geometry.triangles.indexType = VK_INDEX_TYPE_UINT32;
+                accelerationStructureGeometry.geometry.triangles.indexData = indexBufferDeviceAddress;
+                accelerationStructureGeometry.geometry.triangles.transformData.deviceAddress = 0;
+                accelerationStructureGeometry.geometry.triangles.transformData.hostAddress = nullptr;
+                accelerationStructureGeometry.geometry.triangles.transformData = transformBufferDeviceAddress;
+
+                // Get size info
+                VkAccelerationStructureBuildGeometryInfoKHR accelerationStructureBuildGeometryInfo{};
+                accelerationStructureBuildGeometryInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_GEOMETRY_INFO_KHR;
+                accelerationStructureBuildGeometryInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR;
+                accelerationStructureBuildGeometryInfo.flags = VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_KHR;
+                accelerationStructureBuildGeometryInfo.geometryCount = 1;
+                accelerationStructureBuildGeometryInfo.pGeometries = &accelerationStructureGeometry;
+
+                const uint32_t numTriangles = triangles.size();
+                VkAccelerationStructureBuildSizesInfoKHR accelerationStructureBuildSizesInfo{};
+                accelerationStructureBuildSizesInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_SIZES_INFO_KHR;
+                vkGetAccelerationStructureBuildSizesKHR(
+                    vkDevice.getDevice(),
+                    VK_ACCELERATION_STRUCTURE_BUILD_TYPE_DEVICE_KHR,
+                    &accelerationStructureBuildGeometryInfo,
+                    &numTriangles,
+                    &accelerationStructureBuildSizesInfo);
+                AccelerationStructure bottomLevelAS;
+                createAccelerationStructureBuffer(bottomLevelAS, accelerationStructureBuildSizesInfo);
+
+                VkAccelerationStructureCreateInfoKHR accelerationStructureCreateInfo{};
+                accelerationStructureCreateInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_CREATE_INFO_KHR;
+                accelerationStructureCreateInfo.buffer = bottomLevelAS.buffer;
+                accelerationStructureCreateInfo.size = accelerationStructureBuildSizesInfo.accelerationStructureSize;
+                accelerationStructureCreateInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR;
+                vkCreateAccelerationStructureKHR(vkDevice.getDevice(), &accelerationStructureCreateInfo, nullptr, &bottomLevelAS.handle);
+
+                // Create a small scratch buffer used during build of the bottom level acceleration structure
+                RayTracingScratchBuffer scratchBuffer = createScratchBuffer(accelerationStructureBuildSizesInfo.buildScratchSize);
+
+                VkAccelerationStructureBuildGeometryInfoKHR accelerationBuildGeometryInfo{};
+                accelerationBuildGeometryInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_GEOMETRY_INFO_KHR;
+                accelerationBuildGeometryInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR;
+                accelerationBuildGeometryInfo.flags = VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_KHR;
+                accelerationBuildGeometryInfo.mode = VK_BUILD_ACCELERATION_STRUCTURE_MODE_BUILD_KHR;
+                accelerationBuildGeometryInfo.dstAccelerationStructure = bottomLevelAS.handle;
+                accelerationBuildGeometryInfo.geometryCount = 1;
+                accelerationBuildGeometryInfo.pGeometries = &accelerationStructureGeometry;
+                accelerationBuildGeometryInfo.scratchData.deviceAddress = scratchBuffer.deviceAddress;
+
+                VkAccelerationStructureBuildRangeInfoKHR accelerationStructureBuildRangeInfo{};
+                accelerationStructureBuildRangeInfo.primitiveCount = numTriangles;
+                accelerationStructureBuildRangeInfo.primitiveOffset = 0;
+                accelerationStructureBuildRangeInfo.firstVertex = 0;
+                accelerationStructureBuildRangeInfo.transformOffset = 0;
+                std::vector<VkAccelerationStructureBuildRangeInfoKHR*> accelerationBuildStructureRangeInfos = { &accelerationStructureBuildRangeInfo };
+
+                // Build the acceleration structure on the device via a one-time command buffer submission
+                // Some implementations may support acceleration structure building on the host (VkPhysicalDeviceAccelerationStructureFeaturesKHR->accelerationStructureHostCommands), but we prefer device builds
+                VkCommandBufferAllocateInfo allocInfo{};
+                allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+                allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+
+                allocInfo.commandPool = commandPool;
+                allocInfo.commandBufferCount = 1;
+
+                VkCommandBuffer commandBuffer;
+                vkAllocateCommandBuffers(vkDevice.getDevice(), &allocInfo, &commandBuffer);
+
+                VkCommandBufferBeginInfo beginInfo{};
+                beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+                beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+                vkBeginCommandBuffer(commandBuffer, &beginInfo);
+                vkCmdBuildAccelerationStructuresKHR(
+                        commandBuffer,
+                        1,
+                        &accelerationBuildGeometryInfo,
+                        accelerationBuildStructureRangeInfos.data());
+                vkEndCommandBuffer(commandBuffer);
+
+                VkSubmitInfo submitInfo{};
+                submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+                submitInfo.commandBufferCount = 1;
+                submitInfo.pCommandBuffers = &commandBuffer;
+
+                vkQueueSubmit(vkDevice.getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
+                vkQueueWaitIdle(vkDevice.getGraphicsQueue());
+
+                vkFreeCommandBuffers(vkDevice.getDevice(), commandPool, 1, &commandBuffer);
+
+
+
+                VkAccelerationStructureDeviceAddressInfoKHR accelerationDeviceAddressInfo{};
+                accelerationDeviceAddressInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_DEVICE_ADDRESS_INFO_KHR;
+                accelerationDeviceAddressInfo.accelerationStructure = bottomLevelAS.handle;
+                bottomLevelAS.deviceAddress = vkGetAccelerationStructureDeviceAddressKHR(device, &accelerationDeviceAddressInfo);
+
+                deleteScratchBuffer(scratchBuffer);
+                bottomLevelASs.push_back(bottomLevelAS);
+            }
+        }
+        void RaytracingRenderComponent::createTopLevelAccelerationStructure() {
+            VkTransformMatrixKHR transformMatrix = {
+			1.0f, 0.0f, 0.0f, 0.0f,
+			0.0f, 1.0f, 0.0f, 0.0f,
+			0.0f, 0.0f, 1.0f, 0.0f };
+
+            VkAccelerationStructureInstanceKHR instance{};
+            instance.transform = transformMatrix;
+            instance.instanceCustomIndex = 0;
+            instance.mask = 0xFF;
+            instance.instanceShaderBindingTableRecordOffset = 0;
+            instance.flags = VK_GEOMETRY_INSTANCE_TRIANGLE_FACING_CULL_DISABLE_BIT_KHR;
+            instance.accelerationStructureReference = bottomLevelAS.deviceAddress;
+
+            VkDeviceSize bufferSize = sizeof(VkAccelerationStructureInstanceKHR);
+            if (bufferSize > maxInstanceBufferSize) {
+                if (instanceStagingBuffer != nullptr) {
+                    vkDestroyBuffer(vkDevice.getDevice(), instanceStagingBuffer, nullptr);
+                    vkFreeMemory(vkDevice.getDevice(), instanceStagingBufferMemory, nullptr);
+                }
+                createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, instanceStagingBuffer, instanceStagingBufferMemory);
+
+                vkDestroyBuffer(vkDevice.getDevice(), instanceBuffer, nullptr);
+                vkFreeMemory(vkDevice.getDevice(), instanceBufferMemory, nullptr);
+                createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, instanceBuffer, instanceBufferMemory);
+                maxInstanceBufferSize = bufferSize;
+            }
+            void* data;
+            vkMapMemory(vkDevice.getDevice(), instanceBufferMemory, 0, bufferSize, 0, &data);
+            memcpy(data, &instance, (size_t)bufferSize);
+            vkUnmapMemory(vkDevice.getDevice(), instanceBufferMemory);
+            copyBuffer(instanceStagingBuffer, instanceBuffer, bufferSize);
+            VkDeviceOrHostAddressConstKHR instanceDataDeviceAddress{};
+            instanceDataDeviceAddress.deviceAddress = getBufferDeviceAddress(instancesBuffer);
+
+            VkAccelerationStructureGeometryKHR accelerationStructureGeometry{};
+            accelerationStructureGeometry.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_KHR;
+            accelerationStructureGeometry.geometryType = VK_GEOMETRY_TYPE_INSTANCES_KHR;
+            accelerationStructureGeometry.flags = VK_GEOMETRY_OPAQUE_BIT_KHR;
+            accelerationStructureGeometry.geometry.instances.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_INSTANCES_DATA_KHR;
+            accelerationStructureGeometry.geometry.instances.arrayOfPointers = VK_FALSE;
+            accelerationStructureGeometry.geometry.instances.data = instanceDataDeviceAddress;
+
+            // Get size info
+            /*
+            The pSrcAccelerationStructure, dstAccelerationStructure, and mode members of pBuildInfo are ignored. Any VkDeviceOrHostAddressKHR members of pBuildInfo are ignored by this command, except that the hostAddress member of VkAccelerationStructureGeometryTrianglesDataKHR::transformData will be examined to check if it is NULL.*
+            */
+            VkAccelerationStructureBuildGeometryInfoKHR accelerationStructureBuildGeometryInfo{};
+            accelerationStructureBuildGeometryInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_GEOMETRY_INFO_KHR;
+            accelerationStructureBuildGeometryInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR;
+            accelerationStructureBuildGeometryInfo.flags = VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_KHR;
+            accelerationStructureBuildGeometryInfo.geometryCount = 1;
+            accelerationStructureBuildGeometryInfo.pGeometries = &accelerationStructureGeometry;
+
+            uint32_t primitive_count = 1;
+
+            VkAccelerationStructureBuildSizesInfoKHR accelerationStructureBuildSizesInfo{};
+            accelerationStructureBuildSizesInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_SIZES_INFO_KHR;
+            vkGetAccelerationStructureBuildSizesKHR(
+                vkDevice.getDevice(),
+                VK_ACCELERATION_STRUCTURE_BUILD_TYPE_DEVICE_KHR,
+                &accelerationStructureBuildGeometryInfo,
+                &primitive_count,
+                &accelerationStructureBuildSizesInfo);
+
+            createAccelerationStructureBuffer(topLevelAS, accelerationStructureBuildSizesInfo);
+
+            VkAccelerationStructureCreateInfoKHR accelerationStructureCreateInfo{};
+            accelerationStructureCreateInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_CREATE_INFO_KHR;
+            accelerationStructureCreateInfo.buffer = topLevelAS.buffer;
+            accelerationStructureCreateInfo.size = accelerationStructureBuildSizesInfo.accelerationStructureSize;
+            accelerationStructureCreateInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR;
+            vkCreateAccelerationStructureKHR(device, &accelerationStructureCreateInfo, nullptr, &topLevelAS.handle);
+
+            // Create a small scratch buffer used during build of the top level acceleration structure
+            RayTracingScratchBuffer scratchBuffer = createScratchBuffer(accelerationStructureBuildSizesInfo.buildScratchSize);
+
+            VkAccelerationStructureBuildGeometryInfoKHR accelerationBuildGeometryInfo{};
+            accelerationBuildGeometryInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_GEOMETRY_INFO_KHR;
+            accelerationBuildGeometryInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR;
+            accelerationBuildGeometryInfo.flags = VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_KHR;
+            accelerationBuildGeometryInfo.mode = VK_BUILD_ACCELERATION_STRUCTURE_MODE_BUILD_KHR;
+            accelerationBuildGeometryInfo.dstAccelerationStructure = topLevelAS.handle;
+            accelerationBuildGeometryInfo.geometryCount = 1;
+            accelerationBuildGeometryInfo.pGeometries = &accelerationStructureGeometry;
+            accelerationBuildGeometryInfo.scratchData.deviceAddress = scratchBuffer.deviceAddress;
+
+            VkAccelerationStructureBuildRangeInfoKHR accelerationStructureBuildRangeInfo{};
+            accelerationStructureBuildRangeInfo.primitiveCount = 1;
+            accelerationStructureBuildRangeInfo.primitiveOffset = 0;
+            accelerationStructureBuildRangeInfo.firstVertex = 0;
+            accelerationStructureBuildRangeInfo.transformOffset = 0;
+            std::vector<VkAccelerationStructureBuildRangeInfoKHR*> accelerationBuildStructureRangeInfos = { &accelerationStructureBuildRangeInfo };
+
+            // Build the acceleration structure on the device via a one-time command buffer submission
+            // Some implementations may support acceleration structure building on the host (VkPhysicalDeviceAccelerationStructureFeaturesKHR->accelerationStructureHostCommands), but we prefer device builds
+            VkCommandBufferAllocateInfo allocInfo{};
+            allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+            allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+
+            allocInfo.commandPool = commandPool;
+            allocInfo.commandBufferCount = 1;
+
+            VkCommandBuffer commandBuffer;
+            vkAllocateCommandBuffers(vkDevice.getDevice(), &allocInfo, &commandBuffer);
+
+            VkCommandBufferBeginInfo beginInfo{};
+            beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+            beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+            vkBeginCommandBuffer(commandBuffer, &beginInfo);
+            vkCmdBuildAccelerationStructuresKHR(
+                commandBuffer,
+                1,
+                &accelerationBuildGeometryInfo,
+                accelerationBuildStructureRangeInfos.data());
+
+            vkEndCommandBuffer(commandBuffer);
+
+            VkSubmitInfo submitInfo{};
+            submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+            submitInfo.commandBufferCount = 1;
+            submitInfo.pCommandBuffers = &commandBuffer;
+
+            vkQueueSubmit(vkDevice.getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
+            vkQueueWaitIdle(vkDevice.getGraphicsQueue());
+
+            vkFreeCommandBuffers(vkDevice.getDevice(), commandPool, 1, &commandBuffer);
+
+            VkAccelerationStructureDeviceAddressInfoKHR accelerationDeviceAddressInfo{};
+            accelerationDeviceAddressInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_DEVICE_ADDRESS_INFO_KHR;
+            accelerationDeviceAddressInfo.accelerationStructure = topLevelAS.handle;
+            topLevelAS.deviceAddress = vkGetAccelerationStructureDeviceAddressKHR(device, &accelerationDeviceAddressInfo);
+
+            deleteScratchBuffer(scratchBuffer);
+        }
+        void createShaderBindingTable() {
+            const uint32_t handleSize = rayTracingPipelineProperties.shaderGroupHandleSize;
+            const uint32_t handleSizeAligned = (rayTracingPipelineProperties.shaderGroupHandleSize + rayTracingPipelineProperties.shaderGroupHandleAlignment - 1) & ~(rayTracingPipelineProperties.shaderGroupHandleAlignment - 1);
+            const uint32_t groupCount = static_cast<uint32_t>(shaderGroups.size());
+            const uint32_t sbtSize = groupCount * handleSizeAligned;
+
+            std::vector<uint8_t> shaderHandleStorage(sbtSize);
+            if(vkGetRayTracingShaderGroupHandlesKHR(device, pipeline, 0, groupCount, sbtSize, shaderHandleStorage.data()) != VK_SUCCESS) {
+                throw std::runtime_error("failed to raytracing shader group handle!");
+            }
+
+            const VkBufferUsageFlags bufferUsageFlags = VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
+            const VkMemoryPropertyFlags memoryUsageFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+            createBuffer(handleSize, bufferUsageFlags, memoryUsageFlags, &raygenShaderBindingTable, raygenShaderBindingTableMemory);
+            createBuffer(handleSize, bufferUsageFlags, memoryUsageFlags, &missShaderBindingTable, missShaderBindingTableMemory);
+            createBuffer(handleSize, bufferUsageFlags, memoryUsageFlags, &hitShaderBindingTable, hitShaderBindingTableMemory);
+
+            // Copy handles
+            void* data;
+            vkMapMemory(vkDevice.getDevice(), raygenShaderBindingTableMemory, 0, handleSize, 0, &data);
+            memcpy(data, shaderHandleStorage.data(), handleSize);
+            vkUnmapMemory(vkDevice.getDevice(), instanceBufferMemory);
+
+            vkMapMemory(vkDevice.getDevice(), missShaderBindingTableMemory, 0, handleSize, 0, &data);
+            memcpy(data, shaderHandleStorage.data() + handleSizeAligned, handleSize);
+            vkUnmapMemory(vkDevice.getDevice(), missShaderBindingTableMemory);
+
+            vkMapMemory(vkDevice.getDevice(), hitShaderBindingTableMemory, 0, handleSize, 0, &data);
+            memcpy(data, shaderHandleStorage.data() + handleSizeAligned*2, handleSize);
+            vkUnmapMemory(vkDevice.getDevice(), hitShaderBindingTableMemory);
+        }
+        void RaytracingRenderComponent::createDescriptorPool() {
+            std::vector<Texture*> allTextures = Texture::getAllTextures();
+            std::vector<VkDescriptorPoolSize> poolSizes = {
+                { VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR, 1 },
+                { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1 },
+                { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1 },
+                { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, allTextures.size()},
+                { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1},
+                { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1}
+            };
+            VkDescriptorPoolCreateInfo poolInfo{};
+            poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+            poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+            poolInfo.pPoolSizes = poolSizes.data();
+            poolInfo.maxSets = 1;
+            if (vkCreateDescriptorPool(vkDevice.getDevice(), &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) {
+                throw std::runtime_error("echec de la creation de la pool de descripteurs!");
+            }
+        }
+        void RaytracingRenderComponent::createDescriptorSetLayout() {
+            VkDescriptorSetLayoutBinding accelerationStructureLayoutBinding{};
+            accelerationStructureLayoutBinding.binding = 0;
+            accelerationStructureLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR;
+            accelerationStructureLayoutBinding.descriptorCount = 1;
+            accelerationStructureLayoutBinding.stageFlags = VK_SHADER_STAGE_RAYGEN_BIT_KHR;
+
+            VkDescriptorSetLayoutBinding resultImageLayoutBinding{};
+            resultImageLayoutBinding.binding = 1;
+            resultImageLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+            resultImageLayoutBinding.descriptorCount = 1;
+            resultImageLayoutBinding.stageFlags = VK_SHADER_STAGE_RAYGEN_BIT_KHR;
+
+            VkDescriptorSetLayoutBinding uniformBufferBinding{};
+            uniformBufferBinding.binding = 2;
+            uniformBufferBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+            uniformBufferBinding.descriptorCount = 1;
+            uniformBufferBinding.stageFlags = VK_SHADER_STAGE_RAYGEN_BIT_KHR;
+
+            VkDescriptorSetLayoutBinding samplerLayoutBinding{};
+            samplerLayoutBinding.binding = 3;
+            samplerLayoutBinding.descriptorCount = allTextures.size();
+            samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            samplerLayoutBinding.pImmutableSamplers = nullptr;
+            samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_RAYHIT_BIT_KHR;
+
+            VkDescriptorSetLayoutBinding triangleDataLayoutBinding{};
+            triangleDataLayoutBinding.binding = 4;
+            triangleDataLayoutBinding.descriptorCount = 1;
+            triangleDataLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+            triangleDataLayoutBinding.pImmutableSamplers = nullptr;
+            triangleDataLayoutBinding.stageFlags = VK_SHADER_STAGE_RAYHIT_BIT_KHR;
+
+            VkDescriptorSetLayoutBinding offsetDataLayoutBinding{};
+            offsetDataLayoutBinding.binding = 5;
+            offsetDataLayoutBinding.descriptorCount = 1;
+            offsetDataLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+            offsetDataLayoutBinding.pImmutableSamplers = nullptr;
+            offsetDataLayoutBinding.stageFlags = VK_SHADER_STAGE_RAYHIT_BIT_KHR;
+
+            VkDescriptorSetLayoutCreateInfo layoutInfo{};
+            layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+            //layoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR;
+            layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());;
+            layoutInfo.pBindings = bindings.data();
+            if (vkCreateDescriptorSetLayout(vkDevice.getDevice(), &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) {
+                throw std::runtime_error("failed to create descriptor set layout!");
+            }
+        }
+        void RaytracingRenderComponent::allocateDescriptorSets() {
+            std::vector<VkDescriptorSetLayout> layouts(1, descriptorSetLayout);
+            VkDescriptorSetAllocateInfo allocInfo{};
+            allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+            allocInfo.descriptorPool = descriptorPool;
+            allocInfo.descriptorSetCount = 1;
+            allocInfo.pSetLayouts = layouts.data();
+            if (vkAllocateDescriptorSets(vkDevice.getDevice(), &allocInfo, descriptorSets[descriptorId].data()) != VK_SUCCESS) {
+                throw std::runtime_error("echec de l'allocation d'un set de descripteurs!");
+            }
+        }
+        void RaytracingRenderComponent::createDescriptorSets() {
+            std::array<VkWriteDescriptorSet, 5> descriptorWrites{};
+            VkWriteDescriptorSetAccelerationStructureKHR descriptorAccelerationStructureInfo{};
+            descriptorAccelerationStructureInfo.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_KHR;
+            descriptorAccelerationStructureInfo.accelerationStructureCount = 1;
+            descriptorAccelerationStructureInfo.pAccelerationStructures = &topLevelAS.handle;
+
+            VkWriteDescriptorSet accelerationStructureWrite{};
+            descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            // The specialized acceleration structure descriptor has to be chained
+            descriptorWrites[0].pNext = &descriptorAccelerationStructureInfo;
+            descriptorWrites[0].dstSet = descriptorSet;
+            descriptorWrites[0].dstBinding = 0;
+            descriptorWrites[0].descriptorCount = 1;
+            descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR;
+
+            VkDescriptorImageInfo storageImageDescriptor{};
+            storageImageDescriptor.imageView = storageImage.view;
+            storageImageDescriptor.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+            descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            descriptorWrites[1].dstSet = descriptorSets;
+            descriptorWrites[1].dstBinding = 1;
+            descriptorWrites[1].dstArrayElement = 0;
+            descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+            descriptorWrites[1].descriptorCount = 1;
+            descriptorWrites[1].pImageInfo = &storageImageDescriptor;
+
+            VkDescriptorBufferInfo uboDescriptor{};
+            uboDescriptor.buffer = uniformData;
+            uboDescriptor.offset = 0;
+            uboDescriptor.range = sizeof(UniformData);
+
+            descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            descriptorWrites[2].dstSet = descriptorSets;
+            descriptorWrites[2].dstBinding = 2;
+            descriptorWrites[2].dstArrayElement = 0;
+            descriptorWrites[2].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+            descriptorWrites[2].descriptorCount = 1;
+            descriptorWrites[2].pBufferInfo = &uboDescriptor;
+
+            std::vector<Texture*> allTextures = Texture::getAllTextures();
+            std::vector<VkDescriptorImageInfo>	descriptorImageInfos;
+            descriptorImageInfos.resize(allTextures.size());
+            for (unsigned int j = 0; j < allTextures.size(); j++) {
+                descriptorImageInfos[j].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                descriptorImageInfos[j].imageView = allTextures[j]->getImageView();
+                descriptorImageInfos[j].sampler = allTextures[j]->getSampler();
+            }
+            std::array<VkWriteDescriptorSet, 7> descriptorWrites{};
+            descriptorWrites[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            descriptorWrites[3].dstSet = descriptorSets[descriptorId][i];
+            descriptorWrites[3].dstBinding = 0;
+            descriptorWrites[3].dstArrayElement = 0;
+            descriptorWrites[3].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            descriptorWrites[3].descriptorCount = allTextures.size();
+            descriptorWrites[3].pImageInfo = descriptorImageInfos.data();
+
+            VkDescriptorBufferInfo triangleDataStorageBufferDescriptor{};
+            triangleDataStorageBufferDescriptor.buffer = triangleBuffer;
+            triangleDataStorageBufferDescriptor.offset = 0;
+            triangleDataStorageBufferDescriptor.range = maxTriangleBufferSize;
+
+            descriptorWrites[4].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            descriptorWrites[4].dstSet = descriptorSets;
+            descriptorWrites[4].dstBinding = 4;
+            descriptorWrites[4].dstArrayElement = 0;
+            descriptorWrites[4].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+            descriptorWrites[4].descriptorCount = 1;
+            descriptorWrites[4].pBufferInfo = &triangleDataStorageBufferDescriptor
+
+            VkDescriptorBufferInfo offsetDataStorageBufferDescriptor{};
+            offsetDataStorageBufferDescriptor.buffer = triangleOffsetBuffer;
+            offsetDataStorageBufferDescriptor.offset = 0;
+            offsetDataStorageBufferDescriptor.range = maxOffsetBufferSize;
+
+            descriptorWrites[5].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            descriptorWrites[5].dstSet = descriptorSets;
+            descriptorWrites[5].dstBinding = 5;
+            descriptorWrites[5].dstArrayElement = 0;
+            descriptorWrites[5].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+            descriptorWrites[5].descriptorCount = 1;
+            descriptorWrites[5].pBufferInfo = &offsetDataStorageBufferDescriptor;
+
+            vkUpdateDescriptorSets(vkDevice.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+        }
+        void RaytracingRenderComponent::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory) {
+            VkBufferCreateInfo bufferInfo{};
+            bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+            bufferInfo.size = size;
+            bufferInfo.usage = usage;
+            bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+            if (vkCreateBuffer(vkDevice.getDevice(), &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
+                throw std::runtime_error("failed to create buffer!");
+            }
+
+            VkMemoryRequirements memRequirements;
+            vkGetBufferMemoryRequirements(vkDevice.getDevice(), buffer, &memRequirements);
+
+            VkMemoryAllocateInfo allocInfo{};
+            allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+            allocInfo.allocationSize = memRequirements.size;
+            allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
+
+            if (vkAllocateMemory(vkDevice.getDevice(), &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
+                throw std::runtime_error("failed to allocate buffer memory!");
+            }
+
+            vkBindBufferMemory(vkDevice.getDevice(), buffer, bufferMemory, 0);
+        }
+        void RayTracingRenderComponent::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) {
+            VkCommandBufferAllocateInfo allocInfo{};
+            allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+            allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+            allocInfo.commandPool = commandPool;
+            allocInfo.commandBufferCount = 1;
+
+            VkCommandBuffer commandBuffer;
+            vkAllocateCommandBuffers(vkDevice.getDevice(), &allocInfo, &commandBuffer);
+
+            VkCommandBufferBeginInfo beginInfo{};
+            beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+            beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+            vkBeginCommandBuffer(commandBuffer, &beginInfo);
+
+                VkBufferCopy copyRegion{};
+                copyRegion.size = size;
+                vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+
+            vkEndCommandBuffer(commandBuffer);
+
+            VkSubmitInfo submitInfo{};
+            submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+            submitInfo.commandBufferCount = 1;
+            submitInfo.pCommandBuffers = &commandBuffer;
+
+            vkQueueSubmit(vkDevice.getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
+            vkQueueWaitIdle(vkDevice.getGraphicsQueue());
+
+            vkFreeCommandBuffers(vkDevice.getDevice(), commandPool, 1, &commandBuffer);
+        }
+        bool RayTracingRenderComponent::loadEntitiesOnComponent(std::vector<Entity*> visibleEntities) {
+            triangles.clear();
+            /*lights.clear();
+            Light ambientLight;
+            g2d::AmbientLight al = g2d::AmbientLight::getAmbientLight();
+            ambientLight.center = math::Vec3f(al.getLightCenter().x, al.getLightCenter().y, al.getLightCenter().z);
+            ambientLight.radius = 10000;
+            ambientLight.color = math::Vec3f(al.getColor().r/255.f, al.getColor().g/255.f, al.getColor().b/255.f, al.getColor().a/255.f);
+            lights.push_back(ambientLight);*/
+            unsigned int nbVertices =0;
+            for (unsigned int e = 0; e < vEntities.size(); e++) {
+                if ( vEntities[e]->isLeaf()) {
+                    if (!vEntities[e]->isLight()) {
+                        for (unsigned int j = 0; j <  vEntities[e]->getNbFaces(); j++) {
+                            Material material = vEntities[e]->getFace(j)->getMaterial();
+                            VertexArray va = vEntities[e]->getFace(j)->getVertexArray();
+                            unsigned int size = 0;
+                            if (va.getPrimitiveType() == sf::PrimitiveType::Quads) {
+                                size = va.getVertexCount() / 4;
+                            } else if (va.getPrimitiveType() == sf::PrimitiveType::Triangles) {
+                                size = va.getVertexCount() / 3;
+                            } else if (va.getPrimitiveType() == sf::PrimitiveType::TriangleStrip || va.getPrimitiveType() == sf::PrimitiveType::TriangleFan) {
+                                size = va.getVertexCount() - 2;
+                            }
+                            for (unsigned int i = 0; i < size; i++) {
+                                if (va.getPrimitiveType() == sf::PrimitiveType::Quads) {
+                                    for (unsigned int n = 0; n < 2; n++) {
+                                        if (n == 0) {
+                                            Triangle triangle;
+                                            triangle.positions[0] = math::Vec3f(va[i*4].position.x,va[i*4].position.y,va[i*4].position.z);
+                                            triangle.positions[1] = math::Vec3f(va[i*4+1].position.x,va[i*4+1].position.y,va[i*4+1].position.z);
+                                            triangle.positions[2] = math::Vec3f(va[i*4+2].position.x,va[i*4+2].position.y,va[i*4+2].position.z);
+                                            triangle.colours[0] = math::Vec3f(va[i*4].color.r / 255.f,va[i*4].color.g / 255.f,va[i*4].color.b / 255.f, va[i*4].color.a / 255.f);
+                                            triangle.colours[1] = math::Vec3f(va[i*4+1].color.r / 255.f,va[i*4+1].color.g / 255.f,va[i*4+1].color.b / 255.f, va[i*4+1].color.a / 255.f);
+                                            triangle.colours[2] = math::Vec3f(va[i*4+2].color.r / 255.f,va[i*4+2].color.g / 255.f,va[i*4+2].color.b / 255.f, va[i*4+2].color.a / 255.f);
+                                            triangle.texCoords[0] = math::Vec3f(va[i*4].texCoords.x, va[i*4].texCoords.y, 0, 0);
+                                            triangle.texCoords[1] = math::Vec3f(va[i*4+1].texCoords.x, va[i*4+1].texCoords.y, 0, 0);
+                                            triangle.texCoords[2] = math::Vec3f(va[i*4+2].texCoords.x, va[i*4+2].texCoords.y, 0, 0);
+
+
+                                            math::Vec3f v1(va[i*4].position.x, va[i*4].position.y, va[i*4].position.z);
+                                            math::Vec3f v2(va[i*4+1].position.x, va[i*4+1].position.y, va[i*4+1].position.z);
+                                            math::Vec3f v3(va[i*4+2].position.x, va[i*4+2].position.y, va[i*4+2].position.z);
+                                            math::Vec3f d1 = v2 - v1;
+                                            math::Vec3f d2 = v3 - v1;
+                                            math::Vec3f n = d1.cross(d2).normalize();
+                                            triangle.normal = math::Vec3f(n.x, n.y, n.z);
+                                            triangle.ratio = material.getRefractionFactor();
+                                            math::Matrix4f m;
+                                            triangle.textureIndex = (material.getTexture() == nullptr) ? 0 : material.getTexture()->getNativeHandle();
+                                            ////std::cout<<"texture index : "<<triangle.textureIndex<<std::endl;
+                                            triangle.textureMatrix = (material.getTexture() == nullptr) ? m : material.getTexture()->getTextureMatrix();
+                                            triangle.transform = vEntities[e]->getTransform().getMatrix().transpose();
+                                            if (!material.isReflectable() && !material.isRefractable())
+                                                triangle.refractReflect = 0;
+                                            else if (material.isReflectable() && !material.isRefractable())
+                                                triangle.refractReflect = 1;
+                                            else if (!material.isReflectable() && material.isRefractable())
+                                                triangle.refractReflect = 2;
+                                            else
+                                                triangle.refractReflect = 3;
+                                            triangles.push_back(triangle);
+                                        } else {
+                                            Triangle triangle;
+                                            triangle.positions[0] = math::Vec3f(va[i*4].position.x,va[i*4].position.y,va[i*4].position.z);
+                                            triangle.positions[1] = math::Vec3f(va[i*4+2].position.x,va[i*4+2].position.y,va[i*4+2].position.z);
+                                            triangle.positions[2] =  math::Vec3f(va[i*4+3].position.x,va[i*4+3].position.y,va[i*4+3].position.z);
+                                            triangle.colours[0] = math::Vec3f(va[i*4].color.r / 255.f,va[i*4].color.g / 255.f,va[i*4].color.b / 255.f, va[i*4].color.a / 255.f);
+                                            triangle.colours[1] = math::Vec3f(va[i*4+2].color.r / 255.f,va[i*4+2].color.g / 255.f,va[i*4+2].color.b / 255.f, va[i*4+2].color.a / 255.f);
+                                            triangle.colours[2] = math::Vec3f(va[i*4+3].color.r / 255.f,va[i*4+3].color.g / 255.f,va[i*4+3].color.b / 255.f, va[i*4+3].color.a / 255.f);
+                                            triangle.texCoords[0] = math::Vec3f(va[i*4].texCoords.x, va[i*4].texCoords.y, 0, 0);
+                                            triangle.texCoords[1] = math::Vec3f(va[i*4+2].texCoords.x, va[i*4+2].texCoords.y, 0, 0);
+                                            triangle.texCoords[2] = math::Vec3f(va[i*4+3].texCoords.x, va[i*4+3].texCoords.y, 0, 0);
+                                            /*for (unsigned int v = 0; v < 3; v++) {
+                                                //std::cout<<va[i*4+v+1].position.x<<","<<va[i*4+v+1].position.y<<","<<va[i*4+v+1].position.z<<std::endl;
+                                            }*/
+                                            math::Vec3f v1(va[i*4].position.x, va[i*4].position.y, va[i*4].position.z);
+                                            math::Vec3f v2(va[i*4+2].position.x, va[i*4+2].position.y, va[i*4+2].position.z);
+                                            math::Vec3f v3(va[i*4+3].position.x, va[i*4+3].position.y, va[i*4+3].position.z);
+                                            math::Vec3f d1 = v2 - v1;
+                                            math::Vec3f d2 = v3 - v1;
+                                            math::Vec3f n = d1.cross(d2).normalize();
+                                            triangle.normal = math::Vec3f(n.x, n.y, n.z);
+                                            triangle.ratio = material.getRefractionFactor();
+                                            math::Matrix4f m;
+                                            triangle.textureIndex = (material.getTexture() == nullptr) ? 0 : material.getTexture()->getNativeHandle();
+                                            triangle.textureMatrix = (material.getTexture() == nullptr) ? m : material.getTexture()->getTextureMatrix();
+                                            triangle.transform = vEntities[e]->getTransform().getMatrix().transpose();
+                                            if (!material.isReflectable() && !material.isRefractable())
+                                                triangle.refractReflect = 0;
+                                            else if (material.isReflectable() && !material.isRefractable())
+                                                triangle.refractReflect = 1;
+                                            else if (!material.isReflectable() && material.isRefractable())
+                                                triangle.refractReflect = 2;
+                                            else
+                                                triangle.refractReflect = 3;
+                                            triangles.push_back(triangle);
+                                        }
+                                    }
+                                } else if (va.getPrimitiveType() == sf::PrimitiveType::Triangles) {
+                                    Triangle triangle;
+                                    triangle.positions[0] = math::Vec3f(va[i*3].position.x,va[i*3].position.y,va[i*3].position.z);
+                                    triangle.positions[1] = math::Vec3f(va[i*3+1].position.x,va[i*3+1].position.y,va[i*3+1].position.z);
+                                    triangle.positions[2] = math::Vec3f(va[i*3+2].position.x,va[i*3+2].position.y,va[i*3+2].position.z);
+                                    triangle.colours[0] = math::Vec3f(va[i*3].color.r / 255.f,va[i*3].color.g / 255.f,va[i*3].color.b / 255.f, va[i*3].color.a / 255.f);
+                                    triangle.colours[1] = math::Vec3f(va[i*3+1].color.r / 255.f,va[i*3+1].color.g / 255.f,va[i*3+1].color.b / 255.f, va[i*3+1].color.a / 255.f);
+                                    triangle.colours[2] = math::Vec3f(va[i*3+2].color.r / 255.f,va[i*3+2].color.g / 255.f,va[i*3+2].color.b / 255.f, va[i*3+2].color.a / 255.f);
+                                    triangle.texCoords[0] = math::Vec3f(va[i*3].texCoords.x, va[i*3].texCoords.y, 0, 0);
+                                    triangle.texCoords[1] = math::Vec3f(va[i*3+1].texCoords.x, va[i*3+2].texCoords.y, 0, 0);
+                                    triangle.texCoords[2] = math::Vec3f(va[i*3+2].texCoords.x, va[i*3+2].texCoords.y, 0, 0);
+
+                                    math::Vec3f v1(va[i*3].position.x, va[i*3].position.y, va[i*3].position.z);
+                                    math::Vec3f v2(va[i*3+1].position.x, va[i*3+1].position.y, va[i*3+1].position.z);
+                                    math::Vec3f v3(va[i*3+2].position.x, va[i*3+2].position.y, va[i*3+2].position.z);
+                                    math::Vec3f d1 = v2 - v1;
+                                    math::Vec3f d2 = v3 - v1;
+                                    math::Vec3f n = d1.cross(d2).normalize();
+                                    triangle.normal = math::Vec3f(n.x, n.y, n.z);
+                                    triangle.ratio = material.getRefractionFactor();
+                                    math::Matrix4f m;
+                                    triangle.textureIndex = (material.getTexture() == nullptr) ? 0 : material.getTexture()->getNativeHandle();
+                                    triangle.textureMatrix = (material.getTexture() == nullptr) ? m : material.getTexture()->getTextureMatrix();
+                                    triangle.transform = vEntities[e]->getTransform().getMatrix().transpose();
+                                    if (!material.isReflectable() && !material.isRefractable())
+                                        triangle.refractReflect = 0;
+                                    else if (material.isReflectable() && !material.isRefractable())
+                                        triangle.refractReflect = 1;
+                                    else if (!material.isReflectable() && material.isRefractable())
+                                        triangle.refractReflect = 2;
+                                    else
+                                        triangle.refractReflect = 3;
+                                    triangles.push_back(triangle);
+                                } else if (va.getPrimitiveType() == sf::PrimitiveType::TriangleStrip) {
+                                    if (i == 0) {
+                                        Triangle triangle;
+                                        triangle.positions[0] = math::Vec3f(va[i*3].position.x,va[i*3].position.y,va[i*3].position.z);
+                                        triangle.positions[1] = math::Vec3f(va[i*3+1].position.x,va[i*3+1].position.y,va[i*3+1].position.z);
+                                        triangle.positions[2] = math::Vec3f(va[i*3+2].position.x,va[i*3+2].position.y,va[i*3+2].position.z);
+                                        triangle.colours[0] = math::Vec3f(va[i*3].color.r / 255.f,va[i*3].color.g / 255.f,va[i*3].color.b / 255.f, va[i*3].color.a / 255.f);
+                                        triangle.colours[1] = math::Vec3f(va[i*3+1].color.r / 255.f,va[i*3+1].color.g / 255.f,va[i*3+1].color.b / 255.f, va[i*3+1].color.a / 255.f);
+                                        triangle.colours[2] = math::Vec3f(va[i*3+2].color.r / 255.f,va[i*3+2].color.g / 255.f,va[i*3+2].color.b / 255.f, va[i*3+2].color.a / 255.f);
+                                        triangle.texCoords[0] = math::Vec3f(va[i*3].texCoords.x, va[i*3].texCoords.y, 0, 0);
+                                        triangle.texCoords[1] = math::Vec3f(va[i*3+1].texCoords.x, va[i*3+1].texCoords.y, 0, 0);
+                                        triangle.texCoords[2] = math::Vec3f(va[i*3+2].texCoords.x, va[i*3+2].texCoords.y, 0, 0);
+
+                                        math::Vec3f v1(va[i*3].position.x, va[i*3].position.y, va[i*3].position.z);
+                                        math::Vec3f v2(va[i*3+1].position.x, va[i*3+1].position.y, va[i*3+1].position.z);
+                                        math::Vec3f v3(va[i*3+2].position.x, va[i*3+2].position.y, va[i*3+2].position.z);
+                                        math::Vec3f d1 = v2 - v1;
+                                        math::Vec3f d2 = v3 - v1;
+                                        math::Vec3f n = d1.cross(d2).normalize();
+                                        triangle.normal = math::Vec3f(n.x, n.y, n.z);
+                                        triangle.ratio = material.getRefractionFactor();
+                                        math::Matrix4f m;
+                                        triangle.textureIndex = (material.getTexture() == nullptr) ? 0 : material.getTexture()->getNativeHandle();
+                                        triangle.textureMatrix = (material.getTexture() == nullptr) ? m : material.getTexture()->getTextureMatrix();
+                                        triangle.transform = vEntities[e]->getTransform().getMatrix().transpose();
+                                        if (!material.isReflectable() && !material.isRefractable())
+                                            triangle.refractReflect = 0;
+                                        else if (material.isReflectable() && !material.isRefractable())
+                                            triangle.refractReflect = 1;
+                                        else if (!material.isReflectable() && material.isRefractable())
+                                            triangle.refractReflect = 2;
+                                        else
+                                            triangle.refractReflect = 3;
+                                        triangles.push_back(triangle);
+                                    } else {
+                                        Triangle triangle;
+                                        triangle.positions[0] = math::Vec3f(va[i].position.x,va[i].position.y,va[i].position.z);;
+                                        triangle.positions[1] = math::Vec3f(va[i+1].position.x,va[i+1].position.y,va[i+1].position.z);
+                                        triangle.positions[2] = math::Vec3f(va[i+2].position.x,va[i+2].position.y,va[i+2].position.z);
+                                        triangle.colours[0] = math::Vec3f(va[i].color.r / 255.f,va[i].color.g / 255.f,va[i].color.b / 255.f, va[i].color.a / 255.f);
+                                        triangle.colours[1] = math::Vec3f(va[i+1].color.r / 255.f,va[i+1].color.g / 255.f,va[i+1].color.b / 255.f, va[i+1].color.a / 255.f);
+                                        triangle.colours[2] = math::Vec3f(va[i+2].color.r / 255.f,va[i+2].color.g / 255.f,va[i+2].color.b / 255.f, va[i+2].color.a / 255.f);
+                                        triangle.texCoords[0] = math::Vec3f(va[i].texCoords.x, va[i].texCoords.y, 0, 0);
+                                        triangle.texCoords[1] = math::Vec3f(va[i+1].texCoords.x, va[i+1].texCoords.y, 0, 0);
+                                        triangle.texCoords[2] = math::Vec3f(va[i+2].texCoords.x, va[i+2].texCoords.y, 0, 0);
+
+                                        math::Vec3f v1(va[i].position.x, va[i].position.y, va[i].position.z);
+                                        math::Vec3f v2(va[i+1].position.x, va[i+1].position.y, va[i+1].position.z);
+                                        math::Vec3f v3(va[i+2].position.x, va[i+2].position.y, va[i+2].position.z);
+                                        math::Vec3f d1 = v2 - v1;
+                                        math::Vec3f d2 = v3 - v1;
+                                        math::Vec3f n = d1.cross(d2).normalize();
+                                        triangle.normal = math::Vec3f(n.x, n.y, n.z);
+                                        triangle.ratio = material.getRefractionFactor();
+                                        math::Matrix4f m;
+                                        triangle.textureIndex = (material.getTexture() == nullptr) ? 0 : material.getTexture()->getNativeHandle();
+                                        triangle.textureMatrix = (material.getTexture() == nullptr) ? m : material.getTexture()->getTextureMatrix();
+                                        triangle.transform = vEntities[e]->getTransform().getMatrix().transpose();
+                                        if (!material.isReflectable() && !material.isRefractable())
+                                            triangle.refractReflect = 0;
+                                        else if (material.isReflectable() && !material.isRefractable())
+                                            triangle.refractReflect = 1;
+                                        else if (!material.isReflectable() && material.isRefractable())
+                                            triangle.refractReflect = 2;
+                                        else
+                                            triangle.refractReflect = 3;
+                                        triangles.push_back(triangle);
+                                    }
+                                } else if (va.getPrimitiveType() == sf::TriangleFan) {
+                                    if (i == 0) {
+                                        Triangle triangle;
+                                        triangle.positions[0] = math::Vec3f(va[i*3].position.x,va[i*3].position.y,va[i*3].position.z);;
+                                        triangle.positions[1] = math::Vec3f(va[i*3+1].position.x,va[i*3+1].position.y,va[i*3+1].position.z);;
+                                        triangle.positions[2] = math::Vec3f(va[i*3+2].position.x,va[i*3+2].position.y,va[i*3+2].position.z);;
+                                        triangle.colours[0] = math::Vec3f(va[i*3].color.r / 255.f,va[i*3].color.g / 255.f,va[i*3].color.b / 255.f, va[i*3].color.a / 255.f);
+                                        triangle.colours[1] = math::Vec3f(va[i*3+1].color.r / 255.f,va[i*3+1].color.g / 255.f,va[i*3+1].color.b / 255.f, va[i*3+1].color.a / 255.f);
+                                        triangle.colours[2] = math::Vec3f(va[i*3+2].color.r / 255.f,va[i*3+2].color.g / 255.f,va[i*3+2].color.b / 255.f, va[i*3+2].color.a / 255.f);
+                                        triangle.texCoords[0] = math::Vec3f(va[i*3].texCoords.x, va[i*3].texCoords.y, 0, 0);
+                                        triangle.texCoords[1] = math::Vec3f(va[i*3+1].texCoords.x, va[i*3+1].texCoords.y, 0, 0);
+                                        triangle.texCoords[2] = math::Vec3f(va[i*3+2].texCoords.x, va[i*3+2].texCoords.y, 0, 0);
+
+                                        math::Vec3f v1(va[i*3].position.x, va[i*3].position.y, va[i*3].position.z);
+                                        math::Vec3f v2(va[i*3+1].position.x, va[i*3+1].position.y, va[i*3+1].position.z);
+                                        math::Vec3f v3(va[i*3+2].position.x, va[i*3+2].position.y, va[i*3+2].position.z);
+                                        math::Vec3f d1 = v2 - v1;
+                                        math::Vec3f d2 = v3 - v1;
+                                        math::Vec3f n = d1.cross(d2).normalize();
+                                        triangle.normal = math::Vec3f(n.x, n.y, n.z);
+                                        triangle.ratio = material.getRefractionFactor();
+                                        math::Matrix4f m;
+                                        triangle.textureIndex = (material.getTexture() == nullptr) ? 0 : material.getTexture()->getNativeHandle();
+                                        triangle.textureMatrix = (material.getTexture() == nullptr) ? m : material.getTexture()->getTextureMatrix();
+                                        triangle.transform = vEntities[e]->getTransform().getMatrix().transpose();
+                                        if (!material.isReflectable() && !material.isRefractable())
+                                            triangle.refractReflect = 0;
+                                        else if (material.isReflectable() && !material.isRefractable())
+                                            triangle.refractReflect = 1;
+                                        else if (!material.isReflectable() && material.isRefractable())
+                                            triangle.refractReflect = 2;
+                                        else
+                                            triangle.refractReflect = 3;
+                                        triangles.push_back(triangle);
+                                    } else {
+                                        Triangle triangle;
+                                        triangle.positions[0] = math::Vec3f(va[0].position.x,va[0].position.y,va[0].position.z);;
+                                        triangle.positions[1] = math::Vec3f(va[i+1].position.x,va[i+1].position.y,va[i+1].position.z);;
+                                        triangle.positions[2] = math::Vec3f(va[i+2].position.x,va[i+2].position.y,va[i+2].position.z);
+                                        triangle.colours[0] = math::Vec3f(va[0].color.r / 255.f,va[0].color.g / 255.f,va[0].color.b / 255.f, va[0].color.a / 255.f);
+                                        triangle.colours[1] = math::Vec3f(va[i+1].color.r / 255.f,va[i+1].color.g / 255.f,va[i+1].color.b / 255.f, va[i+1].color.a / 255.f);
+                                        triangle.colours[2] = math::Vec3f(va[i+2].color.r / 255.f,va[i+2].color.g / 255.f,va[i+2].color.b / 255.f, va[i+2].color.a / 255.f);
+                                        triangle.texCoords[0] = math::Vec3f(va[0].texCoords.x, va[0].texCoords.y, 0, 0);
+                                        triangle.texCoords[1] = math::Vec3f(va[i+1].texCoords.x, va[i+1].texCoords.y, 0, 0);
+                                        triangle.texCoords[2] = math::Vec3f(va[i+2].texCoords.x, va[i+2].texCoords.y, 0, 0);
+
+                                        math::Vec3f v1(va[0].position.x, va[0].position.y, va[0].position.z);
+                                        math::Vec3f v2(va[i+1].position.x, va[i+1].position.y, va[i+1].position.z);
+                                        math::Vec3f v3(va[i+2].position.x, va[i+2].position.y, va[i+2].position.z);
+                                        math::Vec3f d1 = v2 - v1;
+                                        math::Vec3f d2 = v3 - v1;
+                                        math::Vec3f n = d1.cross(d2).normalize();
+                                        triangle.normal = math::Vec3f(n.x, n.y, n.z);
+                                        triangle.ratio = material.getRefractionFactor();
+                                        math::Matrix4f m;
+                                        triangle.textureIndex = (material.getTexture() == nullptr) ? 0 : material.getTexture()->getNativeHandle();
+                                        triangle.textureMatrix = (material.getTexture() == nullptr) ? m : material.getTexture()->getTextureMatrix();
+                                        triangle.transform = vEntities[e]->getTransform().getMatrix().transpose();
+                                        if (!material.isReflectable() && !material.isRefractable())
+                                            triangle.refractReflect = 0;
+                                        else if (material.isReflectable() && !material.isRefractable())
+                                            triangle.refractReflect = 1;
+                                        else if (!material.isReflectable() && material.isRefractable())
+                                            triangle.refractReflect = 2;
+                                        else
+                                            triangle.refractReflect = 3;
+                                        triangles.push_back(triangle);
+                                    }
+                                } /*else {
+                                    Light light;
+                                    g2d::PonctualLight* pl = static_cast<g2d::PonctualLight*>(vEntities[e]);
+                                    light.center = math::Vec3f(pl->getCenter().x, pl->getCenter().y, pl->getCenter().z);
+                                    light.radius = pl->getSize().y * 0.5f;
+                                    light.color = math::Vec3f(pl->getColor().r / 255.f,pl->getColor().g/255.f,pl->getColor().b/255.f,pl->getColor().a/255.f);
+                                    lights.push_back(light);
+                                }*/
+                            }
+                        }
+                    }
+                }
+            }
+            return true;
+        }
         #else
         RaytracingRenderComponent::RaytracingRenderComponent(RenderWindow& window, int layer, std::string expression, window::ContextSettings settings) : HeavyComponent(window, math::Vec3f(window.getView().getPosition().x, window.getView().getPosition().y, layer),
                           math::Vec3f(window.getView().getSize().x, window.getView().getSize().y, 0),

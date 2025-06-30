@@ -15,6 +15,182 @@
 namespace odfaeg {
     namespace graphic {
         #ifdef VULKAN
+        class ODFAEG_GRAPHICS_API RaytracingRenderComponent : public HeavyComponent {
+        public :
+            struct Vertex {
+                float positions[3];
+            };
+            struct Triangle {
+                math::Matrix4f textureMatrix;
+                float positions[3];
+                float colours[4];
+                float texCoords[2];
+                math::Vec3f normal;
+                uint32_t textureIndex;
+                float ratio;
+            };
+            struct TriangleOffset {
+                uint32_t offset;
+            };
+            RaytracingRenderComponent (RenderWindow& window, int layer, std::string expression, window::ContextSettings settings);
+                 /**
+            * \fn bool loadEntitiesOnComponent(std::vector<Entity*> visibleEntities)
+            * \brief load the given entities onto the component.
+            * \param std::vector<Entity*> visibleEntities : the entities to load.
+            * \return if the loading was sucessfull.
+            */
+            std::vector<Entity*> getEntities();
+            bool loadEntitiesOnComponent(std::vector<Entity*> visibleEntities);
+            bool needToUpdate();
+            /**
+            * \fn void clearBufferBits()
+            * \brief clear the buffer bits of the component.
+            */
+            void clear ();
+            /**
+            * \fn void setBackgroundColor(Color color)
+            * \brief set the background color of the component. (TRansparent by default)
+            * \param Color color : the color.
+            */
+            void setBackgroundColor(Color color);
+            /**
+            * \fn void drawNextFrame()
+            * \brief draw the next frame of the component.
+            */
+            void drawNextFrame();
+            void setExpression (std::string expression);
+            /**
+            * \fn draw(Drawable& drawable, RenderStates states = RenderStates::Default);
+            * \brief draw a drawable object onto the component.
+            * \param Drawable drawable : the drawable object to draw.
+            * \param RenderStates states : the render states.
+            */
+            void draw(Drawable& drawable, RenderStates states = RenderStates::Default);
+            /**
+            * \fn void draw(RenderTarget& target, RenderStates states)
+            * \brief draw the frame on a render target.
+            * \param RenderTarget& target : the render target.
+            * \param RenderStates states : the render states.
+            */
+            void draw(RenderTarget& target, RenderStates states);
+            std::string getExpression();
+            /**
+            * \fn int getLayer()C:\Users\Laurent\Windows\ODFAEG\include\odfaeg\Math\triangle.h
+            * \brief get the layer of the component.
+            * \return the number of the layer.
+            */
+            int getLayer();
+            /**
+            * \fn void setView(View& view)
+            * \brief set the view of the component.
+            * \param the view of the component.
+            */
+            /**
+            * \fn register an event to the event stack of the component.
+            * \param window::IEvent : the event to register.
+            * \param Renderwindow : the window generating the event.
+            */
+            void pushEvent(window::IEvent event, RenderWindow& window);
+            void setView(View view);
+            View& getView();
+            const Texture& getFrameBufferTexture();
+            RenderTexture* getFrameBuffer();
+            ~RaytracingRenderComponent();
+            std::vector<TriangleOffset> trianglesOffsets;
+        private :
+            void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+            void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+            VkDeviceSize maxOffsetBufferSize, maxTriangleBufferSize, maxVertexBufferSize, maxIndexBufferSize, maxTransformBufferSize, maxInstanceBufferSize;
+            RayTracingScratchBuffer createScratchBuffer(VkDeviceSize size);
+            uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+            void deleteScratchBuffer(RayTracingScratchBuffer& scratchBuffer);
+            void createAccelerationStructureBuffer(AccelerationStructure &accelerationStructure, VkAccelerationStructureBuildSizesInfoKHR buildSizeInfo);
+            uint64_t getBufferDeviceAddress(VkBuffer buffer);
+            void createStorageImage();
+            void createBottomLevelAccelerationStructure();
+            void createTopLevelAccelerationStructure();
+            void createShaderBindingTable();
+            void createDescriptorSets();
+            void createRayTracingPipeline();
+            void createUniformBuffer();
+            void buildCommandBuffers();
+            void updateUniformBuffers();
+            VkPhysicalDeviceRayTracingPipelinePropertiesKHR  rayTracingPipelineProperties{};
+            VkPhysicalDeviceAccelerationStructureFeaturesKHR accelerationStructureFeatures{};
+
+            VkPhysicalDeviceBufferDeviceAddressFeatures enabledBufferDeviceAddresFeatures{};
+            VkPhysicalDeviceRayTracingPipelineFeaturesKHR enabledRayTracingPipelineFeatures{};
+            VkPhysicalDeviceAccelerationStructureFeaturesKHR enabledAccelerationStructureFeatures{};
+            VkBuffer vertexBuffer, vertexStagingBuffer;
+            VkBuffer indexBuffer, indexStagingBuffer;
+            VkBuffer transformBuffer, transformStagingBuffer;
+            VkDeviceMemory vertexBufferMemory, vertexStagingBufferMemory;
+            VkDeviceMemory indexBufferMemory, indexBufferStaggingMemory;
+            VkDeviceMemory transformStagingBuffer, transformStagingBufferMemory;
+            Color backgroundColor; /**> The background color.*/
+            std::vector<VkRayTracingShaderGroupCreateInfoKHR> shaderGroups{};
+            VkBuffer raygenShaderBindingTable;
+            VkBuffer missShaderBindingTable;
+            VkBuffer hitShaderBindingTable;
+            VkDeviceMemory raygenShaderBindingTableMemory;
+            VkDeviceMemory missShaderBindingTableMemory;
+            VkDeviceMemory hitShaderBindingTableMemory;
+            VkBuffer triangleBuffer;
+            VkBuffer triangleOffsetBuffer;
+            VkDeviceMemory triangleBufferMemory;
+            VkDeviceMemory triangleOffsetBufferMemory;
+            VkBuffer triangleStagingBuffer, triangleOffsetStagingBuffer;
+            VkDeviceMemory triangleStagingBufferMemory, triangleOffsetStagingBufferMemory;
+            VkBuffer instanceBuffer, instanceStagingBuffer;
+            VkDeviceMemory instanceBufferMemory, instanceStagingBufferMemory;
+            std::vector<AccelerationStructure> bottomLevelASs;
+            AccelerationStructure topLevelAS{};
+
+            struct RayTracingScratchBuffer
+            {
+                uint64_t deviceAddress = 0;
+                VkBuffer handle = VK_NULL_HANDLE;
+                VkDeviceMemory memory = VK_NULL_HANDLE;
+            };
+
+            // Ray tracing acceleration structure
+            struct AccelerationStructure {
+                VkAccelerationStructureKHR handle;
+                uint64_t deviceAddress = 0;
+                VkDeviceMemory memory;
+                VkBuffer buffer;
+            };
+
+            struct StorageImage {
+                VkDeviceMemory memory;
+                VkImage image;
+                VkImageView view;
+                VkFormat format;
+            } storageImage;
+
+            struct UniformData {
+                math::Matrix4f viewInverse;
+                math::Matrix4f projInverse;
+            } uniformData;
+            VkBuffer ubo;
+
+            VkPipeline pipeline;
+            VkPipelineLayout pipelineLayout;
+            VkDescriptorSet descriptorSet;
+            VkDescriptorSetLayout descriptorSetLayout;
+            odfaeg::graphic::RenderTexture frameBuffer;
+            Sprite frameBufferSprite;
+            bool update;
+            std::string expression;
+            int layer;
+            std::vector<odfaeg::graphic::Entity*> visibleEntities;
+            View view;
+            Texture external;
+            window::Device& vkDevice;
+            RenderWindow& window;
+            Batcher m_normals;
+            std::vector<Triangle> triangles;
+        };
         #else
         class ODFAEG_GRAPHICS_API RaytracingRenderComponent : public HeavyComponent {
         public :
@@ -27,8 +203,7 @@ namespace odfaeg {
                 math::Vec3f normal;
                 uint32_t textureIndex;
                 uint32_t refractReflect;
-                alignas (8) float ratio;
-                //float padding;
+                alignas(8) float ratio;
             };
             struct Light {
                 math::Vec3f center;
