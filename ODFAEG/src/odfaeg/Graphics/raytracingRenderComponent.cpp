@@ -832,7 +832,7 @@ namespace odfaeg {
                 }
             }
 
-            VkDeviceSize bufferSize = sizeof(VkAccelerationStructureInstanceKHR);
+            VkDeviceSize bufferSize = instances.size() * sizeof(VkAccelerationStructureInstanceKHR);
             if (bufferSize > maxInstanceBufferSize) {
                 if (instanceStagingBuffer != nullptr) {
                     vkDestroyBuffer(vkDevice.getDevice(), instanceStagingBuffer, nullptr);
@@ -847,7 +847,7 @@ namespace odfaeg {
             }
             void* data;
             vkMapMemory(vkDevice.getDevice(), instanceBufferMemory, 0, bufferSize, 0, &data);
-            memcpy(data, &instance, (size_t)bufferSize);
+            memcpy(data, instances.data(), (size_t)bufferSize);
             vkUnmapMemory(vkDevice.getDevice(), instanceBufferMemory);
             copyBuffer(instanceStagingBuffer, instanceBuffer, bufferSize);
             VkDeviceOrHostAddressConstKHR instanceDataDeviceAddress{};
@@ -890,7 +890,7 @@ namespace odfaeg {
             accelerationStructureCreateInfo.buffer = topLevelAS.buffer;
             accelerationStructureCreateInfo.size = accelerationStructureBuildSizesInfo.accelerationStructureSize;
             accelerationStructureCreateInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_KHR;
-            vkCreateAccelerationStructureKHR(device, &accelerationStructureCreateInfo, nullptr, &topLevelAS.handle);
+            vkCreateAccelerationStructureKHR(vkDevice.getDevice(), &accelerationStructureCreateInfo, nullptr, &topLevelAS.handle);
 
             // Create a small scratch buffer used during build of the top level acceleration structure
             RayTracingScratchBuffer scratchBuffer = createScratchBuffer(accelerationStructureBuildSizesInfo.buildScratchSize);
