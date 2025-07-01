@@ -18,19 +18,15 @@ namespace odfaeg {
         class ODFAEG_GRAPHICS_API RaytracingRenderComponent : public HeavyComponent {
         public :
             struct Vertex {
-                float positions[3];
-            };
-            struct Triangle {
                 math::Matrix4f textureMatrix;
-                float positions[3];
-                float colours[4];
-                float texCoords[2];
+                math::Vec3f position;
+                math::Vec4f colour;
+                math::Vec2f texCoords;
                 math::Vec3f normal;
-                uint32_t textureIndex;
-                float ratio;
             };
-            struct TriangleOffset {
-                uint32_t offset;
+            struct GeometryOffset {
+                uint32_t vertexOffset;
+                uint32_t indexOffset;
             };
             RaytracingRenderComponent (RenderWindow& window, int layer, std::string expression, window::ContextSettings settings);
                  /**
@@ -100,7 +96,7 @@ namespace odfaeg {
         private :
             void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
             void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
-            VkDeviceSize maxOffsetBufferSize, maxTriangleBufferSize, maxVertexBufferSize, maxIndexBufferSize, maxTransformBufferSize, maxInstanceBufferSize;
+            VkDeviceSize maxOffsetBufferSize, maxTriangleBufferSize, maxVertexBufferSize, maxIndexBufferSize, maxTransformBufferSize, maxInstanceBufferSize, maxIndexTriangleBufferSize;
             RayTracingScratchBuffer createScratchBuffer(VkDeviceSize size);
             uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
             void deleteScratchBuffer(RayTracingScratchBuffer& scratchBuffer);
@@ -137,10 +133,12 @@ namespace odfaeg {
             VkDeviceMemory hitShaderBindingTableMemory;
             VkBuffer triangleBuffer;
             VkBuffer triangleOffsetBuffer;
+            VkBuffer indexBuffer;
             VkDeviceMemory triangleBufferMemory;
             VkDeviceMemory triangleOffsetBufferMemory;
-            VkBuffer triangleStagingBuffer, triangleOffsetStagingBuffer;
-            VkDeviceMemory triangleStagingBufferMemory, triangleOffsetStagingBufferMemory;
+            VkDeviceMemory indexTriangleBufferMemory;
+            VkBuffer triangleStagingBuffer, triangleOffsetStagingBuffer, indexTriangleStagingBuffer;
+            VkDeviceMemory triangleStagingBufferMemory, triangleOffsetStagingBufferMemory, indexTriangleStagingBufferMemory;
             VkBuffer instanceBuffer, instanceStagingBuffer;
             VkDeviceMemory instanceBufferMemory, instanceStagingBufferMemory;
             std::vector<AccelerationStructure> bottomLevelASs;
@@ -189,7 +187,9 @@ namespace odfaeg {
             window::Device& vkDevice;
             RenderWindow& window;
             Batcher m_normals;
-            std::vector<Triangle> triangles;
+            std::vector<Vertex> vertices;
+            std::vector<uint32_t> indexes;
+            std::vector<GeometryOffset> geometryOffsets;
         };
         #else
         class ODFAEG_GRAPHICS_API RaytracingRenderComponent : public HeavyComponent {

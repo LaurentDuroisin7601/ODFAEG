@@ -17,7 +17,7 @@ namespace odfaeg {
             window(window) {
 
         }
-        RayTracingScratchBuffer RaytracingRenderComponent::createScratchBuffer(VkDeviceSize size) {
+        RaytracingScratchBuffer RaytracingRenderComponent::createScratchBuffer(VkDeviceSize size) {
             RayTracingScratchBuffer scratchBuffer{};
 
             VkBufferCreateInfo bufferCreateInfo{};
@@ -54,7 +54,7 @@ namespace odfaeg {
 
             return scratchBuffer;
         }
-        uint32_t PerPixelLinkedListRenderComponent::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
+        uint32_t RaytracingRenderComponent::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
             VkPhysicalDeviceMemoryProperties memProperties;
             vkGetPhysicalDeviceMemoryProperties(vkDevice.getPhysicalDevice(), &memProperties);
             for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
@@ -64,7 +64,7 @@ namespace odfaeg {
             }
             throw std::runtime_error("aucun type de memoire ne satisfait le buffer!");
         }
-        void RayTracingRenderComponent::deleteScratchBuffer(RayTracingScratchBuffer& scratchBuffer) {
+        void RaytracingRenderComponent::deleteScratchBuffer(RayTracingScratchBuffer& scratchBuffer) {
             if (scratchBuffer.memory != VK_NULL_HANDLE) {
 			vkFreeMemory(device, scratchBuffer.memory, nullptr);
             }
@@ -72,7 +72,7 @@ namespace odfaeg {
                 vkDestroyBuffer(device, scratchBuffer.handle, nullptr);
             }
         }
-        void RayTracingRenderComponent::createAccelerationStructureBuffer(AccelerationStructure &accelerationStructure, VkAccelerationStructureBuildSizesInfoKHR buildSizeInfo)
+        void RaytracingRenderComponent::createAccelerationStructureBuffer(AccelerationStructure &accelerationStructure, VkAccelerationStructureBuildSizesInfoKHR buildSizeInfo)
         {
             VkBufferCreateInfo bufferCreateInfo{};
             bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -98,7 +98,7 @@ namespace odfaeg {
                 throw std::runtime_error("failed to bind memory for acceleration structure buffer!");
             }
         }
-        void RayTracingRenderComponent::createStorageImage()
+        void RaytracingRenderComponent::createStorageImage()
         {
             VkImageCreateInfo image = {};
             image.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -179,15 +179,15 @@ namespace odfaeg {
 
             vkFreeCommandBuffers(vkDevice.getDevice(), commandPool, 1, &commandBuffer);
         }
-        uint64_t RayTracingRenderComponent::getBufferDeviceAddress(VkBuffer buffer)
+        uint64_t RaytracingRenderComponent::getBufferDeviceAddress(VkBuffer buffer)
         {
             VkBufferDeviceAddressInfoKHR bufferDeviceAI{};
             bufferDeviceAI.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
             bufferDeviceAI.buffer = buffer;
             return vkGetBufferDeviceAddressKHR(device, &bufferDeviceAI);
         }
-        void RayTracingRenderComponent::createTrianglesBuffers() {
-            VkDeviceSize bufferSize = triangles.size() * sizeof(Triangle);
+        void RaytracingRenderComponent::createTrianglesBuffers() {
+            VkDeviceSize bufferSize = vertices.size() * sizeof(Vertex);
             if (bufferSize > maxTriangleBufferSize) {
                 if (triangleStagingBuffer != nullptr) {
                     vkDestroyBuffer(vkDevice.getDevice(), triangleStagingBuffer, nullptr);
@@ -203,39 +203,41 @@ namespace odfaeg {
             }
             void* data;
             vkMapMemory(vkDevice.getDevice(), triangleBufferMemory, 0, bufferSize, 0, &data);
-            memcpy(data, triangles.data(), (size_t)bufferSize);
+            memcpy(data, vertices.data(), (size_t)bufferSize);
             vkUnmapMemory(vkDevice.getDevice(), triangleBufferMemory);
             copyBuffer(triangleStagingBuffer, triangleBuffer, bufferSize);
-            bufferSize = trianglesOffsets.size() * sizeof(TriangleOffset);
-            if (bufferSize > maxTriangleOffsetBufferSize) {
-                if (triangleOffsetStagingBuffer != nullptr) {
-                    vkDestroyBuffer(vkDevice.getDevice(), triangleOffsetStagingBuffer, nullptr);
-                    vkFreeMemory(vkDevice.getDevice(), triangleOffsetStagingBufferMemory, nullptr);
+            bufferSize = indexes.size() * sizeof(uint32_t);
+            if (bufferSize > maxIndexTriangleBufferSize) {
+                if (indexTriangleStagingBuffer != nullptr) {
+                    vkDestroyBuffer(vkDevice.getDevice(), indexTriangleStagingBuffer, nullptr);
+                    vkFreeMemory(vkDevice.getDevice(), indexTriangleStagingBufferMemory, nullptr);
                 }
-                createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, triangleOffsetStagingBuffer, triangleOffsetStagingBufferMemory);
+                createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, indexTriangleStagingBuffer, indexTriangleStagingBufferMemory);
 
-                vkDestroyBuffer(vkDevice.getDevice(), triangleOffsetBuffer, nullptr);
-                vkFreeMemory(vkDevice.getDevice(), triangleOffsetBufferMemory, nullptr);
-                createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, triangleOffsetBuffer, triangleOffsetBufferMemory);
-                maxTriangleOffsetBufferSize = bufferSize;
+                vkDestroyBuffer(vkDevice.getDevice(), indexTriangleBuffer, nullptr);
+                vkFreeMemory(vkDevice.getDevice(), indexTriangleBufferMemory, nullptr);
+                createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexTriangleBuffer, indexTriangleBufferMemory);
+                maxindexTriangleBufferSize = bufferSize;
                 needToUpdateDS  = true;
             }
-            vkMapMemory(vkDevice.getDevice(), triangleOffsetBufferMemory, 0, bufferSize, 0, &data);
-            memcpy(data, trianglesOffsets.data(), (size_t)bufferSize);
-            vkUnmapMemory(vkDevice.getDevice(), triangleOffsetBufferMemory);
-            copyBuffer(triangleOffsetStagingBuffer, triangleOffsetBuffer, bufferSize);
+            vkMapMemory(vkDevice.getDevice(), indexTriangleBufferMemory, 0, bufferSize, 0, &data);
+            memcpy(data, indexes.data(), (size_t)bufferSize);
+            vkUnmapMemory(vkDevice.getDevice(), indexTriangleBufferMemory);
+            copyBuffer(indexTriangleStagingBuffer, indexTriangleBuffer, bufferSize);
         }
-        void RayTracingRenderComponent::createBottomLevelAccelerationStructure()
+        void RaytracingRenderComponent::createBottomLevelAccelerationStructure()
         {
             trianglesOffsets.clear();
             bottomLevelASs.clear();
             uint32_t offset = 0;
+            uint32_t nbVertices = 0;
             for (unsigned int i = 0; i < m_normals.size(); i++) {
                 if (m_normals[i].getAllVertices().getVertexCount() > 0) {
-                    TriangleOffset trianglOffset;
-                    triangleOffset.offset = offset;
-                    trianglesOffsets.push_back(offset);
-                    std::vector<Vertex> triangles;
+                    GeometryOffset geometryOffset;
+                    geometryOffset.vertexOffset = offset;
+                    geometryOffset.indexOffset = offset;
+                    geometryOffsets.push_back(geometryOffset);
+                    std::vector<math::Vec3f> vertices;
                     std::vector<uint32_t> indexes;
                     VertexArray va = m_normals[i].getAllVertices();
                     unsigned int size = 0;
@@ -250,38 +252,53 @@ namespace odfaeg {
                         if (va.getPrimitiveType() == PrimitiveType::Quads) {
                             for (unsigned int n = 0; n < 2; n++) {
                                 if (n == 0) {
-                                    Vertex triangle;
-                                    triangle.positions[0] = math::Vec3f(va[i*4].position.x,va[i*4].position.y,va[i*4].position.z);
-                                    triangle.positions[1] = math::Vec3f(va[i*4+1].position.x,va[i*4+1].position.y,va[i*4+1].position.z);
-                                    triangle.positions[2] = math::Vec3f(va[i*4+2].position.x,va[i*4+2].position.y,va[i*4+2].position.z);
-                                    indexes.push_back(i*4);
-                                    indexes.push_back(i*4+1);
-                                    indexes.push_back(i*4+2);
-                                    triangles.push_back(triangle);
-                                    offset++;
+                                    math::Vec3f v1, v2, v3;
+                                    v1 = math::Vec3f(va[i*4].position.x,va[i*4].position.y,va[i*4].position.z);
+                                    v2 = math::Vec3f(va[i*4+1].position.x,va[i*4+1].position.y,va[i*4+1].position.z);
+                                    v3 = math::Vec3f(va[i*4+2].position.x,va[i*4+2].position.y,va[i*4+2].position.z);
+                                    indexes.push_back(nbVertices);
+                                    nbVertices++;
+                                    indexes.push_back(nbVertices);
+                                    nbVertices++;
+                                    indexes.push_back(nbVertices);
+                                    nbVertices++;
+                                    vertices.push_back(v1);
+                                    vertices.push_back(v2);
+                                    vertices.push_back(v3);
+                                    offset+=3;
                                 } else {
-                                    Vertex triangle;
-                                    triangle.positions[0] = math::Vec3f(va[i*4].position.x,va[i*4].position.y,va[i*4].position.z);
-                                    triangle.positions[1] = math::Vec3f(va[i*4+2].position.x,va[i*4+2].position.y,va[i*4+2].position.z);
-                                    triangle.positions[2] =  math::Vec3f(va[i*4+3].position.x,va[i*4+3].position.y,va[i*4+3].position.z);
-                                    indexes.push_back(i*4);
-                                    indexes.push_back(i*4+2);
-                                    indexes.push_back(i*4+3);
-                                    triangles.push_back(triangle);
-                                    offset++;
+                                    Vertex v1, v2, v3;
+                                    v1 = math::Vec3f(va[i*4].position.x,va[i*4].position.y,va[i*4].position.z);
+                                    v2 = math::Vec3f(va[i*4+2].position.x,va[i*4+2].position.y,va[i*4+2].position.z);
+                                    v3 =  math::Vec3f(va[i*4+3].position.x,va[i*4+3].position.y,va[i*4+3].position.z);
+                                    indexes.push_back(nbVertices);
+                                    nbVertices++;
+                                    indexes.push_back(nbVertices);
+                                    nbVertices++;
+                                    indexes.push_back(nbVertices);
+                                    nbVertices++;
+                                    vertices.push_back(v1);
+                                    vertices.push_back(v2);
+                                    vertices.push_back(v3);
+                                    offset+=3;
                                 }
                             }
                         } else if (va.getPrimitiveType() == PrimitiveType::Triangles) {
-                            Vertex triangle;
-                            triangle.positions[0] = math::Vec3f(va[i*3].position.x,va[i*3].position.y,va[i*3].position.z);
-                            triangle.positions[1] = math::Vec3f(va[i*3+1].position.x,va[i*3+1].position.y,va[i*3+1].position.z);
-                            triangle.positions[2] = math::Vec3f(va[i*3+2].position.x,va[i*3+2].position.y,va[i*3+2].position.z);
-                            triangles.push_back(triangle);
-                            indexes.push_back(i*3);
-                            indexes.push_back(i*3+1);
-                            indexes.push_back(i*3+2);
-                            offset++;
-                        } else if (va.getPrimitiveType() == PrimitiveType::TriangleStrip) {
+                            Vertex v1, v2, v3;
+                            v1 = math::Vec3f(va[i*3].position.x,va[i*3].position.y,va[i*3].position.z);
+                            v2 = math::Vec3f(va[i*3+1].position.x,va[i*3+1].position.y,va[i*3+1].position.z);
+                            v3 = math::Vec3f(va[i*3+2].position.x,va[i*3+2].position.y,va[i*3+2].position.z);
+                            indexes.push_back(nbVertices);
+                            nbVertices++;
+                            indexes.push_back(nbVertices);
+                            nbVertices++;
+                            indexes.push_back(nbVertices);
+                            nbVertices++;
+                            vertices.push_back(v1);
+                            vertices.push_back(v2);
+                            vertices.push_back(v3);
+                            offset+=3;
+                        } /*else if (va.getPrimitiveType() == PrimitiveType::TriangleStrip) {
                             if (i == 0) {
                                 Vertex triangle;
                                 triangle.positions[0] = math::Vec3f(va[i*3].position.x,va[i*3].position.y,va[i*3].position.z);
@@ -325,15 +342,16 @@ namespace odfaeg {
                                 indexes.push_back(i+2);
                                 offset++;
                             }
-                        }
+                        }*/
                     }
                 }
+
                 VkTransformMatrixKHR transformMatrix = {
                     1.0f, 0.0f, 0.0f, 0.0f,
                     0.0f, 1.0f, 0.0f, 0.0f,
                     0.0f, 0.0f, 1.0f, 0.0f
                 };
-                VkDeviceSize bufferSize = triangles.size() * sizeof(Triangle);
+                VkDeviceSize bufferSize = vertices.size() * sizeof(math::Vec3f);
                 if (bufferSize > maxVertexBufferSize) {
                     if (vertexStagingBuffer != nullptr) {
                         vkDestroyBuffer(vkDevice.getDevice(), vertexStagingBuffer, nullptr);
@@ -417,7 +435,7 @@ namespace odfaeg {
                 accelerationStructureBuildGeometryInfo.geometryCount = 1;
                 accelerationStructureBuildGeometryInfo.pGeometries = &accelerationStructureGeometry;
 
-                const uint32_t numTriangles = triangles.size();
+                const uint32_t numTriangles = vertices.size() / 3;
                 VkAccelerationStructureBuildSizesInfoKHR accelerationStructureBuildSizesInfo{};
                 accelerationStructureBuildSizesInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_SIZES_INFO_KHR;
                 vkGetAccelerationStructureBuildSizesKHR(
@@ -500,20 +518,319 @@ namespace odfaeg {
                 deleteScratchBuffer(scratchBuffer);
                 bottomLevelASs.push_back(bottomLevelAS);
             }
+            for (unsigned int i = 0; i < m_instances.size(); i++) {
+                if (m_instances[i].getAllVertices().getVertexCount() > 0) {
+                    VertexArray firstInstanceVertices;
+                    if (m_instances[i].getVertexArrays().size() > 0) {
+                        Entity* entity = m_instances[i].getVertexArrays()[0]->getEntity();
+                        unsigned int p = m_instances[i].getVertexArrays()[0]->getPrimitiveType();
+                        firstInstanceVertices.setPrimitiveType(p);
+                        for (unsigned int j = 0; j < m_instances[i].getVertexArrays().size(); j++) {
+                            if (entity == m_instances[i].getVertexArrays()[j]->getEntity()) {
+                                for (unsigned int k = 0; k < m_instances[i].getVertexArrays()[j]->getVertexCount(); k++) {
+                                    firstInstanceVertices.append((*m_instances[i].getVertexArrays()[j])[k]);
+                                }
+                            }
+                        }
+                    }
+                    GeometryOffset geometryOffset;
+                    geometryOffset.vertexOffset = offset;
+                    geometryOffset.indexOffset = offset;
+                    geometryOffsets.push_back(geometryOffset);
+                    std::vector<math::Vec3f> vertices;
+                    std::vector<uint32_t> indexes;
+                    unsigned int size = 0;
+                    if (firstInstanceVertices.getPrimitiveType() == PrimitiveType::Quads) {
+                        size = firstInstanceVertices.getVertexCount() / 4;
+                    } else if (firstInstanceVertices.getPrimitiveType() == PrimitiveType::Triangles) {
+                        size = firstInstanceVertices.getVertexCount() / 3;
+                    } else if (firstInstanceVertices.getPrimitiveType() == PrimitiveType::TriangleStrip || firstInstanceVertices.getPrimitiveType() == PrimitiveType::TriangleFan) {
+                        size = firstInstanceVertices.getVertexCount() - 2;
+                    }
+                    for (unsigned int i = 0; i < size; i++) {
+                        if (firstInstanceVertices.getPrimitiveType() == PrimitiveType::Quads) {
+                            for (unsigned int n = 0; n < 2; n++) {
+                                if (n == 0) {
+                                    math::Vec3f v1, v2, v3;
+                                    v1 = math::Vec3f(firstInstanceVertices[i*4].position.x,firstInstanceVertices[i*4].position.y,firstInstanceVertices[i*4].position.z);
+                                    v2 = math::Vec3f(firstInstanceVertices[i*4+1].position.x,firstInstanceVertices[i*4+1].position.y,firstInstanceVertices[i*4+1].position.z);
+                                    v3 = math::Vec3f(firstInstanceVertices[i*4+2].position.x,firstInstanceVertices[i*4+2].position.y,firstInstanceVertices[i*4+2].position.z);
+                                    indexes.push_back(nbVertices);
+                                    nbVertices++;
+                                    indexes.push_back(nbVertices);
+                                    nbVertices++;
+                                    indexes.push_back(nbVertices);
+                                    nbVertices++;
+                                    vertices.push_back(v1);
+                                    vertices.push_back(v2);
+                                    vertices.push_back(v3);
+                                    offset+=3;
+                                } else {
+                                    Vertex v1, v2, v3;
+                                    v1 = math::Vec3f(firstInstanceVertices[i*4].position.x,firstInstanceVertices[i*4].position.y,firstInstanceVertices[i*4].position.z);
+                                    v2 = math::Vec3f(firstInstanceVertices[i*4+2].position.x,firstInstanceVertices[i*4+2].position.y,firstInstanceVertices[i*4+2].position.z);
+                                    v3 =  math::Vec3f(firstInstanceVertices[i*4+3].position.x,firstInstanceVertices[i*4+3].position.y,firstInstanceVertices[i*4+3].position.z);
+                                    indexes.push_back(nbVertices);
+                                    nbVertices++;
+                                    indexes.push_back(nbVertices);
+                                    nbVertices++;
+                                    indexes.push_back(nbVertices);
+                                    nbVertices++;
+                                    vertices.push_back(v1);
+                                    vertices.push_back(v2);
+                                    vertices.push_back(v3);
+                                    offset+=3;
+                                }
+                            }
+                        } else if (firstInstanceVertices.getPrimitiveType() == PrimitiveType::Triangles) {
+                            Vertex v1, v2, v3;
+                            v1 = math::Vec3f(firstInstanceVertices[i*3].position.x,firstInstanceVertices[i*3].position.y,firstInstanceVertices[i*3].position.z);
+                            v2 = math::Vec3f(firstInstanceVertices[i*3+1].position.x,firstInstanceVertices[i*3+1].position.y,firstInstanceVertices[i*3+1].position.z);
+                            v3 = math::Vec3f(firstInstanceVertices[i*3+2].position.x,firstInstanceVertices[i*3+2].position.y,firstInstanceVertices[i*3+2].position.z);
+                            indexes.push_back(nbVertices);
+                            nbVertices++;
+                            indexes.push_back(nbVertices);
+                            nbVertices++;
+                            indexes.push_back(nbVertices);
+                            nbVertices++;
+                            vertices.push_back(v1);
+                            vertices.push_back(v2);
+                            vertices.push_back(v3);
+                            offset+=3;
+                        }
+                    }
+                    VkTransformMatrixKHR transformMatrix = {
+                    1.0f, 0.0f, 0.0f, 0.0f,
+                    0.0f, 1.0f, 0.0f, 0.0f,
+                    0.0f, 0.0f, 1.0f, 0.0f
+                    };
+                    VkDeviceSize bufferSize = vertices.size() * sizeof(math::Vec3f);
+                    if (bufferSize > maxVertexBufferSize) {
+                        if (vertexStagingBuffer != nullptr) {
+                            vkDestroyBuffer(vkDevice.getDevice(), vertexStagingBuffer, nullptr);
+                            vkFreeMemory(vkDevice.getDevice(), vertexStagingBufferMemory, nullptr);
+                        }
+                        createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, vertexStagingBuffer, vertexStagingBufferMemory);
+
+                        vkDestroyBuffer(vkDevice.getDevice(), vertexBuffer, nullptr);
+                        vkFreeMemory(vkDevice.getDevice(), vertexBufferMemory, nullptr);
+                        createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
+                        maxVertexBufferSize = bufferSize;
+                    }
+                    void* data;
+                    vkMapMemory(vkDevice.getDevice(), vertexBufferMemory, 0, bufferSize, 0, &data);
+                    memcpy(data, triangles.data(), (size_t)bufferSize);
+                    vkUnmapMemory(vkDevice.getDevice(), vertexBufferMemory);
+                    copyBuffer(vertexStagingBuffer, vertexBuffer, bufferSize);
+                    bufferSize = indexes.size() * sizeof(uint32_t);
+                    if (bufferSize > maxIndexBufferSize) {
+                        if (indexStagingBuffer != nullptr) {
+                            vkDestroyBuffer(vkDevice.getDevice(), indexStagingBuffer, nullptr);
+                            vkFreeMemory(vkDevice.getDevice(), indexStagingBufferMemory, nullptr);
+                        }
+                        createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, indexStagingBuffer, indexStagingBufferMemory);
+
+                        vkDestroyBuffer(vkDevice.getDevice(), indexBuffer, nullptr);
+                        vkFreeMemory(vkDevice.getDevice(), indexBufferMemory, nullptr);
+                        createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
+                        maxVertexBufferSize = bufferSize;
+                    }
+                    vkMapMemory(vkDevice.getDevice(), indexBufferMemory, 0, bufferSize, 0, &data);
+                    memcpy(data, indexes.data(), (size_t)bufferSize);
+                    vkUnmapMemory(vkDevice.getDevice(), indexBufferMemory);
+                    copyBuffer(vertexStagingBuffer, indexBuffer, bufferSize);
+                    bufferSize = sizeof(VkTransformMatrixKHR);
+                    if (bufferSize > maxTransfomBufferSize) {
+                        if (transformStagingBuffer != nullptr) {
+                            vkDestroyBuffer(vkDevice.getDevice(), transformStagingBuffer, nullptr);
+                            vkFreeMemory(vkDevice.getDevice(), transformStagingBufferMemory, nullptr);
+                        }
+                        createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, transformStagingBuffer, transformStagingBufferMemory);
+
+                        vkDestroyBuffer(vkDevice.getDevice(), transformBuffer, nullptr);
+                        vkFreeMemory(vkDevice.getDevice(), transformBufferMemory, nullptr);
+                        createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, transformBuffer, transformBufferMemory);
+                        maxTransformBufferSize = bufferSize;
+                    }
+                    vkMapMemory(vkDevice.getDevice(), transformBufferMemory, 0, bufferSize, 0, &data);
+                    memcpy(data, &transformMatrix, (size_t)bufferSize);
+                    vkUnmapMemory(vkDevice.getDevice(), transformBufferMemory);
+                    copyBuffer(transformStagingBuffer, transformBuffer, bufferSize);
+                    VkDeviceOrHostAddressConstKHR vertexBufferDeviceAddress{};
+                    VkDeviceOrHostAddressConstKHR indexBufferDeviceAddress{};
+                    VkDeviceOrHostAddressConstKHR transformBufferDeviceAddress{};
+
+                    vertexBufferDeviceAddress.deviceAddress = getBufferDeviceAddress(vertexBuffer);
+                    indexBufferDeviceAddress.deviceAddress = getBufferDeviceAddress(indexBuffer);
+                    transformBufferDeviceAddress.deviceAddress = getBufferDeviceAddress(transformBuffer);
+
+                    // Build
+                    VkAccelerationStructureGeometryKHR accelerationStructureGeometry{};
+                    accelerationStructureGeometry.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_KHR;
+                    accelerationStructureGeometry.flags = VK_GEOMETRY_OPAQUE_BIT_KHR;
+                    accelerationStructureGeometry.geometryType = VK_GEOMETRY_TYPE_TRIANGLES_KHR;
+                    accelerationStructureGeometry.geometry.triangles.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_TRIANGLES_DATA_KHR;
+                    accelerationStructureGeometry.geometry.triangles.vertexFormat = VK_FORMAT_R32G32B32_SFLOAT;
+                    accelerationStructureGeometry.geometry.triangles.vertexData = vertexBufferDeviceAddress;
+                    accelerationStructureGeometry.geometry.triangles.maxVertex = 2;
+                    accelerationStructureGeometry.geometry.triangles.vertexStride = sizeof(Vertex);
+                    accelerationStructureGeometry.geometry.triangles.indexType = VK_INDEX_TYPE_UINT32;
+                    accelerationStructureGeometry.geometry.triangles.indexData = indexBufferDeviceAddress;
+                    accelerationStructureGeometry.geometry.triangles.transformData.deviceAddress = 0;
+                    accelerationStructureGeometry.geometry.triangles.transformData.hostAddress = nullptr;
+                    accelerationStructureGeometry.geometry.triangles.transformData = transformBufferDeviceAddress;
+
+                    // Get size info
+                    VkAccelerationStructureBuildGeometryInfoKHR accelerationStructureBuildGeometryInfo{};
+                    accelerationStructureBuildGeometryInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_GEOMETRY_INFO_KHR;
+                    accelerationStructureBuildGeometryInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR;
+                    accelerationStructureBuildGeometryInfo.flags = VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_KHR;
+                    accelerationStructureBuildGeometryInfo.geometryCount = 1;
+                    accelerationStructureBuildGeometryInfo.pGeometries = &accelerationStructureGeometry;
+
+                    const uint32_t numTriangles = vertices.size() / 3;
+                    VkAccelerationStructureBuildSizesInfoKHR accelerationStructureBuildSizesInfo{};
+                    accelerationStructureBuildSizesInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_SIZES_INFO_KHR;
+                    vkGetAccelerationStructureBuildSizesKHR(
+                        vkDevice.getDevice(),
+                        VK_ACCELERATION_STRUCTURE_BUILD_TYPE_DEVICE_KHR,
+                        &accelerationStructureBuildGeometryInfo,
+                        &numTriangles,
+                        &accelerationStructureBuildSizesInfo);
+                    AccelerationStructure bottomLevelAS;
+                    createAccelerationStructureBuffer(bottomLevelAS, accelerationStructureBuildSizesInfo);
+
+                    VkAccelerationStructureCreateInfoKHR accelerationStructureCreateInfo{};
+                    accelerationStructureCreateInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_CREATE_INFO_KHR;
+                    accelerationStructureCreateInfo.buffer = bottomLevelAS.buffer;
+                    accelerationStructureCreateInfo.size = accelerationStructureBuildSizesInfo.accelerationStructureSize;
+                    accelerationStructureCreateInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR;
+                    vkCreateAccelerationStructureKHR(vkDevice.getDevice(), &accelerationStructureCreateInfo, nullptr, &bottomLevelAS.handle);
+
+                    // Create a small scratch buffer used during build of the bottom level acceleration structure
+                    RayTracingScratchBuffer scratchBuffer = createScratchBuffer(accelerationStructureBuildSizesInfo.buildScratchSize);
+
+                    VkAccelerationStructureBuildGeometryInfoKHR accelerationBuildGeometryInfo{};
+                    accelerationBuildGeometryInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_GEOMETRY_INFO_KHR;
+                    accelerationBuildGeometryInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR;
+                    accelerationBuildGeometryInfo.flags = VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_KHR;
+                    accelerationBuildGeometryInfo.mode = VK_BUILD_ACCELERATION_STRUCTURE_MODE_BUILD_KHR;
+                    accelerationBuildGeometryInfo.dstAccelerationStructure = bottomLevelAS.handle;
+                    accelerationBuildGeometryInfo.geometryCount = 1;
+                    accelerationBuildGeometryInfo.pGeometries = &accelerationStructureGeometry;
+                    accelerationBuildGeometryInfo.scratchData.deviceAddress = scratchBuffer.deviceAddress;
+
+                    VkAccelerationStructureBuildRangeInfoKHR accelerationStructureBuildRangeInfo{};
+                    accelerationStructureBuildRangeInfo.primitiveCount = numTriangles;
+                    accelerationStructureBuildRangeInfo.primitiveOffset = 0;
+                    accelerationStructureBuildRangeInfo.firstVertex = 0;
+                    accelerationStructureBuildRangeInfo.transformOffset = 0;
+                    std::vector<VkAccelerationStructureBuildRangeInfoKHR*> accelerationBuildStructureRangeInfos = { &accelerationStructureBuildRangeInfo };
+
+                    // Build the acceleration structure on the device via a one-time command buffer submission
+                    // Some implementations may support acceleration structure building on the host (VkPhysicalDeviceAccelerationStructureFeaturesKHR->accelerationStructureHostCommands), but we prefer device builds
+                    VkCommandBufferAllocateInfo allocInfo{};
+                    allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+                    allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+
+                    allocInfo.commandPool = commandPool;
+                    allocInfo.commandBufferCount = 1;
+
+                    VkCommandBuffer commandBuffer;
+                    vkAllocateCommandBuffers(vkDevice.getDevice(), &allocInfo, &commandBuffer);
+
+                    VkCommandBufferBeginInfo beginInfo{};
+                    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+                    beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+                    vkBeginCommandBuffer(commandBuffer, &beginInfo);
+                    vkCmdBuildAccelerationStructuresKHR(
+                            commandBuffer,
+                            1,
+                            &accelerationBuildGeometryInfo,
+                            accelerationBuildStructureRangeInfos.data());
+                    vkEndCommandBuffer(commandBuffer);
+
+                    VkSubmitInfo submitInfo{};
+                    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+                    submitInfo.commandBufferCount = 1;
+                    submitInfo.pCommandBuffers = &commandBuffer;
+
+                    vkQueueSubmit(vkDevice.getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
+                    vkQueueWaitIdle(vkDevice.getGraphicsQueue());
+
+                    vkFreeCommandBuffers(vkDevice.getDevice(), commandPool, 1, &commandBuffer);
+
+
+
+                    VkAccelerationStructureDeviceAddressInfoKHR accelerationDeviceAddressInfo{};
+                    accelerationDeviceAddressInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_DEVICE_ADDRESS_INFO_KHR;
+                    accelerationDeviceAddressInfo.accelerationStructure = bottomLevelAS.handle;
+                    bottomLevelAS.deviceAddress = vkGetAccelerationStructureDeviceAddressKHR(device, &accelerationDeviceAddressInfo);
+
+                    deleteScratchBuffer(scratchBuffer);
+                    bottomLevelASs.push_back(bottomLevelAS);
+                }
+            }
+            VkDeviceSize bufferSize = geometryOffsets.size() * sizeof(GeometryOffset);
+            if (bufferSize > maxTriangleOffsetBufferSize) {
+                if (triangleOffsetStagingBuffer != nullptr) {
+                    vkDestroyBuffer(vkDevice.getDevice(), triangleOffsetStagingBuffer, nullptr);
+                    vkFreeMemory(vkDevice.getDevice(), triangleOffsetStagingBufferMemory, nullptr);
+                }
+                createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, triangleOffsetStagingBuffer, triangleOffsetStagingBufferMemory);
+
+                vkDestroyBuffer(vkDevice.getDevice(), triangleOffsetBuffer, nullptr);
+                vkFreeMemory(vkDevice.getDevice(), triangleOffsetBufferMemory, nullptr);
+                createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, triangleOffsetBuffer, triangleOffsetBufferMemory);
+                maxTriangleBufferSize = bufferSize;
+                needToUpdateDS  = true;
+            }
+            void* data;
+            vkMapMemory(vkDevice.getDevice(), triangleOffsetBufferMemory, 0, bufferSize, 0, &data);
+            memcpy(data, geometryOffsets.data(), (size_t)bufferSize);
+            vkUnmapMemory(vkDevice.getDevice(), triangleOffsetBufferMemory);
+            copyBuffer(triangleOffsetStagingBuffer, triangleOffsetBuffer, bufferSize);
         }
         void RaytracingRenderComponent::createTopLevelAccelerationStructure() {
-            VkTransformMatrixKHR transformMatrix = {
-			1.0f, 0.0f, 0.0f, 0.0f,
-			0.0f, 1.0f, 0.0f, 0.0f,
-			0.0f, 0.0f, 1.0f, 0.0f };
+            uint32_t blasIndex = 0;
+            std::vector<VkAccelerationStructureInstanceKHR> instances;
+            for (unsigned int i = 0; i < m_normals.size(); i++) {
+                if (m_normals[i].getAllVertices().getVertexCount() > 0) {
+                    VkTransformMatrixKHR transformMatrix = {
+                    1.0f, 0.0f, 0.0f, 0.0f,
+                    0.0f, 1.0f, 0.0f, 0.0f,
+                    0.0f, 0.0f, 1.0f, 0.0f };
 
-            VkAccelerationStructureInstanceKHR instance{};
-            instance.transform = transformMatrix;
-            instance.instanceCustomIndex = 0;
-            instance.mask = 0xFF;
-            instance.instanceShaderBindingTableRecordOffset = 0;
-            instance.flags = VK_GEOMETRY_INSTANCE_TRIANGLE_FACING_CULL_DISABLE_BIT_KHR;
-            instance.accelerationStructureReference = bottomLevelAS.deviceAddress;
+                    VkAccelerationStructureInstanceKHR instance{};
+                    instance.transform = transformMatrix;
+                    instance.instanceCustomIndex = 0;
+                    instance.mask = 0xFF;
+                    instance.instanceShaderBindingTableRecordOffset = 0;
+                    instance.flags = VK_GEOMETRY_INSTANCE_TRIANGLE_FACING_CULL_DISABLE_BIT_KHR;
+                    instance.accelerationStructureReference = bottomLevelASs[blasIndex].deviceAddress;
+                    instances.push_back(instance);
+                    blasIndex++;
+                }
+            }
+            for (unsigned int i = 0; i < m_instances.size(); i++) {
+                if (m_instances[i].getAllVertices().getVertexCount() > 0) {
+                    std::vector<TransformMatrix*> tm = m_instances[i].getTransforms();
+                    for (unsigned int t = 0; t < tm.size(); t++) {
+                        VkTransformMatrixKHR transformMatrix = toVkTransformMatrixKHR(tm[t]->getMatrix().transpose());
+
+                        VkAccelerationStructureInstanceKHR instance{};
+                        instance.transform = transformMatrix;
+                        instance.instanceCustomIndex = 0;
+                        instance.mask = 0xFF;
+                        instance.instanceShaderBindingTableRecordOffset = 0;
+                        instance.flags = VK_GEOMETRY_INSTANCE_TRIANGLE_FACING_CULL_DISABLE_BIT_KHR;
+                        instance.accelerationStructureReference = bottomLevelASs[blasIndex].deviceAddress;
+                        instances.push_back(instance);
+                    }
+                    blasIndex++;
+                }
+            }
 
             VkDeviceSize bufferSize = sizeof(VkAccelerationStructureInstanceKHR);
             if (bufferSize > maxInstanceBufferSize) {
@@ -891,7 +1208,7 @@ namespace odfaeg {
             vkFreeCommandBuffers(vkDevice.getDevice(), commandPool, 1, &commandBuffer);
         }
         bool RayTracingRenderComponent::loadEntitiesOnComponent(std::vector<Entity*> visibleEntities) {
-            triangles.clear();
+            vertices.clear();
             /*lights.clear();
             Light ambientLight;
             g2d::AmbientLight al = g2d::AmbientLight::getAmbientLight();
@@ -915,19 +1232,19 @@ namespace odfaeg {
                                 size = va.getVertexCount() - 2;
                             }
                             for (unsigned int i = 0; i < size; i++) {
-                                if (va.getPrimitiveType() == sf::PrimitiveType::Quads) {
+                                if (va.getPrimitiveType() == PrimitiveType::Quads) {
                                     for (unsigned int n = 0; n < 2; n++) {
                                         if (n == 0) {
-                                            Triangle triangle;
-                                            triangle.positions[0] = math::Vec3f(va[i*4].position.x,va[i*4].position.y,va[i*4].position.z);
-                                            triangle.positions[1] = math::Vec3f(va[i*4+1].position.x,va[i*4+1].position.y,va[i*4+1].position.z);
-                                            triangle.positions[2] = math::Vec3f(va[i*4+2].position.x,va[i*4+2].position.y,va[i*4+2].position.z);
-                                            triangle.colours[0] = math::Vec3f(va[i*4].color.r / 255.f,va[i*4].color.g / 255.f,va[i*4].color.b / 255.f, va[i*4].color.a / 255.f);
-                                            triangle.colours[1] = math::Vec3f(va[i*4+1].color.r / 255.f,va[i*4+1].color.g / 255.f,va[i*4+1].color.b / 255.f, va[i*4+1].color.a / 255.f);
-                                            triangle.colours[2] = math::Vec3f(va[i*4+2].color.r / 255.f,va[i*4+2].color.g / 255.f,va[i*4+2].color.b / 255.f, va[i*4+2].color.a / 255.f);
-                                            triangle.texCoords[0] = math::Vec3f(va[i*4].texCoords.x, va[i*4].texCoords.y, 0, 0);
-                                            triangle.texCoords[1] = math::Vec3f(va[i*4+1].texCoords.x, va[i*4+1].texCoords.y, 0, 0);
-                                            triangle.texCoords[2] = math::Vec3f(va[i*4+2].texCoords.x, va[i*4+2].texCoords.y, 0, 0);
+                                            Vertex v1, v2, v3;
+                                            v1.position = math::Vec3f(va[i*4].position.x,va[i*4].position.y,va[i*4].position.z);
+                                            v2.position = math::Vec3f(va[i*4+1].position.x,va[i*4+1].position.y,va[i*4+1].position.z);
+                                            v3.position = math::Vec3f(va[i*4+2].position.x,va[i*4+2].position.y,va[i*4+2].position.z);
+                                            v1.colour = math::Vec4f(va[i*4].color.r / 255.f,va[i*4].color.g / 255.f,va[i*4].color.b / 255.f, va[i*4].color.a / 255.f);
+                                            v2.colour = math::Vec3f(va[i*4+1].color.r / 255.f,va[i*4+1].color.g / 255.f,va[i*4+1].color.b / 255.f, va[i*4+1].color.a / 255.f);
+                                            v3.colour = math::Vec3f(va[i*4+2].color.r / 255.f,va[i*4+2].color.g / 255.f,va[i*4+2].color.b / 255.f, va[i*4+2].color.a / 255.f);
+                                            v1.texCoords = math::Vec3f(va[i*4].texCoords.x, va[i*4].texCoords.y, 0, 0);
+                                            v2.texCoords = math::Vec3f(va[i*4+1].texCoords.x, va[i*4+1].texCoords.y, 0, 0);
+                                            v3.texCoords = math::Vec3f(va[i*4+2].texCoords.x, va[i*4+2].texCoords.y, 0, 0);
 
 
                                             math::Vec3f v1(va[i*4].position.x, va[i*4].position.y, va[i*4].position.z);
@@ -936,70 +1253,67 @@ namespace odfaeg {
                                             math::Vec3f d1 = v2 - v1;
                                             math::Vec3f d2 = v3 - v1;
                                             math::Vec3f n = d1.cross(d2).normalize();
-                                            triangle.normal = math::Vec3f(n.x, n.y, n.z);
-                                            triangle.ratio = material.getRefractionFactor();
-                                            math::Matrix4f m;
-                                            triangle.textureIndex = (material.getTexture() == nullptr) ? 0 : material.getTexture()->getNativeHandle();
-                                            ////std::cout<<"texture index : "<<triangle.textureIndex<<std::endl;
-                                            triangle.textureMatrix = (material.getTexture() == nullptr) ? m : material.getTexture()->getTextureMatrix();
-                                            triangle.transform = vEntities[e]->getTransform().getMatrix().transpose();
-                                            if (!material.isReflectable() && !material.isRefractable())
-                                                triangle.refractReflect = 0;
-                                            else if (material.isReflectable() && !material.isRefractable())
-                                                triangle.refractReflect = 1;
-                                            else if (!material.isReflectable() && material.isRefractable())
-                                                triangle.refractReflect = 2;
-                                            else
-                                                triangle.refractReflect = 3;
-                                            triangles.push_back(triangle);
+                                            v1.normal = math::Vec3f(n.x, n.y, n.z);
+                                            v2.normal = math::Vec3f(n.x, n.y, n.z);
+                                            v3.normal = math::Vec3f(n.x, n.y, n.z);
+
+
+                                            vertices.push_back(v1);
+                                            vertices.push_back(v2);
+                                            vertices.push_back(v3);
+                                            indices.push_back(nbVertices);
+                                            nbVertices++;
+                                            indices.push_back(nbVertices);
+                                            nbVertices++;
+                                            indices.push_back(nbVertices);
+                                            nbVertices++;
                                         } else {
-                                            Triangle triangle;
-                                            triangle.positions[0] = math::Vec3f(va[i*4].position.x,va[i*4].position.y,va[i*4].position.z);
-                                            triangle.positions[1] = math::Vec3f(va[i*4+2].position.x,va[i*4+2].position.y,va[i*4+2].position.z);
-                                            triangle.positions[2] =  math::Vec3f(va[i*4+3].position.x,va[i*4+3].position.y,va[i*4+3].position.z);
-                                            triangle.colours[0] = math::Vec3f(va[i*4].color.r / 255.f,va[i*4].color.g / 255.f,va[i*4].color.b / 255.f, va[i*4].color.a / 255.f);
-                                            triangle.colours[1] = math::Vec3f(va[i*4+2].color.r / 255.f,va[i*4+2].color.g / 255.f,va[i*4+2].color.b / 255.f, va[i*4+2].color.a / 255.f);
-                                            triangle.colours[2] = math::Vec3f(va[i*4+3].color.r / 255.f,va[i*4+3].color.g / 255.f,va[i*4+3].color.b / 255.f, va[i*4+3].color.a / 255.f);
-                                            triangle.texCoords[0] = math::Vec3f(va[i*4].texCoords.x, va[i*4].texCoords.y, 0, 0);
-                                            triangle.texCoords[1] = math::Vec3f(va[i*4+2].texCoords.x, va[i*4+2].texCoords.y, 0, 0);
-                                            triangle.texCoords[2] = math::Vec3f(va[i*4+3].texCoords.x, va[i*4+3].texCoords.y, 0, 0);
-                                            /*for (unsigned int v = 0; v < 3; v++) {
-                                                //std::cout<<va[i*4+v+1].position.x<<","<<va[i*4+v+1].position.y<<","<<va[i*4+v+1].position.z<<std::endl;
-                                            }*/
+                                            Vertex v1, v2, v3;
+                                            v1.position = math::Vec3f(va[i*4].position.x,va[i*4].position.y,va[i*4].position.z);
+                                            v2.position = math::Vec3f(va[i*4+2].position.x,va[i*4+2].position.y,va[i*4+2].position.z);
+                                            v3.position = math::Vec3f(va[i*4+3].position.x,va[i*4+3].position.y,va[i*4+3].position.z);
+                                            v1.colour = math::Vec4f(va[i*4].color.r / 255.f,va[i*4].color.g / 255.f,va[i*4].color.b / 255.f, va[i*4].color.a / 255.f);
+                                            v2.colour = math::Vec3f(va[i*4+2].color.r / 255.f,va[i*4+2].color.g / 255.f,va[i*4+2].color.b / 255.f, va[i*4+2].color.a / 255.f);
+                                            v3.colour = math::Vec3f(va[i*4+3].color.r / 255.f,va[i*4+3].color.g / 255.f,va[i*4+3].color.b / 255.f, va[i*4+3].color.a / 255.f);
+                                            v1.texCoords = math::Vec3f(va[i*4].texCoords.x, va[i*4].texCoords.y, 0, 0);
+                                            v2.texCoords = math::Vec3f(va[i*4+2].texCoords.x, va[i*4+2].texCoords.y, 0, 0);
+                                            v3.texCoords = math::Vec3f(va[i*4+3].texCoords.x, va[i*4+3].texCoords.y, 0, 0);
+
+
                                             math::Vec3f v1(va[i*4].position.x, va[i*4].position.y, va[i*4].position.z);
                                             math::Vec3f v2(va[i*4+2].position.x, va[i*4+2].position.y, va[i*4+2].position.z);
                                             math::Vec3f v3(va[i*4+3].position.x, va[i*4+3].position.y, va[i*4+3].position.z);
                                             math::Vec3f d1 = v2 - v1;
                                             math::Vec3f d2 = v3 - v1;
                                             math::Vec3f n = d1.cross(d2).normalize();
-                                            triangle.normal = math::Vec3f(n.x, n.y, n.z);
-                                            triangle.ratio = material.getRefractionFactor();
-                                            math::Matrix4f m;
-                                            triangle.textureIndex = (material.getTexture() == nullptr) ? 0 : material.getTexture()->getNativeHandle();
-                                            triangle.textureMatrix = (material.getTexture() == nullptr) ? m : material.getTexture()->getTextureMatrix();
-                                            triangle.transform = vEntities[e]->getTransform().getMatrix().transpose();
-                                            if (!material.isReflectable() && !material.isRefractable())
-                                                triangle.refractReflect = 0;
-                                            else if (material.isReflectable() && !material.isRefractable())
-                                                triangle.refractReflect = 1;
-                                            else if (!material.isReflectable() && material.isRefractable())
-                                                triangle.refractReflect = 2;
-                                            else
-                                                triangle.refractReflect = 3;
-                                            triangles.push_back(triangle);
+                                            v1.normal = math::Vec3f(n.x, n.y, n.z);
+                                            v2.normal = math::Vec3f(n.x, n.y, n.z);
+                                            v3.normal = math::Vec3f(n.x, n.y, n.z);
+
+
+                                            vertices.push_back(v1);
+                                            vertices.push_back(v2);
+                                            vertices.push_back(v3);
+                                            indices.push_back(nbVertices);
+                                            nbVertices++;
+                                            indices.push_back(nbVertices);
+                                            nbVertices++;
+                                            indices.push_back(nbVertices);
+                                            nbVertices++;
                                         }
                                     }
                                 } else if (va.getPrimitiveType() == sf::PrimitiveType::Triangles) {
-                                    Triangle triangle;
-                                    triangle.positions[0] = math::Vec3f(va[i*3].position.x,va[i*3].position.y,va[i*3].position.z);
-                                    triangle.positions[1] = math::Vec3f(va[i*3+1].position.x,va[i*3+1].position.y,va[i*3+1].position.z);
-                                    triangle.positions[2] = math::Vec3f(va[i*3+2].position.x,va[i*3+2].position.y,va[i*3+2].position.z);
-                                    triangle.colours[0] = math::Vec3f(va[i*3].color.r / 255.f,va[i*3].color.g / 255.f,va[i*3].color.b / 255.f, va[i*3].color.a / 255.f);
-                                    triangle.colours[1] = math::Vec3f(va[i*3+1].color.r / 255.f,va[i*3+1].color.g / 255.f,va[i*3+1].color.b / 255.f, va[i*3+1].color.a / 255.f);
-                                    triangle.colours[2] = math::Vec3f(va[i*3+2].color.r / 255.f,va[i*3+2].color.g / 255.f,va[i*3+2].color.b / 255.f, va[i*3+2].color.a / 255.f);
-                                    triangle.texCoords[0] = math::Vec3f(va[i*3].texCoords.x, va[i*3].texCoords.y, 0, 0);
-                                    triangle.texCoords[1] = math::Vec3f(va[i*3+1].texCoords.x, va[i*3+2].texCoords.y, 0, 0);
-                                    triangle.texCoords[2] = math::Vec3f(va[i*3+2].texCoords.x, va[i*3+2].texCoords.y, 0, 0);
+                                    Vertex v1, v2, v3;
+                                    v1.position = math::Vec3f(va[i*3].position.x,va[i*3].position.y,va[i*3].position.z);
+                                    v2.position = math::Vec3f(va[i*3+1].position.x,va[i*3+1].position.y,va[i*3+1].position.z);
+                                    v3.position = math::Vec3f(va[i*3+2].position.x,va[i*3+2].position.y,va[i*3+2].position.z);
+                                    v1.colour = math::Vec4f(va[i*3].color.r / 255.f,va[i*3].color.g / 255.f,va[i*3].color.b / 255.f, va[i*3].color.a / 255.f);
+                                    v2.colour = math::Vec3f(va[i*3+1].color.r / 255.f,va[i*3+1].color.g / 255.f,va[i*3+1].color.b / 255.f, va[i*3+1].color.a / 255.f);
+                                    v3.colour = math::Vec3f(va[i*3+2].color.r / 255.f,va[i*3+2].color.g / 255.f,va[i*3+2].color.b / 255.f, va[i*3+2].color.a / 255.f);
+                                    v1.texCoords = math::Vec3f(va[i*3].texCoords.x, va[i*3].texCoords.y, 0, 0);
+                                    v2.texCoords = math::Vec3f(va[i*3+1].texCoords.x, va[i*3+1].texCoords.y, 0, 0);
+                                    v3.texCoords = math::Vec3f(va[i*3+2].texCoords.x, va[i*3+2].texCoords.y, 0, 0);
+
 
                                     math::Vec3f v1(va[i*3].position.x, va[i*3].position.y, va[i*3].position.z);
                                     math::Vec3f v2(va[i*3+1].position.x, va[i*3+1].position.y, va[i*3+1].position.z);
@@ -1007,22 +1321,21 @@ namespace odfaeg {
                                     math::Vec3f d1 = v2 - v1;
                                     math::Vec3f d2 = v3 - v1;
                                     math::Vec3f n = d1.cross(d2).normalize();
-                                    triangle.normal = math::Vec3f(n.x, n.y, n.z);
-                                    triangle.ratio = material.getRefractionFactor();
-                                    math::Matrix4f m;
-                                    triangle.textureIndex = (material.getTexture() == nullptr) ? 0 : material.getTexture()->getNativeHandle();
-                                    triangle.textureMatrix = (material.getTexture() == nullptr) ? m : material.getTexture()->getTextureMatrix();
-                                    triangle.transform = vEntities[e]->getTransform().getMatrix().transpose();
-                                    if (!material.isReflectable() && !material.isRefractable())
-                                        triangle.refractReflect = 0;
-                                    else if (material.isReflectable() && !material.isRefractable())
-                                        triangle.refractReflect = 1;
-                                    else if (!material.isReflectable() && material.isRefractable())
-                                        triangle.refractReflect = 2;
-                                    else
-                                        triangle.refractReflect = 3;
-                                    triangles.push_back(triangle);
-                                } else if (va.getPrimitiveType() == sf::PrimitiveType::TriangleStrip) {
+                                    v1.normal = math::Vec3f(n.x, n.y, n.z);
+                                    v2.normal = math::Vec3f(n.x, n.y, n.z);
+                                    v3.normal = math::Vec3f(n.x, n.y, n.z);
+
+
+                                    vertices.push_back(v1);
+                                    vertices.push_back(v2);
+                                    vertices.push_back(v3);
+                                    indices.push_back(nbVertices);
+                                    nbVertices++;
+                                    indices.push_back(nbVertices);
+                                    nbVertices++;
+                                    indices.push_back(nbVertices);
+                                    nbVertices++;
+                                } /*else if (va.getPrimitiveType() == sf::PrimitiveType::TriangleStrip) {
                                     if (i == 0) {
                                         Triangle triangle;
                                         triangle.positions[0] = math::Vec3f(va[i*3].position.x,va[i*3].position.y,va[i*3].position.z);
@@ -1157,7 +1470,7 @@ namespace odfaeg {
                                         else
                                             triangle.refractReflect = 3;
                                         triangles.push_back(triangle);
-                                    }
+                                    }*/
                                 } /*else {
                                     Light light;
                                     g2d::PonctualLight* pl = static_cast<g2d::PonctualLight*>(vEntities[e]);
