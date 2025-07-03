@@ -18,7 +18,6 @@ namespace odfaeg {
         class ODFAEG_GRAPHICS_API RaytracingRenderComponent : public HeavyComponent {
         public :
             struct Vertex {
-                math::Matrix4f textureMatrix;
                 math::Vec3f position;
                 math::Vec4f colour;
                 math::Vec2f texCoords;
@@ -27,6 +26,10 @@ namespace odfaeg {
             struct GeometryOffset {
                 uint32_t vertexOffset;
                 uint32_t indexOffset;
+            };
+            struct MaterialData {
+                math::Matrix4f textureMatrix;
+                uint32_t materialIndex;
             };
             RaytracingRenderComponent (RenderWindow& window, int layer, std::string expression, window::ContextSettings settings);
                  /**
@@ -94,6 +97,7 @@ namespace odfaeg {
             ~RaytracingRenderComponent();
             std::vector<TriangleOffset> trianglesOffsets;
         private :
+            void compileShaders();
             void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
             void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
             VkDeviceSize maxOffsetBufferSize, maxTriangleBufferSize, maxVertexBufferSize, maxIndexBufferSize, maxTransformBufferSize, maxInstanceBufferSize, maxIndexTriangleBufferSize;
@@ -133,7 +137,8 @@ namespace odfaeg {
             VkDeviceMemory hitShaderBindingTableMemory;
             VkBuffer triangleBuffer;
             VkBuffer triangleOffsetBuffer;
-            VkBuffer indexBuffer;
+            VkBuffer indexTriangleBuffer;
+
             VkDeviceMemory triangleBufferMemory;
             VkDeviceMemory triangleOffsetBufferMemory;
             VkDeviceMemory indexTriangleBufferMemory;
@@ -174,6 +179,7 @@ namespace odfaeg {
 
             VkPipeline pipeline;
             VkPipelineLayout pipelineLayout;
+            VkDescriptorPool desriptorPool;
             VkDescriptorSet descriptorSet;
             VkDescriptorSetLayout descriptorSetLayout;
             odfaeg::graphic::RenderTexture frameBuffer;
@@ -190,6 +196,8 @@ namespace odfaeg {
             std::vector<Vertex> vertices;
             std::vector<uint32_t> indexes;
             std::vector<GeometryOffset> geometryOffsets;
+            Shader raytracingShader;
+            std::vector<MaterialData> materialDatas;
         };
         #else
         class ODFAEG_GRAPHICS_API RaytracingRenderComponent : public HeavyComponent {

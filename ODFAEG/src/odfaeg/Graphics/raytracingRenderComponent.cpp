@@ -17,6 +17,105 @@ namespace odfaeg {
             window(window) {
 
         }
+        void RaytracingRenderComponent::compileShaders() {
+            const std::string raygen = R"(#version 460
+                                          #extension GL_EXT_ray_tracing : enable
+                                          layout(binding = 0, set = 0) uniform accelerationStructureEXT topLevelAS;
+                                          layout(binding = 1, set = 0, rgba8) uniform image2D image;
+                                          layout(binding = 2, set = 0) uniform CameraProperties
+                                          {
+                                              mat4 viewInverse;
+                                              mat4 projInverse;
+                                          } cam;
+                                          // Dans le shader commun
+                                          struct RayPayload {
+                                              vec4 color;
+                                          };
+                                          layout(location = 0) rayPayloadEXT RayPayload payload; // ray generation
+                                          void main() {
+                                                const vec2 pixelCenter = vec2(gl_LaunchIDEXT.xy) + vec2(0.5);
+                                                const vec2 inUV = pixelCenter/vec2(gl_LaunchSizeEXT.xy);
+                                                vec2 d = inUV * 2.0 - 1.0;
+
+                                                vec4 origin = cam.viewInverse * vec4(0,0,0,1);
+                                                vec4 target = cam.projInverse * vec4(d.x, d.y, 1, 1) ;
+                                                vec4 direction = cam.viewInverse*vec4(normalize(target.xyz), 0) ;
+
+                                                float tmin = 0.001;
+                                                float tmax = 10000.0;
+
+                                                hitValue = vec3(0.0);
+
+                                                traceRayEXT(topLevelAS, gl_RayFlagsOpaqueEXT, 0xff, 0, 0, 0, origin.xyz, tmin, direction.xyz, tmax, 0);
+
+                                                imageStore(image, ivec2(gl_LaunchIDEXT.xy), vec4(hitValue, 0.0));
+                                          }
+                                          )";
+            const std::string rayhit = R"(#version 460
+                                          #version 460
+                                          #extension GL_EXT_ray_tracing : enable
+                                          #extension GL_EXT_nonuniform_qualifier : enable
+                                          struct Vertex {
+                                              vec3 position;
+                                              vec4 color;
+                                              vec2 texCoords;
+                                              vec3 normal;
+                                          };
+                                          struct GeometryOffset {
+                                              uint vertexOffset;
+                                              uint indexOffset;
+                                          };
+                                          layout (location = 3) uniform sampler2D textures[];
+                                          layout (location = 4) uniform buffer vertexBuffer {
+                                              Vertex vertices[];
+                                          };
+                                          layout (location = 5) uniform buffer geomBuffer {
+                                              GeometryOffset geomOffsets[];
+                                          };
+                                          layout (location = 6) uniform buffer indexBuffer {
+                                              uint indexes[];
+                                          };
+                                          struct RayPayload {
+                                              vec4 color;
+                                          };
+                                          layout(location = 0) rayPayloadInEXT RayPayload payload;
+                                          hitAttributeEXT vec2 baryCoords;
+                                          void main() {
+                                              GeometryOffset geomOffs = geomOffsets[gl_InstanceCustomIndexEXT];
+                                              int primID = gl_PrimitiveID;
+                                              uint i1 = indexes[geomOffs.indexOffset + primId * 3 + 0];
+                                              uint i2 = indexes[geomOffs.indexOffset + primId * 3 + 1];
+                                              uint i3 = indexes[geomOffs.indexOffset + primId * 3 + 2];
+                                              vec4 c1 = vertices[geomOffs.vertexOffset + i1].color;
+                                              vec4 c2 = vertices[geomOffs.vertexOffset + i2].color;
+                                              vec4 c3 = vertices[geomOffs.vertexOffset + i3].color;
+                                              vec2 ct1 = vertices[geomOffs.vertexOffset + i1].texCoords;
+                                              vec2 ct2 = vertices[geomOffs.vertexOffset + i2].texCoords;
+                                              vec2 ct3 = vertices[geomOffs.vertexOffset + i3].texCoords;
+                                              float u = baryCoord.x;
+                                              float v = baryCoord.y;
+                                              float w = 1.0 - u - v;
+                                              vec4 color = w * c1 + u * c2 + v * c3;
+                                              vec2 tc = w * ct1 + u * ct2 + v * ct3;
+                                              payload.color = color * texture(textures[gl_InstanceCustomIndexEXT], ct);
+                                          }
+                                          )";
+                                          const std::string raymiss = R"(
+                                                                         #version 460
+                                                                         #extension GL_EXT_ray_tracing : enable
+                                                                         struct RayPayload {
+                                                                             vec4 color;
+                                                                         };
+                                                                         layout(location = 0) rayPayloadInEXT RayPayload payload;
+                                                                         void main()
+                                                                         {
+                                                                             payload.color = vec4(0.0, 0.0, 0.0, 0.0);
+                                                                         }
+                                                                         )";
+            if (!raytracingShader.compile(raygen, raymiss, rayhit)) {
+                throw core::Erreur(52, "Error, failed to load ray tracing shader", 3);
+            }
+        }
         RaytracingScratchBuffer RaytracingRenderComponent::createScratchBuffer(VkDeviceSize size) {
             RayTracingScratchBuffer scratchBuffer{};
 
@@ -993,6 +1092,7 @@ namespace odfaeg {
                 { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1 },
                 { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, allTextures.size()},
                 { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1},
+                { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1},
                 { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1}
             };
             VkDescriptorPoolCreateInfo poolInfo{};
@@ -1044,6 +1144,15 @@ namespace odfaeg {
             offsetDataLayoutBinding.pImmutableSamplers = nullptr;
             offsetDataLayoutBinding.stageFlags = VK_SHADER_STAGE_RAYHIT_BIT_KHR;
 
+            VkDescriptorSetLayoutBinding indexDataLayoutBinding{};
+            offsetDataLayoutBinding.binding = 6;
+            offsetDataLayoutBinding.descriptorCount = 1;
+            offsetDataLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+            offsetDataLayoutBinding.pImmutableSamplers = nullptr;
+            offsetDataLayoutBinding.stageFlags = VK_SHADER_STAGE_RAYHIT_BIT_KHR;
+
+            std::array<VkDescriptorSetLayoutBinding, 7> bindings = {accelerationStructureLayoutBinding, resultImageLayoutBinding, uniformBufferBinding, samplerLayoutBinding, triangleDataLayoutBinding, offsetDataLayoutBinding, indexDataLayoutBinding};
+
             VkDescriptorSetLayoutCreateInfo layoutInfo{};
             layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
             //layoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR;
@@ -1060,12 +1169,12 @@ namespace odfaeg {
             allocInfo.descriptorPool = descriptorPool;
             allocInfo.descriptorSetCount = 1;
             allocInfo.pSetLayouts = layouts.data();
-            if (vkAllocateDescriptorSets(vkDevice.getDevice(), &allocInfo, descriptorSets[descriptorId].data()) != VK_SUCCESS) {
+            if (vkAllocateDescriptorSets(vkDevice.getDevice(), &allocInfo, descriptorSet) != VK_SUCCESS) {
                 throw std::runtime_error("echec de l'allocation d'un set de descripteurs!");
             }
         }
         void RaytracingRenderComponent::createDescriptorSets() {
-            std::array<VkWriteDescriptorSet, 5> descriptorWrites{};
+            std::array<VkWriteDescriptorSet, 7> descriptorWrites{};
             VkWriteDescriptorSetAccelerationStructureKHR descriptorAccelerationStructureInfo{};
             descriptorAccelerationStructureInfo.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_KHR;
             descriptorAccelerationStructureInfo.accelerationStructureCount = 1;
@@ -1116,7 +1225,7 @@ namespace odfaeg {
             std::array<VkWriteDescriptorSet, 7> descriptorWrites{};
             descriptorWrites[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
             descriptorWrites[3].dstSet = descriptorSets[descriptorId][i];
-            descriptorWrites[3].dstBinding = 0;
+            descriptorWrites[3].dstBinding = 3;
             descriptorWrites[3].dstArrayElement = 0;
             descriptorWrites[3].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
             descriptorWrites[3].descriptorCount = allTextures.size();
@@ -1147,6 +1256,19 @@ namespace odfaeg {
             descriptorWrites[5].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
             descriptorWrites[5].descriptorCount = 1;
             descriptorWrites[5].pBufferInfo = &offsetDataStorageBufferDescriptor;
+
+            VkDescriptorBufferInfo indexDataStorageBufferDescriptor{};
+            offsetDataStorageBufferDescriptor.buffer = indexTriangleBuffer;
+            offsetDataStorageBufferDescriptor.offset = 0;
+            offsetDataStorageBufferDescriptor.range = maxIndexTriangleBufferSize;
+
+            descriptorWrites[6].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            descriptorWrites[6].dstSet = descriptorSets;
+            descriptorWrites[6].dstBinding = 6;
+            descriptorWrites[6].dstArrayElement = 0;
+            descriptorWrites[6].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+            descriptorWrites[6].descriptorCount = 1;
+            descriptorWrites[6].pBufferInfo = &indexDataStorageBufferDescriptor;
 
             vkUpdateDescriptorSets(vkDevice.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
         }
