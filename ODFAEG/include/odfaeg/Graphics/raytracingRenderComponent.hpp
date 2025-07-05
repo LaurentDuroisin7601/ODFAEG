@@ -92,15 +92,14 @@ namespace odfaeg {
             void pushEvent(window::IEvent event, RenderWindow& window);
             void setView(View view);
             View& getView();
-            const Texture& getFrameBufferTexture();
             RenderTexture* getFrameBuffer();
             ~RaytracingRenderComponent();
-            std::vector<TriangleOffset> trianglesOffsets;
         private :
             void compileShaders();
             void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
             void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
-            VkDeviceSize maxOffsetBufferSize, maxTriangleBufferSize, maxVertexBufferSize, maxIndexBufferSize, maxTransformBufferSize, maxInstanceBufferSize, maxIndexTriangleBufferSize;
+            VkDeviceSize maxOffsetBufferSize, maxTriangleBufferSize, maxVertexBufferSize, maxIndexBufferSize, maxTransformBufferSize, maxInstanceBufferSize, maxIndexTriangleBufferSize,
+            maxMaterialBufferSize;
             RayTracingScratchBuffer createScratchBuffer(VkDeviceSize size);
             uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
             void deleteScratchBuffer(RayTracingScratchBuffer& scratchBuffer);
@@ -113,7 +112,6 @@ namespace odfaeg {
             void createDescriptorSets();
             void createRayTracingPipeline();
             void createUniformBuffer();
-            void buildCommandBuffers();
             void updateUniformBuffers();
             VkPhysicalDeviceRayTracingPipelinePropertiesKHR  rayTracingPipelineProperties{};
             VkPhysicalDeviceAccelerationStructureFeaturesKHR accelerationStructureFeatures{};
@@ -138,12 +136,14 @@ namespace odfaeg {
             VkBuffer triangleBuffer;
             VkBuffer triangleOffsetBuffer;
             VkBuffer indexTriangleBuffer;
+            VkBuffer materialBuffer;
 
             VkDeviceMemory triangleBufferMemory;
             VkDeviceMemory triangleOffsetBufferMemory;
             VkDeviceMemory indexTriangleBufferMemory;
-            VkBuffer triangleStagingBuffer, triangleOffsetStagingBuffer, indexTriangleStagingBuffer;
-            VkDeviceMemory triangleStagingBufferMemory, triangleOffsetStagingBufferMemory, indexTriangleStagingBufferMemory;
+            VkDeviceMemory materialBufferMemory;
+            VkBuffer triangleStagingBuffer, triangleOffsetStagingBuffer, indexTriangleStagingBuffer, materialStagingBuffer;
+            VkDeviceMemory triangleStagingBufferMemory, triangleOffsetStagingBufferMemory, indexTriangleStagingBufferMemory, materialStagingBufferMemory;
             VkBuffer instanceBuffer, instanceStagingBuffer;
             VkDeviceMemory instanceBufferMemory, instanceStagingBufferMemory;
             std::vector<AccelerationStructure> bottomLevelASs;
@@ -176,6 +176,7 @@ namespace odfaeg {
                 math::Matrix4f projInverse;
             } uniformData;
             VkBuffer ubo;
+            VkDeviceMemory uboMemory;
 
             VkPipeline pipeline;
             VkPipelineLayout pipelineLayout;

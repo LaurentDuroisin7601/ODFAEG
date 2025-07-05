@@ -64,6 +64,7 @@ namespace odfaeg
             void submit(bool lastSubmit = false);
             void endRenderPass();
             VkFormat getSwapchainImageFormat();
+            std::vector<VkImage> getSwapchainImages();
 
         protected:
             VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
@@ -87,7 +88,7 @@ namespace odfaeg
             ///
             ////////////////////////////////////////////////////////////
             virtual void onResize();
-            std::vector<VkImage> getSwapchainImages();
+
             std::vector<VkImageView> getSwapChainImageViews();
             std::vector<VkFramebuffer> getSwapchainFrameBuffers(unsigned int frameBufferId);
 

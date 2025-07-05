@@ -44,11 +44,9 @@ namespace odfaeg {
                                                 float tmin = 0.001;
                                                 float tmax = 10000.0;
 
-                                                hitValue = vec3(0.0);
-
                                                 traceRayEXT(topLevelAS, gl_RayFlagsOpaqueEXT, 0xff, 0, 0, 0, origin.xyz, tmin, direction.xyz, tmax, 0);
 
-                                                imageStore(image, ivec2(gl_LaunchIDEXT.xy), vec4(hitValue, 0.0));
+                                                imageStore(image, ivec2(gl_LaunchIDEXT.xy), payload.color);
                                           }
                                           )";
             const std::string rayhit = R"(#version 460
@@ -65,6 +63,10 @@ namespace odfaeg {
                                               uint vertexOffset;
                                               uint indexOffset;
                                           };
+                                          struct MaterialData {
+                                              mat4 textureMatrix;
+                                              uint textureIndex;
+                                          };
                                           layout (location = 3) uniform sampler2D textures[];
                                           layout (location = 4) uniform buffer vertexBuffer {
                                               Vertex vertices[];
@@ -74,6 +76,9 @@ namespace odfaeg {
                                           };
                                           layout (location = 6) uniform buffer indexBuffer {
                                               uint indexes[];
+                                          };
+                                          layout (location = 7) uniform buffer materialBuffer {
+                                              uint materials[];
                                           };
                                           struct RayPayload {
                                               vec4 color;
@@ -89,15 +94,17 @@ namespace odfaeg {
                                               vec4 c1 = vertices[geomOffs.vertexOffset + i1].color;
                                               vec4 c2 = vertices[geomOffs.vertexOffset + i2].color;
                                               vec4 c3 = vertices[geomOffs.vertexOffset + i3].color;
-                                              vec2 ct1 = vertices[geomOffs.vertexOffset + i1].texCoords;
-                                              vec2 ct2 = vertices[geomOffs.vertexOffset + i2].texCoords;
-                                              vec2 ct3 = vertices[geomOffs.vertexOffset + i3].texCoords;
+                                              mat4 textureMatrix = materials[gl_InstanceCustomIndexEXT].textureMatrix;
+                                              vec2 ct1 = (vec4(vertices[geomOffs.vertexOffset + i1].texCoords.xy, 0, 1) * textureMatrix).xy;
+                                              vec2 ct2 = (vec4(vertices[geomOffs.vertexOffset + i2].texCoords.xy, 0, 1) * textureMatrix).xy;
+                                              vec2 ct3 = (vec4(vertices[geomOffs.vertexOffset + i3].texCoords.xy, 0, 1) * textureMatrix).xy;
                                               float u = baryCoord.x;
                                               float v = baryCoord.y;
                                               float w = 1.0 - u - v;
                                               vec4 color = w * c1 + u * c2 + v * c3;
                                               vec2 tc = w * ct1 + u * ct2 + v * ct3;
-                                              payload.color = color * texture(textures[gl_InstanceCustomIndexEXT], ct);
+                                              uint textureIndex = materials[gl_InstanceCustomIndexEXT].textureIndex;
+                                              payload.color = (textureIndex > 0) ? color * texture(textures[textureIndex-1], ct) : color;
                                           }
                                           )";
                                           const std::string raymiss = R"(
@@ -894,6 +901,7 @@ namespace odfaeg {
         void RaytracingRenderComponent::createTopLevelAccelerationStructure() {
             uint32_t blasIndex = 0;
             std::vector<VkAccelerationStructureInstanceKHR> instances;
+            materialDatas.clear();
             for (unsigned int i = 0; i < m_normals.size(); i++) {
                 if (m_normals[i].getAllVertices().getVertexCount() > 0) {
                     VkTransformMatrixKHR transformMatrix = {
@@ -910,6 +918,10 @@ namespace odfaeg {
                     instance.accelerationStructureReference = bottomLevelASs[blasIndex].deviceAddress;
                     instances.push_back(instance);
                     blasIndex++;
+                    MaterialData materialData;
+                    materialData.materialIndex = (m_normals[i].getMaterial().getTexture() != nullptr) ? m_normals[i].getMaterial().getTexture()->getId() : 0;
+                    materialData.textureMatrix = (m_normals[i].getMaterial().getTexture() != nullptr) ? m_normals[i].getMaterial().getTexture()->getTextureMatrix() : math::Matrix4f();
+                    materialDatas.push_back(materialData);
                 }
             }
             for (unsigned int i = 0; i < m_instances.size(); i++) {
@@ -926,6 +938,10 @@ namespace odfaeg {
                         instance.flags = VK_GEOMETRY_INSTANCE_TRIANGLE_FACING_CULL_DISABLE_BIT_KHR;
                         instance.accelerationStructureReference = bottomLevelASs[blasIndex].deviceAddress;
                         instances.push_back(instance);
+                        MaterialData materialData;
+                        materialData.materialIndex = (m_instances[i].getMaterial().getTexture() != nullptr) ? m_instances[i].getMaterial().getTexture()->getId() : 0;
+                        materialData.textureMatrix = (m_instances[i].getMaterial().getTexture() != nullptr) ? m_instances[i].getMaterial().getTexture()->getTextureMatrix() : math::Matrix4f();
+                        materialDatas.push_back(materialData);
                     }
                     blasIndex++;
                 }
@@ -1052,6 +1068,25 @@ namespace odfaeg {
             topLevelAS.deviceAddress = vkGetAccelerationStructureDeviceAddressKHR(device, &accelerationDeviceAddressInfo);
 
             deleteScratchBuffer(scratchBuffer);
+            VkDeviceSize bufferSize = materialDatas.size() * sizeof(MaterialData);
+            if (bufferSize > maxMaterialBufferSize) {
+                if (materialStagingBuffer != nullptr) {
+                    vkDestroyBuffer(vkDevice.getDevice(), materialStagingBuffer, nullptr);
+                    vkFreeMemory(vkDevice.getDevice(), materialStagingBufferMemory, nullptr);
+                }
+                createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, materialStagingBuffer, materialStagingBufferMemory);
+
+                vkDestroyBuffer(vkDevice.getDevice(), materialBuffer, nullptr);
+                vkFreeMemory(vkDevice.getDevice(), materialBufferMemory, nullptr);
+                createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, materialBuffer, materialBufferMemory);
+                maxMaterialBufferSize = bufferSize;
+                needToUpdateDS  = true;
+            }
+            void* data;
+            vkMapMemory(vkDevice.getDevice(), materialBufferMemory, 0, bufferSize, 0, &data);
+            memcpy(data, materialDatas.data(), (size_t)bufferSize);
+            vkUnmapMemory(vkDevice.getDevice(), materialBufferMemory);
+            copyBuffer(materialStagingBuffer, materialBuffer, bufferSize);
         }
         void createShaderBindingTable() {
             const uint32_t handleSize = rayTracingPipelineProperties.shaderGroupHandleSize;
@@ -1091,6 +1126,7 @@ namespace odfaeg {
                 { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1 },
                 { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1 },
                 { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, allTextures.size()},
+                { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1},
                 { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1},
                 { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1},
                 { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1}
@@ -1151,7 +1187,14 @@ namespace odfaeg {
             offsetDataLayoutBinding.pImmutableSamplers = nullptr;
             offsetDataLayoutBinding.stageFlags = VK_SHADER_STAGE_RAYHIT_BIT_KHR;
 
-            std::array<VkDescriptorSetLayoutBinding, 7> bindings = {accelerationStructureLayoutBinding, resultImageLayoutBinding, uniformBufferBinding, samplerLayoutBinding, triangleDataLayoutBinding, offsetDataLayoutBinding, indexDataLayoutBinding};
+            VkDescriptorSetLayoutBinding materialDataLayoutBinding{};
+            materialDataLayoutBinding.binding = 7;
+            materialDataLayoutBinding.descriptorCount = 1;
+            materialDataLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+            materialDataLayoutBinding.pImmutableSamplers = nullptr;
+            materialDataLayoutBinding.stageFlags = VK_SHADER_STAGE_RAYHIT_BIT_KHR;
+
+            std::array<VkDescriptorSetLayoutBinding, 8> bindings = {accelerationStructureLayoutBinding, resultImageLayoutBinding, uniformBufferBinding, samplerLayoutBinding, triangleDataLayoutBinding, offsetDataLayoutBinding, indexDataLayoutBinding, materialDataLayoutBinding};
 
             VkDescriptorSetLayoutCreateInfo layoutInfo{};
             layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -1174,7 +1217,7 @@ namespace odfaeg {
             }
         }
         void RaytracingRenderComponent::createDescriptorSets() {
-            std::array<VkWriteDescriptorSet, 7> descriptorWrites{};
+            std::array<VkWriteDescriptorSet, 8> descriptorWrites{};
             VkWriteDescriptorSetAccelerationStructureKHR descriptorAccelerationStructureInfo{};
             descriptorAccelerationStructureInfo.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_KHR;
             descriptorAccelerationStructureInfo.accelerationStructureCount = 1;
@@ -1270,6 +1313,19 @@ namespace odfaeg {
             descriptorWrites[6].descriptorCount = 1;
             descriptorWrites[6].pBufferInfo = &indexDataStorageBufferDescriptor;
 
+            VkDescriptorBufferInfo materialDataStorageBufferDescriptor{};
+            materialDataStorageBufferDescriptor.buffer = materialBuffer;
+            materialDataStorageBufferDescriptor.offset = 0;
+            materialDataStorageBufferDescriptor.range = maxMaterialBufferSize;
+
+            descriptorWrites[7].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            descriptorWrites[7].dstSet = descriptorSets;
+            descriptorWrites[7].dstBinding = 7;
+            descriptorWrites[7].dstArrayElement = 0;
+            descriptorWrites[7].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+            descriptorWrites[7].descriptorCount = 1;
+            descriptorWrites[7].pBufferInfo = &materialDataStorageBufferDescriptor;
+
             vkUpdateDescriptorSets(vkDevice.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
         }
         void RaytracingRenderComponent::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory) {
@@ -1329,8 +1385,209 @@ namespace odfaeg {
 
             vkFreeCommandBuffers(vkDevice.getDevice(), commandPool, 1, &commandBuffer);
         }
+        void RaytracingRenderComponent::createRayTracingPipeline() {
+            VkPipelineLayoutCreateInfo pipelineLayoutCI{};
+            pipelineLayoutCI.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+            pipelineLayoutCI.setLayoutCount = 1;
+            pipelineLayoutCI.pSetLayouts = &descriptorSetLayout;
+            if (vkCreatePipelineLayout(vkDevice.getDevice(), &pipelineLayoutCI, nullptr, &pipelineLayout) != VK_SUCESS) {
+                throw std::runtime_error("failed to create raytracing pipeline layout!");
+            }
+            raytracingShader.createRaytracingShaderModules();
+            std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
+            VkPipelineShaderStageCreateInfo raygenShaderStageInfo{};
+            vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+            vertShaderStageInfo.stage = VK_SHADER_STAGE_RAYGEN_BIT_KHR;
+            vertShaderStageInfo.module = raytracingShader.getRaygenShaderModule();
+            vertShaderStageInfo.pName = "main";
+
+            VkPipelineShaderStageCreateInfo raymissShaderStageInfo{};
+            fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+            fragShaderStageInfo.stage = VK_SHADER_STAGE_MISS_BIT_KHR;
+            fragShaderStageInfo.module = raytracingShader.getRaymissShaderModule();
+            fragShaderStageInfo.pName = "main";
+
+            VkPipelineShaderStageCreateInfo rayhitShaderStageInfo{};
+            geomShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+            geomShaderStageInfo.stage = VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
+            geomShaderStageInfo.module = raytracingShader.getRayhitShaderModule();
+            geomShaderStageInfo.pName = "main";
+
+            shaderStages = {raygenShaderStageInfo, raymissShaderStageInfo, rayhitShaderStageInfo};
+
+            std::vector<VkRayTracingShaderGroupCreateInfoKHR> shaderGroups;
+
+            VkRayTracingShaderGroupCreateInfoKHR shaderGroup{};
+			shaderGroup.sType = VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR;
+			shaderGroup.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR;
+			shaderGroup.generalShader = static_cast<uint32_t>(shaderStages.size()) - 1;
+			shaderGroup.closestHitShader = VK_SHADER_UNUSED_KHR;
+			shaderGroup.anyHitShader = VK_SHADER_UNUSED_KHR;
+			shaderGroup.intersectionShader = VK_SHADER_UNUSED_KHR;
+			shaderGroups.push_back(shaderGroup);
+
+			VkRayTracingShaderGroupCreateInfoKHR shaderGroup{};
+			shaderGroup.sType = VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR;
+			shaderGroup.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR;
+			shaderGroup.generalShader = static_cast<uint32_t>(shaderStages.size()) - 1;
+			shaderGroup.closestHitShader = VK_SHADER_UNUSED_KHR;
+			shaderGroup.anyHitShader = VK_SHADER_UNUSED_KHR;
+			shaderGroup.intersectionShader = VK_SHADER_UNUSED_KHR;
+			shaderGroups.push_back(shaderGroup);
+
+			VkRayTracingShaderGroupCreateInfoKHR shaderGroup{};
+			shaderGroup.sType = VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR;
+			shaderGroup.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_TRIANGLES_HIT_GROUP_KHR;
+			shaderGroup.generalShader = VK_SHADER_UNUSED_KHR;
+			shaderGroup.closestHitShader = static_cast<uint32_t>(shaderStages.size()) - 1;
+			shaderGroup.anyHitShader = VK_SHADER_UNUSED_KHR;
+			shaderGroup.intersectionShader = VK_SHADER_UNUSED_KHR;
+			shaderGroups.push_back(shaderGroup);
+
+			VkRayTracingPipelineCreateInfoKHR rayTracingPipelineCI{};
+            rayTracingPipelineCI.sType = VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_CREATE_INFO_KHR;
+            rayTracingPipelineCI.stageCount = static_cast<uint32_t>(shaderStages.size());
+            rayTracingPipelineCI.pStages = shaderStages.data();
+            rayTracingPipelineCI.groupCount = static_cast<uint32_t>(shaderGroups.size());
+            rayTracingPipelineCI.pGroups = shaderGroups.data();
+            rayTracingPipelineCI.maxPipelineRayRecursionDepth = 1;
+            rayTracingPipelineCI.layout = pipelineLayout;
+            if (vkCreateRayTracingPipelinesKHR(vkDevice.getDevice(), VK_NULL_HANDLE, VK_NULL_HANDLE, 1, &rayTracingPipelineCI, nullptr, &pipeline) != VK_SUCCESS) {
+                throw std::runtime_error("failed to create raytracing pipeline!");
+            }
+            raytracingShader.cleanupRaytracingShaderModules();
+        }
+        void RaytracingRenderComponent::createUniformBuffers() {
+            VkDeviceSize bufferSize = sizeof(UniformData);
+            createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, ubo, uboMemory);
+        }
+        void RaytracingRenderComponent::updateUniformbuffers() {
+            uniformData.projInverse = view.getProjMatrix().getMatrix().inverse().transpose();
+		    uniformData.viewInverse = view.getViewMatrix().getMatrix().inverse().transpose();
+            void* data;
+            vkMapMemory(vkDevice.getDevice(), uboMemory, 0, sizeof(ubo), 0, &data);
+            memcpy(data, &ubo, sizeof(ubo));
+            vkUnmapMemory(vkDevice.getDevice(), uboMemory);
+        }
+        void RaytracingRenderComponent::drawNextFrame() {
+            std::vector<VkCommandBuffer> commandBuffers = window.getCommandBuffers();
+            unsigned int currentFrame = window.getCurrentFrame();
+            const uint32_t handleSizeAligned = (rayTracingPipelineProperties.shaderGroupHandleSize + rayTracingPipelineProperties.shaderGroupHandleAlignment - 1) & ~(rayTracingPipelineProperties.shaderGroupHandleAlignment - 1);
+            VkStridedDeviceAddressRegionKHR raygenShaderSbtEntry{};
+			raygenShaderSbtEntry.deviceAddress = getBufferDeviceAddress(raygenShaderBindingTable.buffer);
+			raygenShaderSbtEntry.stride = handleSizeAligned;
+			raygenShaderSbtEntry.size = handleSizeAligned;
+
+			VkStridedDeviceAddressRegionKHR missShaderSbtEntry{};
+			missShaderSbtEntry.deviceAddress = getBufferDeviceAddress(missShaderBindingTable.buffer);
+			missShaderSbtEntry.stride = handleSizeAligned;
+			missShaderSbtEntry.size = handleSizeAligned;
+
+			VkStridedDeviceAddressRegionKHR hitShaderSbtEntry{};
+			hitShaderSbtEntry.deviceAddress = getBufferDeviceAddress(hitShaderBindingTable.buffer);
+			hitShaderSbtEntry.stride = handleSizeAligned;
+			hitShaderSbtEntry.size = handleSizeAligned;
+
+			VkStridedDeviceAddressRegionKHR callableShaderSbtEntry{};
+
+			/*
+				Dispatch the ray tracing commands
+			*/
+			vkCmdBindPipeline(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, pipeline);
+			vkCmdBindDescriptorSets(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, pipelineLayout, 0, 1, &descriptorSet, 0, 0);
+
+			vkCmdTraceRaysKHR(
+				commandBuffers[currentFrame],
+				&raygenShaderSbtEntry,
+				&missShaderSbtEntry,
+				&hitShaderSbtEntry,
+				&callableShaderSbtEntry,
+				width,
+				height,
+				1);
+        }
+        void RaytracingRenderComponent::draw(RenderTarget& target, RenderStates states) {
+            std::vector<VkCommandBuffer> commandBuffers = window.getCommandBuffers();
+            unsigned int currentFrame = window.getCurrentFrame();
+            VkImageMemoryBarrier barrier = {};
+            barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+            barrier.image = window.getSwapchainImages()[window.getImageIndex()];
+            barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            barrier.subresourceRange.levelCount = 1;
+            barrier.subresourceRange.layerCount = 1;
+            vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+
+            VkImageMemoryBarrier barrier = {};
+            barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+            barrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
+            barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+            barrier.image = storageImage.image;
+            barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            barrier.subresourceRange.levelCount = 1;
+            barrier.subresourceRange.layerCount = 1;
+            vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+
+            VkImageCopy copyRegion{};
+			copyRegion.srcSubresource = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1 };
+			copyRegion.srcOffset = { 0, 0, 0 };
+			copyRegion.dstSubresource = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1 };
+			copyRegion.dstOffset = { 0, 0, 0 };
+			copyRegion.extent = { view.getSize().x(), view.getSize().y(), 1 };
+			vkCmdCopyImage(commandBuffers[currentFrame], storageImage.image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, window.getSwapchainImages()[window.getImageIndex()], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copyRegion);
+
+			VkImageMemoryBarrier barrier = {};
+            barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+            barrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+            barrier.image = window.getSwapchainImages()[window.getImageIndex()];
+            barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            barrier.subresourceRange.levelCount = 1;
+            barrier.subresourceRange.layerCount = 1;
+            vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+
+            VkImageMemoryBarrier barrier = {};
+            barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+            barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+            barrier.newLayout = ;VK_IMAGE_LAYOUT_GENERAL;
+            barrier.image = storageImage.image;
+            barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            barrier.subresourceRange.levelCount = 1;
+            barrier.subresourceRange.layerCount = 1;
+            vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+
+        }
+        void RaytracingRenderComponent::clear () {
+            std::vector<VkCommandBuffer> commandBuffers = window.getCommandBuffers();
+            VkClearColorValue clearColor = {0.f, 0.f, 0.f, 0.f};
+            VkImageSubresourceRange subresRange = {};
+            subresRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            subresRange.levelCount = 1;
+            subresRange.layerCount = 1;
+            for (unsigned int i = 0; i < commandBuffers.size(); i++) {
+                vkCmdClearColorImage(commandBuffers[i], storageImage.image, VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
+                VkMemoryBarrier memoryBarrier;
+                memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+                memoryBarrier.pNext = VK_NULL_HANDLE;
+                memoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+                vkCmdPipelineBarrier(commandBuffers[i], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
+            }
+        }
         bool RayTracingRenderComponent::loadEntitiesOnComponent(std::vector<Entity*> visibleEntities) {
             vertices.clear();
+            indices.clear();
+            {
+                std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                datasReady = false;
+                normalBatcher.clear();
+                instanceBatcher.clear();
+            }
             /*lights.clear();
             Light ambientLight;
             g2d::AmbientLight al = g2d::AmbientLight::getAmbientLight();
@@ -1340,10 +1597,16 @@ namespace odfaeg {
             lights.push_back(ambientLight);*/
             unsigned int nbVertices =0;
             for (unsigned int e = 0; e < vEntities.size(); e++) {
-                if ( vEntities[e]->isLeaf()) {
+                if (vEntities[e] != nullptr && vEntities[e]->isLeaf()) {
                     if (!vEntities[e]->isLight()) {
                         for (unsigned int j = 0; j <  vEntities[e]->getNbFaces(); j++) {
-                            Material material = vEntities[e]->getFace(j)->getMaterial();
+                            if(vEntities[e]->getDrawMode() == Entity::INSTANCED) {
+                                std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                                instanceBatcher.addFace( vEntities[e]->getFace(j));
+                            } else {
+                                std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                                normalBatcher.addFace( vEntities[e]->getFace(j));
+                            }
                             VertexArray va = vEntities[e]->getFace(j)->getVertexArray();
                             unsigned int size = 0;
                             if (va.getPrimitiveType() == sf::PrimitiveType::Quads) {
