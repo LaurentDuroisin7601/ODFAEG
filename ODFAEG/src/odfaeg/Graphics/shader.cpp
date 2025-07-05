@@ -172,7 +172,7 @@ namespace odfaeg {
             fragmentShaderCode = fragmentShader;
             return compile(vertexShader.c_str(), fragmentShader.c_str());
         }
-        bool Shader::loadRaytracingFromMemoy(const std::string& raygenShader, const std::string& raymissShader, const std::string& rayhitShader) {
+        bool Shader::loadRaytracingFromMemory(const std::string& raygenShader, const std::string& raymissShader, const std::string& rayhitShader) {
             return compileRaytracing(raygenShader.c_str(), raymissShader.c_str(), rayhitShader.c_str());
         }
         ////////////////////////////////////////////////////////////
@@ -317,14 +317,14 @@ namespace odfaeg {
             } else {
                 spvRaygenShaderCode = {module.cbegin(), module.cend()};
             }
-            module = compiler.CompileGlslToSpv(fragmentShaderCode, shaderc_glsl_raymiss_shader, "shader_src", options);
+            module = compiler.CompileGlslToSpv(fragmentShaderCode, shaderc_glsl_miss_shader, "shader_src", options);
             if (module.GetCompilationStatus() != shaderc_compilation_status_success) {
                 std::cerr << "Failed to compile raymiss shader :  "<<module.GetErrorMessage();
                 return false;
             } else {
                 spvRaymissShaderCode = {module.cbegin(), module.cend()};
             }
-            module = compiler.CompileGlslToSpv(geometryShaderCode, shaderc_glsl_rayhit_shader, "shader_src", options);
+            module = compiler.CompileGlslToSpv(geometryShaderCode, shaderc_glsl_closesthit_shader, "shader_src", options);
             if (module.GetCompilationStatus() != shaderc_compilation_status_success) {
                 std::cerr << "Failed to compile rayhit shader :  "<<module.GetErrorMessage();
                 return false;
@@ -381,7 +381,7 @@ namespace odfaeg {
             createRMInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
             createRMInfo.codeSize = 4*spvFragmentShaderCode.size();
             createRMInfo.pCode = spvFragmentShaderCode.data();
-            if (vkCreateShaderModule(vkDevice.getDevice(), &createRMInfo, nullptr, &raymisstShaderModule) != VK_SUCCESS) {
+            if (vkCreateShaderModule(vkDevice.getDevice(), &createRMInfo, nullptr, &raymissShaderModule) != VK_SUCCESS) {
                 throw core::Erreur (0, "Failed to create raymiss shader module", 1);
             }
             VkShaderModuleCreateInfo createRHInfo{};
@@ -408,7 +408,7 @@ namespace odfaeg {
             vkDestroyShaderModule(vkDevice.getDevice(), raygenShaderModule, nullptr);
             vkDestroyShaderModule(vkDevice.getDevice(), raymissShaderModule, nullptr);
             vkDestroyShaderModule(vkDevice.getDevice(), rayhitShaderModule, nullptr);
-        }        }
+        }
         VkShaderModule Shader::getVertexShaderModule() {
             return vertexShaderModule;
         }

@@ -81,8 +81,8 @@ set(SRC_GRAPHICS
 	${SRCROOT}/shadowRenderCompoenent.cpp
 	${INCROOT}/reflectRefractRenderComponent.hpp
 	${SRCROOT}/reflectRefractRenderComponent.cpp
-	#${INCROOT}/raytracingRenderComponent.hpp
-	#${SRCROOT}/raytracingRenderComponent.cpp
+	${INCROOT}/raytracingRenderComponent.hpp
+	${SRCROOT}/raytracingRenderComponent.cpp
 	${INCROOT}/animatedEntity.h	
 	${INCROOT}/model.h
 	${SRCROOT}/model.cpp
@@ -263,9 +263,9 @@ sfgl_add_library(odfaeg-graphics
 				 SOURCES ${SRC_GRAPHICS} ${SRC_GRAPHICS_2D} ${SRC_GRAPHICS_3D} ${SRC_GUI} ${SRC_ECS} 
 				 )
 if (android_arm64)
-target_link_libraries (odfaeg-graphics odfaeg-window odfaeg-physics odfaeg-math odfaeg-core sfml-network sfml-audio sfml-graphics sfml-window sfml-system assimp freetype opengl32 shaderc_shared vulkan-1)
+target_link_libraries (odfaeg-graphics odfaeg-window odfaeg-physics odfaeg-math odfaeg-core assimp freetype opengl32 shaderc_shared vulkan-1)
 else()
-target_link_libraries (odfaeg-graphics odfaeg-window odfaeg-physics odfaeg-math odfaeg-core sfml-network sfml-audio sfml-graphics sfml-window sfml-system libassimp freetype glew32 opengl32 shaderc_shared vulkan-1)
+target_link_libraries (odfaeg-graphics odfaeg-window odfaeg-physics odfaeg-math odfaeg-core libassimp freetype glew32 opengl32 shaderc_shared vulkan-1)
 endif()
 
 	

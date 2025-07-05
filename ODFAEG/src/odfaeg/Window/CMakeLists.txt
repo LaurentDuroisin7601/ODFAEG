@@ -96,11 +96,11 @@ link_directories(${CMAKE_LIBRARY_PATH})
 sfgl_add_library(odfaeg-window
                  SOURCES ${SRC_WINDOW} ${PLATEFORM_SRC})
 if (android_arm64)
-	target_link_libraries (odfaeg-window PUBLIC odfaeg-core odfaeg-math sfml-network sfml-audio sfml-graphics sfml-window sfml-system SDL3 opengl32 vulkan-1)
+	target_link_libraries (odfaeg-window PUBLIC odfaeg-core odfaeg-math SDL3 opengl32 vulkan-1)
 elif (COMPILER_MSVC)
-	target_link_libraries (odfaeg-window PUBLIC odfaeg-core odfaeg-math sfml-network sfml-audio sfml-graphics sfml-window sfml-system glfw3dll opengl32 vulkan-1)
+	target_link_libraries (odfaeg-window PUBLIC odfaeg-core odfaeg-math glfw3dll opengl32 vulkan-1)
 else()
-	target_link_libraries (odfaeg-window PUBLIC odfaeg-core odfaeg-math sfml-network sfml-audio sfml-graphics sfml-window sfml-system glfw3.dll libSDL3.dll opengl32  vulkan-1)
+	target_link_libraries (odfaeg-window PUBLIC odfaeg-core odfaeg-math glfw3.dll libSDL3.dll opengl32  vulkan-1)
 endif()
 	
 	

@@ -32,10 +32,10 @@ set(SRC
 	${INCROOT}/bigInt.hpp
 	${SRCROOT}/bigInt.cpp)
 	
-include_directories(${CMAKE_INCLUDE_PATH} ${SFML_INCLUDE_DIR})
+include_directories(${CMAKE_INCLUDE_PATH})
 link_directories (${CMAKE_LIBRARY_PATH})
 #find_package (SFML 2.5 COMPONENTS window system graphics audio REQUIRED)
 sfgl_add_library(odfaeg-math
 				 SOURCES ${SRC})
-target_link_libraries (odfaeg-math odfaeg-core sfml-network sfml-audio sfml-graphics sfml-window sfml-system)
+target_link_libraries (odfaeg-math odfaeg-core)
 

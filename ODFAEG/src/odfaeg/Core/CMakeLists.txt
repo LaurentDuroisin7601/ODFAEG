@@ -57,12 +57,12 @@ link_directories(${CMAKE_LIBRARY_PATH})
 
 #find_package(SFML 2.5 COMPONENTS network audio graphics window system REQUIRED)
 
-include_directories(${CMAKE_INCLUDE_PATH} ${SFML_INCLUDE_DIR})
+include_directories(${CMAKE_INCLUDE_PATH})
 
 sfgl_add_library(odfaeg-core
                  SOURCES ${SRC})
 
-target_link_libraries (odfaeg-core sfml-network sfml-audio sfml-graphics sfml-window sfml-system)
+target_link_libraries (odfaeg-core)
 
 
 

@@ -38,6 +38,7 @@ namespace odfaeg {
             * \param std::vector<Entity*> visibleEntities : the entities to load.
             * \return if the loading was sucessfull.
             */
+            void loadTextureIndexes() {}
             std::vector<Entity*> getEntities();
             bool loadEntitiesOnComponent(std::vector<Entity*> visibleEntities);
             bool needToUpdate();
@@ -95,60 +96,6 @@ namespace odfaeg {
             RenderTexture* getFrameBuffer();
             ~RaytracingRenderComponent();
         private :
-            void compileShaders();
-            void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
-            void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
-            VkDeviceSize maxOffsetBufferSize, maxTriangleBufferSize, maxVertexBufferSize, maxIndexBufferSize, maxTransformBufferSize, maxInstanceBufferSize, maxIndexTriangleBufferSize,
-            maxMaterialBufferSize;
-            RayTracingScratchBuffer createScratchBuffer(VkDeviceSize size);
-            uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
-            void deleteScratchBuffer(RayTracingScratchBuffer& scratchBuffer);
-            void createAccelerationStructureBuffer(AccelerationStructure &accelerationStructure, VkAccelerationStructureBuildSizesInfoKHR buildSizeInfo);
-            uint64_t getBufferDeviceAddress(VkBuffer buffer);
-            void createStorageImage();
-            void createBottomLevelAccelerationStructure();
-            void createTopLevelAccelerationStructure();
-            void createShaderBindingTable();
-            void createDescriptorSets();
-            void createRayTracingPipeline();
-            void createUniformBuffer();
-            void updateUniformBuffers();
-            VkPhysicalDeviceRayTracingPipelinePropertiesKHR  rayTracingPipelineProperties{};
-            VkPhysicalDeviceAccelerationStructureFeaturesKHR accelerationStructureFeatures{};
-
-            VkPhysicalDeviceBufferDeviceAddressFeatures enabledBufferDeviceAddresFeatures{};
-            VkPhysicalDeviceRayTracingPipelineFeaturesKHR enabledRayTracingPipelineFeatures{};
-            VkPhysicalDeviceAccelerationStructureFeaturesKHR enabledAccelerationStructureFeatures{};
-            VkBuffer vertexBuffer, vertexStagingBuffer;
-            VkBuffer indexBuffer, indexStagingBuffer;
-            VkBuffer transformBuffer, transformStagingBuffer;
-            VkDeviceMemory vertexBufferMemory, vertexStagingBufferMemory;
-            VkDeviceMemory indexBufferMemory, indexBufferStaggingMemory;
-            VkDeviceMemory transformStagingBuffer, transformStagingBufferMemory;
-            Color backgroundColor; /**> The background color.*/
-            std::vector<VkRayTracingShaderGroupCreateInfoKHR> shaderGroups{};
-            VkBuffer raygenShaderBindingTable;
-            VkBuffer missShaderBindingTable;
-            VkBuffer hitShaderBindingTable;
-            VkDeviceMemory raygenShaderBindingTableMemory;
-            VkDeviceMemory missShaderBindingTableMemory;
-            VkDeviceMemory hitShaderBindingTableMemory;
-            VkBuffer triangleBuffer;
-            VkBuffer triangleOffsetBuffer;
-            VkBuffer indexTriangleBuffer;
-            VkBuffer materialBuffer;
-
-            VkDeviceMemory triangleBufferMemory;
-            VkDeviceMemory triangleOffsetBufferMemory;
-            VkDeviceMemory indexTriangleBufferMemory;
-            VkDeviceMemory materialBufferMemory;
-            VkBuffer triangleStagingBuffer, triangleOffsetStagingBuffer, indexTriangleStagingBuffer, materialStagingBuffer;
-            VkDeviceMemory triangleStagingBufferMemory, triangleOffsetStagingBufferMemory, indexTriangleStagingBufferMemory, materialStagingBufferMemory;
-            VkBuffer instanceBuffer, instanceStagingBuffer;
-            VkDeviceMemory instanceBufferMemory, instanceStagingBufferMemory;
-            std::vector<AccelerationStructure> bottomLevelASs;
-            AccelerationStructure topLevelAS{};
-
             struct RayTracingScratchBuffer
             {
                 uint64_t deviceAddress = 0;
@@ -175,30 +122,92 @@ namespace odfaeg {
                 math::Matrix4f viewInverse;
                 math::Matrix4f projInverse;
             } uniformData;
+            VkTransformMatrixKHR toVkTransformMatrixKHR (math::Matrix4f matrix);
+            void compileShaders();
+            void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+            void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+            void createUniformBuffers();
+            VkDeviceSize maxTriangleOffsetBufferSize, maxTriangleBufferSize, maxVertexBufferSize, maxIndexBufferSize, maxTransformBufferSize, maxInstanceBufferSize, maxIndexTriangleBufferSize,
+            maxMaterialBufferSize;
+            RayTracingScratchBuffer createScratchBuffer(VkDeviceSize size);
+            uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+            void deleteScratchBuffer(RayTracingScratchBuffer& scratchBuffer);
+            void createAccelerationStructureBuffer(AccelerationStructure &accelerationStructure, VkAccelerationStructureBuildSizesInfoKHR buildSizeInfo);
+            uint64_t getBufferDeviceAddress(VkBuffer buffer);
+            void createStorageImage();
+            void createTrianglesBuffers();
+            void createBottomLevelAccelerationStructure();
+            void createTopLevelAccelerationStructure();
+            void createShaderBindingTable();
+            void createDescriptorPool();
+            void createDescriptorSetLayout();
+            void allocateDescriptorSets();
+            void createDescriptorSets();
+            void createRayTracingPipeline();
+            void updateUniformBuffers();
+            VkPhysicalDeviceRayTracingPipelinePropertiesKHR  rayTracingPipelineProperties{};
+            VkPhysicalDeviceAccelerationStructureFeaturesKHR accelerationStructureFeatures{};
+
+
+            VkPhysicalDeviceBufferDeviceAddressFeatures enabledBufferDeviceAddresFeatures{};
+            VkPhysicalDeviceRayTracingPipelineFeaturesKHR enabledRayTracingPipelineFeatures{};
+            VkPhysicalDeviceAccelerationStructureFeaturesKHR enabledAccelerationStructureFeatures{};
+            VkBuffer vertexBuffer, vertexStagingBuffer;
+            VkBuffer indexBuffer, indexStagingBuffer;
+            VkBuffer transformBuffer, transformStagingBuffer;
+            VkDeviceMemory vertexBufferMemory, vertexStagingBufferMemory;
+            VkDeviceMemory indexBufferMemory, indexStagingBufferMemory;
+            VkDeviceMemory transformBufferMemory, transformStagingBufferMemory;
+            Color backgroundColor; /**> The background color.*/
+            std::vector<VkRayTracingShaderGroupCreateInfoKHR> shaderGroups{};
+            VkBuffer raygenShaderBindingTable;
+            VkBuffer missShaderBindingTable;
+            VkBuffer hitShaderBindingTable;
+            VkDeviceMemory raygenShaderBindingTableMemory;
+            VkDeviceMemory missShaderBindingTableMemory;
+            VkDeviceMemory hitShaderBindingTableMemory;
+            VkBuffer triangleBuffer;
+            VkBuffer triangleOffsetBuffer;
+            VkBuffer indexTriangleBuffer;
+            VkBuffer materialBuffer;
+
+            VkDeviceMemory triangleBufferMemory;
+            VkDeviceMemory triangleOffsetBufferMemory;
+            VkDeviceMemory indexTriangleBufferMemory;
+            VkDeviceMemory materialBufferMemory;
+            VkBuffer triangleStagingBuffer, triangleOffsetStagingBuffer, indexTriangleStagingBuffer, materialStagingBuffer;
+            VkDeviceMemory triangleStagingBufferMemory, triangleOffsetStagingBufferMemory, indexTriangleStagingBufferMemory, materialStagingBufferMemory;
+            VkBuffer instanceBuffer, instanceStagingBuffer;
+            VkDeviceMemory instanceBufferMemory, instanceStagingBufferMemory;
+            std::vector<AccelerationStructure> bottomLevelASs;
+            AccelerationStructure topLevelAS{};
+
+
             VkBuffer ubo;
             VkDeviceMemory uboMemory;
 
             VkPipeline pipeline;
             VkPipelineLayout pipelineLayout;
-            VkDescriptorPool desriptorPool;
+            VkDescriptorPool descriptorPool;
             VkDescriptorSet descriptorSet;
             VkDescriptorSetLayout descriptorSetLayout;
-            odfaeg::graphic::RenderTexture frameBuffer;
-            Sprite frameBufferSprite;
-            bool update;
+
+            bool update, needToUpdateDS, datasReady;
             std::string expression;
             int layer;
             std::vector<odfaeg::graphic::Entity*> visibleEntities;
             View view;
-            Texture external;
             window::Device& vkDevice;
             RenderWindow& window;
-            Batcher m_normals;
+            Batcher normalBatcher, instanceBatcher;
+            std::vector<Instance> m_normals, m_instances;
             std::vector<Vertex> vertices;
             std::vector<uint32_t> indexes;
             std::vector<GeometryOffset> geometryOffsets;
             Shader raytracingShader;
             std::vector<MaterialData> materialDatas;
+            VkCommandPool commandPool;
+
         };
         #else
         class ODFAEG_GRAPHICS_API RaytracingRenderComponent : public HeavyComponent {
