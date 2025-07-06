@@ -374,6 +374,7 @@ namespace odfaeg {
         {
             geometryOffsets.clear();
             bottomLevelASs.clear();
+            geometryOffsets.clear();
             uint32_t offset = 0;
             uint32_t nbVertices = 0;
             for (unsigned int i = 0; i < m_normals.size(); i++) {
@@ -678,10 +679,7 @@ namespace odfaeg {
                             }
                         }
                     }
-                    GeometryOffset geometryOffset;
-                    geometryOffset.vertexOffset = offset;
-                    geometryOffset.indexOffset = offset;
-                    geometryOffsets.push_back(geometryOffset);
+
                     std::vector<math::Vec3f> vertices;
                     std::vector<uint32_t> indexes;
                     unsigned int size = 0;
@@ -709,7 +707,6 @@ namespace odfaeg {
                                     vertices.push_back(v1);
                                     vertices.push_back(v2);
                                     vertices.push_back(v3);
-                                    offset+=3;
                                 } else {
                                     math::Vec3f v1, v2, v3;
                                     v1 = firstInstanceVertices[i*4].position;
@@ -724,7 +721,6 @@ namespace odfaeg {
                                     vertices.push_back(v1);
                                     vertices.push_back(v2);
                                     vertices.push_back(v3);
-                                    offset+=3;
                                 }
                             }
                         } else if (firstInstanceVertices.getPrimitiveType() == PrimitiveType::Triangles) {
@@ -741,8 +737,14 @@ namespace odfaeg {
                             vertices.push_back(v1);
                             vertices.push_back(v2);
                             vertices.push_back(v3);
-                            offset+=3;
                         }
+                    }
+                    for (unsigned int t = 0; t < m_instances[i].getTransforms().size(); t++) {
+                        GeometryOffset geometryOffset;
+                        geometryOffset.vertexOffset = offset;
+                        geometryOffset.indexOffset = offset;
+                        geometryOffsets.push_back(geometryOffset);
+                        offset += vertices.size();
                     }
                     VkTransformMatrixKHR transformMatrix = {
                     1.0f, 0.0f, 0.0f, 0.0f,
