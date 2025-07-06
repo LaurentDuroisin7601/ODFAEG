@@ -164,7 +164,7 @@ namespace odfaeg {
             }
 
             // Wait for the thread to terminate
-            //m_thread.join();
+            m_thread.join();
 
             // Move to the beginning
             onSeek(core::Time::zero);

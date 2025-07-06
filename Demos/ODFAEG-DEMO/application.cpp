@@ -99,6 +99,7 @@ namespace sorrok {
             caracter->setIsMovingFromKeyboard(false);
             caracter->setMoving(true);
         }
+        std::cout<<"path ok"<<std::endl;
     }
     bool MyAppli::mouseInside (math::Vec2f mousePos) {
         BoundingBox bx (0, 0, 0, 100, 100, 0);
@@ -543,6 +544,7 @@ namespace sorrok {
         if (caracter->isMoving()) {
             if (!player.isPlaying()) {
                 player.play(true);
+                std::cout<<"executed"<<std::endl;
             }
             if (caracter->isMovingFromKeyboard()) {
                 Vec3f actualPos = Vec3f(caracter->getCenter().x(), caracter->getCenter().y(), 0);
@@ -567,7 +569,6 @@ namespace sorrok {
                 audio::Listener::setPosition(newPos.x(), newPos.y(), 0);
                 //World::update("EntitiesUpdater");
             } else {
-
                 Vec3f actualPos = caracter->getCenter();
                 Vec2f pos = Computer::getPosOnPathFromTime(actualPos, caracter->getPath(),t,caracter->getSpeed());
                 //std::cout<<"actual pos : "<<actualPos<<std::endl<<"new pos  : "<<pos<<std::endl;
@@ -595,6 +596,7 @@ namespace sorrok {
                     if (player.isPlaying())
                         player.stop();
                 }
+
                 //World::update("EntitiesUpdater");
             }
         }

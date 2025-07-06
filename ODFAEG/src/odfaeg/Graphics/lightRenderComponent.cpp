@@ -204,6 +204,7 @@ namespace odfaeg {
                 layerPC.resolution = resolution;
                 needToUpdateDS = false;
                 isSomethingDrawn = false;
+                datasReady = false;
                 update = true;
             }
             void LightRenderComponent::compileShaders() {
