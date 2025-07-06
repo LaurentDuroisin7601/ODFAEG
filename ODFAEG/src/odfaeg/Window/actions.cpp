@@ -168,7 +168,7 @@ namespace odfaeg {
                 /*if (name == "SkillMouseMoved")
                                 ////std::cout<<"events ? "<<events.size()<<std::endl;*/
                 for (unsigned int i = 0; i < events.size(); i++) {
-                    std::cout<<"events "<<std::endl;
+                    //std::cout<<"events "<<std::endl;
 
                     /*if (type == KEY_HELD_DOWN || type == MOUSE_BUTTON_HELD_DOWN) {
                         if (!is_not)

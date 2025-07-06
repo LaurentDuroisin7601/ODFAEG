@@ -86,12 +86,12 @@ namespace sorrok {
     void MyAppli::leftMouseButtonPressed(math::Vec2f mousePos) {
         Vec2f mouse(mousePos.x(), mousePos.y());
         Vec3f finalPos = getRenderComponentManager().getComponent(0)->getFrameBuffer()->mapPixelToCoords(Vec3f(mouse.x(), getRenderWindow().getSize().y()-mouse.y(), 0));
-        std::cout<<mouse.x()<<" "<<mouse.y()<<std::endl;
-        system("PAUSE");
+
         point.clear();
         point.append(Vertex(math::Vec3f(finalPos.x(), finalPos.y(), finalPos.y()), Color(255, 0, 0)));
         std::vector<Vec2f> path = getWorld()->getPath(caracter, finalPos);
         if (path.size() > 0) {
+            //system("PAUSE");
             caracter->setPath(path);
             caracter->setIsMovingFromKeyboard(false);
             caracter->setMoving(true);
@@ -441,6 +441,7 @@ namespace sorrok {
 
     }
     void MyAppli::onDisplay(RenderWindow* window) {
+
         /*Entity* shadowMap = World::getShadowMap("E_WALL+E_DECOR+E_ANIMATION+E_CARACTER", 2, 1);
         window->draw(*shadowMap, sf::BlendMultiply);
         //getView().rotate(0, 0, 20);
@@ -535,6 +536,7 @@ namespace sorrok {
     }
     void MyAppli::onExec () {
         std::int64_t t = getClock("LoopTime").getElapsedTime().asMicroseconds();
+        //std::cout<<"time : "<<t<<std::endl;
         if (caracter->isMoving()) {
             if (!player.isPlaying()) {
                 player.play(true);
