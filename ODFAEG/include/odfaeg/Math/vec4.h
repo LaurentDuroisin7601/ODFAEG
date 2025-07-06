@@ -448,7 +448,7 @@ namespace odfaeg {
                     return 0;
                 if (cosinus == -1)
                     return PI;
-                ////std::cout<<"acos  : "<<Math::acosinus(cosinus)<<std::endl;
+                //////std::cout<<"acos  : "<<Math::acosinus(cosinus)<<std::endl;
                 return Math::acosinus(cosinus);
             }
             float getAngleBetween (const VecN<T, N> &other, const VecN<T, N> &n) {

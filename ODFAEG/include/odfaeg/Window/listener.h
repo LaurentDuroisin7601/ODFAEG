@@ -147,7 +147,7 @@ namespace odfaeg {
                      toAdd.clear();
                      for (it = commands.begin(); it != commands.end(); it++) {
                         /*if (it->second.getName() == "IconMoved")
-                            //std::cout<<"is icon moved triggered ? "<<std::endl;*/
+                            ////std::cout<<"is icon moved triggered ? "<<std::endl;*/
                         if (it->second.isTriggered()) {
                             (it->second)();
                             if (removeListener) {
@@ -185,7 +185,7 @@ namespace odfaeg {
                  toAdd.clear();
                  for (it = commands.begin(); it != commands.end(); it++) {
                     /*if (it->second.getName() == "IconMoved")
-                        //std::cout<<"is icon moved triggered ? "<<std::endl;*/
+                        ////std::cout<<"is icon moved triggered ? "<<std::endl;*/
                     if (it->second.isTriggered()) {
                         (it->second)();
                         if (removeListener) {

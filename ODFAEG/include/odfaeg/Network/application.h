@@ -44,7 +44,7 @@ namespace odfaeg {
                 graphic::RenderWindow* window = new graphic::RenderWindow (vm, title, vkDevice, style, settings);
                 windows.push_back(std::make_pair(window, true));
                 componentManager = std::make_unique<graphic::RenderComponentManager>(*window);
-                //std::cout<<"component manager : "<<componentManager.get()<<std::endl;
+                ////std::cout<<"component manager : "<<componentManager.get()<<std::endl;
                 app = this;
                 running = false;
                 core::Clock loopSpeed;
@@ -190,7 +190,7 @@ namespace odfaeg {
                     componentManager->drawRenderComponents();
                     static_cast<A*>(this)->onDisplay(windows[0].first);
                     componentManager->drawGuiComponents();
-                    ////std::cout<<"window size : "<<windows.size()<<std::endl;
+                    //////std::cout<<"window size : "<<windows.size()<<std::endl;
                     for (unsigned int i = 0; i < windows.size(); i++) {
 
                         windows[i].first->submit(true);
@@ -295,7 +295,7 @@ namespace odfaeg {
             *   \return the render window of the application.
             */
             graphic::RenderWindow& getRenderWindow(unsigned int i=0) {
-                ////std::cout<<windows[i].first<<std::endl;
+                //////std::cout<<windows[i].first<<std::endl;
                 return *windows[i].first;
             }
             unsigned int getNbWindows() {
@@ -350,7 +350,7 @@ namespace odfaeg {
                 return resourceCache;
             }
             ~Application() {
-                //std::cout<<"destroy appli : "<<componentManager.get()<<std::endl;
+                ////std::cout<<"destroy appli : "<<componentManager.get()<<std::endl;
 
                 stop();
                 for (unsigned int i = 0; i < windows.size(); i++) {
@@ -552,7 +552,7 @@ namespace odfaeg {
                     static_cast<A*>(this)->onDisplay(windows[0].first);
                     componentManager->drawGuiComponents();
                     for (unsigned int i = 0; i < windows.size(); i++) {
-                        //std::cout<<"display"<<std::endl;
+                        ////std::cout<<"display"<<std::endl;
                         windows[i].first->display();
                     }
                 }
@@ -653,7 +653,7 @@ namespace odfaeg {
             *   \return the render window of the application.
             */
             graphic::RenderWindow& getRenderWindow(unsigned int i = 0) {
-                ////std::cout<<windows[i].first<<std::endl;
+                //////std::cout<<windows[i].first<<std::endl;
                 return *windows[i].first;
             }
             unsigned int getNbWindows() {

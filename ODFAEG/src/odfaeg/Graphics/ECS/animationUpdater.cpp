@@ -63,7 +63,7 @@ namespace odfaeg {
                                 iva[j].position[2] = cva[j].position.z() + (nva[j].position.z() - cva[j].position.z()) * (interpPerc / interpLevels);
                                 iva[j].color = cva[j].color;
                                 iva[j].texCoords = cva[j].texCoords;
-                                ////std::cout<<"pos : "<<iva[j].position.x <<std::endl;
+                                //////std::cout<<"pos : "<<iva[j].position.x <<std::endl;
                             }
                         }
 

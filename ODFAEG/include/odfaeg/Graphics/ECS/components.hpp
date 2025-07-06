@@ -44,13 +44,13 @@ namespace odfaeg {
                 template <typename Archive>
                 void serialize(Archive& ar) {
                     ar(groupName);
-                    //std::cout<<"groupName : "<<groupName<<std::endl;
+                    ////std::cout<<"groupName : "<<groupName<<std::endl;
                     ar(animIndex);
-                    //std::cout<<"animIndex : "<<animIndex<<std::endl;
+                    ////std::cout<<"animIndex : "<<animIndex<<std::endl;
                     ar(drawMode);
-                    //std::cout<<"drawMode : "<<animIndex<<std::endl;
+                    ////std::cout<<"drawMode : "<<animIndex<<std::endl;
                     ar(isSelected);
-                    //std::cout<<"isSelected : "<<isSelected<<std::endl;
+                    ////std::cout<<"isSelected : "<<isSelected<<std::endl;
                     ar(isLight);
 
                 }
@@ -64,7 +64,7 @@ namespace odfaeg {
                 template <typename Archive>
                 void serialize(Archive& ar) {
                     ar(wallType);
-                    //std::cout<<"wallType : "<<wallType<<std::endl;
+                    ////std::cout<<"wallType : "<<wallType<<std::endl;
 
                 }
             };
@@ -75,36 +75,36 @@ namespace odfaeg {
                 physic::BoundingBox globalBounds, localBounds;
                 template <typename Archive>
                 void serialize(Archive& ar) {
-                    //std::cout<<"read position"<<std::endl;
+                    ////std::cout<<"read position"<<std::endl;
                     ar(position);
-                    //std::cout<<"position : "<<position<<std::endl;
-                    //std::cout<<"read size"<<std::endl;
+                    ////std::cout<<"position : "<<position<<std::endl;
+                    ////std::cout<<"read size"<<std::endl;
                     ar(size);
-                    //std::cout<<"size : "<<size<<std::endl;
-                    //std::cout<<"read center"<<std::endl;
+                    ////std::cout<<"size : "<<size<<std::endl;
+                    ////std::cout<<"read center"<<std::endl;
                     ar(center);
-                    //std::cout<<"center : "<<center<<std::endl;
-                    //std::cout<<"read scale"<<std::endl;
+                    ////std::cout<<"center : "<<center<<std::endl;
+                    ////std::cout<<"read scale"<<std::endl;
                     ar(scale);
-                    //std::cout<<"scale : "<<scale<<std::endl;
-                    //std::cout<<"read rotation axis"<<std::endl;
+                    ////std::cout<<"scale : "<<scale<<std::endl;
+                    ////std::cout<<"read rotation axis"<<std::endl;
                     ar(rotationAxis);
-                    //std::cout<<"rotation axis  : "<<rotationAxis<<std::endl;
-                    //std::cout<<"read origin"<<std::endl;
+                    ////std::cout<<"rotation axis  : "<<rotationAxis<<std::endl;
+                    ////std::cout<<"read origin"<<std::endl;
                     ar(origin);
-                    //std::cout<<"origin : "<<origin<<std::endl;
-                    //std::cout<<"read rotation"<<std::endl;
+                    ////std::cout<<"origin : "<<origin<<std::endl;
+                    ////std::cout<<"read rotation"<<std::endl;
                     ar(rotation);
-                    //std::cout<<"rotation : "<<rotation<<std::endl;
-                    //std::cout<<"read transform matrix"<<std::endl;
+                    ////std::cout<<"rotation : "<<rotation<<std::endl;
+                    ////std::cout<<"read transform matrix"<<std::endl;
                     ar(transformMatrix);
-                    //std::cout<<"transformMatrix : "<<transformMatrix.getMatrix()<<std::endl;
-                    //std::cout<<"read global bounds"<<std::endl;
+                    ////std::cout<<"transformMatrix : "<<transformMatrix.getMatrix()<<std::endl;
+                    ////std::cout<<"read global bounds"<<std::endl;
                     ar(globalBounds);
-                    //std::cout<<"globalBounds : "<<globalBounds.getPosition()<<globalBounds.getSize()<<std::endl;
-                    //std::cout<<"read local bounds"<<std::endl;
+                    ////std::cout<<"globalBounds : "<<globalBounds.getPosition()<<globalBounds.getSize()<<std::endl;
+                    ////std::cout<<"read local bounds"<<std::endl;
                     ar(localBounds);
-                    //std::cout<<"localBounds : "<<localBounds.getPosition()<<localBounds.getSize()<<std::endl;
+                    ////std::cout<<"localBounds : "<<localBounds.getPosition()<<localBounds.getSize()<<std::endl;
 
                 }
             };
@@ -119,15 +119,15 @@ namespace odfaeg {
                 template <typename Archive>
                 void serialize(Archive& ar) {
                     ar(playing);
-                    //std::cout<<"playing : "<<playing<<std::endl;
+                    ////std::cout<<"playing : "<<playing<<std::endl;
                     ar(loop);
-                    //std::cout<<"loop : "<<loop<<std::endl;
+                    ////std::cout<<"loop : "<<loop<<std::endl;
                     ar(interpLevels);
-                    //std::cout<<"interp level : "<<interpLevels<<std::endl;
+                    ////std::cout<<"interp level : "<<interpLevels<<std::endl;
                     ar(interpPerc);
-                    //std::cout<<"interpPerc : "<<interpPerc<<std::endl;
+                    ////std::cout<<"interpPerc : "<<interpPerc<<std::endl;
                     ar(fr);
-                    //std::cout<<"frame rate : "<<fr<<std::endl;
+                    ////std::cout<<"frame rate : "<<fr<<std::endl;
 
                 }
             };
@@ -142,9 +142,9 @@ namespace odfaeg {
                 std::vector<Face> faces;
                 template <typename Archive>
                 void serialize(Archive& ar) {
-                    //std::cout<<"read faces"<<std::endl;
+                    ////std::cout<<"read faces"<<std::endl;
                     ar(faces);
-                    //std::cout<<"faces : "<<faces.size()<<std::endl;
+                    ////std::cout<<"faces : "<<faces.size()<<std::endl;
 
                 }
             };
@@ -154,15 +154,15 @@ namespace odfaeg {
                 template <typename Archive>
                 void serialize(Archive& ar) {
                     ar(shadowCenter);
-                    //std::cout<<"shadow center : "<<shadowCenter<<std::endl;
+                    ////std::cout<<"shadow center : "<<shadowCenter<<std::endl;
                     ar(shadowScale);
-                    //std::cout<<"shadow scale : "<<shadowScale<<std::endl;
+                    ////std::cout<<"shadow scale : "<<shadowScale<<std::endl;
                     ar(shadowRotationAxis);
-                    //std::cout<<"shadow rotation axis : "<<shadowRotationAxis<<std::endl;
+                    ////std::cout<<"shadow rotation axis : "<<shadowRotationAxis<<std::endl;
                     ar(shadowOrigin);
-                    //std::cout<<"shadow origin : "<<shadowOrigin<<std::endl;
+                    ////std::cout<<"shadow origin : "<<shadowOrigin<<std::endl;
                     ar(shadowRotationAngle);
-                    //std::cout<<"shadow Rotation Angle : "<<shadowRotationAngle<<std::endl;
+                    ////std::cout<<"shadow Rotation Angle : "<<shadowRotationAngle<<std::endl;
                 }
             };
         }

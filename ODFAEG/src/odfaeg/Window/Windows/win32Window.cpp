@@ -120,7 +120,7 @@ namespace odfaeg {
         m_cursorGrabbed   (false),
         m_opened(false),
         m_destroyed(true) {
-            std::cout<<"create win32 window"<<std::endl;
+            //std::cout<<"create win32 window"<<std::endl;
 
         }
         ////////////////////////////////////////////////////////////
@@ -184,7 +184,7 @@ namespace odfaeg {
             m_destroyed = false;
         }
         void Win32Window::create (VideoMode mode, const core::String& title, std::uint32_t style, const ContextSettings& settings) {
-            std::cout<<"create win32 window"<<std::endl;
+            //std::cout<<"create win32 window"<<std::endl;
             m_fullscreen = (style & Style::Fullscreen) != 0;
             m_cursorGrabbed = m_fullscreen;
             m_lastSize = math::Vector2u(mode.width, mode.height);

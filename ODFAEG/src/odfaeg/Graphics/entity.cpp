@@ -310,7 +310,7 @@ namespace odfaeg {
         }
         bool Entity::getHeight(math::Vec2f point, float& height) {
             height = 0;
-            //std::cout<<"height entity"<<std::endl;
+            ////std::cout<<"height entity"<<std::endl;
             return false;
         }
         void Entity::reset() {

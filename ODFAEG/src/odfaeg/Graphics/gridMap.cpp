@@ -48,7 +48,7 @@ namespace odfaeg {
         bool GridMap::addEntity (Entity *entity) {
 
             /*if (entity->getType() == "E_ANIMATION_FRAME")
-                //std::cout<<"add global bounds : "<<entity->getGlobalBounds().getPosition()<<entity->getGlobalBounds().getWidth()<<","<<entity->getGlobalBounds().getHeight()<<","<<entity->getGlobalBounds().getDepth()<<std::endl;*/
+                ////std::cout<<"add global bounds : "<<entity->getGlobalBounds().getPosition()<<entity->getGlobalBounds().getWidth()<<","<<entity->getGlobalBounds().getHeight()<<","<<entity->getGlobalBounds().getDepth()<<std::endl;*/
             int x = entity->getGlobalBounds().getPosition().x();
             int y = entity->getGlobalBounds().getPosition().y();
             int z = entity->getGlobalBounds().getPosition().z();
@@ -73,46 +73,46 @@ namespace odfaeg {
                     cm->addEntity(entity);
                 }
             }*/
-            //////std::cout<<"offsets : "<<offsetX<<","<<offsetY<<","<<offsetZ<<std::endl<<"start : "<<x<<","<<y<<","<<z<<std::endl<<"ends : "<<endX<<","<<endY<<","<<endZ<<std::endl;
-            //////std::cout<<"add entity : "<<entity->getType()<<std::endl<<x<<","<<y<<","<<z<<","<<endX<<","<<endY<<","<<endZ<<std::endl;
+            ////////std::cout<<"offsets : "<<offsetX<<","<<offsetY<<","<<offsetZ<<std::endl<<"start : "<<x<<","<<y<<","<<z<<std::endl<<"ends : "<<endX<<","<<endY<<","<<endZ<<std::endl;
+            ////////std::cout<<"add entity : "<<entity->getType()<<std::endl<<x<<","<<y<<","<<z<<","<<endX<<","<<endY<<","<<endZ<<std::endl;
             for (int i = x; i <= endX; i+= offsetX) {
                 for (int j = y; j <= endY; j+= offsetY)  {
                     for (int k = z; k <= endZ; k+= offsetZ) {
 
                         math::Vec3f pos (i, j, k);
-                        //////std::cout<<"pos : "<<pos<<std::endl;
+                        ////////std::cout<<"pos : "<<pos<<std::endl;
 
-                        ////std::cout<<"contains entity"<<std::endl;
+                        //////std::cout<<"contains entity"<<std::endl;
                         if (!(containsEntity(entity, pos))) {
 
                             CellMap *cm = getGridCellAt(pos);
 
                             if (cm == nullptr) {
-                                ////std::cout<<"create cell map"<<std::endl;
+                                //////std::cout<<"create cell map"<<std::endl;
                                 createCellMap(pos);
-                                ////std::cout<<"cell map created"<<std::endl;
-                                ////std::cout<<"get cell map"<<std::endl;
+                                //////std::cout<<"cell map created"<<std::endl;
+                                //////std::cout<<"get cell map"<<std::endl;
                                 cm = getGridCellAt(pos);
-                                ////std::cout<<"cell map get"<<std::endl;
+                                //////std::cout<<"cell map get"<<std::endl;
                             }
                             added = true;
-                            ////std::cout<<"add entity to cell"<<std::endl;
+                            //////std::cout<<"add entity to cell"<<std::endl;
                             cm->addEntity(entity);
-                            ////std::cout<<"entity added to cell"<<std::endl;
+                            //////std::cout<<"entity added to cell"<<std::endl;
 
                             /*if (entity->getType() == "E_BIGTILE")
-                              ////std::cout<<cm->getCoords()<<std::endl;*/
-                            //////std::cout<<"entity added"<<std::endl;
+                              //////std::cout<<cm->getCoords()<<std::endl;*/
+                            ////////std::cout<<"entity added"<<std::endl;
                             /*if (entity->getRootType() == "E_WALL") {
                                 int indice = (math::Math::abs(minX) + cm->getCoords().x)
                                 + (math::Math::abs(minY) + cm->getCoords().y) * nbCasesPerRow + (math::Math::abs(minZ) + cm->getCoords().z) * nbCasesPerCol;
-                                ////std::cout<<"add wall at : "<<pos<<cm->getCoords()<<minX<<std::endl<<"miny : "<<minY<<std::endl<<"minz : "<<minZ<<std::endl<<"nb cases per row : "<<nbCasesPerRow<<std::endl<<"nb cases per col : "<<nbCasesPerCol<<std::endl<<"index : "<<indice<<std::endl;
+                                //////std::cout<<"add wall at : "<<pos<<cm->getCoords()<<minX<<std::endl<<"miny : "<<minY<<std::endl<<"minz : "<<minZ<<std::endl<<"nb cases per row : "<<nbCasesPerRow<<std::endl<<"nb cases per col : "<<nbCasesPerCol<<std::endl<<"index : "<<indice<<std::endl;
                             }*/
                             /*if (i == x && j == y && k == z && entity->getType() == "E_TILE") {*/
 
                                 /*int indice = (math::Math::abs(minX) + cm->getCoords().x)
                                                     + (math::Math::abs(minY) + cm->getCoords().y) * nbCasesPerRow + (math::Math::abs(minZ) + cm->getCoords().z) * nbCasesPerCol;
-                                ////std::cout<<"add entity mins : "<<pos<<std::endl<<minX<<","<<minY<<","<<minZ<<std::endl<<"maxs : "<<maxX<<","<<maxY<<","<<maxZ<<std::endl<<"nb cases : "<<nbCasesPerRow<<","<<nbCasesPerCol<<std::endl<<"coords : "<<cm->getCoords()<<std::endl;*/
+                                //////std::cout<<"add entity mins : "<<pos<<std::endl<<minX<<","<<minY<<","<<minZ<<std::endl<<"maxs : "<<maxX<<","<<maxY<<","<<maxZ<<std::endl<<"nb cases : "<<nbCasesPerRow<<","<<nbCasesPerCol<<std::endl<<"coords : "<<cm->getCoords()<<std::endl;*/
 
 
 
@@ -120,13 +120,13 @@ namespace odfaeg {
                             //}
 
                         }
-                        ////std::cout<<"contains entity ended"<<std::endl;
+                        //////std::cout<<"contains entity ended"<<std::endl;
                     }
-                    //////std::cout<<"leave k"<<std::endl;
+                    ////////std::cout<<"leave k"<<std::endl;
                 }
-                //////std::cout<<"leave j"<<std::endl;
+                ////////std::cout<<"leave j"<<std::endl;
             }
-            ////std::cout<<"entity added"<<std::endl;
+            //////std::cout<<"entity added"<<std::endl;
             return added;
         }
 
@@ -184,9 +184,9 @@ namespace odfaeg {
         }
 
         void GridMap::createCellMap (math::Vec3f &point) {
-            ////std::cout<<"point : "<<point<<std::endl;
+            //////std::cout<<"point : "<<point<<std::endl;
             math::Vec3f coordsCaseP = getCoordinatesAt(point);
-            ////std::cout<<"coords caseP : "<<coordsCaseP<<std::endl;
+            //////std::cout<<"coords caseP : "<<coordsCaseP<<std::endl;
 
             /*minX = (coordsCaseP.x < minX) ? coordsCaseP.x : minX;
             minY = (coordsCaseP.y < minY) ? coordsCaseP.y : minY;
@@ -223,7 +223,7 @@ namespace odfaeg {
             for (unsigned int i = 0; i < 8; i++) {
                 v[i] = bm.changeOfBase(v[i]);
                 /*if (i < 4)
-                    ////std::cout<<"point "<<i<<" : "<<v[i]<<std::endl;*/
+                    //////std::cout<<"point "<<i<<" : "<<v[i]<<std::endl;*/
             }
 
             //Face de devant.
@@ -244,7 +244,7 @@ namespace odfaeg {
             //Face du dessous.
             bp->addTriangle(v[3], v[7], v[6]);
             bp->addTriangle(v[3], v[2], v[6]);
-            //////std::cout<<"center : "<<bp->getCenter()<<std::endl;
+            ////////std::cout<<"center : "<<bp->getCenter()<<std::endl;
             CellMap *cell = new CellMap(bp, coordsCaseP);
             casesMap.push_back(cell);
             checkExts();
@@ -253,14 +253,14 @@ namespace odfaeg {
             nbCasesPerRow = (cellWidth > 0) ? math::Math::abs(minX) + maxX + 1 : 1;
             nbCasesPerCol = (cellHeight > 0) ? math::Math::abs(minY) + maxY + 1 : 1;
             int nbCasesPerDepth = (cellDepth > 0) ? math::Math::abs(minZ) + maxZ + 1 : 1;
-            //////std::cout<<"nbCasesPerRow : "<<nbCasesPerRow<<std::endl<<"nbCasesPerCol : "<<nbCasesPerCol<<"nb cases per depth"<<nbCasesPerDepth<<std::endl;
+            ////////std::cout<<"nbCasesPerRow : "<<nbCasesPerRow<<std::endl<<"nbCasesPerCol : "<<nbCasesPerCol<<"nb cases per depth"<<nbCasesPerDepth<<std::endl;
             unsigned int newSize = nbCasesPerCol * nbCasesPerRow * nbCasesPerDepth;
-            //////std::cout<<"min z : "<<minZ<<std::endl;
+            ////////std::cout<<"min z : "<<minZ<<std::endl;
             int indice = (math::Math::abs(minX) + coordsCaseP.x())
                          + (math::Math::abs(minY) + coordsCaseP.y()) * nbCasesPerRow + (math::Math::abs(minZ) + coordsCaseP.z()) * nbCasesPerCol * nbCasesPerRow;
-            ////std::cout<<"create cell map at indice : "<<indice<<std::endl;
+            //////std::cout<<"create cell map at indice : "<<indice<<std::endl;
             if (newSize > casesMap.size()) {
-                ////std::cout<<"resize vector! > : "<<newSize<<std::endl;
+                //////std::cout<<"resize vector! > : "<<newSize<<std::endl;
                 vector<CellMap*> tmpCasesMap = casesMap;
                 casesMap.clear();
                 casesMap.resize(newSize);
@@ -270,13 +270,13 @@ namespace odfaeg {
                         math::Vec3f coords = tmpCasesMap[i]->getCoords();
                         int newInd = (math::Math::abs(minX) + coords.x())
                                      + (math::Math::abs(minY) + coords.y()) * nbCasesPerRow + (math::Math::abs(minZ) + coords.z()) * nbCasesPerCol * nbCasesPerRow;
-                        //////std::cout<<"new ind  : "<<newInd<<std::endl;
+                        ////////std::cout<<"new ind  : "<<newInd<<std::endl;
                         casesMap[newInd] = tmpCasesMap[i];
                     }
                 }
-                ////std::cout<<"vector resized > "<<std::endl;
+                //////std::cout<<"vector resized > "<<std::endl;
             } else if (newSize < casesMap.size()) {
-                ////std::cout<<"resize vector < ! : "<<newSize<<std::endl;
+                //////std::cout<<"resize vector < ! : "<<newSize<<std::endl;
                 vector<CellMap*> tmpCasesMap = casesMap;
                 casesMap.clear();
                 casesMap.resize(newSize);
@@ -286,13 +286,13 @@ namespace odfaeg {
                         math::Vec3f coords = tmpCasesMap[i]->getCoords();
                         int newInd = (math::Math::abs(minX) + coords.x())
                                      + (math::Math::abs(minY) + coords.y()) * nbCasesPerRow + (math::Math::abs(minZ) + coords.z()) * nbCasesPerCol * nbCasesPerRow;
-                        //////std::cout<<"new ind  : "<<newInd<<std::endl;
+                        ////////std::cout<<"new ind  : "<<newInd<<std::endl;
                         casesMap[newInd] = tmpCasesMap[i];
                     }
                 }
-                ////std::cout<<"vector resized <"<<std::endl;
+                //////std::cout<<"vector resized <"<<std::endl;
             }
-            //////std::cout<<"ind : "<<indice<<std::endl;
+            ////////std::cout<<"ind : "<<indice<<std::endl;
             casesMap[indice] = cell;
             //system("PAUSE");
         }
@@ -305,7 +305,7 @@ namespace odfaeg {
         //Supprime une tile dans la cellule. (Sans la supprimer de la mémoire.)
         bool GridMap::removeEntity (Entity *entity) {
             /*if (entity->getType() == "E_ANIMATION_FRAME")
-                //std::cout<<"remove global bounds : "<<entity->getGlobalBounds().getPosition()<<entity->getGlobalBounds().getWidth()<<","<<entity->getGlobalBounds().getHeight()<<","<<entity->getGlobalBounds().getDepth()<<std::endl;*/
+                ////std::cout<<"remove global bounds : "<<entity->getGlobalBounds().getPosition()<<entity->getGlobalBounds().getWidth()<<","<<entity->getGlobalBounds().getHeight()<<","<<entity->getGlobalBounds().getDepth()<<std::endl;*/
             int x = entity->getGlobalBounds().getPosition().x();
             int y = entity->getGlobalBounds().getPosition().y();
             int z = entity->getGlobalBounds().getPosition().z();
@@ -321,7 +321,7 @@ namespace odfaeg {
                         /*math::Vec3f coords = getCoordinatesAt(pos);
                         int indice = (math::Math::abs(minX) + coords.x)
                                     + (math::Math::abs(minY) + coords.y) * nbCasesPerRow + (math::Math::abs(minZ) + coords.z) * nbCasesPerCol;
-                        ////std::cout<<"remove entity indice : "<<indice<<std::endl<<"mins : "<<std::endl<<minX<<","<<minY<<","<<minZ<<std::endl<<"maxs : "<<maxX<<","<<maxY<<","<<maxZ<<std::endl<<"nb cases : "<<nbCasesPerRow<<","<<nbCasesPerCol<<std::endl<<"coords : "<<coords<<"size : "<<casesMap.size()<<std::endl;*/
+                        //////std::cout<<"remove entity indice : "<<indice<<std::endl<<"mins : "<<std::endl<<minX<<","<<minY<<","<<minZ<<std::endl<<"maxs : "<<maxX<<","<<maxY<<","<<maxZ<<std::endl<<"nb cases : "<<nbCasesPerRow<<","<<nbCasesPerCol<<std::endl<<"coords : "<<coords<<"size : "<<casesMap.size()<<std::endl;*/
                         if (cm != nullptr) {
                           /*if (i == x && j == y && k == z && entity->getType() == "E_TILE") {
                               int indice = (math::Math::abs(minX) + cm->getCoords().x)
@@ -353,7 +353,7 @@ namespace odfaeg {
                     for (int k = z; k <= endZ; k+= offsetZ) {
                         math::Vec3f pos (i, j, k);
                         /*if (entity->getType() == "E_BIGTILE")
-                              ////std::cout<<"remove entity at : "<<pos<<std::endl;*/
+                              //////std::cout<<"remove entity at : "<<pos<<std::endl;*/
                         CellMap *cm = getGridCellAt(pos);
                         if (cm != nullptr) {
 
@@ -392,7 +392,7 @@ namespace odfaeg {
 
             for (unsigned int i = 0; i < casesMap.size(); i++) {
                 if (casesMap[i] != nullptr && casesMap[i]==cell) {
-                    //////std::cout<<"delete cell : "<<casesMap[i]->getCoords()<<std::endl;
+                    ////////std::cout<<"delete cell : "<<casesMap[i]->getCoords()<<std::endl;
                     delete casesMap[i];
                     casesMap[i] = nullptr;
                 }
@@ -407,7 +407,7 @@ namespace odfaeg {
             unsigned int newSize = nbCasesPerCol * nbCasesPerRow * nbCasesPerDepth;
 
             if (newSize < casesMap.size()) {
-                //////std::cout<<"new size : "<<newSize<<std::endl;
+                ////////std::cout<<"new size : "<<newSize<<std::endl;
                 vector<CellMap*> tmpCasesMap = casesMap;
                 casesMap.clear();
                 casesMap.resize(newSize);
@@ -420,7 +420,7 @@ namespace odfaeg {
                     }
                 }
             } else if (newSize > casesMap.size()) {
-                //////std::cout<<"new size : "<<newSize<<std::endl;
+                ////////std::cout<<"new size : "<<newSize<<std::endl;
                 vector<CellMap*> tmpCasesMap = casesMap;
                 casesMap.clear();
                 casesMap.resize(newSize);
@@ -525,9 +525,9 @@ namespace odfaeg {
 
         CellMap* GridMap::getGridCellAt (math::Vec3f point) {
             math::Vec3f coordsCaseP = getCoordinatesAt(point);
-            ////std::cout<<"indice : "<<coordsCaseP<<std::endl;
+            //////std::cout<<"indice : "<<coordsCaseP<<std::endl;
             unsigned int indice = (math::Math::abs(minX) + coordsCaseP.x()) + (math::Math::abs(minY) + coordsCaseP.y()) * nbCasesPerRow + (math::Math::abs(minZ) + coordsCaseP.z()) * nbCasesPerCol * nbCasesPerRow;
-            ////std::cout<<"indice : "<<indice<<std::endl;
+            //////std::cout<<"indice : "<<indice<<std::endl;
             //system("PAUSE");
             if (indice >= 0 && indice < casesMap.size()) {
                 return casesMap[indice];
@@ -536,9 +536,9 @@ namespace odfaeg {
         }
 
         math::Vec3f GridMap::getCoordinatesAt(math::Vec3f &point) {
-            //////std::cout<<"get coordinates at, point : "<<point<<std::endl;
+            ////////std::cout<<"get coordinates at, point : "<<point<<std::endl;
             math::Vec3f p = bm.unchangeOfBase(point);
-            ////std::cout<<"point : "<<point<<std::endl;
+            //////std::cout<<"point : "<<point<<std::endl;
             math::Vec3f f;
             if (cellWidth > 0)
                 f[0] = (int) p.x() / cellWidth;
@@ -558,7 +558,7 @@ namespace odfaeg {
                 f[1]--;
             if (p.z() <= 0 && cellDepth > 0)
                 f[2]--;
-            ////std::cout<<"coordinates at : "<<f<<std::endl;
+            //////std::cout<<"coordinates at : "<<f<<std::endl;
             return f;
         }
 
@@ -625,7 +625,7 @@ namespace odfaeg {
         }
 
         void GridMap::checkExts () {
-            //////std::cout<<"mins : "<<minX<<","<<minY<<","<<minZ<<std::endl<<"maxs : "<<maxX<<","<<maxY<<","<<maxZ<<std::endl;
+            ////////std::cout<<"mins : "<<minX<<","<<minY<<","<<minZ<<std::endl<<"maxs : "<<maxX<<","<<maxY<<","<<maxZ<<std::endl;
             minX = minY = minZ = std::numeric_limits<int>::max();
             maxX = maxY = maxZ = std::numeric_limits<int>::min();
             unsigned int nbCases=0;
@@ -646,7 +646,7 @@ namespace odfaeg {
             if (nbCases == 0) {
                 minX = minY = minZ = maxX = maxY = maxZ = 0;
             }
-            //////std::cout<<"mins : "<<minX<<","<<minY<<","<<minZ<<std::endl<<"maxs : "<<maxX<<","<<maxY<<","<<maxZ<<std::endl;
+            ////////std::cout<<"mins : "<<minX<<","<<minY<<","<<minZ<<std::endl<<"maxs : "<<maxX<<","<<maxY<<","<<maxZ<<std::endl;
             //system("PAUSE");
         }
 
@@ -717,7 +717,7 @@ namespace odfaeg {
                     int distMin = children[0]->getCenter().computeDist(getGridCellAt(startPos)->getCenter());
                     int indMin = 0;
                     for (unsigned int i = 1; i < children.size(); i++) {
-                        ////std::cout<<children[i]->getCenter()<<std::endl;
+                        //////std::cout<<children[i]->getCenter()<<std::endl;
                         int dist = children[i]->getCenter().computeDist(getGridCellAt(startPos)->getCenter());
                         if (dist < distMin) {
                             distMin = dist;
@@ -734,7 +734,7 @@ namespace odfaeg {
                     CellMap *parent = getGridCellAt(currentPos);
                     parent->setTraveled(true);
                     vector<CellMap*> children = getNeightbours(entity, parent, false);
-                    //////std::cout<<"size : "<<children.size()<<std::endl;
+                    ////////std::cout<<"size : "<<children.size()<<std::endl;
                     unsigned int j = 0;
                     while (j < children.size() && children[j]->isTraveled())
                         j++;

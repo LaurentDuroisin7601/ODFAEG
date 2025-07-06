@@ -9,7 +9,7 @@ namespace odfaeg {
             listener(),
             priority(priority),
             window(window) {
-                ////std::cout<<"create component"<<std::endl;
+                //////std::cout<<"create component"<<std::endl;
                 activateEventContext = true;
                 visible = true;
                 id = -1;
@@ -24,7 +24,7 @@ namespace odfaeg {
                 this->activateEventContext = activateEventContext;
                 if (!activateEventContext) {
                     /*if (name == "TEXCOORDY")
-                        //std::cout<<"clear tex coord y event stack"<<std::endl;*/
+                        ////std::cout<<"clear tex coord y event stack"<<std::endl;*/
                     getListener().clearEventsStack();
                 }
                 onEventContextActivated(activateEventContext);

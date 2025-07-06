@@ -67,7 +67,7 @@ namespace odfaeg {
                 if (it->second->getComponentType() == 0 && it->second->isVisible()) {
                     for (unsigned int i = 0; i < windows.size(); i++) {
                         if (windows[i] == &it->second->getWindow()) {
-                            std::cout<<"draw on window"<<std::endl;
+                            //std::cout<<"draw on window"<<std::endl;
                             it->second->getWindow().draw(*it->second.get());
                             #ifdef VULKAN
                             it->second->getWindow().submit();
@@ -211,7 +211,7 @@ namespace odfaeg {
            for (it = eventComponents.begin(); it != eventComponents.end(); it++) {
                if (it->second->isEventContextActivated() && it->second->isVisible()) {
                    if (!it->second->getListener().isUsingThread()) {
-                        std::cout<<"update"<<std::endl;
+                        //std::cout<<"update"<<std::endl;
                        it->second->processEvents();
                    }
                    //it->second->recomputeSize();
@@ -230,7 +230,7 @@ namespace odfaeg {
            //core::Command::clearEventsStack();
         }
         RenderComponentManager::~RenderComponentManager() {
-            //std::cout<<"rcm desrtructor"<<std::endl;
+            ////std::cout<<"rcm desrtructor"<<std::endl;
 
         }
     }

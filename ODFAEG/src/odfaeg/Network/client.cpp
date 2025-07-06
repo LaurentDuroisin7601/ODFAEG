@@ -21,7 +21,7 @@ namespace odfaeg {
             bool certifiateMessageSend, pbKeyReceived, pbIvReceived, pbKeyRsaReceived, certifiate;
             certifiateMessageSend = pbKeyReceived = pbIvReceived = pbKeyRsaReceived = certifiate = false;
             EncryptedPacket enc_packet;
-            //std::cout<<"set cli pb key"<<std::endl;
+            ////std::cout<<"set cli pb key"<<std::endl;
             while (!certifiate || !certifiateMessageSend || !pbKeyReceived || !pbIvReceived || !pbKeyRsaReceived) {
                 if (!certifiate && !certifiateMessageSend && !pbKeyRsaReceived && !pbKeyReceived && !pbIvReceived) {
                     CliEncryptedPacket cliEncryptedPacket;
@@ -34,7 +34,7 @@ namespace odfaeg {
                             cliEncryptedPacket<<message;
                             clientTCP.send(cliEncryptedPacket);
                             certifiateMessageSend = true;
-                            //std::cout<<"certifiate message send"<<std::endl;
+                            ////std::cout<<"certifiate message send"<<std::endl;
                         }
                     }
                 }
@@ -49,7 +49,7 @@ namespace odfaeg {
                             cliEncryptedPacket<<message;
                             clientTCP.send(cliEncryptedPacket);
                             certifiate = true;
-                            //std::cout<<"get pb key rsa send"<<std::endl;
+                            ////std::cout<<"get pb key rsa send"<<std::endl;
                         }
                     }
                 }
@@ -104,29 +104,29 @@ namespace odfaeg {
                 remotePortUDP = portUDP;
                 this->srvAddress = address;
                 this->useSecuredConnexion = useSecuredConnexion;
-                //std::cout<<"connect to client"<<std::endl;
+                ////std::cout<<"connect to client"<<std::endl;
                 if(clientTCP.connect(address, portTCP) != Socket::Done) {
                     cout<<"Erreur : impossible de se connecter au serveur!"<<endl;
                     return false;
                 }
-                //std::cout<<"bind udp port"<<std::endl;
+                ////std::cout<<"bind udp port"<<std::endl;
                 if (clientUDP.bind(Socket::AnyPort) != Socket::Done) {
                     cout<<"Erreur : impossible d'écouter sur le port : "<<portUDP<<endl;
                     return false;
                 }
-                //std::cout<<"send upd port message"<<std::endl;
+                ////std::cout<<"send upd port message"<<std::endl;
                 Packet packet;
                 std::string message = "updateUdpPort*" + core::conversionIntString(clientUDP.getLocalPort());
                 packet<<message;
                 clientTCP.send(packet);
-                //std::cout<<"get public key"<<std::endl;
+                ////std::cout<<"get public key"<<std::endl;
                 if (useSecuredConnexion)
                     getPublicKey();
-                //std::cout<<"public key get"<<std::endl;
+                ////std::cout<<"public key get"<<std::endl;
                 selector.add(clientTCP);
                 selector.add(clientUDP);
                 running = true;
-                //std::cout<<"Client started!"<<std::endl;
+                ////std::cout<<"Client started!"<<std::endl;
                 return true;
             } else {
                 cout<<"Client already started!"<<endl;

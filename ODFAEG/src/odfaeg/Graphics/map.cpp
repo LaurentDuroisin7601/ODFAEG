@@ -130,7 +130,7 @@ namespace odfaeg {
                             int i = math::Math::random(tGround.size());
                             tile = tGround[i]->clone();
                             tile->setPosition(math::Vec3f(pos.x(), pos.y(), pos.y() + tile->getSize().y() * 0.5f));
-                            //////std::cout<<"add tile : "<<tile->getPosition()<<std::endl;
+                            ////////std::cout<<"add tile : "<<tile->getPosition()<<std::endl;
                         } else {
                             tile = factory.make_entity<Tile>(nullptr, math::Vec3f(pos.x(), pos.y(), pos.y() + tileSize.y() * 0.5f), math::Vec3f(tileSize.x(), tileSize.y(), 0), IntRect(0, 0, tileSize.x(), tileSize.y()), factory);
                         }
@@ -300,7 +300,7 @@ namespace odfaeg {
                             int i = math::Math::random(tGround.size());
                             tile = tGround[i]->clone();
                             tile->setPosition(math::Vec3f(pos.x(), 0, pos.y()));
-                            //////std::cout<<"add tile : "<<tile->getPosition()<<std::endl;
+                            ////////std::cout<<"add tile : "<<tile->getPosition()<<std::endl;
                         } else {
                             tile = factory.make_entity<Tile>(nullptr, math::Vec3f(pos.x(), 0, pos.y()), math::Vec3f(tileSize.x(), 0, tileSize.y()), IntRect(0, 0, tileSize.x(), tileSize.y()), factory);
                         }
@@ -377,20 +377,20 @@ namespace odfaeg {
             //Positions de d\E9part et d'arriv\E9es en fonction de la taille, de la position et de la taille des cellules de la map.
             for (int y = startY; y < endY;  y+=tileSize.y()) {
                 for (int x = startX; x < endX; x+=tileSize.x()) {
-                    ////std::cout<<"start x y : "<<startX<<","<<startY<<std::endl;
-                    ////std::cout<<"end x y : "<<endX-tileSize.x()<<","<<endY-tileSize.y()<<std::endl;
-                    ////std::cout<<"x y : "<<x<<","<<y<<std::endl;
+                    //////std::cout<<"start x y : "<<startX<<","<<startY<<std::endl;
+                    //////std::cout<<"end x y : "<<endX-tileSize.x()<<","<<endY-tileSize.y()<<std::endl;
+                    //////std::cout<<"x y : "<<x<<","<<y<<std::endl;
                     //On projete les positions en fonction de la projection du jeux.
                     math::Vec3f projPos = gridMap->getBaseChangementMatrix().changeOfBase(math::Vec3f (x - startX, y - startY, 0));
                     math::Vec2f pos (projPos.x() + startX, projPos.y() + startY);
-                    //////std::cout<<"pos : "<<pos<<std::endl;
+                    ////////std::cout<<"pos : "<<pos<<std::endl;
                     //Mur du coin en haut \E0 gauche.
                     if (x == startX && y == startY && walls.size() >= 11) {
                         if (walls[Wall::TOP_LEFT] != nullptr) {
-                            ////std::cout<<"top left"<<std::endl;
+                            //////std::cout<<"top left"<<std::endl;
                             Entity *w = walls[Wall::TOP_LEFT]->clone();
                             w->setPosition(math::Vec3f(pos.x(), pos.y(), pos.y() + walls[Wall::TOP_LEFT]->getSize().y() * 0.5f));
-                            //////std::cout<<"position top right : "<<w->getPosition()<<std::endl;
+                            ////////std::cout<<"position top right : "<<w->getPosition()<<std::endl;
                             addEntity(w);
                             gridMap->getGridCellAt(math::Vec3f(w->getPosition().x(), w->getPosition().y(), w->getPosition().z()))->setPassable(false);
                         }
@@ -398,17 +398,17 @@ namespace odfaeg {
                         //Mur du coin en haut \E0 droite.
                     } else if (x == endX - tileSize.x() && y == startY && walls.size() >= 11) {
                         if (walls[Wall::TOP_RIGHT] != nullptr) {
-                            ////std::cout<<"top right"<<std::endl;
+                            //////std::cout<<"top right"<<std::endl;
                             Entity *w = walls[Wall::TOP_RIGHT]->clone();
                             w->setPosition(math::Vec3f(pos.x(), pos.y(), pos.y() + walls[Wall::TOP_RIGHT]->getSize().y() * 0.5f));
-                            //////std::cout<<"position top right : "<<w->getPosition()<<std::endl;
+                            ////////std::cout<<"position top right : "<<w->getPosition()<<std::endl;
                             addEntity(w);
                             gridMap->getGridCellAt(math::Vec3f(w->getPosition().x(), w->getPosition().y(), w->getPosition().z()))->setPassable(false);
                         }
                         //Mur du coin en bas \E0 droite.
                     } else if (x == endX - tileSize.x() && y == endY - tileSize.y() && walls.size() >= 11) {
                         if (walls[Wall::BOTTOM_RIGHT] != nullptr) {
-                            ////std::cout<<"bottom right"<<std::endl;
+                            //////std::cout<<"bottom right"<<std::endl;
                             Entity *w = walls[Wall::BOTTOM_RIGHT]->clone();
                             w->setPosition(math::Vec3f(pos.x(), pos.y(), pos.y() + walls[Wall::BOTTOM_RIGHT]->getSize().y() * 0.5f));
                             addEntity(w);
@@ -416,16 +416,16 @@ namespace odfaeg {
                         }
                     } else if (x == startX && y == endY - tileSize.y() && walls.size() >= 11) {
                         if (walls[Wall::BOTTOM_LEFT] != nullptr) {
-                            ////std::cout<<"bottom left"<<std::endl;
+                            //////std::cout<<"bottom left"<<std::endl;
                             Entity *w = walls[Wall::BOTTOM_LEFT]->clone();
                             w->setPosition(math::Vec3f(pos.x(), pos.y(), pos.y() + walls[Wall::BOTTOM_LEFT]->getSize().y() * 0.5f));
-                            //////std::cout<<"position bottom left : "<<w->getPosition()<<std::endl;
+                            ////////std::cout<<"position bottom left : "<<w->getPosition()<<std::endl;
                             addEntity(w);
                             gridMap->getGridCellAt(math::Vec3f(w->getPosition().x(), w->getPosition().y(), w->getPosition().z()))->setPassable(false);
                         }
                     } else if ((y == startY || y == endY - tileSize.y()) && walls.size() >= 11) {
                         if (walls[Wall::TOP_BOTTOM] != nullptr) {
-                            ////std::cout<<"top bottom"<<std::endl;
+                            //////std::cout<<"top bottom"<<std::endl;
                             Entity *w = walls[Wall::TOP_BOTTOM]->clone();
                             w->setPosition(math::Vec3f(pos.x(), pos.y(), pos.y() + walls[Wall::TOP_BOTTOM]->getSize().y() * 0.5f));
                             addEntity(w);
@@ -439,7 +439,7 @@ namespace odfaeg {
                         }
                     } else if ((x == startX || x == endX - tileSize.x()) && walls.size() >= 11) {
                         if (walls[Wall::RIGHT_LEFT] != nullptr) {
-                            ////std::cout<<"right left"<<std::endl;
+                            //////std::cout<<"right left"<<std::endl;
                             Entity *w = walls[Wall::RIGHT_LEFT]->clone();
 
                             w->setPosition(math::Vec3f(pos.x(), pos.y(), pos.y() + walls[Wall::RIGHT_LEFT]->getSize().y() * 0.5f));
@@ -458,7 +458,7 @@ namespace odfaeg {
                         int i = math::Math::random(tGround.size());
                         tile = tGround[i]->clone();
                         tile->setPosition(math::Vec3f(pos.x(), pos.y(), pos.y() + tile->getSize().y() * 0.5f));
-                        //////std::cout<<"add tile : "<<tile->getPosition()<<std::endl;
+                        ////////std::cout<<"add tile : "<<tile->getPosition()<<std::endl;
                     } else {
                         tile = factory.make_entity<Tile>(nullptr, math::Vec3f(pos.x(), pos.y(), pos.y() + tileSize.y() * 0.5f), math::Vec3f(tileSize.x(), tileSize.y(), 0), IntRect(0, 0, tileSize.x(), tileSize.y()), factory);
                     }
@@ -479,21 +479,21 @@ namespace odfaeg {
             //Positions de d\E9part et d'arriv\E9es en fonction de la taille, de la position et de la taille des cellules de la map.
             for (int y = startY; y < endY;  y+=tileSize.y()) {
                 for (int x = startX; x < endX; x+=tileSize.x()) {
-                    ////std::cout<<"start x y : "<<startX<<","<<startY<<std::endl;
-                    ////std::cout<<"end x y : "<<endX-tileSize.x()<<","<<endY-tileSize.y()<<std::endl;
-                    ////std::cout<<"x y : "<<x<<","<<y<<std::endl;
+                    //////std::cout<<"start x y : "<<startX<<","<<startY<<std::endl;
+                    //////std::cout<<"end x y : "<<endX-tileSize.x()<<","<<endY-tileSize.y()<<std::endl;
+                    //////std::cout<<"x y : "<<x<<","<<y<<std::endl;
                     //On projete les positions en fonction de la projection du jeux.
                     math::Vec3f projPos = gridMap->getBaseChangementMatrix().changeOfBase(math::Vec3f (x - startX, y - startY, 0));
                     math::Vec2f pos (projPos.x() + startX, projPos.y() + startY);
-                    //////std::cout<<"pos : "<<pos<<std::endl;
+                    ////////std::cout<<"pos : "<<pos<<std::endl;
                     //Mur du coin en haut \E0 gauche.
                     if (x == startX && y == startY && walls.size() >= 11) {
                         if (walls[Wall::TOP_LEFT] != nullptr) {
-                            ////std::cout<<"top left"<<std::endl;
+                            //////std::cout<<"top left"<<std::endl;
                             Entity *w = walls[Wall::TOP_LEFT]->clone();
                             w->setPosition(math::Vec3f(pos.x(), rect.getPosition().y(), pos.y()));
                             w->setSize(math::Vec3f(w->getSize().x(), rect.getSize().z() + w->getSize().z(), w->getSize().z()));
-                            //////std::cout<<"position top right : "<<w->getPosition()<<std::endl;
+                            ////////std::cout<<"position top right : "<<w->getPosition()<<std::endl;
                             addEntity(w);
                             gridMap->getGridCellAt(math::Vec3f(w->getPosition().x(), w->getPosition().y(), w->getPosition().z()))->setPassable(false);
                         }
@@ -501,18 +501,18 @@ namespace odfaeg {
                         //Mur du coin en haut \E0 droite.
                     } else if (x == endX - tileSize.x() && y == startY && walls.size() >= 11) {
                         if (walls[Wall::TOP_RIGHT] != nullptr) {
-                            ////std::cout<<"top right"<<std::endl;
+                            //////std::cout<<"top right"<<std::endl;
                             Entity *w = walls[Wall::TOP_RIGHT]->clone();
                             w->setPosition(math::Vec3f(pos.x(), rect.getPosition().y(), pos.y()));
                             w->setSize(math::Vec3f(w->getSize().x(), rect.getSize().z() + w->getSize().z(), w->getSize().z()));
-                            //////std::cout<<"position top right : "<<w->getPosition()<<std::endl;
+                            ////////std::cout<<"position top right : "<<w->getPosition()<<std::endl;
                             addEntity(w);
                             gridMap->getGridCellAt(math::Vec3f(w->getPosition().x(), w->getPosition().y(), w->getPosition().z()))->setPassable(false);
                         }
                         //Mur du coin en bas \E0 droite.
                     } else if (x == endX - tileSize.x() && y == endY - tileSize.y() && walls.size() >= 11) {
                         if (walls[Wall::BOTTOM_RIGHT] != nullptr) {
-                            ////std::cout<<"bottom right"<<std::endl;
+                            //////std::cout<<"bottom right"<<std::endl;
                             Entity *w = walls[Wall::BOTTOM_RIGHT]->clone();
                             w->setPosition(math::Vec3f(pos.x(), rect.getPosition().y(), pos.y()));
                             w->setSize(math::Vec3f(w->getSize().x(), rect.getSize().z() + w->getSize().z(), w->getSize().z()));
@@ -521,17 +521,17 @@ namespace odfaeg {
                         }
                     } else if (x == startX && y == endY - tileSize.y() && walls.size() >= 11) {
                         if (walls[Wall::BOTTOM_LEFT] != nullptr) {
-                            ////std::cout<<"bottom left"<<std::endl;
+                            //////std::cout<<"bottom left"<<std::endl;
                             Entity *w = walls[Wall::BOTTOM_LEFT]->clone();
                             w->setPosition(math::Vec3f(pos.x(), rect.getPosition().y(), pos.y()));
                             w->setSize(math::Vec3f(w->getSize().x(), rect.getSize().z() + w->getSize().z(), w->getSize().z()));
-                            //////std::cout<<"position bottom left : "<<w->getPosition()<<std::endl;
+                            ////////std::cout<<"position bottom left : "<<w->getPosition()<<std::endl;
                             addEntity(w);
                             gridMap->getGridCellAt(math::Vec3f(w->getPosition().x(), w->getPosition().y(), w->getPosition().z()))->setPassable(false);
                         }
                     } else if ((y == startY || y == endY - tileSize.y()) && walls.size() >= 11) {
                         if (walls[Wall::TOP_BOTTOM] != nullptr) {
-                            ////std::cout<<"top bottom"<<std::endl;
+                            //////std::cout<<"top bottom"<<std::endl;
                             Entity *w = walls[Wall::TOP_BOTTOM]->clone();
                             w->setPosition(math::Vec3f(pos.x(), rect.getPosition().y(), pos.y()));
                             w->setSize(math::Vec3f(w->getSize().x(), rect.getSize().z() + w->getSize().z(), w->getSize().z()));
@@ -546,7 +546,7 @@ namespace odfaeg {
                         }
                     } else if ((x == startX || x == endX - tileSize.x()) && walls.size() >= 11) {
                         if (walls[Wall::RIGHT_LEFT] != nullptr) {
-                            ////std::cout<<"right left"<<std::endl;
+                            //////std::cout<<"right left"<<std::endl;
                             Entity *w = walls[Wall::RIGHT_LEFT]->clone();
                             w->setPosition(math::Vec3f(pos.x(), rect.getPosition().y(), pos.y()));
                             w->setSize(math::Vec3f(w->getSize().x(), rect.getSize().z() + w->getSize().z(), w->getSize().z()));
@@ -632,7 +632,7 @@ namespace odfaeg {
         bool Scene::addEntity(Entity *entity) {
             if (entity->isAnimated()) {
                 if (entity->getCurrentFrame() != nullptr) {
-                    //////std::cout<<"bone index : "<<entity->getCurrentFrame()->getBoneIndex()<<std::endl;
+                    ////////std::cout<<"bone index : "<<entity->getCurrentFrame()->getBoneIndex()<<std::endl;
                     addEntity(entity->getCurrentFrame());
                 }
             } else {
@@ -646,7 +646,7 @@ namespace odfaeg {
                      increaseComptImg(entity->getFace(j)->getMaterial().getTexture());
                  }
             }
-            ////std::cout<<"add entity : "<<entity->getType()<<std::endl;
+            //////std::cout<<"add entity : "<<entity->getType()<<std::endl;
             return gridMap->addEntity(entity);
         }
         bool Scene::removeEntity (Entity *entity) {
@@ -662,7 +662,7 @@ namespace odfaeg {
                         removeEntity(children[i]);
                     }
                 }
-                ////std::cout<<"remove entity : "<<entity->getType()<<std::endl;
+                //////std::cout<<"remove entity : "<<entity->getType()<<std::endl;
                 if(!gridMap->removeEntity(entity)) {
                    removed = false;
                 }
@@ -685,7 +685,7 @@ namespace odfaeg {
                 }
             }
             if (entity->getParent() != nullptr) {
-                //////std::cout<<"remove entity : "<<entity->getType()<<std::endl;
+                ////////std::cout<<"remove entity : "<<entity->getType()<<std::endl;
                 gridMap->removeEntity(entity);
             }
             std::vector<Face> faces = entity->getFaces();
@@ -773,13 +773,13 @@ namespace odfaeg {
                     if (i == 0) {
                         for (unsigned int j = 0; j < visibleEntities[0].size(); j++) {
                             if (visibleEntities[0][j] != nullptr && visibleEntities[0][j]->getRootEntity()->getType() == "E_WALL" && visibleEntities[0][j]->getRootEntity()->getWallType() == 2)
-                                ////std::cout<<"wall"<<std::endl;
+                                //////std::cout<<"wall"<<std::endl;
                         }
                     }
                 }*/
 
                 if (c < frcm->getNbComponents() && frcm->getRenderComponent(c) != nullptr) {
-                    //////std::cout<<"get entities on component : "<<c<<std::endl;
+                    ////////std::cout<<"get entities on component : "<<c<<std::endl;
                     std::vector<Entity*> entities = getVisibleEntities(frcm->getRenderComponent(c)->getExpression(), factory);
                     frcm->getRenderComponent(c)->loadEntitiesOnComponent(entities);
                 }
@@ -1079,7 +1079,7 @@ namespace odfaeg {
                             Entity* ba = visibleEntitiesType[i]->getRootEntity();
                             if (ba->getBoneAnimationIndex() == visibleEntitiesType[i]->getBoneIndex()) {
                                 /*if (visibleEntitiesType[i]->getType() == "E_ANIMATION")
-                                    ////std::cout<<"add animation"<<visibleEntitiesType[i]->getCurrentFrame()->getType()<<std::endl;*/
+                                    //////std::cout<<"add animation"<<visibleEntitiesType[i]->getCurrentFrame()->getType()<<std::endl;*/
 
                                 entities[visibleEntitiesType[i]->getId()] = visibleEntitiesType[i];
                             }
@@ -1093,7 +1093,7 @@ namespace odfaeg {
         vector<Entity*> Scene::getEntitiesInBox (physic::BoundingBox bx, std::string type) {
              vector<Entity*> entities;
              vector<Entity*> allEntitiesInRect = gridMap->getEntitiesInBox(bx);
-             ////std::cout<<"entities in rect :"<<allEntitiesInRect.size()<<std::endl;
+             //////std::cout<<"entities in rect :"<<allEntitiesInRect.size()<<std::endl;
 
              if (type.at(0) == '*') {
                 if (type.find("-") != string::npos)

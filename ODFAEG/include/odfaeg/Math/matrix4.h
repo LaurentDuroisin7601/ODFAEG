@@ -103,7 +103,7 @@ namespace odfaeg {
                 const int n = sizeof...(Args);
                 static_assert(n == R*C, "Invalid number of arguments for matrix type");
                 std::tuple<Args...> tp = std::make_tuple(args...);
-                //std::cout<<"set : "<<std::endl;
+                ////std::cout<<"set : "<<std::endl;
                 setRow(tp, std::make_index_sequence<C>());
             }
             template <unsigned int RI=0, unsigned int N = 0, typename TP, size_t... CI, class = std::enable_if_t<RI < R - 1>>
@@ -264,7 +264,7 @@ namespace odfaeg {
                         cofactorMatrix[i][j] = std::pow(-1, i + j) * minorDet;
                     }
                 }
-                ////std::cout<<"co factor matrix : "<<cofactorMatrix;
+                //////std::cout<<"co factor matrix : "<<cofactorMatrix;
                 adjointMatrix = cofactorMatrix.transpose();
                 float invDet = 1.f / det;
                 return adjointMatrix * invDet;

@@ -78,7 +78,7 @@ namespace odfaeg {
                 }
                 extractBoneWeightForVertices(vertices, mesh, scene, emesh);
 
-                ////std::cout<<"num bones : "<<mesh->mNumBones<<std::endl;
+                //////std::cout<<"num bones : "<<mesh->mNumBones<<std::endl;
 
                 for(unsigned int i = 0; i < mesh->mNumFaces; i++)
                 {
@@ -102,7 +102,7 @@ namespace odfaeg {
                     {
                         vertex.m_Weights[i] = weight;
                         vertex.m_BoneIDs[i] = boneID;
-                        ////std::cout<<"set vertex bone id : "<<vertex.m_BoneIDs[i]<<std::endl;
+                        //////std::cout<<"set vertex bone id : "<<vertex.m_BoneIDs[i]<<std::endl;
                         break;
                     }
                 }
@@ -128,7 +128,7 @@ namespace odfaeg {
                     {
                         boneID = emesh->getBoneInfoMap()[boneName].id;
                     }
-                    ////std::cout<<"bone id : "<<boneID<<std::endl;
+                    //////std::cout<<"bone id : "<<boneID<<std::endl;
 
                     assert(boneID != -1);
                     auto weights = mesh->mBones[boneIndex]->mWeights;
@@ -140,7 +140,7 @@ namespace odfaeg {
                         float weight = weights[weightIndex].mWeight;
                         assert(vertexId <= vertices.size());
                         setVertexBoneData(vertices[vertexId], boneID, weight);
-                        /*//std::cout<<"vertex bone id : "<<vertices[vertexId]->m_BoneIDs[boneID]<<std::endl;
+                        /*////std::cout<<"vertex bone id : "<<vertices[vertexId]->m_BoneIDs[boneID]<<std::endl;
                         system("PAUSE");*/
                     }
                 }
@@ -253,7 +253,7 @@ namespace odfaeg {
                 }
                 extractBoneWeightForVertices(vertices, mesh, scene, emesh);
 
-                ////std::cout<<"num bones : "<<mesh->mNumBones<<std::endl;
+                //////std::cout<<"num bones : "<<mesh->mNumBones<<std::endl;
 
                 for(unsigned int i = 0; i < mesh->mNumFaces; i++)
                 {
@@ -277,7 +277,7 @@ namespace odfaeg {
                     {
                         vertex.m_Weights[i] = weight;
                         vertex.m_BoneIDs[i] = boneID;
-                        ////std::cout<<"set vertex bone id : "<<vertex.m_BoneIDs[i]<<std::endl;
+                        //////std::cout<<"set vertex bone id : "<<vertex.m_BoneIDs[i]<<std::endl;
                         break;
                     }
                 }
@@ -303,7 +303,7 @@ namespace odfaeg {
                     {
                         boneID = emesh->getBoneInfoMap()[boneName].id;
                     }
-                    ////std::cout<<"bone id : "<<boneID<<std::endl;
+                    //////std::cout<<"bone id : "<<boneID<<std::endl;
 
                     assert(boneID != -1);
                     auto weights = mesh->mBones[boneIndex]->mWeights;
@@ -315,7 +315,7 @@ namespace odfaeg {
                         float weight = weights[weightIndex].mWeight;
                         assert(vertexId <= vertices.size());
                         setVertexBoneData(vertices[vertexId], boneID, weight);
-                        /*//std::cout<<"vertex bone id : "<<vertices[vertexId]->m_BoneIDs[boneID]<<std::endl;
+                        /*////std::cout<<"vertex bone id : "<<vertices[vertexId]->m_BoneIDs[boneID]<<std::endl;
                         system("PAUSE");*/
                     }
                 }

@@ -655,7 +655,7 @@ namespace odfaeg {
                                depthStencilCreateInfo[buildShadowMapShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][stencilBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = {};
                                depthStencilCreateInfo[buildShadowMapShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][stencilBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {};
                                stencilBuffer.createGraphicPipeline(static_cast<PrimitiveType>(i), states, NODEPTHNOSTENCIL, NBDEPTHSTENCIL);
-                               //std::cout<<"pipeline layout : "<<stencilBuffer.getPipelineLayout()[buildShadowMapShader.getId() * (Batcher::nbPrimitiveTypes - 1) + i][stencilBuffer.getId()][j]<<std::endl;
+                               ////std::cout<<"pipeline layout : "<<stencilBuffer.getPipelineLayout()[buildShadowMapShader.getId() * (Batcher::nbPrimitiveTypes - 1) + i][stencilBuffer.getId()][j]<<std::endl;
                             }
                         }
                     }
@@ -817,7 +817,7 @@ namespace odfaeg {
                     if (shader->getNbShaders() > descriptorSetLayout.size())
                         descriptorSetLayout.resize(shader->getNbShaders());
                     unsigned int descriptorId = shader->getId();
-                    ////std::cout<<"ppll descriptor id : "<<descriptorId<<std::endl;
+                    //////std::cout<<"ppll descriptor id : "<<descriptorId<<std::endl;
                     std::vector<Texture*> allTextures = Texture::getAllTextures();
                     VkDescriptorSetLayoutBinding samplerLayoutBinding{};
                     samplerLayoutBinding.binding = 0;
@@ -2661,7 +2661,7 @@ namespace odfaeg {
                 Shader* shader = const_cast<Shader*>(currentStates.shader);
                 if (shader == &depthGenShader) {
 
-                    ////std::cout<<"draw on db"<<std::endl;
+                    //////std::cout<<"draw on db"<<std::endl;
                     std::vector<VkCommandBuffer> commandBuffers = depthBuffer.getCommandBuffers();
                     unsigned int currentFrame = depthBuffer.getCurrentFrame();
                     layerPC.nbLayers = GameObject::getNbLayers();
@@ -2707,7 +2707,7 @@ namespace odfaeg {
                     //vkCmdWaitEvents(commandBuffers[currentFrame], 1, &events[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
                     vkCmdPushConstants(commandBuffers[currentFrame], stencilBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][stencilBuffer.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(LightIndirectRenderingPC), &lightIndirectRenderingPC);
                     vkCmdPushConstants(commandBuffers[currentFrame], stencilBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][stencilBuffer.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(LayerPC), &layerPC);
-                    /*std::cout<<"pipeline layout : "<<stencilBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][stencilBuffer.getId()][depthStencilID]<<std::endl;
+                    /*//std::cout<<"pipeline layout : "<<stencilBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][stencilBuffer.getId()][depthStencilID]<<std::endl;
                     system("PAUSE");*/
                     stencilBuffer.beginRenderPass();
                     stencilBuffer.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
@@ -2956,12 +2956,12 @@ namespace odfaeg {
                             shadowOrigin = entity->getPosition();
                             shadowTranslation = entity->getPosition() + shadowCenter;
                             /*if (entity->getType() == "E_WALL") {
-                                //std::cout<<"shadow center : "<<shadowCenter<<std::endl;
-                                //std::cout<<"shadow scale : "<<shadowScale<<std::endl;
-                                //std::cout<<"shadow rotation axis : "<<shadowRotationAxis<<std::endl;
-                                //std::cout<<"shadow rotation angle : "<<shadowRotationAngle<<std::endl;
-                                //std::cout<<"shadow origin : "<<shadowOrigin<<std::endl;
-                                //std::cout<<"shadow translation : "<<shadowTranslation<<std::endl;
+                                ////std::cout<<"shadow center : "<<shadowCenter<<std::endl;
+                                ////std::cout<<"shadow scale : "<<shadowScale<<std::endl;
+                                ////std::cout<<"shadow rotation axis : "<<shadowRotationAxis<<std::endl;
+                                ////std::cout<<"shadow rotation angle : "<<shadowRotationAngle<<std::endl;
+                                ////std::cout<<"shadow origin : "<<shadowOrigin<<std::endl;
+                                ////std::cout<<"shadow translation : "<<shadowTranslation<<std::endl;
                             }*/
                         //}
                         TransformMatrix tm;
@@ -3538,7 +3538,7 @@ namespace odfaeg {
                     GLuint64 handle_texture = allTextures[i]->getTextureHandle();
                     allTextures[i]->makeTextureResident(handle_texture);
                     allSamplers.tex[i].handle = handle_texture;
-                    ////std::cout<<"add texture i : "<<i<<" id : "<<allTextures[i]->getNativeHandle()<<std::endl;
+                    //////std::cout<<"add texture i : "<<i<<" id : "<<allTextures[i]->getNativeHandle()<<std::endl;
                 }
                 buildShadowMapShader.setParameter("textureMatrix", textureMatrices);
                 depthGenShader.setParameter("textureMatrix", textureMatrices);
@@ -3565,7 +3565,7 @@ namespace odfaeg {
                 glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, modelDataBuffer));
                 glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, materialDataBuffer));
                 alphaBuffer.setActive(false);
-                ////std::cout<<"size : "<<sizeof(Samplers)<<" "<<alignof (alignas(16) uint64_t[200])<<std::endl;
+                //////std::cout<<"size : "<<sizeof(Samplers)<<" "<<alignof (alignas(16) uint64_t[200])<<std::endl;
 
                 /*glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo2));
                 glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo3));*/
@@ -3585,7 +3585,7 @@ namespace odfaeg {
                     GLuint64 handle_texture = allTextures[i]->getTextureHandle();
                     allTextures[i]->makeTextureResident(handle_texture);
                     allSamplers.tex[i].handle = handle_texture;
-                    ////std::cout<<"add texture i : "<<i<<" id : "<<allTextures[i]->getNativeHandle()<<std::endl;
+                    //////std::cout<<"add texture i : "<<i<<" id : "<<allTextures[i]->getNativeHandle()<<std::endl;
                 }
                 glCheck(glBindBuffer(GL_UNIFORM_BUFFER, ubo));
                 glCheck(glBufferData(GL_UNIFORM_BUFFER, sizeof(Samplers),allSamplers.tex, GL_STATIC_DRAW));
@@ -4244,12 +4244,12 @@ namespace odfaeg {
                             shadowOrigin = entity->getPosition();
                             shadowTranslation = entity->getPosition() + shadowCenter;
                             /*if (entity->getType() == "E_WALL") {
-                                //std::cout<<"shadow center : "<<shadowCenter<<std::endl;
-                                //std::cout<<"shadow scale : "<<shadowScale<<std::endl;
-                                //std::cout<<"shadow rotation axis : "<<shadowRotationAxis<<std::endl;
-                                //std::cout<<"shadow rotation angle : "<<shadowRotationAngle<<std::endl;
-                                //std::cout<<"shadow origin : "<<shadowOrigin<<std::endl;
-                                //std::cout<<"shadow translation : "<<shadowTranslation<<std::endl;
+                                ////std::cout<<"shadow center : "<<shadowCenter<<std::endl;
+                                ////std::cout<<"shadow scale : "<<shadowScale<<std::endl;
+                                ////std::cout<<"shadow rotation axis : "<<shadowRotationAxis<<std::endl;
+                                ////std::cout<<"shadow rotation angle : "<<shadowRotationAngle<<std::endl;
+                                ////std::cout<<"shadow origin : "<<shadowOrigin<<std::endl;
+                                ////std::cout<<"shadow translation : "<<shadowTranslation<<std::endl;
                             }*/
                         //}
                         TransformMatrix tm;

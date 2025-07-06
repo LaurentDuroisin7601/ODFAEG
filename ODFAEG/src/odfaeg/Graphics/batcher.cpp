@@ -73,7 +73,7 @@ namespace odfaeg {
                 layer = material.layer;
                 lightCenter = material.lightCenter;
                 lightColor = material.lightColor;
-                ////std::cout<<"copy material"<<std::endl;
+                //////std::cout<<"copy material"<<std::endl;
                 materials.push_back(this);
                 //updateIds();
             }
@@ -288,7 +288,7 @@ namespace odfaeg {
                 transform = tm;
                 m_vertices = va;
                 m_material = mat;
-                ////std::cout<<"face created"<<std::endl;
+                //////std::cout<<"face created"<<std::endl;
             }
             /*Face::Face(const Face& face) {
                 m_material = face.m_material;
@@ -317,13 +317,13 @@ namespace odfaeg {
             }
             VertexArray& Face::getVertexArray() {
                 /*if (m_vertices.getEntity() != nullptr && m_vertices.getEntity()->getRootType() == "E_MONSTER")
-                    //std::cout<<"face tex coords : "<<m_vertices[0].texCoords.x<<","<<m_vertices[0].texCoords.y<<std::endl;*/
+                    ////std::cout<<"face tex coords : "<<m_vertices[0].texCoords.x<<","<<m_vertices[0].texCoords.y<<std::endl;*/
                 return m_vertices;
             }
             void Face::setVertexArray(VertexArray va) {
                 m_vertices = va;
                 /*if (m_vertices.getEntity()->getRootType() == "E_MONSTER")
-                    //std::cout<<"face tex coords : "<<m_vertices[0].texCoords.x<<","<<m_vertices[0].texCoords.y<<std::endl;*/
+                    ////std::cout<<"face tex coords : "<<m_vertices[0].texCoords.x<<","<<m_vertices[0].texCoords.y<<std::endl;*/
             }
             bool Face::useSameMaterial(Face& other) {
                 return m_material == other.m_material;
@@ -360,7 +360,7 @@ namespace odfaeg {
             void Instance::setMaterial (Material& mat) {
                 material = &mat;
             }
-            void Instance::addVertexArray(VertexArray& va, TransformMatrix& tm) {                ////std::cout<<"push transform"<<std::endl;
+            void Instance::addVertexArray(VertexArray& va, TransformMatrix& tm) {                //////std::cout<<"push transform"<<std::endl;
                 va.computeNormals();
                 m_perVaTransforms.push_back(&tm);
                 if (!containsEntity(va.getEntity(), va.getEntityId())) {
@@ -376,10 +376,10 @@ namespace odfaeg {
                     if (va.getEntityId() != entt::null)
                         m_entitiesId.push_back(va.getEntityId());
                 }
-                ////std::cout<<"transform pushed"<<std::endl;
+                //////std::cout<<"transform pushed"<<std::endl;
                 m_vertexArrays.push_back(&va);
 
-                ////std::cout<<"va pushed"<<std::endl;
+                //////std::cout<<"va pushed"<<std::endl;
                 //m_indexes.push_back(std::vector<unsigned int>());
                 unsigned int baseVertex = vertices.getVertexCount();
                 for (unsigned int i = 0; i < va.getVertexCount(); i++) {
@@ -390,7 +390,7 @@ namespace odfaeg {
                     Vertex v (math::Vec3f(t.x, t.y, t.z), va[i].color, va[i].texCoords);
                     #else*/
                     math::Vec3f t = tm.transform(va[i].position);
-                    ////std::cout<<"position : "<<t<<std::endl;
+                    //////std::cout<<"position : "<<t<<std::endl;
                     Vertex v (t, va[i].color, va[i].texCoords);
                     v.normal = va[i].normal;
                     for (unsigned int b = 0; b < MAX_BONE_INFLUENCE; b++) {
@@ -398,23 +398,23 @@ namespace odfaeg {
                         v.m_Weights[b] = va[i].m_Weights[b];
                     }
                     /*if (va.getEntity()->getType() == "E_PONCTUAL_LIGHT")
-                        std::cout<<"position : "<<t<<std::endl;*/
+                        //std::cout<<"position : "<<t<<std::endl;*/
                     //#endif // VULKAN
 
 
 
 
                     /*if (va.getEntity() != nullptr && va.getEntity()->getType() == "E_PARTICLES") {
-                        //std::cout<<"position : "<<t<<std::endl;
+                        ////std::cout<<"position : "<<t<<std::endl;
                         system("PAUSE");
                     }*/
                     /*if (va.getEntity()->getRootType() == "E_HERO")
-                        //std::cout<<"v : "<<v.position.x<<","<<v.position.y<<","<<v.position.z<<std::endl;*/
+                        ////std::cout<<"v : "<<v.position.x<<","<<v.position.y<<","<<v.position.z<<std::endl;*/
                     vertices.append(v);
 
-                    ////std::cout<<"nb indexes : "<<nbIndexes<<std::endl;
+                    //////std::cout<<"nb indexes : "<<nbIndexes<<std::endl;
                     //if (i < va.m_indexes.size() /*&& *va.m_indexes[i] < nbIndexes*/) {
-                        ////std::cout<<"add index to batcher"<<va.m_indexes[i]<<std::endl;
+                        //////std::cout<<"add index to batcher"<<va.m_indexes[i]<<std::endl;
                         /*m_indexes.back().push_back(va.m_indexes[i]);
                         allIndexes.push_back(va.m_indexes[i]);*/
                     //}
@@ -422,7 +422,7 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < va.getIndexes().size(); i++) {
                     vertices.addIndex(baseVertex + va.getIndexes()[i]);
                 }
-                ////std::cout<<"vertices transformed"<<std::endl;
+                //////std::cout<<"vertices transformed"<<std::endl;
             }
             void Instance::addVertexShadowArray (VertexArray& va, TransformMatrix& tm, ViewMatrix& viewMatrix, TransformMatrix shadowProjMatrix) {
                 m_perVaTransforms.push_back(&tm);
@@ -547,26 +547,26 @@ namespace odfaeg {
             }
             void Batcher::addFace(Face* face) {
                 /*if (face->getVertexArray().getEntity() != nullptr && face->getVertexArray().getEntity()->getRootType() == "E_BIGTILE")
-                        //std::cout<<"add E_TILE : "<<face->getVertexArray().getPrimitiveType() * core::Application::app->getNbMaterials() + face->getMaterial().getId()<<std::endl;*/
+                        ////std::cout<<"add E_TILE : "<<face->getVertexArray().getPrimitiveType() * core::Application::app->getNbMaterials() + face->getMaterial().getId()<<std::endl;*/
 
 
                 Instance& instance = instances[face->getMaterial().getId() * nbPrimitiveTypes + face->getVertexArray().getPrimitiveType()];
-                ////std::cout<<"set primitive type : "<<std::endl;
+                //////std::cout<<"set primitive type : "<<std::endl;
                 instance.setPrimitiveType(face->getVertexArray().getPrimitiveType());
                 instance.setMaterial(face->getMaterial());
-                ////std::cout<<"add vertex array"<<std::endl;
+                //////std::cout<<"add vertex array"<<std::endl;
                 instance.addVertexArray(face->getVertexArray(),face->getTransformMatrix());
 
-                ////std::cout<<"vertex array added"<<std::endl;
-                ////std::cout<<"size : "<<instances.size()<<" id : "<<face->getVertexArray().getPrimitiveType() * core::Application::app->getNbMaterials() + face->getMaterial().getId()<<std::endl;
+                //////std::cout<<"vertex array added"<<std::endl;
+                //////std::cout<<"size : "<<instances.size()<<" id : "<<face->getVertexArray().getPrimitiveType() * core::Application::app->getNbMaterials() + face->getMaterial().getId()<<std::endl;
                 /*if (face->getVertexArray().getEntity() != nullptr && face->getVertexArray().getEntity()->getRootType() == "E_MONSTER")
-                    //std::cout<<"batcher tex coords : "<<face->getVertexArray()[0].texCoords.x<<","<<face->getVertexArray()[0].texCoords.y<<std::endl;*/
+                    ////std::cout<<"batcher tex coords : "<<face->getVertexArray()[0].texCoords.x<<","<<face->getVertexArray()[0].texCoords.y<<std::endl;*/
                 /*if (face->getVertexArray().getEntity()->getType() == "E_MESH") {
                 sf::Image img = instance.getMaterial().getTexture()->copyToImage();
                                 for (unsigned int i = 0; i < img.getSize().x; i++) {
                                     for (unsigned int j = 0; j < img.getSize().y; j++) {
                                         if (img.getPixel(i, j).r > 0 || img.getPixel(i, j).g > 0 || img.getPixel(i, j).b > 0)
-                                        //std::cout<<"pixel : "<<(int) img.getPixel(i, j).r<<" , "<<(int) img.getPixel(i, j).g<<" , "<<(int) img.getPixel(i, j).b<<std::endl;
+                                        ////std::cout<<"pixel : "<<(int) img.getPixel(i, j).r<<" , "<<(int) img.getPixel(i, j).g<<" , "<<(int) img.getPixel(i, j).b<<std::endl;
                                     }
                                     }
                                 }*/
@@ -608,7 +608,7 @@ namespace odfaeg {
                 instance.setPrimitiveType(face->getVertexArray().getPrimitiveType());
                 instance.setMaterial(face->getMaterial());
                 instance.addVertexShadowArray(face->getVertexArray(),face->getTransformMatrix(), viewMatrix, shadowProjMatrix);
-                ////std::cout<<"size : "
+                //////std::cout<<"size : "
                 /*bool added = false;
                 for (unsigned int i = 0; i < instances.size() && !added; i++) {
                     if (instances[i].getMaterial() == face->getMaterial()
@@ -646,7 +646,7 @@ namespace odfaeg {
             }
             void Batcher::clear() {
                 instances.clear();
-                ////std::cout<<"nb instances : "<<nbPrimitiveTypes * Material::getNbMaterials()<<std::endl;
+                //////std::cout<<"nb instances : "<<nbPrimitiveTypes * Material::getNbMaterials()<<std::endl;
 
                 instances.resize(nbPrimitiveTypes * Material::getNbMaterials());
                 nbLayers = 0;

@@ -50,7 +50,7 @@ namespace odfaeg {
         math::Vec4f ViewportMatrix::toNormalizedCoordinates(math::Vec4f vec) {
             vec[3] = 1;
             update();
-            ////std::cout<<"matrix : "<<viewport<<std::endl;
+            //////std::cout<<"matrix : "<<viewport<<std::endl;
             return viewport.inverse() * vec;
         }
         math::Matrix4f ViewportMatrix::getMatrix() {

@@ -198,7 +198,7 @@ namespace odfaeg {
             #endif
         }
         void WindowImpl::setVerticalSyncEnabled(bool enabled) {
-            //std::cout<<"set vertical sync enable : "<<enabled<<std::endl;
+            ////std::cout<<"set vertical sync enable : "<<enabled<<std::endl;
             #ifndef VULKAN
             m_context.setVerticalSyncEnabled(enabled);
             #endif
@@ -210,7 +210,7 @@ namespace odfaeg {
             // Limit the framerate if needed
             if (m_frameTimeLimit != core::Time::zero)
             {
-                //std::cout<<"limit the frame rate"<<std::endl;
+                ////std::cout<<"limit the frame rate"<<std::endl;
                 std::this_thread::sleep_for(std::chrono::duration<std::uint32_t, std::milli>((m_frameTimeLimit - m_clock.getElapsedTime()).asMilliseconds()));
                 m_clock.restart();
             }

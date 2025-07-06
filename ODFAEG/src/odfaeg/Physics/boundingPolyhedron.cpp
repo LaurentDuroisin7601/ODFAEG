@@ -18,7 +18,7 @@ namespace odfaeg {
         }
         bool BoundingPolyhedron::intersects(math::Ray& ray, bool segment, CollisionResultSet::Info& info) {
             for (unsigned int i = 0; i < points.size(); i+=3) {
-                   ////std::cout<<"points : "<<points[i]<<points[i+1]<<points[i+2]<<std::endl;
+                   //////std::cout<<"points : "<<points[i]<<points[i+1]<<points[i+2]<<std::endl;
                    math::Triangle t (points[i], points[i+1], points[i+2]);
 
                    if(t.intersects(ray))
@@ -206,7 +206,7 @@ namespace odfaeg {
             }
 
             math::Vec3f bpn = (faceBissectors[faceIndex] - center).projOnVector(faceNormals[faceIndex]);
-            ////std::cout<<"bissector : "<<faceBissectors[faceIndex]<<std::endl;
+            //////std::cout<<"bissector : "<<faceBissectors[faceIndex]<<std::endl;
             math::Vec3f d = point - center;
             float p = d.projOnAxis(bpn);
             if (p * p > bpn.magnSquared()) {

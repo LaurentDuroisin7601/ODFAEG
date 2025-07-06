@@ -86,7 +86,7 @@ namespace sorrok {
     void MyAppli::leftMouseButtonPressed(math::Vec2f mousePos) {
         Vec2f mouse(mousePos.x(), mousePos.y());
         Vec3f finalPos = getRenderComponentManager().getComponent(0)->getFrameBuffer()->mapPixelToCoords(Vec3f(mouse.x(), getRenderWindow().getSize().y()-mouse.y(), 0));
-        //std::cout<<mouse.x()<<" "<<mouse.y()<<std::endl;
+        std::cout<<mouse.x()<<" "<<mouse.y()<<std::endl;
         point.clear();
         point.append(Vertex(math::Vec3f(finalPos.x(), finalPos.y(), finalPos.y()), Color(255, 0, 0)));
         std::vector<Vec2f> path = getWorld()->getPath(caracter, finalPos);

@@ -167,43 +167,43 @@ namespace odfaeg {
                 //if (!alreadySerialized) {
                     Entity::vtserialize(ar);
                     //alreadySerialized = true;
-                    ////std::cout<<"entity"<<std::endl;
+                    //////std::cout<<"entity"<<std::endl;
                     ar(parent);
-                    ////std::cout<<"parent : "<<parent<<std::endl;
+                    //////std::cout<<"parent : "<<parent<<std::endl;
                     ar(faces);
-                    ////std::cout<<"faces"<<std::endl;
+                    //////std::cout<<"faces"<<std::endl;
                     ar(collisionVolume);
-                    ////std::cout<<"collisions volume"<<std::endl;
+                    //////std::cout<<"collisions volume"<<std::endl;
                     ar(shadowCenter);
-                    ////std::cout<<"shadow center : "<<shadowCenter<<std::endl;
+                    //////std::cout<<"shadow center : "<<shadowCenter<<std::endl;
                     ar(shadowScale);
-                    ////std::cout<<"shadow scale : "<<shadowScale<<std::endl;
+                    //////std::cout<<"shadow scale : "<<shadowScale<<std::endl;
                     ar(shadowOrigin);
-                    ////std::cout<<"shadow origin : "<<shadowOrigin<<std::endl;
+                    //////std::cout<<"shadow origin : "<<shadowOrigin<<std::endl;
                     ar(shadowRotationAngle);
-                    ////std::cout<<"shadow rotation angle : "<<shadowRotationAngle;
+                    //////std::cout<<"shadow rotation angle : "<<shadowRotationAngle;
                     ar(shadowRotationAxis);
-                    ////std::cout<<"shadow rotation axis : "<<shadowRotationAxis<<std::endl;
+                    //////std::cout<<"shadow rotation axis : "<<shadowRotationAxis<<std::endl;
                     ar(boneIndex);
-                    ////std::cout<<"bone index : "<<boneIndex<<std::endl;
+                    //////std::cout<<"bone index : "<<boneIndex<<std::endl;
                     ar(externalObjectName);
-                    ////std::cout<<"external object name : "<<std::endl;
+                    //////std::cout<<"external object name : "<<std::endl;
                     ar(layer);
                     if (ar.isInputArchive()) {
                         setLayer(layer);
                     }
-                    ////std::cout<<"water : "<<water<<std::endl;
+                    //////std::cout<<"water : "<<water<<std::endl;
                     ar(drawMode);
-                    ////std::cout<<"draw mode : "<<drawMode<<std::endl;
+                    //////std::cout<<"draw mode : "<<drawMode<<std::endl;
 
                     ar(children);
 
-                    ////std::cout<<"children"<<std::endl;
+                    //////std::cout<<"children"<<std::endl;
                 /*} else {
                     alreadySerialized = false;
                 }*/
-                    ////std::cout<<"children"<<std::endl;
-                ////std::cout<<"entity id : "<<getId()<<std::endl<<"Transform matrix : "<<getTransform().getMatrix()<<std::endl;
+                    //////std::cout<<"children"<<std::endl;
+                //////std::cout<<"entity id : "<<getId()<<std::endl<<"Transform matrix : "<<getTransform().getMatrix()<<std::endl;
             }
             /** \fn void onLoad()
             *   \brief load the entities.

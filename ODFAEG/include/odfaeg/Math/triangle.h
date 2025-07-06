@@ -15,12 +15,12 @@ namespace odfaeg {
                //The ray is parallal to the triangle, but isn't on the triangle => no intersections.
                if (ray.getDir().dot(n) == 0
                    && p.whichSide(ray.getOrig()) != 0) {
-                   ////std::cout<<"parallal no int"<<std::endl;
+                   //////std::cout<<"parallal no int"<<std::endl;
                    return false;
                //The ray is parallal to the triangle, and is on the triangle. => we check a 2D intersection.
                } else if (ray.getDir().dot(n) == 0
                           && p.whichSide(ray.getOrig()) == 0) {
-                            ////std::cout<<"parallal 2D int"<<std::endl;
+                            //////std::cout<<"parallal 2D int"<<std::endl;
                    Ray r (p1, p2);
                    float intrs = r.intersectsWhere(ray);
                    if (intrs != -1) {
@@ -51,7 +51,7 @@ namespace odfaeg {
                    && 0 <= point.y && point.y <= 1
                    &&  0 <= point.z && point.z <= 1
                    && point.y + point.z <= 1) {
-                       ////std::cout<<"point : "<<point<<std::endl;
+                       //////std::cout<<"point : "<<point<<std::endl;
                        return true;
                    }*/
                    // compute plane's normal
@@ -66,7 +66,7 @@ namespace odfaeg {
                     // check if ray and plane are parallel ?
                     float NdotRayDirection = N.dot(ray.getDir());
                     if (fabs(NdotRayDirection) < 0.0000001) { // almost 0
-                        ////std::cout<<"ray plane parallal no int"<<std::endl;
+                        //////std::cout<<"ray plane parallal no int"<<std::endl;
                         return false; // they are parallel so they don't intersect !
                     }
 
@@ -74,11 +74,11 @@ namespace odfaeg {
                     float d = -N.dot(p1);
 
                     // compute t (equation 3)
-                    ////std::cout<<"NdotRayDirection"<<NdotRayDirection<<"N dot ray orig : "<<N.dot(ray.getOrig())<<" d : "<<d<<"ray orig : "<<ray.getOrig()<<std::endl;
+                    //////std::cout<<"NdotRayDirection"<<NdotRayDirection<<"N dot ray orig : "<<N.dot(ray.getOrig())<<" d : "<<d<<"ray orig : "<<ray.getOrig()<<std::endl;
                     float t = -(N.dot(ray.getOrig()) + d) / NdotRayDirection;
                     // check if the triangle is in behind the ray
                     if (t < 0) {
-                        ////std::cout<<"triangle is behind the ray no int"<<std::endl;
+                        //////std::cout<<"triangle is behind the ray no int"<<std::endl;
                         return false; // the triangle is behind
                     }
 
@@ -95,7 +95,7 @@ namespace odfaeg {
                     C = edge0.cross(vp0);
 
                     if (N.dot(C) < 0) {
-                        ////std::cout<<"p is on the right side vp0"<<std::endl;
+                        //////std::cout<<"p is on the right side vp0"<<std::endl;
                         return false; // P is on the right side
                     }
 
@@ -105,7 +105,7 @@ namespace odfaeg {
                     C = edge1.cross(vp1);
 
                     if (N.dot(C) < 0) {
-                        ////std::cout<<"p is on the right side vp1"<<std::endl;
+                        //////std::cout<<"p is on the right side vp1"<<std::endl;
                         return false; // P is on the right side
                     }
 
@@ -114,10 +114,10 @@ namespace odfaeg {
                     Vec3f vp2 = P - p3;
                     C = edge2.cross(vp2);
                     if (N.dot(C) < 0) {
-                        ////std::cout<<"p is on the right side vp2"<<std::endl;
+                        //////std::cout<<"p is on the right side vp2"<<std::endl;
                         return false; // P is on the right side;
                     }
-                    ////std::cout<<P<<std::endl;
+                    //////std::cout<<P<<std::endl;
 
                     return true; // this ray hits the triangle-
               }
@@ -183,7 +183,7 @@ namespace odfaeg {
                    && 0 <= point.y && point.y <= 1
                    &&  0 <= point.z && point.z <= 1
                    && point.y + point.z <= 1) {
-                       ////std::cout<<"point : "<<point<<std::endl;
+                       //////std::cout<<"point : "<<point<<std::endl;
                        if (nbInt == 0) {
                            i1.x = p1.x + u.x * point.z + v.x * point.y;
                            i1.y = p1.y + u.y * point.z + v.y * point.y;
@@ -199,35 +199,35 @@ namespace odfaeg {
                     float u, v;
                     Vec3f v0v1 = p2 - p1;
                     Vec3f v0v2 = p3 - p1;
-                    ////std::cout<<"v0v1 : "<<v0v1<<std::endl;
-                    ////std::cout<<"v0v2 : "<<v0v2<<std::endl;
+                    //////std::cout<<"v0v1 : "<<v0v1<<std::endl;
+                    //////std::cout<<"v0v2 : "<<v0v2<<std::endl;
                     // no need to normalize
                     Vec3f N = v0v1.cross(v0v2); // N
-                    ////std::cout<<"N : "<<N<<std::endl;
+                    //////std::cout<<"N : "<<N<<std::endl;
                     float denom = N.dot(N);
 
                     // Step 1: finding P
 
                     // check if ray and plane are parallel ?
                     float NdotRayDirection = N.dot(ray.getDir());
-                    ////std::cout<<"NdotRayDirection : "<<NdotRayDirection<<std::endl;
+                    //////std::cout<<"NdotRayDirection : "<<NdotRayDirection<<std::endl;
                     if (fabs(NdotRayDirection) < 0.0000001) // almost 0
                         return false; // they are parallel so they don't intersect !
 
                     // compute d parameter using equation 2
                     float d = -N.dot(p1);
-                    ////std::cout<<"d : "<<d<<std::endl;
+                    //////std::cout<<"d : "<<d<<std::endl;
 
                     // compute t (equation 3)
                     float t = -(N.dot(ray.getOrig()) + d) / NdotRayDirection;
-                    ////std::cout<<"t : "<<t<<std::endl;
+                    //////std::cout<<"t : "<<t<<std::endl;
                     // check if the triangle is in behind the ray
                     if (t < 0) return false; // the triangle is behind
 
 
                     // compute the intersection point using equation 1
                     Vec3f P = ray.getOrig() + ray.getDir() * t;
-                    ////std::cout<<"P : "<<P<<std::endl;
+                    //////std::cout<<"P : "<<P<<std::endl;
 
 
                     // Step 2: inside-outside test
@@ -237,9 +237,9 @@ namespace odfaeg {
                     Vec3f edge0 = p2 - p1;
                     Vec3f vp0 = P - p1;
                     C = edge0.cross(vp0);
-                    ////std::cout<<"E 0 : "<<edge0<<std::endl;
-                    ////std::cout<<"VP0 : "<<vp0<<std::endl;
-                    ////std::cout<<"C0 : "<<C<<std::endl;
+                    //////std::cout<<"E 0 : "<<edge0<<std::endl;
+                    //////std::cout<<"VP0 : "<<vp0<<std::endl;
+                    //////std::cout<<"C0 : "<<C<<std::endl;
 
                     if (N.dot(C) < 0) return false; // P is on the right side
 
@@ -247,7 +247,7 @@ namespace odfaeg {
                     Vec3f edge1 = p3 - p2;
                     Vec3f vp1 = P - p2;
                     C = edge1.cross(vp1);
-                    ////std::cout<<"C1 : "<<C<<std::endl;
+                    //////std::cout<<"C1 : "<<C<<std::endl;
 
                     if ((u = N.dot(C)) < 0)  return false; // P is on the right side
 
@@ -255,7 +255,7 @@ namespace odfaeg {
                     Vec3f edge2 = p1 - p3;
                     Vec3f vp2 = P - p3;
                     C = edge2.cross(vp2);
-                    ////std::cout<<"C2 : "<<C<<std::endl;
+                    //////std::cout<<"C2 : "<<C<<std::endl;
                     if ((v = N.dot(C)) < 0) return false;
                     i1 = P;
                     return true;

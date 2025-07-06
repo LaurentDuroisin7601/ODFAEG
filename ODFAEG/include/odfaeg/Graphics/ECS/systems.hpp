@@ -103,7 +103,7 @@ namespace odfaeg {
                             scale.y() = 0;
                         } else if (tc->size.y() == 0) {
                             /*if (name == "WALL") {
-                                //std::cout<<"change local bounds! "<<std::endl;
+                                ////std::cout<<"change local bounds! "<<std::endl;
                             }*/
                             scale.y() = 1;
                             tc->size.y() = size.y();
@@ -148,11 +148,11 @@ namespace odfaeg {
                         tc->transformMatrix.setRotation(math::Vec3f(0, 0, 1), angle);
                         tc->localBounds.transform(tc->transformMatrix);
                         //physic::BoundingBox bounds = getGlobalBounds();
-                        /*//std::cout<<"get global bounds : "<<getGlobalBounds().getPosition()<<getGlobalBounds().getSize();
-                        //std::cout<<"global bounds : "<<globalBounds.getPosition()<<globalBounds.getSize();*/
+                        /*////std::cout<<"get global bounds : "<<getGlobalBounds().getPosition()<<getGlobalBounds().getSize();
+                        ////std::cout<<"global bounds : "<<globalBounds.getPosition()<<globalBounds.getSize();*/
                         /*if (getGlobalBounds().getPosition() != globalBounds.getPosition()
                             || getGlobalBounds().getSize() != globalBounds.getSize())
-                            //std::cout<<"different"<<std::endl;*/
+                            ////std::cout<<"different"<<std::endl;*/
                         tc->size = tc->globalBounds.getSize();
                         tc->position = tc->globalBounds.getPosition();
                     }

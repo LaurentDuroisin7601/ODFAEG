@@ -2831,7 +2831,7 @@ namespace odfaeg {
                                 tp1 = p1;
                                 tp2 = p2;
                                 tp3 = p3;
-                                ////std::cout<<"triangle : "<<triangles[t].positions[0]<<triangles[t].positions[1]<<triangles[t].positions[2]<<std::endl;
+                                //////std::cout<<"triangle : "<<triangles[t].positions[0]<<triangles[t].positions[1]<<triangles[t].positions[2]<<std::endl;
                                 p1 = frameBuffer.mapCoordsToPixel(math::Vec3f(p1.x, p1.y, p1.z));
                                 p2 = frameBuffer.mapCoordsToPixel(math::Vec3f(p2.x, p2.y, p2.z));
                                 p3 = frameBuffer.mapCoordsToPixel(math::Vec3f(p3.x, p3.y, p3.z));
@@ -2943,7 +2943,7 @@ namespace odfaeg {
                 }
             }
             bool RaytracingRenderComponent::loadEntitiesOnComponent(std::vector<Entity*> vEntities) {
-                ////std::cout<<"load entities on component"<<std::endl;
+                //////std::cout<<"load entities on component"<<std::endl;
                 triangles.clear();
                 lights.clear();
                 Light ambientLight;
@@ -2993,7 +2993,7 @@ namespace odfaeg {
                                                 triangle.ratio = material.getRefractionFactor();
                                                 math::Matrix4f m;
                                                 triangle.textureIndex = (material.getTexture() == nullptr) ? 0 : material.getTexture()->getNativeHandle();
-                                                ////std::cout<<"texture index : "<<triangle.textureIndex<<std::endl;
+                                                //////std::cout<<"texture index : "<<triangle.textureIndex<<std::endl;
                                                 triangle.textureMatrix = (material.getTexture() == nullptr) ? m : material.getTexture()->getTextureMatrix();
                                                 triangle.transform = vEntities[e]->getTransform().getMatrix().transpose();
                                                 if (!material.isReflectable() && !material.isRefractable())
@@ -3017,7 +3017,7 @@ namespace odfaeg {
                                                 triangle.texCoords[1] = math::Vec3f(va[i*4+2].texCoords.x, va[i*4+2].texCoords.y, 0, 0);
                                                 triangle.texCoords[2] = math::Vec3f(va[i*4+3].texCoords.x, va[i*4+3].texCoords.y, 0, 0);
                                                 /*for (unsigned int v = 0; v < 3; v++) {
-                                                    //std::cout<<va[i*4+v+1].position.x<<","<<va[i*4+v+1].position.y<<","<<va[i*4+v+1].position.z<<std::endl;
+                                                    ////std::cout<<va[i*4+v+1].position.x<<","<<va[i*4+v+1].position.y<<","<<va[i*4+v+1].position.z<<std::endl;
                                                 }*/
                                                 math::Vec3f v1(va[i*4].position.x, va[i*4].position.y, va[i*4].position.z);
                                                 math::Vec3f v2(va[i*4+2].position.x, va[i*4+2].position.y, va[i*4+2].position.z);
@@ -3262,7 +3262,7 @@ namespace odfaeg {
             }
             void RaytracingRenderComponent::pushEvent(window::IEvent event, RenderWindow& rw) {
                 if (event.type == window::IEvent::WINDOW_EVENT && event.window.type == window::IEvent::WINDOW_EVENT_RESIZED && &getWindow() == &rw && isAutoResized()) {
-                    //std::cout<<"recompute size"<<std::endl;
+                    ////std::cout<<"recompute size"<<std::endl;
                     recomputeSize();
                     getListener().pushEvent(event);
                     getView().reset(physic::BoundingBox(getView().getViewport().getPosition().x, getView().getViewport().getPosition().y, getView().getViewport().getPosition().z, event.window.data1, event.window.data2, getView().getViewport().getDepth()));

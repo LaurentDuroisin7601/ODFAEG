@@ -29,7 +29,7 @@ float Ray::intersects (Ray &other) {
     Vec3f dc = other.orig - orig;
     if (dc.dot(da.cross(db)) != 0.f) // lines are not coplanar
         return -1;
-    ////std::cout<<dc.cross(db).dot2(da.cross(db))<<std::endl;
+    //////std::cout<<dc.cross(db).dot2(da.cross(db))<<std::endl;
     float s = da.cross(db).dot2(dc.cross(db)) / da.cross(db).magnSquared();
     float t = da.cross(db).dot2(dc.cross(da)) / da.cross(db).magnSquared();
     if (s >= 0 && s <= 1 && t >= 0 && t <= 1)
@@ -59,7 +59,7 @@ float Ray::intersectsWhere (Ray &other) {
 
     if (dc.dot(da.cross(db)) != 0.f) // lines are not coplanar
         return -1;
-    ////std::cout<<dc.cross(db).dot2(da.cross(db))<<std::endl;
+    //////std::cout<<dc.cross(db).dot2(da.cross(db))<<std::endl;
     float s = da.cross(db).dot2(dc.cross(db)) / da.cross(db).magnSquared();
     float t = da.cross(db).dot2(dc.cross(da)) / da.cross(db).magnSquared();
     if (s >= 0 && s <= 1 && t >= 0 && t <= 1)
@@ -85,7 +85,7 @@ float Ray::intersectsWhereOther (Ray &other) {
 
     if (dc.dot(da.cross(db)) != 0.f) // lines are not coplanar
         return -1;
-    ////std::cout<<dc.cross(db).dot2(da.cross(db))<<std::endl;
+    //////std::cout<<dc.cross(db).dot2(da.cross(db))<<std::endl;
     float s = da.cross(db).dot2(dc.cross(db)) / da.cross(db).magnSquared();
     float t = da.cross(db).dot2(dc.cross(da)) / da.cross(db).magnSquared();
     if ((s >= 0 && s <= 1) && (t >= 0 && t <= 1))

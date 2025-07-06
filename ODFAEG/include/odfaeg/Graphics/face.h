@@ -100,15 +100,15 @@ class ODFAEG_GRAPHICS_API Material {
         template <typename Archive>
         void serialize(Archive &ar) {
             ar(rect.left);
-            //std::cout<<"left : "<<rect.left<<std::endl;
+            ////std::cout<<"left : "<<rect.left<<std::endl;
             ar(rect.top);
-            //std::cout<<"top : "<<rect.top<<std::endl;
+            ////std::cout<<"top : "<<rect.top<<std::endl;
             ar(rect.width);
-            //std::cout<<"width : "<<rect.width<<std::endl;
+            ////std::cout<<"width : "<<rect.width<<std::endl;
             ar(rect.height);
-            //std::cout<<"height : "<<rect.height<<std::endl;
+            ////std::cout<<"height : "<<rect.height<<std::endl;
             ar(texId);
-            //std::cout<<"tex id : "<<texId<<std::endl;
+            ////std::cout<<"tex id : "<<texId<<std::endl;
         }
     };
     std::vector<TextureInfo*> texInfos; /**> The informations about the textures. */
@@ -330,10 +330,10 @@ public :
     template <typename Archive>
     void serialize (Archive & ar) {
         ar(m_vertices);
-        //std::cout<<"vertices : "<<m_vertices.size()<<std::endl;
+        ////std::cout<<"vertices : "<<m_vertices.size()<<std::endl;
         ar(m_material);
         ar(transform);
-        //std::cout<<"transform : "<<transform.getMatrix()<<std:endl;
+        ////std::cout<<"transform : "<<transform.getMatrix()<<std:endl;
     }
 private :
     VertexArray m_vertices; /**> the vertices.*/

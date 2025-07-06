@@ -51,7 +51,7 @@ namespace odfaeg {
 
             //Check the right order of the points to find the normals of the oriented bounding rectangle.
             /*for (unsigned int i = 4; i < 8; i++) {
-                //std::cout<<(corners[i].y <= position.y && corners[i].x != store[0][1])<<std::endl;
+                ////std::cout<<(corners[i].y <= position.y && corners[i].x != store[0][1])<<std::endl;
                 if (corners[i].x == position.x)
                     p5Index = i;
                 else if (corners[i].y <= position.y && corners[i].x != store[0][1])
@@ -61,13 +61,13 @@ namespace odfaeg {
                 else
                     p8Index = i;
             }*/
-            ////std::cout<<"pt index 6 : "<<p6Index<<std::endl;
+            //////std::cout<<"pt index 6 : "<<p6Index<<std::endl;
             for (unsigned int i = 0 ; i < 8; i++) {
                 points[i] = corners[i];
-                //std::cout<<"point : "<<points[i]<<std::endl;
+                ////std::cout<<"point : "<<points[i]<<std::endl;
             }
             /*for (unsigned int i = 0; i < 8; i++)
-                //std::cout<<"points : "<<points[i]<<std::endl;*/
+                ////std::cout<<"points : "<<points[i]<<std::endl;*/
 
             points[8] = points[4];
             points[9] = points[5];
@@ -88,7 +88,7 @@ namespace odfaeg {
             flat = false;
             center = (points[0] + points[1] + points[2] + points[3]
                           + points[4] + points[5] + points[6] + points[7]) * 0.125f;
-            //std::cout<<"center : "<<center<<std::endl;
+            ////std::cout<<"center : "<<center<<std::endl;
             computeVectors();
         }
         OrientedBoundingBox::OrientedBoundingBox(math::Vec3f p1, math::Vec3f p2, math::Vec3f p3, math::Vec3f p4) {
@@ -105,7 +105,7 @@ namespace odfaeg {
             math::Vec3f position = math::Vec3f (store[0][0], store[1][0], store[2][0]);
             for (unsigned int i = 0 ; i < 4; i++) {
                 points[i] = corners[i];
-                //std::cout<<"point : "<<points[i]<<std::endl;
+                ////std::cout<<"point : "<<points[i]<<std::endl;
             }
             center = (points[0] + points[1] + points[2] + points[3]) * 0.25f;
             flat = true;
@@ -487,7 +487,7 @@ namespace odfaeg {
             return true;
         }
         bool OrientedBoundingBox::intersects (BoundingBox &bx, CollisionResultSet::Info& info) {
-            ////std::cout<<"vertices : "<<bx.getVertices()[0]<<bx.getVertices()[1]<<bx.getVertices()[2]<<std::endl;
+            //////std::cout<<"vertices : "<<bx.getVertices()[0]<<bx.getVertices()[1]<<bx.getVertices()[2]<<std::endl;
             float distMin1, distMin2;
             int ptIndex1, ptIndex2;
             int edgeIndex1, edgeIndex2;
@@ -913,7 +913,7 @@ namespace odfaeg {
             }
 
             math::Vec3f bpn = (faceBissectors[faceIndex] - center).projOnVector(faceNormals[faceIndex]);
-            ////std::cout<<"bissector : "<<faceBissectors[faceIndex]<<std::endl;
+            //////std::cout<<"bissector : "<<faceBissectors[faceIndex]<<std::endl;
             math::Vec3f d = point - center;
             float p = d.projOnAxis(bpn);
             if (p * p > bpn.magnSquared()) {
@@ -929,13 +929,13 @@ namespace odfaeg {
                 const float epsilon = 1e-6f;
                 for (unsigned int i = 0; i < 2; i++) {
                     float p = d.projOnAxis(edgeNormals[i]);
-                    ////std::cout<<"d  :"<<d<<"normal : "<<faceNormals[i]<<std::endl;
+                    //////std::cout<<"d  :"<<d<<"normal : "<<faceNormals[i]<<std::endl;
                     if (i == 0) {
-                        ////std::cout<<"p : "<<p<<",minX : "<<minX<<", maxX : "<<maxX<<",x : "<<(minX <= p+epsilon && p-epsilon <= maxX)<<std::endl;
+                        //////std::cout<<"p : "<<p<<",minX : "<<minX<<", maxX : "<<maxX<<",x : "<<(minX <= p+epsilon && p-epsilon <= maxX)<<std::endl;
                         if (!(minX <= p+epsilon && p-epsilon <= maxX))
                             return false;
                     } else {
-                        ////std::cout<<"p : "<<p<<",minY : "<<minY<<", maxY : "<<maxY<<std::endl;
+                        //////std::cout<<"p : "<<p<<",minY : "<<minY<<", maxY : "<<maxY<<std::endl;
                         if(!(minY <= p+epsilon && p-epsilon <= maxY))
                            return false;
                     }
@@ -953,17 +953,17 @@ namespace odfaeg {
             math::Vec3f d = point - center;
             for (unsigned int i = 0; i < 3; i++) {
                 float p = d.projOnAxis(faceNormals[i]);
-                ////std::cout<<"d  :"<<d<<"normal : "<<faceNormals[i]<<std::endl;
+                //////std::cout<<"d  :"<<d<<"normal : "<<faceNormals[i]<<std::endl;
                 if (i == 0) {
-                    ////std::cout<<"p : "<<p<<",minX : "<<minX<<", maxX : "<<maxX<<",x : "<<(minX <= p+epsilon && p-epsilon <= maxX)<<std::endl;
+                    //////std::cout<<"p : "<<p<<",minX : "<<minX<<", maxX : "<<maxX<<",x : "<<(minX <= p+epsilon && p-epsilon <= maxX)<<std::endl;
                     if (!(minX <= p+epsilon && p-epsilon <= maxX))
                         return false;
                 } else if (i == 1) {
-                    ////std::cout<<"p : "<<p<<",minY : "<<minY<<", maxY : "<<maxY<<std::endl;
+                    //////std::cout<<"p : "<<p<<",minY : "<<minY<<", maxY : "<<maxY<<std::endl;
                     if(!(minY <= p+epsilon && p-epsilon <= maxY))
                        return false;
                 } else {
-                    ////std::cout<<"p : "<<p<<",minZ : "<<minZ<<", maxZ : "<<maxZ<<std::endl;
+                    //////std::cout<<"p : "<<p<<",minZ : "<<minZ<<", maxZ : "<<maxZ<<std::endl;
                     if(!(minZ <= p+epsilon && p-epsilon <= maxZ))
                        return false;
                 }

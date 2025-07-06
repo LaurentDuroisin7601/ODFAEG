@@ -81,12 +81,12 @@ namespace odfaeg {
         void Anim::play (bool loop) {
             if (getChildren().size() > 1 && !running) {
                 running = true;
-                ////std::cout<<"play : "<<running<<std::endl;
+                //////std::cout<<"play : "<<running<<std::endl;
                 this->loop = loop;
             }
         }
         void Anim::setSelected(bool selected) {
-            ////std::cout<<"set selected : "<<selected<<std::endl;
+            //////std::cout<<"set selected : "<<selected<<std::endl;
             Entity::updateSelected(selected);
             interpolatedFrame->setSelected(selected);
         }
@@ -147,7 +147,7 @@ namespace odfaeg {
                 interpolatedFrame->setPosition(currentFrame->getPosition());*/
                 //addChild(interpolatedFrame);
                 /*if (interpolatedFrame->getRootType() == "E_ANIMATION")
-                    //std::cout<<"interpolated frame type : "<<interpolatedFrame->getType()<<std::endl;*/
+                    ////std::cout<<"interpolated frame type : "<<interpolatedFrame->getType()<<std::endl;*/
             }
         }
         void Anim::changeInterpolatedFrame(Entity* currentFrame) {
@@ -192,9 +192,9 @@ namespace odfaeg {
                                 iva[j].position[2] = cva[j].position.z() + (nva[j].position.z() - cva[j].position.z()) * (interpPerc / interpLevels);
                                 iva[j].color = cva[j].color;
                                 iva[j].texCoords = cva[j].texCoords;
-                                ////std::cout<<"position "<<iva[j].position.x<<","<<iva[j].position.y<<","<<iva[j].position.z<<std::endl;
+                                //////std::cout<<"position "<<iva[j].position.x<<","<<iva[j].position.y<<","<<iva[j].position.z<<std::endl;
                                 /*if (currentFrame->getRootType() == "E_MONSTER")
-                                    //std::cout<<"interpolation tex coords : "<<interpolatedFrame->getFace(i)->getVertexArray()[j].texCoords.x<<","<<interpolatedFrame->getFace(i)->getVertexArray()[j].texCoords.y<<std::endl;*/
+                                    ////std::cout<<"interpolation tex coords : "<<interpolatedFrame->getFace(i)->getVertexArray()[j].texCoords.x<<","<<interpolatedFrame->getFace(i)->getVertexArray()[j].texCoords.y<<std::endl;*/
                             }
                             interpolatedFrame->getFace(i)->setMaterial(currentFrame->getFace(i)->getMaterial());
                             interpolatedFrame->getFace(i)->setTransformMatrix(currentFrame->getFace(i)->getTransformMatrix());

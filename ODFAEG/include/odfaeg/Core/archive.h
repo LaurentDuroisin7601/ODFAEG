@@ -92,7 +92,7 @@ namespace odfaeg {
                       class... D,
                       class = typename std::enable_if<std::is_fundamental<T>::value>::type>
             void operator() (T& data, D...) {
-                ////std::cout<<"write fundamental : "<<data<<std::endl;
+                //////std::cout<<"write fundamental : "<<data<<std::endl;
                 buffer<<data<<std::endl;
                 nbSerialized++;
             }
@@ -115,16 +115,16 @@ namespace odfaeg {
                 std::map<std::string, long long int>::iterator it = adresses.find(oss.str());
                 if (it != adresses.end()) {
                     //If the address of the data is already registered, we just write the address of the data to the buffer.
-                    ////std::cout<<"write ref to fundamental type : "<<it->second<<std::endl;
+                    //////std::cout<<"write ref to fundamental type : "<<it->second<<std::endl;
                     buffer<<it->second<<std::endl;
                 } else {
                     //If the address of the data is not registered, we register it's address and we write the data's value.
                     std::pair<std::string, long long int> newAddress (oss.str(), nbSerialized);
                     adresses.insert(newAddress);
                     buffer<<newAddress.second<<std::endl;
-                    ////std::cout<<"write ref to fundamental type : "<<it->second<<std::endl;
+                    //////std::cout<<"write ref to fundamental type : "<<it->second<<std::endl;
                     buffer<<data<<std::endl;
-                    ////std::cout<<"write ref to fundamental type : "<<data<<std::endl;
+                    //////std::cout<<"write ref to fundamental type : "<<data<<std::endl;
                     nbSerialized++;
                 }
             }
@@ -143,16 +143,16 @@ namespace odfaeg {
                     oss<<typeid(*data).name()<<"*"<<reinterpret_cast<unsigned long long int>(data);
                     std::map<std::string, long long int>::iterator it = adresses.find(oss.str());
                     if (it != adresses.end()) {
-                        ////std::cout<<"id : "<<it->second<<std::endl;
+                        //////std::cout<<"id : "<<it->second<<std::endl;
                         buffer<<it->second<<std::endl;
-                        ////std::cout<<"write pointer to a fundamental type id : "<<it->second<<std::endl;
+                        //////std::cout<<"write pointer to a fundamental type id : "<<it->second<<std::endl;
                     } else {
                         std::pair<std::string, long long int> newAddress (oss.str(), nbSerialized);
                         adresses.insert(newAddress);
                         buffer<<newAddress.second<<std::endl;
-                        ////std::cout<<"write pointer to a fundamental type id : "<<newAddress.second<<std::endl;
+                        //////std::cout<<"write pointer to a fundamental type id : "<<newAddress.second<<std::endl;
                         buffer<<(*data)<<std::endl;
-                        ////std::cout<<"fundamental data : "<<(*data)<<std::endl;
+                        //////std::cout<<"fundamental data : "<<(*data)<<std::endl;
                         nbSerialized++;
                     }
                 } else {
@@ -170,7 +170,7 @@ namespace odfaeg {
             class = typename std::enable_if<std::is_enum<E>::value>::type>
             void operator() (E& data, D...) {
                 buffer<<data<<std::endl;
-                ////std::cout<<"write enum : "<<data<<std::endl;
+                //////std::cout<<"write enum : "<<data<<std::endl;
                 nbSerialized++;
             }
             /** \fn void operator() (E& data, D...)
@@ -188,14 +188,14 @@ namespace odfaeg {
                 std::map<std::string, long long int>::iterator it = adresses.find(oss.str());
                 if (it != adresses.end()) {
                     buffer<<it->second<<std::endl;
-                    ////std::cout<<"write ref to enum : "<<it->second<<std::endl;
+                    //////std::cout<<"write ref to enum : "<<it->second<<std::endl;
                 } else {
                     std::pair<std::string, long long int> newAddress (oss.str(), nbSerialized);
                     adresses.insert(newAddress);
                     buffer<<newAddress.second<<std::endl;
-                    ////std::cout<<"write ref to enum : "<<newAddress.second<<std::endl;
+                    //////std::cout<<"write ref to enum : "<<newAddress.second<<std::endl;
                     buffer<<data<<std::endl;
-                    ////std::cout<<"write ref to enum : "<<data<<std::endl;
+                    //////std::cout<<"write ref to enum : "<<data<<std::endl;
                     nbSerialized++;
                 }
             }
@@ -214,14 +214,14 @@ namespace odfaeg {
                     std::map<std::string, long long int>::iterator it = adresses.find(oss.str());
                     if (it != adresses.end()) {
                         buffer<<it->second<<std::endl;
-                        ////std::cout<<"write pointer to enum : "<<it->second<<std::endl;
+                        //////std::cout<<"write pointer to enum : "<<it->second<<std::endl;
                     } else {
                         std::pair<std::string, long long int> newAddress (oss.str(), nbSerialized);
                         adresses.insert(newAddress);
                         buffer<<newAddress.second<<std::endl;
-                        ////std::cout<<"write pointer to enum : "<<newAddress.second<<std::endl;
+                        //////std::cout<<"write pointer to enum : "<<newAddress.second<<std::endl;
                         buffer<<(*data)<<std::endl;
-                         ////std::cout<<"data : "<<*data<<std::endl;
+                         //////std::cout<<"data : "<<*data<<std::endl;
                         nbSerialized++;
                     }
                 } else {
@@ -244,7 +244,7 @@ namespace odfaeg {
             void operator() (T& data, D...) {
                 std::size_t str_size = data.length();
                 buffer<<str_size<<std::endl;
-                ////std::cout<<"write string : "<<str_size<<std::endl;
+                //////std::cout<<"write string : "<<str_size<<std::endl;
                 const char* datas = data.c_str();
                 nbSerialized++;
                 for (unsigned int i = 0; i < str_size; i++) {
@@ -269,15 +269,15 @@ namespace odfaeg {
                 std::map<std::string, long long int>::iterator it = adresses.find(oss.str());
                 if (it != adresses.end()) {
                     buffer<<it->second<<std::endl;
-                    ////std::cout<<"write ref to string : "<<it->second<<std::endl;
+                    //////std::cout<<"write ref to string : "<<it->second<<std::endl;
                 } else {
                     std::pair<std::string, long long int> newAddress (oss.str(), nbSerialized);
                     adresses.insert(newAddress);
                     buffer<<newAddress.second<<std::endl;
-                     ////std::cout<<"write ref to enum : "<<newAddress.second<<std::endl;
+                     //////std::cout<<"write ref to enum : "<<newAddress.second<<std::endl;
                     std::size_t str_size = data.length();
                     buffer<<str_size<<std::endl;
-                     ////std::cout<<"write ref to enum : "<<str_size<<std::endl;
+                     //////std::cout<<"write ref to enum : "<<str_size<<std::endl;
                     const char* datas = data.c_str();
                     nbSerialized++;
                     for (unsigned int i = 0; i < str_size; i++) {
@@ -303,15 +303,15 @@ namespace odfaeg {
                     std::map<std::string, long long int>::iterator it = adresses.find(oss.str());
                     if (it != adresses.end()) {
                         buffer<<it->second<<std::endl;
-                        ////std::cout<<"write pointer to string id : "<<it->second<<std::endl;
+                        //////std::cout<<"write pointer to string id : "<<it->second<<std::endl;
                     } else {
                         std::pair<std::string, long long int> newAddress (oss.str(), nbSerialized);
                         adresses.insert(newAddress);
                         buffer<<newAddress.second<<std::endl;
-                        ////std::cout<<"write pointer to string id : "<<newAddress.second<<std::endl;
+                        //////std::cout<<"write pointer to string id : "<<newAddress.second<<std::endl;
                         std::size_t str_size = data->length();
                         buffer<<str_size<<std::endl;
-                        ////std::cout<<"str size : "<<str_size<<std::endl;
+                        //////std::cout<<"str size : "<<str_size<<std::endl;
                         const char* datas = data->c_str();
                         nbSerialized++;
                         for (unsigned int i = 0; i < str_size; i++)
@@ -336,7 +336,7 @@ namespace odfaeg {
                       class = typename std::enable_if<!has_typedef_key<O>::value>::type,
                       class = typename std::enable_if<!std::is_enum<O>::value>::type>
             void operator() (O& object, D...) {
-                ////std::cout<<"write static object : "<<std::endl;
+                //////std::cout<<"write static object : "<<std::endl;
                 nbSerialized++;
                 object.serialize(*this);
             }
@@ -360,12 +360,12 @@ namespace odfaeg {
                 std::map<std::string, long long int>::iterator it = adresses.find(oss.str());
                 if (it != adresses.end()) {
                     buffer<<it->second<<std::endl;
-                    ////std::cout<<"write ref to static object : "<<it->second<<std::endl;
+                    //////std::cout<<"write ref to static object : "<<it->second<<std::endl;
                 } else {
                     std::pair<std::string, long long int> newAddress (oss.str(), nbSerialized);
                     adresses.insert(newAddress);
                     buffer<<newAddress.second<<std::endl;
-                    ////std::cout<<"write ref to static object : "<<newAddress.second<<std::endl;
+                    //////std::cout<<"write ref to static object : "<<newAddress.second<<std::endl;
                     nbSerialized++;
                     object.serialize(*this);
                 }
@@ -389,17 +389,17 @@ namespace odfaeg {
                     std::map<std::string, long long int>::iterator it = adresses.find(oss.str());
                     if (it != adresses.end()) {
                         buffer<<it->second<<std::endl;
-                        ////std::cout<<"write pointer static object : "<<it->second<<std::endl;
+                        //////std::cout<<"write pointer static object : "<<it->second<<std::endl;
                     } else {
                         std::pair<std::string, long long int> newAddress (oss.str(), nbSerialized);
                         adresses.insert(newAddress);
                         buffer<<newAddress.second<<std::endl;
-                        ////std::cout<<"write pointer static object : "<<newAddress.second<<std::endl;
+                        //////std::cout<<"write pointer static object : "<<newAddress.second<<std::endl;
                         nbSerialized++;
                         object->serialize(*this);
                     }
                 } else {
-                    ////std::cout<<"write null static object"<<std::endl;
+                    //////std::cout<<"write null static object"<<std::endl;
                     long long int id = -1;
                     buffer<<id<<std::endl;
                 }
@@ -420,7 +420,7 @@ namespace odfaeg {
                       class = typename std::enable_if<!sizeof...(D)>::type>
             void operator() (O& object, D...) {
                 nbSerialized++;
-                ////std::cout<<"write dynamic object"<<std::endl;
+                //////std::cout<<"write dynamic object"<<std::endl;
                 //If the type at compile time is the same than the type at runtime.
                 if (typeid(decltype(object)).name() == typeid(object).name()) {
                     //call the virtual template serialize function from the class.
@@ -451,12 +451,12 @@ namespace odfaeg {
                 std::map<std::string, long long int>::iterator it = adresses.find(oss.str());
                 if (it != adresses.end()) {
                     buffer<<it->second<<std::endl;
-                    ////std::cout<<"write ref to dynamic object : "<<it->second<<std::endl;
+                    //////std::cout<<"write ref to dynamic object : "<<it->second<<std::endl;
                 } else {
                     std::pair<std::string, long long int> newAddress (oss.str(), nbSerialized);
                     adresses.insert(newAddress);
                     buffer<<newAddress.second<<std::endl;
-                    ////std::cout<<"write ref to dynamic object : "<<newAddress.second<<std::endl;
+                    //////std::cout<<"write ref to dynamic object : "<<newAddress.second<<std::endl;
                     nbSerialized++;
                     if (typeid(decltype(object)).name() == typeid(object).name()) {
                         object.vtserialize(*this);
@@ -486,29 +486,29 @@ namespace odfaeg {
                     std::map<std::string, long long int>::iterator it = adresses.find(oss.str());
                     if (it != adresses.end()) {
                         buffer<<it->second<<std::endl;
-                        ////std::cout<<"write dynamic object : "<<it->second<<std::endl;
+                        //////std::cout<<"write dynamic object : "<<it->second<<std::endl;
                     } else {
                         std::pair<std::string, long long int> newAddress (oss.str(), nbSerialized);
                         adresses.insert(newAddress);
                         buffer<<newAddress.second<<std::endl;
-                        ////std::cout<<"write dynamic object : "<<newAddress.second<<std::endl;
+                        //////std::cout<<"write dynamic object : "<<newAddress.second<<std::endl;
                         std::string typeName = "BaseType";
                         if (typeid(decltype(*object)).name() == typeid(*object).name()) {
                             buffer<<typeName<<std::endl;
-                            ////std::cout<<"type name : "<<typeName<<std::endl;
+                            //////std::cout<<"type name : "<<typeName<<std::endl;
                             nbSerialized++;
                             object->vtserialize(*this);
                         } else {
                             object->key.register_object(object);
                             typeName = object->key.getTypeName();
                             buffer<<typeName<<std::endl;
-                            ////std::cout<<"type name : "<<typeName<<std::endl;
+                            //////std::cout<<"type name : "<<typeName<<std::endl;
                             nbSerialized++;
                             object->key.serialize_object("serialize", "OTextArchive", *this);
                         }
                     }
                 } else {
-                    ////std::cout<<"serialize null dynamic object"<<std::endl;
+                    //////std::cout<<"serialize null dynamic object"<<std::endl;
                     long long int id = -1;
                     buffer<<id<<std::endl;
                 }
@@ -625,7 +625,7 @@ namespace odfaeg {
 
                 nbDeserialized++;
                 buffer>>data;
-                ////std::cout<<"read fundamental : "<<data<<std::endl;
+                //////std::cout<<"read fundamental : "<<data<<std::endl;
                 char space;
                 buffer.get(space);
             }
@@ -643,7 +643,7 @@ namespace odfaeg {
                 T& data = ref.get();
                 long long int id;
                 buffer>>id;
-                ////std::cout<<"read reference to fundamental, id : "<<id<<std::endl;
+                //////std::cout<<"read reference to fundamental, id : "<<id<<std::endl;
                 char space;
                 buffer.get(space);
                 std::map<long long int, std::string>::iterator it = adresses.find(id);
@@ -658,7 +658,7 @@ namespace odfaeg {
                     adresses.insert(newAddress);
                     nbDeserialized++;
                     buffer>>data;
-                    ////std::cout<<"data : "<<data<<std::endl;
+                    //////std::cout<<"data : "<<data<<std::endl;
                     char space;
                     buffer.get(space);
                 }
@@ -672,9 +672,9 @@ namespace odfaeg {
 
             void operator() (char& data) {
                 nbDeserialized++;
-                ////std::cout<<"read char : "<<data<<std::endl;
+                //////std::cout<<"read char : "<<data<<std::endl;
                 buffer.get(data);
-                ////std::cout<<"data"<<std::endl;
+                //////std::cout<<"data"<<std::endl;
                 char space;
                 buffer.get(space);
             }
@@ -689,7 +689,7 @@ namespace odfaeg {
                 char& data = ref.get();
                 long long int id;
                 buffer>>id;
-                ////std::cout<<"read reference to char : "<<id<<std::endl;
+                //////std::cout<<"read reference to char : "<<id<<std::endl;
                 char space;
                 buffer.get(space);
                 std::map<long long int, std::string>::iterator it = adresses.find(id);
@@ -704,7 +704,7 @@ namespace odfaeg {
                     adresses.insert(newAddress);
                     nbDeserialized++;
                     buffer.get(data);
-                    ////std::cout<<"data : "<<data<<std::endl;
+                    //////std::cout<<"data : "<<data<<std::endl;
                     char space;
                     buffer.get(space);
                 }
@@ -719,7 +719,7 @@ namespace odfaeg {
             void operator() (unsigned char& data) {
                 nbDeserialized++;
                 buffer.get((char&) data);
-                ////std::cout<<"read unsigned char : "<<data<<std::endl;
+                //////std::cout<<"read unsigned char : "<<data<<std::endl;
                 char space;
                 buffer.get(space);
             }
@@ -734,7 +734,7 @@ namespace odfaeg {
                 unsigned char& data = ref.get();
                 long long int id;
                 buffer>>id;
-                ////std::cout<<"read reference to unsigned char : "<<id<<std::endl;
+                //////std::cout<<"read reference to unsigned char : "<<id<<std::endl;
                 char space;
                 buffer.get(space);
                 std::map<long long int, std::string>::iterator it = adresses.find(id);
@@ -749,7 +749,7 @@ namespace odfaeg {
                     adresses.insert(newAddress);
                     nbDeserialized++;
                     buffer.get((char&) data);
-                    ////std::cout<<"data : "<<data<<std::endl;
+                    //////std::cout<<"data : "<<data<<std::endl;
                     char space;
                     buffer.get(space);
                 }
@@ -768,7 +768,7 @@ namespace odfaeg {
                 buffer>>id;
                 char space;
                 buffer.get(space);
-                ////std::cout<<"read pointer to fundamental id : "<<id<<std::endl;
+                //////std::cout<<"read pointer to fundamental id : "<<id<<std::endl;
                 if (id != -1) {
                     std::map<long long int, std::string>::iterator it = adresses.find(id);
                     if (it != adresses.end()) {
@@ -783,7 +783,7 @@ namespace odfaeg {
                         adresses.insert(newAddress);
                         nbDeserialized++;
                         buffer>>(*data);
-                        ////std::cout<<"fundamental data : "<<(*data)<<std::endl;
+                        //////std::cout<<"fundamental data : "<<(*data)<<std::endl;
                         char space;
                         buffer.get(space);
                     }
@@ -805,7 +805,7 @@ namespace odfaeg {
                 buffer>>id;
                 char space;
                 buffer.get(space);
-                ////std::cout<<"read pointer to char : "<<id<<std::endl;
+                //////std::cout<<"read pointer to char : "<<id<<std::endl;
                 if (id != -1) {
                     std::map<long long int, std::string>::iterator it = adresses.find(id);
                     if (it != adresses.end()) {
@@ -822,7 +822,7 @@ namespace odfaeg {
                         buffer>>(*data);
                         char space;
                         buffer.get(space);
-                        ////std::cout<<"char data : "<<(*data)<<std::endl;
+                        //////std::cout<<"char data : "<<(*data)<<std::endl;
                     }
                 } else {
                     data = nullptr;
@@ -842,7 +842,7 @@ namespace odfaeg {
                 buffer>>id;
                 char space;
                 buffer.get(space);
-                ////std::cout<<"read pointer to unsigned char id : "<<id<<std::endl;
+                //////std::cout<<"read pointer to unsigned char id : "<<id<<std::endl;
                 if (id != -1) {
                     std::map<long long int, std::string>::iterator it = adresses.find(id);
                     if (it != adresses.end()) {
@@ -859,7 +859,7 @@ namespace odfaeg {
                         buffer>>((char&) *data);
                         char space;
                         buffer.get(space);
-                        ////std::cout<<"unsigned char data"<<(*data)<<std::endl;
+                        //////std::cout<<"unsigned char data"<<(*data)<<std::endl;
                     }
                 } else {
                     data = nullptr;
@@ -878,7 +878,7 @@ namespace odfaeg {
                 int eVal;
                 buffer>>eVal;
                 data = static_cast<E>(eVal);
-                ////std::cout<<"read enum : "<<data<<std::endl;
+                //////std::cout<<"read enum : "<<data<<std::endl;
                 char space;
                 buffer.get(space);
                 nbDeserialized++;
@@ -896,7 +896,7 @@ namespace odfaeg {
                 E& data = ref.get();
                 long long int id;
                 buffer>>id;
-                ////std::cout<<"read reference to enum id : "<<id<<std::endl;
+                //////std::cout<<"read reference to enum id : "<<id<<std::endl;
                 char space;
                 buffer.get(space);
                 std::map<long long int, std::string>::iterator it = adresses.find(id);
@@ -907,7 +907,7 @@ namespace odfaeg {
                 } else {
                     int eVal;
                     buffer>>eVal;
-                    ////std::cout<<"val : "<<eVal<<std::endl;
+                    //////std::cout<<"val : "<<eVal<<std::endl;
                     data = static_cast<E>(eVal);
                     char space;
                     buffer.get(space);
@@ -925,7 +925,7 @@ namespace odfaeg {
             void operator() (E*& data, D...) {
                 long long int id;
                 buffer>>id;
-                ////std::cout<<"read pointer to enum id : "<<id<<std::endl;
+                //////std::cout<<"read pointer to enum id : "<<id<<std::endl;
                 char space;
                 buffer.get(space);
                 if (id != -1) {
@@ -938,7 +938,7 @@ namespace odfaeg {
                         data = new E();
                         int eVal;
                         buffer>>eVal;
-                        ////std::cout<<"e val : "<<eVal<<std::endl;
+                        //////std::cout<<"e val : "<<eVal<<std::endl;
                         *data = static_cast<E>(eVal);
                         char space;
                         buffer.get(space);
@@ -969,7 +969,7 @@ namespace odfaeg {
                 buffer>>id;
                 char space;
                 buffer.get(space);
-                ////std::cout<<"id : "<<id<<std::endl;
+                //////std::cout<<"id : "<<id<<std::endl;
                 std::map<long long int, std::string>::iterator it = adresses.find(id);
                 if (it != adresses.end()) {
                     std::istringstream iss(it->second);
@@ -978,11 +978,11 @@ namespace odfaeg {
                 } else {*/
                     std::size_t str_size;
                     buffer>>str_size;
-                    ////std::cout<<"read string, size : "<<str_size<<std::endl;
+                    //////std::cout<<"read string, size : "<<str_size<<std::endl;
                     if (str_size > 0) {
                         char space;
                         buffer.get(space);
-                        ////std::cout<<"str size : "<<str_size<<std::endl;
+                        //////std::cout<<"str size : "<<str_size<<std::endl;
                         char* datas = new char[str_size];
                         nbDeserialized++;
                         for (unsigned int i = 0; i < str_size; i++) {
@@ -1013,7 +1013,7 @@ namespace odfaeg {
                 buffer>>id;
                 char space;
                 buffer.get(space);
-                ////std::cout<<"read reference to std::string id : "<<id<<std::endl;
+                //////std::cout<<"read reference to std::string id : "<<id<<std::endl;
                 std::map<long long int, std::string>::iterator it = adresses.find(id);
                 if (it != adresses.end()) {
                     std::istringstream iss(it->second);
@@ -1022,11 +1022,11 @@ namespace odfaeg {
                 } else {
                     std::size_t str_size;
                     buffer>>str_size;
-                    ////std::cout<<"str size : "<<str_size<<std::endl;
+                    //////std::cout<<"str size : "<<str_size<<std::endl;
                     if (str_size > 0) {
                         char space;
                         buffer.get(space);
-                        ////std::cout<<"str size : "<<str_size<<std::endl;
+                        //////std::cout<<"str size : "<<str_size<<std::endl;
                         char* datas = new char[str_size];
                         nbDeserialized++;
                         for (unsigned int i = 0; i < str_size; i++) {
@@ -1056,7 +1056,7 @@ namespace odfaeg {
                 buffer>>id;
                 char space;
                 buffer.get(space);
-                ////std::cout<<"read pointer to std::string id : "<<id<<std::endl;
+                //////std::cout<<"read pointer to std::string id : "<<id<<std::endl;
                 if (id != -1) {
                     std::map<long long int, std::string>::iterator it = adresses.find(id);
                     if (it != adresses.end()) {
@@ -1066,11 +1066,11 @@ namespace odfaeg {
                     } else {
                         std::size_t str_size;
                         buffer>>str_size;
-                        ////std::cout<<"str size : "<<str_size<<std::endl;
+                        //////std::cout<<"str size : "<<str_size<<std::endl;
                         if (str_size > 0) {
                             char space;
                             buffer.get(space);
-                            ////std::cout<<"str size : "<<str_size<<std::endl;
+                            //////std::cout<<"str size : "<<str_size<<std::endl;
                             char* datas = new char [str_size];
                             nbDeserialized++;
                             for (unsigned int i = 0; i < str_size; i++)
@@ -1104,7 +1104,7 @@ namespace odfaeg {
                 buffer>>id;
                 char space;
                 buffer.get(space);
-                ////std::cout<<"id : "<<id<<std::endl;
+                //////std::cout<<"id : "<<id<<std::endl;
                 std::map<long long int, std::string>::iterator it = adresses.find(id);
                 if (it != adresses.end()) {
                     std::istringstream iss(it->second);
@@ -1115,7 +1115,7 @@ namespace odfaeg {
                     oss<<typeid(object).name()<<"*"<<reinterpret_cast<unsigned long long int>(&object);
                     std::pair<long long int, std::string> newAddress (id, oss.str());
                     adresses.insert(newAddress);*/
-                    ////std::cout<<"read static object"<<std::endl;
+                    //////std::cout<<"read static object"<<std::endl;
                     nbDeserialized++;
                     object.serialize(*this);
                 //}
@@ -1138,7 +1138,7 @@ namespace odfaeg {
                 buffer>>id;
                 char space;
                 buffer.get(space);
-                ////std::cout<<"read reference to a static object id : "<<id<<std::endl;
+                //////std::cout<<"read reference to a static object id : "<<id<<std::endl;
                 std::map<long long int, std::string>::iterator it = adresses.find(id);
                 if (it != adresses.end()) {
                     std::istringstream iss(it->second);
@@ -1168,7 +1168,7 @@ namespace odfaeg {
             void operator() (O*& object, D...) {
                 long long int id;
                 buffer>>id;
-                ////std::cout<<"read pointer to static object id : "<<id<<std::endl;
+                //////std::cout<<"read pointer to static object id : "<<id<<std::endl;
                 char space;
                 buffer.get(space);
                 if (id != -1) {
@@ -1209,7 +1209,7 @@ namespace odfaeg {
                 buffer>>id;
                 char space;
                 buffer.get(space);
-                ////std::cout<<"id : "<<id<<std::endl;
+                //////std::cout<<"id : "<<id<<std::endl;
                 std::map<long long int, std::string>::iterator it = adresses.find(id);
                 if (it != adresses.end()) {
                     std::istringstream iss(it->second);
@@ -1220,7 +1220,7 @@ namespace odfaeg {
                     oss<<typeid(object).name()<<"*"<<reinterpret_cast<unsigned long long int>(&object);
                     std::pair<long long int, std::string> newAddress (id, oss.str());
                     adresses.insert(newAddress);*/
-                    ////std::cout<<"read dynamic object : "<<std::endl;
+                    //////std::cout<<"read dynamic object : "<<std::endl;
                     nbDeserialized++;
                     if (typeid(decltype(object)) == typeid(object)) {
                         object.vtserialize(*this);
@@ -1247,7 +1247,7 @@ namespace odfaeg {
                 O& object = ref.get();
                 long long int id;
                 buffer>>id;
-                ////std::cout<<"read reference to dynamic object id : "<<id<<std::endl;
+                //////std::cout<<"read reference to dynamic object id : "<<id<<std::endl;
                 char space;
                 buffer.get(space);
                 std::map<long long int, std::string>::iterator it = adresses.find(id);
@@ -1287,7 +1287,7 @@ namespace odfaeg {
                 buffer>>id;
                 char space;
                 buffer.get(space);
-                ////std::cout<<"read pointer to a dynamic object id : "<<id<<std::endl;
+                //////std::cout<<"read pointer to a dynamic object id : "<<id<<std::endl;
                 if (id != -1) {
                     std::map<long long int, std::string>::iterator it = adresses.find(id);
                     if (it != adresses.end()) {
@@ -1339,7 +1339,7 @@ namespace odfaeg {
                 buffer>>id;
                 char space;
                 buffer.get(space);
-                ////std::cout<<"read pointer to an abstract dynamic object id : "<<id<<std::endl;
+                //////std::cout<<"read pointer to an abstract dynamic object id : "<<id<<std::endl;
                 if (id != -1) {
                     std::map<long long int, std::string>::iterator it = adresses.find(id);
                     if (it != adresses.end()) {
@@ -1374,7 +1374,7 @@ namespace odfaeg {
                 buffer>>size;
                 char space;
                 buffer.get(space);
-                ////std::cout<<"vector size : "<<size<<std::endl;
+                //////std::cout<<"vector size : "<<size<<std::endl;
                 for (unsigned int i = 0; i < size; i++) {
                     O object;
                     (*this)(object);
@@ -1417,7 +1417,7 @@ namespace odfaeg {
                 buffer>>size;
                 char space;
                 buffer.get(space);
-                ////std::cout<<"map size : "<<size<<std::endl;
+                //////std::cout<<"map size : "<<size<<std::endl;
                 for (unsigned int i = 0; i < size; i++) {
                     std::pair<T1, T2> pair;
                     (*this)(pair);
