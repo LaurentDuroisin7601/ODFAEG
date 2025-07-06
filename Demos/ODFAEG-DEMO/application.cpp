@@ -586,10 +586,11 @@ namespace sorrok {
                     }
                 }
                 //getView().move(d.x(), d.y(), d.y());
-                actualPos = Vec2f(caracter->getCenter().x(), caracter->getCenter().y());
+                Vec2f actualPos2 = Vec2f(caracter->getCenter().x(), caracter->getCenter().y());
                 audio::Listener::setDirection(dir.x(), dir.y(), 0);
                 audio::Listener::setPosition(actualPos.x(), actualPos.y(), 0);
-                if (actualPos.computeDist(caracter->getPath()[caracter->getPath().size() - 1]) <= 1.f) {
+                //std::cout<<"pos : "<<actualPos2<<std::endl<<"path end : "<<caracter->getPath()[caracter->getPath().size() - 1]<<std::endl<<"distance : "<<actualPos2.computeDist(caracter->getPath()[caracter->getPath().size() - 1])<<std::endl;
+                if (actualPos2.computeDist(caracter->getPath()[caracter->getPath().size() - 1]) <= 1.f) {
                     caracter->setMoving(false);
                     if (player.isPlaying())
                         player.stop();
