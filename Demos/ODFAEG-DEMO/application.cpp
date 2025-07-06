@@ -536,7 +536,7 @@ namespace sorrok {
     }
     void MyAppli::onExec () {
         std::int64_t t = getClock("LoopTime").getElapsedTime().asMicroseconds();
-        //std::cout<<"time : "<<t<<std::endl;
+        std::cout<<"time : "<<t<<std::endl;
         if (caracter->isMoving()) {
             if (!player.isPlaying()) {
                 player.play(true);
