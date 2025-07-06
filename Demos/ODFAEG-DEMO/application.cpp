@@ -252,8 +252,8 @@ namespace sorrok {
             //std::cout<<bb->getPosition()<<" "<<bb->getSize()<<std::endl;
             decor->setCollisionVolume(bb);
             decor->setShadowCenter(Vec3f(0, 400, -400));
-            thouse->getFace(0)->getMaterial().setSpecularPower(10);
-            thouse->getFace(0)->getMaterial().setSpecularIntensity(100);
+            /*thouse->getFace(0)->getMaterial().setSpecularPower(10);
+            thouse->getFace(0)->getMaterial().setSpecularIntensity(100);*/
             getWorld()->addEntity(decor);
             Anim* fire = entityFactory.make_entity<Anim>(0.1f, Vec3f(0, 0, 0), Vec3f(100, 100, 0), entityFactory);
             Tile* tf1 = entityFactory.make_entity<Tile>(tm.getResourceByAlias("FIRE1"), Vec3f(0, 100, 150), Vec3f(100, 100, 0), IntRect(0, 0, 150, 200), entityFactory);
