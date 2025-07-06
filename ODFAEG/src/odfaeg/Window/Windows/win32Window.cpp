@@ -646,7 +646,6 @@ namespace odfaeg {
             // Don't process any message until window is created
             if (m_handle == NULL)
                 return;
-
             switch (message)
             {
                 // Destroy event

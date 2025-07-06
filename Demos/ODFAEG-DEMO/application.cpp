@@ -87,6 +87,7 @@ namespace sorrok {
         Vec2f mouse(mousePos.x(), mousePos.y());
         Vec3f finalPos = getRenderComponentManager().getComponent(0)->getFrameBuffer()->mapPixelToCoords(Vec3f(mouse.x(), getRenderWindow().getSize().y()-mouse.y(), 0));
         std::cout<<mouse.x()<<" "<<mouse.y()<<std::endl;
+        system("PAUSE");
         point.clear();
         point.append(Vertex(math::Vec3f(finalPos.x(), finalPos.y(), finalPos.y()), Color(255, 0, 0)));
         std::vector<Vec2f> path = getWorld()->getPath(caracter, finalPos);
@@ -409,6 +410,7 @@ namespace sorrok {
         Action a3 (Action::EVENT_TYPE::KEY_PRESSED_ONCE, IKeyboard::Key::S);
         Action a4 (Action::EVENT_TYPE::KEY_PRESSED_ONCE, IKeyboard::Key::D);
         Action a5 (Action::EVENT_TYPE::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
+        a5.name = "left mouse";
         Action combined  = a1 || a2 || a3 || a4;
         Command moveAction(combined, FastDelegate<void>(&MyAppli::keyHeldDown, this, IKeyboard::Unknown));
         getListener().connect("MoveAction", moveAction);
@@ -525,6 +527,7 @@ namespace sorrok {
             getListener().setCommandSlotParams("MouseInside", this, mousePos);
         }
         if (event.type == IEvent::MOUSE_BUTTON_EVENT && event.mouseButton.type == IEvent::BUTTON_EVENT_PRESSED) {
+            //std::cout<<"mouse button pressed"<<std::endl;
             math::Vec2f mousePos (event.mouseButton.x, event.mouseButton.y);
 
             getListener().setCommandSlotParams("LeftMouseButtonPressedAction", this, mousePos);

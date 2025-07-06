@@ -168,6 +168,7 @@ namespace odfaeg {
                 /*if (name == "SkillMouseMoved")
                                 ////std::cout<<"events ? "<<events.size()<<std::endl;*/
                 for (unsigned int i = 0; i < events.size(); i++) {
+                    std::cout<<"events "<<std::endl;
 
                     /*if (type == KEY_HELD_DOWN || type == MOUSE_BUTTON_HELD_DOWN) {
                         if (!is_not)
@@ -185,7 +186,7 @@ namespace odfaeg {
                                 || events[i].type == window::IEvent::MOUSE_BUTTON_EVENT && events[i].mouseButton.type == window::IEvent::BUTTON_EVENT_PRESSED
                                 && startEvent.type == window::IEvent::MOUSE_BUTTON_EVENT && startEvent.mouseButton.type == window::IEvent::BUTTON_EVENT_PRESSED)
                                 pressed = true;
-                            if (name == "SkillMouseMoved")
+                            //if (name == "SkillMouseMoved")
                                 ////std::cout<<"skill move mouse move triggered!"<<std::endl;
                             return true;
                         } else if (is_not && !Command::equalEvent(events[i], startEvent) && !pressed) {
