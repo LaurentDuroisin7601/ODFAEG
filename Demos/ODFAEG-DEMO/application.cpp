@@ -12,7 +12,7 @@ using namespace odfaeg::audio;
 using namespace odfaeg::window;
 namespace sorrok {
     MyAppli::MyAppli(VideoMode wm, std::string title) : Application<MyAppli> (wm, title, Style::Default, ContextSettings(0, 0, 4, 4, 6)) {
-        std::cout<<"constructor"<<std::endl;
+        //std::cout<<"constructor"<<std::endl;
         running = false;
         actualKey = IKeyboard::Key::Unknown;
         previousKey = IKeyboard::Key::Unknown;
@@ -85,12 +85,15 @@ namespace sorrok {
     }
     void MyAppli::leftMouseButtonPressed(math::Vec2f mousePos) {
         Vec2f mouse(mousePos.x(), mousePos.y());
-        Vec3f finalPos = getRenderComponentManager().getComponent(0)->getFrameBuffer()->mapPixelToCoords(Vec3f(mouse.x(), getRenderWindow().getSize().y()-mouse.y(), 0));
+        Vec3f finalPos = getRenderComponentManager().getComponent(0)->getFrameBuffer()->mapPixelToCoords(Vec3f(mouse.x(), /*getRenderWindow().getSize().y()-*/mouse.y(), 0));
 
-        point.clear();
-        point.append(Vertex(math::Vec3f(finalPos.x(), finalPos.y(), finalPos.y()), Color(255, 0, 0)));
+        //point.clear();
+
         std::vector<Vec2f> path = getWorld()->getPath(caracter, finalPos);
         if (path.size() > 0) {
+            /*for (unsigned int i = 0; i < path.size(); i++) {
+                point.append(Vertex(math::Vec3f(path[i].x(), path[i].y(), 0), Color(255, 0, 0)));
+            }*/
             //system("PAUSE");
             caracter->setPath(path);
             caracter->setIsMovingFromKeyboard(false);
@@ -536,7 +539,7 @@ namespace sorrok {
     }
     void MyAppli::onExec () {
         std::int64_t t = getClock("LoopTime").getElapsedTime().asMicroseconds();
-        std::cout<<"time : "<<t<<std::endl;
+
         if (caracter->isMoving()) {
             if (!player.isPlaying()) {
                 player.play(true);
@@ -544,6 +547,7 @@ namespace sorrok {
             if (caracter->isMovingFromKeyboard()) {
                 Vec3f actualPos = Vec3f(caracter->getCenter().x(), caracter->getCenter().y(), 0);
                 Vec3f newPos = actualPos +  Vec3f(caracter->getDir().x(), caracter->getDir().y(), 0) * caracter->getSpeed() * t;
+                //std::cout<<"actual pos : "<<actualPos<<std::endl<<"new pos : "<<newPos<<std::endl<<" t * speed : "<<caracter->getSpeed() * t<<std::endl;
                 Ray r (actualPos, newPos);
                 CollisionResultSet cinfos;
                 if (getWorld()->collide(caracter, r, cinfos)) {
@@ -557,7 +561,7 @@ namespace sorrok {
                         getRenderComponentManager().getRenderComponent(i)->setView(view);
                     }
                 }
-                Vec3f d = newPos - getView().getPosition();
+                Vec3f d = newPos - caracter->getCenter();
                 //getView().move(d.x(), d.y(), d.y());
                 getWorld()->moveEntity(caracter, d.x(), d.y(), d.y());
                 audio::Listener::setPosition(newPos.x(), newPos.y(), 0);
@@ -566,6 +570,7 @@ namespace sorrok {
 
                 Vec3f actualPos = caracter->getCenter();
                 Vec2f pos = Computer::getPosOnPathFromTime(actualPos, caracter->getPath(),t,caracter->getSpeed());
+                //std::cout<<"actual pos : "<<actualPos<<std::endl<<"new pos  : "<<pos<<std::endl;
                 Vec2f d = pos - actualPos;
                 Vec2f dir = d.normalize();
                 //std::cout<<"position : "<<caracter->getPosition().z<<" dy : "<<d.y()<<std::endl;

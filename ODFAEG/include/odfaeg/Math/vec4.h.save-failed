@@ -385,12 +385,6 @@ namespace odfaeg {
             VecN<T, N> normalize () const {
                 VecN<T, N> result;
                 float length = magnitude();
-                if (length == 0) {
-                    for (unsigned int i = 0; i < N; i++) {
-                        result[i] = 0;
-                    }
-                    return result;
-                }
                 for (unsigned int i = 0; i < N; i++) {
                     result[i] = data[i] / length;
                 }

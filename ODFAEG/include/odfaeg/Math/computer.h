@@ -274,7 +274,8 @@ namespace odfaeg {
                         ////std::cout<<"angle : "<<Math::abs(Math::toDegrees(dir1.getAngleBetween(dir2, dir1.cross(dir2))))<<std::endl;*/
                         //If the number of point is greater than 2, we need to check on which segment of the path our actual position is.
                         //If the directions are not the same it means that the point is not on this segment of the path.
-                        //////std::cout<<"pos : "<<actualPos<<"null vector ? "<<dir2.isNulVector()<<std::endl<<"d1 : "<<d1<<std::endl<<"d2 : "<<d2<<std::endl<<"angle : "<<Math::toDegrees(dir1.getAngleBetween(dir2))<<std::endl;
+                        /*std::cout<<"dir1 : "<<dir1<<std::endl<<"dir2 : "<<dir2<<std::endl<<"pos : "<<actualPos<<std::endl<<"null vector ? "<<dir2.isNulVector()<<std::endl<<"d1 : "<<d1<<std::endl<<"d2 : "<<d2<<std::endl<<"angle : "<<Math::toDegrees(dir1.getAngleBetween(dir2))<<std::endl;
+                        system("PAUSE");*/
                         while (currentPathIndex < path.size() - 1 && !dir2.isNulVector() && !(Math::abs(Math::toDegrees(dir1.getAngleBetween(dir2))) <= 1 && d2 < d1)) {
                             //We need to check if the actual position is on the next segment of the path.
                             currentPathIndex++;
@@ -284,11 +285,11 @@ namespace odfaeg {
                                 dir2 = (actualPos - path[currentPathIndex]).normalize();
                                 d1 = (path[currentPathIndex+1] - path[currentPathIndex]).magnitude();
                                 d2 = (actualPos - path[currentPathIndex]).magnitude();
-                                /*////std::cout<<"dir 1 : "<<dir1<<" dir 2 : "<<dir2<<" d1 : "<<d1<<" d2 : "<<d2<<std::endl;
-                                ////std::cout<<"angle : "<<Math::abs(Math::toDegrees(dir1.getAngleBetween(dir2, dir1.cross(dir2))))<<std::endl;*/
+                                /*std::cout<<"dir 1 : "<<dir1<<" dir 2 : "<<dir2<<" d1 : "<<d1<<" d2 : "<<d2<<std::endl;
+                                std::cout<<"angle : "<<Math::abs(Math::toDegrees(dir1.getAngleBetween(dir2)))<<std::endl;*/
                             }
                         }
-                        //////std::cout<<"current index path : "<<currentPathIndex<<"size : "<<path.size()<<std::endl;
+                        //std::cout<<"current index path : "<<currentPathIndex<<"size : "<<path.size()<<std::endl;
                        /*std::string str;
                         std::cin>>str;*/
                         //Our actual position is not on the path so we return our actual position.
@@ -328,8 +329,7 @@ namespace odfaeg {
                                     d1 = (path[currentPathIndex+1] - path[currentPathIndex]).magnitude();
                                     d2 = (nextPos - path[currentPathIndex]).magnitude();
                                     //////std::cout<<"dir 1 : "<<dir1<<" dir 2 : "<<dir2<<" d1 : "<<d1<<" d2 : "<<d2<<"d2 - d1 : "<<d2 - d1<<std::endl;
-                                    /*std::string ok;
-                                    std::cin>>ok;*/
+
                                 }
                             }
 
