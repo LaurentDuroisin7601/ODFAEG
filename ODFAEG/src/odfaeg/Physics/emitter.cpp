@@ -114,6 +114,7 @@ namespace odfaeg
             // integral, we have to emit sometimes more and sometimes less. mParticleDifference takes care of the deviation each frame.
 
             float particleAmount = mEmissionRate * dt.asSeconds() + mEmissionDifference;
+            std::cout<<"particle amount : "<<particleAmount<<std::endl;
             unsigned int nbParticles = static_cast<unsigned int>(particleAmount);
 
             // Compute difference for next frame, return current amount

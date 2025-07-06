@@ -306,13 +306,13 @@ namespace sorrok {
        /* sf::Vector3f acceleration(0, -1, 0);
         ForceAffector affector(acceleration);
         billboard->getParticleSystem().addAffector(affector);*/
-        /*ps->addEmitter(refEmitter(emitter));
+        ps->addEmitter(refEmitter(emitter));
         ps->setLayer(1);
         psu->addParticleSystem(ps);
         psu->setName("ParticlesSystemUpdater");
         //ps->move(Vec3f(0, -125, 0));
         getWorld()->addEntity(ps);
-        View view = getView();*/
+        View view = getView();
         //view.rotate(0, 0, 20);
         PerPixelLinkedListRenderComponent *frc1 = new PerPixelLinkedListRenderComponent(getRenderWindow(),0, "E_BIGTILE", ContextSettings(0, 0, 4, 4, 6));
         PerPixelLinkedListRenderComponent *frc2 = new PerPixelLinkedListRenderComponent(getRenderWindow(), 1, "E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PARTICLES", ContextSettings(24, 8, 4, 4, 6));
