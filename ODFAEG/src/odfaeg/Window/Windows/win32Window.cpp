@@ -19,6 +19,11 @@
 #include <cstring>
 #include <chrono>
 
+#ifdef VULKAN
+#include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan_win32.h>
+#endif
+
 // MinGW lacks the definition of some Win32 constants
 #ifndef XBUTTON1
     #define XBUTTON1 0x0001
@@ -1280,5 +1285,25 @@ namespace odfaeg {
 
             return DefWindowProcW(handle, message, wParam, lParam);
         }
+        #ifdef VULKAN
+        VkSurfaceKHR Win32Window::createSurface(VkInstance instance) {
+            VkWin32SurfaceCreateInfoKHR surfaceCreateInfo = {};
+            surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
+            surfaceCreateInfo.hinstance = GetModuleHandle(nullptr);
+            surfaceCreateInfo.hwnd = m_handle;
+            VkSurfaceKHR surface;
+            if(vkCreateWin32SurfaceKHR(instance, &surfaceCreateInfo, nullptr, &surface) != VK_SUCCESS) {
+                throw std::runtime_error("Failed to create win32 vulkan surface!");
+            }
+            return surface;
+        }
+        void Win32Window::getFramebufferSize(int& width, int& height) {
+            RECT clientRect;
+            if (GetClientRect(m_handle, &clientRect)) {
+                width = clientRect.right - clientRect.left;
+                height = clientRect.bottom - clientRect.top;
+            }
+        }
+        #endif // VULKAN
     }
 }

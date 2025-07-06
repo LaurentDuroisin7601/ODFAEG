@@ -1,5 +1,5 @@
 #include "../../../include/odfaeg/Window/windowFactory.hpp"
-#if defined(SFML)
+/*#if defined(SFML)
 #include "../../../include/odfaeg/Window/ODFAEG/sfmlWindowImpl.hpp"
 typedef odfaeg::window::ODFAEGWindowImpl WindowType;
 #elif defined(SDL)
@@ -11,10 +11,10 @@ typedef odfaeg::window::GLFWWindowImpl WindowType;
 #elif defined (VULKAN)
 #include "../../../include/odfaeg/Window/SDL/vkSDLWindow.hpp"
 typedef odfaeg::window::SDLWindow WindowType;
-#else
+#else*/
 #include "../../../include/odfaeg/Window/windowImpl.hpp"
 typedef odfaeg::window::WindowImpl WindowType;
-#endif
+//#endif
 namespace odfaeg {
     namespace window {
         IWindow* WindowFactory::create() {

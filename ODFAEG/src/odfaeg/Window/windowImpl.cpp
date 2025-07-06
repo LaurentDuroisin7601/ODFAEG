@@ -9,7 +9,6 @@ namespace odfaeg {
     namespace window {
         WindowImpl::WindowImpl() : WindowImplType()
         {
-            std::cout<<"impl : "<<std::endl;
             m_frameTimeLimit = core::Time::zero;
 
         }
@@ -53,7 +52,9 @@ namespace odfaeg {
             #endif
             // Recreate the WindowImpl implementation*/
             WindowImplType::create(mode, title, style, settings);
+            #ifndef VULKAN
             m_context.create(getSystemHandle(), settings, nullptr, mode.bitsPerPixel);
+            #endif
             initialize();
         }
         ////////////////////////////////////////////////////////////
@@ -62,7 +63,9 @@ namespace odfaeg {
             // Recreate the WindowImpl implementation
             WindowImplType::destroy();
             WindowImplType::create(handle, settings);
+            #ifndef VULKAN
             m_context.create(handle, settings);
+            #endif
             initialize();
         }
         ////////////////////////////////////////////////////////////
@@ -188,14 +191,22 @@ namespace odfaeg {
             WindowImplType::destroy();
         }
         bool WindowImpl::setActive(bool active) {
+            #ifndef VULKAN
             return m_context.setActive(active);
+            #else
+            return false;
+            #endif
         }
         void WindowImpl::setVerticalSyncEnabled(bool enabled) {
             //std::cout<<"set vertical sync enable : "<<enabled<<std::endl;
+            #ifndef VULKAN
             m_context.setVerticalSyncEnabled(enabled);
+            #endif
         }
         void WindowImpl::display() {
+            #ifndef VULKAN
             m_context.display();
+            #endif
             // Limit the framerate if needed
             if (m_frameTimeLimit != core::Time::zero)
             {
@@ -227,7 +238,11 @@ namespace odfaeg {
             setActive();
         }
         const ContextSettings& WindowImpl::getSettings() const {
+            #ifndef VULKAN
             return m_context.getSettings();
+            #else
+            return ContextSettings(0, 0, 0, 0, 0);
+            #endif
         }
         WindowImpl::~WindowImpl()
         {

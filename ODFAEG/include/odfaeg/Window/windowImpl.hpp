@@ -14,8 +14,11 @@ typedef odfaeg::window::Win32Window WindowImplType;
 #include "../Core/clock.h"
 namespace odfaeg {
     namespace window {
-
+        #ifdef VULKAN
+        class ODFAEG_WINDOW_API WindowImpl : public WindowImplType {
+        #else
         class ODFAEG_WINDOW_API WindowImpl : public WindowImplType, GLResource {
+        #endif
         public :
             WindowImpl ();
             ////////////////////////////////////////////////////////////
@@ -255,7 +258,9 @@ namespace odfaeg {
             ~WindowImpl ();
             private :
                 void initialize();
+                #ifndef VULKAN
                 ContextImpl m_context;
+                #endif
                 core::Clock m_clock;
                 core::Time m_frameTimeLimit;
                 math::Vector2u m_size;

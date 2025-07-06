@@ -1,5 +1,9 @@
 #include "../../../include/odfaeg/Window/vkSettup.hpp"
 #ifdef VULKAN
+#ifdef ODFAEG_SYSTEM_WINDOWS
+#include <windows.h>
+#include <vulkan/vulkan_win32.h>
+#endif
 namespace odfaeg {
     namespace window {
         VkSettup::VkSettup()  {
@@ -70,7 +74,7 @@ namespace odfaeg {
             const char** glfwExtensions;
             glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);*/
 
-            Uint32 sdl_count_instance_extensions;
+            /*Uint32 sdl_count_instance_extensions;
             const char * const *sdl_instance_extensions = SDL_Vulkan_GetInstanceExtensions(&sdl_count_instance_extensions);
 
             int sdl_count_extensions = sdl_count_instance_extensions + 1;
@@ -78,13 +82,19 @@ namespace odfaeg {
             sdl_extensions[0] = VK_EXT_DEBUG_REPORT_EXTENSION_NAME;
             SDL_memcpy(&sdl_extensions[1], sdl_instance_extensions, sdl_count_instance_extensions * sizeof(const char*));
 
-            std::vector<const char*> extensions(sdl_extensions, sdl_extensions + sdl_count_extensions);
+            std::vector<const char*> extensions(sdl_extensions, sdl_extensions + sdl_count_extensions);*/
+
+            std::vector<const char*> extensions;
 
             if (enableValidationLayers) {
                 extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
             }
             extensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
-
+            #ifdef ODFAEG_SYSTEM_WINDOWS
+            extensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
+            extensions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
+            #endif
+            //SDL_free(sdl_extensions);
 
             return extensions;
         }

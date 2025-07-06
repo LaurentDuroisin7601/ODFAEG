@@ -40,8 +40,8 @@ namespace odfaeg {
             ///
             ////////////////////////////////////////////////////////////
             Win32Window(VideoMode mode, const core::String& title, std::uint32_t style, const ContextSettings& settings);
-            void create (VideoMode mode, const core::String& title, std::uint32_t style, const ContextSettings& settings);
-            void create(WindowHandle handle, const ContextSettings& settings);
+            virtual void create (VideoMode mode, const core::String& title, std::uint32_t style, const ContextSettings& settings);
+            virtual void create(WindowHandle handle, const ContextSettings& settings);
 
             ////////////////////////////////////////////////////////////
             /// \brief Destructor
@@ -169,6 +169,10 @@ namespace odfaeg {
             virtual bool waitEvent(IEvent& event) {
                 return false;
             }
+            #ifdef VULKAN
+            VkSurfaceKHR createSurface(VkInstance instance);
+            void getFramebufferSize(int& width, int& height);
+            #endif
         protected:
 
             ////////////////////////////////////////////////////////////

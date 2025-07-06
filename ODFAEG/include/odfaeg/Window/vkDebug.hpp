@@ -4,6 +4,7 @@
 #ifdef VULKAN
 #include <vulkan/vulkan.hpp>
 #include "export.hpp"
+#include <vector>
 namespace odfaeg {
     namespace window {
         #ifdef ODFAEG_DEBUG
