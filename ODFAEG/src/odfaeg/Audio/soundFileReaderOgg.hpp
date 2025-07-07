@@ -52,7 +52,7 @@ namespace odfaeg {
                 /// \return True if the file is supported by this reader
                 ///
                 ////////////////////////////////////////////////////////////
-                static bool check(std::istream& stream);
+                static bool check(core::InputStream& stream);
 
             public:
 
@@ -77,7 +77,7 @@ namespace odfaeg {
                 /// \return True if the file was successfully opened
                 ///
                 ////////////////////////////////////////////////////////////
-                virtual bool open(std::istream& stream, Info& info);
+                virtual bool open(core::InputStream& stream, Info& info);
 
                 ////////////////////////////////////////////////////////////
                 /// \brief Change the current read position to the given sample offset

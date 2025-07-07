@@ -37,6 +37,7 @@ namespace odfaeg {
         {
             alCheck(alGenSources(1, &m_source));
             alCheck(alSourcei(m_source, AL_BUFFER, 0));
+
             //////std::cout<<"source : "<<m_source<<std::endl;
         }
 
@@ -137,7 +138,7 @@ namespace odfaeg {
         math::Vec3f SoundSource::getPosition() const
         {
             math::Vec3f position;
-            alCheck(alGetSource3f(m_source, AL_POSITION, &position.x(), &position.y(), &position.z()));
+            alCheck(alGetSource3f(m_source, AL_POSITION, &position[0], &position[1], &position[2]));
 
             return position;
         }

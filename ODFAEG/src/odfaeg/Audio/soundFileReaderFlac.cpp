@@ -34,8 +34,7 @@ namespace
     FLAC__StreamDecoderReadStatus streamRead(const FLAC__StreamDecoder*, FLAC__byte buffer[], std::size_t* bytes, void* clientData)
     {
         odfaeg::audio::priv::SoundFileReaderFlac::ClientData* data = static_cast<odfaeg::audio::priv::SoundFileReaderFlac::ClientData*>(clientData);
-        data->stream->read(reinterpret_cast<char*>(buffer), *bytes);
-        std::int64_t count = data->stream->tellg();
+        std::int64_t count = data->stream->read(buffer, *bytes);
         if (count > 0)
         {
             *bytes = static_cast<std::size_t>(count);
@@ -54,8 +53,7 @@ namespace
     FLAC__StreamDecoderSeekStatus streamSeek(const FLAC__StreamDecoder*, FLAC__uint64 absoluteByteOffset, void* clientData)
     {
         odfaeg::audio::priv::SoundFileReaderFlac::ClientData* data = static_cast<odfaeg::audio::priv::SoundFileReaderFlac::ClientData*>(clientData);
-        data->stream->seekg(absoluteByteOffset, std::ios::beg);
-        std::int64_t position = data->stream->tellg();
+        std::int64_t position = data->stream->seek(absoluteByteOffset);
         if (position >= 0)
             return FLAC__STREAM_DECODER_SEEK_STATUS_OK;
         else
@@ -66,7 +64,7 @@ namespace
     {
         odfaeg::audio::priv::SoundFileReaderFlac::ClientData* data = static_cast<odfaeg::audio::priv::SoundFileReaderFlac::ClientData*>(clientData);
 
-        std::int64_t position = data->stream->tellg();
+        std::int64_t position = data->stream->tell();
         if (position >= 0)
         {
             *absoluteByteOffset = position;
@@ -81,10 +79,7 @@ namespace
     FLAC__StreamDecoderLengthStatus streamLength(const FLAC__StreamDecoder*, FLAC__uint64* streamLength, void* clientData)
     {
         odfaeg::audio::priv::SoundFileReaderFlac::ClientData* data = static_cast<odfaeg::audio::priv::SoundFileReaderFlac::ClientData*>(clientData);
-        std::int64_t offset = data->stream->tellg();
-        data->stream->seekg(0, std::ios::end);
-        std::int64_t count = data->stream->tellg();
-        data->stream->seekg(offset, std::ios::beg);
+        std::int64_t count = data->stream->getSize();
         if (count >= 0)
         {
             *streamLength = count;
@@ -99,11 +94,8 @@ namespace
     FLAC__bool streamEof(const FLAC__StreamDecoder*, void* clientData)
     {
         odfaeg::audio::priv::SoundFileReaderFlac::ClientData* data = static_cast<odfaeg::audio::priv::SoundFileReaderFlac::ClientData*>(clientData);
-        data->stream->seekg(0, std::ios::end);
-        size_t offset = data->stream->tellg();
-        data->stream->seekg(offset, std::ios::beg);
-        size_t size = data->stream->tellg();
-        return data->stream->tellg() == size;
+        size_t size = data->stream->getSize();
+        return data->stream->tell() == size;
     }
 
     FLAC__StreamDecoderWriteStatus streamWrite(const FLAC__StreamDecoder*, const FLAC__Frame* frame, const FLAC__int32* const buffer[], void* clientData)
@@ -184,7 +176,7 @@ namespace odfaeg {
         namespace priv
         {
             ////////////////////////////////////////////////////////////
-            bool SoundFileReaderFlac::check(std::istream& stream)
+            bool SoundFileReaderFlac::check(core::InputStream& stream)
             {
                 ////std::cout<<"check flag"<<std::endl;
                 // Create a decoder
@@ -225,7 +217,7 @@ namespace odfaeg {
 
 
             ////////////////////////////////////////////////////////////
-            bool SoundFileReaderFlac::open(std::istream& stream, Info& info)
+            bool SoundFileReaderFlac::open(core::InputStream& stream, Info& info)
             {
                 // Create the decoder
                 m_decoder = FLAC__stream_decoder_new();

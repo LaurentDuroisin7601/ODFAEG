@@ -151,7 +151,7 @@ namespace odfaeg
 
 
             ////////////////////////////////////////////////////////////
-            bool SoundFile::openRead(std::istream& stream)
+            bool SoundFile::openRead(core::InputStream& stream)
             {
                 // If the file is already opened, first close it
                 if (m_file)
@@ -166,11 +166,10 @@ namespace odfaeg
 
                 // Initialize the stream data
                 m_stream.source = &stream;
-                stream.seekg(0, stream.end);
-                m_stream.size = stream.tellg();
+                m_stream.size = stream.getSize();
 
                 // Make sure that the stream's reading position is at the beginning
-                stream.seekg(0, stream.beg);
+                stream.seek(0);
 
                 // Open the sound file
                 SF_INFO fileInfo;
@@ -388,13 +387,12 @@ namespace odfaeg
             sf_count_t SoundFile::Stream::read(void* ptr, sf_count_t count, void* userData)
             {
                 Stream* stream = static_cast<Stream*>(userData);
-                std::int64_t position = stream->source->tellg();
+                std::int64_t position = stream->source->tell();
                 if (position != -1)
                 {
                     if (count > stream->size - position)
                         count = stream->size - position;
-                    stream->source->read(reinterpret_cast<char*>(ptr), count);
-                    return stream->source->tellg();
+                    return stream->source->read(ptr, count);
                 }
                 else
                 {
@@ -409,12 +407,11 @@ namespace odfaeg
                 Stream* stream = static_cast<Stream*>(userData);
                 switch (whence)
                 {
-                    case SEEK_SET : stream->source->seekg(offset, stream->source->beg);
-                    case SEEK_CUR : stream->source->seekg(stream->source->tellg() + offset, stream->source->beg);
-                    case SEEK_END : stream->source->seekg(stream->size - offset, stream->source->beg);
-                    default       : stream->source->seekg(0, stream->source->beg);
+                    case SEEK_SET : return stream->source->seek(offset);
+                    case SEEK_CUR : return stream->source->seek(stream->source->tell() + offset);
+                    case SEEK_END : return stream->source->seek(stream->size - offset);
+                    default       : stream->source->seek(0);
                 }
-                return stream->source->tellg();
             }
 
 
@@ -422,7 +419,7 @@ namespace odfaeg
             sf_count_t SoundFile::Stream::tell(void* userData)
             {
                 Stream* stream = static_cast<Stream*>(userData);
-                return stream->source->tellg();
+                return stream->source->tell();
             }
         }
 

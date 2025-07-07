@@ -49,7 +49,12 @@ set(SRC
 	${INCROOT}/ecs.hpp
 	${INCROOT}/utf.hpp
 	${INCROOT}/string.hpp
-	${SRCROOT}/string.cpp		
+	${SRCROOT}/string.cpp	
+	${INCROOT}/inputStream.hpp
+	${INCROOT}/fileInputStream.hpp
+	${INCROOT}/memoryInputStream.hpp
+	${SRCROOT}/fileInputStream.cpp
+	${SRCROOT}/memoryInputStream.cpp	
 	)	
 
 

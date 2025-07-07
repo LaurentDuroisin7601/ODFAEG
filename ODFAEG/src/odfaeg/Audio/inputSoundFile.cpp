@@ -28,6 +28,8 @@
 #include "../../../include/odfaeg/Audio/inputSoundFile.hpp"
 #include "../../../include/odfaeg/Audio/soundFileReader.hpp"
 #include "../../../include/odfaeg/Audio/soundFileFactory.hpp"
+#include "../../../include/odfaeg/Core/fileInputStream.hpp"
+#include "../../../include/odfaeg/Core/memoryInputStream.hpp"
 
 #include <fstream>
 #include <iostream>
@@ -70,14 +72,14 @@ namespace odfaeg
                 return false;
 
             // Wrap the file into a stream
-            std::ifstream* file = new std::ifstream(filename, std::ios::binary);
+            core::FileInputStream* file = new core::FileInputStream;
             m_stream = file;
             m_streamOwned = true;
 
             // Open it
-            if (!file->good())
+            if (!file->open(filename))
             {
-                file->close();
+                close();
                 return false;
             }
 
@@ -90,6 +92,7 @@ namespace odfaeg
             }
 
             // Retrieve the attributes of the open sound file
+
             m_sampleCount = info.sampleCount;
             m_channelCount = info.channelCount;
             m_sampleRate = info.sampleRate;
@@ -109,11 +112,11 @@ namespace odfaeg
                 return false;
 
             // Wrap the memory file into a stream
-            std::istream* memory = new std::istringstream();
+            core::MemoryInputStream* memory = new core::MemoryInputStream;
             m_stream = memory;
             m_streamOwned = true;
 
-            memory->read(static_cast<char*>(const_cast<void*>(data)), sizeInBytes);
+            memory->open(data, sizeInBytes);
 
             // Pass the stream to the reader
             SoundFileReader::Info info;
@@ -133,7 +136,7 @@ namespace odfaeg
 
 
         ////////////////////////////////////////////////////////////
-        bool InputSoundFile::openFromStream(std::istream& stream)
+        bool InputSoundFile::openFromStream(core::InputStream& stream)
         {
             // If the file is already open, first close it
             close();
@@ -148,8 +151,8 @@ namespace odfaeg
             m_streamOwned = false;
 
             // Don't forget to reset the stream to its beginning before re-opening it
-            stream.seekg(0, stream.beg);
-            if (stream.tellg() != 0)
+
+            if (stream.seek(0) != 0)
             {
                 std::cerr << "Failed to open sound file from stream (cannot restart stream)" << std::endl;
                 return false;

@@ -104,7 +104,7 @@ namespace odfaeg {
 
 
         ////////////////////////////////////////////////////////////
-        bool SoundBuffer::loadFromStream(std::istream& stream)
+        bool SoundBuffer::loadFromStream(core::InputStream& stream)
         {
             InputSoundFile file;
             if (file.openFromStream(stream))

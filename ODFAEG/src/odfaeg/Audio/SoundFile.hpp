@@ -32,6 +32,7 @@
 #include <sndfile.h>
 #include <string>
 #include "../../../include/odfaeg/Core/time.h"
+#include "../../../include/odfaeg/Core/inputStream.hpp"
 
 namespace odfaeg
 {
@@ -112,7 +113,7 @@ namespace odfaeg
                 /// \return True if the file was successfully opened
                 ///
                 ////////////////////////////////////////////////////////////
-                bool openRead(std::istream& stream);
+                bool openRead(core::InputStream& stream);
 
                 ////////////////////////////////////////////////////////////
                 /// \brief a the sound file for writing
@@ -199,7 +200,7 @@ namespace odfaeg
                 ////////////////////////////////////////////////////////////
                 struct Stream
                 {
-                    std::istream* source;
+                    core::InputStream* source;
                     std::int64_t size;
 
                     static sf_count_t getLength(void* user);

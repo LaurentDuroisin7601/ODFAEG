@@ -29,6 +29,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "export.hpp"
+#include "../Core/inputStream.hpp"
 #include <string>
 
 
@@ -75,7 +76,7 @@ namespace odfaeg
             /// \return True if the file was successfully opened
             ///
             ////////////////////////////////////////////////////////////
-            virtual bool open(std::istream& stream, Info& info) = 0;
+            virtual bool open(core::InputStream& stream, Info& info) = 0;
 
             ////////////////////////////////////////////////////////////
             /// \brief Change the current read position to the given sample offset

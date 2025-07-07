@@ -31,6 +31,7 @@
 #include "export.hpp"
 #include "alResource.hpp"
 #include "../Core/time.h"
+#include "../Core/inputStream.hpp"
 #include <string>
 #include <vector>
 #include <set>
@@ -115,7 +116,7 @@ namespace odfaeg
             /// \see loadFromFile, loadFromMemory, loadFromSamples
             ///
             ////////////////////////////////////////////////////////////
-            bool loadFromStream(std::istream& stream);
+            bool loadFromStream(core::InputStream& stream);
 
             ////////////////////////////////////////////////////////////
             /// \brief Load the sound buffer from an array of audio samples

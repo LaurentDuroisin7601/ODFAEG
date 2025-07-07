@@ -37,32 +37,16 @@ namespace
     // The following functions read integers as little endian and
     // return them in the host byte order
 
-    bool decode(std::istream& stream, std::uint8_t& value)
+    bool decode(odfaeg::core::InputStream& stream, std::uint8_t& value)
     {
-         unsigned char bytes[sizeof(value)];
-         stream.read(reinterpret_cast<char*>(bytes), sizeof(bytes));
-         return stream.gcount() == sizeof(value);
+
+         return stream.read(&value, sizeof(value)) == sizeof(value);
     }
 
-    bool decode(std::istream& stream, std::int16_t& value)
+    bool decode(odfaeg::core::InputStream& stream, std::int16_t& value)
     {
         unsigned char bytes[sizeof(value)];
-        stream.read(reinterpret_cast<char*>(bytes), sizeof(bytes));
-        if (stream.gcount() != sizeof(bytes)) {
-            //////std::cout<<"decode false : "<<stream.gcount()<<","<<bytes[0]<<","<<bytes[1]<<std::endl;
-            return false;
-        }
-
-        value = bytes[0] | (bytes[1] << 8);
-
-        return true;
-    }
-
-    bool decode(std::istream& stream, std::uint16_t& value)
-    {
-        unsigned char bytes[sizeof(value)];
-        stream.read(reinterpret_cast<char*>(bytes), sizeof(bytes));
-        if (stream.gcount() != sizeof(bytes))
+        if (stream.read(bytes, sizeof(bytes)) != sizeof(bytes))
             return false;
 
         value = bytes[0] | (bytes[1] << 8);
@@ -70,11 +54,21 @@ namespace
         return true;
     }
 
-    bool decode24bit(std::istream& stream, std::uint32_t& value)
+    bool decode(odfaeg::core::InputStream& stream, std::uint16_t& value)
+    {
+        unsigned char bytes[sizeof(value)];
+        if (stream.read(bytes, sizeof(bytes)) != sizeof(bytes))
+            return false;
+
+        value = bytes[0] | (bytes[1] << 8);
+
+        return true;
+    }
+
+    bool decode24bit(odfaeg::core::InputStream& stream, std::uint32_t& value)
     {
         unsigned char bytes[3];
-        stream.read(reinterpret_cast<char*>(bytes), sizeof(bytes));
-        if (stream.gcount() != sizeof(bytes))
+        if (stream.read(bytes, sizeof(bytes)) != sizeof(bytes))
             return false;
 
         value = bytes[0] | (bytes[1] << 8) | (bytes[2] << 16);
@@ -82,11 +76,10 @@ namespace
         return true;
     }
 
-    bool decode(std::istream& stream, std::uint32_t& value)
+    bool decode(odfaeg::core::InputStream& stream, std::uint32_t& value)
     {
         unsigned char bytes[sizeof(value)];
-        stream.read(reinterpret_cast<char*>(bytes), sizeof(bytes));
-        if (stream.gcount() != sizeof(bytes))
+        if (stream.read(bytes, sizeof(bytes)) != sizeof(bytes))
             return false;
 
         value = bytes[0] | (bytes[1] << 8) | (bytes[2] << 16) | (bytes[3] << 24);
@@ -111,15 +104,12 @@ namespace odfaeg {
         namespace priv
         {
             ////////////////////////////////////////////////////////////
-            bool SoundFileReaderWav::check(std::istream& stream)
+            bool SoundFileReaderWav::check(core::InputStream& stream)
             {
 
                 char header[mainChunkSize];
-                stream.read(header, sizeof(header));
-
-                if (stream.gcount() < static_cast<std::int64_t>(sizeof(header))) {
+                if (stream.read(header, sizeof(header)) < static_cast<std::int64_t>(sizeof(header)))
                     return false;
-                }
                 return (header[0] == 'R') && (header[1] == 'I') && (header[2] == 'F') && (header[3] == 'F')
                     && (header[8] == 'W') && (header[9] == 'A') && (header[10] == 'V') && (header[11] == 'E');
             }
@@ -136,7 +126,7 @@ namespace odfaeg {
 
 
             ////////////////////////////////////////////////////////////
-            bool SoundFileReaderWav::open(std::istream& stream, Info& info)
+            bool SoundFileReaderWav::open(core::InputStream& stream, Info& info)
             {
                 m_stream = &stream;
 
@@ -155,7 +145,7 @@ namespace odfaeg {
             {
                 assert(m_stream);
 
-                m_stream->seekg(m_dataStart + sampleOffset * m_bytesPerSample, std::ios::beg);
+                m_stream->seek(m_dataStart + sampleOffset * m_bytesPerSample);
             }
 
 
@@ -167,7 +157,8 @@ namespace odfaeg {
                 std::uint64_t count = 0;
 
 
-                std::uint64_t startPos = m_stream->tellg();
+                std::uint64_t startPos = m_stream->tell();
+
 
 
 
@@ -243,10 +234,8 @@ namespace odfaeg {
                 // If we are here, it means that the first part of the header
                 // (the format) has already been checked
                 char mainChunk[mainChunkSize];
-                m_stream->read(mainChunk, sizeof(mainChunk));
-                if (m_stream->gcount() != sizeof(mainChunk)) {
+               if (m_stream->read(mainChunk, sizeof(mainChunk)) != sizeof(mainChunk))
                     return false;
-                }
 
                 // Parse all the sub-chunks
                 bool dataChunkFound = false;
@@ -254,15 +243,13 @@ namespace odfaeg {
                 {
                     // Parse the sub-chunk id and size
                     char subChunkId[4];
-                    m_stream->read(subChunkId, sizeof(subChunkId));
-                    if (m_stream->gcount() != sizeof(subChunkId)) {
+                    if (m_stream->read(subChunkId, sizeof(subChunkId)) != sizeof(subChunkId))
                         return false;
-                    }
                     std::uint32_t subChunkSize = 0;
                     if (!decode(*m_stream, subChunkSize)) {
                         return false;
                     }
-                    std::int64_t subChunkStart = m_stream->tellg();
+                    std::int64_t subChunkStart = m_stream->tell();
                     if (subChunkStart == -1)
                         return false;
 
@@ -331,8 +318,7 @@ namespace odfaeg {
 
                             // Subformat
                             char subformat[16];
-                            m_stream->read(subformat, sizeof(subformat));
-                            if (m_stream->gcount() != sizeof(subformat)) {
+                            if (m_stream->read(subformat, sizeof(subformat)) != sizeof(subformat)) {
 
                                 return false;
                             }
@@ -350,10 +336,8 @@ namespace odfaeg {
                                 return false;
                             }
                         }
-
                         // Skip potential extra information
-                        m_stream->seekg(subChunkStart + subChunkSize, std::ios::beg);
-                        if (m_stream->tellg() == -1)
+                        if (m_stream->seek(subChunkStart + subChunkSize) == -1)
                             return false;
                     }
                     else if ((subChunkId[0] == 'd') && (subChunkId[1] == 'a') && (subChunkId[2] == 't') && (subChunkId[3] == 'a'))
@@ -361,7 +345,7 @@ namespace odfaeg {
                         // "data" chunk
 
                         // Compute the total number of samples
-                        info.sampleCount = subChunkSize / m_bytesPerSample;
+                        info.sampleCount = subChunkSize / (info.channelCount * m_bytesPerSample);
 
                         // Store the start and end position of samples in the file
                         m_dataStart = subChunkStart;
@@ -373,11 +357,14 @@ namespace odfaeg {
                     else
                     {
                         // unknown chunk, skip it
-                        m_stream->seekg(m_stream->tellg() + subChunkSize, m_stream->beg);
-                        if (m_stream->tellg() == -1)
+                        if (m_stream->seek(subChunkStart + subChunkSize) == -1)
                             return false;
                     }
                 }
+                std::cout<<"infos : "<<info.channelCount<<","<<info.sampleCount<<","<<m_bytesPerSample<<std::endl;
+                std::cout<<"expected size : "<<info.channelCount * info.sampleCount * m_bytesPerSample<<std::endl;
+                unsigned int size  = m_stream->getSize() - m_stream->tell();
+                std::cout<<"file size : "<<size<<std::endl;
                 return true;
             }
         }

@@ -83,6 +83,7 @@ namespace odfaeg {
             // Deduce the format from the number of channels
             m_format = priv::AudioDevice::getFormatFromChannelCount(channelCount);
 
+
             // Check if the format is valid
             if (m_format == 0)
             {
@@ -102,7 +103,6 @@ namespace odfaeg {
                 std::cerr << "Failed to play audio stream: sound parameters have not been initialized (call initialize() first)" << std::endl;
                 return;
             }
-
             bool isStreaming = false;
             Status threadStartState = Stopped;
 
@@ -335,6 +335,11 @@ namespace odfaeg {
                 // Get the number of buffers that have been processed (i.e. ready for reuse)
                 ALint nbProcessed = 0;
                 alCheck(alGetSourcei(m_source, AL_BUFFERS_PROCESSED, &nbProcessed));
+                /*if (m_format == AL_FORMAT_MONO16)
+                    std::cout<<"mono : "<<nbProcessed<<std::endl;
+                else
+                    std::cout<<"stereo : "<<nbProcessed<<std::endl;*/
+
                 ////std::cout<<"nb processed : "<<nbProcessed<<std::endl;
                 ////std::cout<<"nb proceed : "<<nbProcessed<<std::endl;
 
@@ -467,6 +472,9 @@ namespace odfaeg {
 
                 // Fill the buffer
                 ALsizei size = static_cast<ALsizei>(data.sampleCount) * sizeof(std::int16_t);
+
+
+
                 alCheck(alBufferData(buffer, m_format, data.samples, size, m_sampleRate));
 
 

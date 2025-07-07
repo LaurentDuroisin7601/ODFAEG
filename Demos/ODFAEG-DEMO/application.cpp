@@ -431,8 +431,8 @@ namespace sorrok {
         pfire.setPosition(0, 100, 0);
         pfire.setMinDistance(200);
         pfire.setAttenuation(10.f);
-        pfire.play(true);
         audio::Listener::setPosition(caracter->getCenter().x(), caracter->getCenter().y(), 0);
+        pfire.play(true);
         std::cout<<"appli initialised"<<std::endl;
     }
     void MyAppli::onRender(RenderComponentManager *cm) {
@@ -544,7 +544,7 @@ namespace sorrok {
         if (caracter->isMoving()) {
             if (!player.isPlaying()) {
                 player.play(true);
-                std::cout<<"executed"<<std::endl;
+                //std::cout<<"executed"<<std::endl;
             }
             if (caracter->isMovingFromKeyboard()) {
                 Vec3f actualPos = Vec3f(caracter->getCenter().x(), caracter->getCenter().y(), 0);

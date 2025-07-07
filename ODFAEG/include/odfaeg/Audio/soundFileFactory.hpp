@@ -28,7 +28,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <ODFAEG/Audio/Export.hpp>
+#include "export.hpp"
+#include "../Core/inputStream.hpp"
 #include <string>
 #include <vector>
 
@@ -106,7 +107,7 @@ namespace odfaeg {
             /// \see createReaderFromFilename, createReaderFromMemory
             ///
             ////////////////////////////////////////////////////////////
-            static SoundFileReader* createReaderFromStream(std::istream& stream);
+            static SoundFileReader* createReaderFromStream(core::InputStream& stream);
 
 
 
@@ -117,7 +118,7 @@ namespace odfaeg {
             ////////////////////////////////////////////////////////////
             struct ReaderFactory
             {
-                bool (*check)(std::istream&);
+                bool (*check)(core::InputStream&);
                 SoundFileReader* (*create)();
             };
             typedef std::vector<ReaderFactory> ReaderFactoryArray;
@@ -131,7 +132,7 @@ namespace odfaeg {
 
 } // namespace sf
 
-#include <ODFAEG/Audio/SoundFileFactory.inl>
+#include "soundFileFactory.inl"
 
 #endif // ODFAEG_SOUNDFILEFACTORY_HPP
 

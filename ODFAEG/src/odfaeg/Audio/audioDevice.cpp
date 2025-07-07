@@ -60,6 +60,7 @@ namespace odfaeg {
 
                 if (audioContext)
                 {
+                    //std::cout<<"al set position"<<std::endl;
                     // Set the context as the current one (we'll only need one)
                     alcMakeContextCurrent(audioContext);
 
@@ -71,6 +72,7 @@ namespace odfaeg {
                                            listenerUpVector.y(),
                                            listenerUpVector.z()};
                     alCheck(alListenerf(AL_GAIN, listenerVolume * 0.01f));
+
                     alCheck(alListener3f(AL_POSITION, listenerPosition.x(), listenerPosition.y(), listenerPosition.z()));
                     alCheck(alListenerfv(AL_ORIENTATION, orientation));
                 }

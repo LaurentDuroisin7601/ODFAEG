@@ -53,7 +53,7 @@ namespace odfaeg
                 /// \return True if the file is supported by this reader
                 ///
                 ////////////////////////////////////////////////////////////
-                static bool check(std::istream& stream);
+                static bool check(core::InputStream& stream);
 
             public:
 
@@ -70,7 +70,7 @@ namespace odfaeg
                 /// \param info   Structure to fill with the attributes of the loaded sound
                 ///
                 ////////////////////////////////////////////////////////////
-                virtual bool open(std::istream& stream, Info& info);
+                virtual bool open(core::InputStream& stream, Info& info);
 
                 ////////////////////////////////////////////////////////////
                 /// \brief Change the current read position to the given sample offset
@@ -113,7 +113,7 @@ namespace odfaeg
                 ////////////////////////////////////////////////////////////
                 // Member data
                 ////////////////////////////////////////////////////////////
-                std::istream* m_stream;         ///< Source stream to read from
+                core::InputStream* m_stream;         ///< Source stream to read from
                 unsigned int m_bytesPerSample; ///< Size of a sample, in bytes
                 std::uint64_t       m_dataStart;      ///< Starting position of the audio data in the open file
                 std::uint64_t       m_dataEnd;        ///< Position one byte past the end of the audio data in the open file

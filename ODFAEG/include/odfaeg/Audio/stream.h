@@ -49,7 +49,7 @@ namespace odfaeg {
             *\param sf::InputStream& stream : the input stream.
             *\return true if the file is successfully opened false otherwise.
             */
-            bool openFromStream(std::istream& stream);
+            bool openFromStream(core::InputStream& stream);
             /**\fn bool isFinished()
             *\brief check if the stream has finished to be read.
             *\return true is the stream has finished to be read, false otherwise.

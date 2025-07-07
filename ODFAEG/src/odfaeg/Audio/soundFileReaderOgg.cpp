@@ -36,36 +36,31 @@ namespace
 {
     size_t read(void* ptr, size_t size, size_t nmemb, void* data)
     {
-        std::istream* stream = static_cast<std::istream*>(data);
-        stream->read(static_cast<char*>(ptr), size * nmemb);
-        return stream->tellg();
+        odfaeg::core::InputStream* stream = static_cast<odfaeg::core::InputStream*>(data);
+        return stream->read(ptr, size * nmemb);
     }
 
     int seek(void* data, ogg_int64_t offset, int whence)
     {
-        std::istream* stream = static_cast<std::istream*>(data);
+        odfaeg::core::InputStream* stream = static_cast<odfaeg::core::InputStream*>(data);
         switch (whence)
         {
             case SEEK_SET:
                 break;
             case SEEK_CUR:
-                offset += stream->tellg();
+                offset += stream->tell();
                 break;
             case SEEK_END: {
-                offset = stream->tellg();
-                stream->seekg(0, stream->end);
-                offset = stream->tellg() - offset;
-                stream->seekg(offset, stream->beg);
+                offset = stream->getSize() - offset;
             }
         }
-        stream->seekg(offset, stream->cur);
-        return stream->tellg();
+        return static_cast<int>(stream->seek(offset));
     }
 
     long tell(void* data)
     {
-        std::istream* stream = static_cast<std::istream*>(data);
-        return static_cast<long>(stream->tellg());
+        odfaeg::core::InputStream* stream = static_cast<odfaeg::core::InputStream*>(data);
+        return static_cast<long>(stream->tell());
     }
 
     static ov_callbacks callbacks = {&read, &seek, NULL, &tell};
@@ -77,7 +72,7 @@ namespace odfaeg{
         namespace priv
         {
             ////////////////////////////////////////////////////////////
-            bool SoundFileReaderOgg::check(std::istream& stream)
+            bool SoundFileReaderOgg::check(core::InputStream& stream)
             {
                 ////std::cout<<"check ogg"<<std::endl;
                 OggVorbis_File file;
@@ -110,7 +105,7 @@ namespace odfaeg{
 
 
             ////////////////////////////////////////////////////////////
-            bool SoundFileReaderOgg::open(std::istream& stream, Info& info)
+            bool SoundFileReaderOgg::open(core::InputStream& stream, Info& info)
             {
                 // Open the Vorbis stream
                 int status = ov_open_callbacks(&stream, &m_vorbis, NULL, 0, callbacks);

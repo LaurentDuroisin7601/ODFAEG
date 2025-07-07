@@ -26,6 +26,8 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "../../../include/odfaeg/Audio/soundFileFactory.hpp"
+#include "../../../include/odfaeg/Core/fileInputStream.hpp"
+#include "../../../include/odfaeg/Core/memoryInputStream.hpp"
 #include "soundFileReaderFlac.hpp"
 #include "soundFileReaderOgg.hpp"
 #include "soundFileReaderWav.hpp"
@@ -62,8 +64,8 @@ namespace odfaeg {
             ensureDefaultReadersWritersRegistered();
 
             // Wrap the input file into a file stream
-            std::ifstream stream(filename, std::ios::binary);
-            if (!stream) {
+            core::FileInputStream stream;
+            if (!stream.open(filename)) {
                 std::cerr << "Failed to open sound file \"" << filename << "\" (couldn't open stream)" << std::endl;
                 return NULL;
             }
@@ -71,8 +73,7 @@ namespace odfaeg {
             // Test the filename in all the registered factories
             for (ReaderFactoryArray::const_iterator it = s_readers.begin(); it != s_readers.end(); ++it)
             {
-                stream.clear();
-                stream.seekg(0, stream.beg);
+                stream.seek(0);
                 if (it->check(stream))
                     return it->create();
             }
@@ -90,13 +91,13 @@ namespace odfaeg {
             ensureDefaultReadersWritersRegistered();
 
             // Wrap the memory file into a file stream
-            std::istringstream stream;
-            stream.read(static_cast<char*>(const_cast<void*>(data)), sizeInBytes);
+            core::MemoryInputStream stream;
+            stream.open(data, sizeInBytes);
 
             // Test the stream for all the registered factories
             for (ReaderFactoryArray::const_iterator it = s_readers.begin(); it != s_readers.end(); ++it)
             {
-                stream.seekg(0, stream.beg);
+                stream.seek(0);
                 if (it->check(stream))
                     return it->create();
             }
@@ -108,7 +109,7 @@ namespace odfaeg {
 
 
         ////////////////////////////////////////////////////////////
-        SoundFileReader* SoundFileFactory::createReaderFromStream(std::istream& stream)
+        SoundFileReader* SoundFileFactory::createReaderFromStream(core::InputStream& stream)
         {
             // Register the built-in readers/writers on first call
             ensureDefaultReadersWritersRegistered();
@@ -116,7 +117,7 @@ namespace odfaeg {
             // Test the stream for all the registered factories
             for (ReaderFactoryArray::const_iterator it = s_readers.begin(); it != s_readers.end(); ++it)
             {
-                stream.seekg(0, stream.beg);
+                stream.seek(0);
                 if (it->check(stream))
                     return it->create();
             }

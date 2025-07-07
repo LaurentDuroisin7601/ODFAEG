@@ -52,7 +52,7 @@ namespace odfaeg {
 
 
         ////////////////////////////////////////////////////////////
-        bool Stream::openFromStream(std::istream& stream)
+        bool Stream::openFromStream(core::InputStream& stream)
         {
             m_file = new priv::SoundFile();
             // First stop the music if it was already running

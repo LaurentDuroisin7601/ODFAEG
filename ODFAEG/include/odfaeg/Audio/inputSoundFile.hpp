@@ -30,6 +30,7 @@
 ////////////////////////////////////////////////////////////
 #include "export.hpp"
 #include "../Core/time.h"
+#include "../Core/inputStream.hpp"
 
 #include <string>
 #include <algorithm>
@@ -98,7 +99,7 @@ namespace odfaeg
             /// \return True if the file was successfully opened
             ///
             ////////////////////////////////////////////////////////////
-            bool openFromStream(std::istream& stream);
+            bool openFromStream(core::InputStream& stream);
 
             ////////////////////////////////////////////////////////////
             /// \brief Get the total number of audio samples in the file
@@ -207,7 +208,7 @@ namespace odfaeg
             // Member data
             ////////////////////////////////////////////////////////////
             SoundFileReader* m_reader;       ///< Reader that handles I/O on the file's format
-            std::istream*     m_stream;       ///< Input stream used to access the file's data
+            core::InputStream*     m_stream;       ///< Input stream used to access the file's data
             bool             m_streamOwned;  ///< Is the stream internal or external?
             std::uint64_t           m_sampleOffset; ///< Sample Read Position
             std::uint64_t           m_sampleCount;  ///< Total number of samples in the file
