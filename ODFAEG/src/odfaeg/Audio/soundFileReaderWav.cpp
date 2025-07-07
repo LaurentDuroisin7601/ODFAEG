@@ -361,10 +361,6 @@ namespace odfaeg {
                             return false;
                     }
                 }
-                std::cout<<"infos : "<<info.channelCount<<","<<info.sampleCount<<","<<m_bytesPerSample<<std::endl;
-                std::cout<<"expected size : "<<info.channelCount * info.sampleCount * m_bytesPerSample<<std::endl;
-                unsigned int size  = m_stream->getSize() - m_stream->tell();
-                std::cout<<"file size : "<<size<<std::endl;
                 return true;
             }
         }
