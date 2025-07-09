@@ -44,7 +44,7 @@ namespace odfaeg {
             v2.texCoords = math::Vec2f(subRect.left + subRect.width, subRect.top);
             v3.texCoords = math::Vec2f(subRect.left + subRect.width, subRect.top + subRect.height);
             v4.texCoords = math::Vec2f(subRect.left, subRect.top + subRect.height);
-            /*va[0] = v1;
+            va[0] = v1;
             va[1] = v2;
             va[2] = v3;
             va[3] = v4;
@@ -53,13 +53,13 @@ namespace odfaeg {
             va.addIndex(2);
             va.addIndex(0);
             va.addIndex(2);
-            va.addIndex(3);*/
-            va[0] = v1;
+            va.addIndex(3);
+            /*va[0] = v1;
             va[1] = v2;
             va[2] = v3;
             va[3] = v1;
             va[4] = v3;
-            va[5] = v4;
+            va[5] = v4;*/
             #endif
             Material material;
             material.addTexture(nullptr, IntRect(0, 0, 0, 0));
