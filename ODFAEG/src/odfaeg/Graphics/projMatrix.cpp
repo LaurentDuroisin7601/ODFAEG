@@ -82,8 +82,13 @@ namespace odfaeg {
             matrix4f[0][2] = (r + l) / (r - l);
             matrix4f[0][3] = 0;
             matrix4f[1][0] = 0;
+            #ifndef VULKAN
             matrix4f[1][1] = (2 * n) / (t - b);
             matrix4f[1][2] = (t + b) / (t - b);
+            #else
+            matrix4f[1][1] = -(2 * n) / (t - b);
+            matrix4f[1][2] = -(t + b) / (t - b);
+            #endif
             matrix4f[1][3] = 0;
             matrix4f[2][0] = 0;
             matrix4f[2][1] = 0;
@@ -92,11 +97,15 @@ namespace odfaeg {
             matrix4f[2][3] = (2 * f * n) / (f - n);
             #else
             matrix4f[2][2] = f / (f - n);
-            matrix4f[2][3] = (f * n) / (f - n);
+            matrix4f[2][3] = -(f * n) / (f - n);
             #endif
             matrix4f[3][0] = 0;
             matrix4f[3][1] = 0;
+            #ifndef VULKAN
             matrix4f[3][2] = -1;
+            #else
+            matrix4f[3][2] = 1;
+            #endif
             matrix4f[3][3] = 0;
             this->l = l;
             this->r = r;

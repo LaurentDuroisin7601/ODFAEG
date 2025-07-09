@@ -62,7 +62,7 @@ namespace odfaeg {
         }
 
         View::View (double width, double height, double fovy, double zNear, double zFar) : viewport(0, 0, zNear, width, height, zFar), depth(zFar) {
-            setPerspective(-width * 0.5f, width * 0.5f, -height * 0.5f, height * 0.5f, zNear, zFar);
+            setPerspective(fovy, width / height, zNear, zFar);
             this->position = math::Vec3f(0.f, 0.f, 0.f);
             this->forward = math::Vec3f(0.f, 0.f, -1.f);  // vers -Z
             this->up = math::Vec3f(0.f, 1.f, 0.f);        // Y en haut

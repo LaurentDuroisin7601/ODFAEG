@@ -50,4 +50,5 @@ private :
     odfaeg::graphic::EntityFactory factory;
     std::unique_ptr<odfaeg::graphic::g3d::Skybox> skybox;
     odfaeg::graphic::AnimUpdater* animUpdater;
+    std::unique_ptr<odfaeg::graphic::World> m_world;
 };

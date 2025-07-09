@@ -8,7 +8,8 @@ using namespace odfaeg::window;
 using namespace odfaeg::network;
 MyAppli::MyAppli(Vec2f size, std::string title) :
     Application(VideoMode(size.x(), size.y()), title, Style::Default, ContextSettings(24, 0, 4, 3, 0)),
-    view3D(size.x, size.y, 80, 1, 1000) {
+    view3D(size.x(), size.y(), 80, 1, 1000),
+    loader(getDevice()) {
     //In perspective projection the x and y coordinates of the view are always between -1 and 1 with opengl.
 
     //Rotate the cube around a vector.
@@ -27,7 +28,7 @@ MyAppli::MyAppli(Vec2f size, std::string title) :
     verticalMotionActive = false;
     verticalMotionDirection = 0;
     fpsCounter = 0;
-    addClock(sf::Clock(), "FPS");
+    addClock(Clock(), "FPS");
     std::vector<std::string> faces
     {
         "tilesets/skybox/right.jpg",
@@ -37,18 +38,15 @@ MyAppli::MyAppli(Vec2f size, std::string title) :
         "tilesets/skybox/front.jpg",
         "tilesets/skybox/back.jpg"
     };
-    std::vector<sf::Image> skyboxImgs;
-    for (unsigned int i = 0; i < 6; i++) {
-        sf::Image img;
-        img.loadFromFile(faces[i]);
-        skyboxImgs.push_back(img);
-    }
-    skybox = std::make_unique<g3d::Skybox>(skyboxImgs, factory);
+    //skybox = std::make_unique<g3d::Skybox>(faces, factory, getDevice());
+    m_world = std::make_unique<World>();
+    setCurrentWorld(m_world.get());
 }
 void MyAppli::onLoad() {
+    std::tuple<std::reference_wrapper<Device>> rArgs = std::make_tuple(std::ref(getDevice()));
     TextureManager<TEXTURES> tm;
-    tm.fromFileWithAlias("tilesets/Terre2.jpg", GRASS);
-    tm.fromFileWithAlias("tilesets/particule.png", PARTICLE);
+    tm.fromFileWithAlias("tilesets/Terre2.jpg", GRASS, rArgs);
+    tm.fromFileWithAlias("tilesets/particule.png", PARTICLE, rArgs);
     std::vector<std::string> faces
     {
         "tilesets/skybox/right.jpg",
@@ -59,7 +57,7 @@ void MyAppli::onLoad() {
         "tilesets/skybox/back.jpg"
     };
     for (unsigned int i = 0; i < 6; i++) {
-        tm.fromFileWithAlias(faces[i], static_cast<TEXTURES>(i+2));
+        tm.fromFileWithAlias(faces[i], static_cast<TEXTURES>(i+2), rArgs);
     }
     cache.addResourceManager(tm, "TextureManager");
 }
@@ -78,7 +76,7 @@ void MyAppli::onInit() {
     Texture* text = const_cast<Texture*>(tm.getResourceByAlias(GRASS));
     /*text->setRepeated(true);
     text->setSmooth(true);*/
-    tGround.push_back(new Tile(text, Vec3f(0, 0, 0), Vec3f(50, 0, 50),sf::IntRect(0, 0, 1024, 1024), factory));
+    tGround.push_back(new Tile(text, Vec3f(0, 0, 0), Vec3f(50, 0, 50),IntRect(0, 0, 1024, 1024), factory));
     BoundingBox mapZone (-500, 0, -500, 1000, 50, 1000);
     std::cout<<"generate map"<<std::endl;
     getWorld()->generate_3d_map(tGround, tWall, Vec2f(50, 50), mapZone, factory);
@@ -87,7 +85,7 @@ void MyAppli::onInit() {
     heightmap->setShadowScale(Vec3f(1, -1, 1));
     float cy;
     bool isOnHeightMap = heightmap->getHeight(Vec2f(10, 10), cy);
-    cube = new g3d::Cube(Vec3f(10, cy, 10), 20, 20, 20, sf::Color::Transparent, factory);
+    cube = factory.make_entity<g3d::Cube>(Vec3f(10, cy, 10), 20, 20, 20, Color::Transparent, factory);
     for (unsigned int i = 0; i < cube->getFaces().size(); i++) {
         cube->getFace(i)->getMaterial().setRefractable(true);
         cube->getFace(i)->getMaterial().setType(Material::GLASS);
@@ -96,23 +94,22 @@ void MyAppli::onInit() {
     getWorld()->addEntity(cube);
     ps->setTexture(*tm.getResourceByAlias(PARTICLE));
     for (unsigned int i = 0; i < 10; i++) {
-        ps->addTextureRect(sf::IntRect(i*10, 0, 10, 10));
+        ps->addTextureRect(IntRect(i*10, 0, 10, 10));
     }
     UniversalEmitter emitter;
     emitter.setEmissionRate(30);
-    emitter.setParticleLifetime(Distributions::uniform(sf::seconds(5), sf::seconds(7)));
+    emitter.setParticleLifetime(Distributions::uniform(seconds(5), seconds(7)));
     emitter.setParticlePosition(Distributions::rect(Vec3f(0, 0, 50), Vec3f(10, 0, 100)));   // Emit particles in given circle
     emitter.setParticleVelocity(Distributions::deflect(Vec3f(0, 0, 10),  0)); // Emit towards direction with deviation of 15°
     emitter.setParticleRotation(Distributions::uniform(0.f, 0.f));
     emitter.setParticleTextureIndex(Distributions::uniformui(0, 9));
     emitter.setParticleScale(Distributions::rect(Vec3f(2.1f, 2.1f, 2.f), Vec3f(2.f, 2.f, 2.f)));
     ps->addEmitter(emitter);
-    g3d::PonctualLight* light = new g3d::PonctualLight(Vec3f(0, 25, 10), 200, 200, 200, 255, sf::Color::Yellow, 16, factory);
+    g3d::PonctualLight* light = factory.make_entity<g3d::PonctualLight>(Vec3f(0, 25, 10), 200, 200, 200, 255, Color::Yellow, 16, factory);
     getWorld()->addEntity(light);
     eu = new EntitiesUpdater(factory, *getWorld());
     getWorld()->addWorker(eu);
 
-    loader = g3d::Model();
     model = loader.loadModel("tilesets\\mesh_puddingmill\\puddingmill.obj", factory);
     //model->setSelected(true);
 
@@ -129,11 +126,11 @@ void MyAppli::onInit() {
     //model->setScale(Vec3f(2.f, 2.f, 2.f));
 
     //animator->scale(Vec3f(0.1f, 0.1f, 0.1f));
-    isOnHeightMap = heightmap->getHeight(Vec2f(model->getPosition().x, model->getPosition().z), y);
+    isOnHeightMap = heightmap->getHeight(Vec2f(model->getPosition().x(), model->getPosition().z()), y);
     float y2;
-    isOnHeightMap = heightmap->getHeight(Vec2f(model->getPosition().x, model->getPosition().z - 5), y2);
+    isOnHeightMap = heightmap->getHeight(Vec2f(model->getPosition().x(), model->getPosition().z() - 5), y2);
     float y3;
-    isOnHeightMap = heightmap->getHeight(Vec2f(model->getPosition().x + 5, model->getPosition().z), y3);
+    isOnHeightMap = heightmap->getHeight(Vec2f(model->getPosition().x() + 5, model->getPosition().z()), y3);
     Vec3f v1(0, y, 1);
     Vec3f v2(0, y2, 1);
     float angle = Math::toDegrees(v1.getAngleBetween(v2, v2.cross(v1)));
@@ -147,8 +144,8 @@ void MyAppli::onInit() {
     model->setShadowRotation(90 + angle * 100, Vec3f(1, 0, 0));
     //model->setShadowRotation(angle2 * 150, Vec3f(0, 0, 1));
     model->setShadowCenter(Vec3f(0, 0, -5));
-    model->setSelected(true);
-    isOnHeightMap = heightmap->getHeight(Vec2f(animator->getPosition().x, animator->getPosition().z), z);
+    //model->setSelected(true);
+    isOnHeightMap = heightmap->getHeight(Vec2f(animator->getPosition().x(), animator->getPosition().z()), z);
     //std::cout<<"animator size : "<<animator->getSize()<<std::endl;
     animator->move(Vec3f(0, z, 0));
     getWorld()->addEntity(animator);
@@ -163,20 +160,25 @@ void MyAppli::onInit() {
     frc->setView(view3D);*/
 
     //frc->setVisible(false);
-    ShadowRenderComponent* src = new ShadowRenderComponent(getRenderWindow(), 1, "E_MESH+E_BIGTILE",ContextSettings(24, 0, 4, 4, 6));
-    src->setView(view3D);
-    PerPixelLinkedListRenderComponent* frc2 = new PerPixelLinkedListRenderComponent(getRenderWindow(), 0, "E_BIGTILE+E_MESH+E_CUBE+E_BONE_ANIMATION",ContextSettings(24, 8, 4, 4, 6));
+    /*ShadowRenderComponent* src = new ShadowRenderComponent(getRenderWindow(), 1, "E_MESH+E_BIGTILE",ContextSettings(24, 0, 4, 4, 6));
+    src->setView(view3D);*/
+    PerPixelLinkedListRenderComponent* frc2 = new PerPixelLinkedListRenderComponent(getRenderWindow(), 0, "E_BIGTILE",ContextSettings(24, 8, 4, 4, 6));
     //frc2->preloadEntitiesOnComponent(getWorld()->getEntities("*"), factory);
     frc2->setView(view3D);
-    frc2->loadSkybox(skybox.get());
-    ReflectRefractRenderComponent* rrrc = new ReflectRefractRenderComponent(getRenderWindow(), 2, "E_CUBE+E_BIGTILE+E_MESH", ContextSettings(0, 0, 4, 4, 6));
-    rrrc->setView(view3D);
-    rrrc->loadSkybox(skybox.get());
+    //frc2->loadSkybox(skybox.get());
+    /*ReflectRefractRenderComponent* rrrc = new ReflectRefractRenderComponent(getRenderWindow(), 2, "E_CUBE+E_BIGTILE+E_MESH", ContextSettings(0, 0, 4, 4, 6));
+    rrrc->setView(view3D);*/
+    //rrrc->loadSkybox(skybox.get());
     /*std::vector<Entity*> tiles = heightmap->getChildren();
     for (unsigned int i = 0; i < tiles.size(); i++)
         std::cout<<"window coords : "<<frc2->getFrameBuffer()->mapCoordsToPixel(tiles[i]->getPosition())<<std::endl;*/
-    LightRenderComponent* lrc = new LightRenderComponent(getRenderWindow(), 3, "E_PONCTUAL_LIGHT+E_BIGTILE",ContextSettings(0, 0, 4, 4, 6));
-    lrc->setView(view3D);
+    /*LightRenderComponent* lrc = new LightRenderComponent(getRenderWindow(), 3, "E_PONCTUAL_LIGHT+E_BIGTILE",ContextSettings(0, 0, 4, 4, 6));
+    lrc->setView(view3D);*/
+    frc2->createDescriptorsAndPipelines();
+    /*rrrc->createDescriptorsAndPipelines();
+    src->createDescriptorsAndPipelines();
+    lrc->createDescriptorsAndPipelines();*/
+    getRenderWindow().createDescriptorsAndPipelines();
     //getView().setPerspective(-size.x * 0.5f, size.x * 0.5f, -size.y * 0.5f, size.y * 0.5f,-1000, 1000);
     //getRenderComponentManager().addComponent(frc);
     /*rrrc->setVisible(false);
@@ -184,27 +186,27 @@ void MyAppli::onInit() {
     lrc->setVisible(false);*/
 
     getRenderComponentManager().addComponent(frc2);
-    getRenderComponentManager().addComponent(src);
+    /*getRenderComponentManager().addComponent(src);
     getRenderComponentManager().addComponent(rrrc);
-    getRenderComponentManager().addComponent(lrc);
+    getRenderComponentManager().addComponent(lrc);*/
     //std::cout<<"model size : "<<model->getSize().y<<std::endl;
     for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
         View view = getRenderComponentManager().getRenderComponent(i)->getView();
         float y;
-        bool isOnHeightMap = heightmap->getHeight(Vec2f(view.getPosition().x, view.getPosition().z), y);
+        bool isOnHeightMap = heightmap->getHeight(Vec2f(view.getPosition().x(), view.getPosition().z()), y);
         //std::cout<<"height : "<<y<<std::endl;
-        view.setCenter(Vec3f(view.getPosition().x, y + model->getSize().y, view.getPosition().z));
+        view.setCenter(Vec3f(view.getPosition().x(), y + model->getSize().y(), view.getPosition().z()));
         /*Vec3f target = view.getPosition() + Vec3f(0, -1, 0);
         view.lookAt(target.x, target.y, target.z);*/
         getRenderComponentManager().getRenderComponent(i)->setView(view);
     }
 
-    isOnHeightMap = heightmap->getHeight(Vec2f(view3D.getPosition().x, view3D.getPosition().z), y);
-    view3D.setCenter(Vec3f(view3D.getPosition().x, y + model->getSize().y, view3D.getPosition().z));
+    isOnHeightMap = heightmap->getHeight(Vec2f(view3D.getPosition().x(), view3D.getPosition().z()), y);
+    view3D.setCenter(Vec3f(view3D.getPosition().x(), y + model->getSize().y(), view3D.getPosition().z()));
 
     billboard->setView(view3D);
     //std::cout<<"screen coords : "<<getRenderWindow().mapCoordsToPixel(model->getPosition(), view3D);
-    g2d::AmbientLight::getAmbientLight().setColor(sf::Color::White);
+    g2d::AmbientLight::getAmbientLight().setColor(Color::White);
     animUpdater = new AnimUpdater();
     animUpdater->addBoneAnim(animator);
     getWorld()->addTimer(animUpdater);
@@ -213,12 +215,12 @@ void MyAppli::onInit() {
 }
 void MyAppli::onRender(RenderComponentManager* frcm) {
     //getWorld()->drawOnComponents("E_CUBE", 0);
-    getWorld()->drawOnComponents("E_MESH+E_BIGTILE", 1);
-    getWorld()->drawOnComponents("E_BIGTILE+E_MESH+E_CUBE+E_BONE_ANIMATION", 0);
-    getWorld()->drawOnComponents("E_CUBE+E_BIGTILE+E_MESH", 2);
-    getWorld()->drawOnComponents("E_PONCTUAL_LIGHT+E_BIGTILE", 3);
+    //getWorld()->drawOnComponents("E_MESH+E_BIGTILE", 1);
+    getWorld()->drawOnComponents("E_BIGTILE", 0);
+    /*getWorld()->drawOnComponents("E_CUBE+E_BIGTILE+E_MESH", 2);
+    getWorld()->drawOnComponents("E_PONCTUAL_LIGHT+E_BIGTILE", 3);*/
     fpsCounter++;
-    if (getClock("FPS").getElapsedTime() >= sf::seconds(1.f)) {
+    if (getClock("FPS").getElapsedTime() >= seconds(1.f)) {
         std::cout<<"FPS : "<<fpsCounter<<std::endl;
         fpsCounter = 0;
         getClock("FPS").restart();
@@ -256,7 +258,7 @@ void MyAppli::onUpdate (RenderWindow* window, IEvent& event) {
         if (event.type == IEvent::WINDOW_EVENT && event.window.type == IEvent::WINDOW_EVENT_RESIZED)
         {
             // Ajust the viewport size when the window is resized.
-            getView().reset(BoundingBox(0, 0, getView().getViewport().getPosition().z,event.window.data1, event.window.data2, getView().getViewport().getDepth()));
+            getView().reset(BoundingBox(0, 0, getView().getViewport().getPosition().z(),event.window.data1, event.window.data2, getView().getViewport().getDepth()));
         } else if (event.type == IEvent::MOUSE_MOTION_EVENT && IMouse::isButtonPressed(IMouse::Right)) {
             int relX = (event.mouseMotion.x - oldX) * sensivity;
             int relY = (event.mouseMotion.y - oldY) * sensivity;
@@ -298,15 +300,15 @@ void MyAppli::onExec() {
             View view = getRenderComponentManager().getRenderComponent(i)->getView();
             view.move(view.getForward(), -speed * clock.getElapsedTime().asSeconds());
             float y;
-            bool isOnHeightMap = heightmap->getHeight(Vec2f(view.getPosition().x, view.getPosition().z), y);
-            view.setCenter(Vec3f(view.getPosition().x, y + model->getSize().y,view.getPosition().z));
+            bool isOnHeightMap = heightmap->getHeight(Vec2f(view.getPosition().x(), view.getPosition().z()), y);
+            view.setCenter(Vec3f(view.getPosition().x(), y + model->getSize().y(),view.getPosition().z()));
             getRenderComponentManager().getRenderComponent(i)->setView(view);
         }
         View view = billboard->getView();
         view.move(view.getForward(), -speed * clock.getElapsedTime().asSeconds());
         float y;
-        bool isOnHeightMap = heightmap->getHeight(Vec2f(view.getPosition().x, view.getPosition().z), y);
-        view.setCenter(Vec3f(view.getPosition().x, y + model->getSize().y,view.getPosition().z));
+        bool isOnHeightMap = heightmap->getHeight(Vec2f(view.getPosition().x(), view.getPosition().z()), y);
+        view.setCenter(Vec3f(view.getPosition().x(), y + model->getSize().y(),view.getPosition().z()));
         billboard->setView(view);
         /*View view = getRenderWindow().getView();
         view.move(view.getForward(), -speed * clock.getElapsedTime().asSeconds());
@@ -320,20 +322,20 @@ void MyAppli::onExec() {
             View view = getRenderComponentManager().getRenderComponent(i)->getView();
             view.move(view.getForward(), speed * clock.getElapsedTime().asSeconds());
             float y;
-            bool isOnHeightMap = heightmap->getHeight(Vec2f(view.getPosition().x, view.getPosition().z), y);
-            view.setCenter(Vec3f(view.getPosition().x, y + model->getSize().y,view.getPosition().z));
+            bool isOnHeightMap = heightmap->getHeight(Vec2f(view.getPosition().x(), view.getPosition().z()), y);
+            view.setCenter(Vec3f(view.getPosition().x(), y + model->getSize().y(),view.getPosition().z()));
             getRenderComponentManager().getRenderComponent(i)->setView(view);
         }
         View view = billboard->getView();
         view.move(view.getForward(), speed * clock.getElapsedTime().asSeconds());
         float y;
-        bool isOnHeightMap = heightmap->getHeight(Vec2f(view.getPosition().x, view.getPosition().z), y);
-        view.setCenter(Vec3f(view.getPosition().x, y + model->getSize().y,view.getPosition().z));
+        bool isOnHeightMap = heightmap->getHeight(Vec2f(view.getPosition().x(), view.getPosition().z()), y);
+        view.setCenter(Vec3f(view.getPosition().x(), y + model->getSize().y(),view.getPosition().z()));
         billboard->setView(view);
         /*View view = getRenderWindow().getView();
         view.move(view.getForward(), speed * clock.getElapsedTime().asSeconds());
-        float z = heightmap->getHeight(Vec2f(view.getPosition().x, view.getPosition().y));
-        view.setCenter(Vec3f(view.getPosition().x, view.getPosition().y, z+20));
+        float z = heightmap->getHeight(Vec2f(view.getPosition().x(), view.getPosition().y));
+        view.setCenter(Vec3f(view.getPosition().x(), view.getPosition().y, z+20));
         getRenderWindow().setView(view);*/
 
     }
@@ -342,20 +344,20 @@ void MyAppli::onExec() {
             View view = getRenderComponentManager().getRenderComponent(i)->getView();
             view.move(view.getLeft(), speed * clock.getElapsedTime().asSeconds());
             float y;
-            bool isOnHeightMap = heightmap->getHeight(Vec2f(view.getPosition().x, view.getPosition().z), y);
-            view.setCenter(Vec3f(view.getPosition().x, y + model->getSize().y,view.getPosition().z));
+            bool isOnHeightMap = heightmap->getHeight(Vec2f(view.getPosition().x(), view.getPosition().z()), y);
+            view.setCenter(Vec3f(view.getPosition().x(), y + model->getSize().y(),view.getPosition().z()));
             getRenderComponentManager().getRenderComponent(i)->setView(view);
         }
         View view = billboard->getView();
         view.move(view.getLeft(), speed * clock.getElapsedTime().asSeconds());
         float y;
-        bool isOnHeightMap = heightmap->getHeight(Vec2f(view.getPosition().x, view.getPosition().z), y);
-        view.setCenter(Vec3f(view.getPosition().x, y + model->getSize().y,view.getPosition().z));
+        bool isOnHeightMap = heightmap->getHeight(Vec2f(view.getPosition().x(), view.getPosition().z()), y);
+        view.setCenter(Vec3f(view.getPosition().x(), y + model->getSize().y(),view.getPosition().z()));
         billboard->setView(view);
         /*View view = getRenderWindow().getView();
         view.move(view.getLeft(), speed * clock.getElapsedTime().asSeconds());
-        float z = heightmap->getHeight(Vec2f(view.getPosition().x, view.getPosition().y));
-        view.setCenter(Vec3f(view.getPosition().x, view.getPosition().y, z+20));
+        float z = heightmap->getHeight(Vec2f(view.getPosition().x(), view.getPosition().y));
+        view.setCenter(Vec3f(view.getPosition().x(), view.getPosition().y, z+20));
         getRenderWindow().setView(view);*/
 
     }
@@ -364,20 +366,20 @@ void MyAppli::onExec() {
             View view = getRenderComponentManager().getRenderComponent(i)->getView();
             view.move(view.getLeft(), -speed * clock.getElapsedTime().asSeconds());
             float y;
-            bool isOnHeightMap = heightmap->getHeight(Vec2f(view.getPosition().x, view.getPosition().z), y);
-            view.setCenter(Vec3f(view.getPosition().x, y + model->getSize().y,view.getPosition().z));
+            bool isOnHeightMap = heightmap->getHeight(Vec2f(view.getPosition().x(), view.getPosition().z()), y);
+            view.setCenter(Vec3f(view.getPosition().x(), y + model->getSize().y(),view.getPosition().z()));
             getRenderComponentManager().getRenderComponent(i)->setView(view);
         }
         View view = billboard->getView();
         view.move(view.getLeft(), -speed * clock.getElapsedTime().asSeconds());
         float y;
-        bool isOnHeightMap = heightmap->getHeight(Vec2f(view.getPosition().x, view.getPosition().z), y);
-        view.setCenter(Vec3f(view.getPosition().x, y + model->getSize().y,view.getPosition().z));
+        bool isOnHeightMap = heightmap->getHeight(Vec2f(view.getPosition().x(), view.getPosition().z()), y);
+        view.setCenter(Vec3f(view.getPosition().x(), y + model->getSize().y(),view.getPosition().z()));
         billboard->setView(view);
         /*View view = getRenderWindow().getView();
         view.move(view.getForward(), -speed * clock.getElapsedTime().asSeconds());
-        float z = heightmap->getHeight(Vec2f(view.getPosition().x, view.getPosition().y));
-        view.setCenter(Vec3f(view.getPosition().x, view.getPosition().y, z+20));
+        float z = heightmap->getHeight(Vec2f(view.getPosition().x(), view.getPosition().y));
+        view.setCenter(Vec3f(view.getPosition().x(), view.getPosition().y, z+20));
         getRenderWindow().setView(view);*/
 
     }
@@ -396,7 +398,7 @@ void MyAppli::onExec() {
         view.move(0, 0, -verticalMotionDirection * speed * clock2.getElapsedTime().asSeconds());
         getRenderComponentManager().getRenderComponent(i)->setView(view);
     }*/
-    oldX = IMouse::getPosition(getRenderWindow()).x;
-    oldY = IMouse::getPosition(getRenderWindow()).y;
+    oldX = IMouse::getPosition(getRenderWindow()).x();
+    oldY = IMouse::getPosition(getRenderWindow()).y();
     clock.restart();
 }

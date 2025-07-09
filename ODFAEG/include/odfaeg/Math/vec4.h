@@ -488,9 +488,8 @@ namespace odfaeg {
             }
             VecN<T, N> mix (VecN<T, N>& other, float a) {
                 VecN<T, N> result;
-                for (unsigned int i = 0; i < N; i++) {
-                    (*this) * (1 - a) + other * a;
-                }
+                result = (*this) * (1 - a) + other * a;
+                return result;
             }
             template <typename Archive>
             void serialize (Archive &ar) {

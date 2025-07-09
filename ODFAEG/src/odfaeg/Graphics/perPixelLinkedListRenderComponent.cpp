@@ -992,8 +992,7 @@ namespace odfaeg {
                                                                 frontColor = color;
                                                                 texIndex = textureIndex;
                                                                 normal = normals;
-
-
+                                                                //debugPrintfEXT("position = %v4f", gl_Position);
                                                             }
                                                             )";
                 const std::string  simpleVertexShader = R"(#version 460
@@ -1042,7 +1041,7 @@ namespace odfaeg {
                                                       void main() {
                                                            uint nodeIdx = atomicAdd(count, 1);
                                                            vec4 color = (texIndex != 0) ? frontColor * texture(textures[texIndex-1], fTexCoords.xy) : frontColor;
-                                                           //debugPrintfEXT("sampled texel = %f, %f", fTexCoords.x, fTexCoords.y);
+                                                           //debugPrintfEXT("color = %v4f", color);
                                                            if (nodeIdx < maxNodes) {
                                                                 uint prevHead = imageAtomicExchange(headPointers, ivec2(gl_FragCoord.xy), nodeIdx);
                                                                 nodes[nodeIdx].color = color;
