@@ -418,11 +418,11 @@ namespace odfaeg {
                                                                     texIndex = textureIndex;
                                                                     layer = l;
                                                                     normal = normals;
-                                                                    vec4 row1 = ubo.projectionMatrix[0];
+                                                                    /*vec4 row1 = ubo.projectionMatrix[0];
                                                                     vec4 row2 = ubo.projectionMatrix[1];
                                                                     vec4 row3 = ubo.projectionMatrix[2];
                                                                     vec4 row4 = ubo.projectionMatrix[3];
-                                                                    /*debugPrintfEXT("view raw 1 : %v4f", row1);
+                                                                    debugPrintfEXT("view raw 1 : %v4f", row1);
                                                                     debugPrintfEXT("view raw 2 : %v4f", row2);
                                                                     debugPrintfEXT("view raw 3 : %v4f", row3);
                                                                     debugPrintfEXT("view raw 4 : %v4f", row4);*/

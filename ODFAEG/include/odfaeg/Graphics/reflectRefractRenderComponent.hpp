@@ -30,11 +30,11 @@ namespace odfaeg {
                 unsigned int  baseInstance;
             };
             struct DrawElementsIndirectCommand {
-                    unsigned index_count;
-                    unsigned instance_count;
-                    unsigned first_index;       // cf parametre offset de glDrawElements()
-                    unsigned vertex_base;
-                    unsigned instance_base;
+                unsigned indexCount;
+                unsigned instanceCount;
+                unsigned firstIndex;       // cf parametre offset de glDrawElements()
+                unsigned baseVertex;
+                unsigned baseInstance;
             };
             struct ModelData {
                 GLMatrix4f worldMat;
@@ -103,9 +103,13 @@ namespace odfaeg {
             */
             void drawNextFrame();
             void drawDepthReflInst();
+            void drawDepthReflIndexedInst();
             void drawAlphaInst();
+            void drawAlphaIndexedInst();
             void drawEnvReflInst();
+            void drawEnvReflIndexedInst();
             void drawReflInst(Entity* reflectEntity);
+            void drawReflIndexedInst(Entity* reflectEntity);
             void setExpression (std::string expression);
             /**
             * \fn draw(Drawable& drawable, RenderStates states = RenderStates::Default);
@@ -162,9 +166,9 @@ namespace odfaeg {
             uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
             float squareSize;
             RectangleShape quad;
-            Batcher batcher, normalBatcher, reflBatcher, reflNormalBatcher, rvBatcher, normalRvBatcher, skyboxBatcher;
+            Batcher batcher, normalBatcher, reflBatcher, reflNormalBatcher, indexedBatcher, normalIndexedBatcher, reflIndexedBatcher, reflNormalIndexedBatcher, skyboxBatcher;
             Color backgroundColor; /**> The background color.*/
-            std::vector<Instance> m_instances, m_normals, m_reflInstances, m_reflNormals, m_skyboxInstance; /**> Instances to draw. (Instanced rendering.) */
+            std::vector<Instance> m_instances, m_normals, m_reflInstances, m_reflNormals, m_indexed, m_normalIndexed, m_reflIndexed, m_reflNormalIndexed, m_skyboxInstance; /**> Instances to draw. (Instanced rendering.) */
             std::vector<Entity*> visibleEntities;
             Entity* skybox;
             RenderTexture depthBuffer, alphaBuffer, reflectRefractTex, environmentMap;
