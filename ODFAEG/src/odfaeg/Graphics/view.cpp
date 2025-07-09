@@ -6,22 +6,20 @@ namespace odfaeg {
         using namespace sf;
         View::View () : viewport(0, 0, 0, 2, 2, 1), depth(1) {
             setPerspective(-1, 1, -1, 1, 0, 1);
-            up = math::Vec3f(0, 1, 0);
-            position = math::Vec3f (0, 0, 0);
-            math::Vec3f upToXYPlane(up.x, up.y, 0);
-            teta = upToXYPlane.getAngleBetween(math::Vec3f::yAxis, math::Vec3f::yAxis);
-            math::Vec3f upToYZPlane(0, up.y, math::Math::abs(up.z));
-            phi = upToYZPlane.getAngleBetween(math::Vec3f::zAxis, math::Vec3f::zAxis);
-            gamma = 0;
-            forward = math::Math::toCartesian(phi, teta).normalize();
-            left = forward.cross(up).normalize();
-            target = position + forward;
-            viewMatrix.setScale(math::Vec3f(1.f, 1.f, 1.f));
+            this->position = math::Vec3f(0.f, 0.f, 0.f);
+            this->forward = math::Vec3f(0.f, 0.f, -1.f);  // vers -Z
+            this->up = math::Vec3f(0.f, 1.f, 0.f);        // Y en haut
+            this->left = forward.cross(up).normalize();   // X vers la gauche
+            this->up = left.cross(forward).normalize();   // recalcule up pour ortho
+            this->target = position + forward;
+
             viewMatrix.setAxis(left, up, forward);
             viewMatrix.setOrigin(position);
-            lockTeta = lockPhi = 0;
+            teta = math::Math::toDegrees(math::Math::atang2(forward.x, forward.z));         // rotation horizontale autour de Y
+            phi  = math::Math::toDegrees(math::Math::asinus(forward.y));
             viewUpdated = true;
-            flipX = flipY = false;
+            flipX = false;
+            flipY = true;
         }
         View::View (double width, double height, double zNear, double zFar) : viewport(0, 0, zNear, width, height, zFar), depth(zFar) {
 
@@ -65,23 +63,20 @@ namespace odfaeg {
 
         View::View (double width, double height, double fovy, double zNear, double zFar) : viewport(0, 0, zNear, width, height, zFar), depth(zFar) {
             setPerspective(fovy, width / height, zNear, zFar);
-            this->up = math::Vec3f(0, 1, 0);
-            position = math::Vec3f (0, 0, 0);
-            math::Vec3f upToXYPlane(up.x, up.y, 0);
-            teta = math::Math::toDegrees(upToXYPlane.getAngleBetween(math::Vec3f::yAxis, math::Vec3f::yAxis));
-            math::Vec3f upToYZPlane(0, up.y, math::Math::abs(up.z));
-            phi = math::Math::toDegrees(upToYZPlane.getAngleBetween(math::Vec3f::zAxis, math::Vec3f::zAxis));
-            gamma = 0;
-            forward = math::Math::toCartesian(teta, phi).normalize();
-            left = forward.cross(up).normalize();
-            up = left.cross(forward);
-            target = position + forward;
-            viewMatrix.setScale(math::Vec3f(1.f, 1.f, 1.f));
+            this->position = math::Vec3f(0.f, 0.f, 0.f);
+            this->forward = math::Vec3f(0.f, 0.f, -1.f);  // vers -Z
+            this->up = math::Vec3f(0.f, 1.f, 0.f);        // Y en haut
+            this->left = forward.cross(up).normalize();   // X vers la gauche
+            this->up = left.cross(forward).normalize();   // recalcule up pour ortho
+            this->target = position + forward;
+
             viewMatrix.setAxis(left, up, forward);
             viewMatrix.setOrigin(position);
-            lockTeta = lockPhi = 0;
+            teta = math::Math::toDegrees(math::Math::atang2(forward.x, forward.z));         // rotation horizontale autour de Y
+            phi  = math::Math::toDegrees(math::Math::asinus(forward.y));
             viewUpdated = true;
-            flipX = flipY = false;
+            flipX = false;
+            flipY = true;
         }
         void View::move(float x, float y, float z) {
             math::Vec3f d(x, y, z);
