@@ -2305,6 +2305,7 @@ namespace odfaeg {
                     memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
                     vkCmdPipelineBarrier(commandBuffers[i], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
                 }
+                depthBuffer.display();
                 alphaBuffer.clear(Color::Transparent);
                 commandBuffers = alphaBuffer.getCommandBuffers();
                 for (unsigned int i = 0; i < commandBuffers.size(); i++) {
@@ -2316,11 +2317,12 @@ namespace odfaeg {
                     memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
                     vkCmdPipelineBarrier(commandBuffers[i], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
                 }
+                alphaBuffer.display();
                 reflectRefractTex.beginRecordCommandBuffers();
                 const_cast<Texture&>(reflectRefractTex.getTexture()).toColorAttachmentOptimal(reflectRefractTex.getCommandBuffers()[reflectRefractTex.getCurrentFrame()]);
                 reflectRefractTex.display();
                 reflectRefractTex.clear(Color::Transparent);
-
+                reflectRefractTex.display();
             }
             void ReflectRefractRenderComponent::createCommandBuffersIndirect(unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, DepthStencilID depthStencilID, RenderStates currentStates) {
                 if (needToUpdateDS) {
@@ -2340,6 +2342,7 @@ namespace odfaeg {
                 currentStates.blendMode.updateIds();
                 if (shader == &sBuildDepthBuffer) {
                     //////std::cout<<"draw on db"<<std::endl;
+                    depthBuffer.beginRecordCommandBuffers();
                     std::vector<VkCommandBuffer> commandBuffers = depthBuffer.getCommandBuffers();
                     unsigned int currentFrame = depthBuffer.getCurrentFrame();
                     buildDepthPC.nbLayers = GameObject::getNbLayers();
@@ -2350,6 +2353,7 @@ namespace odfaeg {
                     depthBuffer.endRenderPass();
                     depthBuffer.display();
                 } else if (shader == &sBuildAlphaBuffer) {
+                    alphaBuffer.beginRecordCommandBuffers();
                     const_cast<Texture&>(depthBuffer.getTexture()).toShaderReadOnlyOptimal(alphaBuffer.getCommandBuffers()[alphaBuffer.getCurrentFrame()]);
 
 
@@ -2383,6 +2387,8 @@ namespace odfaeg {
                     std::vector<VkCommandBuffer> commandBuffers = environmentMap.getCommandBuffers();
                     unsigned int currentFrame = environmentMap.getCurrentFrame();
 
+                    environmentMap.beginRecordCommandBuffers();
+
                     //vkCmdWaitEvents(commandBuffers[currentFrame], 1, &events[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
                     VkMemoryBarrier memoryBarrier={};
                     memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
@@ -2396,6 +2402,7 @@ namespace odfaeg {
                     environmentMap.display();
 
                 } else {
+                    reflectRefractTex.beginRecordCommandBuffers();
                     const_cast<Texture&>(environmentMap.getTexture()).toShaderReadOnlyOptimal(reflectRefractTex.getCommandBuffers()[reflectRefractTex.getCurrentFrame()]);
                     const_cast<Texture&>(alphaBuffer.getTexture()).toShaderReadOnlyOptimal(reflectRefractTex.getCommandBuffers()[reflectRefractTex.getCurrentFrame()]);
 
@@ -3964,11 +3971,13 @@ namespace odfaeg {
                 indirectRenderingPC.viewMatrix = toVulkanMatrix(viewMatrix);
 
                 drawDepthReflInst();
-                if (!isSomethingDrawn)
-                    depthBuffer.display();
+                drawDepthReflIndexedInst();
+                /*if (!isSomethingDrawn)
+                    depthBuffer.display();*/
                 drawAlphaInst();
-                if (!isSomethingDrawn)
-                    alphaBuffer.display();
+                drawAlphaIndexedInst();
+                /*if (!isSomethingDrawn)
+                    alphaBuffer.display();*/
 
                 View reflectView;
                 if (view.isOrtho()) {
@@ -4081,8 +4090,8 @@ namespace odfaeg {
                                     updateUniformBuffer(environmentMap.getCurrentFrame(), ubo);
                                     environmentMap.clear(Color::Transparent);
                                     environmentMap.display(false, computeSemaphore);
-                                    environmentMap.beginRecordCommandBuffers();
                                     drawEnvReflInst();
+                                    drawEnvReflIndexedInst();
 
 
                                     vb.clear();
@@ -4106,6 +4115,7 @@ namespace odfaeg {
 
                                     buildFrameBufferPC.cameraPos = math::Vec4f(view.getPosition().x(), view.getPosition().y(), view.getPosition().z(), 1);
                                     drawReflInst(entity);
+                                    drawReflIndexedInst(entity);
 
                                 }
                             }
@@ -4114,6 +4124,7 @@ namespace odfaeg {
                     }
                 }
                 if (!isSomethingDrawn) {
+                    reflectRefractTex.beginRecordCommandBuffers();
                     reflectRefractTex.display(true, renderFinishedSemaphore[window.getCurrentFrame()]);
                 }
                 isSomethingDrawn  = false;

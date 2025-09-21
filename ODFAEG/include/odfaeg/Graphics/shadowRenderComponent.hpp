@@ -32,11 +32,11 @@ namespace odfaeg {
                     unsigned int  baseInstance;
                 };
                 struct DrawElementsIndirectCommand {
-                        unsigned index_count;
-                        unsigned instance_count;
-                        unsigned first_index;       // cf parametre offset de glDrawElements()
-                        unsigned vertex_base;
-                        unsigned instance_base;
+                    unsigned index_count;
+                    unsigned instance_count;
+                    unsigned first_index;       // cf parametre offset de glDrawElements()
+                    unsigned vertex_base;
+                    unsigned instance_base;
                 };
                 struct ModelData {
                     math::Matrix4f worldMat;

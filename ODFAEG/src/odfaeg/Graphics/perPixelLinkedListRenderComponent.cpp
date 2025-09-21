@@ -434,6 +434,7 @@ namespace odfaeg {
                 vkCmdPipelineBarrier(frameBuffer.getCommandBuffers()[i], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
 
             }
+            frameBuffer.display();
         }
         VkCommandBuffer PerPixelLinkedListRenderComponent::beginSingleTimeCommands() {
             VkCommandBufferAllocateInfo allocInfo{};
@@ -1367,7 +1368,6 @@ namespace odfaeg {
                     for (unsigned int j = 0; j < m_normalsIndexed[i].getAllVertices().getIndexes().size(); j++) {
                         vbBindlessTex[p].addIndex(m_normalsIndexed[i].getAllVertices().getIndexes()[j]);
                         indexCount++;
-                        //////std::cout<<"index : "<<m_normalsIndexed[i].getAllVertices().getIndexes()[j]<<std::endl;
                     }
 
                     drawElementsIndirectCommand.index_count = indexCount;
@@ -2352,7 +2352,7 @@ namespace odfaeg {
             RenderStates currentStates;
             currentStates.shader = &perPixelLinkedListP2;
             currentStates.blendMode = BlendNone;
-            frameBuffer.enableStencilTest(false);
+            //frameBuffer.enableStencilTest(false);
             //createDescriptorSets2(currentStates);
             createCommandBufferVertexBuffer(currentStates);
 
@@ -2401,8 +2401,7 @@ namespace odfaeg {
             Shader* shader = const_cast<Shader*>(currentStates.shader);
             std::vector<Texture*> allTextures = Texture::getAllTextures();
 
-
-
+            frameBuffer.beginRecordCommandBuffers();
             vkCmdPushConstants(frameBuffer.getCommandBuffers()[currentFrame], frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][frameBuffer.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectDrawPushConsts), &indirectDrawPushConsts);
 
             frameBuffer.beginRenderPass();
@@ -2418,7 +2417,7 @@ namespace odfaeg {
             isSomethingDrawn = true;
         }
         void PerPixelLinkedListRenderComponent::createCommandBufferVertexBuffer(RenderStates currentStates) {
-            if (isSomethingDrawn)
+            //if (isSomethingDrawn)
                 frameBuffer.beginRecordCommandBuffers();
             currentStates.blendMode.updateIds();
             unsigned int currentFrame = frameBuffer.getCurrentFrame();

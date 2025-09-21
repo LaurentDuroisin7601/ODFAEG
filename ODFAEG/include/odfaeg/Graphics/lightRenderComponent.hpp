@@ -41,11 +41,11 @@ namespace odfaeg {
                     unsigned int  baseInstance;
                 };
                 struct DrawElementsIndirectCommand {
-                        unsigned index_count;
-                        unsigned instance_count;
-                        unsigned first_index;       // cf parametre offset de glDrawElements()
-                        unsigned vertex_base;
-                        unsigned instance_base;
+                    unsigned indexCount;
+                    unsigned instanceCount;
+                    unsigned firstIndex;       // cf parametre offset de glDrawElements()
+                    unsigned baseVertex;
+                    unsigned baseInstance;
                 };
                 struct ModelData {
                     math::Matrix4f worldMat;
@@ -98,6 +98,7 @@ namespace odfaeg {
                 void drawDepthLightInstances();
                 void drawLightInstances();
                 void drawInstances();
+                void drawIndexedInstances();
                 std::vector<Entity*> getEntities();
                 void draw(RenderTarget& target, RenderStates states);
                 void draw(Drawable& drawable, RenderStates states) {
@@ -131,8 +132,8 @@ namespace odfaeg {
                 std::vector<VkDeviceMemory> modelDataShaderStorageBuffersMemory;
                 std::vector<VkBuffer> materialDataShaderStorageBuffers;
                 std::vector<VkDeviceMemory> materialDataShaderStorageBuffersMemory;
-                Batcher batcher, lightBatcher, normalBatcher; /**> A group of faces using the same materials and primitive type.*/
-                std::vector<Instance> m_instances, m_normals; /**> Instances to draw. (Instanced rendering.) */
+                Batcher batcher, lightBatcher, normalBatcher, indexedBatcher, normalIndexedBatcher; /**> A group of faces using the same materials and primitive type.*/
+                std::vector<Instance> m_instances, m_normals, m_instancesIndexed, m_normalsIndexed; /**> Instances to draw. (Instanced rendering.) */
                 std::vector<Instance> m_light_instances; /**> Instances to draw. (Instanced rendering.) */
                 std::vector<Entity*> visibleEntities; /**> Entities loaded*/
                 RenderTexture depthBuffer; /**> the stencil buffer.*/
