@@ -294,6 +294,7 @@ namespace odfaeg {
                         throw std::runtime_error("failed to create compute synchronization objects for a frame!");
                     }
                 }
+                isSomethingDrawn = false;
                 update = true;
             }
             void ReflectRefractRenderComponent::createDescriptorsAndPipelines() {
@@ -2430,9 +2431,9 @@ namespace odfaeg {
                     const_cast<Texture&>(alphaBuffer.getTexture()).toColorAttachmentOptimal(reflectRefractTex.getCommandBuffers()[reflectRefractTex.getCurrentFrame()]);
                     const_cast<Texture&>(environmentMap.getTexture()).toColorAttachmentOptimal(reflectRefractTex.getCommandBuffers()[reflectRefractTex.getCurrentFrame()]);
                     reflectRefractTex.display(true, renderFinishedSemaphore[window.getCurrentFrame()]);
+                    isSomethingDrawn = true;
 
                 }
-                isSomethingDrawn = true;
             }
             void ReflectRefractRenderComponent::createCommandBufferVertexBuffer(RenderStates currentStates) {
 
