@@ -57,6 +57,7 @@ namespace odfaeg {
             }
             void VertexBuffer::clear() {
                 m_vertices.clear();
+                indices.clear();
             }
             void VertexBuffer::clearIndexes() {
                 indices.clear();
