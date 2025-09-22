@@ -2123,6 +2123,7 @@ namespace odfaeg {
                 }
                 for (unsigned int i = 0; i < m_normalsIndexed.size(); i++) {
                    if (m_normalsIndexed[i].getAllVertices().getVertexCount() > 0) {
+
                         DrawElementsIndirectCommand drawElementsIndirectCommand;
                         unsigned int p = m_normalsIndexed[i].getAllVertices().getPrimitiveType();
                         MaterialData material;
@@ -2142,6 +2143,7 @@ namespace odfaeg {
                             vbBindlessTex[p].append(m_normalsIndexed[i].getAllVertices()[j]);
                         }
                         for (unsigned int j = 0; j < m_normalsIndexed[i].getAllVertices().getIndexes().size(); j++) {
+                            //std::cout<<"add  norm index"<<std::endl;
                             indexCount++;
                             vbBindlessTex[p].addIndex(m_normalsIndexed[i].getAllVertices().getIndexes()[j]);
                         }
@@ -2408,10 +2410,12 @@ namespace odfaeg {
                         modelDatas[p].push_back(model);
                         unsigned int indexCount = 0, vertexCount = 0;
                         for (unsigned int j = 0; j < m_shadow_normalsIndexed[i].getAllVertices().getVertexCount(); j++) {
+                            //std::cout<<"add shadow norm vert"<<std::endl;
                             vertexCount++;
                             vbBindlessTex[p].append(m_shadow_normalsIndexed[i].getAllVertices()[j]);
                         }
                         for (unsigned int j = 0; j < m_shadow_normalsIndexed[i].getAllVertices().getIndexes().size(); j++) {
+                            //std::cout<<"add shadow norm index"<<std::endl;
                             indexCount++;
                             vbBindlessTex[p].addIndex(m_shadow_normalsIndexed[i].getAllVertices().getIndexes()[j]);
                         }
@@ -2457,6 +2461,7 @@ namespace odfaeg {
                                         vbBindlessTex[p].append((*m_shadow_instances_indexed[i].getVertexArrays()[j])[k]);
                                     }
                                     for (unsigned int k = 0; k < m_shadow_instances_indexed[i].getVertexArrays()[j]->getIndexes().size(); k++) {
+                                        std::cout<<"add shadow instance index"<<std::endl;
                                         indexCount++;
                                         vbBindlessTex[p].addIndex(m_shadow_instances_indexed[i].getVertexArrays()[j]->getIndexes()[k]);
                                     }
@@ -3000,6 +3005,7 @@ namespace odfaeg {
                                         normalStencilBuffer.addFace(vEntities[i]->getFace(j));
                                     }
                                  } else {
+                                    //std::cout<<"add shadow indexes"<<std::endl;
                                     std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                                     normalBatcherIndexed.addFace( vEntities[i]->getFace(j));
                                     normalShadowBatcherIndexed.addShadowFace(vEntities[i]->getFace(j), view.getViewMatrix(), tm);

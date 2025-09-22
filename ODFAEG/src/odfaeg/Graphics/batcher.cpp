@@ -437,10 +437,14 @@ namespace odfaeg {
                 m_vertexArrays.push_back(&va);
                 //shadowProjMatrix.combine(viewMatrix.getMatrix());
                 shadowProjMatrix.combine(tm.getMatrix());
+                unsigned int baseVertex = vertices.getVertexCount();
                 for (unsigned int i = 0; i < va.getVertexCount(); i++) {
                     math::Vec3f t = shadowProjMatrix.transform(va[i].position);
                     Vertex v (t, va[i].color, va[i].texCoords);
                     vertices.append(v);
+                }
+                for (unsigned int i = 0; i < va.getIndexes().size(); i++) {
+                    vertices.addIndex(baseVertex + va.getIndexes()[i]);
                 }
             }
             bool Instance::containsEntity(Entity* entity, entt::entity entityId) {
