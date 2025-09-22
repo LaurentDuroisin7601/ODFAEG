@@ -35,7 +35,7 @@ namespace odfaeg {
             va[2] = v3;
             va[3] = v4;
             #else
-            VertexArray va(Triangles, 6, this);
+            VertexArray va(Triangles, 4, this);
             Vertex v1(math::Vec3f(0, 0, 0), color);
             Vertex v2(math::Vec3f(size.x(), 0, 0), color);
             Vertex v3(math::Vec3f(size.x(), size.y(), size.z()), color);

@@ -3395,8 +3395,10 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < baseInstance.size(); i++) {
                     baseInstance[i] = 0;
                 }
+                //std::cout<<"normal indexed : "<<m_normalIndexed.size()<<std::endl;
                 for (unsigned int i = 0; i < m_normalIndexed.size(); i++) {
                     if (m_normalIndexed[i].getAllVertices().getVertexCount() > 0) {
+
                         DrawElementsIndirectCommand drawElementsIndirectCommand;
                         unsigned int p = m_normalIndexed[i].getAllVertices().getPrimitiveType();
                         MaterialData material;
@@ -3411,10 +3413,12 @@ namespace odfaeg {
                         modelDatas[p].push_back(model);
                         unsigned int vertexCount = 0, indexCount = 0;
                         for (unsigned int j = 0; j < m_normalIndexed[i].getAllVertices().getVertexCount(); j++) {
+                            //std::cout<<"add vertex"<<std::endl;
                             vertexCount++;
                             vbBindlessTex[p].append(m_normalIndexed[i].getAllVertices()[j]);
                         }
                         for (unsigned int j = 0; j < m_normalIndexed[i].getAllVertices().getIndexes().size(); j++) {
+                            //std::cout<<"add index"<<std::endl;
                             indexCount++;
                             vbBindlessTex[p].addIndex(m_normalIndexed[i].getAllVertices().getIndexes()[j]);
                         }
@@ -3779,19 +3783,20 @@ namespace odfaeg {
                         model.worldMat = toVulkanMatrix(tm.getMatrix())/*.transpose()*/;
                         modelDatas[p].push_back(model);
                         unsigned int vertexCount = 0, indexCount = 0;
-                        for (unsigned int j = 0; j < m_reflNormals[i].getVertexArrays().size(); j++) {
-                            Entity* entity = m_reflNormals[i].getVertexArrays()[j]->getEntity()->getRootEntity();
+                        for (unsigned int j = 0; j < m_reflNormalIndexed[i].getVertexArrays().size(); j++) {
+                            Entity* entity = m_reflNormalIndexed[i].getVertexArrays()[j]->getEntity()->getRootEntity();
                             if (entity == reflectEntity) {
-                                for (unsigned int k = 0; k < m_reflNormals[i].getVertexArrays()[j]->getVertexCount(); k++) {
+                                for (unsigned int k = 0; k < m_reflNormalIndexed[i].getVertexArrays()[j]->getVertexCount(); k++) {
                                     vertexCount++;
-                                    math::Vec3f t = m_reflNormals[i].getVertexArrays()[j]->getEntity()->getTransform().transform(math::Vec4f((*m_reflNormals[i].getVertexArrays()[j])[k].position));
-                                    Vertex v (t, (*m_reflNormals[i].getVertexArrays()[j])[k].color, (*m_reflNormals[i].getVertexArrays()[j])[k].texCoords);
-                                    v.normal = (*m_reflNormals[i].getVertexArrays()[j])[k].normal;
+                                    math::Vec3f t = m_reflNormalIndexed[i].getVertexArrays()[j]->getEntity()->getTransform().transform(math::Vec4f((*m_reflNormalIndexed[i].getVertexArrays()[j])[k].position));
+                                    Vertex v (t, (*m_reflNormalIndexed[i].getVertexArrays()[j])[k].color, (*m_reflNormalIndexed[i].getVertexArrays()[j])[k].texCoords);
+                                    v.normal = (*m_reflNormalIndexed[i].getVertexArrays()[j])[k].normal;
                                     vbBindlessTex[p].append(v);
                                 }
-                                for (unsigned int k = 0; k < m_reflNormals[i].getVertexArrays()[j]->getIndexes().size(); k++) {
+                                for (unsigned int k = 0; k < m_reflNormalIndexed[i].getVertexArrays()[j]->getIndexes().size(); k++) {
+                                    //std::cout<<"add refl norm indexed"<<std::endl;
                                     indexCount++;
-                                    vbBindlessTex[p].addIndex(m_reflNormals[i].getVertexArrays()[j]->getIndexes()[j]);
+                                    vbBindlessTex[p].addIndex(m_reflNormalIndexed[i].getVertexArrays()[j]->getIndexes()[j]);
                                 }
                             }
                         }
@@ -3835,12 +3840,12 @@ namespace odfaeg {
 
                                     unsigned int p = m_reflIndexed[i].getVertexArrays()[j]->getPrimitiveType();
                                     for (unsigned int k = 0; k < m_reflIndexed[i].getVertexArrays()[j]->getVertexCount(); k++) {
-
+                                        //std::cout<<"add refl inst vert"<<std::endl;
                                         vertexCount++;
                                         vbBindlessTex[p].append((*m_reflIndexed[i].getVertexArrays()[j])[k]);
                                     }
                                     for (unsigned int k = 0; k < m_reflIndexed[i].getVertexArrays()[j]->getIndexes().size(); k++) {
-
+                                        //std::cout<<"add refl inst indexed"<<std::endl;
                                         indexCount++;
                                         vbBindlessTex[p].addIndex(m_reflIndexed[i].getVertexArrays()[j]->getIndexes()[k]);
                                     }
@@ -3987,9 +3992,17 @@ namespace odfaeg {
                     reflectView = View (squareSize, squareSize, 80, view.getViewport().getPosition().z(), view.getViewport().getSize().z());
                 }
                 rootEntities.clear();
-                for (unsigned int t = 0; t < 2; t++) {
+                for (unsigned int t = 0; t < 4; t++) {
 
-                    std::vector<Instance> instances = (t == 0) ? m_reflInstances : m_reflNormals;
+                    std::vector<Instance> instances;
+                    if(t == 0)
+                        instances = m_reflInstances;
+                    else if (t == 1)
+                        instances = m_reflNormals;
+                    else if (t == 2)
+                        instances = m_reflIndexed;
+                    else
+                        instances = m_reflNormalIndexed;
                     for (unsigned int n = 0; n < instances.size(); n++) {
                         if (instances[n].getAllVertices().getVertexCount() > 0) {
                             std::vector<Entity*> entities = instances[n].getEntities();
