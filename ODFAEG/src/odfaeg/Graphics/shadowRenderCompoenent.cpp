@@ -2474,7 +2474,7 @@ namespace odfaeg {
                         baseInstance[p] += tm.size();
                     }
                 }
-                currentStates.shader = &buildShadowMapShader;
+                currentStates.shader = &sBuildAlphaBufferShader;
                 currentStates.texture = nullptr;
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                     if (vbBindlessTex[p].getVertexCount() > 0) {
@@ -2673,6 +2673,7 @@ namespace odfaeg {
                     depthBuffer.endRenderPass();
                     depthBuffer.display();
                 } else if (shader == &sBuildAlphaBufferShader) {
+                    alphaBuffer.beginRecordCommandBuffers();
                     const_cast<Texture&>(depthBuffer.getTexture()).toShaderReadOnlyOptimal(alphaBuffer.getCommandBuffers()[alphaBuffer.getCurrentFrame()]);
 
 
@@ -2683,7 +2684,7 @@ namespace odfaeg {
                     vkCmdSetEvent(commandBuffers[currentFrame], events[currentFrame],  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);*/
                     //vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 0, nullptr);
 
-                    alphaBuffer.beginRecordCommandBuffers();
+
 
                     vkCmdPushConstants(commandBuffers[currentFrame], alphaBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][alphaBuffer.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(LayerPC), &layerPC);
 

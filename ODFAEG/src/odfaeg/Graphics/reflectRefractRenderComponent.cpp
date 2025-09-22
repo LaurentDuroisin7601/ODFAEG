@@ -3860,7 +3860,7 @@ namespace odfaeg {
                 }
                 RenderStates currentStates;
                 currentStates.blendMode = BlendNone;
-                currentStates.shader = &sBuildDepthBuffer;
+                currentStates.shader = &sReflectRefract;
                 currentStates.texture = nullptr;
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                     if (vbBindlessTex[p].getVertexCount() > 0) {
