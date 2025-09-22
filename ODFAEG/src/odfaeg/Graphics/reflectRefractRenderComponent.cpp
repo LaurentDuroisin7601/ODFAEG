@@ -1067,6 +1067,7 @@ namespace odfaeg {
                                                                 layout (set = 0, binding = 1) uniform sampler2D alphaBuffer;
                                                                 layout (location = 0) out vec4 fColor;
                                                                 void main () {
+
                                                                     vec2 position = (gl_FragCoord.xy / pushConsts.resolution.xy);
                                                                     vec4 alpha = texture(alphaBuffer, position);
 
@@ -2730,7 +2731,7 @@ namespace odfaeg {
                                         vbBindlessTex[p].append((*m_reflIndexed[i].getVertexArrays()[j])[k]);
                                     }
                                     for (unsigned int k = 0; k < m_reflIndexed[i].getVertexArrays()[j]->getIndexes().size(); k++) {
-
+                                        //std::cout<<"add depth refl inst indexed"<<std::endl;
                                         indexCount++;
                                         vbBindlessTex[p].addIndex(m_reflIndexed[i].getVertexArrays()[j]->getIndexes()[k]);
                                     }
@@ -3044,6 +3045,7 @@ namespace odfaeg {
                             vbBindlessTex[p].append(m_normalIndexed[i].getAllVertices()[j]);
                         }
                         for (unsigned int j = 0; j < m_normalIndexed[i].getAllVertices().getIndexes().size(); j++) {
+                            //std::cout<<"add norm indexed"<<std::endl;
                             indexCount++;
                             vbBindlessTex[p].addIndex(m_normalIndexed[i].getAllVertices().getIndexes()[j]);
                         }
@@ -3774,7 +3776,7 @@ namespace odfaeg {
                         unsigned int p = m_reflNormalIndexed[i].getAllVertices().getPrimitiveType();
                         MaterialData material;
                         material.textureIndex = (m_reflNormalIndexed[i].getMaterial().getTexture() != nullptr) ? m_reflNormalIndexed[i].getMaterial().getTexture()->getId() : 0;
-                        material.layer = m_reflNormalIndexed[i].getMaterial().getLayer();
+                        material.materialType = m_reflNormalIndexed[i].getMaterial().getType();
                         material.uvScale = (m_reflNormalIndexed[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_reflNormalIndexed[i].getMaterial().getTexture()->getSize().x(), 1.f / m_reflNormalIndexed[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
                         material.uvOffset = math::Vec2f(0, 0);
                         materialDatas[p].push_back(material);
@@ -3817,7 +3819,7 @@ namespace odfaeg {
                         unsigned int p = m_reflIndexed[i].getAllVertices().getPrimitiveType();
                         MaterialData material;
                         material.textureIndex = (m_reflIndexed[i].getMaterial().getTexture() != nullptr) ? m_reflIndexed[i].getMaterial().getTexture()->getId() : 0;
-                        material.layer = m_reflIndexed[i].getMaterial().getLayer();
+                        material.materialType = m_reflIndexed[i].getMaterial().getType();
                         material.uvScale = (m_reflIndexed[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_reflIndexed[i].getMaterial().getTexture()->getSize().x(), 1.f / m_reflIndexed[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
                         material.uvOffset = math::Vec2f(0, 0);
                         materialDatas[p].push_back(material);
@@ -3866,7 +3868,7 @@ namespace odfaeg {
                 RenderStates currentStates;
                 currentStates.blendMode = BlendNone;
                 currentStates.shader = &sReflectRefract;
-                currentStates.texture = nullptr;
+                currentStates.texture = &environmentMap.getTexture();
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                     if (vbBindlessTex[p].getVertexCount() > 0) {
                         vbBindlessTex[p].update();
@@ -3948,6 +3950,7 @@ namespace odfaeg {
                         vkUnmapMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory);
                         copyBuffer(vboIndirectStagingBuffer, vboIndirect, bufferSize);
                         //createDescriptorSets(p, currentStates);
+                        //std::cout<<"draw refl refr"<<std::endl;
 
                         createCommandBuffersIndirect(p, drawElementsIndirectCommands[p].size(), sizeof(DrawElementsIndirectCommand), NODEPTHNOSTENCIL, currentStates);
                     }
