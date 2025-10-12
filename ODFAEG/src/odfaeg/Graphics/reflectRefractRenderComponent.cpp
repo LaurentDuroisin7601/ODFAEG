@@ -3740,8 +3740,9 @@ namespace odfaeg {
                         vkUnmapMemory(vkDevice.getDevice(), materialDataStagingBufferMemory);
                         copyBuffer(materialDataStagingBuffer,materialDataBufferMT[p], totalBufferSizeMaterialData[p], copyBufferCommandBuffer);
 
-                        bufferSize = sizeof(DrawElementsIndirectCommand) * drawArraysIndirectCommands[p].size();
+                        bufferSize = sizeof(DrawElementsIndirectCommand) * drawElementsIndirectCommands[p].size();
                         totalBufferSizeIndexedDrawCommand[p] = bufferSize;
+                        //std::cout<<"buffer size : "<<bufferSize<<std::endl<<"max : "<<maxBufferSizeIndexedDrawCommand[p]<<std::endl;
                         if (totalBufferSizeIndexedDrawCommand[p] > maxBufferSizeIndexedDrawCommand[p]) {
                             if (vboIndirectStagingBuffer != nullptr) {
                                 vkDestroyBuffer(vkDevice.getDevice(), vboIndirectStagingBuffer, nullptr);
@@ -4115,7 +4116,7 @@ namespace odfaeg {
                         vkUnmapMemory(vkDevice.getDevice(), materialDataStagingBufferMemory);
                         copyBuffer(materialDataStagingBuffer,materialDataBufferMT[p], totalBufferSizeMaterialData[p], copyBufferCommandBuffer);
 
-                        bufferSize = sizeof(DrawElementsIndirectCommand) * drawArraysIndirectCommands[p].size();
+                        bufferSize = sizeof(DrawElementsIndirectCommand) * drawElementsIndirectCommands[p].size();
                         totalBufferSizeIndexedDrawCommand[p] = bufferSize;
                         if (totalBufferSizeIndexedDrawCommand[p] > maxBufferSizeIndexedDrawCommand[p]) {
                             if (vboIndirectStagingBuffer != nullptr) {
@@ -4504,7 +4505,7 @@ namespace odfaeg {
                         vkUnmapMemory(vkDevice.getDevice(), materialDataStagingBufferMemory);
                         copyBuffer(materialDataStagingBuffer,materialDataBufferMT[p], totalBufferSizeMaterialData[p], copyBufferCommandBuffer);
 
-                        bufferSize = sizeof(DrawElementsIndirectCommand) * drawArraysIndirectCommands[p].size();
+                        bufferSize = sizeof(DrawElementsIndirectCommand) * drawElementsIndirectCommands[p].size();
                         totalBufferSizeIndexedDrawCommand[p] = bufferSize;
                         if (totalBufferSizeIndexedDrawCommand[p] > maxBufferSizeIndexedDrawCommand[p]) {
                             if (vboIndirectStagingBuffer != nullptr) {

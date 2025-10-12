@@ -225,8 +225,8 @@ namespace odfaeg {
             std::array<VkDeviceMemory, Batcher::nbPrimitiveTypes> drawCommandBufferMemoryMT = {};
             std::array<VkBuffer, Batcher::nbPrimitiveTypes> drawCommandBufferIndexedMT = {};
             std::array<VkDeviceMemory, Batcher::nbPrimitiveTypes> drawCommandBufferIndexedMemoryMT = {};
-            std::array<std::vector<DrawArraysIndirectCommand>, Batcher::nbPrimitiveTypes> drawArraysIndirectCommands;
-            std::array<std::vector<DrawElementsIndirectCommand>, Batcher::nbPrimitiveTypes> drawElementsIndirectCommands;
+            std::array<std::vector<DrawArraysIndirectCommand>, Batcher::nbPrimitiveTypes> drawArraysIndirectCommands = {};
+            std::array<std::vector<DrawElementsIndirectCommand>, Batcher::nbPrimitiveTypes> drawElementsIndirectCommands = {};
             VkCommandBuffer copyBufferCommandBuffer, depthBufferCommandBuffer, alphaBufferCommandBuffer, environmentMapPass2CommandBuffer;
             std::vector<VkCommandBuffer> environmentMapCommandBuffer, reflectRefractCommandBuffer;
             VkImage headPtrTextureImage;
