@@ -711,7 +711,7 @@ namespace odfaeg {
                 submitInfo.pSignalSemaphores = &computeSemaphore;
 
                 vkQueueSubmit(vkDevice.getGraphicsQueue(), 1, &submitInfo, computeFence);
-                vkQueueWaitIdle(vkDevice.getGraphicsQueue());
+                //vkQueueWaitIdle(vkDevice.getGraphicsQueue());
 
                 vkFreeCommandBuffers(vkDevice.getDevice(), commandPool, 1, &commandBuffer);
             }
@@ -3488,7 +3488,6 @@ namespace odfaeg {
                         VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
                         currentModelOffset[p] = alignedOffsetModelData[p] + (bufferSize - totalBufferSizeModelData[p]);
                         totalBufferSizeModelData[p] = bufferSize;
-                        //////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
                         if (totalBufferSizeModelData[p] > maxBufferSizeModelData[p]) {
                             if (modelDataStagingBuffer != nullptr) {
                                 vkDestroyBuffer(vkDevice.getDevice(), modelDataStagingBuffer, nullptr);
@@ -3552,7 +3551,7 @@ namespace odfaeg {
                                 vkFreeMemory(vkDevice.getDevice(), drawCommandBufferMemoryMT[p], nullptr);
                             }
                             createBuffer(totalBufferSizeDrawCommand[p], VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, drawCommandBufferMT[p], drawCommandBufferMemoryMT[p]);
-                            maxVboIndirectSize = totalBufferSizeDrawCommand[p];
+                            maxBufferSizeDrawCommand[p] = totalBufferSizeDrawCommand[p];
                         }
 
                         vkMapMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory, 0, totalBufferSizeDrawCommand[p], 0, &data);
@@ -3754,7 +3753,7 @@ namespace odfaeg {
                                 vkFreeMemory(vkDevice.getDevice(), drawCommandBufferIndexedMemoryMT[p], nullptr);
                             }
                             createBuffer(totalBufferSizeIndexedDrawCommand[p], VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, drawCommandBufferIndexedMT[p], drawCommandBufferIndexedMemoryMT[p]);
-                            maxVboIndirectSize = totalBufferSizeIndexedDrawCommand[p];
+                            maxBufferSizeIndexedDrawCommand[p] = totalBufferSizeIndexedDrawCommand[p];
                         }
 
                         vkMapMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory, 0, totalBufferSizeIndexedDrawCommand[p], 0, &data);
@@ -3929,7 +3928,7 @@ namespace odfaeg {
                                 vkFreeMemory(vkDevice.getDevice(), drawCommandBufferMemoryMT[p], nullptr);
                             }
                             createBuffer(totalBufferSizeDrawCommand[p], VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, drawCommandBufferMT[p], drawCommandBufferMemoryMT[p]);
-                            maxVboIndirectSize = totalBufferSizeDrawCommand[p];
+                            maxBufferSizeDrawCommand[p] = totalBufferSizeDrawCommand[p];
                         }
 
                         vkMapMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory, 0, totalBufferSizeDrawCommand[p], 0, &data);
@@ -4310,7 +4309,7 @@ namespace odfaeg {
                                 vkFreeMemory(vkDevice.getDevice(), drawCommandBufferMemoryMT[p], nullptr);
                             }
                             createBuffer(totalBufferSizeDrawCommand[p], VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, drawCommandBufferMT[p], drawCommandBufferMemoryMT[p]);
-                            maxVboIndirectSize = totalBufferSizeDrawCommand[p];
+                            maxBufferSizeDrawCommand[p] = totalBufferSizeDrawCommand[p];
                         }
 
                         vkMapMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory, 0, totalBufferSizeDrawCommand[p], 0, &data);
@@ -4518,7 +4517,7 @@ namespace odfaeg {
                                 vkFreeMemory(vkDevice.getDevice(), drawCommandBufferIndexedMemoryMT[p], nullptr);
                             }
                             createBuffer(totalBufferSizeIndexedDrawCommand[p], VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, drawCommandBufferIndexedMT[p], drawCommandBufferIndexedMemoryMT[p]);
-                            maxVboIndirectSize = totalBufferSizeIndexedDrawCommand[p];
+                            maxBufferSizeIndexedDrawCommand[p] = totalBufferSizeIndexedDrawCommand[p];
                         }
 
                         vkMapMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory, 0, totalBufferSizeIndexedDrawCommand[p], 0, &data);
@@ -6356,6 +6355,7 @@ namespace odfaeg {
                 if (useThread) {
                     std::unique_lock<std::mutex> lock(mtx);
                     cv.wait(lock, [this] { return commandBufferReady.load(); });
+                    commandBufferReady = false;
                     for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                         if (vbBindlessTex[p].getVertexCount() > 0)
                             vbBindlessTex[p].update();
