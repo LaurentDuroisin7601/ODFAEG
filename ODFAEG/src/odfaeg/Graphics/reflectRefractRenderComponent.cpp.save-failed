@@ -3321,7 +3321,7 @@ namespace odfaeg {
                     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
                     beginInfo.pInheritanceInfo = &inheritanceInfo;
                     beginInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
-                    if (vkBeginCommandBuffer(reflectRefractCommandBuffer[i], &beginInfo) != VK_SUCCESS) {
+                    if (vkBeginCommandBuffer(environmentMapCommandBuffer[i], &beginInfo) != VK_SUCCESS) {
                         throw core::Erreur(0, "failed to begin recording command buffer!", 1);
                     }
                     for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
@@ -3337,7 +3337,7 @@ namespace odfaeg {
                             }
                         }
                     }
-                    if (vkEndCommandBuffer(reflectRefractCommandBuffer[i]) != VK_SUCCESS) {
+                    if (vkEndCommandBuffer(environmentMapCommandBuffer[i]) != VK_SUCCESS) {
                         throw core::Erreur(0, "failed to record command buffer!", 1);
                     }
                 }
@@ -6403,7 +6403,6 @@ namespace odfaeg {
                         environmentMap.clear(Color::Transparent);
                         environmentMap.display(false, computeSemaphore);
                         commandBuffers = environmentMap.getCommandBuffers();
-                        currentFrame = environmentMap.getCurrentFrame();
                         environmentMap.getCurrentFrame();
                         environmentMap.beginRecordCommandBuffers();
                         memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;

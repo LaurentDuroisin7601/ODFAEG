@@ -200,7 +200,7 @@ namespace odfaeg {
             void draw(const Vertex* vertices, unsigned int vertexCount, PrimitiveType type,
                       RenderStates states = RenderStates::Default);
             void drawIndirectCount(VkCommandBuffer& cmd, unsigned int i, unsigned int nbIndirectCommands, unsigned int stride, VertexBuffer& vertexBuffer, VkBuffer vboIndirect, VkBuffer vboCount, unsigned int depthStencilId = 0, RenderStates states = RenderStates::Default);
-            void drawIndirect(VkCommandBuffer& cmd, unsigned int i, unsigned int nbIndirectCommands, unsigned int stride, VertexBuffer& vertexBuffer, VkBuffer vboIndirect,unsigned int depthStencilId = 0, RenderStates states = RenderStates::Default);
+            void drawIndirect(VkCommandBuffer& cmd, unsigned int i, unsigned int nbIndirectCommands, unsigned int stride, VertexBuffer& vertexBuffer, VkBuffer vboIndirect,unsigned int depthStencilId = 0, RenderStates states = RenderStates::Default, unsigned int customDescriptorSetID = 0, unsigned int vertexOffset = 0, unsigned int drawCommandOffset = 0, std::vector<unsigned int> dynamicBufferOffsets = std::vector<unsigned int>(), unsigned int indexOffset = 0);
             void drawVertexBuffer(VertexBuffer& vb, RenderStates states);
             void drawVertexBuffer(VkCommandBuffer& cmd, unsigned int i,VertexBuffer& vertexBuffer,  unsigned int depthStencilId = 0, RenderStates states = RenderStates::Default, unsigned int instanceCount = 1);
             /// \brief Return the size of the rendering region of the target
@@ -266,7 +266,7 @@ namespace odfaeg {
                         flat.data[col * 4 + row] = mat[col][row];
                 return flat;
             }
-            void applyViewportAndScissor();
+            void applyViewportAndScissor(VkCommandBuffer cmd);
             PFN_vkCmdPushDescriptorSetKHR vkCmdPushDescriptorSetKHR{ VK_NULL_HANDLE };
             void createUniformBuffers();
             void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);

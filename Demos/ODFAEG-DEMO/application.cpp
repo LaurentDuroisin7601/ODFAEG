@@ -329,9 +329,9 @@ namespace sorrok {
         getRenderWindow().createDescriptorsAndPipelines();
         frc1->createDescriptorsAndPipelines();
         frc2->createDescriptorsAndPipelines();
-        rrrc->createDescriptorsAndPipelines();
         src->createDescriptorsAndPipelines();
         lrc->createDescriptorsAndPipelines();
+        rrrc->createDescriptorsAndPipelines();
 
 
 

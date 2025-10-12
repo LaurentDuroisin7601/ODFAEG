@@ -359,7 +359,7 @@ namespace odfaeg {
             vkCmdBindVertexBuffers(cmd, 0, 1, vertexBuffers, offsets);
             vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vertexBuffer.getPrimitiveType()][id][depthStencilId], 0, 1, &descriptorSets[descriptorId][getCurrentFrame()], 0, nullptr);
 
-            applyViewportAndScissor();
+            applyViewportAndScissor(cmd);
             if(vertexBuffer.getIndicesSize() > 0) {
                 vkCmdBindIndexBuffer(cmd, vertexBuffer.getIndexBuffer(), 0, VK_INDEX_TYPE_UINT16);
             }
@@ -369,29 +369,29 @@ namespace odfaeg {
                 vkCmdDrawIndirectCount(cmd, vboIndirect, 0, vboCount, 0, nbIndirectCommands, stride);
             }
         }
-        void RenderTarget::drawIndirect(VkCommandBuffer& cmd, unsigned int i, unsigned int nbIndirectCommands, unsigned int stride, VertexBuffer& vertexBuffer, VkBuffer vboIndirect, unsigned int depthStencilId, RenderStates states) {
+        void RenderTarget::drawIndirect(VkCommandBuffer& cmd, unsigned int i, unsigned int nbIndirectCommands, unsigned int stride, VertexBuffer& vertexBuffer, VkBuffer vboIndirect, unsigned int depthStencilId, RenderStates states, unsigned int descriptorSetCustomID, unsigned int vertexOffset, unsigned int drawCommandOffset, std::vector<unsigned int> dynamicBufferOffsets, unsigned int indexOffset) {
             states.blendMode.updateIds();
             Shader* shader = const_cast<Shader*>(states.shader);
             unsigned int blendModeId = states.blendMode.id;
             unsigned int nbBlendMode = states.blendMode.nbBlendModes;
             //////std::cout<<"draw indirect depth stencil id :"<<depthStencilId<<std::endl;
-            unsigned int descriptorId = shader->getId();
+            unsigned int descriptorId = descriptorSetCustomID * shader->getNbShaders() + shader->getId();
             /*//std::cout<<"ids : "<<shader->getId()* (Batcher::nbPrimitiveTypes - 1)+vertexBuffer.getPrimitiveType()<<","<<id<<","<<depthStencilId<<std::endl;
             //std::cout<<"pipeline : "<<graphicsPipeline.size()<<std::endl;*/
             vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vertexBuffer.getPrimitiveType()][id][depthStencilId*nbBlendMode+blendModeId]);
             VkBuffer vertexBuffers[] = {vertexBuffer.getVertexBuffer()};
             VkDeviceSize offsets[] = {0, 0};
-            vkCmdBindVertexBuffers(cmd, 0, 1, vertexBuffers, offsets);
-            vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vertexBuffer.getPrimitiveType()][id][depthStencilId*nbBlendMode+blendModeId], 0, 1, &descriptorSets[descriptorId][getCurrentFrame()], 0, nullptr);
+            vkCmdBindVertexBuffers(cmd, vertexOffset, 1, vertexBuffers, offsets);
+            vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vertexBuffer.getPrimitiveType()][id][depthStencilId*nbBlendMode+blendModeId], 0, 1, &descriptorSets[descriptorId][getCurrentFrame()], dynamicBufferOffsets.size(), dynamicBufferOffsets.data());
 
-            applyViewportAndScissor();
+            applyViewportAndScissor(cmd);
             if(vertexBuffer.getIndicesSize() > 0) {
-                vkCmdBindIndexBuffer(cmd, vertexBuffer.getIndexBuffer(), 0, VK_INDEX_TYPE_UINT16);
+                vkCmdBindIndexBuffer(cmd, vertexBuffer.getIndexBuffer(), indexOffset, VK_INDEX_TYPE_UINT16);
             }
             if(vertexBuffer.getIndicesSize() > 0) {
-                vkCmdDrawIndexedIndirect(cmd, vboIndirect, 0, nbIndirectCommands, stride);
+                vkCmdDrawIndexedIndirect(cmd, vboIndirect, drawCommandOffset, nbIndirectCommands, stride);
             } else {
-                vkCmdDrawIndirect(cmd, vboIndirect, 0, nbIndirectCommands, stride);
+                vkCmdDrawIndirect(cmd, vboIndirect, drawCommandOffset, nbIndirectCommands, stride);
             }
         }
         void RenderTarget::drawVertexBuffer(VkCommandBuffer& cmd, unsigned int i, VertexBuffer& vertexBuffer, unsigned int depthStencilId, RenderStates states, unsigned int instanceCount) {
@@ -409,7 +409,7 @@ namespace odfaeg {
             system("PAUSE");*/
             vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vertexBuffer.getPrimitiveType()][id][depthStencilId*nbBlendMode+blendModeId], 0, 1, &descriptorSets[descriptorId][getCurrentFrame()], 0, nullptr);
 
-            applyViewportAndScissor();
+            applyViewportAndScissor(cmd);
             if(vertexBuffer.getIndicesSize() > 0) {
                 vkCmdBindIndexBuffer(cmd, vertexBuffer.getIndexBuffer(), 0, VK_INDEX_TYPE_UINT16);
             }
@@ -913,7 +913,7 @@ namespace odfaeg {
 
             vkCmdBeginRenderPass(getCommandBuffers()[getCurrentFrame()], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE_AND_SECONDARY_COMMAND_BUFFERS_KHR);
         }
-        void RenderTarget::applyViewportAndScissor() {
+        void RenderTarget::applyViewportAndScissor(VkCommandBuffer cmd) {
             VkViewport viewport{};
             viewport.x = m_view.getViewport().getPosition().x();
             viewport.y = m_view.getViewport().getPosition().y();
@@ -922,12 +922,12 @@ namespace odfaeg {
             viewport.minDepth = 0.0f;
             viewport.maxDepth = 1.0f;
             //////std::cout<<(m_view.getViewport().getSize().x == 800 && m_view.getViewport().getSize().y == 800)<<std::endl;
-            vkCmdSetViewport(commandBuffers[getCurrentFrame()], 0, 1, &viewport);
+            vkCmdSetViewport(cmd, 0, 1, &viewport);
 
             VkRect2D scissor{};
             scissor.offset = {0, 0};
             scissor.extent = getSwapchainExtents();
-            vkCmdSetScissor(commandBuffers[getCurrentFrame()], 0, 1, &scissor);
+            vkCmdSetScissor(cmd, 0, 1, &scissor);
         }
         void RenderTarget::recordCommandBuffers(VertexBuffer& vb, RenderStates states) {
             Shader* shader = const_cast<Shader*>(states.shader);
@@ -998,7 +998,7 @@ namespace odfaeg {
 
                     vkCmdPushDescriptorSetKHR(commandBuffers[getCurrentFrame()], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vb.getPrimitiveType()][id][states.blendMode.id], 0, 1, descriptorWrites.data());
                 }
-                applyViewportAndScissor();
+                applyViewportAndScissor(commandBuffers[getCurrentFrame()]);
 
 
                 if(vb.getIndicesSize() > 0) {

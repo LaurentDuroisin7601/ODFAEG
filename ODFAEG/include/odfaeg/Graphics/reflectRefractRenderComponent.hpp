@@ -79,7 +79,7 @@ namespace odfaeg {
                 MatricesData matrices[6];
 
             };
-            ReflectRefractRenderComponent (RenderWindow& window, int layer, std::string expression, window::ContextSettings settings);
+            ReflectRefractRenderComponent (RenderWindow& window, int layer, std::string expression, window::ContextSettings settings, bool useThread = true);
             void loadTextureIndexes();
             void createDescriptorsAndPipelines();
             std::vector<Entity*> getEntities();
@@ -101,7 +101,14 @@ namespace odfaeg {
             * \fn void drawNextFrame()
             * \brief draw the next frame of the component.
             */
+            void resetBuffers();
             void drawNextFrame();
+            void fillBufferReflMT();
+            void fillBufferReflIndexedMT();
+            void fillNonReflBufferMT();
+            void fillNonReflIndexedBufferMT();
+            void fillReflEntityBufferMT(Entity* reflectEntity);
+            void fillIndexedReflEntityBufferMT(Entity* reflectEntity);
             void drawDepthReflInst();
             void drawDepthReflIndexedInst();
             void drawAlphaInst();
@@ -141,6 +148,8 @@ namespace odfaeg {
                         flat.data[col * 4 + row] = mat[col][row];
                 return flat;
             }
+            unsigned int align(unsigned int currentOffset);
+            unsigned int alignUBO (unsigned int blocSize);
             void createCommandPool();
             VkCommandBuffer beginSingleTimeCommands();
             void endSingleTimeCommands(VkCommandBuffer commandBuffer);
@@ -150,18 +159,26 @@ namespace odfaeg {
             void createComputeDescriptorSet();
             void createComputePipeline();
             void createDescriptorPool(RenderStates states);
+            void createDescriptorPool(unsigned int p, RenderStates states);
             void createDescriptorSetLayout(RenderStates states);
             void createDescriptorSets(RenderStates states);
             void allocateDescriptorSets(RenderStates states);
+            void allocateDescriptorSets(unsigned int p, RenderStates states);
+            void updateDescriptorSets(unsigned int p, RenderStates states);
             void compileShaders();
             void createUniformBuffers();
             void updateUniformBuffer(uint32_t currentImage, UniformBufferObject ubo);
+            void updateUniformBuffer(uint32_t currentImage, std::vector<UniformBufferObject> ubo);
             void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
             void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+            void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size, VkCommandBuffer cmd);
             void createImageView();
             void createSampler();
             void createCommandBuffersIndirect(unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, DepthStencilID depthStencilID, RenderStates currentStates);
+            void recordCommandBufferIndirect(unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, DepthStencilID depthStencilID, unsigned int vertexOffset, unsigned int indexOffset, unsigned int uboOffset, unsigned int modelDataOffset, unsigned int materialDataOffset, unsigned int drawCommandOffset, RenderStates currentStates, VkCommandBuffer commandBuffer);
             void createCommandBufferVertexBuffer(RenderStates currentStates);
+            void recordCommandBufferVertexBuffer(RenderStates currentStates, VkCommandBuffer commandBuffer);
+            void drawBuffers();
             unsigned int maxNodes;
             uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
             float squareSize;
@@ -178,12 +195,13 @@ namespace odfaeg {
             bool update;
             Sprite depthBufferSprite, reflectRefractTexSprite, alphaBufferSprite;
             std::array<VertexBuffer ,Batcher::nbPrimitiveTypes> vbBindlessTex;
+            std::array<VertexBuffer ,Batcher::nbPrimitiveTypes> vbBindlessTexIndexed;
             VertexBuffer vb, vb2;
             math::Vec3f dirs[6];
             math::Vec3f ups[6];
             std::vector<Entity*> rootEntities;
-            VkCommandPool commandPool;
-            //std::vector<VkCommandBuffer> commandBuffers;
+            VkCommandPool commandPool, secondaryBufferCommandPool;
+
             VkBuffer modelDataBuffer, materialDataBuffer, modelDataStagingBuffer, materialDataStagingBuffer;
             VkDeviceMemory modelDataStagingBufferMemory, materialDataStagingBufferMemory;
             VkDeviceSize maxVboIndirectSize, maxModelDataSize, maxMaterialDataSize;
@@ -199,6 +217,18 @@ namespace odfaeg {
             std::vector<VkDeviceMemory> modelDataShaderStorageBuffersMemory;
             std::vector<VkBuffer> materialDataShaderStorageBuffers;
             std::vector<VkDeviceMemory> materialDataShaderStorageBuffersMemory;
+            std::array<VkBuffer, Batcher::nbPrimitiveTypes> modelDataBufferMT;
+            std::array<VkDeviceMemory, Batcher::nbPrimitiveTypes> modelDataBufferMemoryMT;
+            std::array<VkBuffer, Batcher::nbPrimitiveTypes> materialDataBufferMT;
+            std::array<VkDeviceMemory, Batcher::nbPrimitiveTypes> materialDataBufferMemoryMT;
+            std::array<VkBuffer, Batcher::nbPrimitiveTypes> drawCommandBufferMT;
+            std::array<VkDeviceMemory, Batcher::nbPrimitiveTypes> drawCommandBufferMemoryMT;
+            std::array<VkBuffer, Batcher::nbPrimitiveTypes> drawCommandBufferIndexedMT;
+            std::array<VkDeviceMemory, Batcher::nbPrimitiveTypes> drawCommandBufferIndexedMemoryMT;
+            std::array<std::vector<DrawArraysIndirectCommand>, Batcher::nbPrimitiveTypes> drawArraysIndirectCommands;
+            std::array<std::vector<DrawElementsIndirectCommand>, Batcher::nbPrimitiveTypes> drawElementsIndirectCommands;
+            VkCommandBuffer copyBufferCommandBuffer, depthBufferCommandBuffer, alphaBufferCommandBuffer, environmentMapPass2CommandBuffer;
+            std::vector<VkCommandBuffer> environmentMapCommandBuffer, reflectRefractCommandBuffer;
             VkImage headPtrTextureImage;
             VkImageView headPtrTextureImageView;
             VkSampler headPtrTextureSampler;
@@ -225,6 +255,7 @@ namespace odfaeg {
             BuildAlphaPC buildAlphaPC;
             BuildFrameBufferPC buildFrameBufferPC;
             UniformBufferObject ubo;
+            std::vector<UniformBufferObject> ubos;
             bool needToUpdateDS, datasReady;
             std::vector<VkEvent> events;
             VkPipeline computePipeline;
@@ -238,6 +269,14 @@ namespace odfaeg {
             std::vector<VkSemaphore> clearFinishedSemaphore;
             RenderWindow& window;
             bool isSomethingDrawn;
+            std::array<unsigned int, Batcher::nbPrimitiveTypes> currentModelOffset, currentMaterialOffset;
+            unsigned int nbReflRefrEntities, alignment, uboAlignment;
+            bool useThread;
+            std::array<unsigned int, Batcher::nbPrimitiveTypes> totalBufferSizeModelData, maxBufferSizeModelData;
+            std::array<unsigned int, Batcher::nbPrimitiveTypes> totalBufferSizeMaterialData, maxBufferSizeMaterialData;
+            std::array<unsigned int, Batcher::nbPrimitiveTypes> totalVertexCount, totalVertexIndexCount, totalIndexCount, totalBufferSizeDrawCommand, totalBufferSizeIndexedDrawCommand, maxBufferSizeDrawCommand, maxBufferSizeIndexedDrawCommand;
+            std::array<std::vector<unsigned int>, Batcher::nbPrimitiveTypes> vertexOffsets, vertexIndexOffsets, indexOffsets, modelDataOffsets, materialDataOffsets, drawCommandBufferOffsets, nbDrawCommandBuffer, drawIndexedCommandBufferOffsets, nbIndexedDrawCommandBuffer;
+
         };
         #else
         class ODFAEG_GRAPHICS_API ReflectRefractRenderComponent : public HeavyComponent {

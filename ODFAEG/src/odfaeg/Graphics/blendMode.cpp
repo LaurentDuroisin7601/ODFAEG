@@ -75,6 +75,7 @@ namespace odfaeg {
             }
         }
         void BlendMode::updateIds() {
+          std::lock_guard<std::recursive_mutex> lock(rec_mutex);
           countNbBlendMode();
           for (unsigned int i = 0; i < sameBlendModes.size(); i++) {
                for (unsigned int j = 0; j < blendModes.size(); j++) {

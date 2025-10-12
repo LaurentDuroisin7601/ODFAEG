@@ -15,6 +15,8 @@ namespace odfaeg {
             needToUpdateVertexBuffer(false), needToUpdateIndexBuffer(false), vertexBuffer(VK_NULL_HANDLE), indexBuffer(VK_NULL_HANDLE),
             vertexStagingBuffer(VK_NULL_HANDLE), indexStagingBuffer(VK_NULL_HANDLE), maxVerticesSize(0), maxIndexSize(0) {
                 createCommandPool();
+                createBuffer(1, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
+                createBuffer(1, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
             }
             /*VertexBuffer::VertexBuffer(const VertexBuffer& vb) : vkDevice(vb.vkDevice) {
                 createCommandPool();
@@ -174,6 +176,8 @@ namespace odfaeg {
                         if (vertexBuffer != VK_NULL_HANDLE) {
                             vkDestroyBuffer(vkDevice.getDevice(), vertexBuffer, nullptr);
                             vkFreeMemory(vkDevice.getDevice(), vertexBufferMemory, nullptr);
+                        }
+                        if (vertexStagingBuffer != nullptr) {
                             vkDestroyBuffer(vkDevice.getDevice(), vertexStagingBuffer, nullptr);
                             vkFreeMemory(vkDevice.getDevice(), vertexStagingBufferMemory, nullptr);
                         }
@@ -198,6 +202,8 @@ namespace odfaeg {
                         if (indexBuffer != VK_NULL_HANDLE) {
                             vkDestroyBuffer(vkDevice.getDevice(), indexBuffer, nullptr);
                             vkFreeMemory(vkDevice.getDevice(), indexBufferMemory, nullptr);
+                        }
+                        if (indexStagingBuffer != VK_NULL_HANDLE) {
                             vkDestroyBuffer(vkDevice.getDevice(), indexStagingBuffer, nullptr);
                             vkFreeMemory(vkDevice.getDevice(), indexStagingBufferMemory, nullptr);
                         }

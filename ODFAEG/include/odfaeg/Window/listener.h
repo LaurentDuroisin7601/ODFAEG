@@ -32,8 +32,10 @@ namespace odfaeg {
              Listener() : removeListener(false), useThread(false) {
              }
              void launch() {
-                useThread = true;
-                m_thread = std::thread(tProcessEvents, this);
+                if (!running) {
+                    useThread = true;
+                    m_thread = std::thread(tProcessEvents, this);
+                }
              }
              bool isUsingThread() {
                  return useThread;
