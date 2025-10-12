@@ -179,6 +179,7 @@ namespace odfaeg {
             void createCommandBufferVertexBuffer(RenderStates currentStates);
             void recordCommandBufferVertexBuffer(RenderStates currentStates, VkCommandBuffer commandBuffer);
             void drawBuffers();
+            bool isCommandBufferReady();
             unsigned int maxNodes;
             uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
             float squareSize;
@@ -227,7 +228,8 @@ namespace odfaeg {
             std::array<VkDeviceMemory, Batcher::nbPrimitiveTypes> drawCommandBufferIndexedMemoryMT = {};
             std::array<std::vector<DrawArraysIndirectCommand>, Batcher::nbPrimitiveTypes> drawArraysIndirectCommands = {};
             std::array<std::vector<DrawElementsIndirectCommand>, Batcher::nbPrimitiveTypes> drawElementsIndirectCommands = {};
-            VkCommandBuffer copyBufferCommandBuffer, depthBufferCommandBuffer, alphaBufferCommandBuffer, environmentMapPass2CommandBuffer;
+            VkCommandBuffer copyModelDataBufferCommandBuffer, copyMaterialDataBufferCommandBuffer, copyDrawBufferCommandBuffer, copyDrawIndexedBufferCommandBuffer,
+            depthBufferCommandBuffer, alphaBufferCommandBuffer, environmentMapPass2CommandBuffer;
             std::vector<VkCommandBuffer> environmentMapCommandBuffer, reflectRefractCommandBuffer;
             VkImage headPtrTextureImage;
             VkImageView headPtrTextureImageView;
