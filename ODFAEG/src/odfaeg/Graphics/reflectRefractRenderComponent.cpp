@@ -210,7 +210,8 @@ namespace odfaeg {
                 //transitionImageLayout(alphaTextureImage, VK_FORMAT_R32G32B32A32_SFLOAT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
                 createImageView();
                 createSampler();
-                createUniformBuffers();
+                if (!useThread)
+                    createUniformBuffers();
                 compileShaders();
                 reflectRefractTex.beginRecordCommandBuffers();
                 std::vector<VkCommandBuffer> commandBuffers = reflectRefractTex.getCommandBuffers();
@@ -801,6 +802,19 @@ namespace odfaeg {
                 uniformBuffer.resize(environmentMap.getMaxFramesInFlight());
                 uniformBufferMemory.resize(environmentMap.getMaxFramesInFlight());
                 for (size_t i = 0; i < environmentMap.getMaxFramesInFlight(); i++) {
+                    createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffer[i], uniformBufferMemory[i]);
+                    //////std::cout<<"uniform buffer : "<<ubos[i]<<std::endl;
+                }
+            }
+            void ReflectRefractRenderComponent::createUniformBuffersMT() {
+                VkDeviceSize bufferSize = nbReflRefrEntities * sizeof(UniformBufferObject);
+                uniformBuffer.resize(environmentMap.getMaxFramesInFlight());
+                uniformBufferMemory.resize(environmentMap.getMaxFramesInFlight());
+                for (size_t i = 0; i < environmentMap.getMaxFramesInFlight(); i++) {
+                    if (uniformBuffer[i] != nullptr) {
+                        vkDestroyBuffer(vkDevice.getDevice(), uniformBuffer[i], nullptr);
+                        vkFreeMemory(vkDevice.getDevice(), uniformBufferMemory[i], nullptr);
+                    }
                     createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffer[i], uniformBufferMemory[i]);
                     //////std::cout<<"uniform buffer : "<<ubos[i]<<std::endl;
                 }
@@ -6332,6 +6346,7 @@ namespace odfaeg {
                                             if (vkAllocateCommandBuffers(vkDevice.getDevice(), &allocInfo, &reflectRefractCommandBuffer[nbReflRefrEntities-1]) != VK_SUCCESS) {
                                                 throw core::Erreur(0, "failed to allocate command buffers!", 1);
                                             }
+                                            createUniformBuffersMT();
                                         }
                                         rootEntities.push_back(entity);
                                         fillReflEntityBufferMT(entity);
@@ -6371,8 +6386,8 @@ namespace odfaeg {
                                                 matrices.viewMatrix = toVulkanMatrix(viewMatrices[f]);
                                                 ubo.matrices[f] = matrices;
                                             }
-                                            ubos.push_back(ubo);
                                         }
+                                        ubos.push_back(ubo);
                                     }
 
                                 }
@@ -6380,11 +6395,16 @@ namespace odfaeg {
                         }
                     }
                     if (nbReflRefrEntities > 0) {
+                        //std::cout<<"nb refl entities  : "<<nbReflRefrEntities<<std::endl<<"size : "<<ubos.size()<<std::endl;
                         updateUniformBuffer(environmentMap.getCurrentFrame(), ubos);
                     } else {
+                        nbReflRefrEntities = 1;
+                        createUniformBuffersMT();
                         UniformBufferObject dummy;
                         ubos.push_back(dummy);
+                        //std::cout<<"dummy nb refl entities  : "<<nbReflRefrEntities<<std::endl<<"size : "<<ubos.size()<<std::endl;
                         updateUniformBuffer(environmentMap.getCurrentFrame(), ubos);
+                        nbReflRefrEntities = 0;
                     }
                     buildFrameBufferPC.cameraPos = math::Vec4f(view.getPosition().x(), view.getPosition().y(), view.getPosition().z(), 1);
                     drawBuffers();

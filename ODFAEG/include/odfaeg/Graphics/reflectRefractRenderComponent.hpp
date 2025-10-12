@@ -167,6 +167,7 @@ namespace odfaeg {
             void updateDescriptorSets(unsigned int p, RenderStates states);
             void compileShaders();
             void createUniformBuffers();
+            void createUniformBuffersMT();
             void updateUniformBuffer(uint32_t currentImage, UniformBufferObject ubo);
             void updateUniformBuffer(uint32_t currentImage, std::vector<UniformBufferObject> ubo);
             void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
