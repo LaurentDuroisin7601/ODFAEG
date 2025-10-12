@@ -6036,11 +6036,12 @@ namespace odfaeg {
                     }
                 }
                 RenderStates currentStates;
-                math::Matrix4f viewMatrix = view.getViewMatrix().getMatrix()/*.transpose()*/;
-                math::Matrix4f projMatrix = view.getProjMatrix().getMatrix()/*.transpose()*/;
+                math::Matrix4f viewMatrix = view.getViewMatrix().getMatrix();
+                math::Matrix4f projMatrix = view.getProjMatrix().getMatrix();
                 indirectRenderingPC.projMatrix = toVulkanMatrix(projMatrix);
                 indirectRenderingPC.viewMatrix = toVulkanMatrix(viewMatrix);
                 if (useThread) {
+                    std::lock_guard<std::mutex> lock(mtx);
                     resetBuffers();
                     VkCommandBufferInheritanceInfo inheritanceInfo{};
                     inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
@@ -6181,6 +6182,8 @@ namespace odfaeg {
                     }
                     buildFrameBufferPC.cameraPos = math::Vec4f(view.getPosition().x(), view.getPosition().y(), view.getPosition().z(), 1);
                     drawBuffers();
+                    commandBufferReady = true;
+                    cv.notify_one();
                 } else {
                     //std::cout<<"draw no thread"<<std::endl;
                     drawDepthReflInst();
@@ -6351,6 +6354,8 @@ namespace odfaeg {
             }
             void ReflectRefractRenderComponent::draw(RenderTarget& target, RenderStates states) {
                 if (useThread) {
+                    std::unique_lock<std::mutex> lock(mtx);
+                    cv.wait(lock, [this] { return commandBufferReady.load(); });
                     for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                         if (vbBindlessTex[p].getVertexCount() > 0)
                             vbBindlessTex[p].update();

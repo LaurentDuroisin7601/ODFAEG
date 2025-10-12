@@ -276,7 +276,9 @@ namespace odfaeg {
             std::array<unsigned int, Batcher::nbPrimitiveTypes> totalBufferSizeMaterialData, maxBufferSizeMaterialData;
             std::array<unsigned int, Batcher::nbPrimitiveTypes> totalVertexCount, totalVertexIndexCount, totalIndexCount, totalBufferSizeDrawCommand, totalBufferSizeIndexedDrawCommand, maxBufferSizeDrawCommand, maxBufferSizeIndexedDrawCommand;
             std::array<std::vector<unsigned int>, Batcher::nbPrimitiveTypes> vertexOffsets, vertexIndexOffsets, indexOffsets, modelDataOffsets, materialDataOffsets, drawCommandBufferOffsets, nbDrawCommandBuffer, drawIndexedCommandBufferOffsets, nbIndexedDrawCommandBuffer;
-
+            std::mutex mtx;
+            std::condition_variable cv;
+            std::atomic<bool> commandBufferReady = false;
         };
         #else
         class ODFAEG_GRAPHICS_API ReflectRefractRenderComponent : public HeavyComponent {
