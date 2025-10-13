@@ -2381,7 +2381,7 @@ namespace odfaeg {
                         VkDescriptorBufferInfo modelDataStorageBufferInfoLastFrame{};
                         modelDataStorageBufferInfoLastFrame.buffer = modelDataBufferMT[p];
                         modelDataStorageBufferInfoLastFrame.offset = 0;
-                        modelDataStorageBufferInfoLastFrame.range = sizeof(ModelData) * modelDatas[p].size();
+                        modelDataStorageBufferInfoLastFrame.range = maxBufferSizeModelData[p] - currentModelOffset[p];
 
                         descriptorWrites[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                         descriptorWrites[3].dstSet = descriptorSets[descriptorId][i];
@@ -2394,7 +2394,7 @@ namespace odfaeg {
                         VkDescriptorBufferInfo materialDataStorageBufferInfoLastFrame{};
                         materialDataStorageBufferInfoLastFrame.buffer = materialDataBufferMT[p];
                         materialDataStorageBufferInfoLastFrame.offset = 0;
-                        materialDataStorageBufferInfoLastFrame.range = sizeof(MaterialData) * materialDatas[p].size();
+                        materialDataStorageBufferInfoLastFrame.range = maxBufferSizeMaterialData[p] - currentMaterialOffset[p];
 
                         descriptorWrites[4].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                         descriptorWrites[4].dstSet = descriptorSets[descriptorId][i];
@@ -2502,7 +2502,7 @@ namespace odfaeg {
                             VkDescriptorBufferInfo modelDataStorageBufferInfoLastFrame{};
                             modelDataStorageBufferInfoLastFrame.buffer = modelDataBufferMT[p];
                             modelDataStorageBufferInfoLastFrame.offset = 0;
-                            modelDataStorageBufferInfoLastFrame.range = sizeof(ModelData) * modelDatas[p].size();;
+                            modelDataStorageBufferInfoLastFrame.range = maxBufferSizeModelData[p] - currentModelOffset[p];
 
                             descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                             descriptorWrites[1].dstSet = descriptorSets[descriptorId][i];
@@ -2515,7 +2515,7 @@ namespace odfaeg {
                             VkDescriptorBufferInfo materialDataStorageBufferInfoLastFrame{};
                             materialDataStorageBufferInfoLastFrame.buffer = materialDataBufferMT[p];
                             materialDataStorageBufferInfoLastFrame.offset = 0;
-                            materialDataStorageBufferInfoLastFrame.range = sizeof(MaterialData) * materialDatas[p].size();;
+                            materialDataStorageBufferInfoLastFrame.range = maxBufferSizeMaterialData[p] - currentMaterialOffset[p];
 
                             descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                             descriptorWrites[2].dstSet = descriptorSets[descriptorId][i];
@@ -2577,7 +2577,7 @@ namespace odfaeg {
                             VkDescriptorBufferInfo modelDataStorageBufferInfoLastFrame{};
                             modelDataStorageBufferInfoLastFrame.buffer = modelDataBufferMT[p];
                             modelDataStorageBufferInfoLastFrame.offset = 0;
-                            modelDataStorageBufferInfoLastFrame.range = sizeof(ModelData) * modelDatas[p].size();
+                            modelDataStorageBufferInfoLastFrame.range = maxBufferSizeModelData[p] - currentModelOffset[p];
 
                             descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                             descriptorWrites[2].dstSet = descriptorSets[descriptorId][i];
@@ -2590,7 +2590,7 @@ namespace odfaeg {
                             VkDescriptorBufferInfo materialDataStorageBufferInfoLastFrame{};
                             materialDataStorageBufferInfoLastFrame.buffer = materialDataBufferMT[p];
                             materialDataStorageBufferInfoLastFrame.offset = 0;
-                            materialDataStorageBufferInfoLastFrame.range = sizeof(MaterialData) * materialDatas[p].size();
+                            materialDataStorageBufferInfoLastFrame.range = maxBufferSizeMaterialData[p] - currentMaterialOffset[p];
 
                             descriptorWrites[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                             descriptorWrites[3].dstSet = descriptorSets[descriptorId][i];
@@ -2643,7 +2643,7 @@ namespace odfaeg {
                         VkDescriptorBufferInfo modelDataStorageBufferInfoLastFrame{};
                         modelDataStorageBufferInfoLastFrame.buffer = modelDataBufferMT[p];
                         modelDataStorageBufferInfoLastFrame.offset = 0;
-                        modelDataStorageBufferInfoLastFrame.range = sizeof(ModelData) * modelDatas[p].size();
+                        modelDataStorageBufferInfoLastFrame.range = maxBufferSizeModelData[p] - currentModelOffset[p];
 
                         descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                         descriptorWrites[2].dstSet = descriptorSets[descriptorId][i];
@@ -2656,7 +2656,7 @@ namespace odfaeg {
                         VkDescriptorBufferInfo materialDataStorageBufferInfoLastFrame{};
                         materialDataStorageBufferInfoLastFrame.buffer = materialDataBufferMT[p];
                         materialDataStorageBufferInfoLastFrame.offset = 0;
-                        materialDataStorageBufferInfoLastFrame.range = sizeof(MaterialData) * materialDatas[p].size();
+                        materialDataStorageBufferInfoLastFrame.range = maxBufferSizeMaterialData[p] - currentMaterialOffset[p];
 
                         descriptorWrites[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                         descriptorWrites[3].dstSet = descriptorSets[descriptorId][i];
