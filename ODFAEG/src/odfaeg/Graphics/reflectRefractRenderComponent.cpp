@@ -3133,7 +3133,7 @@ namespace odfaeg {
                         reflectRefractTex.drawIndirect(commandBuffer, 0, nbIndirectCommands, stride, vbBindlessTex[p], drawCommandBufferMT[p], depthStencilID,currentStates,p,  vertexOffset, drawCommandOffset, dynamicBufferOffsets);
                    else
                         reflectRefractTex.drawIndirect(commandBuffer, 0, nbIndirectCommands, stride, vbBindlessTexIndexed[p], drawCommandBufferIndexedMT[p], depthStencilID,currentStates,p,  vertexOffset, drawCommandOffset, dynamicBufferOffsets, indexOffset);
-                   isSomethingDrawn = true;
+
                 }
             }
             void ReflectRefractRenderComponent::createCommandBuffersIndirect(unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, DepthStencilID depthStencilID, RenderStates currentStates) {
@@ -6805,6 +6805,7 @@ namespace odfaeg {
                         const_cast<Texture&>(alphaBuffer.getTexture()).toColorAttachmentOptimal(reflectRefractTex.getCommandBuffers()[reflectRefractTex.getCurrentFrame()]);
                         const_cast<Texture&>(environmentMap.getTexture()).toColorAttachmentOptimal(reflectRefractTex.getCommandBuffers()[reflectRefractTex.getCurrentFrame()]);
                         reflectRefractTex.display(true, renderFinishedSemaphore[window.getCurrentFrame()]);
+                        isSomethingDrawn = true;
                     }
                     if (!isSomethingDrawn) {
                         reflectRefractTex.beginRecordCommandBuffers();
