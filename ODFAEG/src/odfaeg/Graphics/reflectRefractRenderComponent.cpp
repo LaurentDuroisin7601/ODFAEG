@@ -3094,10 +3094,10 @@ namespace odfaeg {
                     std::vector<unsigned int> dynamicBufferOffsets;
                     dynamicBufferOffsets.push_back(modelDataOffset);
                     dynamicBufferOffsets.push_back(materialDataOffset);
-                    if (indexOffset != -1)
-                        depthBuffer.drawIndirect(commandBuffer, 0, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates, p, vertexOffset, drawCommandOffset, dynamicBufferOffsets);
+                    if (indexOffset == -1)
+                        depthBuffer.drawIndirect(commandBuffer, 0, nbIndirectCommands, stride, vbBindlessTex[p], drawCommandBufferMT[p], depthStencilID,currentStates, p, vertexOffset, drawCommandOffset, dynamicBufferOffsets);
                     else
-                        depthBuffer.drawIndirect(commandBuffer, 0, nbIndirectCommands, stride, vbBindlessTexIndexed[p], vboIndirect, depthStencilID,currentStates, p, vertexOffset, drawCommandOffset, dynamicBufferOffsets, indexOffset);
+                        depthBuffer.drawIndirect(commandBuffer, 0, nbIndirectCommands, stride, vbBindlessTexIndexed[p], drawCommandBufferIndexedMT[p], depthStencilID,currentStates, p, vertexOffset, drawCommandOffset, dynamicBufferOffsets, indexOffset);
                 } else if (shader == &sBuildAlphaBuffer) {
                     buildAlphaPC.nbLayers = GameObject::getNbLayers();
                     buildAlphaPC.resolution = resolution;
@@ -3108,19 +3108,19 @@ namespace odfaeg {
                     std::vector<unsigned int> dynamicBufferOffsets;
                     dynamicBufferOffsets.push_back(modelDataOffset);
                     dynamicBufferOffsets.push_back(materialDataOffset);
-                    if (indexOffset != -1)
-                        alphaBuffer.drawIndirect(commandBuffer, 0, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates, p,  vertexOffset, drawCommandOffset, dynamicBufferOffsets);
+                    if (indexOffset == -1)
+                        alphaBuffer.drawIndirect(commandBuffer, 0, nbIndirectCommands, stride, vbBindlessTex[p], drawCommandBufferMT[p], depthStencilID,currentStates, p,  vertexOffset, drawCommandOffset, dynamicBufferOffsets);
                     else
-                        alphaBuffer.drawIndirect(commandBuffer, 0, nbIndirectCommands, stride, vbBindlessTexIndexed[p], vboIndirect, depthStencilID,currentStates,p, vertexOffset, drawCommandOffset, dynamicBufferOffsets, indexOffset);
+                        alphaBuffer.drawIndirect(commandBuffer, 0, nbIndirectCommands, stride, vbBindlessTexIndexed[p], drawCommandBufferIndexedMT[p], depthStencilID,currentStates,p, vertexOffset, drawCommandOffset, dynamicBufferOffsets, indexOffset);
                 } else if (shader == &sLinkedList) {
                     std::vector<unsigned int> dynamicBufferOffsets;
                     dynamicBufferOffsets.push_back(modelDataOffset);
                     dynamicBufferOffsets.push_back(materialDataOffset);
                     dynamicBufferOffsets.push_back(uboOffset);
-                    if (indexOffset != -1)
-                        environmentMap.drawIndirect(commandBuffer, 0, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates, p, vertexOffset, drawCommandOffset, dynamicBufferOffsets);
+                    if (indexOffset == -1)
+                        environmentMap.drawIndirect(commandBuffer, 0, nbIndirectCommands, stride, vbBindlessTex[p], drawCommandBufferMT[p], depthStencilID,currentStates, p, vertexOffset, drawCommandOffset, dynamicBufferOffsets);
                     else
-                        environmentMap.drawIndirect(commandBuffer, 0, nbIndirectCommands, stride, vbBindlessTexIndexed[p], vboIndirect, depthStencilID,currentStates,p,  vertexOffset, drawCommandOffset, dynamicBufferOffsets, indexOffset);
+                        environmentMap.drawIndirect(commandBuffer, 0, nbIndirectCommands, stride, vbBindlessTexIndexed[p], drawCommandBufferIndexedMT[p], depthStencilID,currentStates,p,  vertexOffset, drawCommandOffset, dynamicBufferOffsets, indexOffset);
                 } else {
                    buildFrameBufferPC.resolution = resolution;
                    vkCmdPushConstants(commandBuffer, reflectRefractTex.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][reflectRefractTex.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectRenderingPC), &indirectRenderingPC);
@@ -3128,10 +3128,10 @@ namespace odfaeg {
                    std::vector<unsigned int> dynamicBufferOffsets;
                    dynamicBufferOffsets.push_back(modelDataOffset);
                    dynamicBufferOffsets.push_back(materialDataOffset);
-                   if (indexOffset != -1)
-                        reflectRefractTex.drawIndirect(commandBuffer, 0, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates,p,  vertexOffset, drawCommandOffset, dynamicBufferOffsets);
+                   if (indexOffset == -1)
+                        reflectRefractTex.drawIndirect(commandBuffer, 0, nbIndirectCommands, stride, vbBindlessTex[p], drawCommandBufferMT[p], depthStencilID,currentStates,p,  vertexOffset, drawCommandOffset, dynamicBufferOffsets);
                    else
-                        reflectRefractTex.drawIndirect(commandBuffer, 0, nbIndirectCommands, stride, vbBindlessTexIndexed[p], vboIndirect, depthStencilID,currentStates,p,  vertexOffset, drawCommandOffset, dynamicBufferOffsets, indexOffset);
+                        reflectRefractTex.drawIndirect(commandBuffer, 0, nbIndirectCommands, stride, vbBindlessTexIndexed[p], drawCommandBufferIndexedMT[p], depthStencilID,currentStates,p,  vertexOffset, drawCommandOffset, dynamicBufferOffsets, indexOffset);
                    isSomethingDrawn = true;
                 }
             }
