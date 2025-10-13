@@ -273,7 +273,7 @@ namespace odfaeg {
             std::vector<VkSemaphore> clearFinishedSemaphore;
             RenderWindow& window;
             bool isSomethingDrawn;
-            std::array<unsigned int, Batcher::nbPrimitiveTypes> currentModelOffset, currentMaterialOffset;
+            std::array<unsigned int, Batcher::nbPrimitiveTypes> currentModelOffset, currentMaterialOffset, previousModelOffset, previousMaterialOffset;
             unsigned int nbReflRefrEntities, alignment, uboAlignment;
             bool useThread;
             std::array<unsigned int, Batcher::nbPrimitiveTypes> totalBufferSizeModelData, maxBufferSizeModelData;

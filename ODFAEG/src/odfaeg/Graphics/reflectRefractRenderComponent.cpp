@@ -2381,7 +2381,7 @@ namespace odfaeg {
                         VkDescriptorBufferInfo modelDataStorageBufferInfoLastFrame{};
                         modelDataStorageBufferInfoLastFrame.buffer = modelDataBufferMT[p];
                         modelDataStorageBufferInfoLastFrame.offset = 0;
-                        modelDataStorageBufferInfoLastFrame.range = maxBufferSizeModelData[p] - currentModelOffset[p];
+                        modelDataStorageBufferInfoLastFrame.range = maxBufferSizeModelData[p] - previousModelOffset[p];
 
                         descriptorWrites[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                         descriptorWrites[3].dstSet = descriptorSets[descriptorId][i];
@@ -2394,7 +2394,7 @@ namespace odfaeg {
                         VkDescriptorBufferInfo materialDataStorageBufferInfoLastFrame{};
                         materialDataStorageBufferInfoLastFrame.buffer = materialDataBufferMT[p];
                         materialDataStorageBufferInfoLastFrame.offset = 0;
-                        materialDataStorageBufferInfoLastFrame.range = maxBufferSizeMaterialData[p] - currentMaterialOffset[p];
+                        materialDataStorageBufferInfoLastFrame.range = maxBufferSizeMaterialData[p] - previousMaterialOffset[p];
 
                         descriptorWrites[4].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                         descriptorWrites[4].dstSet = descriptorSets[descriptorId][i];
@@ -2502,8 +2502,8 @@ namespace odfaeg {
                             VkDescriptorBufferInfo modelDataStorageBufferInfoLastFrame{};
                             modelDataStorageBufferInfoLastFrame.buffer = modelDataBufferMT[p];
                             modelDataStorageBufferInfoLastFrame.offset = 0;
-                            modelDataStorageBufferInfoLastFrame.range = maxBufferSizeModelData[p] - currentModelOffset[p];
-                            std::cout<<"ranges : "<<maxBufferSizeModelData[p]<<","<<currentModelOffset[p]<<std::endl;
+                            modelDataStorageBufferInfoLastFrame.range = maxBufferSizeModelData[p] - previousModelOffset[p];
+                            //std::cout<<"ranges : "<<maxBufferSizeModelData[p]<<","<<currentModelOffset[p]<<std::endl;
 
                             descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                             descriptorWrites[1].dstSet = descriptorSets[descriptorId][i];
@@ -2516,7 +2516,7 @@ namespace odfaeg {
                             VkDescriptorBufferInfo materialDataStorageBufferInfoLastFrame{};
                             materialDataStorageBufferInfoLastFrame.buffer = materialDataBufferMT[p];
                             materialDataStorageBufferInfoLastFrame.offset = 0;
-                            materialDataStorageBufferInfoLastFrame.range = maxBufferSizeMaterialData[p] - currentMaterialOffset[p];
+                            materialDataStorageBufferInfoLastFrame.range = maxBufferSizeMaterialData[p] - previousMaterialOffset[p];
 
                             descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                             descriptorWrites[2].dstSet = descriptorSets[descriptorId][i];
@@ -2578,7 +2578,7 @@ namespace odfaeg {
                             VkDescriptorBufferInfo modelDataStorageBufferInfoLastFrame{};
                             modelDataStorageBufferInfoLastFrame.buffer = modelDataBufferMT[p];
                             modelDataStorageBufferInfoLastFrame.offset = 0;
-                            modelDataStorageBufferInfoLastFrame.range = maxBufferSizeModelData[p] - currentModelOffset[p];
+                            modelDataStorageBufferInfoLastFrame.range = maxBufferSizeModelData[p] - previousModelOffset[p];
 
                             descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                             descriptorWrites[2].dstSet = descriptorSets[descriptorId][i];
@@ -2591,7 +2591,7 @@ namespace odfaeg {
                             VkDescriptorBufferInfo materialDataStorageBufferInfoLastFrame{};
                             materialDataStorageBufferInfoLastFrame.buffer = materialDataBufferMT[p];
                             materialDataStorageBufferInfoLastFrame.offset = 0;
-                            materialDataStorageBufferInfoLastFrame.range = maxBufferSizeMaterialData[p] - currentMaterialOffset[p];
+                            materialDataStorageBufferInfoLastFrame.range = maxBufferSizeMaterialData[p] - previousMaterialOffset[p];
 
                             descriptorWrites[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                             descriptorWrites[3].dstSet = descriptorSets[descriptorId][i];
@@ -2644,7 +2644,7 @@ namespace odfaeg {
                         VkDescriptorBufferInfo modelDataStorageBufferInfoLastFrame{};
                         modelDataStorageBufferInfoLastFrame.buffer = modelDataBufferMT[p];
                         modelDataStorageBufferInfoLastFrame.offset = 0;
-                        modelDataStorageBufferInfoLastFrame.range = maxBufferSizeModelData[p] - currentModelOffset[p];
+                        modelDataStorageBufferInfoLastFrame.range = maxBufferSizeModelData[p] - previousModelOffset[p];
 
                         descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                         descriptorWrites[2].dstSet = descriptorSets[descriptorId][i];
@@ -2657,7 +2657,7 @@ namespace odfaeg {
                         VkDescriptorBufferInfo materialDataStorageBufferInfoLastFrame{};
                         materialDataStorageBufferInfoLastFrame.buffer = materialDataBufferMT[p];
                         materialDataStorageBufferInfoLastFrame.offset = 0;
-                        materialDataStorageBufferInfoLastFrame.range = maxBufferSizeMaterialData[p] - currentMaterialOffset[p];
+                        materialDataStorageBufferInfoLastFrame.range = maxBufferSizeMaterialData[p] - previousMaterialOffset[p];
 
                         descriptorWrites[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                         descriptorWrites[3].dstSet = descriptorSets[descriptorId][i];
@@ -3082,6 +3082,8 @@ namespace odfaeg {
                         drawElementsIndirectCommands[i].clear();
                         currentModelOffset[i] = 0;
                         currentMaterialOffset[i] = 0;
+                        previousModelOffset[i] = 0;
+                        previousMaterialOffset[i] = 0;
                     }
                     nbReflRefrEntities = 0;
             }
@@ -3554,7 +3556,9 @@ namespace odfaeg {
                     if (nbDrawCommandBuffer[p][0] > 0) {
                         vbBindlessTex[p].update(copyVbBufferCommandBuffer);
                         VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
-                        currentModelOffset[p] = alignedOffsetModelData[p] + (bufferSize - totalBufferSizeModelData[p]);
+                        unsigned int delta = (bufferSize >  totalBufferSizeModelData[p]) ? bufferSize - totalBufferSizeModelData[p] : 0;
+                        previousModelOffset[p] = currentModelOffset[p];
+                        currentModelOffset[p] = alignedOffsetModelData[p] + delta;
                         totalBufferSizeModelData[p] = bufferSize;
                         if (totalBufferSizeModelData[p] > maxBufferSizeModelData[p]) {
                             if (modelDataStagingBuffer != nullptr) {
@@ -3583,7 +3587,9 @@ namespace odfaeg {
 
 
                         bufferSize = sizeof(MaterialData) * materialDatas[p].size();
-                        currentMaterialOffset[p] = alignedOffsetMaterialData[p] + (bufferSize - totalBufferSizeMaterialData[p]);
+                        delta = (bufferSize >  totalBufferSizeMaterialData[p]) ? bufferSize - totalBufferSizeMaterialData[p] : 0;
+                        previousMaterialOffset[p] = currentMaterialOffset[p];
+                        currentMaterialOffset[p] = alignedOffsetMaterialData[p] + delta;
                         totalBufferSizeMaterialData[p] = bufferSize;
                         if (totalBufferSizeMaterialData[p] > maxBufferSizeMaterialData[p]) {
                             if (materialDataStagingBuffer != nullptr) {
@@ -3800,8 +3806,12 @@ namespace odfaeg {
                     if (nbIndexedDrawCommandBuffer[p][0] > 0) {
                         vbBindlessTexIndexed[p].update(copyVbIndexedBufferCommandBuffer);
                         VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
-                        currentModelOffset[p] = alignedOffsetModelData[p] + (bufferSize - totalBufferSizeModelData[p]);
+                        unsigned int delta = (bufferSize >  totalBufferSizeModelData[p]) ? bufferSize - totalBufferSizeModelData[p] : 0;
+                        previousModelOffset[p] = currentModelOffset[p];
+                        currentModelOffset[p] = alignedOffsetModelData[p] + delta;
                         totalBufferSizeModelData[p] = bufferSize;
+
+
                         //////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
                         if (totalBufferSizeModelData[p] > maxBufferSizeModelData[p]) {
                             if (modelDataStagingBuffer != nullptr) {
@@ -3820,7 +3830,7 @@ namespace odfaeg {
                             maxBufferSizeModelData[p] = totalBufferSizeModelData[p];
                             //needToUpdateDSs[p]  = true;
                         }
-
+                        std::cout<<currentModelOffset[p]<<","<<maxBufferSizeModelData[p]<<std::endl;
 
                         void* data;
                         vkMapMemory(vkDevice.getDevice(), modelDataStagingBufferMemory, 0, totalBufferSizeModelData[p], 0, &data);
@@ -3830,7 +3840,9 @@ namespace odfaeg {
 
 
                         bufferSize = sizeof(MaterialData) * materialDatas[p].size();
-                        currentMaterialOffset[p] = alignedOffsetMaterialData[p] + (bufferSize - totalBufferSizeMaterialData[p]);
+                        delta = (bufferSize >  totalBufferSizeMaterialData[p]) ? bufferSize - totalBufferSizeMaterialData[p] : 0;
+                        previousMaterialOffset[p] = currentMaterialOffset[p];
+                        currentMaterialOffset[p] = alignedOffsetModelData[p] + delta;
                         totalBufferSizeMaterialData[p] = bufferSize;
                         if (totalBufferSizeMaterialData[p] > maxBufferSizeMaterialData[p]) {
                             if (materialDataStagingBuffer != nullptr) {
@@ -4020,9 +4032,12 @@ namespace odfaeg {
                     if (nbDrawCommandBuffer[p][0] > 0) {
                         vbBindlessTex[p].update(copyVbBufferCommandBuffer);
                         VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
-                        currentModelOffset[p] = alignedOffsetModelData[p] + (bufferSize - totalBufferSizeModelData[p]);
+                        unsigned int delta = (bufferSize >  totalBufferSizeModelData[p]) ? bufferSize - totalBufferSizeModelData[p] : 0;
+                        previousModelOffset[p] = currentModelOffset[p];
+                        currentModelOffset[p] = alignedOffsetModelData[p] + delta;
                         totalBufferSizeModelData[p] = bufferSize;
-                        //////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
+
+
                         if (totalBufferSizeModelData[p] > maxBufferSizeModelData[p]) {
                             if (modelDataStagingBuffer != nullptr) {
                                 vkDestroyBuffer(vkDevice.getDevice(), modelDataStagingBuffer, nullptr);
@@ -4050,7 +4065,9 @@ namespace odfaeg {
 
 
                         bufferSize = sizeof(MaterialData) * materialDatas[p].size();
-                        currentMaterialOffset[p] = alignedOffsetMaterialData[p] + (bufferSize - totalBufferSizeMaterialData[p]);
+                        delta = (bufferSize >  totalBufferSizeMaterialData[p]) ? bufferSize - totalBufferSizeMaterialData[p] : 0;
+                        previousMaterialOffset[p] = currentMaterialOffset[p];
+                        currentMaterialOffset[p] = alignedOffsetModelData[p] + delta;
                         totalBufferSizeMaterialData[p] = bufferSize;
                         if (totalBufferSizeMaterialData[p] > maxBufferSizeMaterialData[p]) {
                             if (materialDataStagingBuffer != nullptr) {
@@ -4265,7 +4282,9 @@ namespace odfaeg {
                     if (nbIndexedDrawCommandBuffer[p][0] > 0) {
                         vbBindlessTexIndexed[p].update(copyVbIndexedBufferCommandBuffer);
                         VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
-                        currentModelOffset[p] = alignedOffsetModelData[p] + (bufferSize - totalBufferSizeModelData[p]);
+                        unsigned int delta = (bufferSize >  totalBufferSizeModelData[p]) ? bufferSize - totalBufferSizeModelData[p] : 0;
+                        previousModelOffset[p] = currentModelOffset[p];
+                        currentModelOffset[p] = alignedOffsetModelData[p] + delta;
                         totalBufferSizeModelData[p] = bufferSize;
                         if (totalBufferSizeModelData[p] > maxBufferSizeModelData[p]) {
                             if (modelDataStagingBuffer != nullptr) {
@@ -4294,7 +4313,9 @@ namespace odfaeg {
 
 
                         bufferSize = sizeof(MaterialData) * materialDatas[p].size();
-                        currentMaterialOffset[p] = alignedOffsetMaterialData[p] + (bufferSize - totalBufferSizeMaterialData[p]);
+                        delta = (bufferSize >  totalBufferSizeMaterialData[p]) ? bufferSize - totalBufferSizeMaterialData[p] : 0;
+                        previousMaterialOffset[p] = currentMaterialOffset[p];
+                        currentMaterialOffset[p] = alignedOffsetModelData[p] + delta;
                         totalBufferSizeMaterialData[p] = bufferSize;
                         if (totalBufferSizeMaterialData[p] > maxBufferSizeMaterialData[p]) {
                             if (materialDataStagingBuffer != nullptr) {
@@ -4489,7 +4510,9 @@ namespace odfaeg {
                     if (nbDrawCommandBuffer[p][0] > 0) {
                         vbBindlessTex[p].update(copyVbBufferCommandBuffer);
                         VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
-                        currentModelOffset[p] = alignedOffsetModelData[p] + (bufferSize - totalBufferSizeModelData[p]);
+                        unsigned int delta = (bufferSize >  totalBufferSizeModelData[p]) ? bufferSize - totalBufferSizeModelData[p] : 0;
+                        previousModelOffset[p] = currentModelOffset[p];
+                        currentModelOffset[p] = alignedOffsetModelData[p] + delta;
                         totalBufferSizeModelData[p] = bufferSize;
                         //////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
                         if (totalBufferSizeModelData[p] > maxBufferSizeModelData[p]) {
@@ -4519,7 +4542,9 @@ namespace odfaeg {
 
 
                         bufferSize = sizeof(MaterialData) * materialDatas[p].size();
-                        currentMaterialOffset[p] = alignedOffsetMaterialData[p] + (bufferSize - totalBufferSizeMaterialData[p]);
+                        delta = (bufferSize >  totalBufferSizeMaterialData[p]) ? bufferSize - totalBufferSizeMaterialData[p] : 0;
+                        previousMaterialOffset[p] = currentMaterialOffset[p];
+                        currentMaterialOffset[p] = alignedOffsetModelData[p] + delta;
                         totalBufferSizeMaterialData[p] = bufferSize;
                         if (totalBufferSizeMaterialData[p] > maxBufferSizeMaterialData[p]) {
                             if (materialDataStagingBuffer != nullptr) {
@@ -4742,7 +4767,9 @@ namespace odfaeg {
                     if (nbIndexedDrawCommandBuffer[p][0] > 0) {
                         vbBindlessTexIndexed[p].update(copyVbIndexedBufferCommandBuffer);
                         VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
-                        currentModelOffset[p] = alignedOffsetModelData[p] + (bufferSize - totalBufferSizeModelData[p]);
+                        unsigned int delta = (bufferSize >  totalBufferSizeModelData[p]) ? bufferSize - totalBufferSizeModelData[p] : 0;
+                        previousModelOffset[p] = currentModelOffset[p];
+                        currentModelOffset[p] = alignedOffsetModelData[p] + delta;
                         totalBufferSizeModelData[p] = bufferSize;
                         //////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
                         if (totalBufferSizeModelData[p] > maxBufferSizeModelData[p]) {
@@ -4772,7 +4799,9 @@ namespace odfaeg {
 
 
                         bufferSize = sizeof(MaterialData) * materialDatas[p].size();
-                        currentMaterialOffset[p] = alignedOffsetMaterialData[p] + (bufferSize - totalBufferSizeMaterialData[p]);
+                        delta = (bufferSize >  totalBufferSizeMaterialData[p]) ? bufferSize - totalBufferSizeMaterialData[p] : 0;
+                        previousMaterialOffset[p] = currentMaterialOffset[p];
+                        currentMaterialOffset[p] = alignedOffsetModelData[p] + delta;
                         totalBufferSizeMaterialData[p] = bufferSize;
                         if (totalBufferSizeMaterialData[p] > maxBufferSizeMaterialData[p]) {
                             if (materialDataStagingBuffer != nullptr) {
@@ -6350,7 +6379,7 @@ namespace odfaeg {
                 indirectRenderingPC.viewMatrix = toVulkanMatrix(viewMatrix);
                 if (useThread) {
                     std::unique_lock<std::mutex> lock(mtx);
-                    cv.wait(lock, [this] { return isCommandBufferReady(); });
+                    //cv.wait(lock, [this] { return isCommandBufferReady(); });
                     resetBuffers();
 
                     fillBufferReflMT();
@@ -6673,7 +6702,7 @@ namespace odfaeg {
                 if (useThread) {
                     std::unique_lock<std::mutex> lock(mtx);
                     cv.wait(lock, [this] { return commandBufferReady.load(); });
-
+                    commandBufferReady = false;
                     depthBuffer.beginRecordCommandBuffers();
                     std::vector<VkCommandBuffer> commandBuffers = depthBuffer.getCommandBuffers();
                     unsigned int currentFrame = depthBuffer.getCurrentFrame();
@@ -6812,8 +6841,6 @@ namespace odfaeg {
                         reflectRefractTex.display(true, renderFinishedSemaphore[window.getCurrentFrame()]);
                     }
                     isSomethingDrawn  = false;
-                    commandBufferReady = false;
-                    cv.notify_one();
                 }
                 if (&target == &window)
                     window.setSemaphore(renderFinishedSemaphore);
