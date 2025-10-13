@@ -268,6 +268,7 @@ namespace odfaeg {
                     maxBufferSizeMaterialData[i] = 0;
                     maxBufferSizeDrawCommand[i] = 0;
                     maxBufferSizeIndexedDrawCommand[i] = 0;
+                    needToUpdateDSs[i] = false;
                 }
                 for (unsigned int i = 0; i < reflectRefractTex.getMaxFramesInFlight(); i++) {
                     VkEventCreateInfo eventInfo = {};
@@ -321,6 +322,18 @@ namespace odfaeg {
                 if (vkAllocateCommandBuffers(vkDevice.getDevice(), &bufferAllocInfo, &copyModelDataBufferCommandBuffer) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to allocate command buffers!", 1);
                 }
+                if (vkAllocateCommandBuffers(vkDevice.getDevice(), &bufferAllocInfo, &copyVbBufferCommandBuffer) != VK_SUCCESS) {
+                    throw core::Erreur(0, "failed to allocate command buffers!", 1);
+                }
+                if (vkAllocateCommandBuffers(vkDevice.getDevice(), &bufferAllocInfo, &copyVbIndexedBufferCommandBuffer) != VK_SUCCESS) {
+                    throw core::Erreur(0, "failed to allocate command buffers!", 1);
+                }
+                if (vkAllocateCommandBuffers(vkDevice.getDevice(), &bufferAllocInfo, &copyModelDataBufferCommandBuffer) != VK_SUCCESS) {
+                    throw core::Erreur(0, "failed to allocate command buffers!", 1);
+                }
+                if (vkAllocateCommandBuffers(vkDevice.getDevice(), &bufferAllocInfo, &copyVbEnvPass2BufferCommandBuffer) != VK_SUCCESS) {
+                    throw core::Erreur(0, "failed to allocate command buffers!", 1);
+                }
                 if (vkAllocateCommandBuffers(vkDevice.getDevice(), &bufferAllocInfo, &depthBufferCommandBuffer) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to allocate command buffers!", 1);
                 }
@@ -336,7 +349,7 @@ namespace odfaeg {
                 VkDeviceSize uboAlignment = deviceProperties.limits.minUniformBufferOffsetAlignment;
                 VkDeviceSize alignment = deviceProperties.limits.minStorageBufferOffsetAlignment;
                 update = true;
-
+                needToUpdateDS = false;
             }
             void ReflectRefractRenderComponent::createDescriptorsAndPipelines() {
                 RenderStates states;
@@ -721,7 +734,7 @@ namespace odfaeg {
                 submitInfo.pSignalSemaphores = &computeSemaphore;
 
                 vkQueueSubmit(vkDevice.getGraphicsQueue(), 1, &submitInfo, computeFence);
-                //vkQueueWaitIdle(vkDevice.getGraphicsQueue());
+                vkQueueWaitIdle(vkDevice.getGraphicsQueue());
 
                 vkFreeCommandBuffers(vkDevice.getDevice(), commandPool, 1, &commandBuffer);
             }
@@ -2368,7 +2381,7 @@ namespace odfaeg {
                         VkDescriptorBufferInfo modelDataStorageBufferInfoLastFrame{};
                         modelDataStorageBufferInfoLastFrame.buffer = modelDataBufferMT[p];
                         modelDataStorageBufferInfoLastFrame.offset = 0;
-                        modelDataStorageBufferInfoLastFrame.range = maxBufferSizeModelData[p];
+                        modelDataStorageBufferInfoLastFrame.range = maxBufferSizeModelData[p] - previousModelOffset[p];
 
                         descriptorWrites[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                         descriptorWrites[3].dstSet = descriptorSets[descriptorId][i];
@@ -2381,13 +2394,13 @@ namespace odfaeg {
                         VkDescriptorBufferInfo materialDataStorageBufferInfoLastFrame{};
                         materialDataStorageBufferInfoLastFrame.buffer = materialDataBufferMT[p];
                         materialDataStorageBufferInfoLastFrame.offset = 0;
-                        materialDataStorageBufferInfoLastFrame.range = maxBufferSizeModelData[p];
+                        materialDataStorageBufferInfoLastFrame.range = maxBufferSizeMaterialData[p] - previousMaterialOffset[p];
 
                         descriptorWrites[4].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                         descriptorWrites[4].dstSet = descriptorSets[descriptorId][i];
                         descriptorWrites[4].dstBinding = 4;
                         descriptorWrites[4].dstArrayElement = 0;
-                        descriptorWrites[4].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                        descriptorWrites[4].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
                         descriptorWrites[4].descriptorCount = 1;
                         descriptorWrites[4].pBufferInfo = &materialDataStorageBufferInfoLastFrame;
 
@@ -2489,7 +2502,8 @@ namespace odfaeg {
                             VkDescriptorBufferInfo modelDataStorageBufferInfoLastFrame{};
                             modelDataStorageBufferInfoLastFrame.buffer = modelDataBufferMT[p];
                             modelDataStorageBufferInfoLastFrame.offset = 0;
-                            modelDataStorageBufferInfoLastFrame.range = maxBufferSizeModelData[p];
+                            modelDataStorageBufferInfoLastFrame.range = maxBufferSizeModelData[p] - previousModelOffset[p];
+                            std::cout<<"ranges : "<<previousModelOffset[p]<<","<<maxBufferSizeModelData[p]<<std::endl;
 
                             descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                             descriptorWrites[1].dstSet = descriptorSets[descriptorId][i];
@@ -2502,7 +2516,7 @@ namespace odfaeg {
                             VkDescriptorBufferInfo materialDataStorageBufferInfoLastFrame{};
                             materialDataStorageBufferInfoLastFrame.buffer = materialDataBufferMT[p];
                             materialDataStorageBufferInfoLastFrame.offset = 0;
-                            materialDataStorageBufferInfoLastFrame.range = maxBufferSizeMaterialData[p];
+                            materialDataStorageBufferInfoLastFrame.range = maxBufferSizeMaterialData[p] - previousMaterialOffset[p];
 
                             descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                             descriptorWrites[2].dstSet = descriptorSets[descriptorId][i];
@@ -2564,7 +2578,7 @@ namespace odfaeg {
                             VkDescriptorBufferInfo modelDataStorageBufferInfoLastFrame{};
                             modelDataStorageBufferInfoLastFrame.buffer = modelDataBufferMT[p];
                             modelDataStorageBufferInfoLastFrame.offset = 0;
-                            modelDataStorageBufferInfoLastFrame.range = maxBufferSizeModelData[p];
+                            modelDataStorageBufferInfoLastFrame.range = maxBufferSizeModelData[p] - previousModelOffset[p];
 
                             descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                             descriptorWrites[2].dstSet = descriptorSets[descriptorId][i];
@@ -2577,7 +2591,7 @@ namespace odfaeg {
                             VkDescriptorBufferInfo materialDataStorageBufferInfoLastFrame{};
                             materialDataStorageBufferInfoLastFrame.buffer = materialDataBufferMT[p];
                             materialDataStorageBufferInfoLastFrame.offset = 0;
-                            materialDataStorageBufferInfoLastFrame.range = maxBufferSizeMaterialData[p];
+                            materialDataStorageBufferInfoLastFrame.range = maxBufferSizeMaterialData[p] - previousMaterialOffset[p];
 
                             descriptorWrites[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                             descriptorWrites[3].dstSet = descriptorSets[descriptorId][i];
@@ -2630,7 +2644,7 @@ namespace odfaeg {
                         VkDescriptorBufferInfo modelDataStorageBufferInfoLastFrame{};
                         modelDataStorageBufferInfoLastFrame.buffer = modelDataBufferMT[p];
                         modelDataStorageBufferInfoLastFrame.offset = 0;
-                        modelDataStorageBufferInfoLastFrame.range = maxBufferSizeModelData[p];
+                        modelDataStorageBufferInfoLastFrame.range = maxBufferSizeModelData[p] - previousModelOffset[p];
 
                         descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                         descriptorWrites[2].dstSet = descriptorSets[descriptorId][i];
@@ -2643,7 +2657,7 @@ namespace odfaeg {
                         VkDescriptorBufferInfo materialDataStorageBufferInfoLastFrame{};
                         materialDataStorageBufferInfoLastFrame.buffer = materialDataBufferMT[p];
                         materialDataStorageBufferInfoLastFrame.offset = 0;
-                        materialDataStorageBufferInfoLastFrame.range = maxBufferSizeMaterialData[p];
+                        materialDataStorageBufferInfoLastFrame.range = maxBufferSizeMaterialData[p] - previousMaterialOffset[p];
 
                         descriptorWrites[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                         descriptorWrites[3].dstSet = descriptorSets[descriptorId][i];
@@ -3068,6 +3082,8 @@ namespace odfaeg {
                         drawElementsIndirectCommands[i].clear();
                         currentModelOffset[i] = 0;
                         currentMaterialOffset[i] = 0;
+                        previousModelOffset[i] = 0;
+                        previousMaterialOffset[i] = 0;
                     }
                     nbReflRefrEntities = 0;
             }
@@ -3081,10 +3097,10 @@ namespace odfaeg {
                     std::vector<unsigned int> dynamicBufferOffsets;
                     dynamicBufferOffsets.push_back(modelDataOffset);
                     dynamicBufferOffsets.push_back(materialDataOffset);
-                    if (indexOffset != -1)
-                        depthBuffer.drawIndirect(commandBuffer, 0, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates, p, vertexOffset, drawCommandOffset, dynamicBufferOffsets);
+                    if (indexOffset == -1)
+                        depthBuffer.drawIndirect(commandBuffer, 0, nbIndirectCommands, stride, vbBindlessTex[p], drawCommandBufferMT[p], depthStencilID,currentStates, p, vertexOffset, drawCommandOffset, dynamicBufferOffsets);
                     else
-                        depthBuffer.drawIndirect(commandBuffer, 0, nbIndirectCommands, stride, vbBindlessTexIndexed[p], vboIndirect, depthStencilID,currentStates, p, vertexOffset, drawCommandOffset, dynamicBufferOffsets, indexOffset);
+                        depthBuffer.drawIndirect(commandBuffer, 0, nbIndirectCommands, stride, vbBindlessTexIndexed[p], drawCommandBufferIndexedMT[p], depthStencilID,currentStates, p, vertexOffset, drawCommandOffset, dynamicBufferOffsets, indexOffset);
                 } else if (shader == &sBuildAlphaBuffer) {
                     buildAlphaPC.nbLayers = GameObject::getNbLayers();
                     buildAlphaPC.resolution = resolution;
@@ -3095,19 +3111,19 @@ namespace odfaeg {
                     std::vector<unsigned int> dynamicBufferOffsets;
                     dynamicBufferOffsets.push_back(modelDataOffset);
                     dynamicBufferOffsets.push_back(materialDataOffset);
-                    if (indexOffset != -1)
-                        alphaBuffer.drawIndirect(commandBuffer, 0, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates, p,  vertexOffset, drawCommandOffset, dynamicBufferOffsets);
+                    if (indexOffset == -1)
+                        alphaBuffer.drawIndirect(commandBuffer, 0, nbIndirectCommands, stride, vbBindlessTex[p], drawCommandBufferMT[p], depthStencilID,currentStates, p,  vertexOffset, drawCommandOffset, dynamicBufferOffsets);
                     else
-                        alphaBuffer.drawIndirect(commandBuffer, 0, nbIndirectCommands, stride, vbBindlessTexIndexed[p], vboIndirect, depthStencilID,currentStates,p, vertexOffset, drawCommandOffset, dynamicBufferOffsets, indexOffset);
+                        alphaBuffer.drawIndirect(commandBuffer, 0, nbIndirectCommands, stride, vbBindlessTexIndexed[p], drawCommandBufferIndexedMT[p], depthStencilID,currentStates,p, vertexOffset, drawCommandOffset, dynamicBufferOffsets, indexOffset);
                 } else if (shader == &sLinkedList) {
                     std::vector<unsigned int> dynamicBufferOffsets;
                     dynamicBufferOffsets.push_back(modelDataOffset);
                     dynamicBufferOffsets.push_back(materialDataOffset);
                     dynamicBufferOffsets.push_back(uboOffset);
-                    if (indexOffset != -1)
-                        environmentMap.drawIndirect(commandBuffer, 0, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates, p, vertexOffset, drawCommandOffset, dynamicBufferOffsets);
+                    if (indexOffset == -1)
+                        environmentMap.drawIndirect(commandBuffer, 0, nbIndirectCommands, stride, vbBindlessTex[p], drawCommandBufferMT[p], depthStencilID,currentStates, p, vertexOffset, drawCommandOffset, dynamicBufferOffsets);
                     else
-                        environmentMap.drawIndirect(commandBuffer, 0, nbIndirectCommands, stride, vbBindlessTexIndexed[p], vboIndirect, depthStencilID,currentStates,p,  vertexOffset, drawCommandOffset, dynamicBufferOffsets, indexOffset);
+                        environmentMap.drawIndirect(commandBuffer, 0, nbIndirectCommands, stride, vbBindlessTexIndexed[p], drawCommandBufferIndexedMT[p], depthStencilID,currentStates,p,  vertexOffset, drawCommandOffset, dynamicBufferOffsets, indexOffset);
                 } else {
                    buildFrameBufferPC.resolution = resolution;
                    vkCmdPushConstants(commandBuffer, reflectRefractTex.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][reflectRefractTex.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectRenderingPC), &indirectRenderingPC);
@@ -3115,11 +3131,11 @@ namespace odfaeg {
                    std::vector<unsigned int> dynamicBufferOffsets;
                    dynamicBufferOffsets.push_back(modelDataOffset);
                    dynamicBufferOffsets.push_back(materialDataOffset);
-                   if (indexOffset != -1)
-                        reflectRefractTex.drawIndirect(commandBuffer, 0, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates,p,  vertexOffset, drawCommandOffset, dynamicBufferOffsets);
+                   if (indexOffset == -1)
+                        reflectRefractTex.drawIndirect(commandBuffer, 0, nbIndirectCommands, stride, vbBindlessTex[p], drawCommandBufferMT[p], depthStencilID,currentStates,p,  vertexOffset, drawCommandOffset, dynamicBufferOffsets);
                    else
-                        reflectRefractTex.drawIndirect(commandBuffer, 0, nbIndirectCommands, stride, vbBindlessTexIndexed[p], vboIndirect, depthStencilID,currentStates,p,  vertexOffset, drawCommandOffset, dynamicBufferOffsets, indexOffset);
-                   isSomethingDrawn = true;
+                        reflectRefractTex.drawIndirect(commandBuffer, 0, nbIndirectCommands, stride, vbBindlessTexIndexed[p], drawCommandBufferIndexedMT[p], depthStencilID,currentStates,p,  vertexOffset, drawCommandOffset, dynamicBufferOffsets, indexOffset);
+
                 }
             }
             void ReflectRefractRenderComponent::createCommandBuffersIndirect(unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, DepthStencilID depthStencilID, RenderStates currentStates) {
@@ -3249,15 +3265,15 @@ namespace odfaeg {
                 RenderStates currentStates;
                 currentStates.blendMode = BlendNone;
                 currentStates.shader = &sBuildDepthBuffer;
-                for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
-                    if (needToUpdateDS) {
+                for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes-1; p++) {
+                    if (needToUpdateDSs[p]) {
                         updateDescriptorSets(p, currentStates);
                     }
                     if (nbDrawCommandBuffer[p][0] > 0) {
-                        recordCommandBufferIndirect(p, nbDrawCommandBuffer[p][0], sizeof(DrawArraysIndirectCommand), DEPTHNOSTENCIL, vertexOffsets[p][0], -1, -1, modelDataOffsets[p][0], materialDataOffsets[p][0],drawCommandBufferOffsets[p][0], currentStates, depthBufferCommandBuffer);
+                        recordCommandBufferIndirect(p, nbDrawCommandBuffer[p][0], sizeof(DrawArraysIndirectCommand), DEPTHNOSTENCIL, 0, -1, -1, modelDataOffsets[p][0], materialDataOffsets[p][0],drawCommandBufferOffsets[p][0], currentStates, depthBufferCommandBuffer);
                     }
                     if (nbIndexedDrawCommandBuffer[p][0] > 0) {
-                        recordCommandBufferIndirect(p, nbIndexedDrawCommandBuffer[p][0], sizeof(DrawElementsIndirectCommand), DEPTHNOSTENCIL, vertexIndexOffsets[p][0], indexOffsets[p][0], -1, modelDataOffsets[p][1], materialDataOffsets[p][1],drawIndexedCommandBufferOffsets[p][0], currentStates, depthBufferCommandBuffer);
+                        recordCommandBufferIndirect(p, nbIndexedDrawCommandBuffer[p][0], sizeof(DrawElementsIndirectCommand), DEPTHNOSTENCIL, 0, 0, -1, modelDataOffsets[p][1], materialDataOffsets[p][1],drawIndexedCommandBufferOffsets[p][0], currentStates, depthBufferCommandBuffer);
                     }
                 }
                 if (vkEndCommandBuffer(depthBufferCommandBuffer) != VK_SUCCESS) {
@@ -3276,15 +3292,15 @@ namespace odfaeg {
                     throw core::Erreur(0, "failed to begin recording command buffer!", 1);
                 }
                 currentStates.shader = &sBuildAlphaBuffer;
-                for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
-                    if (needToUpdateDS) {
+                for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes-1; p++) {
+                    if (needToUpdateDSs[p]) {
                         updateDescriptorSets(p, currentStates);
                     }
                     if (nbDrawCommandBuffer[p][1] > 0) {
-                        recordCommandBufferIndirect(p, nbDrawCommandBuffer[p][1], sizeof(DrawArraysIndirectCommand), DEPTHNOSTENCIL, vertexOffsets[p][1], -1, -1, modelDataOffsets[p][2], materialDataOffsets[p][2],drawCommandBufferOffsets[p][1], currentStates, alphaBufferCommandBuffer);
+                        recordCommandBufferIndirect(p, nbDrawCommandBuffer[p][1], sizeof(DrawArraysIndirectCommand), DEPTHNOSTENCIL, 0, -1, -1, modelDataOffsets[p][2], materialDataOffsets[p][2],drawCommandBufferOffsets[p][1], currentStates, alphaBufferCommandBuffer);
                     }
                     if (nbIndexedDrawCommandBuffer[p][1] > 0) {
-                        recordCommandBufferIndirect(p, nbIndexedDrawCommandBuffer[p][1], sizeof(DrawElementsIndirectCommand), DEPTHNOSTENCIL, vertexIndexOffsets[p][1], indexOffsets[p][1], -1, modelDataOffsets[p][3], materialDataOffsets[p][3],drawIndexedCommandBufferOffsets[p][1], currentStates, alphaBufferCommandBuffer);
+                        recordCommandBufferIndirect(p, nbIndexedDrawCommandBuffer[p][1], sizeof(DrawElementsIndirectCommand), DEPTHNOSTENCIL, 0, 0, -1, modelDataOffsets[p][3], materialDataOffsets[p][3],drawIndexedCommandBufferOffsets[p][1], currentStates, alphaBufferCommandBuffer);
                     }
                 }
                 if (vkEndCommandBuffer(alphaBufferCommandBuffer) != VK_SUCCESS) {
@@ -3302,15 +3318,15 @@ namespace odfaeg {
                     if (vkBeginCommandBuffer(environmentMapCommandBuffer[i], &beginInfo) != VK_SUCCESS) {
                         throw core::Erreur(0, "failed to begin recording command buffer!", 1);
                     }
-                    for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
-                        if (needToUpdateDS && i == 0) {
+                    for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes-1; p++) {
+                        if (needToUpdateDSs[p] && i == 0) {
                             updateDescriptorSets(p, currentStates);
                         }
                         if (nbDrawCommandBuffer[p][1] > 0) {
-                            recordCommandBufferIndirect(p, nbDrawCommandBuffer[p][1], sizeof(DrawArraysIndirectCommand), DEPTHNOSTENCIL, vertexOffsets[p][1], -1, i * alignUBO(sizeof(UniformBufferObject)), modelDataOffsets[p][2], materialDataOffsets[p][2],drawCommandBufferOffsets[p][1], currentStates, environmentMapCommandBuffer[i]);
+                            recordCommandBufferIndirect(p, nbDrawCommandBuffer[p][1], sizeof(DrawArraysIndirectCommand), DEPTHNOSTENCIL, 0, -1, i * alignUBO(sizeof(UniformBufferObject)), modelDataOffsets[p][2], materialDataOffsets[p][2],drawCommandBufferOffsets[p][1], currentStates, environmentMapCommandBuffer[i]);
                         }
                         if (nbIndexedDrawCommandBuffer[p][1] > 0) {
-                            recordCommandBufferIndirect(p, nbIndexedDrawCommandBuffer[p][1], sizeof(DrawElementsIndirectCommand), DEPTHNOSTENCIL, vertexIndexOffsets[p][1], indexOffsets[p][1],  i * alignUBO(sizeof(UniformBufferObject)), modelDataOffsets[p][3], materialDataOffsets[p][3],drawIndexedCommandBufferOffsets[p][1], currentStates, environmentMapCommandBuffer[i]);
+                            recordCommandBufferIndirect(p, nbIndexedDrawCommandBuffer[p][1], sizeof(DrawElementsIndirectCommand), DEPTHNOSTENCIL, 0, 0,  i * alignUBO(sizeof(UniformBufferObject)), modelDataOffsets[p][3], materialDataOffsets[p][3],drawIndexedCommandBufferOffsets[p][1], currentStates, environmentMapCommandBuffer[i]);
                         }
                     }
                     if (vkEndCommandBuffer(environmentMapCommandBuffer[i]) != VK_SUCCESS) {
@@ -3346,16 +3362,16 @@ namespace odfaeg {
                     if (vkBeginCommandBuffer(reflectRefractCommandBuffer[i], &beginInfo) != VK_SUCCESS) {
                         throw core::Erreur(0, "failed to begin recording command buffer!", 1);
                     }
-                    for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
-                        if (needToUpdateDS && i == 0) {
+                    for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes-1; p++) {
+                        if (needToUpdateDSs[p] && i == 0) {
                             updateDescriptorSets(p, currentStates);
                         }
                         if (nbDrawCommandBuffer[p][i+2] > 0) {
                             if (nbDrawCommandBuffer[p][i+2] > 0) {
-                                recordCommandBufferIndirect(p, nbDrawCommandBuffer[p][i+2], sizeof(DrawArraysIndirectCommand), DEPTHNOSTENCIL, vertexOffsets[p][i+2], -1, -1, modelDataOffsets[p][i*2+4], materialDataOffsets[p][i*2+4],drawCommandBufferOffsets[p][i+2], currentStates, reflectRefractCommandBuffer[i]);
+                                recordCommandBufferIndirect(p, nbDrawCommandBuffer[p][i+2], sizeof(DrawArraysIndirectCommand), DEPTHNOSTENCIL, 0, -1, -1, modelDataOffsets[p][i*2+4], materialDataOffsets[p][i*2+4],drawCommandBufferOffsets[p][i+2], currentStates, reflectRefractCommandBuffer[i]);
                             }
                             if (nbIndexedDrawCommandBuffer[p][i+2] > 0) {
-                                recordCommandBufferIndirect(p, nbIndexedDrawCommandBuffer[p][i+2], sizeof(DrawElementsIndirectCommand), DEPTHNOSTENCIL, vertexIndexOffsets[p][i+2], indexOffsets[p][i+2], -1, modelDataOffsets[p][i*2+5], materialDataOffsets[p][i*2+5],drawIndexedCommandBufferOffsets[p][i+2], currentStates, reflectRefractCommandBuffer[i]);
+                                recordCommandBufferIndirect(p, nbIndexedDrawCommandBuffer[p][i+2], sizeof(DrawElementsIndirectCommand), DEPTHNOSTENCIL, 0, 0, -1, modelDataOffsets[p][i*2+5], materialDataOffsets[p][i*2+5],drawIndexedCommandBufferOffsets[p][i+2], currentStates, reflectRefractCommandBuffer[i]);
                             }
                         }
                     }
@@ -3363,7 +3379,8 @@ namespace odfaeg {
                         throw core::Erreur(0, "failed to record command buffer!", 1);
                     }
                 }
-                needToUpdateDS = false;
+                for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes-1; p++)
+                    needToUpdateDSs[p] = false;
             }
             void ReflectRefractRenderComponent::createCommandBufferVertexBuffer(RenderStates currentStates) {
 
@@ -3412,11 +3429,12 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < baseInstance.size(); i++) {
                     baseInstance[i] = 0;
                 }
-                std::array<unsigned int, Batcher::nbPrimitiveTypes> drawCommandCount;
+                std::array<unsigned int, Batcher::nbPrimitiveTypes> drawCommandCount, oldTotalVertexCount;
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                     drawCommandBufferOffsets[p].push_back(totalBufferSizeDrawCommand[p]);
                     vertexOffsets[p].push_back(totalVertexCount[p] * sizeof(Vertex));
                     drawCommandCount[p] = 0;
+                    oldTotalVertexCount[p] = totalVertexCount[p];
                 }
 
                 for (unsigned int i = 0; i < m_reflNormals.size(); i++) {
@@ -3439,7 +3457,7 @@ namespace odfaeg {
                             vbBindlessTex[p].append(m_reflNormals[i].getAllVertices()[j]);
                         }
                         drawArraysIndirectCommand.count = vertexCount;
-                        drawArraysIndirectCommand.firstIndex = firstIndex[p];
+                        drawArraysIndirectCommand.firstIndex = firstIndex[p] + oldTotalVertexCount[p];
                         drawArraysIndirectCommand.baseInstance = baseInstance[p];
                         drawArraysIndirectCommand.instanceCount = 1;
                         drawArraysIndirectCommands[p].push_back(drawArraysIndirectCommand);
@@ -3486,7 +3504,7 @@ namespace odfaeg {
                             }
                         }
                         drawArraysIndirectCommand.count = vertexCount;
-                        drawArraysIndirectCommand.firstIndex = firstIndex[p];
+                        drawArraysIndirectCommand.firstIndex = firstIndex[p] + oldTotalVertexCount[p];
                         drawArraysIndirectCommand.baseInstance = baseInstance[p];
                         drawArraysIndirectCommand.instanceCount = tm.size();
                         drawArraysIndirectCommands[p].push_back(drawArraysIndirectCommand);
@@ -3530,11 +3548,17 @@ namespace odfaeg {
 
                     throw core::Erreur(0, "failed to begin recording command buffer!", 1);
                 }
+                if (vkBeginCommandBuffer(copyVbBufferCommandBuffer, &beginInfo) != VK_SUCCESS) {
+
+                    throw core::Erreur(0, "failed to begin recording command buffer!", 1);
+                }
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                     if (nbDrawCommandBuffer[p][0] > 0) {
-                        //vbBindlessTex[p].update();
+                        vbBindlessTex[p].update(copyVbBufferCommandBuffer);
                         VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
-                        currentModelOffset[p] = alignedOffsetModelData[p] + (bufferSize - totalBufferSizeModelData[p]);
+                        unsigned int delta = (bufferSize >  totalBufferSizeModelData[p]) ? bufferSize - totalBufferSizeModelData[p] : 0;
+                        previousModelOffset[p] = currentModelOffset[p];
+                        currentModelOffset[p] = alignedOffsetModelData[p] + delta;
                         totalBufferSizeModelData[p] = bufferSize;
                         if (totalBufferSizeModelData[p] > maxBufferSizeModelData[p]) {
                             if (modelDataStagingBuffer != nullptr) {
@@ -3551,7 +3575,7 @@ namespace odfaeg {
                             createBuffer(totalBufferSizeModelData[p], VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, modelDataBufferMT[p], modelDataBufferMemoryMT[p]);
 
                             maxBufferSizeModelData[p] = totalBufferSizeModelData[p];
-                            needToUpdateDS  = true;
+                            //needToUpdateDSs[p]  = true;
                         }
 
 
@@ -3563,7 +3587,9 @@ namespace odfaeg {
 
 
                         bufferSize = sizeof(MaterialData) * materialDatas[p].size();
-                        currentMaterialOffset[p] = alignedOffsetMaterialData[p] + (bufferSize - totalBufferSizeMaterialData[p]);
+                        delta = (bufferSize >  totalBufferSizeMaterialData[p]) ? bufferSize - totalBufferSizeMaterialData[p] : 0;
+                        previousMaterialOffset[p] = currentMaterialOffset[p];
+                        currentMaterialOffset[p] = alignedOffsetMaterialData[p] + delta;
                         totalBufferSizeMaterialData[p] = bufferSize;
                         if (totalBufferSizeMaterialData[p] > maxBufferSizeMaterialData[p]) {
                             if (materialDataStagingBuffer != nullptr) {
@@ -3578,7 +3604,7 @@ namespace odfaeg {
                             createBuffer(totalBufferSizeMaterialData[p], VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, materialDataBufferMT[p], materialDataBufferMemoryMT[p]);
 
                             maxBufferSizeMaterialData[p] = totalBufferSizeMaterialData[p];
-                            needToUpdateDS = true;
+                            //needToUpdateDSs[p]  = true;
                         }
 
                         vkMapMemory(vkDevice.getDevice(), materialDataStagingBufferMemory, 0, totalBufferSizeMaterialData[p], 0, &data);
@@ -3588,6 +3614,7 @@ namespace odfaeg {
 
                         bufferSize = sizeof(DrawArraysIndirectCommand) * drawArraysIndirectCommands[p].size();
                         totalBufferSizeDrawCommand[p] = bufferSize;
+                        needToUpdateDSs[p]  = true;
                         if (totalBufferSizeDrawCommand[p] > maxBufferSizeDrawCommand[p]) {
                             if (vboIndirectStagingBuffer != nullptr) {
                                 vkDestroyBuffer(vkDevice.getDevice(), vboIndirectStagingBuffer, nullptr);
@@ -3618,6 +3645,9 @@ namespace odfaeg {
                 if (vkEndCommandBuffer(copyDrawBufferCommandBuffer) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to record command buffer!", 1);
                 }
+                if (vkEndCommandBuffer(copyVbBufferCommandBuffer) != VK_SUCCESS) {
+                    throw core::Erreur(0, "failed to record command buffer!", 1);
+                }
             }
             void ReflectRefractRenderComponent::fillBufferReflIndexedMT() {
 
@@ -3631,12 +3661,14 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < baseInstance.size(); i++) {
                     baseInstance[i] = 0;
                 }
-                std::array<unsigned int, Batcher::nbPrimitiveTypes> drawCommandCount;
+                std::array<unsigned int, Batcher::nbPrimitiveTypes> drawCommandCount, oldTotalVertexIndexCount, oldTotalIndexCount;
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                     drawIndexedCommandBufferOffsets[p].push_back(totalBufferSizeIndexedDrawCommand[p]);
                     vertexIndexOffsets[p].push_back(totalVertexIndexCount[p] * sizeof(Vertex));
                     indexOffsets[p].push_back(totalIndexCount[p] * sizeof(unsigned int));
                     drawCommandCount[p] = 0;
+                    oldTotalVertexIndexCount[p] = totalVertexCount[p];
+                    oldTotalIndexCount[p] = totalIndexCount[p];
                 }
 
 
@@ -3664,9 +3696,9 @@ namespace odfaeg {
                             vbBindlessTexIndexed[p].addIndex(m_reflNormalIndexed[i].getAllVertices().getIndexes()[j]);
                         }
                         drawElementsIndirectCommand.indexCount = indexCount;
-                        drawElementsIndirectCommand.firstIndex = firstIndex[p];
+                        drawElementsIndirectCommand.firstIndex = firstIndex[p] + oldTotalIndexCount[p];
                         drawElementsIndirectCommand.baseInstance = baseInstance[p];
-                        drawElementsIndirectCommand.baseVertex = baseVertex[p];
+                        drawElementsIndirectCommand.baseVertex = baseVertex[p] + oldTotalVertexIndexCount[p];
                         drawElementsIndirectCommand.instanceCount = 1;
                         drawElementsIndirectCommands[p].push_back(drawElementsIndirectCommand);
                         firstIndex[p] += indexCount;
@@ -3719,9 +3751,9 @@ namespace odfaeg {
                             }
                         }
                         drawElementsIndirectCommand.indexCount = indexCount;
-                        drawElementsIndirectCommand.firstIndex = firstIndex[p];
+                        drawElementsIndirectCommand.firstIndex = firstIndex[p] + oldTotalIndexCount[p];
                         drawElementsIndirectCommand.baseInstance = baseInstance[p];
-                        drawElementsIndirectCommand.baseVertex = baseVertex[p];
+                        drawElementsIndirectCommand.baseVertex = baseVertex[p] + oldTotalVertexIndexCount[p];
                         drawElementsIndirectCommand.instanceCount = tm.size();
                         drawElementsIndirectCommands[p].push_back(drawElementsIndirectCommand);
                         firstIndex[p] += indexCount;
@@ -3766,12 +3798,20 @@ namespace odfaeg {
 
                     throw core::Erreur(0, "failed to begin recording command buffer!", 1);
                 }
+                if (vkBeginCommandBuffer(copyVbIndexedBufferCommandBuffer, &beginInfo) != VK_SUCCESS) {
+
+                    throw core::Erreur(0, "failed to begin recording command buffer!", 1);
+                }
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                     if (nbIndexedDrawCommandBuffer[p][0] > 0) {
-                        //vbBindlessTexIndexed[p].update();
+                        vbBindlessTexIndexed[p].update(copyVbIndexedBufferCommandBuffer);
                         VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
-                        currentModelOffset[p] = alignedOffsetModelData[p] + (bufferSize - totalBufferSizeModelData[p]);
+                        unsigned int delta = (bufferSize >  totalBufferSizeModelData[p]) ? bufferSize - totalBufferSizeModelData[p] : 0;
+                        previousModelOffset[p] = currentModelOffset[p];
+                        currentModelOffset[p] = alignedOffsetModelData[p] + delta;
                         totalBufferSizeModelData[p] = bufferSize;
+
+
                         //////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
                         if (totalBufferSizeModelData[p] > maxBufferSizeModelData[p]) {
                             if (modelDataStagingBuffer != nullptr) {
@@ -3788,9 +3828,9 @@ namespace odfaeg {
                             createBuffer(totalBufferSizeModelData[p], VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, modelDataBufferMT[p], modelDataBufferMemoryMT[p]);
 
                             maxBufferSizeModelData[p] = totalBufferSizeModelData[p];
-                            needToUpdateDS  = true;
+                            //needToUpdateDSs[p]  = true;
                         }
-
+                        std::cout<<previousModelOffset[p]<<","<<maxBufferSizeModelData[p]<<std::endl;
 
                         void* data;
                         vkMapMemory(vkDevice.getDevice(), modelDataStagingBufferMemory, 0, totalBufferSizeModelData[p], 0, &data);
@@ -3800,7 +3840,9 @@ namespace odfaeg {
 
 
                         bufferSize = sizeof(MaterialData) * materialDatas[p].size();
-                        currentMaterialOffset[p] = alignedOffsetMaterialData[p] + (bufferSize - totalBufferSizeMaterialData[p]);
+                        delta = (bufferSize >  totalBufferSizeMaterialData[p]) ? bufferSize - totalBufferSizeMaterialData[p] : 0;
+                        previousMaterialOffset[p] = currentMaterialOffset[p];
+                        currentMaterialOffset[p] = alignedOffsetModelData[p] + delta;
                         totalBufferSizeMaterialData[p] = bufferSize;
                         if (totalBufferSizeMaterialData[p] > maxBufferSizeMaterialData[p]) {
                             if (materialDataStagingBuffer != nullptr) {
@@ -3815,7 +3857,7 @@ namespace odfaeg {
                             createBuffer(totalBufferSizeMaterialData[p], VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, materialDataBufferMT[p], materialDataBufferMemoryMT[p]);
 
                             maxBufferSizeMaterialData[p] = totalBufferSizeMaterialData[p];
-                            needToUpdateDS = true;
+                            //needToUpdateDSs[p]  = true;
                         }
 
                         vkMapMemory(vkDevice.getDevice(), materialDataStagingBufferMemory, 0, totalBufferSizeMaterialData[p], 0, &data);
@@ -3825,6 +3867,7 @@ namespace odfaeg {
 
                         bufferSize = sizeof(DrawElementsIndirectCommand) * drawElementsIndirectCommands[p].size();
                         totalBufferSizeIndexedDrawCommand[p] = bufferSize;
+                        needToUpdateDSs[p]  = true;
                         //std::cout<<"buffer size : "<<bufferSize<<std::endl<<"max : "<<maxBufferSizeIndexedDrawCommand[p]<<std::endl;
                         if (totalBufferSizeIndexedDrawCommand[p] > maxBufferSizeIndexedDrawCommand[p]) {
                             if (vboIndirectStagingBuffer != nullptr) {
@@ -3856,6 +3899,9 @@ namespace odfaeg {
                 if (vkEndCommandBuffer(copyDrawIndexedBufferCommandBuffer) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to record command buffer!", 1);
                 }
+                if (vkEndCommandBuffer(copyVbIndexedBufferCommandBuffer) != VK_SUCCESS) {
+                    throw core::Erreur(0, "failed to record command buffer!", 1);
+                }
             }
             void ReflectRefractRenderComponent::fillNonReflBufferMT() {
                 std::array<unsigned int, Batcher::nbPrimitiveTypes> firstIndex, baseInstance;
@@ -3865,11 +3911,12 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < baseInstance.size(); i++) {
                     baseInstance[i] = 0;
                 }
-                std::array<unsigned int, Batcher::nbPrimitiveTypes> drawCommandCount;
+                std::array<unsigned int, Batcher::nbPrimitiveTypes> drawCommandCount, oldTotalVertexCount;
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                     drawCommandBufferOffsets[p].push_back(totalBufferSizeDrawCommand[p]);
                     vertexOffsets[p].push_back(totalVertexCount[p] * sizeof(Vertex));
                     drawCommandCount[p] = 0;
+                    oldTotalVertexCount[p] = totalVertexCount[p];
                 }
                 for (unsigned int i = 0; i < m_normals.size(); i++) {
                     if (m_normals[i].getAllVertices().getVertexCount() > 0) {
@@ -3892,7 +3939,7 @@ namespace odfaeg {
                             vbBindlessTex[p].append(m_normals[i].getAllVertices()[j]);
                         }
                         drawArraysIndirectCommand.count = vertexCount;
-                        drawArraysIndirectCommand.firstIndex = firstIndex[p];
+                        drawArraysIndirectCommand.firstIndex = firstIndex[p] + oldTotalVertexCount[p];
                         drawArraysIndirectCommand.baseInstance = baseInstance[p];
                         drawArraysIndirectCommand.instanceCount = 1;
                         drawArraysIndirectCommands[p].push_back(drawArraysIndirectCommand);
@@ -3933,7 +3980,7 @@ namespace odfaeg {
                             }
                         }
                         drawArraysIndirectCommand.count = vertexCount;
-                        drawArraysIndirectCommand.firstIndex = firstIndex[p];
+                        drawArraysIndirectCommand.firstIndex = firstIndex[p] + oldTotalVertexCount[p];
                         drawArraysIndirectCommand.baseInstance = baseInstance[p];
                         drawArraysIndirectCommand.instanceCount = tm.size();
                         drawArraysIndirectCommands[p].push_back(drawArraysIndirectCommand);
@@ -3977,13 +4024,20 @@ namespace odfaeg {
 
                     throw core::Erreur(0, "failed to begin recording command buffer!", 1);
                 }
+                if (vkBeginCommandBuffer(copyVbBufferCommandBuffer, &beginInfo) != VK_SUCCESS) {
+
+                    throw core::Erreur(0, "failed to begin recording command buffer!", 1);
+                }
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                     if (nbDrawCommandBuffer[p][0] > 0) {
-                        //vbBindlessTex[p].update();
+                        vbBindlessTex[p].update(copyVbBufferCommandBuffer);
                         VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
-                        currentModelOffset[p] = alignedOffsetModelData[p] + (bufferSize - totalBufferSizeModelData[p]);
+                        unsigned int delta = (bufferSize >  totalBufferSizeModelData[p]) ? bufferSize - totalBufferSizeModelData[p] : 0;
+                        previousModelOffset[p] = currentModelOffset[p];
+                        currentModelOffset[p] = alignedOffsetModelData[p] + delta;
                         totalBufferSizeModelData[p] = bufferSize;
-                        //////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
+
+
                         if (totalBufferSizeModelData[p] > maxBufferSizeModelData[p]) {
                             if (modelDataStagingBuffer != nullptr) {
                                 vkDestroyBuffer(vkDevice.getDevice(), modelDataStagingBuffer, nullptr);
@@ -3999,7 +4053,7 @@ namespace odfaeg {
                             createBuffer(totalBufferSizeModelData[p], VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, modelDataBufferMT[p], modelDataBufferMemoryMT[p]);
 
                             maxBufferSizeModelData[p] = totalBufferSizeModelData[p];
-                            needToUpdateDS  = true;
+                            //needToUpdateDSs[p]  = true;
                         }
 
 
@@ -4011,7 +4065,9 @@ namespace odfaeg {
 
 
                         bufferSize = sizeof(MaterialData) * materialDatas[p].size();
-                        currentMaterialOffset[p] = alignedOffsetMaterialData[p] + (bufferSize - totalBufferSizeMaterialData[p]);
+                        delta = (bufferSize >  totalBufferSizeMaterialData[p]) ? bufferSize - totalBufferSizeMaterialData[p] : 0;
+                        previousMaterialOffset[p] = currentMaterialOffset[p];
+                        currentMaterialOffset[p] = alignedOffsetModelData[p] + delta;
                         totalBufferSizeMaterialData[p] = bufferSize;
                         if (totalBufferSizeMaterialData[p] > maxBufferSizeMaterialData[p]) {
                             if (materialDataStagingBuffer != nullptr) {
@@ -4026,7 +4082,7 @@ namespace odfaeg {
                             createBuffer(totalBufferSizeMaterialData[p], VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, materialDataBufferMT[p], materialDataBufferMemoryMT[p]);
 
                             maxBufferSizeMaterialData[p] = totalBufferSizeMaterialData[p];
-                            needToUpdateDS = true;
+                            //needToUpdateDSs[p]  = true;
                         }
 
                         vkMapMemory(vkDevice.getDevice(), materialDataStagingBufferMemory, 0, totalBufferSizeMaterialData[p], 0, &data);
@@ -4036,6 +4092,7 @@ namespace odfaeg {
 
                         bufferSize = sizeof(DrawArraysIndirectCommand) * drawArraysIndirectCommands[p].size();
                         totalBufferSizeDrawCommand[p] = bufferSize;
+                        needToUpdateDSs[p]  = true;
                         if (totalBufferSizeDrawCommand[p] > maxBufferSizeDrawCommand[p]) {
                             if (vboIndirectStagingBuffer != nullptr) {
                                 vkDestroyBuffer(vkDevice.getDevice(), vboIndirectStagingBuffer, nullptr);
@@ -4066,6 +4123,9 @@ namespace odfaeg {
                 if (vkEndCommandBuffer(copyDrawBufferCommandBuffer) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to record command buffer!", 1);
                 }
+                if (vkEndCommandBuffer(copyVbBufferCommandBuffer) != VK_SUCCESS) {
+                    throw core::Erreur(0, "failed to record command buffer!", 1);
+                }
             }
             void ReflectRefractRenderComponent::fillNonReflIndexedBufferMT() {
                 std::array<unsigned int, Batcher::nbPrimitiveTypes> firstIndex, baseInstance, baseVertex;
@@ -4078,12 +4138,14 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < baseInstance.size(); i++) {
                     baseInstance[i] = 0;
                 }
-                std::array<unsigned int, Batcher::nbPrimitiveTypes> drawCommandCount;
+                std::array<unsigned int, Batcher::nbPrimitiveTypes> drawCommandCount, oldTotalVertexIndexCount, oldTotalIndexCount;
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                     drawIndexedCommandBufferOffsets[p].push_back(totalBufferSizeIndexedDrawCommand[p]);
                     vertexIndexOffsets[p].push_back(totalVertexIndexCount[p] * sizeof(Vertex));
                     indexOffsets[p].push_back(totalIndexCount[p] * sizeof(unsigned int));
                     drawCommandCount[p] = 0;
+                    oldTotalVertexIndexCount[p] = totalVertexCount[p];
+                    oldTotalIndexCount[p] = totalIndexCount[p];
                 }
                 for (unsigned int i = 0; i < m_normalIndexed.size(); i++) {
                     if (m_normalIndexed[i].getAllVertices().getVertexCount() > 0) {
@@ -4110,9 +4172,9 @@ namespace odfaeg {
                             vbBindlessTexIndexed[p].addIndex(m_normalIndexed[i].getAllVertices().getIndexes()[j]);
                         }
                         drawElementsIndirectCommand.indexCount = indexCount;
-                        drawElementsIndirectCommand.firstIndex = firstIndex[p];
+                        drawElementsIndirectCommand.firstIndex = firstIndex[p] + oldTotalIndexCount[p];
                         drawElementsIndirectCommand.baseInstance = baseInstance[p];
-                        drawElementsIndirectCommand.baseVertex = baseVertex[p];
+                        drawElementsIndirectCommand.baseVertex = baseVertex[p] + oldTotalVertexIndexCount[p];
                         drawElementsIndirectCommand.instanceCount = 1;
                         drawElementsIndirectCommands[p].push_back(drawElementsIndirectCommand);
                         firstIndex[p] += indexCount;
@@ -4165,9 +4227,9 @@ namespace odfaeg {
                             }
                         }
                         drawElementsIndirectCommand.indexCount = indexCount;
-                        drawElementsIndirectCommand.firstIndex = firstIndex[p];
+                        drawElementsIndirectCommand.firstIndex = firstIndex[p] + oldTotalIndexCount[p];
                         drawElementsIndirectCommand.baseInstance = baseInstance[p];
-                        drawElementsIndirectCommand.baseVertex = baseVertex[p];
+                        drawElementsIndirectCommand.baseVertex = baseVertex[p] + oldTotalVertexIndexCount[p];
                         drawElementsIndirectCommand.instanceCount = tm.size();
                         drawElementsIndirectCommands[p].push_back(drawElementsIndirectCommand);
                         firstIndex[p] += indexCount;
@@ -4212,11 +4274,17 @@ namespace odfaeg {
 
                     throw core::Erreur(0, "failed to begin recording command buffer!", 1);
                 }
+                if (vkBeginCommandBuffer(copyVbIndexedBufferCommandBuffer, &beginInfo) != VK_SUCCESS) {
+
+                    throw core::Erreur(0, "failed to begin recording command buffer!", 1);
+                }
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                     if (nbIndexedDrawCommandBuffer[p][0] > 0) {
-                        //vbBindlessTexIndexed[p].update();
+                        vbBindlessTexIndexed[p].update(copyVbIndexedBufferCommandBuffer);
                         VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
-                        currentModelOffset[p] = alignedOffsetModelData[p] + (bufferSize - totalBufferSizeModelData[p]);
+                        unsigned int delta = (bufferSize >  totalBufferSizeModelData[p]) ? bufferSize - totalBufferSizeModelData[p] : 0;
+                        previousModelOffset[p] = currentModelOffset[p];
+                        currentModelOffset[p] = alignedOffsetModelData[p] + delta;
                         totalBufferSizeModelData[p] = bufferSize;
                         if (totalBufferSizeModelData[p] > maxBufferSizeModelData[p]) {
                             if (modelDataStagingBuffer != nullptr) {
@@ -4233,10 +4301,11 @@ namespace odfaeg {
                             createBuffer(totalBufferSizeModelData[p], VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, modelDataBufferMT[p], modelDataBufferMemoryMT[p]);
 
                             maxBufferSizeModelData[p] = totalBufferSizeModelData[p];
-                            needToUpdateDS  = true;
+                            //needToUpdateDSs[p]  = true;
                         }
+                        std::cout<<"1 : "<<previousModelOffset[p]<<","<<maxBufferSizeModelData[p]<<std::endl;
 
-
+                        std::cout<<"offset : "<<previousModelOffset[p]<<","<<maxBufferSizeModelData[p]<<std::endl;
                         void* data;
                         vkMapMemory(vkDevice.getDevice(), modelDataStagingBufferMemory, 0, totalBufferSizeModelData[p], 0, &data);
                         memcpy(data, modelDatas[p].data(), (size_t)totalBufferSizeModelData[p]);
@@ -4245,7 +4314,9 @@ namespace odfaeg {
 
 
                         bufferSize = sizeof(MaterialData) * materialDatas[p].size();
-                        currentMaterialOffset[p] = alignedOffsetMaterialData[p] + (bufferSize - totalBufferSizeMaterialData[p]);
+                        delta = (bufferSize >  totalBufferSizeMaterialData[p]) ? bufferSize - totalBufferSizeMaterialData[p] : 0;
+                        previousMaterialOffset[p] = currentMaterialOffset[p];
+                        currentMaterialOffset[p] = alignedOffsetModelData[p] + delta;
                         totalBufferSizeMaterialData[p] = bufferSize;
                         if (totalBufferSizeMaterialData[p] > maxBufferSizeMaterialData[p]) {
                             if (materialDataStagingBuffer != nullptr) {
@@ -4260,7 +4331,7 @@ namespace odfaeg {
                             createBuffer(totalBufferSizeMaterialData[p], VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, materialDataBufferMT[p], materialDataBufferMemoryMT[p]);
 
                             maxBufferSizeMaterialData[p] = totalBufferSizeMaterialData[p];
-                            needToUpdateDS = true;
+                            //needToUpdateDSs[p]  = true;
                         }
 
                         vkMapMemory(vkDevice.getDevice(), materialDataStagingBufferMemory, 0, totalBufferSizeMaterialData[p], 0, &data);
@@ -4270,6 +4341,7 @@ namespace odfaeg {
 
                         bufferSize = sizeof(DrawElementsIndirectCommand) * drawElementsIndirectCommands[p].size();
                         totalBufferSizeIndexedDrawCommand[p] = bufferSize;
+                        needToUpdateDSs[p]  = true;
                         if (totalBufferSizeIndexedDrawCommand[p] > maxBufferSizeIndexedDrawCommand[p]) {
                             if (vboIndirectStagingBuffer != nullptr) {
                                 vkDestroyBuffer(vkDevice.getDevice(), vboIndirectStagingBuffer, nullptr);
@@ -4300,6 +4372,9 @@ namespace odfaeg {
                 if (vkEndCommandBuffer(copyDrawIndexedBufferCommandBuffer) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to record command buffer!", 1);
                 }
+                if (vkEndCommandBuffer(copyVbIndexedBufferCommandBuffer) != VK_SUCCESS) {
+                    throw core::Erreur(0, "failed to record command buffer!", 1);
+                }
             }
             void ReflectRefractRenderComponent::fillReflEntityBufferMT(Entity* reflectEntity) {
                 std::array<unsigned int, Batcher::nbPrimitiveTypes> firstIndex, baseInstance;
@@ -4309,11 +4384,12 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < baseInstance.size(); i++) {
                     baseInstance[i] = 0;
                 }
-                std::array<unsigned int, Batcher::nbPrimitiveTypes> drawCommandCount;
+                std::array<unsigned int, Batcher::nbPrimitiveTypes> drawCommandCount, oldTotalVertexCount;
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                     drawCommandBufferOffsets[p].push_back(totalBufferSizeDrawCommand[p]);
                     vertexOffsets[p].push_back(totalVertexCount[p] * sizeof(Vertex));
                     drawCommandCount[p] = 0;
+                    oldTotalVertexCount[p] = totalVertexCount[p];
                 }
                 for (unsigned int i = 0; i < m_reflNormals.size(); i++) {
                     if (m_reflNormals[i].getVertexArrays().size() > 0) {
@@ -4343,7 +4419,7 @@ namespace odfaeg {
                             }
                         }
                         drawArraysIndirectCommand.count = vertexCount;
-                        drawArraysIndirectCommand.firstIndex = firstIndex[p];
+                        drawArraysIndirectCommand.firstIndex = firstIndex[p] + oldTotalVertexCount[p];
                         drawArraysIndirectCommand.baseInstance = baseInstance[p];
                         drawArraysIndirectCommand.instanceCount = 1;
                         drawArraysIndirectCommands[p].push_back(drawArraysIndirectCommand);
@@ -4383,7 +4459,7 @@ namespace odfaeg {
                             }
                         }
                         drawArraysIndirectCommand.count = vertexCount;
-                        drawArraysIndirectCommand.firstIndex = firstIndex[p];
+                        drawArraysIndirectCommand.firstIndex = firstIndex[p] + oldTotalVertexCount[p];
                         drawArraysIndirectCommand.baseInstance = baseInstance[p];
                         drawArraysIndirectCommand.instanceCount = tm.size();
                         drawArraysIndirectCommands[p].push_back(drawArraysIndirectCommand);
@@ -4427,11 +4503,17 @@ namespace odfaeg {
 
                     throw core::Erreur(0, "failed to begin recording command buffer!", 1);
                 }
+                if (vkBeginCommandBuffer(copyVbBufferCommandBuffer, &beginInfo) != VK_SUCCESS) {
+
+                    throw core::Erreur(0, "failed to begin recording command buffer!", 1);
+                }
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                     if (nbDrawCommandBuffer[p][0] > 0) {
-                        //vbBindlessTex[p].update();
+                        vbBindlessTex[p].update(copyVbBufferCommandBuffer);
                         VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
-                        currentModelOffset[p] = alignedOffsetModelData[p] + (bufferSize - totalBufferSizeModelData[p]);
+                        unsigned int delta = (bufferSize >  totalBufferSizeModelData[p]) ? bufferSize - totalBufferSizeModelData[p] : 0;
+                        previousModelOffset[p] = currentModelOffset[p];
+                        currentModelOffset[p] = alignedOffsetModelData[p] + delta;
                         totalBufferSizeModelData[p] = bufferSize;
                         //////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
                         if (totalBufferSizeModelData[p] > maxBufferSizeModelData[p]) {
@@ -4449,7 +4531,7 @@ namespace odfaeg {
                             createBuffer(totalBufferSizeModelData[p], VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, modelDataBufferMT[p], modelDataBufferMemoryMT[p]);
 
                             maxBufferSizeModelData[p] = totalBufferSizeModelData[p];
-                            needToUpdateDS  = true;
+                            //needToUpdateDSs[p]  = true;
                         }
 
 
@@ -4461,7 +4543,9 @@ namespace odfaeg {
 
 
                         bufferSize = sizeof(MaterialData) * materialDatas[p].size();
-                        currentMaterialOffset[p] = alignedOffsetMaterialData[p] + (bufferSize - totalBufferSizeMaterialData[p]);
+                        delta = (bufferSize >  totalBufferSizeMaterialData[p]) ? bufferSize - totalBufferSizeMaterialData[p] : 0;
+                        previousMaterialOffset[p] = currentMaterialOffset[p];
+                        currentMaterialOffset[p] = alignedOffsetModelData[p] + delta;
                         totalBufferSizeMaterialData[p] = bufferSize;
                         if (totalBufferSizeMaterialData[p] > maxBufferSizeMaterialData[p]) {
                             if (materialDataStagingBuffer != nullptr) {
@@ -4476,7 +4560,7 @@ namespace odfaeg {
                             createBuffer(totalBufferSizeMaterialData[p], VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, materialDataBufferMT[p], materialDataBufferMemoryMT[p]);
 
                             maxBufferSizeMaterialData[p] = totalBufferSizeMaterialData[p];
-                            needToUpdateDS = true;
+                            //needToUpdateDSs[p]  = true;
                         }
 
                         vkMapMemory(vkDevice.getDevice(), materialDataStagingBufferMemory, 0, totalBufferSizeMaterialData[p], 0, &data);
@@ -4486,6 +4570,7 @@ namespace odfaeg {
 
                         bufferSize = sizeof(DrawArraysIndirectCommand) * drawArraysIndirectCommands[p].size();
                         totalBufferSizeDrawCommand[p] = bufferSize;
+                        needToUpdateDSs[p]  = true;
                         if (totalBufferSizeDrawCommand[p] > maxBufferSizeDrawCommand[p]) {
                             if (vboIndirectStagingBuffer != nullptr) {
                                 vkDestroyBuffer(vkDevice.getDevice(), vboIndirectStagingBuffer, nullptr);
@@ -4516,6 +4601,9 @@ namespace odfaeg {
                 if (vkEndCommandBuffer(copyDrawBufferCommandBuffer) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to record command buffer!", 1);
                 }
+                if (vkEndCommandBuffer(copyVbBufferCommandBuffer) != VK_SUCCESS) {
+                    throw core::Erreur(0, "failed to record command buffer!", 1);
+                }
             }
             void ReflectRefractRenderComponent::fillIndexedReflEntityBufferMT(Entity* reflectEntity) {
                 std::array<unsigned int, Batcher::nbPrimitiveTypes> firstIndex, baseInstance, baseVertex;
@@ -4528,12 +4616,14 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < baseInstance.size(); i++) {
                     baseInstance[i] = 0;
                 }
-                std::array<unsigned int, Batcher::nbPrimitiveTypes> drawCommandCount;
+                std::array<unsigned int, Batcher::nbPrimitiveTypes> drawCommandCount, oldTotalVertexIndexCount, oldTotalIndexCount;
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                     drawIndexedCommandBufferOffsets[p].push_back(totalBufferSizeIndexedDrawCommand[p]);
                     vertexIndexOffsets[p].push_back(totalVertexIndexCount[p] * sizeof(Vertex));
                     indexOffsets[p].push_back(totalIndexCount[p] * sizeof(unsigned int));
                     drawCommandCount[p] = 0;
+                    oldTotalVertexIndexCount[p] = totalVertexCount[p];
+                    oldTotalIndexCount[p] = totalIndexCount[p];
                 }
                 for (unsigned int i = 0; i < m_reflNormalIndexed.size(); i++) {
                     if (m_reflNormalIndexed[i].getAllVertices().getVertexCount() > 0) {
@@ -4568,9 +4658,9 @@ namespace odfaeg {
                             }
                         }
                         drawElementsIndirectCommand.indexCount = indexCount;
-                        drawElementsIndirectCommand.firstIndex = firstIndex[p];
+                        drawElementsIndirectCommand.firstIndex = firstIndex[p] + oldTotalIndexCount[p];
                         drawElementsIndirectCommand.baseInstance = baseInstance[p];
-                        drawElementsIndirectCommand.baseVertex = baseVertex[p];
+                        drawElementsIndirectCommand.baseVertex = baseVertex[p] + oldTotalVertexIndexCount[p];
                         drawElementsIndirectCommand.instanceCount = 1;
                         drawElementsIndirectCommands[p].push_back(drawElementsIndirectCommand);
                         firstIndex[p] += indexCount;
@@ -4623,8 +4713,8 @@ namespace odfaeg {
                             }
                         }
                         drawElementsIndirectCommand.indexCount = indexCount;
-                        drawElementsIndirectCommand.firstIndex = firstIndex[p];
-                        drawElementsIndirectCommand.baseInstance = baseInstance[p];
+                        drawElementsIndirectCommand.firstIndex = firstIndex[p] + oldTotalIndexCount[p];
+                        drawElementsIndirectCommand.baseInstance = baseInstance[p] + oldTotalVertexIndexCount[p];
                         drawElementsIndirectCommand.baseVertex = baseVertex[p];
                         drawElementsIndirectCommand.instanceCount = tm.size();
                         drawElementsIndirectCommands[p].push_back(drawElementsIndirectCommand);
@@ -4670,11 +4760,17 @@ namespace odfaeg {
 
                     throw core::Erreur(0, "failed to begin recording command buffer!", 1);
                 }
+                if (vkBeginCommandBuffer(copyVbIndexedBufferCommandBuffer, &beginInfo) != VK_SUCCESS) {
+
+                    throw core::Erreur(0, "failed to begin recording command buffer!", 1);
+                }
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                     if (nbIndexedDrawCommandBuffer[p][0] > 0) {
-                        //vbBindlessTexIndexed[p].update();
+                        vbBindlessTexIndexed[p].update(copyVbIndexedBufferCommandBuffer);
                         VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
-                        currentModelOffset[p] = alignedOffsetModelData[p] + (bufferSize - totalBufferSizeModelData[p]);
+                        unsigned int delta = (bufferSize >  totalBufferSizeModelData[p]) ? bufferSize - totalBufferSizeModelData[p] : 0;
+                        previousModelOffset[p] = currentModelOffset[p];
+                        currentModelOffset[p] = alignedOffsetModelData[p] + delta;
                         totalBufferSizeModelData[p] = bufferSize;
                         //////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
                         if (totalBufferSizeModelData[p] > maxBufferSizeModelData[p]) {
@@ -4692,8 +4788,9 @@ namespace odfaeg {
                             createBuffer(totalBufferSizeModelData[p], VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, modelDataBufferMT[p], modelDataBufferMemoryMT[p]);
 
                             maxBufferSizeModelData[p] = totalBufferSizeModelData[p];
-                            needToUpdateDS  = true;
+                            //needToUpdateDSs[p]  = true;
                         }
+                        std::cout<<"2 : "<<previousModelOffset[p]<<","<<maxBufferSizeModelData[p]<<std::endl;
 
 
                         void* data;
@@ -4704,7 +4801,9 @@ namespace odfaeg {
 
 
                         bufferSize = sizeof(MaterialData) * materialDatas[p].size();
-                        currentMaterialOffset[p] = alignedOffsetMaterialData[p] + (bufferSize - totalBufferSizeMaterialData[p]);
+                        delta = (bufferSize >  totalBufferSizeMaterialData[p]) ? bufferSize - totalBufferSizeMaterialData[p] : 0;
+                        previousMaterialOffset[p] = currentMaterialOffset[p];
+                        currentMaterialOffset[p] = alignedOffsetModelData[p] + delta;
                         totalBufferSizeMaterialData[p] = bufferSize;
                         if (totalBufferSizeMaterialData[p] > maxBufferSizeMaterialData[p]) {
                             if (materialDataStagingBuffer != nullptr) {
@@ -4719,7 +4818,7 @@ namespace odfaeg {
                             createBuffer(totalBufferSizeMaterialData[p], VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, materialDataBufferMT[p], materialDataBufferMemoryMT[p]);
 
                             maxBufferSizeMaterialData[p] = totalBufferSizeMaterialData[p];
-                            needToUpdateDS = true;
+                            //needToUpdateDSs[p]  = true;
                         }
 
                         vkMapMemory(vkDevice.getDevice(), materialDataStagingBufferMemory, 0, totalBufferSizeMaterialData[p], 0, &data);
@@ -4729,6 +4828,7 @@ namespace odfaeg {
 
                         bufferSize = sizeof(DrawElementsIndirectCommand) * drawElementsIndirectCommands[p].size();
                         totalBufferSizeIndexedDrawCommand[p] = bufferSize;
+                        needToUpdateDSs[p]  = true;
                         if (totalBufferSizeIndexedDrawCommand[p] > maxBufferSizeIndexedDrawCommand[p]) {
                             if (vboIndirectStagingBuffer != nullptr) {
                                 vkDestroyBuffer(vkDevice.getDevice(), vboIndirectStagingBuffer, nullptr);
@@ -4757,6 +4857,9 @@ namespace odfaeg {
                     throw core::Erreur(0, "failed to record command buffer!", 1);
                 }
                 if (vkEndCommandBuffer(copyDrawIndexedBufferCommandBuffer) != VK_SUCCESS) {
+                    throw core::Erreur(0, "failed to record command buffer!", 1);
+                }
+                if (vkEndCommandBuffer(copyVbIndexedBufferCommandBuffer) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to record command buffer!", 1);
                 }
             }
@@ -6278,7 +6381,7 @@ namespace odfaeg {
                 indirectRenderingPC.viewMatrix = toVulkanMatrix(viewMatrix);
                 if (useThread) {
                     std::unique_lock<std::mutex> lock(mtx);
-                    cv.wait(lock, [this] { return isCommandBufferReady(); });
+                    //cv.wait(lock, [this] { return isCommandBufferReady(); });
                     resetBuffers();
 
                     fillBufferReflMT();
@@ -6297,7 +6400,26 @@ namespace odfaeg {
                     vb.append(v1);
                     vb.append(v3);
                     vb.append(v4);
-                    //vb.update();
+                    VkCommandBufferInheritanceInfo inheritanceInfo{};
+                    inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+                    inheritanceInfo.renderPass = VK_NULL_HANDLE; // pas de render pass
+                    inheritanceInfo.subpass = 0;
+                    inheritanceInfo.framebuffer = VK_NULL_HANDLE;
+                    inheritanceInfo.occlusionQueryEnable = VK_FALSE;
+                    inheritanceInfo.queryFlags = 0;
+                    inheritanceInfo.pipelineStatistics = 0;
+                    VkCommandBufferBeginInfo beginInfo{};
+                    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+                    beginInfo.pInheritanceInfo = &inheritanceInfo; // obligatoire pour secondaire
+                    vkResetCommandBuffer(copyVbEnvPass2BufferCommandBuffer, 0);
+                    if (vkBeginCommandBuffer(copyVbEnvPass2BufferCommandBuffer, &beginInfo) != VK_SUCCESS) {
+
+                        throw core::Erreur(0, "failed to begin recording command buffer!", 1);
+                    }
+                    vb.update(copyVbEnvPass2BufferCommandBuffer);
+                    if (vkEndCommandBuffer(copyVbEnvPass2BufferCommandBuffer) != VK_SUCCESS) {
+                        throw core::Erreur(0, "failed to record command buffer!", 1);
+                    }
                     math::Matrix4f matrix = quad.getTransform().getMatrix();
                     linkedList2PC.worldMat = toVulkanMatrix(matrix);
                     View reflectView;
@@ -6386,8 +6508,8 @@ namespace odfaeg {
                                                 matrices.viewMatrix = toVulkanMatrix(viewMatrices[f]);
                                                 ubo.matrices[f] = matrices;
                                             }
-                                            ubos.push_back(ubo);
                                         }
+                                        ubos.push_back(ubo);
                                     }
 
                                 }
@@ -6395,14 +6517,14 @@ namespace odfaeg {
                         }
                     }
                     if (nbReflRefrEntities > 0) {
-                        std::cout<<"nb refl entities  : "<<nbReflRefrEntities<<std::endl<<"size : "<<ubos.size()<<std::endl;
+                        //std::cout<<"nb refl entities  : "<<nbReflRefrEntities<<std::endl<<"size : "<<ubos.size()<<std::endl;
                         updateUniformBuffer(environmentMap.getCurrentFrame(), ubos);
                     } else {
                         nbReflRefrEntities = 1;
                         createUniformBuffersMT();
                         UniformBufferObject dummy;
                         ubos.push_back(dummy);
-                        std::cout<<"dummy nb refl entities  : "<<nbReflRefrEntities<<std::endl<<"size : "<<ubos.size()<<std::endl;
+                        //std::cout<<"dummy nb refl entities  : "<<nbReflRefrEntities<<std::endl<<"size : "<<ubos.size()<<std::endl;
                         updateUniformBuffer(environmentMap.getCurrentFrame(), ubos);
                         nbReflRefrEntities = 0;
                     }
@@ -6582,12 +6704,7 @@ namespace odfaeg {
                 if (useThread) {
                     std::unique_lock<std::mutex> lock(mtx);
                     cv.wait(lock, [this] { return commandBufferReady.load(); });
-                    for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
-                        if (vbBindlessTex[p].getVertexCount() > 0)
-                            vbBindlessTex[p].update();
-                        if (vbBindlessTexIndexed[p].getVertexCount() > 0)
-                            vbBindlessTexIndexed[p].update();
-                    }
+                    commandBufferReady = false;
                     depthBuffer.beginRecordCommandBuffers();
                     std::vector<VkCommandBuffer> commandBuffers = depthBuffer.getCommandBuffers();
                     unsigned int currentFrame = depthBuffer.getCurrentFrame();
@@ -6596,32 +6713,42 @@ namespace odfaeg {
                         if (modelDatas[p].size() > 0)
                             hasCommands = true;
                     }
-                    if (hasCommands)
+                    //if (hasCommands)
                         vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyModelDataBufferCommandBuffer);
                     hasCommands = false;
                     for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                         if (materialDatas[p].size() > 0)
                             hasCommands = true;
                     }
-                    if (hasCommands)
+                    //if (hasCommands)
                         vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyMaterialDataBufferCommandBuffer);
                     hasCommands = false;
                     for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                         if (drawArraysIndirectCommands[p].size() > 0)
                             hasCommands = true;
                     }
-                    if (hasCommands)
+                    //if (hasCommands)
                         vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyDrawBufferCommandBuffer);
+                        vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyVbBufferCommandBuffer);
                     hasCommands = false;
                     for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                         if (drawElementsIndirectCommands[p].size() > 0)
                             hasCommands = true;
                     }
-                    if (hasCommands)
+                    //if (hasCommands)
                         vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyDrawIndexedBufferCommandBuffer);
+                        vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyVbIndexedBufferCommandBuffer);
+                        vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyVbEnvPass2BufferCommandBuffer);
+
 
                     depthBuffer.beginRenderPass();
-                    vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &depthBufferCommandBuffer);
+                    hasCommands = false;
+                    for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
+                        if (nbDrawCommandBuffer[p][0] > 0 || nbIndexedDrawCommandBuffer[p][0] > 0)
+                            hasCommands = true;
+                    }
+                    //if (hasCommands)
+                        vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &depthBufferCommandBuffer);
                     depthBuffer.endRenderPass();
                     depthBuffer.display();
 
@@ -6635,7 +6762,13 @@ namespace odfaeg {
                     memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
                     vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
                     alphaBuffer.beginRenderPass();
-                    vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &alphaBufferCommandBuffer);
+                    hasCommands = false;
+                    for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
+                        if (nbDrawCommandBuffer[p][1] > 0 || nbIndexedDrawCommandBuffer[p][1] > 0)
+                            hasCommands = true;
+                    }
+                    //if (hasCommands)
+                        vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &alphaBufferCommandBuffer);
                     alphaBuffer.endRenderPass();
                     const_cast<Texture&>(depthBuffer.getTexture()).toColorAttachmentOptimal(alphaBuffer.getCommandBuffers()[alphaBuffer.getCurrentFrame()]);
                     alphaBuffer.display();
@@ -6703,14 +6836,13 @@ namespace odfaeg {
                         const_cast<Texture&>(alphaBuffer.getTexture()).toColorAttachmentOptimal(reflectRefractTex.getCommandBuffers()[reflectRefractTex.getCurrentFrame()]);
                         const_cast<Texture&>(environmentMap.getTexture()).toColorAttachmentOptimal(reflectRefractTex.getCommandBuffers()[reflectRefractTex.getCurrentFrame()]);
                         reflectRefractTex.display(true, renderFinishedSemaphore[window.getCurrentFrame()]);
+                        isSomethingDrawn = true;
                     }
                     if (!isSomethingDrawn) {
                         reflectRefractTex.beginRecordCommandBuffers();
                         reflectRefractTex.display(true, renderFinishedSemaphore[window.getCurrentFrame()]);
                     }
                     isSomethingDrawn  = false;
-                    commandBufferReady = false;
-                    cv.notify_one();
                 }
                 if (&target == &window)
                     window.setSemaphore(renderFinishedSemaphore);
@@ -6885,6 +7017,9 @@ namespace odfaeg {
                 vkFreeCommandBuffers(vkDevice.getDevice(), secondaryBufferCommandPool, 1, &copyDrawBufferCommandBuffer);
                 vkFreeCommandBuffers(vkDevice.getDevice(), secondaryBufferCommandPool, 1, &copyDrawIndexedBufferCommandBuffer);
                 vkFreeCommandBuffers(vkDevice.getDevice(), secondaryBufferCommandPool, 1, &copyModelDataBufferCommandBuffer);
+                vkFreeCommandBuffers(vkDevice.getDevice(), secondaryBufferCommandPool, 1, &copyVbIndexedBufferCommandBuffer);
+                vkFreeCommandBuffers(vkDevice.getDevice(), secondaryBufferCommandPool, 1, &copyVbBufferCommandBuffer);
+                vkFreeCommandBuffers(vkDevice.getDevice(), secondaryBufferCommandPool, 1, &copyVbEnvPass2BufferCommandBuffer);
                 vkFreeCommandBuffers(vkDevice.getDevice(), secondaryBufferCommandPool, 1, &depthBufferCommandBuffer);
                 vkFreeCommandBuffers(vkDevice.getDevice(), secondaryBufferCommandPool, 1, &alphaBufferCommandBuffer);
                 vkFreeCommandBuffers(vkDevice.getDevice(), secondaryBufferCommandPool, 1, &environmentMapPass2CommandBuffer);

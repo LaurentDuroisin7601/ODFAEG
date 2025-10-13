@@ -2503,7 +2503,7 @@ namespace odfaeg {
                             modelDataStorageBufferInfoLastFrame.buffer = modelDataBufferMT[p];
                             modelDataStorageBufferInfoLastFrame.offset = 0;
                             modelDataStorageBufferInfoLastFrame.range = maxBufferSizeModelData[p] - previousModelOffset[p];
-                            //std::cout<<"ranges : "<<maxBufferSizeModelData[p]<<","<<currentModelOffset[p]<<std::endl;
+                            std::cout<<"ranges : "<<previousModelOffset[p]<<","<<maxBufferSizeModelData[p]<<std::endl;
 
                             descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                             descriptorWrites[1].dstSet = descriptorSets[descriptorId][i];
@@ -3080,10 +3080,7 @@ namespace odfaeg {
                         modelDatas[i].clear();
                         drawArraysIndirectCommands[i].clear();
                         drawElementsIndirectCommands[i].clear();
-                        currentModelOffset[i] = 0;
-                        currentMaterialOffset[i] = 0;
-                        previousModelOffset[i] = 0;
-                        previousMaterialOffset[i] = 0;
+
                     }
                     nbReflRefrEntities = 0;
             }
@@ -3429,6 +3426,12 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < baseInstance.size(); i++) {
                     baseInstance[i] = 0;
                 }
+                for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
+                    currentModelOffset[p] = 0;
+                    previousModelOffset[p] = 0;
+                    currentMaterialOffset[p] = 0;
+                    previousMaterialOffset[p] = 0;
+                }
                 std::array<unsigned int, Batcher::nbPrimitiveTypes> drawCommandCount, oldTotalVertexCount;
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                     drawCommandBufferOffsets[p].push_back(totalBufferSizeDrawCommand[p]);
@@ -3661,6 +3664,12 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < baseInstance.size(); i++) {
                     baseInstance[i] = 0;
                 }
+                for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
+                    currentModelOffset[p] = 0;
+                    previousModelOffset[p] = 0;
+                    currentMaterialOffset[p] = 0;
+                    previousMaterialOffset[p] = 0;
+                }
                 std::array<unsigned int, Batcher::nbPrimitiveTypes> drawCommandCount, oldTotalVertexIndexCount, oldTotalIndexCount;
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                     drawIndexedCommandBufferOffsets[p].push_back(totalBufferSizeIndexedDrawCommand[p]);
@@ -3830,7 +3839,7 @@ namespace odfaeg {
                             maxBufferSizeModelData[p] = totalBufferSizeModelData[p];
                             //needToUpdateDSs[p]  = true;
                         }
-                        std::cout<<currentModelOffset[p]<<","<<maxBufferSizeModelData[p]<<std::endl;
+                        std::cout<<previousModelOffset[p]<<","<<maxBufferSizeModelData[p]<<std::endl;
 
                         void* data;
                         vkMapMemory(vkDevice.getDevice(), modelDataStagingBufferMemory, 0, totalBufferSizeModelData[p], 0, &data);
@@ -3910,6 +3919,12 @@ namespace odfaeg {
                 }
                 for (unsigned int i = 0; i < baseInstance.size(); i++) {
                     baseInstance[i] = 0;
+                }
+                for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
+                    currentModelOffset[p] = 0;
+                    previousModelOffset[p] = 0;
+                    currentMaterialOffset[p] = 0;
+                    previousMaterialOffset[p] = 0;
                 }
                 std::array<unsigned int, Batcher::nbPrimitiveTypes> drawCommandCount, oldTotalVertexCount;
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
@@ -4138,6 +4153,12 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < baseInstance.size(); i++) {
                     baseInstance[i] = 0;
                 }
+                for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
+                    currentModelOffset[p] = 0;
+                    previousModelOffset[p] = 0;
+                    currentMaterialOffset[p] = 0;
+                    previousMaterialOffset[p] = 0;
+                }
                 std::array<unsigned int, Batcher::nbPrimitiveTypes> drawCommandCount, oldTotalVertexIndexCount, oldTotalIndexCount;
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                     drawIndexedCommandBufferOffsets[p].push_back(totalBufferSizeIndexedDrawCommand[p]);
@@ -4303,8 +4324,9 @@ namespace odfaeg {
                             maxBufferSizeModelData[p] = totalBufferSizeModelData[p];
                             //needToUpdateDSs[p]  = true;
                         }
+                        std::cout<<"1 : "<<previousModelOffset[p]<<","<<maxBufferSizeModelData[p]<<std::endl;
 
-
+                        std::cout<<"offset : "<<previousModelOffset[p]<<","<<maxBufferSizeModelData[p]<<std::endl;
                         void* data;
                         vkMapMemory(vkDevice.getDevice(), modelDataStagingBufferMemory, 0, totalBufferSizeModelData[p], 0, &data);
                         memcpy(data, modelDatas[p].data(), (size_t)totalBufferSizeModelData[p]);
@@ -4382,6 +4404,12 @@ namespace odfaeg {
                 }
                 for (unsigned int i = 0; i < baseInstance.size(); i++) {
                     baseInstance[i] = 0;
+                }
+                for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
+                    currentModelOffset[p] = 0;
+                    previousModelOffset[p] = 0;
+                    currentMaterialOffset[p] = 0;
+                    previousMaterialOffset[p] = 0;
                 }
                 std::array<unsigned int, Batcher::nbPrimitiveTypes> drawCommandCount, oldTotalVertexCount;
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
@@ -4615,6 +4643,12 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < baseInstance.size(); i++) {
                     baseInstance[i] = 0;
                 }
+                for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
+                    currentModelOffset[p] = 0;
+                    previousModelOffset[p] = 0;
+                    currentMaterialOffset[p] = 0;
+                    previousMaterialOffset[p] = 0;
+                }
                 std::array<unsigned int, Batcher::nbPrimitiveTypes> drawCommandCount, oldTotalVertexIndexCount, oldTotalIndexCount;
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                     drawIndexedCommandBufferOffsets[p].push_back(totalBufferSizeIndexedDrawCommand[p]);
@@ -4789,6 +4823,7 @@ namespace odfaeg {
                             maxBufferSizeModelData[p] = totalBufferSizeModelData[p];
                             //needToUpdateDSs[p]  = true;
                         }
+                        //std::cout<<"2 : "<<previousModelOffset[p]<<","<<maxBufferSizeModelData[p]<<std::endl;
 
 
                         void* data;
