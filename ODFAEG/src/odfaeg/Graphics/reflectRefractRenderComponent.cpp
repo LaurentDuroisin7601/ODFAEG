@@ -3267,10 +3267,10 @@ namespace odfaeg {
                         updateDescriptorSets(p, currentStates);
                     }
                     if (nbDrawCommandBuffer[p][0] > 0) {
-                        recordCommandBufferIndirect(p, nbDrawCommandBuffer[p][0], sizeof(DrawArraysIndirectCommand), DEPTHNOSTENCIL, vertexOffsets[p][0], -1, -1, modelDataOffsets[p][0], materialDataOffsets[p][0],drawCommandBufferOffsets[p][0], currentStates, depthBufferCommandBuffer);
+                        recordCommandBufferIndirect(p, nbDrawCommandBuffer[p][0], sizeof(DrawArraysIndirectCommand), DEPTHNOSTENCIL, 0, -1, -1, modelDataOffsets[p][0], materialDataOffsets[p][0],drawCommandBufferOffsets[p][0], currentStates, depthBufferCommandBuffer);
                     }
                     if (nbIndexedDrawCommandBuffer[p][0] > 0) {
-                        recordCommandBufferIndirect(p, nbIndexedDrawCommandBuffer[p][0], sizeof(DrawElementsIndirectCommand), DEPTHNOSTENCIL, vertexIndexOffsets[p][0], indexOffsets[p][0], -1, modelDataOffsets[p][1], materialDataOffsets[p][1],drawIndexedCommandBufferOffsets[p][0], currentStates, depthBufferCommandBuffer);
+                        recordCommandBufferIndirect(p, nbIndexedDrawCommandBuffer[p][0], sizeof(DrawElementsIndirectCommand), DEPTHNOSTENCIL, 0, 0, -1, modelDataOffsets[p][1], materialDataOffsets[p][1],drawIndexedCommandBufferOffsets[p][0], currentStates, depthBufferCommandBuffer);
                     }
                 }
                 if (vkEndCommandBuffer(depthBufferCommandBuffer) != VK_SUCCESS) {
@@ -3294,10 +3294,10 @@ namespace odfaeg {
                         updateDescriptorSets(p, currentStates);
                     }
                     if (nbDrawCommandBuffer[p][1] > 0) {
-                        recordCommandBufferIndirect(p, nbDrawCommandBuffer[p][1], sizeof(DrawArraysIndirectCommand), DEPTHNOSTENCIL, vertexOffsets[p][1], -1, -1, modelDataOffsets[p][2], materialDataOffsets[p][2],drawCommandBufferOffsets[p][1], currentStates, alphaBufferCommandBuffer);
+                        recordCommandBufferIndirect(p, nbDrawCommandBuffer[p][1], sizeof(DrawArraysIndirectCommand), DEPTHNOSTENCIL, 0, -1, -1, modelDataOffsets[p][2], materialDataOffsets[p][2],drawCommandBufferOffsets[p][1], currentStates, alphaBufferCommandBuffer);
                     }
                     if (nbIndexedDrawCommandBuffer[p][1] > 0) {
-                        recordCommandBufferIndirect(p, nbIndexedDrawCommandBuffer[p][1], sizeof(DrawElementsIndirectCommand), DEPTHNOSTENCIL, vertexIndexOffsets[p][1], indexOffsets[p][1], -1, modelDataOffsets[p][3], materialDataOffsets[p][3],drawIndexedCommandBufferOffsets[p][1], currentStates, alphaBufferCommandBuffer);
+                        recordCommandBufferIndirect(p, nbIndexedDrawCommandBuffer[p][1], sizeof(DrawElementsIndirectCommand), DEPTHNOSTENCIL, 0, 0, -1, modelDataOffsets[p][3], materialDataOffsets[p][3],drawIndexedCommandBufferOffsets[p][1], currentStates, alphaBufferCommandBuffer);
                     }
                 }
                 if (vkEndCommandBuffer(alphaBufferCommandBuffer) != VK_SUCCESS) {
@@ -3320,10 +3320,10 @@ namespace odfaeg {
                             updateDescriptorSets(p, currentStates);
                         }
                         if (nbDrawCommandBuffer[p][1] > 0) {
-                            recordCommandBufferIndirect(p, nbDrawCommandBuffer[p][1], sizeof(DrawArraysIndirectCommand), DEPTHNOSTENCIL, vertexOffsets[p][1], -1, i * alignUBO(sizeof(UniformBufferObject)), modelDataOffsets[p][2], materialDataOffsets[p][2],drawCommandBufferOffsets[p][1], currentStates, environmentMapCommandBuffer[i]);
+                            recordCommandBufferIndirect(p, nbDrawCommandBuffer[p][1], sizeof(DrawArraysIndirectCommand), DEPTHNOSTENCIL, 0, -1, i * alignUBO(sizeof(UniformBufferObject)), modelDataOffsets[p][2], materialDataOffsets[p][2],drawCommandBufferOffsets[p][1], currentStates, environmentMapCommandBuffer[i]);
                         }
                         if (nbIndexedDrawCommandBuffer[p][1] > 0) {
-                            recordCommandBufferIndirect(p, nbIndexedDrawCommandBuffer[p][1], sizeof(DrawElementsIndirectCommand), DEPTHNOSTENCIL, vertexIndexOffsets[p][1], indexOffsets[p][1],  i * alignUBO(sizeof(UniformBufferObject)), modelDataOffsets[p][3], materialDataOffsets[p][3],drawIndexedCommandBufferOffsets[p][1], currentStates, environmentMapCommandBuffer[i]);
+                            recordCommandBufferIndirect(p, nbIndexedDrawCommandBuffer[p][1], sizeof(DrawElementsIndirectCommand), DEPTHNOSTENCIL, 0, 0,  i * alignUBO(sizeof(UniformBufferObject)), modelDataOffsets[p][3], materialDataOffsets[p][3],drawIndexedCommandBufferOffsets[p][1], currentStates, environmentMapCommandBuffer[i]);
                         }
                     }
                     if (vkEndCommandBuffer(environmentMapCommandBuffer[i]) != VK_SUCCESS) {
@@ -3365,10 +3365,10 @@ namespace odfaeg {
                         }
                         if (nbDrawCommandBuffer[p][i+2] > 0) {
                             if (nbDrawCommandBuffer[p][i+2] > 0) {
-                                recordCommandBufferIndirect(p, nbDrawCommandBuffer[p][i+2], sizeof(DrawArraysIndirectCommand), DEPTHNOSTENCIL, vertexOffsets[p][i+2], -1, -1, modelDataOffsets[p][i*2+4], materialDataOffsets[p][i*2+4],drawCommandBufferOffsets[p][i+2], currentStates, reflectRefractCommandBuffer[i]);
+                                recordCommandBufferIndirect(p, nbDrawCommandBuffer[p][i+2], sizeof(DrawArraysIndirectCommand), DEPTHNOSTENCIL, 0, -1, -1, modelDataOffsets[p][i*2+4], materialDataOffsets[p][i*2+4],drawCommandBufferOffsets[p][i+2], currentStates, reflectRefractCommandBuffer[i]);
                             }
                             if (nbIndexedDrawCommandBuffer[p][i+2] > 0) {
-                                recordCommandBufferIndirect(p, nbIndexedDrawCommandBuffer[p][i+2], sizeof(DrawElementsIndirectCommand), DEPTHNOSTENCIL, vertexIndexOffsets[p][i+2], indexOffsets[p][i+2], -1, modelDataOffsets[p][i*2+5], materialDataOffsets[p][i*2+5],drawIndexedCommandBufferOffsets[p][i+2], currentStates, reflectRefractCommandBuffer[i]);
+                                recordCommandBufferIndirect(p, nbIndexedDrawCommandBuffer[p][i+2], sizeof(DrawElementsIndirectCommand), DEPTHNOSTENCIL, 0, 0, -1, modelDataOffsets[p][i*2+5], materialDataOffsets[p][i*2+5],drawIndexedCommandBufferOffsets[p][i+2], currentStates, reflectRefractCommandBuffer[i]);
                             }
                         }
                     }
@@ -3426,11 +3426,12 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < baseInstance.size(); i++) {
                     baseInstance[i] = 0;
                 }
-                std::array<unsigned int, Batcher::nbPrimitiveTypes> drawCommandCount;
+                std::array<unsigned int, Batcher::nbPrimitiveTypes> drawCommandCount, oldTotalVertexCount;
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                     drawCommandBufferOffsets[p].push_back(totalBufferSizeDrawCommand[p]);
                     vertexOffsets[p].push_back(totalVertexCount[p] * sizeof(Vertex));
                     drawCommandCount[p] = 0;
+                    oldTotalVertexCount[p] = totalVertexCount[p];
                 }
 
                 for (unsigned int i = 0; i < m_reflNormals.size(); i++) {
@@ -3453,7 +3454,7 @@ namespace odfaeg {
                             vbBindlessTex[p].append(m_reflNormals[i].getAllVertices()[j]);
                         }
                         drawArraysIndirectCommand.count = vertexCount;
-                        drawArraysIndirectCommand.firstIndex = firstIndex[p];
+                        drawArraysIndirectCommand.firstIndex = firstIndex[p] + oldTotalVertexCount[p];
                         drawArraysIndirectCommand.baseInstance = baseInstance[p];
                         drawArraysIndirectCommand.instanceCount = 1;
                         drawArraysIndirectCommands[p].push_back(drawArraysIndirectCommand);
@@ -3500,7 +3501,7 @@ namespace odfaeg {
                             }
                         }
                         drawArraysIndirectCommand.count = vertexCount;
-                        drawArraysIndirectCommand.firstIndex = firstIndex[p];
+                        drawArraysIndirectCommand.firstIndex = firstIndex[p] + oldTotalVertexCount[p];
                         drawArraysIndirectCommand.baseInstance = baseInstance[p];
                         drawArraysIndirectCommand.instanceCount = tm.size();
                         drawArraysIndirectCommands[p].push_back(drawArraysIndirectCommand);
@@ -3652,12 +3653,14 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < baseInstance.size(); i++) {
                     baseInstance[i] = 0;
                 }
-                std::array<unsigned int, Batcher::nbPrimitiveTypes> drawCommandCount;
+                std::array<unsigned int, Batcher::nbPrimitiveTypes> drawCommandCount, oldTotalVertexIndexCount, oldTotalIndexCount;
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                     drawIndexedCommandBufferOffsets[p].push_back(totalBufferSizeIndexedDrawCommand[p]);
                     vertexIndexOffsets[p].push_back(totalVertexIndexCount[p] * sizeof(Vertex));
                     indexOffsets[p].push_back(totalIndexCount[p] * sizeof(unsigned int));
                     drawCommandCount[p] = 0;
+                    oldTotalVertexIndexCount[p] = totalVertexCount[p];
+                    oldTotalIndexCount[p] = totalIndexCount[p];
                 }
 
 
@@ -3685,9 +3688,9 @@ namespace odfaeg {
                             vbBindlessTexIndexed[p].addIndex(m_reflNormalIndexed[i].getAllVertices().getIndexes()[j]);
                         }
                         drawElementsIndirectCommand.indexCount = indexCount;
-                        drawElementsIndirectCommand.firstIndex = firstIndex[p];
+                        drawElementsIndirectCommand.firstIndex = firstIndex[p] + oldTotalIndexCount[p];
                         drawElementsIndirectCommand.baseInstance = baseInstance[p];
-                        drawElementsIndirectCommand.baseVertex = baseVertex[p];
+                        drawElementsIndirectCommand.baseVertex = baseVertex[p] + oldTotalVertexIndexCount[p];
                         drawElementsIndirectCommand.instanceCount = 1;
                         drawElementsIndirectCommands[p].push_back(drawElementsIndirectCommand);
                         firstIndex[p] += indexCount;
@@ -3740,9 +3743,9 @@ namespace odfaeg {
                             }
                         }
                         drawElementsIndirectCommand.indexCount = indexCount;
-                        drawElementsIndirectCommand.firstIndex = firstIndex[p];
+                        drawElementsIndirectCommand.firstIndex = firstIndex[p] + oldTotalIndexCount[p];
                         drawElementsIndirectCommand.baseInstance = baseInstance[p];
-                        drawElementsIndirectCommand.baseVertex = baseVertex[p];
+                        drawElementsIndirectCommand.baseVertex = baseVertex[p] + oldTotalVertexIndexCount[p];
                         drawElementsIndirectCommand.instanceCount = tm.size();
                         drawElementsIndirectCommands[p].push_back(drawElementsIndirectCommand);
                         firstIndex[p] += indexCount;
@@ -3893,11 +3896,12 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < baseInstance.size(); i++) {
                     baseInstance[i] = 0;
                 }
-                std::array<unsigned int, Batcher::nbPrimitiveTypes> drawCommandCount;
+                std::array<unsigned int, Batcher::nbPrimitiveTypes> drawCommandCount, oldTotalVertexCount;
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                     drawCommandBufferOffsets[p].push_back(totalBufferSizeDrawCommand[p]);
                     vertexOffsets[p].push_back(totalVertexCount[p] * sizeof(Vertex));
                     drawCommandCount[p] = 0;
+                    oldTotalVertexCount[p] = totalVertexCount[p];
                 }
                 for (unsigned int i = 0; i < m_normals.size(); i++) {
                     if (m_normals[i].getAllVertices().getVertexCount() > 0) {
@@ -3920,7 +3924,7 @@ namespace odfaeg {
                             vbBindlessTex[p].append(m_normals[i].getAllVertices()[j]);
                         }
                         drawArraysIndirectCommand.count = vertexCount;
-                        drawArraysIndirectCommand.firstIndex = firstIndex[p];
+                        drawArraysIndirectCommand.firstIndex = firstIndex[p] + oldTotalVertexCount[p];
                         drawArraysIndirectCommand.baseInstance = baseInstance[p];
                         drawArraysIndirectCommand.instanceCount = 1;
                         drawArraysIndirectCommands[p].push_back(drawArraysIndirectCommand);
@@ -3961,7 +3965,7 @@ namespace odfaeg {
                             }
                         }
                         drawArraysIndirectCommand.count = vertexCount;
-                        drawArraysIndirectCommand.firstIndex = firstIndex[p];
+                        drawArraysIndirectCommand.firstIndex = firstIndex[p] + oldTotalVertexCount[p];
                         drawArraysIndirectCommand.baseInstance = baseInstance[p];
                         drawArraysIndirectCommand.instanceCount = tm.size();
                         drawArraysIndirectCommands[p].push_back(drawArraysIndirectCommand);
@@ -4113,12 +4117,14 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < baseInstance.size(); i++) {
                     baseInstance[i] = 0;
                 }
-                std::array<unsigned int, Batcher::nbPrimitiveTypes> drawCommandCount;
+                std::array<unsigned int, Batcher::nbPrimitiveTypes> drawCommandCount, oldTotalVertexIndexCount, oldTotalIndexCount;
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                     drawIndexedCommandBufferOffsets[p].push_back(totalBufferSizeIndexedDrawCommand[p]);
                     vertexIndexOffsets[p].push_back(totalVertexIndexCount[p] * sizeof(Vertex));
                     indexOffsets[p].push_back(totalIndexCount[p] * sizeof(unsigned int));
                     drawCommandCount[p] = 0;
+                    oldTotalVertexIndexCount[p] = totalVertexCount[p];
+                    oldTotalIndexCount[p] = totalIndexCount[p];
                 }
                 for (unsigned int i = 0; i < m_normalIndexed.size(); i++) {
                     if (m_normalIndexed[i].getAllVertices().getVertexCount() > 0) {
@@ -4145,9 +4151,9 @@ namespace odfaeg {
                             vbBindlessTexIndexed[p].addIndex(m_normalIndexed[i].getAllVertices().getIndexes()[j]);
                         }
                         drawElementsIndirectCommand.indexCount = indexCount;
-                        drawElementsIndirectCommand.firstIndex = firstIndex[p];
+                        drawElementsIndirectCommand.firstIndex = firstIndex[p] + oldTotalIndexCount[p];
                         drawElementsIndirectCommand.baseInstance = baseInstance[p];
-                        drawElementsIndirectCommand.baseVertex = baseVertex[p];
+                        drawElementsIndirectCommand.baseVertex = baseVertex[p] + oldTotalVertexIndexCount[p];
                         drawElementsIndirectCommand.instanceCount = 1;
                         drawElementsIndirectCommands[p].push_back(drawElementsIndirectCommand);
                         firstIndex[p] += indexCount;
@@ -4200,9 +4206,9 @@ namespace odfaeg {
                             }
                         }
                         drawElementsIndirectCommand.indexCount = indexCount;
-                        drawElementsIndirectCommand.firstIndex = firstIndex[p];
+                        drawElementsIndirectCommand.firstIndex = firstIndex[p] + oldTotalIndexCount[p];
                         drawElementsIndirectCommand.baseInstance = baseInstance[p];
-                        drawElementsIndirectCommand.baseVertex = baseVertex[p];
+                        drawElementsIndirectCommand.baseVertex = baseVertex[p] + oldTotalVertexIndexCount[p];
                         drawElementsIndirectCommand.instanceCount = tm.size();
                         drawElementsIndirectCommands[p].push_back(drawElementsIndirectCommand);
                         firstIndex[p] += indexCount;
@@ -4351,11 +4357,12 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < baseInstance.size(); i++) {
                     baseInstance[i] = 0;
                 }
-                std::array<unsigned int, Batcher::nbPrimitiveTypes> drawCommandCount;
+                std::array<unsigned int, Batcher::nbPrimitiveTypes> drawCommandCount, oldTotalVertexCount;
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                     drawCommandBufferOffsets[p].push_back(totalBufferSizeDrawCommand[p]);
                     vertexOffsets[p].push_back(totalVertexCount[p] * sizeof(Vertex));
                     drawCommandCount[p] = 0;
+                    oldTotalVertexCount[p] = totalVertexCount[p];
                 }
                 for (unsigned int i = 0; i < m_reflNormals.size(); i++) {
                     if (m_reflNormals[i].getVertexArrays().size() > 0) {
@@ -4385,7 +4392,7 @@ namespace odfaeg {
                             }
                         }
                         drawArraysIndirectCommand.count = vertexCount;
-                        drawArraysIndirectCommand.firstIndex = firstIndex[p];
+                        drawArraysIndirectCommand.firstIndex = firstIndex[p] + oldTotalVertexCount[p];
                         drawArraysIndirectCommand.baseInstance = baseInstance[p];
                         drawArraysIndirectCommand.instanceCount = 1;
                         drawArraysIndirectCommands[p].push_back(drawArraysIndirectCommand);
@@ -4425,7 +4432,7 @@ namespace odfaeg {
                             }
                         }
                         drawArraysIndirectCommand.count = vertexCount;
-                        drawArraysIndirectCommand.firstIndex = firstIndex[p];
+                        drawArraysIndirectCommand.firstIndex = firstIndex[p] + oldTotalVertexCount[p];
                         drawArraysIndirectCommand.baseInstance = baseInstance[p];
                         drawArraysIndirectCommand.instanceCount = tm.size();
                         drawArraysIndirectCommands[p].push_back(drawArraysIndirectCommand);
@@ -4577,12 +4584,14 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < baseInstance.size(); i++) {
                     baseInstance[i] = 0;
                 }
-                std::array<unsigned int, Batcher::nbPrimitiveTypes> drawCommandCount;
+                std::array<unsigned int, Batcher::nbPrimitiveTypes> drawCommandCount, oldTotalVertexIndexCount, oldTotalIndexCount;
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                     drawIndexedCommandBufferOffsets[p].push_back(totalBufferSizeIndexedDrawCommand[p]);
                     vertexIndexOffsets[p].push_back(totalVertexIndexCount[p] * sizeof(Vertex));
                     indexOffsets[p].push_back(totalIndexCount[p] * sizeof(unsigned int));
                     drawCommandCount[p] = 0;
+                    oldTotalVertexIndexCount[p] = totalVertexCount[p];
+                    oldTotalIndexCount[p] = totalIndexCount[p];
                 }
                 for (unsigned int i = 0; i < m_reflNormalIndexed.size(); i++) {
                     if (m_reflNormalIndexed[i].getAllVertices().getVertexCount() > 0) {
@@ -4617,9 +4626,9 @@ namespace odfaeg {
                             }
                         }
                         drawElementsIndirectCommand.indexCount = indexCount;
-                        drawElementsIndirectCommand.firstIndex = firstIndex[p];
+                        drawElementsIndirectCommand.firstIndex = firstIndex[p] + oldTotalIndexCount[p];
                         drawElementsIndirectCommand.baseInstance = baseInstance[p];
-                        drawElementsIndirectCommand.baseVertex = baseVertex[p];
+                        drawElementsIndirectCommand.baseVertex = baseVertex[p] + oldTotalVertexIndexCount[p];
                         drawElementsIndirectCommand.instanceCount = 1;
                         drawElementsIndirectCommands[p].push_back(drawElementsIndirectCommand);
                         firstIndex[p] += indexCount;
@@ -4672,8 +4681,8 @@ namespace odfaeg {
                             }
                         }
                         drawElementsIndirectCommand.indexCount = indexCount;
-                        drawElementsIndirectCommand.firstIndex = firstIndex[p];
-                        drawElementsIndirectCommand.baseInstance = baseInstance[p];
+                        drawElementsIndirectCommand.firstIndex = firstIndex[p] + oldTotalIndexCount[p];
+                        drawElementsIndirectCommand.baseInstance = baseInstance[p] + oldTotalVertexIndexCount[p];
                         drawElementsIndirectCommand.baseVertex = baseVertex[p];
                         drawElementsIndirectCommand.instanceCount = tm.size();
                         drawElementsIndirectCommands[p].push_back(drawElementsIndirectCommand);
