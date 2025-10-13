@@ -53,6 +53,7 @@ namespace odfaeg {
         alphaDstFactor(alphaDestinationFactor),
         alphaEquation (alphaBlendEquation)
         {
+            std::lock_guard<std::recursive_mutex> lock(rec_mutex);
             blendModes.push_back(this);
         }
         BlendMode::BlendMode(const BlendMode& copy) :
@@ -62,6 +63,7 @@ namespace odfaeg {
         alphaSrcFactor(copy.alphaSrcFactor),
         alphaDstFactor(copy.alphaDstFactor),
         alphaEquation (copy.alphaEquation) {
+            std::lock_guard<std::recursive_mutex> lock(rec_mutex);
             blendModes.push_back(this);
         }
         void BlendMode::countNbBlendMode() {
@@ -112,6 +114,7 @@ namespace odfaeg {
             return !(left == right);
         }
         BlendMode::~BlendMode() {
+            std::lock_guard<std::recursive_mutex> lock(rec_mutex);
             std::vector<BlendMode*>::iterator it;
             for (it = blendModes.begin(); it != blendModes.end(); ) {
                 if (*it == this) {
