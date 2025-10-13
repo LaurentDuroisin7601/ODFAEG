@@ -2381,7 +2381,7 @@ namespace odfaeg {
                         VkDescriptorBufferInfo modelDataStorageBufferInfoLastFrame{};
                         modelDataStorageBufferInfoLastFrame.buffer = modelDataBufferMT[p];
                         modelDataStorageBufferInfoLastFrame.offset = 0;
-                        modelDataStorageBufferInfoLastFrame.range = maxBufferSizeModelData[p] - previousModelOffset[p];
+                        modelDataStorageBufferInfoLastFrame.range = maxBufferSizeModelData[p];
 
                         descriptorWrites[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                         descriptorWrites[3].dstSet = descriptorSets[descriptorId][i];
@@ -2394,7 +2394,7 @@ namespace odfaeg {
                         VkDescriptorBufferInfo materialDataStorageBufferInfoLastFrame{};
                         materialDataStorageBufferInfoLastFrame.buffer = materialDataBufferMT[p];
                         materialDataStorageBufferInfoLastFrame.offset = 0;
-                        materialDataStorageBufferInfoLastFrame.range = maxBufferSizeMaterialData[p] - previousMaterialOffset[p];
+                        materialDataStorageBufferInfoLastFrame.range = maxBufferSizeMaterialData[p];
 
                         descriptorWrites[4].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                         descriptorWrites[4].dstSet = descriptorSets[descriptorId][i];
@@ -2502,8 +2502,8 @@ namespace odfaeg {
                             VkDescriptorBufferInfo modelDataStorageBufferInfoLastFrame{};
                             modelDataStorageBufferInfoLastFrame.buffer = modelDataBufferMT[p];
                             modelDataStorageBufferInfoLastFrame.offset = 0;
-                            modelDataStorageBufferInfoLastFrame.range = maxBufferSizeModelData[p] - previousModelOffset[p];
-                            std::cout<<"ranges : "<<previousModelOffset[p]<<","<<maxBufferSizeModelData[p]<<std::endl;
+                            modelDataStorageBufferInfoLastFrame.range = maxBufferSizeModelData[p];
+
 
                             descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                             descriptorWrites[1].dstSet = descriptorSets[descriptorId][i];
@@ -2516,7 +2516,7 @@ namespace odfaeg {
                             VkDescriptorBufferInfo materialDataStorageBufferInfoLastFrame{};
                             materialDataStorageBufferInfoLastFrame.buffer = materialDataBufferMT[p];
                             materialDataStorageBufferInfoLastFrame.offset = 0;
-                            materialDataStorageBufferInfoLastFrame.range = maxBufferSizeMaterialData[p] - previousMaterialOffset[p];
+                            materialDataStorageBufferInfoLastFrame.range = maxBufferSizeMaterialData[p];
 
                             descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                             descriptorWrites[2].dstSet = descriptorSets[descriptorId][i];
@@ -2578,7 +2578,7 @@ namespace odfaeg {
                             VkDescriptorBufferInfo modelDataStorageBufferInfoLastFrame{};
                             modelDataStorageBufferInfoLastFrame.buffer = modelDataBufferMT[p];
                             modelDataStorageBufferInfoLastFrame.offset = 0;
-                            modelDataStorageBufferInfoLastFrame.range = maxBufferSizeModelData[p] - previousModelOffset[p];
+                            modelDataStorageBufferInfoLastFrame.range = maxBufferSizeModelData[p];
 
                             descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                             descriptorWrites[2].dstSet = descriptorSets[descriptorId][i];
@@ -2591,7 +2591,7 @@ namespace odfaeg {
                             VkDescriptorBufferInfo materialDataStorageBufferInfoLastFrame{};
                             materialDataStorageBufferInfoLastFrame.buffer = materialDataBufferMT[p];
                             materialDataStorageBufferInfoLastFrame.offset = 0;
-                            materialDataStorageBufferInfoLastFrame.range = maxBufferSizeMaterialData[p] - previousMaterialOffset[p];
+                            materialDataStorageBufferInfoLastFrame.range = maxBufferSizeMaterialData[p];
 
                             descriptorWrites[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                             descriptorWrites[3].dstSet = descriptorSets[descriptorId][i];
@@ -2644,7 +2644,7 @@ namespace odfaeg {
                         VkDescriptorBufferInfo modelDataStorageBufferInfoLastFrame{};
                         modelDataStorageBufferInfoLastFrame.buffer = modelDataBufferMT[p];
                         modelDataStorageBufferInfoLastFrame.offset = 0;
-                        modelDataStorageBufferInfoLastFrame.range = maxBufferSizeModelData[p] - previousModelOffset[p];
+                        modelDataStorageBufferInfoLastFrame.range = maxBufferSizeModelData[p];
 
                         descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                         descriptorWrites[2].dstSet = descriptorSets[descriptorId][i];
@@ -2657,7 +2657,7 @@ namespace odfaeg {
                         VkDescriptorBufferInfo materialDataStorageBufferInfoLastFrame{};
                         materialDataStorageBufferInfoLastFrame.buffer = materialDataBufferMT[p];
                         materialDataStorageBufferInfoLastFrame.offset = 0;
-                        materialDataStorageBufferInfoLastFrame.range = maxBufferSizeMaterialData[p] - previousMaterialOffset[p];
+                        materialDataStorageBufferInfoLastFrame.range = maxBufferSizeMaterialData[p];
 
                         descriptorWrites[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                         descriptorWrites[3].dstSet = descriptorSets[descriptorId][i];
@@ -6836,6 +6836,7 @@ namespace odfaeg {
                         vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
                         environmentMap.beginRenderPass();
                         vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &environmentMapCommandBuffer[i]);
+                        environmentMap.endRenderPass();
                         environmentMap.display();
 
                         environmentMap.beginRecordCommandBuffers();
