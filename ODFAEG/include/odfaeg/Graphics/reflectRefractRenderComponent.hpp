@@ -230,7 +230,7 @@ namespace odfaeg {
             std::array<std::vector<DrawArraysIndirectCommand>, Batcher::nbPrimitiveTypes> drawArraysIndirectCommands = {};
             std::array<std::vector<DrawElementsIndirectCommand>, Batcher::nbPrimitiveTypes> drawElementsIndirectCommands = {};
             VkCommandBuffer copyModelDataBufferCommandBuffer, copyMaterialDataBufferCommandBuffer, copyDrawBufferCommandBuffer, copyDrawIndexedBufferCommandBuffer,
-            depthBufferCommandBuffer, alphaBufferCommandBuffer, environmentMapPass2CommandBuffer;
+            copyVbBufferCommandBuffer, copyVbIndexedBufferCommandBuffer, copyVbEnvPass2BufferCommandBuffer, depthBufferCommandBuffer, alphaBufferCommandBuffer, environmentMapPass2CommandBuffer;
             std::vector<VkCommandBuffer> environmentMapCommandBuffer, reflectRefractCommandBuffer;
             VkImage headPtrTextureImage;
             VkImageView headPtrTextureImageView;
@@ -260,6 +260,7 @@ namespace odfaeg {
             UniformBufferObject ubo;
             std::vector<UniformBufferObject> ubos;
             bool needToUpdateDS, datasReady;
+            std::array<bool, Batcher::nbPrimitiveTypes> needToUpdateDSs;
             std::vector<VkEvent> events;
             VkPipeline computePipeline;
             VkPipelineLayout computePipelineLayout;

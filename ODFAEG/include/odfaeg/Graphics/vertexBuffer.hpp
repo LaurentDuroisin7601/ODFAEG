@@ -55,6 +55,7 @@ namespace odfaeg {
             ////////////////////////////////////////////////////////////
             PrimitiveType getPrimitiveType() const;
             void update();
+            void update(VkCommandBuffer cmd);
             Vertex& operator [](unsigned int index);
             void draw(RenderTarget& target, RenderStates states);
             ~VertexBuffer();
@@ -64,6 +65,7 @@ namespace odfaeg {
             void createCommandPool();
             void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
             void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+            void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size, VkCommandBuffer cmd);
             void createIndexBuffer();
             uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
             std::vector<Vertex> m_vertices;
