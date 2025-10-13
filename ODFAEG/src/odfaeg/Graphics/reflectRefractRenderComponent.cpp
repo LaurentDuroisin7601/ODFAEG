@@ -734,7 +734,7 @@ namespace odfaeg {
                 submitInfo.pSignalSemaphores = &computeSemaphore;
 
                 vkQueueSubmit(vkDevice.getGraphicsQueue(), 1, &submitInfo, computeFence);
-                //vkQueueWaitIdle(vkDevice.getGraphicsQueue());
+                vkQueueWaitIdle(vkDevice.getGraphicsQueue());
 
                 vkFreeCommandBuffers(vkDevice.getDevice(), commandPool, 1, &commandBuffer);
             }
@@ -2503,6 +2503,7 @@ namespace odfaeg {
                             modelDataStorageBufferInfoLastFrame.buffer = modelDataBufferMT[p];
                             modelDataStorageBufferInfoLastFrame.offset = 0;
                             modelDataStorageBufferInfoLastFrame.range = maxBufferSizeModelData[p] - currentModelOffset[p];
+                            std::cout<<"ranges : "<<maxBufferSizeModelData[p]<<","<<currentModelOffset[p]<<std::endl;
 
                             descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                             descriptorWrites[1].dstSet = descriptorSets[descriptorId][i];
@@ -3570,7 +3571,7 @@ namespace odfaeg {
                             createBuffer(totalBufferSizeModelData[p], VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, modelDataBufferMT[p], modelDataBufferMemoryMT[p]);
 
                             maxBufferSizeModelData[p] = totalBufferSizeModelData[p];
-                            needToUpdateDSs[p]  = true;
+                            //needToUpdateDSs[p]  = true;
                         }
 
 
@@ -3597,7 +3598,7 @@ namespace odfaeg {
                             createBuffer(totalBufferSizeMaterialData[p], VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, materialDataBufferMT[p], materialDataBufferMemoryMT[p]);
 
                             maxBufferSizeMaterialData[p] = totalBufferSizeMaterialData[p];
-                            needToUpdateDSs[p]  = true;
+                            //needToUpdateDSs[p]  = true;
                         }
 
                         vkMapMemory(vkDevice.getDevice(), materialDataStagingBufferMemory, 0, totalBufferSizeMaterialData[p], 0, &data);
@@ -3607,6 +3608,7 @@ namespace odfaeg {
 
                         bufferSize = sizeof(DrawArraysIndirectCommand) * drawArraysIndirectCommands[p].size();
                         totalBufferSizeDrawCommand[p] = bufferSize;
+                        needToUpdateDSs[p]  = true;
                         if (totalBufferSizeDrawCommand[p] > maxBufferSizeDrawCommand[p]) {
                             if (vboIndirectStagingBuffer != nullptr) {
                                 vkDestroyBuffer(vkDevice.getDevice(), vboIndirectStagingBuffer, nullptr);
@@ -3816,7 +3818,7 @@ namespace odfaeg {
                             createBuffer(totalBufferSizeModelData[p], VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, modelDataBufferMT[p], modelDataBufferMemoryMT[p]);
 
                             maxBufferSizeModelData[p] = totalBufferSizeModelData[p];
-                            needToUpdateDSs[p]  = true;
+                            //needToUpdateDSs[p]  = true;
                         }
 
 
@@ -3843,7 +3845,7 @@ namespace odfaeg {
                             createBuffer(totalBufferSizeMaterialData[p], VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, materialDataBufferMT[p], materialDataBufferMemoryMT[p]);
 
                             maxBufferSizeMaterialData[p] = totalBufferSizeMaterialData[p];
-                            needToUpdateDSs[p]  = true;
+                            //needToUpdateDSs[p]  = true;
                         }
 
                         vkMapMemory(vkDevice.getDevice(), materialDataStagingBufferMemory, 0, totalBufferSizeMaterialData[p], 0, &data);
@@ -3853,6 +3855,7 @@ namespace odfaeg {
 
                         bufferSize = sizeof(DrawElementsIndirectCommand) * drawElementsIndirectCommands[p].size();
                         totalBufferSizeIndexedDrawCommand[p] = bufferSize;
+                        needToUpdateDSs[p]  = true;
                         //std::cout<<"buffer size : "<<bufferSize<<std::endl<<"max : "<<maxBufferSizeIndexedDrawCommand[p]<<std::endl;
                         if (totalBufferSizeIndexedDrawCommand[p] > maxBufferSizeIndexedDrawCommand[p]) {
                             if (vboIndirectStagingBuffer != nullptr) {
@@ -4035,7 +4038,7 @@ namespace odfaeg {
                             createBuffer(totalBufferSizeModelData[p], VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, modelDataBufferMT[p], modelDataBufferMemoryMT[p]);
 
                             maxBufferSizeModelData[p] = totalBufferSizeModelData[p];
-                            needToUpdateDSs[p]  = true;
+                            //needToUpdateDSs[p]  = true;
                         }
 
 
@@ -4062,7 +4065,7 @@ namespace odfaeg {
                             createBuffer(totalBufferSizeMaterialData[p], VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, materialDataBufferMT[p], materialDataBufferMemoryMT[p]);
 
                             maxBufferSizeMaterialData[p] = totalBufferSizeMaterialData[p];
-                            needToUpdateDSs[p]  = true;
+                            //needToUpdateDSs[p]  = true;
                         }
 
                         vkMapMemory(vkDevice.getDevice(), materialDataStagingBufferMemory, 0, totalBufferSizeMaterialData[p], 0, &data);
@@ -4072,6 +4075,7 @@ namespace odfaeg {
 
                         bufferSize = sizeof(DrawArraysIndirectCommand) * drawArraysIndirectCommands[p].size();
                         totalBufferSizeDrawCommand[p] = bufferSize;
+                        needToUpdateDSs[p]  = true;
                         if (totalBufferSizeDrawCommand[p] > maxBufferSizeDrawCommand[p]) {
                             if (vboIndirectStagingBuffer != nullptr) {
                                 vkDestroyBuffer(vkDevice.getDevice(), vboIndirectStagingBuffer, nullptr);
@@ -4278,7 +4282,7 @@ namespace odfaeg {
                             createBuffer(totalBufferSizeModelData[p], VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, modelDataBufferMT[p], modelDataBufferMemoryMT[p]);
 
                             maxBufferSizeModelData[p] = totalBufferSizeModelData[p];
-                            needToUpdateDSs[p]  = true;
+                            //needToUpdateDSs[p]  = true;
                         }
 
 
@@ -4305,7 +4309,7 @@ namespace odfaeg {
                             createBuffer(totalBufferSizeMaterialData[p], VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, materialDataBufferMT[p], materialDataBufferMemoryMT[p]);
 
                             maxBufferSizeMaterialData[p] = totalBufferSizeMaterialData[p];
-                            needToUpdateDSs[p]  = true;
+                            //needToUpdateDSs[p]  = true;
                         }
 
                         vkMapMemory(vkDevice.getDevice(), materialDataStagingBufferMemory, 0, totalBufferSizeMaterialData[p], 0, &data);
@@ -4315,6 +4319,7 @@ namespace odfaeg {
 
                         bufferSize = sizeof(DrawElementsIndirectCommand) * drawElementsIndirectCommands[p].size();
                         totalBufferSizeIndexedDrawCommand[p] = bufferSize;
+                        needToUpdateDSs[p]  = true;
                         if (totalBufferSizeIndexedDrawCommand[p] > maxBufferSizeIndexedDrawCommand[p]) {
                             if (vboIndirectStagingBuffer != nullptr) {
                                 vkDestroyBuffer(vkDevice.getDevice(), vboIndirectStagingBuffer, nullptr);
@@ -4502,7 +4507,7 @@ namespace odfaeg {
                             createBuffer(totalBufferSizeModelData[p], VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, modelDataBufferMT[p], modelDataBufferMemoryMT[p]);
 
                             maxBufferSizeModelData[p] = totalBufferSizeModelData[p];
-                            needToUpdateDSs[p]  = true;
+                            //needToUpdateDSs[p]  = true;
                         }
 
 
@@ -4529,7 +4534,7 @@ namespace odfaeg {
                             createBuffer(totalBufferSizeMaterialData[p], VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, materialDataBufferMT[p], materialDataBufferMemoryMT[p]);
 
                             maxBufferSizeMaterialData[p] = totalBufferSizeMaterialData[p];
-                            needToUpdateDSs[p]  = true;
+                            //needToUpdateDSs[p]  = true;
                         }
 
                         vkMapMemory(vkDevice.getDevice(), materialDataStagingBufferMemory, 0, totalBufferSizeMaterialData[p], 0, &data);
@@ -4539,6 +4544,7 @@ namespace odfaeg {
 
                         bufferSize = sizeof(DrawArraysIndirectCommand) * drawArraysIndirectCommands[p].size();
                         totalBufferSizeDrawCommand[p] = bufferSize;
+                        needToUpdateDSs[p]  = true;
                         if (totalBufferSizeDrawCommand[p] > maxBufferSizeDrawCommand[p]) {
                             if (vboIndirectStagingBuffer != nullptr) {
                                 vkDestroyBuffer(vkDevice.getDevice(), vboIndirectStagingBuffer, nullptr);
@@ -4754,7 +4760,7 @@ namespace odfaeg {
                             createBuffer(totalBufferSizeModelData[p], VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, modelDataBufferMT[p], modelDataBufferMemoryMT[p]);
 
                             maxBufferSizeModelData[p] = totalBufferSizeModelData[p];
-                            needToUpdateDSs[p]  = true;
+                            //needToUpdateDSs[p]  = true;
                         }
 
 
@@ -4781,7 +4787,7 @@ namespace odfaeg {
                             createBuffer(totalBufferSizeMaterialData[p], VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, materialDataBufferMT[p], materialDataBufferMemoryMT[p]);
 
                             maxBufferSizeMaterialData[p] = totalBufferSizeMaterialData[p];
-                            needToUpdateDSs[p]  = true;
+                            //needToUpdateDSs[p]  = true;
                         }
 
                         vkMapMemory(vkDevice.getDevice(), materialDataStagingBufferMemory, 0, totalBufferSizeMaterialData[p], 0, &data);
@@ -4791,6 +4797,7 @@ namespace odfaeg {
 
                         bufferSize = sizeof(DrawElementsIndirectCommand) * drawElementsIndirectCommands[p].size();
                         totalBufferSizeIndexedDrawCommand[p] = bufferSize;
+                        needToUpdateDSs[p]  = true;
                         if (totalBufferSizeIndexedDrawCommand[p] > maxBufferSizeIndexedDrawCommand[p]) {
                             if (vboIndirectStagingBuffer != nullptr) {
                                 vkDestroyBuffer(vkDevice.getDevice(), vboIndirectStagingBuffer, nullptr);
