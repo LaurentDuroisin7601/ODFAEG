@@ -980,11 +980,15 @@ namespace odfaeg {
                                                                          uint textureIndex = material.textureIndex;
                                                                          uint l = material.layer;
                                                                          gl_Position = vec4(position, 1.f) * modelData.modelMatrix * pushConsts.viewMatrix * pushConsts.projectionMatrix;
+                                                                         /*debugPrintfEXT("view matrix r1 : %v4f", pushConsts.viewMatrix[0]);
+                                                                         debugPrintfEXT("view matrix r2 : %v4f", pushConsts.viewMatrix[1]);
+                                                                         debugPrintfEXT("view matrix r3 : %v4f", pushConsts.viewMatrix[2]);
+                                                                         debugPrintfEXT("view matrix r4 : %v4f", pushConsts.viewMatrix[3]);*/
+                                                                         //debugPrintfEXT("vertex position : %v4f", gl_Position);
                                                                          fTexCoords = texCoords * material.uvScale + material.uvOffset;
                                                                          frontColor = color;
                                                                          texIndex = textureIndex;
                                                                          normal = normals;
-
                                                                          layer = l;
                                                                          gl_PointSize = 2.0f;
                                                                      }
@@ -1108,8 +1112,9 @@ namespace odfaeg {
                                                                                          }
                                                                                          )";
                     const std::string buildDepthBufferFragmentShader = R"(#version 460
-                                                                      #extension GL_ARB_fragment_shader_interlock : require
-                                                                      #extension GL_EXT_nonuniform_qualifier : enable
+                                                                          #extension GL_ARB_fragment_shader_interlock : require
+                                                                          #extension GL_EXT_nonuniform_qualifier : enable
+                                                                          #extension GL_EXT_debug_printf : enable
                                                                           layout (location = 0) in vec2 fTexCoords;
                                                                           layout (location = 1) in vec4 frontColor;
                                                                           layout (location = 2) in flat uint texIndex;
@@ -1128,6 +1133,7 @@ namespace odfaeg {
                                                                               float l = float(layer) / float(pushConsts.nbLayers);
                                                                               beginInvocationInterlockARB();
                                                                               memoryBarrier();
+                                                                              debugPrintfEXT("indirect depth fragment shader");
                                                                               vec4 depth = imageLoad(depthBuffer,ivec2(gl_FragCoord.xy));
                                                                               if (l > depth.y || l == depth.y && z > depth.z) {
                                                                                 imageStore(depthBuffer,ivec2(gl_FragCoord.xy),vec4(0,l,z,texel.a));
@@ -3688,7 +3694,7 @@ namespace odfaeg {
                     vertexIndexOffsets[p].push_back(totalVertexIndexCount[p] * sizeof(Vertex));
                     indexOffsets[p].push_back(totalIndexCount[p] * sizeof(unsigned int));
                     drawCommandCount[p] = 0;
-                    oldTotalVertexIndexCount[p] = totalVertexCount[p];
+                    oldTotalVertexIndexCount[p] = totalVertexIndexCount[p];
                     oldTotalIndexCount[p] = totalIndexCount[p];
                 }
 
@@ -6447,6 +6453,7 @@ namespace odfaeg {
                 math::Matrix4f projMatrix = view.getProjMatrix().getMatrix();
                 indirectRenderingPC.projMatrix = toVulkanMatrix(projMatrix);
                 indirectRenderingPC.viewMatrix = toVulkanMatrix(viewMatrix);
+                //std::cout<<"view matrix : "<<viewMatrix<<std::endl;
                 if (useThread) {
                     std::unique_lock<std::mutex> lock(mtx);
                     //cv.wait(lock, [this] { return isCommandBufferReady(); });
