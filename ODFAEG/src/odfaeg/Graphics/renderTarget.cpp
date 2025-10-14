@@ -131,7 +131,7 @@ namespace odfaeg {
                                                             normal = normals;
                                                         }
                                                         )";
-            const std::string defaultFragmentShader = R"(#version 450
+             const std::string defaultFragmentShader = R"(#version 450
                                                           #extension GL_ARB_separate_shader_objects : enable
                                                           #extension GL_EXT_debug_printf : enable
                                                           layout(binding = 1) uniform sampler2D texSampler;
