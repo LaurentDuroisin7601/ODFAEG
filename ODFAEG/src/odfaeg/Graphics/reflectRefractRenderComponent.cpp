@@ -1046,10 +1046,10 @@ namespace odfaeg {
                                                                     frontColor = color;
                                                                     texIndex = textureIndex;
                                                                     normal = normals;
-                                                                    debugPrintfEXT("view matrix r1 : %v4f", datas[gl_ViewIndex].viewMatrix[0]);
+                                                                    /*debugPrintfEXT("view matrix r1 : %v4f", datas[gl_ViewIndex].viewMatrix[0]);
                                                                     debugPrintfEXT("view matrix r2 : %v4f", datas[gl_ViewIndex].viewMatrix[1]);
                                                                     debugPrintfEXT("view matrix r3 : %v4f", datas[gl_ViewIndex].viewMatrix[2]);
-                                                                    debugPrintfEXT("view matrix r4 : %v4f", datas[gl_ViewIndex].viewMatrix[3]);
+                                                                    debugPrintfEXT("view matrix r4 : %v4f", datas[gl_ViewIndex].viewMatrix[3]);*/
 
 
                                                                }
@@ -1121,6 +1121,7 @@ namespace odfaeg {
                                                                                              texCoord = texCoords * material.uvScale + material.uvOffset;
                                                                                              normal = mat3(transpose(inverse(model.modelMatrix))) * normals;
                                                                                              materialType = materialT;
+                                                                                             //debugPrintfEXT("vertex position : %v4f", gl_Position);
                                                                                          }
                                                                                          )";
                     const std::string buildDepthBufferFragmentShader = R"(#version 460
@@ -1325,6 +1326,7 @@ namespace odfaeg {
                       }
                       /*if (color.r != 0 || color.g != 0 || color.b != 0 || color.a != 0)
                         debugPrintfEXT("count : %v4f\n", color);*/
+                      //debugPrintfEXT("linked list p2");
                       fcolor = color;
                    })";
                     if (!sBuildDepthBuffer.loadFromMemory(indirectRenderingVertexShader, buildDepthBufferFragmentShader)) {
@@ -3390,12 +3392,10 @@ namespace odfaeg {
                             updateDescriptorSets(p, currentStates);
                         }
                         if (nbDrawCommandBuffer[p][i+2] > 0) {
-                            if (nbDrawCommandBuffer[p][i+2] > 0) {
-                                recordCommandBufferIndirect(p, nbDrawCommandBuffer[p][i+2], sizeof(DrawArraysIndirectCommand), DEPTHNOSTENCIL, 0, -1, -1, modelDataOffsets[p][i*2+4], materialDataOffsets[p][i*2+4],drawCommandBufferOffsets[p][i+2], currentStates, reflectRefractCommandBuffer[i]);
-                            }
-                            if (nbIndexedDrawCommandBuffer[p][i+2] > 0) {
-                                recordCommandBufferIndirect(p, nbIndexedDrawCommandBuffer[p][i+2], sizeof(DrawElementsIndirectCommand), DEPTHNOSTENCIL, 0, 0, -1, modelDataOffsets[p][i*2+5], materialDataOffsets[p][i*2+5],drawIndexedCommandBufferOffsets[p][i+2], currentStates, reflectRefractCommandBuffer[i]);
-                            }
+                            recordCommandBufferIndirect(p, nbDrawCommandBuffer[p][i+2], sizeof(DrawArraysIndirectCommand), DEPTHNOSTENCIL, 0, -1, -1, modelDataOffsets[p][i*2+4], materialDataOffsets[p][i*2+4],drawCommandBufferOffsets[p][i+2], currentStates, reflectRefractCommandBuffer[i]);
+                        }
+                        if (nbIndexedDrawCommandBuffer[p][i+2] > 0) {
+                            recordCommandBufferIndirect(p, nbIndexedDrawCommandBuffer[p][i+2], sizeof(DrawElementsIndirectCommand), DEPTHNOSTENCIL, 0, 0, -1, modelDataOffsets[p][i*2+5], materialDataOffsets[p][i*2+5],drawIndexedCommandBufferOffsets[p][i+2], currentStates, reflectRefractCommandBuffer[i]);
                         }
                     }
                     if (vkEndCommandBuffer(reflectRefractCommandBuffer[i]) != VK_SUCCESS) {
@@ -6589,17 +6589,16 @@ namespace odfaeg {
                                             sbProjMatrices[m] = projMatrix;
                                             if (!reflectView.isOrtho())
                                                 reflectView.setPerspective(80, view.getViewport().getSize().x() / view.getViewport().getSize().y(), zNear, view.getViewport().getSize().z());
-                                            UniformBufferObject ubo;
-                                            for (unsigned int f = 0; f < 6; f++) {
-                                                MatricesData matrices;
-                                                matrices.projMatrix = toVulkanMatrix(projMatrices[f]);
-                                                matrices.viewMatrix = toVulkanMatrix(viewMatrices[f]);
-                                                ubo.matrices[f] = matrices;
-                                            }
+                                        }
+                                        UniformBufferObject ubo;
+                                        for (unsigned int f = 0; f < 6; f++) {
+                                            MatricesData matrices;
+                                            matrices.projMatrix = toVulkanMatrix(projMatrices[f]);
+                                            matrices.viewMatrix = toVulkanMatrix(viewMatrices[f]);
+                                            ubo.matrices[f] = matrices;
                                         }
                                         ubos.push_back(ubo);
                                     }
-
                                 }
                             }
                         }
