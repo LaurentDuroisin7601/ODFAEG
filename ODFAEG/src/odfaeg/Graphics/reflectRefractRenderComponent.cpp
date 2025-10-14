@@ -3832,7 +3832,7 @@ namespace odfaeg {
                         oldTotalBufferSizeModelData[p] = bufferSize;
                         maxAlignedSizeModelData[p] = (currentModelOffset[p] - previousModelOffset[p] > maxAlignedSizeModelData[p]) ? currentModelOffset[p] - previousModelOffset[p] : maxAlignedSizeModelData[p];
                         totalBufferSizeModelData[p] = (alignedOffsetModelData[p] + maxAlignedSizeModelData[p] > bufferSize) ? alignedOffsetModelData[p] + maxAlignedSizeModelData[p] : bufferSize;
-                        std::cout<<"sizes : "<<maxAlignedSizeModelData[p]<<","<<alignedOffsetModelData[p]<<","<<currentModelOffset[p]<<","<<previousModelOffset[p]<<std::endl;
+                        //std::cout<<"sizes : "<<maxAlignedSizeModelData[p]<<","<<alignedOffsetModelData[p]<<","<<currentModelOffset[p]<<","<<previousModelOffset[p]<<std::endl;
                         previousModelOffset[p] = currentModelOffset[p];
 
                         //////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
