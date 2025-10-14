@@ -348,6 +348,7 @@ namespace odfaeg {
 
                 uboAlignment = deviceProperties.limits.minUniformBufferOffsetAlignment;
                 alignment = deviceProperties.limits.minStorageBufferOffsetAlignment;
+                //std::cout<<"align : "<<uboAlignment<<std::endl;
                 update = true;
                 needToUpdateDS = false;
             }
@@ -820,7 +821,7 @@ namespace odfaeg {
                 }
             }
             void ReflectRefractRenderComponent::createUniformBuffersMT() {
-                VkDeviceSize bufferSize = nbReflRefrEntities * sizeof(UniformBufferObject);
+                VkDeviceSize bufferSize = nbReflRefrEntities * alignUBO(sizeof(UniformBufferObject));
                 uniformBuffer.resize(environmentMap.getMaxFramesInFlight());
                 uniformBufferMemory.resize(environmentMap.getMaxFramesInFlight());
                 for (size_t i = 0; i < environmentMap.getMaxFramesInFlight(); i++) {
@@ -833,9 +834,15 @@ namespace odfaeg {
                 }
             }
             void ReflectRefractRenderComponent::updateUniformBuffer(uint32_t currentImage, std::vector<UniformBufferObject> ubo) {
+                VkDeviceSize alignedSize = ((sizeof(UniformBufferObject) + uboAlignment - 1) / uboAlignment) * uboAlignment;
+
                 void* data;
-                vkMapMemory(vkDevice.getDevice(), uniformBufferMemory[currentImage], 0, ubo.size() * sizeof(UniformBufferObject), 0, &data);
-                    memcpy(data, ubo.data(), ubo.size() * sizeof(UniformBufferObject));
+                vkMapMemory(vkDevice.getDevice(), uniformBufferMemory[currentImage], 0, alignedSize * ubos.size(), 0, &data);
+
+                for (size_t i = 0; i < ubos.size(); ++i) {
+                    memcpy(static_cast<char*>(data) + i * alignedSize, &ubos[i], sizeof(UniformBufferObject));
+                }
+
                 vkUnmapMemory(vkDevice.getDevice(), uniformBufferMemory[currentImage]);
 
             }
@@ -1039,6 +1046,11 @@ namespace odfaeg {
                                                                     frontColor = color;
                                                                     texIndex = textureIndex;
                                                                     normal = normals;
+                                                                    debugPrintfEXT("view matrix r1 : %v4f", datas[gl_ViewIndex].viewMatrix[0]);
+                                                                    debugPrintfEXT("view matrix r2 : %v4f", datas[gl_ViewIndex].viewMatrix[1]);
+                                                                    debugPrintfEXT("view matrix r3 : %v4f", datas[gl_ViewIndex].viewMatrix[2]);
+                                                                    debugPrintfEXT("view matrix r4 : %v4f", datas[gl_ViewIndex].viewMatrix[3]);
+
 
                                                                }
                                                                )";
@@ -2414,7 +2426,7 @@ namespace odfaeg {
                         VkDescriptorBufferInfo bufferInfo{};
                         bufferInfo.buffer = uniformBuffer[i];
                         bufferInfo.offset = 0;
-                        bufferInfo.range = ubos.size() * sizeof(UniformBufferObject);
+                        bufferInfo.range = sizeof(UniformBufferObject);
 
                         descriptorWrites[5].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                         descriptorWrites[5].dstSet = descriptorSets[descriptorId][i];
