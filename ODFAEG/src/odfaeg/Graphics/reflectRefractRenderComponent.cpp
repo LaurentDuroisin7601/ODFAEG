@@ -983,8 +983,8 @@ namespace odfaeg {
                                                                          /*debugPrintfEXT("view matrix r1 : %v4f", pushConsts.viewMatrix[0]);
                                                                          debugPrintfEXT("view matrix r2 : %v4f", pushConsts.viewMatrix[1]);
                                                                          debugPrintfEXT("view matrix r3 : %v4f", pushConsts.viewMatrix[2]);
-                                                                         debugPrintfEXT("view matrix r4 : %v4f", pushConsts.viewMatrix[3]);*/
-                                                                         //debugPrintfEXT("vertex position : %v4f", gl_Position);
+                                                                         debugPrintfEXT("view matrix r4 : %v4f", pushConsts.viewMatrix[3]);
+                                                                         debugPrintfEXT("vertex position : %v4f", gl_Position);*/
                                                                          fTexCoords = texCoords * material.uvScale + material.uvOffset;
                                                                          frontColor = color;
                                                                          texIndex = textureIndex;
@@ -1133,7 +1133,7 @@ namespace odfaeg {
                                                                               float l = float(layer) / float(pushConsts.nbLayers);
                                                                               beginInvocationInterlockARB();
                                                                               memoryBarrier();
-                                                                              debugPrintfEXT("indirect depth fragment shader");
+                                                                              //debugPrintfEXT("indirect depth fragment shader");
                                                                               vec4 depth = imageLoad(depthBuffer,ivec2(gl_FragCoord.xy));
                                                                               if (l > depth.y || l == depth.y && z > depth.z) {
                                                                                 imageStore(depthBuffer,ivec2(gl_FragCoord.xy),vec4(0,l,z,texel.a));
@@ -1168,6 +1168,7 @@ namespace odfaeg {
                                                                           vec4 depth = texture (depthBuffer, position);
                                                                           beginInvocationInterlockARB();
                                                                           memoryBarrier();
+                                                                          //debugPrintfEXT("indirect alpha fragment shader");
                                                                           vec4 alpha = imageLoad(alphaBuffer,ivec2(gl_FragCoord.xy));
                                                                           float l = float(layer) / float(pushConsts.nbLayers);
                                                                           float z = gl_FragCoord.z;
@@ -6815,13 +6816,14 @@ namespace odfaeg {
                         vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyVbIndexedBufferCommandBuffer);
                         vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyVbEnvPass2BufferCommandBuffer);
 
-
+                    depthBuffer.display();
+                    depthBuffer.beginRecordCommandBuffers();
                     depthBuffer.beginRenderPass();
-                    hasCommands = false;
+                    /*hasCommands = false;
                     for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                         if (nbDrawCommandBuffer[p][0] > 0 || nbIndexedDrawCommandBuffer[p][0] > 0)
                             hasCommands = true;
-                    }
+                    }*/
                     //if (hasCommands)
                         vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &depthBufferCommandBuffer);
                     depthBuffer.endRenderPass();
