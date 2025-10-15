@@ -6795,38 +6795,111 @@ namespace odfaeg {
                     depthBuffer.beginRecordCommandBuffers();
                     std::vector<VkCommandBuffer> commandBuffers = depthBuffer.getCommandBuffers();
                     unsigned int currentFrame = depthBuffer.getCurrentFrame();
-                    bool hasCommands = false;
-                    for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
-                        if (modelDatas[p].size() > 0)
-                            hasCommands = true;
-                    }
-                    //if (hasCommands)
-                        vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyModelDataBufferCommandBuffer);
-                    hasCommands = false;
-                    for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
-                        if (materialDatas[p].size() > 0)
-                            hasCommands = true;
-                    }
-                    //if (hasCommands)
-                        vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyMaterialDataBufferCommandBuffer);
-                    hasCommands = false;
-                    for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
-                        if (drawArraysIndirectCommands[p].size() > 0)
-                            hasCommands = true;
-                    }
-                    //if (hasCommands)
-                        vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyDrawBufferCommandBuffer);
-                        vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyVbBufferCommandBuffer);
-                    hasCommands = false;
-                    for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
-                        if (drawElementsIndirectCommands[p].size() > 0)
-                            hasCommands = true;
-                    }
-                    //if (hasCommands)
-                        vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyDrawIndexedBufferCommandBuffer);
-                        vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyVbIndexedBufferCommandBuffer);
-                        vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyVbEnvPass2BufferCommandBuffer);
 
+                    vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyModelDataBufferCommandBuffer);
+
+                    vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyMaterialDataBufferCommandBuffer);
+
+                    vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyDrawBufferCommandBuffer);
+                    vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyVbBufferCommandBuffer);
+
+                    vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyDrawIndexedBufferCommandBuffer);
+                    vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyVbIndexedBufferCommandBuffer);
+                    vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyVbEnvPass2BufferCommandBuffer);
+                    for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
+                        VkBufferMemoryBarrier buffersMemoryBarrier{};
+                        buffersMemoryBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+                        buffersMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                        buffersMemoryBarrier.dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+                        buffersMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                        buffersMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                        buffersMemoryBarrier.offset = 0;
+                        buffersMemoryBarrier.size = VK_WHOLE_SIZE;
+                        if (vbBindlessTex[p].getVertexBuffer() != nullptr) {
+                            buffersMemoryBarrier.buffer = vbBindlessTex[p].getVertexBuffer();
+                            vkCmdPipelineBarrier(
+                            commandBuffers[currentFrame],
+                            VK_PIPELINE_STAGE_TRANSFER_BIT,
+                            VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
+                            0,
+                            0, nullptr,
+                            1, &buffersMemoryBarrier,
+                            0, nullptr
+                            );
+                        }
+                        if (vbBindlessTexIndexed[p].getVertexBuffer() != nullptr && vbBindlessTexIndexed[p].getIndexBuffer() != nullptr) {
+                            buffersMemoryBarrier.buffer = vbBindlessTexIndexed[p].getVertexBuffer();
+                            vkCmdPipelineBarrier(
+                            commandBuffers[currentFrame],
+                            VK_PIPELINE_STAGE_TRANSFER_BIT,
+                            VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
+                            0,
+                            0, nullptr,
+                            1, &buffersMemoryBarrier,
+                            0, nullptr
+                            );
+                            buffersMemoryBarrier.buffer = vbBindlessTexIndexed[p].getIndexBuffer();
+                            vkCmdPipelineBarrier(
+                            commandBuffers[currentFrame],
+                            VK_PIPELINE_STAGE_TRANSFER_BIT,
+                            VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
+                            0,
+                            0, nullptr,
+                            1, &buffersMemoryBarrier,
+                            0, nullptr
+                            );
+                        }
+                        buffersMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+                        if (modelDataBufferMT[p] != nullptr) {
+                            buffersMemoryBarrier.buffer = modelDataBufferMT[p];
+                            vkCmdPipelineBarrier(
+                            commandBuffers[currentFrame],
+                            VK_PIPELINE_STAGE_TRANSFER_BIT,
+                            VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                            0,
+                            0, nullptr,
+                            1, &buffersMemoryBarrier,
+                            0, nullptr
+                            );
+                        }
+                        if (materialDataBufferMT[p] != nullptr) {
+                            buffersMemoryBarrier.buffer = materialDataBufferMT[p];
+                            vkCmdPipelineBarrier(
+                            commandBuffers[currentFrame],
+                            VK_PIPELINE_STAGE_TRANSFER_BIT,
+                            VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                            0,
+                            0, nullptr,
+                            1, &buffersMemoryBarrier,
+                            0, nullptr
+                            );
+                        }
+                        buffersMemoryBarrier.dstAccessMask = VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
+                        if (drawCommandBufferMT[p] != nullptr) {
+                            buffersMemoryBarrier.buffer = drawCommandBufferMT[p];
+                            vkCmdPipelineBarrier(
+                            commandBuffers[currentFrame],
+                            VK_PIPELINE_STAGE_TRANSFER_BIT,
+                            VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT,
+                            0,
+                            0, nullptr,
+                            1, &buffersMemoryBarrier,
+                            0, nullptr
+                            );
+                        }
+                        if (drawCommandBufferIndexedMT[p] != nullptr) {
+                            buffersMemoryBarrier.buffer = drawCommandBufferIndexedMT[p];
+                            vkCmdPipelineBarrier(
+                            commandBuffers[currentFrame],
+                            VK_PIPELINE_STAGE_TRANSFER_BIT,
+                            VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT,
+                            0,
+                            0, nullptr,
+                            1, &buffersMemoryBarrier,
+                            0, nullptr
+                            );
+                        }
+                    }
                     depthBuffer.display();
                     depthBuffer.beginRecordCommandBuffers();
                     depthBuffer.beginRenderPass();
@@ -6850,13 +6923,7 @@ namespace odfaeg {
                     memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
                     vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
                     alphaBuffer.beginRenderPass();
-                    hasCommands = false;
-                    for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
-                        if (nbDrawCommandBuffer[p][1] > 0 || nbIndexedDrawCommandBuffer[p][1] > 0)
-                            hasCommands = true;
-                    }
-                    //if (hasCommands)
-                        vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &alphaBufferCommandBuffer);
+                    vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &alphaBufferCommandBuffer);
                     alphaBuffer.endRenderPass();
                     const_cast<Texture&>(depthBuffer.getTexture()).toColorAttachmentOptimal(alphaBuffer.getCommandBuffers()[alphaBuffer.getCurrentFrame()]);
                     alphaBuffer.display();

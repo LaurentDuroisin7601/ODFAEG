@@ -37,7 +37,7 @@ namespace odfaeg {
                 unsigned baseInstance;
             };
             struct ModelData {
-                GLMatrix4f worldMat;
+                alignas(16) GLMatrix4f worldMat;
             };
             struct alignas(16) MaterialData {
                 math::Vec2f uvScale;
