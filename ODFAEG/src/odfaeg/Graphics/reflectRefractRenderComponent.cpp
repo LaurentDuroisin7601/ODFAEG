@@ -6900,6 +6900,25 @@ namespace odfaeg {
                             );
                         }
                     }
+                    VkBufferMemoryBarrier uboBarrier{};
+                    uboBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+                    uboBarrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT;
+                    uboBarrier.dstAccessMask = VK_ACCESS_UNIFORM_READ_BIT;
+                    uboBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                    uboBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                    uboBarrier.buffer = uniformBuffer[0];
+                    uboBarrier.offset = 0;
+                    uboBarrier.size = VK_WHOLE_SIZE;
+
+                    vkCmdPipelineBarrier(
+                        commandBuffers[currentFrame],
+                        VK_PIPELINE_STAGE_HOST_BIT,
+                        VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                        0,
+                        0, nullptr,
+                        1, &uboBarrier,
+                        0, nullptr
+                    );
                     depthBuffer.display();
                     depthBuffer.beginRecordCommandBuffers();
                     depthBuffer.beginRenderPass();
