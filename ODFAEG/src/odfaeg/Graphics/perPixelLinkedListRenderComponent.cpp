@@ -2001,7 +2001,7 @@ namespace odfaeg {
                 if (vbBindlessTex[p].getVertexCount() > 0) {
 
                     vbBindlessTex[p].update();
-                      VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
+                    VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
                     if (bufferSize > maxModelDataSize) {
                         if (modelDataStagingBuffer != nullptr) {
                             vkDestroyBuffer(vkDevice.getDevice(), modelDataStagingBuffer, nullptr);
@@ -2078,7 +2078,7 @@ namespace odfaeg {
                     copyBuffer(vboIndirectStagingBuffer, vboIndirect, bufferSize);
                     //createDescriptorSets(p, currentStates);
                     //////std::cout<<"size : "<<sizeof(DrawElementsIndirectCommand)<<std::endl;
-                    createCommandBuffersIndirect(p, drawElementsIndirectCommands[p].size(), sizeof(DrawElementsIndirectCommand), NODEPTHNOSTENCIL, currentStates);
+                    createCommandBuffersIndirect(p, drawElementsIndirectCommands[p].size(), sizeof(DrawElementsIndirectCommand), NODEPTHSTENCIL, currentStates);
 
                 }
             }
@@ -2087,6 +2087,9 @@ namespace odfaeg {
             }
             for (unsigned int i = 0; i < firstIndex.size(); i++) {
                 firstIndex[i] = 0;
+            }
+            for (unsigned int i = 0; i < baseVertex.size(); i++) {
+                baseVertex[i] = 0;
             }
             for (unsigned int i = 0; i < baseInstance.size(); i++) {
                 baseInstance[i] = 0;
@@ -2268,7 +2271,7 @@ namespace odfaeg {
                     copyBuffer(vboIndirectStagingBuffer, vboIndirect, bufferSize);
                     //createDescriptorSets(p, currentStates);
                     //////std::cout<<"size : "<<sizeof(DrawElementsIndirectCommand)<<std::endl;
-                    createCommandBuffersIndirect(p, drawElementsIndirectCommands[p].size(), sizeof(DrawElementsIndirectCommand), NODEPTHNOSTENCIL, currentStates);
+                    createCommandBuffersIndirect(p, drawElementsIndirectCommands[p].size(), sizeof(DrawElementsIndirectCommand), NODEPTHSTENCILOUTLINE, currentStates);
 
                 }
             }
@@ -2404,7 +2407,7 @@ namespace odfaeg {
 
             frameBuffer.drawIndirect(frameBuffer.getCommandBuffers()[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
             frameBuffer.endRenderPass();
-            std::vector<VkSemaphore> waitSemaphores, signalSemaphores;
+            /*std::vector<VkSemaphore> waitSemaphores, signalSemaphores;
             waitSemaphores.push_back(offscreenFinishedSemaphore[frameBuffer.getCurrentFrame()]);
             std::vector<VkPipelineStageFlags> waitStages;
             waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
@@ -2413,8 +2416,8 @@ namespace odfaeg {
             //std::cout<<"wait value : "<<values[frameBuffer.getCurrentFrame()]<<std::endl;
             signalSemaphores.push_back(offscreenFinishedSemaphore[frameBuffer.getCurrentFrame()]);
             values[frameBuffer.getCurrentFrame()]++;
-            signalValues.push_back(values[frameBuffer.getCurrentFrame()]);
-            frameBuffer.display(signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
+            signalValues.push_back(values[frameBuffer.getCurrentFrame()]);*/
+            frameBuffer.display(/*signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues*/);
             //std::cout<<"signal value : "<<values[frameBuffer.getCurrentFrame()]<<std::endl;
 
             /*frameBuffer.beginRecordCommandBuffers();
@@ -2516,7 +2519,7 @@ namespace odfaeg {
             frameBuffer.beginRenderPass();
             vkCmdExecuteCommands(frameBuffer.getCommandBuffers()[currentFrame], static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());*/
             frameBuffer.endRenderPass();
-            std::vector<VkSemaphore> waitSemaphores, signalSemaphores;
+            /*std::vector<VkSemaphore> waitSemaphores, signalSemaphores;
             waitSemaphores.push_back(offscreenFinishedSemaphore[frameBuffer.getCurrentFrame()]);
             std::vector<VkPipelineStageFlags> waitStages;
             waitStages.push_back(VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
@@ -2525,8 +2528,8 @@ namespace odfaeg {
             signalSemaphores.push_back(offscreenFinishedSemaphore[frameBuffer.getCurrentFrame()]);
             //std::cout<<"pass2 wait value : "<<values[frameBuffer.getCurrentFrame()]<<std::endl;
             values[frameBuffer.getCurrentFrame()]++;
-            signalValues.push_back(values[frameBuffer.getCurrentFrame()]);
-            frameBuffer.display(signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
+            signalValues.push_back(values[frameBuffer.getCurrentFrame()]);*/
+            frameBuffer.display(/*signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues*/);
             //std::cout<<"pass2 signal value : "<<values[frameBuffer.getCurrentFrame()]<<std::endl;
             isSomethingDrawn = false;
         }
@@ -2609,10 +2612,11 @@ namespace odfaeg {
                                 }
                                 Entity* root = (vEntities[i]->getRootEntity()->isAnimated()) ? vEntities[i]->getRootEntity() : vEntities[i];
                                 math::Vec3f oldSize = root->getSize();
-                                border->setOrigin(root->getSize() * 0.5f);
-                                border->setSize(root->getSize() * 1.1f);
+                                border->setOrigin(border->getSize() * 0.5f);
+                                border->setScale(math::Vec3f(1.1f, 1.1f, 1.1f));
                                 math::Vec3f offset =  root->getSize() - oldSize;
                                 border->setPosition(root->getPosition() - offset * 0.5f);
+                               // ////std::cout<<"add to batcher"<<std::endl;
 
                                // ////std::cout<<"add to batcher"<<std::endl;
                                 selectedInstanceIndexScaleBatcher.addFace(border->getFace(j));
@@ -2651,9 +2655,13 @@ namespace odfaeg {
                                     va[j].color = Color::Cyan;
                                 }
 
-                                border->setOrigin(border->getSize() * 0.5f);
-                                border->setScale(math::Vec3f(1.1f, 1.1f, 1.1f));
-                               // ////std::cout<<"add to batcher"<<std::endl;
+                                Entity* root = (vEntities[i]->getRootEntity()->isAnimated()) ? vEntities[i]->getRootEntity() : vEntities[i];
+                                math::Vec3f oldSize = root->getSize();
+                                border->setOrigin(root->getSize() * 0.5f);
+                                border->setSize(root->getSize() * 1.1f);
+                                math::Vec3f offset =  root->getSize() - oldSize;
+                                border->setPosition(root->getPosition() - offset * 0.5f);
+                                //std::cout<<"add to batcher"<<std::endl;
                                 selectedIndexScaleBatcher.addFace(border->getFace(j));
                              }
                         }
