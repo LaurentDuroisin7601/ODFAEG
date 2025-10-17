@@ -268,18 +268,6 @@ namespace odfaeg {
             VkFenceCreateInfo fenceInfo{};
             fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 
-            VkSemaphoreTypeCreateInfo timelineCreateInfo{};
-            timelineCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO;
-            timelineCreateInfo.pNext = nullptr;
-            timelineCreateInfo.semaphoreType = VK_SEMAPHORE_TYPE_TIMELINE;
-            timelineCreateInfo.initialValue = 0;
-
-            VkSemaphoreCreateInfo createInfo;
-            createInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-            createInfo.pNext = &timelineCreateInfo;
-            createInfo.flags = 0;
-
-
             for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
                 if (vkCreateSemaphore(vkDevice.getDevice(), &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS ||
                     vkCreateSemaphore(vkDevice.getDevice(), &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS ||
@@ -411,17 +399,49 @@ namespace odfaeg {
         uint32_t RenderWindow::getImageIndex() {
             return imageIndex;
         }
-        void RenderWindow::setSemaphore(std::vector<VkSemaphore> semaphore) {
-            this->semaphore = semaphore;
-        }
-        void RenderWindow::submit(bool lastSubmit) {
+        void RenderWindow::submit(bool lastSubmit, std::vector<VkSemaphore> signalSemaphores,
+                        std::vector<VkSemaphore> waitSemaphores, std::vector<VkPipelineStageFlags> waitStages,
+                        std::vector<uint64_t> signalValues,
+                        std::vector<uint64_t> waitValues) {
             if (getCommandBuffers().size() > 0) {
                 if (vkEndCommandBuffer(getCommandBuffers()[currentFrame]) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to record command buffer!", 1);
                 }
-
-                //////std::cout<<"current frame : "<<currentFrame<<std::endl;
+                commandsOnRecordedState[currentFrame] = false;
                 VkSubmitInfo submitInfo{};
+                submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+                if (firstSubmit) {
+                    waitSemaphores.push_back(imageAvailableSemaphores[currentFrame]);
+                    waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+                    if (waitValues.size() > 0) {
+                        //////std::cout<<"wait semaphore : "<<semaphore[currentFrame]<<std::endl;
+                        waitValues.push_back(0);
+                    }
+                }
+                if (lastSubmit) {
+                    signalSemaphores.push_back(renderFinishedSemaphores[currentFrame]);
+                    if (signalValues.size() > 0) {
+                        signalValues.push_back(0);
+                    }
+                }
+                VkTimelineSemaphoreSubmitInfo timelineInfo{};
+                if (signalValues.size() > 0 || waitValues.size() > 0) {
+                    timelineInfo.sType = VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO;
+                    timelineInfo.waitSemaphoreValueCount=waitValues.size();
+                    timelineInfo.pWaitSemaphoreValues = waitValues.data();
+                    timelineInfo.signalSemaphoreValueCount=signalValues.size();
+                    timelineInfo.pSignalSemaphoreValues = signalValues.data();
+                    submitInfo.pNext = &timelineInfo;
+                }
+                submitInfo.signalSemaphoreCount = signalSemaphores.size();
+                submitInfo.pSignalSemaphores = signalSemaphores.data();
+                submitInfo.pWaitDstStageMask = waitStages.data();
+                submitInfo.waitSemaphoreCount = waitSemaphores.size();
+                submitInfo.pWaitSemaphores = waitSemaphores.data();
+                submitInfo.commandBufferCount = 1;
+                submitInfo.pCommandBuffers = &getCommandBuffers()[currentFrame];
+                //////std::cout<<"current frame : "<<currentFrame<<std::endl;
+                /*VkSubmitInfo submitInfo{};
                 submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
                 std::vector<VkSemaphore> waitSemaphores;
@@ -450,7 +470,7 @@ namespace odfaeg {
                 } else {
                     submitInfo.signalSemaphoreCount = 0;
                     submitInfo.pSignalSemaphores = nullptr;
-                }
+                }*/
                 firstSubmit = false;
 
                 if (vkQueueSubmit(vkDevice.getGraphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS) {
@@ -458,7 +478,7 @@ namespace odfaeg {
                 }
                 vkWaitForFences(vkDevice.getDevice(), 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
                 vkResetFences(vkDevice.getDevice(), 1, &inFlightFences[currentFrame]);
-                semaphore.clear();
+
 
 
             }

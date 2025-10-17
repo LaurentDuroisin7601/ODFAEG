@@ -104,7 +104,8 @@ namespace odfaeg {
                             flat.data[col * 4 + row] = mat[col][row];
                     return flat;
                 }
-                std::vector<VkSemaphore> renderFinishedSemaphore;
+                std::vector<VkSemaphore> offscreenFinishedSemaphore, offscreenDepthFinishedSemaphore, offscreenAlphaFinishedSemaphore;
+                std::array<unsigned int, 1> values, values2;
                 RenderWindow& window;
                 LayerPC layerPC;
                 ResolutionPC resolutionPC;

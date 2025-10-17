@@ -154,7 +154,8 @@ namespace odfaeg {
 
                 std::array<VertexBuffer ,Batcher::nbPrimitiveTypes> vbBindlessTex;
                 VertexBuffer vb;
-                std::vector<VkSemaphore> renderFinishedSemaphore;
+                std::vector<VkSemaphore> offscreenLightDepthAlphaFinishedSemaphore, offscreenFinishedSemaphore;
+                std::array<unsigned int, 1> valuesFinished, valuesLightDepthAlpha;
                 RenderWindow& window;
                 VkCommandPool commandPool;
                 VkImage lightDepthTextureImage;

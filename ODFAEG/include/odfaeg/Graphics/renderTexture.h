@@ -87,7 +87,10 @@ namespace odfaeg {
             void createRenderPass();
             VkRenderPass getRenderPass(unsigned int renderPassId);
             void clear(const Color& color = Color(0, 0, 0, 255));
-            void display(bool isSignalSemaphore=true, VkSemaphore semaphore = VK_NULL_HANDLE);
+            void display(std::vector<VkSemaphore> signalSemaphores = std::vector<VkSemaphore>(),
+                         std::vector<VkSemaphore> waitSemaphores = std::vector<VkSemaphore>(), std::vector<VkPipelineStageFlags> waitStages = std::vector<VkPipelineStageFlags>(),
+                         std::vector<uint64_t> signalValues = std::vector<uint64_t>(),
+                         std::vector<uint64_t> waitValues = std::vector<uint64_t>());
             /*template<class... Args>
             void encode_checkpoint(Args&&... args)
             {

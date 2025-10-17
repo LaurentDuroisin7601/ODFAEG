@@ -85,7 +85,7 @@ namespace odfaeg
 
             VkFenceCreateInfo fenceInfo{};
             fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-            VkSemaphoreTypeCreateInfo timelineCreateInfo{};
+            /*VkSemaphoreTypeCreateInfo timelineCreateInfo{};
             timelineCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO;
             timelineCreateInfo.pNext = nullptr;
             timelineCreateInfo.semaphoreType = VK_SEMAPHORE_TYPE_TIMELINE;
@@ -94,12 +94,12 @@ namespace odfaeg
             VkSemaphoreCreateInfo createInfo;
             createInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
             createInfo.pNext = &timelineCreateInfo;
-            createInfo.flags = 0;
+            createInfo.flags = 0;*/
 
 
             for (size_t i = 0; i < getMaxFramesInFlight(); i++) {
                 if (vkCreateFence(vkDevice.getDevice(), &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS
-                    || vkCreateSemaphore(vkDevice.getDevice(), &createInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS) {
+                    /*|| vkCreateSemaphore(vkDevice.getDevice(), &createInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS*/) {
 
                     throw core::Erreur(0, "échec de la création des objets de synchronisation pour une frame!", 1);
                 }
@@ -401,18 +401,39 @@ namespace odfaeg
         void RenderTexture::endRenderPass() {
             vkCmdEndRenderPass(getCommandBuffers()[getCurrentFrame()]);
         }
-        void RenderTexture::display(bool isSignalSemaphore, VkSemaphore semaphore) {
+        void RenderTexture::display(std::vector<VkSemaphore> signalSemaphores,
+                         std::vector<VkSemaphore> waitSemaphores, std::vector<VkPipelineStageFlags> waitStages,
+                         std::vector<uint64_t> signalValues,
+                         std::vector<uint64_t> waitValues) {
             if (getCommandBuffers().size() > 0) {
                 //////std::cout<<"render texture end command buffer"<<std::endl;
 
                 //for (unsigned int i = 0; i < getCommandBuffers().size(); i++) {
-                    if (vkEndCommandBuffer(getCommandBuffers()[currentFrame]) != VK_SUCCESS) {
-                        throw core::Erreur(0, "failed to record command buffer!", 1);
-                    }
+                if (vkEndCommandBuffer(getCommandBuffers()[currentFrame]) != VK_SUCCESS) {
+                    throw core::Erreur(0, "failed to record command buffer!", 1);
+                }
                 //}
+                commandsOnRecordedState[currentFrame] = false;
+                VkSubmitInfo submitInfo{};
+                submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+                VkTimelineSemaphoreSubmitInfo timelineInfo{};
+                if (signalValues.size() > 0 || waitValues.size() > 0) {
+                    timelineInfo.sType = VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO;
+                    timelineInfo.waitSemaphoreValueCount=waitValues.size();
+                    timelineInfo.pWaitSemaphoreValues = waitValues.data();
+                    timelineInfo.signalSemaphoreValueCount=signalValues.size();
+                    timelineInfo.pSignalSemaphoreValues = signalValues.data();
+                    submitInfo.pNext = &timelineInfo;
+                }
+                submitInfo.signalSemaphoreCount = signalSemaphores.size();
+                submitInfo.pSignalSemaphores = signalSemaphores.data();
+                submitInfo.pWaitDstStageMask = waitStages.data();
+                submitInfo.waitSemaphoreCount = waitSemaphores.size();
+                submitInfo.pWaitSemaphores = waitSemaphores.data();
+                submitInfo.commandBufferCount = 1;
+                submitInfo.pCommandBuffers = &getCommandBuffers()[currentFrame];
 
-
-                std::vector<uint64_t> waitValues;
+                /*std::vector<uint64_t> waitValues;
                 std::vector<uint64_t> signalValues;
 
 
@@ -452,7 +473,7 @@ namespace odfaeg
                 submitInfo.waitSemaphoreCount = waitSemaphores.size();
                 submitInfo.pWaitSemaphores = waitSemaphores.data();
                 submitInfo.commandBufferCount = 1;
-                submitInfo.pCommandBuffers = &getCommandBuffers()[currentFrame];
+                submitInfo.pCommandBuffers = &getCommandBuffers()[currentFrame];*/
 
                 if (vkQueueSubmit(vkDevice.getGraphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS) {
                     throw core::Erreur(0, "échec de l'envoi d'un command buffer!", 1);
@@ -461,7 +482,7 @@ namespace odfaeg
 
                 vkWaitForFences(vkDevice.getDevice(), 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
                 vkResetFences(vkDevice.getDevice(), 1, &inFlightFences[currentFrame]);
-                value++;
+
             }
         }
         RenderTexture::~RenderTexture() {
@@ -478,9 +499,9 @@ namespace odfaeg
             for (size_t i = 0; i < getMaxFramesInFlight(); i++) {
                 vkDestroyFence(vkDevice.getDevice(), inFlightFences[i], nullptr);
             }
-            for (size_t i = 0; i < getMaxFramesInFlight(); i++) {
+            /*for (size_t i = 0; i < getMaxFramesInFlight(); i++) {
                 vkDestroySemaphore(vkDevice.getDevice(), renderFinishedSemaphores[i], nullptr);
-            }
+            }*/
         }
         #else
         ////////////////////////////////////////////////////////////

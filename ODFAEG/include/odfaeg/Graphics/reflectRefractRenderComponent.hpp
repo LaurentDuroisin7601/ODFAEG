@@ -269,12 +269,15 @@ namespace odfaeg {
             VkDescriptorSet cpDescriptorSet;
             VkFence computeFence;
             VkSemaphore computeSemaphore;
-            std::vector<VkSemaphore> renderFinishedSemaphore;
-            std::vector<VkSemaphore> clearFinishedSemaphore;
+            std::vector<VkSemaphore> offscreenDepthPassFinishedSemaphore;
+            std::vector<VkSemaphore> offscreenAlphaPassFinishedSemaphore;
+            std::vector<VkSemaphore> offscreenRenderingFinishedSemaphore;
+            std::vector<VkSemaphore> copyFinishedSemaphore;
             RenderWindow& window;
             bool isSomethingDrawn;
             std::array<unsigned int, Batcher::nbPrimitiveTypes> currentModelOffset, currentMaterialOffset, previousModelOffset, previousMaterialOffset;
             unsigned int nbReflRefrEntities, alignment, uboAlignment;
+            std::array<unsigned int, 1> values, valuesCopy;
             bool useThread;
             std::array<unsigned int, Batcher::nbPrimitiveTypes> totalBufferSizeModelData, maxBufferSizeModelData, maxAlignedSizeModelData, oldTotalBufferSizeModelData;
             std::array<unsigned int, Batcher::nbPrimitiveTypes> totalBufferSizeMaterialData, maxBufferSizeMaterialData, maxAlignedSizeMaterialData, oldTotalBufferSizeMaterialData;

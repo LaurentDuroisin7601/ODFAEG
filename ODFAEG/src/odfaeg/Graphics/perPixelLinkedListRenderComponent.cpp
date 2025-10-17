@@ -151,23 +151,26 @@ namespace odfaeg {
             barrier.subresourceRange.layerCount = 1;
             vkCmdPipelineBarrier(frameBuffer.getCommandBuffers()[currentFrame], VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
             const_cast<Texture&>(frameBuffer.getTexture()).toShaderReadOnlyOptimal(frameBuffer.getCommandBuffers()[frameBuffer.getCurrentFrame()]);
-            frameBuffer.display();
+            //frameBuffer.display();
             VkSemaphoreCreateInfo semaphoreInfo{};
             semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-            renderFinishedSemaphore.resize(RenderWindow::MAX_FRAMES_IN_FLIGHT);
-            for (size_t i = 0; i < RenderWindow::MAX_FRAMES_IN_FLIGHT; i++) {
-                if (vkCreateSemaphore(vkDevice.getDevice(), &semaphoreInfo, nullptr, &renderFinishedSemaphore[i]) != VK_SUCCESS) {
-                    throw std::runtime_error("failed to create semaphore");
-                }
-                //////std::cout<<"create semaphore : "<<i<<","<<renderFinishedSemaphore[i]<<std::endl;
+            VkSemaphoreTypeCreateInfo timelineCreateInfo{};
+            timelineCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO;
+            timelineCreateInfo.pNext = nullptr;
+            timelineCreateInfo.semaphoreType = VK_SEMAPHORE_TYPE_TIMELINE;
+            semaphoreInfo.pNext = &timelineCreateInfo;            ;
+            for (unsigned int i = 0; i < values.size(); i++) {
+                values[i] = 0;
             }
-            clearFinishedSemaphore.resize(frameBuffer.getMaxFramesInFlight());
+            offscreenFinishedSemaphore.resize(frameBuffer.getMaxFramesInFlight());
             for (size_t i = 0; i < frameBuffer.getMaxFramesInFlight(); i++) {
-                if (vkCreateSemaphore(vkDevice.getDevice(), &semaphoreInfo, nullptr, &clearFinishedSemaphore[i]) != VK_SUCCESS) {
+                timelineCreateInfo.initialValue = values[i];
+                if (vkCreateSemaphore(vkDevice.getDevice(), &semaphoreInfo, nullptr, &offscreenFinishedSemaphore[i]) != VK_SUCCESS) {
                     throw std::runtime_error("failed to create semaphore");
                 }
                 //////std::cout<<"create semaphore : "<<i<<","<<renderFinishedSemaphore[i]<<std::endl;
             }
+
 
             update = true;
             datasReady = false;
@@ -412,10 +415,7 @@ namespace odfaeg {
         void PerPixelLinkedListRenderComponent::clear() {
             frameBuffer.beginRecordCommandBuffers();
             const_cast<Texture&>(frameBuffer.getTexture()).toColorAttachmentOptimal(frameBuffer.getCommandBuffers()[frameBuffer.getCurrentFrame()]);
-            frameBuffer.display();
             frameBuffer.clear(Color::Transparent);
-
-            //firstDraw = true;
             unsigned int currentFrame = frameBuffer.getCurrentFrame();
             VkClearColorValue clearColor;
             clearColor.uint32[0] = 0xffffffff;
@@ -434,7 +434,6 @@ namespace odfaeg {
                 vkCmdPipelineBarrier(frameBuffer.getCommandBuffers()[i], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
 
             }
-            frameBuffer.display();
         }
         VkCommandBuffer PerPixelLinkedListRenderComponent::beginSingleTimeCommands() {
             VkCommandBufferAllocateInfo allocInfo{};
@@ -2331,7 +2330,6 @@ namespace odfaeg {
             drawSelectedInstancesIndexed();
 
 
-
             vb.clear();
             vb.setPrimitiveType(Triangles);
             Vertex v1 (math::Vec3f(0, 0, quad.getSize().z()));
@@ -2355,7 +2353,6 @@ namespace odfaeg {
             //frameBuffer.enableStencilTest(false);
             //createDescriptorSets2(currentStates);
             createCommandBufferVertexBuffer(currentStates);
-
         }
         void PerPixelLinkedListRenderComponent::allocateCommandBuffers() {
             /*commandBuffers.resize(frameBuffer.getSwapchainImages().size());
@@ -2397,28 +2394,38 @@ namespace odfaeg {
             if (vkBeginCommandBuffer(commandBuffers[currentFrame], &commandBufferBeginInfo) != VK_SUCCESS) {
                 std::runtime_error("Failed to begin recording command buffers");
             }*/
-
+            frameBuffer.beginRecordCommandBuffers();
             Shader* shader = const_cast<Shader*>(currentStates.shader);
             std::vector<Texture*> allTextures = Texture::getAllTextures();
 
-            frameBuffer.beginRecordCommandBuffers();
             vkCmdPushConstants(frameBuffer.getCommandBuffers()[currentFrame], frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][frameBuffer.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectDrawPushConsts), &indirectDrawPushConsts);
 
             frameBuffer.beginRenderPass();
 
             frameBuffer.drawIndirect(frameBuffer.getCommandBuffers()[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
             frameBuffer.endRenderPass();
-
+            std::vector<VkSemaphore> waitSemaphores, signalSemaphores;
+            waitSemaphores.push_back(offscreenFinishedSemaphore[frameBuffer.getCurrentFrame()]);
+            std::vector<VkPipelineStageFlags> waitStages;
+            waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+            std::vector<uint64_t> waitValues, signalValues;
+            waitValues.push_back(values[frameBuffer.getCurrentFrame()]);
+            //std::cout<<"wait value : "<<values[frameBuffer.getCurrentFrame()]<<std::endl;
+            signalSemaphores.push_back(offscreenFinishedSemaphore[frameBuffer.getCurrentFrame()]);
+            values[frameBuffer.getCurrentFrame()]++;
+            signalValues.push_back(values[frameBuffer.getCurrentFrame()]);
+            frameBuffer.display(signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
+            //std::cout<<"signal value : "<<values[frameBuffer.getCurrentFrame()]<<std::endl;
 
             /*frameBuffer.beginRecordCommandBuffers();
             frameBuffer.beginRenderPass();
             vkCmdExecuteCommands(frameBuffer.getCommandBuffers()[currentFrame], static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());*/
-            frameBuffer.display();
+
             isSomethingDrawn = true;
         }
         void PerPixelLinkedListRenderComponent::createCommandBufferVertexBuffer(RenderStates currentStates) {
             //if (isSomethingDrawn)
-                frameBuffer.beginRecordCommandBuffers();
+            frameBuffer.beginRecordCommandBuffers();
             currentStates.blendMode.updateIds();
             unsigned int currentFrame = frameBuffer.getCurrentFrame();
             /*VkCommandBufferInheritanceInfo inheritanceInfo;
@@ -2509,7 +2516,18 @@ namespace odfaeg {
             frameBuffer.beginRenderPass();
             vkCmdExecuteCommands(frameBuffer.getCommandBuffers()[currentFrame], static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());*/
             frameBuffer.endRenderPass();
-            frameBuffer.display(true, renderFinishedSemaphore[window.getCurrentFrame()]);
+            std::vector<VkSemaphore> waitSemaphores, signalSemaphores;
+            waitSemaphores.push_back(offscreenFinishedSemaphore[frameBuffer.getCurrentFrame()]);
+            std::vector<VkPipelineStageFlags> waitStages;
+            waitStages.push_back(VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
+            std::vector<uint64_t> waitValues, signalValues;
+            waitValues.push_back(values[frameBuffer.getCurrentFrame()]);
+            signalSemaphores.push_back(offscreenFinishedSemaphore[frameBuffer.getCurrentFrame()]);
+            //std::cout<<"pass2 wait value : "<<values[frameBuffer.getCurrentFrame()]<<std::endl;
+            values[frameBuffer.getCurrentFrame()]++;
+            signalValues.push_back(values[frameBuffer.getCurrentFrame()]);
+            frameBuffer.display(signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
+            //std::cout<<"pass2 signal value : "<<values[frameBuffer.getCurrentFrame()]<<std::endl;
             isSomethingDrawn = false;
         }
         bool PerPixelLinkedListRenderComponent::loadEntitiesOnComponent(std::vector<Entity*> vEntities) {
@@ -2680,8 +2698,8 @@ namespace odfaeg {
             return view;
         }
         void PerPixelLinkedListRenderComponent::draw(RenderTarget& target, RenderStates states) {
-            if (&target == &window)
-                window.setSemaphore(renderFinishedSemaphore);
+            /*if (&target == &window)
+                window.setSemaphore(renderFinishedSemaphore);*/
             const_cast<Texture&>(frameBuffer.getTexture()).toShaderReadOnlyOptimal(window.getCommandBuffers()[window.getCurrentFrame()]);
             frameBufferSprite.setCenter(target.getView().getPosition());
             //////std::cout<<"view position : "<<view.getPosition()<<std::endl;
@@ -2694,6 +2712,16 @@ namespace odfaeg {
             target.draw(frameBufferSprite, states);
             if (&target == &window)
                 window.endRenderPass();
+            std::vector<VkSemaphore> waitSemaphores, signalSemaphores;
+            std::vector<VkPipelineStageFlags> waitStages;
+            std::vector<uint64_t> waitValues, signalValues;
+            waitSemaphores.push_back(offscreenFinishedSemaphore[frameBuffer.getCurrentFrame()]);
+            waitStages.push_back(VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
+            signalSemaphores.push_back(offscreenFinishedSemaphore[frameBuffer.getCurrentFrame()]);
+            waitValues.push_back(values[frameBuffer.getCurrentFrame()]);
+            values[frameBuffer.getCurrentFrame()]++;
+            signalValues.push_back(values[frameBuffer.getCurrentFrame()]);
+            window.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
         }
         std::vector<Entity*> PerPixelLinkedListRenderComponent::getEntities() {
             return visibleEntities;
@@ -2758,6 +2786,9 @@ namespace odfaeg {
             if (vboIndirect != VK_NULL_HANDLE) {
                 vkDestroyBuffer(vkDevice.getDevice(),vboIndirect, nullptr);
                 vkFreeMemory(vkDevice.getDevice(), vboIndirectMemory, nullptr);
+            }
+            for (unsigned int i = 0; i < frameBuffer.getMaxFramesInFlight(); i++) {
+                vkDestroySemaphore(vkDevice.getDevice(), offscreenFinishedSemaphore[i], nullptr);
             }
             ////std::cout<<"indirect vbo destroyed"<<std::endl;
         }

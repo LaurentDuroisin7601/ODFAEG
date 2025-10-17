@@ -58,10 +58,12 @@ namespace odfaeg
             window::Device& getDevice();
             void clear(const Color& color = Color(0, 0, 0, 255));
             uint32_t getImageIndex();
-            void setSemaphore(std::vector<VkSemaphore> semaphore);
             static const int MAX_FRAMES_IN_FLIGHT = 2;
             virtual ~RenderWindow();
-            void submit(bool lastSubmit = false);
+            void submit(bool lastSubmit = false, std::vector<VkSemaphore> signalSemaphores = std::vector<VkSemaphore>(),
+                        std::vector<VkSemaphore> waitSemaphores = std::vector<VkSemaphore>(), std::vector<VkPipelineStageFlags> waitStages = std::vector<VkPipelineStageFlags>(),
+                        std::vector<uint64_t> signalValues = std::vector<uint64_t>(),
+                        std::vector<uint64_t> waitValues = std::vector<uint64_t>());
             void endRenderPass();
             VkFormat getSwapchainImageFormat();
             std::vector<VkImage> getSwapchainImages();
@@ -121,8 +123,6 @@ namespace odfaeg
             std::vector<VkImageView> swapChainImageViews;
             std::vector<VkSemaphore> imageAvailableSemaphores;
             std::vector<VkSemaphore> renderFinishedSemaphores;
-            std::vector<VkSemaphore> timelineSemaphores;
-            std::vector<VkSemaphore> semaphore;
             std::vector<VkFence> inFlightFences;
             std::vector<VkFence> imagesInFlight;
             std::vector<VkRenderPass> renderPasses;

@@ -160,9 +160,9 @@ namespace odfaeg {
                 createImageView();
                 createSampler();
 
-                shadowMap.beginRecordCommandBuffers();
-                std::vector<VkCommandBuffer> commandBuffers = shadowMap.getCommandBuffers();
-                unsigned int currentFrame =  shadowMap.getCurrentFrame();
+                stencilBuffer.beginRecordCommandBuffers();
+                std::vector<VkCommandBuffer> commandBuffers = stencilBuffer.getCommandBuffers();
+                unsigned int currentFrame =  stencilBuffer.getCurrentFrame();
                 VkImageMemoryBarrier barrier = {};
                 barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
                 barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
@@ -194,14 +194,40 @@ namespace odfaeg {
                 barrier3.subresourceRange.layerCount = 1;
                 vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier3);
 
-                const_cast<Texture&>(shadowMap.getTexture()).toShaderReadOnlyOptimal(shadowMap.getCommandBuffers()[shadowMap.getCurrentFrame()]);
-                shadowMap.display();
+                const_cast<Texture&>(shadowMap.getTexture()).toShaderReadOnlyOptimal(stencilBuffer.getCommandBuffers()[stencilBuffer.getCurrentFrame()]);
+                /*shadowMap.display();*/
 
                 VkSemaphoreCreateInfo semaphoreInfo{};
                 semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-                renderFinishedSemaphore.resize(RenderWindow::MAX_FRAMES_IN_FLIGHT);
-                for (unsigned int i = 0; i < RenderWindow::MAX_FRAMES_IN_FLIGHT; i++) {
-                    if (vkCreateSemaphore(vkDevice.getDevice(), &semaphoreInfo, nullptr, &renderFinishedSemaphore[i]) != VK_SUCCESS) {
+
+                offscreenAlphaFinishedSemaphore.resize(alphaBuffer.getMaxFramesInFlight());
+                for (unsigned int i = 0; i < alphaBuffer.getMaxFramesInFlight(); i++) {
+                    if (vkCreateSemaphore(vkDevice.getDevice(), &semaphoreInfo, nullptr, &offscreenAlphaFinishedSemaphore[i]) != VK_SUCCESS) {
+                        throw std::runtime_error("failed to create compute synchronization objects for a frame!");
+                    }
+                }
+                VkSemaphoreTypeCreateInfo timelineCreateInfo{};
+                timelineCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO;
+                timelineCreateInfo.pNext = nullptr;
+                timelineCreateInfo.semaphoreType = VK_SEMAPHORE_TYPE_TIMELINE;
+                semaphoreInfo.pNext = &timelineCreateInfo;            ;
+                for (unsigned int i = 0; i < values.size(); i++) {
+                    values[i] = 0;
+                }
+                offscreenFinishedSemaphore.resize(shadowMap.getMaxFramesInFlight());
+                for (unsigned int i = 0; i < shadowMap.getMaxFramesInFlight(); i++) {
+                    timelineCreateInfo.initialValue = values[i];
+                    if (vkCreateSemaphore(vkDevice.getDevice(), &semaphoreInfo, nullptr, &offscreenFinishedSemaphore[i]) != VK_SUCCESS) {
+                        throw std::runtime_error("failed to create compute synchronization objects for a frame!");
+                    }
+                }
+                for (unsigned int i = 0; i < values.size(); i++) {
+                    values2[i] = 0;
+                }
+                offscreenDepthFinishedSemaphore.resize(depthBuffer.getMaxFramesInFlight());
+                for (unsigned int i = 0; i < depthBuffer.getMaxFramesInFlight(); i++) {
+                    timelineCreateInfo.initialValue = values2[i];
+                    if (vkCreateSemaphore(vkDevice.getDevice(), &semaphoreInfo, nullptr, &offscreenDepthFinishedSemaphore[i]) != VK_SUCCESS) {
                         throw std::runtime_error("failed to create compute synchronization objects for a frame!");
                     }
                 }
@@ -2665,18 +2691,26 @@ namespace odfaeg {
                 currentStates.blendMode.updateIds();
                 Shader* shader = const_cast<Shader*>(currentStates.shader);
                 if (shader == &depthGenShader) {
-
+                    depthBuffer.beginRecordCommandBuffers();
                     //////std::cout<<"draw on db"<<std::endl;
                     std::vector<VkCommandBuffer> commandBuffers = depthBuffer.getCommandBuffers();
                     unsigned int currentFrame = depthBuffer.getCurrentFrame();
                     layerPC.nbLayers = GameObject::getNbLayers();
-                    depthBuffer.beginRecordCommandBuffers();
                     vkCmdPushConstants(commandBuffers[currentFrame], depthBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][depthBuffer.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectRenderingPC), &indirectRenderingPC);
                     vkCmdPushConstants(commandBuffers[currentFrame], depthBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][depthBuffer.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(LayerPC), &layerPC);
                     depthBuffer.beginRenderPass();
                     depthBuffer.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
                     depthBuffer.endRenderPass();
-                    depthBuffer.display();
+                    /*std::vector<VkSemaphore> signalSemaphores, waitSemaphores;
+                    std::vector<VkPipelineStageFlags> waitStages;
+                    std::vector<uint64_t> signalValues, waitValues;
+                    waitSemaphores.push_back(offscreenFinishedSemaphore[shadowMap.getCurrentFrame()]);
+                    waitStages.push_back(VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
+                    waitValues.push_back(values[shadowMap.getCurrentFrame()]);
+                    signalSemaphores.push_back(offscreenDepthFinishedSemaphore[shadowMap.getCurrentFrame()]);
+                    values2[stencilBuffer.getCurrentFrame()]++;
+                    signalValues.push_back(values2[stencilBuffer.getCurrentFrame()]);*/
+                    depthBuffer.display(/*signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues*/);
                 } else if (shader == &sBuildAlphaBufferShader) {
                     alphaBuffer.beginRecordCommandBuffers();
                     const_cast<Texture&>(depthBuffer.getTexture()).toShaderReadOnlyOptimal(alphaBuffer.getCommandBuffers()[alphaBuffer.getCurrentFrame()]);
@@ -2704,13 +2738,22 @@ namespace odfaeg {
                     alphaBuffer.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
                     alphaBuffer.endRenderPass();
                     const_cast<Texture&>(depthBuffer.getTexture()).toColorAttachmentOptimal(alphaBuffer.getCommandBuffers()[alphaBuffer.getCurrentFrame()]);
-                    alphaBuffer.display();
+                    /*waitSemaphores.push_back(offscreenDepthFinishedSemaphore[shadowMap.getCurrentFrame()]);
+                    waitStages.push_back(VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
+                    waitValues.clear();
+                    waitValues.push_back(values[stencilBuffer.getCurrentFrame()]);
+                    waitValues.push_back(values2[depthBuffer.getCurrentFrame()]);
+                    signalSemaphores.clear();
+                    signalSemaphores.push_back(offscreenAlphaFinishedSemaphore[alphaBuffer.getCurrentFrame()]);
+                    signalValues.clear();*/
+                    alphaBuffer.display(/*signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues*/);
+
                 } else if (shader == &buildShadowMapShader) {
 
-
+                    stencilBuffer.beginRecordCommandBuffers();
                     std::vector<VkCommandBuffer> commandBuffers = stencilBuffer.getCommandBuffers();
                     unsigned int currentFrame = stencilBuffer.getCurrentFrame();
-                    stencilBuffer.beginRecordCommandBuffers();
+
 
                     //vkCmdWaitEvents(commandBuffers[currentFrame], 1, &events[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
                     vkCmdPushConstants(commandBuffers[currentFrame], stencilBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][stencilBuffer.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(LightIndirectRenderingPC), &lightIndirectRenderingPC);
@@ -2721,10 +2764,16 @@ namespace odfaeg {
                     stencilBuffer.beginRenderPass();
                     stencilBuffer.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
                     stencilBuffer.endRenderPass();
-                    stencilBuffer.display();
+                    /*
+                    values[stencilBuffer.getCurrentFrame()]++;
+                    signalValues.clear();
+                    signalValues.push_back(values[stencilBuffer.getCurrentFrame()]);
+                    signalSemaphores.clear();
+                    signalSemaphores.push_back(offscreenFinishedSemaphore[shadowMap.getCurrentFrame()]);*/
+                    stencilBuffer.display(/*signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues*/);
 
                 } else {
-                    shadowMap.beginRecordCommandBuffers();
+
                     const_cast<Texture&>(stencilBuffer.getTexture()).toShaderReadOnlyOptimal(shadowMap.getCommandBuffers()[shadowMap.getCurrentFrame()]);
                     const_cast<Texture&>(alphaBuffer.getTexture()).toShaderReadOnlyOptimal(shadowMap.getCommandBuffers()[shadowMap.getCurrentFrame()]);
                     const_cast<Texture&>(depthBuffer.getTexture()).toShaderReadOnlyOptimal(shadowMap.getCommandBuffers()[shadowMap.getCurrentFrame()]);
@@ -2753,7 +2802,16 @@ namespace odfaeg {
                     const_cast<Texture&>(alphaBuffer.getTexture()).toColorAttachmentOptimal(shadowMap.getCommandBuffers()[shadowMap.getCurrentFrame()]);
                     const_cast<Texture&>(depthBuffer.getTexture()).toColorAttachmentOptimal(shadowMap.getCommandBuffers()[shadowMap.getCurrentFrame()]);
                     const_cast<Texture&>(stencilBuffer.getTexture()).toColorAttachmentOptimal(shadowMap.getCommandBuffers()[shadowMap.getCurrentFrame()]);
-                    shadowMap.display(true, renderFinishedSemaphore[window.getCurrentFrame()]);
+
+                    /*waitSemaphores.push_back(offscreenAlphaFinishedSemaphore[alphaBuffer.getCurrentFrame()]);
+                    waitStages.push_back(VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
+                    waitValues.push_back(0);
+                    signalSemaphores.clear();
+                    signalSemaphores.push_back(offscreenFinishedSemaphore[shadowMap.getCurrentFrame()]);
+                    values[shadowMap.getCurrentFrame()]++;
+                    signalValues.push_back(values[shadowMap.getCurrentFrame()]);*/
+                    shadowMap.display(/*signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues*/);
+
                 }
                 isSomethingDrawn = true;
             }
@@ -2785,7 +2843,6 @@ namespace odfaeg {
                     memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
                     vkCmdPipelineBarrier(commandBuffers[i], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
                 }
-                depthBuffer.display();
                 alphaBuffer.clear(Color::Transparent);
                 commandBuffers = alphaBuffer.getCommandBuffers();
                 for (unsigned int i = 0; i < commandBuffers.size(); i++) {
@@ -2797,14 +2854,20 @@ namespace odfaeg {
                     memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
                     vkCmdPipelineBarrier(commandBuffers[i], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
                 }
-                alphaBuffer.display();
                 stencilBuffer.clear(Color::Transparent);
-                stencilBuffer.display();
+                commandBuffers = stencilBuffer.getCommandBuffers();
+                for (unsigned int i = 0; i < commandBuffers.size(); i++) {
+                    vkCmdClearColorImage(commandBuffers[i], stencilTextureImage, VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
+                    VkMemoryBarrier memoryBarrier;
+                    memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+                    memoryBarrier.pNext = VK_NULL_HANDLE;
+                    memoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                    memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+                    vkCmdPipelineBarrier(commandBuffers[i], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
+                }
                 shadowMap.beginRecordCommandBuffers();
                 const_cast<Texture&>(shadowMap.getTexture()).toColorAttachmentOptimal(shadowMap.getCommandBuffers()[shadowMap.getCurrentFrame()]);
-                shadowMap.display();
                 shadowMap.clear(Color::White);
-                shadowMap.display();
             }
             void ShadowRenderComponent::drawNextFrame() {
                 //glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo));
@@ -2862,9 +2925,14 @@ namespace odfaeg {
                 }
                 drawInstanced();
                 drawInstancedIndexed();
+
+
+
                 if (!isSomethingDrawn) {
+                    stencilBuffer.beginRecordCommandBuffers();
+                    stencilBuffer.display();
                     shadowMap.beginRecordCommandBuffers();
-                    shadowMap.display(true, renderFinishedSemaphore[window.getCurrentFrame()]);
+                    shadowMap.display();
                 }
                 isSomethingDrawn = false;
 
@@ -2921,8 +2989,8 @@ namespace odfaeg {
                 return getPosition().z();
             }
             void ShadowRenderComponent::draw(RenderTarget& target, RenderStates states) {
-                if (&target == &window)
-                    window.setSemaphore(renderFinishedSemaphore);
+                /*if (&target == &window)
+                    window.setSemaphore(renderFinishedSemaphore);**/
                 const_cast<Texture&>(shadowMap.getTexture()).toShaderReadOnlyOptimal(window.getCommandBuffers()[window.getCurrentFrame()]);
                 shadowTile.setCenter(target.getView().getPosition());
                 if (&target == &window)
@@ -2931,6 +2999,16 @@ namespace odfaeg {
                 target.draw(shadowTile, states);
                 if (&target == &window)
                     window.endRenderPass();
+                /*std::vector<VkSemaphore> waitSemaphores, signalSemaphores;
+                std::vector<VkPipelineStageFlags> waitStages;
+                std::vector<uint64_t> waitValues, signalValues;
+                waitSemaphores.push_back(offscreenFinishedSemaphore[shadowMap.getCurrentFrame()]);
+                waitStages.push_back(VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
+                signalSemaphores.push_back(offscreenFinishedSemaphore[shadowMap.getCurrentFrame()]);
+                waitValues.push_back(values[shadowMap.getCurrentFrame()]);
+                values[shadowMap.getCurrentFrame()]++;
+                signalValues.push_back(values[shadowMap.getCurrentFrame()]);*/
+                window.submit(/*false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues*/);
             }
             void ShadowRenderComponent::loadTextureIndexes() {
             }
@@ -3022,7 +3100,17 @@ namespace odfaeg {
             std::vector<Entity*> ShadowRenderComponent::getEntities() {
                 return visibleEntities;
             }
-            ShadowRenderComponent::~ShadowRenderComponent() {}
+            ShadowRenderComponent::~ShadowRenderComponent() {
+                for (unsigned int i = 0; i < offscreenDepthFinishedSemaphore.size(); i++) {
+                    vkDestroySemaphore(vkDevice.getDevice(), offscreenDepthFinishedSemaphore[i], nullptr);
+                }
+                for (unsigned int i = 0; i < offscreenAlphaFinishedSemaphore.size(); i++) {
+                    vkDestroySemaphore(vkDevice.getDevice(), offscreenAlphaFinishedSemaphore[i], nullptr);
+                }
+                for (unsigned int i = 0; i < offscreenFinishedSemaphore.size(); i++) {
+                    vkDestroySemaphore(vkDevice.getDevice(), offscreenFinishedSemaphore[i], nullptr);
+                }
+            }
         #else
             ShadowRenderComponent::ShadowRenderComponent (RenderWindow& window, int layer, std::string expression,window::ContextSettings settings) :
             HeavyComponent(window, math::Vec3f(window.getView().getPosition().x(), window.getView().getPosition().y(), layer),

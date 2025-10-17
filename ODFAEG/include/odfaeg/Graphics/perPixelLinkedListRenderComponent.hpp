@@ -167,9 +167,9 @@ namespace odfaeg {
             PFN_vkCmdPushDescriptorSetKHR vkCmdPushDescriptorSetKHR{ VK_NULL_HANDLE };
             core::Clock timeClock;
             std::vector<unsigned int> pipelineIds;
+            std::array<unsigned int, 1> values;
             std::vector<VkEvent> events;
-            std::vector<VkSemaphore> renderFinishedSemaphore;
-            std::vector<VkSemaphore> clearFinishedSemaphore;
+            std::vector<VkSemaphore> offscreenFinishedSemaphore;
             RenderWindow& window;
             bool isSomethingDrawn;
         };

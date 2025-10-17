@@ -869,6 +869,7 @@ namespace odfaeg {
         }
         void RenderTarget::createCommandBuffers() {
             commandBuffers.resize(getSwapchainImages().size());
+            commandsOnRecordedState.resize(getSwapchainImages().size(), false);
 
             VkCommandBufferAllocateInfo allocInfo{};
             allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -883,9 +884,7 @@ namespace odfaeg {
                 ////std::cout<<"allocate cmd : "<<commandBuffers.size()<<std::endl;*/
         }
         void RenderTarget::beginRecordCommandBuffers() {
-            /*if (m_name == "depthBuffer")
-                ////std::cout<<"render texture begin command buffer"<<std::endl;*/
-            //for (unsigned int i = 0; i < getCommandBuffers().size(); i++) {
+            if (!commandsOnRecordedState[getCurrentFrame()]) {
                 VkCommandBufferBeginInfo beginInfo{};
                 beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
                 /*if (m_name == "depthBuffer")
@@ -894,8 +893,8 @@ namespace odfaeg {
 
                     throw core::Erreur(0, "failed to begin recording command buffer!", 1);
                 }
-
-            //}
+                commandsOnRecordedState[getCurrentFrame()] = true;
+            }
         }
         void RenderTarget::beginRenderPass() {
             VkRenderPassBeginInfo renderPassInfo{};

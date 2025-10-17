@@ -257,7 +257,7 @@ namespace odfaeg {
             struct alignas(16) GLMatrix4f {
                 float data[16]; // row-major ou column-major, selon ton convention
             };
-
+            std::vector<bool> commandsOnRecordedState;
         private :
             GLMatrix4f toVulkanMatrix(const math::Matrix4f& mat) {
                 GLMatrix4f flat;

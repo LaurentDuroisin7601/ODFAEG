@@ -372,12 +372,18 @@ namespace odfaeg {
             endSingleTimeCommands(commandBuffer);
         }
         void Texture::toShaderReadOnlyOptimal(VkCommandBuffer cmd) {
-            if (isFBOTexture)
+            //std::cout<<"is on color attachment optimal : "<<isOnColorAttachmentOptimal<<std::endl;
+            if (isFBOTexture) {
                 transitionImageLayout(cmd, textureImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+            }
         }
         void Texture::toColorAttachmentOptimal(VkCommandBuffer cmd) {
-            if (isFBOTexture)
+            //std::cout<<"is on color attachment optimal : "<<isOnColorAttachmentOptimal<<std::endl;
+            if (isFBOTexture) {
                 transitionImageLayout(cmd, textureImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+
+            }
         }
         void Texture::transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout) {
             imageLayout = newLayout;

@@ -70,7 +70,7 @@ namespace odfaeg {
                             //std::cout<<"draw on window"<<std::endl;
                             it->second->getWindow().draw(*it->second.get());
                             #ifdef VULKAN
-                            it->second->getWindow().submit();
+                            //it->second->getWindow().submit();
                             it->second->getWindow().beginRecordCommandBuffers();
                             #endif
                         }
