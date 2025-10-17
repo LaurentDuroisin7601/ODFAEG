@@ -447,15 +447,18 @@ namespace odfaeg {
             *   \return the angle between the two vectors.
             */
              float getAngleBetween (const VecN<T, N> &other) {
-                if(isNulVector() || other.isNulVector())
-                    return 0;
-                float cosinus = dot(other);
-                if (cosinus == 1)
-                    return 0;
-                if (cosinus == -1)
+                if (isNulVector() || other.isNulVector() || *this == other)
+                return 0;
+                if (*this == -other)
                     return PI;
-                //////std::cout<<"acos  : "<<Math::acosinus(cosinus)<<std::endl;
-                return Math::acosinus(cosinus);
+                float dotProduct = dot(other);
+                Vec3f v1 (x(), y(), 0);
+                Vec3f v2 (other.x(), other.y(), 0);
+                Vec3f v3 = v1.cross(v2);
+                if (v3.z() >= 0)
+                    return Math::acosinus(dotProduct);
+                else
+                    return -Math::acosinus(dotProduct);
             }
             float getAngleBetween (const VecN<T, N> &other, const VecN<T, N> &n) {
                 if(isNulVector() || other.isNulVector())

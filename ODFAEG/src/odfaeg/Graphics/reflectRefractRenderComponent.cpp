@@ -6558,7 +6558,7 @@ namespace odfaeg {
                 indirectRenderingPC.viewMatrix = toVulkanMatrix(viewMatrix);
                 //std::cout<<"view matrix : "<<viewMatrix<<std::endl;
                 if (useThread) {
-                    std::unique_lock<std::mutex> lock(mtx);
+                    std::lock_guard<std::mutex> lock(mtx);
                     //cv.wait(lock, [this] { return isCommandBufferReady(); });
                     resetBuffers();
 
