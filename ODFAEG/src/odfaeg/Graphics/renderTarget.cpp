@@ -379,11 +379,14 @@ namespace odfaeg {
             /*//std::cout<<"ids : "<<shader->getId()* (Batcher::nbPrimitiveTypes - 1)+vertexBuffer.getPrimitiveType()<<","<<id<<","<<depthStencilId<<std::endl;
             //std::cout<<"pipeline : "<<graphicsPipeline.size()<<std::endl;*/
             vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vertexBuffer.getPrimitiveType()][id][depthStencilId*nbBlendMode+blendModeId]);
+
             VkBuffer vertexBuffers[] = {vertexBuffer.getVertexBuffer()};
             VkDeviceSize offsets[] = {0, 0};
             vkCmdBindVertexBuffers(cmd, vertexOffset, 1, vertexBuffers, offsets);
             vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vertexBuffer.getPrimitiveType()][id][depthStencilId*nbBlendMode+blendModeId], 0, 1, &descriptorSets[descriptorId][getCurrentFrame()], dynamicBufferOffsets.size(), dynamicBufferOffsets.data());
-
+            //std::cout<<"pipeline id draw : "<<depthStencilId*nbBlendMode+blendModeId<<std::endl;
+            /*if (depthStencil[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vertexBuffer.getPrimitiveType()][id][depthStencilId*nbBlendMode+blendModeId].back.compareOp == VK_COMPARE_OP_NOT_EQUAL)
+                std::cout<<"not equale"<<std::endl;*/
             applyViewportAndScissor(cmd);
             if(vertexBuffer.getIndicesSize() > 0) {
                 vkCmdBindIndexBuffer(cmd, vertexBuffer.getIndexBuffer(), indexOffset, VK_INDEX_TYPE_UINT16);
@@ -760,12 +763,13 @@ namespace odfaeg {
 
             depthStencil[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId*nbBlendMode+blendModeId].sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
             depthStencil[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId*nbBlendMode+blendModeId].depthTestEnable = (depthTestEnabled) ? VK_TRUE : VK_FALSE;
-            depthStencil[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId*nbBlendMode+blendModeId].depthWriteEnable = VK_TRUE;
-            //depthStencil[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId*nbBlendMode+blendModeId].depthCompareOp = VK_COMPARE_OP_ALWAYS;
             depthStencil[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId*nbBlendMode+blendModeId].depthBoundsTestEnable = VK_FALSE;
             depthStencil[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId*nbBlendMode+blendModeId].minDepthBounds = 0.0f; // Optional
             depthStencil[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId*nbBlendMode+blendModeId].maxDepthBounds = 1.0f; // Optional
             depthStencil[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId*nbBlendMode+blendModeId].stencilTestEnable = (stencilTestEnabled) ? VK_TRUE : VK_FALSE;
+            /*if (depthStencil[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId*nbBlendMode+blendModeId].depthTestEnable  == VK_TRUE)
+                std::cout<<"depth test enabled"<<std::endl;*/
+
 
 
             VkGraphicsPipelineCreateInfo pipelineInfo{};
@@ -897,6 +901,7 @@ namespace odfaeg {
             }
         }
         void RenderTarget::beginRenderPass() {
+            //std::cout<<"render pass depth ? "<<(depthTestEnabled || stencilTestEnabled)<<std::endl;
             VkRenderPassBeginInfo renderPassInfo{};
             renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
             renderPassInfo.renderPass = (depthTestEnabled || stencilTestEnabled) ? getRenderPass(1) : getRenderPass(0);

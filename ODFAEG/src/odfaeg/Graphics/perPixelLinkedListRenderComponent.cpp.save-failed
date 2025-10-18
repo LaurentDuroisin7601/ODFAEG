@@ -151,28 +151,30 @@ namespace odfaeg {
             barrier.subresourceRange.layerCount = 1;
             vkCmdPipelineBarrier(frameBuffer.getCommandBuffers()[currentFrame], VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
             const_cast<Texture&>(frameBuffer.getTexture()).toShaderReadOnlyOptimal(frameBuffer.getCommandBuffers()[frameBuffer.getCurrentFrame()]);
-            frameBuffer.display();
+            //frameBuffer.display();
             VkSemaphoreCreateInfo semaphoreInfo{};
             semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-            renderFinishedSemaphore.resize(RenderWindow::MAX_FRAMES_IN_FLIGHT);
-            for (size_t i = 0; i < RenderWindow::MAX_FRAMES_IN_FLIGHT; i++) {
-                if (vkCreateSemaphore(vkDevice.getDevice(), &semaphoreInfo, nullptr, &renderFinishedSemaphore[i]) != VK_SUCCESS) {
-                    throw std::runtime_error("failed to create semaphore");
-                }
-                ////std::cout<<"create semaphore : "<<i<<","<<renderFinishedSemaphore[i]<<std::endl;
+            VkSemaphoreTypeCreateInfo timelineCreateInfo{};
+            timelineCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO;
+            timelineCreateInfo.pNext = nullptr;
+            timelineCreateInfo.semaphoreType = VK_SEMAPHORE_TYPE_TIMELINE;
+            semaphoreInfo.pNext = &timelineCreateInfo;            ;
+            for (unsigned int i = 0; i < values.size(); i++) {
+                values[i] = 0;
             }
-            /*clearFinishedSemaphore.resize(frameBuffer.getMaxFramesInFlight());
+            offscreenFinishedSemaphore.resize(frameBuffer.getMaxFramesInFlight());
             for (size_t i = 0; i < frameBuffer.getMaxFramesInFlight(); i++) {
-                if (vkCreateSemaphore(vkDevice.getDevice(), &semaphoreInfo, nullptr, &clearFinishedSemaphore[i]) != VK_SUCCESS) {
+                timelineCreateInfo.initialValue = values[i];
+                if (vkCreateSemaphore(vkDevice.getDevice(), &semaphoreInfo, nullptr, &offscreenFinishedSemaphore[i]) != VK_SUCCESS) {
                     throw std::runtime_error("failed to create semaphore");
                 }
-                ////std::cout<<"create semaphore : "<<i<<","<<renderFinishedSemaphore[i]<<std::endl;
+                //////std::cout<<"create semaphore : "<<i<<","<<renderFinishedSemaphore[i]<<std::endl;
             }
 
 
+            update = true;
             datasReady = false;
             isSomethingDrawn = false;
-            update = true;
         }
         void PerPixelLinkedListRenderComponent::createDescriptorsAndPipelines() {
             RenderStates states;
@@ -185,7 +187,7 @@ namespace odfaeg {
             createDescriptorSetLayout2(states);
             allocateDescriptorSets2(states);
             createDescriptorSets2(states);
-            states.shader = &indirectRenderingShader;
+
             BlendMode none = BlendNone;
             BlendMode alpha = BlendAlpha;
             BlendMode add = BlendAdd;
@@ -217,6 +219,7 @@ namespace odfaeg {
                 }
             }
             frameBuffer.enableDepthTest(true);
+            states.shader = &indirectRenderingShader;
             for (unsigned int b = 0; b < blendModes.size(); b++) {
 
                 states.blendMode = blendModes[b];
@@ -237,8 +240,15 @@ namespace odfaeg {
                            pipelineLayoutInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = &push_constant;
                            pipelineLayoutInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 1;
                            depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = {}; // Optional
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {}; // Optional
+
+
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.failOp = VK_STENCIL_OP_KEEP;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.depthFailOp = VK_STENCIL_OP_KEEP;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.passOp = VK_STENCIL_OP_REPLACE;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.compareMask = 0xff;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.writeMask = 0xff;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.reference = 0;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back;
                            frameBuffer.createGraphicPipeline(static_cast<PrimitiveType>(i), states, NODEPTHNOSTENCIL, NBDEPTHSTENCIL);
 
 
@@ -246,8 +256,8 @@ namespace odfaeg {
                            frameBuffer.enableStencilTest(true);
                            depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
                            depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.compareOp = VK_COMPARE_OP_ALWAYS;
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.failOp = VK_STENCIL_OP_REPLACE;
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.depthFailOp = VK_STENCIL_OP_REPLACE;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.failOp = VK_STENCIL_OP_KEEP;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.depthFailOp = VK_STENCIL_OP_KEEP;
                            depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.passOp = VK_STENCIL_OP_REPLACE;
                            depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.compareMask = 0xff;
                            depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.writeMask = 0xff;
@@ -269,12 +279,13 @@ namespace odfaeg {
                            frameBuffer.enableStencilTest(true);
 
                            depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
+
                            depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.compareOp = VK_COMPARE_OP_NOT_EQUAL;
                            depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.failOp = VK_STENCIL_OP_KEEP;
                            depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.depthFailOp = VK_STENCIL_OP_KEEP;
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.passOp = VK_STENCIL_OP_REPLACE;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.passOp = VK_STENCIL_OP_KEEP;
                            depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.compareMask = 0xff;
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.writeMask = 0xff;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.writeMask = 0x00;
                            depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.reference = 1;
                            depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].front = depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back;
                            VkPushConstantRange push_constant;
@@ -284,6 +295,7 @@ namespace odfaeg {
                            push_constant.size = sizeof(IndirectDrawPushConsts);
                            //this push constant range is accessible only in the vertex shader
                            push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+                           //std::cout<<"pipeline id : "<<NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id<<std::endl;
 
                            pipelineLayoutInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = &push_constant;
                            pipelineLayoutInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 1;
@@ -300,6 +312,7 @@ namespace odfaeg {
                 for (unsigned int j = 0; j < NBDEPTHSTENCIL; j++) {
                     for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
                         if (j == 0) {
+
                            frameBuffer.enableStencilTest(false);
 
                            VkPushConstantRange push_constant;
@@ -311,13 +324,20 @@ namespace odfaeg {
                            pipelineLayoutInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = &push_constant;
                            pipelineLayoutInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 1;
                            depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
-                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = {}; // Optional
-                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {}; // Optional
+                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthWriteEnable = VK_TRUE;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.failOp = VK_STENCIL_OP_KEEP;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.depthFailOp = VK_STENCIL_OP_KEEP;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.passOp = VK_STENCIL_OP_REPLACE;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.compareMask = 0xff;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.writeMask = 0xff;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.reference = 0;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back;
                            frameBuffer.createGraphicPipeline(static_cast<PrimitiveType>(i), states, NODEPTHNOSTENCIL, NBDEPTHSTENCIL);
                        } else if (j == 1) {
                            frameBuffer.enableStencilTest(true);
 
                            depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
+                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthWriteEnable = VK_TRUE;
                            depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.compareOp = VK_COMPARE_OP_ALWAYS;
                            depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.failOp = VK_STENCIL_OP_REPLACE;
                            depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.depthFailOp = VK_STENCIL_OP_REPLACE;
@@ -337,7 +357,8 @@ namespace odfaeg {
                            frameBuffer.createGraphicPipeline(static_cast<PrimitiveType>(i), states, NODEPTHSTENCIL, NBDEPTHSTENCIL);
                         } else {
                            frameBuffer.enableStencilTest(true);
-                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
+                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_LESS;;
+                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].depthWriteEnable = VK_FALSE;
                            depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.compareOp = VK_COMPARE_OP_NOT_EQUAL;
                            depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.failOp = VK_STENCIL_OP_KEEP;
                            depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.depthFailOp = VK_STENCIL_OP_KEEP;
@@ -413,10 +434,7 @@ namespace odfaeg {
         void PerPixelLinkedListRenderComponent::clear() {
             frameBuffer.beginRecordCommandBuffers();
             const_cast<Texture&>(frameBuffer.getTexture()).toColorAttachmentOptimal(frameBuffer.getCommandBuffers()[frameBuffer.getCurrentFrame()]);
-            frameBuffer.display();
             frameBuffer.clear(Color::Transparent);
-
-            //firstDraw = true;
             unsigned int currentFrame = frameBuffer.getCurrentFrame();
             VkClearColorValue clearColor;
             clearColor.uint32[0] = 0xffffffff;
@@ -547,7 +565,7 @@ namespace odfaeg {
             if (shader->getNbShaders() > descriptorPool.size())
                 descriptorPool.resize(shader->getNbShaders());
             unsigned int descriptorId = shader->getId();
-            ////std::cout<<"ppll descriptor id : "<<frameBuffer.getId()<<","<<shader->getId()<<","<<frameBuffer.getId() * shader->getNbShaders() + shader->getId()<<std::endl;
+            //////std::cout<<"ppll descriptor id : "<<frameBuffer.getId()<<","<<shader->getId()<<","<<frameBuffer.getId() * shader->getNbShaders() + shader->getId()<<std::endl;
             std::vector<Texture*> allTextures = Texture::getAllTextures();
             std::array<VkDescriptorPoolSize, 6> poolSizes;
             poolSizes[0].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
@@ -556,12 +574,12 @@ namespace odfaeg {
             poolSizes[1].descriptorCount = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight());
             poolSizes[2].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
             poolSizes[2].descriptorCount = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight());
-            poolSizes[3].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-            poolSizes[3].descriptorCount = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight() * allTextures.size());
+            poolSizes[3].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+            poolSizes[3].descriptorCount = 1;
             poolSizes[4].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
             poolSizes[4].descriptorCount = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight());
-            poolSizes[5].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-            poolSizes[5].descriptorCount = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight());
+            poolSizes[5].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            poolSizes[5].descriptorCount = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight() * allTextures.size());
 
             if (descriptorPool[descriptorId] != nullptr) {
                 vkDestroyDescriptorPool(vkDevice.getDevice(), descriptorPool[descriptorId], nullptr);
@@ -580,7 +598,7 @@ namespace odfaeg {
             if (shader->getNbShaders() > descriptorSetLayout.size())
                 descriptorSetLayout.resize(shader->getNbShaders());
             unsigned int descriptorId = shader->getId();
-            ////std::cout<<"ppll descriptor id : "<<descriptorId<<std::endl;
+            //////std::cout<<"ppll descriptor id : "<<descriptorId<<std::endl;
             std::vector<Texture*> allTextures = Texture::getAllTextures();
             VkDescriptorSetLayoutBinding counterLayoutBinding{};
             counterLayoutBinding.binding = 0;
@@ -603,34 +621,46 @@ namespace odfaeg {
             linkedListLayoutBinding.pImmutableSamplers = nullptr;
             linkedListLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-            VkDescriptorSetLayoutBinding samplerLayoutBinding{};
-            samplerLayoutBinding.binding = 3;
-            samplerLayoutBinding.descriptorCount = allTextures.size();
-            samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-            samplerLayoutBinding.pImmutableSamplers = nullptr;
-            samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+            std::vector<VkDescriptorBindingFlags> bindingFlags(6, 0); // 6 bindings, flags par défaut à 0
+            bindingFlags[5] = VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
+                  VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT; // seulement pour sampler[]
+
+            VkDescriptorSetLayoutBindingFlagsCreateInfo bindingFlagsInfo{};
+            bindingFlagsInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
+            bindingFlagsInfo.bindingCount = static_cast<uint32_t>(bindingFlags.size());
+            bindingFlagsInfo.pBindingFlags = bindingFlags.data();
 
             VkDescriptorSetLayoutBinding modelDataLayoutBinding{};
-            modelDataLayoutBinding.binding = 4;
+            modelDataLayoutBinding.binding = 3;
             modelDataLayoutBinding.descriptorCount = 1;
             modelDataLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
             modelDataLayoutBinding.pImmutableSamplers = nullptr;
             modelDataLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
             VkDescriptorSetLayoutBinding materialDataLayoutBinding{};
-            materialDataLayoutBinding.binding = 5;
+            materialDataLayoutBinding.binding = 4;
             materialDataLayoutBinding.descriptorCount = 1;
             materialDataLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
             materialDataLayoutBinding.pImmutableSamplers = nullptr;
             materialDataLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
+            VkDescriptorSetLayoutBinding samplerLayoutBinding{};
+            samplerLayoutBinding.binding = 5;
+            samplerLayoutBinding.descriptorCount = allTextures.size();
+            samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            samplerLayoutBinding.pImmutableSamplers = nullptr;
+            samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+
+
             if (descriptorSetLayout[descriptorId] != nullptr) {
                 vkDestroyDescriptorSetLayout(vkDevice.getDevice(), descriptorSetLayout[descriptorId], nullptr);
             }
 
-            std::array<VkDescriptorSetLayoutBinding, 6> bindings = {counterLayoutBinding, headPtrImageLayoutBinding, linkedListLayoutBinding, samplerLayoutBinding, modelDataLayoutBinding, materialDataLayoutBinding};
+            std::array<VkDescriptorSetLayoutBinding, 6> bindings = {counterLayoutBinding, headPtrImageLayoutBinding, linkedListLayoutBinding, modelDataLayoutBinding, materialDataLayoutBinding, samplerLayoutBinding};
             VkDescriptorSetLayoutCreateInfo layoutInfo{};
             layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+            layoutInfo.pNext = &bindingFlagsInfo;
             //layoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR;
             layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());;
             layoutInfo.pBindings = bindings.data();
@@ -647,9 +677,17 @@ namespace odfaeg {
             for (unsigned int i = 0; i < descriptorSets.size(); i++) {
                 descriptorSets[i].resize(frameBuffer.getMaxFramesInFlight());
             }
+            std::vector<Texture*> allTextures = Texture::getAllTextures();
+            std::vector<uint32_t> variableCounts(frameBuffer.getMaxFramesInFlight(), static_cast<uint32_t>(allTextures.size()));
+
+            VkDescriptorSetVariableDescriptorCountAllocateInfo variableCountInfo{};
+            variableCountInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO;
+            variableCountInfo.descriptorSetCount = static_cast<uint32_t>(variableCounts.size());;
+            variableCountInfo.pDescriptorCounts = variableCounts.data();
             std::vector<VkDescriptorSetLayout> layouts(frameBuffer.getMaxFramesInFlight(), descriptorSetLayout[descriptorId]);
             VkDescriptorSetAllocateInfo allocInfo{};
             allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+            allocInfo.pNext = &variableCountInfo;
             allocInfo.descriptorPool = descriptorPool[descriptorId];
             allocInfo.descriptorSetCount = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight());
             allocInfo.pSetLayouts = layouts.data();
@@ -712,19 +750,23 @@ namespace odfaeg {
                 descriptorWrites[2].descriptorCount = 1;
                 descriptorWrites[2].pBufferInfo = &linkedListStorageBufferInfoLastFrame;
 
+                VkDescriptorBufferInfo modelDataStorageBufferInfoLastFrame{};
+                modelDataStorageBufferInfoLastFrame.buffer = modelDataShaderStorageBuffers[i];
+                modelDataStorageBufferInfoLastFrame.offset = 0;
+                modelDataStorageBufferInfoLastFrame.range = maxModelDataSize;
 
                 descriptorWrites[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                 descriptorWrites[3].dstSet = descriptorSets[descriptorId][i];
                 descriptorWrites[3].dstBinding = 3;
                 descriptorWrites[3].dstArrayElement = 0;
-                descriptorWrites[3].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                descriptorWrites[3].descriptorCount = allTextures.size();
-                descriptorWrites[3].pImageInfo = descriptorImageInfos.data();
+                descriptorWrites[3].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                descriptorWrites[3].descriptorCount = 1;
+                descriptorWrites[3].pBufferInfo = &modelDataStorageBufferInfoLastFrame;
 
-                VkDescriptorBufferInfo modelDataStorageBufferInfoLastFrame{};
-                modelDataStorageBufferInfoLastFrame.buffer = modelDataShaderStorageBuffers[i];
-                modelDataStorageBufferInfoLastFrame.offset = 0;
-                modelDataStorageBufferInfoLastFrame.range = maxModelDataSize;
+                VkDescriptorBufferInfo materialDataStorageBufferInfoLastFrame{};
+                materialDataStorageBufferInfoLastFrame.buffer = materialDataShaderStorageBuffers[i];
+                materialDataStorageBufferInfoLastFrame.offset = 0;
+                materialDataStorageBufferInfoLastFrame.range = maxMaterialDataSize;
 
                 descriptorWrites[4].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                 descriptorWrites[4].dstSet = descriptorSets[descriptorId][i];
@@ -732,20 +774,15 @@ namespace odfaeg {
                 descriptorWrites[4].dstArrayElement = 0;
                 descriptorWrites[4].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
                 descriptorWrites[4].descriptorCount = 1;
-                descriptorWrites[4].pBufferInfo = &modelDataStorageBufferInfoLastFrame;
-
-                VkDescriptorBufferInfo materialDataStorageBufferInfoLastFrame{};
-                materialDataStorageBufferInfoLastFrame.buffer = materialDataShaderStorageBuffers[i];
-                materialDataStorageBufferInfoLastFrame.offset = 0;
-                materialDataStorageBufferInfoLastFrame.range = maxMaterialDataSize;
+                descriptorWrites[4].pBufferInfo = &materialDataStorageBufferInfoLastFrame;
 
                 descriptorWrites[5].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                 descriptorWrites[5].dstSet = descriptorSets[descriptorId][i];
                 descriptorWrites[5].dstBinding = 5;
                 descriptorWrites[5].dstArrayElement = 0;
-                descriptorWrites[5].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-                descriptorWrites[5].descriptorCount = 1;
-                descriptorWrites[5].pBufferInfo = &materialDataStorageBufferInfoLastFrame;
+                descriptorWrites[5].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                descriptorWrites[5].descriptorCount = allTextures.size();
+                descriptorWrites[5].pImageInfo = descriptorImageInfos.data();
 
                 vkUpdateDescriptorSets(vkDevice.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
             }
@@ -942,13 +979,16 @@ namespace odfaeg {
                                                                 mat4 modelMatrix;
                                                             };
                                                             struct MaterialData {
+                                                                vec2 uvScale;
+                                                                vec2 uvOffset;
                                                                 uint textureIndex;
                                                                 uint materialType;
+                                                                uint _padding[2];
                                                             };
-                                                            layout(std430, set = 0, binding = 4) buffer modelData {
+                                                            layout(std430, set = 0, binding = 3) buffer modelData {
                                                                 ModelData modelDatas[];
                                                             };
-                                                            layout(std430, set = 0, binding = 5) buffer materialData {
+                                                            layout(std430, set = 0, binding = 4) buffer materialData {
                                                                 MaterialData materialDatas[];
                                                             };
                                                             layout(location = 0) out vec4 frontColor;
@@ -967,11 +1007,11 @@ namespace odfaeg {
                                                                 }
                                                                 uint textureIndex =  materialData.textureIndex;
                                                                 gl_Position = vec4((position.x - xOff), (position.y + yOff), position.z, 1.f) * modelData.modelMatrix * pushConsts.viewMatrix * pushConsts.projectionMatrix;
-                                                                fTexCoords = texCoords;
+                                                                fTexCoords = texCoords * materialData.uvScale + materialData.uvOffset;
                                                                 frontColor = color;
                                                                 texIndex = textureIndex;
                                                                 normal = normals;
-
+                                                                //debugPrintfEXT("position = %v4f", gl_Position);
                                                             }
                                                             )";
                 const std::string  simpleVertexShader = R"(#version 460
@@ -992,6 +1032,7 @@ namespace odfaeg {
                                                             gl_PointSize = 2.0f;
                                                             frontColor = color;
                                                             fTexCoords = texCoords;
+
                                                             normal = normals;
                                                         })";
                 const std::string fragmentShader = R"(#version 460
@@ -1011,21 +1052,24 @@ namespace odfaeg {
                                                       layout(std430, set = 0, binding = 2) buffer LinkedLists {
                                                           NodeType nodes[];
                                                       };
-                                                      layout(set = 0, binding = 3) uniform sampler2D textures[];
+                                                      layout(set = 0, binding = 5) uniform sampler2D textures[];
                                                       layout(location = 0) in vec4 frontColor;
                                                       layout(location = 1) in vec2 fTexCoords;
                                                       layout(location = 2) in flat uint texIndex;
                                                       layout(location = 3) in vec3 normal;
                                                       void main() {
                                                            uint nodeIdx = atomicAdd(count, 1);
-                                                           vec4 color = (texIndex != 0) ? frontColor * textureLod(textures[texIndex-1], fTexCoords.xy, 0) : frontColor;
+                                                           vec4 color = (texIndex != 0) ? frontColor * texture(textures[texIndex-1], fTexCoords.xy) : frontColor;
+
+                                                           //debugPrintfEXT("color = %v4f", color);
                                                            if (nodeIdx < maxNodes) {
                                                                 uint prevHead = imageAtomicExchange(headPointers, ivec2(gl_FragCoord.xy), nodeIdx);
                                                                 nodes[nodeIdx].color = color;
                                                                 nodes[nodeIdx].depth = gl_FragCoord.z;
                                                                 nodes[nodeIdx].next = prevHead;
-                                                                //debugPrintfEXT("prev head : %i, next : %i, node Idx : %i\n", prevHead, nodes[nodeIdx].next, nodeIdx);
+
                                                            }
+
                                                       })";
                  const std::string fragmentShader2 =
                                                    R"(
@@ -1061,7 +1105,7 @@ namespace odfaeg {
                                                       {
                                                           NodeType insert = frags[i];
                                                           uint j = i;
-                                                          while (j > 0 && insert.depth < frags[j - 1].depth)
+                                                          while (j > 0 && insert.depth > frags[j - 1].depth)
                                                           {
                                                               frags[j] = frags[j-1];
                                                               --j;
@@ -1113,14 +1157,14 @@ namespace odfaeg {
             for (unsigned int i = 0; i < m_normals.size(); i++) {
                 if (m_normals[i].getAllVertices().getVertexCount() > 0) {
                     DrawArraysIndirectCommand drawArraysIndirectCommand;
-                    ////std::cout<<"next frame draw normal"<<std::endl;
+                    //////std::cout<<"next frame draw normal"<<std::endl;
                     float time = timeClock.getElapsedTime().asSeconds();
                     indirectDrawPushConsts.time = time;
 
                     unsigned int p = m_normals[i].getAllVertices().getPrimitiveType();
 
                     /*if (m_normals[i].getVertexArrays()[0]->getEntity()->getRootType() == "E_MONSTER") {
-                            //std::cout<<"tex coords : "<<(*m_normals[i].getVertexArrays()[0])[0].texCoords.x<<","<<(*m_normals[i].getVertexArrays()[0])[0].texCoords.y<<std::endl;
+                            ////std::cout<<"tex coords : "<<(*m_normals[i].getVertexArrays()[0])[0].texCoords.x<<","<<(*m_normals[i].getVertexArrays()[0])[0].texCoords.y<<std::endl;
                         }*/
                     unsigned int vertexCount = 0;
                     MaterialData material;
@@ -1128,11 +1172,14 @@ namespace odfaeg {
                         std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                         material.textureIndex = (m_normals[i].getMaterial().getTexture() != nullptr) ? m_normals[i].getMaterial().getTexture()->getId() : 0;
                         material.materialType = m_normals[i].getMaterial().getType();
-
+                        material.uvScale = (m_normals[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_normals[i].getMaterial().getTexture()->getSize().x(), 1.f / m_normals[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
+                        material.uvOffset = math::Vec2f(0, 0);
+                        //std::cout<<"texture matrix : "<<m_normals[i].getMaterial().getTexture()->getTextureMatrix()<<std::endl;
                     }
 
                     materialDatas[p].push_back(material);
                     for (unsigned int j = 0; j < m_normals[i].getAllVertices().getVertexCount(); j++) {
+                        //std::cout<<"add vertex"<<std::endl;
                         vbBindlessTex[p].append(m_normals[i].getAllVertices()[j]);
                         vertexCount++;
                     }
@@ -1152,7 +1199,7 @@ namespace odfaeg {
                     /*for (unsigned int j = 0; j < m_normals[i].getVertexArrays().size(); j++) {
                         if (m_normals[i].getVertexArrays()[j]->getEntity() != nullptr && m_normals[i].getVertexArrays()[j]->getEntity()->getRootType() == "E_HERO") {
                             for (unsigned int n = 0; n < m_normals[i].getVertexArrays()[j]->getVertexCount(); n++)
-                                //std::cout<<"position hero : "<<(*m_normals[i].getVertexArrays()[j])[n].position.x<<","<<(*m_normals[i].getVertexArrays()[j])[n].position.y<<","<<(*m_normals[i].getVertexArrays()[j])[n].position.z<<std::endl;
+                                ////std::cout<<"position hero : "<<(*m_normals[i].getVertexArrays()[j])[n].position.x<<","<<(*m_normals[i].getVertexArrays()[j])[n].position.y<<","<<(*m_normals[i].getVertexArrays()[j])[n].position.z<<std::endl;
                         }
                     }*/
                 }
@@ -1171,13 +1218,16 @@ namespace odfaeg {
                         modelData.worldMat = toVulkanMatrix(tm[j]->getMatrix())/*.transpose()*/;
                         modelDatas[p].push_back(modelData);
                     }
-                    MaterialData materialData;
+                    MaterialData material;
                     {
                         std::lock_guard<std::recursive_mutex> lock(rec_mutex);
-                        materialData.textureIndex = (m_instances[i].getMaterial().getTexture() != nullptr) ? m_instances[i].getMaterial().getTexture()->getId() : 0;
-                        materialData.materialType = m_instances[i].getMaterial().getType();
+                        material.textureIndex = (m_instances[i].getMaterial().getTexture() != nullptr) ? m_instances[i].getMaterial().getTexture()->getId() : 0;
+                        material.materialType = m_instances[i].getMaterial().getType();
+                        material.uvScale = (m_instances[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_instances[i].getMaterial().getTexture()->getSize().x(), 1.f / m_instances[i].getMaterial().getTexture()->getSize().y()): math::Vec2f(0, 0);
+                        material.uvOffset = math::Vec2f(0, 0);
+                        ////std::cout<<"texture matrix : "<<m_instances[i].getMaterial().getTexture()->getTextureMatrix()<<std::endl;
                     }
-                    materialDatas[p].push_back(materialData);
+                    materialDatas[p].push_back(material);
                     unsigned int vertexCount = 0;
                     if (m_instances[i].getVertexArrays().size() > 0) {
                         Entity* entity = m_instances[i].getVertexArrays()[0]->getEntity();
@@ -1197,8 +1247,8 @@ namespace odfaeg {
                     drawArraysIndirectCommands[p].push_back(drawArraysIndirectCommand);
                     firstIndex[p] += vertexCount;
                     baseInstance[p] += tm.size();
-                    ////std::cout<<"texture : "<<m_instances[i].getMaterial().getTexture()<<std::endl;
-                    ////std::cout<<"entity : "<<m_instances[i].getVertexArrays()[0]->getEntity()->getRootEntity()->getType()<<std::endl;
+                    //////std::cout<<"texture : "<<m_instances[i].getMaterial().getTexture()<<std::endl;
+                    //////std::cout<<"entity : "<<m_instances[i].getVertexArrays()[0]->getEntity()->getRootEntity()->getType()<<std::endl;
 
                 }
             }
@@ -1297,7 +1347,6 @@ namespace odfaeg {
                 vbBindlessTex[i].clear();
                 materialDatas[i].clear();
                 modelDatas[i].clear();
-                vbBindlessTex[i].clear();
             }
             std::array<std::vector<DrawElementsIndirectCommand>, Batcher::nbPrimitiveTypes> drawElementsIndirectCommands;
             std::array<unsigned int, Batcher::nbPrimitiveTypes> firstIndex, baseInstance, baseVertex;
@@ -1313,6 +1362,7 @@ namespace odfaeg {
             for (unsigned int i = 0; i < m_normalsIndexed.size(); i++) {
 
                if (m_normalsIndexed[i].getAllVertices().getVertexCount() > 0) {
+                    //std::cout<<"add instance"<<std::endl;
 
                     DrawElementsIndirectCommand drawElementsIndirectCommand;
                     float time = timeClock.getElapsedTime().asSeconds();
@@ -1322,6 +1372,8 @@ namespace odfaeg {
                     MaterialData material;
                     material.textureIndex = (m_normalsIndexed[i].getMaterial().getTexture() != nullptr) ? m_normalsIndexed[i].getMaterial().getTexture()->getId() : 0;
                     material.materialType = m_normalsIndexed[i].getMaterial().getType();
+                    material.uvScale = (m_normalsIndexed[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_normalsIndexed[i].getMaterial().getTexture()->getSize().x(), 1.f / m_normalsIndexed[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
+                    material.uvOffset = math::Vec2f(0, 0);
                     materialDatas[p].push_back(material);
 
                     TransformMatrix tm;
@@ -1330,13 +1382,13 @@ namespace odfaeg {
                     modelDatas[p].push_back(modelData);
                     unsigned int indexCount = 0, vertexCount = 0;
                     for (unsigned int j = 0; j < m_normalsIndexed[i].getAllVertices().getVertexCount(); j++) {
+                        //std::cout<<"add vertex"<<std::endl;
                         vbBindlessTex[p].append(m_normalsIndexed[i].getAllVertices()[j]);
                         vertexCount++;
                     }
                     for (unsigned int j = 0; j < m_normalsIndexed[i].getAllVertices().getIndexes().size(); j++) {
                         vbBindlessTex[p].addIndex(m_normalsIndexed[i].getAllVertices().getIndexes()[j]);
                         indexCount++;
-                        ////std::cout<<"index : "<<m_normalsIndexed[i].getAllVertices().getIndexes()[j]<<std::endl;
                     }
 
                     drawElementsIndirectCommand.index_count = indexCount;
@@ -1360,6 +1412,8 @@ namespace odfaeg {
                     MaterialData material;
                     material.textureIndex = (m_instancesIndexed[i].getMaterial().getTexture() != nullptr) ? m_instancesIndexed[i].getMaterial().getTexture()->getId() : 0;
                     material.materialType = m_instancesIndexed[i].getMaterial().getType();
+                    material.uvScale = (m_instancesIndexed[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_instancesIndexed[i].getMaterial().getTexture()->getSize().x(), 1.f / m_instancesIndexed[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
+                    material.uvOffset = math::Vec2f(0, 0);
                     materialDatas[p].push_back(material);
 
                     std::vector<TransformMatrix*> tm = m_instancesIndexed[i].getTransforms();
@@ -1397,8 +1451,8 @@ namespace odfaeg {
                     firstIndex[p] += indexCount;
                     baseVertex[p] += vertexCount;
                     baseInstance[p] += tm.size();
-                    ////std::cout<<"texture : "<<m_instances[i].getMaterial().getTexture()<<std::endl;
-                    ////std::cout<<"entity : "<<m_instances[i].getVertexArrays()[0]->getEntity()->getRootEntity()->getType()<<std::endl;
+                    //////std::cout<<"texture : "<<m_instances[i].getMaterial().getTexture()<<std::endl;
+                    //////std::cout<<"entity : "<<m_instances[i].getVertexArrays()[0]->getEntity()->getRootEntity()->getType()<<std::endl;
                 }
             }
             RenderStates currentStates;
@@ -1486,7 +1540,7 @@ namespace odfaeg {
                     vkUnmapMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory);
                     copyBuffer(vboIndirectStagingBuffer, vboIndirect, bufferSize);
                     //createDescriptorSets(p, currentStates);
-                    ////std::cout<<"size : "<<sizeof(DrawElementsIndirectCommand)<<std::endl;
+                    //////std::cout<<"size : "<<sizeof(DrawElementsIndirectCommand)<<std::endl;
                     createCommandBuffersIndirect(p, drawElementsIndirectCommands[p].size(), sizeof(DrawElementsIndirectCommand), NODEPTHNOSTENCIL, currentStates);
 
                 }
@@ -1509,19 +1563,19 @@ namespace odfaeg {
             for (unsigned int i = 0; i < m_selected.size(); i++) {
                 if (m_selected[i].getAllVertices().getVertexCount() > 0) {
                     DrawArraysIndirectCommand drawArraysIndirectCommand;
-                    ////std::cout<<"next frame draw normal"<<std::endl;
+                    //////std::cout<<"next frame draw normal"<<std::endl;
                     float time = timeClock.getElapsedTime().asSeconds();
                     indirectDrawPushConsts.time = time;
 
                     unsigned int p = m_selected[i].getAllVertices().getPrimitiveType();
 
-                    /*if (m_selecteds[i].getVertexArrays()[0]->getEntity()->getRootType() == "E_MONSTER") {
-                            //std::cout<<"tex coords : "<<(*m_selecteds[i].getVertexArrays()[0])[0].texCoords.x<<","<<(*m_selecteds[i].getVertexArrays()[0])[0].texCoords.y<<std::endl;
-                        }*/
+
                     unsigned int vertexCount = 0;
                     MaterialData material;
                     material.textureIndex = (m_selected[i].getMaterial().getTexture() != nullptr) ? m_selected[i].getMaterial().getTexture()->getId() : 0;
                     material.materialType = m_selected[i].getMaterial().getType();
+                    material.uvScale = (m_selected[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_selected[i].getMaterial().getTexture()->getSize().x(), 1.f / m_selected[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
+                    material.uvOffset = math::Vec2f(0, 0);
                     materialDatas[p].push_back(material);
                     for (unsigned int j = 0; j < m_selected[i].getAllVertices().getVertexCount(); j++) {
                         vbBindlessTex[p].append(m_selected[i].getAllVertices()[j]);
@@ -1529,7 +1583,7 @@ namespace odfaeg {
                     }
                     TransformMatrix tm;
                     ModelData modelData;
-                    modelData.worldMat = toVulkanMatrix(tm.getMatrix())/*.transpose()*/;
+                    modelData.worldMat = toVulkanMatrix(tm.getMatrix());
                     modelDatas[p].push_back(modelData);
 
                     drawArraysIndirectCommand.count = vertexCount;
@@ -1539,12 +1593,7 @@ namespace odfaeg {
                     drawArraysIndirectCommands[p].push_back(drawArraysIndirectCommand);
                     firstIndex[p] += vertexCount;
                     baseInstance[p] += 1;
-                    /*for (unsigned int j = 0; j < m_selecteds[i].getVertexArrays().size(); j++) {
-                        if (m_selecteds[i].getVertexArrays()[j]->getEntity() != nullptr && m_selecteds[i].getVertexArrays()[j]->getEntity()->getRootType() == "E_HERO") {
-                            for (unsigned int n = 0; n < m_selecteds[i].getVertexArrays()[j]->getVertexCount(); n++)
-                                //std::cout<<"position hero : "<<(*m_selecteds[i].getVertexArrays()[j])[n].position.x<<","<<(*m_selecteds[i].getVertexArrays()[j])[n].position.y<<","<<(*m_selecteds[i].getVertexArrays()[j])[n].position.z<<std::endl;
-                        }
-                    }*/
+
                 }
             }
             for (unsigned int i = 0; i < m_selectedInstance.size(); i++) {
@@ -1558,13 +1607,15 @@ namespace odfaeg {
                     for (unsigned int j = 0; j < tm.size(); j++) {
                         tm[j]->update();
                         ModelData modelData;
-                        modelData.worldMat = toVulkanMatrix(tm[j]->getMatrix())/*.transpose()*/;
+                        modelData.worldMat = toVulkanMatrix(tm[j]->getMatrix());
                         modelDatas[p].push_back(modelData);
                     }
-                    MaterialData materialData;
-                    materialData.textureIndex = (m_selectedInstance[i].getMaterial().getTexture() != nullptr) ? m_selectedInstance[i].getMaterial().getTexture()->getId() : 0;
-                    materialData.materialType = m_selectedInstance[i].getMaterial().getType();
-                    materialDatas[p].push_back(materialData);
+                    MaterialData material;
+                    material.textureIndex = (m_selectedInstance[i].getMaterial().getTexture() != nullptr) ? m_selectedInstance[i].getMaterial().getTexture()->getId() : 0;
+                    material.materialType = m_selectedInstance[i].getMaterial().getType();
+                    material.uvScale = (m_selectedInstance[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_selectedInstance[i].getMaterial().getTexture()->getSize().x(), 1.f / m_selectedInstance[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
+                    material.uvOffset = math::Vec2f(0, 0);
+                    materialDatas[p].push_back(material);
                     unsigned int vertexCount = 0;
                     if (m_selectedInstance[i].getVertexArrays().size() > 0) {
                         Entity* entity = m_selectedInstance[i].getVertexArrays()[0]->getEntity();
@@ -1584,8 +1635,8 @@ namespace odfaeg {
                     drawArraysIndirectCommands[p].push_back(drawArraysIndirectCommand);
                     firstIndex[p] += vertexCount;
                     baseInstance[p] += tm.size();
-                    ////std::cout<<"texture : "<<m_instances[i].getMaterial().getTexture()<<std::endl;
-                    ////std::cout<<"entity : "<<m_instances[i].getVertexArrays()[0]->getEntity()->getRootEntity()->getType()<<std::endl;
+                    //////std::cout<<"texture : "<<m_instances[i].getMaterial().getTexture()<<std::endl;
+                    //////std::cout<<"entity : "<<m_instances[i].getVertexArrays()[0]->getEntity()->getRootEntity()->getType()<<std::endl;
 
                 }
             }
@@ -1593,7 +1644,7 @@ namespace odfaeg {
             currentStates.blendMode = BlendNone;
             currentStates.shader = &indirectRenderingShader;
             currentStates.texture = nullptr;
-            frameBuffer.enableStencilTest(true);
+            //frameBuffer.enableStencilTest(true);
             for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                 if (vbBindlessTex[p].getVertexCount() > 0) {
 
@@ -1699,26 +1750,26 @@ namespace odfaeg {
             for (unsigned int i = 0; i < m_selectedScale.size(); i++) {
                 if (m_selectedScale[i].getAllVertices().getVertexCount() > 0) {
                     DrawArraysIndirectCommand drawArraysIndirectCommand;
-                    ////std::cout<<"next frame draw normal"<<std::endl;
-                    /*if (core::Application::app != nullptr) {
-                        float time = core::Application::getTimeClk().getElapsedTime().asSeconds();
-                        perPixelLinkedList2.setParameter("time", time);
-                    }*/
+                    //////std::cout<<"next frame draw normal"<<std::endl;
+
                     unsigned int p = m_selectedScale[i].getAllVertices().getPrimitiveType();
                     MaterialData material;
                     material.textureIndex = 0;
-                    material.materialType = m_selectedScale[i].getMaterial().getType();
+                    material.materialType = 0;
+                    material.uvScale = math::Vec2f(0, 0);
+                    material.uvOffset = math::Vec2f(0, 0);
+
                     materialDatas[p].push_back(material);
                     TransformMatrix tm;
                     ModelData model;
-                    model.worldMat = toVulkanMatrix(tm.getMatrix())/*.transpose()*/;
+                    model.worldMat = toVulkanMatrix(tm.getMatrix());
                     modelDatas[p].push_back(model);
 
                     unsigned int vertexCount = 0;
                     for (unsigned int j = 0; j < m_selectedScale[i].getAllVertices().getVertexCount(); j++) {
                         vertexCount++;
                         vbBindlessTex[p].append(m_selectedScale[i].getAllVertices()[j]);
-                        ////std::cout<<"color : "<<(int) m_selectedScale[i].getAllVertices()[j].color.r<<","<<(int) m_selectedScale[i].getAllVertices()[j].color.g<<","<<(int) m_selectedScale[i].getAllVertices()[j].color.b<<std::endl;
+                        //////std::cout<<"color : "<<(int) m_selectedScale[i].getAllVertices()[j].color.r<<","<<(int) m_selectedScale[i].getAllVertices()[j].color.g<<","<<(int) m_selectedScale[i].getAllVertices()[j].color.b<<std::endl;
                     }
                     drawArraysIndirectCommand.count = vertexCount;
                     drawArraysIndirectCommand.firstIndex = firstIndex[p];
@@ -1736,13 +1787,15 @@ namespace odfaeg {
 
                     MaterialData material;
                     material.textureIndex = 0;
-                    material.materialType = m_selectedScaleInstance[i].getMaterial().getType();
+                    material.materialType = 0;
+                    material.uvScale = math::Vec2f(0, 0);
+                    material.uvOffset = math::Vec2f(0, 0);
                     materialDatas[p].push_back(material);
                     std::vector<TransformMatrix*> tm = m_selectedScaleInstance[i].getTransforms();
                     for (unsigned int j = 0; j < tm.size(); j++) {
                         tm[j]->update();
                         ModelData model;
-                        model.worldMat = toVulkanMatrix(tm[j]->getMatrix())/*.transpose()*/;
+                        model.worldMat = toVulkanMatrix(tm[j]->getMatrix());
                         modelDatas[p].push_back(model);
                     }
                     unsigned int vertexCount = 0;
@@ -1764,8 +1817,8 @@ namespace odfaeg {
                     drawArraysIndirectCommands[p].push_back(drawArraysIndirectCommand);
                     firstIndex[p] += vertexCount;
                     baseInstance[p] += tm.size();
-                    ////std::cout<<"texture : "<<m_instances[i].getMaterial().getTexture()<<std::endl;
-                    ////std::cout<<"entity : "<<m_instances[i].getVertexArrays()[0]->getEntity()->getRootEntity()->getType()<<std::endl;
+                    //////std::cout<<"texture : "<<m_instances[i].getMaterial().getTexture()<<std::endl;
+                    //////std::cout<<"entity : "<<m_instances[i].getVertexArrays()[0]->getEntity()->getRootEntity()->getType()<<std::endl;
 
                 }
             }
@@ -1850,6 +1903,7 @@ namespace odfaeg {
                     vkUnmapMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory);
                     copyBuffer(vboIndirectStagingBuffer, vboIndirect, bufferSize);
                     //createDescriptorSets(p, currentStates);
+                    //std::cout<<"draw outline"<<std::endl;
                     createCommandBuffersIndirect(p, drawArraysIndirectCommands[p].size(), sizeof(DrawArraysIndirectCommand), NODEPTHSTENCILOUTLINE, currentStates);
 
                 }
@@ -1875,7 +1929,7 @@ namespace odfaeg {
             for (unsigned int i = 0; i < m_selectedIndexed.size(); i++) {
                 if (m_selectedIndexed[i].getAllVertices().getVertexCount() > 0) {
                     DrawElementsIndirectCommand drawElementsIndirectCommand;
-                    ////std::cout<<"next frame draw normal"<<std::endl;
+                    //std::cout<<"next frame draw normal"<<std::endl;
 
                     float time = timeClock.getElapsedTime().asSeconds();
                     indirectDrawPushConsts.time = time;
@@ -1885,6 +1939,8 @@ namespace odfaeg {
                     MaterialData material;
                     material.textureIndex = (m_selectedIndexed[i].getMaterial().getTexture() != nullptr) ? m_selectedIndexed[i].getMaterial().getTexture()->getId() : 0;
                     material.materialType = m_selectedIndexed[i].getMaterial().getType();
+                    material.uvScale = (m_selectedIndexed[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_selectedIndexed[i].getMaterial().getTexture()->getSize().x(), 1.f / m_selectedIndexed[i].getMaterial().getTexture()->getSize().y()): math::Vec2f(0, 0);
+                    material.uvOffset = math::Vec2f(0, 0);
                     materialDatas[p].push_back(material);
 
                     TransformMatrix tm;
@@ -1920,6 +1976,8 @@ namespace odfaeg {
                     MaterialData material;
                     material.textureIndex = (m_selectedInstanceIndexed[i].getMaterial().getTexture() != nullptr) ? m_selectedInstanceIndexed[i].getMaterial().getTexture()->getId() : 0;
                     material.materialType = m_selectedInstanceIndexed[i].getMaterial().getType();
+                    material.uvScale = (m_selectedInstanceIndexed[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_selectedInstanceIndexed[i].getMaterial().getTexture()->getSize().x(), 1.f / m_selectedInstanceIndexed[i].getMaterial().getTexture()->getSize().y()): math::Vec2f(0, 0);
+                    material.uvOffset = math::Vec2f(0, 0);
                     materialDatas[p].push_back(material);
                     std::vector<TransformMatrix*> tm = m_selectedInstanceIndexed[i].getTransforms();
                     for (unsigned int j = 0; j < tm.size(); j++) {
@@ -1954,8 +2012,8 @@ namespace odfaeg {
                     firstIndex[p] += indexCount;
                     baseVertex[p] += vertexCount;
                     baseInstance[p] += tm.size();
-                    ////std::cout<<"texture : "<<m_instances[i].getMaterial().getTexture()<<std::endl;
-                    ////std::cout<<"entity : "<<m_instances[i].getVertexArrays()[0]->getEntity()->getRootEntity()->getType()<<std::endl;
+                    //////std::cout<<"texture : "<<m_instances[i].getMaterial().getTexture()<<std::endl;
+                    //////std::cout<<"entity : "<<m_instances[i].getVertexArrays()[0]->getEntity()->getRootEntity()->getType()<<std::endl;
                 }
             }
             RenderStates currentStates;
@@ -1967,7 +2025,7 @@ namespace odfaeg {
                 if (vbBindlessTex[p].getVertexCount() > 0) {
 
                     vbBindlessTex[p].update();
-                      VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
+                    VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
                     if (bufferSize > maxModelDataSize) {
                         if (modelDataStagingBuffer != nullptr) {
                             vkDestroyBuffer(vkDevice.getDevice(), modelDataStagingBuffer, nullptr);
@@ -2043,8 +2101,8 @@ namespace odfaeg {
                     vkUnmapMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory);
                     copyBuffer(vboIndirectStagingBuffer, vboIndirect, bufferSize);
                     //createDescriptorSets(p, currentStates);
-                    ////std::cout<<"size : "<<sizeof(DrawElementsIndirectCommand)<<std::endl;
-                    createCommandBuffersIndirect(p, drawElementsIndirectCommands[p].size(), sizeof(DrawElementsIndirectCommand), NODEPTHNOSTENCIL, currentStates);
+                    //////std::cout<<"size : "<<sizeof(DrawElementsIndirectCommand)<<std::endl;
+                    createCommandBuffersIndirect(p, drawElementsIndirectCommands[p].size(), sizeof(DrawElementsIndirectCommand), NODEPTHSTENCIL, currentStates);
 
                 }
             }
@@ -2053,6 +2111,9 @@ namespace odfaeg {
             }
             for (unsigned int i = 0; i < firstIndex.size(); i++) {
                 firstIndex[i] = 0;
+            }
+            for (unsigned int i = 0; i < baseVertex.size(); i++) {
+                baseVertex[i] = 0;
             }
             for (unsigned int i = 0; i < baseInstance.size(); i++) {
                 baseInstance[i] = 0;
@@ -2069,11 +2130,13 @@ namespace odfaeg {
             for (unsigned int i = 0; i < m_selectedScaleIndexed.size(); i++) {
                 if (m_selectedScaleIndexed[i].getAllVertices().getVertexCount() > 0) {
                     DrawElementsIndirectCommand drawElementsIndirectCommand;
-                    ////std::cout<<"next frame draw normal"<<std::endl;
+                    //////std::cout<<"next frame draw normal"<<std::endl;
                     unsigned int p = m_selectedScaleIndexed[i].getAllVertices().getPrimitiveType();
                     MaterialData material;
                     material.textureIndex = 0;
-                    material.materialType = m_selectedScaleIndexed[i].getMaterial().getType();
+                    material.materialType = 0;
+                    material.uvScale = math::Vec2f(0, 0);
+                    material.uvOffset = math::Vec2f(0, 0);
                     materialDatas[p].push_back(material);
 
                     TransformMatrix tm;
@@ -2106,13 +2169,12 @@ namespace odfaeg {
                 if (m_selectedScaleInstanceIndexed[i].getAllVertices().getVertexCount() > 0) {
                     DrawElementsIndirectCommand drawElementsIndirectCommand;
                     unsigned int p = m_selectedScaleInstanceIndexed[i].getAllVertices().getPrimitiveType();
-                    /*if (core::Application::app != nullptr) {
-                        float time = core::Application::getTimeClk().getElapsedTime().asSeconds();
-                        perPixelLinkedList.setParameter("time", time);
-                    }*/
+
                     MaterialData material;
                     material.textureIndex = 0;
                     material.materialType = m_selectedScaleInstanceIndexed[i].getMaterial().getType();
+                    material.uvScale = (m_selectedScaleInstanceIndexed[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_selectedScaleInstanceIndexed[i].getMaterial().getTexture()->getSize().x(), 1.f / m_selectedScaleInstanceIndexed[i].getMaterial().getTexture()->getSize().y()): math::Vec2f(0, 0);
+                    material.uvOffset = math::Vec2f(0, 0);
                     materialDatas[p].push_back(material);
                     std::vector<TransformMatrix*> tm = m_selectedScaleInstanceIndexed[i].getTransforms();
                     for (unsigned int j = 0; j < tm.size(); j++) {
@@ -2147,8 +2209,8 @@ namespace odfaeg {
                     firstIndex[p] += indexCount;
                     baseVertex[p] += vertexCount;
                     baseInstance[p] += tm.size();
-                    ////std::cout<<"texture : "<<m_instances[i].getMaterial().getTexture()<<std::endl;
-                    ////std::cout<<"entity : "<<m_instances[i].getVertexArrays()[0]->getEntity()->getRootEntity()->getType()<<std::endl;
+                    //////std::cout<<"texture : "<<m_instances[i].getMaterial().getTexture()<<std::endl;
+                    //////std::cout<<"entity : "<<m_instances[i].getVertexArrays()[0]->getEntity()->getRootEntity()->getType()<<std::endl;
                 }
             }
             currentStates.blendMode = BlendNone;
@@ -2232,8 +2294,8 @@ namespace odfaeg {
                     vkUnmapMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory);
                     copyBuffer(vboIndirectStagingBuffer, vboIndirect, bufferSize);
                     //createDescriptorSets(p, currentStates);
-                    ////std::cout<<"size : "<<sizeof(DrawElementsIndirectCommand)<<std::endl;
-                    createCommandBuffersIndirect(p, drawElementsIndirectCommands[p].size(), sizeof(DrawElementsIndirectCommand), NODEPTHNOSTENCIL, currentStates);
+                    //////std::cout<<"size : "<<sizeof(DrawElementsIndirectCommand)<<std::endl;
+                    createCommandBuffersIndirect(p, drawElementsIndirectCommands[p].size(), sizeof(DrawElementsIndirectCommand), NODEPTHSTENCILOUTLINE, currentStates);
 
                 }
             }
@@ -2241,7 +2303,9 @@ namespace odfaeg {
         void PerPixelLinkedListRenderComponent::drawNextFrame() {
             {
                 std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                //std::cout<<"next frame datasReady"<<datasReady<<std::endl;
                 if (datasReady) {
+
                     datasReady = false;
                     m_instances = batcher.getInstances();
                     m_normals = normalBatcher.getInstances();
@@ -2289,11 +2353,10 @@ namespace odfaeg {
 
 
 
-            /*drawInstances();
+            drawInstances();
             drawInstancesIndexed();
             drawSelectedInstances();
-            drawSelectedInstancesIndexed();*/
-
+            drawSelectedInstancesIndexed();
 
 
             vb.clear();
@@ -2310,7 +2373,7 @@ namespace odfaeg {
             vb.append(v4);
             vb.update();
             math::Matrix4f matrix = quad.getTransform().getMatrix()/*.transpose()*/;
-            //std::cout<<"world mat : "<<matrix<<std::endl;
+            ////std::cout<<"world mat : "<<matrix<<std::endl;
             ppll2PushConsts.worldMat = toVulkanMatrix(matrix);
             //system("PAUSE");
             RenderStates currentStates;
@@ -2319,7 +2382,6 @@ namespace odfaeg {
             //frameBuffer.enableStencilTest(false);
             //createDescriptorSets2(currentStates);
             createCommandBufferVertexBuffer(currentStates);
-
         }
         void PerPixelLinkedListRenderComponent::allocateCommandBuffers() {
             /*commandBuffers.resize(frameBuffer.getSwapchainImages().size());
@@ -2335,7 +2397,7 @@ namespace odfaeg {
             }*/
         }
         void PerPixelLinkedListRenderComponent::createCommandBuffersIndirect(unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, DepthStencilID depthStencilID, RenderStates currentStates) {
-            //std::cout<<"draw indirect"<<std::endl;
+            ////std::cout<<"draw indirect"<<std::endl;
             if (needToUpdateDS) {
                 createDescriptorSets(p, currentStates);
                 needToUpdateDS = false;
@@ -2343,12 +2405,27 @@ namespace odfaeg {
             unsigned int currentFrame = frameBuffer.getCurrentFrame();
             currentStates.blendMode.updateIds();
 
+            /*VkCommandBufferInheritanceInfo inheritanceInfo;
+            inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+            inheritanceInfo.pNext = nullptr;
+            inheritanceInfo.renderPass = frameBuffer.getRenderPass(1);
+            inheritanceInfo.subpass = 0;
+            inheritanceInfo.framebuffer = frameBuffer.getSwapchainFrameBuffers(1)[currentFrame];
+            inheritanceInfo.occlusionQueryEnable = VK_FALSE;
+            inheritanceInfo.queryFlags = 0;
+            inheritanceInfo.pipelineStatistics = 0;
+            VkCommandBufferBeginInfo commandBufferBeginInfo;
+            commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+            commandBufferBeginInfo.pNext = nullptr;
+            commandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+            commandBufferBeginInfo.pInheritanceInfo = &inheritanceInfo;
 
-
+            if (vkBeginCommandBuffer(commandBuffers[currentFrame], &commandBufferBeginInfo) != VK_SUCCESS) {
+                std::runtime_error("Failed to begin recording command buffers");
+            }*/
+            frameBuffer.beginRecordCommandBuffers();
             Shader* shader = const_cast<Shader*>(currentStates.shader);
             std::vector<Texture*> allTextures = Texture::getAllTextures();
-
-
 
             vkCmdPushConstants(frameBuffer.getCommandBuffers()[currentFrame], frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][frameBuffer.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectDrawPushConsts), &indirectDrawPushConsts);
 
@@ -2356,22 +2433,85 @@ namespace odfaeg {
 
             frameBuffer.drawIndirect(frameBuffer.getCommandBuffers()[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
             frameBuffer.endRenderPass();
+            std::vector<VkSemaphore> waitSemaphores, signalSemaphores;
+            waitSemaphores.push_back(offscreenFinishedSemaphore[frameBuffer.getCurrentFrame()]);
+            std::vector<VkPipelineStageFlags> waitStages;
+            waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+            std::vector<uint64_t> waitValues, signalValues;
+            waitValues.push_back(values[frameBuffer.getCurrentFrame()]);
+            //std::cout<<"wait value : "<<values[frameBuffer.getCurrentFrame()]<<std::endl;
+            signalSemaphores.push_back(offscreenFinishedSemaphore[frameBuffer.getCurrentFrame()]);
+            values[frameBuffer.getCurrentFrame()]++;
+            signalValues.push_back(values[frameBuffer.getCurrentFrame()]);
+            frameBuffer.display(signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
+            //std::cout<<"signal value : "<<values[frameBuffer.getCurrentFrame()]<<std::endl;
 
+            /*frameBuffer.beginRecordCommandBuffers();
+            frameBuffer.beginRenderPass();
+            vkCmdExecuteCommands(frameBuffer.getCommandBuffers()[currentFrame], static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());*/
 
-
-            frameBuffer.display();
             isSomethingDrawn = true;
         }
         void PerPixelLinkedListRenderComponent::createCommandBufferVertexBuffer(RenderStates currentStates) {
-            if (isSomethingDrawn)
-                frameBuffer.beginRecordCommandBuffers();
+            //if (isSomethingDrawn)
+            frameBuffer.beginRecordCommandBuffers();
             currentStates.blendMode.updateIds();
             unsigned int currentFrame = frameBuffer.getCurrentFrame();
-
+            /*VkCommandBufferInheritanceInfo inheritanceInfo;
+            inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+            inheritanceInfo.pNext = nullptr;
+            inheritanceInfo.renderPass = frameBuffer.getRenderPass(1);
+            inheritanceInfo.subpass = 0;
+            inheritanceInfo.framebuffer = frameBuffer.getSwapchainFrameBuffers(1)[currentFrame];
+            inheritanceInfo.occlusionQueryEnable = VK_FALSE;
+            inheritanceInfo.queryFlags = 0;
+            inheritanceInfo.pipelineStatistics = 0;
+            VkCommandBufferBeginInfo commandBufferBeginInfo;
+            commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+            commandBufferBeginInfo.pNext = nullptr;
+            commandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+            commandBufferBeginInfo.pInheritanceInfo = &inheritanceInfo;
+            if (vkBeginCommandBuffer(commandBuffers[currentFrame], &commandBufferBeginInfo) != VK_SUCCESS) {
+                std::runtime_error("Failed to begin recording command buffers");
+            }*/
             Shader* shader = const_cast<Shader*>(currentStates.shader);
 
             //for (size_t i = 0; i < commandBuffers.size(); i++) {
+                /*vkResetCommandBuffer(commandBuffers[currentFrame], VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
+                VkCommandBufferBeginInfo beginInfo{};
+                beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
+                if (vkBeginCommandBuffer(commandBuffers[i], &beginInfo) != VK_SUCCESS) {
+                    throw core::Erreur(0, "failed to begin recording command buffer!", 1);
+                }*/
+                /*std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
+
+                VkDescriptorImageInfo headPtrDescriptorImageInfo;
+                headPtrDescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+                headPtrDescriptorImageInfo.imageView = headPtrTextureImageView;
+                headPtrDescriptorImageInfo.sampler = headPtrTextureSampler;
+
+                descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                descriptorWrites[0].dstSet = 0;
+                descriptorWrites[0].dstBinding = 0;
+                descriptorWrites[0].dstArrayElement = 0;
+                descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+                descriptorWrites[0].descriptorCount = 1;
+                descriptorWrites[0].pImageInfo = &headPtrDescriptorImageInfo;
+
+                VkDescriptorBufferInfo linkedListStorageBufferInfoLastFrame{};
+                linkedListStorageBufferInfoLastFrame.buffer = linkedListShaderStorageBuffers[currentFrame];
+                linkedListStorageBufferInfoLastFrame.offset = 0;
+                unsigned int nodeSize = 5 * sizeof(float) + sizeof(unsigned int);
+                linkedListStorageBufferInfoLastFrame.range = maxNodes * nodeSize;
+
+                descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                descriptorWrites[1].dstSet = 0;
+                descriptorWrites[1].dstBinding = 1;
+                descriptorWrites[1].dstArrayElement = 0;
+                descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                descriptorWrites[1].descriptorCount = 1;
+                descriptorWrites[1].pBufferInfo = &linkedListStorageBufferInfoLastFrame;*/
                 vkCmdPipelineBarrier(frameBuffer.getCommandBuffers()[currentFrame], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 0, nullptr);
 
 
@@ -2393,13 +2533,30 @@ namespace odfaeg {
                 frameBuffer.drawVertexBuffer(frameBuffer.getCommandBuffers()[currentFrame], currentFrame, vb, NODEPTHNOSTENCIL, currentStates);
 
 
-
+                /*if (vkEndCommandBuffer(commandBuffers[currentFrame]) != VK_SUCCESS) {
+                    throw core::Erreur(0, "failed to record command buffer!", 1);
+                }*/
 
             //}
-
+            /*if(vkEndCommandBuffer(commandBuffers[currentFrame]) != VK_SUCCESS) {
+                std::runtime_error("Failed to record command buffers");
+            }*/
+            /*frameBuffer.beginRecordCommandBuffers();
+            frameBuffer.beginRenderPass();
+            vkCmdExecuteCommands(frameBuffer.getCommandBuffers()[currentFrame], static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());*/
             frameBuffer.endRenderPass();
-             std::cout<<"signal frame : "<<window.getCurrentFrame()<<std::endl;
-            frameBuffer.display(true, renderFinishedSemaphore[window.getCurrentFrame()]);
+            std::vector<VkSemaphore> waitSemaphores, signalSemaphores;
+            waitSemaphores.push_back(offscreenFinishedSemaphore[frameBuffer.getCurrentFrame()]);
+            std::vector<VkPipelineStageFlags> waitStages;
+            waitStages.push_back(VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
+            std::vector<uint64_t> waitValues, signalValues;
+            waitValues.push_back(values[frameBuffer.getCurrentFrame()]);
+            signalSemaphores.push_back(offscreenFinishedSemaphore[frameBuffer.getCurrentFrame()]);
+            //std::cout<<"pass2 wait value : "<<values[frameBuffer.getCurrentFrame()]<<std::endl;
+            values[frameBuffer.getCurrentFrame()]++;
+            signalValues.push_back(values[frameBuffer.getCurrentFrame()]);
+            frameBuffer.display(signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
+            //std::cout<<"pass2 signal value : "<<values[frameBuffer.getCurrentFrame()]<<std::endl;
             isSomethingDrawn = false;
         }
         bool PerPixelLinkedListRenderComponent::loadEntitiesOnComponent(std::vector<Entity*> vEntities) {
@@ -2444,37 +2601,19 @@ namespace odfaeg {
                          } else if (vEntities[i]->getDrawMode() == Entity::NORMAL && !vEntities[i]->isSelected()) {
                              if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0) {
                                 normalBatcher.addFace( vEntities[i]->getFace(j));
-                             } else
+                             } else {
+                                //std::cout<<"add face"<<std::endl;
                                 normalBatcherIndexed.addFace( vEntities[i]->getFace(j));
+                             }
                         } else if (vEntities[i]->getDrawMode() == Entity::INSTANCED && vEntities[i]->isSelected()) {
 
                             if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0) {
                                 selectedInstanceBatcher.addFace(vEntities[i]->getFace(j));
-                           // //std::cout<<"remove texture"<<std::endl;
+                           // ////std::cout<<"remove texture"<<std::endl;
 
-                            ////std::cout<<"get va"<<std::endl;
+                            //////std::cout<<"get va"<<std::endl;
                                 VertexArray& va = border->getFace(j)->getVertexArray();
-                                ////std::cout<<"change color"<<std::endl;
-                                for (unsigned int j = 0; j < va.getVertexCount(); j++) {
-
-                                    va[j].color = Color::Cyan;
-                                }
-                                Entity* root = (vEntities[i]->getRootEntity()->isAnimated()) ? vEntities[i]->getRootEntity() : vEntities[i];
-                                math::Vec3f oldSize = root->getSize();
-                                border->setOrigin(border->getSize() * 0.5f);
-                                border->setScale(math::Vec3f(1.1f, 1.1f, 1.1f));
-                                math::Vec3f offset =  root->getSize() - oldSize;
-                                border->setPosition(root->getPosition() - offset * 0.5f);
-                               // //std::cout<<"add to batcher"<<std::endl;
-                                selectedInstanceScaleBatcher.addFace(border->getFace(j));
-                           // //std::cout<<"face added"<<std::endl;
-                             } else {
-                                 selectedInstanceIndexBatcher.addFace(vEntities[i]->getFace(j));
-                               // //std::cout<<"remove texture"<<std::endl;
-
-                            ////std::cout<<"get va"<<std::endl;
-                                VertexArray& va = border->getFace(j)->getVertexArray();
-                                ////std::cout<<"change color"<<std::endl;
+                                //////std::cout<<"change color"<<std::endl;
                                 for (unsigned int j = 0; j < va.getVertexCount(); j++) {
 
                                     va[j].color = Color::Cyan;
@@ -2484,20 +2623,45 @@ namespace odfaeg {
                                 border->setOrigin(root->getSize() * 0.5f);
                                 border->setSize(root->getSize() * 1.1f);
                                 math::Vec3f offset =  root->getSize() - oldSize;
-                                border->setPosition(root->getPosition() - offset * 0.5f);
+                                if (border->getSize().z() > 0) {
+                                    border->setPosition(root->getPosition() - offset * 0.5f);
+                                }
+                               // ////std::cout<<"add to batcher"<<std::endl;
+                                selectedInstanceScaleBatcher.addFace(border->getFace(j));
+                           // ////std::cout<<"face added"<<std::endl;
+                             } else {
+                                 selectedInstanceIndexBatcher.addFace(vEntities[i]->getFace(j));
+                               // ////std::cout<<"remove texture"<<std::endl;
 
-                               // //std::cout<<"add to batcher"<<std::endl;
+                            //////std::cout<<"get va"<<std::endl;
+                                VertexArray& va = border->getFace(j)->getVertexArray();
+                                //////std::cout<<"change color"<<std::endl;
+                                for (unsigned int j = 0; j < va.getVertexCount(); j++) {
+
+                                    va[j].color = Color::Cyan;
+                                }
+                                Entity* root = (vEntities[i]->getRootEntity()->isAnimated()) ? vEntities[i]->getRootEntity() : vEntities[i];
+                                math::Vec3f oldSize = root->getSize();
+                                border->setOrigin(root->getSize() * 0.5f);
+                                border->setSize(root->getSize() * 1.1f);
+                                math::Vec3f offset =  root->getSize() - oldSize;
+                                if (border->getSize().z() > 0) {
+                                    border->setPosition(root->getPosition() - offset * 0.5f);
+                                }
+                               // ////std::cout<<"add to batcher"<<std::endl;
+
+                               // ////std::cout<<"add to batcher"<<std::endl;
                                 selectedInstanceIndexScaleBatcher.addFace(border->getFace(j));
                              }
                         } else {
                             if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0) {
 
                                 selectedBatcher.addFace(vEntities[i]->getFace(j));
-                           // //std::cout<<"remove texture"<<std::endl;
+                           // ////std::cout<<"remove texture"<<std::endl;
 
-                            ////std::cout<<"get va"<<std::endl;
+                            //////std::cout<<"get va"<<std::endl;
                                 VertexArray& va = border->getFace(j)->getVertexArray();
-                                ////std::cout<<"change color"<<std::endl;
+                                //////std::cout<<"change color"<<std::endl;
                                 for (unsigned int j = 0; j < va.getVertexCount(); j++) {
 
                                     va[j].color = Color::Cyan;
@@ -2507,25 +2671,33 @@ namespace odfaeg {
                                 border->setOrigin(root->getSize() * 0.5f);
                                 border->setSize(root->getSize() * 1.1f);
                                 math::Vec3f offset =  root->getSize() - oldSize;
-                                border->setPosition(root->getPosition() - offset * 0.5f);
+                                if (border->getSize().z() > 0) {
+                                    border->setPosition(root->getPosition() - offset * 0.5f);
+                                }
                                 selectedScaleBatcher.addFace(border->getFace(j));
 
-                               // //std::cout<<"face added"<<std::endl;
+                                //std::cout<<"face added"<<std::endl;
                              } else {
                                  selectedIndexBatcher.addFace(vEntities[i]->getFace(j));
-                               // //std::cout<<"remove texture"<<std::endl;
+                               // ////std::cout<<"remove texture"<<std::endl;
 
-                            ////std::cout<<"get va"<<std::endl;
+                            //////std::cout<<"get va"<<std::endl;
                                 VertexArray& va = border->getFace(j)->getVertexArray();
-                                ////std::cout<<"change color"<<std::endl;
+                                //////std::cout<<"change color"<<std::endl;
                                 for (unsigned int j = 0; j < va.getVertexCount(); j++) {
 
                                     va[j].color = Color::Cyan;
                                 }
 
-                                border->setOrigin(border->getSize() * 0.5f);
-                                border->setScale(math::Vec3f(1.1f, 1.1f, 1.1f));
-                               // //std::cout<<"add to batcher"<<std::endl;
+                                Entity* root = (vEntities[i]->getRootEntity()->isAnimated()) ? vEntities[i]->getRootEntity() : vEntities[i];
+                                math::Vec3f oldSize = root->getSize();
+                                border->setOrigin(root->getSize() * 0.5f);
+                                border->setSize(root->getSize() * 1.1f);
+                                math::Vec3f offset =  root->getSize() - oldSize;
+                                if (border->getSize().z() > 0) {
+                                    border->setPosition(root->getPosition() - offset * 0.5f);
+                                }
+                                //std::cout<<"add to batcher"<<std::endl;
                                 selectedIndexScaleBatcher.addFace(border->getFace(j));
                              }
                         }
@@ -2539,10 +2711,11 @@ namespace odfaeg {
 
             }
 
-            ////std::cout<<"instances added"<<std::endl;
+            //////std::cout<<"instances added"<<std::endl;
             visibleEntities = vEntities;
             std::lock_guard<std::recursive_mutex> lock(rec_mutex);
             datasReady = true;
+            //std::cout<<"load entities data ready : "<<datasReady<<std::endl;
             return true;
         }
         bool PerPixelLinkedListRenderComponent::needToUpdate() {
@@ -2556,7 +2729,7 @@ namespace odfaeg {
         }
         void PerPixelLinkedListRenderComponent::pushEvent(window::IEvent event, RenderWindow& rw) {
             if (event.type == window::IEvent::WINDOW_EVENT && event.window.type == window::IEvent::WINDOW_EVENT_RESIZED && &getWindow() == &rw && isAutoResized()) {
-                //std::cout<<"recompute size"<<std::endl;
+                ////std::cout<<"recompute size"<<std::endl;
                 recomputeSize();
                 getListener().pushEvent(event);
                 getView().reset(physic::BoundingBox(getView().getViewport().getPosition().x(), getView().getViewport().getPosition().y(), getView().getViewport().getPosition().z(), event.window.data1, event.window.data2, getView().getViewport().getDepth()));
@@ -2570,21 +2743,30 @@ namespace odfaeg {
             return view;
         }
         void PerPixelLinkedListRenderComponent::draw(RenderTarget& target, RenderStates states) {
-            if (&target == &window)
-                window.setSemaphore(renderFinishedSemaphore);
+            /*if (&target == &window)
+                window.setSemaphore(renderFinishedSemaphore);*/
             const_cast<Texture&>(frameBuffer.getTexture()).toShaderReadOnlyOptimal(window.getCommandBuffers()[window.getCurrentFrame()]);
             frameBufferSprite.setCenter(target.getView().getPosition());
-            ////std::cout<<"view position : "<<view.getPosition()<<std::endl;
-            ////std::cout<<"sprite position : "<<frameBufferSprite.getCenter()<<std::endl;
+            //////std::cout<<"view position : "<<view.getPosition()<<std::endl;
+            //////std::cout<<"sprite position : "<<frameBufferSprite.getCenter()<<std::endl;
             if (&target == &window)
                 window.beginRenderPass();
             states.blendMode = BlendAlpha;
-            //std::cout<<"blend mode : "<<states.blendMode.colorSrcFactor<<std::endl;
+            ////std::cout<<"blend mode : "<<states.blendMode.colorSrcFactor<<std::endl;
 
             target.draw(frameBufferSprite, states);
             if (&target == &window)
                 window.endRenderPass();
-
+            std::vector<VkSemaphore> waitSemaphores, signalSemaphores;
+            std::vector<VkPipelineStageFlags> waitStages;
+            std::vector<uint64_t> waitValues, signalValues;
+            waitSemaphores.push_back(offscreenFinishedSemaphore[frameBuffer.getCurrentFrame()]);
+            waitStages.push_back(VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
+            signalSemaphores.push_back(offscreenFinishedSemaphore[frameBuffer.getCurrentFrame()]);
+            waitValues.push_back(values[frameBuffer.getCurrentFrame()]);
+            values[frameBuffer.getCurrentFrame()]++;
+            signalValues.push_back(values[frameBuffer.getCurrentFrame()]);
+            window.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
         }
         std::vector<Entity*> PerPixelLinkedListRenderComponent::getEntities() {
             return visibleEntities;
@@ -2601,7 +2783,7 @@ namespace odfaeg {
             }
         }
         PerPixelLinkedListRenderComponent::~PerPixelLinkedListRenderComponent() {
-            //std::cout<<"ppll destructor"<<std::endl;
+            ////std::cout<<"ppll destructor"<<std::endl;
             for (unsigned int i = 0; i < events.size(); i++) {
                 vkDestroyEvent(vkDevice.getDevice(), events[i], nullptr);
             }
@@ -2611,19 +2793,19 @@ namespace odfaeg {
             vkDestroyImage(vkDevice.getDevice(), headPtrTextureImage, nullptr);
             vkFreeMemory(vkDevice.getDevice(), headPtrTextureImageMemory, nullptr);
 
-            //std::cout<<"image destroyed"<<std::endl;
+            ////std::cout<<"image destroyed"<<std::endl;
             for (size_t i = 0; i < counterShaderStorageBuffers.size(); i++) {
                 if (counterShaderStorageBuffers[i] != VK_NULL_HANDLE) {
                     vkDestroyBuffer(vkDevice.getDevice(), counterShaderStorageBuffers[i], nullptr);
                     vkFreeMemory(vkDevice.getDevice(), counterShaderStorageBuffersMemory[i], nullptr);
                 }
             }
-            //std::cout<<"counter ssbo destroyed"<<std::endl;
+            ////std::cout<<"counter ssbo destroyed"<<std::endl;
             for (unsigned int i = 0; i < linkedListShaderStorageBuffers.size(); i++) {
                 vkDestroyBuffer(vkDevice.getDevice(), linkedListShaderStorageBuffers[i], nullptr);
                 vkFreeMemory(vkDevice.getDevice(), linkedListShaderStorageBuffersMemory[i], nullptr);
             }
-            //std::cout<<"linked list ssbo destroyed"<<std::endl;
+            ////std::cout<<"linked list ssbo destroyed"<<std::endl;
             for (size_t i = 0; i < modelDataShaderStorageBuffers.size(); i++) {
                 vkDestroyBuffer(vkDevice.getDevice(), modelDataShaderStorageBuffers[i], nullptr);
                 vkFreeMemory(vkDevice.getDevice(), modelDataShaderStorageBuffersMemory[i], nullptr);
@@ -2632,7 +2814,7 @@ namespace odfaeg {
                 vkDestroyBuffer(vkDevice.getDevice(), modelDataStagingBuffer, nullptr);
                 vkFreeMemory(vkDevice.getDevice(), modelDataStagingBufferMemory, nullptr);
             }
-            //std::cout<<"model data ssbo destroyed"<<std::endl;
+            ////std::cout<<"model data ssbo destroyed"<<std::endl;
             for (size_t i = 0; i < materialDataShaderStorageBuffers.size(); i++) {
                 vkDestroyBuffer(vkDevice.getDevice(), materialDataShaderStorageBuffers[i], nullptr);
                 vkFreeMemory(vkDevice.getDevice(), materialDataShaderStorageBuffersMemory[i], nullptr);
@@ -2645,12 +2827,15 @@ namespace odfaeg {
                 vkDestroyBuffer(vkDevice.getDevice(), vboIndirectStagingBuffer, nullptr);
                 vkFreeMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory, nullptr);
             }
-            //std::cout<<"material data ssbo destroyed"<<std::endl;
+            ////std::cout<<"material data ssbo destroyed"<<std::endl;
             if (vboIndirect != VK_NULL_HANDLE) {
                 vkDestroyBuffer(vkDevice.getDevice(),vboIndirect, nullptr);
                 vkFreeMemory(vkDevice.getDevice(), vboIndirectMemory, nullptr);
             }
-            //std::cout<<"indirect vbo destroyed"<<std::endl;
+            for (unsigned int i = 0; i < frameBuffer.getMaxFramesInFlight(); i++) {
+                vkDestroySemaphore(vkDevice.getDevice(), offscreenFinishedSemaphore[i], nullptr);
+            }
+            ////std::cout<<"indirect vbo destroyed"<<std::endl;
         }
         #else
         PerPixelLinkedListRenderComponent::PerPixelLinkedListRenderComponent(RenderWindow& window, int layer, std::string expression, window::ContextSettings settings) :
@@ -2664,12 +2849,12 @@ namespace odfaeg {
             maxModelDataSize = maxMaterialDataSize = maxVboIndirectSize = 0;
             if (!(settings.versionMajor >= 4 && settings.versionMinor >= 6))
                 throw core::Erreur(53, "opengl version not supported for this renderer type");
-            ////std::cout<<"move quad"<<std::endl;
+            //////std::cout<<"move quad"<<std::endl;
             datasReady = false;
             quad.move(math::Vec3f(-window.getView().getSize().x() * 0.5f, -window.getView().getSize().y() * 0.5f, 0));
             maxNodes = 20 * window.getView().getSize().x() * window.getView().getSize().y();
             GLint nodeSize = 5 * sizeof(GLfloat) + sizeof(GLuint);
-            ////std::cout<<"stencil bits : "<<settings.stencilBits<<std::endl;
+            //////std::cout<<"stencil bits : "<<settings.stencilBits<<std::endl;
 
             frameBuffer.create(window.getView().getSize().x(), window.getView().getSize().y(), settings);
             frameBufferSprite = Sprite(frameBuffer.getTexture(), math::Vec3f(0, 0, 0), math::Vec3f(window.getView().getSize().x(), window.getView().getSize().y(), 0), IntRect(0, 0, window.getView().getSize().x(), window.getView().getSize().y()));
@@ -2695,7 +2880,7 @@ namespace odfaeg {
             glCheck(glBufferData(GL_PIXEL_UNPACK_BUFFER, headPtrClearBuf.size() * sizeof(GLuint),
             &headPtrClearBuf[0], GL_STATIC_COPY));
             glCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0));*/
-            ////std::cout<<"buffers : "<<atomicBuffer<<" "<<linkedListBuffer<<" "<<headPtrTex<<" "<<clearBuf<<std::endl;
+            //////std::cout<<"buffers : "<<atomicBuffer<<" "<<linkedListBuffer<<" "<<headPtrTex<<" "<<clearBuf<<std::endl;
             core::FastDelegate<bool> signal (&PerPixelLinkedListRenderComponent::needToUpdate, this);
             core::FastDelegate<void> slot (&PerPixelLinkedListRenderComponent::drawNextFrame, this);
             core::Command cmd(signal, slot);
@@ -2715,7 +2900,7 @@ namespace odfaeg {
                 GLuint64 handle_texture = allTextures[i]->getTextureHandle();
                 allTextures[i]->makeTextureResident(handle_texture);
                 allSamplers.tex[i].handle = handle_texture;
-                ////std::cout<<"add texture i : "<<i<<" id : "<<allTextures[i]->getId()<<std::endl;
+                //////std::cout<<"add texture i : "<<i<<" id : "<<allTextures[i]->getId()<<std::endl;
             }
             indirectRenderingShader.setParameter("textureMatrix", textureMatrices);
             glCheck(glGenBuffers(1, &ubo));
@@ -2724,7 +2909,7 @@ namespace odfaeg {
             glCheck(glBindBuffer(GL_UNIFORM_BUFFER, ubo));
             glCheck(glBufferData(GL_UNIFORM_BUFFER, sizeof(Samplers),allSamplers.tex, GL_STATIC_DRAW));
             glCheck(glBindBuffer(GL_UNIFORM_BUFFER, 0));
-            ////std::cout<<"size : "<<sizeof(Samplers)<<" "<<alignof (alignas(16) uint64_t[200])<<std::endl;
+            //////std::cout<<"size : "<<sizeof(Samplers)<<" "<<alignof (alignas(16) uint64_t[200])<<std::endl;
             backgroundColor = Color::Transparent;
             glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo));
             glCheck(glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 0, atomicBuffer));
@@ -2751,7 +2936,7 @@ namespace odfaeg {
                 GLuint64 handle_texture = allTextures[i]->getTextureHandle();
                 allTextures[i]->makeTextureResident(handle_texture);
                 allSamplers.tex[i].handle = handle_texture;
-                ////std::cout<<"add texture i : "<<i<<" id : "<<allTextures[i]->getId()<<std::endl;
+                //////std::cout<<"add texture i : "<<i<<" id : "<<allTextures[i]->getId()<<std::endl;
             }
             indirectRenderingShader.setParameter("textureMatrix", textureMatrices);
             glCheck(glBindBuffer(GL_UNIFORM_BUFFER, ubo));
@@ -2961,8 +3146,8 @@ namespace odfaeg {
                    math::Matrix4f projMatrix = getWindow().getDefaultView().getProjMatrix().getMatrix().transpose();
                    perPixelLinkedListP2.setParameter("viewMatrix", viewMatrix);
                    perPixelLinkedListP2.setParameter("projectionMatrix", projMatrix);
-                   std::cout<<"view matrix : "<<viewMatrix<<std::endl;
-                   std::cout<<"projection matrix : "<<projMatrix<<std::endl;
+                   //std::cout<<"view matrix : "<<viewMatrix<<std::endl;
+                   //std::cout<<"projection matrix : "<<projMatrix<<std::endl;
         }
         void PerPixelLinkedListRenderComponent::setBackgroundColor(Color color) {
             backgroundColor = color;
@@ -3005,7 +3190,7 @@ namespace odfaeg {
             for (unsigned int i = 0; i < m_selected.size(); i++) {
                 if (m_selected[i].getAllVertices().getVertexCount() > 0) {
                     DrawArraysIndirectCommand drawArraysIndirectCommand;
-                    ////std::cout<<"next frame draw normal"<<std::endl;
+                    //////std::cout<<"next frame draw normal"<<std::endl;
 
                     float time = timeClock.getElapsedTime().asSeconds();
                     indirectRenderingShader.setParameter("time", time);
@@ -3076,8 +3261,8 @@ namespace odfaeg {
                     drawArraysIndirectCommands[p].push_back(drawArraysIndirectCommand);
                     firstIndex[p] += vertexCount;
                     baseInstance[p] += tm.size();
-                    ////std::cout<<"texture : "<<m_instances[i].getMaterial().getTexture()<<std::endl;
-                    ////std::cout<<"entity : "<<m_instances[i].getVertexArrays()[0]->getEntity()->getRootEntity()->getType()<<std::endl;
+                    //////std::cout<<"texture : "<<m_instances[i].getMaterial().getTexture()<<std::endl;
+                    //////std::cout<<"entity : "<<m_instances[i].getVertexArrays()[0]->getEntity()->getRootEntity()->getType()<<std::endl;
 
                 }
             }
@@ -3123,7 +3308,7 @@ namespace odfaeg {
             for (unsigned int i = 0; i < m_selectedScale.size(); i++) {
                 if (m_selectedScale[i].getAllVertices().getVertexCount() > 0) {
                     DrawArraysIndirectCommand drawArraysIndirectCommand;
-                    ////std::cout<<"next frame draw normal"<<std::endl;
+                    //////std::cout<<"next frame draw normal"<<std::endl;
                     /*if (core::Application::app != nullptr) {
                         float time = core::Application::getTimeClk().getElapsedTime().asSeconds();
                         perPixelLinkedList2.setParameter("time", time);
@@ -3190,8 +3375,8 @@ namespace odfaeg {
                     drawArraysIndirectCommands[p].push_back(drawArraysIndirectCommand);
                     firstIndex[p] += vertexCount;
                     baseInstance[p] += tm.size();
-                    ////std::cout<<"texture : "<<m_instances[i].getMaterial().getTexture()<<std::endl;
-                    ////std::cout<<"entity : "<<m_instances[i].getVertexArrays()[0]->getEntity()->getRootEntity()->getType()<<std::endl;
+                    //////std::cout<<"texture : "<<m_instances[i].getMaterial().getTexture()<<std::endl;
+                    //////std::cout<<"entity : "<<m_instances[i].getVertexArrays()[0]->getEntity()->getRootEntity()->getType()<<std::endl;
 
                 }
             }
@@ -3241,7 +3426,7 @@ namespace odfaeg {
             for (unsigned int i = 0; i < m_selectedIndexed.size(); i++) {
                 if (m_selectedIndexed[i].getAllVertices().getVertexCount() > 0) {
                     DrawElementsIndirectCommand drawElementsIndirectCommand;
-                    ////std::cout<<"next frame draw normal"<<std::endl;
+                    //////std::cout<<"next frame draw normal"<<std::endl;
 
                     float time = timeClock.getElapsedTime().asSeconds();
                     indirectRenderingShader.setParameter("time", time);
@@ -3323,8 +3508,8 @@ namespace odfaeg {
                     firstIndex[p] += indexCount;
                     baseVertex[p] += vertexCount;
                     baseInstance[p] += tm.size();
-                    ////std::cout<<"texture : "<<m_instances[i].getMaterial().getTexture()<<std::endl;
-                    ////std::cout<<"entity : "<<m_instances[i].getVertexArrays()[0]->getEntity()->getRootEntity()->getType()<<std::endl;
+                    //////std::cout<<"texture : "<<m_instances[i].getMaterial().getTexture()<<std::endl;
+                    //////std::cout<<"entity : "<<m_instances[i].getVertexArrays()[0]->getEntity()->getRootEntity()->getType()<<std::endl;
                 }
             }
             currentStates.blendMode = BlendNone;
@@ -3370,7 +3555,7 @@ namespace odfaeg {
             for (unsigned int i = 0; i < m_selectedScaleIndexed.size(); i++) {
                 if (m_selectedScaleIndexed[i].getAllVertices().getVertexCount() > 0) {
                     DrawElementsIndirectCommand drawElementsIndirectCommand;
-                    ////std::cout<<"next frame draw normal"<<std::endl;
+                    //////std::cout<<"next frame draw normal"<<std::endl;
                     unsigned int p = m_selectedScaleIndexed[i].getAllVertices().getPrimitiveType();
                     MaterialData material;
                     material.textureIndex = 0;
@@ -3448,8 +3633,8 @@ namespace odfaeg {
                     firstIndex[p] += indexCount;
                     baseVertex[p] += vertexCount;
                     baseInstance[p] += tm.size();
-                    ////std::cout<<"texture : "<<m_instances[i].getMaterial().getTexture()<<std::endl;
-                    ////std::cout<<"entity : "<<m_instances[i].getVertexArrays()[0]->getEntity()->getRootEntity()->getType()<<std::endl;
+                    //////std::cout<<"texture : "<<m_instances[i].getMaterial().getTexture()<<std::endl;
+                    //////std::cout<<"entity : "<<m_instances[i].getVertexArrays()[0]->getEntity()->getRootEntity()->getType()<<std::endl;
                 }
             }
             currentStates.blendMode = BlendNone;
@@ -3482,7 +3667,7 @@ namespace odfaeg {
             /*glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo));
             glCheck(glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 0, atomicBuffer));
             glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, linkedListBuffer));*/
-            ////std::cout<<"draw nex frame"<<std::endl;
+            //////std::cout<<"draw nex frame"<<std::endl;
             //basicView.setPerspective(-1, 1, -1, 1, 0, 1);
 
 
@@ -3497,7 +3682,7 @@ namespace odfaeg {
 
 
 
-                    ////std::cout<<"data ready"<<std::endl;
+                    //////std::cout<<"data ready"<<std::endl;
                     m_instances = batcher.getInstances();
                     m_normals = normalBatcher.getInstances();
                     m_instancesIndexed = batcherIndexed.getInstances();
@@ -3569,7 +3754,7 @@ namespace odfaeg {
             drawInstancesIndexed();
             drawSelectedInstances();
             drawSelectedInstancesIndexed();*/
-            ////std::cout<<"nb instances : "<<m_normals.size()<<std::endl;
+            //////std::cout<<"nb instances : "<<m_normals.size()<<std::endl;
 
 
             /*glCheck(glFinish());
@@ -3589,7 +3774,7 @@ namespace odfaeg {
             vb.update();
 
             math::Matrix4f matrix = quad.getTransform().getMatrix().transpose();
-            std::cout<<"world mat : "<<matrix<<std::endl;
+            //std::cout<<"world mat : "<<matrix<<std::endl;
             perPixelLinkedListP2.setParameter("worldMat", matrix);
             currentStates.shader = &perPixelLinkedListP2;
             frameBuffer.drawVertexBuffer(vb, currentStates);
@@ -3623,13 +3808,13 @@ namespace odfaeg {
             for (unsigned int i = 0; i < m_normals.size(); i++) {
                 if (m_normals[i].getAllVertices().getVertexCount() > 0) {
                     DrawArraysIndirectCommand drawArraysIndirectCommand;
-                    ////std::cout<<"next frame draw normal"<<std::endl;
+                    //////std::cout<<"next frame draw normal"<<std::endl;
                     float time = timeClock.getElapsedTime().asSeconds();
                     indirectRenderingShader.setParameter("time", time);
 
                     unsigned int p = m_normals[i].getAllVertices().getPrimitiveType();
                     /*if (m_normals[i].getVertexArrays()[0]->getEntity()->getRootType() == "E_MONSTER") {
-                            //std::cout<<"tex coords : "<<(*m_normals[i].getVertexArrays()[0])[0].texCoords.x<<","<<(*m_normals[i].getVertexArrays()[0])[0].texCoords.y<<std::endl;
+                            ////std::cout<<"tex coords : "<<(*m_normals[i].getVertexArrays()[0])[0].texCoords.x<<","<<(*m_normals[i].getVertexArrays()[0])[0].texCoords.y<<std::endl;
                         }*/
                     unsigned int vertexCount = 0;
                     MaterialData material;
@@ -3642,9 +3827,9 @@ namespace odfaeg {
                     /*for (unsigned int v = 0; v < m_normals[i].getVertexArrays().size(); v++) {
                         if (m_normals[i].getVertexArrays()[v]->getEntity()->getType() == "E_MESH") {
                             for (unsigned int n = 0; n < m_normals[i].getVertexArrays()[v]->getVertexCount(); n++) {
-                                //std::cout<<"vertex position : "<<(*m_normals[i].getVertexArrays()[v])[n].position.x<<std::endl;
-                                //std::cout<<"vertex color : "<<(int) (*m_normals[i].getVertexArrays()[v])[n].color.r<<std::endl;
-                                //std::cout<<"vertex tex coords : "<<(*m_normals[i].getVertexArrays()[v])[n].texCoords.x<<std::endl;
+                                ////std::cout<<"vertex position : "<<(*m_normals[i].getVertexArrays()[v])[n].position.x<<std::endl;
+                                ////std::cout<<"vertex color : "<<(int) (*m_normals[i].getVertexArrays()[v])[n].color.r<<std::endl;
+                                ////std::cout<<"vertex tex coords : "<<(*m_normals[i].getVertexArrays()[v])[n].texCoords.x<<std::endl;
 
                             }
                         }
@@ -3674,7 +3859,7 @@ namespace odfaeg {
                     /*for (unsigned int j = 0; j < m_normals[i].getVertexArrays().size(); j++) {
                         if (m_normals[i].getVertexArrays()[j]->getEntity() != nullptr && m_normals[i].getVertexArrays()[j]->getEntity()->getRootType() == "E_HERO") {
                             for (unsigned int n = 0; n < m_normals[i].getVertexArrays()[j]->getVertexCount(); n++)
-                                //std::cout<<"position hero : "<<(*m_normals[i].getVertexArrays()[j])[n].position.x<<","<<(*m_normals[i].getVertexArrays()[j])[n].position.y<<","<<(*m_normals[i].getVertexArrays()[j])[n].position.z<<std::endl;
+                                ////std::cout<<"position hero : "<<(*m_normals[i].getVertexArrays()[j])[n].position.x<<","<<(*m_normals[i].getVertexArrays()[j])[n].position.y<<","<<(*m_normals[i].getVertexArrays()[j])[n].position.z<<std::endl;
                         }
                     }*/
                 }
@@ -3723,8 +3908,8 @@ namespace odfaeg {
                     drawArraysIndirectCommands[p].push_back(drawArraysIndirectCommand);
                     firstIndex[p] += vertexCount;
                     baseInstance[p] += tm.size();
-                    ////std::cout<<"texture : "<<m_instances[i].getMaterial().getTexture()<<std::endl;
-                    ////std::cout<<"entity : "<<m_instances[i].getVertexArrays()[0]->getEntity()->getRootEntity()->getType()<<std::endl;
+                    //////std::cout<<"texture : "<<m_instances[i].getMaterial().getTexture()<<std::endl;
+                    //////std::cout<<"entity : "<<m_instances[i].getVertexArrays()[0]->getEntity()->getRootEntity()->getType()<<std::endl;
 
                 }
             }
@@ -3781,7 +3966,7 @@ namespace odfaeg {
                     indirectRenderingShader.setParameter("time", time);
                     unsigned int p = m_normalsIndexed[i].getAllVertices().getPrimitiveType();
                     /*if (m_normals[i].getVertexArrays()[0]->getEntity()->getRootType() == "E_MONSTER") {
-                            //std::cout<<"tex coords : "<<(*m_normals[i].getVertexArrays()[0])[0].texCoords.x<<","<<(*m_normals[i].getVertexArrays()[0])[0].texCoords.y<<std::endl;
+                            ////std::cout<<"tex coords : "<<(*m_normals[i].getVertexArrays()[0])[0].texCoords.x<<","<<(*m_normals[i].getVertexArrays()[0])[0].texCoords.y<<std::endl;
                         }*/
                     MaterialData material;
                     material.textureIndex = (m_normalsIndexed[i].getMaterial().getTexture() != nullptr) ? m_normalsIndexed[i].getMaterial().getTexture()->getId() : 0;
@@ -3859,8 +4044,8 @@ namespace odfaeg {
                     firstIndex[p] += indexCount;
                     baseVertex[p] += vertexCount;
                     baseInstance[p] += tm.size();
-                    ////std::cout<<"texture : "<<m_instances[i].getMaterial().getTexture()<<std::endl;
-                    ////std::cout<<"entity : "<<m_instances[i].getVertexArrays()[0]->getEntity()->getRootEntity()->getType()<<std::endl;
+                    //////std::cout<<"texture : "<<m_instances[i].getMaterial().getTexture()<<std::endl;
+                    //////std::cout<<"entity : "<<m_instances[i].getVertexArrays()[0]->getEntity()->getRootEntity()->getType()<<std::endl;
                 }
             }
             currentStates.blendMode = BlendNone;
@@ -3953,10 +4138,10 @@ namespace odfaeg {
                 datasReady = false;
 
                 //if (datasReady) {
-                    ////std::cout<<"wait 2 "<<std::endl;
+                    //////std::cout<<"wait 2 "<<std::endl;
                     //cv.wait(lock, [this]() {return !datasReady;});
                 //}
-                ////std::cout<<"data unready"<<std::endl;
+                //////std::cout<<"data unready"<<std::endl;
                 batcher.clear();
                 normalBatcher.clear();
                 batcherIndexed.clear();
@@ -4007,11 +4192,11 @@ namespace odfaeg {
                                     selectedInstanceBatcher.addFace(vEntities[i]->getFace(j));
                                 }
 
-                           // //std::cout<<"remove texture"<<std::endl;
+                           // ////std::cout<<"remove texture"<<std::endl;
 
-                            ////std::cout<<"get va"<<std::endl;
+                            //////std::cout<<"get va"<<std::endl;
                                 VertexArray& va = border->getFace(j)->getVertexArray();
-                                ////std::cout<<"change color"<<std::endl;
+                                //////std::cout<<"change color"<<std::endl;
                                 for (unsigned int j = 0; j < va.getVertexCount(); j++) {
 
                                     va[j].color = Color::Cyan;
@@ -4019,20 +4204,20 @@ namespace odfaeg {
 
                                 border->setOrigin(border->getSize() * 0.5f);
                                 border->setScale(math::Vec3f(1.1f, 1.1f, 1.1f));
-                               // //std::cout<<"add to batcher"<<std::endl;
+                               // ////std::cout<<"add to batcher"<<std::endl;
                                 selectedInstanceScaleBatcher.addFace(border->getFace(j));
-                           // //std::cout<<"face added"<<std::endl;
+                           // ////std::cout<<"face added"<<std::endl;
                              } else {
                                  {
                                     std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                                     selectedInstanceIndexBatcher.addFace(vEntities[i]->getFace(j));
                                  }
 
-                               // //std::cout<<"remove texture"<<std::endl;
+                               // ////std::cout<<"remove texture"<<std::endl;
 
-                            ////std::cout<<"get va"<<std::endl;
+                            //////std::cout<<"get va"<<std::endl;
                                 VertexArray& va = border->getFace(j)->getVertexArray();
-                                ////std::cout<<"change color"<<std::endl;
+                                //////std::cout<<"change color"<<std::endl;
                                 for (unsigned int j = 0; j < va.getVertexCount(); j++) {
 
                                     va[j].color = Color::Cyan;
@@ -4044,7 +4229,7 @@ namespace odfaeg {
                                 math::Vec3f offset =  root->getSize() - oldSize;
                                 //border->setPosition(root->getPosition() - offset * 0.5f);
 
-                               // //std::cout<<"add to batcher"<<std::endl;
+                               // ////std::cout<<"add to batcher"<<std::endl;
                                 selectedInstanceIndexScaleBatcher.addFace(border->getFace(j));
                              }
                         } else {
@@ -4054,11 +4239,11 @@ namespace odfaeg {
                                     selectedBatcher.addFace(vEntities[i]->getFace(j));
                                 }
 
-                           // //std::cout<<"remove texture"<<std::endl;
+                           // ////std::cout<<"remove texture"<<std::endl;
 
-                            ////std::cout<<"get va"<<std::endl;
+                            //////std::cout<<"get va"<<std::endl;
                                 VertexArray& va = border->getFace(j)->getVertexArray();
-                                ////std::cout<<"change color"<<std::endl;
+                                //////std::cout<<"change color"<<std::endl;
                                 for (unsigned int j = 0; j < va.getVertexCount(); j++) {
 
                                     va[j].color = Color::Cyan;
@@ -4073,18 +4258,18 @@ namespace odfaeg {
                                 }
                                 selectedScaleBatcher.addFace(border->getFace(j));
 
-                               // //std::cout<<"face added"<<std::endl;
+                               // ////std::cout<<"face added"<<std::endl;
                              } else {
                                  {
                                     std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                                     selectedIndexBatcher.addFace(vEntities[i]->getFace(j));
                                  }
 
-                               // //std::cout<<"remove texture"<<std::endl;
+                               // ////std::cout<<"remove texture"<<std::endl;
 
-                            ////std::cout<<"get va"<<std::endl;
+                            //////std::cout<<"get va"<<std::endl;
                                 VertexArray& va = border->getFace(j)->getVertexArray();
-                                ////std::cout<<"change color"<<std::endl;
+                                //////std::cout<<"change color"<<std::endl;
                                 for (unsigned int j = 0; j < va.getVertexCount(); j++) {
 
                                     va[j].color = Color::Cyan;
@@ -4092,7 +4277,7 @@ namespace odfaeg {
 
                                 border->setOrigin(border->getSize() * 0.5f);
                                 border->setScale(math::Vec3f(1.1f, 1.1f, 1.1f));
-                               // //std::cout<<"add to batcher"<<std::endl;
+                               // ////std::cout<<"add to batcher"<<std::endl;
                                 selectedIndexScaleBatcher.addFace(border->getFace(j));
                              }
                         }
@@ -4106,7 +4291,7 @@ namespace odfaeg {
 
             }
 
-            ////std::cout<<"instances added"<<std::endl;
+            //////std::cout<<"instances added"<<std::endl;
             visibleEntities = vEntities;*/
             update = true;
             std::lock_guard<std::recursive_mutex> lock(rec_mutex);
@@ -4118,7 +4303,7 @@ namespace odfaeg {
         }
         void PerPixelLinkedListRenderComponent::pushEvent(window::IEvent event, RenderWindow& rw) {
             if (event.type == window::IEvent::WINDOW_EVENT && event.window.type == window::IEvent::WINDOW_EVENT_RESIZED && &getWindow() == &rw && isAutoResized()) {
-                //std::cout<<"recompute size"<<std::endl;
+                ////std::cout<<"recompute size"<<std::endl;
                 recomputeSize();
                 getListener().pushEvent(event);
                 getView().reset(physic::BoundingBox(getView().getViewport().getPosition().x(), getView().getViewport().getPosition().y(), getView().getViewport().getPosition().z(), event.window.data1, event.window.data2, getView().getViewport().getDepth()));

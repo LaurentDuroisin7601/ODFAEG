@@ -91,7 +91,7 @@ namespace odfaeg {
                 layer = material.layer;
                 lightCenter = material.lightCenter;
                 lightColor = material.lightColor;
-                materials.push_back(this);
+                //materials.push_back(this);
                 return *this;
             }
             void Material::setLightInfos(math::Vec4f center, Color color) {

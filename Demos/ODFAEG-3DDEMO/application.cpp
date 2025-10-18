@@ -111,7 +111,7 @@ void MyAppli::onInit() {
     getWorld()->addWorker(eu);
 
     model = loader.loadModel("tilesets\\mesh_puddingmill\\puddingmill.obj", factory);
-    //model->setSelected(true);
+    model->setSelected(true);
 
     animatedModel = loader.loadModel("tilesets\\vampire\\dancing_vampire.dae", factory);
     g3d::Animation* danceAnimation = new g3d::Animation("tilesets\\vampire\\dancing_vampire.dae", animatedModel);
@@ -122,7 +122,7 @@ void MyAppli::onInit() {
     animator->setDrawMode(Entity::INSTANCED);
 
     float y, z;
-    model->move(Vec3f(0, 0, 10));
+    model->move(Vec3f(0, 0, -20));
     //model->setScale(Vec3f(2.f, 2.f, 2.f));
 
     //animator->scale(Vec3f(0.1f, 0.1f, 0.1f));
@@ -140,15 +140,16 @@ void MyAppli::onInit() {
     angle = (y2 > y) ? angle : -angle;
     angle2 = (y3 > y) ? angle2 : -angle2;
     model->move(Vec3f(0, y, 0));
+    //model->setRotation(45, Vec3f(1, 0, 0));
     model->setShadowScale(Vec3f(1, -1, 1));
     model->setShadowRotation(90 + angle * 100, Vec3f(1, 0, 0));
     //model->setShadowRotation(angle2 * 150, Vec3f(0, 0, 1));
     model->setShadowCenter(Vec3f(0, 0, -5));
-    //model->setSelected(true);
+
     isOnHeightMap = heightmap->getHeight(Vec2f(animator->getPosition().x(), animator->getPosition().z()), z);
     //std::cout<<"animator size : "<<animator->getSize()<<std::endl;
     animator->move(Vec3f(0, z, 0));
-    getWorld()->addEntity(animator);
+    //getWorld()->addEntity(animator);
 
     //std::cout<<model->getPosition()<<model->getCenter()<<std::endl;
 
@@ -162,9 +163,10 @@ void MyAppli::onInit() {
     //frc->setVisible(false);
     /*ShadowRenderComponent* src = new ShadowRenderComponent(getRenderWindow(), 1, "E_MESH+E_BIGTILE",ContextSettings(24, 0, 4, 4, 6));
     src->setView(view3D);*/
-    PerPixelLinkedListRenderComponent* frc2 = new PerPixelLinkedListRenderComponent(getRenderWindow(), 0, "E_BIGTILE",ContextSettings(24, 8, 4, 4, 6));
+    PerPixelLinkedListRenderComponent* frc2 = new PerPixelLinkedListRenderComponent(getRenderWindow(), 0, "E_BIGTILE+E_MESH",ContextSettings(24, 8, 4, 4, 6));
     //frc2->preloadEntitiesOnComponent(getWorld()->getEntities("*"), factory);
     frc2->setView(view3D);
+    getRenderWindow().createDescriptorsAndPipelines();
     //frc2->loadSkybox(skybox.get());
     /*ReflectRefractRenderComponent* rrrc = new ReflectRefractRenderComponent(getRenderWindow(), 2, "E_CUBE+E_BIGTILE+E_MESH", ContextSettings(0, 0, 4, 4, 6));
     rrrc->setView(view3D);*/
@@ -178,7 +180,7 @@ void MyAppli::onInit() {
     /*rrrc->createDescriptorsAndPipelines();
     src->createDescriptorsAndPipelines();
     lrc->createDescriptorsAndPipelines();*/
-    getRenderWindow().createDescriptorsAndPipelines();
+
     //getView().setPerspective(-size.x * 0.5f, size.x * 0.5f, -size.y * 0.5f, size.y * 0.5f,-1000, 1000);
     //getRenderComponentManager().addComponent(frc);
     /*rrrc->setVisible(false);
@@ -216,7 +218,7 @@ void MyAppli::onInit() {
 void MyAppli::onRender(RenderComponentManager* frcm) {
     //getWorld()->drawOnComponents("E_CUBE", 0);
     //getWorld()->drawOnComponents("E_MESH+E_BIGTILE", 1);
-    getWorld()->drawOnComponents("E_BIGTILE", 0);
+    getWorld()->drawOnComponents("E_BIGTILE+E_MESH", 0);
     /*getWorld()->drawOnComponents("E_CUBE+E_BIGTILE+E_MESH", 2);
     getWorld()->drawOnComponents("E_PONCTUAL_LIGHT+E_BIGTILE", 3);*/
     fpsCounter++;

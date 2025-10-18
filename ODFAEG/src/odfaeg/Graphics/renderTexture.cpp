@@ -67,9 +67,13 @@ namespace odfaeg
             vkDevice.pickupPhysicalDevice(VK_NULL_HANDLE);
             vkDevice.createLogicalDevice(VK_NULL_HANDLE);
             m_texture.createCubeMap(width, height, true);
+            //std::cout<<"cm texture created"<<std::endl;
             getDepthTexture().createDepthTextureCM(width, height);
+            //std::cout<<"cm dt created"<<std::endl;
             createRenderPass();
+            //std::cout<<"render pass created"<<std::endl;
             createFramebuffers();
+            //std::cout<<"frame buffer created"<<std::endl;
             createSyncObjects();
             m_size[0] = width;
             m_size[1] = height;
@@ -228,10 +232,10 @@ namespace odfaeg
                     dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
                     renderPassInfo.dependencyCount = 1;
                     renderPassInfo.pDependencies = &dependency;
-
+                    VkRenderPassMultiviewCreateInfo multiviewInfo{};
+                    //std::cout<<"pass 1 created"<<std::endl;
                     if (isCubeMap) {
                         const uint32_t viewMask = 0b00111111;
-                        VkRenderPassMultiviewCreateInfo multiviewInfo{};
                         multiviewInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO;
                         multiviewInfo.subpassCount = 1;
                         multiviewInfo.pViewMasks = &viewMask;
@@ -240,6 +244,7 @@ namespace odfaeg
                     if (vkCreateRenderPass(vkDevice.getDevice(), &renderPassInfo, nullptr, &renderPasses[0]) != VK_SUCCESS) {
                         throw core::Erreur(0, "failed to create render pass!", 1);
                     }
+
                 } else {
                     VkAttachmentDescription colorAttachment{};
                     colorAttachment.format =    getSwapchainImageFormat();
@@ -255,9 +260,9 @@ namespace odfaeg
                     depthAttachment.format = getDepthTexture().getFormat();
                     depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
                     depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
-                    depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+                    depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
                     depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
-                    depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+                    depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
                     depthAttachment.initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
                     depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
@@ -293,10 +298,9 @@ namespace odfaeg
                     dependency.dependencyFlags = (isCubeMap) ? VK_DEPENDENCY_BY_REGION_BIT | VK_DEPENDENCY_VIEW_LOCAL_BIT : 0;
                     renderPassInfo.dependencyCount = 1;
                     renderPassInfo.pDependencies = &dependency;
-
+                    VkRenderPassMultiviewCreateInfo multiviewInfo{};
                     if (isCubeMap) {
                         const uint32_t viewMask = 0b00111111;
-                        VkRenderPassMultiviewCreateInfo multiviewInfo{};
                         multiviewInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO;
                         multiviewInfo.subpassCount = 1;
                         multiviewInfo.pViewMasks = &viewMask;
@@ -316,7 +320,7 @@ namespace odfaeg
              clearColor = color;
              VkClearColorValue clearValue = {clearColor.r / 255.f, clearColor.g / 255.f, clearColor.b / 255.f, clearColor.a / 255.f};
              VkClearDepthStencilValue clearDepthStencilValue = {
-                .depth = 0.f,
+                .depth = 1.f,
                 .stencil = 0
              };
              VkImageSubresourceRange imageRange = {

@@ -239,6 +239,7 @@ namespace sorrok {
             std::cout<<"not read serialisation file"<<std::endl;
             BoundingBox mapZone(0, 0, 0, 1500, 1000, 0);
             getWorld()->generate_map(tiles, walls, Vec2f(100, 50), mapZone, entityFactory);
+            std::cout<<"map generated"<<std::endl;
             Tile* thouse = entityFactory.make_entity<Tile>(tm.getResourceByAlias("HOUSE"), Vec3f(-100, 250, 400), Vec3f(250, 300, 0), IntRect(0, 0, 250, 300), entityFactory);
 
             thouse->setLayer(1);
@@ -316,22 +317,27 @@ namespace sorrok {
         psu->setName("ParticlesSystemUpdater");
         //ps->move(Vec3f(0, -125, 0));
         getWorld()->addEntity(ps);
+        std::cout<<"entity added to the world"<<std::endl;
         View view = getView();
         //view.rotate(0, 0, 20);
         PerPixelLinkedListRenderComponent *frc1 = new PerPixelLinkedListRenderComponent(getRenderWindow(),0, "E_BIGTILE", ContextSettings(0, 0, 4, 4, 6));
+        std::cout<<"ppll1 component created"<<std::endl;
         PerPixelLinkedListRenderComponent *frc2 = new PerPixelLinkedListRenderComponent(getRenderWindow(), 1, "E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PARTICLES", ContextSettings(24, 8, 4, 4, 6));
-
+        std::cout<<"ppll2 component created"<<std::endl;
         ReflectRefractRenderComponent *rrrc = new ReflectRefractRenderComponent(getRenderWindow(), 2, "E_BIGTILE+E_WALL+E_DECOR+E_ANIMATION+E_HERO", ContextSettings(0, 0, 4, 4, 6));
-
+        std::cout<<"reflect refract component created"<<std::endl;
 
         ShadowRenderComponent *src = new ShadowRenderComponent(getRenderWindow(), 3, "E_WALL+E_DECOR+E_ANIMATION+E_HERO", ContextSettings(0, 0, 4, 4, 6));
+        std::cout<<"shadow component created"<<std::endl;
         LightRenderComponent *lrc = new LightRenderComponent(getRenderWindow(), 4, "E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PONCTUAL_LIGHT", ContextSettings(0, 0, 4, 4, 6));
+        std::cout<<"light component created"<<std::endl;
         getRenderWindow().createDescriptorsAndPipelines();
         frc1->createDescriptorsAndPipelines();
         frc2->createDescriptorsAndPipelines();
         src->createDescriptorsAndPipelines();
         lrc->createDescriptorsAndPipelines();
         rrrc->createDescriptorsAndPipelines();
+        std::cout<<"pipelines created"<<std::endl;
 
 
 

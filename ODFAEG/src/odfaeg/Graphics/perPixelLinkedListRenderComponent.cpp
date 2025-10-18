@@ -187,7 +187,7 @@ namespace odfaeg {
             createDescriptorSetLayout2(states);
             allocateDescriptorSets2(states);
             createDescriptorSets2(states);
-            states.shader = &indirectRenderingShader;
+
             BlendMode none = BlendNone;
             BlendMode alpha = BlendAlpha;
             BlendMode add = BlendAdd;
@@ -219,6 +219,7 @@ namespace odfaeg {
                 }
             }
             frameBuffer.enableDepthTest(true);
+            states.shader = &indirectRenderingShader;
             for (unsigned int b = 0; b < blendModes.size(); b++) {
 
                 states.blendMode = blendModes[b];
@@ -239,17 +240,26 @@ namespace odfaeg {
                            pipelineLayoutInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = &push_constant;
                            pipelineLayoutInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 1;
                            depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = {}; // Optional
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {}; // Optional
+                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthWriteEnable = VK_TRUE;
+
+
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.failOp = VK_STENCIL_OP_KEEP;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.depthFailOp = VK_STENCIL_OP_KEEP;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.passOp = VK_STENCIL_OP_REPLACE;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.compareMask = 0xff;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.writeMask = 0xff;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.reference = 0;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back;
                            frameBuffer.createGraphicPipeline(static_cast<PrimitiveType>(i), states, NODEPTHNOSTENCIL, NBDEPTHSTENCIL);
 
 
                        } else if (j == 1) {
                            frameBuffer.enableStencilTest(true);
                            depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
+                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthWriteEnable = VK_TRUE;
                            depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.compareOp = VK_COMPARE_OP_ALWAYS;
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.failOp = VK_STENCIL_OP_REPLACE;
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.depthFailOp = VK_STENCIL_OP_REPLACE;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.failOp = VK_STENCIL_OP_KEEP;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.depthFailOp = VK_STENCIL_OP_KEEP;
                            depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.passOp = VK_STENCIL_OP_REPLACE;
                            depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.compareMask = 0xff;
                            depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.writeMask = 0xff;
@@ -270,13 +280,15 @@ namespace odfaeg {
                        } else {
                            frameBuffer.enableStencilTest(true);
 
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_LESS;
+                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].depthWriteEnable = VK_FALSE;
+
                            depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.compareOp = VK_COMPARE_OP_NOT_EQUAL;
                            depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.failOp = VK_STENCIL_OP_KEEP;
                            depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.depthFailOp = VK_STENCIL_OP_KEEP;
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.passOp = VK_STENCIL_OP_REPLACE;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.passOp = VK_STENCIL_OP_KEEP;
                            depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.compareMask = 0xff;
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.writeMask = 0xff;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.writeMask = 0x00;
                            depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.reference = 1;
                            depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].front = depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back;
                            VkPushConstantRange push_constant;
@@ -286,6 +298,7 @@ namespace odfaeg {
                            push_constant.size = sizeof(IndirectDrawPushConsts);
                            //this push constant range is accessible only in the vertex shader
                            push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+                           //std::cout<<"pipeline id : "<<NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id<<std::endl;
 
                            pipelineLayoutInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = &push_constant;
                            pipelineLayoutInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 1;
@@ -302,6 +315,7 @@ namespace odfaeg {
                 for (unsigned int j = 0; j < NBDEPTHSTENCIL; j++) {
                     for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
                         if (j == 0) {
+
                            frameBuffer.enableStencilTest(false);
 
                            VkPushConstantRange push_constant;
@@ -313,13 +327,20 @@ namespace odfaeg {
                            pipelineLayoutInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = &push_constant;
                            pipelineLayoutInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 1;
                            depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
-                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = {}; // Optional
-                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {}; // Optional
+                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthWriteEnable = VK_TRUE;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.failOp = VK_STENCIL_OP_KEEP;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.depthFailOp = VK_STENCIL_OP_KEEP;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.passOp = VK_STENCIL_OP_REPLACE;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.compareMask = 0xff;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.writeMask = 0xff;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.reference = 0;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back;
                            frameBuffer.createGraphicPipeline(static_cast<PrimitiveType>(i), states, NODEPTHNOSTENCIL, NBDEPTHSTENCIL);
                        } else if (j == 1) {
                            frameBuffer.enableStencilTest(true);
 
                            depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
+                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthWriteEnable = VK_TRUE;
                            depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.compareOp = VK_COMPARE_OP_ALWAYS;
                            depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.failOp = VK_STENCIL_OP_REPLACE;
                            depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.depthFailOp = VK_STENCIL_OP_REPLACE;
@@ -339,7 +360,8 @@ namespace odfaeg {
                            frameBuffer.createGraphicPipeline(static_cast<PrimitiveType>(i), states, NODEPTHSTENCIL, NBDEPTHSTENCIL);
                         } else {
                            frameBuffer.enableStencilTest(true);
-                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
+                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_LESS;;
+                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].depthWriteEnable = VK_FALSE;
                            depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.compareOp = VK_COMPARE_OP_NOT_EQUAL;
                            depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.failOp = VK_STENCIL_OP_KEEP;
                            depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.depthFailOp = VK_STENCIL_OP_KEEP;
@@ -1041,6 +1063,7 @@ namespace odfaeg {
                                                       void main() {
                                                            uint nodeIdx = atomicAdd(count, 1);
                                                            vec4 color = (texIndex != 0) ? frontColor * texture(textures[texIndex-1], fTexCoords.xy) : frontColor;
+
                                                            //debugPrintfEXT("color = %v4f", color);
                                                            if (nodeIdx < maxNodes) {
                                                                 uint prevHead = imageAtomicExchange(headPointers, ivec2(gl_FragCoord.xy), nodeIdx);
@@ -1085,7 +1108,7 @@ namespace odfaeg {
                                                       {
                                                           NodeType insert = frags[i];
                                                           uint j = i;
-                                                          while (j > 0 && insert.depth < frags[j - 1].depth)
+                                                          while (j > 0 && insert.depth > frags[j - 1].depth)
                                                           {
                                                               frags[j] = frags[j-1];
                                                               --j;
@@ -1159,6 +1182,7 @@ namespace odfaeg {
 
                     materialDatas[p].push_back(material);
                     for (unsigned int j = 0; j < m_normals[i].getAllVertices().getVertexCount(); j++) {
+                        //std::cout<<"add vertex"<<std::endl;
                         vbBindlessTex[p].append(m_normals[i].getAllVertices()[j]);
                         vertexCount++;
                     }
@@ -1326,7 +1350,6 @@ namespace odfaeg {
                 vbBindlessTex[i].clear();
                 materialDatas[i].clear();
                 modelDatas[i].clear();
-                vbBindlessTex[i].clear();
             }
             std::array<std::vector<DrawElementsIndirectCommand>, Batcher::nbPrimitiveTypes> drawElementsIndirectCommands;
             std::array<unsigned int, Batcher::nbPrimitiveTypes> firstIndex, baseInstance, baseVertex;
@@ -1342,6 +1365,7 @@ namespace odfaeg {
             for (unsigned int i = 0; i < m_normalsIndexed.size(); i++) {
 
                if (m_normalsIndexed[i].getAllVertices().getVertexCount() > 0) {
+                    //std::cout<<"add instance"<<std::endl;
 
                     DrawElementsIndirectCommand drawElementsIndirectCommand;
                     float time = timeClock.getElapsedTime().asSeconds();
@@ -1361,6 +1385,7 @@ namespace odfaeg {
                     modelDatas[p].push_back(modelData);
                     unsigned int indexCount = 0, vertexCount = 0;
                     for (unsigned int j = 0; j < m_normalsIndexed[i].getAllVertices().getVertexCount(); j++) {
+                        //std::cout<<"add vertex"<<std::endl;
                         vbBindlessTex[p].append(m_normalsIndexed[i].getAllVertices()[j]);
                         vertexCount++;
                     }
@@ -1561,7 +1586,7 @@ namespace odfaeg {
                     }
                     TransformMatrix tm;
                     ModelData modelData;
-                    modelData.worldMat = toVulkanMatrix(tm.getMatrix())/*.transpose()*/;
+                    modelData.worldMat = toVulkanMatrix(tm.getMatrix());
                     modelDatas[p].push_back(modelData);
 
                     drawArraysIndirectCommand.count = vertexCount;
@@ -1585,7 +1610,7 @@ namespace odfaeg {
                     for (unsigned int j = 0; j < tm.size(); j++) {
                         tm[j]->update();
                         ModelData modelData;
-                        modelData.worldMat = toVulkanMatrix(tm[j]->getMatrix())/*.transpose()*/;
+                        modelData.worldMat = toVulkanMatrix(tm[j]->getMatrix());
                         modelDatas[p].push_back(modelData);
                     }
                     MaterialData material;
@@ -1622,7 +1647,7 @@ namespace odfaeg {
             currentStates.blendMode = BlendNone;
             currentStates.shader = &indirectRenderingShader;
             currentStates.texture = nullptr;
-            frameBuffer.enableStencilTest(true);
+            //frameBuffer.enableStencilTest(true);
             for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                 if (vbBindlessTex[p].getVertexCount() > 0) {
 
@@ -1733,13 +1758,14 @@ namespace odfaeg {
                     unsigned int p = m_selectedScale[i].getAllVertices().getPrimitiveType();
                     MaterialData material;
                     material.textureIndex = 0;
-                    material.materialType = m_selectedScale[i].getMaterial().getType();
-                    material.uvScale = (m_selectedScale[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_selectedScale[i].getMaterial().getTexture()->getSize().x(), 1.f / m_selectedScale[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
+                    material.materialType = 0;
+                    material.uvScale = math::Vec2f(0, 0);
                     material.uvOffset = math::Vec2f(0, 0);
+
                     materialDatas[p].push_back(material);
                     TransformMatrix tm;
                     ModelData model;
-                    model.worldMat = toVulkanMatrix(tm.getMatrix())/*.transpose()*/;
+                    model.worldMat = toVulkanMatrix(tm.getMatrix());
                     modelDatas[p].push_back(model);
 
                     unsigned int vertexCount = 0;
@@ -1764,15 +1790,15 @@ namespace odfaeg {
 
                     MaterialData material;
                     material.textureIndex = 0;
-                    material.materialType = m_selectedScaleInstance[i].getMaterial().getType();
-                    material.uvScale = (m_selectedScaleInstance[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_selectedScaleInstance[i].getMaterial().getTexture()->getSize().x(), 1.f / m_selectedScaleInstance[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
+                    material.materialType = 0;
+                    material.uvScale = math::Vec2f(0, 0);
                     material.uvOffset = math::Vec2f(0, 0);
                     materialDatas[p].push_back(material);
                     std::vector<TransformMatrix*> tm = m_selectedScaleInstance[i].getTransforms();
                     for (unsigned int j = 0; j < tm.size(); j++) {
                         tm[j]->update();
                         ModelData model;
-                        model.worldMat = toVulkanMatrix(tm[j]->getMatrix())/*.transpose()*/;
+                        model.worldMat = toVulkanMatrix(tm[j]->getMatrix());
                         modelDatas[p].push_back(model);
                     }
                     unsigned int vertexCount = 0;
@@ -1880,6 +1906,7 @@ namespace odfaeg {
                     vkUnmapMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory);
                     copyBuffer(vboIndirectStagingBuffer, vboIndirect, bufferSize);
                     //createDescriptorSets(p, currentStates);
+                    //std::cout<<"draw outline"<<std::endl;
                     createCommandBuffersIndirect(p, drawArraysIndirectCommands[p].size(), sizeof(DrawArraysIndirectCommand), NODEPTHSTENCILOUTLINE, currentStates);
 
                 }
@@ -1905,7 +1932,7 @@ namespace odfaeg {
             for (unsigned int i = 0; i < m_selectedIndexed.size(); i++) {
                 if (m_selectedIndexed[i].getAllVertices().getVertexCount() > 0) {
                     DrawElementsIndirectCommand drawElementsIndirectCommand;
-                    //////std::cout<<"next frame draw normal"<<std::endl;
+                    //std::cout<<"next frame draw normal"<<std::endl;
 
                     float time = timeClock.getElapsedTime().asSeconds();
                     indirectDrawPushConsts.time = time;
@@ -2110,8 +2137,8 @@ namespace odfaeg {
                     unsigned int p = m_selectedScaleIndexed[i].getAllVertices().getPrimitiveType();
                     MaterialData material;
                     material.textureIndex = 0;
-                    material.materialType = m_selectedScaleIndexed[i].getMaterial().getType();
-                    material.uvScale = (m_selectedScaleIndexed[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_selectedScaleIndexed[i].getMaterial().getTexture()->getSize().x(), 1.f / m_selectedScaleIndexed[i].getMaterial().getTexture()->getSize().y()): math::Vec2f(0, 0);
+                    material.materialType = 0;
+                    material.uvScale = math::Vec2f(0, 0);
                     material.uvOffset = math::Vec2f(0, 0);
                     materialDatas[p].push_back(material);
 
@@ -2279,7 +2306,9 @@ namespace odfaeg {
         void PerPixelLinkedListRenderComponent::drawNextFrame() {
             {
                 std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                //std::cout<<"next frame datasReady"<<datasReady<<std::endl;
                 if (datasReady) {
+
                     datasReady = false;
                     m_instances = batcher.getInstances();
                     m_normals = normalBatcher.getInstances();
@@ -2407,7 +2436,7 @@ namespace odfaeg {
 
             frameBuffer.drawIndirect(frameBuffer.getCommandBuffers()[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
             frameBuffer.endRenderPass();
-            /*std::vector<VkSemaphore> waitSemaphores, signalSemaphores;
+            std::vector<VkSemaphore> waitSemaphores, signalSemaphores;
             waitSemaphores.push_back(offscreenFinishedSemaphore[frameBuffer.getCurrentFrame()]);
             std::vector<VkPipelineStageFlags> waitStages;
             waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
@@ -2416,8 +2445,8 @@ namespace odfaeg {
             //std::cout<<"wait value : "<<values[frameBuffer.getCurrentFrame()]<<std::endl;
             signalSemaphores.push_back(offscreenFinishedSemaphore[frameBuffer.getCurrentFrame()]);
             values[frameBuffer.getCurrentFrame()]++;
-            signalValues.push_back(values[frameBuffer.getCurrentFrame()]);*/
-            frameBuffer.display(/*signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues*/);
+            signalValues.push_back(values[frameBuffer.getCurrentFrame()]);
+            frameBuffer.display(signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
             //std::cout<<"signal value : "<<values[frameBuffer.getCurrentFrame()]<<std::endl;
 
             /*frameBuffer.beginRecordCommandBuffers();
@@ -2519,7 +2548,7 @@ namespace odfaeg {
             frameBuffer.beginRenderPass();
             vkCmdExecuteCommands(frameBuffer.getCommandBuffers()[currentFrame], static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());*/
             frameBuffer.endRenderPass();
-            /*std::vector<VkSemaphore> waitSemaphores, signalSemaphores;
+            std::vector<VkSemaphore> waitSemaphores, signalSemaphores;
             waitSemaphores.push_back(offscreenFinishedSemaphore[frameBuffer.getCurrentFrame()]);
             std::vector<VkPipelineStageFlags> waitStages;
             waitStages.push_back(VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
@@ -2528,8 +2557,8 @@ namespace odfaeg {
             signalSemaphores.push_back(offscreenFinishedSemaphore[frameBuffer.getCurrentFrame()]);
             //std::cout<<"pass2 wait value : "<<values[frameBuffer.getCurrentFrame()]<<std::endl;
             values[frameBuffer.getCurrentFrame()]++;
-            signalValues.push_back(values[frameBuffer.getCurrentFrame()]);*/
-            frameBuffer.display(/*signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues*/);
+            signalValues.push_back(values[frameBuffer.getCurrentFrame()]);
+            frameBuffer.display(signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
             //std::cout<<"pass2 signal value : "<<values[frameBuffer.getCurrentFrame()]<<std::endl;
             isSomethingDrawn = false;
         }
@@ -2575,8 +2604,10 @@ namespace odfaeg {
                          } else if (vEntities[i]->getDrawMode() == Entity::NORMAL && !vEntities[i]->isSelected()) {
                              if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0) {
                                 normalBatcher.addFace( vEntities[i]->getFace(j));
-                             } else
+                             } else {
+                                //std::cout<<"add face"<<std::endl;
                                 normalBatcherIndexed.addFace( vEntities[i]->getFace(j));
+                             }
                         } else if (vEntities[i]->getDrawMode() == Entity::INSTANCED && vEntities[i]->isSelected()) {
 
                             if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0) {
@@ -2592,10 +2623,12 @@ namespace odfaeg {
                                 }
                                 Entity* root = (vEntities[i]->getRootEntity()->isAnimated()) ? vEntities[i]->getRootEntity() : vEntities[i];
                                 math::Vec3f oldSize = root->getSize();
-                                border->setOrigin(border->getSize() * 0.5f);
-                                border->setScale(math::Vec3f(1.1f, 1.1f, 1.1f));
+                                border->setOrigin(root->getSize() * 0.5f);
+                                border->setSize(root->getSize() * 1.1f);
                                 math::Vec3f offset =  root->getSize() - oldSize;
-                                border->setPosition(root->getPosition() - offset * 0.5f);
+                                if (border->getSize().z() > 0) {
+                                    border->setPosition(root->getPosition() - offset * 0.5f);
+                                }
                                // ////std::cout<<"add to batcher"<<std::endl;
                                 selectedInstanceScaleBatcher.addFace(border->getFace(j));
                            // ////std::cout<<"face added"<<std::endl;
@@ -2612,10 +2645,12 @@ namespace odfaeg {
                                 }
                                 Entity* root = (vEntities[i]->getRootEntity()->isAnimated()) ? vEntities[i]->getRootEntity() : vEntities[i];
                                 math::Vec3f oldSize = root->getSize();
-                                border->setOrigin(border->getSize() * 0.5f);
-                                border->setScale(math::Vec3f(1.1f, 1.1f, 1.1f));
+                                border->setOrigin(root->getSize() * 0.5f);
+                                border->setSize(root->getSize() * 1.1f);
                                 math::Vec3f offset =  root->getSize() - oldSize;
-                                border->setPosition(root->getPosition() - offset * 0.5f);
+                                if (border->getSize().z() > 0) {
+                                    border->setPosition(root->getPosition() - offset * 0.5f);
+                                }
                                // ////std::cout<<"add to batcher"<<std::endl;
 
                                // ////std::cout<<"add to batcher"<<std::endl;
@@ -2639,10 +2674,12 @@ namespace odfaeg {
                                 border->setOrigin(root->getSize() * 0.5f);
                                 border->setSize(root->getSize() * 1.1f);
                                 math::Vec3f offset =  root->getSize() - oldSize;
-                                border->setPosition(root->getPosition() - offset * 0.5f);
+                                if (border->getSize().z() > 0) {
+                                    border->setPosition(root->getPosition() - offset * 0.5f);
+                                }
                                 selectedScaleBatcher.addFace(border->getFace(j));
 
-                               // ////std::cout<<"face added"<<std::endl;
+                                //std::cout<<"face added"<<std::endl;
                              } else {
                                  selectedIndexBatcher.addFace(vEntities[i]->getFace(j));
                                // ////std::cout<<"remove texture"<<std::endl;
@@ -2660,7 +2697,9 @@ namespace odfaeg {
                                 border->setOrigin(root->getSize() * 0.5f);
                                 border->setSize(root->getSize() * 1.1f);
                                 math::Vec3f offset =  root->getSize() - oldSize;
-                                border->setPosition(root->getPosition() - offset * 0.5f);
+                                if (border->getSize().z() > 0) {
+                                    border->setPosition(root->getPosition() - offset * 0.5f);
+                                }
                                 //std::cout<<"add to batcher"<<std::endl;
                                 selectedIndexScaleBatcher.addFace(border->getFace(j));
                              }
@@ -2679,6 +2718,7 @@ namespace odfaeg {
             visibleEntities = vEntities;
             std::lock_guard<std::recursive_mutex> lock(rec_mutex);
             datasReady = true;
+            //std::cout<<"load entities data ready : "<<datasReady<<std::endl;
             return true;
         }
         bool PerPixelLinkedListRenderComponent::needToUpdate() {

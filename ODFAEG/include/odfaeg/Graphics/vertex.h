@@ -39,6 +39,7 @@
 #define MAX_BONE_INFLUENCE 4
 namespace odfaeg {
     namespace graphic {
+
         ////////////////////////////////////////////////////////////
         /// \brief Define a point with color and texture coordinates
         ///
@@ -161,6 +162,16 @@ namespace odfaeg {
                 attributeDescriptions[3].location = 3;
                 attributeDescriptions[3].format = VK_FORMAT_R32G32B32_SFLOAT;
                 attributeDescriptions[3].offset = offsetof(Vertex, normal);
+
+                /*attributeDescriptions[4].binding = 0;
+                attributeDescriptions[4].location = 4;
+                attributeDescriptions[4].format = VK_FORMAT_R32G32B32A32_SINT; // ou autre selon MAX_BONE_INFLUENCE
+                attributeDescriptions[4].offset = offsetof(Vertex, m_BoneIDs);
+
+                attributeDescriptions[5].binding = 0;
+                attributeDescriptions[5].location = 5;
+                attributeDescriptions[5].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+                attributeDescriptions[5].offset = offsetof(Vertex, m_Weights);*/
                 return attributeDescriptions;
             }
             #endif

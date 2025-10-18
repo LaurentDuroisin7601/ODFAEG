@@ -53,18 +53,22 @@ namespace odfaeg {
                 ups[5] = math::Vec3f(0, -1, 0);
                 //depthBuffer.m_name = "depthBuffer";
                 depthBuffer.create(window.getView().getSize().x(), window.getView().getSize().y());
+                //std::cout<<"depth buffer created"<<std::endl;
                 depthBuffer.setView(view);
 
                 depthBufferSprite = Sprite(depthBuffer.getTexture(), math::Vec3f(0, 0, 0), math::Vec3f(window.getView().getSize().x(), window.getView().getSize().y(), 0), IntRect(0, 0, window.getView().getSize().x(), window.getView().getSize().y()));
                 alphaBuffer.create(window.getView().getSize().x(), window.getView().getSize().y());
+                //std::cout<<"alpha buffer created"<<std::endl;
                 alphaBuffer.setView(view);
                 //alphaBuffer.m_name = "alphaBuffer";
                 alphaBufferSprite = Sprite(alphaBuffer.getTexture(), math::Vec3f(0, 0, 0), math::Vec3f(window.getView().getSize().x(), window.getView().getSize().y(), 0), IntRect(0, 0, window.getView().getSize().x(), window.getView().getSize().y()));
                 environmentMap.createCubeMap(squareSize, squareSize);
+                //std::cout<<"environment map created"<<std::endl;
                 //environmentMap.m_name = "environmentMap";
                 reflectRefractTex.create(window.getView().getSize().x(), window.getView().getSize().y());
                 reflectRefractTex.setView(view);
                 //reflectRefractTex.m_name = "relfectRefractTex";
+
                 reflectRefractTexSprite = Sprite(reflectRefractTex.getTexture(), math::Vec3f(0, 0, 0), math::Vec3f(window.getView().getSize().x(), window.getView().getSize().y(), 0), IntRect(0, 0, window.getView().getSize().x(), window.getView().getSize().y()));
                 linkedListShaderStorageBuffers.resize(reflectRefractTex.getMaxFramesInFlight());
                 linkedListShaderStorageBuffersMemory.resize(reflectRefractTex.getMaxFramesInFlight());

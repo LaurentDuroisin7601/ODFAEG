@@ -31,7 +31,7 @@ namespace odfaeg {
             matrix4f[2][2] = -2 / (f - n);
             matrix4f[2][3] = -(f + n) / (f - n);
             #else
-            matrix4f[2][2] = -1 / (f - n);
+            matrix4f[2][2] = 1 / (f - n);
             matrix4f[2][3] = -n / (f - n);
             #endif
             matrix4f[3][0] = 0;
@@ -97,7 +97,7 @@ namespace odfaeg {
             matrix4f[2][3] = (2 * f * n) / (f - n);
             #else
             matrix4f[2][2] = f / (f - n);
-            matrix4f[2][3] = -(f * n) / (f - n);
+            matrix4f[2][3] = -f * n / (f - n);
             #endif
             matrix4f[3][0] = 0;
             matrix4f[3][1] = 0;
