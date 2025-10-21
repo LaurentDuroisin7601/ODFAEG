@@ -56,6 +56,7 @@ namespace odfaeg {
             PrimitiveType getPrimitiveType() const;
             void update();
             void update(VkCommandBuffer cmd);
+            void updateStagingBuffers();
             Vertex& operator [](unsigned int index);
             void draw(RenderTarget& target, RenderStates states);
             ~VertexBuffer();
@@ -76,7 +77,7 @@ namespace odfaeg {
             VkDeviceMemory indexBufferMemory, indexStagingBufferMemory;
             std::vector<uint16_t> indices;
             PrimitiveType       m_primitiveType; ///< Type of primitives to draw
-            bool needToUpdateVertexBuffer, needToUpdateIndexBuffer;
+            bool needToUpdateVertexBuffer, needToUpdateIndexBuffer, needToUpdateVertexStagingBuffer, needToUpdateIndexStagingBuffer;
             VkCommandPool commandPool;
             VkDeviceSize maxVerticesSize, maxIndexSize;
         };

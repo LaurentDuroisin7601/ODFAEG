@@ -90,6 +90,15 @@ namespace odfaeg {
             void createHeadPtrImageView();
             void createHeadPtrSampler();
             void clear();
+            void clearBuffers();
+            void fillBuffersMT();
+            void fillIndexedBuffersMT();
+            void fillSelectedBuffersMT();
+            void fillSelectedIndexedBuffersMT();
+            void fillOutlineBuffersMT();
+            void fillOutlineIndexedBuffersMT();
+            void drawBuffers();
+            unsigned int align(unsigned int currentOffset);
             VkCommandBuffer beginSingleTimeCommands();
             void endSingleTimeCommands(VkCommandBuffer commandBuffer);
             void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
@@ -104,6 +113,7 @@ namespace odfaeg {
             void allocateDescriptorSets2(RenderStates states);
             void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
             void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+            void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size, VkCommandBuffer cmd);
             void compileShaders();
             void drawInstances();
             void drawInstancesIndexed();
@@ -130,6 +140,16 @@ namespace odfaeg {
             std::vector<VkDeviceMemory> modelDataShaderStorageBuffersMemory;
             std::vector<VkBuffer> materialDataShaderStorageBuffers;
             std::vector<VkDeviceMemory> materialDataShaderStorageBuffersMemory;
+            std::array<VkBuffer, Batcher::nbPrimitiveTypes> modelDataBufferMT = {};
+            std::array<VkDeviceMemory, Batcher::nbPrimitiveTypes> modelDataBufferMemoryMT = {};
+            std::array<VkBuffer, Batcher::nbPrimitiveTypes> materialDataBufferMT = {};
+            std::array<VkDeviceMemory, Batcher::nbPrimitiveTypes> materialDataBufferMemoryMT = {};
+            std::array<VkBuffer, Batcher::nbPrimitiveTypes> drawCommandBufferMT = {};
+            std::array<VkDeviceMemory, Batcher::nbPrimitiveTypes> drawCommandBufferMemoryMT = {};
+            std::array<VkBuffer, Batcher::nbPrimitiveTypes> drawCommandBufferIndexedMT = {};
+            std::array<VkDeviceMemory, Batcher::nbPrimitiveTypes> drawCommandBufferIndexedMemoryMT = {};
+            std::array<std::vector<DrawArraysIndirectCommand>, Batcher::nbPrimitiveTypes> drawArraysIndirectCommands = {};
+            std::array<std::vector<DrawElementsIndirectCommand>, Batcher::nbPrimitiveTypes> drawElementsIndirectCommands = {};
             VkBuffer modelDataStagingBuffer, materialDataStagingBuffer;
             VkDeviceMemory modelDataStagingBufferMemory, materialDataStagingBufferMemory;
             VkDeviceSize maxVboIndirectSize, maxModelDataSize, maxMaterialDataSize;
@@ -147,7 +167,7 @@ namespace odfaeg {
             Shader indirectRenderingShader, perPixelLinkedListP2;
             Ppll2PushConsts ppll2PushConsts;
             IndirectDrawPushConsts indirectDrawPushConsts;
-            std::array<VertexBuffer ,Batcher::nbPrimitiveTypes> vbBindlessTex;
+            std::array<VertexBuffer ,Batcher::nbPrimitiveTypes> vbBindlessTex, vbBindlessTexIndexed;
             VertexBuffer vb;
             VkBuffer vboIndirect, vboIndirectStagingBuffer;
             VkDeviceMemory vboIndirectMemory, vboIndirectStagingBufferMemory;
@@ -163,7 +183,7 @@ namespace odfaeg {
             std::vector<std::unique_ptr<Entity>> visibleSelectedScaleEntities;
             std::vector<Entity*> visibleEntities;
             math::Vec4f resolution;
-            VkCommandPool commandPool;
+            VkCommandPool commandPool, secondaryBufferCommandPool;
             PFN_vkCmdPushDescriptorSetKHR vkCmdPushDescriptorSetKHR{ VK_NULL_HANDLE };
             core::Clock timeClock;
             std::vector<unsigned int> pipelineIds;
@@ -172,6 +192,18 @@ namespace odfaeg {
             std::vector<VkSemaphore> offscreenFinishedSemaphore;
             RenderWindow& window;
             bool isSomethingDrawn;
+            VkCommandBuffer ppllCommandBuffer, ppllSelectedCommandBuffer, ppllOutlineCommandBuffer,
+            copyModelDataBufferCommandBuffer, copyMaterialDataBufferCommandBuffer, copyDrawBufferCommandBuffer, copyDrawIndexedBufferCommandBuffer,
+            copyVbBufferCommandBuffer, copyVbIndexedBufferCommandBuffer, copyVbPpllPass2CommandBuffer;
+            std::array<unsigned int, Batcher::nbPrimitiveTypes> totalBufferSizeModelData, maxBufferSizeModelData, maxAlignedSizeModelData, oldTotalBufferSizeModelData;
+            std::array<unsigned int, Batcher::nbPrimitiveTypes> totalBufferSizeMaterialData, maxBufferSizeMaterialData, maxAlignedSizeMaterialData, oldTotalBufferSizeMaterialData;
+            std::array<unsigned int, Batcher::nbPrimitiveTypes> totalVertexCount, totalVertexIndexCount, totalIndexCount, totalBufferSizeDrawCommand, totalBufferSizeIndexedDrawCommand, maxBufferSizeDrawCommand, maxBufferSizeIndexedDrawCommand;
+            std::array<unsigned int, Batcher::nbPrimitiveTypes> currentModelOffset, currentMaterialOffset;
+            std::array<std::vector<unsigned int>, Batcher::nbPrimitiveTypes> modelDataOffsets, materialDataOffsets, drawCommandBufferOffsets, nbDrawCommandBuffer, drawIndexedCommandBufferOffsets, nbIndexedDrawCommandBuffer;
+            std::atomic<bool> commandBufferReady = false;
+            std::condition_variable cv;
+            std::array<bool, Batcher::nbPrimitiveTypes> needToUpdateDSs;
+            unsigned int alignment;
         };
         #else
         class ODFAEG_GRAPHICS_API PerPixelLinkedListRenderComponent : public HeavyComponent {

@@ -124,7 +124,7 @@ namespace odfaeg {
             VkCommandBuffer cmd = beginSingleTimeCommands();
             transitionImageLayout(cmd, textureImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED,  VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
             endSingleTimeCommands(cmd);
-            createTextureImageView(depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+            createTextureImageView(depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT);
             createTextureSampler();
             return true;
         }
@@ -136,7 +136,7 @@ namespace odfaeg {
             VkCommandBuffer cmd = beginSingleTimeCommands();
             transitionImageLayout(cmd, textureImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED,  VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
             endSingleTimeCommands(cmd);
-            createTextureImageView(depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+            createTextureImageView(depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT);
             createTextureSampler();
             return true;
         }

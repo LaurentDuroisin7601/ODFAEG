@@ -170,6 +170,44 @@ namespace odfaeg {
                 }
                 //////std::cout<<"create semaphore : "<<i<<","<<renderFinishedSemaphore[i]<<std::endl;
             }
+            VkCommandBufferAllocateInfo bufferAllocInfo{};
+                bufferAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+                bufferAllocInfo.commandPool = secondaryBufferCommandPool;
+                bufferAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_SECONDARY;
+                bufferAllocInfo.commandBufferCount = 1;
+                if (vkAllocateCommandBuffers(vkDevice.getDevice(), &bufferAllocInfo, &copyMaterialDataBufferCommandBuffer) != VK_SUCCESS) {
+                    throw core::Erreur(0, "failed to allocate command buffers!", 1);
+                }
+                if (vkAllocateCommandBuffers(vkDevice.getDevice(), &bufferAllocInfo, &copyDrawBufferCommandBuffer) != VK_SUCCESS) {
+                    throw core::Erreur(0, "failed to allocate command buffers!", 1);
+                }
+                if (vkAllocateCommandBuffers(vkDevice.getDevice(), &bufferAllocInfo, &copyDrawIndexedBufferCommandBuffer) != VK_SUCCESS) {
+                    throw core::Erreur(0, "failed to allocate command buffers!", 1);
+                }
+                if (vkAllocateCommandBuffers(vkDevice.getDevice(), &bufferAllocInfo, &copyModelDataBufferCommandBuffer) != VK_SUCCESS) {
+                    throw core::Erreur(0, "failed to allocate command buffers!", 1);
+                }
+                if (vkAllocateCommandBuffers(vkDevice.getDevice(), &bufferAllocInfo, &copyVbBufferCommandBuffer) != VK_SUCCESS) {
+                    throw core::Erreur(0, "failed to allocate command buffers!", 1);
+                }
+                if (vkAllocateCommandBuffers(vkDevice.getDevice(), &bufferAllocInfo, &copyVbIndexedBufferCommandBuffer) != VK_SUCCESS) {
+                    throw core::Erreur(0, "failed to allocate command buffers!", 1);
+                }
+                if (vkAllocateCommandBuffers(vkDevice.getDevice(), &bufferAllocInfo, &copyModelDataBufferCommandBuffer) != VK_SUCCESS) {
+                    throw core::Erreur(0, "failed to allocate command buffers!", 1);
+                }
+                if (vkAllocateCommandBuffers(vkDevice.getDevice(), &bufferAllocInfo, &copyVbPpllPass2CommandBuffer) != VK_SUCCESS) {
+                    throw core::Erreur(0, "failed to allocate command buffers!", 1);
+                }
+                if (vkAllocateCommandBuffers(vkDevice.getDevice(), &bufferAllocInfo, &ppllCommandBuffer) != VK_SUCCESS) {
+                    throw core::Erreur(0, "failed to allocate command buffers!", 1);
+                }
+                if (vkAllocateCommandBuffers(vkDevice.getDevice(), &bufferAllocInfo, &ppllSelectedCommandBuffer) != VK_SUCCESS) {
+                    throw core::Erreur(0, "failed to allocate command buffers!", 1);
+                }
+                if (vkAllocateCommandBuffers(vkDevice.getDevice(), &bufferAllocInfo, &ppllOutlineCommandBuffer) != VK_SUCCESS) {
+                    throw core::Erreur(0, "failed to allocate command buffers!", 1);
+                }
 
 
             update = true;
@@ -240,6 +278,7 @@ namespace odfaeg {
                            pipelineLayoutInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = &push_constant;
                            pipelineLayoutInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 1;
                            depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
+                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthWriteEnable = VK_TRUE;
 
 
                            depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.failOp = VK_STENCIL_OP_KEEP;
@@ -255,6 +294,7 @@ namespace odfaeg {
                        } else if (j == 1) {
                            frameBuffer.enableStencilTest(true);
                            depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
+                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthWriteEnable = VK_TRUE;
                            depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.compareOp = VK_COMPARE_OP_ALWAYS;
                            depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.failOp = VK_STENCIL_OP_KEEP;
                            depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.depthFailOp = VK_STENCIL_OP_KEEP;
@@ -278,7 +318,8 @@ namespace odfaeg {
                        } else {
                            frameBuffer.enableStencilTest(true);
 
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_LESS;
+                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].depthWriteEnable = VK_FALSE;
 
                            depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.compareOp = VK_COMPARE_OP_NOT_EQUAL;
                            depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.failOp = VK_STENCIL_OP_KEEP;
@@ -1139,6 +1180,258 @@ namespace odfaeg {
 
             //ppll2PushConsts.projMatrix.m22 *= -1;
             indirectDrawPushConsts.resolution = resolution;
+        }
+        void PerPixelLinkedListRenderComponent::fillBuffersMT() {
+            /*std::array<unsigned int, Batcher::nbPrimitiveTypes> firstIndex, baseInstance;
+            for (unsigned int i = 0; i < firstIndex.size(); i++) {
+                firstIndex[i] = 0;
+            }
+            for (unsigned int i = 0; i < baseInstance.size(); i++) {
+                baseInstance[i] = 0;
+            }
+            std::array<unsigned int, Batcher::nbPrimitiveTypes> drawCommandCount, oldTotalVertexCount;
+            for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
+                drawCommandBufferOffsets[p].push_back(totalBufferSizeDrawCommand[p]);
+                drawCommandCount[p] = 0;
+                oldTotalVertexCount[p] = totalVertexCount[p];
+            }
+            for (unsigned int i = 0; i < m_normals.size(); i++) {
+                if (m_normals[i].getAllVertices().getVertexCount() > 0) {
+                    DrawArraysIndirectCommand drawArraysIndirectCommand;
+                    //////std::cout<<"next frame draw normal"<<std::endl;
+                    float time = timeClock.getElapsedTime().asSeconds();
+                    indirectDrawPushConsts.time = time;
+
+                    unsigned int p = m_normals[i].getAllVertices().getPrimitiveType();
+
+
+                    unsigned int vertexCount = 0;
+                    MaterialData material;
+                    {
+                        std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                        material.textureIndex = (m_normals[i].getMaterial().getTexture() != nullptr) ? m_normals[i].getMaterial().getTexture()->getId() : 0;
+                        material.materialType = m_normals[i].getMaterial().getType();
+                        material.uvScale = (m_normals[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_normals[i].getMaterial().getTexture()->getSize().x(), 1.f / m_normals[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
+                        material.uvOffset = math::Vec2f(0, 0);
+                        //std::cout<<"texture matrix : "<<m_normals[i].getMaterial().getTexture()->getTextureMatrix()<<std::endl;
+                    }
+
+                    materialDatas[p].push_back(material);
+                    for (unsigned int j = 0; j < m_normals[i].getAllVertices().getVertexCount(); j++) {
+                        //std::cout<<"add vertex"<<std::endl;
+                        vbBindlessTex[p].append(m_normals[i].getAllVertices()[j]);
+                        vertexCount++;
+                    }
+                    TransformMatrix tm;
+                    ModelData modelData;
+                    modelData.worldMat = toVulkanMatrix(tm.getMatrix());
+
+                    modelDatas[p].push_back(modelData);
+
+                    drawArraysIndirectCommand.count = vertexCount;
+                    drawArraysIndirectCommand.firstIndex = firstIndex[p] + oldTotalVertexCount[p];;
+                    drawArraysIndirectCommand.baseInstance = baseInstance[p];
+                    drawArraysIndirectCommand.instanceCount = 1;
+                    drawArraysIndirectCommands[p].push_back(drawArraysIndirectCommand);
+                    firstIndex[p] += vertexCount;
+                    baseInstance[p] += 1;
+                    totalVertexCount[p] += vertexCount;
+                    drawCommandCount[p]++;
+
+                }
+            }
+            for (unsigned int i = 0; i < m_instances.size(); i++) {
+                if (m_instances[i].getAllVertices().getVertexCount() > 0) {
+                    DrawArraysIndirectCommand drawArraysIndirectCommand;
+                    unsigned int p = m_instances[i].getAllVertices().getPrimitiveType();
+                    float time = timeClock.getElapsedTime().asSeconds();
+                    indirectDrawPushConsts.time = time;
+
+                    std::vector<TransformMatrix*> tm = m_instances[i].getTransforms();
+                    for (unsigned int j = 0; j < tm.size(); j++) {
+                        tm[j]->update();
+                        ModelData modelData;
+                        modelData.worldMat = toVulkanMatrix(tm[j]->getMatrix());
+                        modelDatas[p].push_back(modelData);
+                    }
+                    MaterialData material;
+                    {
+                        std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                        material.textureIndex = (m_instances[i].getMaterial().getTexture() != nullptr) ? m_instances[i].getMaterial().getTexture()->getId() : 0;
+                        material.materialType = m_instances[i].getMaterial().getType();
+                        material.uvScale = (m_instances[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_instances[i].getMaterial().getTexture()->getSize().x(), 1.f / m_instances[i].getMaterial().getTexture()->getSize().y()): math::Vec2f(0, 0);
+                        material.uvOffset = math::Vec2f(0, 0);
+                        ////std::cout<<"texture matrix : "<<m_instances[i].getMaterial().getTexture()->getTextureMatrix()<<std::endl;
+                    }
+                    materialDatas[p].push_back(material);
+                    unsigned int vertexCount = 0;
+                    if (m_instances[i].getVertexArrays().size() > 0) {
+                        Entity* entity = m_instances[i].getVertexArrays()[0]->getEntity();
+                        for (unsigned int j = 0; j < m_instances[i].getVertexArrays().size(); j++) {
+                            if (entity == m_instances[i].getVertexArrays()[j]->getEntity()) {
+                                for (unsigned int k = 0; k < m_instances[i].getVertexArrays()[j]->getVertexCount(); k++) {
+                                    vertexCount++;
+                                    vbBindlessTex[p].append((*m_instances[i].getVertexArrays()[j])[k]);
+                                }
+                            }
+                        }
+                    }
+                    drawArraysIndirectCommand.count = vertexCount;
+                    drawArraysIndirectCommand.firstIndex = firstIndex[p] + oldTotalVertexCount[p];
+                    drawArraysIndirectCommand.baseInstance = baseInstance[p];
+                    drawArraysIndirectCommand.instanceCount = tm.size();
+                    drawArraysIndirectCommands[p].push_back(drawArraysIndirectCommand);
+                    firstIndex[p] += vertexCount;
+                    baseInstance[p] += tm.size();
+                    totalVertexCount[p] += vertexCount;
+                    drawCommandCount[p]++;
+                    //////std::cout<<"texture : "<<m_instances[i].getMaterial().getTexture()<<std::endl;
+                    //////std::cout<<"entity : "<<m_instances[i].getVertexArrays()[0]->getEntity()->getRootEntity()->getType()<<std::endl;
+
+                }
+            }
+            std::array<unsigned int, Batcher::nbPrimitiveTypes> alignedOffsetModelData, alignedOffsetMaterialData;
+            for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
+                nbDrawCommandBuffer[p].push_back(drawCommandCount[p]);
+                alignedOffsetModelData[p] = align(currentModelOffset[p]);
+                modelDataOffsets[p].push_back(alignedOffsetModelData[p]);
+                alignedOffsetMaterialData[p] = align(currentMaterialOffset[p]);
+                materialDataOffsets[p].push_back(alignedOffsetMaterialData[p]);
+            }
+            VkCommandBufferInheritanceInfo inheritanceInfo{};
+            inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+            inheritanceInfo.renderPass = VK_NULL_HANDLE; // pas de render pass
+            inheritanceInfo.subpass = 0;
+            inheritanceInfo.framebuffer = VK_NULL_HANDLE;
+            inheritanceInfo.occlusionQueryEnable = VK_FALSE;
+            inheritanceInfo.queryFlags = 0;
+            inheritanceInfo.pipelineStatistics = 0;
+            VkCommandBufferBeginInfo beginInfo{};
+            beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+            beginInfo.pInheritanceInfo = &inheritanceInfo; // obligatoire pour secondaire
+            vkResetCommandBuffer(copyModelDataBufferCommandBuffer, 0);
+            vkResetCommandBuffer(copyMaterialDataBufferCommandBuffer, 0);
+            vkResetCommandBuffer(copyDrawBufferCommandBuffer, 0);
+            if (vkBeginCommandBuffer(copyModelDataBufferCommandBuffer, &beginInfo) != VK_SUCCESS) {
+
+                throw core::Erreur(0, "failed to begin recording command buffer!", 1);
+            }
+            if (vkBeginCommandBuffer(copyMaterialDataBufferCommandBuffer, &beginInfo) != VK_SUCCESS) {
+
+                throw core::Erreur(0, "failed to begin recording command buffer!", 1);
+            }
+            if (vkBeginCommandBuffer(copyDrawBufferCommandBuffer, &beginInfo) != VK_SUCCESS) {
+
+                throw core::Erreur(0, "failed to begin recording command buffer!", 1);
+            }
+            if (vkBeginCommandBuffer(copyVbBufferCommandBuffer, &beginInfo) != VK_SUCCESS) {
+
+                throw core::Erreur(0, "failed to begin recording command buffer!", 1);
+            }
+            for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
+                    if (nbDrawCommandBuffer[p][0] > 0) {
+                        vbBindlessTex[p].update(copyVbBufferCommandBuffer);
+                        VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
+
+                        currentModelOffset[p] = alignedOffsetModelData[p] + ((bufferSize - oldTotalBufferSizeModelData[p] > 0) ? bufferSize - oldTotalBufferSizeModelData[p] : 0);
+
+                        maxAlignedSizeModelData[p] = (bufferSize - oldTotalBufferSizeModelData[p] > maxAlignedSizeModelData[p]) ? bufferSize - oldTotalBufferSizeModelData[p] : maxAlignedSizeModelData[p];
+                        totalBufferSizeModelData[p] = (alignedOffsetModelData[p] + maxAlignedSizeModelData[p] > bufferSize) ? alignedOffsetModelData[p] + maxAlignedSizeModelData[p] : bufferSize;
+                        oldTotalBufferSizeModelData[p] = bufferSize;
+                        previousModelOffset[p] = currentModelOffset[p];
+                        if (totalBufferSizeModelData[p] > maxBufferSizeModelData[p]) {
+                            if (modelDataStagingBuffer != nullptr) {
+                                vkDestroyBuffer(vkDevice.getDevice(), modelDataStagingBuffer, nullptr);
+                                vkFreeMemory(vkDevice.getDevice(), modelDataStagingBufferMemory, nullptr);
+                            }
+
+                            createBuffer(totalBufferSizeModelData[p], VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, modelDataStagingBuffer, modelDataStagingBufferMemory);
+                            if (modelDataBufferMT[p] != nullptr) {
+                                vkDestroyBuffer(vkDevice.getDevice(), modelDataBufferMT[p], nullptr);
+                                vkFreeMemory(vkDevice.getDevice(), modelDataBufferMemoryMT[p], nullptr);
+                            }
+
+                            createBuffer(totalBufferSizeModelData[p], VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, modelDataBufferMT[p], modelDataBufferMemoryMT[p]);
+
+                            maxBufferSizeModelData[p] = totalBufferSizeModelData[p];
+                            //needToUpdateDSs[p]  = true;
+                        }
+
+
+                        void* data;
+                        vkMapMemory(vkDevice.getDevice(), modelDataStagingBufferMemory, 0, bufferSize, 0, &data);
+                        memcpy(data, modelDatas[p].data(), (size_t)bufferSize);
+                        vkUnmapMemory(vkDevice.getDevice(), modelDataStagingBufferMemory);
+                        copyBuffer(modelDataStagingBuffer, modelDataBufferMT[p], bufferSize, copyModelDataBufferCommandBuffer);
+
+
+                        bufferSize = sizeof(MaterialData) * materialDatas[p].size();
+
+                        currentMaterialOffset[p] = alignedOffsetMaterialData[p] + ((bufferSize - oldTotalBufferSizeMaterialData[p] > 0) ? bufferSize - oldTotalBufferSizeMaterialData[p] : 0);
+                        oldTotalBufferSizeMaterialData[p] = bufferSize;
+                        maxAlignedSizeMaterialData[p] = (currentMaterialOffset[p] - previousMaterialOffset[p] > maxAlignedSizeMaterialData[p]) ? currentMaterialOffset[p] - previousMaterialOffset[p] : maxAlignedSizeMaterialData[p];
+                        totalBufferSizeMaterialData[p] = (alignedOffsetMaterialData[p] + maxAlignedSizeMaterialData[p] > bufferSize) ? alignedOffsetMaterialData[p] + maxAlignedSizeMaterialData[p] : bufferSize;
+                        previousMaterialOffset[p] = currentMaterialOffset[p];
+                        if (totalBufferSizeMaterialData[p] > maxBufferSizeMaterialData[p]) {
+                            if (materialDataStagingBuffer != nullptr) {
+                                vkDestroyBuffer(vkDevice.getDevice(), materialDataStagingBuffer, nullptr);
+                                vkFreeMemory(vkDevice.getDevice(), materialDataStagingBufferMemory, nullptr);
+                            }
+                            createBuffer(totalBufferSizeMaterialData[p], VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, materialDataStagingBuffer, materialDataStagingBufferMemory);
+                            if (materialDataBufferMT[p] != nullptr) {
+                                vkDestroyBuffer(vkDevice.getDevice(),materialDataBufferMT[p], nullptr);
+                                vkFreeMemory(vkDevice.getDevice(), materialDataBufferMemoryMT[p], nullptr);
+                            }
+                            createBuffer(totalBufferSizeMaterialData[p], VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, materialDataBufferMT[p], materialDataBufferMemoryMT[p]);
+
+                            maxBufferSizeMaterialData[p] = totalBufferSizeMaterialData[p];
+                            //needToUpdateDSs[p]  = true;
+                        }
+
+                        vkMapMemory(vkDevice.getDevice(), materialDataStagingBufferMemory, 0, bufferSize, 0, &data);
+                        memcpy(data, materialDatas[p].data(), (size_t)bufferSize);
+                        vkUnmapMemory(vkDevice.getDevice(), materialDataStagingBufferMemory);
+                        copyBuffer(materialDataStagingBuffer,materialDataBufferMT[p], bufferSize, copyMaterialDataBufferCommandBuffer);
+
+                        bufferSize = sizeof(DrawArraysIndirectCommand) * drawArraysIndirectCommands[p].size();
+                        totalBufferSizeDrawCommand[p] = bufferSize;
+                        needToUpdateDSs[p]  = true;
+                        if (totalBufferSizeDrawCommand[p] > maxBufferSizeDrawCommand[p]) {
+                            if (vboIndirectStagingBuffer != nullptr) {
+                                vkDestroyBuffer(vkDevice.getDevice(), vboIndirectStagingBuffer, nullptr);
+                                vkFreeMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory, nullptr);
+                            }
+                            createBuffer(totalBufferSizeDrawCommand[p], VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, vboIndirectStagingBuffer, vboIndirectStagingBufferMemory);
+                            if (drawCommandBufferMT[p] != nullptr) {
+                                vkDestroyBuffer(vkDevice.getDevice(),drawCommandBufferMT[p], nullptr);
+                                vkFreeMemory(vkDevice.getDevice(), drawCommandBufferMemoryMT[p], nullptr);
+                            }
+                            createBuffer(totalBufferSizeDrawCommand[p], VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, drawCommandBufferMT[p], drawCommandBufferMemoryMT[p]);
+                            maxBufferSizeDrawCommand[p] = totalBufferSizeDrawCommand[p];
+                        }
+
+                        vkMapMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory, 0, totalBufferSizeDrawCommand[p], 0, &data);
+                        memcpy(data, drawArraysIndirectCommands[p].data(), (size_t)totalBufferSizeDrawCommand[p]);
+                        vkUnmapMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory);
+                        copyBuffer(vboIndirectStagingBuffer, drawCommandBufferMT[p], totalBufferSizeDrawCommand[p], copyDrawBufferCommandBuffer);
+
+                    }
+                }
+                if (vkEndCommandBuffer(copyModelDataBufferCommandBuffer) != VK_SUCCESS) {
+                    throw core::Erreur(0, "failed to record command buffer!", 1);
+                }
+                if (vkEndCommandBuffer(copyMaterialDataBufferCommandBuffer) != VK_SUCCESS) {
+                    throw core::Erreur(0, "failed to record command buffer!", 1);
+                }
+                if (vkEndCommandBuffer(copyDrawBufferCommandBuffer) != VK_SUCCESS) {
+                    throw core::Erreur(0, "failed to record command buffer!", 1);
+                }
+                if (vkEndCommandBuffer(copyVbBufferCommandBuffer) != VK_SUCCESS) {
+                    throw core::Erreur(0, "failed to record command buffer!", 1);
+                }*/
+        }
+        void PerPixelLinkedListRenderComponent::fillIndexedBuffersMT () {
+
         }
         void PerPixelLinkedListRenderComponent::drawInstances() {
             for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
@@ -2781,6 +3074,9 @@ namespace odfaeg {
             if (vkCreateCommandPool(vkDevice.getDevice(), &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {
                 throw core::Erreur(0, "échec de la création d'une command pool!", 1);
             }
+            if (vkCreateCommandPool(vkDevice.getDevice(), &poolInfo, nullptr, &secondaryCommandBufferCommandPool) != VK_SUCCESS) {
+                throw core::Erreur(0, "échec de la création d'une command pool!", 1);
+            }
         }
         PerPixelLinkedListRenderComponent::~PerPixelLinkedListRenderComponent() {
             ////std::cout<<"ppll destructor"<<std::endl;
@@ -2835,6 +3131,20 @@ namespace odfaeg {
             for (unsigned int i = 0; i < frameBuffer.getMaxFramesInFlight(); i++) {
                 vkDestroySemaphore(vkDevice.getDevice(), offscreenFinishedSemaphore[i], nullptr);
             }
+            vkFreeCommandBuffers(vkDevice.getDevice(), secondaryCommandBufferCommandPool, 1, &copyMaterialDataBufferCommandBuffer);
+
+            vkFreeCommandBuffers(vkDevice.getDevice(), secondaryCommandBufferCommandPool, 1, &copyMaterialDataBufferCommandBuffer);
+
+            vkFreeCommandBuffers(vkDevice.getDevice(), secondaryCommandBufferCommandPool, 1, &copyDrawBufferCommandBuffer);
+
+            vkFreeCommandBuffers(vkDevice.getDevice(), secondaryCommandBufferCommandPool, 1, &copyDrawIndexedBufferCommandBuffer);
+            vkFreeCommandBuffers(vkDevice.getDevice(), secondaryCommandBufferCommandPool, 1, &copyVbBufferCommandBuffer);
+            vkFreeCommandBuffers(vkDevice.getDevice(), secondaryCommandBufferCommandPool, 1, &copyVbIndexedBufferCommandBuffer);
+            vkFreeCommandBuffers(vkDevice.getDevice(), secondaryCommandBufferCommandPool, 1, &copyVbPpllPass2CommandBuffer);
+            vkFreeCommandBuffers(vkDevice.getDevice(), secondaryCommandBufferCommandPool, 1, &ppllCommandBufferCommandBuffer);
+            vkFreeCommandBuffers(vkDevice.getDevice(), secondaryCommandBufferCommandPool, 1, &ppllSelectedCommandBuffer);
+            vkFreeCommandBuffers(vkDevice.getDevice(), secondaryCommandBufferCommandPool, 1, &ppllOutlineCommandBuffer);
+            vkDestroyCommandPool(vkDevice.getDevice(), secondaryBufferCommandPool, nullptr);
             ////std::cout<<"indirect vbo destroyed"<<std::endl;
         }
         #else
