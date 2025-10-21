@@ -565,13 +565,13 @@ namespace sorrok {
                     if (getRenderComponentManager().getRenderComponent(i) != nullptr) {
                         View view = getRenderComponentManager().getRenderComponent(i)->getView();
                         Vec3f d = newPos - view.getPosition();
-                        view.move(d.x(), d.y(), d.y());
+                        view.move(d.x(), d.y(), -d.y());
                         getRenderComponentManager().getRenderComponent(i)->setView(view);
                     }
                 }
                 Vec3f d = newPos - caracter->getCenter();
                 //getView().move(d.x(), d.y(), d.y());
-                getWorld()->moveEntity(caracter, d.x(), d.y(), d.y());
+                getWorld()->moveEntity(caracter, d.x(), d.y(), -d.y());
                 audio::Listener::setPosition(newPos.x(), newPos.y(), 0);
                 //World::update("EntitiesUpdater");
             } else {
@@ -581,14 +581,14 @@ namespace sorrok {
                 Vec2f d = pos - actualPos;
                 Vec2f dir = d.normalize();
                 //std::cout<<"position : "<<caracter->getPosition().z<<" dy : "<<d.y()<<std::endl;
-                getWorld()->moveEntity(caracter, d.x(), d.y(), d.y());
+                getWorld()->moveEntity(caracter, d.x(), d.y(), -d.y());
                 //std::cout<<"position : "<<caracter->getPosition().z<<std::endl;
                 if (dir != caracter->getDir())
                     caracter->setDir(dir);
                 for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
                     if (getRenderComponentManager().getRenderComponent(i) != nullptr) {
                         View view = getRenderComponentManager().getRenderComponent(i)->getView();
-                        view.move(d.x(), d.y(), d.y());
+                        view.move(d.x(), d.y(), -d.y());
                         getRenderComponentManager().getRenderComponent(i)->setView(view);
                     }
                 }
