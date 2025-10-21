@@ -1091,6 +1091,7 @@ namespace odfaeg {
                                                       #extension GL_ARB_separate_shader_objects : enable
                                                       #extension GL_EXT_nonuniform_qualifier : enable
                                                       #extension GL_EXT_debug_printf : enable
+                                                      layout (early_fragment_tests) in;
                                                       struct NodeType {
                                                           vec4 color;
                                                           float depth;
