@@ -203,7 +203,7 @@ namespace odfaeg {
 
 
                     needToUpdateVertexBuffer = false;
-                    //////std::cout<<"vertex buffer : "<<indexBuffer<<std::endl;
+                    ////////std::cout<<"vertex buffer : "<<indexBuffer<<std::endl;
                 }
                 if (needToUpdateIndexBuffer) {
                     VkDeviceSize bufferSize = sizeof(uint16_t) * indices.size();
@@ -230,12 +230,12 @@ namespace odfaeg {
 
 
                     needToUpdateIndexBuffer  = false;
-                    //////std::cout<<"index buffer : "<<indexBuffer<<std::endl;
+                    ////////std::cout<<"index buffer : "<<indexBuffer<<std::endl;
                 }
             }
             void VertexBuffer::updateStagingBuffers() {
                 if (needToUpdateVertexStagingBuffer) {
-                    //std::cout<<"update vb sg"<<std::endl;
+                    ////std::cout<<"update vb sg"<<std::endl;
                     VkDeviceSize bufferSize = sizeof(Vertex) * m_vertices.size();
                     void* data;
                     vkMapMemory(vkDevice.getDevice(), vertexStagingBufferMemory, 0, bufferSize, 0, &data);
@@ -244,7 +244,7 @@ namespace odfaeg {
                     needToUpdateVertexStagingBuffer = false;
                 }
                 if (needToUpdateIndexStagingBuffer) {
-                    //std::cout<<"update idx sg"<<std::endl;
+                    ////std::cout<<"update idx sg"<<std::endl;
                     VkDeviceSize bufferSize = sizeof(uint16_t) * indices.size();
                     void* data;
                     vkMapMemory(vkDevice.getDevice(), indexStagingBufferMemory, 0, bufferSize, 0, &data);
@@ -280,7 +280,7 @@ namespace odfaeg {
 
 
                     needToUpdateVertexBuffer = false;
-                    //////std::cout<<"vertex buffer : "<<indexBuffer<<std::endl;
+                    ////////std::cout<<"vertex buffer : "<<indexBuffer<<std::endl;
                 }
                 if (needToUpdateIndexBuffer) {
                     VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
@@ -307,7 +307,7 @@ namespace odfaeg {
 
 
                     needToUpdateIndexBuffer  = false;
-                    //////std::cout<<"index buffer : "<<indexBuffer<<std::endl;
+                    ////////std::cout<<"index buffer : "<<indexBuffer<<std::endl;
                 }
 
             }
@@ -746,12 +746,12 @@ namespace odfaeg {
         }
         void VertexBuffer::addIndex(unsigned int index) {
             m_indexes.push_back(index);
-            //////std::cout<<"vb index : "<<index<<"size : "<<m_indexes.size()<<std::endl;
+            ////////std::cout<<"vb index : "<<index<<"size : "<<m_indexes.size()<<std::endl;
             if (!needToUpdateIndexBuffer)
                 needToUpdateIndexBuffer = true;
         }
         void VertexBuffer::addLightInfos (math::Vec3f center, Color color) {
-            //////std::cout<<"add light info : "<<center<<(int) color.r<<","<<(int) color.g<<","<<(int) color.b<<","<<(int) color.a<<std::endl;
+            ////////std::cout<<"add light info : "<<center<<(int) color.r<<","<<(int) color.g<<","<<(int) color.b<<","<<(int) color.a<<std::endl;
             LightInfos li;
             li.center = center;
             li.color = color;
@@ -862,7 +862,7 @@ namespace odfaeg {
                     contains = true;
             }*/
             //if (!contains)  {
-                //////std::cout<<"position : "<<vertex.position.x<<" "<<vertex.position.y<<" "<<vertex.position.z<<std::endl;
+                ////////std::cout<<"position : "<<vertex.position.x<<" "<<vertex.position.y<<" "<<vertex.position.z<<std::endl;
                 m_vertices.push_back(vertex);
                 m_texturesIndexes.push_back(textureIndex);
                 /*m_vPosX.push_back(vertex.position.x);
@@ -968,7 +968,7 @@ namespace odfaeg {
             if (!m_vertices.empty()) {
                 std::vector<GlVertex> glVerts(m_vertices.size());
                 for (unsigned int i = 0; i < m_vertices.size(); i++) {
-                    ////std::cout<<"position : "<<m_vertices[i].position<<std::endl;
+                    //////std::cout<<"position : "<<m_vertices[i].position<<std::endl;
                     glVerts[i].position.x = m_vertices[i].position[0];
                     glVerts[i].position.y = m_vertices[i].position[1];
                     glVerts[i].position.z = m_vertices[i].position[2];
@@ -1013,7 +1013,7 @@ namespace odfaeg {
                             glCheck(glBindBuffer(GL_ARRAY_BUFFER, 0));
                         }
                         /*if (vboNormalBuffer == 0) {
-                            //////std::cout<<"create vbo normal buffer"<<std::endl;
+                            ////////std::cout<<"create vbo normal buffer"<<std::endl;
                             GLuint vbo;
                             glCheck(glGenBuffers(1, &vbo));
                             vboNormalBuffer = static_cast<unsigned int>(vbo);
@@ -1041,7 +1041,7 @@ namespace odfaeg {
                         if (oldVerticesSize != m_vertices.size()) {
                             glCheck(glBindBuffer(GL_ARRAY_BUFFER, vboTextureIndexesBuffer));
                             glCheck(glBufferData(GL_ARRAY_BUFFER, m_texturesIndexes.size() * sizeof(unsigned int), &m_texturesIndexes[0], GL_DYNAMIC_DRAW));
-                            //////std::cout<<"vbo index texture : "<<vboTextureIndexesBuffer<<std::endl;
+                            ////////std::cout<<"vbo index texture : "<<vboTextureIndexesBuffer<<std::endl;
 
                             glCheck(glBindBuffer(GL_ARRAY_BUFFER, 0));
                         } else {
@@ -1059,18 +1059,18 @@ namespace odfaeg {
                     }*/
                     if (needToUpdateIndexBuffer) {
                         if (vboIndexBuffer == 0) {
-                            //////std::cout<<"create index vbo buffer"<<std::endl;
+                            ////////std::cout<<"create index vbo buffer"<<std::endl;
                             GLuint vbo;
                             glCheck(glGenBuffers(1, &vbo));
                             vboIndexBuffer = static_cast<unsigned int>(vbo);
                         }
                         if (oldIndexesSize != m_indexes.size()) {
-                            //////std::cout<<"size changed : update index vbo buffer"<<std::endl;
+                            ////////std::cout<<"size changed : update index vbo buffer"<<std::endl;
                             glCheck(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboIndexBuffer));
                             glCheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_indexes.size() * sizeof(unsigned int), &m_indexes[0], GL_DYNAMIC_DRAW));
                             glCheck(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
                         } else {
-                            //////std::cout<<"update index vbo buffer"<<std::endl;
+                            ////////std::cout<<"update index vbo buffer"<<std::endl;
                             GLvoid *pos_vbo = nullptr;
                             glCheck(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboVertexBuffer));
                             glCheck(pos_vbo = glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY));
@@ -1090,12 +1090,12 @@ namespace odfaeg {
                             vboMaterialType = static_cast<unsigned int>(vbo);
                         }
                         if (oldMaterialTypeSize != m_MaterialType.size()) {
-                            //////std::cout<<"size changed : update index vbo buffer"<<std::endl;
+                            ////////std::cout<<"size changed : update index vbo buffer"<<std::endl;
                             glCheck(glBindBuffer(GL_ARRAY_BUFFER, vboMaterialType));
                             glCheck(glBufferData(GL_ARRAY_BUFFER, m_MaterialType.size() * sizeof(unsigned int), &m_MaterialType[0], GL_DYNAMIC_DRAW));
                             glCheck(glBindBuffer(GL_ARRAY_BUFFER, 0));
                         } else {
-                            //////std::cout<<"update index vbo buffer"<<std::endl;
+                            ////////std::cout<<"update index vbo buffer"<<std::endl;
                             GLvoid *pos_vbo = nullptr;
                             glCheck(glBindBuffer(GL_ARRAY_BUFFER, vboMaterialType));
                             glCheck(pos_vbo = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
@@ -1115,12 +1115,12 @@ namespace odfaeg {
                             vboLayer = static_cast<unsigned int>(vbo);
                         }
                         if (oldLayerSize != m_layers.size()) {
-                            //////std::cout<<"size changed : update index vbo buffer"<<std::endl;
+                            ////////std::cout<<"size changed : update index vbo buffer"<<std::endl;
                             glCheck(glBindBuffer(GL_ARRAY_BUFFER, vboLayer));
                             glCheck(glBufferData(GL_ARRAY_BUFFER, m_layers.size() * sizeof(unsigned int), &m_layers[0], GL_DYNAMIC_DRAW));
                             glCheck(glBindBuffer(GL_ARRAY_BUFFER, 0));
                         } else {
-                            //////std::cout<<"update index vbo buffer"<<std::endl;
+                            ////////std::cout<<"update index vbo buffer"<<std::endl;
                             GLvoid *pos_vbo = nullptr;
                             glCheck(glBindBuffer(GL_ARRAY_BUFFER, vboLayer));
                             glCheck(pos_vbo = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
@@ -1144,7 +1144,7 @@ namespace odfaeg {
                             glCheck(glBufferData(GL_ARRAY_BUFFER, m_specular.size() * sizeof(math::Vec2f), &m_specular[0], GL_DYNAMIC_DRAW));
                             glCheck(glBindBuffer(GL_ARRAY_BUFFER, 0));
                          } else {
-                            //////std::cout<<"update index vbo buffer"<<std::endl;
+                            ////////std::cout<<"update index vbo buffer"<<std::endl;
                             GLvoid *pos_vbo = nullptr;
                             glCheck(glBindBuffer(GL_ARRAY_BUFFER, vboSpecular));
                             glCheck(pos_vbo = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
@@ -1167,7 +1167,7 @@ namespace odfaeg {
                             glCheck(glBufferData(GL_ARRAY_BUFFER, m_lightInfos.size() * sizeof(LightInfos), &m_lightInfos[0], GL_DYNAMIC_DRAW));
                             glCheck(glBindBuffer(GL_ARRAY_BUFFER, 0));
                         } else {
-                            //////std::cout<<"size : "<<m_lightInfos.size()<<std::endl;
+                            ////////std::cout<<"size : "<<m_lightInfos.size()<<std::endl;
                             GLvoid *pos_vbo = nullptr;
                             glCheck(glBindBuffer(GL_ARRAY_BUFFER, vboLightInfos));
                             glCheck(pos_vbo = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
@@ -1196,18 +1196,18 @@ namespace odfaeg {
                 if (GLEW_ARB_vertex_buffer_object) {
                     if (needToUpdateVertexBuffer) {
                         if (vboVertexBuffer == 0) {
-                            //////std::cout<<"create vbo vertex buffer"<<std::endl;
+                            ////////std::cout<<"create vbo vertex buffer"<<std::endl;
                             GLuint vbo;
                             glCheck(glGenBuffers(1, &vbo));
                             vboVertexBuffer = static_cast<unsigned int>(vbo);
                         }
                         if (oldVerticesSize != m_vertices.size()) {
-                            //////std::cout<<"size changed : update vbo vertex buffer"<<std::endl;
+                            ////////std::cout<<"size changed : update vbo vertex buffer"<<std::endl;
                             glCheck(glBindBuffer(GL_ARRAY_BUFFER, vboVertexBuffer));
                             glCheck(glBufferData(GL_ARRAY_BUFFER, m_vertices.size() * sizeof(Vertex), &m_vertices[0], GL_STREAM_DRAW));
                             glCheck(glBindBuffer(GL_ARRAY_BUFFER, 0));
                         } else {
-                            //////std::cout<<"update vbo vertex buffer"<<std::endl;
+                            ////////std::cout<<"update vbo vertex buffer"<<std::endl;
                             GLvoid *pos_vbo = nullptr;
                             glCheck(glBindBuffer(GL_ARRAY_BUFFER, vboVertexBuffer));
                             pos_vbo = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
@@ -1219,18 +1219,18 @@ namespace odfaeg {
                             glCheck(glBindBuffer(GL_ARRAY_BUFFER, 0));
                         }
                         if (vboNormalBuffer == 0) {
-                            //////std::cout<<"create vbo normal buffer"<<std::endl;
+                            ////////std::cout<<"create vbo normal buffer"<<std::endl;
                             GLuint vbo;
                             glCheck(glGenBuffers(1, &vbo));
                             vboNormalBuffer = static_cast<unsigned int>(vbo);
                         }
                         if (oldVerticesSize != m_vertices.size()) {
-                            //////std::cout<<"size changed : update vbo normal buffer"<<std::endl;
+                            ////////std::cout<<"size changed : update vbo normal buffer"<<std::endl;
                             glCheck(glBindBuffer(GL_ARRAY_BUFFER, vboNormalBuffer));
                             glCheck(glBufferData(GL_ARRAY_BUFFER, m_normals.size() * sizeof(math::Vec3f), &m_normals[0], GL_STREAM_DRAW));
                             glCheck(glBindBuffer(GL_ARRAY_BUFFER, 0));
                         } else {
-                            //////std::cout<<"update vbo normal buffer"<<std::endl;
+                            ////////std::cout<<"update vbo normal buffer"<<std::endl;
                             GLvoid *pos_vbo = nullptr;
                             glCheck(glBindBuffer(GL_ARRAY_BUFFER, vboNormalBuffer));
                             pos_vbo = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
@@ -1250,7 +1250,7 @@ namespace odfaeg {
                             glCheck(glBindBuffer(GL_ARRAY_BUFFER, vboTextureIndexesBuffer));
                             glCheck(glBufferData(GL_ARRAY_BUFFER, m_texturesIndexes.size() * sizeof(unsigned int), &m_texturesIndexes[0], GL_DYNAMIC_DRAW));
                             /*for (unsigned int i = 0; i < m_texturesIndexes.size(); i++) {
-                                ////std::cout<<"texture indexes size : "<<m_texturesIndexes.size()<<" index : "<<m_texturesIndexes[i]<<std::endl;
+                                //////std::cout<<"texture indexes size : "<<m_texturesIndexes.size()<<" index : "<<m_texturesIndexes[i]<<std::endl;
                             }*/
                             glCheck(glBindBuffer(GL_ARRAY_BUFFER, 0));
                         } else {
@@ -1268,18 +1268,18 @@ namespace odfaeg {
                     }
                     if (needToUpdateIndexBuffer) {
                         if (vboIndexBuffer == 0) {
-                            //////std::cout<<"create index vbo buffer"<<std::endl;
+                            ////////std::cout<<"create index vbo buffer"<<std::endl;
                             GLuint vbo;
                             glCheck(glGenBuffers(1, &vbo));
                             vboIndexBuffer = static_cast<unsigned int>(vbo);
                         }
                         if (oldIndexesSize != m_indexes.size()) {
-                            //////std::cout<<"size changed : update index vbo buffer"<<std::endl;
+                            ////////std::cout<<"size changed : update index vbo buffer"<<std::endl;
                             glCheck(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboIndexBuffer));
                             glCheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_indexes.size() * sizeof(unsigned int), &m_indexes[0], GL_STREAM_DRAW));
                             glCheck(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
                         } else {
-                            //////std::cout<<"update index vbo buffer"<<std::endl;
+                            ////////std::cout<<"update index vbo buffer"<<std::endl;
                             GLvoid *pos_vbo = nullptr;
                             glCheck(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboVertexBuffer));
                             glCheck(pos_vbo = glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY));

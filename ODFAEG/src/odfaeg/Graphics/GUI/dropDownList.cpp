@@ -35,7 +35,7 @@ namespace odfaeg {
             bool DropDownList::isValueChanged() {
                 bool b = valueChanged;
                 if (valueChanged)
-                    ////std::cout<<"value changed"<<std::endl;
+                    //////std::cout<<"value changed"<<std::endl;
                 valueChanged = false;
                 return b;
             }
@@ -44,10 +44,10 @@ namespace odfaeg {
             }
             void DropDownList::onItemSelected(Label* label) {
                 /*if (getName() == "FUNCTION")
-                    ////std::cout<<"function ! "<<std::endl;*/
+                    //////std::cout<<"function ! "<<std::endl;*/
 
                 if (label != selectedItem) {
-                    ////std::cout<<"change value changed"<<std::endl;
+                    //////std::cout<<"change value changed"<<std::endl;
                     valueChanged = true;
                 }
                 selectedItem = label;
@@ -61,9 +61,9 @@ namespace odfaeg {
             bool DropDownList::isMouseOnTriangle() {
                 /*if (getName() == "FUNCTION") {
                     if (bp.isPointInside(mousePos)) {
-                        ////std::cout<<"inside : "<<std::endl;
+                        //////std::cout<<"inside : "<<std::endl;
                     }
-                    //////std::cout<<"mouse pos : "<<mousePos<<std::endl;
+                    ////////std::cout<<"mouse pos : "<<mousePos<<std::endl;
                 }*/
                 return bp.isPointInside(mousePos);
             }
@@ -80,7 +80,7 @@ namespace odfaeg {
             }
             void DropDownList::addItem(std::string t, unsigned int charSize) {
                 /*if (getName() == "POINTERTYPE")
-                    ////std::cout<<"add item : "<<t<<std::endl;*/
+                    //////std::cout<<"add item : "<<t<<std::endl;*/
                 Label* label = new Label (getWindow(), getPosition(), math::Vec3f(getSize().x() - 50, getSize().y(), 0), font, t, charSize);
                 label->setPosition(math::Vec3f(getPosition().x(), getPosition().y() + getSize().y() * nbItems, 0));
                 label->setForegroundColor(Color::Black);
@@ -102,7 +102,7 @@ namespace odfaeg {
             void DropDownList::removeAllItems() {
                 items.clear();
                 /*if (getName() == "FUNCTION")
-                    ////std::cout<<"size : "<<items.size()<<std::endl;*/
+                    //////std::cout<<"size : "<<items.size()<<std::endl;*/
                 selectedItem = nullptr;
             }
             void DropDownList::onDraw(RenderTarget& target, RenderStates states) {
@@ -123,13 +123,13 @@ namespace odfaeg {
                 target.draw(rect, states);
                 if (!dropDown && selectedItem != nullptr) {
                     /*if (getName() == "FUNCTION")
-                        ////std::cout<<"draw items"<<std::endl;*/
+                        //////std::cout<<"draw items"<<std::endl;*/
                     selectedItem->setPosition(getPosition());
                     selectedItem->setSize(math::Vec3f(getSize().x() - 50, getSize().y(), getSize().z()));
                     target.draw(*selectedItem, states);
                 } else {
                     /*if (getName() == "FUNCTION")
-                        ////std::cout<<"draw items"<<std::endl;*/
+                        //////std::cout<<"draw items"<<std::endl;*/
                     for (unsigned int i = 0; i < items.size(); i++) {
                         items[i]->setPosition(math::Vec3f(getPosition().x(), getPosition().y() + getSize().y() * i, getPosition().z()));
                         items[i]->setSize(math::Vec3f(getSize().x() - 50, getSize().y(), getSize().z()));

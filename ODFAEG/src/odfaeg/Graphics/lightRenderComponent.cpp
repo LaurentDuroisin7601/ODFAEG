@@ -1955,7 +1955,7 @@ namespace odfaeg {
             }
             for (unsigned int i = 0; i < m_light_instances.size(); i++) {
                 if (m_light_instances[i].getAllVertices().getVertexCount() > 0) {
-                    //////std::cout<<"instance : "<<i<<std::endl;
+                    ////////std::cout<<"instance : "<<i<<std::endl;
                     DrawArraysIndirectCommand drawArraysIndirectCommand;
                     unsigned int p = m_light_instances[i].getAllVertices().getPrimitiveType();
                     MaterialData material;
@@ -2087,7 +2087,7 @@ namespace odfaeg {
             }
             for (unsigned int i = 0; i < m_light_instances.size(); i++) {
                 if (m_light_instances[i].getAllVertices().getVertexCount() > 0) {
-                    //////std::cout<<"instance : "<<i<<std::endl;
+                    ////////std::cout<<"instance : "<<i<<std::endl;
                     DrawArraysIndirectCommand drawArraysIndirectCommand;
                     unsigned int p = m_light_instances[i].getAllVertices().getPrimitiveType();
                     MaterialData material;
@@ -2129,7 +2129,7 @@ namespace odfaeg {
             }
             for (unsigned int i = 0; i < m_light_instances.size(); i++) {
                 if (m_light_instances[i].getAllVertices().getVertexCount() > 0) {
-                    //////std::cout<<"instance : "<<i<<std::endl;
+                    ////////std::cout<<"instance : "<<i<<std::endl;
                     DrawArraysIndirectCommand drawArraysIndirectCommand;
                     unsigned int p = m_light_instances[i].getAllVertices().getPrimitiveType();
                     MaterialData material;
@@ -2137,8 +2137,8 @@ namespace odfaeg {
                     material.layer = m_light_instances[i].getMaterial().getLayer();
                     material.lightCenter = m_light_instances[i].getMaterial().getLightCenter();
                     TransformMatrix modelMatrix;
-                    /*//std::cout<<"light center : "<<material.lightCenter<<std::endl;
-                    //std::cout<<"light center screen : "<<lightMap.mapCoordsToPixel(modelMatrix.transform(material.lightCenter))<<std::endl;
+                    /*////std::cout<<"light center : "<<material.lightCenter<<std::endl;
+                    ////std::cout<<"light center screen : "<<lightMap.mapCoordsToPixel(modelMatrix.transform(material.lightCenter))<<std::endl;
                     system("PAUSE");*/
 
                     Color c = m_light_instances[i].getMaterial().getLightColor();
@@ -2268,7 +2268,7 @@ namespace odfaeg {
             Shader* shader = const_cast<Shader*>(currentStates.shader);
             if (shader == &depthBufferGenerator) {
 
-                //////std::cout<<"draw on db"<<std::endl;
+                ////////std::cout<<"draw on db"<<std::endl;
                 if (!lightDepth) {
                     createDescriptorSets(currentStates, false);
                     depthBuffer.beginRecordCommandBuffers();
@@ -2359,7 +2359,7 @@ namespace odfaeg {
                 //vkCmdWaitEvents(commandBuffers[currentFrame], 1, &events[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
                 vkCmdPushConstants(commandBuffers[currentFrame], specularTexture.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][specularTexture.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectRenderingPC), &indirectRenderingPC);
                 vkCmdPushConstants(commandBuffers[currentFrame], specularTexture.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][specularTexture.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(MaxSpecPC), &maxSpecPC);
-                /*//std::cout<<"pipeline layout : "<<stencilBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][stencilBuffer.getId()][depthStencilID]<<std::endl;
+                /*////std::cout<<"pipeline layout : "<<stencilBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][stencilBuffer.getId()][depthStencilID]<<std::endl;
                 system("PAUSE");*/
                  vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 0, nullptr);
                 VkMemoryBarrier memoryBarrier;
@@ -2392,7 +2392,7 @@ namespace odfaeg {
                 //vkCmdWaitEvents(commandBuffers[currentFrame], 1, &events[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
                 vkCmdPushConstants(commandBuffers[currentFrame], bumpTexture.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][bumpTexture.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectRenderingPC), &indirectRenderingPC);
                 vkCmdPushConstants(commandBuffers[currentFrame], bumpTexture.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][bumpTexture.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(LayerPC), &layerPC);
-                /*//std::cout<<"pipeline layout : "<<stencilBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][stencilBuffer.getId()][depthStencilID]<<std::endl;
+                /*////std::cout<<"pipeline layout : "<<stencilBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][stencilBuffer.getId()][depthStencilID]<<std::endl;
                 system("PAUSE");*/
                  vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 0, nullptr);
                 VkMemoryBarrier memoryBarrier;
@@ -4533,7 +4533,7 @@ namespace odfaeg {
                             GLuint64 handle_texture = allTextures[i]->getTextureHandle();
                             allTextures[i]->makeTextureResident(handle_texture);
                             allSamplers.tex[i].handle = handle_texture;
-                            //////std::cout<<"add texture i : "<<i<<" id : "<<allTextures[i]->getNativeHandle()<<std::endl;
+                            ////////std::cout<<"add texture i : "<<i<<" id : "<<allTextures[i]->getNativeHandle()<<std::endl;
                         }
                         depthBufferGenerator.setParameter("textureMatrix", textureMatrices);
                         specularTextureGenerator.setParameter("textureMatrix", textureMatrices);
@@ -4543,7 +4543,7 @@ namespace odfaeg {
 
                         glCheck(glBindBuffer(GL_UNIFORM_BUFFER, ubo));
                         glCheck(glBufferData(GL_UNIFORM_BUFFER, sizeof(Samplers),allSamplers.tex, GL_STATIC_DRAW));
-                        //////std::cout<<"size : "<<sizeof(Samplers)<<" "<<alignof (alignas(16) uint64_t[200])<<std::endl;
+                        ////////std::cout<<"size : "<<sizeof(Samplers)<<" "<<alignof (alignas(16) uint64_t[200])<<std::endl;
 
                         glCheck(glBindBuffer(GL_UNIFORM_BUFFER, 0));
                         glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo));
@@ -4579,7 +4579,7 @@ namespace odfaeg {
             }
             void LightRenderComponent::pushEvent(window::IEvent event, RenderWindow& rw) {
                 if (event.type == window::IEvent::WINDOW_EVENT && event.window.type == window::IEvent::WINDOW_EVENT_RESIZED && &getWindow() == &rw && isAutoResized()) {
-                    ////std::cout<<"recompute size"<<std::endl;
+                    //////std::cout<<"recompute size"<<std::endl;
                     recomputeSize();
                     getListener().pushEvent(event);
                     getView().reset(physic::BoundingBox(getView().getViewport().getPosition().x(), getView().getViewport().getPosition().y(), getView().getViewport().getPosition().z(), event.window.data1, event.window.data2, getView().getViewport().getDepth()));
@@ -4597,7 +4597,7 @@ namespace odfaeg {
                 GLuint64 handle_texture = allTextures[i]->getTextureHandle();
                 allTextures[i]->makeTextureResident(handle_texture);
                 allSamplers.tex[i].handle = handle_texture;
-                //////std::cout<<"add texture i : "<<i<<" id : "<<allTextures[i]->getNativeHandle()<<std::endl;
+                ////////std::cout<<"add texture i : "<<i<<" id : "<<allTextures[i]->getNativeHandle()<<std::endl;
             }
             glCheck(glBindBuffer(GL_UNIFORM_BUFFER, ubo));
             glCheck(glBufferData(GL_UNIFORM_BUFFER, sizeof(Samplers),allSamplers.tex, GL_STATIC_DRAW));
@@ -4738,7 +4738,7 @@ namespace odfaeg {
             for (unsigned int i = 0; i < m_light_instances.size(); i++) {
                 if (m_light_instances[i].getAllVertices().getVertexCount() > 0) {
                     DrawArraysIndirectCommand drawArraysIndirectCommand;
-                    //////std::cout<<"instance : "<<i<<std::endl;
+                    ////////std::cout<<"instance : "<<i<<std::endl;
                     unsigned int p = m_light_instances[i].getAllVertices().getPrimitiveType();
                     MaterialData material;
                     material.textureIndex = 0;
@@ -4796,7 +4796,7 @@ namespace odfaeg {
             }
             for (unsigned int i = 0; i < m_light_instances.size(); i++) {
                 if (m_light_instances[i].getAllVertices().getVertexCount() > 0) {
-                    //////std::cout<<"instance : "<<i<<std::endl;
+                    ////////std::cout<<"instance : "<<i<<std::endl;
                     DrawArraysIndirectCommand drawArraysIndirectCommand;
                     unsigned int p = m_light_instances[i].getAllVertices().getPrimitiveType();
                     MaterialData material;
@@ -5273,11 +5273,11 @@ namespace odfaeg {
                                 math::Matrix4f m = m_light_instances[i].getPerVaTransforms()[j]->getMatrix().transpose();
                                 lightMapGenerator.setParameter("worldMat", m);
                                 Entity* el = m_light_instances[i].getVertexArrays()[j]->getEntity();
-                                //////std::cout<<"add light : "<<el<<std::endl;
+                                ////////std::cout<<"add light : "<<el<<std::endl;
                                 math::Vec3f center = getWindow().mapCoordsToPixel(el->getCenter() - el->getSize()*0.5f, view);
-                                ////std::cout<<"light center : "<<center<<std::endl;
+                                //////std::cout<<"light center : "<<center<<std::endl;
                                 center.w = el->getSize().x() * 0.5f;
-                                //////std::cout<<"center : "<<center<<std::endl;
+                                ////////std::cout<<"center : "<<center<<std::endl;
                                 /*lightMapGenerator.setParameter("lightPos", center.x(), center.y(), center.z(), center.w);
                                 lightMapGenerator.setParameter("lightColor", el->getColor().r, el->getColor().g,el->getColor().b,el->getColor().a);
                                 lightMap.drawVertexBuffer(vb, states);

@@ -245,7 +245,7 @@ namespace sorrok {
             thouse->setLayer(1);
             thouse->getFace(0)->getMaterial().setTexId("HOUSE");
             g2d::Decor* decor = entityFactory.make_entity<g2d::Decor>(thouse, &g2d::AmbientLight::getAmbientLight(), entityFactory);
-            decor->setSelected(true);
+            //decor->setSelected(true);
 
 
             BoundingVolume *bb = new BoundingBox(decor->getGlobalBounds().getPosition().x(), decor->getGlobalBounds().getPosition().y() + decor->getGlobalBounds().getSize().y() * 0.4f, 0,
@@ -322,21 +322,25 @@ namespace sorrok {
         //view.rotate(0, 0, 20);
         PerPixelLinkedListRenderComponent *frc1 = new PerPixelLinkedListRenderComponent(getRenderWindow(),0, "E_BIGTILE", ContextSettings(0, 0, 4, 4, 6));
         std::cout<<"ppll1 component created"<<std::endl;
-        PerPixelLinkedListRenderComponent *frc2 = new PerPixelLinkedListRenderComponent(getRenderWindow(), 1, "E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PARTICLES", ContextSettings(24, 8, 4, 4, 6));
+        //PerPixelLinkedListRenderComponent *frc2 = new PerPixelLinkedListRenderComponent(getRenderWindow(), 1, "E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PARTICLES", ContextSettings(24, 8, 4, 4, 6));
         std::cout<<"ppll2 component created"<<std::endl;
-        ReflectRefractRenderComponent *rrrc = new ReflectRefractRenderComponent(getRenderWindow(), 2, "E_BIGTILE+E_WALL+E_DECOR+E_ANIMATION+E_HERO", ContextSettings(0, 0, 4, 4, 6));
+        ReflectRefractRenderComponent *rrrc = new ReflectRefractRenderComponent(getRenderWindow(), 1, "E_BIGTILE+E_WALL+E_DECOR+E_ANIMATION+E_HERO", ContextSettings(0, 0, 4, 4, 6));
         std::cout<<"reflect refract component created"<<std::endl;
 
-        ShadowRenderComponent *src = new ShadowRenderComponent(getRenderWindow(), 3, "E_WALL+E_DECOR+E_ANIMATION+E_HERO", ContextSettings(0, 0, 4, 4, 6));
+        /*ShadowRenderComponent *src = new ShadowRenderComponent(getRenderWindow(), 3, "E_WALL+E_DECOR+E_ANIMATION+E_HERO", ContextSettings(0, 0, 4, 4, 6));
         std::cout<<"shadow component created"<<std::endl;
         LightRenderComponent *lrc = new LightRenderComponent(getRenderWindow(), 4, "E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PONCTUAL_LIGHT", ContextSettings(0, 0, 4, 4, 6));
-        std::cout<<"light component created"<<std::endl;
+        std::cout<<"light component created"<<std::endl;*/
         getRenderWindow().createDescriptorsAndPipelines();
         frc1->createDescriptorsAndPipelines();
-        frc2->createDescriptorsAndPipelines();
-        src->createDescriptorsAndPipelines();
-        lrc->createDescriptorsAndPipelines();
+        //frc2->createDescriptorsAndPipelines();
+        /*src->createDescriptorsAndPipelines();
+        lrc->createDescriptorsAndPipelines();*/
         rrrc->createDescriptorsAndPipelines();
+
+        frc1->launchRenderer();
+        //frc2->launchRenderer();
+        rrrc->launchRenderer();
         std::cout<<"pipelines created"<<std::endl;
 
 
@@ -361,9 +365,9 @@ namespace sorrok {
         //src->setVisible(false);
         //lrc->setVisible(false);
         getRenderComponentManager().addComponent(frc1);
-        getRenderComponentManager().addComponent(frc2);
+        //getRenderComponentManager().addComponent(frc2);
         getRenderComponentManager().addComponent(rrrc);
-        getRenderComponentManager().addComponent(src);
+        /*getRenderComponentManager().addComponent(src);
         getRenderComponentManager().addComponent(lrc);
         /*getRenderComponentManager().addComponent(textArea);
         getRenderComponentManager().addComponent(op);*/
@@ -444,10 +448,10 @@ namespace sorrok {
     void MyAppli::onRender(RenderComponentManager *cm) {
         // draw everything here...
         getWorld()->drawOnComponents("E_BIGTILE", 0);
-        getWorld()->drawOnComponents("E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PARTICLES", 1);
-        getWorld()->drawOnComponents("E_BIGTILE+E_WALL+E_DECOR+E_ANIMATION+E_HERO", 2);
-        getWorld()->drawOnComponents("E_WALL+E_DECOR+E_ANIMATION+E_HERO", 3);
-        getWorld()->drawOnComponents("E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PONCTUAL_LIGHT", 4);
+        //getWorld()->drawOnComponents("E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PARTICLES", 1);
+        getWorld()->drawOnComponents("E_BIGTILE+E_WALL+E_DECOR+E_ANIMATION+E_HERO", 1);
+        /*getWorld()->drawOnComponents("E_WALL+E_DECOR+E_ANIMATION+E_HERO", 3);
+        getWorld()->drawOnComponents("E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PONCTUAL_LIGHT", 4);*/
 
     }
     void MyAppli::onDisplay(RenderWindow* window) {

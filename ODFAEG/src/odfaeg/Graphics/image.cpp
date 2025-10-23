@@ -148,7 +148,7 @@ namespace odfaeg {
                             empty = false;
 
                     }
-                    ////std::cout<<"empty : "<<empty<<std::endl;*/
+                    //////std::cout<<"empty : "<<empty<<std::endl;*/
                     // Free the loaded pixels (they are now in our own pixel buffer)
                     stbi_image_free(ptr);
                     //saveToFile(filename);

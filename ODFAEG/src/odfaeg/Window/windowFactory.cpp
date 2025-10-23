@@ -21,7 +21,7 @@ namespace odfaeg {
             //
             try {
                 IWindow* window = new WindowType();
-                //std::cout << "create factory" << std::endl;
+                ////std::cout << "create factory" << std::endl;
                 return window;
             } catch (const std::bad_alloc& e) {
                 std::cerr << "Exception : " << e.what() << std::endl;

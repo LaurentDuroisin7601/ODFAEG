@@ -516,7 +516,7 @@ namespace odfaeg {
                             GLuint64 handle_texture = allTextures[i]->getTextureHandle();
                             allTextures[i]->makeTextureResident(handle_texture);
                             allSamplers.tex[i].handle = handle_texture;
-                            //////std::cout<<"add texture i : "<<i<<" id : "<<allTextures[i]->getNativeHandle()<<std::endl;
+                            ////////std::cout<<"add texture i : "<<i<<" id : "<<allTextures[i]->getNativeHandle()<<std::endl;
                         }
                         buildShadowMapNormalShader.setParameter("textureMatrix", textureMatrices);
                         buildShadowMapShader.setParameter("textureMatrix", textureMatrices);
@@ -551,7 +551,7 @@ namespace odfaeg {
                         glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo));
                         depthBuffer.setActive();
                         glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo));
-                        //////std::cout<<"size : "<<sizeof(Samplers)<<" "<<alignof (alignas(16) uint64_t[200])<<std::endl;
+                        ////////std::cout<<"size : "<<sizeof(Samplers)<<" "<<alignof (alignas(16) uint64_t[200])<<std::endl;
 
                         /*glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo2));
                         glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo3));*/
@@ -654,7 +654,7 @@ namespace odfaeg {
                     GLuint64 handle_texture = allTextures[i]->getTextureHandle();
                     allTextures[i]->makeTextureResident(handle_texture);
                     allSamplers.tex[i].handle = handle_texture;
-                    //////std::cout<<"add texture i : "<<i<<" id : "<<allTextures[i]->getNativeHandle()<<std::endl;
+                    ////////std::cout<<"add texture i : "<<i<<" id : "<<allTextures[i]->getNativeHandle()<<std::endl;
                 }
                 glCheck(glBindBuffer(GL_UNIFORM_BUFFER, ubo));
                 glCheck(glBufferData(GL_UNIFORM_BUFFER, sizeof(Samplers),allSamplers.tex, GL_STATIC_DRAW));
@@ -1288,12 +1288,12 @@ namespace odfaeg {
                             shadowOrigin = tc->position;
                             shadowTranslation = tc->position + shadowCenter;
                             /*if (componentMapping.getComponent<EntityInfoComponent>(componentMapping.getRoot(vEntities[i]))->groupName == "E_WALL") {
-                                ////std::cout<<"shadow center : "<<shadowCenter<<std::endl;
-                                ////std::cout<<"shadow scale : "<<shadowScale<<std::endl;
-                                ////std::cout<<"shadow rotation axis : "<<shadowRotationAxis<<std::endl;
-                                ////std::cout<<"shadow rotation angle : "<<shadowRotationAngle<<std::endl;
-                                ////std::cout<<"shadow origin : "<<shadowOrigin<<std::endl;
-                                ////std::cout<<"shadow translation : "<<shadowTranslation<<std::endl;
+                                //////std::cout<<"shadow center : "<<shadowCenter<<std::endl;
+                                //////std::cout<<"shadow scale : "<<shadowScale<<std::endl;
+                                //////std::cout<<"shadow rotation axis : "<<shadowRotationAxis<<std::endl;
+                                //////std::cout<<"shadow rotation angle : "<<shadowRotationAngle<<std::endl;
+                                //////std::cout<<"shadow origin : "<<shadowOrigin<<std::endl;
+                                //////std::cout<<"shadow translation : "<<shadowTranslation<<std::endl;
                             }*/
                         }
                         TransformMatrix tm;

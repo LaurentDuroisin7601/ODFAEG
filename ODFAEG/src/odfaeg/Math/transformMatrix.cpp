@@ -138,7 +138,7 @@ namespace odfaeg {
                 matrix4f[3][1] = 0;
                 matrix4f[3][2] = 0;
                 matrix4f[3][3] = 1;
-                ////std::cout<<"matrix : "<<matrix4f<<std::endl;
+                //////std::cout<<"matrix : "<<matrix4f<<std::endl;
                 needToUpdate3D = false;
             }
         }

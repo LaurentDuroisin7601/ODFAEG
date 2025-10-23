@@ -146,7 +146,7 @@ namespace odfaeg {
         //Déprojette un vecteur suivant la matrice de projection définie.
         math::Vec4f ProjMatrix::unProject (math::Vec4f vec4) {
             vec4[3] = 1;
-            //////std::cout<<"matrix : "<<matrix4f<<"inv matrix : "<<invMatrix4f<<std::endl;
+            ////////std::cout<<"matrix : "<<matrix4f<<"inv matrix : "<<invMatrix4f<<std::endl;
             return invMatrix4f * vec4;
         }
         physic::BoundingBox ProjMatrix::getFrustum() {

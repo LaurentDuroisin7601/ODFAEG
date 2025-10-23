@@ -572,7 +572,7 @@ namespace odfaeg {
                     GLuint64 handle_texture = allTextures[i]->getTextureHandle();
                     allTextures[i]->makeTextureResident(handle_texture);
                     allSamplers.tex[i].handle = handle_texture;
-                    //////std::cout<<"add texture i : "<<i<<" id : "<<allTextures[i]->getNativeHandle()<<std::endl;
+                    ////////std::cout<<"add texture i : "<<i<<" id : "<<allTextures[i]->getNativeHandle()<<std::endl;
                 }
                 sBuildDepthBuffer.setParameter("textureMatrix", textureMatrices);
                 sBuildAlphaBuffer.setParameter("textureMatrix", textureMatrices);
@@ -580,7 +580,7 @@ namespace odfaeg {
 
 
 
-                //////std::cout<<"ubid : "<<ubid<<std::endl;
+                ////////std::cout<<"ubid : "<<ubid<<std::endl;
                 backgroundColor = Color::Transparent;
                 glCheck(glGenBuffers(1, &ubo));
                 glCheck(glBindBuffer(GL_UNIFORM_BUFFER, ubo));
@@ -600,7 +600,7 @@ namespace odfaeg {
                 glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, modelDataBuffer));
                 glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, materialDataBuffer));
                 reflectRefractTex.setActive();
-                //////std::cout<<"size : "<<sizeof(Samplers)<<" "<<alignof (alignas(16) uint64_t[200])<<std::endl;
+                ////////std::cout<<"size : "<<sizeof(Samplers)<<" "<<alignof (alignas(16) uint64_t[200])<<std::endl;
 
                 /*glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo2));
                 glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo3));*/
@@ -621,7 +621,7 @@ namespace odfaeg {
                     GLuint64 handle_texture = allTextures[i]->getTextureHandle();
                     allTextures[i]->makeTextureResident(handle_texture);
                     allSamplers.tex[i].handle = handle_texture;
-                    //////std::cout<<"add texture i : "<<i<<" id : "<<allTextures[i]->getNativeHandle()<<std::endl;
+                    ////////std::cout<<"add texture i : "<<i<<" id : "<<allTextures[i]->getNativeHandle()<<std::endl;
                 }
                 glCheck(glBindBuffer(GL_UNIFORM_BUFFER, ubo));
                 glCheck(glBufferData(GL_UNIFORM_BUFFER, sizeof(Samplers),allSamplers.tex, GL_STATIC_DRAW));
@@ -756,7 +756,7 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < m_normals.size(); i++) {
                     if (m_normals[i].getAllVertices().getVertexCount() > 0) {
                         DrawArraysIndirectCommand drawArraysIndirectCommand;
-                        //////std::cout<<"layer : "<<layer<<" nb layers : "<<Entity::getNbLayers()<<std::endl;
+                        ////////std::cout<<"layer : "<<layer<<" nb layers : "<<Entity::getNbLayers()<<std::endl;
                         unsigned int p = m_normals[i].getAllVertices().getPrimitiveType();
                         MaterialData material;
                         material.textureIndex = (m_normals[i].getMaterial().getTexture() != nullptr) ? m_normals[i].getMaterial().getTexture()->getNativeHandle() : 0;
@@ -1092,7 +1092,7 @@ namespace odfaeg {
                                         if (entity->getSize().y() > squareSize) {
                                             scale.y() = entity->getSize().y() / squareSize;
                                         }*/
-                                        //////std::cout<<"scale : "<<scale<<"position : "<<entity->getPosition()<<std::endl;
+                                        ////////std::cout<<"scale : "<<scale<<"position : "<<entity->getPosition()<<std::endl;
                                         //reflectView.setScale(scale.x(), scale.y(), scale.z());
                                         if (componentMapping.getComponent<EntityInfoComponent>(entity)->groupName != "E_BIGTILE") {
                                             TransformComponent* tc = componentMapping.getComponent<TransformComponent>(entity);
@@ -1153,7 +1153,7 @@ namespace odfaeg {
                                             if (m_skyboxInstance[i].getAllVertices().getVertexCount() > 0) {
                                                 vb.setPrimitiveType(m_skyboxInstance[i].getAllVertices().getPrimitiveType());
                                                 for (unsigned int j = 0; j < m_skyboxInstance[i].getAllVertices().getVertexCount(); j++) {
-                                                    //////std::cout<<"append"<<std::endl;
+                                                    ////////std::cout<<"append"<<std::endl;
                                                     vb.append(m_skyboxInstance[i].getAllVertices()[j]);
                                                 }
                                             }
@@ -1286,7 +1286,7 @@ namespace odfaeg {
             }
             void ReflectRefractRenderComponent::pushEvent(window::IEvent event, RenderWindow& rw) {
                 if (event.type == window::IEvent::WINDOW_EVENT && event.window.type == window::IEvent::WINDOW_EVENT_RESIZED && &getWindow() == &rw && isAutoResized()) {
-                    ////std::cout<<"recompute size"<<std::endl;
+                    //////std::cout<<"recompute size"<<std::endl;
                     recomputeSize();
                     getListener().pushEvent(event);
                     getView().reset(physic::BoundingBox(getView().getViewport().getPosition().x(), getView().getViewport().getPosition().y(), getView().getViewport().getPosition().z(), event.window.data1, event.window.data2, getView().getViewport().getDepth()));
@@ -2212,7 +2212,7 @@ namespace odfaeg {
             }
             void ReflectRefractRenderComponent::pushEvent(window::IEvent event, RenderWindow& rw) {
                 if (event.type == window::IEvent::WINDOW_EVENT && event.window.type == window::IEvent::WINDOW_EVENT_RESIZED && &getWindow() == &rw && isAutoResized()) {
-                    ////std::cout<<"recompute size"<<std::endl;
+                    //////std::cout<<"recompute size"<<std::endl;
                     recomputeSize();
                     getListener().pushEvent(event);
                     getView().reset(physic::BoundingBox(getView().getViewport().getPosition().x(), getView().getViewport().getPosition().y(), getView().getViewport().getPosition().z(), event.window.data1, event.window.data2, getView().getViewport().getDepth()));

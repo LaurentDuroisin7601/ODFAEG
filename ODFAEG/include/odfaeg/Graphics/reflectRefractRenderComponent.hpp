@@ -82,6 +82,7 @@ namespace odfaeg {
             ReflectRefractRenderComponent (RenderWindow& window, int layer, std::string expression, window::ContextSettings settings, bool useThread = true);
             void loadTextureIndexes();
             void createDescriptorsAndPipelines();
+            void launchRenderer();
             std::vector<Entity*> getEntities();
             bool loadEntitiesOnComponent(std::vector<Entity*> visibleEntities);
             void loadSkybox(Entity* skybox);

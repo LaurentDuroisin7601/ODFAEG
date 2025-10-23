@@ -60,7 +60,7 @@ namespace odfaeg {
 
                 if (audioContext)
                 {
-                    //std::cout<<"al set position"<<std::endl;
+                    ////std::cout<<"al set position"<<std::endl;
                     // Set the context as the current one (we'll only need one)
                     alcMakeContextCurrent(audioContext);
 

@@ -414,7 +414,7 @@ namespace odfaeg {
                     waitSemaphores.push_back(imageAvailableSemaphores[currentFrame]);
                     waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
                     if (waitValues.size() > 0) {
-                        //////std::cout<<"wait semaphore : "<<semaphore[currentFrame]<<std::endl;
+                        ////////std::cout<<"wait semaphore : "<<semaphore[currentFrame]<<std::endl;
                         waitValues.push_back(0);
                     }
                 }
@@ -440,7 +440,7 @@ namespace odfaeg {
                 submitInfo.pWaitSemaphores = waitSemaphores.data();
                 submitInfo.commandBufferCount = 1;
                 submitInfo.pCommandBuffers = &getCommandBuffers()[currentFrame];
-                //////std::cout<<"current frame : "<<currentFrame<<std::endl;
+                ////////std::cout<<"current frame : "<<currentFrame<<std::endl;
                 /*VkSubmitInfo submitInfo{};
                 submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
@@ -448,14 +448,14 @@ namespace odfaeg {
                 if (firstSubmit)
                     waitSemaphores.push_back(imageAvailableSemaphores[currentFrame]);
                 if (semaphore.size() != 0) {
-                    //////std::cout<<"wait semaphore : "<<semaphore[currentFrame]<<std::endl;
+                    ////////std::cout<<"wait semaphore : "<<semaphore[currentFrame]<<std::endl;
                     waitSemaphores.push_back(semaphore[currentFrame]);
                 }
                 std::vector<VkPipelineStageFlags> waitStages;
                 if (firstSubmit)
                     waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT); // pour imageAvailable
                 if (semaphore.size() != 0) {
-                    ////std::cout<<"wait frame : "<<currentFrame<<std::endl;
+                    //////std::cout<<"wait frame : "<<currentFrame<<std::endl;
                     waitStages.push_back(VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT); // pour la sync personnalisée
                 }
                 submitInfo.waitSemaphoreCount = waitSemaphores.size();
@@ -503,8 +503,8 @@ namespace odfaeg {
                 presentInfo.pResults = nullptr; // Optionnel
                 vkQueuePresentKHR(vkDevice.getPresentQueue(), &presentInfo);
                 currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
-                ////std::cout<<"current frame : "<<currentFrame<<std::endl;
-                vkDeviceWaitIdle(vkDevice.getDevice());
+                //////std::cout<<"current frame : "<<currentFrame<<std::endl;
+                //vkDeviceWaitIdle(vkDevice.getDevice());
             }
         }
         void RenderWindow::cleanupSwapchain() {
@@ -531,7 +531,7 @@ namespace odfaeg {
         RenderWindow::~RenderWindow()
         {
             //RenderTarget::cleanup();
-            ////std::cout<<"destroy window"<<std::endl;
+            //////std::cout<<"destroy window"<<std::endl;
             cleanup();
         }
         ////////////////////////////////////////////////////////////

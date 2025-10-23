@@ -17,7 +17,7 @@ namespace odfaeg {
         }
         Tile::Tile (const Texture *image, math::Vec3f position, math::Vec3f size, IntRect subRect, EntityFactory& factory, Color color, Entity *parent)
         : GameObject (position, size, size * 0.5f, "E_TILE", factory) {
-            //////std::cout<<"add vertex array"<<std::endl;
+            ////////std::cout<<"add vertex array"<<std::endl;
             #ifndef VULKAN
             VertexArray va(Quads, 4, this);
             Vertex v1(math::Vec3f(0, 0, 0), color);
@@ -28,7 +28,7 @@ namespace odfaeg {
             v2.texCoords = math::Vec2f(subRect.left + subRect.width, subRect.top);
             v3.texCoords = math::Vec2f(subRect.left + subRect.width, subRect.top + subRect.height);
             v4.texCoords = math::Vec2f(subRect.left, subRect.top + subRect.height);
-            //////std::cout<<"tex coords : "<<v2.texCoords.x<<" "<<v2.texCoords.y<<std::endl;
+            ////////std::cout<<"tex coords : "<<v2.texCoords.x<<" "<<v2.texCoords.y<<std::endl;
             //v1.color = v2.color = v3.color = v4.color = color;
             va[0] = v1;
             va[1] = v2;
@@ -64,11 +64,11 @@ namespace odfaeg {
             Material material;
             material.addTexture(nullptr, IntRect(0, 0, 0, 0));
             Face face(va, material,getTransform());
-            //////std::cout<<"add face"<<std::endl;
+            ////////std::cout<<"add face"<<std::endl;
             addFace(face);
             getFace(0)->getMaterial().clearTextures();
             getFace(0)->getMaterial().addTexture(image, subRect);
-            //////std::cout<<"face added"<<std::endl;
+            ////////std::cout<<"face added"<<std::endl;
         }
         void Tile::changeVerticesHeights(float h1, float h2, float h3, float h4) {
             getFace(0)->getVertexArray()[0].position[1] = h1;

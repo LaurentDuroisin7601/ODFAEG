@@ -108,19 +108,19 @@ namespace odfaeg {
             */
             template <typename Archive>
             void serialize(Archive & ar) {
-                //////std::cout<<"position : "<<std::endl;
+                ////////std::cout<<"position : "<<std::endl;
                 ar(position);
-                //////std::cout<<"position z "<<position.z<<std::endl;
+                ////////std::cout<<"position z "<<position.z<<std::endl;
                 ar(color.r);
-                //////std::cout<<"color r "<<color.r<<std::endl;
+                ////////std::cout<<"color r "<<color.r<<std::endl;
                 ar(color.g);
-                //////std::cout<<"color g "<<color.g<<std::endl;
+                ////////std::cout<<"color g "<<color.g<<std::endl;
                 ar(color.b);
-                //////std::cout<<"color b "<<color.b<<std::endl;
+                ////////std::cout<<"color b "<<color.b<<std::endl;
                 ar(color.a);
-                //////std::cout<<"color a "<<color.a<<std::endl;
+                ////////std::cout<<"color a "<<color.a<<std::endl;
                 ar(texCoords);
-                //////std::cout<<"tex coord y "<<texCoords.y<<std::endl;
+                ////////std::cout<<"tex coord y "<<texCoords.y<<std::endl;
             }
             ////////////////////////////////////////////////////////////
             // Member data

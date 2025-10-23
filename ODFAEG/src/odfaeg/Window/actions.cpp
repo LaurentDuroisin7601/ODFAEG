@@ -110,7 +110,7 @@ namespace odfaeg {
         }
         bool Action::andComparator (Action& a1, Action& a2) {
             /*if (name == "SkillCombined")
-                ////std::cout<<"skill combined"<<std::endl;*/
+                //////std::cout<<"skill combined"<<std::endl;*/
             return a1.isTriggered() && a2.isTriggered();
         }
         bool Action::orComparator (Action& a1, Action& a2) {
@@ -144,8 +144,8 @@ namespace odfaeg {
                 return comparator(this, std::ref(*leftChild), std::ref(*rightChild));
             } else {
                 /*if (startEvent.type == window::IEvent::TextEntered)
-                    ////std::cout<<"text entered : "<<startEvent.text.unicode<<std::endl;*/
-                //////std::cout<<"triggered"<<std::endl;
+                    //////std::cout<<"text entered : "<<startEvent.text.unicode<<std::endl;*/
+                ////////std::cout<<"triggered"<<std::endl;
 
                 if (type == KEY_HELD_DOWN && !is_not) {
                     return window::IKeyboard::isKeyPressed(static_cast<window::IKeyboard::Key>(startEvent.keyboard.code));
@@ -155,7 +155,7 @@ namespace odfaeg {
                 }
                 if (type == MOUSE_BUTTON_HELD_DOWN && !is_not) {
                     /*if (name == "SkillButtonHeldDown")
-                        ////std::cout<<"skill move mouse button held down ? "<<window::IMouse::isButtonPressed(static_cast<window::IMouse::Button>(startEvent.mouseButton.button))<<std::endl;*/
+                        //////std::cout<<"skill move mouse button held down ? "<<window::IMouse::isButtonPressed(static_cast<window::IMouse::Button>(startEvent.mouseButton.button))<<std::endl;*/
                     return window::IMouse::isButtonPressed(static_cast<window::IMouse::Button>(startEvent.mouseButton.button));
                 }
                 if (type == MOUSE_BUTTON_HELD_DOWN && is_not) {
@@ -166,9 +166,9 @@ namespace odfaeg {
 
                 //vector<window::IEvent> events = Command::getEvents();
                 /*if (name == "SkillMouseMoved")
-                                ////std::cout<<"events ? "<<events.size()<<std::endl;*/
+                                //////std::cout<<"events ? "<<events.size()<<std::endl;*/
                 for (unsigned int i = 0; i < events.size(); i++) {
-                    //std::cout<<"events "<<std::endl;
+                    ////std::cout<<"events "<<std::endl;
 
                     /*if (type == KEY_HELD_DOWN || type == MOUSE_BUTTON_HELD_DOWN) {
                         if (!is_not)
@@ -178,8 +178,8 @@ namespace odfaeg {
                     } else {*/
                         /*Sometimes the event stored to startEvent is deleted*/
                         /*if (name == "ANAMECTEXTENTERED" && events[i].type == window::IEvent::EventType::TEXT_INPUT_EVENT)
-                            ////std::cout<<"text input event ta name"<<std::endl;*/
-                        //////std::cout<<"test event"<<std::endl;
+                            //////std::cout<<"text input event ta name"<<std::endl;*/
+                        ////////std::cout<<"test event"<<std::endl;
                         if (!is_not && Command::equalEvent(events[i], startEvent) && !pressed) {
                             if (events[i].type == window::IEvent::KEYBOARD_EVENT && events[i].keyboard.type == window::IEvent::KEY_EVENT_PRESSED
                                 && startEvent.type == window::IEvent::KEYBOARD_EVENT && startEvent.keyboard.type == window::IEvent::KEY_EVENT_PRESSED
@@ -187,7 +187,7 @@ namespace odfaeg {
                                 && startEvent.type == window::IEvent::MOUSE_BUTTON_EVENT && startEvent.mouseButton.type == window::IEvent::BUTTON_EVENT_PRESSED)
                                 pressed = true;
                             //if (name == "SkillMouseMoved")
-                                ////std::cout<<"skill move mouse move triggered!"<<std::endl;
+                                //////std::cout<<"skill move mouse move triggered!"<<std::endl;
                             return true;
                         } else if (is_not && !Command::equalEvent(events[i], startEvent) && !pressed) {
                             if (events[i].type == window::IEvent::KEYBOARD_EVENT && events[i].keyboard.type == window::IEvent::KEY_EVENT_RELEASED

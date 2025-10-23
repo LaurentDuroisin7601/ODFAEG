@@ -654,7 +654,7 @@ namespace odfaeg {
                                 GLuint64 handle_texture = allTextures[i]->getTextureHandle();
                                 allTextures[i]->makeTextureResident(handle_texture);
                                 allSamplers.tex[i].handle = handle_texture;
-                                //////std::cout<<"add texture i : "<<i<<" id : "<<allTextures[i]->getNativeHandle()<<std::endl;
+                                ////////std::cout<<"add texture i : "<<i<<" id : "<<allTextures[i]->getNativeHandle()<<std::endl;
                             }
                             depthBufferGenerator.setParameter("textureMatrix", textureMatrices);
                             depthBufferNormalGenerator.setParameter("textureMatrix", textureMatrices);
@@ -671,7 +671,7 @@ namespace odfaeg {
                             glCheck(glUniformBlockBinding(depthBufferNormalGenerator.getHandle(),    ubid, 0));
                             glCheck(glBindBuffer(GL_UNIFORM_BUFFER, ubo));
                             glCheck(glBufferData(GL_UNIFORM_BUFFER, sizeof(Samplers),allSamplers.tex, GL_STATIC_DRAW));
-                            //////std::cout<<"size : "<<sizeof(Samplers)<<" "<<alignof (alignas(16) uint64_t[200])<<std::endl;
+                            ////////std::cout<<"size : "<<sizeof(Samplers)<<" "<<alignof (alignas(16) uint64_t[200])<<std::endl;
 
                             glCheck(glBindBuffer(GL_UNIFORM_BUFFER, 0));
                             glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo));
@@ -969,7 +969,7 @@ namespace odfaeg {
                 }
                 void LightRenderComponent::pushEvent(window::IEvent event, RenderWindow& rw) {
                     if (event.type == window::IEvent::WINDOW_EVENT && event.window.type == window::IEvent::WINDOW_EVENT_RESIZED && &getWindow() == &rw && isAutoResized()) {
-                        ////std::cout<<"recompute size"<<std::endl;
+                        //////std::cout<<"recompute size"<<std::endl;
                         recomputeSize();
                         getListener().pushEvent(event);
                         getView().reset(physic::BoundingBox(getView().getViewport().getPosition().x(), getView().getViewport().getPosition().y(), getView().getViewport().getPosition().z(), event.window.data1, event.window.data2, getView().getViewport().getDepth()));
@@ -987,7 +987,7 @@ namespace odfaeg {
                     GLuint64 handle_texture = allTextures[i]->getTextureHandle();
                     allTextures[i]->makeTextureResident(handle_texture);
                     allSamplers.tex[i].handle = handle_texture;
-                    //////std::cout<<"add texture i : "<<i<<" id : "<<allTextures[i]->getNativeHandle()<<std::endl;
+                    ////////std::cout<<"add texture i : "<<i<<" id : "<<allTextures[i]->getNativeHandle()<<std::endl;
                 }
                 glCheck(glBindBuffer(GL_UNIFORM_BUFFER, ubo));
                 glCheck(glBufferData(GL_UNIFORM_BUFFER, sizeof(Samplers),allSamplers.tex, GL_STATIC_DRAW));
@@ -1127,7 +1127,7 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < m_light_instances.size(); i++) {
                     if (m_light_instances[i].getAllVertices().getVertexCount() > 0) {
                         DrawArraysIndirectCommand drawArraysIndirectCommand;
-                        //////std::cout<<"instance : "<<i<<std::endl;
+                        ////////std::cout<<"instance : "<<i<<std::endl;
                         unsigned int p = m_light_instances[i].getAllVertices().getPrimitiveType();
                         MaterialData material;
                         material.textureIndex = 0;
@@ -1185,7 +1185,7 @@ namespace odfaeg {
                 }
                 for (unsigned int i = 0; i < m_light_instances.size(); i++) {
                     if (m_light_instances[i].getAllVertices().getVertexCount() > 0) {
-                        //////std::cout<<"instance : "<<i<<std::endl;
+                        ////////std::cout<<"instance : "<<i<<std::endl;
                         DrawArraysIndirectCommand drawArraysIndirectCommand;
                         unsigned int p = m_light_instances[i].getAllVertices().getPrimitiveType();
                         MaterialData material;
@@ -1651,11 +1651,11 @@ namespace odfaeg {
                                     math::Matrix4f m = m_light_instances[i].getPerVaTransforms()[j]->getMatrix().transpose();
                                     lightMapGenerator.setParameter("worldMat", m);
                                     Entity* el = m_light_instances[i].getVertexArrays()[j]->getEntity();
-                                    //////std::cout<<"add light : "<<el<<std::endl;
+                                    ////////std::cout<<"add light : "<<el<<std::endl;
                                     math::Vec3f center = getWindow().mapCoordsToPixel(el->getCenter() - el->getSize()*0.5f, view);
-                                    ////std::cout<<"light center : "<<center<<std::endl;
+                                    //////std::cout<<"light center : "<<center<<std::endl;
                                     center.w = el->getSize().x() * 0.5f;
-                                    //////std::cout<<"center : "<<center<<std::endl;
+                                    ////////std::cout<<"center : "<<center<<std::endl;
                                     /*lightMapGenerator.setParameter("lightPos", center.x(), center.y(), center.z(), center.w);
                                     lightMapGenerator.setParameter("lightColor", el->getColor().r, el->getColor().g,el->getColor().b,el->getColor().a);
                                     lightMap.drawVertexBuffer(vb, states);

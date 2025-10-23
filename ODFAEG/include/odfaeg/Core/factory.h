@@ -128,7 +128,7 @@ namespace odfaeg {
             static void register_function(std::string typeName, std::string funcName, std::string funcArgs, FastDelegate<void> delegate) {
                 typename std::map<std::string, FastDelegate<void>>::iterator it = functions.find(typeName+funcName+funcArgs);
                 if (it == functions.end()) {
-                    //////std::cout<<"register function : "<<typeName+funcName+funcArgs<<std::endl;
+                    ////////std::cout<<"register function : "<<typeName+funcName+funcArgs<<std::endl;
                     functions[typeName+funcName+funcArgs] = delegate;
                 }
             }
@@ -142,7 +142,7 @@ namespace odfaeg {
             template <typename... A>
             static void callFunction(std::string typeName, std::string funcName, std::string funcArgs, A&&... args) {
                 typename std::map<std::string, FastDelegate<void>>::iterator it = functions.find(typeName+funcName+funcArgs);
-                //////std::cout<<"call function : "<<typeName+","+funcName+","+funcArgs<<std::endl;
+                ////////std::cout<<"call function : "<<typeName+","+funcName+","+funcArgs<<std::endl;
                 if (it != functions.end()) {
                     it->second.setParams(std::forward<A>(args)...);
                     (it->second)();

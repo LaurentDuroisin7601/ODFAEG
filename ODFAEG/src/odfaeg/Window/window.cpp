@@ -25,9 +25,9 @@ namespace odfaeg {
 
 
             m_window = WindowFactory::create();
-            //std::cout<<"factory create"<<std::endl;
+            ////std::cout<<"factory create"<<std::endl;
             m_window->create(mode, title, style, settings);
-            //std::cout<<"window created"<<std::endl;
+            ////std::cout<<"window created"<<std::endl;
             // Perform common initializations
             initialize();
         }

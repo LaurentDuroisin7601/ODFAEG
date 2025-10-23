@@ -289,7 +289,7 @@ namespace odfaeg {
                 *   \return the render window of the application.
                 */
                 graphic::RenderWindow& getRenderWindow(unsigned int i = 0) {
-                    //////std::cout<<windows[i].first<<std::endl;
+                    ////////std::cout<<windows[i].first<<std::endl;
                     return *windows[i].first;
                 }
                 unsigned int getNbWindows() {
@@ -645,7 +645,7 @@ namespace odfaeg {
                 *   \return the render window of the application.
                 */
                 graphic::RenderWindow& getRenderWindow(unsigned int i = 0) {
-                    //////std::cout<<windows[i].first<<std::endl;
+                    ////////std::cout<<windows[i].first<<std::endl;
                     return *windows[i].first;
                 }
                 unsigned int getNbWindows() {

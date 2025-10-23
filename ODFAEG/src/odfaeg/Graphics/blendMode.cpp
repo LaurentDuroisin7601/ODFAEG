@@ -82,7 +82,7 @@ namespace odfaeg {
           for (unsigned int i = 0; i < sameBlendModes.size(); i++) {
                for (unsigned int j = 0; j < blendModes.size(); j++) {
                     if (*sameBlendModes[i] == *blendModes[j]) {
-                        ////std::cout<<"id : "<<i<<std::endl;
+                        //////std::cout<<"id : "<<i<<std::endl;
                         blendModes[j]->id = i;
                     }
                }

@@ -336,15 +336,15 @@ namespace odfaeg {
                 ALint nbProcessed = 0;
                 alCheck(alGetSourcei(m_source, AL_BUFFERS_PROCESSED, &nbProcessed));
                 /*if (m_format == AL_FORMAT_MONO16)
-                    std::cout<<"mono : "<<nbProcessed<<std::endl;
+                    //std::cout<<"mono : "<<nbProcessed<<std::endl;
                 else
-                    std::cout<<"stereo : "<<nbProcessed<<std::endl;*/
+                    //std::cout<<"stereo : "<<nbProcessed<<std::endl;*/
 
-                ////std::cout<<"nb processed : "<<nbProcessed<<std::endl;
-                ////std::cout<<"nb proceed : "<<nbProcessed<<std::endl;
-
-
+                //////std::cout<<"nb processed : "<<nbProcessed<<std::endl;
                 //////std::cout<<"nb proceed : "<<nbProcessed<<std::endl;
+
+
+                ////////std::cout<<"nb proceed : "<<nbProcessed<<std::endl;
 
                 while (nbProcessed--)
                 {
@@ -404,7 +404,7 @@ namespace odfaeg {
 
                 // Leave some time for the other threads if the stream is still playing
                 if (SoundSource::getStatus() != Stopped) {
-                    /*//std::cout<<"temps écoulé : "<<clock.getElapsedTime().asMilliseconds()<<std::endl;
+                    /*////std::cout<<"temps écoulé : "<<clock.getElapsedTime().asMilliseconds()<<std::endl;
                     clock.restart();*/
                     std::this_thread::sleep_for(std::chrono::duration<uint32_t, std::milli>(10));
                 }

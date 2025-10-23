@@ -67,13 +67,13 @@ namespace odfaeg
             vkDevice.pickupPhysicalDevice(VK_NULL_HANDLE);
             vkDevice.createLogicalDevice(VK_NULL_HANDLE);
             m_texture.createCubeMap(width, height, true);
-            //std::cout<<"cm texture created"<<std::endl;
+            ////std::cout<<"cm texture created"<<std::endl;
             getDepthTexture().createDepthTextureCM(width, height);
-            //std::cout<<"cm dt created"<<std::endl;
+            ////std::cout<<"cm dt created"<<std::endl;
             createRenderPass();
-            //std::cout<<"render pass created"<<std::endl;
+            ////std::cout<<"render pass created"<<std::endl;
             createFramebuffers();
-            //std::cout<<"frame buffer created"<<std::endl;
+            ////std::cout<<"frame buffer created"<<std::endl;
             createSyncObjects();
             m_size[0] = width;
             m_size[1] = height;
@@ -233,7 +233,7 @@ namespace odfaeg
                     renderPassInfo.dependencyCount = 1;
                     renderPassInfo.pDependencies = &dependency;
                     VkRenderPassMultiviewCreateInfo multiviewInfo{};
-                    //std::cout<<"pass 1 created"<<std::endl;
+                    ////std::cout<<"pass 1 created"<<std::endl;
                     if (isCubeMap) {
                         const uint32_t viewMask = 0b00111111;
                         multiviewInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO;
@@ -314,7 +314,7 @@ namespace odfaeg
 
         }
         void RenderTexture::clear(const Color& color) {
-             //////std::cout<<"render texture clear begin command buffer"<<std::endl;
+             ////////std::cout<<"render texture clear begin command buffer"<<std::endl;
 
 
              clearColor = color;
@@ -410,7 +410,7 @@ namespace odfaeg
                          std::vector<uint64_t> signalValues,
                          std::vector<uint64_t> waitValues) {
             if (getCommandBuffers().size() > 0) {
-                //////std::cout<<"render texture end command buffer"<<std::endl;
+                ////////std::cout<<"render texture end command buffer"<<std::endl;
 
                 //for (unsigned int i = 0; i < getCommandBuffers().size(); i++) {
                 if (vkEndCommandBuffer(getCommandBuffers()[currentFrame]) != VK_SUCCESS) {
@@ -457,7 +457,7 @@ namespace odfaeg
                     if (isSignalSemaphore) {
                         signalSemaphores.push_back(semaphore);
                         signalValues.push_back(0);
-                        ////std::cout<<"offscreen signal semaphore : "<<semaphore<<std::endl;
+                        //////std::cout<<"offscreen signal semaphore : "<<semaphore<<std::endl;
                     } else {
                         waitSemaphores.push_back(semaphore);
                         waitStages.push_back(VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
@@ -491,7 +491,7 @@ namespace odfaeg
         }
         RenderTexture::~RenderTexture() {
             //RenderTarget::cleanup();
-            ////std::cout<<"destroy render texture"<<std::endl;
+            //////std::cout<<"destroy render texture"<<std::endl;
             for (unsigned int j = 0; j < 2; j++) {
                 for (size_t i = 0; i < swapChainFramebuffers[j].size(); i++) {
                     vkDestroyFramebuffer(vkDevice.getDevice(), swapChainFramebuffers[j][i], nullptr);
@@ -566,7 +566,7 @@ namespace odfaeg
             }
             else
             {
-                ////std::cout<<"FBO not avalaible"<<std::endl;
+                //////std::cout<<"FBO not avalaible"<<std::endl;
                 // Use default implementation
                 m_impl = new priv::RenderTextureImplDefault;
             }

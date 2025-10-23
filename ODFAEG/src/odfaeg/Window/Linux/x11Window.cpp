@@ -550,7 +550,7 @@ namespace odfaeg {
                 windowPosition.x = (DisplayWidth(m_display, m_screen)  - mode.width) / 2;
                 windowPosition.y = (DisplayWidth(m_display, m_screen)  - mode.height) / 2;
             }
-            ////std::cout<<"Creating window"<<std::endl;
+            //////std::cout<<"Creating window"<<std::endl;
             m_window = XCreateWindow(m_display, DefaultRootWindow(m_display),
                                           windowPosition.x, windowPosition.y, mode.width, mode.height, 0, vi.depth, InputOutput,
                                           vi.visual,

@@ -117,7 +117,7 @@ namespace odfaeg {
             for (unsigned int i = 0; i < shaders.size(); i++) {
                 if (shaders[i] != nullptr && shaders[i]->isCompiled && !contains(*shaders[i])) {
                     nbShaders++;
-                    //////std::cout<<"nb shader : "<<nbShaders<<std::endl;
+                    ////////std::cout<<"nb shader : "<<nbShaders<<std::endl;
                     sameShaders.push_back(shaders[i]);
                 }
             }
@@ -859,7 +859,7 @@ namespace odfaeg {
                         for (unsigned int i = 0; i < mats.size(); i++) {
                             std::array<float, 16> glmatrix = mats[i].toGlMatrix();
                             for (unsigned int j = 0; j < glmatrix.size(); j++) {
-                                //////std::cout<<"matrix : "<<i<<" element : "<<j<<" : "<<glmatrix[j]<<std::endl;
+                                ////////std::cout<<"matrix : "<<i<<" element : "<<j<<" : "<<glmatrix[j]<<std::endl;
                                 matrices.push_back(glmatrix[j]);
                             }
                         }

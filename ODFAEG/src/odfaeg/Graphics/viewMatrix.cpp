@@ -115,7 +115,7 @@ namespace odfaeg {
             xAxis = left.normalize();
             yAxis = up.normalize();
             zAxis = forward.normalize();
-            ////std::cout<<"axis : "<<xAxis<<" "<<yAxis<<" "<<zAxis<<std::endl;
+            //////std::cout<<"axis : "<<xAxis<<" "<<yAxis<<" "<<zAxis<<std::endl;
             needToUpdate3D = true;
             inverseNeedToUpdate3D = true;
         }

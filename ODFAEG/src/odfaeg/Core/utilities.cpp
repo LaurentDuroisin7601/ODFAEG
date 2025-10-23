@@ -104,7 +104,7 @@ namespace odfaeg {
                        std::string path = startDir + "\\" + std::string(ent->d_name);
                        struct stat st;
                        stat(path.c_str(), &st);
-                       //////std::cout<<"path : "<<path<<" keyword : "<<keyword<<std::endl;
+                       ////////std::cout<<"path : "<<path<<" keyword : "<<keyword<<std::endl;
                        if (S_ISDIR(st.st_mode)) {
                            findFiles(keyword, files, path);
                        } else {

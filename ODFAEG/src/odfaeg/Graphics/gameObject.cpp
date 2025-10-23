@@ -21,10 +21,10 @@ namespace odfaeg {
                 setName("E_HERO");*/
         }
         void GameObject::copy(GameObject* gameObject) {
-            //////std::cout<<"copy entity : "<<getPosition()<<getType()<<std::endl;
+            ////////std::cout<<"copy entity : "<<getPosition()<<getType()<<std::endl;
             Entity::copy(gameObject);
             //gameObject->parent = parent;
-            //////std::cout<<"parent : "<<parent<<",this : "<<this<<std::endl;
+            ////////std::cout<<"parent : "<<parent<<",this : "<<this<<std::endl;
             gameObject->alreadySerialized = false;
             gameObject->collisionVolume = (collisionVolume == nullptr) ? nullptr : getCollisionVolume()->clone();
             gameObject->shadowOrigin = getShadowOrigin();
@@ -39,19 +39,19 @@ namespace odfaeg {
             gameObject->external = external;
             gameObject->drawMode = drawMode;
 
-            //////std::cout<<"clone id : "<<entity->getId()<<std::endl;
+            ////////std::cout<<"clone id : "<<entity->getId()<<std::endl;
             for (unsigned int i = 0; i < faces.size(); i++) {
                 gameObject->addFace(Face(faces[i].getVertexArray(), faces[i].getMaterial(), gameObject->getTransform()));
                 gameObject->getFace(i)->getVertexArray().setEntity(gameObject);
                 /*if (entity->getRootType() == "E_WALL")
-                    ////std::cout<<"alias : "<<entity->getFace(i)->getMaterial().getTexId();*/
+                    //////std::cout<<"alias : "<<entity->getFace(i)->getMaterial().getTexId();*/
             }
             for (unsigned int i = 0; i < getChildren().size(); i++) {
                 Entity* child = getChildren()[i]->clone();
                 child->setParent(gameObject);
                 gameObject->addChild(child);
             }
-            //////std::cout<<"nb entities type : "<<nbEntitiesTypes<<std::endl;
+            ////////std::cout<<"nb entities type : "<<nbEntitiesTypes<<std::endl;
         }
         void GameObject::setExternalObjectName(std::string externalObjectName) {
             this->externalObjectName = externalObjectName;
@@ -98,11 +98,11 @@ namespace odfaeg {
         int GameObject::getRootTypeInt() {
             if (parent == nullptr) {
                 /*if (parent->getType() == "E_WALL")
-                    ////std::cout<<"parent type : "<<parent->getTypeInt()<<std::endl;*/
+                    //////std::cout<<"parent type : "<<parent->getTypeInt()<<std::endl;*/
                 return getTypeInt();
             }
             /*if (getType() == "E_WALL")
-                ////std::cout<<"type : "<<getType()<<" int of type :  "<<getTypeInt()<<std::endl;*/
+                //////std::cout<<"type : "<<getType()<<" int of type :  "<<getTypeInt()<<std::endl;*/
             return parent->getRootTypeInt();
         }
         Entity* GameObject::getRootEntity() {
@@ -209,8 +209,8 @@ namespace odfaeg {
         }
         void GameObject::onMove(math::Vec3f &t) {
             /*if (getRootType() == "E_HERO")
-                ////std::cout<<"matrix : "<<getTransform().getMatrix()<<std::endl;*/
-            //////std::cout<<"move : "<<getType()<<"t : "<<t<<std::endl;
+                //////std::cout<<"matrix : "<<getTransform().getMatrix()<<std::endl;*/
+            ////////std::cout<<"move : "<<getType()<<"t : "<<t<<std::endl;
             for (unsigned int i = 0; i < faces.size(); i++) {
                 getTransform().update();
                 faces[i].setTransformMatrix(getTransform());
@@ -245,7 +245,7 @@ namespace odfaeg {
         void GameObject::addFace (Face face) {
             /*if (name == "SKYBOX") {
                 for (unsigned int i = 0; i < face.getVertexArray().getVertexCount(); i++) {
-                    ////std::cout<<face.getVertexArray()[i].position.x<<std::endl;
+                    //////std::cout<<face.getVertexArray()[i].position.x<<std::endl;
                 }
             }*/
             faces.push_back(face);

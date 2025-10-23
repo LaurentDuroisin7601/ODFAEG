@@ -162,21 +162,21 @@ namespace odfaeg {
             void transform(TransformMatrix tm);
             template <typename Archive>
             void serialize (Archive & ar) {
-                //////std::cout<<"read indexes"<<std::endl;
+                ////////std::cout<<"read indexes"<<std::endl;
                 ar(m_indexes);
-                //////std::cout<<"indexes : "<<m_indexes.size()<<std::endl;
-                //////std::cout<<"read vertices : "<<std::endl;
+                ////////std::cout<<"indexes : "<<m_indexes.size()<<std::endl;
+                ////////std::cout<<"read vertices : "<<std::endl;
                 ar(m_vertices);
-                //////std::cout<<"vertices : "<<m_vertices.size()<<std::endl;
-                //////std::cout<<"read primitives types"<<std::endl;
+                ////////std::cout<<"vertices : "<<m_vertices.size()<<std::endl;
+                ////////std::cout<<"read primitives types"<<std::endl;
                 ar(m_primitiveType);
-                //////std::cout<<"primitive type : "<<m_primitiveType<<std::endl;
-                //////std::cout<<"read locals"<<std::endl;
+                ////////std::cout<<"primitive type : "<<m_primitiveType<<std::endl;
+                ////////std::cout<<"read locals"<<std::endl;
                 ar(m_locals);
-                //////std::cout<<"locals : "<<m_locals.size()<<std::endl;
-                //////std::cout<<"read entity"<<std::endl;
+                ////////std::cout<<"locals : "<<m_locals.size()<<std::endl;
+                ////////std::cout<<"read entity"<<std::endl;
                 ar(m_entity);
-                //////std::cout<<"entity : "<<m_entity<<std::endl;
+                ////////std::cout<<"entity : "<<m_entity<<std::endl;
                 if (ar.isInputArchive())
                     onLoad();
             }

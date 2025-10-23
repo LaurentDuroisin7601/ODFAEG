@@ -19,7 +19,7 @@ namespace odfaeg {
             *   \brief lock the mutex and updates the scene at each time interval.
             */
             void Timer::update() {
-                //////std::cout<<"update"<<std::endl;
+                ////////std::cout<<"update"<<std::endl;
                 Time elapsedTime = clock.getElapsedTime();
                 if (elapsedTime >= interval) {
                     onUpdate();
@@ -29,7 +29,7 @@ namespace odfaeg {
             void Timer::tUpdate() {
                 running = true;
                 while (running) {
-                    //////std::cout<<"update"<<std::endl;
+                    ////////std::cout<<"update"<<std::endl;
                     Time elapsedTime = clock.getElapsedTime();
                     if (elapsedTime >= interval) {
                         onUpdate();

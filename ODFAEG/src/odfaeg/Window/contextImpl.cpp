@@ -84,7 +84,7 @@ namespace odfaeg {
             return false;
         }
         void ContextImpl::initResource() {
-            //std::cout<<"init resource"<<std::endl;
+            ////std::cout<<"init resource"<<std::endl;
             // Protect from concurrent access
             std::lock_guard<std::recursive_mutex> lock(rec_mutex);
             if (nbContexts == 0) {
@@ -123,10 +123,10 @@ namespace odfaeg {
                 {
 
                     // Try to load the >= 3.0 way
-                    ////std::cout<<"create shared"<<std::endl;
+                    //////std::cout<<"create shared"<<std::endl;
                     glGetStringiFuncType glGetStringiFunc = NULL;
                     glGetStringiFunc = reinterpret_cast<glGetStringiFuncType>(getFunction("glGetStringi"));
-                    //std::cout<<"create shared"<<std::endl;
+                    ////std::cout<<"create shared"<<std::endl;
 
 
                     if (glGetStringiFunc)
@@ -150,7 +150,7 @@ namespace odfaeg {
                 sharedContext->setActive(false);
             }
             nbContexts++;
-            //std::cout<<"resource init"<<std::endl;
+            ////std::cout<<"resource init"<<std::endl;
         }
         void ContextImpl::cleanupResource() {
             nbContexts--;
@@ -161,7 +161,7 @@ namespace odfaeg {
         }
         ContextImpl::ContextImpl() : m_id(id++) {
             /*if (nbContexts == 0) {
-                ////std::cout<<"create the shared context"<<std::endl;
+                //////std::cout<<"create the shared context"<<std::endl;
                 sharedContext = new ContextImplType();
                 ContextSettings settings;
                 sharedContext->create(settings, 1, 1);
@@ -303,9 +303,9 @@ namespace odfaeg {
         GlFunctionPointer ContextImpl::getFunction(const char* name)
         {
             #if !defined(ODFAEG_OPENGL_ES)
-                //std::cout<<"get func"<<std::endl;
+                ////std::cout<<"get func"<<std::endl;
                 std::lock_guard<std::recursive_mutex> lock(rec_mutex);
-                //std::cout<<"get func"<<std::endl;
+                ////std::cout<<"get func"<<std::endl;
                 return ContextImplType::getFunction(name);
 
             #else

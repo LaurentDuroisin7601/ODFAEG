@@ -53,17 +53,17 @@ namespace odfaeg {
                 ups[5] = math::Vec3f(0, -1, 0);
                 //depthBuffer.m_name = "depthBuffer";
                 depthBuffer.create(window.getView().getSize().x(), window.getView().getSize().y());
-                //std::cout<<"depth buffer created"<<std::endl;
+                ////std::cout<<"depth buffer created"<<std::endl;
                 depthBuffer.setView(view);
 
                 depthBufferSprite = Sprite(depthBuffer.getTexture(), math::Vec3f(0, 0, 0), math::Vec3f(window.getView().getSize().x(), window.getView().getSize().y(), 0), IntRect(0, 0, window.getView().getSize().x(), window.getView().getSize().y()));
                 alphaBuffer.create(window.getView().getSize().x(), window.getView().getSize().y());
-                //std::cout<<"alpha buffer created"<<std::endl;
+                ////std::cout<<"alpha buffer created"<<std::endl;
                 alphaBuffer.setView(view);
                 //alphaBuffer.m_name = "alphaBuffer";
                 alphaBufferSprite = Sprite(alphaBuffer.getTexture(), math::Vec3f(0, 0, 0), math::Vec3f(window.getView().getSize().x(), window.getView().getSize().y(), 0), IntRect(0, 0, window.getView().getSize().x(), window.getView().getSize().y()));
                 environmentMap.createCubeMap(squareSize, squareSize);
-                //std::cout<<"environment map created"<<std::endl;
+                ////std::cout<<"environment map created"<<std::endl;
                 //environmentMap.m_name = "environmentMap";
                 reflectRefractTex.create(window.getView().getSize().x(), window.getView().getSize().y());
                 reflectRefractTex.setView(view);
@@ -348,9 +348,6 @@ namespace odfaeg {
                 if (vkAllocateCommandBuffers(vkDevice.getDevice(), &bufferAllocInfo, &copyDrawIndexedBufferCommandBuffer) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to allocate command buffers!", 1);
                 }
-                if (vkAllocateCommandBuffers(vkDevice.getDevice(), &bufferAllocInfo, &copyModelDataBufferCommandBuffer) != VK_SUCCESS) {
-                    throw core::Erreur(0, "failed to allocate command buffers!", 1);
-                }
                 if (vkAllocateCommandBuffers(vkDevice.getDevice(), &bufferAllocInfo, &copyVbBufferCommandBuffer) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to allocate command buffers!", 1);
                 }
@@ -377,7 +374,7 @@ namespace odfaeg {
 
                 uboAlignment = deviceProperties.limits.minUniformBufferOffsetAlignment;
                 alignment = deviceProperties.limits.minStorageBufferOffsetAlignment;
-                //std::cout<<"align : "<<uboAlignment<<std::endl;
+                ////std::cout<<"align : "<<uboAlignment<<std::endl;
                 update = true;
                 needToUpdateDS = false;
             }
@@ -514,7 +511,7 @@ namespace odfaeg {
                                depthStencilCreateInfo[sLinkedList2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = {};
                                depthStencilCreateInfo[sLinkedList2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][environmentMap.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {};
                                environmentMap.createGraphicPipeline(static_cast<PrimitiveType>(i), states, NODEPTHNOSTENCIL, NBDEPTHSTENCIL);
-                               //////std::cout<<"pipeline ids : "<<sLinkedList2.getId() * (Batcher::nbPrimitiveTypes - 1) + i<<","<<environmentMap.getId()<<","<<NODEPTHNOSTENCIL<<std::endl;
+                               ////////std::cout<<"pipeline ids : "<<sLinkedList2.getId() * (Batcher::nbPrimitiveTypes - 1) + i<<","<<environmentMap.getId()<<","<<NODEPTHNOSTENCIL<<std::endl;
                             } else {
                                VkPushConstantRange push_constant;
                                //this push constant range starts at the beginning
@@ -707,6 +704,8 @@ namespace odfaeg {
                         }
                     }
                 }
+            }
+            void ReflectRefractRenderComponent::launchRenderer() {
                 if (useThread) {
                     getListener().launch();
                 }
@@ -846,7 +845,7 @@ namespace odfaeg {
                 uniformBufferMemory.resize(environmentMap.getMaxFramesInFlight());
                 for (size_t i = 0; i < environmentMap.getMaxFramesInFlight(); i++) {
                     createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffer[i], uniformBufferMemory[i]);
-                    //////std::cout<<"uniform buffer : "<<ubos[i]<<std::endl;
+                    ////////std::cout<<"uniform buffer : "<<ubos[i]<<std::endl;
                 }
             }
             void ReflectRefractRenderComponent::createUniformBuffersMT() {
@@ -859,7 +858,7 @@ namespace odfaeg {
                         vkFreeMemory(vkDevice.getDevice(), uniformBufferMemory[i], nullptr);
                     }
                     createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffer[i], uniformBufferMemory[i]);
-                    //////std::cout<<"uniform buffer : "<<ubos[i]<<std::endl;
+                    ////////std::cout<<"uniform buffer : "<<ubos[i]<<std::endl;
                 }
             }
             void ReflectRefractRenderComponent::updateUniformBuffer(uint32_t currentImage, std::vector<UniformBufferObject> ubo) {
@@ -1511,7 +1510,7 @@ namespace odfaeg {
                     unsigned int descriptorId = p * shader->getNbShaders() + shader->getId();
                     if (shader->getNbShaders() * (Batcher::nbPrimitiveTypes - 1) > descriptorPool.size())
                         descriptorPool.resize(shader->getNbShaders() * (Batcher::nbPrimitiveTypes - 1));
-                    //////std::cout<<"ppll descriptor id : "<<environmentMap.getId()<<","<<shader->getId()<<","<<environmentMap.getId() * shader->getNbShaders() + shader->getId()<<std::endl;
+                    ////////std::cout<<"ppll descriptor id : "<<environmentMap.getId()<<","<<shader->getId()<<","<<environmentMap.getId() * shader->getNbShaders() + shader->getId()<<std::endl;
                     std::vector<Texture*> allTextures = Texture::getAllTextures();
                     std::array<VkDescriptorPoolSize, 7> poolSizes;
                     poolSizes[0].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
@@ -1538,7 +1537,7 @@ namespace odfaeg {
                     poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
                     poolInfo.pPoolSizes = poolSizes.data();
                     poolInfo.maxSets = static_cast<uint32_t>(environmentMap.getMaxFramesInFlight());
-                    //std::cout<<"descriptor id : "<<descriptorId<<std::endl;
+                    ////std::cout<<"descriptor id : "<<descriptorId<<std::endl;
                     if (vkCreateDescriptorPool(vkDevice.getDevice(), &poolInfo, nullptr, &descriptorPool[descriptorId]) != VK_SUCCESS) {
                         throw std::runtime_error("echec de la creation de la pool de descripteurs!");
                     }
@@ -1656,7 +1655,7 @@ namespace odfaeg {
                     unsigned int descriptorId = shader->getId();
                     if (shader->getNbShaders() > descriptorPool.size())
                         descriptorPool.resize(shader->getNbShaders());
-                    //////std::cout<<"ppll descriptor id : "<<environmentMap.getId()<<","<<shader->getId()<<","<<environmentMap.getId() * shader->getNbShaders() + shader->getId()<<std::endl;
+                    ////////std::cout<<"ppll descriptor id : "<<environmentMap.getId()<<","<<shader->getId()<<","<<environmentMap.getId() * shader->getNbShaders() + shader->getId()<<std::endl;
                     std::vector<Texture*> allTextures = Texture::getAllTextures();
                     std::array<VkDescriptorPoolSize, 7> poolSizes;
                     poolSizes[0].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
@@ -1825,7 +1824,7 @@ namespace odfaeg {
                     if (shader->getNbShaders() > descriptorSetLayout.size())
                         descriptorSetLayout.resize(shader->getNbShaders());
                     unsigned int descriptorId = shader->getId();
-                    //////std::cout<<"ppll descriptor id : "<<descriptorId<<std::endl;
+                    ////////std::cout<<"ppll descriptor id : "<<descriptorId<<std::endl;
                     std::vector<Texture*> allTextures = Texture::getAllTextures();
                     std::vector<VkDescriptorBindingFlags> bindingFlags(7, 0); // 6 bindings, flags par défaut à 0
                     bindingFlags[6] = VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
@@ -1904,7 +1903,7 @@ namespace odfaeg {
                     if (shader->getNbShaders() > descriptorSetLayout.size())
                         descriptorSetLayout.resize(shader->getNbShaders());
                     unsigned int descriptorId = shader->getId();
-                    //////std::cout<<"ppll descriptor id : "<<descriptorId<<std::endl;
+                    ////////std::cout<<"ppll descriptor id : "<<descriptorId<<std::endl;
                     std::vector<Texture*> allTextures = Texture::getAllTextures();
                     VkDescriptorSetLayoutBinding counterLayoutBinding{};
                     counterLayoutBinding.binding = 0;
@@ -1945,7 +1944,7 @@ namespace odfaeg {
                     if (shader->getNbShaders() > descriptorSetLayout.size())
                         descriptorSetLayout.resize(shader->getNbShaders());
                     unsigned int descriptorId = shader->getId();
-                    //////std::cout<<"ppll descriptor id : "<<descriptorId<<std::endl;
+                    ////////std::cout<<"ppll descriptor id : "<<descriptorId<<std::endl;
                     std::vector<Texture*> allTextures = Texture::getAllTextures();
                     std::vector<VkDescriptorBindingFlags> bindingFlags(4, 0); // 6 bindings, flags par défaut à 0
                     bindingFlags[3] = VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
@@ -2177,7 +2176,7 @@ namespace odfaeg {
                     allocInfo.descriptorPool = descriptorPool[descriptorId];
                     allocInfo.descriptorSetCount = static_cast<uint32_t>(environmentMap.getMaxFramesInFlight());
                     allocInfo.pSetLayouts = layouts.data();
-                    //std::cout<<"descriptor id : "<<descriptorId<<std::endl;
+                    ////std::cout<<"descriptor id : "<<descriptorId<<std::endl;
                     if (vkAllocateDescriptorSets(vkDevice.getDevice(), &allocInfo, descriptorSets[descriptorId].data()) != VK_SUCCESS) {
                         throw std::runtime_error("echec de l'allocation d'un set de descripteurs!");
                     }
@@ -2631,7 +2630,7 @@ namespace odfaeg {
                             modelDataStorageBufferInfoLastFrame.buffer = modelDataBufferMT[p];
                             modelDataStorageBufferInfoLastFrame.offset = 0;
                             modelDataStorageBufferInfoLastFrame.range = maxAlignedSizeModelData[p];
-                            //std::cout<<"max model data : "<<maxAlignedSizeModelData[p]<<std::endl;
+                            ////std::cout<<"max model data : "<<maxAlignedSizeModelData[p]<<std::endl;
 
                             descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                             descriptorWrites[2].dstSet = descriptorSets[descriptorId][i];
@@ -2646,7 +2645,7 @@ namespace odfaeg {
                             materialDataStorageBufferInfoLastFrame.offset = 0;
                             materialDataStorageBufferInfoLastFrame.range = maxAlignedSizeMaterialData[p];
 
-                            //std::cout<<"max model data : "<<maxAlignedSizeMaterialData[p]<<std::endl;
+                            ////std::cout<<"max model data : "<<maxAlignedSizeMaterialData[p]<<std::endl;
 
                             descriptorWrites[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                             descriptorWrites[3].dstSet = descriptorSets[descriptorId][i];
@@ -3210,7 +3209,7 @@ namespace odfaeg {
                 Shader* shader = const_cast<Shader*>(currentStates.shader);
                 currentStates.blendMode.updateIds();
                 if (shader == &sBuildDepthBuffer) {
-                    //////std::cout<<"draw on db"<<std::endl;
+                    ////////std::cout<<"draw on db"<<std::endl;
                     depthBuffer.beginRecordCommandBuffers();
                     std::vector<VkCommandBuffer> commandBuffers = depthBuffer.getCommandBuffers();
                     unsigned int currentFrame = depthBuffer.getCurrentFrame();
@@ -3351,7 +3350,7 @@ namespace odfaeg {
                     unsigned int bufferSize = sizeof(ModelData) * modelDatas[p].size();
 
                     if (bufferSize > 0) {
-                        //std::cout<<"size models : "<<bufferSize<<std::endl;
+                        ////std::cout<<"size models : "<<bufferSize<<std::endl;
                         void* data;
                         vkMapMemory(vkDevice.getDevice(), modelDataStagingBufferMemory, 0, bufferSize, 0, &data);
                         memcpy(data, modelDatas[p].data(), (size_t)bufferSize);
@@ -3359,7 +3358,7 @@ namespace odfaeg {
                     }
                     bufferSize = sizeof(MaterialData) * materialDatas[p].size();
                     if (bufferSize > 0) {
-                        //std::cout<<"size materials : "<<bufferSize<<std::endl;
+                        ////std::cout<<"size materials : "<<bufferSize<<std::endl;
                         void* data;
                         vkMapMemory(vkDevice.getDevice(), materialDataStagingBufferMemory, 0, bufferSize, 0, &data);
                         memcpy(data, materialDatas[p].data(), (size_t)bufferSize);
@@ -3367,7 +3366,7 @@ namespace odfaeg {
                     }
                     bufferSize = sizeof(DrawArraysIndirectCommand) * drawArraysIndirectCommands[p].size();
                     if (bufferSize > 0) {
-                        //std::cout<<"size draw arrays : "<<bufferSize<<std::endl;
+                        ////std::cout<<"size draw arrays : "<<bufferSize<<std::endl;
                         void* data;
                         vkMapMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory, 0, bufferSize, 0, &data);
                         memcpy(data, drawArraysIndirectCommands[p].data(), (size_t)bufferSize);
@@ -3375,18 +3374,19 @@ namespace odfaeg {
                     }
                     bufferSize = sizeof(DrawElementsIndirectCommand) * drawElementsIndirectCommands[p].size();
                     if (bufferSize > 0) {
-                        //std::cout<<"size draw elements : "<<bufferSize<<std::endl;
+                        ////std::cout<<"size draw elements : "<<bufferSize<<std::endl;
                         void* data;
                         vkMapMemory(vkDevice.getDevice(), vboIndexedIndirectStagingBufferMemory, 0, bufferSize, 0, &data);
                         memcpy(data, drawElementsIndirectCommands[p].data(), (size_t)bufferSize);
                         vkUnmapMemory(vkDevice.getDevice(), vboIndexedIndirectStagingBufferMemory);
                     }
+                    ////std::cout<<"vertex count : "<<vbBindlessTex[p].getVertexCount()<<std::endl;
                     if (vbBindlessTex[p].getVertexCount() > 0) {
-                        //std::cout<<"size vb : "<<vbBindlessTex[p].getVertexCount()<<std::endl;
+                        ////std::cout<<"size vb : "<<vbBindlessTex[p].getVertexCount()<<std::endl;
                         vbBindlessTex[p].updateStagingBuffers();
                     }
                     if (vbBindlessTexIndexed[p].getVertexCount() > 0) {
-                        //std::cout<<"size vb indexed : "<<vbBindlessTexIndexed[p].getVertexCount()<<std::endl;
+                        ////std::cout<<"size vb indexed : "<<vbBindlessTexIndexed[p].getVertexCount()<<std::endl;
                         vbBindlessTexIndexed[p].updateStagingBuffers();
                     }
                 }
@@ -3442,7 +3442,7 @@ namespace odfaeg {
                         recordCommandBufferIndirect(p, nbDrawCommandBuffer[p][1], sizeof(DrawArraysIndirectCommand), DEPTHNOSTENCIL, 0, -1, -1, modelDataOffsets[p][2], materialDataOffsets[p][2],drawCommandBufferOffsets[p][1], currentStates, alphaBufferCommandBuffer);
                     }
                     if (nbIndexedDrawCommandBuffer[p][1] > 0) {
-                        //std::cout<<"offsets : "<<modelDataOffsets[p][3]<<","<<materialDataOffsets[p][3]<<std::endl;
+                        ////std::cout<<"offsets : "<<modelDataOffsets[p][3]<<","<<materialDataOffsets[p][3]<<std::endl;
                         recordCommandBufferIndirect(p, nbIndexedDrawCommandBuffer[p][1], sizeof(DrawElementsIndirectCommand), DEPTHNOSTENCIL, 0, 0, -1, modelDataOffsets[p][3], materialDataOffsets[p][3],drawIndexedCommandBufferOffsets[p][1], currentStates, alphaBufferCommandBuffer);
                     }
                 }
@@ -3547,7 +3547,7 @@ namespace odfaeg {
                 vkCmdPushConstants(commandBuffers[currentFrame], environmentMap.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + vb.getPrimitiveType()][environmentMap.getId()][NODEPTHNOSTENCIL*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(LinkedList2PC), &linkedList2PC);
 
 
-                //////std::cout<<"ids : "<<shader->getId() * (Batcher::nbPrimitiveTypes - 1) + vb.getPrimitiveType()<<","<<environmentMap.getId()<<","<<NODEPTHNOSTENCIL<<std::endl;
+                ////////std::cout<<"ids : "<<shader->getId() * (Batcher::nbPrimitiveTypes - 1) + vb.getPrimitiveType()<<","<<environmentMap.getId()<<","<<NODEPTHNOSTENCIL<<std::endl;
                 environmentMap.beginRenderPass();
                 environmentMap.drawVertexBuffer(commandBuffers[currentFrame], currentFrame, vb, NODEPTHNOSTENCIL, currentStates);
                 environmentMap.endRenderPass();
@@ -3565,7 +3565,7 @@ namespace odfaeg {
 
             }
             unsigned int ReflectRefractRenderComponent::align(unsigned int offset) {
-                //std::cout << "alignment = " << alignment << std::endl;
+                ////std::cout << "alignment = " << alignment << std::endl;
                 return (offset + alignment - 1) & ~(alignment - 1);
             }
             unsigned int ReflectRefractRenderComponent::alignUBO(unsigned int offset) {
@@ -3581,12 +3581,7 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < baseInstance.size(); i++) {
                     baseInstance[i] = 0;
                 }
-                /*for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
-                    currentModelOffset[p] = 0;
-                    previousModelOffset[p] = 0;
-                    currentMaterialOffset[p] = 0;
-                    previousMaterialOffset[p] = 0;
-                }*/
+
                 std::array<unsigned int, Batcher::nbPrimitiveTypes> drawCommandCount, oldTotalVertexCount;
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                     drawCommandBufferOffsets[p].push_back(totalBufferSizeDrawCommand[p]);
@@ -3642,7 +3637,7 @@ namespace odfaeg {
                             model.worldMat = toVulkanMatrix(tm[j]->getMatrix())/*.transpose()*/;
                             modelDatas[p].push_back(model);
                         }
-                        //////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
+                        ////////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
                         unsigned int vertexCount = 0;
 
                         if (m_reflInstances[i].getVertexArrays().size() > 0) {
@@ -3824,12 +3819,7 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < baseInstance.size(); i++) {
                     baseInstance[i] = 0;
                 }
-                /*for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
-                    currentModelOffset[p] = 0;
-                    previousModelOffset[p] = 0;
-                    currentMaterialOffset[p] = 0;
-                    previousMaterialOffset[p] = 0;
-                }*/
+
                 std::array<unsigned int, Batcher::nbPrimitiveTypes> drawCommandCount, oldTotalVertexIndexCount, oldTotalIndexCount;
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                     drawIndexedCommandBufferOffsets[p].push_back(totalBufferSizeIndexedDrawCommand[p]);
@@ -3895,7 +3885,7 @@ namespace odfaeg {
                             model.worldMat = toVulkanMatrix(tm[j]->getMatrix())/*.transpose()*/;
                             modelDatas[p].push_back(model);
                         }
-                        //////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
+                        ////////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
                         unsigned int vertexCount = 0, indexCount = 0;
 
                         if (m_reflIndexed[i].getVertexArrays().size() > 0) {
@@ -3912,7 +3902,7 @@ namespace odfaeg {
                                         vbBindlessTexIndexed[p].append((*m_reflIndexed[i].getVertexArrays()[j])[k]);
                                     }
                                     for (unsigned int k = 0; k < m_reflIndexed[i].getVertexArrays()[j]->getIndexes().size(); k++) {
-                                        //std::cout<<"add depth refl inst indexed"<<std::endl;
+                                        ////std::cout<<"add depth refl inst indexed"<<std::endl;
                                         indexCount++;
                                         vbBindlessTexIndexed[p].addIndex(m_reflIndexed[i].getVertexArrays()[j]->getIndexes()[k]);
                                     }
@@ -3975,7 +3965,7 @@ namespace odfaeg {
                     if (nbIndexedDrawCommandBuffer[p][0] > 0) {
                         vbBindlessTexIndexed[p].update(copyVbIndexedBufferCommandBuffer);
                         VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
-                        //std::cout<<"buffer size : "<<bufferSize<<std::endl;
+                        ////std::cout<<"buffer size : "<<bufferSize<<std::endl;
 
                         currentModelOffset[p] = alignedOffsetModelData[p] + ((bufferSize - oldTotalBufferSizeModelData[p] > 0) ? bufferSize - oldTotalBufferSizeModelData[p] : 0);
 
@@ -3984,7 +3974,7 @@ namespace odfaeg {
                         oldTotalBufferSizeModelData[p] = bufferSize;
                         previousModelOffset[p] = currentModelOffset[p];
 
-                        //////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
+                        ////////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
                         if (totalBufferSizeModelData[p] > maxBufferSizeModelData[p]) {
                             if (modelDataStagingBuffer != nullptr) {
                                 vkDestroyBuffer(vkDevice.getDevice(), modelDataStagingBuffer, nullptr);
@@ -4002,7 +3992,7 @@ namespace odfaeg {
                             maxBufferSizeModelData[p] = totalBufferSizeModelData[p];
                             //needToUpdateDSs[p]  = true;
                         }
-                        //std::cout<<previousModelOffset[p]<<","<<maxBufferSizeModelData[p]<<std::endl;
+                        ////std::cout<<previousModelOffset[p]<<","<<maxBufferSizeModelData[p]<<std::endl;
 
                         /*void* data;
                         vkMapMemory(vkDevice.getDevice(), modelDataStagingBufferMemory, 0, bufferSize, 0, &data);
@@ -4043,7 +4033,7 @@ namespace odfaeg {
                         bufferSize = sizeof(DrawElementsIndirectCommand) * drawElementsIndirectCommands[p].size();
                         totalBufferSizeIndexedDrawCommand[p] = bufferSize;
                         needToUpdateDSs[p]  = true;
-                        //std::cout<<"buffer size : "<<bufferSize<<std::endl<<"max : "<<maxBufferSizeIndexedDrawCommand[p]<<std::endl;
+                        ////std::cout<<"buffer size : "<<bufferSize<<std::endl<<"max : "<<maxBufferSizeIndexedDrawCommand[p]<<std::endl;
                         if (totalBufferSizeIndexedDrawCommand[p] > maxBufferSizeIndexedDrawCommand[p]) {
                             if (vboIndexedIndirectStagingBuffer != nullptr) {
                                 vkDestroyBuffer(vkDevice.getDevice(), vboIndexedIndirectStagingBuffer, nullptr);
@@ -4102,7 +4092,7 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < m_normals.size(); i++) {
                     if (m_normals[i].getAllVertices().getVertexCount() > 0) {
                         DrawArraysIndirectCommand drawArraysIndirectCommand;
-                        //////std::cout<<"layer : "<<layer<<" nb layers : "<<Entity::getNbLayers()<<std::endl;
+                        ////////std::cout<<"layer : "<<layer<<" nb layers : "<<Entity::getNbLayers()<<std::endl;
                         unsigned int p = m_normals[i].getAllVertices().getPrimitiveType();
                         MaterialData material;
                         material.textureIndex = (m_normals[i].getMaterial().getTexture() != nullptr) ? m_normals[i].getMaterial().getTexture()->getId() : 0;
@@ -4193,6 +4183,7 @@ namespace odfaeg {
                 vkResetCommandBuffer(copyModelDataBufferCommandBuffer, 0);
                 vkResetCommandBuffer(copyMaterialDataBufferCommandBuffer, 0);
                 vkResetCommandBuffer(copyDrawBufferCommandBuffer, 0);
+
                 if (vkBeginCommandBuffer(copyModelDataBufferCommandBuffer, &beginInfo) != VK_SUCCESS) {
 
                     throw core::Erreur(0, "failed to begin recording command buffer!", 1);
@@ -4219,7 +4210,7 @@ namespace odfaeg {
 
                         maxAlignedSizeModelData[p] = (bufferSize - oldTotalBufferSizeModelData[p] > maxAlignedSizeModelData[p]) ? bufferSize - oldTotalBufferSizeModelData[p] : maxAlignedSizeModelData[p];
                         totalBufferSizeModelData[p] = (alignedOffsetModelData[p] + maxAlignedSizeModelData[p] > bufferSize) ? alignedOffsetModelData[p] + maxAlignedSizeModelData[p] : bufferSize;
-                        //std::cout<<"sizes 0 : "<<maxAlignedSizeModelData[p]<<","<<alignedOffsetModelData[p]<<","<<currentModelOffset[p]<<","<<previousModelOffset[p]<<","<<maxAlignedSizeModelData[p]<<std::endl;
+                        ////std::cout<<"sizes 0 : "<<maxAlignedSizeModelData[p]<<","<<alignedOffsetModelData[p]<<","<<currentModelOffset[p]<<","<<previousModelOffset[p]<<","<<maxAlignedSizeModelData[p]<<std::endl;
                         oldTotalBufferSizeModelData[p] = bufferSize;
                         previousModelOffset[p] = currentModelOffset[p];
 
@@ -4362,7 +4353,7 @@ namespace odfaeg {
                             vbBindlessTexIndexed[p].append(m_normalIndexed[i].getAllVertices()[j]);
                         }
                         for (unsigned int j = 0; j < m_normalIndexed[i].getAllVertices().getIndexes().size(); j++) {
-                            //std::cout<<"add norm indexed"<<std::endl;
+                            ////std::cout<<"add norm indexed"<<std::endl;
                             indexCount++;
                             vbBindlessTexIndexed[p].addIndex(m_normalIndexed[i].getAllVertices().getIndexes()[j]);
                         }
@@ -4397,7 +4388,7 @@ namespace odfaeg {
                             model.worldMat = toVulkanMatrix(tm[j]->getMatrix())/*.transpose()*/;
                             modelDatas[p].push_back(model);
                         }
-                        //////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
+                        ////////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
                         unsigned int vertexCount = 0, indexCount = 0;
 
                         if (m_indexed[i].getVertexArrays().size() > 0) {
@@ -4483,11 +4474,11 @@ namespace odfaeg {
 
                         maxAlignedSizeModelData[p] = (bufferSize - oldTotalBufferSizeModelData[p] > maxAlignedSizeModelData[p]) ? bufferSize - oldTotalBufferSizeModelData[p] : maxAlignedSizeModelData[p];
                         totalBufferSizeModelData[p] = (alignedOffsetModelData[p] + maxAlignedSizeModelData[p] > bufferSize) ? alignedOffsetModelData[p] + maxAlignedSizeModelData[p] : bufferSize;
-                        //std::cout<<"sizes : "<<maxAlignedSizeModelData[p]<<","<<alignedOffsetModelData[p]<<","<<currentModelOffset[p]<<","<<previousModelOffset[p]<<std::endl;
+                        ////std::cout<<"sizes : "<<maxAlignedSizeModelData[p]<<","<<alignedOffsetModelData[p]<<","<<currentModelOffset[p]<<","<<previousModelOffset[p]<<std::endl;
                         oldTotalBufferSizeModelData[p] = bufferSize;
                         previousModelOffset[p] = currentModelOffset[p];
 
-                        //////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
+                        ////////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
                         if (totalBufferSizeModelData[p] > maxBufferSizeModelData[p]) {
                             if (modelDataStagingBuffer != nullptr) {
                                 vkDestroyBuffer(vkDevice.getDevice(), modelDataStagingBuffer, nullptr);
@@ -4505,7 +4496,7 @@ namespace odfaeg {
                             maxBufferSizeModelData[p] = totalBufferSizeModelData[p];
                             //needToUpdateDSs[p]  = true;
                         }
-                        //std::cout<<previousModelOffset[p]<<","<<maxBufferSizeModelData[p]<<std::endl;
+                        ////std::cout<<previousModelOffset[p]<<","<<maxBufferSizeModelData[p]<<std::endl;
 
                         /*void* data;
                         vkMapMemory(vkDevice.getDevice(), modelDataStagingBufferMemory, 0, bufferSize, 0, &data);
@@ -4547,7 +4538,7 @@ namespace odfaeg {
                         bufferSize = sizeof(DrawElementsIndirectCommand) * drawElementsIndirectCommands[p].size();
                         totalBufferSizeIndexedDrawCommand[p] = bufferSize;
                         needToUpdateDSs[p]  = true;
-                        //std::cout<<"buffer size : "<<bufferSize<<std::endl<<"max : "<<maxBufferSizeIndexedDrawCommand[p]<<std::endl;
+                        ////std::cout<<"buffer size : "<<bufferSize<<std::endl<<"max : "<<maxBufferSizeIndexedDrawCommand[p]<<std::endl;
                         if (totalBufferSizeIndexedDrawCommand[p] > maxBufferSizeIndexedDrawCommand[p]) {
                             if (vboIndexedIndirectStagingBuffer != nullptr) {
                                 vkDestroyBuffer(vkDevice.getDevice(), vboIndexedIndirectStagingBuffer, nullptr);
@@ -4728,7 +4719,7 @@ namespace odfaeg {
 
                         maxAlignedSizeModelData[p] = (bufferSize - oldTotalBufferSizeModelData[p] > maxAlignedSizeModelData[p]) ? bufferSize - oldTotalBufferSizeModelData[p] : maxAlignedSizeModelData[p];
                         totalBufferSizeModelData[p] = (alignedOffsetModelData[p] + maxAlignedSizeModelData[p] > bufferSize) ? alignedOffsetModelData[p] + maxAlignedSizeModelData[p] : bufferSize;
-                        //////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
+                        ////////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
                         oldTotalBufferSizeModelData[p] = bufferSize;
                         previousModelOffset[p] = currentModelOffset[p];
                         if (totalBufferSizeModelData[p] > maxBufferSizeModelData[p]) {
@@ -4875,7 +4866,7 @@ namespace odfaeg {
                                     vbBindlessTexIndexed[p].append(v);
                                 }
                                 for (unsigned int k = 0; k < m_reflNormalIndexed[i].getVertexArrays()[j]->getIndexes().size(); k++) {
-                                    //std::cout<<"add refl norm indexed"<<std::endl;
+                                    ////std::cout<<"add refl norm indexed"<<std::endl;
                                     indexCount++;
                                     vbBindlessTexIndexed[p].addIndex(m_reflNormalIndexed[i].getVertexArrays()[j]->getIndexes()[j]);
                                 }
@@ -4912,7 +4903,7 @@ namespace odfaeg {
                             model.worldMat = toVulkanMatrix(tm[j]->getMatrix())/*.transpose()*/;
                             modelDatas[p].push_back(model);
                         }
-                        //////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
+                        ////////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
                         unsigned int vertexCount = 0, indexCount = 0;
 
                         if (m_reflIndexed[i].getVertexArrays().size() > 0) {
@@ -4924,12 +4915,12 @@ namespace odfaeg {
 
                                     unsigned int p = m_reflIndexed[i].getVertexArrays()[j]->getPrimitiveType();
                                     for (unsigned int k = 0; k < m_reflIndexed[i].getVertexArrays()[j]->getVertexCount(); k++) {
-                                        //std::cout<<"add refl inst vert"<<std::endl;
+                                        ////std::cout<<"add refl inst vert"<<std::endl;
                                         vertexCount++;
                                         vbBindlessTexIndexed[p].append((*m_reflIndexed[i].getVertexArrays()[j])[k]);
                                     }
                                     for (unsigned int k = 0; k < m_reflIndexed[i].getVertexArrays()[j]->getIndexes().size(); k++) {
-                                        //std::cout<<"add refl inst indexed"<<std::endl;
+                                        ////std::cout<<"add refl inst indexed"<<std::endl;
                                         indexCount++;
                                         vbBindlessTexIndexed[p].addIndex(m_reflIndexed[i].getVertexArrays()[j]->getIndexes()[k]);
                                     }
@@ -4999,7 +4990,7 @@ namespace odfaeg {
                         totalBufferSizeModelData[p] = (alignedOffsetModelData[p] + maxAlignedSizeModelData[p] > bufferSize) ? alignedOffsetModelData[p] + maxAlignedSizeModelData[p] : bufferSize;
                         oldTotalBufferSizeModelData[p] = bufferSize;
                         previousModelOffset[p] = currentModelOffset[p];
-                        //std::cout<<"sizes 2 : "<<maxAlignedSizeModelData[p]<<","<<alignedOffsetModelData[p]<<","<<currentModelOffset[p]<<","<<previousModelOffset[p]<<","<<maxAlignedSizeModelData[p]<<std::endl;
+                        ////std::cout<<"sizes 2 : "<<maxAlignedSizeModelData[p]<<","<<alignedOffsetModelData[p]<<","<<currentModelOffset[p]<<","<<previousModelOffset[p]<<","<<maxAlignedSizeModelData[p]<<std::endl;
                         if (totalBufferSizeModelData[p] > maxBufferSizeModelData[p]) {
                             if (modelDataStagingBuffer != nullptr) {
                                 vkDestroyBuffer(vkDevice.getDevice(), modelDataStagingBuffer, nullptr);
@@ -5017,7 +5008,7 @@ namespace odfaeg {
                             maxBufferSizeModelData[p] = totalBufferSizeModelData[p];
                             //needToUpdateDSs[p]  = true;
                         }
-                        //std::cout<<"2 : "<<previousModelOffset[p]<<","<<maxBufferSizeModelData[p]<<std::endl;
+                        ////std::cout<<"2 : "<<previousModelOffset[p]<<","<<maxBufferSizeModelData[p]<<std::endl;
 
 
                         /*void* data;
@@ -5153,7 +5144,7 @@ namespace odfaeg {
                             model.worldMat = toVulkanMatrix(tm[j]->getMatrix())/*.transpose()*/;
                             modelDatas[p].push_back(model);
                         }
-                        //////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
+                        ////////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
                         unsigned int vertexCount = 0;
 
                         if (m_reflInstances[i].getVertexArrays().size() > 0) {
@@ -5189,7 +5180,7 @@ namespace odfaeg {
                     if (vbBindlessTex[p].getVertexCount() > 0) {
                         vbBindlessTex[p].update();
                         VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
-                        //////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
+                        ////////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
                         if (bufferSize > maxModelDataSize) {
                             if (modelDataStagingBuffer != nullptr) {
                                 vkDestroyBuffer(vkDevice.getDevice(), modelDataStagingBuffer, nullptr);
@@ -5340,7 +5331,7 @@ namespace odfaeg {
                             model.worldMat = toVulkanMatrix(tm[j]->getMatrix())/*.transpose()*/;
                             modelDatas[p].push_back(model);
                         }
-                        //////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
+                        ////////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
                         unsigned int vertexCount = 0, indexCount = 0;
 
                         if (m_reflIndexed[i].getVertexArrays().size() > 0) {
@@ -5357,7 +5348,7 @@ namespace odfaeg {
                                         vbBindlessTex[p].append((*m_reflIndexed[i].getVertexArrays()[j])[k]);
                                     }
                                     for (unsigned int k = 0; k < m_reflIndexed[i].getVertexArrays()[j]->getIndexes().size(); k++) {
-                                        //std::cout<<"add depth refl inst indexed"<<std::endl;
+                                        ////std::cout<<"add depth refl inst indexed"<<std::endl;
                                         indexCount++;
                                         vbBindlessTex[p].addIndex(m_reflIndexed[i].getVertexArrays()[j]->getIndexes()[k]);
                                     }
@@ -5383,7 +5374,7 @@ namespace odfaeg {
                     if (vbBindlessTex[p].getVertexCount() > 0) {
                         vbBindlessTex[p].update();
                         VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
-                        //std::cout<<"model datas size : "<<bufferSize<<std::endl;
+                        ////std::cout<<"model datas size : "<<bufferSize<<std::endl;
                         if (bufferSize > maxModelDataSize) {
                             if (modelDataStagingBuffer != nullptr) {
                                 vkDestroyBuffer(vkDevice.getDevice(), modelDataStagingBuffer, nullptr);
@@ -5482,7 +5473,7 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < m_normals.size(); i++) {
                     if (m_normals[i].getAllVertices().getVertexCount() > 0) {
                         DrawArraysIndirectCommand drawArraysIndirectCommand;
-                        //////std::cout<<"layer : "<<layer<<" nb layers : "<<Entity::getNbLayers()<<std::endl;
+                        ////////std::cout<<"layer : "<<layer<<" nb layers : "<<Entity::getNbLayers()<<std::endl;
                         unsigned int p = m_normals[i].getAllVertices().getPrimitiveType();
                         MaterialData material;
                         material.textureIndex = (m_normals[i].getMaterial().getTexture() != nullptr) ? m_normals[i].getMaterial().getTexture()->getId() : 0;
@@ -5671,7 +5662,7 @@ namespace odfaeg {
                             vbBindlessTex[p].append(m_normalIndexed[i].getAllVertices()[j]);
                         }
                         for (unsigned int j = 0; j < m_normalIndexed[i].getAllVertices().getIndexes().size(); j++) {
-                            //std::cout<<"add norm indexed"<<std::endl;
+                            ////std::cout<<"add norm indexed"<<std::endl;
                             indexCount++;
                             vbBindlessTex[p].addIndex(m_normalIndexed[i].getAllVertices().getIndexes()[j]);
                         }
@@ -5703,7 +5694,7 @@ namespace odfaeg {
                             model.worldMat = toVulkanMatrix(tm[j]->getMatrix())/*.transpose()*/;
                             modelDatas[p].push_back(model);
                         }
-                        //////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
+                        ////////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
                         unsigned int vertexCount = 0, indexCount = 0;
 
                         if (m_indexed[i].getVertexArrays().size() > 0) {
@@ -5746,7 +5737,7 @@ namespace odfaeg {
                     if (vbBindlessTex[p].getVertexCount() > 0) {
                         vbBindlessTex[p].update();
                         VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
-                        //////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
+                        ////////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
                         if (bufferSize > maxModelDataSize) {
                             if (modelDataStagingBuffer != nullptr) {
                                 vkDestroyBuffer(vkDevice.getDevice(), modelDataStagingBuffer, nullptr);
@@ -6023,7 +6014,7 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < baseInstance.size(); i++) {
                     baseInstance[i] = 0;
                 }
-                //std::cout<<"normal indexed : "<<m_normalIndexed.size()<<std::endl;
+                ////std::cout<<"normal indexed : "<<m_normalIndexed.size()<<std::endl;
                 for (unsigned int i = 0; i < m_normalIndexed.size(); i++) {
                     if (m_normalIndexed[i].getAllVertices().getVertexCount() > 0) {
 
@@ -6041,12 +6032,12 @@ namespace odfaeg {
                         modelDatas[p].push_back(model);
                         unsigned int vertexCount = 0, indexCount = 0;
                         for (unsigned int j = 0; j < m_normalIndexed[i].getAllVertices().getVertexCount(); j++) {
-                            //std::cout<<"add vertex"<<std::endl;
+                            ////std::cout<<"add vertex"<<std::endl;
                             vertexCount++;
                             vbBindlessTex[p].append(m_normalIndexed[i].getAllVertices()[j]);
                         }
                         for (unsigned int j = 0; j < m_normalIndexed[i].getAllVertices().getIndexes().size(); j++) {
-                            //std::cout<<"add index"<<std::endl;
+                            ////std::cout<<"add index"<<std::endl;
                             indexCount++;
                             vbBindlessTex[p].addIndex(m_normalIndexed[i].getAllVertices().getIndexes()[j]);
                         }
@@ -6078,7 +6069,7 @@ namespace odfaeg {
                             model.worldMat = toVulkanMatrix(tm[j]->getMatrix())/*.transpose()*/;
                             modelDatas[p].push_back(model);
                         }
-                        //////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
+                        ////////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
                         unsigned int vertexCount = 0, indexCount = 0;
 
                         if (m_indexed[i].getVertexArrays().size() > 0) {
@@ -6121,7 +6112,7 @@ namespace odfaeg {
                     if (vbBindlessTex[p].getVertexCount() > 0) {
                         vbBindlessTex[p].update();
                         VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
-                        //////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
+                        ////////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
                         if (bufferSize > maxModelDataSize) {
                             if (modelDataStagingBuffer != nullptr) {
                                 vkDestroyBuffer(vkDevice.getDevice(), modelDataStagingBuffer, nullptr);
@@ -6422,7 +6413,7 @@ namespace odfaeg {
                                     vbBindlessTex[p].append(v);
                                 }
                                 for (unsigned int k = 0; k < m_reflNormalIndexed[i].getVertexArrays()[j]->getIndexes().size(); k++) {
-                                    //std::cout<<"add refl norm indexed"<<std::endl;
+                                    ////std::cout<<"add refl norm indexed"<<std::endl;
                                     indexCount++;
                                     vbBindlessTex[p].addIndex(m_reflNormalIndexed[i].getVertexArrays()[j]->getIndexes()[j]);
                                 }
@@ -6456,7 +6447,7 @@ namespace odfaeg {
                             model.worldMat = toVulkanMatrix(tm[j]->getMatrix())/*.transpose()*/;
                             modelDatas[p].push_back(model);
                         }
-                        //////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
+                        ////////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
                         unsigned int vertexCount = 0, indexCount = 0;
 
                         if (m_reflIndexed[i].getVertexArrays().size() > 0) {
@@ -6468,12 +6459,12 @@ namespace odfaeg {
 
                                     unsigned int p = m_reflIndexed[i].getVertexArrays()[j]->getPrimitiveType();
                                     for (unsigned int k = 0; k < m_reflIndexed[i].getVertexArrays()[j]->getVertexCount(); k++) {
-                                        //std::cout<<"add refl inst vert"<<std::endl;
+                                        ////std::cout<<"add refl inst vert"<<std::endl;
                                         vertexCount++;
                                         vbBindlessTex[p].append((*m_reflIndexed[i].getVertexArrays()[j])[k]);
                                     }
                                     for (unsigned int k = 0; k < m_reflIndexed[i].getVertexArrays()[j]->getIndexes().size(); k++) {
-                                        //std::cout<<"add refl inst indexed"<<std::endl;
+                                        ////std::cout<<"add refl inst indexed"<<std::endl;
                                         indexCount++;
                                         vbBindlessTex[p].addIndex(m_reflIndexed[i].getVertexArrays()[j]->getIndexes()[k]);
                                     }
@@ -6499,7 +6490,7 @@ namespace odfaeg {
                     if (vbBindlessTex[p].getVertexCount() > 0) {
                         vbBindlessTex[p].update();
                         VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
-                        //////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
+                        ////////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
                         if (bufferSize > maxModelDataSize) {
                             if (modelDataStagingBuffer != nullptr) {
                                 vkDestroyBuffer(vkDevice.getDevice(), modelDataStagingBuffer, nullptr);
@@ -6576,7 +6567,7 @@ namespace odfaeg {
                         vkUnmapMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory);
                         copyBuffer(vboIndirectStagingBuffer, vboIndirect, bufferSize);
                         //createDescriptorSets(p, currentStates);
-                        //std::cout<<"draw refl refr"<<std::endl;
+                        ////std::cout<<"draw refl refr"<<std::endl;
 
                         createCommandBuffersIndirect(p, drawElementsIndirectCommands[p].size(), sizeof(DrawElementsIndirectCommand), NODEPTHNOSTENCIL, currentStates);
                     }
@@ -6588,7 +6579,7 @@ namespace odfaeg {
                 return true;
             }
             void ReflectRefractRenderComponent::drawNextFrame() {
-                //////std::cout<<"draw next frame"<<std::endl;
+                ////////std::cout<<"draw next frame"<<std::endl;
                 {
                     std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                     if (datasReady) {
@@ -6609,10 +6600,10 @@ namespace odfaeg {
                 math::Matrix4f projMatrix = view.getProjMatrix().getMatrix();
                 indirectRenderingPC.projMatrix = toVulkanMatrix(projMatrix);
                 indirectRenderingPC.viewMatrix = toVulkanMatrix(viewMatrix);
-                //std::cout<<"view matrix : "<<viewMatrix<<std::endl;
+                ////std::cout<<"view matrix : "<<viewMatrix<<std::endl;
                 if (useThread) {
                     //commandBufferReady = false;
-                    std::unique_lock<std::mutex> lock(mtx);
+                    std::lock_guard<std::mutex> lock(mtx);
                     //cv.wait(lock, [this] { return isCommandBufferReady(); });
                     resetBuffers();
 
@@ -6748,24 +6739,24 @@ namespace odfaeg {
                         }
                     }
                     if (nbReflRefrEntities > 0) {
-                        //std::cout<<"nb refl entities  : "<<nbReflRefrEntities<<std::endl<<"size : "<<ubos.size()<<std::endl;
+                        ////std::cout<<"nb refl entities  : "<<nbReflRefrEntities<<std::endl<<"size : "<<ubos.size()<<std::endl;
                         updateUniformBuffer(environmentMap.getCurrentFrame(), ubos);
                     } else {
                         nbReflRefrEntities = 1;
                         createUniformBuffersMT();
                         UniformBufferObject dummy;
                         ubos.push_back(dummy);
-                        //std::cout<<"dummy nb refl entities  : "<<nbReflRefrEntities<<std::endl<<"size : "<<ubos.size()<<std::endl;
+                        ////std::cout<<"dummy nb refl entities  : "<<nbReflRefrEntities<<std::endl<<"size : "<<ubos.size()<<std::endl;
                         updateUniformBuffer(environmentMap.getCurrentFrame(), ubos);
                         nbReflRefrEntities = 0;
                     }
                     buildFrameBufferPC.cameraPos = math::Vec4f(view.getPosition().x(), view.getPosition().y(), view.getPosition().z(), 1);
-                    //std::cout<<"copie"<<std::endl;
+                    ////std::cout<<"copie"<<std::endl;
                     drawBuffers();
                     commandBufferReady = true;
                     cv.notify_one();
                 } else {
-                    //std::cout<<"draw no thread"<<std::endl;
+                    ////std::cout<<"draw no thread"<<std::endl;
 
                     drawDepthReflInst();
                     drawDepthReflIndexedInst();
@@ -6813,7 +6804,7 @@ namespace odfaeg {
                                         if (entity->getSize().y() > squareSize) {
                                             scale.y = entity->getSize().y() / squareSize;
                                         }*/
-                                        //////std::cout<<"scale : "<<scale<<"position : "<<entity->getPosition()<<std::endl;
+                                        ////////std::cout<<"scale : "<<scale<<"position : "<<entity->getPosition()<<std::endl;
                                         //reflectView.setScale(scale.x, scale.y, scale.z);
                                         if (entity->getType() != "E_BIGTILE")
                                             reflectView.setCenter(entity->getPosition()+entity->getSize()*0.5f);
@@ -6874,7 +6865,7 @@ namespace odfaeg {
                                             if (m_skyboxInstance[i].getAllVertices().getVertexCount() > 0) {
                                                 vb.setPrimitiveType(m_skyboxInstance[i].getAllVertices().getPrimitiveType());
                                                 for (unsigned int j = 0; j < m_skyboxInstance[i].getAllVertices().getVertexCount(); j++) {
-                                                    //////std::cout<<"append"<<std::endl;
+                                                    ////////std::cout<<"append"<<std::endl;
                                                     vb.append(m_skyboxInstance[i].getAllVertices()[j]);
                                                 }
                                             }
@@ -6978,7 +6969,7 @@ namespace odfaeg {
             }
             void ReflectRefractRenderComponent::draw(RenderTarget& target, RenderStates states) {
                 if (useThread) {
-                    //std::cout<<"soumission"<<std::endl;
+                    ////std::cout<<"soumission"<<std::endl;
                     std::unique_lock<std::mutex> lock(mtx);
                     cv.wait(lock, [this] { return commandBufferReady.load(); });
                     commandBufferReady = false;
@@ -6996,7 +6987,24 @@ namespace odfaeg {
                     vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyDrawIndexedBufferCommandBuffer);
                     vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyVbIndexedBufferCommandBuffer);
                     vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyVbEnvPass2BufferCommandBuffer);
-
+                    VkBufferMemoryBarrier bufferMemoryBarrier{};
+                    bufferMemoryBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+                    bufferMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                    bufferMemoryBarrier.dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+                    bufferMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                    bufferMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                    bufferMemoryBarrier.offset = 0;
+                    bufferMemoryBarrier.size = VK_WHOLE_SIZE;
+                    bufferMemoryBarrier.buffer = vb.getVertexBuffer();
+                    vkCmdPipelineBarrier(
+                    commandBuffers[currentFrame],
+                    VK_PIPELINE_STAGE_TRANSFER_BIT,
+                    VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
+                    0,
+                    0, nullptr,
+                    1, &bufferMemoryBarrier,
+                    0, nullptr
+                    );
                     for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                         VkBufferMemoryBarrier buffersMemoryBarrier{};
                         buffersMemoryBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
@@ -7006,6 +7014,7 @@ namespace odfaeg {
                         buffersMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
                         buffersMemoryBarrier.offset = 0;
                         buffersMemoryBarrier.size = VK_WHOLE_SIZE;
+                        buffersMemoryBarrier.buffer = vb.getVertexBuffer();
                         if (vbBindlessTex[p].getVertexBuffer() != nullptr) {
                             buffersMemoryBarrier.buffer = vbBindlessTex[p].getVertexBuffer();
                             vkCmdPipelineBarrier(
@@ -7126,8 +7135,7 @@ namespace odfaeg {
 
 
                     depthBuffer.beginRecordCommandBuffers();
-                    depthBuffer.beginRenderPass();
-                    depthBuffer.endRenderPass();
+
                     signalSemaphores.clear();
                     signalSemaphores.push_back(offscreenDepthPassFinishedSemaphore[currentFrame]);
                     signalValues.clear();
@@ -7345,20 +7353,20 @@ namespace odfaeg {
 
                 for (unsigned int i = 0; i < vEntities.size(); i++) {
                     if ( vEntities[i] != nullptr && vEntities[i]->isLeaf()) {
-                        //////std::cout<<"add entity"<<std::endl;
+                        ////////std::cout<<"add entity"<<std::endl;
                         for (unsigned int j = 0; j <  vEntities[i]->getNbFaces(); j++) {
                             std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                             if (vEntities[i]->getFace(j)->getMaterial().isReflectable() || vEntities[i]->getFace(j)->getMaterial().isRefractable()) {
                                 if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0) {
                                     if (vEntities[i]->getDrawMode() == Entity::INSTANCED) {
-                                        //////std::cout<<"add refl face"<<std::endl;
+                                        ////////std::cout<<"add refl face"<<std::endl;
                                         reflBatcher.addFace( vEntities[i]->getFace(j));
                                     } else {
                                         reflNormalBatcher.addFace(vEntities[i]->getFace(j));
                                     }
                                 } else {
                                    if (vEntities[i]->getDrawMode() == Entity::INSTANCED) {
-                                        //////std::cout<<"add refl face"<<std::endl;
+                                        ////////std::cout<<"add refl face"<<std::endl;
                                         reflIndexedBatcher.addFace( vEntities[i]->getFace(j));
                                     } else {
                                         reflNormalIndexedBatcher.addFace(vEntities[i]->getFace(j));
@@ -7434,12 +7442,12 @@ namespace odfaeg {
                         vkFreeMemory(vkDevice.getDevice(), counterShaderStorageBuffersMemory[i], nullptr);
                     }
                 }
-                ////std::cout<<"counter ssbo destroyed"<<std::endl;
+                //////std::cout<<"counter ssbo destroyed"<<std::endl;
                 for (unsigned int i = 0; i < linkedListShaderStorageBuffers.size(); i++) {
                     vkDestroyBuffer(vkDevice.getDevice(), linkedListShaderStorageBuffers[i], nullptr);
                     vkFreeMemory(vkDevice.getDevice(), linkedListShaderStorageBuffersMemory[i], nullptr);
                 }
-                ////std::cout<<"linked list ssbo destroyed"<<std::endl;
+                //////std::cout<<"linked list ssbo destroyed"<<std::endl;
                 for (size_t i = 0; i < modelDataShaderStorageBuffers.size(); i++) {
                     vkDestroyBuffer(vkDevice.getDevice(), modelDataShaderStorageBuffers[i], nullptr);
                     vkFreeMemory(vkDevice.getDevice(), modelDataShaderStorageBuffersMemory[i], nullptr);
@@ -7448,7 +7456,7 @@ namespace odfaeg {
                     vkDestroyBuffer(vkDevice.getDevice(), modelDataStagingBuffer, nullptr);
                     vkFreeMemory(vkDevice.getDevice(), modelDataStagingBufferMemory, nullptr);
                 }
-                ////std::cout<<"model data ssbo destroyed"<<std::endl;
+                //////std::cout<<"model data ssbo destroyed"<<std::endl;
                 for (size_t i = 0; i < materialDataShaderStorageBuffers.size(); i++) {
                     vkDestroyBuffer(vkDevice.getDevice(), materialDataShaderStorageBuffers[i], nullptr);
                     vkFreeMemory(vkDevice.getDevice(), materialDataShaderStorageBuffersMemory[i], nullptr);
@@ -7465,7 +7473,7 @@ namespace odfaeg {
                     vkDestroyBuffer(vkDevice.getDevice(), vboIndirectStagingBuffer, nullptr);
                     vkFreeMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory, nullptr);
                 }
-                ////std::cout<<"material data ssbo destroyed"<<std::endl;
+                //////std::cout<<"material data ssbo destroyed"<<std::endl;
                 if (vboIndirect != VK_NULL_HANDLE) {
                     vkDestroyBuffer(vkDevice.getDevice(),vboIndirect, nullptr);
                     vkFreeMemory(vkDevice.getDevice(), vboIndirectMemory, nullptr);
@@ -7483,7 +7491,7 @@ namespace odfaeg {
                 vkFreeCommandBuffers(vkDevice.getDevice(), secondaryBufferCommandPool, environmentMapCommandBuffer.size(), environmentMapCommandBuffer.data());
                 vkFreeCommandBuffers(vkDevice.getDevice(), secondaryBufferCommandPool, reflectRefractCommandBuffer.size(), reflectRefractCommandBuffer.data());
                 vkDestroyCommandPool(vkDevice.getDevice(), secondaryBufferCommandPool, nullptr);
-                ////std::cout<<"indirect vbo destroyed"<<std::endl;
+                //////std::cout<<"indirect vbo destroyed"<<std::endl;
             }
         #else
         ReflectRefractRenderComponent::ReflectRefractRenderComponent (RenderWindow& window, int layer, std::string expression, window::ContextSettings settings) :
@@ -8052,7 +8060,7 @@ namespace odfaeg {
                 GLuint64 handle_texture = allTextures[i]->getTextureHandle();
                 allTextures[i]->makeTextureResident(handle_texture);
                 allSamplers.tex[i].handle = handle_texture;
-                //////std::cout<<"add texture i : "<<i<<" id : "<<allTextures[i]->getNativeHandle()<<std::endl;
+                ////////std::cout<<"add texture i : "<<i<<" id : "<<allTextures[i]->getNativeHandle()<<std::endl;
             }
             sBuildDepthBuffer.setParameter("textureMatrix", textureMatrices);
             sBuildAlphaBuffer.setParameter("textureMatrix", textureMatrices);
@@ -8060,7 +8068,7 @@ namespace odfaeg {
 
 
 
-            //////std::cout<<"ubid : "<<ubid<<std::endl;
+            ////////std::cout<<"ubid : "<<ubid<<std::endl;
             backgroundColor = Color::Transparent;
             glCheck(glGenBuffers(1, &ubo));
             glCheck(glBindBuffer(GL_UNIFORM_BUFFER, ubo));
@@ -8080,7 +8088,7 @@ namespace odfaeg {
             glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, modelDataBuffer));
             glCheck(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, materialDataBuffer));
             reflectRefractTex.setActive();
-            //////std::cout<<"size : "<<sizeof(Samplers)<<" "<<alignof (alignas(16) uint64_t[200])<<std::endl;
+            ////////std::cout<<"size : "<<sizeof(Samplers)<<" "<<alignof (alignas(16) uint64_t[200])<<std::endl;
 
             /*glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo2));
             glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo3));*/
@@ -8101,7 +8109,7 @@ namespace odfaeg {
                 GLuint64 handle_texture = allTextures[i]->getTextureHandle();
                 allTextures[i]->makeTextureResident(handle_texture);
                 allSamplers.tex[i].handle = handle_texture;
-                //////std::cout<<"add texture i : "<<i<<" id : "<<allTextures[i]->getNativeHandle()<<std::endl;
+                ////////std::cout<<"add texture i : "<<i<<" id : "<<allTextures[i]->getNativeHandle()<<std::endl;
             }
             glCheck(glBindBuffer(GL_UNIFORM_BUFFER, ubo));
             glCheck(glBufferData(GL_UNIFORM_BUFFER, sizeof(Samplers),allSamplers.tex, GL_STATIC_DRAW));
@@ -8236,7 +8244,7 @@ namespace odfaeg {
             for (unsigned int i = 0; i < m_normals.size(); i++) {
                 if (m_normals[i].getAllVertices().getVertexCount() > 0) {
                     DrawArraysIndirectCommand drawArraysIndirectCommand;
-                    //////std::cout<<"layer : "<<layer<<" nb layers : "<<Entity::getNbLayers()<<std::endl;
+                    ////////std::cout<<"layer : "<<layer<<" nb layers : "<<Entity::getNbLayers()<<std::endl;
                     unsigned int p = m_normals[i].getAllVertices().getPrimitiveType();
                     MaterialData material;
                     material.textureIndex = (m_normals[i].getMaterial().getTexture() != nullptr) ? m_normals[i].getMaterial().getTexture()->getNativeHandle() : 0;
@@ -8586,7 +8594,7 @@ namespace odfaeg {
                                     if (entity->getSize().y() > squareSize) {
                                         scale.y = entity->getSize().y() / squareSize;
                                     }*/
-                                    //////std::cout<<"scale : "<<scale<<"position : "<<entity->getPosition()<<std::endl;
+                                    ////////std::cout<<"scale : "<<scale<<"position : "<<entity->getPosition()<<std::endl;
                                     //reflectView.setScale(scale.x, scale.y, scale.z);
                                     if (entity->getFaces().size() > 0 && !entity->getFaces()[0].getMaterial().getType() == Material::WATER)
                                         reflectView.setCenter(entity->getPosition()+entity->getSize()*0.5f);
@@ -8645,7 +8653,7 @@ namespace odfaeg {
                                         if (m_skyboxInstance[i].getAllVertices().getVertexCount() > 0) {
                                             vb.setPrimitiveType(m_skyboxInstance[i].getAllVertices().getPrimitiveType());
                                             for (unsigned int j = 0; j < m_skyboxInstance[i].getAllVertices().getVertexCount(); j++) {
-                                                //////std::cout<<"append"<<std::endl;
+                                                ////////std::cout<<"append"<<std::endl;
                                                 vb.append(m_skyboxInstance[i].getAllVertices()[j]);
                                             }
                                         }
@@ -8729,7 +8737,7 @@ namespace odfaeg {
                         if (vEntities[i]->getFace(j)->getMaterial().isReflectable() || vEntities[i]->getFace(j)->getMaterial().isRefractable()) {
 
                             if (vEntities[i]->getDrawMode() == Entity::INSTANCED) {
-                                //////std::cout<<"add refl face"<<std::endl;
+                                ////////std::cout<<"add refl face"<<std::endl;
                                 reflBatcher.addFace( vEntities[i]->getFace(j));
                             } else {
                                 reflNormalBatcher.addFace(vEntities[i]->getFace(j));
@@ -8792,7 +8800,7 @@ namespace odfaeg {
         }
         void ReflectRefractRenderComponent::pushEvent(window::IEvent event, RenderWindow& rw) {
             if (event.type == window::IEvent::WINDOW_EVENT && event.window.type == window::IEvent::WINDOW_EVENT_RESIZED && &getWindow() == &rw && isAutoResized()) {
-                ////std::cout<<"recompute size"<<std::endl;
+                //////std::cout<<"recompute size"<<std::endl;
                 recomputeSize();
                 getListener().pushEvent(event);
                 getView().reset(physic::BoundingBox(getView().getViewport().getPosition().x(), getView().getViewport().getPosition().y(), getView().getViewport().getPosition().z(), event.window.data1, event.window.data2, getView().getViewport().getDepth()));

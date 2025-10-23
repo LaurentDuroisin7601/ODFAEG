@@ -120,7 +120,7 @@ namespace odfaeg {
         bool Texture::createDepthTexture(uint32_t texWidth, uint32_t texHeight) {
             VkFormat depthFormat = findDepthFormat();
             createImage(texWidth, texHeight, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT /*| VK_IMAGE_USAGE_SAMPLED_BIT*/, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
-            //////std::cout<<"dt address : "<<textureImage<<std::endl;
+            ////////std::cout<<"dt address : "<<textureImage<<std::endl;
             VkCommandBuffer cmd = beginSingleTimeCommands();
             transitionImageLayout(cmd, textureImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED,  VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
             endSingleTimeCommands(cmd);
@@ -132,7 +132,7 @@ namespace odfaeg {
             isCubeMap = true;
             VkFormat depthFormat = findDepthFormat();
             createImage(texWidth, texHeight, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT /*| VK_IMAGE_USAGE_SAMPLED_BIT*/, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
-            //////std::cout<<"dt address : "<<textureImage<<std::endl;
+            ////////std::cout<<"dt address : "<<textureImage<<std::endl;
             VkCommandBuffer cmd = beginSingleTimeCommands();
             transitionImageLayout(cmd, textureImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED,  VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
             endSingleTimeCommands(cmd);
@@ -372,14 +372,14 @@ namespace odfaeg {
             endSingleTimeCommands(commandBuffer);
         }
         void Texture::toShaderReadOnlyOptimal(VkCommandBuffer cmd) {
-            //std::cout<<"is on color attachment optimal : "<<isOnColorAttachmentOptimal<<std::endl;
+            ////std::cout<<"is on color attachment optimal : "<<isOnColorAttachmentOptimal<<std::endl;
             if (isFBOTexture) {
                 transitionImageLayout(cmd, textureImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
             }
         }
         void Texture::toColorAttachmentOptimal(VkCommandBuffer cmd) {
-            //std::cout<<"is on color attachment optimal : "<<isOnColorAttachmentOptimal<<std::endl;
+            ////std::cout<<"is on color attachment optimal : "<<isOnColorAttachmentOptimal<<std::endl;
             if (isFBOTexture) {
                 transitionImageLayout(cmd, textureImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
@@ -502,7 +502,7 @@ namespace odfaeg {
                 height,
                 1
             };
-            //////std::cout<<"offsets : "<<x<<','<<y<<std::endl<<"size : "<<width<<","<<height<<std::endl;
+            ////////std::cout<<"offsets : "<<x<<','<<y<<std::endl<<"size : "<<width<<","<<height<<std::endl;
 
             vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
@@ -945,7 +945,7 @@ namespace odfaeg {
             matrix[0][0] = 1.f / m_size.x();
             matrix[1][1] = 1.f / m_size.y();
             /*if (m_name == "CUBE") {
-                ////std::cout<<"actual size : "<<m_actualSize.x()<<","<<m_actualSize.y()<<std::endl;
+                //////std::cout<<"actual size : "<<m_actualSize.x()<<","<<m_actualSize.y()<<std::endl;
             }*/
            /* if (m_pixelsFlipped)
             {
@@ -956,7 +956,7 @@ namespace odfaeg {
         }
         Texture::~Texture() {
             vkDestroyCommandPool(vkDevice.getDevice(), commandPool, nullptr);
-            ////std::cout<<"destroy texture"<<std::endl;
+            //////std::cout<<"destroy texture"<<std::endl;
             if (textureImage != VK_NULL_HANDLE) {
 
                 vkDestroySampler(vkDevice.getDevice(), textureSampler, nullptr);
@@ -1249,7 +1249,7 @@ namespace odfaeg {
             if (area.width == 0 || (area.height == 0) ||
                ((area.left <= 0) && (area.top <= 0) && (area.width >= width) && (area.height >= height)))
             {
-                //////std::cout<<"width  : "<<width<<" height : "<<height<<std::endl;
+                ////////std::cout<<"width  : "<<width<<" height : "<<height<<std::endl;
                 // Load the entire image
                 if (create(image.getSize().x(), image.getSize().y()))
                 {
@@ -1334,7 +1334,7 @@ namespace odfaeg {
                 glCheck(glBindTexture(GL_TEXTURE_2D, m_texture));
                 glCheck(glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, &pixels[0]));
                 //for (unsigned int i = 0; i < m_size.x() * m_size.y() * 4; i++)
-                    ////std::cout<<"pixel : "<<(int) pixels[i]<<std::endl;
+                    //////std::cout<<"pixel : "<<(int) pixels[i]<<std::endl;
             }
             else
             {
@@ -1395,7 +1395,7 @@ namespace odfaeg {
                 // Make sure that the current texture binding will be preserved
                 priv::TextureSaver save;
                 /*for (unsigned int i = 0; i < width * height * 4; i++) {
-                    ////std::cout<<"update pixel : "<<(int) pixels[i]<<std::endl;
+                    //////std::cout<<"update pixel : "<<(int) pixels[i]<<std::endl;
                 }*/
                 // Copy pixels from the given array to the texture
                 glCheck(glBindTexture(GL_TEXTURE_2D, m_texture));
@@ -1566,7 +1566,7 @@ namespace odfaeg {
             matrix[0][0] = 1.f / m_actualSize.x();
             matrix[1][1] = 1.f / m_actualSize.y();
             /*if (m_name == "CUBE") {
-                ////std::cout<<"actual size : "<<m_actualSize.x()<<","<<m_actualSize.y()<<std::endl;
+                //////std::cout<<"actual size : "<<m_actualSize.x()<<","<<m_actualSize.y()<<std::endl;
             }*/
            /* if (m_pixelsFlipped)
             {

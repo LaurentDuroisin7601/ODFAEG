@@ -22,7 +22,7 @@ namespace odfaeg {
                         maxSizeX = tabXPos - getPosition().x() + 100;
                     }
                 }
-                //////std::cout<<"max size : "<<maxSizeX<<std::endl<<"size : "<<getSize().x<<std::endl;
+                ////////std::cout<<"max size : "<<maxSizeX<<std::endl<<"size : "<<getSize().x<<std::endl;
                 if (maxSizeX > getSize().x()) {
                     unsigned int scrollXSize = (getSize().x()) / maxSizeX * (getSize().x());
                     vertScrollBar = RectangleShape(math::Vec3f(scrollXSize, 10, 0));

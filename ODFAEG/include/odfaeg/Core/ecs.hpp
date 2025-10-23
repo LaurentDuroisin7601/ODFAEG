@@ -79,21 +79,21 @@ namespace odfaeg {
                 void addChild(EntityId parentId, EntityId child) {
 
                     if (!getComponent<Relation>(parentId)) {
-                        ////std::cout<<"add relation add child"<<std::endl;
+                        //////std::cout<<"add relation add child"<<std::endl;
                         Relation relation;
                         relation.children.push_back(child);
                         addComponent(parentId, relation);
                     } else {
-                        ////std::cout<<"add child"<<std::endl;
+                        //////std::cout<<"add child"<<std::endl;
                         getComponent<Relation>(parentId)->children.push_back(child);
                     }
                     if (!getComponent<Relation>(child)) {
-                        ////std::cout<<"add relation set parent"<<std::endl;
+                        //////std::cout<<"add relation set parent"<<std::endl;
                         Relation relation;
                         relation.parent = parentId;
                         addComponent(child, relation);
                     } else {
-                        ////std::cout<<"set parent"<<std::endl;
+                        //////std::cout<<"set parent"<<std::endl;
                         getComponent<Relation>(child)->parent = child;
                     }
 
@@ -152,9 +152,9 @@ namespace odfaeg {
                 template <size_t I, typename Archive, typename... Components> requires NOTLASTELEM<I, Components...>
                 void readComponents(Archive& ar, EntityId entity) {
                     std::tuple_element_t<I, std::tuple<Components...>>* component;
-                    ////std::cout<<"read component"<<std::endl;
+                    //////std::cout<<"read component"<<std::endl;
                     ar(component);
-                    ////std::cout<<"component : "<<component<<std::endl;
+                    //////std::cout<<"component : "<<component<<std::endl;
                     if (component != nullptr) {
                         addComponent(entity, *component);
                     }
@@ -163,9 +163,9 @@ namespace odfaeg {
                 template <size_t I, typename Archive, typename... Components> requires LASTELEM<I, Components...>
                 void readComponents(Archive& ar, EntityId entity) {
                     std::tuple_element_t<I, std::tuple<Components...>>* component;
-                    ////std::cout<<"read component"<<std::endl;
+                    //////std::cout<<"read component"<<std::endl;
                     ar(component);
-                    ////std::cout<<"component : "<<component<<std::endl;
+                    //////std::cout<<"component : "<<component<<std::endl;
                     if (component != nullptr) {
                         addComponent(entity, *component);
                     }
@@ -193,13 +193,13 @@ namespace odfaeg {
                 }
                 template <size_t I, typename Archive, typename... Components> requires NOTLASTELEM<I, Components...>
                 void writeComponents(Archive& ar, EntityId entity) {
-                    ////std::cout<<"component :  "<<getComponent<std::tuple_element_t<I, std::tuple<Components...>>>(entity)<<std::endl;
+                    //////std::cout<<"component :  "<<getComponent<std::tuple_element_t<I, std::tuple<Components...>>>(entity)<<std::endl;
                     ar(getComponent<std::tuple_element_t<I, std::tuple<Components...>>>(entity));
                     writeComponents<I+1, Archive, Components...>(ar, entity);
                 }
                 template <size_t I, typename Archive, typename... Components> requires LASTELEM<I, Components...>
                 void writeComponents(Archive& ar, EntityId entity) {
-                    ////std::cout<<"component :  "<<getComponent<std::tuple_element_t<I, std::tuple<Components...>>>(entity)<<std::endl;
+                    //////std::cout<<"component :  "<<getComponent<std::tuple_element_t<I, std::tuple<Components...>>>(entity)<<std::endl;
                     ar(getComponent<std::tuple_element_t<I, std::tuple<Components...>>>(entity));
                 }
 

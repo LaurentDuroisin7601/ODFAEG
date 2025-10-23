@@ -148,7 +148,7 @@ namespace odfaeg {
             return loop;
         }
         void VertexArray::transform(TransformMatrix tm) {
-            //////std::cout<<"transform"<<std::endl;
+            ////////std::cout<<"transform"<<std::endl;
             /*for (unsigned int i = 0; i < m_vertices.size(); i++) {
                 if (m_locals.size() < m_vertices.size())
                     m_locals.push_back(math::Vec3f(m_vertices[i].position.x, m_vertices[i].position.y,m_vertices[i].position.z));
@@ -156,7 +156,7 @@ namespace odfaeg {
                 m_vertices[i].position.x = t.x;
                 m_vertices[i].position.y = t.y;
                 m_vertices[i].position.z = t.z;
-                //////std::cout<<"vertex pos : "<<m_vertices[i].position.x<<" "<<m_vertices[i].position.y<<" "<<m_vertices[i].position.z<<std::endl;
+                ////////std::cout<<"vertex pos : "<<m_vertices[i].position.x<<" "<<m_vertices[i].position.y<<" "<<m_vertices[i].position.z<<std::endl;
             }
             needToUpdateVBOBuffer = true;*/
         }
@@ -188,7 +188,7 @@ namespace odfaeg {
         }
         void VertexArray::addIndex(unsigned int index) {
             m_indexes.push_back(index);
-            //////std::cout<<"va index : "<<index<<"size : "<<m_indexes.size()<<std::endl;
+            ////////std::cout<<"va index : "<<index<<"size : "<<m_indexes.size()<<std::endl;
 
         }
         std::vector<unsigned int> VertexArray::getBaseIndexes() {
@@ -329,7 +329,7 @@ namespace odfaeg {
         Vertex& VertexArray::operator [](unsigned int index)
         {
             needToUpdateNormals = true;
-            //////std::cout<<"vertex position : "<<m_vertices[index].position.x<<" "<<m_vertices[index].position.y<<std::endl;
+            ////////std::cout<<"vertex position : "<<m_vertices[index].position.x<<" "<<m_vertices[index].position.y<<std::endl;
             return m_vertices[index];
         }
 

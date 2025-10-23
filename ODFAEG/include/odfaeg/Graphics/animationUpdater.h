@@ -58,7 +58,7 @@ namespace odfaeg {
                     if (anims[i]->isRunning() &&
                         anims[i]->getElapsedTime().asSeconds() > anims[i]->getFrameRate()) {
                        /* if (anims[i]->getRootType() == "E_HERO")
-                            ////std::cout<<"update anim hero"<<std::endl;*/
+                            //////std::cout<<"update anim hero"<<std::endl;*/
 
                         anims[i]->computeNextFrame();
                         if (anims[i]->isCurrentFrameChanged() /*&& graphic::World::containsVisibleParentEntity(anims[i]->getRootEntity())*/) {
@@ -72,7 +72,7 @@ namespace odfaeg {
                     boneAnims[i]->updateAnimation(clock.getElapsedTime().asSeconds());
                 }
                 clock.restart();
-               // ////std::cout<<"end animations"<<std::endl;
+               // //////std::cout<<"end animations"<<std::endl;
             }
             std::vector<Entity*> getAnims() {
                 return anims;

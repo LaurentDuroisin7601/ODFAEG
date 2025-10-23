@@ -39,14 +39,15 @@ namespace odfaeg {
                     unsigned instance_base;
             };
             struct ModelData {
-                GLMatrix4f worldMat;
+                alignas(16) GLMatrix4f worldMat;
             };
             struct alignas(16) MaterialData {
                 math::Vec2f uvScale;
                 math::Vec2f uvOffset;
                 unsigned int textureIndex;
                 unsigned int materialType;
-                uint32_t _padding[2];
+                uint32_t padding1;
+                uint32_t padding2;
             };
             struct alignas(8) AtomicCounterSSBO {
                 unsigned int count;
@@ -63,8 +64,9 @@ namespace odfaeg {
                 GLMatrix4f viewMatrix;
                 GLMatrix4f worldMat;
             };
-            PerPixelLinkedListRenderComponent (RenderWindow& window, int layer, std::string expression, window::ContextSettings settings);
+            PerPixelLinkedListRenderComponent (RenderWindow& window, int layer, std::string expression, window::ContextSettings settings, bool useThread = true);
             void createDescriptorsAndPipelines();
+            void launchRenderer();
             void drawNextFrame();
             bool loadEntitiesOnComponent(std::vector<Entity*> visibleEntities);
             bool needToUpdate();
@@ -90,7 +92,7 @@ namespace odfaeg {
             void createHeadPtrImageView();
             void createHeadPtrSampler();
             void clear();
-            void clearBuffers();
+            void resetBuffers();
             void fillBuffersMT();
             void fillIndexedBuffersMT();
             void fillSelectedBuffersMT();
@@ -103,9 +105,12 @@ namespace odfaeg {
             void endSingleTimeCommands(VkCommandBuffer commandBuffer);
             void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
             void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+            void createDescriptorPool(unsigned int p, RenderStates states);
             void createDescriptorPool(RenderStates states);
             void createDescriptorSetLayout(RenderStates states);
+            void updateDescriptorSets(unsigned int p, RenderStates states);
             void createDescriptorSets(unsigned int p, RenderStates states);
+            void allocateDescriptorSets(unsigned int p, RenderStates states);
             void allocateDescriptorSets(RenderStates states);
             void createDescriptorPool2(RenderStates states);
             void createDescriptorSetLayout2(RenderStates states);
@@ -119,7 +124,9 @@ namespace odfaeg {
             void drawInstancesIndexed();
             void drawSelectedInstances();
             void drawSelectedInstancesIndexed();
+            void recordCommandBufferIndirect(unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, DepthStencilID depthStencilID, unsigned int vertexOffset, unsigned int indexOffset, unsigned int uboOffset, unsigned int modelDataOffset, unsigned int materialDataOffset, unsigned int drawCommandOffset, RenderStates currentStates, VkCommandBuffer commandBuffer);
             void createCommandBuffersIndirect(unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, DepthStencilID dephStencilID, RenderStates currentStates);
+            void recordCommandBufferVertexBuffer(RenderStates currentStates, VkCommandBuffer commandBuffer);
             void createCommandBufferVertexBuffer(RenderStates currentStates);
             uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
             void allocateCommandBuffers();
@@ -169,8 +176,8 @@ namespace odfaeg {
             IndirectDrawPushConsts indirectDrawPushConsts;
             std::array<VertexBuffer ,Batcher::nbPrimitiveTypes> vbBindlessTex, vbBindlessTexIndexed;
             VertexBuffer vb;
-            VkBuffer vboIndirect, vboIndirectStagingBuffer;
-            VkDeviceMemory vboIndirectMemory, vboIndirectStagingBufferMemory;
+            VkBuffer vboIndirect, vboIndirectStagingBuffer, vboIndexedIndirectStagingBuffer;
+            VkDeviceMemory vboIndirectMemory, vboIndirectStagingBufferMemory, vboIndexedIndirectStagingBufferMemory;
             std::vector<VkCommandBuffer> commandBuffers;
             std::vector<Instance> m_instances, m_normals, m_instancesIndexed, m_normalsIndexed,
             m_selectedScale, m_selected, m_selectedScaleIndexed, m_selectedIndexed,
@@ -191,8 +198,8 @@ namespace odfaeg {
             std::vector<VkEvent> events;
             std::vector<VkSemaphore> offscreenFinishedSemaphore;
             RenderWindow& window;
-            bool isSomethingDrawn;
-            VkCommandBuffer ppllCommandBuffer, ppllSelectedCommandBuffer, ppllOutlineCommandBuffer,
+            bool isSomethingDrawn, useThread;
+            VkCommandBuffer ppllCommandBuffer, ppllSelectedCommandBuffer, ppllOutlineCommandBuffer, ppllPass2CommandBuffer,
             copyModelDataBufferCommandBuffer, copyMaterialDataBufferCommandBuffer, copyDrawBufferCommandBuffer, copyDrawIndexedBufferCommandBuffer,
             copyVbBufferCommandBuffer, copyVbIndexedBufferCommandBuffer, copyVbPpllPass2CommandBuffer;
             std::array<unsigned int, Batcher::nbPrimitiveTypes> totalBufferSizeModelData, maxBufferSizeModelData, maxAlignedSizeModelData, oldTotalBufferSizeModelData;
@@ -204,6 +211,7 @@ namespace odfaeg {
             std::condition_variable cv;
             std::array<bool, Batcher::nbPrimitiveTypes> needToUpdateDSs;
             unsigned int alignment;
+            std::mutex mtx;
         };
         #else
         class ODFAEG_GRAPHICS_API PerPixelLinkedListRenderComponent : public HeavyComponent {

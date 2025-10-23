@@ -43,7 +43,7 @@ namespace odfaeg {
                 //math::Vec2f mousePos = math::Vec2f(window::IMouse::getPosition(getWindow()).x, window::IMouse::getPosition(getWindow()).y);
                 if (bb.isPointInside(mousePos)) {
                     if (getName() == "DENY")
-                        ////std::cout<<"button deny : "<<bb.getPosition()<<bb.getSize()<<mousePos<<std::endl;
+                        //////std::cout<<"button deny : "<<bb.getPosition()<<bb.getSize()<<mousePos<<std::endl;
                     return true;
                 }
                 return false;
