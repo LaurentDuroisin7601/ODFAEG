@@ -125,9 +125,7 @@ namespace odfaeg {
                 VkDeviceSize maxVboIndirectSize, maxModelDataSize, maxMaterialDataSize;
                 VkBuffer vboIndirect, vboIndirectStagingBuffer;
                 VkDeviceMemory vboIndirectMemory, vboIndirectStagingBufferMemory;
-                std::vector<VkDescriptorPool>& descriptorPool;
-                std::vector<VkDescriptorSetLayout>& descriptorSetLayout;
-                std::vector<std::vector<VkDescriptorSet>>& descriptorSets;
+
                 std::vector<VkBuffer> modelDataShaderStorageBuffers;
                 std::vector<VkDeviceMemory> modelDataShaderStorageBuffersMemory;
                 std::vector<VkBuffer> materialDataShaderStorageBuffers;

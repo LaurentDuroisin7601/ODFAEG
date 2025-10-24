@@ -247,9 +247,6 @@ namespace odfaeg {
             VkDeviceMemory alphaTextureImageMemory;
             window::Device& vkDevice;
             PFN_vkCmdPushDescriptorSetKHR vkCmdPushDescriptorSetKHR{ VK_NULL_HANDLE };
-            std::vector<VkDescriptorPool>& descriptorPool;
-            std::vector<VkDescriptorSetLayout>& descriptorSetLayout;
-            std::vector<std::vector<VkDescriptorSet>>& descriptorSets;
             std::array<std::vector<ModelData>, Batcher::nbPrimitiveTypes> modelDatas;
             std::array<std::vector<MaterialData>, Batcher::nbPrimitiveTypes> materialDatas;
             math::Vec4f resolution;

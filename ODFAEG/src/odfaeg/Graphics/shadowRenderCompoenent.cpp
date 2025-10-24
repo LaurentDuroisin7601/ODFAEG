@@ -20,11 +20,8 @@ namespace odfaeg {
             vb(window.getDevice()), vb2(window.getDevice()),
             vbBindlessTex {VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()),
              VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice())},
-             descriptorSetLayout(window.getDescriptorSetLayout()),
              depthGenShader(window.getDevice()), sBuildAlphaBufferShader(window.getDevice()), buildShadowMapShader(window.getDevice()), perPixShadowShader(window.getDevice()),
              vkDevice(window.getDevice()),
-             descriptorPool(window.getDescriptorPool()),
-             descriptorSets(window.getDescriptorSet()),
              depthBuffer(window.getDevice()),
              alphaBuffer(window.getDevice()),
              stencilBuffer(window.getDevice()),
@@ -568,8 +565,8 @@ namespace odfaeg {
                 blendModes.push_back(alpha);
                 blendModes.push_back(add);
                 blendModes.push_back(multiply);
-                std::vector<std::vector<std::vector<VkPipelineLayoutCreateInfo>>>& pipelineLayoutInfo = shadowMap.getPipelineLayoutCreateInfo();
-                std::vector<std::vector<std::vector<VkPipelineDepthStencilStateCreateInfo>>>& depthStencilCreateInfo = shadowMap.getDepthStencilCreateInfo();
+                std::vector<std::vector<std::vector<VkPipelineLayoutCreateInfo>>>& pipelineLayoutInfo = depthBuffer.getPipelineLayoutCreateInfo();
+                std::vector<std::vector<std::vector<VkPipelineDepthStencilStateCreateInfo>>>& depthStencilCreateInfo = depthBuffer.getDepthStencilCreateInfo();
                 if ((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders() > pipelineLayoutInfo.size()) {
                     pipelineLayoutInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
                     depthStencilCreateInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
@@ -627,6 +624,26 @@ namespace odfaeg {
                         }
                     }
                 }
+                pipelineLayoutInfo = alphaBuffer.getPipelineLayoutCreateInfo();
+                depthStencilCreateInfo = alphaBuffer.getDepthStencilCreateInfo();
+                if ((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders() > pipelineLayoutInfo.size()) {
+                    pipelineLayoutInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
+                    depthStencilCreateInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
+                }
+                for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
+                    if (shadowMap.getNbRenderTargets() > pipelineLayoutInfo[i].size()) {
+                        pipelineLayoutInfo[i].resize(shadowMap.getNbRenderTargets());
+                        depthStencilCreateInfo[i].resize(shadowMap.getNbRenderTargets());
+                    }
+                }
+                for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
+                    for (unsigned int j = 0; j < shadowMap.getNbRenderTargets(); j++) {
+                        if (NBDEPTHSTENCIL * none.nbBlendModes > pipelineLayoutInfo[i][j].size()) {
+                            pipelineLayoutInfo[i][j].resize(NBDEPTHSTENCIL * none.nbBlendModes);
+                            depthStencilCreateInfo[i][j].resize(NBDEPTHSTENCIL* none.nbBlendModes);
+                        }
+                    }
+                }
                 for (unsigned int b = 0; b < blendModes.size(); b++) {
                     states.blendMode = blendModes[b];
                     states.blendMode.updateIds();
@@ -648,6 +665,26 @@ namespace odfaeg {
                                depthStencilCreateInfo[sBuildAlphaBufferShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {};
                                alphaBuffer.createGraphicPipeline(static_cast<PrimitiveType>(i), states, NODEPTHNOSTENCIL, NBDEPTHSTENCIL);
                             }
+                        }
+                    }
+                }
+                pipelineLayoutInfo = stencilBuffer.getPipelineLayoutCreateInfo();
+                depthStencilCreateInfo = stencilBuffer.getDepthStencilCreateInfo();
+                if ((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders() > pipelineLayoutInfo.size()) {
+                    pipelineLayoutInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
+                    depthStencilCreateInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
+                }
+                for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
+                    if (shadowMap.getNbRenderTargets() > pipelineLayoutInfo[i].size()) {
+                        pipelineLayoutInfo[i].resize(shadowMap.getNbRenderTargets());
+                        depthStencilCreateInfo[i].resize(shadowMap.getNbRenderTargets());
+                    }
+                }
+                for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
+                    for (unsigned int j = 0; j < shadowMap.getNbRenderTargets(); j++) {
+                        if (NBDEPTHSTENCIL * none.nbBlendModes > pipelineLayoutInfo[i][j].size()) {
+                            pipelineLayoutInfo[i][j].resize(NBDEPTHSTENCIL * none.nbBlendModes);
+                            depthStencilCreateInfo[i][j].resize(NBDEPTHSTENCIL* none.nbBlendModes);
                         }
                     }
                 }
@@ -686,6 +723,26 @@ namespace odfaeg {
                         }
                     }
                 }
+                pipelineLayoutInfo = shadowMap.getPipelineLayoutCreateInfo();
+                depthStencilCreateInfo = shadowMap.getDepthStencilCreateInfo();
+                if ((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders() > pipelineLayoutInfo.size()) {
+                    pipelineLayoutInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
+                    depthStencilCreateInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
+                }
+                for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
+                    if (shadowMap.getNbRenderTargets() > pipelineLayoutInfo[i].size()) {
+                        pipelineLayoutInfo[i].resize(shadowMap.getNbRenderTargets());
+                        depthStencilCreateInfo[i].resize(shadowMap.getNbRenderTargets());
+                    }
+                }
+                for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
+                    for (unsigned int j = 0; j < shadowMap.getNbRenderTargets(); j++) {
+                        if (NBDEPTHSTENCIL * none.nbBlendModes > pipelineLayoutInfo[i][j].size()) {
+                            pipelineLayoutInfo[i][j].resize(NBDEPTHSTENCIL * none.nbBlendModes);
+                            depthStencilCreateInfo[i][j].resize(NBDEPTHSTENCIL* none.nbBlendModes);
+                        }
+                    }
+                }
                 for (unsigned int b = 0; b < blendModes.size(); b++) {
                     states.blendMode = blendModes[b];
                     states.blendMode.updateIds();
@@ -716,6 +773,7 @@ namespace odfaeg {
              void ShadowRenderComponent::createDescriptorPool(RenderStates states) {
                  Shader* shader = const_cast<Shader*>(states.shader);
                  if (shader == &depthGenShader) {
+                    std::vector<VkDescriptorPool>& descriptorPool = depthBuffer.getDescriptorPool();
                     if (shader->getNbShaders() > descriptorPool.size())
                         descriptorPool.resize(shader->getNbShaders());
                     unsigned int descriptorId = shader->getId();
@@ -743,6 +801,7 @@ namespace odfaeg {
                         throw std::runtime_error("echec de la creation de la pool de descripteurs!");
                     }
                  } else if (shader == &sBuildAlphaBufferShader) {
+                    std::vector<VkDescriptorPool>& descriptorPool = alphaBuffer.getDescriptorPool();
                     if (shader->getNbShaders() > descriptorPool.size())
                         descriptorPool.resize(shader->getNbShaders());
                     unsigned int descriptorId = shader->getId();
@@ -776,6 +835,7 @@ namespace odfaeg {
                         throw std::runtime_error("echec de la creation de la pool de descripteurs!");
                     }
                 } else if (shader == &buildShadowMapShader) {
+                    std::vector<VkDescriptorPool>& descriptorPool = stencilBuffer.getDescriptorPool();
                     if (shader->getNbShaders() > descriptorPool.size())
                         descriptorPool.resize(shader->getNbShaders());
                     unsigned int descriptorId = shader->getId();
@@ -803,6 +863,7 @@ namespace odfaeg {
                         throw std::runtime_error("echec de la creation de la pool de descripteurs!");
                     }
                 } else {
+                    std::vector<VkDescriptorPool>& descriptorPool = shadowMap.getDescriptorPool();
                     if (shader->getNbShaders() > descriptorPool.size())
                         descriptorPool.resize(shader->getNbShaders());
                     unsigned int descriptorId = shader->getId();
@@ -840,6 +901,7 @@ namespace odfaeg {
              void ShadowRenderComponent::createDescriptorSetLayout(RenderStates states) {
                  Shader* shader = const_cast<Shader*>(states.shader);
                  if (shader == &depthGenShader) {
+                    std::vector<VkDescriptorSetLayout>& descriptorSetLayout = depthBuffer.getDescriptorSetLayout();
                     if (shader->getNbShaders() > descriptorSetLayout.size())
                         descriptorSetLayout.resize(shader->getNbShaders());
                     unsigned int descriptorId = shader->getId();
@@ -889,6 +951,7 @@ namespace odfaeg {
                         throw std::runtime_error("failed to create descriptor set layout!");
                     }
                 } else if (shader == &sBuildAlphaBufferShader) {
+                    std::vector<VkDescriptorSetLayout>& descriptorSetLayout = alphaBuffer.getDescriptorSetLayout();
                     if (shader->getNbShaders() > descriptorSetLayout.size())
                         descriptorSetLayout.resize(shader->getNbShaders());
                     unsigned int descriptorId = shader->getId();
@@ -958,6 +1021,7 @@ namespace odfaeg {
                         throw std::runtime_error("failed to create descriptor set layout!");
                     }
                 } else if (shader == &buildShadowMapShader) {
+                    std::vector<VkDescriptorSetLayout>& descriptorSetLayout = stencilBuffer.getDescriptorSetLayout();
                     if (shader->getNbShaders() > descriptorSetLayout.size())
                         descriptorSetLayout.resize(shader->getNbShaders());
                     unsigned int descriptorId = shader->getId();
@@ -1005,6 +1069,7 @@ namespace odfaeg {
                         throw std::runtime_error("failed to create descriptor set layout!");
                     }
                 } else {
+                    std::vector<VkDescriptorSetLayout>& descriptorSetLayout = shadowMap.getDescriptorSetLayout();
                     if (shader->getNbShaders() > descriptorSetLayout.size())
                         descriptorSetLayout.resize(shader->getNbShaders());
                     unsigned int descriptorId = shader->getId();
@@ -1077,6 +1142,9 @@ namespace odfaeg {
              void ShadowRenderComponent::allocateDescriptorSets(RenderStates states) {
                 Shader* shader = const_cast<Shader*>(states.shader);
                 if (shader == &depthGenShader) {
+                    std::vector<std::vector<VkDescriptorSet>>& descriptorSets = depthBuffer.getDescriptorSet();
+                    std::vector<VkDescriptorPool>& descriptorPool = depthBuffer.getDescriptorPool();
+                    std::vector<VkDescriptorSetLayout>& descriptorSetLayout = depthBuffer.getDescriptorSetLayout();
                     if (shader->getNbShaders() > descriptorSets.size())
                         descriptorSets.resize(shader->getNbShaders());
                     unsigned int descriptorId = shader->getId();
@@ -1093,6 +1161,9 @@ namespace odfaeg {
                         throw std::runtime_error("echec de l'allocation d'un set de descripteurs!");
                     }
                 } else if (shader == &sBuildAlphaBufferShader) {
+                    std::vector<std::vector<VkDescriptorSet>>& descriptorSets = alphaBuffer.getDescriptorSet();
+                    std::vector<VkDescriptorPool>& descriptorPool = alphaBuffer.getDescriptorPool();
+                    std::vector<VkDescriptorSetLayout>& descriptorSetLayout = alphaBuffer.getDescriptorSetLayout();
                     if (shader->getNbShaders() > descriptorSets.size())
                         descriptorSets.resize(shader->getNbShaders());
                     unsigned int descriptorId = shader->getId();
@@ -1109,6 +1180,9 @@ namespace odfaeg {
                         throw std::runtime_error("echec de l'allocation d'un set de descripteurs!");
                     }
                 } else if (shader == &buildShadowMapShader) {
+                    std::vector<std::vector<VkDescriptorSet>>& descriptorSets = stencilBuffer.getDescriptorSet();
+                    std::vector<VkDescriptorPool>& descriptorPool = stencilBuffer.getDescriptorPool();
+                    std::vector<VkDescriptorSetLayout>& descriptorSetLayout = stencilBuffer.getDescriptorSetLayout();
                     if (shader->getNbShaders() > descriptorSets.size())
                         descriptorSets.resize(shader->getNbShaders());
                     unsigned int descriptorId = shader->getId();
@@ -1125,6 +1199,9 @@ namespace odfaeg {
                         throw std::runtime_error("echec de l'allocation d'un set de descripteurs!");
                     }
                 } else {
+                    std::vector<std::vector<VkDescriptorSet>>& descriptorSets = shadowMap.getDescriptorSet();
+                    std::vector<VkDescriptorPool>& descriptorPool = shadowMap.getDescriptorPool();
+                    std::vector<VkDescriptorSetLayout>& descriptorSetLayout = shadowMap.getDescriptorSetLayout();
                     if (shader->getNbShaders() > descriptorSets.size())
                         descriptorSets.resize(shader->getNbShaders());
                     unsigned int descriptorId = shader->getId();
@@ -1145,6 +1222,7 @@ namespace odfaeg {
              void ShadowRenderComponent::createDescriptorSets(RenderStates states) {
                  Shader* shader = const_cast<Shader*>(states.shader);
                  if (shader == &depthGenShader) {
+                       std::vector<std::vector<VkDescriptorSet>>& descriptorSets = depthBuffer.getDescriptorSet();
                        std::vector<Texture*> allTextures = Texture::getAllTextures();
                        unsigned int descriptorId =shader->getId();
                        for (size_t i = 0; i < depthBuffer.getMaxFramesInFlight(); i++) {
@@ -1206,6 +1284,7 @@ namespace odfaeg {
                             vkUpdateDescriptorSets(vkDevice.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
                        }
                 } else if (shader == &sBuildAlphaBufferShader) {
+                        std::vector<std::vector<VkDescriptorSet>>& descriptorSets = alphaBuffer.getDescriptorSet();
                         std::vector<Texture*> allTextures = Texture::getAllTextures();
                         unsigned int descriptorId = shader->getId();
                         for (size_t i = 0; i < alphaBuffer.getMaxFramesInFlight(); i++) {
@@ -1302,6 +1381,7 @@ namespace odfaeg {
                             vkUpdateDescriptorSets(vkDevice.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
                     }
                 } else if (shader == &buildShadowMapShader) {
+                    std::vector<std::vector<VkDescriptorSet>>& descriptorSets = stencilBuffer.getDescriptorSet();
                     std::vector<Texture*> allTextures = Texture::getAllTextures();
                     unsigned int descriptorId = shader->getId();
                     for (size_t i = 0; i < stencilBuffer.getMaxFramesInFlight(); i++) {
@@ -1363,6 +1443,7 @@ namespace odfaeg {
                         vkUpdateDescriptorSets(vkDevice.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
                     }
                 } else {
+                    std::vector<std::vector<VkDescriptorSet>>& descriptorSets = shadowMap.getDescriptorSet();
                     std::vector<Texture*> allTextures = Texture::getAllTextures();
                     unsigned int descriptorId = shader->getId();
                     for (size_t i = 0; i < shadowMap.getMaxFramesInFlight(); i++) {

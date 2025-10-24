@@ -200,9 +200,9 @@ namespace odfaeg {
             void draw(const Vertex* vertices, unsigned int vertexCount, PrimitiveType type,
                       RenderStates states = RenderStates::Default);
             void drawIndirectCount(VkCommandBuffer& cmd, unsigned int i, unsigned int nbIndirectCommands, unsigned int stride, VertexBuffer& vertexBuffer, VkBuffer vboIndirect, VkBuffer vboCount, unsigned int depthStencilId = 0, RenderStates states = RenderStates::Default);
-            void drawIndirect(VkCommandBuffer& cmd, unsigned int i, unsigned int nbIndirectCommands, unsigned int stride, VertexBuffer& vertexBuffer, VkBuffer vboIndirect,unsigned int depthStencilId = 0, RenderStates states = RenderStates::Default, unsigned int customDescriptorSetID = 0, unsigned int vertexOffset = 0, unsigned int drawCommandOffset = 0, std::vector<unsigned int> dynamicBufferOffsets = std::vector<unsigned int>(), unsigned int indexOffset = 0);
+            void drawIndirect(VkCommandBuffer& cmd, unsigned int i, unsigned int nbIndirectCommands, unsigned int stride, VertexBuffer& vertexBuffer, VkBuffer vboIndirect,unsigned int depthStencilId = 0, RenderStates states = RenderStates::Default, unsigned int customDescriptorSetID = 0, unsigned int vertexOffset = 0, unsigned int drawCommandOffset = 0, std::vector<unsigned int> dynamicBufferOffsets = std::vector<unsigned int>(), unsigned int indexOffset = 0, unsigned int id = 0);
             void drawVertexBuffer(VertexBuffer& vb, RenderStates states);
-            void drawVertexBuffer(VkCommandBuffer& cmd, unsigned int i,VertexBuffer& vertexBuffer,  unsigned int depthStencilId = 0, RenderStates states = RenderStates::Default, unsigned int instanceCount = 1);
+            void drawVertexBuffer(VkCommandBuffer& cmd, unsigned int i,VertexBuffer& vertexBuffer,  unsigned int depthStencilId = 0, RenderStates states = RenderStates::Default, unsigned int instanceCount = 1, unsigned int customDescriptorSetId = 0, unsigned int id = 0);
             /// \brief Return the size of the rendering region of the target
             ///
             /// \return Size in pixels
@@ -212,17 +212,17 @@ namespace odfaeg {
             virtual uint32_t getImageIndex() = 0;
             void cleanup();
             void createGraphicPipeline(PrimitiveType type,
-                      RenderStates states = RenderStates::Default, unsigned int depthStencilId=0, unsigned int nbDepthStencil=1);
+                      RenderStates states = RenderStates::Default, unsigned int depthStencilId=0, unsigned int nbDepthStencil=1, unsigned int id = 0);
             virtual std::vector<VkFramebuffer> getSwapchainFrameBuffers(unsigned int frameBufferId) = 0;
             virtual VkRenderPass getRenderPass(unsigned int renderPassId) = 0;
             virtual uint32_t getCurrentFrame() = 0;
-            static std::vector<std::vector<std::vector<VkPipelineLayoutCreateInfo>>>& getPipelineLayoutCreateInfo();
-            static std::vector<std::vector<std::vector<VkPipelineDepthStencilStateCreateInfo>>>& getDepthStencilCreateInfo();
-            static std::vector<std::vector<std::vector<VkPipelineLayout>>>& getPipelineLayout();
-            static std::vector<std::vector<std::vector<VkPipeline>>>& getGraphicPipeline();
-            static std::vector<VkDescriptorPool>& getDescriptorPool();
-            static std::vector<VkDescriptorSetLayout>& getDescriptorSetLayout();
-            static std::vector<std::vector<VkDescriptorSet>>& getDescriptorSet();
+            std::vector<std::vector<std::vector<VkPipelineLayoutCreateInfo>>>& getPipelineLayoutCreateInfo();
+            std::vector<std::vector<std::vector<VkPipelineDepthStencilStateCreateInfo>>>& getDepthStencilCreateInfo();
+            std::vector<std::vector<std::vector<VkPipelineLayout>>>& getPipelineLayout();
+            std::vector<std::vector<std::vector<VkPipeline>>>& getGraphicPipeline();
+            std::vector<VkDescriptorPool>& getDescriptorPool();
+            std::vector<VkDescriptorSetLayout>& getDescriptorSetLayout();
+            std::vector<std::vector<VkDescriptorSet>>& getDescriptorSet();
 
 
             void updateCommandBuffers(VkCommandPool commandPool, std::vector<VkCommandBuffer> commandBuffers);
@@ -285,18 +285,18 @@ namespace odfaeg {
             View        m_defaultView; ///< Default view
             View        m_view;  ///< Current view
             Shader defaultShader, defaultShader2;
-            static std::vector<std::vector<std::vector<VkPipelineLayoutCreateInfo>>> pipelineLayoutInfo;
-            static std::vector<std::vector<std::vector<VkPipelineDepthStencilStateCreateInfo>>> depthStencil;
-            static std::vector<std::vector<std::vector<VkPipelineLayout>>> pipelineLayout;
-            static std::vector<std::vector<std::vector<VkPipeline>>> graphicsPipeline;
+            std::vector<std::vector<std::vector<VkPipelineLayoutCreateInfo>>> pipelineLayoutInfo;
+            std::vector<std::vector<std::vector<VkPipelineDepthStencilStateCreateInfo>>> depthStencil;
+            std::vector<std::vector<std::vector<VkPipelineLayout>>> pipelineLayout;
+            std::vector<std::vector<std::vector<VkPipeline>>> graphicsPipeline;
             VkCommandPool commandPool;
             std::vector<VkCommandBuffer> commandBuffers;
             static std::vector<VertexBuffer*> vertexBuffers;
             static std::vector<std::vector<VkBuffer>> uniformBuffers;
             static std::vector<std::vector<VkDeviceMemory>> uniformBuffersMemory;
-            static std::vector<VkDescriptorPool> descriptorPool;
-            static std::vector<VkDescriptorSetLayout> descriptorSetLayout;
-            static std::vector<std::vector<VkDescriptorSet>> descriptorSets;
+            std::vector<VkDescriptorPool> descriptorPool;
+            std::vector<VkDescriptorSetLayout> descriptorSetLayout;
+            std::vector<std::vector<VkDescriptorSet>> descriptorSets;
             unsigned int selectedBuffer;
             static unsigned int nbBuffers;
             unsigned int id;

@@ -16,11 +16,8 @@ namespace odfaeg {
                 vb(window.getDevice()),
                 vbBindlessTex {VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()),
                 VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice())},
-                descriptorSetLayout(window.getDescriptorSetLayout()),
                 depthBufferGenerator(window.getDevice()), buildAlphaBufferGenerator(window.getDevice()), specularTextureGenerator(window.getDevice()),bumpTextureGenerator(window.getDevice()), lightMapGenerator(window.getDevice()),
                 vkDevice(window.getDevice()),
-                descriptorPool(window.getDescriptorPool()),
-                descriptorSets(window.getDescriptorSet()),
                 depthBuffer(window.getDevice()),
                 alphaBuffer(window.getDevice()),
                 bumpTexture(window.getDevice()),
@@ -860,8 +857,8 @@ namespace odfaeg {
                 blendModes.push_back(alpha);
                 blendModes.push_back(add);
                 blendModes.push_back(multiply);
-                std::vector<std::vector<std::vector<VkPipelineLayoutCreateInfo>>>& pipelineLayoutInfo = lightMap.getPipelineLayoutCreateInfo();
-                std::vector<std::vector<std::vector<VkPipelineDepthStencilStateCreateInfo>>>& depthStencilCreateInfo = lightMap.getDepthStencilCreateInfo();
+                std::vector<std::vector<std::vector<VkPipelineLayoutCreateInfo>>>& pipelineLayoutInfo = depthBuffer.getPipelineLayoutCreateInfo();
+                std::vector<std::vector<std::vector<VkPipelineDepthStencilStateCreateInfo>>>& depthStencilCreateInfo = depthBuffer.getDepthStencilCreateInfo();
                 if ((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders() > pipelineLayoutInfo.size()) {
                     pipelineLayoutInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
                     depthStencilCreateInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
@@ -919,6 +916,26 @@ namespace odfaeg {
                         }
                     }
                 }
+                pipelineLayoutInfo = lightDepthBuffer.getPipelineLayoutCreateInfo();
+                depthStencilCreateInfo = lightDepthBuffer.getDepthStencilCreateInfo();
+                if ((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders() > pipelineLayoutInfo.size()) {
+                    pipelineLayoutInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
+                    depthStencilCreateInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
+                }
+                for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
+                    if (lightMap.getNbRenderTargets() > pipelineLayoutInfo[i].size()) {
+                        pipelineLayoutInfo[i].resize(lightMap.getNbRenderTargets());
+                        depthStencilCreateInfo[i].resize(lightMap.getNbRenderTargets());
+                    }
+                }
+                for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
+                    for (unsigned int j = 0; j < lightMap.getNbRenderTargets(); j++) {
+                        if (NBDEPTHSTENCIL * none.nbBlendModes > pipelineLayoutInfo[i][j].size()) {
+                            pipelineLayoutInfo[i][j].resize(NBDEPTHSTENCIL * none.nbBlendModes);
+                            depthStencilCreateInfo[i][j].resize(NBDEPTHSTENCIL* none.nbBlendModes);
+                        }
+                    }
+                }
                 for (unsigned int b = 0; b < blendModes.size(); b++) {
                     states.blendMode = blendModes[b];
                     states.blendMode.updateIds();
@@ -949,6 +966,26 @@ namespace odfaeg {
                                depthStencilCreateInfo[depthBufferGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][lightDepthBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {};
                                lightDepthBuffer.createGraphicPipeline(static_cast<PrimitiveType>(i), states, NODEPTHNOSTENCIL, NBDEPTHSTENCIL);
                             }
+                        }
+                    }
+                }
+                pipelineLayoutInfo = alphaBuffer.getPipelineLayoutCreateInfo();
+                depthStencilCreateInfo = alphaBuffer.getDepthStencilCreateInfo();
+                if ((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders() > pipelineLayoutInfo.size()) {
+                    pipelineLayoutInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
+                    depthStencilCreateInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
+                }
+                for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
+                    if (lightMap.getNbRenderTargets() > pipelineLayoutInfo[i].size()) {
+                        pipelineLayoutInfo[i].resize(lightMap.getNbRenderTargets());
+                        depthStencilCreateInfo[i].resize(lightMap.getNbRenderTargets());
+                    }
+                }
+                for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
+                    for (unsigned int j = 0; j < lightMap.getNbRenderTargets(); j++) {
+                        if (NBDEPTHSTENCIL * none.nbBlendModes > pipelineLayoutInfo[i][j].size()) {
+                            pipelineLayoutInfo[i][j].resize(NBDEPTHSTENCIL * none.nbBlendModes);
+                            depthStencilCreateInfo[i][j].resize(NBDEPTHSTENCIL* none.nbBlendModes);
                         }
                     }
                 }
@@ -987,6 +1024,26 @@ namespace odfaeg {
                         }
                     }
                 }
+                pipelineLayoutInfo = specularTexture.getPipelineLayoutCreateInfo();
+                depthStencilCreateInfo = specularTexture.getDepthStencilCreateInfo();
+                if ((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders() > pipelineLayoutInfo.size()) {
+                    pipelineLayoutInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
+                    depthStencilCreateInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
+                }
+                for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
+                    if (lightMap.getNbRenderTargets() > pipelineLayoutInfo[i].size()) {
+                        pipelineLayoutInfo[i].resize(lightMap.getNbRenderTargets());
+                        depthStencilCreateInfo[i].resize(lightMap.getNbRenderTargets());
+                    }
+                }
+                for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
+                    for (unsigned int j = 0; j < lightMap.getNbRenderTargets(); j++) {
+                        if (NBDEPTHSTENCIL * none.nbBlendModes > pipelineLayoutInfo[i][j].size()) {
+                            pipelineLayoutInfo[i][j].resize(NBDEPTHSTENCIL * none.nbBlendModes);
+                            depthStencilCreateInfo[i][j].resize(NBDEPTHSTENCIL* none.nbBlendModes);
+                        }
+                    }
+                }
                 for (unsigned int b = 0; b < blendModes.size(); b++) {
                     states.blendMode = blendModes[b];
                     states.blendMode.updateIds();
@@ -1019,6 +1076,26 @@ namespace odfaeg {
                                depthStencilCreateInfo[specularTextureGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][specularTexture.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {};
                                specularTexture.createGraphicPipeline(static_cast<PrimitiveType>(i), states, NODEPTHNOSTENCIL, NBDEPTHSTENCIL);
                             }
+                        }
+                    }
+                }
+                pipelineLayoutInfo = bumpTexture.getPipelineLayoutCreateInfo();
+                depthStencilCreateInfo = bumpTexture.getDepthStencilCreateInfo();
+                if ((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders() > pipelineLayoutInfo.size()) {
+                    pipelineLayoutInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
+                    depthStencilCreateInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
+                }
+                for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
+                    if (lightMap.getNbRenderTargets() > pipelineLayoutInfo[i].size()) {
+                        pipelineLayoutInfo[i].resize(lightMap.getNbRenderTargets());
+                        depthStencilCreateInfo[i].resize(lightMap.getNbRenderTargets());
+                    }
+                }
+                for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
+                    for (unsigned int j = 0; j < lightMap.getNbRenderTargets(); j++) {
+                        if (NBDEPTHSTENCIL * none.nbBlendModes > pipelineLayoutInfo[i][j].size()) {
+                            pipelineLayoutInfo[i][j].resize(NBDEPTHSTENCIL * none.nbBlendModes);
+                            depthStencilCreateInfo[i][j].resize(NBDEPTHSTENCIL* none.nbBlendModes);
                         }
                     }
                 }
@@ -1055,6 +1132,26 @@ namespace odfaeg {
                                depthStencilCreateInfo[bumpTextureGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][bumpTexture.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {};
                                bumpTexture.createGraphicPipeline(static_cast<PrimitiveType>(i), states, NODEPTHNOSTENCIL, NBDEPTHSTENCIL);
                             }
+                        }
+                    }
+                }
+                pipelineLayoutInfo = lightMap.getPipelineLayoutCreateInfo();
+                depthStencilCreateInfo = lightMap.getDepthStencilCreateInfo();
+                if ((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders() > pipelineLayoutInfo.size()) {
+                    pipelineLayoutInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
+                    depthStencilCreateInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
+                }
+                for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
+                    if (lightMap.getNbRenderTargets() > pipelineLayoutInfo[i].size()) {
+                        pipelineLayoutInfo[i].resize(lightMap.getNbRenderTargets());
+                        depthStencilCreateInfo[i].resize(lightMap.getNbRenderTargets());
+                    }
+                }
+                for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
+                    for (unsigned int j = 0; j < lightMap.getNbRenderTargets(); j++) {
+                        if (NBDEPTHSTENCIL * none.nbBlendModes > pipelineLayoutInfo[i][j].size()) {
+                            pipelineLayoutInfo[i][j].resize(NBDEPTHSTENCIL * none.nbBlendModes);
+                            depthStencilCreateInfo[i][j].resize(NBDEPTHSTENCIL* none.nbBlendModes);
                         }
                     }
                 }
@@ -1097,6 +1194,7 @@ namespace odfaeg {
             void LightRenderComponent::createDescriptorPool(RenderStates states) {
                 Shader* shader = const_cast<Shader*>(states.shader);
                 if (shader == &depthBufferGenerator) {
+                    std::vector<VkDescriptorPool>& descriptorPool = depthBuffer.getDescriptorPool();
                     if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorPool.size())
                         descriptorPool.resize(shader->getNbShaders()*depthBuffer.getNbRenderTargets());
                     unsigned int descriptorId = shader->getId();
@@ -1124,7 +1222,18 @@ namespace odfaeg {
                         throw std::runtime_error("echec de la creation de la pool de descripteurs!");
                     }
 
+                    descriptorPool = lightDepthBuffer.getDescriptorPool();
+                    if (descriptorPool[descriptorId] != nullptr) {
+                        vkDestroyDescriptorPool(vkDevice.getDevice(), descriptorPool[descriptorId], nullptr);
+                    }
+
+
+                    if (vkCreateDescriptorPool(vkDevice.getDevice(), &poolInfo, nullptr, &descriptorPool[descriptorId]) != VK_SUCCESS) {
+                        throw std::runtime_error("echec de la creation de la pool de descripteurs!");
+                    }
+
                 } else if (shader == &buildAlphaBufferGenerator) {
+                    std::vector<VkDescriptorPool>& descriptorPool = alphaBuffer.getDescriptorPool();
                     if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorPool.size())
                         descriptorPool.resize(shader->getNbShaders()*alphaBuffer.getNbRenderTargets());
                     unsigned int descriptorId = shader->getId();
@@ -1154,6 +1263,7 @@ namespace odfaeg {
                         throw std::runtime_error("echec de la creation de la pool de descripteurs!");
                     }
                 } else if (shader == &specularTextureGenerator) {
+                    std::vector<VkDescriptorPool>& descriptorPool = specularTexture.getDescriptorPool();
                     if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorPool.size())
                         descriptorPool.resize(shader->getNbShaders()*specularTexture.getNbRenderTargets());
                     unsigned int descriptorId = shader->getId();
@@ -1176,6 +1286,7 @@ namespace odfaeg {
                         throw std::runtime_error("echec de la creation de la pool de descripteurs!");
                     }
                 } else if (shader == &bumpTextureGenerator) {
+                    std::vector<VkDescriptorPool>& descriptorPool = bumpTexture.getDescriptorPool();
                     if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorPool.size())
                         descriptorPool.resize(shader->getNbShaders()*bumpTexture.getNbRenderTargets());
                     unsigned int descriptorId = shader->getId();
@@ -1199,6 +1310,7 @@ namespace odfaeg {
                     }
 
                 } else {
+                    std::vector<VkDescriptorPool>& descriptorPool = lightMap.getDescriptorPool();
                     if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorPool.size())
                         descriptorPool.resize(shader->getNbShaders()*lightMap.getNbRenderTargets());
                     unsigned int descriptorId = shader->getId();
@@ -1228,6 +1340,7 @@ namespace odfaeg {
             void LightRenderComponent::createDescriptorSetLayout(RenderStates states) {
                 Shader* shader = const_cast<Shader*>(states.shader);
                 if (shader == &depthBufferGenerator) {
+                    std::vector<VkDescriptorSetLayout>& descriptorSetLayout = depthBuffer.getDescriptorSetLayout();
                     if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorSetLayout.size())
                         descriptorSetLayout.resize(shader->getNbShaders()*depthBuffer.getNbRenderTargets());
                     unsigned int descriptorId = shader->getId();
@@ -1275,7 +1388,12 @@ namespace odfaeg {
                     if (vkCreateDescriptorSetLayout(vkDevice.getDevice(), &layoutInfo, nullptr, &descriptorSetLayout[descriptorId]) != VK_SUCCESS) {
                         throw std::runtime_error("failed to create descriptor set layout!");
                     }
+                    descriptorSetLayout = lightDepthBuffer.getDescriptorSetLayout();
+                    if (vkCreateDescriptorSetLayout(vkDevice.getDevice(), &layoutInfo, nullptr, &descriptorSetLayout[descriptorId]) != VK_SUCCESS) {
+                        throw std::runtime_error("failed to create descriptor set layout!");
+                    }
                 } else if (shader == &buildAlphaBufferGenerator) {
+                    std::vector<VkDescriptorSetLayout>& descriptorSetLayout = alphaBuffer.getDescriptorSetLayout();
                     if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorSetLayout.size())
                         descriptorSetLayout.resize(shader->getNbShaders()*alphaBuffer.getNbRenderTargets());
                     unsigned int descriptorId = shader->getId();
@@ -1331,6 +1449,7 @@ namespace odfaeg {
                         throw std::runtime_error("failed to create descriptor set layout!");
                     }
                 } else if (shader == &specularTextureGenerator) {
+                    std::vector<VkDescriptorSetLayout>& descriptorSetLayout = specularTexture.getDescriptorSetLayout();
                     if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorSetLayout.size())
                         descriptorSetLayout.resize(shader->getNbShaders()*specularTexture.getNbRenderTargets());
                     unsigned int descriptorId = shader->getId();
@@ -1379,6 +1498,7 @@ namespace odfaeg {
                         throw std::runtime_error("failed to create descriptor set layout!");
                     }
                 } else if (shader == &bumpTextureGenerator) {
+                    std::vector<VkDescriptorSetLayout>& descriptorSetLayout = bumpTexture.getDescriptorSetLayout();
                     if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorSetLayout.size())
                         descriptorSetLayout.resize(shader->getNbShaders()*bumpTexture.getNbRenderTargets());
                     unsigned int descriptorId = shader->getId();
@@ -1428,6 +1548,7 @@ namespace odfaeg {
                         throw std::runtime_error("failed to create descriptor set layout!");
                     }
                 } else {
+                    std::vector<VkDescriptorSetLayout>& descriptorSetLayout = lightMap.getDescriptorSetLayout();
                     if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorSetLayout.size())
                         descriptorSetLayout.resize(shader->getNbShaders()*lightMap.getNbRenderTargets());
                     unsigned int descriptorId = shader->getId();
@@ -1492,9 +1613,11 @@ namespace odfaeg {
                 }
             }
             void LightRenderComponent::createDescriptorSets(RenderStates states, bool lightDepth) {
+
                 Shader* shader = const_cast<Shader*>(states.shader);
                 if (shader == &depthBufferGenerator) {
-                    std::vector<Texture*> allTextures = Texture::getAllTextures();
+                   std::vector<std::vector<VkDescriptorSet>> descriptorSets;
+                   std::vector<Texture*> allTextures = Texture::getAllTextures();
                    unsigned int descriptorId = shader->getId();
                    for (size_t i = 0; i < depthBuffer.getMaxFramesInFlight(); i++) {
                         std::vector<VkDescriptorImageInfo>	descriptorImageInfos;
@@ -1514,6 +1637,7 @@ namespace odfaeg {
                         descriptorWrites[0].pImageInfo = descriptorImageInfos.data();
 
                         if (!lightDepth) {
+                            descriptorSets = lightDepthBuffer.getDescriptorSet();
                             VkDescriptorImageInfo headPtrDescriptorImageInfo;
                             headPtrDescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
                             headPtrDescriptorImageInfo.imageView = depthTextureImageView;
@@ -1527,6 +1651,7 @@ namespace odfaeg {
                             descriptorWrites[1].descriptorCount = 1;
                             descriptorWrites[1].pImageInfo = &headPtrDescriptorImageInfo;
                         } else {
+                            descriptorSets = depthBuffer.getDescriptorSet();
                             VkDescriptorImageInfo headPtrDescriptorImageInfo;
                             headPtrDescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
                             headPtrDescriptorImageInfo.imageView = lightDepthTextureImageView;
@@ -1569,6 +1694,7 @@ namespace odfaeg {
                         vkUpdateDescriptorSets(vkDevice.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
                    }
                 } else if (shader == &buildAlphaBufferGenerator) {
+                        std::vector<std::vector<VkDescriptorSet>>& descriptorSets = alphaBuffer.getDescriptorSet();
                         std::vector<Texture*> allTextures = Texture::getAllTextures();
                         unsigned int descriptorId = shader->getId();
                         for (size_t i = 0; i < alphaBuffer.getMaxFramesInFlight(); i++) {
@@ -1646,6 +1772,7 @@ namespace odfaeg {
                             vkUpdateDescriptorSets(vkDevice.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
                     }
                 } else if (shader == &specularTextureGenerator) {
+                    std::vector<std::vector<VkDescriptorSet>>& descriptorSets = specularTexture.getDescriptorSet();
                     std::vector<Texture*> allTextures = Texture::getAllTextures();
                     unsigned int descriptorId = shader->getId();
                     for (size_t i = 0; i < specularTexture.getMaxFramesInFlight(); i++) {
@@ -1707,6 +1834,7 @@ namespace odfaeg {
                         vkUpdateDescriptorSets(vkDevice.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
                     }
                 } else if (shader == &bumpTextureGenerator) {
+                    std::vector<std::vector<VkDescriptorSet>>& descriptorSets = bumpTexture.getDescriptorSet();
                     std::vector<Texture*> allTextures = Texture::getAllTextures();
                     unsigned int descriptorId = shader->getId();
                     for (size_t i = 0; i < bumpTexture.getMaxFramesInFlight(); i++) {
@@ -1769,6 +1897,7 @@ namespace odfaeg {
                         vkUpdateDescriptorSets(vkDevice.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
                     }
                 } else {
+                    std::vector<std::vector<VkDescriptorSet>>& descriptorSets = lightMap.getDescriptorSet();
                     unsigned int descriptorId = shader->getId();
                     for (size_t i = 0; i < lightMap.getMaxFramesInFlight(); i++) {
                         std::array<VkWriteDescriptorSet, 6> descriptorWrites{};
@@ -1857,6 +1986,9 @@ namespace odfaeg {
             void LightRenderComponent::allocateDescriptorSets(RenderStates states) {
                 Shader* shader = const_cast<Shader*>(states.shader);
                 if (shader == &depthBufferGenerator) {
+                    std::vector<std::vector<VkDescriptorSet>>& descriptorSets = depthBuffer.getDescriptorSet();
+                    std::vector<VkDescriptorPool>& descriptorPool = depthBuffer.getDescriptorPool();
+                    std::vector<VkDescriptorSetLayout>& descriptorSetLayout = depthBuffer.getDescriptorSetLayout();
                     if (shader->getNbShaders() > descriptorSets.size())
                         descriptorSets.resize(shader->getNbShaders());
                     unsigned int descriptorId = shader->getId();
@@ -1872,7 +2004,22 @@ namespace odfaeg {
                     if (vkAllocateDescriptorSets(vkDevice.getDevice(), &allocInfo, descriptorSets[descriptorId].data()) != VK_SUCCESS) {
                         throw std::runtime_error("echec de l'allocation d'un set de descripteurs!");
                     }
+                    descriptorSets = lightDepthBuffer.getDescriptorSet();
+                    descriptorPool = lightDepthBuffer.getDescriptorPool();
+                    descriptorSetLayout = lightDepthBuffer.getDescriptorSetLayout();
+                    layouts = std::vector<VkDescriptorSetLayout>(depthBuffer.getMaxFramesInFlight(), descriptorSetLayout[descriptorId]);
+                    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+                    allocInfo.descriptorPool = descriptorPool[descriptorId];
+                    allocInfo.descriptorSetCount = static_cast<uint32_t>(depthBuffer.getMaxFramesInFlight());
+                    allocInfo.pSetLayouts = layouts.data();
+
+                    if (vkAllocateDescriptorSets(vkDevice.getDevice(), &allocInfo, descriptorSets[descriptorId].data()) != VK_SUCCESS) {
+                        throw std::runtime_error("echec de l'allocation d'un set de descripteurs!");
+                    }
                 } else if (shader == &buildAlphaBufferGenerator) {
+                    std::vector<std::vector<VkDescriptorSet>>& descriptorSets = alphaBuffer.getDescriptorSet();
+                    std::vector<VkDescriptorPool>& descriptorPool = alphaBuffer.getDescriptorPool();
+                    std::vector<VkDescriptorSetLayout>& descriptorSetLayout = alphaBuffer.getDescriptorSetLayout();
                     if (shader->getNbShaders() > descriptorSets.size())
                         descriptorSets.resize(shader->getNbShaders());
                     unsigned int descriptorId = shader->getId();
@@ -1889,55 +2036,64 @@ namespace odfaeg {
                         throw std::runtime_error("echec de l'allocation d'un set de descripteurs!");
                     }
 
-            } else if (shader == &specularTextureGenerator) {
-                if (shader->getNbShaders() > descriptorSets.size())
-                    descriptorSets.resize(shader->getNbShaders());
-                unsigned int descriptorId =  shader->getId();
-                for (unsigned int i = 0; i < descriptorSets.size(); i++) {
-                    descriptorSets[i].resize(specularTexture.getMaxFramesInFlight());
+                } else if (shader == &specularTextureGenerator) {
+                    std::vector<std::vector<VkDescriptorSet>>& descriptorSets = specularTexture.getDescriptorSet();
+                    std::vector<VkDescriptorPool>& descriptorPool = specularTexture.getDescriptorPool();
+                    std::vector<VkDescriptorSetLayout>& descriptorSetLayout = specularTexture.getDescriptorSetLayout();
+                    if (shader->getNbShaders() > descriptorSets.size())
+                        descriptorSets.resize(shader->getNbShaders());
+                    unsigned int descriptorId =  shader->getId();
+                    for (unsigned int i = 0; i < descriptorSets.size(); i++) {
+                        descriptorSets[i].resize(specularTexture.getMaxFramesInFlight());
+                    }
+                    std::vector<VkDescriptorSetLayout> layouts(specularTexture.getMaxFramesInFlight(), descriptorSetLayout[descriptorId]);
+                    VkDescriptorSetAllocateInfo allocInfo{};
+                    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+                    allocInfo.descriptorPool = descriptorPool[descriptorId];
+                    allocInfo.descriptorSetCount = static_cast<uint32_t>(specularTexture.getMaxFramesInFlight());
+                    allocInfo.pSetLayouts = layouts.data();
+                    if (vkAllocateDescriptorSets(vkDevice.getDevice(), &allocInfo, descriptorSets[descriptorId].data()) != VK_SUCCESS) {
+                        throw std::runtime_error("echec de l'allocation d'un set de descripteurs!");
+                    }
+                } else if (shader == &bumpTextureGenerator) {
+                    std::vector<std::vector<VkDescriptorSet>>& descriptorSets = bumpTexture.getDescriptorSet();
+                    std::vector<VkDescriptorPool>& descriptorPool = bumpTexture.getDescriptorPool();
+                    std::vector<VkDescriptorSetLayout>& descriptorSetLayout = bumpTexture.getDescriptorSetLayout();
+                    if (shader->getNbShaders() > descriptorSets.size())
+                        descriptorSets.resize(shader->getNbShaders());
+                    unsigned int descriptorId = shader->getId();
+                    for (unsigned int i = 0; i < descriptorSets.size(); i++) {
+                        descriptorSets[i].resize(bumpTexture.getMaxFramesInFlight());
+                    }
+                    std::vector<VkDescriptorSetLayout> layouts(bumpTexture.getMaxFramesInFlight(), descriptorSetLayout[descriptorId]);
+                    VkDescriptorSetAllocateInfo allocInfo{};
+                    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+                    allocInfo.descriptorPool = descriptorPool[descriptorId];
+                    allocInfo.descriptorSetCount = static_cast<uint32_t>(bumpTexture.getMaxFramesInFlight());
+                    allocInfo.pSetLayouts = layouts.data();
+                    if (vkAllocateDescriptorSets(vkDevice.getDevice(), &allocInfo, descriptorSets[descriptorId].data()) != VK_SUCCESS) {
+                        throw std::runtime_error("echec de l'allocation d'un set de descripteurs!");
+                    }
+                } else {
+                    std::vector<std::vector<VkDescriptorSet>>& descriptorSets = lightMap.getDescriptorSet();
+                    std::vector<VkDescriptorPool>& descriptorPool = lightMap.getDescriptorPool();
+                    std::vector<VkDescriptorSetLayout>& descriptorSetLayout = lightMap.getDescriptorSetLayout();
+                    if (shader->getNbShaders() > descriptorSets.size())
+                        descriptorSets.resize(shader->getNbShaders());
+                    unsigned int descriptorId = shader->getId();
+                    for (unsigned int i = 0; i < descriptorSets.size(); i++) {
+                        descriptorSets[i].resize(lightMap.getMaxFramesInFlight());
+                    }
+                    std::vector<VkDescriptorSetLayout> layouts(lightMap.getMaxFramesInFlight(), descriptorSetLayout[descriptorId]);
+                    VkDescriptorSetAllocateInfo allocInfo{};
+                    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+                    allocInfo.descriptorPool = descriptorPool[descriptorId];
+                    allocInfo.descriptorSetCount = static_cast<uint32_t>(lightMap.getMaxFramesInFlight());
+                    allocInfo.pSetLayouts = layouts.data();
+                    if (vkAllocateDescriptorSets(vkDevice.getDevice(), &allocInfo, descriptorSets[descriptorId].data()) != VK_SUCCESS) {
+                        throw std::runtime_error("echec de l'allocation d'un set de descripteurs!");
+                    }
                 }
-                std::vector<VkDescriptorSetLayout> layouts(specularTexture.getMaxFramesInFlight(), descriptorSetLayout[descriptorId]);
-                VkDescriptorSetAllocateInfo allocInfo{};
-                allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-                allocInfo.descriptorPool = descriptorPool[descriptorId];
-                allocInfo.descriptorSetCount = static_cast<uint32_t>(specularTexture.getMaxFramesInFlight());
-                allocInfo.pSetLayouts = layouts.data();
-                if (vkAllocateDescriptorSets(vkDevice.getDevice(), &allocInfo, descriptorSets[descriptorId].data()) != VK_SUCCESS) {
-                    throw std::runtime_error("echec de l'allocation d'un set de descripteurs!");
-                }
-            } else if (shader == &bumpTextureGenerator) {
-                if (shader->getNbShaders() > descriptorSets.size())
-                    descriptorSets.resize(shader->getNbShaders());
-                unsigned int descriptorId = shader->getId();
-                for (unsigned int i = 0; i < descriptorSets.size(); i++) {
-                    descriptorSets[i].resize(bumpTexture.getMaxFramesInFlight());
-                }
-                std::vector<VkDescriptorSetLayout> layouts(bumpTexture.getMaxFramesInFlight(), descriptorSetLayout[descriptorId]);
-                VkDescriptorSetAllocateInfo allocInfo{};
-                allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-                allocInfo.descriptorPool = descriptorPool[descriptorId];
-                allocInfo.descriptorSetCount = static_cast<uint32_t>(bumpTexture.getMaxFramesInFlight());
-                allocInfo.pSetLayouts = layouts.data();
-                if (vkAllocateDescriptorSets(vkDevice.getDevice(), &allocInfo, descriptorSets[descriptorId].data()) != VK_SUCCESS) {
-                    throw std::runtime_error("echec de l'allocation d'un set de descripteurs!");
-                }
-            } else {
-                if (shader->getNbShaders() > descriptorSets.size())
-                    descriptorSets.resize(shader->getNbShaders());
-                unsigned int descriptorId = shader->getId();
-                for (unsigned int i = 0; i < descriptorSets.size(); i++) {
-                    descriptorSets[i].resize(lightMap.getMaxFramesInFlight());
-                }
-                std::vector<VkDescriptorSetLayout> layouts(lightMap.getMaxFramesInFlight(), descriptorSetLayout[descriptorId]);
-                VkDescriptorSetAllocateInfo allocInfo{};
-                allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-                allocInfo.descriptorPool = descriptorPool[descriptorId];
-                allocInfo.descriptorSetCount = static_cast<uint32_t>(lightMap.getMaxFramesInFlight());
-                allocInfo.pSetLayouts = layouts.data();
-                if (vkAllocateDescriptorSets(vkDevice.getDevice(), &allocInfo, descriptorSets[descriptorId].data()) != VK_SUCCESS) {
-                    throw std::runtime_error("echec de l'allocation d'un set de descripteurs!");
-                }
-            }
         }
         void LightRenderComponent::drawDepthLightInstances() {
             for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {

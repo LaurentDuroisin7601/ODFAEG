@@ -104,9 +104,11 @@ namespace odfaeg {
                 vkBindBufferMemory(vkDevice.getDevice(), buffer, bufferMemory, 0);
             }
             void VertexBuffer::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size, VkCommandBuffer cmd) {
-                VkBufferCopy copyRegion{};
-                copyRegion.size = size;
-                vkCmdCopyBuffer(cmd, srcBuffer, dstBuffer, 1, &copyRegion);
+                if (srcBuffer != nullptr && dstBuffer != nullptr && size > 0) {
+                    VkBufferCopy copyRegion{};
+                    copyRegion.size = size;
+                    vkCmdCopyBuffer(cmd, srcBuffer, dstBuffer, 1, &copyRegion);
+                }
             }
             void VertexBuffer::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) {
                 VkCommandBufferAllocateInfo allocInfo{};
@@ -179,8 +181,9 @@ namespace odfaeg {
                 return m_primitiveType;
             }
             void VertexBuffer::update(VkCommandBuffer cmd) {
+                VkDeviceSize bufferSize = sizeof(Vertex) * m_vertices.size();
                 if (needToUpdateVertexBuffer) {
-                    VkDeviceSize bufferSize = sizeof(Vertex) * m_vertices.size();
+
                     if (bufferSize > maxVerticesSize) {
                         if (vertexBuffer != VK_NULL_HANDLE) {
                             vkDestroyBuffer(vkDevice.getDevice(), vertexBuffer, nullptr);
@@ -199,14 +202,15 @@ namespace odfaeg {
                     vkMapMemory(vkDevice.getDevice(), vertexStagingBufferMemory, 0, bufferSize, 0, &data);
                         memcpy(data, m_vertices.data(), (size_t) bufferSize);
                     vkUnmapMemory(vkDevice.getDevice(), vertexStagingBufferMemory);*/
-                    copyBuffer(vertexStagingBuffer, vertexBuffer, bufferSize, cmd);
+
 
 
                     needToUpdateVertexBuffer = false;
                     ////////std::cout<<"vertex buffer : "<<indexBuffer<<std::endl;
                 }
+                copyBuffer(vertexStagingBuffer, vertexBuffer, bufferSize, cmd);
                 if (needToUpdateIndexBuffer) {
-                    VkDeviceSize bufferSize = sizeof(uint16_t) * indices.size();
+
                     if (bufferSize > maxIndexSize) {
                         if (indexBuffer != VK_NULL_HANDLE) {
                             vkDestroyBuffer(vkDevice.getDevice(), indexBuffer, nullptr);
@@ -226,32 +230,42 @@ namespace odfaeg {
                     memcpy(data, indices.data(), (size_t) bufferSize);
                     vkUnmapMemory(vkDevice.getDevice(), indexStagingBufferMemory);*/
 
-                    copyBuffer(indexStagingBuffer, indexBuffer, bufferSize, cmd);
+
 
 
                     needToUpdateIndexBuffer  = false;
                     ////////std::cout<<"index buffer : "<<indexBuffer<<std::endl;
                 }
+                bufferSize = sizeof(uint16_t) * indices.size();
+                copyBuffer(indexStagingBuffer, indexBuffer, bufferSize, cmd);
             }
             void VertexBuffer::updateStagingBuffers() {
-                if (needToUpdateVertexStagingBuffer) {
+                //if (needToUpdateVertexStagingBuffer) {
                     ////std::cout<<"update vb sg"<<std::endl;
+                if (vertexStagingBufferMemory != nullptr) {
                     VkDeviceSize bufferSize = sizeof(Vertex) * m_vertices.size();
-                    void* data;
-                    vkMapMemory(vkDevice.getDevice(), vertexStagingBufferMemory, 0, bufferSize, 0, &data);
-                        memcpy(data, m_vertices.data(), (size_t) bufferSize);
-                    vkUnmapMemory(vkDevice.getDevice(), vertexStagingBufferMemory);
-                    needToUpdateVertexStagingBuffer = false;
+                    if (bufferSize > 0) {
+                        void* data;
+                        vkMapMemory(vkDevice.getDevice(), vertexStagingBufferMemory, 0, bufferSize, 0, &data);
+                            memcpy(data, m_vertices.data(), (size_t) bufferSize);
+                        vkUnmapMemory(vkDevice.getDevice(), vertexStagingBufferMemory);
+                    }
                 }
-                if (needToUpdateIndexStagingBuffer) {
+                //needToUpdateVertexStagingBuffer = false;
+                //}
+                //if (needToUpdateIndexStagingBuffer) {
                     ////std::cout<<"update idx sg"<<std::endl;
+                if (indexBufferMemory != nullptr) {
                     VkDeviceSize bufferSize = sizeof(uint16_t) * indices.size();
-                    void* data;
-                    vkMapMemory(vkDevice.getDevice(), indexStagingBufferMemory, 0, bufferSize, 0, &data);
-                    memcpy(data, indices.data(), (size_t) bufferSize);
-                    vkUnmapMemory(vkDevice.getDevice(), indexStagingBufferMemory);
-                    needToUpdateIndexStagingBuffer = false;
-                }
+                    if (bufferSize > 0) {
+                        void* data;
+                        vkMapMemory(vkDevice.getDevice(), indexStagingBufferMemory, 0, bufferSize, 0, &data);
+                        memcpy(data, indices.data(), (size_t) bufferSize);
+                        vkUnmapMemory(vkDevice.getDevice(), indexStagingBufferMemory);
+                    }
+                    }
+                //needToUpdateIndexStagingBuffer = false;
+                //}
             }
             void VertexBuffer::update() {
 

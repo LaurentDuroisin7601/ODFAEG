@@ -165,9 +165,6 @@ namespace odfaeg {
             VkImageView headPtrTextureImageView;
             VkSampler headPtrTextureSampler;
             VkDeviceMemory headPtrTextureImageMemory;
-            std::vector<VkDescriptorPool>& descriptorPool;
-            std::vector<VkDescriptorSetLayout>& descriptorSetLayout;
-            std::vector<std::vector<VkDescriptorSet>>& descriptorSets;
             std::array<std::vector<ModelData>, Batcher::nbPrimitiveTypes> modelDatas;
             std::array<std::vector<MaterialData>, Batcher::nbPrimitiveTypes> materialDatas;
 

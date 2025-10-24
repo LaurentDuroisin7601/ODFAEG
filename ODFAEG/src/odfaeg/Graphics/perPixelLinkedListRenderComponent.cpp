@@ -26,9 +26,6 @@ namespace odfaeg {
             vb(window.getDevice()),
             vbBindlessTex {VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice())},
             vbBindlessTexIndexed {VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice())},
-            descriptorPool(window.getDescriptorPool()),
-            descriptorSetLayout(window.getDescriptorSetLayout()),
-            descriptorSets(window.getDescriptorSet()),
             vboIndirect(nullptr) {
             needToUpdateDS = false;
             maxVboIndirectSize = maxModelDataSize = maxMaterialDataSize = 0;
@@ -225,6 +222,7 @@ namespace odfaeg {
             isSomethingDrawn = false;
         }
         void PerPixelLinkedListRenderComponent::createDescriptorsAndPipelines() {
+
             RenderStates states;
             states.shader = &indirectRenderingShader;
             if (useThread) {
@@ -261,13 +259,11 @@ namespace odfaeg {
                 depthStencilCreateInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
             }
             for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
-                if (frameBuffer.getNbRenderTargets() > pipelineLayoutInfo[i].size()) {
-                    pipelineLayoutInfo[i].resize(frameBuffer.getNbRenderTargets());
-                    depthStencilCreateInfo[i].resize(frameBuffer.getNbRenderTargets());
-                }
+                pipelineLayoutInfo[i].resize(1);
+                depthStencilCreateInfo[i].resize(1);
             }
             for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
-                for (unsigned int j = 0; j < frameBuffer.getNbRenderTargets(); j++) {
+                for (unsigned int j = 0; j < 1; j++) {
                     if (NBDEPTHSTENCIL*none.nbBlendModes > pipelineLayoutInfo[i][j].size()) {
                         pipelineLayoutInfo[i][j].resize(NBDEPTHSTENCIL*none.nbBlendModes);
                         depthStencilCreateInfo[i][j].resize(NBDEPTHSTENCIL*none.nbBlendModes);
@@ -293,34 +289,34 @@ namespace odfaeg {
                            //this push constant range is accessible only in the vertex shader
                            push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
-                           pipelineLayoutInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = &push_constant;
-                           pipelineLayoutInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 1;
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
-                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthWriteEnable = VK_TRUE;
+                           pipelineLayoutInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = &push_constant;
+                           pipelineLayoutInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 1;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
+                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthWriteEnable = VK_TRUE;
 
 
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.failOp = VK_STENCIL_OP_KEEP;
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.depthFailOp = VK_STENCIL_OP_KEEP;
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.passOp = VK_STENCIL_OP_REPLACE;
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.compareMask = 0xff;
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.writeMask = 0xff;
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.reference = 0;
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.failOp = VK_STENCIL_OP_KEEP;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.depthFailOp = VK_STENCIL_OP_KEEP;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.passOp = VK_STENCIL_OP_REPLACE;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.compareMask = 0xff;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.writeMask = 0xff;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.reference = 0;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back;
                            frameBuffer.createGraphicPipeline(static_cast<PrimitiveType>(i), states, NODEPTHNOSTENCIL, NBDEPTHSTENCIL);
 
 
                        } else if (j == 1) {
                            frameBuffer.enableStencilTest(true);
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
-                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthWriteEnable = VK_TRUE;
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.compareOp = VK_COMPARE_OP_ALWAYS;
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.failOp = VK_STENCIL_OP_REPLACE;
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.depthFailOp = VK_STENCIL_OP_REPLACE;
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.passOp = VK_STENCIL_OP_REPLACE;
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.compareMask = 0xff;
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.writeMask = 0xff;
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.reference = 1;
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
+                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthWriteEnable = VK_TRUE;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.compareOp = VK_COMPARE_OP_ALWAYS;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.failOp = VK_STENCIL_OP_REPLACE;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.depthFailOp = VK_STENCIL_OP_REPLACE;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.passOp = VK_STENCIL_OP_REPLACE;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.compareMask = 0xff;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.writeMask = 0xff;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.reference = 1;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back;
                            VkPushConstantRange push_constant;
                            //this push constant range starts at the beginning
                            push_constant.offset = 0;
@@ -329,24 +325,24 @@ namespace odfaeg {
                            //this push constant range is accessible only in the vertex shader
                            push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
-                           pipelineLayoutInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = &push_constant;
-                           pipelineLayoutInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 1;
+                           pipelineLayoutInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = &push_constant;
+                           pipelineLayoutInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 1;
                            frameBuffer.createGraphicPipeline(static_cast<PrimitiveType>(i), states, NODEPTHSTENCIL, NBDEPTHSTENCIL);
 
                        } else {
                            frameBuffer.enableStencilTest(true);
 
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
-                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].depthWriteEnable = VK_FALSE;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
+                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].depthWriteEnable = VK_FALSE;
 
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.compareOp = VK_COMPARE_OP_NOT_EQUAL;
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.failOp = VK_STENCIL_OP_KEEP;
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.depthFailOp = VK_STENCIL_OP_KEEP;
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.passOp = VK_STENCIL_OP_KEEP;
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.compareMask = 0xff;
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.writeMask = 0x00;
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.reference = 1;
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].front = depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.compareOp = VK_COMPARE_OP_NOT_EQUAL;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.failOp = VK_STENCIL_OP_KEEP;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.depthFailOp = VK_STENCIL_OP_KEEP;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.passOp = VK_STENCIL_OP_KEEP;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.compareMask = 0xff;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.writeMask = 0x00;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.reference = 1;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].front = depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back;
                            VkPushConstantRange push_constant;
                            //this push constant range starts at the beginning
                            push_constant.offset = 0;
@@ -356,8 +352,8 @@ namespace odfaeg {
                            push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
                            ////std::cout<<"pipeline id : "<<NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id<<std::endl;
 
-                           pipelineLayoutInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = &push_constant;
-                           pipelineLayoutInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 1;
+                           pipelineLayoutInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = &push_constant;
+                           pipelineLayoutInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 1;
                            frameBuffer.createGraphicPipeline(static_cast<PrimitiveType>(i), states, NODEPTHSTENCILOUTLINE, NBDEPTHSTENCIL);
                        }
                     }
@@ -380,60 +376,60 @@ namespace odfaeg {
                            push_constant.size = sizeof(Ppll2PushConsts);
                            //this push constant range is accessible only in the vertex shader
                            push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-                           pipelineLayoutInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = &push_constant;
-                           pipelineLayoutInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 1;
-                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
-                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthWriteEnable = VK_TRUE;
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.failOp = VK_STENCIL_OP_KEEP;
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.depthFailOp = VK_STENCIL_OP_KEEP;
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.passOp = VK_STENCIL_OP_REPLACE;
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.compareMask = 0xff;
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.writeMask = 0xff;
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.reference = 0;
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back;
+                           pipelineLayoutInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = &push_constant;
+                           pipelineLayoutInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 1;
+                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
+                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthWriteEnable = VK_TRUE;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.failOp = VK_STENCIL_OP_KEEP;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.depthFailOp = VK_STENCIL_OP_KEEP;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.passOp = VK_STENCIL_OP_REPLACE;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.compareMask = 0xff;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.writeMask = 0xff;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.reference = 0;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back;
                            frameBuffer.createGraphicPipeline(static_cast<PrimitiveType>(i), states, NODEPTHNOSTENCIL, NBDEPTHSTENCIL);
                        } else if (j == 1) {
                            frameBuffer.enableStencilTest(true);
 
-                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
-                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthWriteEnable = VK_TRUE;
-                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.compareOp = VK_COMPARE_OP_ALWAYS;
-                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.failOp = VK_STENCIL_OP_REPLACE;
-                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.depthFailOp = VK_STENCIL_OP_REPLACE;
-                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.passOp = VK_STENCIL_OP_REPLACE;
-                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.compareMask = 0xff;
-                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.writeMask = 0xff;
-                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.reference = 1;
-                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back;
+                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
+                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthWriteEnable = VK_TRUE;
+                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.compareOp = VK_COMPARE_OP_ALWAYS;
+                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.failOp = VK_STENCIL_OP_REPLACE;
+                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.depthFailOp = VK_STENCIL_OP_REPLACE;
+                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.passOp = VK_STENCIL_OP_REPLACE;
+                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.compareMask = 0xff;
+                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.writeMask = 0xff;
+                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.reference = 1;
+                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back;
                            VkPushConstantRange push_constant;
                            push_constant.offset = 0;
                            //this push constant range takes up the size of a MeshPushConstants struct
                            push_constant.size = sizeof(Ppll2PushConsts);
                            //this push constant range is accessible only in the vertex shader
                            push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-                           pipelineLayoutInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = &push_constant;
-                           pipelineLayoutInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 1;
+                           pipelineLayoutInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = &push_constant;
+                           pipelineLayoutInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 1;
                            frameBuffer.createGraphicPipeline(static_cast<PrimitiveType>(i), states, NODEPTHSTENCIL, NBDEPTHSTENCIL);
                         } else {
                            frameBuffer.enableStencilTest(true);
-                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_LESS;;
-                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].depthWriteEnable = VK_FALSE;
-                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.compareOp = VK_COMPARE_OP_NOT_EQUAL;
-                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.failOp = VK_STENCIL_OP_KEEP;
-                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.depthFailOp = VK_STENCIL_OP_KEEP;
-                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.passOp = VK_STENCIL_OP_REPLACE;
-                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.compareMask = 0xff;
-                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.writeMask = 0xff;
-                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.reference = 1;
-                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].front = depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back;
+                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_LESS;;
+                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].depthWriteEnable = VK_FALSE;
+                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.compareOp = VK_COMPARE_OP_NOT_EQUAL;
+                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.failOp = VK_STENCIL_OP_KEEP;
+                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.depthFailOp = VK_STENCIL_OP_KEEP;
+                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.passOp = VK_STENCIL_OP_REPLACE;
+                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.compareMask = 0xff;
+                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.writeMask = 0xff;
+                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.reference = 1;
+                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].front = depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back;
                            VkPushConstantRange push_constant;
                            push_constant.offset = 0;
                            //this push constant range takes up the size of a MeshPushConstants struct
                            push_constant.size = sizeof(Ppll2PushConsts);
                            //this push constant range is accessible only in the vertex shader
                            push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-                           pipelineLayoutInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = &push_constant;
-                           pipelineLayoutInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][frameBuffer.getId()][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 1;
+                           pipelineLayoutInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = &push_constant;
+                           pipelineLayoutInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][NODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 1;
                            frameBuffer.createGraphicPipeline(static_cast<PrimitiveType>(i), states, NODEPTHSTENCILOUTLINE, NBDEPTHSTENCIL);
                         }
                     }
@@ -660,6 +656,7 @@ namespace odfaeg {
             return (offset + alignment - 1) & ~(alignment - 1);
         }
         void PerPixelLinkedListRenderComponent::createDescriptorPool(unsigned int p, RenderStates states) {
+            std::vector<VkDescriptorPool>& descriptorPool = frameBuffer.getDescriptorPool();
             Shader* shader = const_cast<Shader*>(states.shader);
             unsigned int descriptorId = p * shader->getNbShaders() + shader->getId();
             if (shader->getNbShaders() * (Batcher::nbPrimitiveTypes - 1) > descriptorPool.size())
@@ -692,6 +689,7 @@ namespace odfaeg {
             }
         }
         void PerPixelLinkedListRenderComponent::createDescriptorPool(RenderStates states) {
+            std::vector<VkDescriptorPool>& descriptorPool = frameBuffer.getDescriptorPool();
             Shader* shader = const_cast<Shader*>(states.shader);
             if (shader->getNbShaders() > descriptorPool.size())
                 descriptorPool.resize(shader->getNbShaders());
@@ -725,6 +723,7 @@ namespace odfaeg {
             }
         }
         void PerPixelLinkedListRenderComponent::createDescriptorSetLayout(RenderStates states) {
+            std::vector<VkDescriptorSetLayout>& descriptorSetLayout = frameBuffer.getDescriptorSetLayout();
             Shader* shader = const_cast<Shader*>(states.shader);
             if (shader->getNbShaders() > descriptorSetLayout.size())
                 descriptorSetLayout.resize(shader->getNbShaders());
@@ -801,6 +800,9 @@ namespace odfaeg {
             }
         }
         void PerPixelLinkedListRenderComponent::allocateDescriptorSets(unsigned int p, RenderStates states) {
+            std::vector<std::vector<VkDescriptorSet>>& descriptorSets = frameBuffer.getDescriptorSet();
+            std::vector<VkDescriptorPool>& descriptorPool = frameBuffer.getDescriptorPool();
+            std::vector<VkDescriptorSetLayout>& descriptorSetLayout = frameBuffer.getDescriptorSetLayout();
             Shader* shader = const_cast<Shader*>(states.shader);
             if (shader->getNbShaders()  * (Batcher::nbPrimitiveTypes - 1) > descriptorSets.size())
                 descriptorSets.resize(shader->getNbShaders() * (Batcher::nbPrimitiveTypes - 1));
@@ -827,6 +829,9 @@ namespace odfaeg {
             }
         }
         void PerPixelLinkedListRenderComponent::allocateDescriptorSets(RenderStates states) {
+            std::vector<std::vector<VkDescriptorSet>>& descriptorSets = frameBuffer.getDescriptorSet();
+            std::vector<VkDescriptorPool>& descriptorPool = frameBuffer.getDescriptorPool();
+            std::vector<VkDescriptorSetLayout>& descriptorSetLayout = frameBuffer.getDescriptorSetLayout();
             Shader* shader = const_cast<Shader*>(states.shader);
             if (shader->getNbShaders() > descriptorSets.size())
                 descriptorSets.resize(shader->getNbShaders());
@@ -853,6 +858,7 @@ namespace odfaeg {
             }
         }
         void PerPixelLinkedListRenderComponent::updateDescriptorSets(unsigned int p, RenderStates states) {
+            std::vector<std::vector<VkDescriptorSet>>& descriptorSets = frameBuffer.getDescriptorSet();
             Shader* shader = const_cast<Shader*>(states.shader);
             std::vector<Texture*> allTextures = Texture::getAllTextures();
 
@@ -945,6 +951,7 @@ namespace odfaeg {
             }
         }
         void PerPixelLinkedListRenderComponent::createDescriptorSets(unsigned int p, RenderStates states) {
+            std::vector<std::vector<VkDescriptorSet>>& descriptorSets = frameBuffer.getDescriptorSet();
             Shader* shader = const_cast<Shader*>(states.shader);
             std::vector<Texture*> allTextures = Texture::getAllTextures();
 
@@ -1037,6 +1044,7 @@ namespace odfaeg {
             }
         }
         void PerPixelLinkedListRenderComponent::createDescriptorPool2(RenderStates states) {
+            std::vector<VkDescriptorPool>& descriptorPool = frameBuffer.getDescriptorPool();
             Shader* shader = const_cast<Shader*>(states.shader);
             if (shader->getNbShaders() > descriptorPool.size())
                 descriptorPool.resize(shader->getNbShaders());
@@ -1062,6 +1070,7 @@ namespace odfaeg {
             }
         }
         void PerPixelLinkedListRenderComponent::createDescriptorSetLayout2(RenderStates states) {
+            std::vector<VkDescriptorSetLayout>& descriptorSetLayout = frameBuffer.getDescriptorSetLayout();
             Shader* shader = const_cast<Shader*>(states.shader);
             if (shader->getNbShaders() > descriptorSetLayout.size())
                 descriptorSetLayout.resize(shader->getNbShaders());
@@ -1096,6 +1105,9 @@ namespace odfaeg {
             }
         }
         void PerPixelLinkedListRenderComponent::allocateDescriptorSets2(RenderStates states) {
+            std::vector<std::vector<VkDescriptorSet>>& descriptorSets = frameBuffer.getDescriptorSet();
+            std::vector<VkDescriptorSetLayout>& descriptorSetLayout = frameBuffer.getDescriptorSetLayout();
+            std::vector<VkDescriptorPool>& descriptorPool = frameBuffer.getDescriptorPool();
             Shader* shader = const_cast<Shader*>(states.shader);
             if (shader->getNbShaders() > descriptorSets.size())
                 descriptorSets.resize(shader->getNbShaders());
@@ -1115,6 +1127,7 @@ namespace odfaeg {
             }
         }
         void PerPixelLinkedListRenderComponent::createDescriptorSets2(RenderStates states) {
+            std::vector<std::vector<VkDescriptorSet>>& descriptorSets = frameBuffer.getDescriptorSet();
             Shader* shader = const_cast<Shader*>(states.shader);
 
             unsigned int descriptorId = shader->getId();
@@ -1211,9 +1224,11 @@ namespace odfaeg {
         }
         void PerPixelLinkedListRenderComponent::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size, VkCommandBuffer cmd) {
             //std::cout<<"opy buffers"<<std::endl;
-            VkBufferCopy copyRegion{};
-            copyRegion.size = size;
-            vkCmdCopyBuffer(cmd, srcBuffer, dstBuffer, 1, &copyRegion);
+            if (srcBuffer != nullptr && dstBuffer != nullptr) {
+                VkBufferCopy copyRegion{};
+                copyRegion.size = size;
+                vkCmdCopyBuffer(cmd, srcBuffer, dstBuffer, 1, &copyRegion);
+            }
         }
         void PerPixelLinkedListRenderComponent::compileShaders() {
             const std::string indirectDrawVertexShader = R"(#version 460
@@ -1252,7 +1267,7 @@ namespace odfaeg {
                                                             layout(location = 2) out uint texIndex;
                                                             layout(location = 3) out vec3 normal;
                                                             void main() {
-                                                                debugPrintfEXT("vertex shader");
+
                                                                 gl_PointSize = 2.0f;
                                                                 MaterialData materialData = materialDatas[gl_DrawID];
                                                                 ModelData modelData = modelDatas[gl_InstanceIndex];
@@ -1268,6 +1283,7 @@ namespace odfaeg {
                                                                 frontColor = color;
                                                                 texIndex = textureIndex;
                                                                 normal = normals;
+                                                                //debugPrintfEXT("position : %v4f", gl_Position);
 
                                                             }
                                                             )";
@@ -1380,8 +1396,8 @@ namespace odfaeg {
                                                         //color = mix (color, frags[i].color, frags[i].color.a);
 
                                                       }
-                                                      if (color.r != 0 || color.g != 0 || color.b != 0 || color.a != 0)
-                                                        debugPrintfEXT("color : %v4f", color);
+                                                      /*if (color.r != 0 || color.g != 0 || color.b != 0 || color.a != 0)
+                                                        debugPrintfEXT("color : %v4f", color);*/
                                                       fcolor = color;
                                                    })";
             if (!indirectRenderingShader.loadFromMemory(indirectDrawVertexShader, fragmentShader)) {
@@ -1551,7 +1567,7 @@ namespace odfaeg {
             }
             for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                 if (nbDrawCommandBuffer[p][0] > 0) {
-                    vbBindlessTex[p].update(copyVbBufferCommandBuffer);
+
                     VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
 
                     currentModelOffset[p] = alignedOffsetModelData[p] + ((bufferSize - oldTotalBufferSizeModelData[p] > 0) ? bufferSize - oldTotalBufferSizeModelData[p] : 0);
@@ -1582,7 +1598,7 @@ namespace odfaeg {
                     vkMapMemory(vkDevice.getDevice(), modelDataStagingBufferMemory, 0, bufferSize, 0, &data);
                     memcpy(data, modelDatas[p].data(), (size_t)bufferSize);
                     vkUnmapMemory(vkDevice.getDevice(), modelDataStagingBufferMemory);*/
-                    copyBuffer(modelDataStagingBuffer, modelDataBufferMT[p], bufferSize, copyModelDataBufferCommandBuffer);
+
 
 
                     bufferSize = sizeof(MaterialData) * materialDatas[p].size();
@@ -1611,9 +1627,9 @@ namespace odfaeg {
                     /*vkMapMemory(vkDevice.getDevice(), materialDataStagingBufferMemory, 0, bufferSize, 0, &data);
                     memcpy(data, materialDatas[p].data(), (size_t)bufferSize);
                     vkUnmapMemory(vkDevice.getDevice(), materialDataStagingBufferMemory);*/
-                    copyBuffer(materialDataStagingBuffer,materialDataBufferMT[p], bufferSize, copyMaterialDataBufferCommandBuffer);
 
-                    bufferSize = sizeof(DrawArraysIndirectCommand) * drawArraysIndirectCommands[p].size();
+
+
                     totalBufferSizeDrawCommand[p] = bufferSize;
                     needToUpdateDSs[p]  = true;
                     if (totalBufferSizeDrawCommand[p] > maxBufferSizeDrawCommand[p]) {
@@ -1633,10 +1649,22 @@ namespace odfaeg {
                     /*vkMapMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory, 0, totalBufferSizeDrawCommand[p], 0, &data);
                     memcpy(data, drawArraysIndirectCommands[p].data(), (size_t)totalBufferSizeDrawCommand[p]);
                     vkUnmapMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory);*/
-                    copyBuffer(vboIndirectStagingBuffer, drawCommandBufferMT[p], totalBufferSizeDrawCommand[p], copyDrawBufferCommandBuffer);
+
 
                 }
+                VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
+                if (bufferSize > 0)
+                    copyBuffer(modelDataStagingBuffer, modelDataBufferMT[p], bufferSize, copyModelDataBufferCommandBuffer);
+                bufferSize = sizeof(MaterialData) * materialDatas[p].size();
+                if (bufferSize > 0)
+                    copyBuffer(materialDataStagingBuffer,materialDataBufferMT[p], bufferSize, copyMaterialDataBufferCommandBuffer);
+                bufferSize = sizeof(DrawArraysIndirectCommand) * drawArraysIndirectCommands[p].size();
+                if (bufferSize > 0)
+                    copyBuffer(vboIndirectStagingBuffer, drawCommandBufferMT[p], totalBufferSizeDrawCommand[p], copyDrawBufferCommandBuffer);
+                if (vbBindlessTex[p].getVertexCount() > 0)
+                    vbBindlessTex[p].update(copyVbBufferCommandBuffer);
             }
+
             if (vkEndCommandBuffer(copyModelDataBufferCommandBuffer) != VK_SUCCESS) {
                 throw core::Erreur(0, "failed to record command buffer!", 1);
             }
@@ -1813,7 +1841,7 @@ namespace odfaeg {
             }
             for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                 if (nbIndexedDrawCommandBuffer[p][0] > 0) {
-                    vbBindlessTexIndexed[p].update(copyVbIndexedBufferCommandBuffer);
+                    //vbBindlessTexIndexed[p].update(copyVbIndexedBufferCommandBuffer);
                     VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
                     //std::cout<<"buffer size : "<<bufferSize<<std::endl;
                     //std::cout<<"aligned model : "<<alignedOffsetModelData[p]<<std::endl<<"aligned material : "<<alignedOffsetMaterialData[p]<<std::endl;
@@ -1849,7 +1877,7 @@ namespace odfaeg {
                     memcpy(data, modelDatas[p].data(), (size_t)bufferSize);
                     vkUnmapMemory(vkDevice.getDevice(), modelDataStagingBufferMemory);*/
                     //std::cout<<"copy model buffer cmd : "<<bufferSize<<std::endl;
-                    copyBuffer(modelDataStagingBuffer, modelDataBufferMT[p], bufferSize, copyModelDataBufferCommandBuffer);
+                    //copyBuffer(modelDataStagingBuffer, modelDataBufferMT[p], bufferSize, copyModelDataBufferCommandBuffer);
 
 
                     bufferSize = sizeof(MaterialData) * materialDatas[p].size();
@@ -1879,7 +1907,7 @@ namespace odfaeg {
                     /*vkMapMemory(vkDevice.getDevice(), materialDataStagingBufferMemory, 0, bufferSize, 0, &data);
                     memcpy(data, materialDatas[p].data(), (size_t)bufferSize);
                     vkUnmapMemory(vkDevice.getDevice(), materialDataStagingBufferMemory);*/
-                    copyBuffer(materialDataStagingBuffer,materialDataBufferMT[p], bufferSize, copyMaterialDataBufferCommandBuffer);
+                    //copyBuffer(materialDataStagingBuffer,materialDataBufferMT[p], bufferSize, copyMaterialDataBufferCommandBuffer);
 
                     bufferSize = sizeof(DrawElementsIndirectCommand) * drawElementsIndirectCommands[p].size();
                     totalBufferSizeIndexedDrawCommand[p] = bufferSize;
@@ -1902,9 +1930,20 @@ namespace odfaeg {
                     /*vkMapMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory, 0, totalBufferSizeIndexedDrawCommand[p], 0, &data);
                     memcpy(data, drawElementsIndirectCommands[p].data(), (size_t)totalBufferSizeIndexedDrawCommand[p]);
                     vkUnmapMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory);*/
-                    copyBuffer(vboIndexedIndirectStagingBuffer, drawCommandBufferIndexedMT[p], totalBufferSizeIndexedDrawCommand[p], copyDrawIndexedBufferCommandBuffer);
+                    //copyBuffer(vboIndexedIndirectStagingBuffer, drawCommandBufferIndexedMT[p], totalBufferSizeIndexedDrawCommand[p], copyDrawIndexedBufferCommandBuffer);
 
                 }
+                VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
+                if (bufferSize > 0)
+                    copyBuffer(modelDataStagingBuffer, modelDataBufferMT[p], bufferSize, copyModelDataBufferCommandBuffer);
+                bufferSize = sizeof(MaterialData) * materialDatas[p].size();
+                if (bufferSize > 0)
+                    copyBuffer(materialDataStagingBuffer,materialDataBufferMT[p], bufferSize, copyMaterialDataBufferCommandBuffer);
+                bufferSize = sizeof(DrawElementsIndirectCommand) * drawElementsIndirectCommands[p].size();
+                if (bufferSize > 0)
+                    copyBuffer(vboIndexedIndirectStagingBuffer, drawCommandBufferIndexedMT[p], totalBufferSizeIndexedDrawCommand[p], copyDrawIndexedBufferCommandBuffer);
+                if (vbBindlessTexIndexed[p].getVertexCount() > 0)
+                    vbBindlessTexIndexed[p].update(copyVbIndexedBufferCommandBuffer);
             }
             if (vkEndCommandBuffer(copyModelDataBufferCommandBuffer) != VK_SUCCESS) {
                 throw core::Erreur(0, "failed to record command buffer!", 1);
@@ -2060,7 +2099,7 @@ namespace odfaeg {
             }
             for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                 if (nbDrawCommandBuffer[p][1] > 0) {
-                    vbBindlessTex[p].update(copyVbBufferCommandBuffer);
+                    //vbBindlessTex[p].update(copyVbBufferCommandBuffer);
                     VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
 
                     currentModelOffset[p] = alignedOffsetModelData[p] + ((bufferSize - oldTotalBufferSizeModelData[p] > 0) ? bufferSize - oldTotalBufferSizeModelData[p] : 0);
@@ -2091,7 +2130,7 @@ namespace odfaeg {
                     vkMapMemory(vkDevice.getDevice(), modelDataStagingBufferMemory, 0, bufferSize, 0, &data);
                     memcpy(data, modelDatas[p].data(), (size_t)bufferSize);
                     vkUnmapMemory(vkDevice.getDevice(), modelDataStagingBufferMemory);*/
-                    copyBuffer(modelDataStagingBuffer, modelDataBufferMT[p], bufferSize, copyModelDataBufferCommandBuffer);
+                    //copyBuffer(modelDataStagingBuffer, modelDataBufferMT[p], bufferSize, copyModelDataBufferCommandBuffer);
 
 
                     bufferSize = sizeof(MaterialData) * materialDatas[p].size();
@@ -2120,7 +2159,7 @@ namespace odfaeg {
                     /*vkMapMemory(vkDevice.getDevice(), materialDataStagingBufferMemory, 0, bufferSize, 0, &data);
                     memcpy(data, materialDatas[p].data(), (size_t)bufferSize);
                     vkUnmapMemory(vkDevice.getDevice(), materialDataStagingBufferMemory);*/
-                    copyBuffer(materialDataStagingBuffer,materialDataBufferMT[p], bufferSize, copyMaterialDataBufferCommandBuffer);
+                    //copyBuffer(materialDataStagingBuffer,materialDataBufferMT[p], bufferSize, copyMaterialDataBufferCommandBuffer);
 
                     bufferSize = sizeof(DrawArraysIndirectCommand) * drawArraysIndirectCommands[p].size();
                     totalBufferSizeDrawCommand[p] = bufferSize;
@@ -2142,9 +2181,20 @@ namespace odfaeg {
                     /*vkMapMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory, 0, totalBufferSizeDrawCommand[p], 0, &data);
                     memcpy(data, drawArraysIndirectCommands[p].data(), (size_t)totalBufferSizeDrawCommand[p]);
                     vkUnmapMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory);*/
-                    copyBuffer(vboIndirectStagingBuffer, drawCommandBufferMT[p], totalBufferSizeDrawCommand[p], copyDrawBufferCommandBuffer);
+                    //copyBuffer(vboIndirectStagingBuffer, drawCommandBufferMT[p], totalBufferSizeDrawCommand[p], copyDrawBufferCommandBuffer);
 
                 }
+                VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
+                if (bufferSize > 0)
+                    copyBuffer(modelDataStagingBuffer, modelDataBufferMT[p], bufferSize, copyModelDataBufferCommandBuffer);
+                bufferSize = sizeof(MaterialData) * materialDatas[p].size();
+                if (bufferSize > 0)
+                    copyBuffer(materialDataStagingBuffer,materialDataBufferMT[p], bufferSize, copyMaterialDataBufferCommandBuffer);
+                bufferSize = sizeof(DrawElementsIndirectCommand) * drawElementsIndirectCommands[p].size();
+                if (bufferSize > 0)
+                    copyBuffer(vboIndirectStagingBuffer, drawCommandBufferMT[p], totalBufferSizeDrawCommand[p], copyDrawBufferCommandBuffer);
+                if (vbBindlessTex[p].getVertexCount() > 0)
+                    vbBindlessTex[p].update(copyVbBufferCommandBuffer);
             }
             if (vkEndCommandBuffer(copyModelDataBufferCommandBuffer) != VK_SUCCESS) {
                 throw core::Erreur(0, "failed to record command buffer!", 1);
@@ -2272,6 +2322,7 @@ namespace odfaeg {
                     ////////std::cout<<"texture : "<<m_instances[i].getMaterial().getTexture()<<std::endl;
                     ////////std::cout<<"entity : "<<m_instances[i].getVertexArrays()[0]->getEntity()->getRootEntity()->getType()<<std::endl;
                 }
+
             }
             std::array<unsigned int, Batcher::nbPrimitiveTypes> alignedOffsetModelData, alignedOffsetMaterialData;
             for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
@@ -2316,7 +2367,7 @@ namespace odfaeg {
             }
             for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                 if (nbIndexedDrawCommandBuffer[p][1] > 0) {
-                    vbBindlessTexIndexed[p].update(copyVbIndexedBufferCommandBuffer);
+                    //vbBindlessTexIndexed[p].update(copyVbIndexedBufferCommandBuffer);
                     VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
                     //std::cout<<"aligned model : "<<alignedOffsetModelData[p]<<std::endl<<"aligned material : "<<alignedOffsetMaterialData[p]<<std::endl;
 
@@ -2351,7 +2402,7 @@ namespace odfaeg {
                     vkMapMemory(vkDevice.getDevice(), modelDataStagingBufferMemory, 0, bufferSize, 0, &data);
                     memcpy(data, modelDatas[p].data(), (size_t)bufferSize);
                     vkUnmapMemory(vkDevice.getDevice(), modelDataStagingBufferMemory);*/
-                    copyBuffer(modelDataStagingBuffer, modelDataBufferMT[p], bufferSize, copyModelDataBufferCommandBuffer);
+                    //copyBuffer(modelDataStagingBuffer, modelDataBufferMT[p], bufferSize, copyModelDataBufferCommandBuffer);
 
 
                     bufferSize = sizeof(MaterialData) * materialDatas[p].size();
@@ -2381,7 +2432,7 @@ namespace odfaeg {
                     /*vkMapMemory(vkDevice.getDevice(), materialDataStagingBufferMemory, 0, bufferSize, 0, &data);
                     memcpy(data, materialDatas[p].data(), (size_t)bufferSize);
                     vkUnmapMemory(vkDevice.getDevice(), materialDataStagingBufferMemory);*/
-                    copyBuffer(materialDataStagingBuffer,materialDataBufferMT[p], bufferSize, copyMaterialDataBufferCommandBuffer);
+                    //copyBuffer(materialDataStagingBuffer,materialDataBufferMT[p], bufferSize, copyMaterialDataBufferCommandBuffer);
 
                     bufferSize = sizeof(DrawElementsIndirectCommand) * drawElementsIndirectCommands[p].size();
                     totalBufferSizeIndexedDrawCommand[p] = bufferSize;
@@ -2404,9 +2455,20 @@ namespace odfaeg {
                     /*vkMapMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory, 0, totalBufferSizeIndexedDrawCommand[p], 0, &data);
                     memcpy(data, drawElementsIndirectCommands[p].data(), (size_t)totalBufferSizeIndexedDrawCommand[p]);
                     vkUnmapMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory);*/
-                    copyBuffer(vboIndexedIndirectStagingBuffer, drawCommandBufferIndexedMT[p], totalBufferSizeIndexedDrawCommand[p], copyDrawIndexedBufferCommandBuffer);
+                    //copyBuffer(vboIndexedIndirectStagingBuffer, drawCommandBufferIndexedMT[p], totalBufferSizeIndexedDrawCommand[p], copyDrawIndexedBufferCommandBuffer);
 
                 }
+                VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
+                if (bufferSize > 0)
+                    copyBuffer(modelDataStagingBuffer, modelDataBufferMT[p], bufferSize, copyModelDataBufferCommandBuffer);
+                bufferSize = sizeof(MaterialData) * materialDatas[p].size();
+                if (bufferSize > 0)
+                    copyBuffer(materialDataStagingBuffer,materialDataBufferMT[p], bufferSize, copyMaterialDataBufferCommandBuffer);
+                bufferSize = sizeof(DrawElementsIndirectCommand) * drawElementsIndirectCommands[p].size();
+                if (bufferSize > 0)
+                    copyBuffer(vboIndexedIndirectStagingBuffer, drawCommandBufferIndexedMT[p], totalBufferSizeIndexedDrawCommand[p], copyDrawIndexedBufferCommandBuffer);
+                if (vbBindlessTexIndexed[p].getVertexCount() > 0)
+                    vbBindlessTexIndexed[p].update(copyVbIndexedBufferCommandBuffer);
             }
             if (vkEndCommandBuffer(copyModelDataBufferCommandBuffer) != VK_SUCCESS) {
                 throw core::Erreur(0, "failed to record command buffer!", 1);
@@ -2558,7 +2620,7 @@ namespace odfaeg {
             }
             for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                 if (nbDrawCommandBuffer[p][2] > 0) {
-                    vbBindlessTex[p].update(copyVbBufferCommandBuffer);
+                    //vbBindlessTex[p].update(copyVbBufferCommandBuffer);
                     VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
 
                     currentModelOffset[p] = alignedOffsetModelData[p] + ((bufferSize - oldTotalBufferSizeModelData[p] > 0) ? bufferSize - oldTotalBufferSizeModelData[p] : 0);
@@ -2590,7 +2652,7 @@ namespace odfaeg {
                     vkMapMemory(vkDevice.getDevice(), modelDataStagingBufferMemory, 0, bufferSize, 0, &data);
                     memcpy(data, modelDatas[p].data(), (size_t)bufferSize);
                     vkUnmapMemory(vkDevice.getDevice(), modelDataStagingBufferMemory);*/
-                    copyBuffer(modelDataStagingBuffer, modelDataBufferMT[p], bufferSize, copyModelDataBufferCommandBuffer);
+                    //copyBuffer(modelDataStagingBuffer, modelDataBufferMT[p], bufferSize, copyModelDataBufferCommandBuffer);
 
 
                     bufferSize = sizeof(MaterialData) * materialDatas[p].size();
@@ -2619,7 +2681,7 @@ namespace odfaeg {
                     /*vkMapMemory(vkDevice.getDevice(), materialDataStagingBufferMemory, 0, bufferSize, 0, &data);
                     memcpy(data, materialDatas[p].data(), (size_t)bufferSize);
                     vkUnmapMemory(vkDevice.getDevice(), materialDataStagingBufferMemory);*/
-                    copyBuffer(materialDataStagingBuffer,materialDataBufferMT[p], bufferSize, copyMaterialDataBufferCommandBuffer);
+                    //copyBuffer(materialDataStagingBuffer,materialDataBufferMT[p], bufferSize, copyMaterialDataBufferCommandBuffer);
 
                     bufferSize = sizeof(DrawArraysIndirectCommand) * drawArraysIndirectCommands[p].size();
                     totalBufferSizeDrawCommand[p] = bufferSize;
@@ -2641,9 +2703,20 @@ namespace odfaeg {
                     /*vkMapMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory, 0, totalBufferSizeDrawCommand[p], 0, &data);
                     memcpy(data, drawArraysIndirectCommands[p].data(), (size_t)totalBufferSizeDrawCommand[p]);
                     vkUnmapMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory);*/
-                    copyBuffer(vboIndirectStagingBuffer, drawCommandBufferMT[p], totalBufferSizeDrawCommand[p], copyDrawBufferCommandBuffer);
+                    //copyBuffer(vboIndirectStagingBuffer, drawCommandBufferMT[p], totalBufferSizeDrawCommand[p], copyDrawBufferCommandBuffer);
 
                 }
+                VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
+                if (bufferSize > 0)
+                    copyBuffer(modelDataStagingBuffer, modelDataBufferMT[p], bufferSize, copyModelDataBufferCommandBuffer);
+                bufferSize = sizeof(MaterialData) * materialDatas[p].size();
+                if (bufferSize > 0)
+                    copyBuffer(materialDataStagingBuffer,materialDataBufferMT[p], bufferSize, copyMaterialDataBufferCommandBuffer);
+                bufferSize = sizeof(DrawElementsIndirectCommand) * drawElementsIndirectCommands[p].size();
+                if (bufferSize > 0)
+                    copyBuffer(vboIndirectStagingBuffer, drawCommandBufferMT[p], totalBufferSizeDrawCommand[p], copyDrawBufferCommandBuffer);
+                if (vbBindlessTex[p].getVertexCount() > 0)
+                    vbBindlessTex[p].update(copyVbBufferCommandBuffer);
             }
             if (vkEndCommandBuffer(copyModelDataBufferCommandBuffer) != VK_SUCCESS) {
                 throw core::Erreur(0, "failed to record command buffer!", 1);
@@ -2815,7 +2888,7 @@ namespace odfaeg {
             }
             for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                 if (nbIndexedDrawCommandBuffer[p][2] > 0) {
-                    vbBindlessTexIndexed[p].update(copyVbIndexedBufferCommandBuffer);
+                    //vbBindlessTexIndexed[p].update(copyVbIndexedBufferCommandBuffer);
                     VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
                     //std::cout<<"aligned model : "<<alignedOffsetModelData[p]<<std::endl<<"aligned material : "<<alignedOffsetMaterialData[p]<<std::endl;
 
@@ -2849,7 +2922,7 @@ namespace odfaeg {
                     vkMapMemory(vkDevice.getDevice(), modelDataStagingBufferMemory, 0, bufferSize, 0, &data);
                     memcpy(data, modelDatas[p].data(), (size_t)bufferSize);
                     vkUnmapMemory(vkDevice.getDevice(), modelDataStagingBufferMemory);*/
-                    copyBuffer(modelDataStagingBuffer, modelDataBufferMT[p], bufferSize, copyModelDataBufferCommandBuffer);
+                    //copyBuffer(modelDataStagingBuffer, modelDataBufferMT[p], bufferSize, copyModelDataBufferCommandBuffer);
 
 
                     bufferSize = sizeof(MaterialData) * materialDatas[p].size();
@@ -2879,7 +2952,7 @@ namespace odfaeg {
                     /*vkMapMemory(vkDevice.getDevice(), materialDataStagingBufferMemory, 0, bufferSize, 0, &data);
                     memcpy(data, materialDatas[p].data(), (size_t)bufferSize);
                     vkUnmapMemory(vkDevice.getDevice(), materialDataStagingBufferMemory);*/
-                    copyBuffer(materialDataStagingBuffer,materialDataBufferMT[p], bufferSize, copyMaterialDataBufferCommandBuffer);
+                    //copyBuffer(materialDataStagingBuffer,materialDataBufferMT[p], bufferSize, copyMaterialDataBufferCommandBuffer);
 
                     bufferSize = sizeof(DrawElementsIndirectCommand) * drawElementsIndirectCommands[p].size();
                     totalBufferSizeIndexedDrawCommand[p] = bufferSize;
@@ -2902,8 +2975,20 @@ namespace odfaeg {
                     /*vkMapMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory, 0, totalBufferSizeIndexedDrawCommand[p], 0, &data);
                     memcpy(data, drawElementsIndirectCommands[p].data(), (size_t)totalBufferSizeIndexedDrawCommand[p]);
                     vkUnmapMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory);*/
-                    copyBuffer(vboIndexedIndirectStagingBuffer, drawCommandBufferIndexedMT[p], totalBufferSizeIndexedDrawCommand[p], copyDrawIndexedBufferCommandBuffer);
+                    //copyBuffer(vboIndexedIndirectStagingBuffer, drawCommandBufferIndexedMT[p], totalBufferSizeIndexedDrawCommand[p], copyDrawIndexedBufferCommandBuffer);
 
+                }
+                VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
+                if (bufferSize > 0)
+                    copyBuffer(modelDataStagingBuffer, modelDataBufferMT[p], bufferSize, copyModelDataBufferCommandBuffer);
+                bufferSize = sizeof(MaterialData) * materialDatas[p].size();
+                if (bufferSize > 0)
+                    copyBuffer(materialDataStagingBuffer,materialDataBufferMT[p], bufferSize, copyMaterialDataBufferCommandBuffer);
+                bufferSize = sizeof(DrawElementsIndirectCommand) * drawElementsIndirectCommands[p].size();
+                if (bufferSize > 0)
+                    copyBuffer(vboIndexedIndirectStagingBuffer, drawCommandBufferIndexedMT[p], totalBufferSizeIndexedDrawCommand[p], copyDrawIndexedBufferCommandBuffer);
+                if (vbBindlessTexIndexed[p].getVertexCount() > 0) {
+                    vbBindlessTexIndexed[p].update(copyVbIndexedBufferCommandBuffer);
                 }
             }
             if (vkEndCommandBuffer(copyModelDataBufferCommandBuffer) != VK_SUCCESS) {
@@ -4230,11 +4315,11 @@ namespace odfaeg {
             }*/
         }
         void PerPixelLinkedListRenderComponent::recordCommandBufferIndirect(unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, DepthStencilID depthStencilID, unsigned int vertexOffset, unsigned int indexOffset, unsigned int uboOffset, unsigned int modelDataOffset, unsigned int materialDataOffset, unsigned int drawCommandOffset, RenderStates currentStates, VkCommandBuffer commandBuffer) {
-
+            //std::lock_guard<std::recursive_mutex> lock(rec_mutex);
             currentStates.blendMode.updateIds();
             Shader* shader = const_cast<Shader*>(currentStates.shader);
 
-            vkCmdPushConstants(commandBuffer, frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][frameBuffer.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectDrawPushConsts), &indirectDrawPushConsts);
+            vkCmdPushConstants(commandBuffer, frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][0][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectDrawPushConsts), &indirectDrawPushConsts);
             std::vector<unsigned int> dynamicBufferOffsets;
             dynamicBufferOffsets.push_back(modelDataOffset);
             dynamicBufferOffsets.push_back(materialDataOffset);
@@ -4246,14 +4331,14 @@ namespace odfaeg {
                 frameBuffer.drawIndirect(commandBuffer, 0, nbIndirectCommands, stride, vbBindlessTexIndexed[p], drawCommandBufferIndexedMT[p], depthStencilID,currentStates,p,  vertexOffset, drawCommandOffset, dynamicBufferOffsets, indexOffset);
         }
         void PerPixelLinkedListRenderComponent::recordCommandBufferVertexBuffer(RenderStates currentStates, VkCommandBuffer commandBuffer) {
-
+            //std::lock_guard<std::recursive_mutex> lock(rec_mutex);
             currentStates.blendMode.updateIds();
 
 
             Shader* shader = const_cast<Shader*>(currentStates.shader);
 
 
-            vkCmdPushConstants(commandBuffer, frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + vb.getPrimitiveType()][frameBuffer.getId()][NODEPTHNOSTENCIL*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(Ppll2PushConsts), &ppll2PushConsts);
+            vkCmdPushConstants(commandBuffer, frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + vb.getPrimitiveType()][0][NODEPTHNOSTENCIL*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(Ppll2PushConsts), &ppll2PushConsts);
 
             frameBuffer.drawVertexBuffer(commandBuffer, 0, vb, NODEPTHNOSTENCIL, currentStates);
         }
