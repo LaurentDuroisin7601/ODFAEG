@@ -19,8 +19,8 @@ namespace odfaeg {
         #ifdef VULKAN
         class ODFAEG_GRAPHICS_API ShadowRenderComponent : public HeavyComponent {
             public :
-                enum DepthStencilID {
-                    NODEPTHNOSTENCIL, NBDEPTHSTENCIL
+                enum ShadowDepthStencilID {
+                    SHADOWNODEPTHNOSTENCIL, SHADOWNBDEPTHSTENCIL
                 };
                 struct alignas(16) GLMatrix4f {
                     float data[16]; // row-major ou column-major, selon ton convention
@@ -124,7 +124,7 @@ namespace odfaeg {
                 void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
                 void createImageView();
                 void createSampler();
-                void createCommandBuffersIndirect(unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, DepthStencilID depthStencilID, RenderStates currentStates);
+                void createCommandBuffersIndirect(unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, ShadowDepthStencilID depthStencilID, RenderStates currentStates);
                 Batcher batcher, shadowBatcher, normalBatcher, normalShadowBatcher, batcherIndexed, shadowBatcherIndexed, normalBatcherIndexed, normalShadowBatcherIndexed, normalStencilBuffer; /**> A group of faces using the same materials and primitive type.*/
                 std::vector<Instance> m_instances, m_normals, m_instancesIndexed, m_normalsIndexed; /**> Instances to draw. (Instanced rendering.) */
                 std::vector<Instance> m_shadow_instances, m_shadow_normals, m_shadow_instances_indexed, m_shadow_normalsIndexed;

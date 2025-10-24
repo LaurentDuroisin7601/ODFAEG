@@ -579,9 +579,9 @@ namespace odfaeg {
                 }
                 for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
                     for (unsigned int j = 0; j < shadowMap.getNbRenderTargets(); j++) {
-                        if (NBDEPTHSTENCIL * none.nbBlendModes > pipelineLayoutInfo[i][j].size()) {
-                            pipelineLayoutInfo[i][j].resize(NBDEPTHSTENCIL * none.nbBlendModes);
-                            depthStencilCreateInfo[i][j].resize(NBDEPTHSTENCIL* none.nbBlendModes);
+                        if (SHADOWNBDEPTHSTENCIL * none.nbBlendModes > pipelineLayoutInfo[i][j].size()) {
+                            pipelineLayoutInfo[i][j].resize(SHADOWNBDEPTHSTENCIL * none.nbBlendModes);
+                            depthStencilCreateInfo[i][j].resize(SHADOWNBDEPTHSTENCIL* none.nbBlendModes);
                         }
                     }
                 }
@@ -594,7 +594,7 @@ namespace odfaeg {
                 for (unsigned int b = 0; b < blendModes.size(); b++) {
                     states.blendMode = blendModes[b];
                     states.blendMode.updateIds();
-                    for (unsigned int j = 0; j < NBDEPTHSTENCIL; j++) {
+                    for (unsigned int j = 0; j < SHADOWNBDEPTHSTENCIL; j++) {
                         for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
                             if (j == 0) {
                                 std::array<VkPushConstantRange, 2> push_constants;
@@ -614,12 +614,12 @@ namespace odfaeg {
                                 //this push constant range is accessible only in the vertex shader
                                 push_constant2.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
                                 push_constants[1] = push_constant2;
-                                pipelineLayoutInfo[depthGenShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = push_constants.data();
-                                pipelineLayoutInfo[depthGenShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 2;
-                               depthStencilCreateInfo[depthGenShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
-                               depthStencilCreateInfo[depthGenShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = {};
-                               depthStencilCreateInfo[depthGenShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {};
-                               depthBuffer.createGraphicPipeline(static_cast<PrimitiveType>(i), states, NODEPTHNOSTENCIL, NBDEPTHSTENCIL);
+                                pipelineLayoutInfo[depthGenShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][SHADOWNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = push_constants.data();
+                                pipelineLayoutInfo[depthGenShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][SHADOWNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 2;
+                               depthStencilCreateInfo[depthGenShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][SHADOWNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
+                               depthStencilCreateInfo[depthGenShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][SHADOWNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = {};
+                               depthStencilCreateInfo[depthGenShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][SHADOWNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {};
+                               depthBuffer.createGraphicPipeline(static_cast<PrimitiveType>(i), states, SHADOWNODEPTHNOSTENCIL, SHADOWNBDEPTHSTENCIL);
                             }
                         }
                     }
@@ -638,9 +638,9 @@ namespace odfaeg {
                 }
                 for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
                     for (unsigned int j = 0; j < shadowMap.getNbRenderTargets(); j++) {
-                        if (NBDEPTHSTENCIL * none.nbBlendModes > pipelineLayoutInfo[i][j].size()) {
-                            pipelineLayoutInfo[i][j].resize(NBDEPTHSTENCIL * none.nbBlendModes);
-                            depthStencilCreateInfo[i][j].resize(NBDEPTHSTENCIL* none.nbBlendModes);
+                        if (SHADOWNBDEPTHSTENCIL * none.nbBlendModes > pipelineLayoutInfo[i][j].size()) {
+                            pipelineLayoutInfo[i][j].resize(SHADOWNBDEPTHSTENCIL * none.nbBlendModes);
+                            depthStencilCreateInfo[i][j].resize(SHADOWNBDEPTHSTENCIL* none.nbBlendModes);
                         }
                     }
                 }
@@ -648,7 +648,7 @@ namespace odfaeg {
                     states.blendMode = blendModes[b];
                     states.blendMode.updateIds();
                     states.shader = &sBuildAlphaBufferShader;
-                    for (unsigned int j = 0; j < NBDEPTHSTENCIL; j++) {
+                    for (unsigned int j = 0; j < SHADOWNBDEPTHSTENCIL; j++) {
                         for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
                             if (j == 0) {
                                 VkPushConstantRange push_constant;
@@ -658,12 +658,12 @@ namespace odfaeg {
                                 //this push constant range is accessible only in the vertex shader
                                 push_constant.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-                                pipelineLayoutInfo[sBuildAlphaBufferShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = &push_constant;
-                                pipelineLayoutInfo[sBuildAlphaBufferShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 1;
-                               depthStencilCreateInfo[sBuildAlphaBufferShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
-                               depthStencilCreateInfo[sBuildAlphaBufferShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = {};
-                               depthStencilCreateInfo[sBuildAlphaBufferShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {};
-                               alphaBuffer.createGraphicPipeline(static_cast<PrimitiveType>(i), states, NODEPTHNOSTENCIL, NBDEPTHSTENCIL);
+                                pipelineLayoutInfo[sBuildAlphaBufferShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][SHADOWNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = &push_constant;
+                                pipelineLayoutInfo[sBuildAlphaBufferShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][SHADOWNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 1;
+                               depthStencilCreateInfo[sBuildAlphaBufferShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][SHADOWNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
+                               depthStencilCreateInfo[sBuildAlphaBufferShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][SHADOWNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = {};
+                               depthStencilCreateInfo[sBuildAlphaBufferShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][SHADOWNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {};
+                               alphaBuffer.createGraphicPipeline(static_cast<PrimitiveType>(i), states, SHADOWNODEPTHNOSTENCIL, SHADOWNBDEPTHSTENCIL);
                             }
                         }
                     }
@@ -682,9 +682,9 @@ namespace odfaeg {
                 }
                 for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
                     for (unsigned int j = 0; j < shadowMap.getNbRenderTargets(); j++) {
-                        if (NBDEPTHSTENCIL * none.nbBlendModes > pipelineLayoutInfo[i][j].size()) {
-                            pipelineLayoutInfo[i][j].resize(NBDEPTHSTENCIL * none.nbBlendModes);
-                            depthStencilCreateInfo[i][j].resize(NBDEPTHSTENCIL* none.nbBlendModes);
+                        if (SHADOWNBDEPTHSTENCIL * none.nbBlendModes > pipelineLayoutInfo[i][j].size()) {
+                            pipelineLayoutInfo[i][j].resize(SHADOWNBDEPTHSTENCIL * none.nbBlendModes);
+                            depthStencilCreateInfo[i][j].resize(SHADOWNBDEPTHSTENCIL* none.nbBlendModes);
                         }
                     }
                 }
@@ -692,7 +692,7 @@ namespace odfaeg {
                     states.blendMode = blendModes[b];
                     states.blendMode.updateIds();
                     states.shader = &buildShadowMapShader;
-                    for (unsigned int j = 0; j < NBDEPTHSTENCIL; j++) {
+                    for (unsigned int j = 0; j < SHADOWNBDEPTHSTENCIL; j++) {
                         for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
                             if (j == 0) {
                                  std::array<VkPushConstantRange, 2> push_constants;
@@ -712,12 +712,12 @@ namespace odfaeg {
                                 //this push constant range is accessible only in the vertex shader
                                 push_constant2.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
                                 push_constants[1] = push_constant2;
-                                pipelineLayoutInfo[buildShadowMapShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][stencilBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = push_constants.data();
-                                pipelineLayoutInfo[buildShadowMapShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][stencilBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 2;
-                               depthStencilCreateInfo[buildShadowMapShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][stencilBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
-                               depthStencilCreateInfo[buildShadowMapShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][stencilBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = {};
-                               depthStencilCreateInfo[buildShadowMapShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][stencilBuffer.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {};
-                               stencilBuffer.createGraphicPipeline(static_cast<PrimitiveType>(i), states, NODEPTHNOSTENCIL, NBDEPTHSTENCIL);
+                                pipelineLayoutInfo[buildShadowMapShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][stencilBuffer.getId()][SHADOWNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = push_constants.data();
+                                pipelineLayoutInfo[buildShadowMapShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][stencilBuffer.getId()][SHADOWNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 2;
+                               depthStencilCreateInfo[buildShadowMapShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][stencilBuffer.getId()][SHADOWNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
+                               depthStencilCreateInfo[buildShadowMapShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][stencilBuffer.getId()][SHADOWNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = {};
+                               depthStencilCreateInfo[buildShadowMapShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][stencilBuffer.getId()][SHADOWNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {};
+                               stencilBuffer.createGraphicPipeline(static_cast<PrimitiveType>(i), states, SHADOWNODEPTHNOSTENCIL, SHADOWNBDEPTHSTENCIL);
                                //////std::cout<<"pipeline layout : "<<stencilBuffer.getPipelineLayout()[buildShadowMapShader.getId() * (Batcher::nbPrimitiveTypes - 1) + i][stencilBuffer.getId()][j]<<std::endl;
                             }
                         }
@@ -737,9 +737,9 @@ namespace odfaeg {
                 }
                 for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
                     for (unsigned int j = 0; j < shadowMap.getNbRenderTargets(); j++) {
-                        if (NBDEPTHSTENCIL * none.nbBlendModes > pipelineLayoutInfo[i][j].size()) {
-                            pipelineLayoutInfo[i][j].resize(NBDEPTHSTENCIL * none.nbBlendModes);
-                            depthStencilCreateInfo[i][j].resize(NBDEPTHSTENCIL* none.nbBlendModes);
+                        if (SHADOWNBDEPTHSTENCIL * none.nbBlendModes > pipelineLayoutInfo[i][j].size()) {
+                            pipelineLayoutInfo[i][j].resize(SHADOWNBDEPTHSTENCIL * none.nbBlendModes);
+                            depthStencilCreateInfo[i][j].resize(SHADOWNBDEPTHSTENCIL* none.nbBlendModes);
                         }
                     }
                 }
@@ -747,7 +747,7 @@ namespace odfaeg {
                     states.blendMode = blendModes[b];
                     states.blendMode.updateIds();
                     states.shader = &perPixShadowShader;
-                    for (unsigned int j = 0; j < NBDEPTHSTENCIL; j++) {
+                    for (unsigned int j = 0; j < SHADOWNBDEPTHSTENCIL; j++) {
                         for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
                             if (j == 0) {
                                VkPushConstantRange push_constant;
@@ -757,12 +757,12 @@ namespace odfaeg {
                                push_constant.size = sizeof(ResolutionPC);
                                 //this push constant range is accessible only in the vertex shader
                                push_constant.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-                               pipelineLayoutInfo[perPixShadowShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][shadowMap.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = &push_constant;
-                               pipelineLayoutInfo[perPixShadowShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][shadowMap.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 1;
-                               depthStencilCreateInfo[perPixShadowShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][shadowMap.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
-                               depthStencilCreateInfo[perPixShadowShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][shadowMap.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = {};
-                               depthStencilCreateInfo[perPixShadowShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][shadowMap.getId()][NODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {};
-                               shadowMap.createGraphicPipeline(static_cast<PrimitiveType>(i), states, NODEPTHNOSTENCIL, NBDEPTHSTENCIL);
+                               pipelineLayoutInfo[perPixShadowShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][shadowMap.getId()][SHADOWNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = &push_constant;
+                               pipelineLayoutInfo[perPixShadowShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][shadowMap.getId()][SHADOWNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 1;
+                               depthStencilCreateInfo[perPixShadowShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][shadowMap.getId()][SHADOWNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
+                               depthStencilCreateInfo[perPixShadowShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][shadowMap.getId()][SHADOWNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = {};
+                               depthStencilCreateInfo[perPixShadowShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][shadowMap.getId()][SHADOWNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {};
+                               shadowMap.createGraphicPipeline(static_cast<PrimitiveType>(i), states, SHADOWNODEPTHNOSTENCIL, SHADOWNBDEPTHSTENCIL);
                             }
                         }
                     }
@@ -1867,7 +1867,7 @@ namespace odfaeg {
                         vkUnmapMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory);
                         copyBuffer(vboIndirectStagingBuffer, vboIndirect, bufferSize);
                         //createDescriptorSets(p, currentStates);
-                        createCommandBuffersIndirect(p, drawArraysIndirectCommands[p].size(), sizeof(DrawArraysIndirectCommand), NODEPTHNOSTENCIL, currentStates);
+                        createCommandBuffersIndirect(p, drawArraysIndirectCommands[p].size(), sizeof(DrawArraysIndirectCommand), SHADOWNODEPTHNOSTENCIL, currentStates);
                     }
                 }
                 currentStates.shader = &depthGenShader;
@@ -1951,7 +1951,7 @@ namespace odfaeg {
                         vkUnmapMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory);
                         copyBuffer(vboIndirectStagingBuffer, vboIndirect, bufferSize);
                         //createDescriptorSets(p, currentStates);
-                        createCommandBuffersIndirect(p, drawArraysIndirectCommands[p].size(), sizeof(DrawArraysIndirectCommand), NODEPTHNOSTENCIL, currentStates);
+                        createCommandBuffersIndirect(p, drawArraysIndirectCommands[p].size(), sizeof(DrawArraysIndirectCommand), SHADOWNODEPTHNOSTENCIL, currentStates);
                     }
                 }
 
@@ -2123,7 +2123,7 @@ namespace odfaeg {
                         vkUnmapMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory);
                         copyBuffer(vboIndirectStagingBuffer, vboIndirect, bufferSize);
                         //createDescriptorSets(p, currentStates);
-                        createCommandBuffersIndirect(p, drawArraysIndirectCommands[p].size(), sizeof(DrawArraysIndirectCommand), NODEPTHNOSTENCIL, currentStates);
+                        createCommandBuffersIndirect(p, drawArraysIndirectCommands[p].size(), sizeof(DrawArraysIndirectCommand), SHADOWNODEPTHNOSTENCIL, currentStates);
                     }
                 }
                 currentStates.shader = &perPixShadowShader;
@@ -2207,7 +2207,7 @@ namespace odfaeg {
                         vkUnmapMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory);
                         copyBuffer(vboIndirectStagingBuffer, vboIndirect, bufferSize);
                         //createDescriptorSets(p, currentStates);
-                        createCommandBuffersIndirect(p, drawArraysIndirectCommands[p].size(), sizeof(DrawArraysIndirectCommand), NODEPTHNOSTENCIL, currentStates);
+                        createCommandBuffersIndirect(p, drawArraysIndirectCommands[p].size(), sizeof(DrawArraysIndirectCommand), SHADOWNODEPTHNOSTENCIL, currentStates);
                     }
                 }
             }
@@ -2395,7 +2395,7 @@ namespace odfaeg {
                         vkUnmapMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory);
                         copyBuffer(vboIndirectStagingBuffer, vboIndirect, bufferSize);
                         //createDescriptorSets(p, currentStates);
-                        createCommandBuffersIndirect(p, drawElementsIndirectCommands[p].size(), sizeof(DrawElementsIndirectCommand), NODEPTHNOSTENCIL, currentStates);
+                        createCommandBuffersIndirect(p, drawElementsIndirectCommands[p].size(), sizeof(DrawElementsIndirectCommand), SHADOWNODEPTHNOSTENCIL, currentStates);
                     }
                 }
                 currentStates.shader = &depthGenShader;
@@ -2479,7 +2479,7 @@ namespace odfaeg {
                         vkUnmapMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory);
                         copyBuffer(vboIndirectStagingBuffer, vboIndirect, bufferSize);
                         //createDescriptorSets(p, currentStates);
-                        createCommandBuffersIndirect(p, drawElementsIndirectCommands[p].size(), sizeof(DrawElementsIndirectCommand), NODEPTHNOSTENCIL, currentStates);
+                        createCommandBuffersIndirect(p, drawElementsIndirectCommands[p].size(), sizeof(DrawElementsIndirectCommand), SHADOWNODEPTHNOSTENCIL, currentStates);
                     }
                 }
                 for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
@@ -2667,7 +2667,7 @@ namespace odfaeg {
                         vkUnmapMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory);
                         copyBuffer(vboIndirectStagingBuffer, vboIndirect, bufferSize);
                         //createDescriptorSets(p, currentStates);
-                        createCommandBuffersIndirect(p, drawElementsIndirectCommands[p].size(), sizeof(DrawElementsIndirectCommand), NODEPTHNOSTENCIL, currentStates);
+                        createCommandBuffersIndirect(p, drawElementsIndirectCommands[p].size(), sizeof(DrawElementsIndirectCommand), SHADOWNODEPTHNOSTENCIL, currentStates);
                     }
                 }
                 currentStates.shader = &perPixShadowShader;
@@ -2751,11 +2751,11 @@ namespace odfaeg {
                         vkUnmapMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory);
                         copyBuffer(vboIndirectStagingBuffer, vboIndirect, bufferSize);
                         //createDescriptorSets(p, currentStates);
-                        createCommandBuffersIndirect(p, drawElementsIndirectCommands[p].size(), sizeof(DrawElementsIndirectCommand), NODEPTHNOSTENCIL, currentStates);
+                        createCommandBuffersIndirect(p, drawElementsIndirectCommands[p].size(), sizeof(DrawElementsIndirectCommand), SHADOWNODEPTHNOSTENCIL, currentStates);
                     }
                 }
             }
-            void ShadowRenderComponent::createCommandBuffersIndirect(unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, DepthStencilID depthStencilID, RenderStates currentStates) {
+            void ShadowRenderComponent::createCommandBuffersIndirect(unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, ShadowDepthStencilID depthStencilID, RenderStates currentStates) {
                 if (needToUpdateDS) {
                     Shader* shader = const_cast<Shader*>(currentStates.shader);
                     currentStates.shader = &buildShadowMapShader;

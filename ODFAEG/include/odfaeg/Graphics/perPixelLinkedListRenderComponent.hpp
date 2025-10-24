@@ -19,8 +19,8 @@ namespace odfaeg {
         #ifdef VULKAN
         class ODFAEG_GRAPHICS_API PerPixelLinkedListRenderComponent : public HeavyComponent {
             public :
-            enum DepthStencilID {
-                NODEPTHNOSTENCIL, NODEPTHSTENCIL, NODEPTHSTENCILOUTLINE, NBDEPTHSTENCIL
+            enum PPLLDepthStencilID {
+                PPLLNODEPTHNOSTENCIL, PPLLNODEPTHSTENCIL, PPLLNODEPTHSTENCILOUTLINE, PPLLNBDEPTHSTENCIL
             };
             struct alignas(16) GLMatrix4f {
                 float data[16]; // row-major ou column-major, selon ton convention
@@ -124,8 +124,8 @@ namespace odfaeg {
             void drawInstancesIndexed();
             void drawSelectedInstances();
             void drawSelectedInstancesIndexed();
-            void recordCommandBufferIndirect(unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, DepthStencilID depthStencilID, unsigned int vertexOffset, unsigned int indexOffset, unsigned int uboOffset, unsigned int modelDataOffset, unsigned int materialDataOffset, unsigned int drawCommandOffset, RenderStates currentStates, VkCommandBuffer commandBuffer);
-            void createCommandBuffersIndirect(unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, DepthStencilID dephStencilID, RenderStates currentStates);
+            void recordCommandBufferIndirect(unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, PPLLDepthStencilID depthStencilID, unsigned int vertexOffset, unsigned int indexOffset, unsigned int uboOffset, unsigned int modelDataOffset, unsigned int materialDataOffset, unsigned int drawCommandOffset, RenderStates currentStates, VkCommandBuffer commandBuffer);
+            void createCommandBuffersIndirect(unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, PPLLDepthStencilID dephStencilID, RenderStates currentStates);
             void recordCommandBufferVertexBuffer(RenderStates currentStates, VkCommandBuffer commandBuffer);
             void createCommandBufferVertexBuffer(RenderStates currentStates);
             uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);

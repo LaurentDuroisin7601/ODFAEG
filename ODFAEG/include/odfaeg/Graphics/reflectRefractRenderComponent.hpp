@@ -20,8 +20,8 @@ namespace odfaeg {
             struct GLMatrix4f {
                 float data[16];
             };
-            enum DepthStencilID {
-                NODEPTHNOSTENCIL, DEPTHNOSTENCIL, NBDEPTHSTENCIL
+            enum RRRCDepthStencilID {
+                RRRCNODEPTHNOSTENCIL, RRRCDEPTHNOSTENCIL, RRRCNBDEPTHSTENCIL
             };
             struct DrawArraysIndirectCommand {
                 unsigned int  count;
@@ -176,8 +176,8 @@ namespace odfaeg {
             void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size, VkCommandBuffer cmd);
             void createImageView();
             void createSampler();
-            void createCommandBuffersIndirect(unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, DepthStencilID depthStencilID, RenderStates currentStates);
-            void recordCommandBufferIndirect(unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, DepthStencilID depthStencilID, unsigned int vertexOffset, unsigned int indexOffset, unsigned int uboOffset, unsigned int modelDataOffset, unsigned int materialDataOffset, unsigned int drawCommandOffset, RenderStates currentStates, VkCommandBuffer commandBuffer);
+            void createCommandBuffersIndirect(unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, RRRCDepthStencilID depthStencilID, RenderStates currentStates);
+            void recordCommandBufferIndirect(unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, RRRCDepthStencilID depthStencilID, unsigned int vertexOffset, unsigned int indexOffset, unsigned int uboOffset, unsigned int modelDataOffset, unsigned int materialDataOffset, unsigned int drawCommandOffset, RenderStates currentStates, VkCommandBuffer commandBuffer);
             void createCommandBufferVertexBuffer(RenderStates currentStates);
             void recordCommandBufferVertexBuffer(RenderStates currentStates, VkCommandBuffer commandBuffer);
             void drawBuffers();

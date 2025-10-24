@@ -31,8 +31,8 @@ namespace odfaeg {
         #ifdef VULKAN
         class ODFAEG_GRAPHICS_API LightRenderComponent : public HeavyComponent {
                 public :
-                enum DepthStencilID {
-                    NODEPTHNOSTENCIL, NBDEPTHSTENCIL
+                enum LightDepthStencilID {
+                    LIGHTNODEPTHNOSTENCIL, LIGHTNBDEPTHSTENCIL
                 };
                 struct DrawArraysIndirectCommand {
                     unsigned int  count;
@@ -119,7 +119,7 @@ namespace odfaeg {
                 void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
                 void createImageView();
                 void createSampler();
-                void createCommandBuffersIndirect(unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, DepthStencilID depthStencilID, RenderStates currentStates, bool lightDepth=false);
+                void createCommandBuffersIndirect(unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, LightDepthStencilID depthStencilID, RenderStates currentStates, bool lightDepth=false);
                 VkBuffer modelDataBuffer, materialDataBuffer, modelDataStagingBuffer, materialDataStagingBuffer;
                 VkDeviceMemory modelDataStagingBufferMemory, materialDataStagingBufferMemory;
                 VkDeviceSize maxVboIndirectSize, maxModelDataSize, maxMaterialDataSize;
