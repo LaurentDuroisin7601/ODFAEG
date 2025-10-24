@@ -987,10 +987,11 @@ namespace odfaeg {
             }
             void ReflectRefractRenderComponent::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size, VkCommandBuffer cmd) {
 
-
-                VkBufferCopy copyRegion{};
-                copyRegion.size = size;
-                vkCmdCopyBuffer(cmd, srcBuffer, dstBuffer, 1, &copyRegion);
+                if (srcBuffer != nullptr && dstBuffer != nullptr) {
+                    VkBufferCopy copyRegion{};
+                    copyRegion.size = size;
+                    vkCmdCopyBuffer(cmd, srcBuffer, dstBuffer, 1, &copyRegion);
+                }
 
             }
             void ReflectRefractRenderComponent::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) {
@@ -3335,8 +3336,8 @@ namespace odfaeg {
                     std::vector<VkCommandBuffer> commandBuffers = depthBuffer.getCommandBuffers();
                     unsigned int currentFrame = depthBuffer.getCurrentFrame();
                     buildDepthPC.nbLayers = GameObject::getNbLayers();
-                    vkCmdPushConstants(commandBuffers[currentFrame], depthBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][depthBuffer.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectRenderingPC), &indirectRenderingPC);
-                    vkCmdPushConstants(commandBuffers[currentFrame], depthBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][depthBuffer.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(BuildDepthPC), &buildDepthPC);
+                    vkCmdPushConstants(commandBuffers[currentFrame], depthBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][0][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectRenderingPC), &indirectRenderingPC);
+                    vkCmdPushConstants(commandBuffers[currentFrame], depthBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][0][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(BuildDepthPC), &buildDepthPC);
                     depthBuffer.beginRenderPass();
                     depthBuffer.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
                     depthBuffer.endRenderPass();
@@ -3361,8 +3362,8 @@ namespace odfaeg {
                     buildAlphaPC.nbLayers = GameObject::getNbLayers();
                     buildAlphaPC.resolution = resolution;
 
-                    vkCmdPushConstants(commandBuffers[currentFrame], alphaBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][alphaBuffer.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectRenderingPC), &indirectRenderingPC);
-                    vkCmdPushConstants(commandBuffers[currentFrame], alphaBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][alphaBuffer.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(BuildAlphaPC), &buildAlphaPC);
+                    vkCmdPushConstants(commandBuffers[currentFrame], alphaBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][0][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectRenderingPC), &indirectRenderingPC);
+                    vkCmdPushConstants(commandBuffers[currentFrame], alphaBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][0][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(BuildAlphaPC), &buildAlphaPC);
                     VkMemoryBarrier memoryBarrier={};
                     memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
                     memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
@@ -3432,8 +3433,8 @@ namespace odfaeg {
                     //vkCmdWaitEvents(commandBuffers[currentFrame], 1, &events[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
 
                     vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
-                    vkCmdPushConstants(commandBuffers[currentFrame], reflectRefractTex.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][reflectRefractTex.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectRenderingPC), &indirectRenderingPC);
-                    vkCmdPushConstants(commandBuffers[currentFrame], reflectRefractTex.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][reflectRefractTex.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(BuildFrameBufferPC), &buildFrameBufferPC);
+                    vkCmdPushConstants(commandBuffers[currentFrame], reflectRefractTex.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][0][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectRenderingPC), &indirectRenderingPC);
+                    vkCmdPushConstants(commandBuffers[currentFrame], reflectRefractTex.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][0][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(BuildFrameBufferPC), &buildFrameBufferPC);
                     reflectRefractTex.beginRenderPass();
                     reflectRefractTex.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
                     reflectRefractTex.endRenderPass();
@@ -3666,7 +3667,7 @@ namespace odfaeg {
 
 
                 vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
-                vkCmdPushConstants(commandBuffers[currentFrame], environmentMap.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + vb.getPrimitiveType()][environmentMap.getId()][RRRCNODEPTHNOSTENCIL*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(LinkedList2PC), &linkedList2PC);
+                vkCmdPushConstants(commandBuffers[currentFrame], environmentMap.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + vb.getPrimitiveType()][0][RRRCNODEPTHNOSTENCIL*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(LinkedList2PC), &linkedList2PC);
 
 
                 ////////std::cout<<"ids : "<<shader->getId() * (Batcher::nbPrimitiveTypes - 1) + vb.getPrimitiveType()<<","<<environmentMap.getId()<<","<<RRRCNODEPTHNOSTENCIL<<std::endl;
@@ -3829,7 +3830,7 @@ namespace odfaeg {
                 }
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                     if (nbDrawCommandBuffer[p][0] > 0) {
-                        vbBindlessTex[p].update(copyVbBufferCommandBuffer);
+                        //vbBindlessTex[p].update(copyVbBufferCommandBuffer);
                         VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
 
                         currentModelOffset[p] = alignedOffsetModelData[p] + ((bufferSize - oldTotalBufferSizeModelData[p] > 0) ? bufferSize - oldTotalBufferSizeModelData[p] : 0);
@@ -3861,7 +3862,7 @@ namespace odfaeg {
                         vkMapMemory(vkDevice.getDevice(), modelDataStagingBufferMemory, 0, bufferSize, 0, &data);
                         memcpy(data, modelDatas[p].data(), (size_t)bufferSize);
                         vkUnmapMemory(vkDevice.getDevice(), modelDataStagingBufferMemory);*/
-                        copyBuffer(modelDataStagingBuffer, modelDataBufferMT[p], bufferSize, copyModelDataBufferCommandBuffer);
+                        //copyBuffer(modelDataStagingBuffer, modelDataBufferMT[p], bufferSize, copyModelDataBufferCommandBuffer);
 
 
                         bufferSize = sizeof(MaterialData) * materialDatas[p].size();
@@ -3890,7 +3891,7 @@ namespace odfaeg {
                         /*vkMapMemory(vkDevice.getDevice(), materialDataStagingBufferMemory, 0, bufferSize, 0, &data);
                         memcpy(data, materialDatas[p].data(), (size_t)bufferSize);
                         vkUnmapMemory(vkDevice.getDevice(), materialDataStagingBufferMemory);*/
-                        copyBuffer(materialDataStagingBuffer,materialDataBufferMT[p], bufferSize, copyMaterialDataBufferCommandBuffer);
+                        //copyBuffer(materialDataStagingBuffer,materialDataBufferMT[p], bufferSize, copyMaterialDataBufferCommandBuffer);
 
                         bufferSize = sizeof(DrawArraysIndirectCommand) * drawArraysIndirectCommands[p].size();
                         totalBufferSizeDrawCommand[p] = bufferSize;
@@ -3912,10 +3913,21 @@ namespace odfaeg {
                         /*vkMapMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory, 0, totalBufferSizeDrawCommand[p], 0, &data);
                         memcpy(data, drawArraysIndirectCommands[p].data(), (size_t)totalBufferSizeDrawCommand[p]);
                         vkUnmapMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory);*/
-                        copyBuffer(vboIndirectStagingBuffer, drawCommandBufferMT[p], totalBufferSizeDrawCommand[p], copyDrawBufferCommandBuffer);
+                        //copyBuffer(vboIndirectStagingBuffer, drawCommandBufferMT[p], totalBufferSizeDrawCommand[p], copyDrawBufferCommandBuffer);
 
                     }
-                }
+                    VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
+                    if (bufferSize > 0)
+                        copyBuffer(modelDataStagingBuffer, modelDataBufferMT[p], bufferSize, copyModelDataBufferCommandBuffer);
+                    bufferSize = sizeof(MaterialData) * materialDatas[p].size();
+                    if (bufferSize > 0)
+                        copyBuffer(materialDataStagingBuffer,materialDataBufferMT[p], bufferSize, copyMaterialDataBufferCommandBuffer);
+                    bufferSize = sizeof(DrawArraysIndirectCommand) * drawArraysIndirectCommands[p].size();
+                    if (bufferSize > 0)
+                        copyBuffer(vboIndirectStagingBuffer, drawCommandBufferMT[p], totalBufferSizeDrawCommand[p], copyDrawBufferCommandBuffer);
+                    if (vbBindlessTex[p].getVertexCount() > 0)
+                        vbBindlessTex[p].update(copyVbBufferCommandBuffer);
+                    }
                 if (vkEndCommandBuffer(copyModelDataBufferCommandBuffer) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to record command buffer!", 1);
                 }
@@ -4085,7 +4097,7 @@ namespace odfaeg {
                 }
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                     if (nbIndexedDrawCommandBuffer[p][0] > 0) {
-                        vbBindlessTexIndexed[p].update(copyVbIndexedBufferCommandBuffer);
+                        //vbBindlessTexIndexed[p].update(copyVbIndexedBufferCommandBuffer);
                         VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
                         ////std::cout<<"buffer size : "<<bufferSize<<std::endl;
 
@@ -4120,7 +4132,7 @@ namespace odfaeg {
                         vkMapMemory(vkDevice.getDevice(), modelDataStagingBufferMemory, 0, bufferSize, 0, &data);
                         memcpy(data, modelDatas[p].data(), (size_t)bufferSize);
                         vkUnmapMemory(vkDevice.getDevice(), modelDataStagingBufferMemory);*/
-                        copyBuffer(modelDataStagingBuffer, modelDataBufferMT[p], bufferSize, copyModelDataBufferCommandBuffer);
+                        //copyBuffer(modelDataStagingBuffer, modelDataBufferMT[p], bufferSize, copyModelDataBufferCommandBuffer);
 
 
                         bufferSize = sizeof(MaterialData) * materialDatas[p].size();
@@ -4150,7 +4162,7 @@ namespace odfaeg {
                         /*vkMapMemory(vkDevice.getDevice(), materialDataStagingBufferMemory, 0, bufferSize, 0, &data);
                         memcpy(data, materialDatas[p].data(), (size_t)bufferSize);
                         vkUnmapMemory(vkDevice.getDevice(), materialDataStagingBufferMemory);*/
-                        copyBuffer(materialDataStagingBuffer,materialDataBufferMT[p], bufferSize, copyMaterialDataBufferCommandBuffer);
+                        //copyBuffer(materialDataStagingBuffer,materialDataBufferMT[p], bufferSize, copyMaterialDataBufferCommandBuffer);
 
                         bufferSize = sizeof(DrawElementsIndirectCommand) * drawElementsIndirectCommands[p].size();
                         totalBufferSizeIndexedDrawCommand[p] = bufferSize;
@@ -4173,9 +4185,21 @@ namespace odfaeg {
                         /*vkMapMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory, 0, totalBufferSizeIndexedDrawCommand[p], 0, &data);
                         memcpy(data, drawElementsIndirectCommands[p].data(), (size_t)totalBufferSizeIndexedDrawCommand[p]);
                         vkUnmapMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory);*/
-                        copyBuffer(vboIndexedIndirectStagingBuffer, drawCommandBufferIndexedMT[p], totalBufferSizeIndexedDrawCommand[p], copyDrawIndexedBufferCommandBuffer);
+                        //copyBuffer(vboIndexedIndirectStagingBuffer, drawCommandBufferIndexedMT[p], totalBufferSizeIndexedDrawCommand[p], copyDrawIndexedBufferCommandBuffer);
 
                     }
+                    VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
+                    if (bufferSize > 0)
+                        copyBuffer(modelDataStagingBuffer, modelDataBufferMT[p], bufferSize, copyModelDataBufferCommandBuffer);
+                    bufferSize = sizeof(MaterialData) * materialDatas[p].size();
+                    if (bufferSize > 0)
+                        copyBuffer(materialDataStagingBuffer,materialDataBufferMT[p], bufferSize, copyMaterialDataBufferCommandBuffer);
+                    bufferSize = sizeof(DrawElementsIndirectCommand) * drawElementsIndirectCommands[p].size();
+                    if (bufferSize > 0)
+                        copyBuffer(vboIndexedIndirectStagingBuffer, drawCommandBufferIndexedMT[p], totalBufferSizeIndexedDrawCommand[p], copyDrawIndexedBufferCommandBuffer);
+                    if (vbBindlessTexIndexed[p].getVertexCount() > 0)
+                        vbBindlessTexIndexed[p].update(copyVbIndexedBufferCommandBuffer);
+
                 }
                 if (vkEndCommandBuffer(copyModelDataBufferCommandBuffer) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to record command buffer!", 1);
@@ -4325,7 +4349,7 @@ namespace odfaeg {
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                     if (nbDrawCommandBuffer[p][0] > 0) {
 
-                        vbBindlessTex[p].update(copyVbBufferCommandBuffer);
+                        //vbBindlessTex[p].update(copyVbBufferCommandBuffer);
                         VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
 
                         currentModelOffset[p] = alignedOffsetModelData[p] + ((bufferSize - oldTotalBufferSizeModelData[p] > 0) ? bufferSize - oldTotalBufferSizeModelData[p] : 0);
@@ -4359,7 +4383,7 @@ namespace odfaeg {
                         vkMapMemory(vkDevice.getDevice(), modelDataStagingBufferMemory, 0, bufferSize, 0, &data);
                         memcpy(data, modelDatas[p].data(), (size_t)bufferSize);
                         vkUnmapMemory(vkDevice.getDevice(), modelDataStagingBufferMemory);*/
-                        copyBuffer(modelDataStagingBuffer, modelDataBufferMT[p], bufferSize, copyModelDataBufferCommandBuffer);
+                        //copyBuffer(modelDataStagingBuffer, modelDataBufferMT[p], bufferSize, copyModelDataBufferCommandBuffer);
 
 
                         bufferSize = sizeof(MaterialData) * materialDatas[p].size();
@@ -4389,7 +4413,7 @@ namespace odfaeg {
                         /*vkMapMemory(vkDevice.getDevice(), materialDataStagingBufferMemory, 0, bufferSize, 0, &data);
                         memcpy(data, materialDatas[p].data(), (size_t)bufferSize);
                         vkUnmapMemory(vkDevice.getDevice(), materialDataStagingBufferMemory);*/
-                        copyBuffer(materialDataStagingBuffer,materialDataBufferMT[p], bufferSize, copyMaterialDataBufferCommandBuffer);
+                        //copyBuffer(materialDataStagingBuffer,materialDataBufferMT[p], bufferSize, copyMaterialDataBufferCommandBuffer);
 
                         bufferSize = sizeof(DrawArraysIndirectCommand) * drawArraysIndirectCommands[p].size();
                         totalBufferSizeDrawCommand[p] = bufferSize;
@@ -4411,9 +4435,20 @@ namespace odfaeg {
                         /*vkMapMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory, 0, totalBufferSizeDrawCommand[p], 0, &data);
                         memcpy(data, drawArraysIndirectCommands[p].data(), (size_t)totalBufferSizeDrawCommand[p]);
                         vkUnmapMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory);*/
-                        copyBuffer(vboIndirectStagingBuffer, drawCommandBufferMT[p], totalBufferSizeDrawCommand[p], copyDrawBufferCommandBuffer);
+                        //copyBuffer(vboIndirectStagingBuffer, drawCommandBufferMT[p], totalBufferSizeDrawCommand[p], copyDrawBufferCommandBuffer);
 
                     }
+                    VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
+                    if (bufferSize > 0)
+                        copyBuffer(modelDataStagingBuffer, modelDataBufferMT[p], bufferSize, copyModelDataBufferCommandBuffer);
+                    bufferSize = sizeof(MaterialData) * materialDatas[p].size();
+                    if (bufferSize > 0)
+                        copyBuffer(materialDataStagingBuffer,materialDataBufferMT[p], bufferSize, copyMaterialDataBufferCommandBuffer);
+                    bufferSize = sizeof(DrawArraysIndirectCommand) * drawArraysIndirectCommands[p].size();
+                    if (bufferSize > 0)
+                        copyBuffer(vboIndirectStagingBuffer, drawCommandBufferMT[p], totalBufferSizeDrawCommand[p], copyDrawBufferCommandBuffer);
+                    if (vbBindlessTex[p].getVertexCount() > 0)
+                        vbBindlessTex[p].update(copyVbBufferCommandBuffer);
                 }
                 if (vkEndCommandBuffer(copyModelDataBufferCommandBuffer) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to record command buffer!", 1);
@@ -4460,10 +4495,13 @@ namespace odfaeg {
                         DrawElementsIndirectCommand drawElementsIndirectCommand;
                         unsigned int p = m_normalIndexed[i].getAllVertices().getPrimitiveType();
                         MaterialData material;
-                        material.textureIndex = (m_normalIndexed[i].getMaterial().getTexture() != nullptr) ? m_normalIndexed[i].getMaterial().getTexture()->getId() : 0;
-                        material.layer = m_normalIndexed[i].getMaterial().getLayer();
-                        material.uvScale = (m_normalIndexed[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_normalIndexed[i].getMaterial().getTexture()->getSize().x(), 1.f / m_normalIndexed[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
-                        material.uvOffset = math::Vec2f(0, 0);
+                        {
+                            std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                            material.textureIndex = (m_normalIndexed[i].getMaterial().getTexture() != nullptr) ? m_normalIndexed[i].getMaterial().getTexture()->getId() : 0;
+                            material.layer = m_normalIndexed[i].getMaterial().getLayer();
+                            material.uvScale = (m_normalIndexed[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_normalIndexed[i].getMaterial().getTexture()->getSize().x(), 1.f / m_normalIndexed[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
+                            material.uvOffset = math::Vec2f(0, 0);
+                        }
                         materialDatas[p].push_back(material);
                         ModelData model;
                         TransformMatrix tm;
@@ -4589,7 +4627,7 @@ namespace odfaeg {
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                     if (nbIndexedDrawCommandBuffer[p][0] > 0) {
 
-                        vbBindlessTexIndexed[p].update(copyVbIndexedBufferCommandBuffer);
+                        //vbBindlessTexIndexed[p].update(copyVbIndexedBufferCommandBuffer);
                         VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
 
                         currentModelOffset[p] = alignedOffsetModelData[p] + ((bufferSize - oldTotalBufferSizeModelData[p] > 0) ? bufferSize - oldTotalBufferSizeModelData[p] : 0);
@@ -4624,7 +4662,7 @@ namespace odfaeg {
                         vkMapMemory(vkDevice.getDevice(), modelDataStagingBufferMemory, 0, bufferSize, 0, &data);
                         memcpy(data, modelDatas[p].data(), (size_t)bufferSize);
                         vkUnmapMemory(vkDevice.getDevice(), modelDataStagingBufferMemory);*/
-                        copyBuffer(modelDataStagingBuffer, modelDataBufferMT[p], bufferSize, copyModelDataBufferCommandBuffer);
+                        //copyBuffer(modelDataStagingBuffer, modelDataBufferMT[p], bufferSize, copyModelDataBufferCommandBuffer);
 
 
                         bufferSize = sizeof(MaterialData) * materialDatas[p].size();
@@ -4655,7 +4693,7 @@ namespace odfaeg {
                         /*vkMapMemory(vkDevice.getDevice(), materialDataStagingBufferMemory, 0, bufferSize, 0, &data);
                         memcpy(data, materialDatas[p].data(), (size_t)bufferSize);
                         vkUnmapMemory(vkDevice.getDevice(), materialDataStagingBufferMemory);*/
-                        copyBuffer(materialDataStagingBuffer,materialDataBufferMT[p], bufferSize, copyMaterialDataBufferCommandBuffer);
+                        //copyBuffer(materialDataStagingBuffer,materialDataBufferMT[p], bufferSize, copyMaterialDataBufferCommandBuffer);
 
                         bufferSize = sizeof(DrawElementsIndirectCommand) * drawElementsIndirectCommands[p].size();
                         totalBufferSizeIndexedDrawCommand[p] = bufferSize;
@@ -4678,9 +4716,20 @@ namespace odfaeg {
                         /*vkMapMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory, 0, totalBufferSizeIndexedDrawCommand[p], 0, &data);
                         memcpy(data, drawElementsIndirectCommands[p].data(), (size_t)totalBufferSizeIndexedDrawCommand[p]);
                         vkUnmapMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory);*/
-                        copyBuffer(vboIndexedIndirectStagingBuffer, drawCommandBufferIndexedMT[p], totalBufferSizeIndexedDrawCommand[p], copyDrawIndexedBufferCommandBuffer);
+                        //copyBuffer(vboIndexedIndirectStagingBuffer, drawCommandBufferIndexedMT[p], totalBufferSizeIndexedDrawCommand[p], copyDrawIndexedBufferCommandBuffer);
 
                     }
+                    VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
+                    if (bufferSize > 0)
+                        copyBuffer(modelDataStagingBuffer, modelDataBufferMT[p], bufferSize, copyModelDataBufferCommandBuffer);
+                    bufferSize = sizeof(MaterialData) * materialDatas[p].size();
+                    if (bufferSize > 0)
+                        copyBuffer(materialDataStagingBuffer,materialDataBufferMT[p], bufferSize, copyMaterialDataBufferCommandBuffer);
+                    bufferSize = sizeof(DrawElementsIndirectCommand) * drawElementsIndirectCommands[p].size();
+                    if (bufferSize > 0)
+                        copyBuffer(vboIndexedIndirectStagingBuffer, drawCommandBufferIndexedMT[p], totalBufferSizeIndexedDrawCommand[p], copyDrawIndexedBufferCommandBuffer);
+                    if (vbBindlessTexIndexed[p].getVertexCount() > 0)
+                        vbBindlessTexIndexed[p].update(copyVbIndexedBufferCommandBuffer);
                 }
                 if (vkEndCommandBuffer(copyModelDataBufferCommandBuffer) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to record command buffer!", 1);
@@ -4834,7 +4883,7 @@ namespace odfaeg {
                 }
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                     if (nbDrawCommandBuffer[p][0] > 0) {
-                        vbBindlessTex[p].update(copyVbBufferCommandBuffer);
+                        //vbBindlessTex[p].update(copyVbBufferCommandBuffer);
                         VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
 
                         currentModelOffset[p] = alignedOffsetModelData[p] + ((bufferSize - oldTotalBufferSizeModelData[p] > 0) ? bufferSize - oldTotalBufferSizeModelData[p] : 0);
@@ -4867,7 +4916,7 @@ namespace odfaeg {
                         vkMapMemory(vkDevice.getDevice(), modelDataStagingBufferMemory, 0, bufferSize, 0, &data);
                         memcpy(data, modelDatas[p].data(), (size_t)bufferSize);
                         vkUnmapMemory(vkDevice.getDevice(), modelDataStagingBufferMemory);*/
-                        copyBuffer(modelDataStagingBuffer, modelDataBufferMT[p], bufferSize, copyModelDataBufferCommandBuffer);
+                        //copyBuffer(modelDataStagingBuffer, modelDataBufferMT[p], bufferSize, copyModelDataBufferCommandBuffer);
 
 
                         bufferSize = sizeof(MaterialData) * materialDatas[p].size();
@@ -4897,7 +4946,7 @@ namespace odfaeg {
                         /*vkMapMemory(vkDevice.getDevice(), materialDataStagingBufferMemory, 0, bufferSize, 0, &data);
                         memcpy(data, materialDatas[p].data(), (size_t)bufferSize);
                         vkUnmapMemory(vkDevice.getDevice(), materialDataStagingBufferMemory);*/
-                        copyBuffer(materialDataStagingBuffer,materialDataBufferMT[p], bufferSize, copyMaterialDataBufferCommandBuffer);
+                        //copyBuffer(materialDataStagingBuffer,materialDataBufferMT[p], bufferSize, copyMaterialDataBufferCommandBuffer);
 
                         bufferSize = sizeof(DrawArraysIndirectCommand) * drawArraysIndirectCommands[p].size();
                         totalBufferSizeDrawCommand[p] = bufferSize;
@@ -4919,9 +4968,20 @@ namespace odfaeg {
                         /*vkMapMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory, 0, totalBufferSizeDrawCommand[p], 0, &data);
                         memcpy(data, drawArraysIndirectCommands[p].data(), (size_t)totalBufferSizeDrawCommand[p]);
                         vkUnmapMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory);*/
-                        copyBuffer(vboIndirectStagingBuffer, drawCommandBufferMT[p], totalBufferSizeDrawCommand[p], copyDrawBufferCommandBuffer);
+                        //copyBuffer(vboIndirectStagingBuffer, drawCommandBufferMT[p], totalBufferSizeDrawCommand[p], copyDrawBufferCommandBuffer);
 
                     }
+                    VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
+                    if (bufferSize > 0)
+                        copyBuffer(modelDataStagingBuffer, modelDataBufferMT[p], bufferSize, copyModelDataBufferCommandBuffer);
+                    bufferSize = sizeof(MaterialData) * materialDatas[p].size();
+                    if (bufferSize > 0)
+                        copyBuffer(materialDataStagingBuffer,materialDataBufferMT[p], bufferSize, copyMaterialDataBufferCommandBuffer);
+                    bufferSize = sizeof(DrawArraysIndirectCommand) * drawArraysIndirectCommands[p].size();
+                    if (bufferSize > 0)
+                        copyBuffer(vboIndirectStagingBuffer, drawCommandBufferMT[p], totalBufferSizeDrawCommand[p], copyDrawBufferCommandBuffer);
+                    if (vbBindlessTex[p].getVertexCount() > 0)
+                        vbBindlessTex[p].update(copyVbBufferCommandBuffer);
                 }
                 if (vkEndCommandBuffer(copyModelDataBufferCommandBuffer) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to record command buffer!", 1);
@@ -5103,7 +5163,7 @@ namespace odfaeg {
                 }
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                     if (nbIndexedDrawCommandBuffer[p][0] > 0) {
-                        vbBindlessTexIndexed[p].update(copyVbIndexedBufferCommandBuffer);
+                        //vbBindlessTexIndexed[p].update(copyVbIndexedBufferCommandBuffer);
                         VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
 
                         currentModelOffset[p] = alignedOffsetModelData[p] + ((bufferSize - oldTotalBufferSizeModelData[p] > 0) ? bufferSize - oldTotalBufferSizeModelData[p] : 0);
@@ -5137,7 +5197,7 @@ namespace odfaeg {
                         vkMapMemory(vkDevice.getDevice(), modelDataStagingBufferMemory, 0, bufferSize, 0, &data);
                         memcpy(data, modelDatas[p].data(), bufferSize);
                         vkUnmapMemory(vkDevice.getDevice(), modelDataStagingBufferMemory);*/
-                        copyBuffer(modelDataStagingBuffer, modelDataBufferMT[p], bufferSize, copyModelDataBufferCommandBuffer);
+                        //copyBuffer(modelDataStagingBuffer, modelDataBufferMT[p], bufferSize, copyModelDataBufferCommandBuffer);
 
 
                         bufferSize = sizeof(MaterialData) * materialDatas[p].size();
@@ -5167,7 +5227,7 @@ namespace odfaeg {
                         /*vkMapMemory(vkDevice.getDevice(), materialDataStagingBufferMemory, 0, totalBufferSizeMaterialData[p], 0, &data);
                         memcpy(data, materialDatas[p].data(), (size_t)totalBufferSizeMaterialData[p]);
                         vkUnmapMemory(vkDevice.getDevice(), materialDataStagingBufferMemory);*/
-                        copyBuffer(materialDataStagingBuffer,materialDataBufferMT[p], totalBufferSizeMaterialData[p], copyMaterialDataBufferCommandBuffer);
+                        //copyBuffer(materialDataStagingBuffer,materialDataBufferMT[p], totalBufferSizeMaterialData[p], copyMaterialDataBufferCommandBuffer);
 
                         bufferSize = sizeof(DrawElementsIndirectCommand) * drawElementsIndirectCommands[p].size();
                         totalBufferSizeIndexedDrawCommand[p] = bufferSize;
@@ -5189,9 +5249,20 @@ namespace odfaeg {
                         /*vkMapMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory, 0, bufferSize, 0, &data);
                         memcpy(data, drawElementsIndirectCommands[p].data(), bufferSize);
                         vkUnmapMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemory);*/
-                        copyBuffer(vboIndexedIndirectStagingBuffer, drawCommandBufferIndexedMT[p], bufferSize, copyDrawIndexedBufferCommandBuffer);
+                        //copyBuffer(vboIndexedIndirectStagingBuffer, drawCommandBufferIndexedMT[p], bufferSize, copyDrawIndexedBufferCommandBuffer);
 
                     }
+                    VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
+                    if (bufferSize > 0)
+                        copyBuffer(modelDataStagingBuffer, modelDataBufferMT[p], bufferSize, copyModelDataBufferCommandBuffer);
+                    bufferSize = sizeof(MaterialData) * materialDatas[p].size();
+                    if (bufferSize > 0)
+                        copyBuffer(materialDataStagingBuffer,materialDataBufferMT[p], bufferSize, copyMaterialDataBufferCommandBuffer);
+                    bufferSize = sizeof(DrawElementsIndirectCommand) * drawElementsIndirectCommands[p].size();
+                    if (bufferSize > 0)
+                        copyBuffer(vboIndexedIndirectStagingBuffer, drawCommandBufferIndexedMT[p], totalBufferSizeIndexedDrawCommand[p], copyDrawIndexedBufferCommandBuffer);
+                    if (vbBindlessTexIndexed[p].getVertexCount() > 0)
+                        vbBindlessTexIndexed[p].update(copyVbIndexedBufferCommandBuffer);
                 }
                 if (vkEndCommandBuffer(copyModelDataBufferCommandBuffer) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to record command buffer!", 1);

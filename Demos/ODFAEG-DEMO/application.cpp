@@ -327,15 +327,15 @@ namespace sorrok {
         ReflectRefractRenderComponent *rrrc = new ReflectRefractRenderComponent(getRenderWindow(), 2, "E_BIGTILE+E_WALL+E_DECOR+E_ANIMATION+E_HERO", ContextSettings(0, 0, 4, 4, 6));
         std::cout<<"reflect refract component created"<<std::endl;
 
-        /*ShadowRenderComponent *src = new ShadowRenderComponent(getRenderWindow(), 3, "E_WALL+E_DECOR+E_ANIMATION+E_HERO", ContextSettings(0, 0, 4, 4, 6));
+        ShadowRenderComponent *src = new ShadowRenderComponent(getRenderWindow(), 3, "E_WALL+E_DECOR+E_ANIMATION+E_HERO", ContextSettings(0, 0, 4, 4, 6));
         std::cout<<"shadow component created"<<std::endl;
         LightRenderComponent *lrc = new LightRenderComponent(getRenderWindow(), 4, "E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PONCTUAL_LIGHT", ContextSettings(0, 0, 4, 4, 6));
-        std::cout<<"light component created"<<std::endl;*/
+        std::cout<<"light component created"<<std::endl;
         getRenderWindow().createDescriptorsAndPipelines();
         frc1->createDescriptorsAndPipelines();
         frc2->createDescriptorsAndPipelines();
-        /*src->createDescriptorsAndPipelines();
-        lrc->createDescriptorsAndPipelines();*/
+        src->createDescriptorsAndPipelines();
+        lrc->createDescriptorsAndPipelines();
         rrrc->createDescriptorsAndPipelines();
 
         frc1->launchRenderer();
@@ -367,7 +367,7 @@ namespace sorrok {
         getRenderComponentManager().addComponent(frc1);
         getRenderComponentManager().addComponent(frc2);
         getRenderComponentManager().addComponent(rrrc);
-        /*getRenderComponentManager().addComponent(src);
+        getRenderComponentManager().addComponent(src);
         getRenderComponentManager().addComponent(lrc);
         /*getRenderComponentManager().addComponent(textArea);
         getRenderComponentManager().addComponent(op);*/
@@ -450,8 +450,8 @@ namespace sorrok {
         getWorld()->drawOnComponents("E_BIGTILE", 0);
         getWorld()->drawOnComponents("E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PARTICLES", 1);
         getWorld()->drawOnComponents("E_BIGTILE+E_WALL+E_DECOR+E_ANIMATION+E_HERO", 2);
-        /*getWorld()->drawOnComponents("E_WALL+E_DECOR+E_ANIMATION+E_HERO", 3);
-        getWorld()->drawOnComponents("E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PONCTUAL_LIGHT", 4);*/
+        getWorld()->drawOnComponents("E_WALL+E_DECOR+E_ANIMATION+E_HERO", 3);
+        getWorld()->drawOnComponents("E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PONCTUAL_LIGHT", 4);
 
     }
     void MyAppli::onDisplay(RenderWindow* window) {

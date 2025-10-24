@@ -857,335 +857,335 @@ namespace odfaeg {
                 blendModes.push_back(alpha);
                 blendModes.push_back(add);
                 blendModes.push_back(multiply);
-                std::vector<std::vector<std::vector<VkPipelineLayoutCreateInfo>>>& pipelineLayoutInfo = depthBuffer.getPipelineLayoutCreateInfo();
-                std::vector<std::vector<std::vector<VkPipelineDepthStencilStateCreateInfo>>>& depthStencilCreateInfo = depthBuffer.getDepthStencilCreateInfo();
-                if ((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders() > pipelineLayoutInfo.size()) {
-                    pipelineLayoutInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
-                    depthStencilCreateInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
-                }
-                for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
-                    if (lightMap.getNbRenderTargets() > pipelineLayoutInfo[i].size()) {
-                        pipelineLayoutInfo[i].resize(lightMap.getNbRenderTargets());
-                        depthStencilCreateInfo[i].resize(lightMap.getNbRenderTargets());
+                {
+                    std::vector<std::vector<std::vector<VkPipelineLayoutCreateInfo>>>& pipelineLayoutInfo = depthBuffer.getPipelineLayoutCreateInfo();
+                    std::vector<std::vector<std::vector<VkPipelineDepthStencilStateCreateInfo>>>& depthStencilCreateInfo = depthBuffer.getDepthStencilCreateInfo();
+                    if ((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders() > pipelineLayoutInfo.size()) {
+                        pipelineLayoutInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
+                        depthStencilCreateInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
                     }
-                }
-                for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
-                    for (unsigned int j = 0; j < lightMap.getNbRenderTargets(); j++) {
-                        if (LIGHTNBDEPTHSTENCIL * none.nbBlendModes > pipelineLayoutInfo[i][j].size()) {
-                            pipelineLayoutInfo[i][j].resize(LIGHTNBDEPTHSTENCIL * none.nbBlendModes);
-                            depthStencilCreateInfo[i][j].resize(LIGHTNBDEPTHSTENCIL* none.nbBlendModes);
+                    for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
+                        pipelineLayoutInfo[i].resize(1);
+                        depthStencilCreateInfo[i].resize(1);
+                    }
+                    for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
+                        for (unsigned int j = 0; j < 1; j++) {
+                            if (LIGHTNBDEPTHSTENCIL * none.nbBlendModes > pipelineLayoutInfo[i][j].size()) {
+                                pipelineLayoutInfo[i][j].resize(LIGHTNBDEPTHSTENCIL * none.nbBlendModes);
+                                depthStencilCreateInfo[i][j].resize(LIGHTNBDEPTHSTENCIL* none.nbBlendModes);
+                            }
                         }
                     }
-                }
-                specularTexture.enableDepthTest(true);
-                depthBuffer.enableDepthTest(true);
-                lightDepthBuffer.enableDepthTest(true);
-                alphaBuffer.enableDepthTest(true);
-                bumpTexture.enableDepthTest(true);
-                states.shader = &depthBufferGenerator;
-                for (unsigned int b = 0; b < blendModes.size(); b++) {
-                    states.blendMode = blendModes[b];
-                    states.blendMode.updateIds();
-                    for (unsigned int j = 0; j < LIGHTNBDEPTHSTENCIL; j++) {
-                        for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
-                            if (j == 0) {
-                                std::array<VkPushConstantRange, 2> push_constants;
-                                VkPushConstantRange push_constant;
-                                //this push constant range starts at the beginning
-                                push_constant.offset = 0;
-                                //this push constant range takes up the size of a MeshPushConstants struct
-                                push_constant.size = sizeof(IndirectRenderingPC);
-                                //this push constant range is accessible only in the vertex shader
-                                push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-                                push_constants[0] = push_constant;
-                                VkPushConstantRange push_constant2;
-                                //this push constant range starts at the beginning
-                                push_constant2.offset = 128;
-                                //this push constant range takes up the size of a MeshPushConstants struct
-                                push_constant2.size = sizeof(LayerPC);
-                                //this push constant range is accessible only in the vertex shader
-                                push_constant2.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-                                push_constants[1] = push_constant2;
-                                pipelineLayoutInfo[depthBufferGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = push_constants.data();
-                                pipelineLayoutInfo[depthBufferGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 2;
-                               depthStencilCreateInfo[depthBufferGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
-                               depthStencilCreateInfo[depthBufferGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = {};
-                               depthStencilCreateInfo[depthBufferGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][depthBuffer.getId()][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {};
-                               depthBuffer.createGraphicPipeline(static_cast<PrimitiveType>(i), states, LIGHTNODEPTHNOSTENCIL, LIGHTNBDEPTHSTENCIL);
+                    specularTexture.enableDepthTest(true);
+                    depthBuffer.enableDepthTest(true);
+                    lightDepthBuffer.enableDepthTest(true);
+                    alphaBuffer.enableDepthTest(true);
+                    bumpTexture.enableDepthTest(true);
+                    states.shader = &depthBufferGenerator;
+                    for (unsigned int b = 0; b < blendModes.size(); b++) {
+                        states.blendMode = blendModes[b];
+                        states.blendMode.updateIds();
+                        for (unsigned int j = 0; j < LIGHTNBDEPTHSTENCIL; j++) {
+                            for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
+                                if (j == 0) {
+                                    std::array<VkPushConstantRange, 2> push_constants;
+                                    VkPushConstantRange push_constant;
+                                    //this push constant range starts at the beginning
+                                    push_constant.offset = 0;
+                                    //this push constant range takes up the size of a MeshPushConstants struct
+                                    push_constant.size = sizeof(IndirectRenderingPC);
+                                    //this push constant range is accessible only in the vertex shader
+                                    push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+                                    push_constants[0] = push_constant;
+                                    VkPushConstantRange push_constant2;
+                                    //this push constant range starts at the beginning
+                                    push_constant2.offset = 128;
+                                    //this push constant range takes up the size of a MeshPushConstants struct
+                                    push_constant2.size = sizeof(LayerPC);
+                                    //this push constant range is accessible only in the vertex shader
+                                    push_constant2.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+                                    push_constants[1] = push_constant2;
+                                    pipelineLayoutInfo[depthBufferGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = push_constants.data();
+                                    pipelineLayoutInfo[depthBufferGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 2;
+                                   depthStencilCreateInfo[depthBufferGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
+                                   depthStencilCreateInfo[depthBufferGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = {};
+                                   depthStencilCreateInfo[depthBufferGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {};
+                                   depthBuffer.createGraphicPipeline(static_cast<PrimitiveType>(i), states, LIGHTNODEPTHNOSTENCIL, LIGHTNBDEPTHSTENCIL);
+                                }
                             }
                         }
                     }
                 }
-                pipelineLayoutInfo = lightDepthBuffer.getPipelineLayoutCreateInfo();
-                depthStencilCreateInfo = lightDepthBuffer.getDepthStencilCreateInfo();
-                if ((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders() > pipelineLayoutInfo.size()) {
-                    pipelineLayoutInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
-                    depthStencilCreateInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
-                }
-                for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
-                    if (lightMap.getNbRenderTargets() > pipelineLayoutInfo[i].size()) {
-                        pipelineLayoutInfo[i].resize(lightMap.getNbRenderTargets());
-                        depthStencilCreateInfo[i].resize(lightMap.getNbRenderTargets());
+                {
+                    std::vector<std::vector<std::vector<VkPipelineLayoutCreateInfo>>>& pipelineLayoutInfo = lightDepthBuffer.getPipelineLayoutCreateInfo();
+                    std::vector<std::vector<std::vector<VkPipelineDepthStencilStateCreateInfo>>>& depthStencilCreateInfo = lightDepthBuffer.getDepthStencilCreateInfo();
+                    if ((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders() > pipelineLayoutInfo.size()) {
+                        pipelineLayoutInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
+                        depthStencilCreateInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
                     }
-                }
-                for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
-                    for (unsigned int j = 0; j < lightMap.getNbRenderTargets(); j++) {
-                        if (LIGHTNBDEPTHSTENCIL * none.nbBlendModes > pipelineLayoutInfo[i][j].size()) {
-                            pipelineLayoutInfo[i][j].resize(LIGHTNBDEPTHSTENCIL * none.nbBlendModes);
-                            depthStencilCreateInfo[i][j].resize(LIGHTNBDEPTHSTENCIL* none.nbBlendModes);
+                    for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
+                        pipelineLayoutInfo[i].resize(1);
+                        depthStencilCreateInfo[i].resize(1);
+                    }
+                    for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
+                        for (unsigned int j = 0; j < 1; j++) {
+                            if (LIGHTNBDEPTHSTENCIL * none.nbBlendModes > pipelineLayoutInfo[i][j].size()) {
+                                pipelineLayoutInfo[i][j].resize(LIGHTNBDEPTHSTENCIL * none.nbBlendModes);
+                                depthStencilCreateInfo[i][j].resize(LIGHTNBDEPTHSTENCIL* none.nbBlendModes);
+                            }
                         }
                     }
-                }
-                for (unsigned int b = 0; b < blendModes.size(); b++) {
-                    states.blendMode = blendModes[b];
-                    states.blendMode.updateIds();
-                    for (unsigned int j = 0; j < LIGHTNBDEPTHSTENCIL; j++) {
-                        for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
-                            if (j == 0) {
-                                std::array<VkPushConstantRange, 2> push_constants;
-                                VkPushConstantRange push_constant;
-                                //this push constant range starts at the beginning
-                                push_constant.offset = 0;
-                                //this push constant range takes up the size of a MeshPushConstants struct
-                                push_constant.size = sizeof(IndirectRenderingPC);
-                                //this push constant range is accessible only in the vertex shader
-                                push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-                                push_constants[0] = push_constant;
-                                VkPushConstantRange push_constant2;
-                                //this push constant range starts at the beginning
-                                push_constant2.offset = 128;
-                                //this push constant range takes up the size of a MeshPushConstants struct
-                                push_constant2.size = sizeof(LayerPC);
-                                //this push constant range is accessible only in the vertex shader
-                                push_constant2.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-                                push_constants[1] = push_constant2;
-                                pipelineLayoutInfo[depthBufferGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][lightDepthBuffer.getId()][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = push_constants.data();
-                                pipelineLayoutInfo[depthBufferGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][lightDepthBuffer.getId()][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 2;
-                               depthStencilCreateInfo[depthBufferGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][lightDepthBuffer.getId()][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
-                               depthStencilCreateInfo[depthBufferGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][lightDepthBuffer.getId()][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = {};
-                               depthStencilCreateInfo[depthBufferGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][lightDepthBuffer.getId()][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {};
-                               lightDepthBuffer.createGraphicPipeline(static_cast<PrimitiveType>(i), states, LIGHTNODEPTHNOSTENCIL, LIGHTNBDEPTHSTENCIL);
+                    for (unsigned int b = 0; b < blendModes.size(); b++) {
+                        states.blendMode = blendModes[b];
+                        states.blendMode.updateIds();
+                        for (unsigned int j = 0; j < LIGHTNBDEPTHSTENCIL; j++) {
+                            for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
+                                if (j == 0) {
+                                    std::array<VkPushConstantRange, 2> push_constants;
+                                    VkPushConstantRange push_constant;
+                                    //this push constant range starts at the beginning
+                                    push_constant.offset = 0;
+                                    //this push constant range takes up the size of a MeshPushConstants struct
+                                    push_constant.size = sizeof(IndirectRenderingPC);
+                                    //this push constant range is accessible only in the vertex shader
+                                    push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+                                    push_constants[0] = push_constant;
+                                    VkPushConstantRange push_constant2;
+                                    //this push constant range starts at the beginning
+                                    push_constant2.offset = 128;
+                                    //this push constant range takes up the size of a MeshPushConstants struct
+                                    push_constant2.size = sizeof(LayerPC);
+                                    //this push constant range is accessible only in the vertex shader
+                                    push_constant2.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+                                    push_constants[1] = push_constant2;
+                                    pipelineLayoutInfo[depthBufferGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = push_constants.data();
+                                    pipelineLayoutInfo[depthBufferGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 2;
+                                   depthStencilCreateInfo[depthBufferGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
+                                   depthStencilCreateInfo[depthBufferGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = {};
+                                   depthStencilCreateInfo[depthBufferGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {};
+                                   lightDepthBuffer.createGraphicPipeline(static_cast<PrimitiveType>(i), states, LIGHTNODEPTHNOSTENCIL, LIGHTNBDEPTHSTENCIL);
+                                }
                             }
                         }
                     }
                 }
-                pipelineLayoutInfo = alphaBuffer.getPipelineLayoutCreateInfo();
-                depthStencilCreateInfo = alphaBuffer.getDepthStencilCreateInfo();
-                if ((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders() > pipelineLayoutInfo.size()) {
-                    pipelineLayoutInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
-                    depthStencilCreateInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
-                }
-                for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
-                    if (lightMap.getNbRenderTargets() > pipelineLayoutInfo[i].size()) {
-                        pipelineLayoutInfo[i].resize(lightMap.getNbRenderTargets());
-                        depthStencilCreateInfo[i].resize(lightMap.getNbRenderTargets());
+                {
+                    std::vector<std::vector<std::vector<VkPipelineLayoutCreateInfo>>>& pipelineLayoutInfo = alphaBuffer.getPipelineLayoutCreateInfo();
+                    std::vector<std::vector<std::vector<VkPipelineDepthStencilStateCreateInfo>>>& depthStencilCreateInfo = alphaBuffer.getDepthStencilCreateInfo();
+                    if ((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders() > pipelineLayoutInfo.size()) {
+                        pipelineLayoutInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
+                        depthStencilCreateInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
                     }
-                }
-                for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
-                    for (unsigned int j = 0; j < lightMap.getNbRenderTargets(); j++) {
-                        if (LIGHTNBDEPTHSTENCIL * none.nbBlendModes > pipelineLayoutInfo[i][j].size()) {
-                            pipelineLayoutInfo[i][j].resize(LIGHTNBDEPTHSTENCIL * none.nbBlendModes);
-                            depthStencilCreateInfo[i][j].resize(LIGHTNBDEPTHSTENCIL* none.nbBlendModes);
+                    for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
+                        pipelineLayoutInfo[i].resize(1);
+                        depthStencilCreateInfo[i].resize(1);
+                    }
+                    for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
+                        for (unsigned int j = 0; j < 1; j++) {
+                            if (LIGHTNBDEPTHSTENCIL * none.nbBlendModes > pipelineLayoutInfo[i][j].size()) {
+                                pipelineLayoutInfo[i][j].resize(LIGHTNBDEPTHSTENCIL * none.nbBlendModes);
+                                depthStencilCreateInfo[i][j].resize(LIGHTNBDEPTHSTENCIL* none.nbBlendModes);
+                            }
                         }
                     }
-                }
-                for (unsigned int b = 0; b < blendModes.size(); b++) {
-                    states.blendMode = blendModes[b];
-                    states.blendMode.updateIds();
-                    states.shader = &buildAlphaBufferGenerator;
-                    for (unsigned int j = 0; j < LIGHTNBDEPTHSTENCIL; j++) {
-                        for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
-                            if (j == 0) {
-                                std::array<VkPushConstantRange, 2> push_constants;
-                                VkPushConstantRange push_constant;
-                                //this push constant range starts at the beginning
-                                push_constant.offset = 0;
-                                //this push constant range takes up the size of a MeshPushConstants struct
-                                push_constant.size = sizeof(IndirectRenderingPC);
-                                //this push constant range is accessible only in the vertex shader
-                                push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-                                push_constants[0] = push_constant;
-                                VkPushConstantRange push_constant2;
-                                //this push constant range starts at the beginning
-                                push_constant2.offset = 128;
-                                //this push constant range takes up the size of a MeshPushConstants struct
-                                push_constant2.size = sizeof(LayerPC);
-                                //this push constant range is accessible only in the vertex shader
-                                push_constant2.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-                                push_constants[1] = push_constant2;
+                    for (unsigned int b = 0; b < blendModes.size(); b++) {
+                        states.blendMode = blendModes[b];
+                        states.blendMode.updateIds();
+                        states.shader = &buildAlphaBufferGenerator;
+                        for (unsigned int j = 0; j < LIGHTNBDEPTHSTENCIL; j++) {
+                            for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
+                                if (j == 0) {
+                                    std::array<VkPushConstantRange, 2> push_constants;
+                                    VkPushConstantRange push_constant;
+                                    //this push constant range starts at the beginning
+                                    push_constant.offset = 0;
+                                    //this push constant range takes up the size of a MeshPushConstants struct
+                                    push_constant.size = sizeof(IndirectRenderingPC);
+                                    //this push constant range is accessible only in the vertex shader
+                                    push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+                                    push_constants[0] = push_constant;
+                                    VkPushConstantRange push_constant2;
+                                    //this push constant range starts at the beginning
+                                    push_constant2.offset = 128;
+                                    //this push constant range takes up the size of a MeshPushConstants struct
+                                    push_constant2.size = sizeof(LayerPC);
+                                    //this push constant range is accessible only in the vertex shader
+                                    push_constant2.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+                                    push_constants[1] = push_constant2;
 
-                                pipelineLayoutInfo[buildAlphaBufferGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = push_constants.data();
-                                pipelineLayoutInfo[buildAlphaBufferGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 2;
-                               depthStencilCreateInfo[buildAlphaBufferGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
-                               depthStencilCreateInfo[buildAlphaBufferGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = {};
-                               depthStencilCreateInfo[buildAlphaBufferGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][alphaBuffer.getId()][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {};
-                               alphaBuffer.createGraphicPipeline(static_cast<PrimitiveType>(i), states, LIGHTNODEPTHNOSTENCIL, LIGHTNBDEPTHSTENCIL);
+                                    pipelineLayoutInfo[buildAlphaBufferGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = push_constants.data();
+                                    pipelineLayoutInfo[buildAlphaBufferGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 2;
+                                    depthStencilCreateInfo[buildAlphaBufferGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
+                                    depthStencilCreateInfo[buildAlphaBufferGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = {};
+                                    depthStencilCreateInfo[buildAlphaBufferGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {};
+                                    alphaBuffer.createGraphicPipeline(static_cast<PrimitiveType>(i), states, LIGHTNODEPTHNOSTENCIL, LIGHTNBDEPTHSTENCIL);
+                                }
                             }
                         }
                     }
                 }
-                pipelineLayoutInfo = specularTexture.getPipelineLayoutCreateInfo();
-                depthStencilCreateInfo = specularTexture.getDepthStencilCreateInfo();
-                if ((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders() > pipelineLayoutInfo.size()) {
-                    pipelineLayoutInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
-                    depthStencilCreateInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
-                }
-                for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
-                    if (lightMap.getNbRenderTargets() > pipelineLayoutInfo[i].size()) {
-                        pipelineLayoutInfo[i].resize(lightMap.getNbRenderTargets());
-                        depthStencilCreateInfo[i].resize(lightMap.getNbRenderTargets());
+                {
+                    std::vector<std::vector<std::vector<VkPipelineLayoutCreateInfo>>>& pipelineLayoutInfo = specularTexture.getPipelineLayoutCreateInfo();
+                    std::vector<std::vector<std::vector<VkPipelineDepthStencilStateCreateInfo>>>& depthStencilCreateInfo = specularTexture.getDepthStencilCreateInfo();
+                    if ((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders() > pipelineLayoutInfo.size()) {
+                        pipelineLayoutInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
+                        depthStencilCreateInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
                     }
-                }
-                for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
-                    for (unsigned int j = 0; j < lightMap.getNbRenderTargets(); j++) {
-                        if (LIGHTNBDEPTHSTENCIL * none.nbBlendModes > pipelineLayoutInfo[i][j].size()) {
-                            pipelineLayoutInfo[i][j].resize(LIGHTNBDEPTHSTENCIL * none.nbBlendModes);
-                            depthStencilCreateInfo[i][j].resize(LIGHTNBDEPTHSTENCIL* none.nbBlendModes);
+                    for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
+                        pipelineLayoutInfo[i].resize(1);
+                        depthStencilCreateInfo[i].resize(1);
+                    }
+                    for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
+                        for (unsigned int j = 0; j < 1; j++) {
+                            if (LIGHTNBDEPTHSTENCIL * none.nbBlendModes > pipelineLayoutInfo[i][j].size()) {
+                                pipelineLayoutInfo[i][j].resize(LIGHTNBDEPTHSTENCIL * none.nbBlendModes);
+                                depthStencilCreateInfo[i][j].resize(LIGHTNBDEPTHSTENCIL* none.nbBlendModes);
+                            }
                         }
                     }
-                }
-                for (unsigned int b = 0; b < blendModes.size(); b++) {
-                    states.blendMode = blendModes[b];
-                    states.blendMode.updateIds();
-                    states.shader = &specularTextureGenerator;
-                    for (unsigned int j = 0; j < LIGHTNBDEPTHSTENCIL; j++) {
-                        for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
-                            if (j == 0) {
-                                std::array<VkPushConstantRange, 2> push_constants;
-                                VkPushConstantRange push_constant;
-                                //this push constant range starts at the beginning
-                                push_constant.offset = 0;
-                                //this push constant range takes up the size of a MeshPushConstants struct
-                                push_constant.size = sizeof(IndirectRenderingPC);
-                                //this push constant range is accessible only in the vertex shader
-                                push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-                                push_constants[0] = push_constant;
-                                VkPushConstantRange push_constant2;
-                                //this push constant range starts at the beginning
-                                push_constant2.offset = 128;
-                                //this push constant range takes up the size of a MeshPushConstants struct
-                                push_constant2.size = sizeof(MaxSpecPC);
-                                //this push constant range is accessible only in the vertex shader
-                                push_constant2.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-                                push_constants[1] = push_constant2;
+                    for (unsigned int b = 0; b < blendModes.size(); b++) {
+                        states.blendMode = blendModes[b];
+                        states.blendMode.updateIds();
+                        states.shader = &specularTextureGenerator;
+                        for (unsigned int j = 0; j < LIGHTNBDEPTHSTENCIL; j++) {
+                            for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
+                                if (j == 0) {
+                                    std::array<VkPushConstantRange, 2> push_constants;
+                                    VkPushConstantRange push_constant;
+                                    //this push constant range starts at the beginning
+                                    push_constant.offset = 0;
+                                    //this push constant range takes up the size of a MeshPushConstants struct
+                                    push_constant.size = sizeof(IndirectRenderingPC);
+                                    //this push constant range is accessible only in the vertex shader
+                                    push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+                                    push_constants[0] = push_constant;
+                                    VkPushConstantRange push_constant2;
+                                    //this push constant range starts at the beginning
+                                    push_constant2.offset = 128;
+                                    //this push constant range takes up the size of a MeshPushConstants struct
+                                    push_constant2.size = sizeof(MaxSpecPC);
+                                    //this push constant range is accessible only in the vertex shader
+                                    push_constant2.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+                                    push_constants[1] = push_constant2;
 
-                                pipelineLayoutInfo[specularTextureGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][specularTexture.getId()][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = push_constants.data();
-                                pipelineLayoutInfo[specularTextureGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][specularTexture.getId()][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 2;
-                               depthStencilCreateInfo[specularTextureGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][specularTexture.getId()][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
-                               depthStencilCreateInfo[specularTextureGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][specularTexture.getId()][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = {};
-                               depthStencilCreateInfo[specularTextureGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][specularTexture.getId()][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {};
-                               specularTexture.createGraphicPipeline(static_cast<PrimitiveType>(i), states, LIGHTNODEPTHNOSTENCIL, LIGHTNBDEPTHSTENCIL);
+                                    pipelineLayoutInfo[specularTextureGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = push_constants.data();
+                                    pipelineLayoutInfo[specularTextureGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 2;
+                                    depthStencilCreateInfo[specularTextureGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
+                                    depthStencilCreateInfo[specularTextureGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = {};
+                                    depthStencilCreateInfo[specularTextureGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {};
+                                    specularTexture.createGraphicPipeline(static_cast<PrimitiveType>(i), states, LIGHTNODEPTHNOSTENCIL, LIGHTNBDEPTHSTENCIL);
+                                }
                             }
                         }
                     }
                 }
-                pipelineLayoutInfo = bumpTexture.getPipelineLayoutCreateInfo();
-                depthStencilCreateInfo = bumpTexture.getDepthStencilCreateInfo();
-                if ((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders() > pipelineLayoutInfo.size()) {
-                    pipelineLayoutInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
-                    depthStencilCreateInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
-                }
-                for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
-                    if (lightMap.getNbRenderTargets() > pipelineLayoutInfo[i].size()) {
-                        pipelineLayoutInfo[i].resize(lightMap.getNbRenderTargets());
-                        depthStencilCreateInfo[i].resize(lightMap.getNbRenderTargets());
+                {
+                    std::vector<std::vector<std::vector<VkPipelineLayoutCreateInfo>>>& pipelineLayoutInfo = bumpTexture.getPipelineLayoutCreateInfo();
+                    std::vector<std::vector<std::vector<VkPipelineDepthStencilStateCreateInfo>>>& depthStencilCreateInfo = bumpTexture.getDepthStencilCreateInfo();
+                    if ((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders() > pipelineLayoutInfo.size()) {
+                        pipelineLayoutInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
+                        depthStencilCreateInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
                     }
-                }
-                for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
-                    for (unsigned int j = 0; j < lightMap.getNbRenderTargets(); j++) {
-                        if (LIGHTNBDEPTHSTENCIL * none.nbBlendModes > pipelineLayoutInfo[i][j].size()) {
-                            pipelineLayoutInfo[i][j].resize(LIGHTNBDEPTHSTENCIL * none.nbBlendModes);
-                            depthStencilCreateInfo[i][j].resize(LIGHTNBDEPTHSTENCIL* none.nbBlendModes);
+                    for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
+                        pipelineLayoutInfo[i].resize(1);
+                        depthStencilCreateInfo[i].resize(1);
+                    }
+                    for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
+                        for (unsigned int j = 0; j < 1; j++) {
+                            if (LIGHTNBDEPTHSTENCIL * none.nbBlendModes > pipelineLayoutInfo[i][j].size()) {
+                                pipelineLayoutInfo[i][j].resize(LIGHTNBDEPTHSTENCIL * none.nbBlendModes);
+                                depthStencilCreateInfo[i][j].resize(LIGHTNBDEPTHSTENCIL* none.nbBlendModes);
+                            }
                         }
                     }
-                }
-                for (unsigned int b = 0; b < blendModes.size(); b++) {
-                    states.blendMode = blendModes[b];
-                    states.blendMode.updateIds();
-                    states.shader = &bumpTextureGenerator;
-                    for (unsigned int j = 0; j < LIGHTNBDEPTHSTENCIL; j++) {
-                        for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
-                            if (j == 0) {
-                                std::array<VkPushConstantRange, 2> push_constants;
-                                VkPushConstantRange push_constant;
-                                //this push constant range starts at the beginning
-                                push_constant.offset = 0;
-                                //this push constant range takes up the size of a MeshPushConstants struct
-                                push_constant.size = sizeof(IndirectRenderingPC);
-                                //this push constant range is accessible only in the vertex shader
-                                push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-                                push_constants[0] = push_constant;
-                                VkPushConstantRange push_constant2;
-                                //this push constant range starts at the beginning
-                                push_constant2.offset = 128;
-                                //this push constant range takes up the size of a MeshPushConstants struct
-                                push_constant2.size = sizeof(LayerPC);
-                                //this push constant range is accessible only in the vertex shader
-                                push_constant2.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-                                push_constants[1] = push_constant2;
+                    for (unsigned int b = 0; b < blendModes.size(); b++) {
+                        states.blendMode = blendModes[b];
+                        states.blendMode.updateIds();
+                        states.shader = &bumpTextureGenerator;
+                        for (unsigned int j = 0; j < LIGHTNBDEPTHSTENCIL; j++) {
+                            for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
+                                if (j == 0) {
+                                    std::array<VkPushConstantRange, 2> push_constants;
+                                    VkPushConstantRange push_constant;
+                                    //this push constant range starts at the beginning
+                                    push_constant.offset = 0;
+                                    //this push constant range takes up the size of a MeshPushConstants struct
+                                    push_constant.size = sizeof(IndirectRenderingPC);
+                                    //this push constant range is accessible only in the vertex shader
+                                    push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+                                    push_constants[0] = push_constant;
+                                    VkPushConstantRange push_constant2;
+                                    //this push constant range starts at the beginning
+                                    push_constant2.offset = 128;
+                                    //this push constant range takes up the size of a MeshPushConstants struct
+                                    push_constant2.size = sizeof(LayerPC);
+                                    //this push constant range is accessible only in the vertex shader
+                                    push_constant2.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+                                    push_constants[1] = push_constant2;
 
 
-                                pipelineLayoutInfo[bumpTextureGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][bumpTexture.getId()][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = push_constants.data();
-                                pipelineLayoutInfo[bumpTextureGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][bumpTexture.getId()][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 2;
-                               depthStencilCreateInfo[bumpTextureGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][bumpTexture.getId()][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
-                               depthStencilCreateInfo[bumpTextureGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][bumpTexture.getId()][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = {};
-                               depthStencilCreateInfo[bumpTextureGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][bumpTexture.getId()][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {};
-                               bumpTexture.createGraphicPipeline(static_cast<PrimitiveType>(i), states, LIGHTNODEPTHNOSTENCIL, LIGHTNBDEPTHSTENCIL);
+                                    pipelineLayoutInfo[bumpTextureGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = push_constants.data();
+                                    pipelineLayoutInfo[bumpTextureGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 2;
+                                    depthStencilCreateInfo[bumpTextureGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
+                                    depthStencilCreateInfo[bumpTextureGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = {};
+                                    depthStencilCreateInfo[bumpTextureGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {};
+                                    bumpTexture.createGraphicPipeline(static_cast<PrimitiveType>(i), states, LIGHTNODEPTHNOSTENCIL, LIGHTNBDEPTHSTENCIL);
+                                }
                             }
                         }
                     }
                 }
-                pipelineLayoutInfo = lightMap.getPipelineLayoutCreateInfo();
-                depthStencilCreateInfo = lightMap.getDepthStencilCreateInfo();
-                if ((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders() > pipelineLayoutInfo.size()) {
-                    pipelineLayoutInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
-                    depthStencilCreateInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
-                }
-                for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
-                    if (lightMap.getNbRenderTargets() > pipelineLayoutInfo[i].size()) {
-                        pipelineLayoutInfo[i].resize(lightMap.getNbRenderTargets());
-                        depthStencilCreateInfo[i].resize(lightMap.getNbRenderTargets());
+                {
+                    std::vector<std::vector<std::vector<VkPipelineLayoutCreateInfo>>>& pipelineLayoutInfo = lightMap.getPipelineLayoutCreateInfo();
+                    std::vector<std::vector<std::vector<VkPipelineDepthStencilStateCreateInfo>>>& depthStencilCreateInfo = lightMap.getDepthStencilCreateInfo();
+                    if ((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders() > pipelineLayoutInfo.size()) {
+                        pipelineLayoutInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
+                        depthStencilCreateInfo.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
                     }
-                }
-                for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
-                    for (unsigned int j = 0; j < lightMap.getNbRenderTargets(); j++) {
-                        if (LIGHTNBDEPTHSTENCIL * none.nbBlendModes > pipelineLayoutInfo[i][j].size()) {
-                            pipelineLayoutInfo[i][j].resize(LIGHTNBDEPTHSTENCIL * none.nbBlendModes);
-                            depthStencilCreateInfo[i][j].resize(LIGHTNBDEPTHSTENCIL* none.nbBlendModes);
+                    for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
+                        pipelineLayoutInfo[i].resize(1);
+                        depthStencilCreateInfo[i].resize(1);
+                    }
+                    for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
+                        for (unsigned int j = 0; j < 1; j++) {
+                            if (LIGHTNBDEPTHSTENCIL * none.nbBlendModes > pipelineLayoutInfo[i][j].size()) {
+                                pipelineLayoutInfo[i][j].resize(LIGHTNBDEPTHSTENCIL * none.nbBlendModes);
+                                depthStencilCreateInfo[i][j].resize(LIGHTNBDEPTHSTENCIL* none.nbBlendModes);
+                            }
                         }
                     }
-                }
-                for (unsigned int b = 0; b < blendModes.size(); b++) {
-                    states.blendMode = blendModes[b];
-                    states.blendMode.updateIds();
-                    states.shader = &lightMapGenerator;
-                    for (unsigned int j = 0; j < LIGHTNBDEPTHSTENCIL; j++) {
-                        for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
-                            if (j == 0) {
-                                std::array<VkPushConstantRange, 2> push_constants;
-                                VkPushConstantRange push_constant;
-                                //this push constant range starts at the beginning
-                                push_constant.offset = 0;
-                                //this push constant range takes up the size of a MeshPushConstants struct
-                                push_constant.size = sizeof(LightIndirectRenderingPC);
-                                //this push constant range is accessible only in the vertex shader
-                                push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-                                push_constants[0] = push_constant;
-                                VkPushConstantRange push_constant2;
-                                //this push constant range starts at the beginning
-                                push_constant2.offset = 192;
-                                //this push constant range takes up the size of a MeshPushConstants struct
-                                push_constant2.size = sizeof(ResolutionPC);
-                                //this push constant range is accessible only in the vertex shader
-                                push_constant2.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-                                push_constants[1] = push_constant2;
+                    for (unsigned int b = 0; b < blendModes.size(); b++) {
+                        states.blendMode = blendModes[b];
+                        states.blendMode.updateIds();
+                        states.shader = &lightMapGenerator;
+                        for (unsigned int j = 0; j < LIGHTNBDEPTHSTENCIL; j++) {
+                            for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
+                                if (j == 0) {
+                                    std::array<VkPushConstantRange, 2> push_constants;
+                                    VkPushConstantRange push_constant;
+                                    //this push constant range starts at the beginning
+                                    push_constant.offset = 0;
+                                    //this push constant range takes up the size of a MeshPushConstants struct
+                                    push_constant.size = sizeof(LightIndirectRenderingPC);
+                                    //this push constant range is accessible only in the vertex shader
+                                    push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+                                    push_constants[0] = push_constant;
+                                    VkPushConstantRange push_constant2;
+                                    //this push constant range starts at the beginning
+                                    push_constant2.offset = 192;
+                                    //this push constant range takes up the size of a MeshPushConstants struct
+                                    push_constant2.size = sizeof(ResolutionPC);
+                                    //this push constant range is accessible only in the vertex shader
+                                    push_constant2.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+                                    push_constants[1] = push_constant2;
 
-                                pipelineLayoutInfo[lightMapGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][lightMap.getId()][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = push_constants.data();
-                                pipelineLayoutInfo[lightMapGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][lightMap.getId()][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 2;
-                               depthStencilCreateInfo[lightMapGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][lightMap.getId()][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
-                               depthStencilCreateInfo[lightMapGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][lightMap.getId()][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = {};
-                               depthStencilCreateInfo[lightMapGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][lightMap.getId()][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {};
-                               lightMap.createGraphicPipeline(static_cast<PrimitiveType>(i), states, LIGHTNODEPTHNOSTENCIL, LIGHTNBDEPTHSTENCIL);
+                                    pipelineLayoutInfo[lightMapGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = push_constants.data();
+                                    pipelineLayoutInfo[lightMapGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 2;
+                                    depthStencilCreateInfo[lightMapGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
+                                    depthStencilCreateInfo[lightMapGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = {};
+                                    depthStencilCreateInfo[lightMapGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {};
+                                    lightMap.createGraphicPipeline(static_cast<PrimitiveType>(i), states, LIGHTNODEPTHNOSTENCIL, LIGHTNBDEPTHSTENCIL);
+                                }
                             }
                         }
                     }
@@ -1194,44 +1194,65 @@ namespace odfaeg {
             void LightRenderComponent::createDescriptorPool(RenderStates states) {
                 Shader* shader = const_cast<Shader*>(states.shader);
                 if (shader == &depthBufferGenerator) {
-                    std::vector<VkDescriptorPool>& descriptorPool = depthBuffer.getDescriptorPool();
-                    if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorPool.size())
-                        descriptorPool.resize(shader->getNbShaders()*depthBuffer.getNbRenderTargets());
-                    unsigned int descriptorId = shader->getId();
-                    std::array<VkDescriptorPoolSize, 4> poolSizes;
-                    std::vector<Texture*> allTextures = Texture::getAllTextures();
-                    poolSizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                    poolSizes[0].descriptorCount = static_cast<uint32_t>(depthBuffer.getMaxFramesInFlight() * allTextures.size());
-                    poolSizes[1].type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-                    poolSizes[1].descriptorCount = static_cast<uint32_t>(depthBuffer.getMaxFramesInFlight());
-                    poolSizes[2].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-                    poolSizes[2].descriptorCount = static_cast<uint32_t>(depthBuffer.getMaxFramesInFlight());
-                    poolSizes[3].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-                    poolSizes[3].descriptorCount = static_cast<uint32_t>(depthBuffer.getMaxFramesInFlight());
+                    {
+                        std::vector<VkDescriptorPool>& descriptorPool = depthBuffer.getDescriptorPool();
+                        if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorPool.size())
+                            descriptorPool.resize(shader->getNbShaders()*depthBuffer.getNbRenderTargets());
+                        unsigned int descriptorId = shader->getId();
+                        std::array<VkDescriptorPoolSize, 4> poolSizes;
+                        std::vector<Texture*> allTextures = Texture::getAllTextures();
+                        poolSizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                        poolSizes[0].descriptorCount = static_cast<uint32_t>(depthBuffer.getMaxFramesInFlight() * allTextures.size());
+                        poolSizes[1].type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+                        poolSizes[1].descriptorCount = static_cast<uint32_t>(depthBuffer.getMaxFramesInFlight());
+                        poolSizes[2].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                        poolSizes[2].descriptorCount = static_cast<uint32_t>(depthBuffer.getMaxFramesInFlight());
+                        poolSizes[3].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                        poolSizes[3].descriptorCount = static_cast<uint32_t>(depthBuffer.getMaxFramesInFlight());
 
-                    if (descriptorPool[descriptorId] != nullptr) {
-                        vkDestroyDescriptorPool(vkDevice.getDevice(), descriptorPool[descriptorId], nullptr);
+                        if (descriptorPool[descriptorId] != nullptr) {
+                            vkDestroyDescriptorPool(vkDevice.getDevice(), descriptorPool[descriptorId], nullptr);
+                        }
+
+                        VkDescriptorPoolCreateInfo poolInfo{};
+                        poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+                        poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+                        poolInfo.pPoolSizes = poolSizes.data();
+                        poolInfo.maxSets = static_cast<uint32_t>(depthBuffer.getMaxFramesInFlight());
+                        if (vkCreateDescriptorPool(vkDevice.getDevice(), &poolInfo, nullptr, &descriptorPool[descriptorId]) != VK_SUCCESS) {
+                            throw std::runtime_error("echec de la creation de la pool de descripteurs!");
+                        }
                     }
+                    {
+                        std::vector<VkDescriptorPool>& descriptorPool = lightDepthBuffer.getDescriptorPool();
+                        if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorPool.size())
+                            descriptorPool.resize(shader->getNbShaders()*depthBuffer.getNbRenderTargets());
+                        unsigned int descriptorId = shader->getId();
+                        std::array<VkDescriptorPoolSize, 4> poolSizes;
+                        std::vector<Texture*> allTextures = Texture::getAllTextures();
+                        poolSizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                        poolSizes[0].descriptorCount = static_cast<uint32_t>(depthBuffer.getMaxFramesInFlight() * allTextures.size());
+                        poolSizes[1].type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+                        poolSizes[1].descriptorCount = static_cast<uint32_t>(depthBuffer.getMaxFramesInFlight());
+                        poolSizes[2].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                        poolSizes[2].descriptorCount = static_cast<uint32_t>(depthBuffer.getMaxFramesInFlight());
+                        poolSizes[3].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                        poolSizes[3].descriptorCount = static_cast<uint32_t>(depthBuffer.getMaxFramesInFlight());
 
-                    VkDescriptorPoolCreateInfo poolInfo{};
-                    poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-                    poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
-                    poolInfo.pPoolSizes = poolSizes.data();
-                    poolInfo.maxSets = static_cast<uint32_t>(depthBuffer.getMaxFramesInFlight());
-                    if (vkCreateDescriptorPool(vkDevice.getDevice(), &poolInfo, nullptr, &descriptorPool[descriptorId]) != VK_SUCCESS) {
-                        throw std::runtime_error("echec de la creation de la pool de descripteurs!");
+                        if (descriptorPool[descriptorId] != nullptr) {
+                            vkDestroyDescriptorPool(vkDevice.getDevice(), descriptorPool[descriptorId], nullptr);
+                        }
+
+                        VkDescriptorPoolCreateInfo poolInfo{};
+                        poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+                        poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+                        poolInfo.pPoolSizes = poolSizes.data();
+                        poolInfo.maxSets = static_cast<uint32_t>(depthBuffer.getMaxFramesInFlight());
+                        if (vkCreateDescriptorPool(vkDevice.getDevice(), &poolInfo, nullptr, &descriptorPool[descriptorId]) != VK_SUCCESS) {
+                            throw std::runtime_error("echec de la creation de la pool de descripteurs!");
+                        }
+
                     }
-
-                    descriptorPool = lightDepthBuffer.getDescriptorPool();
-                    if (descriptorPool[descriptorId] != nullptr) {
-                        vkDestroyDescriptorPool(vkDevice.getDevice(), descriptorPool[descriptorId], nullptr);
-                    }
-
-
-                    if (vkCreateDescriptorPool(vkDevice.getDevice(), &poolInfo, nullptr, &descriptorPool[descriptorId]) != VK_SUCCESS) {
-                        throw std::runtime_error("echec de la creation de la pool de descripteurs!");
-                    }
-
                 } else if (shader == &buildAlphaBufferGenerator) {
                     std::vector<VkDescriptorPool>& descriptorPool = alphaBuffer.getDescriptorPool();
                     if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorPool.size())
@@ -1340,58 +1361,109 @@ namespace odfaeg {
             void LightRenderComponent::createDescriptorSetLayout(RenderStates states) {
                 Shader* shader = const_cast<Shader*>(states.shader);
                 if (shader == &depthBufferGenerator) {
-                    std::vector<VkDescriptorSetLayout>& descriptorSetLayout = depthBuffer.getDescriptorSetLayout();
-                    if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorSetLayout.size())
-                        descriptorSetLayout.resize(shader->getNbShaders()*depthBuffer.getNbRenderTargets());
-                    unsigned int descriptorId = shader->getId();
-                    std::vector<Texture*> allTextures = Texture::getAllTextures();
-                    VkDescriptorSetLayoutBinding samplerLayoutBinding{};
-                    samplerLayoutBinding.binding = 0;
-                    samplerLayoutBinding.descriptorCount = allTextures.size();
-                    samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                    samplerLayoutBinding.pImmutableSamplers = nullptr;
-                    samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+                    {
+                        std::vector<VkDescriptorSetLayout>& descriptorSetLayout = depthBuffer.getDescriptorSetLayout();
+                        if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorSetLayout.size())
+                            descriptorSetLayout.resize(shader->getNbShaders()*depthBuffer.getNbRenderTargets());
+                        unsigned int descriptorId = shader->getId();
+                        std::vector<Texture*> allTextures = Texture::getAllTextures();
+                        VkDescriptorSetLayoutBinding samplerLayoutBinding{};
+                        samplerLayoutBinding.binding = 0;
+                        samplerLayoutBinding.descriptorCount = allTextures.size();
+                        samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                        samplerLayoutBinding.pImmutableSamplers = nullptr;
+                        samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-                    VkDescriptorSetLayoutBinding headPtrImageLayoutBinding;
-                    headPtrImageLayoutBinding.binding = 1;
-                    headPtrImageLayoutBinding.descriptorCount = 1;
-                    headPtrImageLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-                    headPtrImageLayoutBinding.pImmutableSamplers = nullptr;
-                    headPtrImageLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+                        VkDescriptorSetLayoutBinding headPtrImageLayoutBinding;
+                        headPtrImageLayoutBinding.binding = 1;
+                        headPtrImageLayoutBinding.descriptorCount = 1;
+                        headPtrImageLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+                        headPtrImageLayoutBinding.pImmutableSamplers = nullptr;
+                        headPtrImageLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-                    VkDescriptorSetLayoutBinding modelDataLayoutBinding{};
-                    modelDataLayoutBinding.binding = 4;
-                    modelDataLayoutBinding.descriptorCount = 1;
-                    modelDataLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-                    modelDataLayoutBinding.pImmutableSamplers = nullptr;
-                    modelDataLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+                        VkDescriptorSetLayoutBinding modelDataLayoutBinding{};
+                        modelDataLayoutBinding.binding = 4;
+                        modelDataLayoutBinding.descriptorCount = 1;
+                        modelDataLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                        modelDataLayoutBinding.pImmutableSamplers = nullptr;
+                        modelDataLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
-                    VkDescriptorSetLayoutBinding materialDataLayoutBinding{};
-                    materialDataLayoutBinding.binding = 5;
-                    materialDataLayoutBinding.descriptorCount = 1;
-                    materialDataLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-                    materialDataLayoutBinding.pImmutableSamplers = nullptr;
-                    materialDataLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+                        VkDescriptorSetLayoutBinding materialDataLayoutBinding{};
+                        materialDataLayoutBinding.binding = 5;
+                        materialDataLayoutBinding.descriptorCount = 1;
+                        materialDataLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                        materialDataLayoutBinding.pImmutableSamplers = nullptr;
+                        materialDataLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
-                    std::array<VkDescriptorSetLayoutBinding, 4> bindings = {samplerLayoutBinding, headPtrImageLayoutBinding, modelDataLayoutBinding, materialDataLayoutBinding};
+                        std::array<VkDescriptorSetLayoutBinding, 4> bindings = {samplerLayoutBinding, headPtrImageLayoutBinding, modelDataLayoutBinding, materialDataLayoutBinding};
 
-                    if (descriptorSetLayout[descriptorId] != nullptr) {
-                        vkDestroyDescriptorSetLayout(vkDevice.getDevice(), descriptorSetLayout[descriptorId], nullptr);
+                        if (descriptorSetLayout[descriptorId] != nullptr) {
+                            vkDestroyDescriptorSetLayout(vkDevice.getDevice(), descriptorSetLayout[descriptorId], nullptr);
+                        }
+
+                        VkDescriptorSetLayoutCreateInfo layoutInfo{};
+                        layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+                        //layoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR;
+                        layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());;
+                        layoutInfo.pBindings = bindings.data();
+
+                        if (vkCreateDescriptorSetLayout(vkDevice.getDevice(), &layoutInfo, nullptr, &descriptorSetLayout[descriptorId]) != VK_SUCCESS) {
+                            throw std::runtime_error("failed to create descriptor set layout!");
+                        }
+
+                    }
+                    {
+                        std::vector<VkDescriptorSetLayout>& descriptorSetLayout = lightDepthBuffer.getDescriptorSetLayout();
+                        if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorSetLayout.size())
+                            descriptorSetLayout.resize(shader->getNbShaders()*depthBuffer.getNbRenderTargets());
+                        unsigned int descriptorId = shader->getId();
+                        std::vector<Texture*> allTextures = Texture::getAllTextures();
+                        VkDescriptorSetLayoutBinding samplerLayoutBinding{};
+                        samplerLayoutBinding.binding = 0;
+                        samplerLayoutBinding.descriptorCount = allTextures.size();
+                        samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                        samplerLayoutBinding.pImmutableSamplers = nullptr;
+                        samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+                        VkDescriptorSetLayoutBinding headPtrImageLayoutBinding;
+                        headPtrImageLayoutBinding.binding = 1;
+                        headPtrImageLayoutBinding.descriptorCount = 1;
+                        headPtrImageLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+                        headPtrImageLayoutBinding.pImmutableSamplers = nullptr;
+                        headPtrImageLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+                        VkDescriptorSetLayoutBinding modelDataLayoutBinding{};
+                        modelDataLayoutBinding.binding = 4;
+                        modelDataLayoutBinding.descriptorCount = 1;
+                        modelDataLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                        modelDataLayoutBinding.pImmutableSamplers = nullptr;
+                        modelDataLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+                        VkDescriptorSetLayoutBinding materialDataLayoutBinding{};
+                        materialDataLayoutBinding.binding = 5;
+                        materialDataLayoutBinding.descriptorCount = 1;
+                        materialDataLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                        materialDataLayoutBinding.pImmutableSamplers = nullptr;
+                        materialDataLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+                        std::array<VkDescriptorSetLayoutBinding, 4> bindings = {samplerLayoutBinding, headPtrImageLayoutBinding, modelDataLayoutBinding, materialDataLayoutBinding};
+
+                        if (descriptorSetLayout[descriptorId] != nullptr) {
+                            vkDestroyDescriptorSetLayout(vkDevice.getDevice(), descriptorSetLayout[descriptorId], nullptr);
+                        }
+
+                        VkDescriptorSetLayoutCreateInfo layoutInfo{};
+                        layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+                        //layoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR;
+                        layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());;
+                        layoutInfo.pBindings = bindings.data();
+
+                        if (vkCreateDescriptorSetLayout(vkDevice.getDevice(), &layoutInfo, nullptr, &descriptorSetLayout[descriptorId]) != VK_SUCCESS) {
+                            throw std::runtime_error("failed to create descriptor set layout!");
+                        }
+
                     }
 
-                    VkDescriptorSetLayoutCreateInfo layoutInfo{};
-                    layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-                    //layoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR;
-                    layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());;
-                    layoutInfo.pBindings = bindings.data();
-
-                    if (vkCreateDescriptorSetLayout(vkDevice.getDevice(), &layoutInfo, nullptr, &descriptorSetLayout[descriptorId]) != VK_SUCCESS) {
-                        throw std::runtime_error("failed to create descriptor set layout!");
-                    }
-                    descriptorSetLayout = lightDepthBuffer.getDescriptorSetLayout();
-                    if (vkCreateDescriptorSetLayout(vkDevice.getDevice(), &layoutInfo, nullptr, &descriptorSetLayout[descriptorId]) != VK_SUCCESS) {
-                        throw std::runtime_error("failed to create descriptor set layout!");
-                    }
                 } else if (shader == &buildAlphaBufferGenerator) {
                     std::vector<VkDescriptorSetLayout>& descriptorSetLayout = alphaBuffer.getDescriptorSetLayout();
                     if (shader->getNbShaders()*RenderTarget::getNbRenderTargets() > descriptorSetLayout.size())
@@ -1616,7 +1688,7 @@ namespace odfaeg {
 
                 Shader* shader = const_cast<Shader*>(states.shader);
                 if (shader == &depthBufferGenerator) {
-                   std::vector<std::vector<VkDescriptorSet>> descriptorSets;
+                   std::vector<std::vector<VkDescriptorSet>> descriptorSets = (lightDepth) ? lightDepthBuffer.getDescriptorSet() : depthBuffer.getDescriptorSet();
                    std::vector<Texture*> allTextures = Texture::getAllTextures();
                    unsigned int descriptorId = shader->getId();
                    for (size_t i = 0; i < depthBuffer.getMaxFramesInFlight(); i++) {
@@ -1637,7 +1709,6 @@ namespace odfaeg {
                         descriptorWrites[0].pImageInfo = descriptorImageInfos.data();
 
                         if (!lightDepth) {
-                            descriptorSets = lightDepthBuffer.getDescriptorSet();
                             VkDescriptorImageInfo headPtrDescriptorImageInfo;
                             headPtrDescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
                             headPtrDescriptorImageInfo.imageView = depthTextureImageView;
@@ -1651,7 +1722,6 @@ namespace odfaeg {
                             descriptorWrites[1].descriptorCount = 1;
                             descriptorWrites[1].pImageInfo = &headPtrDescriptorImageInfo;
                         } else {
-                            descriptorSets = depthBuffer.getDescriptorSet();
                             VkDescriptorImageInfo headPtrDescriptorImageInfo;
                             headPtrDescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
                             headPtrDescriptorImageInfo.imageView = lightDepthTextureImageView;
@@ -1986,35 +2056,46 @@ namespace odfaeg {
             void LightRenderComponent::allocateDescriptorSets(RenderStates states) {
                 Shader* shader = const_cast<Shader*>(states.shader);
                 if (shader == &depthBufferGenerator) {
-                    std::vector<std::vector<VkDescriptorSet>>& descriptorSets = depthBuffer.getDescriptorSet();
-                    std::vector<VkDescriptorPool>& descriptorPool = depthBuffer.getDescriptorPool();
-                    std::vector<VkDescriptorSetLayout>& descriptorSetLayout = depthBuffer.getDescriptorSetLayout();
-                    if (shader->getNbShaders() > descriptorSets.size())
-                        descriptorSets.resize(shader->getNbShaders());
-                    unsigned int descriptorId = shader->getId();
-                    for (unsigned int i = 0; i < descriptorSets.size(); i++) {
-                        descriptorSets[i].resize(depthBuffer.getMaxFramesInFlight());
+                    {
+                        std::vector<std::vector<VkDescriptorSet>>& descriptorSets = depthBuffer.getDescriptorSet();
+                        std::vector<VkDescriptorPool>& descriptorPool = depthBuffer.getDescriptorPool();
+                        std::vector<VkDescriptorSetLayout>& descriptorSetLayout = depthBuffer.getDescriptorSetLayout();
+                        if (shader->getNbShaders() > descriptorSets.size())
+                            descriptorSets.resize(shader->getNbShaders());
+                        unsigned int descriptorId = shader->getId();
+                        for (unsigned int i = 0; i < descriptorSets.size(); i++) {
+                            descriptorSets[i].resize(depthBuffer.getMaxFramesInFlight());
+                        }
+                        std::vector<VkDescriptorSetLayout> layouts(depthBuffer.getMaxFramesInFlight(), descriptorSetLayout[descriptorId]);
+                        VkDescriptorSetAllocateInfo allocInfo{};
+                        allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+                        allocInfo.descriptorPool = descriptorPool[descriptorId];
+                        allocInfo.descriptorSetCount = static_cast<uint32_t>(depthBuffer.getMaxFramesInFlight());
+                        allocInfo.pSetLayouts = layouts.data();
+                        if (vkAllocateDescriptorSets(vkDevice.getDevice(), &allocInfo, descriptorSets[descriptorId].data()) != VK_SUCCESS) {
+                            throw std::runtime_error("echec de l'allocation d'un set de descripteurs!");
+                        }
                     }
-                    std::vector<VkDescriptorSetLayout> layouts(depthBuffer.getMaxFramesInFlight(), descriptorSetLayout[descriptorId]);
-                    VkDescriptorSetAllocateInfo allocInfo{};
-                    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-                    allocInfo.descriptorPool = descriptorPool[descriptorId];
-                    allocInfo.descriptorSetCount = static_cast<uint32_t>(depthBuffer.getMaxFramesInFlight());
-                    allocInfo.pSetLayouts = layouts.data();
-                    if (vkAllocateDescriptorSets(vkDevice.getDevice(), &allocInfo, descriptorSets[descriptorId].data()) != VK_SUCCESS) {
-                        throw std::runtime_error("echec de l'allocation d'un set de descripteurs!");
-                    }
-                    descriptorSets = lightDepthBuffer.getDescriptorSet();
-                    descriptorPool = lightDepthBuffer.getDescriptorPool();
-                    descriptorSetLayout = lightDepthBuffer.getDescriptorSetLayout();
-                    layouts = std::vector<VkDescriptorSetLayout>(depthBuffer.getMaxFramesInFlight(), descriptorSetLayout[descriptorId]);
-                    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-                    allocInfo.descriptorPool = descriptorPool[descriptorId];
-                    allocInfo.descriptorSetCount = static_cast<uint32_t>(depthBuffer.getMaxFramesInFlight());
-                    allocInfo.pSetLayouts = layouts.data();
+                    {
+                        std::vector<std::vector<VkDescriptorSet>>& descriptorSets =     lightDepthBuffer.getDescriptorSet();
+                        std::vector<VkDescriptorPool>& descriptorPool = lightDepthBuffer.getDescriptorPool();
+                        std::vector<VkDescriptorSetLayout>& descriptorSetLayout = lightDepthBuffer.getDescriptorSetLayout();
+                        if (shader->getNbShaders() > descriptorSets.size())
+                            descriptorSets.resize(shader->getNbShaders());
+                        unsigned int descriptorId = shader->getId();
+                        for (unsigned int i = 0; i < descriptorSets.size(); i++) {
+                            descriptorSets[i].resize(lightDepthBuffer.getMaxFramesInFlight());
+                        }
+                        std::vector<VkDescriptorSetLayout> layouts(depthBuffer.getMaxFramesInFlight(), descriptorSetLayout[descriptorId]);
+                        VkDescriptorSetAllocateInfo allocInfo{};
+                        allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+                        allocInfo.descriptorPool = descriptorPool[descriptorId];
+                        allocInfo.descriptorSetCount = static_cast<uint32_t>(depthBuffer.getMaxFramesInFlight());
+                        allocInfo.pSetLayouts = layouts.data();
 
-                    if (vkAllocateDescriptorSets(vkDevice.getDevice(), &allocInfo, descriptorSets[descriptorId].data()) != VK_SUCCESS) {
-                        throw std::runtime_error("echec de l'allocation d'un set de descripteurs!");
+                        if (vkAllocateDescriptorSets(vkDevice.getDevice(), &allocInfo, descriptorSets[descriptorId].data()) != VK_SUCCESS) {
+                            throw std::runtime_error("echec de l'allocation d'un set de descripteurs!");
+                        }
                     }
                 } else if (shader == &buildAlphaBufferGenerator) {
                     std::vector<std::vector<VkDescriptorSet>>& descriptorSets = alphaBuffer.getDescriptorSet();
@@ -2431,8 +2512,8 @@ namespace odfaeg {
                     std::vector<VkCommandBuffer> commandBuffers = depthBuffer.getCommandBuffers();
                     unsigned int currentFrame = depthBuffer.getCurrentFrame();
                     layerPC.nbLayers = GameObject::getNbLayers();
-                    vkCmdPushConstants(commandBuffers[currentFrame], depthBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][depthBuffer.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectRenderingPC), &indirectRenderingPC);
-                    vkCmdPushConstants(commandBuffers[currentFrame], depthBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][depthBuffer.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(LayerPC), &layerPC);
+                    vkCmdPushConstants(commandBuffers[currentFrame], depthBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][0][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectRenderingPC), &indirectRenderingPC);
+                    vkCmdPushConstants(commandBuffers[currentFrame], depthBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][0][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(LayerPC), &layerPC);
                     depthBuffer.beginRenderPass();
                     depthBuffer.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
                     depthBuffer.endRenderPass();
@@ -2452,8 +2533,8 @@ namespace odfaeg {
                     std::vector<VkCommandBuffer> commandBuffers = lightDepthBuffer.getCommandBuffers();
                     unsigned int currentFrame = lightDepthBuffer.getCurrentFrame();
                     layerPC.nbLayers = GameObject::getNbLayers();
-                    vkCmdPushConstants(commandBuffers[currentFrame], lightDepthBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][lightDepthBuffer.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectRenderingPC), &indirectRenderingPC);
-                    vkCmdPushConstants(commandBuffers[currentFrame], lightDepthBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][lightDepthBuffer.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(LayerPC), &layerPC);
+                    vkCmdPushConstants(commandBuffers[currentFrame], lightDepthBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][0][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectRenderingPC), &indirectRenderingPC);
+                    vkCmdPushConstants(commandBuffers[currentFrame], lightDepthBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][0][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(LayerPC), &layerPC);
                     lightDepthBuffer.beginRenderPass();
                     lightDepthBuffer.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
                     lightDepthBuffer.endRenderPass();
@@ -2482,8 +2563,8 @@ namespace odfaeg {
                 //vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 0, nullptr);
 
 
-                vkCmdPushConstants(commandBuffers[currentFrame], alphaBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][alphaBuffer.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectRenderingPC), &indirectRenderingPC);
-                vkCmdPushConstants(commandBuffers[currentFrame], alphaBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][alphaBuffer.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(LayerPC), &layerPC);
+                vkCmdPushConstants(commandBuffers[currentFrame], alphaBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][0][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectRenderingPC), &indirectRenderingPC);
+                vkCmdPushConstants(commandBuffers[currentFrame], alphaBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][0][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(LayerPC), &layerPC);
 
 
                 VkMemoryBarrier memoryBarrier={};
@@ -2513,8 +2594,8 @@ namespace odfaeg {
 
 
                 //vkCmdWaitEvents(commandBuffers[currentFrame], 1, &events[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
-                vkCmdPushConstants(commandBuffers[currentFrame], specularTexture.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][specularTexture.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectRenderingPC), &indirectRenderingPC);
-                vkCmdPushConstants(commandBuffers[currentFrame], specularTexture.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][specularTexture.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(MaxSpecPC), &maxSpecPC);
+                vkCmdPushConstants(commandBuffers[currentFrame], specularTexture.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][0][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectRenderingPC), &indirectRenderingPC);
+                vkCmdPushConstants(commandBuffers[currentFrame], specularTexture.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][0][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(MaxSpecPC), &maxSpecPC);
                 /*////std::cout<<"pipeline layout : "<<stencilBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][stencilBuffer.getId()][depthStencilID]<<std::endl;
                 system("PAUSE");*/
                  vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 0, nullptr);
@@ -2546,8 +2627,8 @@ namespace odfaeg {
 
 
                 //vkCmdWaitEvents(commandBuffers[currentFrame], 1, &events[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
-                vkCmdPushConstants(commandBuffers[currentFrame], bumpTexture.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][bumpTexture.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectRenderingPC), &indirectRenderingPC);
-                vkCmdPushConstants(commandBuffers[currentFrame], bumpTexture.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][bumpTexture.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(LayerPC), &layerPC);
+                vkCmdPushConstants(commandBuffers[currentFrame], bumpTexture.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][0][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectRenderingPC), &indirectRenderingPC);
+                vkCmdPushConstants(commandBuffers[currentFrame], bumpTexture.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][0][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(LayerPC), &layerPC);
                 /*////std::cout<<"pipeline layout : "<<stencilBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][stencilBuffer.getId()][depthStencilID]<<std::endl;
                 system("PAUSE");*/
                  vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 0, nullptr);
@@ -2595,8 +2676,8 @@ namespace odfaeg {
                 //vkCmdWaitEvents(commandBuffers[currentFrame], 1, &events[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
 
                 vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
-                vkCmdPushConstants(commandBuffers[currentFrame], lightMap.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][lightMap.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(LightIndirectRenderingPC), &lightIndirectRenderingPC);
-                vkCmdPushConstants(commandBuffers[currentFrame], lightMap.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][lightMap.getId()][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_FRAGMENT_BIT, 192, sizeof(ResolutionPC), &resolutionPC);
+                vkCmdPushConstants(commandBuffers[currentFrame], lightMap.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][0][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(LightIndirectRenderingPC), &lightIndirectRenderingPC);
+                vkCmdPushConstants(commandBuffers[currentFrame], lightMap.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][0][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_FRAGMENT_BIT, 192, sizeof(ResolutionPC), &resolutionPC);
                 lightMap.beginRenderPass();
                 lightMap.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
                 lightMap.endRenderPass();
