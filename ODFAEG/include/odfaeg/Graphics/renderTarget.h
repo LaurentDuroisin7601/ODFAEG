@@ -234,8 +234,10 @@ namespace odfaeg {
             void enableStencilTest(bool enabled);
             void enableDepthTest(bool enable);
             void beginRecordCommandBuffers();
+            void beginRecordSecondaryCommandBuffers();
             void beginRenderPass();
             std::vector<VkCommandBuffer>& getCommandBuffers();
+            std::vector<VkCommandBuffer>& getSecondaryCommandBuffers();
             std::string m_name;
             virtual const int getMaxFramesInFlight() = 0;
             ViewportMatrix getViewportMatrix(View* view);
@@ -258,6 +260,7 @@ namespace odfaeg {
                 float data[16]; // row-major ou column-major, selon ton convention
             };
             std::vector<bool> commandsOnRecordedState;
+            std::vector<bool> secondaryCommandsOnRecordedState;
         private :
             GLMatrix4f toVulkanMatrix(const math::Matrix4f& mat) {
                 GLMatrix4f flat;
@@ -281,7 +284,7 @@ namespace odfaeg {
 
             void createCommandPool();
             void createCommandBuffers();
-            void recordCommandBuffers(VertexBuffer& vb, RenderStates states);
+            void recordCommandBuffers(VkCommandBuffer cmd, VertexBuffer& vb, RenderStates states);
             View        m_defaultView; ///< Default view
             View        m_view;  ///< Current view
             Shader defaultShader, defaultShader2;
@@ -289,16 +292,16 @@ namespace odfaeg {
             std::vector<std::vector<std::vector<VkPipelineDepthStencilStateCreateInfo>>> depthStencil;
             std::vector<std::vector<std::vector<VkPipelineLayout>>> pipelineLayout;
             std::vector<std::vector<std::vector<VkPipeline>>> graphicsPipeline;
-            VkCommandPool commandPool;
+            VkCommandPool commandPool, secondaryCommandPool;
             std::vector<VkCommandBuffer> commandBuffers;
-            static std::vector<VertexBuffer*> vertexBuffers;
-            static std::vector<std::vector<VkBuffer>> uniformBuffers;
-            static std::vector<std::vector<VkDeviceMemory>> uniformBuffersMemory;
+            std::vector<VkCommandBuffer> secondaryCommandBuffers;
+            std::vector<VertexBuffer> vertexBuffer;
+            std::vector<VkBuffer> uniformBuffers;
+            std::vector<VkDeviceMemory> uniformBuffersMemory;
             std::vector<VkDescriptorPool> descriptorPool;
             std::vector<VkDescriptorSetLayout> descriptorSetLayout;
             std::vector<std::vector<VkDescriptorSet>> descriptorSets;
             unsigned int selectedBuffer;
-            static unsigned int nbBuffers;
             unsigned int id;
             static unsigned int nbRenderTargets;
             Texture* depthTexture;

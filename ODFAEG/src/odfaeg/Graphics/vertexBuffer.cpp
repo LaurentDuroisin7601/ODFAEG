@@ -26,8 +26,8 @@ namespace odfaeg {
                 update();
             }*/
             VertexBuffer::VertexBuffer(VertexBuffer&& vb) : vkDevice(vb.vkDevice)
-            , vertexBuffer(std::exchange(vb.vertexBuffer, nullptr))
-            , indexBuffer(std::exchange(vb.indexBuffer, nullptr))
+            , vertexBuffer(std::exchange(vb.vertexBuffer, VK_NULL_HANDLE))
+            , indexBuffer(std::exchange(vb.indexBuffer, VK_NULL_HANDLE))
             , m_vertices(std::move(vb.m_vertices))
             , indices(std::move(vb.indices))
             , needToUpdateVertexBuffer((m_vertices.size() > 0) ? true : false)
@@ -52,8 +52,8 @@ namespace odfaeg {
                 commandPool = vb.commandPool;
                 m_vertices = std::move(vb.m_vertices);
                 indices = std::move(vb.indices);
-                vertexBuffer = std::exchange(vertexBuffer, nullptr);
-                indexBuffer = std::exchange(indexBuffer, nullptr);
+                vertexBuffer = std::exchange(vertexBuffer, VK_NULL_HANDLE);
+                indexBuffer = std::exchange(indexBuffer, VK_NULL_HANDLE);
                 needToUpdateIndexBuffer = std::move(vb.needToUpdateVertexBuffer);
                 needToUpdateVertexBuffer = std::move(vb.needToUpdateVertexBuffer);
                 needToUpdateIndexStagingBuffer = std::move(vb.needToUpdateIndexStagingBuffer);
@@ -126,10 +126,11 @@ namespace odfaeg {
                 beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
                 vkBeginCommandBuffer(commandBuffer, &beginInfo);
-
+                if (srcBuffer != nullptr && dstBuffer != nullptr && size > 0) {
                     VkBufferCopy copyRegion{};
                     copyRegion.size = size;
                     vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+                }
 
                 vkEndCommandBuffer(commandBuffer);
 
@@ -285,11 +286,12 @@ namespace odfaeg {
                         createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
                         maxVerticesSize = bufferSize;
                     }
-
-                    void* data;
-                    vkMapMemory(vkDevice.getDevice(), vertexStagingBufferMemory, 0, bufferSize, 0, &data);
-                        memcpy(data, m_vertices.data(), (size_t) bufferSize);
-                    vkUnmapMemory(vkDevice.getDevice(), vertexStagingBufferMemory);
+                    if (vertexStagingBufferMemory != VK_NULL_HANDLE && bufferSize > 0) {
+                        void* data;
+                        vkMapMemory(vkDevice.getDevice(), vertexStagingBufferMemory, 0, bufferSize, 0, &data);
+                            memcpy(data, m_vertices.data(), (size_t) bufferSize);
+                        vkUnmapMemory(vkDevice.getDevice(), vertexStagingBufferMemory);
+                    }
                     copyBuffer(vertexStagingBuffer, vertexBuffer, bufferSize);
 
 
@@ -311,11 +313,12 @@ namespace odfaeg {
                         createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
                         maxIndexSize = bufferSize;
                     }
-
-                    void* data;
-                    vkMapMemory(vkDevice.getDevice(), indexStagingBufferMemory, 0, bufferSize, 0, &data);
-                    memcpy(data, indices.data(), (size_t) bufferSize);
-                    vkUnmapMemory(vkDevice.getDevice(), indexStagingBufferMemory);
+                    if (indexStagingBuffer != VK_NULL_HANDLE && bufferSize > 0) {
+                        void* data;
+                        vkMapMemory(vkDevice.getDevice(), indexStagingBufferMemory, 0, bufferSize, 0, &data);
+                        memcpy(data, indices.data(), (size_t) bufferSize);
+                        vkUnmapMemory(vkDevice.getDevice(), indexStagingBufferMemory);
+                    }
 
                     copyBuffer(indexStagingBuffer, indexBuffer, bufferSize);
 

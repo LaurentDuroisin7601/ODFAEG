@@ -36,7 +36,6 @@ namespace odfaeg {
         class ODFAEG_GRAPHICS_API Drawable
         {
         public :
-            int bufferId = -1;
             virtual ~Drawable() {}
         protected :
 

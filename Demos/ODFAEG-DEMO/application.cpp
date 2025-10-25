@@ -338,9 +338,7 @@ namespace sorrok {
         lrc->createDescriptorsAndPipelines();
         rrrc->createDescriptorsAndPipelines();
 
-        frc1->launchRenderer();
-        frc2->launchRenderer();
-        rrrc->launchRenderer();
+
         std::cout<<"pipelines created"<<std::endl;
 
 
@@ -443,6 +441,9 @@ namespace sorrok {
         pfire.setAttenuation(10.f);
         audio::Listener::setPosition(caracter->getCenter().x(), caracter->getCenter().y(), 0);
         pfire.play(true);
+        frc1->launchRenderer();
+        frc2->launchRenderer();
+        rrrc->launchRenderer();
         std::cout<<"appli initialised"<<std::endl;
     }
     void MyAppli::onRender(RenderComponentManager *cm) {

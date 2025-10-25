@@ -73,11 +73,6 @@ namespace odfaeg {
     namespace graphic {
 
         #ifdef VULKAN
-        unsigned int RenderTarget::nbBuffers = 0;
-        std::vector<VertexBuffer*> RenderTarget::vertexBuffers =  std::vector<VertexBuffer*>();
-        std::vector<std::vector<VkBuffer>> RenderTarget::uniformBuffers = std::vector<std::vector<VkBuffer>>();
-        std::vector<std::vector<VkDeviceMemory>> RenderTarget::uniformBuffersMemory = std::vector<std::vector<VkDeviceMemory>>();
-
         unsigned int RenderTarget::nbRenderTargets = 0;
 
         RenderTarget::RenderTarget(window::Device& vkDevice) : vkDevice(vkDevice), defaultShader(vkDevice), defaultShader2(vkDevice),
@@ -157,6 +152,9 @@ namespace odfaeg {
 
              createCommandPool();
              createCommandBuffers();
+             createUniformBuffers();
+             VertexBuffer vb(vkDevice);
+             vertexBuffer.push_back(std::move(vb));
 
 
 
@@ -261,16 +259,6 @@ namespace odfaeg {
         void RenderTarget::draw(Drawable& drawable, RenderStates states)
         {
             ////std::cout<<"check ubo drawable"<<std::endl;
-            if (drawable.bufferId == -1) {
-
-                createUniformBuffers();
-                drawable.bufferId = nbBuffers;
-                selectedBuffer = drawable.bufferId;
-                nbBuffers++;
-                /*system("PAUSE");*/
-            } else {
-                selectedBuffer = drawable.bufferId;
-            }
             ////std::cout<<"draw drawable"<<std::endl;
             drawable.draw(*this, states);
             ////std::cout<<"drawable drawn"<<std::endl;
@@ -278,25 +266,25 @@ namespace odfaeg {
         void RenderTarget::draw(const Vertex* vertices, unsigned int vertexCount, PrimitiveType type,
                       RenderStates states) {
              ////std::cout<<"draw vertices"<<std::endl;
-             vertexBuffers[selectedBuffer]->clear();
+             vertexBuffer[0].clear();
              for (unsigned int i = 0; i < vertexCount; i++) {
-                vertexBuffers[selectedBuffer]->append(vertices[i]);
+                vertexBuffer[0].append(vertices[i]);
                 ////////std::cout<<"vertex : "<<vertices[i].position.x<<std::endl;
              }
              PrimitiveType oldType;
              if (type == Quads) {
-                for (unsigned int i = 0; i < vertexBuffers[selectedBuffer]->getSize(); i+=4) {
-                    vertexBuffers[selectedBuffer]->addIndex(i);
-                    vertexBuffers[selectedBuffer]->addIndex(i+1);
-                    vertexBuffers[selectedBuffer]->addIndex(i+2);
-                    vertexBuffers[selectedBuffer]->addIndex(i);
-                    vertexBuffers[selectedBuffer]->addIndex(i+2);
-                    vertexBuffers[selectedBuffer]->addIndex(i+3);
+                for (unsigned int i = 0; i < vertexBuffer[0].getSize(); i+=4) {
+                    vertexBuffer[0].addIndex(i);
+                    vertexBuffer[0].addIndex(i+1);
+                    vertexBuffer[0].addIndex(i+2);
+                    vertexBuffer[0].addIndex(i);
+                    vertexBuffer[0].addIndex(i+2);
+                    vertexBuffer[0].addIndex(i+3);
                 }
                 type = Triangles;
                 oldType = Quads;
              }
-             vertexBuffers[selectedBuffer]->setPrimitiveType(type);
+             vertexBuffer[0].setPrimitiveType(type);
              if (states.shader == nullptr) {
                 if (states.texture != nullptr) {
                     states.shader = &defaultShader;
@@ -304,7 +292,7 @@ namespace odfaeg {
                     states.shader = &defaultShader2;
                 }
              }
-             vertexBuffers[selectedBuffer]->update();
+             vertexBuffer[0].update();
              UniformBufferObject ubo;
              ubo.proj = toVulkanMatrix(m_view.getProjMatrix().getMatrix())/*.transpose()*/;
              //ubo.proj.m22 *= -1;
@@ -316,9 +304,12 @@ namespace odfaeg {
                 ubo.textureMatrix = toVulkanMatrix(math::Matrix4f());
 
              updateUniformBuffer(getCurrentFrame(), ubo);
-             recordCommandBuffers(*vertexBuffers[selectedBuffer], states);
+             if (secondaryCommandsOnRecordedState[getCurrentFrame()])
+                recordCommandBuffers(secondaryCommandBuffers[getCurrentFrame()], vertexBuffer[0], states);
+             else if(commandsOnRecordedState[getCurrentFrame()])
+                recordCommandBuffers(commandBuffers[getCurrentFrame()], vertexBuffer[0], states);
              if (oldType == Quads)
-                vertexBuffers[selectedBuffer]->clearIndexes();
+                vertexBuffer[0].clearIndexes();
              ////std::cout<<"drawn"<<std::endl;
 
 
@@ -342,7 +333,10 @@ namespace odfaeg {
              else
                 ubo.textureMatrix = toVulkanMatrix(math::Matrix4f());
              updateUniformBuffer(getCurrentFrame(), ubo);
-             recordCommandBuffers(vb, states);
+             if (secondaryCommandsOnRecordedState[getCurrentFrame()])
+                recordCommandBuffers(secondaryCommandBuffers[getCurrentFrame()], vb, states);
+             else if(commandsOnRecordedState[getCurrentFrame()])
+                recordCommandBuffers(commandBuffers[getCurrentFrame()], vb, states);
              /*//////std::cout<<"drawn"<<std::endl;
              system("PAUSE");*/
 
@@ -514,7 +508,7 @@ namespace odfaeg {
             Shader* shader = const_cast<Shader*>(states.shader);
             for (size_t i = 0; i < getMaxFramesInFlight(); i++) {
                 VkDescriptorBufferInfo bufferInfo{};
-                bufferInfo.buffer = uniformBuffers[selectedBuffer][i];
+                bufferInfo.buffer = uniformBuffers[i];
                 bufferInfo.offset = 0;
                 bufferInfo.range = sizeof(UniformBufferObject);
                 if (states.shader == &defaultShader) {
@@ -813,28 +807,25 @@ namespace odfaeg {
             if (vkCreateCommandPool(vkDevice.getDevice(), &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {
                 throw core::Erreur(0, "échec de la création d'une command pool!", 1);
             }
+            if (vkCreateCommandPool(vkDevice.getDevice(), &poolInfo, nullptr, &secondaryCommandPool) != VK_SUCCESS) {
+                throw core::Erreur(0, "échec de la création d'une command pool!", 1);
+            }
         }
         void RenderTarget::createUniformBuffers() {
             VkDeviceSize bufferSize = sizeof(UniformBufferObject);
-            std::vector<VkBuffer> ubos;
-            std::vector<VkDeviceMemory> ubosMemory;
-            ubos.resize(getMaxFramesInFlight());
-            ubosMemory.resize(getMaxFramesInFlight());
+            uniformBuffers.resize(getMaxFramesInFlight());
+            uniformBuffersMemory.resize(getMaxFramesInFlight());
 
             for (size_t i = 0; i < getMaxFramesInFlight(); i++) {
-                createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, ubos[i], ubosMemory[i]);
+                createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffers[i], uniformBuffersMemory[i]);
                 ////////std::cout<<"uniform buffer : "<<ubos[i]<<std::endl;
             }
-            uniformBuffers.push_back(ubos);
-            uniformBuffersMemory.push_back(ubosMemory);
-            VertexBuffer* vb = new VertexBuffer(vkDevice);
-            vertexBuffers.push_back(std::move(vb));
         }
         void RenderTarget::updateUniformBuffer(uint32_t currentImage, UniformBufferObject ubo) {
             void* data;
-            vkMapMemory(vkDevice.getDevice(), uniformBuffersMemory[selectedBuffer][currentImage], 0, sizeof(ubo), 0, &data);
+            vkMapMemory(vkDevice.getDevice(), uniformBuffersMemory[currentImage], 0, sizeof(ubo), 0, &data);
                 memcpy(data, &ubo, sizeof(ubo));
-            vkUnmapMemory(vkDevice.getDevice(), uniformBuffersMemory[selectedBuffer][currentImage]);
+            vkUnmapMemory(vkDevice.getDevice(), uniformBuffersMemory[currentImage]);
 
         }
         void RenderTarget::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory) {
@@ -875,6 +866,8 @@ namespace odfaeg {
         void RenderTarget::createCommandBuffers() {
             commandBuffers.resize(getSwapchainImages().size());
             commandsOnRecordedState.resize(getSwapchainImages().size(), false);
+            secondaryCommandBuffers.resize(getSwapchainImages().size());
+            secondaryCommandsOnRecordedState.resize(getSwapchainImages().size());
 
             VkCommandBufferAllocateInfo allocInfo{};
             allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -883,6 +876,12 @@ namespace odfaeg {
             allocInfo.commandBufferCount = (uint32_t) commandBuffers.size();
 
             if (vkAllocateCommandBuffers(vkDevice.getDevice(), &allocInfo, commandBuffers.data()) != VK_SUCCESS) {
+                throw core::Erreur(0, "failed to allocate command buffers!", 1);
+            }
+            allocInfo.commandPool = secondaryCommandPool;
+            allocInfo.level = VK_COMMAND_BUFFER_LEVEL_SECONDARY;
+            allocInfo.commandBufferCount = (uint32_t) secondaryCommandBuffers.size();
+            if (vkAllocateCommandBuffers(vkDevice.getDevice(), &allocInfo, secondaryCommandBuffers.data()) != VK_SUCCESS) {
                 throw core::Erreur(0, "failed to allocate command buffers!", 1);
             }
             /*if (m_name == "depthBuffer")
@@ -901,6 +900,26 @@ namespace odfaeg {
                     throw core::Erreur(0, "failed to begin recording command buffer!", 1);
                 }
                 commandsOnRecordedState[getCurrentFrame()] = true;
+            }
+        }
+        void RenderTarget::beginRecordSecondaryCommandBuffers() {
+            if (!secondaryCommandsOnRecordedState[getCurrentFrame()]) {
+                VkCommandBufferInheritanceInfo inheritanceInfo{};
+                inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+                inheritanceInfo.renderPass = (depthTestEnabled || stencilTestEnabled) ? getRenderPass(1) : getRenderPass(0);
+                inheritanceInfo.framebuffer = (depthTestEnabled || stencilTestEnabled) ? getSwapchainFrameBuffers(1)[getImageIndex()] : getSwapchainFrameBuffers(0)[getImageIndex()];
+                VkCommandBufferBeginInfo beginInfo{};
+                beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+                beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT | VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+                beginInfo.pInheritanceInfo = &inheritanceInfo;
+                /*if (m_name == "depthBuffer")
+                    //////std::cout<<"begin cmd : "<<commandBuffers.size()<<std::endl;*/
+                vkResetCommandBuffer(secondaryCommandBuffers[getCurrentFrame()], 0);
+                if (vkBeginCommandBuffer(secondaryCommandBuffers[getCurrentFrame()], &beginInfo) != VK_SUCCESS) {
+
+                    throw core::Erreur(0, "failed to begin recording command buffer!", 1);
+                }
+                secondaryCommandsOnRecordedState[getCurrentFrame()] = true;
             }
         }
         void RenderTarget::beginRenderPass() {
@@ -936,8 +955,8 @@ namespace odfaeg {
             scissor.extent = getSwapchainExtents();
             vkCmdSetScissor(cmd, 0, 1, &scissor);
         }
-        void RenderTarget::recordCommandBuffers(VertexBuffer& vb, RenderStates states) {
-            std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+        void RenderTarget::recordCommandBuffers(VkCommandBuffer cmd, VertexBuffer& vb, RenderStates states) {
+            //std::lock_guard<std::recursive_mutex> lock(rec_mutex);
             Shader* shader = const_cast<Shader*>(states.shader);
             states.blendMode.updateIds();
             /*////std::cout<<"blend mode : "<<states.blendMode.colorSrcFactor<<","<<states.blendMode.colorDstFactor<<std::endl;
@@ -958,13 +977,13 @@ namespace odfaeg {
                     //////std::cout<<"render pass cmd rt : "<<getRenderPass()<<std::endl;*/
                 /*////std::cout<<"ids : "<<shader->getId()<<","<<vb.getPrimitiveType()<<","<<id<<","<<states.blendMode.id<<std::endl;
                 system("PAUSE");*/
-                vkCmdBindPipeline(commandBuffers[getCurrentFrame()], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vb.getPrimitiveType()][0][states.blendMode.id]);
+                vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vb.getPrimitiveType()][0][states.blendMode.id]);
                 ////////std::cout<<"buffer : "<<this->vertexBuffers[selectedBuffer]->getVertexBuffer()<<std::endl;
                 VkBuffer vertexBuffers[] = {vb.getVertexBuffer()};
                 VkDeviceSize offsets[] = {0};
-                vkCmdBindVertexBuffers(commandBuffers[getCurrentFrame()], 0, 1, vertexBuffers, offsets);
+                vkCmdBindVertexBuffers(cmd, 0, 1, vertexBuffers, offsets);
                 VkDescriptorBufferInfo bufferInfo{};
-                bufferInfo.buffer = uniformBuffers[selectedBuffer][getCurrentFrame()];
+                bufferInfo.buffer = uniformBuffers[getCurrentFrame()];
                 bufferInfo.offset = 0;
                 bufferInfo.range = sizeof(UniformBufferObject);
                 if (states.shader == &defaultShader) {
@@ -992,7 +1011,7 @@ namespace odfaeg {
                     descriptorWrites[1].descriptorCount = 1;
                     descriptorWrites[1].pImageInfo = &imageInfo;
 
-                    vkCmdPushDescriptorSetKHR(commandBuffers[getCurrentFrame()], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vb.getPrimitiveType()][0][states.blendMode.id], 0, 2, descriptorWrites.data());
+                    vkCmdPushDescriptorSetKHR(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vb.getPrimitiveType()][0][states.blendMode.id], 0, 2, descriptorWrites.data());
                 }  else {
                     std::array<VkWriteDescriptorSet, 1> descriptorWrites{};
 
@@ -1004,18 +1023,18 @@ namespace odfaeg {
                     descriptorWrites[0].descriptorCount = 1;
                     descriptorWrites[0].pBufferInfo = &bufferInfo;
 
-                    vkCmdPushDescriptorSetKHR(commandBuffers[getCurrentFrame()], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vb.getPrimitiveType()][0][states.blendMode.id], 0, 1, descriptorWrites.data());
+                    vkCmdPushDescriptorSetKHR(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vb.getPrimitiveType()][0][states.blendMode.id], 0, 1, descriptorWrites.data());
                 }
-                applyViewportAndScissor(commandBuffers[getCurrentFrame()]);
+                applyViewportAndScissor(cmd);
 
 
                 if(vb.getIndicesSize() > 0) {
-                    vkCmdBindIndexBuffer(commandBuffers[getCurrentFrame()], vb.getIndexBuffer(), 0, VK_INDEX_TYPE_UINT16);
+                    vkCmdBindIndexBuffer(cmd, vb.getIndexBuffer(), 0, VK_INDEX_TYPE_UINT16);
                 }
                 if(vb.getIndicesSize() > 0) {
-                    vkCmdDrawIndexed(commandBuffers[getCurrentFrame()], static_cast<uint32_t>(vb.getIndicesSize()), 1, 0, 0, 0);
+                    vkCmdDrawIndexed(cmd, static_cast<uint32_t>(vb.getIndicesSize()), 1, 0, 0, 0);
                 } else {
-                    vkCmdDraw(commandBuffers[getCurrentFrame()], static_cast<uint32_t>(vb.getSize()), 1, 0, 0);
+                    vkCmdDraw(cmd, static_cast<uint32_t>(vb.getSize()), 1, 0, 0);
                 }
 
 
@@ -1038,6 +1057,10 @@ namespace odfaeg {
             if (commandBuffers.size() > 0) {
                 vkFreeCommandBuffers(vkDevice.getDevice(), commandPool, commandBuffers.size(), commandBuffers.data());
                 vkDestroyCommandPool(vkDevice.getDevice(), commandPool, nullptr);
+            }
+            if (secondaryCommandBuffers.size() > 0) {
+                vkFreeCommandBuffers(vkDevice.getDevice(), secondaryCommandPool, secondaryCommandBuffers.size(), secondaryCommandBuffers.data());
+                vkDestroyCommandPool(vkDevice.getDevice(), secondaryCommandPool, nullptr);
             }
             delete depthTexture;
 
@@ -1068,20 +1091,16 @@ namespace odfaeg {
             for (unsigned int i = 0; i < descriptorPool.size(); i++) {
                 vkDestroyDescriptorPool(vkDevice.getDevice(), descriptorPool[i], nullptr);
             }
-            if (nbRenderTargets == 0) {
-                for (unsigned int i = 0; i < uniformBuffers.size(); i++) {
-                    for (size_t j = 0; j < uniformBuffers[i].size(); j++) {
-                        vkDestroyBuffer(vkDevice.getDevice(), uniformBuffers[i][j], nullptr);
-                        vkFreeMemory(vkDevice.getDevice(), uniformBuffersMemory[i][j], nullptr);
-                    }
-                }
-                for (unsigned int i = 0; i < vertexBuffers.size(); i++) {
-                    delete vertexBuffers[i];
-                }
+            for (unsigned int i = 0; i < uniformBuffers.size(); i++) {
+                vkDestroyBuffer(vkDevice.getDevice(), uniformBuffers[i], nullptr);
+                vkFreeMemory(vkDevice.getDevice(), uniformBuffersMemory[i], nullptr);
             }
         }
         std::vector<VkCommandBuffer>& RenderTarget::getCommandBuffers() {
             return commandBuffers;
+        }
+        std::vector<VkCommandBuffer>& RenderTarget::getSecondaryCommandBuffers() {
+            return secondaryCommandBuffers;
         }
         std::vector<std::vector<std::vector<VkPipelineLayoutCreateInfo>>>& RenderTarget::getPipelineLayoutCreateInfo() {
             return pipelineLayoutInfo;
