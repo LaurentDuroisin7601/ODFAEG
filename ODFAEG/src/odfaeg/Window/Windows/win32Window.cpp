@@ -869,8 +869,8 @@ namespace odfaeg {
                     IEvent event;
                     event.type          = IEvent::EventType::MOUSE_WHEEL_EVENT;
                     std::chrono::time_point<std::chrono::system_clock> time = std::chrono::system_clock::now();
-                    event.mouseButton.type = IEvent::MouseEventID::MOUSE_WHEEL_MOVED;
-                    event.mouseButton.timestamp = std::chrono::system_clock::to_time_t(time);
+                    event.mouseWheel.type = IEvent::MouseEventID::MOUSE_WHEEL_MOVED;
+                    event.mouseWheel.timestamp = std::chrono::system_clock::to_time_t(time);
                     event.mouseWheel.direction = delta / 120;
                     event.mouseWheel.x     = position.x;
                     event.mouseWheel.y     = position.y;
