@@ -405,16 +405,11 @@ namespace odfaeg {
                         std::vector<uint64_t> signalValues,
                         std::vector<uint64_t> waitValues) {
             if (getCommandBuffers().size() > 0) {
-                if (secondaryCommandsOnRecordedState[getCurrentFrame()]) {
-                    if (vkEndCommandBuffer(getSecondaryCommandBuffers()[currentFrame]) != VK_SUCCESS) {
-                        throw core::Erreur(0, "failed to record command buffer!", 1);
-                    }
-                    secondaryCommandsOnRecordedState[currentFrame] = false;
-                    vkCmdExecuteCommands(getCommandBuffers()[currentFrame], 1, &getSecondaryCommandBuffers()[currentFrame]);
-                }
+
                 if (vkEndCommandBuffer(getCommandBuffers()[currentFrame]) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to record command buffer!", 1);
                 }
+
                 commandsOnRecordedState[currentFrame] = false;
                 VkSubmitInfo submitInfo{};
                 submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;

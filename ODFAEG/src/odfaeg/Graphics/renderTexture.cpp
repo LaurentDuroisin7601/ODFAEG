@@ -411,17 +411,14 @@ namespace odfaeg
                          std::vector<uint64_t> waitValues) {
             if (getCommandBuffers().size() > 0) {
                 ////////std::cout<<"render texture end command buffer"<<std::endl;
-                if (secondaryCommandsOnRecordedState[getCurrentFrame()]) {
-                    if (vkEndCommandBuffer(getSecondaryCommandBuffers()[currentFrame]) != VK_SUCCESS) {
-                        throw core::Erreur(0, "failed to record command buffer!", 1);
-                    }
-                    secondaryCommandsOnRecordedState[currentFrame] = false;
+                if (useSecondaryCmds) {
                     vkCmdExecuteCommands(getCommandBuffers()[currentFrame], 1, &getSecondaryCommandBuffers()[currentFrame]);
+                    useSecondaryCmds = false;
                 }
-                //for (unsigned int i = 0; i < getCommandBuffers().size(); i++) {
                 if (vkEndCommandBuffer(getCommandBuffers()[currentFrame]) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to record command buffer!", 1);
                 }
+
                 //}
                 commandsOnRecordedState[currentFrame] = false;
                 VkSubmitInfo submitInfo{};

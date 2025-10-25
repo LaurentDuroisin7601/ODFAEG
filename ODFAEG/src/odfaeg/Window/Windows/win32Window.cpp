@@ -1092,7 +1092,7 @@ namespace odfaeg {
                             setTracking(true);
 
                             // Generate a MouseEntered event
-                           IEvent event;
+                            IEvent event;
                             event.type = IEvent::EventType::MOUSE_EVENT_ENTER;
                             std::chrono::time_point<std::chrono::system_clock> time = std::chrono::system_clock::now();
                             event.mouseMotion.type = IEvent::EventType::MOUSE_EVENT_ENTER;

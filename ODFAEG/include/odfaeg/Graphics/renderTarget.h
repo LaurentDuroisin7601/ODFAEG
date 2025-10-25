@@ -235,6 +235,8 @@ namespace odfaeg {
             void enableDepthTest(bool enable);
             void beginRecordCommandBuffers();
             void beginRecordSecondaryCommandBuffers();
+            void endRecordSecondaryCommandBuffers();
+            void executeSecondaryCommandBuffers();
             void beginRenderPass();
             std::vector<VkCommandBuffer>& getCommandBuffers();
             std::vector<VkCommandBuffer>& getSecondaryCommandBuffers();
@@ -262,6 +264,7 @@ namespace odfaeg {
             };
             std::vector<bool> commandsOnRecordedState;
             std::vector<bool> secondaryCommandsOnRecordedState;
+            bool useSecondaryCmds;
         private :
             GLMatrix4f toVulkanMatrix(const math::Matrix4f& mat) {
                 GLMatrix4f flat;

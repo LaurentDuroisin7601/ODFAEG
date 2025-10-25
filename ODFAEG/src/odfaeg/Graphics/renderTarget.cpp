@@ -77,7 +77,7 @@ namespace odfaeg {
 
         RenderTarget::RenderTarget(window::Device& vkDevice) : vkDevice(vkDevice), defaultShader(vkDevice), defaultShader2(vkDevice),
         m_defaultView(), m_view(), id(nbRenderTargets), depthTestEnabled(false), stencilTestEnabled(false), depthTexture(nullptr),
-        usePushDescriptorSets(true) {
+        usePushDescriptorSets(true), useSecondaryCmds(false) {
             nbRenderTargets++;
         }
         RenderTarget::~RenderTarget() {
@@ -893,6 +893,7 @@ namespace odfaeg {
         }
         void RenderTarget::beginRecordSecondaryCommandBuffers() {
             if (!secondaryCommandsOnRecordedState[getCurrentFrame()]) {
+                useSecondaryCmds = true;
                 VkCommandBufferInheritanceInfo inheritanceInfo{};
                 inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
                 inheritanceInfo.renderPass = (depthTestEnabled || stencilTestEnabled) ? getRenderPass(1) : getRenderPass(0);
@@ -909,6 +910,18 @@ namespace odfaeg {
                     throw core::Erreur(0, "failed to begin recording command buffer!", 1);
                 }
                 secondaryCommandsOnRecordedState[getCurrentFrame()] = true;
+            }
+        }
+        void RenderTarget::endRecordSecondaryCommandBuffers() {
+            if (vkEndCommandBuffer(getSecondaryCommandBuffers()[getCurrentFrame()]) != VK_SUCCESS) {
+                throw core::Erreur(0, "failed to record command buffer!", 1);
+            }
+            secondaryCommandsOnRecordedState[getCurrentFrame()] = false;
+        }
+        void RenderTarget::executeSecondaryCommandBuffers() {
+            if (useSecondaryCmds) {
+                vkCmdExecuteCommands(getCommandBuffers()[getCurrentFrame()], 1, &getSecondaryCommandBuffers()[getCurrentFrame()]);
+                useSecondaryCmds = false;
             }
         }
         void RenderTarget::beginRenderPass() {
