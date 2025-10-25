@@ -286,7 +286,7 @@ class RCM {
 };
 int main(int argc, char *argv[]) {
 
-    VkSettup instance;
+    /*VkSettup instance;
     Device device(instance);
 
     RenderWindow window(VideoMode(800, 600), "test", device, Style::Default, ContextSettings(0, 0, 4, 4, 6));
@@ -299,7 +299,7 @@ int main(int argc, char *argv[]) {
     window.setSize(Vector2u(640, 480));
     window.setVerticalSyncEnabled(true);
     window.setFramerateLimit(30);*/
-    while(window.isOpen()) {
+    /*while(window.isOpen()) {
         window.clear(Color::Black);
         window.beginRenderPass();
         window.draw(sprite);
@@ -314,13 +314,13 @@ int main(int argc, char *argv[]) {
                 window.close();
         }
 
-    }
+    }*/
 
 
 
 
-    /*MyAppli app(VideoMode(800, 600), "Test odfaeg");
-    return app.exec();*/
+    MyAppli app(VideoMode(800, 600), "Test odfaeg");
+    return app.exec();
 }
 
 

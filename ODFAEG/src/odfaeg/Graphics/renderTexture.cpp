@@ -411,10 +411,7 @@ namespace odfaeg
                          std::vector<uint64_t> waitValues) {
             if (getCommandBuffers().size() > 0) {
                 ////////std::cout<<"render texture end command buffer"<<std::endl;
-                if (useSecondaryCmds) {
-                    vkCmdExecuteCommands(getCommandBuffers()[currentFrame], 1, &getSecondaryCommandBuffers()[currentFrame]);
-                    useSecondaryCmds = false;
-                }
+
                 if (vkEndCommandBuffer(getCommandBuffers()[currentFrame]) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to record command buffer!", 1);
                 }
