@@ -59,6 +59,7 @@ namespace odfaeg {
             void updateStagingBuffers();
             Vertex& operator [](unsigned int index);
             void draw(RenderTarget& target, RenderStates states);
+            void cleanup();
             ~VertexBuffer();
         private :
             VertexBuffer(const VertexBuffer& vb);

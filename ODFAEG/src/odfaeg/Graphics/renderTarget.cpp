@@ -96,6 +96,7 @@ namespace odfaeg {
             m_defaultView.reset(physic::BoundingBox(0, 0, -static_cast<float>(getSize().y()) - 200,static_cast<float>(getSize().x()), static_cast<float>(getSize().y()),static_cast<float>(getSize().y())+200));
             m_view = m_defaultView;
             const std::string defaultVertexShader = R"(#version 450
+                                                       #extension GL_EXT_debug_printf : enable
                                                         layout(binding = 0) uniform UniformBufferObject {
                                                             mat4 model;
                                                             mat4 view;
@@ -118,6 +119,7 @@ namespace odfaeg {
                                                             fragColor = inColor;
                                                             fragTexCoord = (vec4(inTexCoord.xy, 0, 1) * ubo.textureMatrix).xy;
                                                             normal = normals;
+                                                            //debugPrintfEXT("position : %v4f", gl_Position);
                                                         }
                                                         )";
              const std::string defaultFragmentShader = R"(#version 450
@@ -130,7 +132,7 @@ namespace odfaeg {
                                                           layout(location = 0) out vec4 outColor;
                                                           void main() {
                                                              outColor = texture(texSampler, fragTexCoord) * fragColor;
-                                                             //debugPrintfEXT("out color : %v4f", outColor);
+
                                                           })";
              const std::string defaultFragmentShader2 = R"(#version 450
                                                           #extension GL_ARB_separate_shader_objects : enable
@@ -154,6 +156,14 @@ namespace odfaeg {
              createCommandBuffers();
              createUniformBuffers();
              VertexBuffer vb(vkDevice);
+             vb.append(Vertex(math::Vec3f(0, 0, 0)));
+             vb.addIndex(0);
+             vb.addIndex(0);
+             vb.addIndex(0);
+             vb.addIndex(0);
+             vb.addIndex(0);
+             vb.addIndex(0);
+             vb.update();
              vertexBuffer.push_back(std::move(vb));
 
 
@@ -269,20 +279,17 @@ namespace odfaeg {
              vertexBuffer[0].clear();
              for (unsigned int i = 0; i < vertexCount; i++) {
                 vertexBuffer[0].append(vertices[i]);
-                ////////std::cout<<"vertex : "<<vertices[i].position.x<<std::endl;
+
              }
-             PrimitiveType oldType;
              if (type == Quads) {
-                for (unsigned int i = 0; i < vertexBuffer[0].getSize(); i+=4) {
-                    vertexBuffer[0].addIndex(i);
-                    vertexBuffer[0].addIndex(i+1);
-                    vertexBuffer[0].addIndex(i+2);
-                    vertexBuffer[0].addIndex(i);
-                    vertexBuffer[0].addIndex(i+2);
-                    vertexBuffer[0].addIndex(i+3);
-                }
+                vertexBuffer[0].clearIndexes();
+                vertexBuffer[0].addIndex(0);
+                vertexBuffer[0].addIndex(1);
+                vertexBuffer[0].addIndex(2);
+                vertexBuffer[0].addIndex(0);
+                vertexBuffer[0].addIndex(2);
+                vertexBuffer[0].addIndex(3);
                 type = Triangles;
-                oldType = Quads;
              }
              vertexBuffer[0].setPrimitiveType(type);
              if (states.shader == nullptr) {
@@ -308,8 +315,6 @@ namespace odfaeg {
                 recordCommandBuffers(secondaryCommandBuffers[getCurrentFrame()], vertexBuffer[0], states);
              else if(commandsOnRecordedState[getCurrentFrame()])
                 recordCommandBuffers(commandBuffers[getCurrentFrame()], vertexBuffer[0], states);
-             if (oldType == Quads)
-                vertexBuffer[0].clearIndexes();
              ////std::cout<<"drawn"<<std::endl;
 
 
@@ -979,6 +984,7 @@ namespace odfaeg {
                 system("PAUSE");*/
                 vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vb.getPrimitiveType()][0][states.blendMode.id]);
                 ////////std::cout<<"buffer : "<<this->vertexBuffers[selectedBuffer]->getVertexBuffer()<<std::endl;
+
                 VkBuffer vertexBuffers[] = {vb.getVertexBuffer()};
                 VkDeviceSize offsets[] = {0};
                 vkCmdBindVertexBuffers(cmd, 0, 1, vertexBuffers, offsets);
@@ -1012,7 +1018,7 @@ namespace odfaeg {
                     descriptorWrites[1].pImageInfo = &imageInfo;
 
                     vkCmdPushDescriptorSetKHR(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vb.getPrimitiveType()][0][states.blendMode.id], 0, 2, descriptorWrites.data());
-                }  else {
+                }  else if (states.shader == &defaultShader2) {
                     std::array<VkWriteDescriptorSet, 1> descriptorWrites{};
 
                     descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -1024,6 +1030,9 @@ namespace odfaeg {
                     descriptorWrites[0].pBufferInfo = &bufferInfo;
 
                     vkCmdPushDescriptorSetKHR(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vb.getPrimitiveType()][0][states.blendMode.id], 0, 1, descriptorWrites.data());
+                } else {
+                    unsigned int descriptorId = shader->getId();
+                    vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vb.getPrimitiveType()][id][states.blendMode.id], 0, 1, &descriptorSets[descriptorId][getCurrentFrame()], 0, nullptr);
                 }
                 applyViewportAndScissor(cmd);
 

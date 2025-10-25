@@ -294,22 +294,11 @@ int main(int argc, char *argv[]) {
     Texture texture(device);
     texture.loadFromFile("tilesets/eau.png");
     Sprite sprite(texture, Vec3f(0, 0, 0), Vec3f(100, 50, 0), IntRect(0, 0, 100, 50));
-
-    RenderTexture rt(device);
-    rt.create(800, 600);
     window.createDescriptorsAndPipelines();
-    rt.createDescriptorsAndPipelines();
-    rt.getView().move(400, 300, 0);
-    rt.clear();
-    rt.beginRenderPass();
-    rt.draw(sprite);
-    rt.endRenderPass();
-    rt.display();
-    Sprite sprite2(rt.getTexture(), Vec3f(0, 0, 0), Vec3f(800, 600, 0), IntRect(0, 0, 800, 600));
     while(window.isOpen()) {
         window.clear(Color::Black);
         window.beginRenderPass();
-        window.draw(sprite2);
+        window.draw(sprite);
         window.endRenderPass();
         window.submit(true);
         window.display();

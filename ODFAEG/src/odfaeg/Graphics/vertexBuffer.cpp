@@ -14,7 +14,11 @@ namespace odfaeg {
             VertexBuffer::VertexBuffer(window::Device& vkDevice) : vkDevice(vkDevice),
             needToUpdateVertexBuffer(false), needToUpdateIndexBuffer(false), needToUpdateVertexStagingBuffer(false),
             needToUpdateIndexStagingBuffer(false), vertexBuffer(VK_NULL_HANDLE), indexBuffer(VK_NULL_HANDLE),
-            vertexStagingBuffer(VK_NULL_HANDLE), indexStagingBuffer(VK_NULL_HANDLE), maxVerticesSize(0), maxIndexSize(0) {
+            vertexStagingBuffer(VK_NULL_HANDLE), indexStagingBuffer(VK_NULL_HANDLE),
+            vertexBufferMemory(VK_NULL_HANDLE), indexBufferMemory(VK_NULL_HANDLE),
+            vertexStagingBufferMemory(VK_NULL_HANDLE), indexStagingBufferMemory(VK_NULL_HANDLE),
+
+            maxVerticesSize(0), maxIndexSize(0) {
                 createCommandPool();
             }
             /*VertexBuffer::VertexBuffer(const VertexBuffer& vb) : vkDevice(vb.vkDevice) {
@@ -25,18 +29,37 @@ namespace odfaeg {
                 needToUpdateIndexBuffer = (indices.size() > 0) ? true : false;
                 update();
             }*/
-            VertexBuffer::VertexBuffer(VertexBuffer&& vb) : vkDevice(vb.vkDevice)
-            , vertexBuffer(std::exchange(vb.vertexBuffer, VK_NULL_HANDLE))
-            , indexBuffer(std::exchange(vb.indexBuffer, VK_NULL_HANDLE))
-            , m_vertices(std::move(vb.m_vertices))
-            , indices(std::move(vb.indices))
-            , needToUpdateVertexBuffer((m_vertices.size() > 0) ? true : false)
-            , needToUpdateIndexBuffer((indices.size() > 0) ? true : false)
-            , needToUpdateVertexStagingBuffer((m_vertices.size() > 0) ? true : false)
-            , needToUpdateIndexStagingBuffer((indices.size() > 0) ? true : false)
-             {
+            VertexBuffer::VertexBuffer(VertexBuffer&& vb) :
+            vkDevice(vb.vkDevice)
+            {
+
+                // Transfert des ressources
                 createCommandPool();
-                update();
+
+
+
+                m_vertices = std::move(vb.m_vertices);
+                indices = std::move(vb.indices);
+
+                needToUpdateIndexBuffer = !indices.empty();
+                needToUpdateVertexBuffer = !m_vertices.empty();
+                needToUpdateIndexStagingBuffer = !indices.empty();
+                needToUpdateVertexStagingBuffer = !m_vertices.empty();
+
+
+                vertexBuffer = std::exchange(vb.vertexBuffer, VK_NULL_HANDLE);
+                indexBuffer = std::exchange(vb.indexBuffer, VK_NULL_HANDLE);
+                vertexBufferMemory = std::exchange(vb.vertexBufferMemory, VK_NULL_HANDLE);
+                indexBufferMemory = std::exchange(vb.indexBufferMemory, VK_NULL_HANDLE);
+                vertexStagingBuffer = std::exchange(vb.vertexStagingBuffer, VK_NULL_HANDLE);
+                vertexStagingBufferMemory = std::exchange(vb.vertexStagingBufferMemory, VK_NULL_HANDLE);
+                indexStagingBuffer = std::exchange(vb.indexStagingBuffer, VK_NULL_HANDLE);
+                indexStagingBufferMemory = std::exchange(vb.indexStagingBufferMemory, VK_NULL_HANDLE);
+
+                maxVerticesSize = vb.maxVerticesSize;
+                maxIndexSize = vb.maxIndexSize;
+
+
             }
             /*VertexBuffer& VertexBuffer::operator=(const VertexBuffer& vb) {
                 commandPool = vb.commandPool;
@@ -49,16 +72,33 @@ namespace odfaeg {
             }*/
             VertexBuffer& VertexBuffer::operator=(VertexBuffer&& vb) {
 
-                commandPool = vb.commandPool;
-                m_vertices = std::move(vb.m_vertices);
-                indices = std::move(vb.indices);
-                vertexBuffer = std::exchange(vertexBuffer, VK_NULL_HANDLE);
-                indexBuffer = std::exchange(indexBuffer, VK_NULL_HANDLE);
-                needToUpdateIndexBuffer = std::move(vb.needToUpdateVertexBuffer);
-                needToUpdateVertexBuffer = std::move(vb.needToUpdateVertexBuffer);
-                needToUpdateIndexStagingBuffer = std::move(vb.needToUpdateIndexStagingBuffer);
-                needToUpdateVertexStagingBuffer = std::move(vb.needToUpdateVertexStagingBuffer);
-                update();
+                if (this != &vb) {
+                    // Libérer les ressources actuelles si nécessaire
+                    cleanup(); // méthode qui détruit vertexBuffer, indexBuffer, etc.
+
+                    // Transfert des ressources
+                    commandPool = vb.commandPool;
+
+                    vertexBuffer = std::exchange(vb.vertexBuffer, VK_NULL_HANDLE);
+                    indexBuffer = std::exchange(vb.indexBuffer, VK_NULL_HANDLE);
+                    vertexBufferMemory = std::exchange(vb.vertexBufferMemory, VK_NULL_HANDLE);
+                    indexBufferMemory = std::exchange(vb.indexBufferMemory, VK_NULL_HANDLE);
+                    vertexStagingBuffer = std::exchange(vb.vertexStagingBuffer, VK_NULL_HANDLE);
+                    vertexStagingBufferMemory = std::exchange(vb.vertexStagingBufferMemory, VK_NULL_HANDLE);
+                    indexStagingBuffer = std::exchange(vb.indexStagingBuffer, VK_NULL_HANDLE);
+                    indexStagingBufferMemory = std::exchange(vb.indexStagingBufferMemory, VK_NULL_HANDLE);
+
+                    m_vertices = std::move(vb.m_vertices);
+                    indices = std::move(vb.indices);
+
+                    needToUpdateIndexBuffer = !indices.empty();
+                    needToUpdateVertexBuffer = !m_vertices.empty();
+                    needToUpdateIndexStagingBuffer = !indices.empty();
+                    needToUpdateVertexStagingBuffer = !m_vertices.empty();
+
+                    update(); // maintenant que les ressources sont valides
+                }
+
                 return *this;
             }
             void VertexBuffer::clear() {
@@ -270,9 +310,9 @@ namespace odfaeg {
             }
             void VertexBuffer::update() {
 
-
+                VkDeviceSize bufferSize = sizeof(Vertex) * m_vertices.size();
                 if (needToUpdateVertexBuffer) {
-                    VkDeviceSize bufferSize = sizeof(Vertex) * m_vertices.size();
+
                     if (bufferSize > maxVerticesSize) {
                         if (vertexBuffer != VK_NULL_HANDLE) {
                             vkDestroyBuffer(vkDevice.getDevice(), vertexBuffer, nullptr);
@@ -286,20 +326,20 @@ namespace odfaeg {
                         createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
                         maxVerticesSize = bufferSize;
                     }
-                    if (vertexStagingBufferMemory != VK_NULL_HANDLE && bufferSize > 0) {
-                        void* data;
-                        vkMapMemory(vkDevice.getDevice(), vertexStagingBufferMemory, 0, bufferSize, 0, &data);
-                            memcpy(data, m_vertices.data(), (size_t) bufferSize);
-                        vkUnmapMemory(vkDevice.getDevice(), vertexStagingBufferMemory);
-                    }
-                    copyBuffer(vertexStagingBuffer, vertexBuffer, bufferSize);
-
-
                     needToUpdateVertexBuffer = false;
                     ////////std::cout<<"vertex buffer : "<<indexBuffer<<std::endl;
                 }
+                if (vertexStagingBuffer != VK_NULL_HANDLE && bufferSize > 0) {
+                    std::cout<<"update"<<std::endl;
+                    void* data;
+                    vkMapMemory(vkDevice.getDevice(), vertexStagingBufferMemory, 0, bufferSize, 0, &data);
+                        memcpy(data, m_vertices.data(), (size_t) bufferSize);
+                    vkUnmapMemory(vkDevice.getDevice(), vertexStagingBufferMemory);
+                }
+                copyBuffer(vertexStagingBuffer, vertexBuffer, bufferSize);
+                bufferSize = sizeof(indices[0]) * indices.size();
                 if (needToUpdateIndexBuffer) {
-                    VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
+
                     if (bufferSize > maxIndexSize) {
                         if (indexBuffer != VK_NULL_HANDLE) {
                             vkDestroyBuffer(vkDevice.getDevice(), indexBuffer, nullptr);
@@ -313,20 +353,16 @@ namespace odfaeg {
                         createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
                         maxIndexSize = bufferSize;
                     }
-                    if (indexStagingBuffer != VK_NULL_HANDLE && bufferSize > 0) {
-                        void* data;
-                        vkMapMemory(vkDevice.getDevice(), indexStagingBufferMemory, 0, bufferSize, 0, &data);
-                        memcpy(data, indices.data(), (size_t) bufferSize);
-                        vkUnmapMemory(vkDevice.getDevice(), indexStagingBufferMemory);
-                    }
-
-                    copyBuffer(indexStagingBuffer, indexBuffer, bufferSize);
-
-
                     needToUpdateIndexBuffer  = false;
                     ////////std::cout<<"index buffer : "<<indexBuffer<<std::endl;
                 }
-
+                if (indexStagingBuffer != VK_NULL_HANDLE && bufferSize > 0) {
+                    void* data;
+                    vkMapMemory(vkDevice.getDevice(), indexStagingBufferMemory, 0, bufferSize, 0, &data);
+                    memcpy(data, indices.data(), (size_t) bufferSize);
+                    vkUnmapMemory(vkDevice.getDevice(), indexStagingBufferMemory);
+                }
+                copyBuffer(indexStagingBuffer, indexBuffer, bufferSize);
             }
             Vertex& VertexBuffer::operator [](unsigned int index)
             {
@@ -347,7 +383,7 @@ namespace odfaeg {
             void VertexBuffer::draw(RenderTarget& target, RenderStates states) {
                 target.drawVertexBuffer(*this, states);
             }
-            VertexBuffer::~VertexBuffer() {
+            void VertexBuffer::cleanup() {
                 vkDestroyCommandPool(vkDevice.getDevice(), commandPool, nullptr);
                 if (vertexBuffer != VK_NULL_HANDLE) {
                     vkDestroyBuffer(vkDevice.getDevice(), vertexBuffer, nullptr);
@@ -361,6 +397,9 @@ namespace odfaeg {
                     vkDestroyBuffer(vkDevice.getDevice(), indexStagingBuffer, nullptr);
                     vkFreeMemory(vkDevice.getDevice(), indexStagingBufferMemory, nullptr);
                 }
+            }
+            VertexBuffer::~VertexBuffer() {
+                cleanup();
             }
         #else
         ////////////////////////////////////////////////////////////
