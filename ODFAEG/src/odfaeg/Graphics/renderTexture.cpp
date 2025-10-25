@@ -402,9 +402,6 @@ namespace odfaeg
         uint32_t RenderTexture::getImageIndex() {
             return imageIndex;
         }
-        void RenderTexture::endRenderPass() {
-            vkCmdEndRenderPass(getCommandBuffers()[getCurrentFrame()]);
-        }
         void RenderTexture::display(std::vector<VkSemaphore> signalSemaphores,
                          std::vector<VkSemaphore> waitSemaphores, std::vector<VkPipelineStageFlags> waitStages,
                          std::vector<uint64_t> signalValues,

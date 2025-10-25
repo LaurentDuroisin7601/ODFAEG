@@ -4018,12 +4018,12 @@ namespace odfaeg {
                 window.setSemaphore(renderFinishedSemaphore);*/
             const_cast<Texture&>(lightMap.getTexture()).toShaderReadOnlyOptimal(window.getCommandBuffers()[window.getCurrentFrame()]);
             lightMapTile.setCenter(target.getView().getPosition());
-            if (&target == &window)
-                window.beginRenderPass();
+            /*if (&target == &window)
+                window.beginRenderPass();*/
             states.blendMode = BlendMultiply;
             target.draw(lightMapTile, states);
-            if (&target == &window)
-                window.endRenderPass();
+            /*if (&target == &window)
+                window.endRenderPass();*/
             /*std::vector<VkSemaphore> signalSemaphores, waitSemaphores;
             std::vector<VkPipelineStageFlags> waitStages;
             std::vector<uint64_t> signalValues, waitValues;

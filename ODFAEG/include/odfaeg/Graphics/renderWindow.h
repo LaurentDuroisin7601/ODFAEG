@@ -64,7 +64,6 @@ namespace odfaeg
                         std::vector<VkSemaphore> waitSemaphores = std::vector<VkSemaphore>(), std::vector<VkPipelineStageFlags> waitStages = std::vector<VkPipelineStageFlags>(),
                         std::vector<uint64_t> signalValues = std::vector<uint64_t>(),
                         std::vector<uint64_t> waitValues = std::vector<uint64_t>());
-            void endRenderPass();
             VkFormat getSwapchainImageFormat();
             std::vector<VkImage> getSwapchainImages();
 

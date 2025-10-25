@@ -301,9 +301,7 @@ int main(int argc, char *argv[]) {
     window.setFramerateLimit(30);*/
     /*while(window.isOpen()) {
         window.clear(Color::Black);
-        window.beginRenderPass();
         window.draw(sprite);
-        window.endRenderPass();
         window.submit(true);
         window.display();
         odfaeg::window::IEvent event;

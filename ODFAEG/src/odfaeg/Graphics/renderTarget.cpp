@@ -303,12 +303,20 @@ namespace odfaeg {
                     states.shader = &defaultShader2;
                 }
              }
-             vertexBuffer[0].update();
+             if (secondaryCommandsOnRecordedState[getCurrentFrame()])
+                vertexBuffer[0].update(secondaryCommandBuffers[getCurrentFrame()]);
+             else if(commandsOnRecordedState[getCurrentFrame()])
+                vertexBuffer[0].update(commandBuffers[getCurrentFrame()]);
+             vertexBuffer[0].updateStagingBuffers();
+             if (!useSecondaryCmds)
+                beginRenderPass();
 
              if (secondaryCommandsOnRecordedState[getCurrentFrame()])
                 recordCommandBuffers(secondaryCommandBuffers[getCurrentFrame()], vertexBuffer[0], states);
              else if(commandsOnRecordedState[getCurrentFrame()])
                 recordCommandBuffers(commandBuffers[getCurrentFrame()], vertexBuffer[0], states);
+             if (!useSecondaryCmds)
+                endRenderPass();
              ////std::cout<<"drawn"<<std::endl;
 
 
@@ -940,6 +948,9 @@ namespace odfaeg {
 
 
             vkCmdBeginRenderPass(getCommandBuffers()[getCurrentFrame()], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE_AND_SECONDARY_COMMAND_BUFFERS_KHR);
+        }
+        void RenderTarget::endRenderPass() {
+            vkCmdEndRenderPass(getCommandBuffers()[getCurrentFrame()]);
         }
         void RenderTarget::applyViewportAndScissor(VkCommandBuffer cmd) {
             VkViewport viewport{};

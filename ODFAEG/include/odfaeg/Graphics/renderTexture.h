@@ -106,7 +106,6 @@ namespace odfaeg {
                 }
             #endif
             }*/
-            void endRenderPass();
             ~RenderTexture();
         private :
             void createSyncObjects();

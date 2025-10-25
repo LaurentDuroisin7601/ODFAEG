@@ -3076,12 +3076,12 @@ namespace odfaeg {
                     window.setSemaphore(renderFinishedSemaphore);**/
                 const_cast<Texture&>(shadowMap.getTexture()).toShaderReadOnlyOptimal(window.getCommandBuffers()[window.getCurrentFrame()]);
                 shadowTile.setCenter(target.getView().getPosition());
-                if (&target == &window)
-                    window.beginRenderPass();
+                /*if (&target == &window)
+                    window.beginRenderPass();*/
                 states.blendMode = BlendMultiply;
                 target.draw(shadowTile, states);
-                if (&target == &window)
-                    window.endRenderPass();
+                /*if (&target == &window)
+                    window.endRenderPass();*/
                 /*std::vector<VkSemaphore> waitSemaphores, signalSemaphores;
                 std::vector<VkPipelineStageFlags> waitStages;
                 std::vector<uint64_t> waitValues, signalValues;

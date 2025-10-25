@@ -394,9 +394,6 @@ namespace odfaeg {
                 }*/
              //}
         }
-        void RenderWindow::endRenderPass() {
-            vkCmdEndRenderPass(getCommandBuffers()[getCurrentFrame()]);
-        }
         uint32_t RenderWindow::getImageIndex() {
             return imageIndex;
         }

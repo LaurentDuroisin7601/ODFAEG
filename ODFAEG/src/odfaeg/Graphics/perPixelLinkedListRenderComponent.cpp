@@ -4972,15 +4972,15 @@ namespace odfaeg {
             frameBufferSprite.setCenter(target.getView().getPosition());
             ////////std::cout<<"view position : "<<view.getPosition()<<std::endl;
             ////////std::cout<<"sprite position : "<<frameBufferSprite.getCenter()<<std::endl;
-            if (&target == &window)
-                window.beginRenderPass();
+            /*if (&target == &window)
+                window.beginRenderPass();*/
             states.blendMode = BlendAlpha;
             states.blendMode.updateIds();
             //////std::cout<<"blend mode : "<<states.blendMode.colorSrcFactor<<std::endl;
 
             target.draw(frameBufferSprite, states);
-            if (&target == &window)
-                window.endRenderPass();
+            /*if (&target == &window)
+                window.endRenderPass();*/
             std::vector<VkSemaphore> waitSemaphores, signalSemaphores;
             std::vector<VkPipelineStageFlags> waitStages;
             std::vector<uint64_t> waitValues, signalValues;

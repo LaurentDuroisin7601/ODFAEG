@@ -7480,12 +7480,12 @@ namespace odfaeg {
                     window.setSemaphore(renderFinishedSemaphore);*/
                 const_cast<Texture&>(reflectRefractTex.getTexture()).toShaderReadOnlyOptimal(window.getCommandBuffers()[window.getCurrentFrame()]);
                 reflectRefractTexSprite.setCenter(target.getView().getPosition());
-                if (&target == &window)
-                    window.beginRenderPass();
+                /*if (&target == &window)
+                    window.beginRenderPass();*/
                 states.blendMode = BlendAlpha;
                 target.draw(reflectRefractTexSprite, states);
-                if (&target == &window)
-                    window.endRenderPass();
+                /*if (&target == &window)
+                    window.endRenderPass();*/
                 std::vector<VkSemaphore> signalSemaphores;
                 std::vector<VkSemaphore> waitSemaphores;
                 std::vector<VkPipelineStageFlags> waitStages;

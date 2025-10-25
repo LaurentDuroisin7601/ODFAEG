@@ -244,6 +244,7 @@ namespace odfaeg {
             virtual const int getMaxFramesInFlight() = 0;
             ViewportMatrix getViewportMatrix(View* view);
             void setUsePushDescriptorSets(bool pushDescriptorSetEnable);
+            void endRenderPass();
 
         protected :
 
