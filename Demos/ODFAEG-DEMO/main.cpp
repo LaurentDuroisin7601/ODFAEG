@@ -286,7 +286,7 @@ class RCM {
 };
 int main(int argc, char *argv[]) {
 
-    /*VkSettup instance;
+    VkSettup instance;
     Device device(instance);
 
     RenderWindow window(VideoMode(800, 600), "test", device, Style::Default, ContextSettings(0, 0, 4, 4, 6));
@@ -295,6 +295,10 @@ int main(int argc, char *argv[]) {
     texture.loadFromFile("tilesets/eau.png");
     Sprite sprite(texture, Vec3f(0, 0, 0), Vec3f(100, 50, 0), IntRect(0, 0, 100, 50));
     window.createDescriptorsAndPipelines();
+    /*window.setPosition(Vector2i(10, 50));
+    window.setSize(Vector2u(640, 480));
+    window.setVerticalSyncEnabled(true);
+    window.setFramerateLimit(30);*/
     while(window.isOpen()) {
         window.clear(Color::Black);
         window.beginRenderPass();
@@ -302,13 +306,21 @@ int main(int argc, char *argv[]) {
         window.endRenderPass();
         window.submit(true);
         window.display();
-    }*/
+        odfaeg::window::IEvent event;
+        while (window.pollEvent(event))
+        {
+            // évènement "fermeture demandée" : on ferme la fenêtre
+            if (event.type == IEvent::WINDOW_EVENT && event.window.type == IEvent::WINDOW_EVENT_CLOSED)
+                window.close();
+        }
+
+    }
 
 
 
 
-    MyAppli app(VideoMode(800, 600), "Test odfaeg");
-    return app.exec();
+    /*MyAppli app(VideoMode(800, 600), "Test odfaeg");
+    return app.exec();*/
 }
 
 

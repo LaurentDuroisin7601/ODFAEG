@@ -22,6 +22,7 @@ namespace odfaeg {
             create(handle, settings);
         }
         void RenderWindow::cleanup() {
+            vkDeviceWaitIdle(vkDevice.getDevice());
             cleanupSwapchain();
             for (unsigned int i = 0; i < renderPasses.size(); i++) {
                 vkDestroyRenderPass(vkDevice.getDevice(), renderPasses[i], nullptr);

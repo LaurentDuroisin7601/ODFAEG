@@ -166,6 +166,7 @@ namespace odfaeg {
         }
         void Win32Window::create(WindowHandle handle, const ContextSettings& settings) {
             // Set that this process is DPI aware and can handle DPI scaling
+            m_handle = (HWND) handle;
             setProcessDpiAware();
 
             if (m_handle)
