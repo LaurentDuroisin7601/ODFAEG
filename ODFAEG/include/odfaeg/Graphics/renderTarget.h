@@ -241,6 +241,7 @@ namespace odfaeg {
             std::string m_name;
             virtual const int getMaxFramesInFlight() = 0;
             ViewportMatrix getViewportMatrix(View* view);
+            void setUsePushDescriptorSets(bool pushDescriptorSetEnable);
 
         protected :
 
@@ -305,6 +306,7 @@ namespace odfaeg {
             unsigned int id;
             static unsigned int nbRenderTargets;
             Texture* depthTexture;
+            bool usePushDescriptorSets;
         };
         #else
         ////////////////////////////////////////////////////////////

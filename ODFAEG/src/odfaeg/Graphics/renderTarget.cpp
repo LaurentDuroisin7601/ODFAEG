@@ -76,12 +76,16 @@ namespace odfaeg {
         unsigned int RenderTarget::nbRenderTargets = 0;
 
         RenderTarget::RenderTarget(window::Device& vkDevice) : vkDevice(vkDevice), defaultShader(vkDevice), defaultShader2(vkDevice),
-        m_defaultView(), m_view(), id(nbRenderTargets), depthTestEnabled(false), stencilTestEnabled(false), depthTexture(nullptr) {
+        m_defaultView(), m_view(), id(nbRenderTargets), depthTestEnabled(false), stencilTestEnabled(false), depthTexture(nullptr),
+        usePushDescriptorSets(true) {
             nbRenderTargets++;
         }
         RenderTarget::~RenderTarget() {
             nbRenderTargets--;
             cleanup();
+        }
+        void RenderTarget::setUsePushDescriptorSets(bool pushDescriptorSetEnable) {
+            usePushDescriptorSets = pushDescriptorSetEnable;
         }
         void RenderTarget::enableDepthTest(bool enabled) {
             depthTestEnabled = enabled;
@@ -300,17 +304,7 @@ namespace odfaeg {
                 }
              }
              vertexBuffer[0].update();
-             UniformBufferObject ubo;
-             ubo.proj = toVulkanMatrix(m_view.getProjMatrix().getMatrix())/*.transpose()*/;
-             //ubo.proj.m22 *= -1;
-             ubo.view = toVulkanMatrix(m_view.getViewMatrix().getMatrix())/*.transpose()*/;
-             ubo.model = toVulkanMatrix(states.transform.getMatrix())/*.transpose()*/;
-             if (states.texture != nullptr)
-                ubo.textureMatrix = toVulkanMatrix(states.texture->getTextureMatrix());
-             else
-                ubo.textureMatrix = toVulkanMatrix(math::Matrix4f());
 
-             updateUniformBuffer(getCurrentFrame(), ubo);
              if (secondaryCommandsOnRecordedState[getCurrentFrame()])
                 recordCommandBuffers(secondaryCommandBuffers[getCurrentFrame()], vertexBuffer[0], states);
              else if(commandsOnRecordedState[getCurrentFrame()])
@@ -328,16 +322,6 @@ namespace odfaeg {
                     states.shader = &defaultShader2;
                 }
              }
-             UniformBufferObject ubo;
-             ubo.proj = toVulkanMatrix(m_view.getProjMatrix().getMatrix())/*.transpose()*/;
-             //ubo.proj.m22 *= -1;
-             ubo.view = toVulkanMatrix(m_view.getViewMatrix().getMatrix())/*.transpose()*/;
-             ubo.model = toVulkanMatrix(states.transform.getMatrix())/*.transpose()*/;
-             if (states.texture != nullptr)
-                ubo.textureMatrix = toVulkanMatrix(states.texture->getTextureMatrix());
-             else
-                ubo.textureMatrix = toVulkanMatrix(math::Matrix4f());
-             updateUniformBuffer(getCurrentFrame(), ubo);
              if (secondaryCommandsOnRecordedState[getCurrentFrame()])
                 recordCommandBuffers(secondaryCommandBuffers[getCurrentFrame()], vb, states);
              else if(commandsOnRecordedState[getCurrentFrame()])
@@ -988,48 +972,61 @@ namespace odfaeg {
                 VkBuffer vertexBuffers[] = {vb.getVertexBuffer()};
                 VkDeviceSize offsets[] = {0};
                 vkCmdBindVertexBuffers(cmd, 0, 1, vertexBuffers, offsets);
-                VkDescriptorBufferInfo bufferInfo{};
-                bufferInfo.buffer = uniformBuffers[getCurrentFrame()];
-                bufferInfo.offset = 0;
-                bufferInfo.range = sizeof(UniformBufferObject);
-                if (states.shader == &defaultShader) {
-                    VkDescriptorImageInfo imageInfo{};
-                    imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                    imageInfo.imageView = const_cast<Texture*>(states.texture)->getImageView();
-                    imageInfo.sampler = const_cast<Texture*>(states.texture)->getSampler();
-                    std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
+                if (usePushDescriptorSets) {
+                    UniformBufferObject ubo;
+                    ubo.proj = toVulkanMatrix(m_view.getProjMatrix().getMatrix())/*.transpose()*/;
+                    //ubo.proj.m22 *= -1;
+                    ubo.view = toVulkanMatrix(m_view.getViewMatrix().getMatrix())/*.transpose()*/;
+                    ubo.model = toVulkanMatrix(states.transform.getMatrix())/*.transpose()*/;
+                    if (states.texture != nullptr)
+                       ubo.textureMatrix = toVulkanMatrix(states.texture->getTextureMatrix());
+                    else
+                       ubo.textureMatrix = toVulkanMatrix(math::Matrix4f());
 
-                    descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                    descriptorWrites[0].dstSet = 0;
-                    descriptorWrites[0].dstBinding = 0;
-                    descriptorWrites[0].dstArrayElement = 0;
-                    descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-                    descriptorWrites[0].descriptorCount = 1;
-                    descriptorWrites[0].pBufferInfo = &bufferInfo;
+                    updateUniformBuffer(getCurrentFrame(), ubo);
+                    VkDescriptorBufferInfo bufferInfo{};
+                    bufferInfo.buffer = uniformBuffers[getCurrentFrame()];
+                    bufferInfo.offset = 0;
+                    bufferInfo.range = sizeof(UniformBufferObject);
+                    if (states.texture != nullptr) {
+                        VkDescriptorImageInfo imageInfo{};
+                        imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                        imageInfo.imageView = const_cast<Texture*>(states.texture)->getImageView();
+                        imageInfo.sampler = const_cast<Texture*>(states.texture)->getSampler();
+                        std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
+
+                        descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                        descriptorWrites[0].dstSet = 0;
+                        descriptorWrites[0].dstBinding = 0;
+                        descriptorWrites[0].dstArrayElement = 0;
+                        descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+                        descriptorWrites[0].descriptorCount = 1;
+                        descriptorWrites[0].pBufferInfo = &bufferInfo;
 
 
 
-                    descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                    descriptorWrites[1].dstSet = 0;
-                    descriptorWrites[1].dstBinding = 1;
-                    descriptorWrites[1].dstArrayElement = 0;
-                    descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                    descriptorWrites[1].descriptorCount = 1;
-                    descriptorWrites[1].pImageInfo = &imageInfo;
+                        descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                        descriptorWrites[1].dstSet = 0;
+                        descriptorWrites[1].dstBinding = 1;
+                        descriptorWrites[1].dstArrayElement = 0;
+                        descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                        descriptorWrites[1].descriptorCount = 1;
+                        descriptorWrites[1].pImageInfo = &imageInfo;
 
-                    vkCmdPushDescriptorSetKHR(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vb.getPrimitiveType()][0][states.blendMode.id], 0, 2, descriptorWrites.data());
-                }  else if (states.shader == &defaultShader2) {
-                    std::array<VkWriteDescriptorSet, 1> descriptorWrites{};
+                        vkCmdPushDescriptorSetKHR(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vb.getPrimitiveType()][0][states.blendMode.id], 0, 2, descriptorWrites.data());
+                    }  else {
+                        std::array<VkWriteDescriptorSet, 1> descriptorWrites{};
 
-                    descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                    descriptorWrites[0].dstSet = 0;
-                    descriptorWrites[0].dstBinding = 0;
-                    descriptorWrites[0].dstArrayElement = 0;
-                    descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-                    descriptorWrites[0].descriptorCount = 1;
-                    descriptorWrites[0].pBufferInfo = &bufferInfo;
+                        descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                        descriptorWrites[0].dstSet = 0;
+                        descriptorWrites[0].dstBinding = 0;
+                        descriptorWrites[0].dstArrayElement = 0;
+                        descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+                        descriptorWrites[0].descriptorCount = 1;
+                        descriptorWrites[0].pBufferInfo = &bufferInfo;
 
-                    vkCmdPushDescriptorSetKHR(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vb.getPrimitiveType()][0][states.blendMode.id], 0, 1, descriptorWrites.data());
+                        vkCmdPushDescriptorSetKHR(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vb.getPrimitiveType()][0][states.blendMode.id], 0, 1, descriptorWrites.data());
+                    }
                 } else {
                     unsigned int descriptorId = shader->getId();
                     vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vb.getPrimitiveType()][id][states.blendMode.id], 0, 1, &descriptorSets[descriptorId][getCurrentFrame()], 0, nullptr);
