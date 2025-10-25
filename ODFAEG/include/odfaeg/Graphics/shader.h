@@ -151,6 +151,26 @@ namespace odfaeg {
             bool loadRaytracingFromMemory(const std::string& raygenShader, const std::string& raymissShader, const std::string& rayhitShader);
             bool loadFromStream(std::istream& vertexShaderStream, std::istream& fragmentShaderStream, std::istream& geometryShaderStream);
             bool loadFromMemory(const std::string& computeShaderCode);
+            template <typename T>
+            unsigned int registerPushConstant(VkPipelineLayoutCreateInfo& createInfo, VkShaderStageFlags shaderStages, std::uint32_t offset) {
+               VkPushConstantRange push_constant;
+               //this push constant range starts at the beginning
+               push_constant.offset = offset;
+               //this push constant range takes up the size of a MeshPushConstants struct
+               push_constant.size = sizeof(T);
+               //this push constant range is accessible only in the vertex shader
+               push_constant.stageFlags = shaderStages;
+
+               pushConstants.push_back(push_constant);
+
+               createInfo.pPushConstantRanges = pushConstants.data();
+               createInfo.pushConstantRangeCount = pushConstants.size();
+               return pushConstants.size() - 1;
+            }
+            template <typename T>
+            void setParameter (VkCommandBuffer cmd, VkShaderStageFlags shaderStages, unsigned int id, VkPipelineLayout pipelineLayout, unsigned int offset, T value) {
+                vkCmdPushConstants(cmd, pipelineLayout, shaderStages, offset, sizeof(T), &value);
+            }
             void createShaderModules();
             void createComputeShaderModule();
             void createRaytracingShaderModules();
@@ -178,6 +198,7 @@ namespace odfaeg {
             */
             bool operator!= (Shader& shader);
         private :
+            std::vector<VkPushConstantRange> pushConstants;
 
             ////////////////////////////////////////////////////////////
             /// \brief Compile the shader(s) and create the program
