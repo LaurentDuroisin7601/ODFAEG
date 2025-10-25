@@ -867,7 +867,7 @@ namespace odfaeg {
             commandBuffers.resize(getSwapchainImages().size());
             commandsOnRecordedState.resize(getSwapchainImages().size(), false);
             secondaryCommandBuffers.resize(getSwapchainImages().size());
-            secondaryCommandsOnRecordedState.resize(getSwapchainImages().size());
+            secondaryCommandsOnRecordedState.resize(getSwapchainImages().size(), false);
 
             VkCommandBufferAllocateInfo allocInfo{};
             allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
