@@ -330,7 +330,7 @@ namespace odfaeg {
                     ////////std::cout<<"vertex buffer : "<<indexBuffer<<std::endl;
                 }
                 if (vertexStagingBuffer != VK_NULL_HANDLE && bufferSize > 0) {
-                    std::cout<<"update"<<std::endl;
+                    //std::cout<<"update"<<std::endl;
                     void* data;
                     vkMapMemory(vkDevice.getDevice(), vertexStagingBufferMemory, 0, bufferSize, 0, &data);
                         memcpy(data, m_vertices.data(), (size_t) bufferSize);
