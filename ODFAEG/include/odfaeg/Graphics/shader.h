@@ -152,7 +152,7 @@ namespace odfaeg {
             bool loadFromStream(std::istream& vertexShaderStream, std::istream& fragmentShaderStream, std::istream& geometryShaderStream);
             bool loadFromMemory(const std::string& computeShaderCode);
             template <typename T>
-            unsigned int registerPushConstant(VkPipelineLayoutCreateInfo& createInfo, VkShaderStageFlags shaderStages, std::uint32_t offset) {
+            void registerPushConstant(VkPipelineLayoutCreateInfo& createInfo, VkShaderStageFlags shaderStages, std::uint32_t offset) {
                VkPushConstantRange push_constant;
                //this push constant range starts at the beginning
                push_constant.offset = offset;
@@ -165,10 +165,9 @@ namespace odfaeg {
 
                createInfo.pPushConstantRanges = pushConstants.data();
                createInfo.pushConstantRangeCount = pushConstants.size();
-               return pushConstants.size() - 1;
             }
             template <typename T>
-            void setParameter (VkCommandBuffer cmd, VkShaderStageFlags shaderStages, unsigned int id, VkPipelineLayout pipelineLayout, unsigned int offset, T value) {
+            void setParameter (VkCommandBuffer cmd, VkShaderStageFlags shaderStages, VkPipelineLayout pipelineLayout, unsigned int offset, T value) {
                 vkCmdPushConstants(cmd, pipelineLayout, shaderStages, offset, sizeof(T), &value);
             }
             void createShaderModules();

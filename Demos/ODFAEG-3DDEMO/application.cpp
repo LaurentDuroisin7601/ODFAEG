@@ -38,7 +38,7 @@ MyAppli::MyAppli(Vec2f size, std::string title) :
         "tilesets/skybox/front.jpg",
         "tilesets/skybox/back.jpg"
     };
-    //skybox = std::make_unique<g3d::Skybox>(faces, factory, getDevice());
+    skybox = std::make_unique<g3d::Skybox>(faces, factory, getDevice());
     m_world = std::make_unique<World>();
     setCurrentWorld(m_world.get());
 }
