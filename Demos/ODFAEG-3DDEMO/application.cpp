@@ -163,7 +163,7 @@ void MyAppli::onInit() {
     //frc->setVisible(false);
     /*ShadowRenderComponent* src = new ShadowRenderComponent(getRenderWindow(), 1, "E_MESH+E_BIGTILE",ContextSettings(24, 0, 4, 4, 6));
     src->setView(view3D);*/
-    PerPixelLinkedListRenderComponent* frc2 = new PerPixelLinkedListRenderComponent(getRenderWindow(), 0, "E_BIGTILE+E_MESH",ContextSettings(24, 8, 4, 4, 6));
+    PerPixelLinkedListRenderComponent* frc2 = new PerPixelLinkedListRenderComponent(getRenderWindow(), 0, "E_BIGTILE+E_MESH+E_CUBE",ContextSettings(24, 8, 4, 4, 6));
     //frc2->preloadEntitiesOnComponent(getWorld()->getEntities("*"), factory);
     frc2->setView(view3D);
     getRenderWindow().createDescriptorsAndPipelines();
@@ -219,7 +219,7 @@ void MyAppli::onInit() {
 void MyAppli::onRender(RenderComponentManager* frcm) {
     //getWorld()->drawOnComponents("E_CUBE", 0);
     //getWorld()->drawOnComponents("E_MESH+E_BIGTILE", 1);
-    getWorld()->drawOnComponents("E_BIGTILE+E_MESH", 0);
+    getWorld()->drawOnComponents("E_BIGTILE+E_MESH+E_CUBE", 0);
     /*getWorld()->drawOnComponents("E_CUBE+E_BIGTILE+E_MESH", 2);
     getWorld()->drawOnComponents("E_PONCTUAL_LIGHT+E_BIGTILE", 3);*/
     fpsCounter++;
