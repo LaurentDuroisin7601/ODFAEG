@@ -23,7 +23,9 @@ namespace odfaeg {
             vkDevice(window.getDevice()),
             indirectRenderingShader(window.getDevice()),
             perPixelLinkedListP2(window.getDevice()),
+            skyboxShader(window.getDevice()),
             vb(window.getDevice()),
+            skyboxVB(window.getDevice()),
             vbBindlessTex {VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice())},
             vbBindlessTexIndexed {VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice())},
             vboIndirect(nullptr) {
@@ -213,34 +215,59 @@ namespace odfaeg {
             if (vkAllocateCommandBuffers(vkDevice.getDevice(), &bufferAllocInfo, &ppllPass2CommandBuffer) != VK_SUCCESS) {
                 throw core::Erreur(0, "failed to allocate command buffers!", 1);
             }
+            if (vkAllocateCommandBuffers(vkDevice.getDevice(), &bufferAllocInfo, &skyboxCommandBuffer) != VK_SUCCESS) {
+                throw core::Erreur(0, "failed to allocate command buffers!", 1);
+            }
+            if (vkAllocateCommandBuffers(vkDevice.getDevice(), &bufferAllocInfo, &copySkyboxCommandBuffer) != VK_SUCCESS) {
+                throw core::Erreur(0, "failed to allocate command buffers!", 1);
+            }
             VkPhysicalDeviceProperties deviceProperties;
             vkGetPhysicalDeviceProperties(vkDevice.getPhysicalDevice(), &deviceProperties);
             alignment = deviceProperties.limits.minStorageBufferOffsetAlignment;
+            skyboxVB.append(Vertex(math::Vec3f(0, 0, 0)));
+            skyboxVB.update();
 
             update = true;
             datasReady = false;
             isSomethingDrawn = false;
         }
         void PerPixelLinkedListRenderComponent::createDescriptorsAndPipelines() {
-
             RenderStates states;
-            states.shader = &indirectRenderingShader;
             if (useThread) {
+                states.shader = &skyboxShader;
+                createDescriptorSetLayout(states);
+                states.shader = &perPixelLinkedListP2;
+                createDescriptorSetLayout2(states);
+                states.shader = &skyboxShader;
+                for (unsigned int p = 0; p < (Batcher::nbPrimitiveTypes - 1); p++) {
+                    createDescriptorPool(p, states);
+                    allocateDescriptorSets(p, states);
+                }
+                states.shader = &indirectRenderingShader;
                 createDescriptorSetLayout(states);
                 for (unsigned int p = 0; p < (Batcher::nbPrimitiveTypes - 1); p++) {
                     createDescriptorPool(p, states);
                     allocateDescriptorSets(p, states);
                 }
+                states.shader = &perPixelLinkedListP2;
+                for (unsigned int p = 0; p < (Batcher::nbPrimitiveTypes - 1); p++) {
+                    createDescriptorPool(p, states);
+                    allocateDescriptorSets(p, states);
+                    updateDescriptorSets(p, states);
+                }
+
             } else {
                 createDescriptorPool(states);
                 createDescriptorSetLayout(states);
                 allocateDescriptorSets(states);
+                states.shader = &perPixelLinkedListP2;
+                createDescriptorPool2(states);
+                createDescriptorSetLayout2(states);
+                allocateDescriptorSets2(states);
+                createDescriptorSets2(states);
             }
-            states.shader = &perPixelLinkedListP2;
-            createDescriptorPool2(states);
-            createDescriptorSetLayout2(states);
-            allocateDescriptorSets2(states);
-            createDescriptorSets2(states);
+
+
 
             BlendMode none = BlendNone;
             BlendMode alpha = BlendAlpha;
@@ -271,6 +298,82 @@ namespace odfaeg {
                 }
             }
             frameBuffer.enableDepthTest(true);
+            states.shader = &skyboxShader;
+            for (unsigned int b = 0; b < blendModes.size(); b++) {
+                states.blendMode = blendModes[b];
+                states.blendMode.updateIds();
+                for (unsigned int j = 0; j < PPLLNBDEPTHSTENCIL; j++) {
+                    for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
+                        if (j == 0) {
+
+                           frameBuffer.enableStencilTest(false);
+
+                           VkPushConstantRange push_constant;
+                           push_constant.offset = 0;
+                           //this push constant range takes up the size of a MeshPushConstants struct
+                           push_constant.size = sizeof(SkyboxPushConsts);
+                           //this push constant range is accessible only in the vertex shader
+                           push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+                           pipelineLayoutInfo[skyboxShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = &push_constant;
+                           pipelineLayoutInfo[skyboxShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 1;
+                           depthStencilCreateInfo[skyboxShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
+                           depthStencilCreateInfo[skyboxShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthWriteEnable = VK_FALSE;
+                           depthStencilCreateInfo[skyboxShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.failOp = VK_STENCIL_OP_KEEP;
+                           depthStencilCreateInfo[skyboxShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.depthFailOp = VK_STENCIL_OP_KEEP;
+                           depthStencilCreateInfo[skyboxShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.passOp = VK_STENCIL_OP_REPLACE;
+                           depthStencilCreateInfo[skyboxShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.compareMask = 0xff;
+                           depthStencilCreateInfo[skyboxShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.writeMask = 0xff;
+                           depthStencilCreateInfo[skyboxShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.reference = 0;
+                           depthStencilCreateInfo[skyboxShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = depthStencilCreateInfo[skyboxShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back;
+                           frameBuffer.createGraphicPipeline(static_cast<PrimitiveType>(i), states, PPLLNODEPTHNOSTENCIL, PPLLNBDEPTHSTENCIL);
+                       } else if (j == 1) {
+                           frameBuffer.enableStencilTest(true);
+
+                           depthStencilCreateInfo[skyboxShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
+                           depthStencilCreateInfo[skyboxShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthWriteEnable = VK_TRUE;
+                           depthStencilCreateInfo[skyboxShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.compareOp = VK_COMPARE_OP_ALWAYS;
+                           depthStencilCreateInfo[skyboxShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.failOp = VK_STENCIL_OP_REPLACE;
+                           depthStencilCreateInfo[skyboxShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.depthFailOp = VK_STENCIL_OP_REPLACE;
+                           depthStencilCreateInfo[skyboxShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.passOp = VK_STENCIL_OP_REPLACE;
+                           depthStencilCreateInfo[skyboxShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.compareMask = 0xff;
+                           depthStencilCreateInfo[skyboxShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.writeMask = 0xff;
+                           depthStencilCreateInfo[skyboxShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.reference = 1;
+                           depthStencilCreateInfo[skyboxShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = depthStencilCreateInfo[skyboxShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back;
+                           VkPushConstantRange push_constant;
+                           push_constant.offset = 0;
+                           //this push constant range takes up the size of a MeshPushConstants struct
+                           push_constant.size = sizeof(SkyboxPushConsts);
+                           //this push constant range is accessible only in the vertex shader
+                           push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+                           pipelineLayoutInfo[skyboxShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = &push_constant;
+                           pipelineLayoutInfo[skyboxShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 1;
+                           frameBuffer.createGraphicPipeline(static_cast<PrimitiveType>(i), states, PPLLNODEPTHSTENCIL, PPLLNBDEPTHSTENCIL);
+                        } else {
+                           frameBuffer.enableStencilTest(true);
+                           depthStencilCreateInfo[skyboxShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_LESS;;
+                           depthStencilCreateInfo[skyboxShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].depthWriteEnable = VK_FALSE;
+                           depthStencilCreateInfo[skyboxShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.compareOp = VK_COMPARE_OP_NOT_EQUAL;
+                           depthStencilCreateInfo[skyboxShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.failOp = VK_STENCIL_OP_KEEP;
+                           depthStencilCreateInfo[skyboxShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.depthFailOp = VK_STENCIL_OP_KEEP;
+                           depthStencilCreateInfo[skyboxShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.passOp = VK_STENCIL_OP_REPLACE;
+                           depthStencilCreateInfo[skyboxShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.compareMask = 0xff;
+                           depthStencilCreateInfo[skyboxShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.writeMask = 0xff;
+                           depthStencilCreateInfo[skyboxShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.reference = 1;
+                           depthStencilCreateInfo[skyboxShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].front = depthStencilCreateInfo[skyboxShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back;
+                           VkPushConstantRange push_constant;
+                           push_constant.offset = 0;
+                           //this push constant range takes up the size of a MeshPushConstants struct
+                           push_constant.size = sizeof(SkyboxPushConsts);
+                           //this push constant range is accessible only in the vertex shader
+                           push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+                           pipelineLayoutInfo[skyboxShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = &push_constant;
+                           pipelineLayoutInfo[skyboxShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 1;
+                           frameBuffer.createGraphicPipeline(static_cast<PrimitiveType>(i), states, PPLLNODEPTHSTENCILOUTLINE, PPLLNBDEPTHSTENCIL);
+                        }
+                    }
+                }
+            }
             states.shader = &indirectRenderingShader;
             for (unsigned int b = 0; b < blendModes.size(); b++) {
 
@@ -292,7 +395,7 @@ namespace odfaeg {
                            pipelineLayoutInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = &push_constant;
                            pipelineLayoutInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 1;
                            depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
-                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthWriteEnable = VK_TRUE;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthWriteEnable = VK_TRUE;
 
 
                            depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.failOp = VK_STENCIL_OP_KEEP;
@@ -308,7 +411,7 @@ namespace odfaeg {
                        } else if (j == 1) {
                            frameBuffer.enableStencilTest(true);
                            depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
-                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthWriteEnable = VK_TRUE;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthWriteEnable = VK_TRUE;
                            depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.compareOp = VK_COMPARE_OP_ALWAYS;
                            depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.failOp = VK_STENCIL_OP_REPLACE;
                            depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.depthFailOp = VK_STENCIL_OP_REPLACE;
@@ -333,7 +436,7 @@ namespace odfaeg {
                            frameBuffer.enableStencilTest(true);
 
                            depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
-                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].depthWriteEnable = VK_FALSE;
+                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].depthWriteEnable = VK_FALSE;
 
                            depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.compareOp = VK_COMPARE_OP_NOT_EQUAL;
                            depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.failOp = VK_STENCIL_OP_KEEP;
@@ -380,13 +483,13 @@ namespace odfaeg {
                            pipelineLayoutInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 1;
                            depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
                            depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthWriteEnable = VK_TRUE;
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.failOp = VK_STENCIL_OP_KEEP;
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.depthFailOp = VK_STENCIL_OP_KEEP;
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.passOp = VK_STENCIL_OP_REPLACE;
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.compareMask = 0xff;
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.writeMask = 0xff;
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.reference = 0;
-                           depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back;
+                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.failOp = VK_STENCIL_OP_KEEP;
+                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.depthFailOp = VK_STENCIL_OP_KEEP;
+                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.passOp = VK_STENCIL_OP_REPLACE;
+                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.compareMask = 0xff;
+                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.writeMask = 0xff;
+                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back.reference = 0;
+                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back;
                            frameBuffer.createGraphicPipeline(static_cast<PrimitiveType>(i), states, PPLLNODEPTHNOSTENCIL, PPLLNBDEPTHSTENCIL);
                        } else if (j == 1) {
                            frameBuffer.enableStencilTest(true);
@@ -421,7 +524,7 @@ namespace odfaeg {
                            depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.compareMask = 0xff;
                            depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.writeMask = 0xff;
                            depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back.reference = 1;
-                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].front = depthStencilCreateInfo[indirectRenderingShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back;
+                           depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].front = depthStencilCreateInfo[perPixelLinkedListP2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][PPLLNODEPTHSTENCILOUTLINE*states.blendMode.nbBlendModes+states.blendMode.id].back;
                            VkPushConstantRange push_constant;
                            push_constant.offset = 0;
                            //this push constant range takes up the size of a MeshPushConstants struct
@@ -440,6 +543,13 @@ namespace odfaeg {
             if (useThread) {
                 getListener().launch();
             }
+        }
+        void PerPixelLinkedListRenderComponent::loadSkybox(Entity* skybox) {
+            this->skybox = skybox;
+            RenderStates states;
+            states.shader = &skyboxShader;
+            for (unsigned int p = 0; p < (Batcher::nbPrimitiveTypes - 1); p++)
+                updateDescriptorSets(p, states);
         }
         uint32_t PerPixelLinkedListRenderComponent::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
             VkPhysicalDeviceMemoryProperties memProperties;
@@ -658,34 +768,77 @@ namespace odfaeg {
         void PerPixelLinkedListRenderComponent::createDescriptorPool(unsigned int p, RenderStates states) {
             std::vector<VkDescriptorPool>& descriptorPool = frameBuffer.getDescriptorPool();
             Shader* shader = const_cast<Shader*>(states.shader);
-            unsigned int descriptorId = p * shader->getNbShaders() + shader->getId();
-            if (shader->getNbShaders() * (Batcher::nbPrimitiveTypes - 1) > descriptorPool.size())
-                descriptorPool.resize(shader->getNbShaders() * (Batcher::nbPrimitiveTypes - 1));
-            std::vector<Texture*> allTextures = Texture::getAllTextures();
-            std::array<VkDescriptorPoolSize, 6> poolSizes;
-            poolSizes[0].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-            poolSizes[0].descriptorCount = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight());
-            poolSizes[1].type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-            poolSizes[1].descriptorCount = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight());
-            poolSizes[2].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-            poolSizes[2].descriptorCount = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight());
-            poolSizes[3].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
-            poolSizes[3].descriptorCount = 1;
-            poolSizes[4].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
-            poolSizes[4].descriptorCount = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight());
-            poolSizes[5].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-            poolSizes[5].descriptorCount = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight() * allTextures.size());
+            if (shader == &indirectRenderingShader) {
+                unsigned int descriptorId = p * shader->getNbShaders() + shader->getId();
+                if (shader->getNbShaders() * (Batcher::nbPrimitiveTypes - 1) > descriptorPool.size())
+                    descriptorPool.resize(shader->getNbShaders() * (Batcher::nbPrimitiveTypes - 1));
+                std::vector<Texture*> allTextures = Texture::getAllTextures();
+                std::array<VkDescriptorPoolSize, 6> poolSizes;
+                poolSizes[0].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                poolSizes[0].descriptorCount = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight());
+                poolSizes[1].type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+                poolSizes[1].descriptorCount = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight());
+                poolSizes[2].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                poolSizes[2].descriptorCount = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight());
+                poolSizes[3].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+                poolSizes[3].descriptorCount = 1;
+                poolSizes[4].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+                poolSizes[4].descriptorCount = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight());
+                poolSizes[5].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                poolSizes[5].descriptorCount = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight() * allTextures.size());
 
-            if (descriptorPool[descriptorId] != nullptr) {
-                vkDestroyDescriptorPool(vkDevice.getDevice(), descriptorPool[descriptorId], nullptr);
-            }
-            VkDescriptorPoolCreateInfo poolInfo{};
-            poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-            poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
-            poolInfo.pPoolSizes = poolSizes.data();
-            poolInfo.maxSets = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight());
-            if (vkCreateDescriptorPool(vkDevice.getDevice(), &poolInfo, nullptr, &descriptorPool[descriptorId]) != VK_SUCCESS) {
-                throw std::runtime_error("echec de la creation de la pool de descripteurs!");
+                if (descriptorPool[descriptorId] != nullptr) {
+                    vkDestroyDescriptorPool(vkDevice.getDevice(), descriptorPool[descriptorId], nullptr);
+                }
+                VkDescriptorPoolCreateInfo poolInfo{};
+                poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+                poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+                poolInfo.pPoolSizes = poolSizes.data();
+                poolInfo.maxSets = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight());
+                if (vkCreateDescriptorPool(vkDevice.getDevice(), &poolInfo, nullptr, &descriptorPool[descriptorId]) != VK_SUCCESS) {
+                    throw std::runtime_error("echec de la creation de la pool de descripteurs!");
+                }
+            } else if (shader == &perPixelLinkedListP2) {
+                if (shader->getNbShaders() * (Batcher::nbPrimitiveTypes - 1) > descriptorPool.size())
+                    descriptorPool.resize(shader->getNbShaders() * (Batcher::nbPrimitiveTypes - 1));
+                unsigned int descriptorId =  p * shader->getNbShaders() + shader->getId();
+                std::array<VkDescriptorPoolSize, 2> poolSizes{};
+                poolSizes[0].type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+                poolSizes[0].descriptorCount = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight());
+                poolSizes[1].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                poolSizes[1].descriptorCount = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight());
+
+                if (descriptorPool[descriptorId] != nullptr) {
+                    vkDestroyDescriptorPool(vkDevice.getDevice(), descriptorPool[descriptorId], nullptr);
+                }
+
+
+                VkDescriptorPoolCreateInfo poolInfo{};
+                poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+                poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+                poolInfo.pPoolSizes = poolSizes.data();
+                poolInfo.maxSets = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight());
+                if (vkCreateDescriptorPool(vkDevice.getDevice(), &poolInfo, nullptr, &descriptorPool[descriptorId]) != VK_SUCCESS) {
+                    throw std::runtime_error("echec de la creation de la pool de descripteurs!");
+                }
+            } else {
+                unsigned int descriptorId = p * shader->getNbShaders() + shader->getId();
+                if (shader->getNbShaders() * (Batcher::nbPrimitiveTypes - 1) > descriptorPool.size())
+                    descriptorPool.resize(shader->getNbShaders() * (Batcher::nbPrimitiveTypes - 1));
+                std::array<VkDescriptorPoolSize, 1> poolSizes;
+                poolSizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                poolSizes[0].descriptorCount = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight());
+                if (descriptorPool[descriptorId] != nullptr) {
+                    vkDestroyDescriptorPool(vkDevice.getDevice(), descriptorPool[descriptorId], nullptr);
+                }
+                VkDescriptorPoolCreateInfo poolInfo{};
+                poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+                poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+                poolInfo.pPoolSizes = poolSizes.data();
+                poolInfo.maxSets = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight());
+                if (vkCreateDescriptorPool(vkDevice.getDevice(), &poolInfo, nullptr, &descriptorPool[descriptorId]) != VK_SUCCESS) {
+                    throw std::runtime_error("echec de la creation de la pool de descripteurs!");
+                }
             }
         }
         void PerPixelLinkedListRenderComponent::createDescriptorPool(RenderStates states) {
@@ -725,78 +878,105 @@ namespace odfaeg {
         void PerPixelLinkedListRenderComponent::createDescriptorSetLayout(RenderStates states) {
             std::vector<VkDescriptorSetLayout>& descriptorSetLayout = frameBuffer.getDescriptorSetLayout();
             Shader* shader = const_cast<Shader*>(states.shader);
-            if (shader->getNbShaders() > descriptorSetLayout.size())
-                descriptorSetLayout.resize(shader->getNbShaders());
-            unsigned int descriptorId = shader->getId();
-            ////////std::cout<<"ppll descriptor id : "<<descriptorId<<std::endl;
-            std::vector<Texture*> allTextures = Texture::getAllTextures();
-            VkDescriptorSetLayoutBinding counterLayoutBinding{};
-            counterLayoutBinding.binding = 0;
-            counterLayoutBinding.descriptorCount = 1;
-            counterLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-            counterLayoutBinding.pImmutableSamplers = nullptr;
-            counterLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+            if (shader == &indirectRenderingShader) {
+                if (shader->getNbShaders() > descriptorSetLayout.size())
+                    descriptorSetLayout.resize(shader->getNbShaders());
+                unsigned int descriptorId = shader->getId();
+                ////////std::cout<<"ppll descriptor id : "<<descriptorId<<std::endl;
+                std::vector<Texture*> allTextures = Texture::getAllTextures();
+                VkDescriptorSetLayoutBinding counterLayoutBinding{};
+                counterLayoutBinding.binding = 0;
+                counterLayoutBinding.descriptorCount = 1;
+                counterLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                counterLayoutBinding.pImmutableSamplers = nullptr;
+                counterLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-            VkDescriptorSetLayoutBinding headPtrImageLayoutBinding;
-            headPtrImageLayoutBinding.binding = 1;
-            headPtrImageLayoutBinding.descriptorCount = 1;
-            headPtrImageLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-            headPtrImageLayoutBinding.pImmutableSamplers = nullptr;
-            headPtrImageLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+                VkDescriptorSetLayoutBinding headPtrImageLayoutBinding;
+                headPtrImageLayoutBinding.binding = 1;
+                headPtrImageLayoutBinding.descriptorCount = 1;
+                headPtrImageLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+                headPtrImageLayoutBinding.pImmutableSamplers = nullptr;
+                headPtrImageLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-            VkDescriptorSetLayoutBinding linkedListLayoutBinding{};
-            linkedListLayoutBinding.binding = 2;
-            linkedListLayoutBinding.descriptorCount = 1;
-            linkedListLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-            linkedListLayoutBinding.pImmutableSamplers = nullptr;
-            linkedListLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+                VkDescriptorSetLayoutBinding linkedListLayoutBinding{};
+                linkedListLayoutBinding.binding = 2;
+                linkedListLayoutBinding.descriptorCount = 1;
+                linkedListLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                linkedListLayoutBinding.pImmutableSamplers = nullptr;
+                linkedListLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-            std::vector<VkDescriptorBindingFlags> bindingFlags(6, 0); // 6 bindings, flags par défaut à 0
-            bindingFlags[5] = VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
-                  VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT; // seulement pour sampler[]
+                std::vector<VkDescriptorBindingFlags> bindingFlags(6, 0); // 6 bindings, flags par défaut à 0
+                bindingFlags[5] = VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
+                      VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT; // seulement pour sampler[]
 
-            VkDescriptorSetLayoutBindingFlagsCreateInfo bindingFlagsInfo{};
-            bindingFlagsInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
-            bindingFlagsInfo.bindingCount = static_cast<uint32_t>(bindingFlags.size());
-            bindingFlagsInfo.pBindingFlags = bindingFlags.data();
+                VkDescriptorSetLayoutBindingFlagsCreateInfo bindingFlagsInfo{};
+                bindingFlagsInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
+                bindingFlagsInfo.bindingCount = static_cast<uint32_t>(bindingFlags.size());
+                bindingFlagsInfo.pBindingFlags = bindingFlags.data();
 
-            VkDescriptorSetLayoutBinding modelDataLayoutBinding{};
-            modelDataLayoutBinding.binding = 3;
-            modelDataLayoutBinding.descriptorCount = 1;
-            modelDataLayoutBinding.descriptorType = (useThread) ? VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC : VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-            modelDataLayoutBinding.pImmutableSamplers = nullptr;
-            modelDataLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+                VkDescriptorSetLayoutBinding modelDataLayoutBinding{};
+                modelDataLayoutBinding.binding = 3;
+                modelDataLayoutBinding.descriptorCount = 1;
+                modelDataLayoutBinding.descriptorType = (useThread) ? VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC : VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                modelDataLayoutBinding.pImmutableSamplers = nullptr;
+                modelDataLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
-            VkDescriptorSetLayoutBinding materialDataLayoutBinding{};
-            materialDataLayoutBinding.binding = 4;
-            materialDataLayoutBinding.descriptorCount = 1;
-            materialDataLayoutBinding.descriptorType = (useThread) ? VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC : VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-            materialDataLayoutBinding.pImmutableSamplers = nullptr;
-            materialDataLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+                VkDescriptorSetLayoutBinding materialDataLayoutBinding{};
+                materialDataLayoutBinding.binding = 4;
+                materialDataLayoutBinding.descriptorCount = 1;
+                materialDataLayoutBinding.descriptorType = (useThread) ? VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC : VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                materialDataLayoutBinding.pImmutableSamplers = nullptr;
+                materialDataLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
-            VkDescriptorSetLayoutBinding samplerLayoutBinding{};
-            samplerLayoutBinding.binding = 5;
-            samplerLayoutBinding.descriptorCount = allTextures.size();
-            samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-            samplerLayoutBinding.pImmutableSamplers = nullptr;
-            samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+                VkDescriptorSetLayoutBinding samplerLayoutBinding{};
+                samplerLayoutBinding.binding = 5;
+                samplerLayoutBinding.descriptorCount = allTextures.size();
+                samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                samplerLayoutBinding.pImmutableSamplers = nullptr;
+                samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
 
 
-            if (descriptorSetLayout[descriptorId] != nullptr) {
-                vkDestroyDescriptorSetLayout(vkDevice.getDevice(), descriptorSetLayout[descriptorId], nullptr);
-            }
+                if (descriptorSetLayout[descriptorId] != nullptr) {
+                    vkDestroyDescriptorSetLayout(vkDevice.getDevice(), descriptorSetLayout[descriptorId], nullptr);
+                }
 
-            std::array<VkDescriptorSetLayoutBinding, 6> bindings = {counterLayoutBinding, headPtrImageLayoutBinding, linkedListLayoutBinding, modelDataLayoutBinding, materialDataLayoutBinding, samplerLayoutBinding};
-            VkDescriptorSetLayoutCreateInfo layoutInfo{};
-            layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-            layoutInfo.pNext = &bindingFlagsInfo;
-            //layoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR;
-            layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());;
-            layoutInfo.pBindings = bindings.data();
+                std::array<VkDescriptorSetLayoutBinding, 6> bindings = {counterLayoutBinding, headPtrImageLayoutBinding, linkedListLayoutBinding, modelDataLayoutBinding, materialDataLayoutBinding, samplerLayoutBinding};
+                VkDescriptorSetLayoutCreateInfo layoutInfo{};
+                layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+                layoutInfo.pNext = &bindingFlagsInfo;
+                //layoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR;
+                layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());;
+                layoutInfo.pBindings = bindings.data();
 
-            if (vkCreateDescriptorSetLayout(vkDevice.getDevice(), &layoutInfo, nullptr, &descriptorSetLayout[descriptorId]) != VK_SUCCESS) {
-                throw std::runtime_error("failed to create descriptor set layout!");
+                if (vkCreateDescriptorSetLayout(vkDevice.getDevice(), &layoutInfo, nullptr, &descriptorSetLayout[descriptorId]) != VK_SUCCESS) {
+                    throw std::runtime_error("failed to create descriptor set layout!");
+                }
+            } else {
+                if (shader->getNbShaders() > descriptorSetLayout.size())
+                    descriptorSetLayout.resize(shader->getNbShaders());
+                unsigned int descriptorId = shader->getId();
+                //std::cout<<"shader id : "<<descriptorId<<std::endl;
+                VkDescriptorSetLayoutBinding samplerLayoutBinding{};
+                samplerLayoutBinding.binding = 0;
+                samplerLayoutBinding.descriptorCount = 1;
+                samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                samplerLayoutBinding.pImmutableSamplers = nullptr;
+                samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+                if (descriptorSetLayout[descriptorId] != nullptr) {
+                    vkDestroyDescriptorSetLayout(vkDevice.getDevice(), descriptorSetLayout[descriptorId], nullptr);
+                }
+
+                std::array<VkDescriptorSetLayoutBinding, 1> bindings = {samplerLayoutBinding};
+                VkDescriptorSetLayoutCreateInfo layoutInfo{};
+                layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+                //layoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR;
+                layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());;
+                layoutInfo.pBindings = bindings.data();
+
+                if (vkCreateDescriptorSetLayout(vkDevice.getDevice(), &layoutInfo, nullptr, &descriptorSetLayout[descriptorId]) != VK_SUCCESS) {
+                    throw std::runtime_error("failed to create descriptor set layout!");
+                }
             }
         }
         void PerPixelLinkedListRenderComponent::allocateDescriptorSets(unsigned int p, RenderStates states) {
@@ -804,28 +984,65 @@ namespace odfaeg {
             std::vector<VkDescriptorPool>& descriptorPool = frameBuffer.getDescriptorPool();
             std::vector<VkDescriptorSetLayout>& descriptorSetLayout = frameBuffer.getDescriptorSetLayout();
             Shader* shader = const_cast<Shader*>(states.shader);
-            if (shader->getNbShaders()  * (Batcher::nbPrimitiveTypes - 1) > descriptorSets.size())
-                descriptorSets.resize(shader->getNbShaders() * (Batcher::nbPrimitiveTypes - 1));
-            unsigned int descriptorId = p * shader->getNbShaders() + shader->getId();
-            for (unsigned int i = 0; i < descriptorSets.size(); i++) {
-                descriptorSets[i].resize(frameBuffer.getMaxFramesInFlight());
-            }
-            std::vector<Texture*> allTextures = Texture::getAllTextures();
-            std::vector<uint32_t> variableCounts(frameBuffer.getMaxFramesInFlight(), static_cast<uint32_t>(allTextures.size()));
+            if (shader == &indirectRenderingShader) {
+                if (shader->getNbShaders()  * (Batcher::nbPrimitiveTypes - 1) > descriptorSets.size())
+                    descriptorSets.resize(shader->getNbShaders() * (Batcher::nbPrimitiveTypes - 1));
+                unsigned int descriptorId = p * shader->getNbShaders() + shader->getId();
 
-            VkDescriptorSetVariableDescriptorCountAllocateInfo variableCountInfo{};
-            variableCountInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO;
-            variableCountInfo.descriptorSetCount = static_cast<uint32_t>(variableCounts.size());;
-            variableCountInfo.pDescriptorCounts = variableCounts.data();
-            std::vector<VkDescriptorSetLayout> layouts(frameBuffer.getMaxFramesInFlight(), descriptorSetLayout[shader->getId()]);
-            VkDescriptorSetAllocateInfo allocInfo{};
-            allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-            allocInfo.pNext = &variableCountInfo;
-            allocInfo.descriptorPool = descriptorPool[descriptorId];
-            allocInfo.descriptorSetCount = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight());
-            allocInfo.pSetLayouts = layouts.data();
-            if (vkAllocateDescriptorSets(vkDevice.getDevice(), &allocInfo, descriptorSets[descriptorId].data()) != VK_SUCCESS) {
-                throw std::runtime_error("echec de l'allocation d'un set de descripteurs!");
+                for (unsigned int i = 0; i < descriptorSets.size(); i++) {
+                    descriptorSets[i].resize(frameBuffer.getMaxFramesInFlight());
+                }
+                std::vector<Texture*> allTextures = Texture::getAllTextures();
+                std::vector<uint32_t> variableCounts(frameBuffer.getMaxFramesInFlight(), static_cast<uint32_t>(allTextures.size()));
+
+                VkDescriptorSetVariableDescriptorCountAllocateInfo variableCountInfo{};
+                variableCountInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO;
+                variableCountInfo.descriptorSetCount = static_cast<uint32_t>(variableCounts.size());;
+                variableCountInfo.pDescriptorCounts = variableCounts.data();
+                std::vector<VkDescriptorSetLayout> layouts(frameBuffer.getMaxFramesInFlight(), descriptorSetLayout[shader->getId()]);
+                VkDescriptorSetAllocateInfo allocInfo{};
+                allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+                allocInfo.pNext = &variableCountInfo;
+                allocInfo.descriptorPool = descriptorPool[descriptorId];
+                allocInfo.descriptorSetCount = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight());
+                allocInfo.pSetLayouts = layouts.data();
+                if (vkAllocateDescriptorSets(vkDevice.getDevice(), &allocInfo, descriptorSets[descriptorId].data()) != VK_SUCCESS) {
+                    throw std::runtime_error("echec de l'allocation d'un set de descripteurs!");
+                }
+            } else if (shader == &perPixelLinkedListP2) {
+                if (shader->getNbShaders() * (Batcher::nbPrimitiveTypes - 1) > descriptorSets.size())
+                    descriptorSets.resize(shader->getNbShaders() * (Batcher::nbPrimitiveTypes - 1));
+                unsigned int descriptorId = p * shader->getNbShaders() + shader->getId();
+                for (unsigned int i = 0; i < descriptorSets.size(); i++) {
+                    descriptorSets[i].resize(frameBuffer.getMaxFramesInFlight());
+                }
+                std::vector<VkDescriptorSetLayout> layouts(frameBuffer.getMaxFramesInFlight(), descriptorSetLayout[shader->getId()]);
+                VkDescriptorSetAllocateInfo allocInfo{};
+                allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+
+                allocInfo.descriptorPool = descriptorPool[descriptorId];
+                allocInfo.descriptorSetCount = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight());
+                allocInfo.pSetLayouts = layouts.data();
+                if (vkAllocateDescriptorSets(vkDevice.getDevice(), &allocInfo, descriptorSets[descriptorId].data()) != VK_SUCCESS) {
+                    throw std::runtime_error("echec de l'allocation d'un set de descripteurs!");
+                }
+            } else {
+                if (shader->getNbShaders()  * (Batcher::nbPrimitiveTypes - 1)> descriptorSets.size())
+                    descriptorSets.resize(shader->getNbShaders() * (Batcher::nbPrimitiveTypes - 1));
+                unsigned int descriptorId = p * shader->getNbShaders() + shader->getId();
+                //std::cout<<"descriptor skybox ids : "<<descriptorId<<","<<shader->getId()<<std::endl;
+                for (unsigned int i = 0; i < descriptorSets.size(); i++) {
+                    descriptorSets[i].resize(frameBuffer.getMaxFramesInFlight());
+                }
+                std::vector<VkDescriptorSetLayout> layouts(frameBuffer.getMaxFramesInFlight(), descriptorSetLayout[shader->getId()]);
+                VkDescriptorSetAllocateInfo allocInfo{};
+                allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+                allocInfo.descriptorPool = descriptorPool[descriptorId];
+                allocInfo.descriptorSetCount = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight());
+                allocInfo.pSetLayouts = layouts.data();
+                if (vkAllocateDescriptorSets(vkDevice.getDevice(), &allocInfo, descriptorSets[descriptorId].data()) != VK_SUCCESS) {
+                    throw std::runtime_error("echec de l'allocation d'un set de descripteurs!");
+                }
             }
         }
         void PerPixelLinkedListRenderComponent::allocateDescriptorSets(RenderStates states) {
@@ -861,93 +1078,149 @@ namespace odfaeg {
             std::vector<std::vector<VkDescriptorSet>>& descriptorSets = frameBuffer.getDescriptorSet();
             Shader* shader = const_cast<Shader*>(states.shader);
             std::vector<Texture*> allTextures = Texture::getAllTextures();
+            if (shader == &indirectRenderingShader) {
 
-            unsigned int descriptorId = p * shader->getNbShaders() + shader->getId();
-            for (size_t i = 0; i < frameBuffer.getMaxFramesInFlight(); i++) {
-                std::vector<VkDescriptorImageInfo>	descriptorImageInfos;
-                descriptorImageInfos.resize(allTextures.size());
-                for (unsigned int j = 0; j < allTextures.size(); j++) {
-                    descriptorImageInfos[j].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                    descriptorImageInfos[j].imageView = allTextures[j]->getImageView();
-                    descriptorImageInfos[j].sampler = allTextures[j]->getSampler();
+                unsigned int descriptorId = p * shader->getNbShaders() + shader->getId();
+                for (size_t i = 0; i < frameBuffer.getMaxFramesInFlight(); i++) {
+                    std::vector<VkDescriptorImageInfo>	descriptorImageInfos;
+                    descriptorImageInfos.resize(allTextures.size());
+                    for (unsigned int j = 0; j < allTextures.size(); j++) {
+                        descriptorImageInfos[j].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                        descriptorImageInfos[j].imageView = allTextures[j]->getImageView();
+                        descriptorImageInfos[j].sampler = allTextures[j]->getSampler();
+                    }
+                    std::array<VkWriteDescriptorSet, 6> descriptorWrites{};
+
+                    VkDescriptorBufferInfo counterStorageBufferInfoLastFrame{};
+                    counterStorageBufferInfoLastFrame.buffer = counterShaderStorageBuffers[i];
+                    counterStorageBufferInfoLastFrame.offset = 0;
+                    counterStorageBufferInfoLastFrame.range = sizeof(AtomicCounterSSBO);
+
+                    descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                    descriptorWrites[0].dstSet = descriptorSets[descriptorId][i];
+                    descriptorWrites[0].dstBinding = 0;
+                    descriptorWrites[0].dstArrayElement = 0;
+                    descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                    descriptorWrites[0].descriptorCount = 1;
+                    descriptorWrites[0].pBufferInfo = &counterStorageBufferInfoLastFrame;
+
+                    VkDescriptorImageInfo headPtrDescriptorImageInfo;
+                    headPtrDescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+                    headPtrDescriptorImageInfo.imageView = headPtrTextureImageView;
+                    headPtrDescriptorImageInfo.sampler = headPtrTextureSampler;
+
+                    descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                    descriptorWrites[1].dstSet = descriptorSets[descriptorId][i];
+                    descriptorWrites[1].dstBinding = 1;
+                    descriptorWrites[1].dstArrayElement = 0;
+                    descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+                    descriptorWrites[1].descriptorCount = 1;
+                    descriptorWrites[1].pImageInfo = &headPtrDescriptorImageInfo;
+
+                    VkDescriptorBufferInfo linkedListStorageBufferInfoLastFrame{};
+                    linkedListStorageBufferInfoLastFrame.buffer = linkedListShaderStorageBuffers[i];
+                    linkedListStorageBufferInfoLastFrame.offset = 0;
+                    unsigned int nodeSize = 5 * sizeof(float) + sizeof(unsigned int);
+                    linkedListStorageBufferInfoLastFrame.range = maxNodes * nodeSize;
+
+                    descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                    descriptorWrites[2].dstSet = descriptorSets[descriptorId][i];
+                    descriptorWrites[2].dstBinding = 2;
+                    descriptorWrites[2].dstArrayElement = 0;
+                    descriptorWrites[2].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                    descriptorWrites[2].descriptorCount = 1;
+                    descriptorWrites[2].pBufferInfo = &linkedListStorageBufferInfoLastFrame;
+
+                    VkDescriptorBufferInfo modelDataStorageBufferInfoLastFrame{};
+                    modelDataStorageBufferInfoLastFrame.buffer = modelDataBufferMT[p];
+                    modelDataStorageBufferInfoLastFrame.offset = 0;
+                    modelDataStorageBufferInfoLastFrame.range = maxAlignedSizeModelData[p];
+
+                    descriptorWrites[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                    descriptorWrites[3].dstSet = descriptorSets[descriptorId][i];
+                    descriptorWrites[3].dstBinding = 3;
+                    descriptorWrites[3].dstArrayElement = 0;
+                    descriptorWrites[3].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+                    descriptorWrites[3].descriptorCount = 1;
+                    descriptorWrites[3].pBufferInfo = &modelDataStorageBufferInfoLastFrame;
+
+                    VkDescriptorBufferInfo materialDataStorageBufferInfoLastFrame{};
+                    materialDataStorageBufferInfoLastFrame.buffer = materialDataBufferMT[p];
+                    materialDataStorageBufferInfoLastFrame.offset = 0;
+                    materialDataStorageBufferInfoLastFrame.range = maxAlignedSizeMaterialData[p];
+
+                    descriptorWrites[4].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                    descriptorWrites[4].dstSet = descriptorSets[descriptorId][i];
+                    descriptorWrites[4].dstBinding = 4;
+                    descriptorWrites[4].dstArrayElement = 0;
+                    descriptorWrites[4].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+                    descriptorWrites[4].descriptorCount = 1;
+                    descriptorWrites[4].pBufferInfo = &materialDataStorageBufferInfoLastFrame;
+
+                    descriptorWrites[5].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                    descriptorWrites[5].dstSet = descriptorSets[descriptorId][i];
+                    descriptorWrites[5].dstBinding = 5;
+                    descriptorWrites[5].dstArrayElement = 0;
+                    descriptorWrites[5].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                    descriptorWrites[5].descriptorCount = allTextures.size();
+                    descriptorWrites[5].pImageInfo = descriptorImageInfos.data();
+
+                    vkUpdateDescriptorSets(vkDevice.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
                 }
-                std::array<VkWriteDescriptorSet, 6> descriptorWrites{};
+            } else if (shader == &perPixelLinkedListP2) {
+                unsigned int descriptorId = p * shader->getNbShaders() + shader->getId();
+                for (size_t i = 0; i < frameBuffer.getMaxFramesInFlight(); i++) {
 
-                VkDescriptorBufferInfo counterStorageBufferInfoLastFrame{};
-                counterStorageBufferInfoLastFrame.buffer = counterShaderStorageBuffers[i];
-                counterStorageBufferInfoLastFrame.offset = 0;
-                counterStorageBufferInfoLastFrame.range = sizeof(AtomicCounterSSBO);
+                    std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
 
-                descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                descriptorWrites[0].dstSet = descriptorSets[descriptorId][i];
-                descriptorWrites[0].dstBinding = 0;
-                descriptorWrites[0].dstArrayElement = 0;
-                descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-                descriptorWrites[0].descriptorCount = 1;
-                descriptorWrites[0].pBufferInfo = &counterStorageBufferInfoLastFrame;
+                    VkDescriptorImageInfo headPtrDescriptorImageInfo;
+                    headPtrDescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+                    headPtrDescriptorImageInfo.imageView = headPtrTextureImageView;
+                    headPtrDescriptorImageInfo.sampler = headPtrTextureSampler;
 
-                VkDescriptorImageInfo headPtrDescriptorImageInfo;
-                headPtrDescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
-                headPtrDescriptorImageInfo.imageView = headPtrTextureImageView;
-                headPtrDescriptorImageInfo.sampler = headPtrTextureSampler;
+                    descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                    descriptorWrites[0].dstSet = descriptorSets[descriptorId][i];
+                    descriptorWrites[0].dstBinding = 0;
+                    descriptorWrites[0].dstArrayElement = 0;
+                    descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+                    descriptorWrites[0].descriptorCount = 1;
+                    descriptorWrites[0].pImageInfo = &headPtrDescriptorImageInfo;
 
-                descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                descriptorWrites[1].dstSet = descriptorSets[descriptorId][i];
-                descriptorWrites[1].dstBinding = 1;
-                descriptorWrites[1].dstArrayElement = 0;
-                descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-                descriptorWrites[1].descriptorCount = 1;
-                descriptorWrites[1].pImageInfo = &headPtrDescriptorImageInfo;
+                    VkDescriptorBufferInfo linkedListStorageBufferInfoLastFrame{};
+                    linkedListStorageBufferInfoLastFrame.buffer = linkedListShaderStorageBuffers[i];
+                    linkedListStorageBufferInfoLastFrame.offset = 0;
+                    unsigned int nodeSize = 5 * sizeof(float) + sizeof(unsigned int);
+                    linkedListStorageBufferInfoLastFrame.range = maxNodes * nodeSize;
 
-                VkDescriptorBufferInfo linkedListStorageBufferInfoLastFrame{};
-                linkedListStorageBufferInfoLastFrame.buffer = linkedListShaderStorageBuffers[i];
-                linkedListStorageBufferInfoLastFrame.offset = 0;
-                unsigned int nodeSize = 5 * sizeof(float) + sizeof(unsigned int);
-                linkedListStorageBufferInfoLastFrame.range = maxNodes * nodeSize;
+                    descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                    descriptorWrites[1].dstSet = descriptorSets[descriptorId][i];
+                    descriptorWrites[1].dstBinding = 1;
+                    descriptorWrites[1].dstArrayElement = 0;
+                    descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                    descriptorWrites[1].descriptorCount = 1;
+                    descriptorWrites[1].pBufferInfo = &linkedListStorageBufferInfoLastFrame;
 
-                descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                descriptorWrites[2].dstSet = descriptorSets[descriptorId][i];
-                descriptorWrites[2].dstBinding = 2;
-                descriptorWrites[2].dstArrayElement = 0;
-                descriptorWrites[2].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-                descriptorWrites[2].descriptorCount = 1;
-                descriptorWrites[2].pBufferInfo = &linkedListStorageBufferInfoLastFrame;
+                    vkUpdateDescriptorSets(vkDevice.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+                }
+            } else {
+                unsigned int descriptorId = p * shader->getNbShaders() + shader->getId();
+                for (size_t i = 0; i < frameBuffer.getMaxFramesInFlight(); i++) {
+                    VkDescriptorImageInfo	descriptorImageInfo;
+                    std::array<VkWriteDescriptorSet, 1> descriptorWrites{};
+                    descriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                    descriptorImageInfo.imageView = skybox->getTexture().getImageView();
+                    descriptorImageInfo.sampler = skybox->getTexture().getSampler();
 
-                VkDescriptorBufferInfo modelDataStorageBufferInfoLastFrame{};
-                modelDataStorageBufferInfoLastFrame.buffer = modelDataBufferMT[p];
-                modelDataStorageBufferInfoLastFrame.offset = 0;
-                modelDataStorageBufferInfoLastFrame.range = maxAlignedSizeModelData[p];
+                    descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                    descriptorWrites[0].dstSet = descriptorSets[descriptorId][i];
+                    descriptorWrites[0].dstBinding = 0;
+                    descriptorWrites[0].dstArrayElement = 0;
+                    descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                    descriptorWrites[0].descriptorCount = 1;
+                    descriptorWrites[0].pImageInfo = &descriptorImageInfo;
 
-                descriptorWrites[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                descriptorWrites[3].dstSet = descriptorSets[descriptorId][i];
-                descriptorWrites[3].dstBinding = 3;
-                descriptorWrites[3].dstArrayElement = 0;
-                descriptorWrites[3].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
-                descriptorWrites[3].descriptorCount = 1;
-                descriptorWrites[3].pBufferInfo = &modelDataStorageBufferInfoLastFrame;
-
-                VkDescriptorBufferInfo materialDataStorageBufferInfoLastFrame{};
-                materialDataStorageBufferInfoLastFrame.buffer = materialDataBufferMT[p];
-                materialDataStorageBufferInfoLastFrame.offset = 0;
-                materialDataStorageBufferInfoLastFrame.range = maxAlignedSizeMaterialData[p];
-
-                descriptorWrites[4].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                descriptorWrites[4].dstSet = descriptorSets[descriptorId][i];
-                descriptorWrites[4].dstBinding = 4;
-                descriptorWrites[4].dstArrayElement = 0;
-                descriptorWrites[4].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
-                descriptorWrites[4].descriptorCount = 1;
-                descriptorWrites[4].pBufferInfo = &materialDataStorageBufferInfoLastFrame;
-
-                descriptorWrites[5].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                descriptorWrites[5].dstSet = descriptorSets[descriptorId][i];
-                descriptorWrites[5].dstBinding = 5;
-                descriptorWrites[5].dstArrayElement = 0;
-                descriptorWrites[5].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                descriptorWrites[5].descriptorCount = allTextures.size();
-                descriptorWrites[5].pImageInfo = descriptorImageInfos.data();
-
-                vkUpdateDescriptorSets(vkDevice.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+                    vkUpdateDescriptorSets(vkDevice.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+                }
             }
         }
         void PerPixelLinkedListRenderComponent::createDescriptorSets(unsigned int p, RenderStates states) {
@@ -1231,6 +1504,30 @@ namespace odfaeg {
             }
         }
         void PerPixelLinkedListRenderComponent::compileShaders() {
+            const std::string skyboxVertexShader = R"(#version 460
+                                                         #extension GL_EXT_debug_printf : enable
+                                                         layout (location = 0) in vec3 aPos;
+                                                         layout (location = 1) in vec4 color;
+                                                         layout (location = 2) in vec2 texCoords;
+                                                         layout (location = 3) in vec3 normals;
+                                                         layout(location = 0) out vec4 frontColor;
+                                                         layout(location = 1) out vec3 fTexCoords;
+                                                         layout(location = 2) out vec3 normal;
+                                                         layout (push_constant) uniform PushConsts {
+                                                            mat4 projectionMatrix;
+                                                            mat4 viewMatrix;
+                                                         } pushConsts;
+                                                         void main()
+                                                         {
+
+                                                             gl_PointSize = 2.0f;
+                                                             frontColor = color;
+                                                             normal = normals;
+                                                             fTexCoords = aPos;
+                                                             gl_Position = vec4(aPos, 1.0) * mat4(mat3(pushConsts.viewMatrix)) * pushConsts.projectionMatrix;
+                                                             //debugPrintfEXT("cubemap vertex shader %v4f", gl_Position);
+                                                         }
+                                                         )";
             const std::string indirectDrawVertexShader = R"(#version 460
                                                             #define M_PI 3.1415926535897932384626433832795
                                                             #define FPI M_PI/4
@@ -1308,6 +1605,18 @@ namespace odfaeg {
 
                                                             normal = normals;
                                                         })";
+                const std::string skyboxFragmentShader = R"(#version 460
+                                                            #extension GL_EXT_debug_printf : enable
+                                                            layout (location = 0) out vec4 fcolor;
+                                                            layout(location = 0) in vec4 frontColor;
+                                                            layout(location = 1) in vec3 fTexCoords;
+                                                            layout(location = 2) in vec3 normal;
+                                                            layout (binding = 0) uniform samplerCube skybox;
+                                                            void main() {
+                                                                //debugPrintfEXT("cubemap fragment shader");
+                                                                fcolor = texture(skybox, fTexCoords);
+                                                            }
+                                                            )";
                 const std::string fragmentShader = R"(#version 460
                                                       #extension GL_ARB_separate_shader_objects : enable
                                                       #extension GL_EXT_nonuniform_qualifier : enable
@@ -1381,7 +1690,7 @@ namespace odfaeg {
                                                       {
                                                           NodeType insert = frags[i];
                                                           uint j = i;
-                                                          while (j > 0 && insert.depth > frags[j - 1].depth)
+                                                          while (j > 0 && insert.depth < frags[j - 1].depth)
                                                           {
                                                               frags[j] = frags[j-1];
                                                               --j;
@@ -1400,6 +1709,9 @@ namespace odfaeg {
                                                         debugPrintfEXT("color : %v4f", color);*/
                                                       fcolor = color;
                                                    })";
+            if (!skyboxShader.loadFromMemory(skyboxVertexShader, skyboxFragmentShader)) {
+                throw core::Erreur(57, "Failed to load skybox rendering shader");
+            }
             if (!indirectRenderingShader.loadFromMemory(indirectDrawVertexShader, fragmentShader)) {
                 throw core::Erreur(57, "Failed to load indirect rendering shader");
             }
@@ -4218,6 +4530,9 @@ namespace odfaeg {
             math::Matrix4f viewMatrix = view.getViewMatrix().getMatrix()/*.transpose()*/;
             indirectDrawPushConsts.projMatrix = toVulkanMatrix(projMatrix);
             indirectDrawPushConsts.viewMatrix = toVulkanMatrix(viewMatrix);
+            //projMatrix.identity();
+            skyboxPushConsts.projMatrix = toVulkanMatrix(projMatrix);
+            skyboxPushConsts.viewMatrix = toVulkanMatrix(viewMatrix);
             //indirectDrawPushConsts.projMatrix.m22 *= -1;
 
             if (useThread) {
@@ -4230,6 +4545,43 @@ namespace odfaeg {
                 fillOutlineBuffersMT();
                 fillOutlineIndexedBuffersMT();
                 ////std::cout<<"buffer filled"<<std::endl;
+
+                skyboxVB.clear();
+                //skyboxVB.name = "SKYBOXVB";
+                for (unsigned int i = 0; i < m_skyboxInstance.size(); i++) {
+                    if (m_skyboxInstance[i].getAllVertices().getVertexCount() > 0) {
+                        skyboxVB.setPrimitiveType(m_skyboxInstance[i].getAllVertices().getPrimitiveType());
+                        for (unsigned int j = 0; j < m_skyboxInstance[i].getAllVertices().getVertexCount(); j++) {
+                            skyboxVB.append(m_skyboxInstance[i].getAllVertices()[j]);
+                        }
+                    }
+                }
+                if (skybox != nullptr) {
+                    vkResetCommandBuffer(copySkyboxCommandBuffer, 0);
+                    VkCommandBufferInheritanceInfo inheritanceInfo{};
+                    inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+                    inheritanceInfo.renderPass = VK_NULL_HANDLE; // pas de render pass
+                    inheritanceInfo.subpass = 0;
+                    inheritanceInfo.framebuffer = VK_NULL_HANDLE;
+                    inheritanceInfo.occlusionQueryEnable = VK_FALSE;
+                    inheritanceInfo.queryFlags = 0;
+                    inheritanceInfo.pipelineStatistics = 0;
+                    VkCommandBufferBeginInfo beginInfo{};
+                    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+                    beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+                    beginInfo.pInheritanceInfo = &inheritanceInfo; // obligatoire pour secondaire
+
+                    if (vkBeginCommandBuffer(copySkyboxCommandBuffer, &beginInfo) != VK_SUCCESS) {
+
+                        throw core::Erreur(0, "failed to begin recording command buffer!", 1);
+                    }
+                    //std::cout<<"copy skybox vb"<<std::endl;
+                    skyboxVB.update(copySkyboxCommandBuffer);
+                    if (vkEndCommandBuffer(copySkyboxCommandBuffer) != VK_SUCCESS) {
+                        throw core::Erreur(0, "failed to record command buffer!", 1);
+                    }
+                }
+
 
                 vb.clear();
                 vb.setPrimitiveType(Triangles);
@@ -4340,11 +4692,17 @@ namespace odfaeg {
 
 
             Shader* shader = const_cast<Shader*>(currentStates.shader);
+            if (shader == &perPixelLinkedListP2) {
 
 
-            vkCmdPushConstants(commandBuffer, frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + vb.getPrimitiveType()][0][PPLLNODEPTHNOSTENCIL*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(Ppll2PushConsts), &ppll2PushConsts);
+                vkCmdPushConstants(commandBuffer, frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + vb.getPrimitiveType()][0][PPLLNODEPTHNOSTENCIL*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(Ppll2PushConsts), &ppll2PushConsts);
 
-            frameBuffer.drawVertexBuffer(commandBuffer, 0, vb, PPLLNODEPTHNOSTENCIL, currentStates);
+                frameBuffer.drawVertexBuffer(commandBuffer, vb.getPrimitiveType(), vb, PPLLNODEPTHNOSTENCIL, currentStates);
+            } else if (shader == &skyboxShader) {
+                vkCmdPushConstants(commandBuffer, frameBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + skyboxVB.getPrimitiveType()][0][PPLLNODEPTHNOSTENCIL*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(SkyboxPushConsts), &skyboxPushConsts);
+
+                frameBuffer.drawVertexBuffer(commandBuffer, skyboxVB.getPrimitiveType(), skyboxVB, PPLLNODEPTHNOSTENCIL, currentStates);
+            }
         }
         void PerPixelLinkedListRenderComponent::drawBuffers() {
             for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
@@ -4391,6 +4749,8 @@ namespace odfaeg {
                     vbBindlessTexIndexed[p].updateStagingBuffers();
                 }
             }
+            if (skybox != nullptr)
+                skyboxVB.updateStagingBuffers();
             vb.updateStagingBuffers();
             VkCommandBufferInheritanceInfo inheritanceInfo{};
             inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
@@ -4400,11 +4760,27 @@ namespace odfaeg {
             beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
             beginInfo.pInheritanceInfo = &inheritanceInfo;
             beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT | VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+            if (skybox != nullptr) {
+                vkResetCommandBuffer(skyboxCommandBuffer, 0);
+                if (vkBeginCommandBuffer(skyboxCommandBuffer, &beginInfo) != VK_SUCCESS) {
+
+                    throw core::Erreur(0, "failed to begin recording command buffer!", 1);
+                }
+                RenderStates currentStates;
+                currentStates.blendMode = BlendNone;
+                currentStates.shader = &skyboxShader;
+                if (skybox != nullptr)
+                    recordCommandBufferVertexBuffer(currentStates, skyboxCommandBuffer);
+                if (vkEndCommandBuffer(skyboxCommandBuffer) != VK_SUCCESS) {
+                    throw core::Erreur(0, "failed to record command buffer!", 1);
+                }
+            }
             vkResetCommandBuffer(ppllCommandBuffer, 0);
             if (vkBeginCommandBuffer(ppllCommandBuffer, &beginInfo) != VK_SUCCESS) {
 
                 throw core::Erreur(0, "failed to begin recording command buffer!", 1);
             }
+
             RenderStates currentStates;
             currentStates.blendMode = BlendNone;
             currentStates.shader = &indirectRenderingShader;
@@ -4460,6 +4836,7 @@ namespace odfaeg {
             if (vkBeginCommandBuffer(ppllPass2CommandBuffer, &beginInfo) != VK_SUCCESS) {
                 throw core::Erreur(0, "failed to begin recording command buffer!", 1);
             }
+            currentStates.blendMode = BlendAlpha;
             currentStates.shader = &perPixelLinkedListP2;
             recordCommandBufferVertexBuffer(currentStates, ppllPass2CommandBuffer);
             if (vkEndCommandBuffer(ppllPass2CommandBuffer) != VK_SUCCESS) {
@@ -4782,6 +5159,8 @@ namespace odfaeg {
                 vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyDrawIndexedBufferCommandBuffer);
                 vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyVbIndexedBufferCommandBuffer);
                 vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyVbPpllPass2CommandBuffer);
+                if (skybox != nullptr)
+                    vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copySkyboxCommandBuffer);
                 VkBufferMemoryBarrier bufferMemoryBarrier{};
                 bufferMemoryBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
                 bufferMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
@@ -4800,6 +5179,18 @@ namespace odfaeg {
                 1, &bufferMemoryBarrier,
                 0, nullptr
                 );
+                if (skybox != nullptr) {
+                    bufferMemoryBarrier.buffer = skyboxVB.getVertexBuffer();
+                    vkCmdPipelineBarrier(
+                    commandBuffers[currentFrame],
+                    VK_PIPELINE_STAGE_TRANSFER_BIT,
+                    VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
+                    0,
+                    0, nullptr,
+                    1, &bufferMemoryBarrier,
+                    0, nullptr
+                    );
+                }
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                     VkBufferMemoryBarrier buffersMemoryBarrier{};
                     buffersMemoryBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
@@ -4906,7 +5297,26 @@ namespace odfaeg {
                 waitValues.push_back(values[currentFrame]);
                 values[currentFrame]++;
                 signalValues.push_back(values[currentFrame]);
+
                 frameBuffer.display(signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
+                if (skybox != nullptr) {
+                    frameBuffer.beginRecordCommandBuffers();
+                    frameBuffer.beginRenderPass();
+                    vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &skyboxCommandBuffer);
+                    frameBuffer.endRenderPass();
+                    signalSemaphores.clear();
+                    signalSemaphores.push_back(offscreenFinishedSemaphore[currentFrame]);
+                    signalValues.clear();
+                    waitSemaphores.clear();
+                    waitSemaphores.push_back(offscreenFinishedSemaphore[currentFrame]);
+                    waitStages.clear();
+                    waitStages.push_back(VK_PIPELINE_STAGE_VERTEX_SHADER_BIT);
+                    waitValues.clear();
+                    waitValues.push_back(values[currentFrame]);
+                    values[currentFrame]++;
+                    signalValues.push_back(values[currentFrame]);
+                    frameBuffer.display(signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
+                }
                 ////std::cout<<"copies ok"<<std::endl;
                 frameBuffer.beginRecordCommandBuffers();
                 frameBuffer.beginRenderPass();
@@ -5077,6 +5487,8 @@ namespace odfaeg {
             vkFreeCommandBuffers(vkDevice.getDevice(), secondaryBufferCommandPool, 1, &ppllSelectedCommandBuffer);
             vkFreeCommandBuffers(vkDevice.getDevice(), secondaryBufferCommandPool, 1, &ppllOutlineCommandBuffer);
             vkFreeCommandBuffers(vkDevice.getDevice(), secondaryBufferCommandPool, 1, &ppllPass2CommandBuffer);
+            vkFreeCommandBuffers(vkDevice.getDevice(), secondaryBufferCommandPool, 1, &skyboxCommandBuffer);
+            vkFreeCommandBuffers(vkDevice.getDevice(), secondaryBufferCommandPool, 1, &copySkyboxCommandBuffer);
             vkDestroyCommandPool(vkDevice.getDevice(), secondaryBufferCommandPool, nullptr);
             //////std::cout<<"indirect vbo destroyed"<<std::endl;
         }

@@ -444,6 +444,7 @@ namespace odfaeg {
                 virtual bool changeHeights(physic::OrientedBoundingBox& obx, float delta);
                 std::map<std::string, Entity::BoneInfo>& getBoneInfoMap();
                 int& getBoneCount();
+                virtual Texture& getTexture();
             protected :
                 /** \fn Entity(math::Vec3f position, math::Vec3f size, math::Vec3f origin, std::string type, Entity* parent)
                  * \brief constructor.

@@ -240,7 +240,7 @@ namespace sorrok {
             BoundingBox mapZone(0, 0, 0, 1500, 1000, 0);
             getWorld()->generate_map(tiles, walls, Vec2f(100, 50), mapZone, entityFactory);
             std::cout<<"map generated"<<std::endl;
-            Tile* thouse = entityFactory.make_entity<Tile>(tm.getResourceByAlias("HOUSE"), Vec3f(-100, 250, -400), Vec3f(250, 300, 0), IntRect(0, 0, 250, 300), entityFactory);
+            Tile* thouse = entityFactory.make_entity<Tile>(tm.getResourceByAlias("HOUSE"), Vec3f(-100, 250, 400), Vec3f(250, 300, 0), IntRect(0, 0, 250, 300), entityFactory);
 
             thouse->setLayer(1);
             thouse->getFace(0)->getMaterial().setTexId("HOUSE");
@@ -257,19 +257,19 @@ namespace sorrok {
             thouse->getFace(0)->getMaterial().setSpecularIntensity(100);*/
             getWorld()->addEntity(decor);
             Anim* fire = entityFactory.make_entity<Anim>(0.1f, Vec3f(0, 0, 0), Vec3f(100, 100, 0), entityFactory);
-            Tile* tf1 = entityFactory.make_entity<Tile>(tm.getResourceByAlias("FIRE1"), Vec3f(0, 100, -150), Vec3f(100, 100, 0), IntRect(0, 0, 150, 200), entityFactory);
+            Tile* tf1 = entityFactory.make_entity<Tile>(tm.getResourceByAlias("FIRE1"), Vec3f(0, 100, 150), Vec3f(100, 100, 0), IntRect(0, 0, 150, 200), entityFactory);
             tf1->setLayer(1);
             tf1->getFace(0)->getMaterial().setTexId("FIRE1");
             g2d::Decor *fire1 = entityFactory.make_entity<g2d::Decor>(tf1, &g2d::AmbientLight::getAmbientLight(), entityFactory);
             fire1->setShadowCenter(Vec3f(0, 200, 0));
             //decor->changeGravityCenter(Vec3f(50, 50, 0));
-            Tile* tf2 = entityFactory.make_entity<Tile>(tm.getResourceByAlias("FIRE2"), Vec3f(0, 100, -150), Vec3f(100, 100, 0), IntRect(0, 0, 150, 200), entityFactory);
+            Tile* tf2 = entityFactory.make_entity<Tile>(tm.getResourceByAlias("FIRE2"), Vec3f(0, 100, 150), Vec3f(100, 100, 0), IntRect(0, 0, 150, 200), entityFactory);
             tf2->setLayer(1);
             tf2->getFace(0)->getMaterial().setTexId("FIRE2");
             g2d::Decor *fire2 = entityFactory.make_entity<g2d::Decor>(tf2, &g2d::AmbientLight::getAmbientLight(), entityFactory);
             fire2->setShadowCenter(Vec3f(0, 200, 0));
             //decor->changeGravityCenter(Vec3f(50, 50, 0));
-            Tile* tf3 = entityFactory.make_entity<Tile>(tm.getResourceByAlias("FIRE3"), Vec3f(0, 100, -150), Vec3f(100, 100, 0), IntRect(0, 0, 150, 200), entityFactory);
+            Tile* tf3 = entityFactory.make_entity<Tile>(tm.getResourceByAlias("FIRE3"), Vec3f(0, 100, 150), Vec3f(100, 100, 0), IntRect(0, 0, 150, 200), entityFactory);
             tf3->setLayer(1);
             tf3->getFace(0)->getMaterial().setTexId("FIRE3");
             g2d::Decor *fire3 = entityFactory.make_entity<g2d::Decor>(tf3, &g2d::AmbientLight::getAmbientLight(), entityFactory);
@@ -292,7 +292,7 @@ namespace sorrok {
             au->addAnim(fire);
             w = entityFactory.make_entity<g2d::Wall>(entityFactory.make_entity<Tile>(tm.getResourceByAlias("WALLS"), Vec3f(0, 0, 0), Vec3f(100, 100, 0), IntRect(100, 200, 100, 100), entityFactory),g2d::Wall::TOP_LEFT, &g2d::AmbientLight::getAmbientLight(), entityFactory);
             w->getChildren()[0]->getFace(0)->getMaterial().setTexId("WALLS");
-            w->setPosition(Vec3f(0, 130, -(130 + w->getSize().y() * 0.5f)));
+            w->setPosition(Vec3f(0, 130, (130 + w->getSize().y() * 0.5f)));
             w->setLayer(1);
             getWorld()->addEntity(w);
         //}
@@ -405,9 +405,9 @@ namespace sorrok {
         caracter->setShadowScale(Vec3f(1, -1, 1));
         caracter->setShadowCenter(Vec3f(0, 280, -140));
         //std::cout<<bb2->getPosition()<<" "<<bb2->getSize()<<std::endl;
-        g2d::PonctualLight* light1 = entityFactory.make_entity<g2d::PonctualLight>(Vec3f(-50, 420, -420), 100, 50, 0, 255, Color::Yellow, 16, entityFactory);
+        g2d::PonctualLight* light1 = entityFactory.make_entity<g2d::PonctualLight>(Vec3f(-50, 420, 420), 100, 50, 0, 255, Color::Yellow, 16, entityFactory);
         light1->setLayer(1);
-        g2d::PonctualLight* light2 = entityFactory.make_entity<g2d::PonctualLight>(Vec3f(50, 160, -160), 100, 50, 0, 255, Color::Yellow, 16, entityFactory);
+        g2d::PonctualLight* light2 = entityFactory.make_entity<g2d::PonctualLight>(Vec3f(50, 160, 160), 100, 50, 0, 255, Color::Yellow, 16, entityFactory);
         light2->setLayer(1);
         getWorld()->addEntity(light1);
         getWorld()->addEntity(light2);
@@ -570,13 +570,13 @@ namespace sorrok {
                     if (getRenderComponentManager().getRenderComponent(i) != nullptr) {
                         View view = getRenderComponentManager().getRenderComponent(i)->getView();
                         Vec3f d = newPos - view.getPosition();
-                        view.move(d.x(), d.y(), -d.y());
+                        view.move(d.x(), d.y(), d.y());
                         getRenderComponentManager().getRenderComponent(i)->setView(view);
                     }
                 }
                 Vec3f d = newPos - caracter->getCenter();
                 //getView().move(d.x(), d.y(), d.y());
-                getWorld()->moveEntity(caracter, d.x(), d.y(), -d.y());
+                getWorld()->moveEntity(caracter, d.x(), d.y(), d.y());
                 audio::Listener::setPosition(newPos.x(), newPos.y(), 0);
                 //World::update("EntitiesUpdater");
             } else {
@@ -586,14 +586,14 @@ namespace sorrok {
                 Vec2f d = pos - actualPos;
                 Vec2f dir = d.normalize();
                 //std::cout<<"position : "<<caracter->getPosition().z<<" dy : "<<d.y()<<std::endl;
-                getWorld()->moveEntity(caracter, d.x(), d.y(), -d.y());
+                getWorld()->moveEntity(caracter, d.x(), d.y(), d.y());
                 //std::cout<<"position : "<<caracter->getPosition().z<<std::endl;
                 if (dir != caracter->getDir())
                     caracter->setDir(dir);
                 for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
                     if (getRenderComponentManager().getRenderComponent(i) != nullptr) {
                         View view = getRenderComponentManager().getRenderComponent(i)->getView();
-                        view.move(d.x(), d.y(), -d.y());
+                        view.move(d.x(), d.y(), d.y());
                         getRenderComponentManager().getRenderComponent(i)->setView(view);
                     }
                 }

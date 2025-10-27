@@ -403,7 +403,7 @@ namespace odfaeg {
                                                                               float l = layer;
                                                                               beginInvocationInterlockARB();
                                                                               vec4 depth = imageLoad(depthBuffer,ivec2(gl_FragCoord.xy));
-                                                                              if (/*l > depth.y() || l == depth.y() &&*/ z < depth.z) {
+                                                                              if (/*l > depth.y() || l == depth.y() &&*/ z > depth.z) {
                                                                                 if (texel.a < 0.1) discard;
                                                                                 imageStore(depthBuffer,ivec2(gl_FragCoord.xy),vec4(0,l,z,texel.a));
                                                                                 memoryBarrier();
@@ -439,7 +439,7 @@ namespace odfaeg {
                                                                           vec4 alpha = imageLoad(alphaBuffer,ivec2(gl_FragCoord.xy));
                                                                           float l = layer;
                                                                           float z = gl_FragCoord.z;
-                                                                          if (/*l > depth.y() || l == depth.y() &&*/ depth.z <= z && current_alpha > alpha.a) {
+                                                                          if (/*l > depth.y() || l == depth.y() &&*/ depth.z >= z && current_alpha > alpha.a) {
                                                                               imageStore(alphaBuffer,ivec2(gl_FragCoord.xy),vec4(0, l, z, current_alpha));
                                                                               memoryBarrier();
                                                                               fColor = vec4(0, l, z, current_alpha);
@@ -471,7 +471,7 @@ namespace odfaeg {
                                                                         float z = gl_FragCoord.z;
                                                                         float intensity = (pushConsts.maxM != 0.f) ? specular.x / pushConsts.maxM : 0.f;
                                                                         float power = (pushConsts.maxP != 0.f) ? specular.y / pushConsts.maxP : 0.f;
-                                                                        if (/*layer > depth.y || layer == depth.y &&*/ z < depth.z)
+                                                                        if (/*layer > depth.y || layer == depth.y &&*/ z > depth.z)
                                                                             fColor = vec4(intensity, power, z, texel.a);
                                                                         else
                                                                             fColor = vec4(0, 0, 0, 0);
@@ -494,7 +494,7 @@ namespace odfaeg {
                                                                  void main() {
                                                                      vec4 color = (texIndex != 0) ? texture(textures[texIndex-1], fTexCoords.xy) : vec4(0, 0, 0, 0);
                                                                      vec4 depth = texture(depthBuffer, gl_FragCoord.xy / pushConsts.resolution.xy);
-                                                                     if (/*layer > depth.y() || layer == depth.y() &&*/ gl_FragCoord.z < depth.z) {
+                                                                     if (/*layer > depth.y() || layer == depth.y() &&*/ gl_FragCoord.z > depth.z) {
                                                                         fColor = color;
                                                                      } else {
                                                                         fColor = vec4(0, 0, 0, 0);
@@ -553,7 +553,7 @@ namespace odfaeg {
                                                                  normal.z = dot(bump.xyz, tmpNormal);
                                                              }
                                                              //debugPrintfEXT("depth : %f", depth.z);
-                                                             if (/*layer > depth.y || layer == depth.y &&*/ gl_FragCoord.z < depth.z) {
+                                                             if (/*layer > depth.y || layer == depth.y &&*/ gl_FragCoord.z > depth.z) {
                                                                  vec4 specularColor = vec4(0, 0, 0, 0);
                                                                  float attenuation = 1.f - length(vertexToLight) / radius;
 
@@ -674,7 +674,7 @@ namespace odfaeg {
             void LightRenderComponent::clear() {
                 lightDepthBuffer.clear(Color::Transparent);
                 std::vector<VkCommandBuffer> commandBuffers = lightDepthBuffer.getCommandBuffers();
-                VkClearColorValue clearColor = {0.f, 0.f, 1.f, 0.f};
+                VkClearColorValue clearColor = {0.f, 0.f, 0.f, 0.f};
                 VkImageSubresourceRange subresRange = {};
                 subresRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
                 subresRange.levelCount = 1;

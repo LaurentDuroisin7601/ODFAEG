@@ -584,6 +584,7 @@ namespace odfaeg {
             }
 
             unsigned int descriptorId = shader->getId();
+            //std::cout<<"descriptor set layout id : "<<descriptorId<<std::endl;
 
 
             ////////std::cout<<"rt dl size : "<<descriptorSetLayout.size()<<std::endl;

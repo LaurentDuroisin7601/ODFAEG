@@ -378,5 +378,7 @@ namespace odfaeg {
         std::map<std::string, Entity::BoneInfo>& Entity::getBoneInfoMap() { return m_BoneInfoMap; }
         int& Entity::getBoneCount() { return m_BoneCounter; }
         bool Entity::changeHeights(physic::OrientedBoundingBox& obx, float delta) { return false; }
+        Texture& Entity::getTexture() {
+        }
     }
 }

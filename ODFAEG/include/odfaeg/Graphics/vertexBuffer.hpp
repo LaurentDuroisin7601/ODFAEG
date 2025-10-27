@@ -61,6 +61,7 @@ namespace odfaeg {
             void draw(RenderTarget& target, RenderStates states);
             void cleanup();
             ~VertexBuffer();
+            std::string name;
         private :
             VertexBuffer(const VertexBuffer& vb);
             VertexBuffer& operator= (const VertexBuffer& vb);

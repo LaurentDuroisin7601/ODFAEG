@@ -53,6 +53,10 @@ namespace odfaeg {
                 unsigned int count;
                 unsigned int maxNodeCount;
             };
+            struct SkyboxPushConsts {
+                GLMatrix4f projMatrix;
+                GLMatrix4f viewMatrix;
+            };
             struct IndirectDrawPushConsts {
                 GLMatrix4f projMatrix;
                 GLMatrix4f viewMatrix;
@@ -78,6 +82,7 @@ namespace odfaeg {
             void draw(RenderTarget& target, RenderStates states);
             void draw(Drawable& drawable, RenderStates states) {}
             void loadTextureIndexes() {}
+            void loadSkybox(Entity* skybox);
             std::vector<Entity*> getEntities();
             virtual ~PerPixelLinkedListRenderComponent();
             private :
@@ -168,11 +173,12 @@ namespace odfaeg {
             std::array<std::vector<ModelData>, Batcher::nbPrimitiveTypes> modelDatas;
             std::array<std::vector<MaterialData>, Batcher::nbPrimitiveTypes> materialDatas;
 
-            Shader indirectRenderingShader, perPixelLinkedListP2;
+            Shader indirectRenderingShader, perPixelLinkedListP2, skyboxShader;
             Ppll2PushConsts ppll2PushConsts;
             IndirectDrawPushConsts indirectDrawPushConsts;
+            SkyboxPushConsts skyboxPushConsts;
             std::array<VertexBuffer ,Batcher::nbPrimitiveTypes> vbBindlessTex, vbBindlessTexIndexed;
-            VertexBuffer vb;
+            VertexBuffer vb, skyboxVB;
             VkBuffer vboIndirect, vboIndirectStagingBuffer, vboIndexedIndirectStagingBuffer;
             VkDeviceMemory vboIndirectMemory, vboIndirectStagingBufferMemory, vboIndexedIndirectStagingBufferMemory;
             std::vector<VkCommandBuffer> commandBuffers;
@@ -196,9 +202,9 @@ namespace odfaeg {
             std::vector<VkSemaphore> offscreenFinishedSemaphore;
             RenderWindow& window;
             bool isSomethingDrawn, useThread;
-            VkCommandBuffer ppllCommandBuffer, ppllSelectedCommandBuffer, ppllOutlineCommandBuffer, ppllPass2CommandBuffer,
+            VkCommandBuffer ppllCommandBuffer, ppllSelectedCommandBuffer, ppllOutlineCommandBuffer, ppllPass2CommandBuffer, skyboxCommandBuffer,
             copyModelDataBufferCommandBuffer, copyMaterialDataBufferCommandBuffer, copyDrawBufferCommandBuffer, copyDrawIndexedBufferCommandBuffer,
-            copyVbBufferCommandBuffer, copyVbIndexedBufferCommandBuffer, copyVbPpllPass2CommandBuffer;
+            copyVbBufferCommandBuffer, copyVbIndexedBufferCommandBuffer, copyVbPpllPass2CommandBuffer, copySkyboxCommandBuffer;
             std::array<unsigned int, Batcher::nbPrimitiveTypes> totalBufferSizeModelData, maxBufferSizeModelData, maxAlignedSizeModelData, oldTotalBufferSizeModelData;
             std::array<unsigned int, Batcher::nbPrimitiveTypes> totalBufferSizeMaterialData, maxBufferSizeMaterialData, maxAlignedSizeMaterialData, oldTotalBufferSizeMaterialData;
             std::array<unsigned int, Batcher::nbPrimitiveTypes> totalVertexCount, totalVertexIndexCount, totalIndexCount, totalBufferSizeDrawCommand, totalBufferSizeIndexedDrawCommand, maxBufferSizeDrawCommand, maxBufferSizeIndexedDrawCommand;

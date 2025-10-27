@@ -481,7 +481,7 @@ namespace odfaeg {
                                    depthStencilCreateInfo[sLinkedList.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][RRRCNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {};
                                    environmentMap.createGraphicPipeline(static_cast<PrimitiveType>(i), states, RRRCNODEPTHNOSTENCIL, RRRCNBDEPTHSTENCIL);
                                 } else {
-                                   depthStencilCreateInfo[sLinkedList.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][RRRCDEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_LESS;
+                                   depthStencilCreateInfo[sLinkedList.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][RRRCDEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_GREATER;
                                    depthStencilCreateInfo[sLinkedList.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][RRRCDEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = {};
                                    depthStencilCreateInfo[sLinkedList.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][RRRCDEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {};
                                    environmentMap.createGraphicPipeline(static_cast<PrimitiveType>(i), states, RRRCDEPTHNOSTENCIL, RRRCNBDEPTHSTENCIL);
@@ -520,7 +520,7 @@ namespace odfaeg {
                                    push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
                                    pipelineLayoutInfo[sLinkedList2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][RRRCDEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = &push_constant;
                                    pipelineLayoutInfo[sLinkedList2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][RRRCDEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 1;
-                                   depthStencilCreateInfo[sLinkedList2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][RRRCDEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_LESS;
+                                   depthStencilCreateInfo[sLinkedList2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][RRRCDEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_GREATER;
                                    depthStencilCreateInfo[sLinkedList2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][RRRCDEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = {};
                                    depthStencilCreateInfo[sLinkedList2.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][RRRCDEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {};
                                    environmentMap.createGraphicPipeline(static_cast<PrimitiveType>(i), states, RRRCDEPTHNOSTENCIL, RRRCNBDEPTHSTENCIL);
@@ -600,7 +600,7 @@ namespace odfaeg {
                                     push_constants[1] = push_constant2;
                                     pipelineLayoutInfo[sBuildDepthBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][RRRCDEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = push_constants.data();
                                     pipelineLayoutInfo[sBuildDepthBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][RRRCDEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 2;
-                                    depthStencilCreateInfo[sBuildDepthBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][RRRCDEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_LESS;
+                                    depthStencilCreateInfo[sBuildDepthBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][RRRCDEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_GREATER;
                                     depthStencilCreateInfo[sBuildDepthBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][RRRCDEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = {};
                                     depthStencilCreateInfo[sBuildDepthBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][RRRCDEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {};
                                     depthBuffer.createGraphicPipeline(static_cast<PrimitiveType>(i), states, RRRCDEPTHNOSTENCIL, RRRCNBDEPTHSTENCIL);
@@ -680,7 +680,7 @@ namespace odfaeg {
                                     push_constants[1] = push_constant2;
                                     pipelineLayoutInfo[sBuildAlphaBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][RRRCDEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = push_constants.data();
                                     pipelineLayoutInfo[sBuildAlphaBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][RRRCDEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 2;
-                                    depthStencilCreateInfo[sBuildAlphaBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][RRRCDEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_LESS;
+                                    depthStencilCreateInfo[sBuildAlphaBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][RRRCDEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_GREATER;
                                     depthStencilCreateInfo[sBuildAlphaBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][RRRCDEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = {};
                                     depthStencilCreateInfo[sBuildAlphaBuffer.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][RRRCDEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {};
                                     alphaBuffer.createGraphicPipeline(static_cast<PrimitiveType>(i), states, RRRCDEPTHNOSTENCIL, RRRCNBDEPTHSTENCIL);
@@ -759,7 +759,7 @@ namespace odfaeg {
                                     push_constants[1] = push_constant2;
                                     pipelineLayoutInfo[sReflectRefract.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][RRRCDEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = push_constants.data();
                                     pipelineLayoutInfo[sReflectRefract.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][RRRCDEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 2;
-                                    depthStencilCreateInfo[sReflectRefract.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][RRRCDEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_LESS;
+                                    depthStencilCreateInfo[sReflectRefract.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][RRRCDEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_GREATER;
                                     depthStencilCreateInfo[sReflectRefract.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][RRRCDEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = {};
                                     depthStencilCreateInfo[sReflectRefract.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][RRRCDEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {};
                                     reflectRefractTex.createGraphicPipeline(static_cast<PrimitiveType>(i), states, RRRCDEPTHNOSTENCIL, RRRCNBDEPTHSTENCIL);
@@ -1403,15 +1403,17 @@ namespace odfaeg {
                       }
                       /*if (count > 0)
                         debugPrintfEXT("count : %i", count);*/
-                      //Insertion sort.
-                      for (int i = 0; i < count - 1; i++) {
-                        for (int j = i + 1; j > 0; j--) {
-                            if (frags[j - 1].depth > frags[j].depth) {
-                                NodeType tmp = frags[j - 1];
-                                frags[j - 1] = frags[j];
-                                frags[j] = tmp;
-                            }
-                        }
+                       // Do the insertion sort
+                      for (uint i = 1; i < count; ++i)
+                      {
+                          NodeType insert = frags[i];
+                          uint j = i;
+                          while (j > 0 && insert.depth < frags[j - 1].depth)
+                          {
+                              frags[j] = frags[j-1];
+                              --j;
+                          }
+                          frags[j] = insert;
                       }
                       vec4 color = vec4(0, 0, 0, 0);
                       for( int i = 0; i < count; i++)

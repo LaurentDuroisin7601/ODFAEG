@@ -8,7 +8,7 @@ namespace odfaeg {
             #ifdef VULKAN
             class ODFAEG_GRAPHICS_API Skybox : public GameObject {
                 public :
-                Skybox  (std::vector<std::string> filepaths, EntityFactory& factory, window::Device& vkDevice);
+                Skybox  (float size, std::vector<std::string> filepaths, EntityFactory& factory, window::Device& vkDevice);
                 void onDraw (RenderTarget& target, RenderStates states);
                 Texture& getTexture();
                 bool isAnimated() const {
@@ -34,6 +34,7 @@ namespace odfaeg {
                 Texture skyboxCM;
                 std::vector<std::string> filepaths;
                 window::Device& vkDevice;
+                float m_size;
             };
             #else
             class ODFAEG_GRAPHICS_API Skybox : public GameObject {

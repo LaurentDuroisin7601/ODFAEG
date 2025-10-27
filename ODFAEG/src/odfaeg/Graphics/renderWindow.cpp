@@ -313,7 +313,7 @@ namespace odfaeg {
              clearColor = color;
              VkClearColorValue clearValue  = {clearColor.r / 255.f, clearColor.g / 255.f, clearColor.b / 255.f, clearColor.a / 255.f};
              VkClearDepthStencilValue clearDepthStencilValue = {
-                .depth = 1.f,
+                .depth = 0.f,
                 .stencil = 0
              };
 

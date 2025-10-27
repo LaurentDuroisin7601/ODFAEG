@@ -17,7 +17,7 @@ namespace odfaeg {
             vertexStagingBuffer(VK_NULL_HANDLE), indexStagingBuffer(VK_NULL_HANDLE),
             vertexBufferMemory(VK_NULL_HANDLE), indexBufferMemory(VK_NULL_HANDLE),
             vertexStagingBufferMemory(VK_NULL_HANDLE), indexStagingBufferMemory(VK_NULL_HANDLE),
-
+            m_primitiveType(Points),
             maxVerticesSize(0), maxIndexSize(0) {
                 createCommandPool();
             }
@@ -74,7 +74,7 @@ namespace odfaeg {
 
                 if (this != &vb) {
                     // Libérer les ressources actuelles si nécessaire
-                    cleanup(); // méthode qui détruit vertexBuffer, indexBuffer, etc.
+                    //cleanup(); // méthode qui détruit vertexBuffer, indexBuffer, etc.
 
                     // Transfert des ressources
                     commandPool = vb.commandPool;
@@ -95,8 +95,10 @@ namespace odfaeg {
                     needToUpdateVertexBuffer = !m_vertices.empty();
                     needToUpdateIndexStagingBuffer = !indices.empty();
                     needToUpdateVertexStagingBuffer = !m_vertices.empty();
+                    maxVerticesSize = vb.maxVerticesSize;
+                    maxIndexSize = vb.maxIndexSize;
 
-                    update(); // maintenant que les ressources sont valides
+                    //update(); // maintenant que les ressources sont valides
                 }
 
                 return *this;
@@ -223,7 +225,9 @@ namespace odfaeg {
             }
             void VertexBuffer::update(VkCommandBuffer cmd) {
                 VkDeviceSize bufferSize = sizeof(Vertex) * m_vertices.size();
+
                 if (needToUpdateVertexBuffer) {
+
 
                     if (bufferSize > maxVerticesSize) {
                         if (vertexBuffer != VK_NULL_HANDLE) {
@@ -234,6 +238,7 @@ namespace odfaeg {
                             vkDestroyBuffer(vkDevice.getDevice(), vertexStagingBuffer, nullptr);
                             vkFreeMemory(vkDevice.getDevice(), vertexStagingBufferMemory, nullptr);
                         }
+
                         createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, vertexStagingBuffer, vertexStagingBufferMemory);
                         createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
                         maxVerticesSize = bufferSize;
