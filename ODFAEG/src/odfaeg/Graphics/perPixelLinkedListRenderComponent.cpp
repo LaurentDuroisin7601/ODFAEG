@@ -5141,10 +5141,9 @@ namespace odfaeg {
         }
         void PerPixelLinkedListRenderComponent::draw(RenderTarget& target, RenderStates states) {
             if (useThread) {
-                ////std::cout<<"wait"<<std::endl;
                 std::unique_lock<std::mutex> lock(mtx);
                 cv.wait(lock, [this] { return commandBufferReady.load(); });
-                ////std::cout<<"ok"<<std::endl;
+
                 commandBufferReady = false;
                 frameBuffer.beginRecordCommandBuffers();
                 std::vector<VkCommandBuffer> commandBuffers = frameBuffer.getCommandBuffers();

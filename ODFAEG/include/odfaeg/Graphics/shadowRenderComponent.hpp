@@ -70,8 +70,9 @@ namespace odfaeg {
                     GLMatrix4f lprojectionMatrix;
                     GLMatrix4f lviewMatrix;
                 };
-                ShadowRenderComponent (RenderWindow& window, int layer, std::string expression,window::ContextSettings settings = window::ContextSettings(0, 0, 4, 3, 0));
+                ShadowRenderComponent (RenderWindow& window, int layer, std::string expression,window::ContextSettings settings = window::ContextSettings(0, 0, 4, 3, 0), bool useThread = true);
                 void loadTextureIndexes();
+                void launchRenderer();
                 void drawNextFrame();
 
                 void drawInstanced();
@@ -104,27 +105,41 @@ namespace odfaeg {
                             flat.data[col * 4 + row] = mat[col][row];
                     return flat;
                 }
-                std::vector<VkSemaphore> offscreenFinishedSemaphore, offscreenDepthFinishedSemaphore, offscreenAlphaFinishedSemaphore;
-                std::array<unsigned int, 1> values, values2;
+                std::vector<VkSemaphore> offscreenFinishedSemaphore, offscreenDepthFinishedSemaphore, offscreenAlphaFinishedSemaphore, copyFinishedSemaphore;
+                std::array<unsigned int, 1> values, values2, copyValues;
                 RenderWindow& window;
                 LayerPC layerPC;
                 ResolutionPC resolutionPC;
                 IndirectRenderingPC indirectRenderingPC;
                 LightIndirectRenderingPC lightIndirectRenderingPC;
-                VkCommandPool commandPool;
+                VkCommandPool commandPool, secondaryBufferCommandPool;
+                VkCommandBuffer copyModelDataBufferCommandBuffer, copyMaterialDataBufferCommandBuffer, copyDrawBufferCommandBuffer, copyDrawIndexedBufferCommandBuffer,
+                copyVbBufferCommandBuffer, copyVbIndexedBufferCommandBuffer, depthCommandBuffer, alphaCommandBuffer, stencilCommandBuffer, shadowCommandBuffer;
                 ShadowUBO shadowUBODatas;
                 void createCommandPool();
+                unsigned int align(unsigned int offset);
                 uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+                void resetBuffers();
+                void fillBuffersMT();
+                void fillIndexedBuffersMT();
+                void fillShadowBuffersMT();
+                void fillShadowIndexedBuffersMT();
+                void drawBuffers();
                 void createDescriptorPool(RenderStates states);
+                void createDescriptorPool(unsigned int p, RenderStates states);
                 void createDescriptorSetLayout(RenderStates states);
                 void createDescriptorSets(RenderStates states);
+                void updateDescriptorSets(unsigned int p, RenderStates states);
                 void allocateDescriptorSets(RenderStates states);
+                void allocateDescriptorSets(unsigned int p, RenderStates states);
                 void compileShaders();
                 void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
                 void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+                void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size, VkCommandBuffer cmd);
                 void createImageView();
                 void createSampler();
                 void createCommandBuffersIndirect(unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, ShadowDepthStencilID depthStencilID, RenderStates currentStates);
+                void recordCommandBufferIndirect(unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, ShadowDepthStencilID depthStencilID, unsigned int vertexOffset, unsigned int indexOffset, unsigned int uboOffset, unsigned int modelDataOffset, unsigned int materialDataOffset, unsigned int drawCommandOffset, RenderStates currentStates, VkCommandBuffer commandBuffer);
                 Batcher batcher, shadowBatcher, normalBatcher, normalShadowBatcher, batcherIndexed, shadowBatcherIndexed, normalBatcherIndexed, normalShadowBatcherIndexed, normalStencilBuffer; /**> A group of faces using the same materials and primitive type.*/
                 std::vector<Instance> m_instances, m_normals, m_instancesIndexed, m_normalsIndexed; /**> Instances to draw. (Instanced rendering.) */
                 std::vector<Instance> m_shadow_instances, m_shadow_normals, m_shadow_instances_indexed, m_shadow_normalsIndexed;
@@ -145,8 +160,19 @@ namespace odfaeg {
                 VkBuffer modelDataBuffer, materialDataBuffer, modelDataStagingBuffer, materialDataStagingBuffer;
                 VkDeviceMemory modelDataStagingBufferMemory, materialDataStagingBufferMemory;
                 VkDeviceSize maxVboIndirectSize, maxModelDataSize, maxMaterialDataSize;
-                VkBuffer vboIndirect, vboIndirectStagingBuffer;
-                VkDeviceMemory vboIndirectMemory, vboIndirectStagingBufferMemory;
+                VkBuffer vboIndirect, vboIndirectStagingBuffer, vboIndexedIndirectStagingBuffer;
+                VkDeviceMemory vboIndirectMemory, vboIndirectStagingBufferMemory, vboIndexedIndirectStagingBufferMemory;
+
+                std::array<VkBuffer, Batcher::nbPrimitiveTypes> modelDataBufferMT = {};
+                std::array<VkDeviceMemory, Batcher::nbPrimitiveTypes> modelDataBufferMemoryMT = {};
+                std::array<VkBuffer, Batcher::nbPrimitiveTypes> materialDataBufferMT = {};
+                std::array<VkDeviceMemory, Batcher::nbPrimitiveTypes> materialDataBufferMemoryMT = {};
+                std::array<VkBuffer, Batcher::nbPrimitiveTypes> drawCommandBufferMT = {};
+                std::array<VkDeviceMemory, Batcher::nbPrimitiveTypes> drawCommandBufferMemoryMT = {};
+                std::array<VkBuffer, Batcher::nbPrimitiveTypes> drawCommandBufferIndexedMT = {};
+                std::array<VkDeviceMemory, Batcher::nbPrimitiveTypes> drawCommandBufferIndexedMemoryMT = {};
+                std::array<std::vector<DrawArraysIndirectCommand>, Batcher::nbPrimitiveTypes> drawArraysIndirectCommands = {};
+                std::array<std::vector<DrawElementsIndirectCommand>, Batcher::nbPrimitiveTypes> drawElementsIndirectCommands = {};
 
                 std::vector<VkBuffer> modelDataShaderStorageBuffers;
                 std::vector<VkDeviceMemory> modelDataShaderStorageBuffersMemory;
@@ -168,10 +194,21 @@ namespace odfaeg {
                 VkDeviceMemory stencilTextureImageMemory;
                 window::Device& vkDevice;
                 VertexBuffer vb, vb2;
-                std::array<VertexBuffer ,Batcher::nbPrimitiveTypes> vbBindlessTex;
+                std::array<VertexBuffer ,Batcher::nbPrimitiveTypes> vbBindlessTex, vbBindlessTexIndexed;
                 RectangleShape quad;
                 std::array<std::vector<ModelData>, Batcher::nbPrimitiveTypes> modelDatas;
                 std::array<std::vector<MaterialData>, Batcher::nbPrimitiveTypes> materialDatas;
+                std::array<unsigned int, Batcher::nbPrimitiveTypes> totalBufferSizeModelData, maxBufferSizeModelData, maxAlignedSizeModelData, oldTotalBufferSizeModelData;
+                std::array<unsigned int, Batcher::nbPrimitiveTypes> totalBufferSizeMaterialData, maxBufferSizeMaterialData, maxAlignedSizeMaterialData, oldTotalBufferSizeMaterialData;
+                std::array<unsigned int, Batcher::nbPrimitiveTypes> totalVertexCount, totalVertexIndexCount, totalIndexCount, totalBufferSizeDrawCommand, totalBufferSizeIndexedDrawCommand, maxBufferSizeDrawCommand, maxBufferSizeIndexedDrawCommand;
+                std::array<unsigned int, Batcher::nbPrimitiveTypes> currentModelOffset, currentMaterialOffset;
+                std::array<std::vector<unsigned int>, Batcher::nbPrimitiveTypes> modelDataOffsets, materialDataOffsets, drawCommandBufferOffsets, nbDrawCommandBuffer, drawIndexedCommandBufferOffsets, nbIndexedDrawCommandBuffer;
+                std::atomic<bool> commandBufferReady = false;
+                std::condition_variable cv;
+                std::array<bool, Batcher::nbPrimitiveTypes> needToUpdateDSs;
+                unsigned int alignment;
+                std::mutex mtx;
+                bool useThread;
         };
 
         #else
