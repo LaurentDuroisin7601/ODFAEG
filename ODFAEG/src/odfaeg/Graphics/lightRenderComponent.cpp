@@ -497,6 +497,8 @@ namespace odfaeg {
                                                                                          MaterialData material = materialDatas[gl_DrawID];
                                                                                          uint l = material.layer;
                                                                                          gl_Position = pushConsts.projectionMatrix * pushConsts.viewMatrix * model.modelMatrix * vec4(position, 1.f);
+                                                                                         //debugPrintfEXT("vertex position %v4f", gl_Position);
+
                                                                                          fTexCoords = texCoords * material.uvScale + material.uvOffset;
                                                                                          frontColor = color;
                                                                                          layer = l;
@@ -681,6 +683,7 @@ namespace odfaeg {
                                                              vec3 pixPos = vec3 (gl_FragCoord.x, gl_FragCoord.y, pixelViewZ);
                                                              vec3 viewPos = vec3(pushConsts.resolution.x * 0.5f, pushConsts.resolution.y * 0.5f, 0);
                                                              vec3 vertexToLight = sLightPos - pixPos;
+                                                             //debugPrintfEXT("light pos : %v3f pix pos : %v3f", sLightPos, pixPos);
 
                                                              if (bump.x != 0 || bump.y != 0 || bump.z != 0) {
                                                                  vec3 tmpNormal = (normal.xyz);
@@ -4598,7 +4601,7 @@ namespace odfaeg {
                 throw core::Erreur(0, "failed to begin recording command buffer!", 1);
             }
 
-            currentStates.blendMode = BlendNone;
+            currentStates.blendMode = BlendAdd;
             currentStates.shader = &lightMapGenerator;
             for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes-1; p++) {
                 if (needToUpdateDSs[p]) {
@@ -4634,8 +4637,8 @@ namespace odfaeg {
 
            }
             //glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo));
-            if (!view.isOrtho())
-                view.setPerspective(80, view.getViewport().getSize().x() / view.getViewport().getSize().y(), 0.1, view.getViewport().getSize().z());
+            /*if (!view.isOrtho())
+                view.setPerspective(80, view.getViewport().getSize().x() / view.getViewport().getSize().y(), 0.1, view.getViewport().getSize().z());*/
             math::Matrix4f viewMatrix = view.getViewMatrix().getMatrix().transpose();
             math::Matrix4f projMatrix = view.getProjMatrix().getMatrix().transpose();
             indirectRenderingPC.projMatrix = projMatrix;
