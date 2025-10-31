@@ -54,11 +54,16 @@ namespace odfaeg {
                     math::Vec2f uvScale;
                     math::Vec2f uvOffset;
                     unsigned int textureIndex;
+                    unsigned int bumpTextureIndex;
                     unsigned int layer;
                     float specularIntensity;
                     float specularPower;
+                    unsigned int padding1;
+                    unsigned int padding2;
+                    unsigned int padding3;
                     math::Vec4f lightCenter;
                     math::Vec4f lightColor;
+
                 };
                 struct IndirectRenderingPC {
                     math::Matrix4f projMatrix;
@@ -83,9 +88,10 @@ namespace odfaeg {
                     float maxP;
                     float maxM;
                 };
-                LightRenderComponent (RenderWindow& window, int layer, std::string expression,window::ContextSettings settings = window::ContextSettings(0, 0, 4, 3, 0));
+                LightRenderComponent (RenderWindow& window, int layer, std::string expression,window::ContextSettings settings = window::ContextSettings(0, 0, 4, 3, 0), bool useThread = true);
                 void createDescriptorsAndPipelines();
                 void loadTextureIndexes() {}
+                void launchRenderer();
                 void onVisibilityChanged(bool visible);
                 void pushEvent(window::IEvent event, RenderWindow& rw);
                 bool needToUpdate();
@@ -109,22 +115,44 @@ namespace odfaeg {
                 ~LightRenderComponent();
             private :
                 void createCommandPool();
+                unsigned int align(unsigned int offset);
                 uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+                void resetBuffers();
+                void fillBuffersMT();
+                void fillIndexedBuffersMT();
+                void fillLightBuffersMT();
+                void drawBuffers();
+                void createDescriptorPool(unsigned int p, RenderStates states);
                 void createDescriptorPool(RenderStates states);
                 void createDescriptorSetLayout(RenderStates states);
+                void updateDescriptorSets(unsigned int p, RenderStates states, bool lightDepth = false);
                 void createDescriptorSets(RenderStates states, bool lightDepth = false);
+                void allocateDescriptorSets(unsigned int p, RenderStates states);
                 void allocateDescriptorSets(RenderStates states);
                 void compileShaders();
                 void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
                 void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+                void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size, VkCommandBuffer cmd);
                 void createImageView();
                 void createSampler();
                 void createCommandBuffersIndirect(unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, LightDepthStencilID depthStencilID, RenderStates currentStates, bool lightDepth=false);
+                void recordCommandBufferIndirect(unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, LightDepthStencilID depthStencilID, unsigned int vertexOffset, unsigned int indexOffset, unsigned int uboOffset, unsigned int modelDataOffset, unsigned int materialDataOffset, unsigned int drawCommandOffset, RenderStates currentStates, VkCommandBuffer commandBuffer, bool lightDepth = false);
                 VkBuffer modelDataBuffer, materialDataBuffer, modelDataStagingBuffer, materialDataStagingBuffer;
                 VkDeviceMemory modelDataStagingBufferMemory, materialDataStagingBufferMemory;
                 VkDeviceSize maxVboIndirectSize, maxModelDataSize, maxMaterialDataSize;
-                VkBuffer vboIndirect, vboIndirectStagingBuffer;
-                VkDeviceMemory vboIndirectMemory, vboIndirectStagingBufferMemory;
+                VkBuffer vboIndirect, vboIndirectStagingBuffer, vboIndexedIndirectStagingBuffer;
+                VkDeviceMemory vboIndirectMemory, vboIndirectStagingBufferMemory, vboIndexedIndirectStagingBufferMemory;
+
+                std::array<VkBuffer, Batcher::nbPrimitiveTypes> modelDataBufferMT = {};
+                std::array<VkDeviceMemory, Batcher::nbPrimitiveTypes> modelDataBufferMemoryMT = {};
+                std::array<VkBuffer, Batcher::nbPrimitiveTypes> materialDataBufferMT = {};
+                std::array<VkDeviceMemory, Batcher::nbPrimitiveTypes> materialDataBufferMemoryMT = {};
+                std::array<VkBuffer, Batcher::nbPrimitiveTypes> drawCommandBufferMT = {};
+                std::array<VkDeviceMemory, Batcher::nbPrimitiveTypes> drawCommandBufferMemoryMT = {};
+                std::array<VkBuffer, Batcher::nbPrimitiveTypes> drawCommandBufferIndexedMT = {};
+                std::array<VkDeviceMemory, Batcher::nbPrimitiveTypes> drawCommandBufferIndexedMemoryMT = {};
+                std::array<std::vector<DrawArraysIndirectCommand>, Batcher::nbPrimitiveTypes> drawArraysIndirectCommands = {};
+                std::array<std::vector<DrawElementsIndirectCommand>, Batcher::nbPrimitiveTypes> drawElementsIndirectCommands = {};
 
                 std::vector<VkBuffer> modelDataShaderStorageBuffers;
                 std::vector<VkDeviceMemory> modelDataShaderStorageBuffersMemory;
@@ -150,12 +178,15 @@ namespace odfaeg {
                 std::string expression;
                 bool update, datasReady, needToUpdateDS, isSomethingDrawn;
 
-                std::array<VertexBuffer ,Batcher::nbPrimitiveTypes> vbBindlessTex;
+                std::array<VertexBuffer ,Batcher::nbPrimitiveTypes> vbBindlessTex, vbBindlessTexIndexed;
                 VertexBuffer vb;
-                std::vector<VkSemaphore> offscreenLightDepthAlphaFinishedSemaphore, offscreenFinishedSemaphore;
-                std::array<unsigned int, 1> valuesFinished, valuesLightDepthAlpha;
+                std::vector<VkSemaphore> offscreenLightDepthAlphaFinishedSemaphore, offscreenFinishedSemaphore, copyFinishedSemaphore;
+                std::array<unsigned int, 1> valuesFinished, valuesLightDepthAlpha, copyValues;
                 RenderWindow& window;
-                VkCommandPool commandPool;
+                VkCommandPool commandPool, secondaryBufferCommandPool;
+                VkCommandBuffer copyModelDataBufferCommandBuffer, copyMaterialDataBufferCommandBuffer, copyDrawBufferCommandBuffer, copyDrawIndexedBufferCommandBuffer,
+                copyVbBufferCommandBuffer, copyVbIndexedBufferCommandBuffer, lightDepthCommandBuffer,depthCommandBuffer, alphaCommandBuffer, specularCommandBuffer,
+                bumpCommandBuffer, lightCommandBuffer;
                 VkImage lightDepthTextureImage;
                 VkImageView lightDepthTextureImageView;
                 VkSampler lightDepthTextureSampler;
@@ -176,6 +207,17 @@ namespace odfaeg {
                 LayerPC layerPC;
                 ResolutionPC resolutionPC;
                 MaxSpecPC maxSpecPC;
+                std::array<unsigned int, Batcher::nbPrimitiveTypes> totalBufferSizeModelData, maxBufferSizeModelData, maxAlignedSizeModelData, oldTotalBufferSizeModelData;
+                std::array<unsigned int, Batcher::nbPrimitiveTypes> totalBufferSizeMaterialData, maxBufferSizeMaterialData, maxAlignedSizeMaterialData, oldTotalBufferSizeMaterialData;
+                std::array<unsigned int, Batcher::nbPrimitiveTypes> totalVertexCount, totalVertexIndexCount, totalIndexCount, totalBufferSizeDrawCommand, totalBufferSizeIndexedDrawCommand, maxBufferSizeDrawCommand, maxBufferSizeIndexedDrawCommand;
+                std::array<unsigned int, Batcher::nbPrimitiveTypes> currentModelOffset, currentMaterialOffset;
+                std::array<std::vector<unsigned int>, Batcher::nbPrimitiveTypes> modelDataOffsets, materialDataOffsets, drawCommandBufferOffsets, nbDrawCommandBuffer, drawIndexedCommandBufferOffsets, nbIndexedDrawCommandBuffer;
+                std::atomic<bool> commandBufferReady = false;
+                std::condition_variable cv;
+                std::array<bool, Batcher::nbPrimitiveTypes> needToUpdateDSs;
+                unsigned int alignment;
+                std::mutex mtx;
+                bool useThread;
         };
         #else
         class ODFAEG_GRAPHICS_API LightRenderComponent : public HeavyComponent {

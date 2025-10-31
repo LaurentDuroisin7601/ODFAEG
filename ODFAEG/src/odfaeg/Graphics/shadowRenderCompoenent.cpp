@@ -4307,10 +4307,9 @@ namespace odfaeg {
                         bufferSize = sizeof(MaterialData) * materialDatas[p].size();
 
                         currentMaterialOffset[p] = alignedOffsetMaterialData[p] + ((bufferSize - oldTotalBufferSizeMaterialData[p] > 0) ? bufferSize - oldTotalBufferSizeMaterialData[p] : 0);
-                        oldTotalBufferSizeMaterialData[p] = bufferSize;
                         maxAlignedSizeMaterialData[p] = (currentMaterialOffset[p] - oldTotalBufferSizeMaterialData[p] > maxAlignedSizeMaterialData[p]) ? currentMaterialOffset[p] - oldTotalBufferSizeMaterialData[p] : maxAlignedSizeMaterialData[p];
                         totalBufferSizeMaterialData[p] = (alignedOffsetMaterialData[p] + maxAlignedSizeMaterialData[p] > bufferSize) ? alignedOffsetMaterialData[p] + maxAlignedSizeMaterialData[p] : bufferSize;
-
+                        oldTotalBufferSizeMaterialData[p] = bufferSize;
                         if (totalBufferSizeMaterialData[p] > maxBufferSizeMaterialData[p]) {
                             if (materialDataStagingBuffer != nullptr) {
                                 vkDestroyBuffer(vkDevice.getDevice(), materialDataStagingBuffer, nullptr);
@@ -4403,10 +4402,14 @@ namespace odfaeg {
                         DrawElementsIndirectCommand drawElementsIndirectCommand;
                         unsigned int p = m_shadow_normalsIndexed[i].getAllVertices().getPrimitiveType();
                         MaterialData material;
-                        material.textureIndex = (m_shadow_normalsIndexed[i].getMaterial().getTexture() != nullptr) ? m_shadow_normalsIndexed[i].getMaterial().getTexture()->getId() : 0;
-                        material.layer = m_shadow_normalsIndexed[i].getMaterial().getLayer();
-                        material.uvScale = (m_shadow_normalsIndexed[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_shadow_normalsIndexed[i].getMaterial().getTexture()->getSize().x(), 1.f / m_shadow_normalsIndexed[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
-                        material.uvOffset = math::Vec2f(0, 0);
+                        {
+                            std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                            material.textureIndex = (m_shadow_normalsIndexed[i].getMaterial().getTexture() != nullptr) ? m_shadow_normalsIndexed[i].getMaterial().getTexture()->getId() : 0;
+                            material.layer = m_shadow_normalsIndexed[i].getMaterial().getLayer();
+                            material.uvScale = (m_shadow_normalsIndexed[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_shadow_normalsIndexed[i].getMaterial().getTexture()->getSize().x(), 1.f / m_shadow_normalsIndexed[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
+                            material.uvOffset = math::Vec2f(0, 0);
+                        }
+
                         materialDatas[p].push_back(material);
                         TransformMatrix tm;
                         ModelData model;

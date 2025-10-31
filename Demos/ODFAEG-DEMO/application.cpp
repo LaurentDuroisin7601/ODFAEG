@@ -445,6 +445,7 @@ namespace sorrok {
         frc2->launchRenderer();
         rrrc->launchRenderer();
         src->launchRenderer();
+        lrc->launchRenderer();
         std::cout<<"appli initialised"<<std::endl;
     }
     void MyAppli::onRender(RenderComponentManager *cm) {
