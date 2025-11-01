@@ -4769,8 +4769,7 @@ namespace odfaeg {
                 RenderStates currentStates;
                 currentStates.blendMode = BlendNone;
                 currentStates.shader = &skyboxShader;
-                if (skybox != nullptr)
-                    recordCommandBufferVertexBuffer(currentStates, skyboxCommandBuffer);
+                recordCommandBufferVertexBuffer(currentStates, skyboxCommandBuffer);
                 if (vkEndCommandBuffer(skyboxCommandBuffer) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to record command buffer!", 1);
                 }

@@ -366,6 +366,9 @@ namespace odfaeg {
                 if (vkAllocateCommandBuffers(vkDevice.getDevice(), &bufferAllocInfo, &environmentMapPass2CommandBuffer) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to allocate command buffers!", 1);
                 }
+                if (vkAllocateCommandBuffers(vkDevice.getDevice(), &bufferAllocInfo, &copySkyboxCommandBuffer) != VK_SUCCESS) {
+                    throw core::Erreur(0, "failed to allocate command buffers!", 1);
+                }
                 VkPhysicalDeviceProperties deviceProperties;
                 vkGetPhysicalDeviceProperties(vkDevice.getPhysicalDevice(), &deviceProperties);
 
@@ -379,6 +382,12 @@ namespace odfaeg {
 
                 RenderStates states;
                 if (useThread) {
+                    states.shader = &skyboxShader;
+                    createDescriptorSetLayout(states);
+                    for (unsigned int p = 0; p < (Batcher::nbPrimitiveTypes - 1); p++) {
+                        createDescriptorPool(p, states);
+                        allocateDescriptorSets(p, states);
+                    }
                     states.shader = &sLinkedList;
                     createDescriptorSetLayout(states);
                     for (unsigned int p = 0; p < (Batcher::nbPrimitiveTypes - 1); p++) {
@@ -1041,6 +1050,30 @@ namespace odfaeg {
                                                                         count[layer] = 0;
                                                                      }
                                                                      )";
+                const std::string skyboxVertexShader = R"(#version 460
+                                                          #extension GL_EXT_multiview : enable
+                                                          layout (location = 0) in vec3 aPos;
+                                                          layout (location = 1) in vec4 color;
+                                                          layout (location = 2) in vec2 texCoords;
+                                                          layout (location = 3) in vec3 normals;
+                                                          layout(location = 0) out vec4 frontColor;
+                                                          layout(location = 1) out vec3 fTexCoords;
+                                                          layout(location = 2) out vec3 normal;
+                                                          struct MatricesDatas {
+                                                              mat4 projectionMatrix;
+                                                              mat4 viewMatrix;
+                                                          };
+                                                          layout (set = 0, binding = 0) uniform UniformBufferObject {
+                                                             MatricesDatas datas[6];
+                                                          };
+                                                          void main()
+                                                          {
+                                                              fTexCoords = aPos;
+                                                              frontColor = color;
+                                                              normal = normals;
+                                                              gl_Position = vec4(aPos, 1.0) * mat4(mat3(datas[gl_ViewIndex].viewMatrix)) * datas[gl_ViewIndex].projectionMatrix;
+                                                          }
+                                                          )";
                 const std::string indirectRenderingVertexShader = R"(#version 460
                                                                      layout (location = 0) in vec3 position;
                                                                      layout (location = 1) in vec4 color;
@@ -1218,6 +1251,16 @@ namespace odfaeg {
                                                                                              //debugPrintfEXT("vertex position : %v4f", gl_Position);
                                                                                          }
                                                                                          )";
+                    const std::string skyboxFragmentShader = R"(#version 460
+                                                            layout (location = 0) out vec4 fcolor;
+                                                            layout(location = 0) in vec4 frontColor;
+                                                            layout(location = 1) in vec3 fTexCoords;
+                                                            layout(location = 2) in vec3 normal;
+                                                            layout (binding = 1) uniform samplerCube skybox;
+                                                            void main() {
+                                                                fcolor = texture(skybox, fTexCoords);
+                                                            }
+                                                            )";
                     const std::string buildDepthBufferFragmentShader = R"(#version 460
                                                                           #extension GL_ARB_fragment_shader_interlock : require
                                                                           #extension GL_EXT_nonuniform_qualifier : enable
@@ -1426,6 +1469,9 @@ namespace odfaeg {
                       //debugPrintfEXT("linked list p2");
                       fcolor = color;
                    })";
+                    if (!skyboxShader.loadFromMemory(skyboxVertexShader, skyboxFragmentShader)) {
+                        throw core::Erreur(51, "Error, failed to load build skybox shader", 3);
+                    }
                     if (!sBuildDepthBuffer.loadFromMemory(indirectRenderingVertexShader, buildDepthBufferFragmentShader)) {
                         throw core::Erreur(50, "Error, failed to load build depth buffer shader", 3);
                     }
@@ -1573,7 +1619,32 @@ namespace odfaeg {
             }
             void ReflectRefractRenderComponent::createDescriptorPool(unsigned int p, RenderStates states) {
                 Shader* shader = const_cast<Shader*>(states.shader);
-                if (shader == &sLinkedList) {
+                if (shader == &skyboxShader) {
+                    std::vector<VkDescriptorPool>& descriptorPool = environmentMap.getDescriptorPool();
+                    unsigned int descriptorId = p * shader->getNbShaders() + shader->getId();
+                    if (shader->getNbShaders() * (Batcher::nbPrimitiveTypes - 1) > descriptorPool.size())
+                        descriptorPool.resize(shader->getNbShaders() * (Batcher::nbPrimitiveTypes - 1));
+                    std::array<VkDescriptorPoolSize, 2> poolSizes;
+                    poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+                    poolSizes[0].descriptorCount = static_cast<uint32_t>(environmentMap.getMaxFramesInFlight());
+                    poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                    poolSizes[1].descriptorCount = static_cast<uint32_t>(environmentMap.getMaxFramesInFlight());
+
+                    if (descriptorPool[descriptorId] != nullptr) {
+                        vkDestroyDescriptorPool(vkDevice.getDevice(), descriptorPool[descriptorId], nullptr);
+                    }
+
+                    VkDescriptorPoolCreateInfo poolInfo{};
+                    poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+                    poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+                    poolInfo.pPoolSizes = poolSizes.data();
+                    poolInfo.maxSets = static_cast<uint32_t>(environmentMap.getMaxFramesInFlight());
+                    ////std::cout<<"descriptor id : "<<descriptorId<<std::endl;
+                    if (vkCreateDescriptorPool(vkDevice.getDevice(), &poolInfo, nullptr, &descriptorPool[descriptorId]) != VK_SUCCESS) {
+                        throw std::runtime_error("echec de la creation de la pool de descripteurs!");
+                    }
+
+                } else if (shader == &sLinkedList) {
                     std::vector<VkDescriptorPool>& descriptorPool = environmentMap.getDescriptorPool();
                     unsigned int descriptorId = p * shader->getNbShaders() + shader->getId();
                     if (shader->getNbShaders() * (Batcher::nbPrimitiveTypes - 1) > descriptorPool.size())
@@ -1897,7 +1968,40 @@ namespace odfaeg {
             }
             void ReflectRefractRenderComponent::createDescriptorSetLayout(RenderStates states) {
                 Shader* shader = const_cast<Shader*>(states.shader);
-                if (shader == &sLinkedList) {
+                if (shader == &skyboxShader) {
+                    std::vector<VkDescriptorSetLayout>& descriptorSetLayout = environmentMap.getDescriptorSetLayout();
+                    if (shader->getNbShaders() > descriptorSetLayout.size())
+                        descriptorSetLayout.resize(shader->getNbShaders());
+                    unsigned int descriptorId = shader->getId();
+                    VkDescriptorSetLayoutBinding uniformBufferLayoutBinding;
+                    uniformBufferLayoutBinding.binding = 0;
+                    uniformBufferLayoutBinding.descriptorCount = 1;
+                    uniformBufferLayoutBinding.descriptorType = (useThread) ? VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC : VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+                    uniformBufferLayoutBinding.pImmutableSamplers = nullptr;
+                    uniformBufferLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+                    VkDescriptorSetLayoutBinding samplerLayoutBinding{};
+                    samplerLayoutBinding.binding = 1;
+                    samplerLayoutBinding.descriptorCount = 1;
+                    samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                    samplerLayoutBinding.pImmutableSamplers = nullptr;
+                    samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+                    if (descriptorSetLayout[descriptorId] != nullptr) {
+                        vkDestroyDescriptorSetLayout(vkDevice.getDevice(), descriptorSetLayout[descriptorId], nullptr);
+                    }
+
+                    std::array<VkDescriptorSetLayoutBinding, 2> bindings = {uniformBufferLayoutBinding, samplerLayoutBinding};
+                    VkDescriptorSetLayoutCreateInfo layoutInfo{};
+                    layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+                    //layoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR;
+                    layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());;
+                    layoutInfo.pBindings = bindings.data();
+
+                    if (vkCreateDescriptorSetLayout(vkDevice.getDevice(), &layoutInfo, nullptr, &descriptorSetLayout[descriptorId]) != VK_SUCCESS) {
+                        throw std::runtime_error("failed to create descriptor set layout!");
+                    }
+                } else if (shader == &sLinkedList) {
                     std::vector<VkDescriptorSetLayout>& descriptorSetLayout = environmentMap.getDescriptorSetLayout();
                     if (shader->getNbShaders() > descriptorSetLayout.size())
                         descriptorSetLayout.resize(shader->getNbShaders());
@@ -2235,7 +2339,27 @@ namespace odfaeg {
             }
             void ReflectRefractRenderComponent::allocateDescriptorSets(unsigned int p, RenderStates states) {
                 Shader* shader = const_cast<Shader*>(states.shader);
-                if (shader == &sLinkedList) {
+                if (shader == &skyboxShader) {
+                    std::vector<std::vector<VkDescriptorSet>>& descriptorSets = environmentMap.getDescriptorSet();
+                    std::vector<VkDescriptorPool>& descriptorPool = environmentMap.getDescriptorPool();
+                    std::vector<VkDescriptorSetLayout>& descriptorSetLayout = environmentMap.getDescriptorSetLayout();
+                    if (shader->getNbShaders()  * (Batcher::nbPrimitiveTypes - 1) > descriptorSets.size())
+                        descriptorSets.resize(shader->getNbShaders() * (Batcher::nbPrimitiveTypes - 1));
+                    unsigned int descriptorId = p * shader->getNbShaders() + shader->getId();
+                    for (unsigned int i = 0; i < descriptorSets.size(); i++) {
+                        descriptorSets[i].resize(environmentMap.getMaxFramesInFlight());
+                    }
+                    std::vector<VkDescriptorSetLayout> layouts(environmentMap.getMaxFramesInFlight(), descriptorSetLayout[shader->getId()]);
+                    VkDescriptorSetAllocateInfo allocInfo{};
+                    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+                    allocInfo.descriptorPool = descriptorPool[descriptorId];
+                    allocInfo.descriptorSetCount = static_cast<uint32_t>(environmentMap.getMaxFramesInFlight());
+                    allocInfo.pSetLayouts = layouts.data();
+                    ////std::cout<<"descriptor id : "<<descriptorId<<std::endl;
+                    if (vkAllocateDescriptorSets(vkDevice.getDevice(), &allocInfo, descriptorSets[descriptorId].data()) != VK_SUCCESS) {
+                        throw std::runtime_error("echec de l'allocation d'un set de descripteurs!");
+                    }
+                } else if (shader == &sLinkedList) {
                     std::vector<std::vector<VkDescriptorSet>>& descriptorSets = environmentMap.getDescriptorSet();
                     std::vector<VkDescriptorPool>& descriptorPool = environmentMap.getDescriptorPool();
                     std::vector<VkDescriptorSetLayout>& descriptorSetLayout = environmentMap.getDescriptorSetLayout();
@@ -2252,7 +2376,7 @@ namespace odfaeg {
 
                     VkDescriptorSetVariableDescriptorCountAllocateInfo variableCountInfo{};
                     variableCountInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO;
-                    variableCountInfo.descriptorSetCount = static_cast<uint32_t>(variableCounts.size());;
+                    variableCountInfo.descriptorSetCount = static_cast<uint32_t>(variableCounts.size());
                     variableCountInfo.pDescriptorCounts = variableCounts.data();
                     std::vector<VkDescriptorSetLayout> layouts(environmentMap.getMaxFramesInFlight(), descriptorSetLayout[shader->getId()]);
                     VkDescriptorSetAllocateInfo allocInfo{};
@@ -2486,6 +2610,41 @@ namespace odfaeg {
             }
             void ReflectRefractRenderComponent::updateDescriptorSets(unsigned int p, RenderStates states) {
                 Shader* shader = const_cast<Shader*>(states.shader);
+                if (shader == &skyboxShader) {
+                    std::vector<std::vector<VkDescriptorSet>>& descriptorSets = environmentMap.getDescriptorSet();
+                    unsigned int descriptorId = p * shader->getNbShaders() + shader->getId();
+                    for (size_t i = 0; i < environmentMap.getMaxFramesInFlight(); i++) {
+                        std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
+                        VkDescriptorBufferInfo bufferInfo{};
+                        bufferInfo.buffer = uniformBuffer[i];
+                        bufferInfo.offset = 0;
+                        bufferInfo.range = sizeof(UniformBufferObject);
+
+                        descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                        descriptorWrites[0].dstSet = descriptorSets[descriptorId][i];
+                        descriptorWrites[0].dstBinding = 0;
+                        descriptorWrites[0].dstArrayElement = 0;
+                        descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+                        descriptorWrites[0].descriptorCount = 1;
+                        descriptorWrites[0].pBufferInfo = &bufferInfo;
+
+                        VkDescriptorImageInfo descriptorImageInfo;
+                        descriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                        descriptorImageInfo.imageView = skybox->getTexture().getImageView();
+                        descriptorImageInfo.sampler = skybox->getTexture().getSampler();
+
+                        descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                        descriptorWrites[1].dstSet = descriptorSets[descriptorId][i];
+                        descriptorWrites[1].dstBinding = 1;
+                        descriptorWrites[1].dstArrayElement = 0;
+                        descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                        descriptorWrites[1].descriptorCount = 1;
+                        descriptorWrites[1].pImageInfo = &descriptorImageInfo;
+
+                        vkUpdateDescriptorSets(vkDevice.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+
+                    }
+                }
                 if (shader == &sLinkedList) {
                     std::vector<std::vector<VkDescriptorSet>>& descriptorSets = environmentMap.getDescriptorSet();
                     std::vector<Texture*> allTextures = Texture::getAllTextures();
@@ -3462,12 +3621,18 @@ namespace odfaeg {
 
                 }
             }
-            void ReflectRefractRenderComponent::recordCommandBufferVertexBuffer(RenderStates currentStates, VkCommandBuffer commandBuffer) {
+            void ReflectRefractRenderComponent::recordCommandBufferVertexBuffer(RenderStates currentStates, VkCommandBuffer commandBuffer, unsigned int uboOffset) {
                 //std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                 Shader* shader = const_cast<Shader*>(currentStates.shader);
                 currentStates.blendMode.updateIds();
-                vkCmdPushConstants(commandBuffer, environmentMap.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + vb.getPrimitiveType()][0][RRRCNODEPTHNOSTENCIL*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(LinkedList2PC), &linkedList2PC);
-                environmentMap.drawVertexBuffer(commandBuffer, environmentMap.getCurrentFrame(), vb, RRRCNODEPTHNOSTENCIL, currentStates);
+                if (currentStates.shader == &skyboxShader) {
+                    std::vector<unsigned int> dynamicOffsets;
+                    dynamicOffsets.push_back(uboOffset);
+                    environmentMap.drawVertexBuffer(commandBuffer, environmentMap.getCurrentFrame(), vb2, RRRCNODEPTHNOSTENCIL, currentStates, dynamicOffsets);
+                } else {
+                    vkCmdPushConstants(commandBuffer, environmentMap.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + vb.getPrimitiveType()][0][RRRCNODEPTHNOSTENCIL*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(LinkedList2PC), &linkedList2PC);
+                    environmentMap.drawVertexBuffer(commandBuffer, environmentMap.getCurrentFrame(), vb, RRRCNODEPTHNOSTENCIL, currentStates);
+                }
             }
             void ReflectRefractRenderComponent::drawBuffers() {
 
@@ -3515,6 +3680,8 @@ namespace odfaeg {
                         vbBindlessTexIndexed[p].updateStagingBuffers();
                     }
                 }
+                if (skybox != nullptr)
+                    vb2.updateStagingBuffers();
                 vb.updateStagingBuffers();
 
                 VkCommandBufferInheritanceInfo inheritanceInfo{};
@@ -3573,6 +3740,25 @@ namespace odfaeg {
                 }
                 if (vkEndCommandBuffer(alphaBufferCommandBuffer) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to record command buffer!", 1);
+                }
+                if (skybox != nullptr) {
+                    currentStates.shader = &skyboxShader;
+                    for (unsigned int i = 0; i < nbReflRefrEntities; i++) {
+                        inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+                        inheritanceInfo.renderPass = environmentMap.getRenderPass(1);
+                        inheritanceInfo.framebuffer = environmentMap.getSwapchainFrameBuffers(1)[environmentMap.getCurrentFrame()];
+                        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+                        beginInfo.pInheritanceInfo = &inheritanceInfo;
+                        beginInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+                        vkResetCommandBuffer(skyboxCommandBuffer[i], 0);
+                        if (vkBeginCommandBuffer(skyboxCommandBuffer[i], &beginInfo) != VK_SUCCESS) {
+                            throw core::Erreur(0, "failed to begin recording command buffer!", 1);
+                        }
+                        recordCommandBufferVertexBuffer(currentStates, skyboxCommandBuffer[i], i * alignUBO(sizeof(UniformBufferObject)));
+                        if (vkEndCommandBuffer(skyboxCommandBuffer[i]) != VK_SUCCESS) {
+                            throw core::Erreur(0, "failed to record command buffer!", 1);
+                        }
+                    }
                 }
                 currentStates.shader = &sLinkedList;
                 for (unsigned int i = 0; i < nbReflRefrEntities; i++) {
@@ -3695,6 +3881,13 @@ namespace odfaeg {
             }
             unsigned int ReflectRefractRenderComponent::alignUBO(unsigned int offset) {
                 return (offset + uboAlignment - 1) & ~(uboAlignment - 1);
+            }
+            void ReflectRefractRenderComponent::loadSkybox(Entity* skybox) {
+                this->skybox = skybox;
+                RenderStates states;
+                states.shader = &skyboxShader;
+                for (unsigned int p = 0; p < (Batcher::nbPrimitiveTypes - 1); p++)
+                    updateDescriptorSets(p, states);
             }
             void ReflectRefractRenderComponent::fillBufferReflMT() {
 
@@ -6806,6 +6999,41 @@ namespace odfaeg {
                     fillBufferReflIndexedMT();
                     fillNonReflBufferMT();
                     fillNonReflIndexedBufferMT();
+                    vb2.clear();
+                    //skyboxVB.name = "SKYBOXVB";
+                    for (unsigned int i = 0; i < m_skyboxInstance.size(); i++) {
+                        if (m_skyboxInstance[i].getAllVertices().getVertexCount() > 0) {
+                            vb2.setPrimitiveType(m_skyboxInstance[i].getAllVertices().getPrimitiveType());
+                            for (unsigned int j = 0; j < m_skyboxInstance[i].getAllVertices().getVertexCount(); j++) {
+                                vb2.append(m_skyboxInstance[i].getAllVertices()[j]);
+                            }
+                        }
+                    }
+                    if (skybox != nullptr) {
+                        vkResetCommandBuffer(copySkyboxCommandBuffer, 0);
+                        VkCommandBufferInheritanceInfo inheritanceInfo{};
+                        inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+                        inheritanceInfo.renderPass = VK_NULL_HANDLE; // pas de render pass
+                        inheritanceInfo.subpass = 0;
+                        inheritanceInfo.framebuffer = VK_NULL_HANDLE;
+                        inheritanceInfo.occlusionQueryEnable = VK_FALSE;
+                        inheritanceInfo.queryFlags = 0;
+                        inheritanceInfo.pipelineStatistics = 0;
+                        VkCommandBufferBeginInfo beginInfo{};
+                        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+                        beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+                        beginInfo.pInheritanceInfo = &inheritanceInfo; // obligatoire pour secondaire
+
+                        if (vkBeginCommandBuffer(copySkyboxCommandBuffer, &beginInfo) != VK_SUCCESS) {
+
+                            throw core::Erreur(0, "failed to begin recording command buffer!", 1);
+                        }
+                        //std::cout<<"copy skybox vb"<<std::endl;
+                        vb2.update(copySkyboxCommandBuffer);
+                        if (vkEndCommandBuffer(copySkyboxCommandBuffer) != VK_SUCCESS) {
+                            throw core::Erreur(0, "failed to record command buffer!", 1);
+                        }
+                    }
                     vb.clear();
                     vb.setPrimitiveType(Triangles);
                     Vertex v1 (math::Vec3f(0, 0, quad.getSize().z()));
@@ -6874,6 +7102,7 @@ namespace odfaeg {
                                         if (nbReflRefrEntities > environmentMapCommandBuffer.size()) {
                                             environmentMapCommandBuffer.resize(nbReflRefrEntities);
                                             reflectRefractCommandBuffer.resize(nbReflRefrEntities);
+                                            skyboxCommandBuffer.resize(nbReflRefrEntities);
                                             VkCommandBufferAllocateInfo allocInfo{};
                                             allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
                                             allocInfo.commandPool = secondaryBufferCommandPool;
@@ -6884,6 +7113,9 @@ namespace odfaeg {
                                                 throw core::Erreur(0, "failed to allocate command buffers!", 1);
                                             }
                                             if (vkAllocateCommandBuffers(vkDevice.getDevice(), &allocInfo, &reflectRefractCommandBuffer[nbReflRefrEntities-1]) != VK_SUCCESS) {
+                                                throw core::Erreur(0, "failed to allocate command buffers!", 1);
+                                            }
+                                            if (vkAllocateCommandBuffers(vkDevice.getDevice(), &allocInfo, &skyboxCommandBuffer[nbReflRefrEntities-1]) != VK_SUCCESS) {
                                                 throw core::Erreur(0, "failed to allocate command buffers!", 1);
                                             }
                                             createUniformBuffersMT();
@@ -6909,16 +7141,6 @@ namespace odfaeg {
                                             viewMatrix = reflectView.getViewMatrix().getMatrix();
                                             projMatrices[m] = projMatrix;
                                             viewMatrices[m] = viewMatrix;
-                                            float zNear = reflectView.getViewport().getPosition().z();
-                                            if (!reflectView.isOrtho())
-                                                reflectView.setPerspective(80, view.getViewport().getSize().x() / view.getViewport().getSize().y(), 0.1f, view.getViewport().getSize().z());
-                                            viewMatrix = reflectView.getViewMatrix().getMatrix();
-                                            projMatrix = reflectView.getProjMatrix().getMatrix();
-                                            math::Matrix4f sbViewMatrix = math::Matrix4f(math::Matrix3f(viewMatrix));
-                                            sbViewMatrices[m] = sbViewMatrix;
-                                            sbProjMatrices[m] = projMatrix;
-                                            if (!reflectView.isOrtho())
-                                                reflectView.setPerspective(80, view.getViewport().getSize().x() / view.getViewport().getSize().y(), zNear, view.getViewport().getSize().z());
                                         }
                                         UniformBufferObject ubo;
                                         for (unsigned int f = 0; f < 6; f++) {
@@ -6992,23 +7214,12 @@ namespace odfaeg {
                                     }
                                     if (!contains) {
                                         rootEntities.push_back(entity);
-                                        /*math::Vec3f scale(1, 1, 1);
-                                        if (entity->getSize().x() > squareSize) {
-                                            scale.x = entity->getSize().x() / squareSize;
-                                        }
-                                        if (entity->getSize().y() > squareSize) {
-                                            scale.y = entity->getSize().y() / squareSize;
-                                        }*/
-                                        ////////std::cout<<"scale : "<<scale<<"position : "<<entity->getPosition()<<std::endl;
-                                        //reflectView.setScale(scale.x, scale.y, scale.z);
                                         if (entity->getType() != "E_BIGTILE")
                                             reflectView.setCenter(entity->getPosition()+entity->getSize()*0.5f);
                                         else
                                             reflectView.setCenter(view.getPosition());
                                         math::Matrix4f projMatrices[6];
                                         math::Matrix4f viewMatrices[6];
-                                        math::Matrix4f sbProjMatrices[6];
-                                        math::Matrix4f sbViewMatrices[6];
 
                                         environmentMap.setView(reflectView);
                                         for (unsigned int m = 0; m < 6; m++) {
@@ -7018,58 +7229,11 @@ namespace odfaeg {
                                             viewMatrix = reflectView.getViewMatrix().getMatrix()/*.transpose()*/;
                                             projMatrices[m] = projMatrix;
                                             viewMatrices[m] = viewMatrix;
-                                            float zNear = reflectView.getViewport().getPosition().z();
-                                            if (!reflectView.isOrtho())
-                                                reflectView.setPerspective(80, view.getViewport().getSize().x() / view.getViewport().getSize().y(), 0.1f, view.getViewport().getSize().z());
-                                            viewMatrix = reflectView.getViewMatrix().getMatrix()/*.transpose()*/;
-                                            projMatrix = reflectView.getProjMatrix().getMatrix()/*.transpose()*/;
-                                            math::Matrix4f sbViewMatrix = math::Matrix4f(math::Matrix3f(viewMatrix));
-                                            sbViewMatrices[m] = sbViewMatrix;
-                                            sbProjMatrices[m] = projMatrix;
-                                            if (!reflectView.isOrtho())
-                                                reflectView.setPerspective(80, view.getViewport().getSize().x() / view.getViewport().getSize().y(), zNear, view.getViewport().getSize().z());
+
 
                                         }
 
-                                        //environmentMap.display();
-                                        /*vkWaitForFences(vkDevice.getDevice(), 1, &computeFence, VK_TRUE, UINT64_MAX);
-                                        vkResetFences(vkDevice.getDevice(), 1, &computeFence);
-                                        VkCommandBuffer cmd = beginSingleTimeCommands();
 
-
-
-
-                                        VkMemoryBarrier memoryBarrier = {};
-                                        memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-                                        memoryBarrier.srcAccessMask = 0;
-                                        memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
-                                        vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
-                                        vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, computePipeline);
-                                        vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, computePipelineLayout, 0, 1, &cpDescriptorSet, 0, nullptr);
-                                        vkCmdDispatch(cmd, squareSize, squareSize, 6);
-                                        VkMemoryBarrier memoryBarrier2 = {};
-                                        memoryBarrier2.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-                                        memoryBarrier2.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
-                                        memoryBarrier2.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-                                        vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier2, 0, nullptr, 0, nullptr);
-                                        endSingleTimeCommands(cmd);*/
-
-                                        /*vb.clear();
-                                        //vb.name = "SKYBOXVB";
-                                        for (unsigned int i = 0; i < m_skyboxInstance.size(); i++) {
-                                            if (m_skyboxInstance[i].getAllVertices().getVertexCount() > 0) {
-                                                vb.setPrimitiveType(m_skyboxInstance[i].getAllVertices().getPrimitiveType());
-                                                for (unsigned int j = 0; j < m_skyboxInstance[i].getAllVertices().getVertexCount(); j++) {
-                                                    ////////std::cout<<"append"<<std::endl;
-                                                    vb.append(m_skyboxInstance[i].getAllVertices()[j]);
-                                                }
-                                            }
-                                        }
-                                        currentStates.blendMode = BlendAlpha;
-                                        currentStates.shader = &skyboxShader;
-                                        currentStates.texture = (skybox == nullptr ) ? nullptr : &static_cast<g3d::Skybox*>(skybox)->getTexture();
-                                        vb.update();
-                                        environmentMap.drawVertexBuffer(vb, currentStates);*/
                                         UniformBufferObject ubo;
                                         for (unsigned int f = 0; f < 6; f++) {
                                             MatricesData matrices;
@@ -7182,6 +7346,8 @@ namespace odfaeg {
                     vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyDrawIndexedBufferCommandBuffer);
                     vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyVbIndexedBufferCommandBuffer);
                     vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyVbEnvPass2BufferCommandBuffer);
+                    if (skybox != nullptr)
+                        vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copySkyboxCommandBuffer);
                     VkBufferMemoryBarrier bufferMemoryBarrier{};
                     bufferMemoryBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
                     bufferMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
@@ -7200,6 +7366,18 @@ namespace odfaeg {
                     1, &bufferMemoryBarrier,
                     0, nullptr
                     );
+                    if (skybox != nullptr) {
+                        bufferMemoryBarrier.buffer = vb2.getVertexBuffer();
+                        vkCmdPipelineBarrier(
+                        commandBuffers[currentFrame],
+                        VK_PIPELINE_STAGE_TRANSFER_BIT,
+                        VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
+                        0,
+                        0, nullptr,
+                        1, &bufferMemoryBarrier,
+                        0, nullptr
+                        );
+                    }
                     for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                         VkBufferMemoryBarrier buffersMemoryBarrier{};
                         buffersMemoryBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
@@ -7369,6 +7547,7 @@ namespace odfaeg {
 
                         commandBuffers = environmentMap.getCommandBuffers();
                         currentFrame = environmentMap.getCurrentFrame();
+
                         environmentMap.clear(Color::Transparent);
                         VkClearColorValue clearColor;
                         clearColor.uint32[0] = 0xffffffff;
@@ -7387,6 +7566,23 @@ namespace odfaeg {
                             memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
                             vkCmdPipelineBarrier(commandBuffers[j], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
 
+                        }
+                        if (skybox != nullptr) {
+                            environmentMap.beginRenderPass();
+                            vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &skyboxCommandBuffer[i]);
+                            environmentMap.endRenderPass();
+                            signalSemaphores.clear();
+                            signalSemaphores.push_back(offscreenRenderingFinishedSemaphore[currentFrame]);
+                            signalValues.clear();
+                            waitSemaphores.clear();
+                            waitSemaphores.push_back(copyFinishedSemaphore[currentFrame]);
+                            waitStages.clear();
+                            waitStages.push_back(VK_PIPELINE_STAGE_VERTEX_SHADER_BIT);
+                            waitValues.clear();
+                            waitValues.push_back(valuesCopy[currentFrame]);
+                            values[currentFrame]++;
+                            signalValues.push_back(values[currentFrame]);
+                            environmentMap.display(signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
                         }
                         //environmentMap.display(false, computeSemaphore);
 
@@ -7683,6 +7879,8 @@ namespace odfaeg {
                 vkFreeCommandBuffers(vkDevice.getDevice(), secondaryBufferCommandPool, 1, &depthBufferCommandBuffer);
                 vkFreeCommandBuffers(vkDevice.getDevice(), secondaryBufferCommandPool, 1, &alphaBufferCommandBuffer);
                 vkFreeCommandBuffers(vkDevice.getDevice(), secondaryBufferCommandPool, 1, &environmentMapPass2CommandBuffer);
+                vkFreeCommandBuffers(vkDevice.getDevice(), secondaryBufferCommandPool, 1, &copySkyboxCommandBuffer);
+                vkFreeCommandBuffers(vkDevice.getDevice(), secondaryBufferCommandPool, skyboxCommandBuffer.size(), skyboxCommandBuffer.data());
                 vkFreeCommandBuffers(vkDevice.getDevice(), secondaryBufferCommandPool, environmentMapCommandBuffer.size(), environmentMapCommandBuffer.data());
                 vkFreeCommandBuffers(vkDevice.getDevice(), secondaryBufferCommandPool, reflectRefractCommandBuffer.size(), reflectRefractCommandBuffer.data());
                 vkDestroyCommandPool(vkDevice.getDevice(), secondaryBufferCommandPool, nullptr);

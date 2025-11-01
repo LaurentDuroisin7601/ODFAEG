@@ -179,7 +179,7 @@ namespace odfaeg {
             void createCommandBuffersIndirect(unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, RRRCDepthStencilID depthStencilID, RenderStates currentStates);
             void recordCommandBufferIndirect(unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, RRRCDepthStencilID depthStencilID, unsigned int vertexOffset, unsigned int indexOffset, unsigned int uboOffset, unsigned int modelDataOffset, unsigned int materialDataOffset, unsigned int drawCommandOffset, RenderStates currentStates, VkCommandBuffer commandBuffer);
             void createCommandBufferVertexBuffer(RenderStates currentStates);
-            void recordCommandBufferVertexBuffer(RenderStates currentStates, VkCommandBuffer commandBuffer);
+            void recordCommandBufferVertexBuffer(RenderStates currentStates, VkCommandBuffer commandBuffer, unsigned int uboOffset = -1);
             void drawBuffers();
             bool isCommandBufferReady();
             unsigned int maxNodes;
@@ -230,9 +230,9 @@ namespace odfaeg {
             std::array<VkDeviceMemory, Batcher::nbPrimitiveTypes> drawCommandBufferIndexedMemoryMT = {};
             std::array<std::vector<DrawArraysIndirectCommand>, Batcher::nbPrimitiveTypes> drawArraysIndirectCommands = {};
             std::array<std::vector<DrawElementsIndirectCommand>, Batcher::nbPrimitiveTypes> drawElementsIndirectCommands = {};
-            VkCommandBuffer copyModelDataBufferCommandBuffer, copyMaterialDataBufferCommandBuffer, copyDrawBufferCommandBuffer, copyDrawIndexedBufferCommandBuffer,
+            VkCommandBuffer copySkyboxCommandBuffer, copyModelDataBufferCommandBuffer, copyMaterialDataBufferCommandBuffer, copyDrawBufferCommandBuffer, copyDrawIndexedBufferCommandBuffer,
             copyVbBufferCommandBuffer, copyVbIndexedBufferCommandBuffer, copyVbEnvPass2BufferCommandBuffer, depthBufferCommandBuffer, alphaBufferCommandBuffer, environmentMapPass2CommandBuffer;
-            std::vector<VkCommandBuffer> environmentMapCommandBuffer, reflectRefractCommandBuffer;
+            std::vector<VkCommandBuffer> skyboxCommandBuffer, environmentMapCommandBuffer, reflectRefractCommandBuffer;
             VkImage headPtrTextureImage;
             VkImageView headPtrTextureImageView;
             VkSampler headPtrTextureSampler;

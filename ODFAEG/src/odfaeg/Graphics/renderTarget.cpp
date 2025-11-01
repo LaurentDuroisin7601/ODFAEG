@@ -387,7 +387,7 @@ namespace odfaeg {
                 vkCmdDrawIndirect(cmd, vboIndirect, drawCommandOffset, nbIndirectCommands, stride);
             }
         }
-        void RenderTarget::drawVertexBuffer(VkCommandBuffer& cmd, unsigned int i, VertexBuffer& vertexBuffer, unsigned int depthStencilId, RenderStates states, unsigned int instanceCount, unsigned int customDescriptorSetId, unsigned int id) {
+        void RenderTarget::drawVertexBuffer(VkCommandBuffer& cmd, unsigned int i, VertexBuffer& vertexBuffer, unsigned int depthStencilId, RenderStates states, std::vector<unsigned int> dynamicOffsets, unsigned int instanceCount, unsigned int customDescriptorSetId, unsigned int id) {
             ////////std::cout<<"vertex stencil id :"<<depthStencilId<<std::endl;
             states.blendMode.updateIds();
             Shader* shader = const_cast<Shader*>(states.shader);
@@ -400,7 +400,7 @@ namespace odfaeg {
             vkCmdBindVertexBuffers(cmd, 0, 1, vertexBuffers, offsets);
             /*//////std::cout<<"draw pipeline id : "<<shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vertexBuffer.getPrimitiveType()<<","<<id<<","<<depthStencilId<<std::endl;
             system("PAUSE");*/
-            vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vertexBuffer.getPrimitiveType()][id][depthStencilId*nbBlendMode+blendModeId], 0, 1, &descriptorSets[descriptorId][getCurrentFrame()], 0, nullptr);
+            vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vertexBuffer.getPrimitiveType()][id][depthStencilId*nbBlendMode+blendModeId], 0, 1, &descriptorSets[descriptorId][getCurrentFrame()], dynamicOffsets.size(), dynamicOffsets.data());
 
             applyViewportAndScissor(cmd);
             if(vertexBuffer.getIndicesSize() > 0) {
