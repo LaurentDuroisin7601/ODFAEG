@@ -2844,7 +2844,7 @@ namespace odfaeg {
                                                                     //vec3 localNormal = mat3(finalBonesMatrices[boneIds[i]]) * normals;
                                                                 }
                                                                 uint textureIndex =  materialData.textureIndex;
-                                                                gl_Position = projectionMatrix * viewMatrix * modelData.modelMatrix * vec4((position.x - xOff), (position.y + yOff), position.z, 1.f) + totalPosition;
+                                                                gl_Position = projectionMatrix * viewMatrix * modelData.modelMatrix * (vec4((position.x - xOff), (position.y + yOff), position.z, 1.f) + totalPosition);
                                                                 fTexCoords = (textureIndex != 0) ? (textureMatrix[textureIndex-1] * vec4(texCoords, 1.f, 1.f)).xy : texCoords;
                                                                 frontColor = color;
                                                                 texIndex = textureIndex;

@@ -161,6 +161,10 @@ void ODFAEGCreator::onInit() {
         item18 = new MenuItem(getRenderWindow(), fm.getResourceByAlias(Fonts::Serif), "New particle system updater");
         item18->addMenuItemListener(this);
         getRenderComponentManager().addComponent(item18);
+        item19 = new MenuItem(getRenderWindow(), fm.getResourceByAlias(Fonts::Serif), "New script");
+        item19->addMenuItemListener(this);
+        getRenderComponentManager().addComponent(item19);
+
         menu1->addMenuItem(item11);
         menu1->addMenuItem(item12);
         menu1->addMenuItem(item13);
@@ -169,6 +173,8 @@ void ODFAEGCreator::onInit() {
         menu1->addMenuItem(item16);
         menu1->addMenuItem(item17);
         menu1->addMenuItem(item18);
+        menu1->addMenuItem(item19);
+
         item21 = new MenuItem(getRenderWindow(), fm.getResourceByAlias(Fonts::Serif), "Build");
         item21->addMenuItemListener(this);
         getRenderComponentManager().addComponent(item21);
@@ -792,6 +798,12 @@ void ODFAEGCreator::onInit() {
         wGenerate3DTerrain->setVisible(false);
         addWindow(wGenerate3DTerrain);
         getRenderComponentManager().setEventContextActivated(false, *wGenerate3DTerrain);
+
+        wCreateScript = new RenderWindow(sf::VideoMode(400, 800), "Generate terrain", sf::Style::Default, ContextSettings(0, 0, 4, 3, 0));
+        Label* lScriptFileName = new Label(*wCreateScript, Vec3f(0, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "Script file name : ", 15);
+        getRenderComponentManager().addComponent(lScriptFileName);
+        taScriptFileName = new TextArea(Vec3f(200, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "", *wCreateScript);
+        getRenderComponentManager().addComponent(taScriptFileName);
 
         //Create panel for project files.
         pProjects = new Panel(getRenderWindow(), Vec3f(0, 0, 0), Vec3f(200, 700, 0), 0);

@@ -765,8 +765,8 @@ namespace odfaeg {
                                        if (visibleEntities[entity->getRootTypeInt()][entity->getId()] == nullptr) {
                                             math::Vec3f entityToView = entity->getCenter() - view.getPosition();
                                             //std::cout<<"forward : "<<view.getForward()<<std::endl;
-                                            if (entityToView.dot(view.getForward()) <= 0)
-                                                visibleEntities[entity->getRootTypeInt()][entity->getId()] = entity;
+                                            //if (entityToView.dot(view.getForward()) <= 0)
+                                            visibleEntities[entity->getRootTypeInt()][entity->getId()] = entity;
                                        }
 
                                     }
