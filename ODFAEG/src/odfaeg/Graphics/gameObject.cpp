@@ -85,6 +85,9 @@ namespace odfaeg {
         }
         void GameObject::setDrawMode(DrawMode dm) {
             drawMode = dm;
+            for (unsigned int i = 0; i < children.size(); i++) {
+                children[i]->setDrawMode(dm);
+            }
         }
         Entity::DrawMode GameObject::getDrawMode() {
             return drawMode;

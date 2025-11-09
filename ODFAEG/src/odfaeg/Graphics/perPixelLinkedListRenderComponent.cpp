@@ -1577,6 +1577,7 @@ namespace odfaeg {
                                                             layout(location = 2) out uint texIndex;
                                                             layout(location = 3) out vec3 normal;
 
+
                                                             void main() {
 
                                                                 gl_PointSize = 2.0f;
@@ -1590,6 +1591,7 @@ namespace odfaeg {
                                                                     xOff = 0.025*cos(position.x*12+pushConsts.time*FPI)*pushConsts.resolution.x;
                                                                 }
                                                                 uint textureIndex =  materialData.textureIndex;
+
 
                                                                 gl_Position = vec4((position.x - xOff), (position.y + yOff), position.z, 1.f) * modelData.modelMatrix * pushConsts.viewMatrix * pushConsts.projectionMatrix;
                                                                 fTexCoords = texCoords * materialData.uvScale + materialData.uvOffset;
@@ -5111,10 +5113,13 @@ namespace odfaeg {
                     for (unsigned int j = 0; j <  vEntities[i]->getNbFaces(); j++) {
                          std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                          if (vEntities[i]->getDrawMode() == Entity::INSTANCED && !vEntities[i]->isSelected()) {
-                            if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0)
+                            if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0) {
+
                                 batcher.addFace( vEntities[i]->getFace(j));
-                            else
+                            } else {
+
                                 batcherIndexed.addFace(vEntities[i]->getFace(j));
+                            }
                          } else if (vEntities[i]->getDrawMode() == Entity::NORMAL && !vEntities[i]->isSelected()) {
                              if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0) {
                                 normalBatcher.addFace( vEntities[i]->getFace(j));
