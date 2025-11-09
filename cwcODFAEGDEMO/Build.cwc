@@ -1,0 +1,80 @@
+-{vFlag}=
+-std=c++14
+-DSFML
+-DODFAEG_STATIC
+-DSFML_STATIC
+-DGLEW_STATIC
+;-DODFAEG_SYSTEM_WINDOWS
+>
+-{vIncl}=
+-I ../ 
+-I ../ExtLib/SFML-2.5.1/include/
+-I ../ExtLib/SDL2/include/
+-I ../ODFAEG/extlibs/headers/libsndfile/windows/
+-I ../ODFAEG/extlibs/headers/OPENSSL/
+-I ../ODFAEG/include/
+-I ../ODFAEG/extlibs/headers/
+-I ../ODFAEG/extlibs/headers/freetype2/
+-I ../Extlib/Assimp/include/
+
+>
+;Build ODFAEG
+-c ../ODFAEG/src/odfaeg/Core/                -o obj/cpp_{_sPlatform}_{_sOpt}/lib/ODFAEG/Core/
+-{vIncl}
+-{vFlag}
+>
+-c ../ODFAEG/src/odfaeg/Math/                -o obj/cpp_{_sPlatform}_{_sOpt}/lib/ODFAEG/Math/
+-{vIncl}
+-{vFlag}
+>
+-c ../ODFAEG/src/odfaeg/Physics/             -o obj/cpp_{_sPlatform}_{_sOpt}/lib/ODFAEG/Physics/
+-{vIncl}
+-{vFlag}
+>
+-c ../ODFAEG/src/odfaeg/Graphics/            -o obj/cpp_{_sPlatform}_{_sOpt}/lib/ODFAEG/Graphics/
+-{vIncl}
+-{vFlag}
+>
+-c ../ODFAEG/src/odfaeg/Network/             -o obj/cpp_{_sPlatform}_{_sOpt}/lib/ODFAEG/Network/
+-{vIncl}
+-{vFlag}
+>
+-c ../ODFAEG/src/odfaeg/Window/ !../ODFAEG/src/odfaeg/Window/Linux/ -o obj/cpp_{_sPlatform}_{_sOpt}/lib/ODFAEG/
+-{vIncl}
+-{vFlag}
+>
+
+-c ../ODFAEG/src/odfaeg/Audio/               -o obj/cpp_{_sPlatform}_{_sOpt}/lib/ODFAEG/Audio/
+-{vIncl}
+-{vFlag}
+>
+;Build Demo
+-c ../Demos/ODFAEG-DEMO/ -o obj/cpp_{_sPlatform}_{_sOpt}/Demo/
+-I ..
+-{vIncl}
+-{vFlag}
+>
+;Copy Assets
+-#Copy ../Demos/ODFAEG-DEMO/fonts/  _out/{_sPlatform}_{_sOpt}/fonts/
+>
+-#Copy ../Demos/ODFAEG-DEMO/sounds/  _out/{_sPlatform}_{_sOpt}/sounds/
+>
+-#Copy ../Demos/ODFAEG-DEMO/tilesets/  _out/{_sPlatform}_{_sOpt}/tilesets/
+>
+;Copy DLL
+-#Copy ../ODFAEG/extlibs/bin/x86/  _out/{_sPlatform}_{_sOpt}/
+>
+;Generate executable
+-o obj/cpp_{_sPlatform}_{_sOpt}/ -#To _out/{_sPlatform}_{_sOpt}/App.*
+-L ../ODFAEG/extlibs/bin/x86/
+-L ../ODFAEG/extlibs/libs-mingw/x86/
+-L ../ExtLib/SFML-2.5.1/lib/
+-L ../ExtLib/GLEW/glew-2.0.0/lib/Release/Win32/
+ 
+ 
+-lsfml-network-s -lsfml-audio-s -lsfml-graphics-s -lsfml-window-s  -lsfml-system-s  
+-lfreetype   -lws2_32 -lglew32s  -lwinmm -luser32 -lssl -lcrypto -lgdi32 -lopengl32 -lassimp -lopenal32 -lflac -lvorbisenc -lvorbisfile -lvorbis  -logg -lsndfile -lglm_static  
+  
+;-lnghttp2 -lcurl -lssh2 
+>
+-#Run

@@ -1,0 +1,45 @@
+#ifndef TIMER
+#define TIMER
+#include "singleton.h"
+#include <mutex>
+namespace sfgl {
+class Timer {
+public :
+    Timer() {
+
+    }
+    void setInterval(sf::Time interval) {
+        this->interval = interval;
+    }
+    void start () {
+        running = true;
+        m_thread = std::thread (&Timer::run, this);
+    }
+    void stop() {
+        running = false;
+        m_thread.join();
+    }
+    void run () {
+        while (running) {
+            rec_mutex.lock();
+            sf::Time elapsedTime = clock.getElapsedTime();
+            if (elapsedTime >= interval) {
+                onUpdate();
+                clock.restart();
+            }
+            rec_mutex.unlock();
+        }
+    }
+    virtual void onUpdate() = 0;
+    bool isRunning () {
+        return running;
+    }
+private :
+    sf::Clock clock;
+    sf::Time interval;
+    std::thread m_thread;
+    bool running;
+    std::recursive_mutex rec_mutex;
+};
+}
+#endif // TIMER

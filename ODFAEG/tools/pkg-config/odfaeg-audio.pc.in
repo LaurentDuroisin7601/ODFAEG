@@ -1,0 +1,11 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib@LIB_SUFFIX@
+includedir=${prefix}/include
+Name: ODFAEG-network
+Description: The Simple and Fast Game Library, audio module.
+URL: http://lolilolight.github.io
+Version: @VERSION_MAJOR@.@VERSION_MINOR@.@VERSION_PATCH@
+Requires: odfaeg-audio
+Libs: -L${libdir} -odfaeg-audio
+Cflags: -I${includedir}
