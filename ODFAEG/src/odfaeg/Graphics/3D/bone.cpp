@@ -89,7 +89,7 @@ namespace odfaeg {
                 std::cout<<"rotation : "<<rotation<<std::endl;
                 std::cout<<"scale : "<<scale<<std::endl;*/
 
-                m_LocalTransform = scale * rotation * translation;
+                m_LocalTransform = translation * scale * rotation;
                 /*if (!isBoneMatrixValid(getBoneName(), m_LocalTransform)) {
                     std::cerr<<"bone matrice not valid"<<std::endl;
                 }*/
