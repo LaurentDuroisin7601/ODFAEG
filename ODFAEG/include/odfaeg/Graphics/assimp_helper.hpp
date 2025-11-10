@@ -31,7 +31,7 @@ namespace odfaeg {
             {
                 return glm::quat(pOrientation.w, pOrientation.x, pOrientation.y, pOrientation.z);
             }
-            static inline math::Matrix4f convertAssimpToODFAEGNodeTransformMatrix(aiMatrix4x4 aiMatrix) {
+            static inline math::Matrix4f convertAssimpToODFAEGMatrix(aiMatrix4x4 aiMatrix) {
                 math::Matrix4f mat;
                 mat[0][0] = aiMatrix.a1;
                 mat[0][1] = aiMatrix.a2;
@@ -52,31 +52,10 @@ namespace odfaeg {
                 mat[3][1] = aiMatrix.d2;
                 mat[3][2] = aiMatrix.d3;
                 mat[3][3] = aiMatrix.d4;
+                //std::cout<<"transform : "<<mat<<std::endl;
                 return mat;
             }
-            static inline math::Matrix4f convertAssimpToODFAEGOffsetMatrix (aiMatrix4x4 aiMatrix) {
-                math::Matrix4f mat;
-                mat[0][0] = aiMatrix.a1;
-                mat[0][1] = aiMatrix.b1;
-                mat[0][2] = aiMatrix.c1;
-                mat[0][3] = aiMatrix.d1;
 
-                mat[1][0] = aiMatrix.a2;
-                mat[1][1] = aiMatrix.b2;
-                mat[1][2] = aiMatrix.c2;
-                mat[1][3] = aiMatrix.d2;
-
-                mat[2][0] = aiMatrix.a3;
-                mat[2][1] = aiMatrix.b3;
-                mat[2][2] = aiMatrix.c3;
-                mat[2][3] = aiMatrix.d3;
-
-                mat[3][0] = aiMatrix.a4;
-                mat[3][1] = aiMatrix.b4;
-                mat[3][2] = aiMatrix.c4;
-                mat[3][3] = aiMatrix.d4;
-                return mat;
-            }
             static inline math::Vec3f convertAssimpToODFAEGVec4(aiVector3D aiVec) {
                 math::Vec3f vec;
                 vec[0] = aiVec.x;

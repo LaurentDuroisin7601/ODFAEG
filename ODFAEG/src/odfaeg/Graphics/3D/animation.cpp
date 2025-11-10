@@ -72,7 +72,7 @@ namespace odfaeg {
                 assert(src);
 
                 dest.name = src->mName.data;
-                dest.transformation = AssimpHelpers::convertAssimpToODFAEGNodeTransformMatrix(src->mTransformation);
+                dest.transformation = AssimpHelpers::convertAssimpToODFAEGMatrix(src->mTransformation);
                 //std::cout<<"dest transform : "<<dest.transformation<<std::endl;
                 dest.childrenCount = src->mNumChildren;
 

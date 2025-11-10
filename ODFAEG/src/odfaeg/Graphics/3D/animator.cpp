@@ -159,7 +159,7 @@ namespace odfaeg {
                 {
                     int index = boneInfoMap[nodeName].id;
                     math::Matrix4f offset = boneInfoMap[nodeName].offset;
-                    m_FinalBoneMatrices[index] = offset * globalTransformation;
+                    m_FinalBoneMatrices[index] = globalTransformation * offset;
                     //std::cout<<"final bone transform : "<<m_FinalBoneMatrices[index]<<std::endl;
                 }
 
@@ -278,6 +278,10 @@ namespace odfaeg {
                                                               totalPosition += vertices[vertexIndex].weights[i] * (vec4(vertices[vertexIndex].position.xyz, 1) * finalBonesMatrices[vertices[vertexIndex].boneIds[i]]);
 
                                                             }
+                                                            /*float totalWeight = vertices[vertexIndex].weights[0] + vertices[vertexIndex].weights[1] + vertices[vertexIndex].weights[2] + vertices[vertexIndex].weights[3];
+
+                                                            debugPrintfEXT("total weight %f", totalWeight);*/
+
 
                                                             vertices[vertexIndex].position = vec3(totalPosition.xyz);
                                                        }
