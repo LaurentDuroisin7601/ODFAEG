@@ -427,7 +427,6 @@ namespace odfaeg {
             Material* material; /**> the material of the instance.*/
             std::vector<VertexArray*> m_vertexArrays; /**> the vertex arrays of the instance.*/
             std::vector<TransformMatrix*> m_transforms; /**> the transformations of the instance.*/
-            std::vector<TransformMatrix*> m_perVaTransforms;
             std::vector<TransformMatrix> m_shadowProjMatrix;
             PrimitiveType primType; /**>The primitive type of the instance.*/
             unsigned int numInstances; /**>The number of instances.*/

@@ -1835,14 +1835,13 @@ namespace odfaeg {
                     }
                     materialDatas[p].push_back(material);
                     unsigned int vertexCount = 0;
-                    if (m_instances[i].getVertexArrays().size() > 0) {
-                        Entity* entity = m_instances[i].getVertexArrays()[0]->getEntity();
-                        for (unsigned int j = 0; j < m_instances[i].getVertexArrays().size(); j++) {
-                            if (entity == m_instances[i].getVertexArrays()[j]->getEntity()) {
-                                for (unsigned int k = 0; k < m_instances[i].getVertexArrays()[j]->getVertexCount(); k++) {
-                                    vertexCount++;
-                                    vbBindlessTex[p].append((*m_instances[i].getVertexArrays()[j])[k]);
-                                }
+
+                    if (m_instances[i].getEntities().size() > 0) {
+                        Entity* firstInstance = m_instances[i].getEntities()[0];
+                        for (unsigned int j = 0; j < firstInstance->getFaces().size(); j++) {
+                            for (unsigned int k = 0; k < firstInstance->getFace(j)->getVertexArray().getVertexCount(); k++) {
+                                vertexCount++;
+                                vbBindlessTex[p].append(firstInstance->getFace(j)->getVertexArray()[k]);
                             }
                         }
                     }
