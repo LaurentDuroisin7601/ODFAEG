@@ -501,6 +501,7 @@ namespace odfaeg {
                                                                                       layout (location = 4) out vec3 normal;
                                                                                       layout (location = 5) out vec4 lightPos;
                                                                                       layout (location = 6) out vec4 lightColor;
+                                                                                      layout (location = 7) out float isOrthoProj;
                                                                                       void main() {
                                                                                          gl_PointSize = 2.0f;
                                                                                          ModelData model = modelDatas[gl_InstanceIndex];
@@ -524,6 +525,7 @@ namespace odfaeg {
                                                                                          lightColor = material.lightColor;
 
                                                                                          normal = normals;
+                                                                                         isOrthoProj = pushConsts.projectionMatrix[3][3];
                                                                                       }
                                                                                       )";
 
@@ -665,6 +667,7 @@ namespace odfaeg {
                                                                  layout (location = 4) in vec3 normal;
                                                                  layout (location = 5) in flat vec4 lightPos;
                                                                  layout (location = 6) in flat vec4 lightColor;
+                                                                 layout (location = 7) in float isOrthoProj;
                                                                  const vec2 size = vec2(2.0,0.0);
                                                                  const ivec3 off = ivec3(-1,0,1);
                                                                  layout(set = 0, binding = 0) uniform sampler2D depthTexture[];
@@ -690,9 +693,21 @@ namespace odfaeg {
                                                              vec3 normal = vec3(cross(va, vb));
                                                              vec4 bump = texture(bumpMap[pushConsts.imageIndex], gl_FragCoord.xy / pushConsts.resolution.xy);
                                                              vec4 specularInfos = texture(specularTexture[pushConsts.imageIndex], gl_FragCoord.xy / pushConsts.resolution.xy);
-                                                             float pixelViewZ = pushConsts.near + gl_FragCoord.z * (pushConsts.far - pushConsts.near);
-                                                             float lightViewZ = pushConsts.near + lightPos.z * (pushConsts.far - pushConsts.near);
+                                                             bool useOrthoProj = (isOrthoProj != 0);
 
+                                                             float pixelViewZ;
+                                                             float lightViewZ;
+                                                             if (useOrthoProj) {
+                                                                pixelViewZ = pushConsts.near + gl_FragCoord.z * (pushConsts.far - pushConsts.near);
+                                                                lightViewZ = pushConsts.near + lightPos.z * (pushConsts.far - pushConsts.near);
+                                                             } else {
+                                                                float ndcZ = gl_FragCoord.z * 2.0 - 1.0; // Convertit de [0,1] à [-1,1]
+                                                                pixelViewZ = (2.0 * pushConsts.near * pushConsts.far) /
+                                                               (ndcZ * (pushConsts.near - pushConsts.far) - (pushConsts.near + pushConsts.far));
+                                                                ndcZ = lightPos.z * 2.0 - 1.0; // Convertit de [0,1] à [-1,1]
+                                                                lightViewZ = (2.0 * pushConsts.near * pushConsts.far) /
+                                                                (ndcZ * (pushConsts.near - pushConsts.far) - (pushConsts.near + pushConsts.far));
+                                                             }
                                                              vec3 sLightPos = vec3 (lightPos.x, lightPos.y,lightViewZ);
                                                              float radius = lightPos.w;
                                                              vec3 pixPos = vec3 (gl_FragCoord.x, gl_FragCoord.y, pixelViewZ);
@@ -711,8 +726,9 @@ namespace odfaeg {
                                                              //debugPrintfEXT("depth : %f", depth.z);
                                                              if (/*layer > depth.y || layer == depth.y &&*/ gl_FragCoord.z > depth.z) {
                                                                  vec4 specularColor = vec4(0, 0, 0, 0);
+
                                                                  float attenuation = 1.f - length(vertexToLight) / radius;
-                                                                 //debugPrintfEXT("attenuation : %f", attenuation);
+                                                                 //debugPrintfEXT("vertex to light, radius, attenuation : %v3f, %f, %f", vertexToLight, radius, attenuation);
 
                                                                  vec3 pixToView = pixPos - viewPos;
                                                                  float normalLength = dot(normal.xyz, vertexToLight);
@@ -732,7 +748,7 @@ namespace odfaeg {
 
 
                                                                  }
-                                                                 //debugPrintfEXT("Light color : %v3f", lightColor.rgb);
+
                                                                  fColor = vec4(lightColor.rgb, 1) * max(0.0f, attenuation) + specularColor * (1 - alpha.a);
                                                              } else {
                                                                  discard;
@@ -4544,8 +4560,10 @@ namespace odfaeg {
             currentStates.blendMode = BlendNone;
             currentStates.shader = &depthBufferGenerator;
             for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes-1; p++) {
+
                 if (needToUpdateDSs[p])
                     updateDescriptorSets(p, currentStates);
+
                 if (nbDrawCommandBuffer[p][0] > 0) {
                     recordCommandBufferIndirect(currentFrame, p, nbDrawCommandBuffer[p][0], sizeof(DrawArraysIndirectCommand), LIGHTNBDEPTHSTENCIL, 0, -1, -1, modelDataOffsets[p][0], materialDataOffsets[p][0],drawCommandBufferOffsets[p][0], currentStates, depthCommandBuffer[currentFrame]);
                 }
@@ -4575,8 +4593,10 @@ namespace odfaeg {
 
             currentStates.blendMode = BlendNone;
             for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes-1; p++) {
+
                 if (needToUpdateDSs[p])
                     updateDescriptorSets(p, currentStates, true);
+
                 if (nbDrawCommandBuffer[p][1] > 0) {
                     recordCommandBufferIndirect(currentFrame, p, nbDrawCommandBuffer[p][1], sizeof(DrawArraysIndirectCommand), LIGHTNODEPTHNOSTENCIL, 0, -1, -1, modelDataOffsets[p][2], materialDataOffsets[p][2],drawCommandBufferOffsets[p][1], currentStates, lightDepthCommandBuffer[currentFrame]);
                 }
@@ -4604,14 +4624,17 @@ namespace odfaeg {
             currentStates.blendMode = BlendNone;
             currentStates.shader = &buildAlphaBufferGenerator;
             for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes-1; p++) {
+
                 if (needToUpdateDSs[p])
                     updateDescriptorSets(p, currentStates);
+
                 if (nbDrawCommandBuffer[p][0] > 0) {
                     recordCommandBufferIndirect(currentFrame, p, nbDrawCommandBuffer[p][0], sizeof(DrawArraysIndirectCommand), LIGHTNODEPTHNOSTENCIL, 0, -1, -1, modelDataOffsets[p][0], materialDataOffsets[p][0],drawCommandBufferOffsets[p][0], currentStates, alphaCommandBuffer[currentFrame]);
                 }
                 if (nbIndexedDrawCommandBuffer[p][0] > 0) {
                     recordCommandBufferIndirect(currentFrame, p, nbIndexedDrawCommandBuffer[p][0], sizeof(DrawElementsIndirectCommand), LIGHTNODEPTHNOSTENCIL, 0, 0, -1, modelDataOffsets[p][1], materialDataOffsets[p][1],drawIndexedCommandBufferOffsets[p][0], currentStates, alphaCommandBuffer[currentFrame]);
                 }
+
 
             }
             if (vkEndCommandBuffer(alphaCommandBuffer[currentFrame]) != VK_SUCCESS) {
@@ -4636,14 +4659,17 @@ namespace odfaeg {
             currentStates.blendMode = BlendNone;
             currentStates.shader = &specularTextureGenerator;
             for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes-1; p++) {
+
                 if (needToUpdateDSs[p])
                     updateDescriptorSets(p, currentStates);
+
                 if (nbDrawCommandBuffer[p][0] > 0) {
                     recordCommandBufferIndirect(currentFrame, p, nbDrawCommandBuffer[p][0], sizeof(DrawArraysIndirectCommand), LIGHTNODEPTHNOSTENCIL, 0, -1, -1, modelDataOffsets[p][0], materialDataOffsets[p][0],drawCommandBufferOffsets[p][0], currentStates, specularCommandBuffer[currentFrame]);
                 }
                 if (nbIndexedDrawCommandBuffer[p][0] > 0) {
                     recordCommandBufferIndirect(currentFrame, p, nbIndexedDrawCommandBuffer[p][0], sizeof(DrawElementsIndirectCommand), LIGHTNODEPTHNOSTENCIL, 0, 0, -1, modelDataOffsets[p][1], materialDataOffsets[p][1],drawIndexedCommandBufferOffsets[p][0], currentStates, specularCommandBuffer[currentFrame]);
                 }
+
 
             }
             if (vkEndCommandBuffer(specularCommandBuffer[currentFrame]) != VK_SUCCESS) {
@@ -4667,14 +4693,17 @@ namespace odfaeg {
             currentStates.blendMode = BlendNone;
             currentStates.shader = &bumpTextureGenerator;
             for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes-1; p++) {
+
                 if (needToUpdateDSs[p])
                     updateDescriptorSets(p, currentStates);
+
                 if (nbDrawCommandBuffer[p][0] > 0) {
                     recordCommandBufferIndirect(currentFrame, p, nbDrawCommandBuffer[p][0], sizeof(DrawArraysIndirectCommand), LIGHTNODEPTHNOSTENCIL, 0, -1, -1, modelDataOffsets[p][0], materialDataOffsets[p][0],drawCommandBufferOffsets[p][0], currentStates, bumpCommandBuffer[currentFrame]);
                 }
                 if (nbIndexedDrawCommandBuffer[p][0] > 0) {
                     recordCommandBufferIndirect(currentFrame, p, nbIndexedDrawCommandBuffer[p][0], sizeof(DrawElementsIndirectCommand), LIGHTNODEPTHNOSTENCIL, 0, 0, -1, modelDataOffsets[p][1], materialDataOffsets[p][1],drawIndexedCommandBufferOffsets[p][0], currentStates, bumpCommandBuffer[currentFrame]);
                 }
+
             }
             if (vkEndCommandBuffer(bumpCommandBuffer[currentFrame]) != VK_SUCCESS) {
                 throw core::Erreur(0, "failed to record command buffer!", 1);
@@ -4697,11 +4726,14 @@ namespace odfaeg {
             currentStates.blendMode = BlendAdd;
             currentStates.shader = &lightMapGenerator;
             for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes-1; p++) {
+
                 if (needToUpdateDSs[p])
                     updateDescriptorSets(p, currentStates);
+
                 if (nbDrawCommandBuffer[p][1] > 0) {
                     recordCommandBufferIndirect(currentFrame, p, nbDrawCommandBuffer[p][1], sizeof(DrawArraysIndirectCommand), LIGHTNODEPTHNOSTENCIL, 0, -1, -1, modelDataOffsets[p][2], materialDataOffsets[p][2],drawCommandBufferOffsets[p][1], currentStates, lightCommandBuffer[currentFrame]);
                 }
+
 
             }
             if (vkEndCommandBuffer(lightCommandBuffer[currentFrame]) != VK_SUCCESS) {
@@ -4743,21 +4775,26 @@ namespace odfaeg {
             maxSpecPC.maxP = 1;
             if (useThread) {
                 std::unique_lock<std::mutex> lock(mtx);
-                cv.wait(lock, [this](){return registerFrameJob[depthBuffer.getCurrentFrame()].load();});
-                registerFrameJob[depthBuffer.getCurrentFrame()] = false;
+                cv.wait(lock, [this](){return registerFrameJob[lightDepthBuffer.getCurrentFrame()].load();});
+                registerFrameJob[lightDepthBuffer.getCurrentFrame()] = false;
+
                 resetBuffers();
                 fillBuffersMT();
                 fillIndexedBuffersMT();
                 fillLightBuffersMT();
+                //std::cout<<"buffer filled"<<std::endl;
                 lightIndirectRenderingPC.projMatrix = projMatrix;
                 lightIndirectRenderingPC.viewMatrix = viewMatrix;
                 lightIndirectRenderingPC.viewportMatrix = lightMap.getViewportMatrix(&lightMap.getView()).getMatrix().transpose();
 
                 resolutionPC.near = view.getViewport().getPosition().z();
                 resolutionPC.far = view.getViewport().getSize().z();
+
                 drawBuffers();
-                commandBufferReady[depthBuffer.getCurrentFrame()] = true;
+                //std::cout<<"current frame : "<<lightDepthBuffer.getCurrentFrame()<<std::endl;
+                commandBufferReady[lightDepthBuffer.getCurrentFrame()] = true;
                 cv.notify_one();
+                //std::cout<<"buffer drawn"<<std::endl;
             } else {
                 drawDepthLightInstances();
 
@@ -6032,9 +6069,10 @@ namespace odfaeg {
         void LightRenderComponent::draw(RenderTarget& target, RenderStates states) {
 
             if (useThread) {
+                //std::cout<<"draw current frame : "<<lightDepthBuffer.getCurrentFrame()<<std::endl;
                 std::unique_lock<std::mutex> lock(mtx);
                 cv.wait(lock, [this] { return commandBufferReady[lightDepthBuffer.getCurrentFrame()].load(); });
-
+                //std::cout<<"copy"<<std::endl;
                 commandBufferReady[lightDepthBuffer.getCurrentFrame()] = false;
                 lightDepthBuffer.beginRecordCommandBuffers();
                 std::vector<VkCommandBuffer> commandBuffers = lightDepthBuffer.getCommandBuffers();
@@ -6156,7 +6194,7 @@ namespace odfaeg {
                 copyValues[currentFrame]++;
                 signalValues.push_back(copyValues[currentFrame]);
                 lightDepthBuffer.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
-
+                //std::cout<<"draw"<<std::endl;
 
                 lightDepthBuffer.beginRecordCommandBuffers();
                 lightDepthBuffer.beginRenderPass();
@@ -6407,7 +6445,8 @@ namespace odfaeg {
             bumpTexture.display();
             specularTexture.display();
             lightMap.display();
-            registerFrameJob[depthBuffer.getCurrentFrame()] = true;
+            //std::cout<<"next frame"<<std::endl;
+            registerFrameJob[lightDepthBuffer.getCurrentFrame()] = true;
             cv.notify_one();
         }
         bool LightRenderComponent::loadEntitiesOnComponent(std::vector<Entity*> vEntities)
@@ -6428,6 +6467,7 @@ namespace odfaeg {
                     std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                     if (vEntities[i]->isLight()) {
                         for (unsigned int j = 0; j <  vEntities[i]->getNbFaces(); j++) {
+
                             lightBatcher.addFace(vEntities[i]->getFace(j));
                         }
                     } else {

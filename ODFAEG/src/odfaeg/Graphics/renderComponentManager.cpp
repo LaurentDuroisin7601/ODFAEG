@@ -68,9 +68,9 @@ namespace odfaeg {
                 if (it->second->getComponentType() == 0 && it->second->isVisible()) {
                     for (unsigned int i = 0; i < windows.size(); i++) {
                         if (windows[i] == &it->second->getWindow()) {
-                            ////std::cout<<"draw on window : "<<i<<std::endl;
+                            //std::cout<<"draw on window : "<<it->second->getPosition().z()<<std::endl;
                             it->second->getWindow().draw(*it->second.get());
-                            ////std::cout<<"drawed on window : "<<i<<std::endl;
+                            //std::cout<<"drawed on window : "<<i<<std::endl;
                             /*#ifdef VULKAN
                             //it->second->getWindow().submit();
                             it->second->getWindow().beginRecordCommandBuffers();

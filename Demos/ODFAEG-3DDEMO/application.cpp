@@ -180,15 +180,16 @@ void MyAppli::onInit() {
     /*std::vector<Entity*> tiles = heightmap->getChildren();
     for (unsigned int i = 0; i < tiles.size(); i++)
         std::cout<<"window coords : "<<frc2->getFrameBuffer()->mapCoordsToPixel(tiles[i]->getPosition())<<std::endl;*/
-    /*LightRenderComponent* lrc = new LightRenderComponent(getRenderWindow(), 3, "E_PONCTUAL_LIGHT+E_BIGTILE",ContextSettings(0, 0, 4, 4, 6));
-    lrc->setView(view3D);*/
+    LightRenderComponent* lrc = new LightRenderComponent(getRenderWindow(), 3, "E_PONCTUAL_LIGHT+E_BIGTILE",ContextSettings(0, 0, 4, 4, 6));
+    //std::cout<<"light render component created"<<std::endl;
+    lrc->setView(view3D);
     getRenderWindow().createDescriptorsAndPipelines();
     frc2->createDescriptorsAndPipelines();
     frc2->loadSkybox(skybox.get());
     rrrc->createDescriptorsAndPipelines();
 
     src->createDescriptorsAndPipelines();
-    /*lrc->createDescriptorsAndPipelines();*/
+    lrc->createDescriptorsAndPipelines();
 
     //getView().setPerspective(-size.x * 0.5f, size.x * 0.5f, -size.y * 0.5f, size.y * 0.5f,-1000, 1000);
     //getRenderComponentManager().addComponent(frc);
@@ -199,8 +200,7 @@ void MyAppli::onInit() {
     getRenderComponentManager().addComponent(frc2);
     getRenderComponentManager().addComponent(rrrc);
     getRenderComponentManager().addComponent(src);
-
-    /*getRenderComponentManager().addComponent(lrc);*/
+    getRenderComponentManager().addComponent(lrc);
     //std::cout<<"model size : "<<model->getSize().y<<std::endl;
     for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
         View view = getRenderComponentManager().getRenderComponent(i)->getView();
@@ -218,7 +218,7 @@ void MyAppli::onInit() {
 
     billboard->setView(view3D);
     //std::cout<<"screen coords : "<<getRenderWindow().mapCoordsToPixel(model->getPosition(), view3D);
-    g2d::AmbientLight::getAmbientLight().setColor(Color::White);
+    g2d::AmbientLight::getAmbientLight().setColor(Color::Blue);
     animUpdater = new AnimUpdater();
     animUpdater->addBoneAnim(animator);
     getWorld()->addTimer(animUpdater);
@@ -226,6 +226,7 @@ void MyAppli::onInit() {
     frc2->launchRenderer();    //getWorld()->update();
     rrrc->launchRenderer();
     src->launchRenderer();
+    lrc->launchRenderer();
 }
 void MyAppli::onRender(RenderComponentManager* frcm) {
     //getWorld()->drawOnComponents("E_CUBE", 0);
@@ -235,7 +236,7 @@ void MyAppli::onRender(RenderComponentManager* frcm) {
     getWorld()->drawOnComponents("E_CUBE+E_BIGTILE+E_MESH", 1);
     getWorld()->drawOnComponents("E_BIGTILE+E_MESH", 2);
 
-   /* getWorld()->drawOnComponents("E_PONCTUAL_LIGHT+E_BIGTILE", 3);*/
+    getWorld()->drawOnComponents("E_PONCTUAL_LIGHT+E_BIGTILE", 3);
     fpsCounter++;
     if (getClock("FPS").getElapsedTime() >= seconds(1.f)) {
         std::cout<<"FPS : "<<fpsCounter<<std::endl;

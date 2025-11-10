@@ -27,7 +27,7 @@ namespace odfaeg {
                 return pl;
             }
             void PonctualLight::initTriangles() {
-                /*for (unsigned int i = 0; i < triangles.size(); i++) {
+                for (unsigned int i = 0; i < triangles.size(); i++) {
                     delete triangles[i];
                 }
                 triangles.clear();
@@ -57,8 +57,8 @@ namespace odfaeg {
                     (*triangle)[1] = Vertex(v2, color);
                     (*triangle)[2] = Vertex(v3, color);
                     addTriangle(triangle);
-                }*/
-                const int space = 10;
+                }
+                /*const int space = 10;
                 const int vertexCount = (90 / space) * (360 / space) * 4;
                 VertexArray vertices(TrianglesStrip, vertexCount, this);
                 int n = 0;
@@ -93,10 +93,11 @@ namespace odfaeg {
                     }
                 }
                 Material material;
-                math::Vec3f center = getCenter() - getSize()*0.5f;
+                math::Vec4f center = getCenter() - getSize()*0.5f;
+                center[3] = bigRadius;
                 material.setLightInfos(center,getColor());
                 Face face (vertices,material,getTransform());
-                addFace(face);
+                addFace(face);*/
             }
             //Ajoute un triangle à la source lumineuse.
             void PonctualLight::addTriangle (VertexArray *triangle) {
@@ -106,7 +107,8 @@ namespace odfaeg {
                 /*triangle->EnableFill(true);
                 triangle->EnableOutline(false);*/
                 Material material;
-                math::Vec3f center = getCenter() - getSize()*0.5f;
+                math::Vec4f center = getCenter() - getSize()*0.5f;
+                center[3] = bigRadius;
                 material.setLightInfos(center,getColor());
                 Face face (*triangle,material,getTransform());
                 addFace(face);

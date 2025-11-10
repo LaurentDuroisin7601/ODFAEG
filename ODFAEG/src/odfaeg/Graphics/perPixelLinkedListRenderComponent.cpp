@@ -5271,6 +5271,7 @@ namespace odfaeg {
                 std::unique_lock<std::mutex> lock2(mtx2);
                 cv.wait(lock, [this] { return commandBufferReady[frameBuffer.getCurrentFrame()].load(); });
                 commandBufferReady[frameBuffer.getCurrentFrame()] = false;
+                //std::cout<<"copy"<<std::endl;
 
 
                 frameBuffer.beginRecordCommandBuffers();
@@ -5427,7 +5428,7 @@ namespace odfaeg {
                 signalValues.push_back(values[currentFrame]);
 
                 frameBuffer.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
-
+                //std::cout<<"skybox"<<std::endl;
                 if (skybox != nullptr) {
                     frameBuffer.beginRecordCommandBuffers();
                     frameBuffer.beginRenderPass();
@@ -5468,7 +5469,7 @@ namespace odfaeg {
                 values[currentFrame]++;
                 signalValues.push_back(values[currentFrame]);
                 std::vector<VkFence> fencesToWait;
-
+                //std::cout<<"compute"<<std::endl;
 
                 if (visibleEntities.size() > computeSemaphores.size()) {
                     for (unsigned int i = 0; i < visibleEntities.size(); i++) {
@@ -5502,10 +5503,11 @@ namespace odfaeg {
 
 
 
-                        //std::cout<<"wait"<<std::endl;
+                        //std::cout<<"wait : "<<visibleEntities[i]<<" current frame : "<<frameBuffer.getCurrentFrame()<<std::endl;
                         cv2.wait(lock2, [&, this](){return visibleEntities[i]->isComputeFinished(frameBuffer.getCurrentFrame());});
-                        waitSemaphores.push_back(computeSemaphores[i][frameBuffer.getCurrentFrame()]);
                         //std::cout<<"wait finished"<<std::endl;
+                        waitSemaphores.push_back(computeSemaphores[i][frameBuffer.getCurrentFrame()]);
+
 
                         waitValues.push_back(0);
                         waitStages.push_back(VK_PIPELINE_STAGE_VERTEX_INPUT_BIT);
@@ -5540,7 +5542,7 @@ namespace odfaeg {
                 frameBuffer.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, fencesToWait);
                 //std::cout<<"ppll ok"<<std::endl;
 
-
+                //std::cout<<"draw"<<std::endl;
                 frameBuffer.beginRecordCommandBuffers();
                 frameBuffer.beginRenderPass();
                 vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &ppllOutlineCommandBuffer[currentFrame]);
@@ -5615,6 +5617,7 @@ namespace odfaeg {
             signalValues.push_back(values[frameBuffer.getCurrentFrame()]);
             target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
             frameBuffer.display();
+            //std::cout<<"next frame"<<std::endl;
             registerFrameJob[frameBuffer.getCurrentFrame()] = true;
             cv.notify_one();
 
