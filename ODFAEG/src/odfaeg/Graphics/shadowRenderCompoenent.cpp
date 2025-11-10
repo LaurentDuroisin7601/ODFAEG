@@ -591,19 +591,21 @@ namespace odfaeg {
                                                                     uint l = layer;
                                                                     float shadowFactor;
                                                                     vec3 lightDir = vec3(lightCenter.x, lightCenter.y, lightViewZ) - vec3(gl_FragCoord.x, gl_FragCoord.y, pixelViewZ);
-                                                                    if (/*l > stencil.y || l == stencil.y &&*/ stencil.z > projCoords.z) {
+
+                                                                    if (stencil.z > projCoords.z) {
                                                                         if (depth.z > z) {
-                                                                            shadowFactor = 1.f;
-                                                                            visibility = vec4 (1, 1, 1, alpha.a);
+                                                                            shadowFactor = 1.0;
                                                                         } else {
-                                                                            shadowFactor = clamp(dot(normalize(n), normalize(lightDir.xyz)), 0.0, 1.0);
-                                                                            visibility = vec4 (0.5, 0.5, 0.5, color);
+                                                                            shadowFactor = clamp(dot(normalize(n), normalize(lightDir)), 0.0, 1.0);
                                                                         }
+
+                                                                        vec4 litColor = vec4(1.0, 1.0, 1.0, alpha.a);
+                                                                        vec4 shadowColor = vec4(0.5, 0.5, 0.5, color);
+
+                                                                        fColor = mix(shadowColor, litColor, shadowFactor);
                                                                     } else {
                                                                         discard;
                                                                     }
-                                                                    //debugPrintfEXT("visibility : %v4f", visibility);
-                                                                    fColor = visibility * shadowFactor;
                                                                   }
                                                                   )";
                 if (!depthGenShader.loadFromMemory(indirectRenderingVertexShader, buildDepthBufferFragmentShader))  {

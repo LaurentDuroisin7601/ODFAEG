@@ -3941,19 +3941,12 @@ namespace odfaeg {
                         ////////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
                         unsigned int vertexCount = 0;
 
-                        if (m_reflInstances[i].getVertexArrays().size() > 0) {
-                            Entity* entity = m_reflInstances[i].getVertexArrays()[0]->getEntity();
-
-                            for (unsigned int j = 0; j < m_reflInstances[i].getVertexArrays().size(); j++) {
-
-                                if (entity == m_reflInstances[i].getVertexArrays()[j]->getEntity()) {
-
-                                    unsigned int p = m_reflInstances[i].getVertexArrays()[j]->getPrimitiveType();
-                                    for (unsigned int k = 0; k < m_reflInstances[i].getVertexArrays()[j]->getVertexCount(); k++) {
-
-                                        vertexCount++;
-                                        vbBindlessTex[p].append((*m_reflInstances[i].getVertexArrays()[j])[k]);
-                                    }
+                        if (m_reflInstances[i].getEntities().size() > 0) {
+                            Entity* firstInstance = m_reflInstances[i].getEntities()[0];
+                            for (unsigned int j = 0; j < firstInstance->getFaces().size(); j++) {
+                                for (unsigned int k = 0; k < firstInstance->getFace(j)->getVertexArray().getVertexCount(); k++) {
+                                    vertexCount++;
+                                    vbBindlessTex[p].append(firstInstance->getFace(j)->getVertexArray()[k]);
                                 }
                             }
                         }
@@ -4213,24 +4206,17 @@ namespace odfaeg {
                         ////////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
                         unsigned int vertexCount = 0, indexCount = 0;
 
-                        if (m_reflIndexed[i].getVertexArrays().size() > 0) {
-                            Entity* entity = m_reflIndexed[i].getVertexArrays()[0]->getEntity();
+                        if (m_reflIndexed[i].getEntities().size() > 0) {
+                            Entity* firstInstance = m_reflIndexed[i].getEntities()[0];
+                            for (unsigned int j = 0; j < firstInstance->getFaces().size(); j++) {
+                                for (unsigned int k = 0; k < firstInstance->getFace(j)->getVertexArray().getVertexCount(); k++) {
+                                    vertexCount++;
+                                    vbBindlessTexIndexed[p].append(firstInstance->getFace(j)->getVertexArray()[k]);
+                                }
+                                for (unsigned int k = 0; k < firstInstance->getFace(j)->getVertexArray().getIndexes().size(); k++) {
+                                    indexCount++;
+                                    vbBindlessTexIndexed[p].addIndex(firstInstance->getFace(j)->getVertexArray().getIndexes()[k]);
 
-                            for (unsigned int j = 0; j < m_reflIndexed[i].getVertexArrays().size(); j++) {
-
-                                if (entity == m_reflIndexed[i].getVertexArrays()[j]->getEntity()) {
-
-                                    unsigned int p = m_reflIndexed[i].getVertexArrays()[j]->getPrimitiveType();
-                                    for (unsigned int k = 0; k < m_reflIndexed[i].getVertexArrays()[j]->getVertexCount(); k++) {
-
-                                        vertexCount++;
-                                        vbBindlessTexIndexed[p].append((*m_reflIndexed[i].getVertexArrays()[j])[k]);
-                                    }
-                                    for (unsigned int k = 0; k < m_reflIndexed[i].getVertexArrays()[j]->getIndexes().size(); k++) {
-                                        ////std::cout<<"add depth refl inst indexed"<<std::endl;
-                                        indexCount++;
-                                        vbBindlessTexIndexed[p].addIndex(m_reflIndexed[i].getVertexArrays()[j]->getIndexes()[k]);
-                                    }
                                 }
                             }
                         }
@@ -4486,14 +4472,12 @@ namespace odfaeg {
                             modelDatas[p].push_back(model);
                         }
                         unsigned int vertexCount = 0;
-                        if (m_instances[i].getVertexArrays().size() > 0) {
-                            Entity* entity = m_instances[i].getVertexArrays()[0]->getEntity();
-                            for (unsigned int j = 0; j < m_instances[i].getVertexArrays().size(); j++) {
-                                if (entity == m_instances[i].getVertexArrays()[j]->getEntity()) {
-                                    for (unsigned int k = 0; k < m_instances[i].getVertexArrays()[j]->getVertexCount(); k++) {
-                                        vertexCount++;
-                                        vbBindlessTex[p].append((*m_instances[i].getVertexArrays()[j])[k]);
-                                    }
+                        if (m_instances[i].getEntities().size() > 0) {
+                            Entity* firstInstance = m_instances[i].getEntities()[0];
+                            for (unsigned int j = 0; j < firstInstance->getFaces().size(); j++) {
+                                for (unsigned int k = 0; k < firstInstance->getFace(j)->getVertexArray().getVertexCount(); k++) {
+                                    vertexCount++;
+                                    vbBindlessTex[p].append(firstInstance->getFace(j)->getVertexArray()[k]);
                                 }
                             }
                         }
@@ -4760,24 +4744,17 @@ namespace odfaeg {
                         ////////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
                         unsigned int vertexCount = 0, indexCount = 0;
 
-                        if (m_indexed[i].getVertexArrays().size() > 0) {
-                            Entity* entity = m_indexed[i].getVertexArrays()[0]->getEntity();
+                        if (m_indexed[i].getEntities().size() > 0) {
+                            Entity* firstInstance = m_indexed[i].getEntities()[0];
+                            for (unsigned int j = 0; j < firstInstance->getFaces().size(); j++) {
+                                for (unsigned int k = 0; k < firstInstance->getFace(j)->getVertexArray().getVertexCount(); k++) {
+                                    vertexCount++;
+                                    vbBindlessTexIndexed[p].append(firstInstance->getFace(j)->getVertexArray()[k]);
+                                }
+                                for (unsigned int k = 0; k < firstInstance->getFace(j)->getVertexArray().getIndexes().size(); k++) {
+                                    indexCount++;
+                                    vbBindlessTexIndexed[p].addIndex(firstInstance->getFace(j)->getVertexArray().getIndexes()[k]);
 
-                            for (unsigned int j = 0; j < m_indexed[i].getVertexArrays().size(); j++) {
-
-                                if (entity == m_indexed[i].getVertexArrays()[j]->getEntity()) {
-
-                                    unsigned int p = m_indexed[i].getVertexArrays()[j]->getPrimitiveType();
-                                    for (unsigned int k = 0; k < m_indexed[i].getVertexArrays()[j]->getVertexCount(); k++) {
-
-                                        vertexCount++;
-                                        vbBindlessTexIndexed[p].append((*m_indexed[i].getVertexArrays()[j])[k]);
-                                    }
-                                    for (unsigned int k = 0; k < m_indexed[i].getVertexArrays()[j]->getIndexes().size(); k++) {
-
-                                        indexCount++;
-                                        vbBindlessTexIndexed[p].addIndex(m_indexed[i].getVertexArrays()[j]->getIndexes()[k]);
-                                    }
                                 }
                             }
                         }

@@ -218,7 +218,7 @@ void MyAppli::onInit() {
 
     billboard->setView(view3D);
     //std::cout<<"screen coords : "<<getRenderWindow().mapCoordsToPixel(model->getPosition(), view3D);
-    g2d::AmbientLight::getAmbientLight().setColor(Color::Blue);
+    g2d::AmbientLight::getAmbientLight().setColor(Color::White);
     animUpdater = new AnimUpdater();
     animUpdater->addBoneAnim(animator);
     getWorld()->addTimer(animUpdater);
