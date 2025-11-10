@@ -93,7 +93,7 @@ namespace odfaeg {
                 }
                 std::array<std::array<float, 2>, 3> exts = math::Computer::getExtends(verts);
                 emesh->setSize(math::Vec3f(exts[0][1] - exts[0][0], exts[1][1] - exts[1][0], exts[2][1] - exts[2][0]));
-                emesh->setOrigin(math::Vec3f(emesh->getSize()*0.5));
+                //emesh->setOrigin(math::Vec3f(emesh->getSize()*0.5));
             }
             void Model::setVertexBoneData(Vertex& vertex, int boneID, float weight)
             {

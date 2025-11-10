@@ -41,6 +41,7 @@ namespace odfaeg {
                 int getRotationIndex(float animationTime);
                 int getScaleIndex(float animationTime);
             private :
+                bool isBoneMatrixValid(const std::string& boneName, const math::Matrix4f& m);
                 float getScaleFactor(float lastTimeStamp, float nextTimeStamp, float animationTime);
                 math::Matrix4f interpolatePosition(float animationTime);
                 math::Matrix4f interpolateRotation(float animationTime);

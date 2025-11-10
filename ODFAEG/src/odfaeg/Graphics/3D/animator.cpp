@@ -160,7 +160,7 @@ namespace odfaeg {
                     int index = boneInfoMap[nodeName].id;
                     math::Matrix4f offset = boneInfoMap[nodeName].offset;
                     m_FinalBoneMatrices[index] = offset * globalTransformation;
-                    //std::cout<<"offset : "<<offset<<std::endl;
+                    //std::cout<<"final bone transform : "<<m_FinalBoneMatrices[index]<<std::endl;
                 }
 
 

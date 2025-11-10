@@ -43,6 +43,39 @@ namespace odfaeg {
                     m_Scales.push_back(data);
                 }
             }
+            bool Bone::isBoneMatrixValid(const std::string& boneName, const math::Matrix4f& m) {
+                math::Vec3f xAxis(m[0][0], m[1][0], m[2][0]);
+                math::Vec3f yAxis(m[0][1], m[1][1], m[2][1]);
+                math::Vec3f zAxis(m[0][2], m[1][2], m[2][2]);
+                math::Vec3f translation(m[0][3], m[1][3], m[2][3]);
+
+                float scaleX = xAxis.magnitude();
+                float scaleY = yAxis.magnitude();
+                float scaleZ = zAxis.magnitude();
+
+                float dotXY = std::abs(xAxis.dot(yAxis));
+                float dotYZ = std::abs(yAxis.dot(zAxis));
+                float dotZX = std::abs(zAxis.dot(xAxis));
+
+                bool isOrtho = (dotXY < 0.01f && dotYZ < 0.01f && dotZX < 0.01f);
+                bool isUniformScale = (std::abs(scaleX - 1.0f) < 0.1f &&
+                                       std::abs(scaleY - 1.0f) < 0.1f &&
+                                       std::abs(scaleZ - 1.0f) < 0.1f);
+                bool isTranslationReasonable = translation.magnitude() < 1000.0f;
+
+                std::cout << "Bone: " << boneName << "\n";
+                std::cout << "Translation: " << translation << "\n";
+                std::cout << "Scale: X=" << scaleX << " Y=" << scaleY << " Z=" << scaleZ << "\n";
+                std::cout << "Orthogonality: XY=" << dotXY << " YZ=" << dotYZ << " ZX=" << dotZX << "\n";
+
+                if (!isOrtho) std::cout << " Axes not orthogonal\n";
+                if (!isUniformScale) std::cout << "Non-uniform scale\n";
+                if (!isTranslationReasonable) std::cout << " Translation too large\n";
+
+                std::cout << "-----------------------------\n";
+
+                return isOrtho && isUniformScale && isTranslationReasonable;
+            }
 
             /*interpolates  b/w positions,rotations & scaling keys based on the curren time of
             the animation and prepares the local transformation matrix by combining all keys
@@ -52,8 +85,14 @@ namespace odfaeg {
                 math::Matrix4f translation = interpolatePosition(animationTime);
                 math::Matrix4f rotation = interpolateRotation(animationTime);
                 math::Matrix4f scale = interpolateScaling(animationTime);
+                /*std::cout<<"translation : "<<translation<<std::endl;
+                std::cout<<"rotation : "<<rotation<<std::endl;
+                std::cout<<"scale : "<<scale<<std::endl;*/
 
                 m_LocalTransform = scale * rotation * translation;
+                /*if (!isBoneMatrixValid(getBoneName(), m_LocalTransform)) {
+                    std::cerr<<"bone matrice not valid"<<std::endl;
+                }*/
             }
 
             math::Matrix4f Bone::getLocalTransform() { return m_LocalTransform; }
