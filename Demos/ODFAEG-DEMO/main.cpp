@@ -295,12 +295,16 @@ int main(int argc, char *argv[]) {
     texture.loadFromFile("tilesets/eau.png");
     Sprite sprite(texture, Vec3f(0, 0, 0), Vec3f(100, 50, 0), IntRect(0, 0, 100, 50));
     window.createDescriptorsAndPipelines();
+    CircleShape circle(50);
     /*window.setPosition(Vector2i(10, 50));
     window.setSize(Vector2u(640, 480));
     window.setVerticalSyncEnabled(true);
     window.setFramerateLimit(30);*/
     /*while(window.isOpen()) {
         window.clear(Color::Black);
+        window.draw(circle);
+        window.submit(false);
+        window.beginRecordCommandBuffers();
         window.draw(sprite);
         window.submit(true);
         window.display();
@@ -310,6 +314,8 @@ int main(int argc, char *argv[]) {
             // évènement "fermeture demandée" : on ferme la fenêtre
             if (event.type == IEvent::WINDOW_EVENT && event.window.type == IEvent::WINDOW_EVENT_CLOSED)
                 window.close();
+
+
         }
 
     }*/

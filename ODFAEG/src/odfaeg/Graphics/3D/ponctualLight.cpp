@@ -58,9 +58,8 @@ namespace odfaeg {
                     (*triangle)[2] = Vertex(v3, color);
                     addTriangle(triangle);
                 }*/
-                const int stacks = 32, slices = 32;
+                /*const int stacks = 32, slices = 32;
                 const int vertexCount = stacks * (slices + 1) * 2;
-                //std::cout<<"vertex count : "<<vertexCount<<std::endl;
                 VertexArray* vertices = new VertexArray(TriangleStrip, vertexCount, this);
                 float radius = bigRadius;
                 int n = 0;
@@ -95,6 +94,46 @@ namespace odfaeg {
                         v2.normal = normal2;
                         (*vertices)[n] = v2;
                         n++;
+                    }
+                }*/
+                const int stacks = 32, slices = 32;
+                const int vertexCount = (stacks + 1) * (slices + 1);
+                VertexArray* vertices = new VertexArray(Triangles, vertexCount, this);
+                //std::cout<<"vertex count : "<<vertexCount<<std::endl;
+                int n = 0;
+                for (uint32_t i = 0; i <= stacks; ++i) {
+                    float phi = PI * i / stacks;
+                    float y = radius * cos(phi);
+                    float r = radius * sin(phi);
+
+                    for (uint32_t j = 0; j <= slices; ++j) {
+                        float theta = 2 * PI * j / slices;
+                        float x = r * cos(theta);
+                        float z = r * sin(theta);
+
+                        math::Vec3f pos(x, y, z);
+                        math::Vec3f normal = pos.normalize();
+                        math::Vec2f uv((float)j / slices, (float)i / stacks);
+                        Vertex vertex(pos, color, uv);
+                        vertex.normal = normal;
+                        (*vertices)[n] = vertex;
+                        n++;
+                    }
+                }
+                //std::cout<<"n : "<<n<<std::endl;
+
+                for (uint32_t i = 0; i < stacks; ++i) {
+                    for (uint32_t j = 0; j < slices; ++j) {
+                        uint32_t first = i * (slices + 1) + j;
+                        uint32_t second = first + slices + 1;
+
+                        vertices->addIndex(first);
+                        vertices->addIndex(second);
+                        vertices->addIndex(first + 1);
+
+                        vertices->addIndex(second);
+                        vertices->addIndex(second + 1);
+                        vertices->addIndex(first + 1);
                     }
                 }
                 //std::cout<<"n : "<<n<<std::endl;

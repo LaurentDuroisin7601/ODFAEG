@@ -3517,8 +3517,8 @@ namespace odfaeg {
                 std::vector<unsigned int> dynamicBufferOffsets;
                 dynamicBufferOffsets.push_back(modelDataOffset);
                 dynamicBufferOffsets.push_back(materialDataOffset);
-                if (p == TriangleStrip)
-                    std::cout<<"record lights"<<std::endl;
+                /*if (p == TriangleStrip)
+                    std::cout<<"record lights"<<std::endl;*/
                 if (indexOffset == -1)
                     lightMap.drawIndirect(commandBuffer, currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], drawCommandBufferMT[p][currentFrame], depthStencilID,currentStates, p, vertexOffset, drawCommandOffset, dynamicBufferOffsets);
                 else
