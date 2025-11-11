@@ -718,7 +718,7 @@ namespace odfaeg {
                                                              //debugPrintfEXT("light pos : %v3f pix pos : %v3f", sLightPos, pixPos);
 
                                                              if (bump.x != 0 || bump.y != 0 || bump.z != 0) {
-                                                                 vec3 tmpNormal = (normal.xyz);
+                                                                 vec3 tmpNormal = (n.xyz);
                                                                  vec3 tangeant = normalize (vec3(size.xy, s21 - s01));
                                                                  vec3 binomial = normalize (vec3(size.yx, s12 - s10));
                                                                  n.x = dot(bump.xyz, tangeant);
