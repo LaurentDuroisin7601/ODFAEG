@@ -59,15 +59,15 @@ namespace odfaeg {
                     addTriangle(triangle);
                 }*/
 
-                const int stacks = 32, slices = 32;
+                const int stacks = quality, slices = quality;
                 const int vertexCount = (stacks + 1) * (slices + 1);
                 VertexArray* vertices = new VertexArray(Triangles, vertexCount, this);
 
                 int n = 0;
                 for (uint32_t i = 0; i <= stacks; ++i) {
                     float phi = PI * i / stacks;
-                    float y = getSize().x() * math::Math::cosinus(phi);
-                    float r = getSize().x() * math::Math::sinus(phi);
+                    float y = getSize().x() * 0.5f * math::Math::cosinus(phi);
+                    float r = getSize().x() * 0.5f * math::Math::sinus(phi);
 
                     for (uint32_t j = 0; j <= slices; ++j) {
                         float theta = 2 * PI * j / slices;
@@ -112,7 +112,7 @@ namespace odfaeg {
                 Material material;
                 math::Vec4f center = getCenter() - getSize()*0.5f;
                 //std::cout<<"radius : "<<getSize().x()<<std::endl;
-                center[3] = getSize().x();
+                center[3] = getSize().x() * 0.5f;
                 material.setLightInfos(center,getColor());
                 Face face (*triangle,material,getTransform());
                 addFace(face);
