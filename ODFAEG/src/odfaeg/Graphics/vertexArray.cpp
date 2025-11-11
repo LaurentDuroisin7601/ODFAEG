@@ -169,6 +169,7 @@ namespace odfaeg {
         m_entityId(entityId)
         {
 
+
         }
         void VertexArray::setEntity(Entity* entity) {
             m_entity = entity;

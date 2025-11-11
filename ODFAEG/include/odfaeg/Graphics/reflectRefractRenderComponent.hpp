@@ -162,7 +162,7 @@ namespace odfaeg {
             void createDescriptorSets(RenderStates states);
             void allocateDescriptorSets(RenderStates states);
             void allocateDescriptorSets(unsigned int p, RenderStates states);
-            void updateDescriptorSets(unsigned int p, RenderStates states);
+            void updateDescriptorSets(unsigned int currentFrame, unsigned int p, RenderStates states);
             void compileShaders();
             void createUniformBuffers();
             void createUniformBuffersMT();
@@ -260,7 +260,7 @@ namespace odfaeg {
             std::vector<UniformBufferObject> ubos;
             bool needToUpdateDS;
             std::atomic<bool> datasReady;
-            std::array<bool, Batcher::nbPrimitiveTypes> needToUpdateDSs;
+            std::array<std::array<bool, MAX_FRAMES_IN_FLIGHT>, Batcher::nbPrimitiveTypes> needToUpdateDSs;
             std::vector<VkEvent> events;
 
 
@@ -275,9 +275,12 @@ namespace odfaeg {
             unsigned int nbReflRefrEntities, alignment, uboAlignment;
             std::array<unsigned int, MAX_FRAMES_IN_FLIGHT> values, valuesCopy;
             bool useThread;
-            std::array<unsigned int, Batcher::nbPrimitiveTypes> totalBufferSizeModelData, maxBufferSizeModelData, maxAlignedSizeModelData, oldTotalBufferSizeModelData;
-            std::array<unsigned int, Batcher::nbPrimitiveTypes> totalBufferSizeMaterialData, maxBufferSizeMaterialData, maxAlignedSizeMaterialData, oldTotalBufferSizeMaterialData;
-            std::array<unsigned int, Batcher::nbPrimitiveTypes> totalVertexCount, totalVertexIndexCount, totalIndexCount, totalBufferSizeDrawCommand, totalBufferSizeIndexedDrawCommand, maxBufferSizeDrawCommand, maxBufferSizeIndexedDrawCommand;
+            std::array<unsigned int, Batcher::nbPrimitiveTypes> totalBufferSizeModelData, maxAlignedSizeModelData, oldTotalBufferSizeModelData;
+            std::array<std::array<unsigned int, MAX_FRAMES_IN_FLIGHT>, Batcher::nbPrimitiveTypes> maxBufferSizeModelData;
+            std::array<unsigned int, Batcher::nbPrimitiveTypes> totalBufferSizeMaterialData, maxAlignedSizeMaterialData, oldTotalBufferSizeMaterialData;
+            std::array<std::array<unsigned int, MAX_FRAMES_IN_FLIGHT>, Batcher::nbPrimitiveTypes> maxBufferSizeMaterialData;
+            std::array<unsigned int, Batcher::nbPrimitiveTypes> totalVertexCount, totalVertexIndexCount, totalIndexCount, totalBufferSizeDrawCommand, totalBufferSizeIndexedDrawCommand;
+            std::array<std::array<unsigned int, MAX_FRAMES_IN_FLIGHT>, Batcher::nbPrimitiveTypes> maxBufferSizeDrawCommand, maxBufferSizeIndexedDrawCommand;
             std::array<std::vector<unsigned int>, Batcher::nbPrimitiveTypes> vertexOffsets, vertexIndexOffsets, indexOffsets, modelDataOffsets, materialDataOffsets, drawCommandBufferOffsets, nbDrawCommandBuffer, drawIndexedCommandBufferOffsets, nbIndexedDrawCommandBuffer;
             std::mutex mtx;
             std::condition_variable cv;

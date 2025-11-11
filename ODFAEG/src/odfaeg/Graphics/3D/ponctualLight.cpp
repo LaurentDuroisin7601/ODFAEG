@@ -31,7 +31,7 @@ namespace odfaeg {
                     delete triangles[i];
                 }
                 triangles.clear();
-                float angle = math::Math::toRadians(360) / quality;
+                /*float angle = math::Math::toRadians(360) / quality;
 
                 Color color2 (color.r, color.g, color.b, 0);
                 int end = quality;
@@ -57,47 +57,48 @@ namespace odfaeg {
                     (*triangle)[1] = Vertex(v2, color);
                     (*triangle)[2] = Vertex(v3, color);
                     addTriangle(triangle);
-                }
-                /*const int space = 10;
-                const int vertexCount = (90 / space) * (360 / space) * 4;
-                VertexArray vertices(TrianglesStrip, vertexCount, this);
+                }*/
+                const int stacks = 32, slices = 32;
+                const int vertexCount = stacks * (slices + 1) * 2;
+                //std::cout<<"vertex count : "<<vertexCount<<std::endl;
+                VertexArray* vertices = new VertexArray(TriangleStrip, vertexCount, this);
+                float radius = bigRadius;
                 int n = 0;
-                float h=0, k=0, z=0;
-                for (double b = 0; b <= 90 - space; b += space) {
-                    for (double a = 0; a <= 360 - space; a += space) {
-                        math::Vec3f position;
-                        position[0] = getSize().x() * math::Math::sinus((a) / 180 * PI) * math::Math::sinus((b) / 180 * PI)-h;
-                        position[1] = getSize().x() * math::Math::cosinus((a) / 180 * PI) * math::Math::sinus((b) / 180 * PI)+k;
-                        position[2] = getSize().x() * math::Math::cosinus((b) / 180 * PI)-z;
-                        Vertex v1(position, color, math::Vec2f((a) / 360, (2 * b) / 360));
-                        vertices[n] = v1;
+                for (uint32_t i = 0; i < stacks; ++i) {
+                    float phi1 = PI * i / stacks;
+                    float phi2 = PI * (i + 1) / stacks;
+
+                    for (uint32_t j = 0; j <= slices; ++j) {
+                        float theta = 2 * PI * j / slices;
+
+                        // Point sur la bande supérieure
+                        float x1 = radius * sin(phi1) * cos(theta);
+                        float y1 = radius * cos(phi1);
+                        float z1 = radius * sin(phi1) * sin(theta);
+                        math::Vec3f pos1 = math::Vec3f(x1, y1, z1);
+                        math::Vec3f normal1 = pos1.normalize();
+                        math::Vec2f uv1((float)j / slices, (float)i / stacks);
+                        Vertex v1(pos1, color, uv1);
+                        v1.normal = normal1;
+                        (*vertices)[n] = v1;
                         n++;
-                        position[0] = getSize().x() * math::Math::sinus((a) / 180 * PI) * math::Math::sinus((b + space) / 180 * PI)-h;
-                        position[1] = getSize().x() * math::Math::cosinus((a) / 180 * PI) * math::Math::sinus((b + space) / 180 * PI)+k;
-                        position[2] = getSize().x() * math::Math::cosinus((b + space) / 180 * PI)-z;
-                        Vertex v2(position, color, math::Vec2f((a) / 360, (2 * (b + space)) / 360));
-                        vertices[n] = v2;
-                        n++;
-                        position[0] = getSize().x() * math::Math::sinus((a + space) / 180 * PI) * math::Math::sinus((b) / 180 * PI)-h;
-                        position[1] = getSize().x() * math::Math::cosinus((a + space) / 180 * PI) * math::Math::sinus((b) / 180 * PI)+k;
-                        position[2] = getSize().x() * math::Math::cosinus((b) / 180 * PI)-z;
-                        Vertex v3(position, color, math::Vec2f((a + space) / 360, (2 * b) / 360));
-                        vertices[n] = v3;
-                        n++;
-                        position[0] = getSize().x() * math::Math::sinus((a + space) / 180 * PI) * math::Math::sinus((b + space) / 180 * PI)-h;
-                        position[1] = getSize().x() * math::Math::cosinus((a + space) / 180 * PI) * math::Math::sinus((b + space) / 180 * PI)+k;
-                        position[2] = getSize().x() * math::Math::cosinus((b + space) / 180 * PI)-z;
-                        Vertex v4(position, color, math::Vec2f((a + space) / 360, (2 * (b + space)) / 360));
-                        vertices[n] = v4;
+
+                        // Point sur la bande inférieure
+                        float x2 = radius * sin(phi2) * cos(theta);
+                        float y2 = radius * cos(phi2);
+                        float z2 = radius * sin(phi2) * sin(theta);
+
+                        math::Vec3f pos2 = math::Vec3f(x2, y2, z2);
+                        math::Vec3f normal2 = pos2.normalize();
+                        math::Vec2f uv2((float)j / slices, (float)i / stacks);
+                        Vertex v2(pos2, color, uv2);
+                        v2.normal = normal2;
+                        (*vertices)[n] = v2;
                         n++;
                     }
                 }
-                Material material;
-                math::Vec4f center = getCenter() - getSize()*0.5f;
-                center[3] = bigRadius;
-                material.setLightInfos(center,getColor());
-                Face face (vertices,material,getTransform());
-                addFace(face);*/
+                //std::cout<<"n : "<<n<<std::endl;
+                addTriangle(vertices);
             }
             //Ajoute un triangle à la source lumineuse.
             void PonctualLight::addTriangle (VertexArray *triangle) {

@@ -543,8 +543,8 @@ namespace odfaeg {
                 nbLayers = 0;
             }
             void Batcher::addFace(Face* face) {
-                /*if (face->getVertexArray().getEntity() != nullptr && face->getVertexArray().getEntity()->getRootType() == "E_BIGTILE")
-                        //////std::cout<<"add E_TILE : "<<face->getVertexArray().getPrimitiveType() * core::Application::app->getNbMaterials() + face->getMaterial().getId()<<std::endl;*/
+                /*if (face->getVertexArray().getEntity() != nullptr && face->getVertexArray().getEntity()->getRootType() == "E_PONCTUAL_LIGHT")
+                    std::cout<<"primitive type :"<<face->getVertexArray().getPrimitiveType()<<std::endl;*/
 
 
                 Instance& instance = instances[face->getMaterial().getId() * nbPrimitiveTypes + face->getVertexArray().getPrimitiveType()];

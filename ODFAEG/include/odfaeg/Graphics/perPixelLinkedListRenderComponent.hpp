@@ -113,7 +113,7 @@ namespace odfaeg {
             void createDescriptorPool(unsigned int p, RenderStates states);
             void createDescriptorPool(RenderStates states);
             void createDescriptorSetLayout(RenderStates states);
-            void updateDescriptorSets(unsigned int p, RenderStates states);
+            void updateDescriptorSets(unsigned int currentFrame, unsigned int p, RenderStates states);
             void createDescriptorSets(unsigned int p, RenderStates states);
             void allocateDescriptorSets(unsigned int p, RenderStates states);
             void allocateDescriptorSets(RenderStates states);
@@ -211,16 +211,19 @@ namespace odfaeg {
             std::array<VkCommandBuffer, MAX_FRAMES_IN_FLIGHT> ppllCommandBuffer, ppllSelectedCommandBuffer, ppllOutlineCommandBuffer, ppllPass2CommandBuffer, skyboxCommandBuffer,
             copyModelDataBufferCommandBuffer, copyMaterialDataBufferCommandBuffer, copyDrawBufferCommandBuffer, copyDrawIndexedBufferCommandBuffer,
             copyVbBufferCommandBuffer, copyVbIndexedBufferCommandBuffer, copyVbPpllPass2CommandBuffer, copySkyboxCommandBuffer;
-            std::array<unsigned int, Batcher::nbPrimitiveTypes> totalBufferSizeModelData, maxBufferSizeModelData, maxAlignedSizeModelData, oldTotalBufferSizeModelData;
-            std::array<unsigned int, Batcher::nbPrimitiveTypes> totalBufferSizeMaterialData, maxBufferSizeMaterialData, maxAlignedSizeMaterialData, oldTotalBufferSizeMaterialData;
-            std::array<unsigned int, Batcher::nbPrimitiveTypes> totalVertexCount, totalVertexIndexCount, totalIndexCount, totalBufferSizeDrawCommand, totalBufferSizeIndexedDrawCommand, maxBufferSizeDrawCommand, maxBufferSizeIndexedDrawCommand;
+            std::array<unsigned int, Batcher::nbPrimitiveTypes> totalBufferSizeModelData, maxAlignedSizeModelData, oldTotalBufferSizeModelData;
+            std::array<std::array<unsigned int, MAX_FRAMES_IN_FLIGHT>, Batcher::nbPrimitiveTypes> maxBufferSizeModelData;
+            std::array<unsigned int, Batcher::nbPrimitiveTypes> totalBufferSizeMaterialData, maxAlignedSizeMaterialData, oldTotalBufferSizeMaterialData;
+            std::array<std::array<unsigned int, MAX_FRAMES_IN_FLIGHT>, Batcher::nbPrimitiveTypes> maxBufferSizeMaterialData;
+            std::array<unsigned int, Batcher::nbPrimitiveTypes> totalVertexCount, totalVertexIndexCount, totalIndexCount, totalBufferSizeDrawCommand, totalBufferSizeIndexedDrawCommand;
+            std::array<std::array<unsigned int, MAX_FRAMES_IN_FLIGHT>, Batcher::nbPrimitiveTypes> maxBufferSizeDrawCommand, maxBufferSizeIndexedDrawCommand;
             std::array<unsigned int, Batcher::nbPrimitiveTypes> currentModelOffset, currentMaterialOffset;
             std::array<std::vector<unsigned int>, Batcher::nbPrimitiveTypes> modelDataOffsets, materialDataOffsets, drawCommandBufferOffsets, nbDrawCommandBuffer, drawIndexedCommandBufferOffsets, nbIndexedDrawCommandBuffer;
             std::array<std::atomic<bool>, MAX_FRAMES_IN_FLIGHT> commandBufferReady = {};
             std::array<std::atomic<bool>, MAX_FRAMES_IN_FLIGHT> registerFrameJob = {true, false};
 
             std::condition_variable cv, cv2;
-            std::array<bool, Batcher::nbPrimitiveTypes> needToUpdateDSs;
+            std::array<std::array<bool, MAX_FRAMES_IN_FLIGHT>, Batcher::nbPrimitiveTypes> needToUpdateDSs;
             unsigned int alignment;
             std::mutex mtx, mtx2;
             std::vector<std::array<VkSemaphore, MAX_FRAMES_IN_FLIGHT>> computeSemaphores;

@@ -131,11 +131,12 @@ namespace odfaeg {
                 void fillBuffersMT();
                 void fillIndexedBuffersMT();
                 void fillLightBuffersMT();
+                void fillLightBuffersIndexedMT();
                 void drawBuffers();
                 void createDescriptorPool(unsigned int p, RenderStates states);
                 void createDescriptorPool(RenderStates states);
                 void createDescriptorSetLayout(RenderStates states);
-                void updateDescriptorSets(unsigned int p, RenderStates states, bool lightDepth = false);
+                void updateDescriptorSets(unsigned int currentFrame, unsigned int p, RenderStates states, bool lightDepth = false);
                 void createDescriptorSets(RenderStates states, bool lightDepth = false);
                 void allocateDescriptorSets(unsigned int p, RenderStates states);
                 void allocateDescriptorSets(RenderStates states);
@@ -172,9 +173,9 @@ namespace odfaeg {
                 std::vector<VkDeviceMemory> modelDataShaderStorageBuffersMemory;
                 std::vector<VkBuffer> materialDataShaderStorageBuffers;
                 std::vector<VkDeviceMemory> materialDataShaderStorageBuffersMemory;
-                Batcher batcher, lightBatcher, normalBatcher, indexedBatcher, normalIndexedBatcher; /**> A group of faces using the same materials and primitive type.*/
+                Batcher batcher, lightBatcher, lightIndexedBatcher, normalBatcher, indexedBatcher, normalIndexedBatcher; /**> A group of faces using the same materials and primitive type.*/
                 std::vector<Instance> m_instances, m_normals, m_instancesIndexed, m_normalsIndexed; /**> Instances to draw. (Instanced rendering.) */
-                std::vector<Instance> m_light_instances; /**> Instances to draw. (Instanced rendering.) */
+                std::vector<Instance> m_light_instances, m_light_instances_indexed; /**> Instances to draw. (Instanced rendering.) */
                 std::vector<Entity*> visibleEntities; /**> Entities loaded*/
                 RenderTexture depthBuffer; /**> the stencil buffer.*/
                 RenderTexture bumpTexture;
@@ -221,15 +222,18 @@ namespace odfaeg {
                 LayerPC layerPC;
                 ResolutionPC resolutionPC;
                 MaxSpecPC maxSpecPC;
-                std::array<unsigned int, Batcher::nbPrimitiveTypes> totalBufferSizeModelData, maxBufferSizeModelData, maxAlignedSizeModelData, oldTotalBufferSizeModelData;
-                std::array<unsigned int, Batcher::nbPrimitiveTypes> totalBufferSizeMaterialData, maxBufferSizeMaterialData, maxAlignedSizeMaterialData, oldTotalBufferSizeMaterialData;
-                std::array<unsigned int, Batcher::nbPrimitiveTypes> totalVertexCount, totalVertexIndexCount, totalIndexCount, totalBufferSizeDrawCommand, totalBufferSizeIndexedDrawCommand, maxBufferSizeDrawCommand, maxBufferSizeIndexedDrawCommand;
+                std::array<unsigned int, Batcher::nbPrimitiveTypes> totalBufferSizeModelData, maxAlignedSizeModelData, oldTotalBufferSizeModelData;
+                std::array<std::array<unsigned int, MAX_FRAMES_IN_FLIGHT>, Batcher::nbPrimitiveTypes> maxBufferSizeModelData;
+                std::array<unsigned int, Batcher::nbPrimitiveTypes> totalBufferSizeMaterialData, maxAlignedSizeMaterialData, oldTotalBufferSizeMaterialData;
+                std::array<std::array<unsigned int, MAX_FRAMES_IN_FLIGHT>, Batcher::nbPrimitiveTypes> maxBufferSizeMaterialData;
+                std::array<unsigned int, Batcher::nbPrimitiveTypes> totalVertexCount, totalVertexIndexCount, totalIndexCount, totalBufferSizeDrawCommand, totalBufferSizeIndexedDrawCommand;
+                std::array<std::array<unsigned int, MAX_FRAMES_IN_FLIGHT>, Batcher::nbPrimitiveTypes> maxBufferSizeDrawCommand, maxBufferSizeIndexedDrawCommand;
                 std::array<unsigned int, Batcher::nbPrimitiveTypes> currentModelOffset, currentMaterialOffset;
                 std::array<std::vector<unsigned int>, Batcher::nbPrimitiveTypes> modelDataOffsets, materialDataOffsets, drawCommandBufferOffsets, nbDrawCommandBuffer, drawIndexedCommandBufferOffsets, nbIndexedDrawCommandBuffer;
                 std::array<std::atomic<bool>, MAX_FRAMES_IN_FLIGHT> commandBufferReady = {};
                 std::array<std::atomic<bool>, MAX_FRAMES_IN_FLIGHT> registerFrameJob = {true, false};
                 std::condition_variable cv;
-                std::array<bool, Batcher::nbPrimitiveTypes> needToUpdateDSs;
+                std::array<std::array<bool, MAX_FRAMES_IN_FLIGHT>, Batcher::nbPrimitiveTypes> needToUpdateDSs;
                 unsigned int alignment;
                 std::mutex mtx;
                 bool useThread;
