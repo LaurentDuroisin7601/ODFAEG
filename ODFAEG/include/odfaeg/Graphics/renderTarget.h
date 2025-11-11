@@ -296,7 +296,7 @@ namespace odfaeg {
 
             void createCommandPool();
             void createCommandBuffers();
-            void recordCommandBuffers(VkCommandBuffer cmd, VertexBuffer& vb, RenderStates states);
+            void recordCommandBuffers(VkCommandBuffer cmd, VertexBuffer& vb, PrimitiveType primitiveType, RenderStates states);
             View        m_defaultView; ///< Default view
             View        m_view;  ///< Current view
             Shader defaultShader, defaultShader2;

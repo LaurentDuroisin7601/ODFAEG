@@ -170,9 +170,7 @@ namespace odfaeg {
                     queueCreateInfos.push_back(queueCreateInfo);
                 }
 
-                VkPhysicalDeviceMultiviewFeatures physicalDeviceMultiviewFeatures{};
-                physicalDeviceMultiviewFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES_KHR;
-                physicalDeviceMultiviewFeatures.multiview = VK_TRUE;
+
 
                 VkPhysicalDeviceNestedCommandBufferFeaturesEXT maintenance7Features {
                     .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NESTED_COMMAND_BUFFER_FEATURES_EXT,
@@ -202,26 +200,21 @@ namespace odfaeg {
                 deviceFeatures.fragmentStoresAndAtomics = VK_TRUE;
                 VkPhysicalDeviceVulkan11Features features11 = {};
                 features11.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
+                features11.pNext = &physcialDeviceFragmentShaderInterlock;
                 VkPhysicalDeviceVulkan12Features features12 = {};
                 features12.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
+                features12.pNext = &features11;
 
-
+                VkPhysicalDevicePrimitiveTopologyListRestartFeaturesEXT restartFeatures = {};
+                restartFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRIMITIVE_TOPOLOGY_LIST_RESTART_FEATURES_EXT;
+                restartFeatures.primitiveTopologyListRestart = VK_TRUE;
+                restartFeatures.pNext = &features12;
 
                 VkPhysicalDeviceFeatures2 physical_features21;
                 physical_features21.sType =  VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
-                physical_features21.pNext = &features11;
+                physical_features21.pNext = &restartFeatures;
                 physical_features21.features = deviceFeatures;
                 vkGetPhysicalDeviceFeatures2(physicalDevice, &physical_features21);
-
-                VkPhysicalDeviceFeatures2 physical_features22;
-                physical_features22.sType =  VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
-                physical_features22.pNext = &features12;
-                vkGetPhysicalDeviceFeatures2(physicalDevice, &physical_features22);
-
-
-                features11.pNext = &features12;
-
-                features12.pNext = &physcialDeviceFragmentShaderInterlock;
 
 
 
