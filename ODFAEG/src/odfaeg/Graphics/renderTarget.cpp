@@ -298,6 +298,7 @@ namespace odfaeg {
         void RenderTarget::draw(const Vertex* vertices, unsigned int vertexCount, PrimitiveType type,
                       RenderStates states) {
              ////std::cout<<"draw vertices"<<std::endl;
+             beginRecordCommandBuffers();
              if (type == Quads) {
                 type = Triangles;
                 for (unsigned int i = 0; i < vertexCount; i++) {

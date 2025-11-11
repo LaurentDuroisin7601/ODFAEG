@@ -286,7 +286,7 @@ class RCM {
 };
 int main(int argc, char *argv[]) {
 
-    /*VkSettup instance;
+    VkSettup instance;
     Device device(instance);
 
     RenderWindow window(VideoMode(800, 600), "test", device, Style::Default, ContextSettings(0, 0, 4, 4, 6));
@@ -294,6 +294,7 @@ int main(int argc, char *argv[]) {
     Texture texture(device);
     texture.loadFromFile("tilesets/eau.png");
     Sprite sprite(texture, Vec3f(0, 0, 0), Vec3f(100, 50, 0), IntRect(0, 0, 100, 50));
+    Sprite sprite2(texture, Vec3f(100, 50, 0), Vec3f(100, 50, 0), IntRect(0, 0, 100, 50));
     window.createDescriptorsAndPipelines();
     CircleShape circle(50);
     window.setPosition(Vector2i(10, 50));
@@ -302,9 +303,9 @@ int main(int argc, char *argv[]) {
     window.setFramerateLimit(30);
     while(window.isOpen()) {
         window.clear(Color::Black);
-        window.draw(circle);
-
         window.draw(sprite);
+
+        window.draw(sprite2);
         window.submit(true);
         window.display();
         odfaeg::window::IEvent event;
@@ -317,13 +318,13 @@ int main(int argc, char *argv[]) {
 
         }
 
-    }*/
+    }
 
 
         //std::cout<<"size : "<<sizeof(std::chrono::time_point<std::chrono::high_resolution_clock, std::chrono::duration<float>>)<<std::endl;
 
-    MyAppli app(VideoMode(800, 600), "Test odfaeg");
-    return app.exec();
+    /*MyAppli app(VideoMode(800, 600), "Test odfaeg");
+    return app.exec();*/
 }
 
 
