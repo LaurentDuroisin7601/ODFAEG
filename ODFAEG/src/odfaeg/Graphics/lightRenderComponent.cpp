@@ -692,7 +692,7 @@ namespace odfaeg {
                                                              float s12 = textureOffset(depthTexture[pushConsts.imageIndex], gl_FragCoord.xy / pushConsts.resolution.xy, off.yz).z;
                                                              vec3 va = normalize (vec3(size.xy, s21 - s01));
                                                              vec3 vb = normalize (vec3(size.yx, s12 - s10));
-                                                             vec3 normal = vec3(cross(va, vb));
+                                                             vec3 n = vec3(cross(va, vb));
                                                              vec4 bump = texture(bumpMap[pushConsts.imageIndex], gl_FragCoord.xy / pushConsts.resolution.xy);
                                                              vec4 specularInfos = texture(specularTexture[pushConsts.imageIndex], gl_FragCoord.xy / pushConsts.resolution.xy);
                                                              bool useOrthoProj = (isOrthoProj != 0);
@@ -721,9 +721,9 @@ namespace odfaeg {
                                                                  vec3 tmpNormal = (normal.xyz);
                                                                  vec3 tangeant = normalize (vec3(size.xy, s21 - s01));
                                                                  vec3 binomial = normalize (vec3(size.yx, s12 - s10));
-                                                                 normal.x = dot(bump.xyz, tangeant);
-                                                                 normal.y = dot(bump.xyz, binomial);
-                                                                 normal.z = dot(bump.xyz, tmpNormal);
+                                                                 n.x = dot(bump.xyz, tangeant);
+                                                                 n.y = dot(bump.xyz, binomial);
+                                                                 n.z = dot(bump.xyz, tmpNormal);
                                                              }
                                                              //debugPrintfEXT("depth : %f", depth.z);
                                                              if (/*layer > depth.y || layer == depth.y &&*/ gl_FragCoord.z > depth.z) {
@@ -733,8 +733,8 @@ namespace odfaeg {
                                                                  //debugPrintfEXT("vertex to light, radius, attenuation : %v3f, %f, %f", vertexToLight, radius, attenuation);
 
                                                                  vec3 pixToView = pixPos - viewPos;
-                                                                 float normalLength = dot(normal.xyz, vertexToLight);
-                                                                 vec3 lightReflect = vertexToLight + 2 * (normal.xyz * normalLength - vertexToLight);
+                                                                 float normalLength = dot(n.xyz, vertexToLight);
+                                                                 vec3 lightReflect = vertexToLight + 2 * (n.xyz * normalLength - vertexToLight);
                                                                  float m = specularInfos.r;
                                                                  float p = specularInfos.g;
                                                                  float specularFactor = dot(normalize(pixToView), normalize(lightReflect));
@@ -742,9 +742,9 @@ namespace odfaeg {
                                                                  if (specularFactor > 0) {
                                                                      specularColor = vec4(lightColor.rgb, 1) * m * specularFactor;
                                                                  }
-                                                                 if (normal.x != 0 || normal.y != 0 || normal.z != 0 && vertexToLight.z > 0.f) {
+                                                                 if (n.x != 0 || n.y != 0 || n.z != 0 && vertexToLight.z > 0.f) {
                                                                      vec3 dirToLight = normalize(vertexToLight.xyz);
-                                                                     float nDotl = max(dot (dirToLight, normal.xyz), 0.0);
+                                                                     float nDotl = max(dot (dirToLight, n.xyz), 0.0);
 
                                                                      attenuation *= nDotl;
 
@@ -4519,10 +4519,10 @@ namespace odfaeg {
                     MaterialData material;
                     {
                         std::lock_guard<std::recursive_mutex> lock(rec_mutex);
-                        MaterialData material;
                         material.textureIndex = 0;
                         material.layer =  m_light_instances_indexed[i].getMaterial().getLayer();
-                        material.lightCenter =  m_light_instances_indexed[i].getMaterial().getLightCenter();
+                        material.lightCenter = m_light_instances_indexed[i].getMaterial().getLightCenter();
+                        //std::cout<<"light center : "<<m_light_instances_indexed[i].getMaterial().getLightCenter()<<std::endl;
                         material.uvScale = math::Vec2f(0, 0);
                         material.uvOffset = math::Vec2f(0, 0);
                         Color c =  m_light_instances_indexed[i].getMaterial().getLightColor();
@@ -4539,11 +4539,12 @@ namespace odfaeg {
                     modelDatas[p].push_back(modelData);
                     unsigned int indexCount = 0, vertexCount = 0;
                     for (unsigned int j = 0; j < m_light_instances_indexed[i].getAllVertices().getVertexCount(); j++) {
-                        ////std::cout<<"add vertex"<<std::endl;
+                        //std::cout<<"add vertex"<<std::endl;
                         vbBindlessTexIndexed[p].append(m_light_instances_indexed[i].getAllVertices()[j]);
                         vertexCount++;
                     }
                     for (unsigned int j = 0; j < m_light_instances_indexed[i].getAllVertices().getIndexes().size(); j++) {
+                        // std::cout<<"add index"<<std::endl;
                         vbBindlessTexIndexed[p].addIndex(m_light_instances_indexed[i].getAllVertices().getIndexes()[j]);
                         indexCount++;
                     }

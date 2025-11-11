@@ -58,58 +58,21 @@ namespace odfaeg {
                     (*triangle)[2] = Vertex(v3, color);
                     addTriangle(triangle);
                 }*/
-                /*const int stacks = 32, slices = 32;
-                const int vertexCount = stacks * (slices + 1) * 2;
-                VertexArray* vertices = new VertexArray(TriangleStrip, vertexCount, this);
-                float radius = bigRadius;
-                int n = 0;
-                for (uint32_t i = 0; i < stacks; ++i) {
-                    float phi1 = PI * i / stacks;
-                    float phi2 = PI * (i + 1) / stacks;
 
-                    for (uint32_t j = 0; j <= slices; ++j) {
-                        float theta = 2 * PI * j / slices;
-
-                        // Point sur la bande supérieure
-                        float x1 = radius * sin(phi1) * cos(theta);
-                        float y1 = radius * cos(phi1);
-                        float z1 = radius * sin(phi1) * sin(theta);
-                        math::Vec3f pos1 = math::Vec3f(x1, y1, z1);
-                        math::Vec3f normal1 = pos1.normalize();
-                        math::Vec2f uv1((float)j / slices, (float)i / stacks);
-                        Vertex v1(pos1, color, uv1);
-                        v1.normal = normal1;
-                        (*vertices)[n] = v1;
-                        n++;
-
-                        // Point sur la bande inférieure
-                        float x2 = radius * sin(phi2) * cos(theta);
-                        float y2 = radius * cos(phi2);
-                        float z2 = radius * sin(phi2) * sin(theta);
-
-                        math::Vec3f pos2 = math::Vec3f(x2, y2, z2);
-                        math::Vec3f normal2 = pos2.normalize();
-                        math::Vec2f uv2((float)j / slices, (float)i / stacks);
-                        Vertex v2(pos2, color, uv2);
-                        v2.normal = normal2;
-                        (*vertices)[n] = v2;
-                        n++;
-                    }
-                }*/
                 const int stacks = 32, slices = 32;
                 const int vertexCount = (stacks + 1) * (slices + 1);
                 VertexArray* vertices = new VertexArray(Triangles, vertexCount, this);
-                //std::cout<<"vertex count : "<<vertexCount<<std::endl;
+
                 int n = 0;
                 for (uint32_t i = 0; i <= stacks; ++i) {
                     float phi = PI * i / stacks;
-                    float y = radius * cos(phi);
-                    float r = radius * sin(phi);
+                    float y = getSize().x() * math::Math::cosinus(phi);
+                    float r = getSize().x() * math::Math::sinus(phi);
 
                     for (uint32_t j = 0; j <= slices; ++j) {
                         float theta = 2 * PI * j / slices;
-                        float x = r * cos(theta);
-                        float z = r * sin(theta);
+                        float x = r * math::Math::cosinus(theta);
+                        float z = r * math::Math::sinus(theta);
 
                         math::Vec3f pos(x, y, z);
                         math::Vec3f normal = pos.normalize();
@@ -120,7 +83,7 @@ namespace odfaeg {
                         n++;
                     }
                 }
-                //std::cout<<"n : "<<n<<std::endl;
+
 
                 for (uint32_t i = 0; i < stacks; ++i) {
                     for (uint32_t j = 0; j < slices; ++j) {
@@ -136,7 +99,7 @@ namespace odfaeg {
                         vertices->addIndex(first + 1);
                     }
                 }
-                //std::cout<<"n : "<<n<<std::endl;
+
                 addTriangle(vertices);
             }
             //Ajoute un triangle à la source lumineuse.
@@ -148,7 +111,8 @@ namespace odfaeg {
                 triangle->EnableOutline(false);*/
                 Material material;
                 math::Vec4f center = getCenter() - getSize()*0.5f;
-                center[3] = bigRadius;
+                //std::cout<<"radius : "<<getSize().x()<<std::endl;
+                center[3] = getSize().x();
                 material.setLightInfos(center,getColor());
                 Face face (*triangle,material,getTransform());
                 addFace(face);

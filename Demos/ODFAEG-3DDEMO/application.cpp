@@ -105,7 +105,10 @@ void MyAppli::onInit() {
     emitter.setParticleTextureIndex(Distributions::uniformui(0, 9));
     emitter.setParticleScale(Distributions::rect(Vec3f(2.1f, 2.1f, 2.f), Vec3f(2.f, 2.f, 2.f)));
     ps->addEmitter(emitter);
-    g3d::PonctualLight* light = factory.make_entity<g3d::PonctualLight>(Vec3f(0, 25, 10), 200, 200, 200, 255, Color::Yellow, 16, factory);
+    g3d::PonctualLight* light = factory.make_entity<g3d::PonctualLight>(Vec3f(0, 0, 0), 200, 200, 200, 255, Color::Yellow, 16, factory);
+    float h;
+    isOnHeightMap = heightmap->getHeight(Vec2f(light->getPosition().x(), light->getPosition().z()), h);
+    light->move(Vec3f(0, h, 0));
     getWorld()->addEntity(light);
     eu = new EntitiesUpdater(factory, *getWorld());
     getWorld()->addWorker(eu);
@@ -218,7 +221,7 @@ void MyAppli::onInit() {
 
     billboard->setView(view3D);
     //std::cout<<"screen coords : "<<getRenderWindow().mapCoordsToPixel(model->getPosition(), view3D);
-    g2d::AmbientLight::getAmbientLight().setColor(Color::White);
+    g2d::AmbientLight::getAmbientLight().setColor(Color::Blue);
     animUpdater = new AnimUpdater();
     animUpdater->addBoneAnim(animator);
     getWorld()->addTimer(animUpdater);
