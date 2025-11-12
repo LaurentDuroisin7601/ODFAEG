@@ -126,7 +126,8 @@ namespace odfaeg {
              void stop() {
                  if (useThread) {
                      running = false;
-                     m_thread.join();
+                     if (m_thread.joinable())
+                        m_thread.join();
                  }
              }
              /** \fn void processEvents ()

@@ -513,7 +513,7 @@ namespace sorrok {
         // check all the window's events that were triggered since the last iteration of the loop
         if (rw == &getRenderWindow() && event.type == IEvent::WINDOW_EVENT && event.window.type == IEvent::WINDOW_EVENT_CLOSED) {
             std::cout<<"close"<<std::endl;
-            //getRenderComponentManager().stopComponentThreads();
+
 
             stop();
             /*eu->stop();
