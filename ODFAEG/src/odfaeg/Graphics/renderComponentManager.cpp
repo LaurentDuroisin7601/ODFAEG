@@ -232,6 +232,12 @@ namespace odfaeg {
            }
            //core::Command::clearEventsStack();
         }
+        void RenderComponentManager::stopComponentThreads() {
+            std::multimap<int, Component*, std::greater<int>>::iterator it;
+            for (it = eventComponents.begin(); it != eventComponents.end(); it++) {
+                it->second->getListener().stop();
+            }
+        }
         RenderComponentManager::~RenderComponentManager() {
             //////std::cout<<"rcm desrtructor"<<std::endl;
 

@@ -51,8 +51,6 @@ namespace odfaeg {
             VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
             VkDevice device;
             VkQueue graphicsQueue, computeQueue, presentQueue;
-
-
         };
     }
 }

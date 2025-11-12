@@ -134,7 +134,7 @@ namespace odfaeg {
             */
             void draw(RenderTarget& target, RenderStates states);
             std::string getExpression();
-            void pushEvent(window::IEvent event, RenderWindow& window) {}
+            void pushEvent(window::IEvent event, RenderWindow& window);
             void setView(View view);
             View& getView();
             int getLayer();
@@ -286,6 +286,7 @@ namespace odfaeg {
             std::condition_variable cv;
             std::array<std::atomic<bool>, MAX_FRAMES_IN_FLIGHT> commandBufferReady = {};
             std::array<std::atomic<bool>, MAX_FRAMES_IN_FLIGHT> registerFrameJob = {true, false};
+            std::atomic<bool> stop = false;
         };
         #else
         class ODFAEG_GRAPHICS_API ReflectRefractRenderComponent : public HeavyComponent {

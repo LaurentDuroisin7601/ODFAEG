@@ -237,6 +237,7 @@ namespace odfaeg {
                 unsigned int alignment;
                 std::mutex mtx;
                 bool useThread;
+                std::atomic<bool> stop = false;
         };
         #else
         class ODFAEG_GRAPHICS_API LightRenderComponent : public HeavyComponent {

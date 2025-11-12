@@ -3778,15 +3778,12 @@ namespace odfaeg {
                             modelDatas[p].push_back(model);
                         }
                         unsigned int vertexCount = 0;
-                        if (m_instances[i].getVertexArrays().size() > 0) {
-                            Entity* entity = m_instances[i].getVertexArrays()[0]->getEntity();
-                            for (unsigned int j = 0; j < m_instances[i].getVertexArrays().size(); j++) {
-                                if (entity == m_instances[i].getVertexArrays()[j]->getEntity()) {
-                                    unsigned int p = m_instances[i].getVertexArrays()[j]->getPrimitiveType();
-                                    for (unsigned int k = 0; k < m_instances[i].getVertexArrays()[j]->getVertexCount(); k++) {
-                                        vertexCount++;
-                                        vbBindlessTex[p].append((*m_instances[i].getVertexArrays()[j])[k]);
-                                    }
+                        if (m_instances[i].getEntities().size() > 0) {
+                            Entity* firstInstance = m_instances[i].getEntities()[0];
+                            for (unsigned int j = 0; j < firstInstance->getFaces().size(); j++) {
+                                for (unsigned int k = 0; k < firstInstance->getFace(j)->getVertexArray().getVertexCount(); k++) {
+                                    vertexCount++;
+                                    vbBindlessTex[p].append(firstInstance->getFace(j)->getVertexArray()[k]);
                                 }
                             }
                         }
@@ -4043,19 +4040,17 @@ namespace odfaeg {
                             modelDatas[p].push_back(model);
                         }
                         unsigned int vertexCount = 0, indexCount = 0;
-                        if (m_instancesIndexed[i].getVertexArrays().size() > 0) {
-                            Entity* entity = m_instancesIndexed[i].getVertexArrays()[0]->getEntity();
-                            for (unsigned int j = 0; j < m_instancesIndexed[i].getVertexArrays().size(); j++) {
-                                if (entity == m_instancesIndexed[i].getVertexArrays()[j]->getEntity()) {
-                                    unsigned int p = m_instancesIndexed[i].getVertexArrays()[j]->getPrimitiveType();
-                                    for (unsigned int k = 0; k < m_instancesIndexed[i].getVertexArrays()[j]->getVertexCount(); k++) {
-                                        vertexCount++;
-                                        vbBindlessTexIndexed[p].append((*m_instancesIndexed[i].getVertexArrays()[j])[k]);
-                                    }
-                                    for (unsigned int k = 0; k < m_instancesIndexed[i].getVertexArrays()[j]->getIndexes().size(); k++) {
-                                        indexCount++;
-                                        vbBindlessTexIndexed[p].addIndex(m_instancesIndexed[i].getVertexArrays()[j]->getIndexes()[k]);
-                                    }
+                        if (m_instancesIndexed[i].getEntities().size() > 0) {
+                            Entity* firstInstance = m_instancesIndexed[i].getEntities()[0];
+                            for (unsigned int j = 0; j < firstInstance->getFaces().size(); j++) {
+                                for (unsigned int k = 0; k < firstInstance->getFace(j)->getVertexArray().getVertexCount(); k++) {
+                                    vertexCount++;
+                                    vbBindlessTexIndexed[p].append(firstInstance->getFace(j)->getVertexArray()[k]);
+                                }
+                                for (unsigned int k = 0; k < firstInstance->getFace(j)->getVertexArray().getIndexes().size(); k++) {
+                                    indexCount++;
+                                    vbBindlessTexIndexed[p].addIndex(firstInstance->getFace(j)->getVertexArray().getIndexes()[k]);
+
                                 }
                             }
                         }
@@ -4303,15 +4298,12 @@ namespace odfaeg {
                             modelDatas[p].push_back(model);
                         }
                         unsigned int vertexCount=0;
-                        if (m_shadow_instances[i].getVertexArrays().size() > 0) {
-                            Entity* entity = m_shadow_instances[i].getVertexArrays()[0]->getEntity();
-                            for (unsigned int j = 0; j < m_shadow_instances[i].getVertexArrays().size(); j++) {
-                                if (entity == m_shadow_instances[i].getVertexArrays()[j]->getEntity()) {
-                                    unsigned int p = m_shadow_instances[i].getVertexArrays()[j]->getPrimitiveType();
-                                    for (unsigned int k = 0; k < m_shadow_instances[i].getVertexArrays()[j]->getVertexCount(); k++) {
-                                        vertexCount++;
-                                        vbBindlessTex[p].append((*m_shadow_instances[i].getVertexArrays()[j])[k]);
-                                    }
+                        if (m_shadow_instances[i].getEntities().size() > 0) {
+                            Entity* firstInstance = m_shadow_instances[i].getEntities()[0];
+                            for (unsigned int j = 0; j < firstInstance->getFaces().size(); j++) {
+                                for (unsigned int k = 0; k < firstInstance->getFace(j)->getVertexArray().getVertexCount(); k++) {
+                                    vertexCount++;
+                                    vbBindlessTex[p].append(firstInstance->getFace(j)->getVertexArray()[k]);
                                 }
                             }
                         }
@@ -4570,20 +4562,17 @@ namespace odfaeg {
                             modelDatas[p].push_back(model);
                         }
                         unsigned int vertexCount = 0, indexCount = 0;
-                        if (m_shadow_instances_indexed[i].getVertexArrays().size() > 0) {
-                            Entity* entity = m_shadow_instances_indexed[i].getVertexArrays()[0]->getEntity();
-                            for (unsigned int j = 0; j < m_shadow_instances_indexed[i].getVertexArrays().size(); j++) {
-                                if (entity == m_shadow_instances_indexed[i].getVertexArrays()[j]->getEntity()) {
-                                    unsigned int p = m_shadow_instances_indexed[i].getVertexArrays()[j]->getPrimitiveType();
-                                    for (unsigned int k = 0; k < m_shadow_instances_indexed[i].getVertexArrays()[j]->getVertexCount(); k++) {
-                                        vertexCount++;
-                                        vbBindlessTexIndexed[p].append((*m_shadow_instances_indexed[i].getVertexArrays()[j])[k]);
-                                    }
-                                    for (unsigned int k = 0; k < m_shadow_instances_indexed[i].getVertexArrays()[j]->getIndexes().size(); k++) {
-                                        //std::cout<<"add shadow instance index"<<std::endl;
-                                        indexCount++;
-                                        vbBindlessTexIndexed[p].addIndex(m_shadow_instances_indexed[i].getVertexArrays()[j]->getIndexes()[k]);
-                                    }
+                        if (m_shadow_instances_indexed[i].getEntities().size() > 0) {
+                            Entity* firstInstance = m_shadow_instances_indexed[i].getEntities()[0];
+                            for (unsigned int j = 0; j < firstInstance->getFaces().size(); j++) {
+                                for (unsigned int k = 0; k < firstInstance->getFace(j)->getVertexArray().getVertexCount(); k++) {
+                                    vertexCount++;
+                                    vbBindlessTexIndexed[p].append(firstInstance->getFace(j)->getVertexArray()[k]);
+                                }
+                                for (unsigned int k = 0; k < firstInstance->getFace(j)->getVertexArray().getIndexes().size(); k++) {
+                                    indexCount++;
+                                    vbBindlessTexIndexed[p].addIndex(firstInstance->getFace(j)->getVertexArray().getIndexes()[k]);
+
                                 }
                             }
                         }
@@ -5040,7 +5029,7 @@ namespace odfaeg {
 
                 if (useThread) {
                     std::unique_lock<std::mutex> lock(mtx);
-                    cv.wait(lock, [this](){return registerFrameJob[depthBuffer.getCurrentFrame()].load();});
+                    cv.wait(lock, [this](){return registerFrameJob[depthBuffer.getCurrentFrame()].load() || stop.load();});
                     registerFrameJob[currentFrame] = false;
                     resetBuffers();
                     fillBuffersMT();
@@ -5084,7 +5073,13 @@ namespace odfaeg {
                     isSomethingDrawn = false;
                 }
             }
-            void ShadowRenderComponent::pushEvent(window::IEvent event, RenderWindow& rw) {}
+            void ShadowRenderComponent::pushEvent(window::IEvent event, RenderWindow& rw) {
+                if (&rw == &window && event.type == window::IEvent::WINDOW_EVENT && event.window.type == window::IEvent::WINDOW_EVENT_CLOSED) {
+                    stop = true;
+                    cv.notify_all();
+                    getListener().stop();
+                }
+            }
             bool ShadowRenderComponent::needToUpdate() {
                 return update;
             }
@@ -5113,7 +5108,7 @@ namespace odfaeg {
             void ShadowRenderComponent::draw(RenderTarget& target, RenderStates states) {
                 if (useThread) {
                     std::unique_lock<std::mutex> lock(mtx);
-                    cv.wait(lock, [this] { return commandBufferReady[depthBuffer.getCurrentFrame()].load(); });
+                    cv.wait(lock, [this] { return commandBufferReady[depthBuffer.getCurrentFrame()].load() || stop.load(); });
 
                     commandBufferReady[depthBuffer.getCurrentFrame()] = false;
                     depthBuffer.beginRecordCommandBuffers();

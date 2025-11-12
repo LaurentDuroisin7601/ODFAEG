@@ -4588,7 +4588,7 @@ namespace odfaeg {
             if (useThread) {
                 std::unique_lock<std::mutex> lock(mtx);
                 //std::unique_lock<std::mutex> lock2(mtx2);
-                cv.wait(lock, [this](){return registerFrameJob[frameBuffer.getCurrentFrame()].load();});
+                cv.wait(lock, [this](){return registerFrameJob[frameBuffer.getCurrentFrame()].load() || stop.load();});
                 //std::cout<<"register frame"<<std::endl;
                 registerFrameJob[frameBuffer.getCurrentFrame()] = false;
                 resetBuffers();
@@ -5216,11 +5216,18 @@ namespace odfaeg {
             return expression;
         }
         void PerPixelLinkedListRenderComponent::pushEvent(window::IEvent event, RenderWindow& rw) {
+
             if (event.type == window::IEvent::WINDOW_EVENT && event.window.type == window::IEvent::WINDOW_EVENT_RESIZED && &getWindow() == &rw && isAutoResized()) {
                 //////std::cout<<"recompute size"<<std::endl;
                 recomputeSize();
                 getListener().pushEvent(event);
                 getView().reset(physic::BoundingBox(getView().getViewport().getPosition().x(), getView().getViewport().getPosition().y(), getView().getViewport().getPosition().z(), event.window.data1, event.window.data2, getView().getViewport().getDepth()));
+            }
+            if (&rw == &getWindow() && event.type == window::IEvent::WINDOW_EVENT && event.window.type == window::IEvent::WINDOW_EVENT_CLOSED) {
+                stop = true;
+                cv.notify_all();
+                cv2.notify_all();
+                getListener().stop();
             }
         }
         void PerPixelLinkedListRenderComponent::setView(View view) {
@@ -5234,7 +5241,7 @@ namespace odfaeg {
             if (useThread) {
                 std::unique_lock<std::mutex> lock(mtx);
                 std::unique_lock<std::mutex> lock2(mtx2);
-                cv.wait(lock, [this] { return commandBufferReady[frameBuffer.getCurrentFrame()].load(); });
+                cv.wait(lock, [this] { return commandBufferReady[frameBuffer.getCurrentFrame()].load() || stop.load(); });
                 commandBufferReady[frameBuffer.getCurrentFrame()] = false;
                 //std::cout<<"copy"<<std::endl;
 
@@ -5469,7 +5476,7 @@ namespace odfaeg {
 
 
                         //std::cout<<"wait : "<<visibleEntities[i]<<" current frame : "<<frameBuffer.getCurrentFrame()<<std::endl;
-                        cv2.wait(lock2, [&, this](){return visibleEntities[i]->isComputeFinished(frameBuffer.getCurrentFrame());});
+                        cv2.wait(lock2, [&, this](){return visibleEntities[i]->isComputeFinished(frameBuffer.getCurrentFrame()) || stop.load();});
                         //std::cout<<"wait finished"<<std::endl;
                         waitSemaphores.push_back(computeSemaphores[i][frameBuffer.getCurrentFrame()]);
 

@@ -4115,6 +4115,7 @@ namespace odfaeg {
                     throw core::Erreur(0, "failed to record command buffer!", 1);
                 }
             }
+
             void ReflectRefractRenderComponent::fillBufferReflIndexedMT() {
 
                 std::array<unsigned int, Batcher::nbPrimitiveTypes> firstIndex, baseInstance, baseVertex;
@@ -6984,7 +6985,7 @@ namespace odfaeg {
                     //commandBufferReady = false;
 
                     std::unique_lock<std::mutex> lock(mtx);
-                    cv.wait(lock, [this] { return registerFrameJob[depthBuffer.getCurrentFrame()].load(); });
+                    cv.wait(lock, [this] { return registerFrameJob[depthBuffer.getCurrentFrame()].load() || stop.load(); });
                     registerFrameJob[depthBuffer.getCurrentFrame()] = false;
                     //std::cout<<"wait job : "<<depthBuffer.getCurrentFrame()<<std::endl;
                     //std::cout<<"fill buffers"<<std::endl;
@@ -7343,7 +7344,7 @@ namespace odfaeg {
                     //std::cout<<"current frame : "<<depthBuffer.getCurrentFrame()<<std::endl;
                     std::unique_lock<std::mutex> lock(mtx);
 
-                    cv.wait(lock, [this] { return commandBufferReady[depthBuffer.getCurrentFrame()].load(); });
+                    cv.wait(lock, [this] { return commandBufferReady[depthBuffer.getCurrentFrame()].load() || stop.load(); });
                     commandBufferReady[depthBuffer.getCurrentFrame()] = false;
                     // std::cout<<"wait command buffers : "<<depthBuffer.getCurrentFrame()<<std::endl;
                     //std::cout<<"soumission"<<std::endl;
@@ -7765,6 +7766,13 @@ namespace odfaeg {
             }
             bool ReflectRefractRenderComponent::needToUpdate() {
                 return update;
+            }
+            void ReflectRefractRenderComponent::pushEvent(window::IEvent event, RenderWindow& rw) {
+                if (&rw == &window && event.type == window::IEvent::WINDOW_EVENT && event.window.type == window::IEvent::WINDOW_EVENT_CLOSED) {
+                    stop = true;
+                    cv.notify_all();
+                    getListener().stop();
+                }
             }
             bool ReflectRefractRenderComponent::loadEntitiesOnComponent(std::vector<Entity*> vEntities) {
                 {

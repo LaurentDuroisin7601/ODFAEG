@@ -221,6 +221,7 @@ namespace odfaeg {
                 unsigned int alignment;
                 std::mutex mtx;
                 bool useThread;
+                std::atomic<bool> stop = false;
         };
 
         #else

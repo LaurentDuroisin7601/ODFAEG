@@ -3814,18 +3814,15 @@ namespace odfaeg {
                         modelDatas[p].push_back(model);
                     }
                     unsigned int vertexCount = 0;
-                    if (m_instances[i].getVertexArrays().size() > 0) {
-                        Entity* entity = m_instances[i].getVertexArrays()[0]->getEntity();
-                        for (unsigned int j = 0; j < m_instances[i].getVertexArrays().size(); j++) {
-                            if (entity == m_instances[i].getVertexArrays()[j]->getEntity()) {
-                                for (unsigned int k = 0; k < m_instances[i].getVertexArrays()[j]->getVertexCount(); k++) {
+                    if (m_instances[i].getEntities().size() > 0) {
+                            Entity* firstInstance = m_instances[i].getEntities()[0];
+                            for (unsigned int j = 0; j < firstInstance->getFaces().size(); j++) {
+                                for (unsigned int k = 0; k < firstInstance->getFace(j)->getVertexArray().getVertexCount(); k++) {
                                     vertexCount++;
-                                    vbBindlessTex[p].append((*m_instances[i].getVertexArrays()[j])[k]);
-
+                                    vbBindlessTex[p].append(firstInstance->getFace(j)->getVertexArray()[k]);
                                 }
                             }
                         }
-                    }
                     drawArraysIndirectCommand.count = vertexCount;
                     drawArraysIndirectCommand.firstIndex = firstIndex[p] + oldTotalVertexCount[p];
                     drawArraysIndirectCommand.baseInstance = baseInstance[p];
@@ -4077,20 +4074,17 @@ namespace odfaeg {
                         modelDatas[p].push_back(model);
                     }
                     unsigned int vertexCount = 0, indexCount = 0;
-                    if (m_instancesIndexed[i].getVertexArrays().size() > 0) {
-                        Entity* entity = m_instancesIndexed[i].getVertexArrays()[0]->getEntity();
-                        for (unsigned int j = 0; j < m_instancesIndexed[i].getVertexArrays().size(); j++) {
-                            if (entity == m_instancesIndexed[i].getVertexArrays()[j]->getEntity()) {
-                                for (unsigned int k = 0; k < m_instancesIndexed[i].getVertexArrays()[j]->getVertexCount(); k++) {
-                                    vertexCount++;
-                                    vbBindlessTexIndexed[p].append((*m_instancesIndexed[i].getVertexArrays()[j])[k]);
+                    if (m_instancesIndexed[i].getEntities().size() > 0) {
+                        Entity* firstInstance = m_instancesIndexed[i].getEntities()[0];
+                        for (unsigned int j = 0; j < firstInstance->getFaces().size(); j++) {
+                            for (unsigned int k = 0; k < firstInstance->getFace(j)->getVertexArray().getVertexCount(); k++) {
+                                vertexCount++;
+                                vbBindlessTexIndexed[p].append(firstInstance->getFace(j)->getVertexArray()[k]);
+                            }
+                            for (unsigned int k = 0; k < firstInstance->getFace(j)->getVertexArray().getIndexes().size(); k++) {
+                                indexCount++;
+                                vbBindlessTexIndexed[p].addIndex(firstInstance->getFace(j)->getVertexArray().getIndexes()[k]);
 
-                                }
-                                for (unsigned int k = 0; k < m_instancesIndexed[i].getVertexArrays()[j]->getIndexes().size(); k++) {
-                                    indexCount++;
-                                    vbBindlessTexIndexed[p].addIndex(m_instancesIndexed[i].getVertexArrays()[j]->getIndexes()[k]);
-
-                                }
                             }
                         }
                     }
@@ -5011,7 +5005,7 @@ namespace odfaeg {
             maxSpecPC.maxP = 1;
             if (useThread) {
                 std::unique_lock<std::mutex> lock(mtx);
-                cv.wait(lock, [this](){return registerFrameJob[lightDepthBuffer.getCurrentFrame()].load();});
+                cv.wait(lock, [this](){return registerFrameJob[lightDepthBuffer.getCurrentFrame()].load() || stop.load();});
                 registerFrameJob[lightDepthBuffer.getCurrentFrame()] = false;
                 //std::cout<<"draw buffers"<<std::endl;
                 resetBuffers();
@@ -6308,7 +6302,7 @@ namespace odfaeg {
             if (useThread) {
                 //std::cout<<"draw current frame : "<<lightDepthBuffer.getCurrentFrame()<<std::endl;
                 std::unique_lock<std::mutex> lock(mtx);
-                cv.wait(lock, [this] { return commandBufferReady[lightDepthBuffer.getCurrentFrame()].load(); });
+                cv.wait(lock, [this] { return commandBufferReady[lightDepthBuffer.getCurrentFrame()].load() || stop.load(); });
                 //std::cout<<"copy"<<std::endl;
                 commandBufferReady[lightDepthBuffer.getCurrentFrame()] = false;
                 lightDepthBuffer.beginRecordCommandBuffers();
@@ -6769,7 +6763,11 @@ namespace odfaeg {
             return &lightMap;
         }
         void LightRenderComponent::pushEvent(window::IEvent event, RenderWindow& rw) {
-
+            if (&rw == &window && event.type == window::IEvent::WINDOW_EVENT && event.window.type == window::IEvent::WINDOW_EVENT_CLOSED) {
+                stop = true;
+                cv.notify_all();
+                getListener().stop();
+            }
         }
         LightRenderComponent::~LightRenderComponent() {
             vkDestroyCommandPool(vkDevice.getDevice(), commandPool, nullptr);

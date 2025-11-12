@@ -124,8 +124,10 @@ namespace odfaeg {
                  }
              }
              void stop() {
-                 running = false;
-                 m_thread.join();
+                 if (useThread) {
+                     running = false;
+                     m_thread.join();
+                 }
              }
              /** \fn void processEvents ()
              *   \brief check if the commands are triggered and execute them.

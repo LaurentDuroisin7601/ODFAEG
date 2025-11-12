@@ -157,7 +157,7 @@ namespace odfaeg {
             */
             void stop() {
                 running = false;
-                //rendering_thread.join();
+
                 for(unsigned int i = 0; i < windows.size(); i++)
                     windows[i].first->close();
             }
@@ -225,7 +225,7 @@ namespace odfaeg {
                     }
                     if (events.size() > 0) {
                         for (it = events.begin(); it != events.end(); it++) {
-                            static_cast<A*>(this)->onUpdate(it->first, it->second);
+
                             if (eventContextActivated) {
                                 listener->pushEvent(it->second);
                             }
@@ -235,6 +235,7 @@ namespace odfaeg {
                                     componentManager->getComponent(i)->pushEvent(it->second, *(it->first));
                                 }
                             }
+                            static_cast<A*>(this)->onUpdate(it->first, it->second);
                         }
                     }
                 }
