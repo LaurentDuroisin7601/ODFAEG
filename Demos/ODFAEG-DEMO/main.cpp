@@ -286,7 +286,7 @@ class RCM {
 };
 int main(int argc, char *argv[]) {
 
-    VkSettup instance;
+    /*VkSettup instance;
     Device device(instance);
 
     RenderWindow window(VideoMode(800, 600), "test", device, Style::Default, ContextSettings(0, 0, 4, 4, 6));
@@ -318,13 +318,13 @@ int main(int argc, char *argv[]) {
 
         }
 
-    }
+    }*/
 
 
         //std::cout<<"size : "<<sizeof(std::chrono::time_point<std::chrono::high_resolution_clock, std::chrono::duration<float>>)<<std::endl;
 
-    /*MyAppli app(VideoMode(800, 600), "Test odfaeg");
-    return app.exec();*/
+    MyAppli app(VideoMode(800, 600), "Test odfaeg");
+    return app.exec();
 }
 
 
