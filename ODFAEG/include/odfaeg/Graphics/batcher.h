@@ -393,7 +393,7 @@ namespace odfaeg {
             */
             std::vector<TransformMatrix*> getTransforms();
             std::vector<TransformMatrix> getShadowProjMatrix();
-            std::vector<TransformMatrix*> getPerVaTransforms();
+
             /** \fn Material& getMaterial()
             * \brief get the material of the instance.
             * \return the material.

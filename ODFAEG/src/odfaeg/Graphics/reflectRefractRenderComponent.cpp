@@ -4955,16 +4955,20 @@ namespace odfaeg {
 
                         modelDatas[p].push_back(model);
                         unsigned int vertexCount = 0;
-                        for (unsigned int j = 0; j < m_reflNormals[i].getVertexArrays().size(); j++) {
-                            Entity* entity = m_reflNormals[i].getVertexArrays()[j]->getEntity()->getRootEntity();
-                            if (entity == reflectEntity) {
-                                for (unsigned int k = 0; k < m_reflNormals[i].getVertexArrays()[j]->getVertexCount(); k++) {
+                        if (m_reflNormals[i].getEntities().size() > 0) {
+                            for (unsigned int j = 0; j < m_reflNormals[i].getEntities().size(); j++) {
+                                Entity* entity = m_reflNormals[i].getEntities()[j]->getRootEntity();
+                                if (entity == reflectEntity) {
+                                    for (unsigned int f = 0; f < m_reflNormals[i].getEntities()[j]->getFaces().size(); f++) {
+                                        for (unsigned int k = 0; k < m_reflNormals[i].getEntities()[j]->getFace(f)->getVertexArray().getVertexCount(); k++) {
 
-                                    vertexCount++;
-                                    math::Vec3f t = m_reflNormals[i].getVertexArrays()[j]->getEntity()->getTransform().transform(math::Vec4f((*m_reflNormals[i].getVertexArrays()[j])[k].position));
-                                    Vertex v (t, (*m_reflNormals[i].getVertexArrays()[j])[k].color, (*m_reflNormals[i].getVertexArrays()[j])[k].texCoords);
-                                    v.normal = (*m_reflNormals[i].getVertexArrays()[j])[k].normal;
-                                    vbBindlessTex[p].append(v);
+                                            vertexCount++;
+                                            math::Vec3f t = m_reflNormals[i].getEntities()[j]->getTransform().transform(math::Vec4f(m_reflNormals[i].getEntities()[j]->getFace(f)->getVertexArray()[k].position));
+                                            Vertex v (t, m_reflNormals[i].getEntities()[j]->getFace(f)->getVertexArray()[k].color, m_reflNormals[i].getEntities()[j]->getFace(f)->getVertexArray()[k].texCoords);
+                                            v.normal = m_reflNormals[i].getEntities()[j]->getFace(f)->getVertexArray()[k].normal;
+                                            vbBindlessTex[p].append(v);
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -4998,13 +5002,13 @@ namespace odfaeg {
                             modelDatas[p].push_back(model);
                         }
                         unsigned int vertexCount = 0;
-                        if (m_reflInstances[i].getVertexArrays().size() > 0) {
-                            Entity* entity = m_reflInstances[i].getVertexArrays()[0]->getEntity();
-                            for (unsigned int j = 0; j < m_reflInstances[i].getVertexArrays().size(); j++) {
-                                if (entity == m_reflInstances[i].getVertexArrays()[j]->getEntity() && entity->getRootEntity() == reflectEntity) {
-                                    for (unsigned int k = 0; k < m_reflInstances[i].getVertexArrays()[j]->getVertexCount(); k++) {
+                        if (m_reflInstances[i].getEntities().size() > 0) {
+                            Entity* firstEntity =  m_reflInstances[i].getEntities()[0];
+                            if (firstEntity->getRootEntity() == reflectEntity) {
+                                for (unsigned int j = 0; j < firstEntity->getFaces().size(); j++) {
+                                    for (unsigned int k = 0; k < firstEntity->getFace(j)->getVertexArray().getVertexCount(); k++) {
                                         vertexCount++;
-                                        vbBindlessTex[p].append((*m_reflInstances[i].getVertexArrays()[j])[k]);
+                                        vbBindlessTex[p].append(firstEntity->getFace(j)->getVertexArray()[k]);
                                     }
                                 }
                             }
@@ -5222,20 +5226,25 @@ namespace odfaeg {
 
                         modelDatas[p].push_back(model);
                         unsigned int vertexCount = 0, indexCount = 0;
-                        for (unsigned int j = 0; j < m_reflNormalIndexed[i].getVertexArrays().size(); j++) {
-                            Entity* entity = m_reflNormalIndexed[i].getVertexArrays()[j]->getEntity()->getRootEntity();
-                            if (entity == reflectEntity) {
-                                for (unsigned int k = 0; k < m_reflNormalIndexed[i].getVertexArrays()[j]->getVertexCount(); k++) {
-                                    vertexCount++;
-                                    math::Vec3f t = m_reflNormalIndexed[i].getVertexArrays()[j]->getEntity()->getTransform().transform(math::Vec4f((*m_reflNormalIndexed[i].getVertexArrays()[j])[k].position));
-                                    Vertex v (t, (*m_reflNormalIndexed[i].getVertexArrays()[j])[k].color, (*m_reflNormalIndexed[i].getVertexArrays()[j])[k].texCoords);
-                                    v.normal = (*m_reflNormalIndexed[i].getVertexArrays()[j])[k].normal;
-                                    vbBindlessTexIndexed[p].append(v);
-                                }
-                                for (unsigned int k = 0; k < m_reflNormalIndexed[i].getVertexArrays()[j]->getIndexes().size(); k++) {
-                                    ////std::cout<<"add refl norm indexed"<<std::endl;
-                                    indexCount++;
-                                    vbBindlessTexIndexed[p].addIndex(m_reflNormalIndexed[i].getVertexArrays()[j]->getIndexes()[j]);
+                        if (m_reflNormalIndexed[i].getEntities().size() > 0){
+                            for (unsigned int j = 0; j < m_reflNormalIndexed[i].getEntities().size(); j++) {
+                                Entity* entity = m_reflNormalIndexed[i].getEntities()[j]->getRootEntity();
+                                if (entity == reflectEntity) {
+                                    for (unsigned int f = 0; f < m_reflNormalIndexed[i].getEntities()[j]->getFaces().size(); f++) {
+                                        for (unsigned int k = 0; k < m_reflNormalIndexed[i].getEntities()[j]->getFace(f)->getVertexArray().getVertexCount(); k++) {
+
+                                            vertexCount++;
+                                            math::Vec3f t = m_reflNormalIndexed[i].getEntities()[j]->getTransform().transform(math::Vec4f(m_reflNormalIndexed[i].getEntities()[j]->getFace(f)->getVertexArray()[k].position));
+                                            Vertex v (t, m_reflNormalIndexed[i].getEntities()[j]->getFace(f)->getVertexArray()[k].color, m_reflNormalIndexed[i].getEntities()[j]->getFace(f)->getVertexArray()[k].texCoords);
+                                            v.normal = m_reflNormalIndexed[i].getEntities()[j]->getFace(f)->getVertexArray()[k].normal;
+                                            vbBindlessTexIndexed[p].append(v);
+                                        }
+                                        for (unsigned int k = 0; k < m_reflNormalIndexed[i].getEntities()[j]->getFace(f)->getVertexArray().getIndexes().size(); k++) {
+                                            ////std::cout<<"add refl norm indexed"<<std::endl;
+                                            indexCount++;
+                                            vbBindlessTexIndexed[p].addIndex(m_reflNormalIndexed[i].getEntities()[j]->getFace(f)->getVertexArray().getIndexes()[k]);
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -5274,23 +5283,18 @@ namespace odfaeg {
                         ////////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
                         unsigned int vertexCount = 0, indexCount = 0;
 
-                        if (m_reflIndexed[i].getVertexArrays().size() > 0) {
-                            Entity* entity = m_reflIndexed[i].getVertexArrays()[0]->getEntity();
-
-                            for (unsigned int j = 0; j < m_reflIndexed[i].getVertexArrays().size(); j++) {
-
-                                if (entity == m_reflIndexed[i].getVertexArrays()[j]->getEntity() && entity->getRootEntity() == reflectEntity) {
-
-                                    unsigned int p = m_reflIndexed[i].getVertexArrays()[j]->getPrimitiveType();
-                                    for (unsigned int k = 0; k < m_reflIndexed[i].getVertexArrays()[j]->getVertexCount(); k++) {
-                                        ////std::cout<<"add refl inst vert"<<std::endl;
+                        if (m_reflIndexed[i].getEntities().size() > 0) {
+                            Entity* firstEntity =  m_reflIndexed[i].getEntities()[0];
+                            if (firstEntity->getRootEntity() == reflectEntity) {
+                                for (unsigned int j = 0; j < firstEntity->getFaces().size(); j++) {
+                                    for (unsigned int k = 0; k < firstEntity->getFace(j)->getVertexArray().getVertexCount(); k++) {
                                         vertexCount++;
-                                        vbBindlessTexIndexed[p].append((*m_reflIndexed[i].getVertexArrays()[j])[k]);
+                                        vbBindlessTexIndexed[p].append(firstEntity->getFace(j)->getVertexArray()[k]);
                                     }
-                                    for (unsigned int k = 0; k < m_reflIndexed[i].getVertexArrays()[j]->getIndexes().size(); k++) {
+                                    for (unsigned int k = 0; k < firstEntity->getFace(j)->getVertexArray().getIndexes().size(); k++) {
                                         ////std::cout<<"add refl inst indexed"<<std::endl;
                                         indexCount++;
-                                        vbBindlessTexIndexed[p].addIndex(m_reflIndexed[i].getVertexArrays()[j]->getIndexes()[k]);
+                                        vbBindlessTexIndexed[p].addIndex(firstEntity->getFace(j)->getVertexArray().getIndexes()[k]);
                                     }
                                 }
                             }
