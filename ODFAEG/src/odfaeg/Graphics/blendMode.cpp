@@ -25,6 +25,7 @@ namespace odfaeg {
         alphaDstFactor(BlendMode::OneMinusSrcAlpha),
         alphaEquation (BlendMode::Add)
         {
+            std::lock_guard<std::recursive_mutex> lock(rec_mutex);
             blendModes.push_back(this);
         }
 
@@ -38,6 +39,7 @@ namespace odfaeg {
         alphaDstFactor(destinationFactor),
         alphaEquation (blendEquation)
         {
+            std::lock_guard<std::recursive_mutex> lock(rec_mutex);
             blendModes.push_back(this);
         }
 

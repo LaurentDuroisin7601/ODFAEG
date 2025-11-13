@@ -57,6 +57,7 @@ namespace odfaeg {
                 layer = 0;
                 lightCenter = math::Vec3f(0, 0, 0);
                 lightColor = Color::White;
+                std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                 materials.push_back(this);
             }
             Material::Material(const Material& material) {
@@ -73,7 +74,7 @@ namespace odfaeg {
                 layer = material.layer;
                 lightCenter = material.lightCenter;
                 lightColor = material.lightColor;
-                ////////std::cout<<"copy material"<<std::endl;
+                std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                 materials.push_back(this);
                 //updateIds();
             }
@@ -91,6 +92,7 @@ namespace odfaeg {
                 layer = material.layer;
                 lightCenter = material.lightCenter;
                 lightColor = material.lightColor;
+
                 //materials.push_back(this);
                 return *this;
             }
@@ -256,6 +258,7 @@ namespace odfaeg {
                 }
             }
             void Material::updateIds() {
+              std::lock_guard<std::recursive_mutex> lock(rec_mutex);
               countNbMaterials();
               for (unsigned int i = 0; i < sameMaterials.size(); i++) {
                    for (unsigned int j = 0; j < materials.size(); j++) {
@@ -266,6 +269,7 @@ namespace odfaeg {
                }
             }
             Material::~Material() {
+                std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                 std::vector<Material*>::iterator it;
                 for (it = materials.begin(); it != materials.end();) {
                     if (*it == this)
