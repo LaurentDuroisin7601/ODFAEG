@@ -366,7 +366,7 @@ namespace odfaeg {
             }
             void Instance::addVertexArray(VertexArray& va, TransformMatrix& tm) {                ////////std::cout<<"push transform"<<std::endl;
                 va.computeNormals();
-                if (!containsEntity(va.getEntity(), va.getEntityId())) {
+                if (!containsEntity(va.getEntity())) {
                     m_transforms.push_back(&tm);
                     if (va.getEntity() != nullptr) {
                         m_entities.push_back(va.getEntity());
@@ -374,8 +374,6 @@ namespace odfaeg {
                         std::lock_guard<std::rec_mutex> lock(rec_mutex);*/
 
                     }
-                    if (va.getEntityId() != entt::null)
-                        m_entitiesId.push_back(va.getEntityId());
                 }
                 ////////std::cout<<"transform pushed"<<std::endl;
                 m_vertexArrays.push_back(&va);
@@ -429,13 +427,11 @@ namespace odfaeg {
             }
             void Instance::addVertexShadowArray (VertexArray& va, TransformMatrix& tm, ViewMatrix& viewMatrix, TransformMatrix shadowProjMatrix) {
 
-                if (!containsEntity(va.getEntity(), va.getEntityId())) {
+                if (!containsEntity(va.getEntity())) {
                     m_transforms.push_back(&tm);
                     m_shadowProjMatrix.push_back(shadowProjMatrix);
                     if (va.getEntity() != nullptr)
                         m_entities.push_back(va.getEntity());
-                    if (va.getEntityId() != entt::null)
-                        m_entitiesId.push_back(va.getEntityId());
                 }
                 m_vertexArrays.push_back(&va);
                 //shadowProjMatrix.combine(viewMatrix.getMatrix());
@@ -450,22 +446,15 @@ namespace odfaeg {
                     vertices.addIndex(baseVertex + va.getIndexes()[i]);
                 }
             }
-            bool Instance::containsEntity(Entity* entity, entt::entity entityId) {
+            bool Instance::containsEntity(Entity* entity) {
                 for (unsigned int i = 0; i < m_entities.size(); i++) {
                     if (m_entities[i] == entity)
-                        return true;
-                }
-                for (unsigned int i = 0; i < m_entitiesId.size(); i++) {
-                    if (m_entitiesId[i] == entityId)
                         return true;
                 }
                 return false;
             }
             std::vector<Entity*> Instance::getEntities() {
                 return m_entities;
-            }
-            std::vector<ecs::EntityId> Instance::getEntitiesId() {
-                return m_entitiesId;
             }
 
             void Instance::sortVertexArrays(View& view) {

@@ -138,6 +138,7 @@ namespace odfaeg {
             std::unique_ptr<Entity> ptr;
             ptr.reset(child);
             children.push_back(std::move(ptr));
+
             /*for (unsigned int i = 0; i < children.size(); i++) {
                 vecs.push_back(children[i]->getPosition());
                 vecs.push_back(children[i]->getPosition() + children[i]->getSize());

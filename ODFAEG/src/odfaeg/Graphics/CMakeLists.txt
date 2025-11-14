@@ -3,7 +3,9 @@ include(${PROJECT_SOURCE_DIR}/cmake/Macros.cmake)
 set(INCROOT ${PROJECT_SOURCE_DIR}/include/odfaeg/Graphics)
 set(SRCROOT ${PROJECT_SOURCE_DIR}/src/odfaeg/Graphics)
 
-set(SRC_GRAPHICS		
+set(SRC_GRAPHICS
+	${INCROOT}/ecs.hpp
+	${INCROOT}/components.hpp		
 	${INCROOT}/lightRenderComponent.hpp
 	${SRCROOT}/lightRenderComponent.cpp
 	${INCROOT}/baseChangementMatrix.h
@@ -136,35 +138,6 @@ set(SRC_GRAPHICS
 	)
 source_group ("graphics" FILES ${SRC_GRAPHICS})
 
-set(SRC_ECS
-	${INCROOT}/ECS/cell.hpp
-	${SRCROOT}/ECS/cell.cpp
-	${INCROOT}/ECS/grid.hpp
-	${SRCROOT}/ECS/grid.cpp
-	${INCROOT}/ECS/modelFactory.hpp
-	${INCROOT}/ECS/systems.hpp
-	${INCROOT}/ECS/components.hpp
-	${SRCROOT}/ECS/component.cpp
-	${INCROOT}/ECS/world.hpp
-	${SRCROOT}/ECS/system.cpp
-	${INCROOT}/ECS/scene.hpp
-	${SRCROOT}/ECS/scene.cpp
-	${INCROOT}/ECS/heavyComponent.hpp
-	${INCROOT}/ECS/component.hpp
-	${INCROOT}/ECS/perPixelLinkedList.hpp
-	${SRCROOT}/ECS/perPixelLinkedList.cpp
-	${INCROOT}/ECS/shadowRenderComponent.hpp
-	${SRCROOT}/ECS/shadowRenderComponent.cpp
-	${INCROOT}/ECS/reflectRefractRenderComponent.hpp
-	${SRCROOT}/ECS/reflectRefractRenderComponent.cpp
-	${INCROOT}/ECS/lightRenderComponent.hpp
-	${SRCROOT}/ECS/lightRenderComponent.cpp
-	${INCROOT}/ECS/entitiesUpdater.hpp	
-	${INCROOT}/ECS/animationUpdater.hpp
-	${SRCROOT}/ECS/animationUpdater.cpp	
-	${INCROOT}/ECS/particleSystem.hpp
-	${SRCROOT}/ECS/particleSystem.cpp
-	)
 	
 set(SRC_GRAPHICS_2D
 	
@@ -260,7 +233,7 @@ include_directories(${CMAKE_INCLUDE_PATH} ${FREETYPE_INCLUDE_DIRS})
 link_directories(${CMAKE_LIBRARY_PATH})
 
 sfgl_add_library(odfaeg-graphics
-				 SOURCES ${SRC_GRAPHICS} ${SRC_GRAPHICS_2D} ${SRC_GRAPHICS_3D} ${SRC_GUI} ${SRC_ECS} 
+				 SOURCES ${SRC_GRAPHICS} ${SRC_GRAPHICS_2D} ${SRC_GRAPHICS_3D} ${SRC_GUI} 
 				 )
 if (android_arm64)
 target_link_libraries (odfaeg-graphics odfaeg-window odfaeg-physics odfaeg-math odfaeg-core assimp freetype opengl32 shaderc_shared vulkan-1)

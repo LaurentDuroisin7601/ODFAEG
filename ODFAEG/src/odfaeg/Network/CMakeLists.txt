@@ -24,9 +24,7 @@ set(SRC
 	${INCROOT}/cliEncryptedPacket.hpp
 	${SRCROOT}/cliEncryptedPacket.cpp
 	${INCROOT}/application.h
-	${SRCROOT}/application.cpp
-	${INCROOT}/ECS/application.hpp
-	${SRCROOT}/ECS/application.cpp
+	${SRCROOT}/application.cpp	
 	${INCROOT}/packet.hpp
 	${SRCROOT}/packet.cpp
 	${INCROOT}/socket.hpp

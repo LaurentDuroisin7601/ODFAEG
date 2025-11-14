@@ -641,6 +641,7 @@ namespace odfaeg {
                     addEntity(children[i]);
                 }
             }
+            std::lock_guard<std::recursive_mutex> lock(rec_mutex);
             for (unsigned int j = 0; j < entity->getFaces().size(); j++) {
                  if (entity->getFace(j)->getMaterial().getTexture() != nullptr) {
                      increaseComptImg(entity->getFace(j)->getMaterial().getTexture());
@@ -666,6 +667,7 @@ namespace odfaeg {
                 if(!gridMap->removeEntity(entity)) {
                    removed = false;
                 }
+                std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                 std::vector<Face> faces = entity->getFaces();
                 for (unsigned int j = 0; j < faces.size(); j++) {
                     decreaseComptImg(faces[j].getMaterial().getTexture());

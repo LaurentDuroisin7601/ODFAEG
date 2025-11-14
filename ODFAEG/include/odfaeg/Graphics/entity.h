@@ -13,6 +13,8 @@
 #include <glm/glm.hpp>
 #include "../Physics/orientedBoundingBox.h"
 #include <condition_variable>
+#include <entt.hpp>
+
 /*
   *\namespace odfaeg
   * the namespace of the Opensource Development Framework Adapted for Every Games.
@@ -31,8 +33,10 @@ namespace odfaeg {
           *  Entities can have 0, 1 or more children and 0 or one parent.
           *  Each entity of the framework inherits from this class.
           */
+        using EntityId = entt::entity;
         class ODFAEG_GRAPHICS_API EntityFactory {
             public :
+
                 EntityFactory() {
                     nbEntities = 0;
                     nbEntitiesTypes = 0;
@@ -85,11 +89,18 @@ namespace odfaeg {
                     nbEntities++;
                     return nbEntities-1;
                 }
+                EntityId getEnttID() {
+                    return m_Registery.create();
+                }
+                entt::registry& getRegistery() {
+                    return m_Registery;
+                }
             private :
-                //EntityFactory(const EntityFactory& entity) = delete; /**> an entity if not copiable.*/
-                //EntityFactory& operator=(const EntityFactory& entity) = delete; /**> an entity is not affectable*/
+                EntityFactory(const EntityFactory& entity) = delete; /**> an entity if not copiable.*/
+                EntityFactory& operator=(const EntityFactory& entity) = delete; /**> an entity is not affectable*/
                 unsigned int nbEntities, nbEntitiesTypes;
                 std::map<int, std::string> types;
+                entt::registry m_Registery;
 
         };
         class ODFAEG_GRAPHICS_API Entity : public Transformable, public Drawable, public core::Registered<Entity> {
@@ -448,6 +459,8 @@ namespace odfaeg {
                 virtual Texture& getTexture();
                 virtual bool isComputeFinished(unsigned int currentFrame) {return true;}
                 virtual void setWaitComputeFinished() {};
+                EntityId getEnttID();
+                void setEnttID(EntityId enttID);
                 #ifdef VULKAN
                 virtual void computeParticles(std::mutex* mtx, std::condition_variable* cv2, VertexBuffer& frameVertexBuffer, unsigned int currentRrame, VkSemaphore computeSemaphore, VkFence computeFence) {}
                 #endif
@@ -464,6 +477,7 @@ namespace odfaeg {
                  */
                 Entity (math::Vec3f position, math::Vec3f size, math::Vec3f origin, std::string type, EntityFactory& factory, std::string name = "");
                 EntityFactory& factory;
+
             private :
                 std::string className;
                 static std::map<int, std::string> types; /** A list of the type's id and name's of the entities. */
@@ -475,6 +489,7 @@ namespace odfaeg {
                 Entity& operator=(const Entity& entity) = delete; /**> an entity is not affectable*/
                 std::map<std::string, BoneInfo> m_BoneInfoMap; //
                 int m_BoneCounter = 0;
+                EntityId enttID;
         };
     }
 }

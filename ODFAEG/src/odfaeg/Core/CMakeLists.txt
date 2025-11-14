@@ -5,9 +5,7 @@ set(SRCROOT ${PROJECT_SOURCE_DIR}/src/odfaeg/Core)
 set(SRC    
 	${INCROOT}/archive.h
 	${SRCROOT}/archive.cpp
-	${INCROOT}/serialization.h
-	${INCROOT}/entityFactory.hpp
-	${INCROOT}/ecs.hpp
+	${INCROOT}/serialization.h		
 	${INCROOT}/erreur.h
 	${INCROOT}/export.hpp
 	${SRCROOT}/erreur.cpp	
@@ -45,8 +43,7 @@ set(SRC
 	${SRCROOT}/memberFunction.cpp
 	${INCROOT}/runtimeCompiler.hpp
 	${SRCROOT}/runtimeCompiler.cpp
-	${INCROOT}/fastDelegate.h
-	${INCROOT}/ecs.hpp
+	${INCROOT}/fastDelegate.h	
 	${INCROOT}/utf.hpp
 	${INCROOT}/string.hpp
 	${SRCROOT}/string.cpp	

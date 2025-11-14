@@ -7,7 +7,7 @@
 /*#include "shader.h"
 #include "../Graphics/tile.h"*/
 #include "../../../include/odfaeg/Graphics/heavyComponent.h"
-#include "../../../include/odfaeg/Graphics/ECS/heavyComponent.hpp"
+
 
 /**
   *\namespace odfaeg
@@ -39,7 +39,6 @@ namespace odfaeg {
             * \param component : the render component to add.
             */
             void addComponent(graphic::Component* component);
-            void addECSComponent(graphic::ecs::Component* component);
             void addWindow(RenderWindow& window);
             void setEventContextActivated(bool activated, RenderWindow& window);
             bool removeComponent(unsigned int layer);
@@ -55,19 +54,16 @@ namespace odfaeg {
             * \brief init the components.
             */
             void initComponents();
-            void initECSComponents();
             /**
             * \fn void clearComponents();
             * \brief clear the components.
             */
             void clearComponents();
-            void clearECSComponents();
             /**
             * \fn void drawComponents();
             * \brief draw the components into the window.
             */
             void drawRenderComponents ();
-            void drawECSComponents();
             void drawGuiComponents();
             /**
             * \fn Color getClrColor();
@@ -82,7 +78,6 @@ namespace odfaeg {
             * \return if the component has been created.
             */
             bool isComponentAdded(unsigned int layer);
-            bool isECSComponentAdded(unsigned int layer);
             /**
             * \fn g2d::OITRenderComponent* getRenderComponent(int layer)
             * \brief get the render component on the following layer.
@@ -92,10 +87,8 @@ namespace odfaeg {
             Component* getRenderComponent(unsigned int layer);
             Component* getGuiComponent(unsigned int layer);
             Component* getComponent(unsigned int layer);
-            ecs::Component* getECSComponent(unsigned int layer);
             std::vector<Component*> getComponents();
             std::vector<Component*> getRenderComponents();
-            std::vector<ecs::Component*> getECSComponents();
 
             /**
             * \fn unsigned int getNbComponents();
@@ -103,15 +96,11 @@ namespace odfaeg {
             * \return the number of components.
             */
             unsigned int getNbComponents();
-            unsigned int getNbECSComponents();
             void updateComponents();
-            void updateECSComponents();
-            void stopComponentThreads();
             virtual ~RenderComponentManager();
         protected :
             std::multimap<int, std::unique_ptr<Component>, std::greater<int>> components; /**> the components.*/
             std::multimap<int, Component*, std::greater<int>> eventComponents;
-            std::multimap<int, std::unique_ptr<ecs::Component>, std::greater<int>> ecs_components;
             std::vector<RenderWindow*> windows; /**> the window.*/
         };
     }

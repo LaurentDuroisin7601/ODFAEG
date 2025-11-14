@@ -3,7 +3,7 @@
 #include "vertexArray.h"
 #include "view.h"
 #include <map>
-#include "../Core/entityFactory.hpp"
+
 #include "../config.hpp"
 #include <glm/glm.hpp>
 /**
@@ -418,9 +418,8 @@ namespace odfaeg {
             * \brief destructor.
             */
             VertexArray& getAllVertices();
-            bool containsEntity(Entity* entity, entt::entity entityId);
+            bool containsEntity(Entity* entity);
             std::vector<Entity*> getEntities();
-            std::vector<ecs::EntityId> getEntitiesId();
 
             ~Instance();
         private:
@@ -434,7 +433,6 @@ namespace odfaeg {
             std::vector<unsigned int> allIndexes;
             std::vector<std::vector<unsigned int>> m_indexes;
             std::vector<Entity*> m_entities;
-            std::vector<ecs::EntityId> m_entitiesId;
         };
         /**
           * \file face.h

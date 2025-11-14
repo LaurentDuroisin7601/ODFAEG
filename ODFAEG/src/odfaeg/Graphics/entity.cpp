@@ -1,10 +1,14 @@
+
 #include "../../../include/odfaeg/Graphics/entity.h"
+
+
 //#include "../../../include/odfaeg/Graphics/application.h"
 namespace odfaeg {
     namespace graphic {
         //Initialization of static variables.
 
         std::map<int, std::string> Entity::types = std::map<int, std::string>();
+
         //Construct an entity with the given position, size, origin, type and name.
         Entity::Entity (math::Vec3f position, math::Vec3f size, math::Vec3f origin, std::string sType,  EntityFactory& factory, std::string name) :
             Transformable (position, size, origin, name), Drawable(), entityState("Entity State", nullptr), factory(factory) {
@@ -32,9 +36,17 @@ namespace odfaeg {
             type = factory.updateTypes(sType);
 
             id = factory.getUniqueId();
+            enttID = factory.getEnttID();
             getTransform().setEntityId(id);
             selected = false;
         }
+        EntityId Entity::getEnttID() {
+            return enttID;
+        }
+        void Entity::setEnttID(EntityId enttID) {
+            this->enttID = enttID;
+        }
+
         //Setup the static variables when reading entities from an input stream.
         void Entity::onLoad() {
             /*if (core::Application::app != nullptr) {

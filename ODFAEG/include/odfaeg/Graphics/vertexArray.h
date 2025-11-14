@@ -12,7 +12,7 @@
 #include <vector>
 #include "../Physics/boundingBox.h"
 //#include "vbo.h"
-#include "../Core/entityFactory.hpp"
+
 /**
   *\namespace odfaeg
   * the namespace of the Opensource Development Framework Adapted for Every Games.
@@ -53,11 +53,9 @@ namespace odfaeg {
             /// \param vertexCount Initial number of vertices in the array
             ///
             ////////////////////////////////////////////////////////////
-            explicit VertexArray(PrimitiveType type, unsigned int vertexCount = 0, Entity* entity = nullptr, entt::entity entityId = entt::null);
+            explicit VertexArray(PrimitiveType type, unsigned int vertexCount = 0, Entity* entity = nullptr);
             Entity* getEntity();
-            entt::entity getEntityId();
             void setEntity(Entity* entity);
-            void setEntityId(entt::entity id);
             ////////////////////////////////////////////////////////////
             /// \brief Return the vertex count
             ///
@@ -218,7 +216,6 @@ namespace odfaeg {
             unsigned int nbVerticesPerFace;
             bool loop;
             Entity* m_entity;
-            entt::entity m_entityId;
         };
     }
 } // namespace sf
