@@ -690,6 +690,7 @@ namespace odfaeg {
                 //////////std::cout<<"remove entity : "<<entity->getType()<<std::endl;
                 gridMap->removeEntity(entity);
             }
+            std::lock_guard<std::recursive_mutex> lock(rec_mutex);
             std::vector<Face> faces = entity->getFaces();
             for (unsigned int j = 0; j < faces.size(); j++) {
                 decreaseComptImg(faces[j].getMaterial().getTexture());

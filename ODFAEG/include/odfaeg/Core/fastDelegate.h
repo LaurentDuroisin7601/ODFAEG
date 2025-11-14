@@ -970,7 +970,7 @@ namespace odfaeg {
             *  \param Arg&&... arg : arguments to pass to the functor.
             */
             template<class F, class... Arg>
-            FastDelegate(F&& f, Arg&&... arg) :
+            FastDelegate(F&& f, Arg... arg) :
                 delegate(std::make_unique
                     <FastDelegateImpl<R, Arg...>>
                     (std::forward<F>(f),std::forward<Arg>(arg)...)

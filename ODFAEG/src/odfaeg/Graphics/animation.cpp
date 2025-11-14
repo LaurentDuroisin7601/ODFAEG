@@ -163,7 +163,6 @@ namespace odfaeg {
                 std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                 interpolatedFrame->getFaces().clear();
                 for (unsigned int i = 0; i < currentFrame->getFaces().size(); i++) {
-                    std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                     VertexArray va = currentFrame->getFaces()[i].getVertexArray();
                     Face face (va,currentFrame->getFaces()[i].getMaterial(), currentFrame->getTransform());
                     interpolatedFrame->addFace(face);
