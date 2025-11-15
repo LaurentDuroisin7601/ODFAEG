@@ -231,8 +231,6 @@ namespace odfaeg
                                                             debugPrintfEXT("indexes : %i, %i, %i, %i", pushConsts.entityId, vertices[vertexIndex].entityId, particles[particleIndex].id, vertices[vertexIndex].particleId);
                                                          }*/
                                                          if (pushConsts.entityId == vertices[vertexIndex].entityId && particles[particleIndex].id == vertices[vertexIndex].particleId) {
-                                                            particles[particleIndex].position += particles[particleIndex].velocity * pushConsts.dt;
-                                                            particles[particleIndex].rotation += particles[particleIndex].rotationSpeed * pushConsts.dt;
                                                             float angle = radians(particles[particleIndex].rotation);
                                                             vec3 scale = particles[particleIndex].scale;
                                                             vec3 translation = particles[particleIndex].position;
@@ -713,8 +711,8 @@ namespace odfaeg
         void ParticleSystem::updateParticle(Particle& particle, core::Time dt)
         {
             particle.passedLifetime += dt;
-            /*particle.position += particle.velocity * dt.asSeconds();
-            particle.rotation += particle.rotationSpeed * dt.asSeconds();*/
+            particle.position += particle.velocity * dt.asSeconds();
+            particle.rotation += particle.rotationSpeed * dt.asSeconds();
         }
         void ParticleSystem::update () {
             // Check cached rectangles
