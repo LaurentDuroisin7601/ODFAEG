@@ -5676,10 +5676,15 @@ namespace odfaeg {
                         DrawElementsIndirectCommand drawElementsIndirectCommand;
                         unsigned int p = m_reflNormalIndexed[i].getAllVertices().getPrimitiveType();
                         MaterialData material;
-                        material.textureIndex = (m_reflNormalIndexed[i].getMaterial().getTexture() != nullptr) ? m_reflNormalIndexed[i].getMaterial().getTexture()->getId() : 0;
-                        material.layer = m_reflNormalIndexed[i].getMaterial().getLayer();
-                        material.uvScale = (m_reflNormalIndexed[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_reflNormalIndexed[i].getMaterial().getTexture()->getSize().x(), 1.f / m_reflNormalIndexed[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
-                        material.uvOffset = math::Vec2f(0, 0);
+                        {
+                            std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                            material.textureIndex = (m_reflNormalIndexed[i].getMaterial().getTexture() != nullptr) ? m_reflNormalIndexed[i].getMaterial().getTexture()->getId() : 0;
+                            material.layer = m_reflNormalIndexed[i].getMaterial().getLayer();
+                            material.uvScale = (m_reflNormalIndexed[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_reflNormalIndexed[i].getMaterial().getTexture()->getSize().x(), 1.f / m_reflNormalIndexed[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
+                            material.uvOffset = math::Vec2f(0, 0);
+
+                        }
+
                         materialDatas[p].push_back(material);
                         ModelData model;
                         TransformMatrix tm;
@@ -6412,10 +6417,15 @@ namespace odfaeg {
                         DrawElementsIndirectCommand drawElementsIndirectCommand;
                         unsigned int p = m_normalIndexed[i].getAllVertices().getPrimitiveType();
                         MaterialData material;
-                        material.textureIndex = (m_normalIndexed[i].getMaterial().getTexture() != nullptr) ? m_normalIndexed[i].getMaterial().getTexture()->getId() : 0;
-                        material.layer = m_normalIndexed[i].getMaterial().getLayer();
-                        material.uvScale = (m_normalIndexed[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_normalIndexed[i].getMaterial().getTexture()->getSize().x(), 1.f / m_normalIndexed[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
-                        material.uvOffset = math::Vec2f(0, 0);
+                        {
+                            std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                            material.textureIndex = (m_normalIndexed[i].getMaterial().getTexture() != nullptr) ? m_normalIndexed[i].getMaterial().getTexture()->getId() : 0;
+                            material.layer = m_normalIndexed[i].getMaterial().getLayer();
+                            material.uvScale = (m_normalIndexed[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_normalIndexed[i].getMaterial().getTexture()->getSize().x(), 1.f / m_normalIndexed[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
+                            material.uvOffset = math::Vec2f(0, 0);
+
+                        }
+
                         materialDatas[p].push_back(material);
                         ModelData model;
                         TransformMatrix tm;
@@ -6783,10 +6793,14 @@ namespace odfaeg {
                         DrawElementsIndirectCommand drawElementsIndirectCommand;
                         unsigned int p = m_reflNormalIndexed[i].getAllVertices().getPrimitiveType();
                         MaterialData material;
-                        material.textureIndex = (m_reflNormalIndexed[i].getMaterial().getTexture() != nullptr) ? m_reflNormalIndexed[i].getMaterial().getTexture()->getId() : 0;
-                        material.materialType = m_reflNormalIndexed[i].getMaterial().getType();
-                        material.uvScale = (m_reflNormalIndexed[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_reflNormalIndexed[i].getMaterial().getTexture()->getSize().x(), 1.f / m_reflNormalIndexed[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
-                        material.uvOffset = math::Vec2f(0, 0);
+                        {
+                            std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                            material.textureIndex = (m_reflNormalIndexed[i].getMaterial().getTexture() != nullptr) ? m_reflNormalIndexed[i].getMaterial().getTexture()->getId() : 0;
+                            material.materialType = m_reflNormalIndexed[i].getMaterial().getType();
+                            material.uvScale = (m_reflNormalIndexed[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_reflNormalIndexed[i].getMaterial().getTexture()->getSize().x(), 1.f / m_reflNormalIndexed[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
+                            material.uvOffset = math::Vec2f(0, 0);
+                        }
+
                         materialDatas[p].push_back(material);
                         ModelData model;
                         TransformMatrix tm;
