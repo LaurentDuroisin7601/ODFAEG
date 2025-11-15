@@ -130,6 +130,7 @@ namespace odfaeg {
                 VkCommandBuffer cmd = beginSingleTimeCommands();
                 transitionImageLayout(cmd, textureImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
                 endSingleTimeCommands(cmd);
+                allTextures.push_back(this);
             }
             createTextureImageView(VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
             createTextureSampler();
@@ -826,6 +827,7 @@ namespace odfaeg {
                 VkCommandBuffer cmd = beginSingleTimeCommands();
                 transitionImageLayout(cmd, textureImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
                 endSingleTimeCommands(cmd);
+                allTextures.push_back(this);
             }
             createCubeMapTextureImageView(VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
             createCubeMapTextureImageSampler();
