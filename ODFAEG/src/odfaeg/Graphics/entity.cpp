@@ -11,7 +11,7 @@ namespace odfaeg {
 
         //Construct an entity with the given position, size, origin, type and name.
         Entity::Entity (math::Vec3f position, math::Vec3f size, math::Vec3f origin, std::string sType,  EntityFactory& factory, std::string name) :
-            Transformable (position, size, origin, name), Drawable(), entityState("Entity State", nullptr), factory(factory) {
+            Transformable (position, size, origin, name), Drawable(), entityState("Entity State", nullptr), factory(factory), componentMapping(factory) {
             /*If this is an ODFAEG Application and if we call functions from a shared lib (like ODFAEGCreator), we prefer to avoid to use
             static variables which leads to problems because they haven't the expected values when there are used in an executable and in a shared lib.
             So global variables are stored as member variables of the application class which contains everything.
@@ -39,6 +39,10 @@ namespace odfaeg {
             enttID = factory.getEnttID();
             getTransform().setEntityId(id);
             selected = false;
+            behaviour = nullptr;
+        }
+        ComponentMapping& Entity::getComponentMapping() {
+            return componentMapping;
         }
         EntityId Entity::getEnttID() {
             return enttID;
@@ -141,6 +145,26 @@ namespace odfaeg {
             entity->entityState = entityState;
             entity->selected = selected;
             entity->className = className;
+            entity->scriptClassName = scriptClassName;
+        }
+        void Entity::attachScript(std::string scriptClassName) {
+            this->scriptClassName = scriptClassName;
+        }
+        std::string Entity::getScript() {
+            return scriptClassName;
+        }
+        void Entity::setBehaviour(MonoBehaviour* behaviour) {
+            this->behaviour = behaviour;
+        }
+        void Entity::onUpdate() {
+            if (behaviour != nullptr) {
+                behaviour->update();
+            }
+        }
+        void Entity::onInit() {
+            if (behaviour != nullptr) {
+                behaviour->init();
+            }
         }
         //Do nothing by default.
         void Entity::setExternalObjectName(std::string externalObjectName) {

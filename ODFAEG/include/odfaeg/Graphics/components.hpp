@@ -1,6 +1,6 @@
 #ifndef ODFAEG_ECS_COMPONENTS_HPP
 #define ODFAEG_ECS_COMPONENTS_HPP
-#include "entity.h"
+#include "entityFactory.hpp"
 namespace odfaeg {
     namespace graphic {
         struct ODFAEG_GRAPHICS_API Relation {

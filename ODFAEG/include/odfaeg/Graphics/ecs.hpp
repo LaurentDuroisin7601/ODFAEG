@@ -1,7 +1,7 @@
 #ifndef ODFAEG_ECS_HPP
 #define ODFAEG_ECS_HPP
 #include "components.hpp"
-#include "entity.h"
+#include "entityFactory.hpp"
 
 namespace odfaeg {
     namespace graphic {

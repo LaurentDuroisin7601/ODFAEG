@@ -4,6 +4,8 @@ set(INCROOT ${PROJECT_SOURCE_DIR}/include/odfaeg/Graphics)
 set(SRCROOT ${PROJECT_SOURCE_DIR}/src/odfaeg/Graphics)
 
 set(SRC_GRAPHICS
+	${INCROOT}/entityFactory.hpp
+	${INCROOT}/monoBehaviour.hpp
 	${INCROOT}/ecs.hpp
 	${INCROOT}/components.hpp		
 	${INCROOT}/lightRenderComponent.hpp

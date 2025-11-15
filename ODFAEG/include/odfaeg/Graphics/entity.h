@@ -13,8 +13,9 @@
 #include <glm/glm.hpp>
 #include "../Physics/orientedBoundingBox.h"
 #include <condition_variable>
-#include <entt.hpp>
-
+#include "ecs.hpp"
+#include "../../../include/odfaeg/Graphics/ecs.hpp"
+#include "monoBehaviour.hpp"
 /*
   *\namespace odfaeg
   * the namespace of the Opensource Development Framework Adapted for Every Games.
@@ -22,6 +23,7 @@
 namespace odfaeg {
     namespace graphic {
         class EntityManager;
+
         /**
           * \file entity.h
           * \class Entity
@@ -33,76 +35,7 @@ namespace odfaeg {
           *  Entities can have 0, 1 or more children and 0 or one parent.
           *  Each entity of the framework inherits from this class.
           */
-        using EntityId = entt::entity;
-        class ODFAEG_GRAPHICS_API EntityFactory {
-            public :
 
-                EntityFactory() {
-                    nbEntities = 0;
-                    nbEntitiesTypes = 0;
-                }
-                int getIntOfType(std::string sType) {
-                    std::map<int, std::string>::iterator it;
-                    for (it = types.begin(); it != types.end(); ++it) {
-                        if (it->second == sType) {
-                            return it->first;
-                        }
-                    }
-                    return -1;
-                }
-                std::pair<int, std::string> updateTypes(std::string sType) {
-                    int iType = getIntOfType(sType);
-                    /*if (sType == "E_WALL")
-                        //////std::cout<<"i type : "<<iType<<std::endl;*/
-                    if (iType == -1) {
-                        /*if (sType == "E_WALL")
-                            //////std::cout<<"i type  : "<<nbEntitiesTypes<<std::endl;*/
-                        std::pair<int, std::string> type = std::pair<int, std::string> (nbEntitiesTypes, sType);
-                        types.insert(type);
-                        nbEntitiesTypes++;
-                        return type;
-                    } else {
-                        std::map<int, std::string>::iterator it = types.find(iType);
-                        /*if (it->second == "E_WALL")
-                            //////std::cout<<"i type : "<<it->first<<std::endl;*/
-                        return *it;
-                    }
-                }
-                std::string getTypeOfInt (int type) {
-                    std::map<int, std::string>::iterator it = types.find(type);
-                    return it != types.end() ? it->second : "";
-                }
-                int getNbEntitiesTypes () {
-                    return nbEntitiesTypes;
-                }
-                int getNbEntities () {
-                    return nbEntities;
-                }
-                void decreaseNbEntities() {
-                    nbEntities--;
-                }
-                template <typename D, typename... Args>
-                D* make_entity(Args&&... args) {
-                    return new D(std::forward<Args>(args)...);
-                }
-                int getUniqueId() {
-                    nbEntities++;
-                    return nbEntities-1;
-                }
-                EntityId getEnttID() {
-                    return m_Registery.create();
-                }
-                entt::registry& getRegistery() {
-                    return m_Registery;
-                }
-            private :
-                EntityFactory(const EntityFactory& entity) = delete; /**> an entity if not copiable.*/
-                EntityFactory& operator=(const EntityFactory& entity) = delete; /**> an entity is not affectable*/
-                unsigned int nbEntities, nbEntitiesTypes;
-                std::map<int, std::string> types;
-                entt::registry m_Registery;
-
-        };
         class ODFAEG_GRAPHICS_API Entity : public Transformable, public Drawable, public core::Registered<Entity> {
             friend class EntityFactory;
             public :
@@ -375,6 +308,7 @@ namespace odfaeg {
                     ar(type.first);
                     ////////std::cout<<"type first : "<<type.first<<std::endl;
                     ar(type.second);
+                    ar(scriptClassName);
                     /*if (type.second == "E_WALL")
                         //////std::cout<<"i type : "<<type.first<<std::endl;*/
                     ////////std::cout<<"entity id : "<<getId()<<std::endl<<"Transform matrix : "<<getTransform().getMatrix()<<std::endl;
@@ -382,6 +316,7 @@ namespace odfaeg {
                         type = factory.updateTypes(type.second);
                     }
                 }
+                ComponentMapping& getComponentMapping();
                 /** \fn void onLoad()
                 *   \brief load the entities.
                 */
@@ -461,6 +396,11 @@ namespace odfaeg {
                 virtual void setWaitComputeFinished() {};
                 EntityId getEnttID();
                 void setEnttID(EntityId enttID);
+                 void attachScript(std::string scriptClassName);
+                std::string getScript();
+                void setBehaviour(MonoBehaviour* behaviour);
+                void onInit();
+                void onUpdate();
                 #ifdef VULKAN
                 virtual void computeParticles(std::mutex* mtx, std::condition_variable* cv2, VertexBuffer& frameVertexBuffer, unsigned int currentRrame, VkSemaphore computeSemaphore, VkFence computeFence) {}
                 #endif
@@ -489,7 +429,10 @@ namespace odfaeg {
                 Entity& operator=(const Entity& entity) = delete; /**> an entity is not affectable*/
                 std::map<std::string, BoneInfo> m_BoneInfoMap; //
                 int m_BoneCounter = 0;
+                ComponentMapping componentMapping;
+                MonoBehaviour* behaviour;
                 EntityId enttID;
+                std::string scriptClassName;
         };
     }
 }
