@@ -326,10 +326,10 @@ namespace odfaeg {
                                                                                  mat4 projectionMatrix;
                                                                                  layout (offset = 64) mat4 viewMatrix;
                                                                              } pushConsts;
-                                                                             layout(binding = 4) buffer modelData {
+                                                                             layout(binding = 0) buffer modelData {
                                                                                  ModelData modelDatas[];
                                                                              };
-                                                                             layout(binding = 5) buffer materialData {
+                                                                             layout(binding = 1) buffer materialData {
                                                                                  MaterialData materialDatas[];
                                                                              };
                                                                              layout (location = 0) out vec2 fTexCoords;
@@ -380,10 +380,10 @@ namespace odfaeg {
                                                                                  mat4 projectionMatrix;
                                                                                  layout (offset = 64) mat4 viewMatrix;
                                                                              } pushConsts;
-                                                                             layout(binding = 4) buffer modelData {
+                                                                             layout(binding = 0) buffer modelData {
                                                                                  ModelData modelDatas[];
                                                                              };
-                                                                             layout(binding = 5) buffer materialData {
+                                                                             layout(binding = 1) buffer materialData {
                                                                                  MaterialData materialDatas[];
                                                                              };
                                                                              layout (location = 0) out vec2 fTexCoords;
@@ -433,10 +433,10 @@ namespace odfaeg {
                                                                                          mat4 projectionMatrix;
                                                                                          layout (offset = 64) mat4 viewMatrix;
                                                                                      } pushConsts;
-                                                                                     layout(binding = 4) buffer modelData {
+                                                                                     layout(binding = 0) buffer modelData {
                                                                                      ModelData modelDatas[];
                                                                                      };
-                                                                                     layout(binding = 5) buffer materialData {
+                                                                                     layout(binding = 1) buffer materialData {
                                                                                          MaterialData materialDatas[];
                                                                                      };
                                                                                      layout (location = 0) out vec2 fTexCoords;
@@ -541,8 +541,8 @@ namespace odfaeg {
                                                                           layout (location = 2) in flat uint texIndex;
                                                                           layout (location = 3) in flat uint layer;
                                                                           layout (location = 4) in vec3 normal;
-                                                                          layout(set = 0, binding = 0) uniform sampler2D textures[];
-                                                                          layout(set = 0, binding = 1, rgba32f) uniform coherent image2D depthBuffer;
+                                                                          layout(set = 0, binding = 3) uniform sampler2D textures[];
+                                                                          layout(set = 0, binding = 2, rgba32f) uniform coherent image2D depthBuffer;
                                                                           layout (location = 0) out vec4 fColor;
                                                                           layout (push_constant) uniform PushConsts {
                                                                               layout (offset = 128) uint nbLayers;
@@ -574,9 +574,9 @@ namespace odfaeg {
                                                                       layout (location = 2) in flat uint texIndex;
                                                                       layout (location = 3) in flat uint layer;
                                                                       layout (location = 4) in vec3 normal;
-                                                                      layout(set = 0, binding = 0) uniform sampler2D textures[];
-                                                                      layout(binding = 1, rgba32f) uniform coherent image2D alphaBuffer;
-                                                                      layout(set = 0, binding = 2) uniform sampler2D depthBuffer[];
+                                                                      layout(set = 0, binding = 4) uniform sampler2D textures[];
+                                                                      layout(binding = 2, rgba32f) uniform coherent image2D alphaBuffer;
+                                                                      layout(set = 0, binding =3) uniform sampler2D depthBuffer[];
 
                                                                       layout (location = 0) out vec4 fColor;
                                                                       layout (push_constant) uniform PushConsts {
@@ -618,8 +618,8 @@ namespace odfaeg {
                                                                          layout (offset = 148) float maxP;
                                                                          layout (offset = 152) uint imageIndex;
                                                                      } pushConsts;
-                                                                     layout(set = 0, binding = 0) uniform sampler2D textures[];
-                                                                     layout(set = 0, binding = 1) uniform sampler2D depthBuffer[];
+                                                                     layout(set = 0, binding = 3) uniform sampler2D textures[];
+                                                                     layout(set = 0, binding = 2) uniform sampler2D depthBuffer[];
                                                                      layout (location = 0) out vec4 fColor;
                                                                      void main() {
                                                                         vec4 texel = (texIndex != 0) ? frontColor * texture(textures[texIndex-1], fTexCoords.xy) : frontColor;
@@ -636,13 +636,13 @@ namespace odfaeg {
                                                                   )";
                         const std::string bumpGenFragShader =    R"(#version 460
                                                                     #extension GL_EXT_nonuniform_qualifier : enable
-                                                                 layout(set = 0, binding = 0) uniform sampler2D textures[];
+                                                                 layout(set = 0, binding = 3) uniform sampler2D textures[];
                                                                  layout (location = 0) in vec2 fTexCoords;
                                                                  layout (location = 1) in vec4 frontColor;
                                                                  layout (location = 2) in flat uint texIndex;
                                                                  layout (location = 3) in flat uint layer;
                                                                  layout (location = 4) in vec3 normal;
-                                                                 layout(set = 0, binding = 1) uniform sampler2D depthBuffer[];
+                                                                 layout(set = 0, binding = 2) uniform sampler2D depthBuffer[];
                                                                  layout (push_constant) uniform PushConsts {
                                                                     layout (offset = 128) vec4 resolution;
                                                                     layout (offset = 144) uint nbLayers;
@@ -1482,14 +1482,15 @@ namespace odfaeg {
                         unsigned int descriptorId = p * shader->getNbShaders() + shader->getId();
                         std::array<VkDescriptorPoolSize, 4> poolSizes;
                         std::vector<Texture*> allTextures = Texture::getAllTextures();
-                        poolSizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                        poolSizes[0].descriptorCount = static_cast<uint32_t>(depthBuffer.getMaxFramesInFlight() * allTextures.size());
-                        poolSizes[1].type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+                        poolSizes[0].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+                        poolSizes[0].descriptorCount = static_cast<uint32_t>(depthBuffer.getMaxFramesInFlight());
+                        poolSizes[1].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
                         poolSizes[1].descriptorCount = static_cast<uint32_t>(depthBuffer.getMaxFramesInFlight());
-                        poolSizes[2].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
-                        poolSizes[2].descriptorCount = static_cast<uint32_t>(depthBuffer.getMaxFramesInFlight());
-                        poolSizes[3].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+                        poolSizes[2].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                        poolSizes[2].descriptorCount = static_cast<uint32_t>(depthBuffer.getMaxFramesInFlight() * allTextures.size());
+                        poolSizes[3].type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
                         poolSizes[3].descriptorCount = static_cast<uint32_t>(depthBuffer.getMaxFramesInFlight());
+
 
                         if (descriptorPool[descriptorId] != nullptr) {
                             vkDestroyDescriptorPool(vkDevice.getDevice(), descriptorPool[descriptorId], nullptr);
@@ -1511,14 +1512,16 @@ namespace odfaeg {
                         unsigned int descriptorId = p * shader->getNbShaders() + shader->getId();
                         std::array<VkDescriptorPoolSize, 4> poolSizes;
                         std::vector<Texture*> allTextures = Texture::getAllTextures();
-                        poolSizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                        poolSizes[0].descriptorCount = static_cast<uint32_t>(depthBuffer.getMaxFramesInFlight() * allTextures.size());
-                        poolSizes[1].type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+
+                        poolSizes[0].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+                        poolSizes[0].descriptorCount = static_cast<uint32_t>(depthBuffer.getMaxFramesInFlight());
+                        poolSizes[1].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
                         poolSizes[1].descriptorCount = static_cast<uint32_t>(depthBuffer.getMaxFramesInFlight());
-                        poolSizes[2].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
-                        poolSizes[2].descriptorCount = static_cast<uint32_t>(depthBuffer.getMaxFramesInFlight());
-                        poolSizes[3].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+                        poolSizes[2].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                        poolSizes[2].descriptorCount = static_cast<uint32_t>(depthBuffer.getMaxFramesInFlight() * allTextures.size());
+                        poolSizes[3].type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
                         poolSizes[3].descriptorCount = static_cast<uint32_t>(depthBuffer.getMaxFramesInFlight());
+
 
                         if (descriptorPool[descriptorId] != nullptr) {
                             vkDestroyDescriptorPool(vkDevice.getDevice(), descriptorPool[descriptorId], nullptr);
@@ -1541,16 +1544,17 @@ namespace odfaeg {
                     unsigned int descriptorId = p * shader->getNbShaders() + shader->getId();
                     std::array<VkDescriptorPoolSize, 5> poolSizes;
                     std::vector<Texture*> allTextures = Texture::getAllTextures();
-                    poolSizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                    poolSizes[0].descriptorCount = static_cast<uint32_t>(alphaBuffer.getMaxFramesInFlight() * allTextures.size());
-                    poolSizes[1].type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+                    poolSizes[0].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+                    poolSizes[0].descriptorCount = static_cast<uint32_t>(alphaBuffer.getMaxFramesInFlight());
+                    poolSizes[1].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
                     poolSizes[1].descriptorCount = static_cast<uint32_t>(alphaBuffer.getMaxFramesInFlight());
                     poolSizes[2].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                    poolSizes[2].descriptorCount = static_cast<uint32_t>(alphaBuffer.getMaxFramesInFlight()) * lightDepthBuffer.getSwapchainImagesSize();
-                    poolSizes[3].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+                    poolSizes[2].descriptorCount = static_cast<uint32_t>(alphaBuffer.getMaxFramesInFlight() * allTextures.size());
+                    poolSizes[3].type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
                     poolSizes[3].descriptorCount = static_cast<uint32_t>(alphaBuffer.getMaxFramesInFlight());
-                    poolSizes[4].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
-                    poolSizes[4].descriptorCount = static_cast<uint32_t>(alphaBuffer.getMaxFramesInFlight());
+                    poolSizes[4].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                    poolSizes[4].descriptorCount = static_cast<uint32_t>(alphaBuffer.getMaxFramesInFlight()) * lightDepthBuffer.getSwapchainImagesSize();
+
 
                     if (descriptorPool[descriptorId] != nullptr) {
                         vkDestroyDescriptorPool(vkDevice.getDevice(), descriptorPool[descriptorId], nullptr);
@@ -1571,14 +1575,15 @@ namespace odfaeg {
                     unsigned int descriptorId = p * shader->getNbShaders() + shader->getId();
                     std::array<VkDescriptorPoolSize, 4> poolSizes;
                     std::vector<Texture*> allTextures = Texture::getAllTextures();
-                    poolSizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                    poolSizes[0].descriptorCount = static_cast<uint32_t>(specularTexture.getMaxFramesInFlight() * allTextures.size());
-                    poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                    poolSizes[1].descriptorCount = static_cast<uint32_t>(specularTexture.getMaxFramesInFlight()) * depthBuffer.getSwapchainImagesSize();
-                    poolSizes[2].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
-                    poolSizes[2].descriptorCount = static_cast<uint32_t>(specularTexture.getMaxFramesInFlight());
-                    poolSizes[3].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
-                    poolSizes[3].descriptorCount = static_cast<uint32_t>(specularTexture.getMaxFramesInFlight());
+                    poolSizes[0].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+                    poolSizes[0].descriptorCount = static_cast<uint32_t>(specularTexture.getMaxFramesInFlight());
+                    poolSizes[1].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+                    poolSizes[1].descriptorCount = static_cast<uint32_t>(specularTexture.getMaxFramesInFlight());
+                    poolSizes[2].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                    poolSizes[2].descriptorCount = static_cast<uint32_t>(specularTexture.getMaxFramesInFlight() * allTextures.size());
+                    poolSizes[3].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                    poolSizes[3].descriptorCount = static_cast<uint32_t>(specularTexture.getMaxFramesInFlight()) * depthBuffer.getSwapchainImagesSize();
+
                     VkDescriptorPoolCreateInfo poolInfo{};
                     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
                     poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
@@ -1594,14 +1599,15 @@ namespace odfaeg {
                     unsigned int descriptorId = p * shader->getNbShaders() + shader->getId();
                     std::array<VkDescriptorPoolSize, 4> poolSizes;
                     std::vector<Texture*> allTextures = Texture::getAllTextures();
-                    poolSizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                    poolSizes[0].descriptorCount = static_cast<uint32_t>(bumpTexture.getMaxFramesInFlight() * allTextures.size());
-                    poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                    poolSizes[1].descriptorCount = static_cast<uint32_t>(bumpTexture.getMaxFramesInFlight()) * depthBuffer.getSwapchainImagesSize();
-                    poolSizes[2].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
-                    poolSizes[2].descriptorCount = static_cast<uint32_t>(bumpTexture.getMaxFramesInFlight());
-                    poolSizes[3].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
-                    poolSizes[3].descriptorCount = static_cast<uint32_t>(bumpTexture.getMaxFramesInFlight());
+                    poolSizes[0].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+                    poolSizes[0].descriptorCount = static_cast<uint32_t>(bumpTexture.getMaxFramesInFlight());
+                    poolSizes[1].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+                    poolSizes[1].descriptorCount = static_cast<uint32_t>(bumpTexture.getMaxFramesInFlight());
+                    poolSizes[2].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                    poolSizes[2].descriptorCount = static_cast<uint32_t>(bumpTexture.getMaxFramesInFlight() * allTextures.size());
+                    poolSizes[3].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                    poolSizes[3].descriptorCount = static_cast<uint32_t>(bumpTexture.getMaxFramesInFlight()) * depthBuffer.getSwapchainImagesSize();
+
                     VkDescriptorPoolCreateInfo poolInfo{};
                     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
                     poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
@@ -1815,35 +1821,45 @@ namespace odfaeg {
                             descriptorSetLayout.resize(shader->getNbShaders() * (Batcher::nbPrimitiveTypes - 1));
                         unsigned int descriptorId = shader->getId();
                         std::vector<Texture*> allTextures = Texture::getAllTextures();
-                        VkDescriptorSetLayoutBinding samplerLayoutBinding{};
-                        samplerLayoutBinding.binding = 0;
-                        samplerLayoutBinding.descriptorCount = allTextures.size();
-                        samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                        samplerLayoutBinding.pImmutableSamplers = nullptr;
-                        samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-
-                        VkDescriptorSetLayoutBinding headPtrImageLayoutBinding;
-                        headPtrImageLayoutBinding.binding = 1;
-                        headPtrImageLayoutBinding.descriptorCount = 1;
-                        headPtrImageLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-                        headPtrImageLayoutBinding.pImmutableSamplers = nullptr;
-                        headPtrImageLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
                         VkDescriptorSetLayoutBinding modelDataLayoutBinding{};
-                        modelDataLayoutBinding.binding = 4;
+                        modelDataLayoutBinding.binding = 0;
                         modelDataLayoutBinding.descriptorCount = 1;
                         modelDataLayoutBinding.descriptorType = (useThread) ? VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC : VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
                         modelDataLayoutBinding.pImmutableSamplers = nullptr;
                         modelDataLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
                         VkDescriptorSetLayoutBinding materialDataLayoutBinding{};
-                        materialDataLayoutBinding.binding = 5;
+                        materialDataLayoutBinding.binding = 1;
                         materialDataLayoutBinding.descriptorCount = 1;
                         materialDataLayoutBinding.descriptorType = (useThread) ? VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC : VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
                         materialDataLayoutBinding.pImmutableSamplers = nullptr;
                         materialDataLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
-                        std::array<VkDescriptorSetLayoutBinding, 4> bindings = {samplerLayoutBinding, headPtrImageLayoutBinding, modelDataLayoutBinding, materialDataLayoutBinding};
+                        VkDescriptorSetLayoutBinding headPtrImageLayoutBinding;
+                        headPtrImageLayoutBinding.binding = 2;
+                        headPtrImageLayoutBinding.descriptorCount = 1;
+                        headPtrImageLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+                        headPtrImageLayoutBinding.pImmutableSamplers = nullptr;
+                        headPtrImageLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+
+                        VkDescriptorSetLayoutBinding samplerLayoutBinding{};
+                        samplerLayoutBinding.binding = 3;
+                        samplerLayoutBinding.descriptorCount = allTextures.size();
+                        samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                        samplerLayoutBinding.pImmutableSamplers = nullptr;
+                        samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+                        std::vector<VkDescriptorBindingFlags> bindingFlags(4, 0); // 6 bindings, flags par défaut à 0
+                        bindingFlags[3] = VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
+                        VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT;
+                        VkDescriptorSetLayoutBindingFlagsCreateInfo bindingFlagsInfo{};
+                        bindingFlagsInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
+                        bindingFlagsInfo.bindingCount = static_cast<uint32_t>(bindingFlags.size());
+                        bindingFlagsInfo.pBindingFlags = bindingFlags.data();
+
+                        std::array<VkDescriptorSetLayoutBinding, 4> bindings = {modelDataLayoutBinding, materialDataLayoutBinding, headPtrImageLayoutBinding, samplerLayoutBinding};
 
                         if (descriptorSetLayout[descriptorId] != nullptr) {
                             vkDestroyDescriptorSetLayout(vkDevice.getDevice(), descriptorSetLayout[descriptorId], nullptr);
@@ -1851,6 +1867,7 @@ namespace odfaeg {
 
                         VkDescriptorSetLayoutCreateInfo layoutInfo{};
                         layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+                        layoutInfo.pNext = &bindingFlagsInfo;
                         //layoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR;
                         layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());;
                         layoutInfo.pBindings = bindings.data();
@@ -1866,35 +1883,45 @@ namespace odfaeg {
                             descriptorSetLayout.resize(shader->getNbShaders() * (Batcher::nbPrimitiveTypes - 1));
                         unsigned int descriptorId = shader->getId();
                         std::vector<Texture*> allTextures = Texture::getAllTextures();
-                        VkDescriptorSetLayoutBinding samplerLayoutBinding{};
-                        samplerLayoutBinding.binding = 0;
-                        samplerLayoutBinding.descriptorCount = allTextures.size();
-                        samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                        samplerLayoutBinding.pImmutableSamplers = nullptr;
-                        samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-                        VkDescriptorSetLayoutBinding headPtrImageLayoutBinding;
-                        headPtrImageLayoutBinding.binding = 1;
-                        headPtrImageLayoutBinding.descriptorCount = 1;
-                        headPtrImageLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-                        headPtrImageLayoutBinding.pImmutableSamplers = nullptr;
-                        headPtrImageLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
                         VkDescriptorSetLayoutBinding modelDataLayoutBinding{};
-                        modelDataLayoutBinding.binding = 4;
+                        modelDataLayoutBinding.binding = 0;
                         modelDataLayoutBinding.descriptorCount = 1;
                         modelDataLayoutBinding.descriptorType = (useThread) ? VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC : VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
                         modelDataLayoutBinding.pImmutableSamplers = nullptr;
                         modelDataLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
                         VkDescriptorSetLayoutBinding materialDataLayoutBinding{};
-                        materialDataLayoutBinding.binding = 5;
+                        materialDataLayoutBinding.binding = 1;
                         materialDataLayoutBinding.descriptorCount = 1;
                         materialDataLayoutBinding.descriptorType = (useThread) ? VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC : VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
                         materialDataLayoutBinding.pImmutableSamplers = nullptr;
                         materialDataLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
-                        std::array<VkDescriptorSetLayoutBinding, 4> bindings = {samplerLayoutBinding, headPtrImageLayoutBinding, modelDataLayoutBinding, materialDataLayoutBinding};
+                        VkDescriptorSetLayoutBinding headPtrImageLayoutBinding;
+                        headPtrImageLayoutBinding.binding = 2;
+                        headPtrImageLayoutBinding.descriptorCount = 1;
+                        headPtrImageLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+                        headPtrImageLayoutBinding.pImmutableSamplers = nullptr;
+                        headPtrImageLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+
+                        VkDescriptorSetLayoutBinding samplerLayoutBinding{};
+                        samplerLayoutBinding.binding = 3;
+                        samplerLayoutBinding.descriptorCount = allTextures.size();
+                        samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                        samplerLayoutBinding.pImmutableSamplers = nullptr;
+                        samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+                        std::vector<VkDescriptorBindingFlags> bindingFlags(4, 0); // 6 bindings, flags par défaut à 0
+                        bindingFlags[3] = VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
+                        VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT;
+                        VkDescriptorSetLayoutBindingFlagsCreateInfo bindingFlagsInfo{};
+                        bindingFlagsInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
+                        bindingFlagsInfo.bindingCount = static_cast<uint32_t>(bindingFlags.size());
+                        bindingFlagsInfo.pBindingFlags = bindingFlags.data();
+
+                        std::array<VkDescriptorSetLayoutBinding, 4> bindings = { modelDataLayoutBinding, materialDataLayoutBinding, headPtrImageLayoutBinding, samplerLayoutBinding};
 
                         if (descriptorSetLayout[descriptorId] != nullptr) {
                             vkDestroyDescriptorSetLayout(vkDevice.getDevice(), descriptorSetLayout[descriptorId], nullptr);
@@ -1902,6 +1929,7 @@ namespace odfaeg {
 
                         VkDescriptorSetLayoutCreateInfo layoutInfo{};
                         layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+                        layoutInfo.pNext = &bindingFlagsInfo;
                         //layoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR;
                         layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());;
                         layoutInfo.pBindings = bindings.data();
@@ -1918,42 +1946,51 @@ namespace odfaeg {
                         descriptorSetLayout.resize(shader->getNbShaders() * (Batcher::nbPrimitiveTypes - 1));
                     unsigned int descriptorId = shader->getId();
                     std::vector<Texture*> allTextures = Texture::getAllTextures();
-                    VkDescriptorSetLayoutBinding samplerLayoutBinding{};
-                    samplerLayoutBinding.binding = 0;
-                    samplerLayoutBinding.descriptorCount = allTextures.size();
-                    samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                    samplerLayoutBinding.pImmutableSamplers = nullptr;
-                    samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-
-                    VkDescriptorSetLayoutBinding headPtrImageLayoutBinding;
-                    headPtrImageLayoutBinding.binding = 1;
-                    headPtrImageLayoutBinding.descriptorCount = 1;
-                    headPtrImageLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-                    headPtrImageLayoutBinding.pImmutableSamplers = nullptr;
-                    headPtrImageLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-
-                    VkDescriptorSetLayoutBinding samplerLayoutBinding2{};
-                    samplerLayoutBinding2.binding = 2;
-                    samplerLayoutBinding2.descriptorCount = lightDepthBuffer.getSwapchainImagesSize();
-                    samplerLayoutBinding2.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                    samplerLayoutBinding2.pImmutableSamplers = nullptr;
-                    samplerLayoutBinding2.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
                     VkDescriptorSetLayoutBinding modelDataLayoutBinding{};
-                    modelDataLayoutBinding.binding = 4;
+                    modelDataLayoutBinding.binding = 0;
                     modelDataLayoutBinding.descriptorCount = 1;
                     modelDataLayoutBinding.descriptorType = (useThread) ? VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC : VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
                     modelDataLayoutBinding.pImmutableSamplers = nullptr;
                     modelDataLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
                     VkDescriptorSetLayoutBinding materialDataLayoutBinding{};
-                    materialDataLayoutBinding.binding = 5;
+                    materialDataLayoutBinding.binding = 1;
                     materialDataLayoutBinding.descriptorCount = 1;
                     materialDataLayoutBinding.descriptorType = (useThread) ? VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC : VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
                     materialDataLayoutBinding.pImmutableSamplers = nullptr;
                     materialDataLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
-                    std::array<VkDescriptorSetLayoutBinding, 5> bindings = {samplerLayoutBinding, headPtrImageLayoutBinding, samplerLayoutBinding2, modelDataLayoutBinding, materialDataLayoutBinding};
+                    VkDescriptorSetLayoutBinding headPtrImageLayoutBinding;
+                    headPtrImageLayoutBinding.binding = 2;
+                    headPtrImageLayoutBinding.descriptorCount = 1;
+                    headPtrImageLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+                    headPtrImageLayoutBinding.pImmutableSamplers = nullptr;
+                    headPtrImageLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+                    VkDescriptorSetLayoutBinding samplerLayoutBinding2{};
+                    samplerLayoutBinding2.binding = 3;
+                    samplerLayoutBinding2.descriptorCount = lightDepthBuffer.getSwapchainImagesSize();
+                    samplerLayoutBinding2.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                    samplerLayoutBinding2.pImmutableSamplers = nullptr;
+                    samplerLayoutBinding2.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+                    VkDescriptorSetLayoutBinding samplerLayoutBinding{};
+                    samplerLayoutBinding.binding = 4;
+                    samplerLayoutBinding.descriptorCount = allTextures.size();
+                    samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                    samplerLayoutBinding.pImmutableSamplers = nullptr;
+                    samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+                    std::vector<VkDescriptorBindingFlags> bindingFlags(5, 0); // 6 bindings, flags par défaut à 0
+                    bindingFlags[4] = VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
+                    VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT;
+                    VkDescriptorSetLayoutBindingFlagsCreateInfo bindingFlagsInfo{};
+                    bindingFlagsInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
+                    bindingFlagsInfo.bindingCount = static_cast<uint32_t>(bindingFlags.size());
+                    bindingFlagsInfo.pBindingFlags = bindingFlags.data();
+
+                    std::array<VkDescriptorSetLayoutBinding, 5> bindings = {modelDataLayoutBinding, materialDataLayoutBinding, headPtrImageLayoutBinding, samplerLayoutBinding2, samplerLayoutBinding};
 
                     if (descriptorSetLayout[descriptorId] != nullptr) {
                         vkDestroyDescriptorSetLayout(vkDevice.getDevice(), descriptorSetLayout[descriptorId], nullptr);
@@ -1961,6 +1998,7 @@ namespace odfaeg {
 
                     VkDescriptorSetLayoutCreateInfo layoutInfo{};
                     layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+                    layoutInfo.pNext = &bindingFlagsInfo;
                     //layoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR;
                     layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());;
                     layoutInfo.pBindings = bindings.data();
@@ -1974,35 +2012,46 @@ namespace odfaeg {
                         descriptorSetLayout.resize(shader->getNbShaders() * (Batcher::nbPrimitiveTypes - 1));
                     unsigned int descriptorId = shader->getId();
                     std::vector<Texture*> allTextures = Texture::getAllTextures();
-                    VkDescriptorSetLayoutBinding samplerLayoutBinding{};
-                    samplerLayoutBinding.binding = 0;
-                    samplerLayoutBinding.descriptorCount = allTextures.size();
-                    samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                    samplerLayoutBinding.pImmutableSamplers = nullptr;
-                    samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-
-                    VkDescriptorSetLayoutBinding samplerLayoutBinding2{};
-                    samplerLayoutBinding2.binding = 1;
-                    samplerLayoutBinding2.descriptorCount = depthBuffer.getSwapchainImagesSize();
-                    samplerLayoutBinding2.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                    samplerLayoutBinding2.pImmutableSamplers = nullptr;
-                    samplerLayoutBinding2.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
                     VkDescriptorSetLayoutBinding modelDataLayoutBinding{};
-                    modelDataLayoutBinding.binding = 4;
+                    modelDataLayoutBinding.binding = 0;
                     modelDataLayoutBinding.descriptorCount = 1;
                     modelDataLayoutBinding.descriptorType = (useThread) ? VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC : VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
                     modelDataLayoutBinding.pImmutableSamplers = nullptr;
                     modelDataLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
                     VkDescriptorSetLayoutBinding materialDataLayoutBinding{};
-                    materialDataLayoutBinding.binding = 5;
+                    materialDataLayoutBinding.binding = 1;
                     materialDataLayoutBinding.descriptorCount = 1;
                     materialDataLayoutBinding.descriptorType = (useThread) ? VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC : VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
                     materialDataLayoutBinding.pImmutableSamplers = nullptr;
                     materialDataLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
-                    std::array<VkDescriptorSetLayoutBinding, 4> bindings = {samplerLayoutBinding, samplerLayoutBinding2, modelDataLayoutBinding, materialDataLayoutBinding};
+                    VkDescriptorSetLayoutBinding samplerLayoutBinding2{};
+                    samplerLayoutBinding2.binding = 2;
+                    samplerLayoutBinding2.descriptorCount = depthBuffer.getSwapchainImagesSize();
+                    samplerLayoutBinding2.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                    samplerLayoutBinding2.pImmutableSamplers = nullptr;
+                    samplerLayoutBinding2.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+
+
+                    VkDescriptorSetLayoutBinding samplerLayoutBinding{};
+                    samplerLayoutBinding.binding = 3;
+                    samplerLayoutBinding.descriptorCount = allTextures.size();
+                    samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                    samplerLayoutBinding.pImmutableSamplers = nullptr;
+                    samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+                    std::vector<VkDescriptorBindingFlags> bindingFlags(4, 0); // 6 bindings, flags par défaut à 0
+                    bindingFlags[3] = VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
+                    VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT;
+                    VkDescriptorSetLayoutBindingFlagsCreateInfo bindingFlagsInfo{};
+                    bindingFlagsInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
+                    bindingFlagsInfo.bindingCount = static_cast<uint32_t>(bindingFlags.size());
+                    bindingFlagsInfo.pBindingFlags = bindingFlags.data();
+
+                    std::array<VkDescriptorSetLayoutBinding, 4> bindings = {modelDataLayoutBinding, materialDataLayoutBinding, samplerLayoutBinding2, samplerLayoutBinding};
 
                     if (descriptorSetLayout[descriptorId] != nullptr) {
                         vkDestroyDescriptorSetLayout(vkDevice.getDevice(), descriptorSetLayout[descriptorId], nullptr);
@@ -2010,6 +2059,7 @@ namespace odfaeg {
 
                     VkDescriptorSetLayoutCreateInfo layoutInfo{};
                     layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+                    layoutInfo.pNext = &bindingFlagsInfo;
                     //layoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR;
                     layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());;
                     layoutInfo.pBindings = bindings.data();
@@ -2023,36 +2073,44 @@ namespace odfaeg {
                         descriptorSetLayout.resize(shader->getNbShaders() * (Batcher::nbPrimitiveTypes - 1));
                     unsigned int descriptorId = shader->getId();
                     std::vector<Texture*> allTextures = Texture::getAllTextures();
-                    VkDescriptorSetLayoutBinding samplerLayoutBinding{};
-                    samplerLayoutBinding.binding = 0;
-                    samplerLayoutBinding.descriptorCount = allTextures.size();
-                    samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                    samplerLayoutBinding.pImmutableSamplers = nullptr;
-                    samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-
-                    VkDescriptorSetLayoutBinding samplerLayoutBinding2{};
-                    samplerLayoutBinding2.binding = 1;
-                    samplerLayoutBinding2.descriptorCount = depthBuffer.getSwapchainImagesSize();
-                    samplerLayoutBinding2.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                    samplerLayoutBinding2.pImmutableSamplers = nullptr;
-                    samplerLayoutBinding2.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-
 
                     VkDescriptorSetLayoutBinding modelDataLayoutBinding{};
-                    modelDataLayoutBinding.binding = 4;
+                    modelDataLayoutBinding.binding = 0;
                     modelDataLayoutBinding.descriptorCount = 1;
                     modelDataLayoutBinding.descriptorType = (useThread) ? VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC : VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
                     modelDataLayoutBinding.pImmutableSamplers = nullptr;
                     modelDataLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
                     VkDescriptorSetLayoutBinding materialDataLayoutBinding{};
-                    materialDataLayoutBinding.binding = 5;
+                    materialDataLayoutBinding.binding = 1;
                     materialDataLayoutBinding.descriptorCount = 1;
                     materialDataLayoutBinding.descriptorType = (useThread) ? VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC : VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
                     materialDataLayoutBinding.pImmutableSamplers = nullptr;
                     materialDataLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
-                    std::array<VkDescriptorSetLayoutBinding, 4> bindings = {samplerLayoutBinding, samplerLayoutBinding2, modelDataLayoutBinding, materialDataLayoutBinding};
+                    VkDescriptorSetLayoutBinding samplerLayoutBinding2{};
+                    samplerLayoutBinding2.binding = 2;
+                    samplerLayoutBinding2.descriptorCount = depthBuffer.getSwapchainImagesSize();
+                    samplerLayoutBinding2.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                    samplerLayoutBinding2.pImmutableSamplers = nullptr;
+                    samplerLayoutBinding2.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+                    VkDescriptorSetLayoutBinding samplerLayoutBinding{};
+                    samplerLayoutBinding.binding = 3;
+                    samplerLayoutBinding.descriptorCount = allTextures.size();
+                    samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                    samplerLayoutBinding.pImmutableSamplers = nullptr;
+                    samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+                    std::vector<VkDescriptorBindingFlags> bindingFlags(4, 0); // 6 bindings, flags par défaut à 0
+                    bindingFlags[3] = VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
+                    VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT;
+                    VkDescriptorSetLayoutBindingFlagsCreateInfo bindingFlagsInfo{};
+                    bindingFlagsInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
+                    bindingFlagsInfo.bindingCount = static_cast<uint32_t>(bindingFlags.size());
+                    bindingFlagsInfo.pBindingFlags = bindingFlags.data();
+
+                    std::array<VkDescriptorSetLayoutBinding, 4> bindings = {modelDataLayoutBinding, materialDataLayoutBinding, samplerLayoutBinding2, samplerLayoutBinding};
 
                     if (descriptorSetLayout[descriptorId] != nullptr) {
                         vkDestroyDescriptorSetLayout(vkDevice.getDevice(), descriptorSetLayout[descriptorId], nullptr);
@@ -2060,6 +2118,7 @@ namespace odfaeg {
 
                     VkDescriptorSetLayoutCreateInfo layoutInfo{};
                     layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+                    layoutInfo.pNext = &bindingFlagsInfo;
                     //layoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR;
                     layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());;
                     layoutInfo.pBindings = bindings.data();
@@ -2138,21 +2197,34 @@ namespace odfaeg {
                     std::vector<std::vector<VkDescriptorSet>> descriptorSets = (lightDepth) ? lightDepthBuffer.getDescriptorSet() : depthBuffer.getDescriptorSet();
                     std::vector<Texture*> allTextures = Texture::getAllTextures();
                     unsigned int descriptorId = p * shader->getNbShaders() + shader->getId();
-                    std::vector<VkDescriptorImageInfo>	descriptorImageInfos;
-                    descriptorImageInfos.resize(allTextures.size());
-                    for (unsigned int j = 0; j < allTextures.size(); j++) {
-                        descriptorImageInfos[j].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                        descriptorImageInfos[j].imageView = allTextures[j]->getImageView();
-                        descriptorImageInfos[j].sampler = allTextures[j]->getSampler();
-                    }
                     std::array<VkWriteDescriptorSet, 4> descriptorWrites{};
+
+                    VkDescriptorBufferInfo modelDataStorageBufferInfoLastFrame{};
+                    modelDataStorageBufferInfoLastFrame.buffer = modelDataBufferMT[p][currentFrame];
+                    modelDataStorageBufferInfoLastFrame.offset = 0;
+                    modelDataStorageBufferInfoLastFrame.range = maxAlignedSizeModelData[p];
+
                     descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                     descriptorWrites[0].dstSet = descriptorSets[descriptorId][currentFrame];
                     descriptorWrites[0].dstBinding = 0;
                     descriptorWrites[0].dstArrayElement = 0;
-                    descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                    descriptorWrites[0].descriptorCount = allTextures.size();
-                    descriptorWrites[0].pImageInfo = descriptorImageInfos.data();
+                    descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+                    descriptorWrites[0].descriptorCount = 1;
+                    descriptorWrites[0].pBufferInfo = &modelDataStorageBufferInfoLastFrame;
+
+                    VkDescriptorBufferInfo materialDataStorageBufferInfoLastFrame{};
+                    materialDataStorageBufferInfoLastFrame.buffer = materialDataBufferMT[p][currentFrame];
+                    materialDataStorageBufferInfoLastFrame.offset = 0;
+                    materialDataStorageBufferInfoLastFrame.range = maxAlignedSizeMaterialData[p];
+
+                    descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                    descriptorWrites[1].dstSet = descriptorSets[descriptorId][currentFrame];
+                    descriptorWrites[1].dstBinding = 1;
+                    descriptorWrites[1].dstArrayElement = 0;
+                    descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+                    descriptorWrites[1].descriptorCount = 1;
+                    descriptorWrites[1].pBufferInfo = &materialDataStorageBufferInfoLastFrame;
+
 
                     if (!lightDepth) {
                         VkDescriptorImageInfo headPtrDescriptorImageInfo;
@@ -2160,52 +2232,44 @@ namespace odfaeg {
                         headPtrDescriptorImageInfo.imageView = depthTextureImageView[currentFrame];
                         headPtrDescriptorImageInfo.sampler = depthTextureSampler[currentFrame];
 
-                        descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                        descriptorWrites[1].dstSet = descriptorSets[descriptorId][currentFrame];
-                        descriptorWrites[1].dstBinding = 1;
-                        descriptorWrites[1].dstArrayElement = 0;
-                        descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-                        descriptorWrites[1].descriptorCount = 1;
-                        descriptorWrites[1].pImageInfo = &headPtrDescriptorImageInfo;
+                        descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                        descriptorWrites[2].dstSet = descriptorSets[descriptorId][currentFrame];
+                        descriptorWrites[2].dstBinding = 2;
+                        descriptorWrites[2].dstArrayElement = 0;
+                        descriptorWrites[2].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+                        descriptorWrites[2].descriptorCount = 1;
+                        descriptorWrites[2].pImageInfo = &headPtrDescriptorImageInfo;
                     } else {
                         VkDescriptorImageInfo headPtrDescriptorImageInfo;
                         headPtrDescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
                         headPtrDescriptorImageInfo.imageView = lightDepthTextureImageView[currentFrame];
                         headPtrDescriptorImageInfo.sampler = lightDepthTextureSampler[currentFrame];
 
-                        descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                        descriptorWrites[1].dstSet = descriptorSets[descriptorId][currentFrame];
-                        descriptorWrites[1].dstBinding = 1;
-                        descriptorWrites[1].dstArrayElement = 0;
-                        descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-                        descriptorWrites[1].descriptorCount = 1;
-                        descriptorWrites[1].pImageInfo = &headPtrDescriptorImageInfo;
+                        descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                        descriptorWrites[2].dstSet = descriptorSets[descriptorId][currentFrame];
+                        descriptorWrites[2].dstBinding = 2;
+                        descriptorWrites[2].dstArrayElement = 0;
+                        descriptorWrites[2].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+                        descriptorWrites[2].descriptorCount = 1;
+                        descriptorWrites[2].pImageInfo = &headPtrDescriptorImageInfo;
                     }
-                    VkDescriptorBufferInfo modelDataStorageBufferInfoLastFrame{};
-                    modelDataStorageBufferInfoLastFrame.buffer = modelDataBufferMT[p][currentFrame];
-                    modelDataStorageBufferInfoLastFrame.offset = 0;
-                    modelDataStorageBufferInfoLastFrame.range = maxAlignedSizeModelData[p];
 
-                    descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                    descriptorWrites[2].dstSet = descriptorSets[descriptorId][currentFrame];
-                    descriptorWrites[2].dstBinding = 4;
-                    descriptorWrites[2].dstArrayElement = 0;
-                    descriptorWrites[2].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
-                    descriptorWrites[2].descriptorCount = 1;
-                    descriptorWrites[2].pBufferInfo = &modelDataStorageBufferInfoLastFrame;
 
-                    VkDescriptorBufferInfo materialDataStorageBufferInfoLastFrame{};
-                    materialDataStorageBufferInfoLastFrame.buffer = materialDataBufferMT[p][currentFrame];
-                    materialDataStorageBufferInfoLastFrame.offset = 0;
-                    materialDataStorageBufferInfoLastFrame.range = maxAlignedSizeMaterialData[p];
+                    std::vector<VkDescriptorImageInfo>	descriptorImageInfos;
+                    descriptorImageInfos.resize(allTextures.size());
+                    for (unsigned int j = 0; j < allTextures.size(); j++) {
+                        descriptorImageInfos[j].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                        descriptorImageInfos[j].imageView = allTextures[j]->getImageView();
+                        descriptorImageInfos[j].sampler = allTextures[j]->getSampler();
+                    }
 
                     descriptorWrites[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                     descriptorWrites[3].dstSet = descriptorSets[descriptorId][currentFrame];
-                    descriptorWrites[3].dstBinding = 5;
+                    descriptorWrites[3].dstBinding = 3;
                     descriptorWrites[3].dstArrayElement = 0;
-                    descriptorWrites[3].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
-                    descriptorWrites[3].descriptorCount = 1;
-                    descriptorWrites[3].pBufferInfo = &materialDataStorageBufferInfoLastFrame;
+                    descriptorWrites[3].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                    descriptorWrites[3].descriptorCount = allTextures.size();
+                    descriptorWrites[3].pImageInfo = descriptorImageInfos.data();
 
                     vkUpdateDescriptorSets(vkDevice.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
 
@@ -2215,32 +2279,46 @@ namespace odfaeg {
                         unsigned int descriptorId = p * shader->getNbShaders() + shader->getId();
                         std::vector<VkDescriptorImageInfo>	descriptorImageInfos;
                         descriptorImageInfos.resize(allTextures.size());
-                        for (unsigned int j = 0; j < allTextures.size(); j++) {
-                            descriptorImageInfos[j].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                            descriptorImageInfos[j].imageView = allTextures[j]->getImageView();
-                            descriptorImageInfos[j].sampler = allTextures[j]->getSampler();
-                        }
                         std::array<VkWriteDescriptorSet, 5> descriptorWrites{};
+
+                        VkDescriptorBufferInfo modelDataStorageBufferInfoLastFrame{};
+                        modelDataStorageBufferInfoLastFrame.buffer = modelDataBufferMT[p][currentFrame];
+                        modelDataStorageBufferInfoLastFrame.offset = 0;
+                        modelDataStorageBufferInfoLastFrame.range = maxAlignedSizeModelData[p];
+
                         descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                         descriptorWrites[0].dstSet = descriptorSets[descriptorId][currentFrame];
                         descriptorWrites[0].dstBinding = 0;
                         descriptorWrites[0].dstArrayElement = 0;
-                        descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                        descriptorWrites[0].descriptorCount = allTextures.size();
-                        descriptorWrites[0].pImageInfo = descriptorImageInfos.data();
+                        descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+                        descriptorWrites[0].descriptorCount = 1;
+                        descriptorWrites[0].pBufferInfo = &modelDataStorageBufferInfoLastFrame;
+
+                        VkDescriptorBufferInfo materialDataStorageBufferInfoLastFrame{};
+                        materialDataStorageBufferInfoLastFrame.buffer = materialDataBufferMT[p][currentFrame];
+                        materialDataStorageBufferInfoLastFrame.offset = 0;
+                        materialDataStorageBufferInfoLastFrame.range = maxAlignedSizeMaterialData[p];
+
+                        descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                        descriptorWrites[1].dstSet = descriptorSets[descriptorId][currentFrame];
+                        descriptorWrites[1].dstBinding = 1;
+                        descriptorWrites[1].dstArrayElement = 0;
+                        descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+                        descriptorWrites[1].descriptorCount = 1;
+                        descriptorWrites[1].pBufferInfo = &materialDataStorageBufferInfoLastFrame;
 
                         VkDescriptorImageInfo headPtrDescriptorImageInfo;
                         headPtrDescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
                         headPtrDescriptorImageInfo.imageView = alphaTextureImageView[currentFrame];
                         headPtrDescriptorImageInfo.sampler = alphaTextureSampler[currentFrame];
 
-                        descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                        descriptorWrites[1].dstSet = descriptorSets[descriptorId][currentFrame];
-                        descriptorWrites[1].dstBinding = 1;
-                        descriptorWrites[1].dstArrayElement = 0;
-                        descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-                        descriptorWrites[1].descriptorCount = 1;
-                        descriptorWrites[1].pImageInfo = &headPtrDescriptorImageInfo;
+                        descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                        descriptorWrites[2].dstSet = descriptorSets[descriptorId][currentFrame];
+                        descriptorWrites[2].dstBinding = 2;
+                        descriptorWrites[2].dstArrayElement = 0;
+                        descriptorWrites[2].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+                        descriptorWrites[2].descriptorCount = 1;
+                        descriptorWrites[2].pImageInfo = &headPtrDescriptorImageInfo;
 
                         std::array<VkDescriptorImageInfo, RenderTexture::NB_SWAPCHAIN_IMAGES>	descriptorImageInfos2;
                         for (unsigned int j = 0; j < depthBuffer.getSwapchainImagesSize(); j++) {
@@ -2249,40 +2327,27 @@ namespace odfaeg {
                             descriptorImageInfos2[j].sampler = lightDepthBuffer.getTexture(j).getSampler();
                         }
 
-                        descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                        descriptorWrites[2].dstSet = descriptorSets[descriptorId][currentFrame];
-                        descriptorWrites[2].dstBinding = 2;
-                        descriptorWrites[2].dstArrayElement = 0;
-                        descriptorWrites[2].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                        descriptorWrites[2].descriptorCount = descriptorImageInfos2.size();
-                        descriptorWrites[2].pImageInfo = descriptorImageInfos2.data();
-
-
-                        VkDescriptorBufferInfo modelDataStorageBufferInfoLastFrame{};
-                        modelDataStorageBufferInfoLastFrame.buffer = modelDataBufferMT[p][currentFrame];
-                        modelDataStorageBufferInfoLastFrame.offset = 0;
-                        modelDataStorageBufferInfoLastFrame.range = maxAlignedSizeModelData[p];
-
                         descriptorWrites[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                         descriptorWrites[3].dstSet = descriptorSets[descriptorId][currentFrame];
-                        descriptorWrites[3].dstBinding = 4;
+                        descriptorWrites[3].dstBinding = 3;
                         descriptorWrites[3].dstArrayElement = 0;
-                        descriptorWrites[3].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
-                        descriptorWrites[3].descriptorCount = 1;
-                        descriptorWrites[3].pBufferInfo = &modelDataStorageBufferInfoLastFrame;
+                        descriptorWrites[3].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                        descriptorWrites[3].descriptorCount = descriptorImageInfos2.size();
+                        descriptorWrites[3].pImageInfo = descriptorImageInfos2.data();
 
-                        VkDescriptorBufferInfo materialDataStorageBufferInfoLastFrame{};
-                        materialDataStorageBufferInfoLastFrame.buffer = materialDataBufferMT[p][currentFrame];
-                        materialDataStorageBufferInfoLastFrame.offset = 0;
-                        materialDataStorageBufferInfoLastFrame.range = maxAlignedSizeMaterialData[p];
+                        for (unsigned int j = 0; j < allTextures.size(); j++) {
+                            descriptorImageInfos[j].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                            descriptorImageInfos[j].imageView = allTextures[j]->getImageView();
+                            descriptorImageInfos[j].sampler = allTextures[j]->getSampler();
+                        }
 
                         descriptorWrites[4].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                         descriptorWrites[4].dstSet = descriptorSets[descriptorId][currentFrame];
-                        descriptorWrites[4].dstBinding = 5;
+                        descriptorWrites[4].dstBinding = 4;
                         descriptorWrites[4].dstArrayElement = 0;
-                        descriptorWrites[4].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
-                        descriptorWrites[4].descriptorCount = 1;
-                        descriptorWrites[4].pBufferInfo = &materialDataStorageBufferInfoLastFrame;
+                        descriptorWrites[4].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                        descriptorWrites[4].descriptorCount = allTextures.size();
+                        descriptorWrites[4].pImageInfo = descriptorImageInfos.data();
 
 
 
@@ -2294,19 +2359,34 @@ namespace odfaeg {
                     unsigned int descriptorId = p * shader->getNbShaders() + shader->getId();
                     std::vector<VkDescriptorImageInfo>	descriptorImageInfos;
                     descriptorImageInfos.resize(allTextures.size());
-                    for (unsigned int j = 0; j < allTextures.size(); j++) {
-                        descriptorImageInfos[j].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                        descriptorImageInfos[j].imageView = allTextures[j]->getImageView();
-                        descriptorImageInfos[j].sampler = allTextures[j]->getSampler();
-                    }
                     std::array<VkWriteDescriptorSet, 4> descriptorWrites{};
+
+                    VkDescriptorBufferInfo modelDataStorageBufferInfoLastFrame{};
+                    modelDataStorageBufferInfoLastFrame.buffer = modelDataBufferMT[p][currentFrame];
+                    modelDataStorageBufferInfoLastFrame.offset = 0;
+                    modelDataStorageBufferInfoLastFrame.range = maxAlignedSizeModelData[p];
+
                     descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                     descriptorWrites[0].dstSet = descriptorSets[descriptorId][currentFrame];
                     descriptorWrites[0].dstBinding = 0;
                     descriptorWrites[0].dstArrayElement = 0;
-                    descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                    descriptorWrites[0].descriptorCount = allTextures.size();
-                    descriptorWrites[0].pImageInfo = descriptorImageInfos.data();
+                    descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+                    descriptorWrites[0].descriptorCount = 1;
+                    descriptorWrites[0].pBufferInfo = &modelDataStorageBufferInfoLastFrame;
+
+                    VkDescriptorBufferInfo materialDataStorageBufferInfoLastFrame{};
+                    materialDataStorageBufferInfoLastFrame.buffer = materialDataBufferMT[p][currentFrame];
+                    materialDataStorageBufferInfoLastFrame.offset = 0;
+                    materialDataStorageBufferInfoLastFrame.range = maxAlignedSizeMaterialData[p];
+
+                    descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                    descriptorWrites[1].dstSet = descriptorSets[descriptorId][currentFrame];
+                    descriptorWrites[1].dstBinding = 1;
+                    descriptorWrites[1].dstArrayElement = 0;
+                    descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+                    descriptorWrites[1].descriptorCount = 1;
+                    descriptorWrites[1].pBufferInfo = &materialDataStorageBufferInfoLastFrame;
+
 
                     std::array<VkDescriptorImageInfo, RenderTexture::NB_SWAPCHAIN_IMAGES>	descriptorImageInfos2;
                     for (unsigned int j = 0; j < depthBuffer.getSwapchainImagesSize(); j++) {
@@ -2315,39 +2395,29 @@ namespace odfaeg {
                         descriptorImageInfos2[j].sampler = depthBuffer.getTexture(j).getSampler();
                     }
 
-                    descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                    descriptorWrites[1].dstSet = descriptorSets[descriptorId][currentFrame];
-                    descriptorWrites[1].dstBinding = 1;
-                    descriptorWrites[1].dstArrayElement = 0;
-                    descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                    descriptorWrites[1].descriptorCount = descriptorImageInfos2.size();
-                    descriptorWrites[1].pImageInfo = descriptorImageInfos2.data();
-
-                    VkDescriptorBufferInfo modelDataStorageBufferInfoLastFrame{};
-                    modelDataStorageBufferInfoLastFrame.buffer = modelDataBufferMT[p][currentFrame];
-                    modelDataStorageBufferInfoLastFrame.offset = 0;
-                    modelDataStorageBufferInfoLastFrame.range = maxAlignedSizeModelData[p];
-
                     descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                     descriptorWrites[2].dstSet = descriptorSets[descriptorId][currentFrame];
-                    descriptorWrites[2].dstBinding = 4;
+                    descriptorWrites[2].dstBinding = 2;
                     descriptorWrites[2].dstArrayElement = 0;
-                    descriptorWrites[2].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
-                    descriptorWrites[2].descriptorCount = 1;
-                    descriptorWrites[2].pBufferInfo = &modelDataStorageBufferInfoLastFrame;
+                    descriptorWrites[2].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                    descriptorWrites[2].descriptorCount = descriptorImageInfos2.size();
+                    descriptorWrites[2].pImageInfo = descriptorImageInfos2.data();
 
-                    VkDescriptorBufferInfo materialDataStorageBufferInfoLastFrame{};
-                    materialDataStorageBufferInfoLastFrame.buffer = materialDataBufferMT[p][currentFrame];
-                    materialDataStorageBufferInfoLastFrame.offset = 0;
-                    materialDataStorageBufferInfoLastFrame.range = maxAlignedSizeMaterialData[p];
+
+
+                    for (unsigned int j = 0; j < allTextures.size(); j++) {
+                        descriptorImageInfos[j].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                        descriptorImageInfos[j].imageView = allTextures[j]->getImageView();
+                        descriptorImageInfos[j].sampler = allTextures[j]->getSampler();
+                    }
 
                     descriptorWrites[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                     descriptorWrites[3].dstSet = descriptorSets[descriptorId][currentFrame];
-                    descriptorWrites[3].dstBinding = 5;
+                    descriptorWrites[3].dstBinding = 3;
                     descriptorWrites[3].dstArrayElement = 0;
-                    descriptorWrites[3].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
-                    descriptorWrites[3].descriptorCount = 1;
-                    descriptorWrites[3].pBufferInfo = &materialDataStorageBufferInfoLastFrame;
+                    descriptorWrites[3].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                    descriptorWrites[3].descriptorCount = allTextures.size();
+                    descriptorWrites[3].pImageInfo = descriptorImageInfos.data();
 
                     vkUpdateDescriptorSets(vkDevice.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
 
@@ -2355,21 +2425,34 @@ namespace odfaeg {
                     std::vector<std::vector<VkDescriptorSet>>& descriptorSets = bumpTexture.getDescriptorSet();
                     std::vector<Texture*> allTextures = Texture::getAllTextures();
                     unsigned int descriptorId = p * shader->getNbShaders() + shader->getId();
-                    std::vector<VkDescriptorImageInfo>	descriptorImageInfos;
-                    descriptorImageInfos.resize(allTextures.size());
-                    for (unsigned int j = 0; j < allTextures.size(); j++) {
-                        descriptorImageInfos[j].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                        descriptorImageInfos[j].imageView = allTextures[j]->getImageView();
-                        descriptorImageInfos[j].sampler = allTextures[j]->getSampler();
-                    }
                     std::array<VkWriteDescriptorSet, 4> descriptorWrites{};
+
+                    VkDescriptorBufferInfo modelDataStorageBufferInfoLastFrame{};
+                    modelDataStorageBufferInfoLastFrame.buffer = modelDataBufferMT[p][currentFrame];
+                    modelDataStorageBufferInfoLastFrame.offset = 0;
+                    modelDataStorageBufferInfoLastFrame.range = maxAlignedSizeModelData[p];
+
                     descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                     descriptorWrites[0].dstSet = descriptorSets[descriptorId][currentFrame];
                     descriptorWrites[0].dstBinding = 0;
                     descriptorWrites[0].dstArrayElement = 0;
-                    descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                    descriptorWrites[0].descriptorCount = allTextures.size();
-                    descriptorWrites[0].pImageInfo = descriptorImageInfos.data();
+                    descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+                    descriptorWrites[0].descriptorCount = 1;
+                    descriptorWrites[0].pBufferInfo = &modelDataStorageBufferInfoLastFrame;
+
+                    VkDescriptorBufferInfo materialDataStorageBufferInfoLastFrame{};
+                    materialDataStorageBufferInfoLastFrame.buffer = materialDataBufferMT[p][currentFrame];
+                    materialDataStorageBufferInfoLastFrame.offset = 0;
+                    materialDataStorageBufferInfoLastFrame.range = maxAlignedSizeMaterialData[p];
+
+                    descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                    descriptorWrites[1].dstSet = descriptorSets[descriptorId][currentFrame];
+                    descriptorWrites[1].dstBinding = 1;
+                    descriptorWrites[1].dstArrayElement = 0;
+                    descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+                    descriptorWrites[1].descriptorCount = 1;
+                    descriptorWrites[1].pBufferInfo = &materialDataStorageBufferInfoLastFrame;
+
 
                     std::array<VkDescriptorImageInfo, RenderTexture::NB_SWAPCHAIN_IMAGES>	descriptorImageInfos2;
                     for (unsigned int j = 0; j < depthBuffer.getSwapchainImagesSize(); j++) {
@@ -2378,40 +2461,29 @@ namespace odfaeg {
                         descriptorImageInfos2[j].sampler = depthBuffer.getTexture(j).getSampler();
                     }
 
-                    descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                    descriptorWrites[1].dstSet = descriptorSets[descriptorId][currentFrame];
-                    descriptorWrites[1].dstBinding = 1;
-                    descriptorWrites[1].dstArrayElement = 0;
-                    descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                    descriptorWrites[1].descriptorCount = descriptorImageInfos2.size();
-                    descriptorWrites[1].pImageInfo = descriptorImageInfos2.data();
-
-
-                    VkDescriptorBufferInfo modelDataStorageBufferInfoLastFrame{};
-                    modelDataStorageBufferInfoLastFrame.buffer = modelDataBufferMT[p][currentFrame];
-                    modelDataStorageBufferInfoLastFrame.offset = 0;
-                    modelDataStorageBufferInfoLastFrame.range = maxAlignedSizeModelData[p];
-
                     descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                     descriptorWrites[2].dstSet = descriptorSets[descriptorId][currentFrame];
-                    descriptorWrites[2].dstBinding = 4;
+                    descriptorWrites[2].dstBinding = 2;
                     descriptorWrites[2].dstArrayElement = 0;
-                    descriptorWrites[2].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
-                    descriptorWrites[2].descriptorCount = 1;
-                    descriptorWrites[2].pBufferInfo = &modelDataStorageBufferInfoLastFrame;
+                    descriptorWrites[2].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                    descriptorWrites[2].descriptorCount = descriptorImageInfos2.size();
+                    descriptorWrites[2].pImageInfo = descriptorImageInfos2.data();
 
-                    VkDescriptorBufferInfo materialDataStorageBufferInfoLastFrame{};
-                    materialDataStorageBufferInfoLastFrame.buffer = materialDataBufferMT[p][currentFrame];
-                    materialDataStorageBufferInfoLastFrame.offset = 0;
-                    materialDataStorageBufferInfoLastFrame.range = maxAlignedSizeMaterialData[p];
+                    std::vector<VkDescriptorImageInfo>	descriptorImageInfos;
+                    descriptorImageInfos.resize(allTextures.size());
+                    for (unsigned int j = 0; j < allTextures.size(); j++) {
+                        descriptorImageInfos[j].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                        descriptorImageInfos[j].imageView = allTextures[j]->getImageView();
+                        descriptorImageInfos[j].sampler = allTextures[j]->getSampler();
+                    }
 
                     descriptorWrites[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                     descriptorWrites[3].dstSet = descriptorSets[descriptorId][currentFrame];
-                    descriptorWrites[3].dstBinding = 5;
+                    descriptorWrites[3].dstBinding = 3;
                     descriptorWrites[3].dstArrayElement = 0;
-                    descriptorWrites[3].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
-                    descriptorWrites[3].descriptorCount = 1;
-                    descriptorWrites[3].pBufferInfo = &materialDataStorageBufferInfoLastFrame;
+                    descriptorWrites[3].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                    descriptorWrites[3].descriptorCount = allTextures.size();
+                    descriptorWrites[3].pImageInfo = descriptorImageInfos.data();
 
                     vkUpdateDescriptorSets(vkDevice.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
 
@@ -2891,9 +2963,17 @@ namespace odfaeg {
                         for (unsigned int i = 0; i < descriptorSets.size(); i++) {
                             descriptorSets[i].resize(depthBuffer.getMaxFramesInFlight());
                         }
+                        std::vector<Texture*> allTextures = Texture::getAllTextures();
+                        std::vector<uint32_t> variableCounts(depthBuffer.getMaxFramesInFlight(), static_cast<uint32_t>(allTextures.size()));
+
+                        VkDescriptorSetVariableDescriptorCountAllocateInfo variableCountInfo{};
+                        variableCountInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO;
+                        variableCountInfo.descriptorSetCount = static_cast<uint32_t>(variableCounts.size());
+                        variableCountInfo.pDescriptorCounts = variableCounts.data();
                         std::vector<VkDescriptorSetLayout> layouts(depthBuffer.getMaxFramesInFlight(), descriptorSetLayout[shader->getId()]);
                         VkDescriptorSetAllocateInfo allocInfo{};
                         allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+                        allocInfo.pNext = &variableCountInfo;
                         allocInfo.descriptorPool = descriptorPool[descriptorId];
                         allocInfo.descriptorSetCount = static_cast<uint32_t>(depthBuffer.getMaxFramesInFlight());
                         allocInfo.pSetLayouts = layouts.data();
@@ -2911,9 +2991,17 @@ namespace odfaeg {
                         for (unsigned int i = 0; i < descriptorSets.size(); i++) {
                             descriptorSets[i].resize(lightDepthBuffer.getMaxFramesInFlight());
                         }
+                        std::vector<Texture*> allTextures = Texture::getAllTextures();
+                        std::vector<uint32_t> variableCounts(depthBuffer.getMaxFramesInFlight(), static_cast<uint32_t>(allTextures.size()));
+
+                        VkDescriptorSetVariableDescriptorCountAllocateInfo variableCountInfo{};
+                        variableCountInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO;
+                        variableCountInfo.descriptorSetCount = static_cast<uint32_t>(variableCounts.size());
+                        variableCountInfo.pDescriptorCounts = variableCounts.data();
                         std::vector<VkDescriptorSetLayout> layouts(depthBuffer.getMaxFramesInFlight(), descriptorSetLayout[shader->getId()]);
                         VkDescriptorSetAllocateInfo allocInfo{};
                         allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+                        allocInfo.pNext = &variableCountInfo;
                         allocInfo.descriptorPool = descriptorPool[descriptorId];
                         allocInfo.descriptorSetCount = static_cast<uint32_t>(depthBuffer.getMaxFramesInFlight());
                         allocInfo.pSetLayouts = layouts.data();
@@ -2932,9 +3020,18 @@ namespace odfaeg {
                     for (unsigned int i = 0; i < descriptorSets.size(); i++) {
                         descriptorSets[i].resize(alphaBuffer.getMaxFramesInFlight());
                     }
+                    std::vector<Texture*> allTextures = Texture::getAllTextures();
+                    std::vector<uint32_t> variableCounts(depthBuffer.getMaxFramesInFlight(), static_cast<uint32_t>(allTextures.size()));
+
+                    VkDescriptorSetVariableDescriptorCountAllocateInfo variableCountInfo{};
+                    variableCountInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO;
+                    variableCountInfo.descriptorSetCount = static_cast<uint32_t>(variableCounts.size());
+                    variableCountInfo.pDescriptorCounts = variableCounts.data();
+
                     std::vector<VkDescriptorSetLayout> layouts(alphaBuffer.getMaxFramesInFlight(), descriptorSetLayout[shader->getId()]);
                     VkDescriptorSetAllocateInfo allocInfo{};
                     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+                    allocInfo.pNext = &variableCountInfo;
                     allocInfo.descriptorPool = descriptorPool[descriptorId];
                     allocInfo.descriptorSetCount = static_cast<uint32_t>(alphaBuffer.getMaxFramesInFlight());
                     allocInfo.pSetLayouts = layouts.data();
@@ -2952,9 +3049,17 @@ namespace odfaeg {
                     for (unsigned int i = 0; i < descriptorSets.size(); i++) {
                         descriptorSets[i].resize(specularTexture.getMaxFramesInFlight());
                     }
+                    std::vector<Texture*> allTextures = Texture::getAllTextures();
+                    std::vector<uint32_t> variableCounts(depthBuffer.getMaxFramesInFlight(), static_cast<uint32_t>(allTextures.size()));
+
+                    VkDescriptorSetVariableDescriptorCountAllocateInfo variableCountInfo{};
+                    variableCountInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO;
+                    variableCountInfo.descriptorSetCount = static_cast<uint32_t>(variableCounts.size());
+                    variableCountInfo.pDescriptorCounts = variableCounts.data();
                     std::vector<VkDescriptorSetLayout> layouts(specularTexture.getMaxFramesInFlight(), descriptorSetLayout[shader->getId()]);
                     VkDescriptorSetAllocateInfo allocInfo{};
                     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+                    allocInfo.pNext = &variableCountInfo;
                     allocInfo.descriptorPool = descriptorPool[descriptorId];
                     allocInfo.descriptorSetCount = static_cast<uint32_t>(specularTexture.getMaxFramesInFlight());
                     allocInfo.pSetLayouts = layouts.data();
@@ -2971,9 +3076,17 @@ namespace odfaeg {
                     for (unsigned int i = 0; i < descriptorSets.size(); i++) {
                         descriptorSets[i].resize(bumpTexture.getMaxFramesInFlight());
                     }
+                    std::vector<Texture*> allTextures = Texture::getAllTextures();
+                    std::vector<uint32_t> variableCounts(depthBuffer.getMaxFramesInFlight(), static_cast<uint32_t>(allTextures.size()));
+
+                    VkDescriptorSetVariableDescriptorCountAllocateInfo variableCountInfo{};
+                    variableCountInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO;
+                    variableCountInfo.descriptorSetCount = static_cast<uint32_t>(variableCounts.size());
+                    variableCountInfo.pDescriptorCounts = variableCounts.data();
                     std::vector<VkDescriptorSetLayout> layouts(bumpTexture.getMaxFramesInFlight(), descriptorSetLayout[shader->getId()]);
                     VkDescriptorSetAllocateInfo allocInfo{};
                     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+                    allocInfo.pNext = &variableCountInfo;
                     allocInfo.descriptorPool = descriptorPool[descriptorId];
                     allocInfo.descriptorSetCount = static_cast<uint32_t>(bumpTexture.getMaxFramesInFlight());
                     allocInfo.pSetLayouts = layouts.data();
