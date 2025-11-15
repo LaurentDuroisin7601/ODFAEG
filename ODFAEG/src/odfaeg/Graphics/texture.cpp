@@ -818,7 +818,12 @@ namespace odfaeg {
             return *this;
         }
         unsigned int Texture::getMaximumSize() {
-            return 10000;
+            VkPhysicalDeviceProperties props;
+            vkGetPhysicalDeviceProperties(vkDevice.getPhysicalDevice(), &props);
+
+            // Taille max des images 2D
+            uint32_t maxTexSize = props.limits.maxImageDimension2D;
+            return maxTexSize;
         }
         bool Texture::createCubeMap (unsigned int width, unsigned int height, bool FBOAttachment) {
             isCubeMap = true;
@@ -1026,14 +1031,7 @@ namespace odfaeg {
                        0.f, 0.f, 0.f, 1.f);
             matrix[0][0] = 1.f / m_size.x();
             matrix[1][1] = 1.f / m_size.y();
-            /*if (m_name == "CUBE") {
-                //////std::cout<<"actual size : "<<m_actualSize.x()<<","<<m_actualSize.y()<<std::endl;
-            }*/
-           /* if (m_pixelsFlipped)
-            {
-                matrix.m22 = -matrix.m22;
-                matrix.m42 = 1.f;
-            }*/
+
             return matrix;
         }
         Texture::~Texture() {

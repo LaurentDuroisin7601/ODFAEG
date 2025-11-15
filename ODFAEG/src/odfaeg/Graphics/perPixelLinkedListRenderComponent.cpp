@@ -799,7 +799,7 @@ namespace odfaeg {
                 poolSizes[4].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
                 poolSizes[4].descriptorCount = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight());
                 poolSizes[5].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                poolSizes[5].descriptorCount = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight() * allTextures.size());
+                poolSizes[5].descriptorCount = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight() * MAX_TEXTURES);
 
                 if (descriptorPool[descriptorId] != nullptr) {
                     vkDestroyDescriptorPool(vkDevice.getDevice(), descriptorPool[descriptorId], nullptr);
@@ -944,7 +944,7 @@ namespace odfaeg {
 
                 VkDescriptorSetLayoutBinding samplerLayoutBinding{};
                 samplerLayoutBinding.binding = 5;
-                samplerLayoutBinding.descriptorCount = allTextures.size();
+                samplerLayoutBinding.descriptorCount = MAX_TEXTURES;
                 samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
                 samplerLayoutBinding.pImmutableSamplers = nullptr;
                 samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -1007,7 +1007,7 @@ namespace odfaeg {
                     descriptorSets[i].resize(frameBuffer.getMaxFramesInFlight());
                 }
                 std::vector<Texture*> allTextures = Texture::getAllTextures();
-                std::vector<uint32_t> variableCounts(frameBuffer.getMaxFramesInFlight(), static_cast<uint32_t>(allTextures.size()));
+                std::vector<uint32_t> variableCounts(frameBuffer.getMaxFramesInFlight(), static_cast<uint32_t>(MAX_TEXTURES));
 
                 VkDescriptorSetVariableDescriptorCountAllocateInfo variableCountInfo{};
                 variableCountInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO;
@@ -4763,8 +4763,14 @@ namespace odfaeg {
         }
         void PerPixelLinkedListRenderComponent::drawBuffers() {
             unsigned int currentFrame = frameBuffer.getCurrentFrame();
+            unsigned int texturesInUse = Texture::getAllTextures().size();
+
             for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
 
+                if (modelDatas[p].size() > 0 && texturesInUse > maxTexturesInUse[currentFrame]) {
+                    needToUpdateDSs[p][currentFrame];
+
+                }
                 unsigned int bufferSize = sizeof(ModelData) * modelDatas[p].size();
 
                 if (bufferSize > 0) {
@@ -4808,6 +4814,7 @@ namespace odfaeg {
                     vbBindlessTexIndexed[p].updateStagingBuffers(currentFrame);
                 }
             }
+            maxTexturesInUse[currentFrame] = texturesInUse;
             if (skybox != nullptr)
                 skyboxVB.updateStagingBuffers(currentFrame);
             vb.updateStagingBuffers(currentFrame);
@@ -5444,9 +5451,9 @@ namespace odfaeg {
                 //std::cout<<"compute"<<std::endl;
 
                 if (visibleEntities.size() > computeSemaphores.size()) {
+                    computeSemaphores.resize(visibleEntities.size());
+                    computeFences.resize(visibleEntities.size());
                     for (unsigned int i = 0; i < visibleEntities.size(); i++) {
-                        computeSemaphores.resize(visibleEntities.size());
-                        computeFences.resize(visibleEntities.size());
                         for (unsigned int j = 0; j < MAX_FRAMES_IN_FLIGHT; j++) {
                             VkSemaphoreCreateInfo semaphoreInfo{};
                             semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;

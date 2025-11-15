@@ -103,6 +103,8 @@ namespace odfaeg {
             virtual void setView(View view);
             virtual void draw(Drawable& drawable, RenderStates states);
             virtual void loadTextureIndexes();
+            virtual void createDescriptorsAndPipelines(){}
+            virtual void launchRenderer(){}
             virtual RenderTexture* getFrameBuffer() {
                 return nullptr;
             }

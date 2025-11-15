@@ -79,7 +79,7 @@ namespace odfaeg
             void updateCubeMap(const Texture& texture);
             void updateCubeMap(const Texture& texture, unsigned int x, unsigned int y);
             void swap(Texture& texture);
-            static unsigned int getMaximumSize();
+            unsigned int getMaximumSize();
             bool createCubeMap (unsigned int width, unsigned int height, bool FBOAttachment = false);
             bool isSmooth() const;
             void setRepeated(bool repeated);

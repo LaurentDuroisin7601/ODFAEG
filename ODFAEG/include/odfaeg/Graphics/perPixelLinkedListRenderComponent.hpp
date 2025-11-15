@@ -229,6 +229,7 @@ namespace odfaeg {
             std::vector<std::array<VkSemaphore, MAX_FRAMES_IN_FLIGHT>> computeSemaphores;
             std::vector<std::array<VkFence, MAX_FRAMES_IN_FLIGHT>> computeFences;
             std::atomic<bool> stop = false;
+            std::array<unsigned int, MAX_FRAMES_IN_FLIGHT> maxTexturesInUse={0, 0};
         };
         #else
         class ODFAEG_GRAPHICS_API PerPixelLinkedListRenderComponent : public HeavyComponent {

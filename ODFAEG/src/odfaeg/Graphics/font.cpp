@@ -742,7 +742,7 @@ namespace odfaeg
                     unsigned int textureWidth  = page.texture.getSize().x();
                     unsigned int textureHeight = page.texture.getSize().y();
 
-                    if ((textureWidth * 2 <= Texture::getMaximumSize()) && (textureHeight * 2 <= Texture::getMaximumSize()))
+                    if ((textureWidth * 2 <= page.texture.getMaximumSize()) && (textureHeight * 2 <= page.texture.getMaximumSize()))
                     {
                         // Make the texture 2 times bigger
                         Texture newTexture(vkDevice);

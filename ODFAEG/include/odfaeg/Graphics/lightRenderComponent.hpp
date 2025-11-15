@@ -238,6 +238,7 @@ namespace odfaeg {
                 std::mutex mtx;
                 bool useThread;
                 std::atomic<bool> stop = false;
+                std::array<unsigned int, MAX_FRAMES_IN_FLIGHT> maxTexturesInUse={0, 0};
         };
         #else
         class ODFAEG_GRAPHICS_API LightRenderComponent : public HeavyComponent {

@@ -34,7 +34,7 @@
 #include <mutex>
 static std::recursive_mutex rec_mutex;
 static const unsigned int MAX_FRAMES_IN_FLIGHT = 2;
-static const unsigned int MAX_TEXTURES = 128;
+static const unsigned int MAX_TEXTURES = 1024;
 
 ////////////////////////////////////////////////////////////
 // Identify the operating system

@@ -166,7 +166,7 @@ namespace odfaeg
             throw std::runtime_error("aucun type de memoire ne satisfait le buffer!");
         }
         void ParticleSystem::computeParticles(std::mutex* mtx, std::condition_variable* cv2, graphic::VertexBuffer& frameVertexBuffer, unsigned int currentFrame, VkSemaphore computeSemaphore, VkFence computeFence) {
-            //std::cout<<"compute particles"<<std::endl;
+
             computeFinished[currentFrame] = false;
             this->mtx = mtx;
             this->cv2 = cv2;

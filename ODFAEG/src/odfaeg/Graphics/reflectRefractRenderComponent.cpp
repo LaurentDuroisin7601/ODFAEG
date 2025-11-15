@@ -1693,7 +1693,7 @@ namespace odfaeg {
                     poolSizes[5].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
                     poolSizes[5].descriptorCount = static_cast<uint32_t>(environmentMap.getMaxFramesInFlight());
                     poolSizes[6].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                    poolSizes[6].descriptorCount = static_cast<uint32_t>(environmentMap.getMaxFramesInFlight() * allTextures.size());
+                    poolSizes[6].descriptorCount = static_cast<uint32_t>(environmentMap.getMaxFramesInFlight() * MAX_TEXTURES);
 
                     if (descriptorPool[descriptorId] != nullptr) {
                         vkDestroyDescriptorPool(vkDevice.getDevice(), descriptorPool[descriptorId], nullptr);
@@ -1747,7 +1747,7 @@ namespace odfaeg {
                     poolSizes[2].type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
                     poolSizes[2].descriptorCount = static_cast<uint32_t>(depthBuffer.getMaxFramesInFlight());
                     poolSizes[3].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                    poolSizes[3].descriptorCount = static_cast<uint32_t>(depthBuffer.getMaxFramesInFlight() * allTextures.size());
+                    poolSizes[3].descriptorCount = static_cast<uint32_t>(depthBuffer.getMaxFramesInFlight() * MAX_TEXTURES);
 
                     if (descriptorPool[descriptorId] != nullptr) {
                         vkDestroyDescriptorPool(vkDevice.getDevice(), descriptorPool[descriptorId], nullptr);
@@ -1777,7 +1777,7 @@ namespace odfaeg {
                     poolSizes[3].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
                     poolSizes[3].descriptorCount = static_cast<uint32_t>(depthBuffer.getMaxFramesInFlight()) * depthBuffer.getSwapchainImagesSize();
                     poolSizes[4].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                    poolSizes[4].descriptorCount = static_cast<uint32_t>(depthBuffer.getMaxFramesInFlight() * allTextures.size());
+                    poolSizes[4].descriptorCount = static_cast<uint32_t>(depthBuffer.getMaxFramesInFlight() * MAX_TEXTURES);
 
                     if (descriptorPool[descriptorId] != nullptr) {
                         vkDestroyDescriptorPool(vkDevice.getDevice(), descriptorPool[descriptorId], nullptr);
@@ -2067,7 +2067,7 @@ namespace odfaeg {
 
                     VkDescriptorSetLayoutBinding samplerLayoutBinding{};
                     samplerLayoutBinding.binding = 6;
-                    samplerLayoutBinding.descriptorCount = allTextures.size();
+                    samplerLayoutBinding.descriptorCount = MAX_TEXTURES;
                     samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
                     samplerLayoutBinding.pImmutableSamplers = nullptr;
                     samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -2169,7 +2169,7 @@ namespace odfaeg {
 
                     VkDescriptorSetLayoutBinding samplerLayoutBinding{};
                     samplerLayoutBinding.binding = 3;
-                    samplerLayoutBinding.descriptorCount = allTextures.size();
+                    samplerLayoutBinding.descriptorCount = MAX_TEXTURES;
                     samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
                     samplerLayoutBinding.pImmutableSamplers = nullptr;
                     samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -2237,7 +2237,7 @@ namespace odfaeg {
 
                     VkDescriptorSetLayoutBinding samplerLayoutBinding{};
                     samplerLayoutBinding.binding = 4;
-                    samplerLayoutBinding.descriptorCount = allTextures.size();
+                    samplerLayoutBinding.descriptorCount = MAX_TEXTURES;
                     samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
                     samplerLayoutBinding.pImmutableSamplers = nullptr;
                     samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -2343,7 +2343,7 @@ namespace odfaeg {
 
 
                     std::vector<Texture*> allTextures = Texture::getAllTextures();
-                    std::vector<uint32_t> variableCounts(environmentMap.getMaxFramesInFlight(), static_cast<uint32_t>(allTextures.size()));
+                    std::vector<uint32_t> variableCounts(environmentMap.getMaxFramesInFlight(), static_cast<uint32_t>(MAX_TEXTURES));
 
                     VkDescriptorSetVariableDescriptorCountAllocateInfo variableCountInfo{};
                     variableCountInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO;
@@ -2391,7 +2391,7 @@ namespace odfaeg {
                         descriptorSets[i].resize(depthBuffer.getMaxFramesInFlight());
                     }
                     std::vector<Texture*> allTextures = Texture::getAllTextures();
-                    std::vector<uint32_t> variableCounts(depthBuffer.getMaxFramesInFlight(), static_cast<uint32_t>(allTextures.size()));
+                    std::vector<uint32_t> variableCounts(depthBuffer.getMaxFramesInFlight(), static_cast<uint32_t>(MAX_TEXTURES));
 
                     VkDescriptorSetVariableDescriptorCountAllocateInfo variableCountInfo{};
                     variableCountInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO;
@@ -2418,7 +2418,7 @@ namespace odfaeg {
                         descriptorSets[i].resize(alphaBuffer.getMaxFramesInFlight());
                     }
                     std::vector<Texture*> allTextures = Texture::getAllTextures();
-                    std::vector<uint32_t> variableCounts(alphaBuffer.getMaxFramesInFlight(), static_cast<uint32_t>(allTextures.size()));
+                    std::vector<uint32_t> variableCounts(alphaBuffer.getMaxFramesInFlight(), static_cast<uint32_t>(MAX_TEXTURES));
 
                     VkDescriptorSetVariableDescriptorCountAllocateInfo variableCountInfo{};
                     variableCountInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO;
@@ -3605,8 +3605,14 @@ namespace odfaeg {
             void ReflectRefractRenderComponent::drawBuffers() {
 
                unsigned int currentFrame = depthBuffer.getCurrentFrame();
+               unsigned int texturesInUse = Texture::getAllTextures().size();
+
                for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
 
+                    if (modelDatas[p].size() > 0 && texturesInUse > maxTexturesInUse[currentFrame]) {
+                        needToUpdateDSs[p][currentFrame] = true;
+
+                    }
                     unsigned int bufferSize = sizeof(ModelData) * modelDatas[p].size();
 
                     if (bufferSize > 0) {
@@ -3650,6 +3656,7 @@ namespace odfaeg {
                         vbBindlessTexIndexed[p].updateStagingBuffers(currentFrame);
                     }
                 }
+                maxTexturesInUse[currentFrame] = texturesInUse;
                 if (skybox != nullptr)
                     vb2.updateStagingBuffers(currentFrame);
                 vb.updateStagingBuffers(currentFrame);
