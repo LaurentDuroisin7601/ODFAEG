@@ -5,17 +5,17 @@ using namespace odfaeg::graphic;
 RotationGuismo::RotationGuismo() : Drawable(), Transformable(), visible(false) {
 }
 void RotationGuismo::setCenterSize(Vec3f center, Vec3f size) {
-    float maxSize = size.x;
-    if (size.y > maxSize)
-        maxSize = size.y;
-    if (size.z > maxSize)
-        maxSize = size.z;
+    float maxSize = size.x();
+    if (size.y() > maxSize)
+        maxSize = size.y();
+    if (size.z() > maxSize)
+        maxSize = size.z();
     cc = CircleShape(maxSize*0.5f);
-    cc.setFillColor(sf::Color::Transparent);
+    cc.setFillColor(Color::Transparent);
     cc.setOutlineThickness(2.f);
-    cc.setOutlineColor(sf::Color::Blue);
+    cc.setOutlineColor(Color::Blue);
     bc = BoundingCircle(center, maxSize * 0.5f, Vec3f::zAxis);
-    demiCircle = DemiCircle(maxSize*0.5f, 0, sf::Color(128, 128, 128, 255));
+    demiCircle = DemiCircle(maxSize*0.5f, 0, Color(128, 128, 128, 255));
     cc.setOrigin(Vec3f(maxSize*0.5f, maxSize*0.5f, maxSize*0.5f));
     cc.setCenter(center);
     demiCircle.setCenter(center);

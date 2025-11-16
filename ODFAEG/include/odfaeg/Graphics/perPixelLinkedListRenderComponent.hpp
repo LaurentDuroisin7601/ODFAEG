@@ -1,8 +1,6 @@
 #ifndef ODFAEG_PERPIXEL_LINKEDLIST_RENDER_COMPONENT_HPP
 #define ODFAEG_PERPIXEL_LINKEDLIST_RENDER_COMPONENT_HPP
 
-#include "GL/glew.h"
-#include "../openGL.hpp"
 
 
 #include "heavyComponent.h"

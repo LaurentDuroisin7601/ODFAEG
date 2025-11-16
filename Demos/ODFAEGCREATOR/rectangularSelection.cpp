@@ -5,8 +5,8 @@ using namespace odfaeg::math;
 using namespace odfaeg::physic;
 RectangularSelection::RectangularSelection() {
     selectionRect.setOutlineThickness(1.f);
-    selectionRect.setFillColor(sf::Color::Transparent);
-    selectionRect.setOutlineColor(sf::Color::Red);
+    selectionRect.setFillColor(Color::Transparent);
+    selectionRect.setOutlineColor(Color::Red);
 }
 void RectangularSelection::setRect(int posX, int posY, int posZ, int width, int height, int depth) {
     selectionRect.setSize(Vec3f(width, height, depth));
@@ -23,7 +23,7 @@ void RectangularSelection::addItem(Entity* item) {
         items.push_back(item);
 }
 BoundingBox RectangularSelection::getSelectionRect() {
-    BoundingBox rect(selectionRect.getPosition().x, selectionRect.getPosition().y, selectionRect.getPosition().z, selectionRect.getSize().x, selectionRect.getSize().y, selectionRect.getSize().z);
+    BoundingBox rect(selectionRect.getPosition().x(), selectionRect.getPosition().y(), selectionRect.getPosition().z(), selectionRect.getSize().x(), selectionRect.getSize().y(), selectionRect.getSize().z());
     return rect;
 }
 std::vector<Entity*>& RectangularSelection::getItems() {

@@ -1,5 +1,4 @@
 #include "../../../../include/odfaeg/Graphics/GUI/panel.hpp"
-#include "../../../../include/odfaeg/openGL.hpp"
 namespace odfaeg {
     namespace graphic {
         namespace gui {

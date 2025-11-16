@@ -1,9 +1,5 @@
 #ifndef ODFAEG_GRAPHIC_RAYTRACING_RENDER_COMPONENT
 #define ODFAEG_GRAPHIC_RAYTRACING_RENDER_COMPONENT
-#ifndef VULKAN
-#include "GL/glew.h"
-#include "../openGL.hpp"
-#endif
 #include "heavyComponent.h"
 #include "renderTexture.h"
 #include "sprite.h"

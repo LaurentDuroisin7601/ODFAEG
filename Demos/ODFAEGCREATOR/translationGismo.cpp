@@ -6,43 +6,43 @@ TranslationGuismo::TranslationGuismo(float arrowSize) : Drawable(), Transformabl
 
 }
 void TranslationGuismo::setCenterSize(Vec3f center, Vec3f size) {
-    zRect = RectangleShape(Vec3f(0, size.y + arrowSize - size.y, size.z));
-    zRect.setCenter(Vec3f(center.x, center.y - arrowSize * 0.5f, center.z));
-    zRect.setFillColor(sf::Color::Blue);
+    zRect = RectangleShape(Vec3f(0, size.y() + arrowSize - size.y(), size.z()));
+    zRect.setCenter(Vec3f(center.x(), center.y() - arrowSize * 0.5f, center.z()));
+    zRect.setFillColor(Color::Blue);
     zArrow = ConvexShape(3);
-    zArrow.setPoint(0, sf::Vector3f(center.x, center.y + arrowSize, center.z + size.z));
-    zArrow.setPoint(1, sf::Vector3f(center.x, center.y, center.z + size.z + arrowSize));
-    zArrow.setPoint(2, sf::Vector3f(center.x, center.y - arrowSize, center.z + size.z));
-    zArrow.setFillColor(sf::Color::Blue);
+    zArrow.setPoint(0, Vec3f(center.x(), center.y() + arrowSize, center.z() + size.z()));
+    zArrow.setPoint(1, Vec3f(center.x(), center.y(), center.z() + size.z() + arrowSize));
+    zArrow.setPoint(2, Vec3f(center.x(), center.y() - arrowSize, center.z() + size.z()));
+    zArrow.setFillColor(Color::Blue);
 
-    bpZArrow = BoundingPolyhedron(Vec3f(center.x,  center.y + arrowSize, center.z + size.z),
-                            Vec3f(center.x,  center.y, center.z + size.z + arrowSize),
-                            Vec3f(center.x,  center.y - arrowSize, center.z + size.z), true);
-    xRect = RectangleShape(Vec3f(size.x, size.y + arrowSize - size.y, 0));
-    xRect.setCenter(Vec3f(center.x, center.y - arrowSize * 0.5f, center.z));
-    xRect.setFillColor(sf::Color::Red);
+    bpZArrow = BoundingPolyhedron(Vec3f(center.x(),  center.y() + arrowSize, center.z() + size.z()),
+                            Vec3f(center.x(),  center.y(), center.z() + size.z() + arrowSize),
+                            Vec3f(center.x(),  center.y() - arrowSize, center.z() + size.z()), true);
+    xRect = RectangleShape(Vec3f(size.x(), size.y() + arrowSize - size.y(), 0));
+    xRect.setCenter(Vec3f(center.x(), center.y() - arrowSize * 0.5f, center.z()));
+    xRect.setFillColor(Color::Red);
     xArrow = ConvexShape(3);
-    xArrow.setPoint(0, sf::Vector3f(center.x + size.x, center.y + arrowSize, center.z));
-    xArrow.setPoint(1, sf::Vector3f(center.x + size.x + arrowSize, center.y, center.z));
-    xArrow.setPoint(2, sf::Vector3f(center.x + size.x, center.y - arrowSize, center.z));
-    xArrow.setFillColor(sf::Color::Red);
+    xArrow.setPoint(0, Vec3f(center.x() + size.x(), center.y() + arrowSize, center.z()));
+    xArrow.setPoint(1, Vec3f(center.x() + size.x() + arrowSize, center.y(), center.z()));
+    xArrow.setPoint(2, Vec3f(center.x() + size.x(), center.y() - arrowSize, center.z()));
+    xArrow.setFillColor(Color::Red);
 
-    bpXArrow = BoundingPolyhedron(Vec3f(center.x + size.x,  center.y - arrowSize, center.z),
-                            Vec3f(center.x + size.x + arrowSize,  center.y, center.z),
-                            Vec3f(center.x + size.x,  center.y + arrowSize, center.z), true);
+    bpXArrow = BoundingPolyhedron(Vec3f(center.x() + size.x(),  center.y() - arrowSize, center.z()),
+                            Vec3f(center.x() + size.x() + arrowSize,  center.y(), center.z()),
+                            Vec3f(center.x() + size.x(),  center.y() + arrowSize, center.z()), true);
 
-    yRect = RectangleShape(Vec3f(size.x + arrowSize - size.x, size.y, 0));
-    yRect.setCenter(Vec3f(center.x - arrowSize * 0.5f, center.y, 0));
-    yRect.setFillColor(sf::Color::Green);
+    yRect = RectangleShape(Vec3f(size.x() + arrowSize - size.x(), size.y(), 0));
+    yRect.setCenter(Vec3f(center.x() - arrowSize * 0.5f, center.y(), 0));
+    yRect.setFillColor(Color::Green);
     yArrow = ConvexShape(3);
-    yArrow.setPoint(0, sf::Vector3f(center.x + arrowSize, center.y + size.y, center.z));
-    yArrow.setPoint(1, sf::Vector3f(center.x, center.y + size.y + arrowSize, center.z));
-    yArrow.setPoint(2, sf::Vector3f(center.x - arrowSize, center.y + size.y, center.z));
-    yArrow.setFillColor(sf::Color::Green);
+    yArrow.setPoint(0, Vec3f(center.x() + arrowSize, center.y() + size.y(), center.z()));
+    yArrow.setPoint(1, Vec3f(center.x(), center.y() + size.y() + arrowSize, center.z()));
+    yArrow.setPoint(2, Vec3f(center.x() - arrowSize, center.y() + size.y(), center.z()));
+    yArrow.setFillColor(Color::Green);
 
-    bpYArrow = BoundingPolyhedron(Vec3f(center.x + arrowSize,  center.y + size.y, center.z),
-                            Vec3f(center.x,  center.y + size.y + arrowSize, center.z),
-                            Vec3f(center.x - arrowSize,  center.y + size.y, center.z), true);
+    bpYArrow = BoundingPolyhedron(Vec3f(center.x() + arrowSize,  center.y() + size.y(), center.z()),
+                            Vec3f(center.x(),  center.y() + size.y() + arrowSize, center.z()),
+                            Vec3f(center.x() - arrowSize,  center.y() + size.y(), center.z()), true);
 }
 void TranslationGuismo::draw(RenderTarget& target, RenderStates states) {
     if (visible) {

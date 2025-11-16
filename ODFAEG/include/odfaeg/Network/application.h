@@ -1,9 +1,8 @@
 #ifndef ODFAEG_APPLICATION_HPP
 #define ODFAEG_APPLICATION_HPP
+#include "../config.hpp"
 #ifndef VULKAN
 #include "GL/glew.h"
-#else
-#include "GLFW/glfw3.h"
 #endif
 #include "srkserveur.h"
 #include "../Network/network.h"

@@ -1,7 +1,6 @@
 
 
 #include "application.hpp"
-#ifndef VULKAN
 #include "odfaeg/Window/action.h"
 #include "odfaeg/Window/command.h"
 #include <sys/stat.h>
@@ -15,8 +14,8 @@ using namespace odfaeg::graphic::gui;
 using namespace odfaeg::graphic::g2d;
 using namespace odfaeg::physic;
 using namespace odfaeg::window;
-ODFAEGCreator::ODFAEGCreator(sf::VideoMode vm, std::string title) :
-Application (vm, title, sf::Style::Resize|sf::Style::Close, ContextSettings(0, 8, 4, 4, 6)), isGuiShown (false), cursor(10), se(this), rtc("create"), rotationGuismo(), translationGuismo(10), scaleGuismo(10) {
+ODFAEGCreator::ODFAEGCreator(VideoMode vm, std::string title) :
+Application (vm, title, Style::Resize|Style::Close, ContextSettings(0, 8, 4, 4, 6)), isGuiShown (false), cursor(10), se(this), rtc("create"), rotationGuismo(), translationGuismo(10), scaleGuismo(10) {
     //Command::sname = "modified by process";
     loader = g3d::Model();
     isSelectingPolyhedron = false;
@@ -79,8 +78,8 @@ Application (vm, title, sf::Style::Resize|sf::Style::Close, ContextSettings(0, 8
     rtc.addSourceFile("../../ODFAEG-master/Demos/ODFAEGCREATOR/translationGismo");
 	speed = 10.f;
     sensivity = 0.5f;
-    /*oldX = IMouse::getPosition(getRenderWindow()).x;
-    oldY = IMouse::getPosition(getRenderWindow()).y;*/
+    /*oldX = IMouse::getPosition(getRenderWindow()).x();
+    oldY = IMouse::getPosition(getRenderWindow()).y();*/
     pluginSourceCode = "";
 
 
@@ -161,6 +160,10 @@ void ODFAEGCreator::onInit() {
         item18 = new MenuItem(getRenderWindow(), fm.getResourceByAlias(Fonts::Serif), "New particle system updater");
         item18->addMenuItemListener(this);
         getRenderComponentManager().addComponent(item18);
+        item19 = new MenuItem(getRenderWindow(), fm.getResourceByAlias(Fonts::Serif), "New script");
+        item19->addMenuItemListener(this);
+        getRenderComponentManager().addComponent(item19);
+
         menu1->addMenuItem(item11);
         menu1->addMenuItem(item12);
         menu1->addMenuItem(item13);
@@ -169,6 +172,8 @@ void ODFAEGCreator::onInit() {
         menu1->addMenuItem(item16);
         menu1->addMenuItem(item17);
         menu1->addMenuItem(item18);
+        menu1->addMenuItem(item19);
+
         item21 = new MenuItem(getRenderWindow(), fm.getResourceByAlias(Fonts::Serif), "Build");
         item21->addMenuItemListener(this);
         getRenderComponentManager().addComponent(item21);
@@ -296,7 +301,7 @@ void ODFAEGCreator::onInit() {
         fdImport3DModel->setEventContextActivated(false);
         addWindow(&fdImport3DModel->getWindow(), false);
         getRenderComponentManager().addComponent(fdImport3DModel);
-        wApplicationNew = new RenderWindow(sf::VideoMode(400, 300), "Create ODFAEG Application", sf::Style::Default, ContextSettings(0, 0, 0, 3, 0));
+        wApplicationNew = new RenderWindow(VideoMode(400, 300), "Create ODFAEG Application", Style::Default, ContextSettings(0, 0, 0, 3, 0));
         //New application.
         Label* label = new Label(*wApplicationNew, Vec3f(0, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "Application name : ", 15);
         getRenderComponentManager().addComponent(label);
@@ -323,7 +328,7 @@ void ODFAEGCreator::onInit() {
         wApplicationNew->setVisible(false);
         getRenderComponentManager().setEventContextActivated(false, *wApplicationNew);
         //Create map window.
-        wNewMap = new RenderWindow(sf::VideoMode(400, 400), "Create new scene", sf::Style::Default, ContextSettings(0, 0, 0, 3, 0));
+        wNewMap = new RenderWindow(VideoMode(400, 400), "Create new scene", Style::Default, ContextSettings(0, 0, 0, 3, 0));
         Label* labMapName = new Label(*wNewMap, Vec3f(0, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "Map name : ", 15);
         getRenderComponentManager().addComponent(labMapName);
         taMapName = new TextArea(Vec3f(200, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "", *wNewMap);
@@ -353,7 +358,7 @@ void ODFAEGCreator::onInit() {
         wNewMap->setVisible(false);
         getRenderComponentManager().setEventContextActivated(false, *wNewMap);
         //Create component.
-        wNewComponent = new RenderWindow(sf::VideoMode(1000, 300), "Create new render component", sf::Style::Default, ContextSettings(0, 0, 0, 3, 0));
+        wNewComponent = new RenderWindow(VideoMode(1000, 300), "Create new render component", Style::Default, ContextSettings(0, 0, 0, 3, 0));
         Label* labComponentExpression = new Label(*wNewComponent, Vec3f(0, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "entity's type(s) : ", 15);
         getRenderComponentManager().addComponent(labComponentExpression);
         taComponentExpression = new TextArea(Vec3f(200, 0, 0), Vec3f(800, 50, 0), fm.getResourceByAlias(Fonts::Serif), "", *wNewComponent);
@@ -380,7 +385,7 @@ void ODFAEGCreator::onInit() {
         wNewComponent->setVisible(false);
         getRenderComponentManager().setEventContextActivated(false, *wNewComponent);
         //Create entities updater.
-        wNewEntitiesUpdater = new RenderWindow(sf::VideoMode(400, 300), "Create new entities updater", sf::Style::Default, ContextSettings(0, 0, 0, 3, 0));
+        wNewEntitiesUpdater = new RenderWindow(VideoMode(400, 300), "Create new entities updater", Style::Default, ContextSettings(0, 0, 0, 3, 0));
         Label* lEntitiesUpdaterName = new Label(*wNewEntitiesUpdater, Vec3f(0, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "entities updater name : ", 15);
         getRenderComponentManager().addComponent(lEntitiesUpdaterName);
         taEntitiesUpdaterName = new TextArea(Vec3f(200, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "", *wNewEntitiesUpdater);
@@ -392,7 +397,7 @@ void ODFAEGCreator::onInit() {
         wNewEntitiesUpdater->setVisible(false);
         getRenderComponentManager().setEventContextActivated(false, *wNewEntitiesUpdater);
         //Create animation updater.
-        wNewAnimUpdater = new RenderWindow(sf::VideoMode(400, 300), "Create new anim updater", sf::Style::Default, ContextSettings(0, 0, 0, 3, 0));
+        wNewAnimUpdater = new RenderWindow(VideoMode(400, 300), "Create new anim updater", Style::Default, ContextSettings(0, 0, 0, 3, 0));
         Label* lAnimUpdaterName = new Label(*wNewAnimUpdater, Vec3f(0, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "animation updater name : ", 15);
         getRenderComponentManager().addComponent(lAnimUpdaterName);
         taAnimUpdaterName = new TextArea(Vec3f(200, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "", *wNewAnimUpdater);
@@ -404,7 +409,7 @@ void ODFAEGCreator::onInit() {
         wNewAnimUpdater->setVisible(false);
         getRenderComponentManager().setEventContextActivated(false, *wNewAnimUpdater);
         //Create particle system updater.
-        wNewParticleSystemUpdater = new RenderWindow(sf::VideoMode(400, 300), "Create new particle system updater", sf::Style::Default, ContextSettings(0, 0, 0, 3, 0));
+        wNewParticleSystemUpdater = new RenderWindow(VideoMode(400, 300), "Create new particle system updater", Style::Default, ContextSettings(0, 0, 0, 3, 0));
         Label* lPartSysUpdName = new Label(*wNewParticleSystemUpdater, Vec3f(0, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "particle system updater name : ", 15);
         getRenderComponentManager().addComponent(lPartSysUpdName);
         taParticleSystemUpdaterName = new TextArea(Vec3f(200, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "", *wNewParticleSystemUpdater);
@@ -416,7 +421,7 @@ void ODFAEGCreator::onInit() {
         wNewParticleSystemUpdater->setVisible(false);
         getRenderComponentManager().setEventContextActivated(false, *wNewParticleSystemUpdater);
         //Create emitter for particle systems.
-        wNewEmitter = new RenderWindow(sf::VideoMode(800, 800), "Create new emitter", sf::Style::Default, ContextSettings(0, 0, 0, 3, 0));
+        wNewEmitter = new RenderWindow(VideoMode(800, 800), "Create new emitter", Style::Default, ContextSettings(0, 0, 0, 3, 0));
         //Particle system name.
         Label* lParticleSystemName = new Label(*wNewEmitter, Vec3f(0, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "particle system name : ", 15);
         getRenderComponentManager().addComponent(lParticleSystemName);
@@ -547,7 +552,7 @@ void ODFAEGCreator::onInit() {
         addWindow(wNewEmitter);
         getRenderComponentManager().setEventContextActivated(false, *wNewEmitter);
         //Create new window.
-        wCreateNewWindow = new RenderWindow(sf::VideoMode(400, 300), "Create new window", sf::Style::Default, ContextSettings(0, 0, 4, 3, 0));
+        wCreateNewWindow = new RenderWindow(VideoMode(400, 300), "Create new window", Style::Default, ContextSettings(0, 0, 4, 3, 0));
         //Title.
         Label* lWindowTitle = new Label(*wCreateNewWindow, Vec3f(0, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "Title : ", 15);
         getRenderComponentManager().addComponent(lWindowTitle);
@@ -576,7 +581,7 @@ void ODFAEGCreator::onInit() {
         addWindow(wCreateNewWindow);
         getRenderComponentManager().setEventContextActivated(false, *wCreateNewWindow);
         //Create new object.
-        wCreateNewObject = new RenderWindow(sf::VideoMode(400, 1000), "Create new object", sf::Style::Default, ContextSettings(0, 0, 4, 3, 0));
+        wCreateNewObject = new RenderWindow(VideoMode(400, 1000), "Create new object", Style::Default, ContextSettings(0, 0, 4, 3, 0));
         Label* objectName = new Label(*wCreateNewObject, Vec3f(0, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "Name : ", 15);
         getRenderComponentManager().addComponent(objectName);
         taObjectName = new TextArea(Vec3f(200, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "", *wCreateNewObject);
@@ -618,7 +623,7 @@ void ODFAEGCreator::onInit() {
         addWindow(wCreateNewObject);
         getRenderComponentManager().setEventContextActivated(false, *wCreateNewObject);
         //Modify object.
-        wModifyObject = new RenderWindow(sf::VideoMode(400, 1000), "Modify object", sf::Style::Default, ContextSettings(0, 0, 4, 3, 0));
+        wModifyObject = new RenderWindow(VideoMode(400, 1000), "Modify object", Style::Default, ContextSettings(0, 0, 4, 3, 0));
         Label* lMObjectName = new Label(*wModifyObject, Vec3f(0, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "Object name : ", 15);
         getRenderComponentManager().addComponent(lMObjectName);
         taMObjectName = new TextArea(Vec3f(200, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "", *wModifyObject);
@@ -654,7 +659,7 @@ void ODFAEGCreator::onInit() {
         addWindow(wModifyObject);
         getRenderComponentManager().setEventContextActivated(false, *wModifyObject);
         //Generate terrain.
-        wGenerateTerrain = new RenderWindow(sf::VideoMode(400, 800), "Generate terrain", sf::Style::Default, ContextSettings(0, 0, 4, 3, 0));
+        wGenerateTerrain = new RenderWindow(VideoMode(400, 800), "Generate terrain", Style::Default, ContextSettings(0, 0, 4, 3, 0));
         Label* lTileWidth = new Label(*wGenerateTerrain, Vec3f(0, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "Tile width : ", 15);
         getRenderComponentManager().addComponent(lTileWidth);
         taTileWidth = new TextArea(Vec3f(200, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "", *wGenerateTerrain);
@@ -724,7 +729,7 @@ void ODFAEGCreator::onInit() {
         addWindow(wGenerateTerrain);
         getRenderComponentManager().setEventContextActivated(false, *wGenerateTerrain);
 
-        wGenerate3DTerrain = new RenderWindow(sf::VideoMode(400, 800), "Generate 3D terrain", sf::Style::Default, ContextSettings(0, 0, 4, 3, 0));
+        wGenerate3DTerrain = new RenderWindow(VideoMode(400, 800), "Generate 3D terrain", Style::Default, ContextSettings(0, 0, 4, 3, 0));
         Label* lTileWidth3D = new Label(*wGenerate3DTerrain, Vec3f(0, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "Tile width : ", 15);
         getRenderComponentManager().addComponent(lTileWidth3D);
         taTileWidth3D = new TextArea(Vec3f(200, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "", *wGenerate3DTerrain);
@@ -793,11 +798,17 @@ void ODFAEGCreator::onInit() {
         addWindow(wGenerate3DTerrain);
         getRenderComponentManager().setEventContextActivated(false, *wGenerate3DTerrain);
 
+        wCreateScript = new RenderWindow(VideoMode(400, 800), "Generate terrain", Style::Default, ContextSettings(0, 0, 4, 3, 0));
+        Label* lScriptFileName = new Label(*wCreateScript, Vec3f(0, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "Script file name : ", 15);
+        getRenderComponentManager().addComponent(lScriptFileName);
+        taScriptFileName = new TextArea(Vec3f(200, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "", *wCreateScript);
+        getRenderComponentManager().addComponent(taScriptFileName);
+
         //Create panel for project files.
         pProjects = new Panel(getRenderWindow(), Vec3f(0, 0, 0), Vec3f(200, 700, 0), 0);
         rootNode = std::make_unique<Node>("projects", pProjects, Vec2f(0.f, 0.015f), Vec2f(1.f / 6.f, 1.f));
-        pProjects->setBorderColor(sf::Color(128, 128, 128));
-        pProjects->setBackgroundColor(sf::Color::White);
+        pProjects->setBorderColor(Color(128, 128, 128));
+        pProjects->setBackgroundColor(Color::White);
         pProjects->setBorderThickness(5);
         unsigned int i = 0;
 
@@ -807,22 +818,22 @@ void ODFAEGCreator::onInit() {
         pScriptsEdit = new Panel(getRenderWindow(), Vec3f(200, 10, 0), Vec3f(800, 700, 0));
         pScriptsEdit->setRelPosition(1.f / 6.f, 0.015f);
         pScriptsEdit->setRelSize(0.60f, 0.75f);
-        pScriptsEdit->setBorderColor(sf::Color(128, 128, 128));
-        pScriptsEdit->setBackgroundColor(sf::Color::White);
+        pScriptsEdit->setBorderColor(Color(128, 128, 128));
+        pScriptsEdit->setBackgroundColor(Color::White);
         pScriptsEdit->setBorderThickness(5);
         pScriptsEdit->setName("PSCRIPTEDIT");
         getRenderComponentManager().addComponent(pScriptsEdit);
         pScriptsFiles = new Panel(getRenderWindow(), Vec3f(0, 0, 0), Vec3f(200, 700, 0), 0);
-        pScriptsFiles->setBorderColor(sf::Color(128, 128, 128));
-        pScriptsFiles->setBackgroundColor(sf::Color::White);
+        pScriptsFiles->setBorderColor(Color(128, 128, 128));
+        pScriptsFiles->setBackgroundColor(Color::White);
         pScriptsFiles->setBorderThickness(5);
         pScriptsFiles->setRelPosition(5.f / 6.5f, 0.015f);
         pScriptsFiles->setRelSize(1.5f / 6.f, 1.f);
         pScriptsFiles->setName("PSCRIPTFILES");
         getRenderComponentManager().addComponent(pScriptsFiles);
         pComponent = new Panel(getRenderWindow(), Vec3f(0, 0, 0), Vec3f(500, 200, 0), 0);
-        pComponent->setBorderColor(sf::Color(128, 128, 128));
-        pComponent->setBackgroundColor(sf::Color::White);
+        pComponent->setBorderColor(Color(128, 128, 128));
+        pComponent->setBackgroundColor(Color::White);
         pComponent->setBorderThickness(5);
         pComponent->setRelPosition(1.f / 6.f, 0.75f);
         pComponent->setRelSize(1.f - 1.f / 6.f - 1.39f / 6.f, 0.25f);
@@ -880,31 +891,31 @@ void ODFAEGCreator::onInit() {
         tabPane->setRelSize(1, 1);
         tabPane->setParent(pScriptsFiles);
         pScriptsFiles->addChild(tabPane);
-        pScriptsFiles->setBackgroundColor(sf::Color::Black);
+        pScriptsFiles->setBackgroundColor(Color::Black);
         pInfos = new Panel(getRenderWindow(), Vec3f(0, 0, 0), Vec3f(200, 700, 0), 0);
-        pInfos->setBackgroundColor(sf::Color::White);
+        pInfos->setBackgroundColor(Color::White);
         pInfos->setName("PINFOS");
         //pInfos->setScissorEnabled(false);
         rootInfosNode = std::make_unique<Node>("Infos", pInfos, Vec2f(0.f, 0.05f), Vec2f(1.f, 1.f - 0.05f));
         tabPane->addTab(pInfos, "Informations", *fm.getResourceByAlias(Fonts::Serif));
         pTransform = new Panel(getRenderWindow(), Vec3f(0, 0, 0), Vec3f(200, 700, 0), 0);
-        pTransform->setBackgroundColor(sf::Color::White);
+        pTransform->setBackgroundColor(Color::White);
         //pTransform->setScissorEnabled(false);
         rootPropNode = std::make_unique<Node>("Properties", pTransform, Vec2f(0.f, 0.05f), Vec2f(1.f, 1.f - 0.05f));
         tabPane->addTab(pTransform, "Transform", *fm.getResourceByAlias(Fonts::Serif));
         pMaterial = new Panel(getRenderWindow(), Vec3f(0, 0, 0), Vec3f(200, 700, 0), 0);
-        pMaterial->setBackgroundColor(sf::Color::White);
+        pMaterial->setBackgroundColor(Color::White);
         pMaterial->setMoveComponents(false);
         //pMaterial->setScissorEnabled(false);
         rootMaterialNode = std::make_unique<Node>("Material", pMaterial, Vec2f(0.f, 0.05f), Vec2f(1.f - 0.05f, 1.f - 0.06f));
         tabPane->addTab(pMaterial, "Material", *fm.getResourceByAlias(Fonts::Serif));
         pShadows = new Panel(getRenderWindow(), Vec3f(0, 0, 0), Vec3f(200, 700, 0), 0);
-        pShadows->setBackgroundColor(sf::Color::White);
+        pShadows->setBackgroundColor(Color::White);
         //pShadows->setScissorEnabled(false);
         rootShadowsNode = std::make_unique<Node>("Shadows", pShadows, Vec2f(0.f, 0.05f), Vec2f(1.f, 1.f - 0.05f));
         tabPane->addTab(pShadows, "Shadow", *fm.getResourceByAlias(Fonts::Serif));
         pCollisions = new Panel(getRenderWindow(), Vec3f(0, 0, 0), Vec3f(200, 700, 0), 0);
-        pCollisions->setBackgroundColor(sf::Color::White);
+        pCollisions->setBackgroundColor(Color::White);
         rootCollisionNode = std::make_unique<Node>("Collisions", pCollisions, Vec2f(0.f, 0.05f), Vec2f(1.f, 1.f - 0.05f));
         tabPane->addTab(pCollisions, "Collisions", *fm.getResourceByAlias(Fonts::Serif));
         tScriptEdit = new TextArea(Vec3f(200, 20, 0), Vec3f(790, 650, 0), fm.getResourceByAlias(Fonts::Serif), "", getRenderWindow());
@@ -912,15 +923,15 @@ void ODFAEGCreator::onInit() {
         tScriptEdit->setRelPosition(0.f, 0.f);
         tScriptEdit->setRelSize(0.9f, 0.9f);
         pScriptsEdit->addChild(tScriptEdit);
-        guiSize.x = getRenderWindow().getSize().x - pProjects->getSize().x - pScriptsFiles->getSize().x;
-        guiSize.y = getRenderWindow().getSize().y - menuBar->getSize().y;
-        guiPos.x = pProjects->getSize().x;
-        guiPos.y = menuBar->getSize().y;
-        cursor.setOutlineColor(sf::Color::Red);
+        guiSize.x() = getRenderWindow().getSize().x() - pProjects->getSize().x() - pScriptsFiles->getSize().x();
+        guiSize.y() = getRenderWindow().getSize().y() - menuBar->getSize().y();
+        guiPos.x() = pProjects->getSize().x();
+        guiPos.y() = menuBar->getSize().y();
+        cursor.setOutlineColor(Color::Red);
         cursor.setOutlineThickness(5);
-        cursor.setFillColor(sf::Color::Transparent);
+        cursor.setFillColor(Color::Transparent);
         Action moveCursorAction(Action::EVENT_TYPE::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
-        Command moveCursorCommand(moveCursorAction, FastDelegate<void>(&ODFAEGCreator::moveCursor, this, sf::Vector2f(-1, -1)));
+        Command moveCursorCommand(moveCursorAction, FastDelegate<void>(&ODFAEGCreator::moveCursor, this, Vec2f(-1, -1)));
         getListener().connect("MoveCursor", moveCursorCommand);
     }
     catch (Erreur& erreur) {
@@ -979,8 +990,8 @@ void ODFAEGCreator::updateScriptText(Tile* tile, const Texture* text) {
                 std::string subs = content.substr(pos);
                 pos += subs.find_first_of('\n') + 1;
                 content.insert(pos,"tile"+conversionUIntString(tile->getId())+"->getFace(0)->getMaterial().clearTextures();\n"+
-                               "tile->getFace(0)->getMaterial().addTexture(text"+conversionUIntString(id)+", sf::IntRect(0, 0,"+
-                               conversionIntString(text->getSize().x)+","+conversionIntString(text->getSize().y)+"));\n");
+                               "tile->getFace(0)->getMaterial().addTexture(text"+conversionUIntString(id)+", IntRect(0, 0,"+
+                               conversionIntString(text->getSize().x())+","+conversionIntString(text->getSize().y())+"));\n");
             }
         } else {
             unsigned int pos = content.find("tile"+conversionUIntString(tile->getId())+"->getFace(0).getMaterial().addTexture");
@@ -988,8 +999,8 @@ void ODFAEGCreator::updateScriptText(Tile* tile, const Texture* text) {
                 std::string subs = content.substr(pos);
                 unsigned int endpos = subs.find_first_of('\n') + pos + 1;
                 content.erase(pos, endpos - pos);
-                content.insert(pos,"tile->getFace(0)->getMaterial().addTexture(text"+conversionUIntString(id)+", sf::IntRect(0, 0,"+
-                               conversionIntString(text->getSize().x)+","+conversionIntString(text->getSize().y)+"));\n");
+                content.insert(pos,"tile->getFace(0)->getMaterial().addTexture(text"+conversionUIntString(id)+", IntRect(0, 0,"+
+                               conversionIntString(text->getSize().x())+","+conversionIntString(text->getSize().y())+"));\n");
             }
         }
     }
@@ -1016,23 +1027,23 @@ void ODFAEGCreator::onDisplay(RenderWindow* window) {
             /*for (unsigned int i = 0; i < entities.size(); i++) {
                 RectangleShape rect(entities[i]->getSize());
                 rect.setPosition(entities[i]->getPosition());
-                rect.setFillColor(sf::Color::Transparent);
+                rect.setFillColor(Color::Transparent);
                 rect.setOutlineThickness(5);
-                rect.setOutlineColor(sf::Color::Cyan);
+                rect.setOutlineColor(Color::Cyan);
                 window->draw(rect);*/
                 /*if (dynamic_cast<Entity*>(entities[i])) {
                     Entity* border = dynamic_cast<Entity*>(entities[i])->clone();
                     for (unsigned int f = 0; f < border->getNbFaces(); f++) {
                         if (border->getFace(f)->getMaterial().getTexture() != nullptr) {
                             border->getFace(f)->getMaterial().clearTextures();
-                            border->getFace(f)->getMaterial().addTexture(nullptr, sf::IntRect(0, 0, 0, 0));
+                            border->getFace(f)->getMaterial().addTexture(nullptr, IntRect(0, 0, 0, 0));
                         }
                         //std::cout<<"get va"<<std::endl;
                         VertexArray& va = border->getFace(f)->getVertexArray();
                         //std::cout<<"change color"<<std::endl;
                         for (unsigned int j = 0; j < va.getVertexCount(); j++) {
 
-                            va[j].color = sf::Color::Cyan;
+                            va[j].color = Color::Cyan;
                         }
                         //std::cout<<"color changed"<<std::endl;
                     }
@@ -1072,16 +1083,16 @@ void ODFAEGCreator::onDisplay(RenderWindow* window) {
                 //window->setView(defaultView);
                 BoundingBox view = selectedComponentView.getViewVolume();
                 /*Vec3f delta = defaultView.getPosition()-selectedComponentView.getPosition();
-                int moveX = (int) delta.x / (int) (gridWidth) * (int) (gridWidth);
-                int moveY = (int) delta.y / (int) (gridHeight) * (int) (gridHeight);
-                if (delta.x < 0)
+                int moveX = (int) delta.x() / (int) (gridWidth) * (int) (gridWidth);
+                int moveY = (int) delta.y() / (int) (gridHeight) * (int) (gridHeight);
+                if (delta.x() < 0)
                     moveX-=gridWidth;
-                if (delta.y < 0)
+                if (delta.y() < 0)
                     moveY-=gridHeight;*/
-                int x = view.getPosition().x;
-                int y = view.getPosition().y;
-                int endX = view.getPosition().x + view.getWidth();
-                int endY = view.getPosition().y + view.getHeight();
+                int x = view.getPosition().x();
+                int y = view.getPosition().y();
+                int endX = view.getPosition().x() + view.getWidth();
+                int endY = view.getPosition().y() + view.getHeight();
                 for (int i = x; i <= endX; i+=gridWidth*0.5f) {
                     for (int j = y; j <= endY; j+=gridHeight*0.5f) {
                         Vec3f point(i, j, 0);
@@ -1089,24 +1100,24 @@ void ODFAEGCreator::onDisplay(RenderWindow* window) {
                         if(cellMap != nullptr) {
                             FontManager<Fonts>& fm = cache.resourceManager<Font, Fonts>("FontManager");
                             Text text;
-                            text.setString(conversionIntString(cellMap->getCoords().x)+","+conversionIntString(cellMap->getCoords().y));
+                            text.setString(conversionIntString(cellMap->getCoords().x())+","+conversionIntString(cellMap->getCoords().y()));
                             text.setFont(*fm.getResourceByAlias(Fonts::Serif));
-                            text.setColor(sf::Color::Red);
+                            text.setColor(Color::Red);
                             ConvexShape cellPassable(4);
                             BoundingPolyhedron* bp = cellMap->getCellVolume();
                             std::vector<Vec3f> points = bp->getPoints();
                             //std::cout<<"0 : "<<points[0]<<"1 : "<<points[1]<<"2 : "<<points[2]<<"3 : "<<points[5];
-                            cellPassable.setPoint(0, sf::Vector3f(points[0].x, points[0].y, points[0].z));
-                            cellPassable.setPoint(1, sf::Vector3f(points[1].x, points[1].y, points[1].z));
-                            cellPassable.setPoint(2, sf::Vector3f(points[2].x, points[2].y, points[2].z));
-                            cellPassable.setPoint(3, sf::Vector3f(points[3].x, points[3].y, points[3].z));
-                            text.setPosition(Vec3f(points[0].x, points[0].y, points[0].z));
-                            cellPassable.setOutlineColor(sf::Color::Red);
+                            cellPassable.setPoint(0, Vec3f(points[0].x(), points[0].y(), points[0].z()));
+                            cellPassable.setPoint(1, Vec3f(points[1].x(), points[1].y(), points[1].z()));
+                            cellPassable.setPoint(2, Vec3f(points[2].x(), points[2].y(), points[2].z()));
+                            cellPassable.setPoint(3, Vec3f(points[3].x(), points[3].y(), points[3].z()));
+                            text.setPosition(Vec3f(points[0].x(), points[0].y(), points[0].z()));
+                            cellPassable.setOutlineColor(Color::Red);
                             cellPassable.setOutlineThickness(1);
                             if (cellMap->isPassable()) {
-                                cellPassable.setFillColor(sf::Color(0, 255, 0, 100));
+                                cellPassable.setFillColor(Color(0, 255, 0, 100));
                             } else {
-                                cellPassable.setFillColor(sf::Color(255, 0, 0, 100));
+                                cellPassable.setFillColor(Color(255, 0, 0, 100));
                             }
                             //cellPassable.move(Vec3f(moveX, moveY, 0));
                             window->draw(cellPassable);
@@ -1125,15 +1136,15 @@ void ODFAEGCreator::onDisplay(RenderWindow* window) {
                 BoundingBox view = selectedComponentView.getViewVolume();
                 cshapes.clear();
 
-                int x = (int) view.getPosition().x / gridWidth * gridWidth;
-                int y = (int) view.getPosition().y / gridHeight * gridHeight;
-                int endX = (int) (view.getPosition().x + view.getWidth()) / gridWidth * gridWidth;
-                int endY = (int) (view.getPosition().y + view.getHeight()) / gridHeight * gridHeight;
+                int x = (int) view.getPosition().x() / gridWidth * gridWidth;
+                int y = (int) view.getPosition().y() / gridHeight * gridHeight;
+                int endX = (int) (view.getPosition().x() + view.getWidth()) / gridWidth * gridWidth;
+                int endY = (int) (view.getPosition().y() + view.getHeight()) / gridHeight * gridHeight;
                 for (int i = x; i < endX; i+=gridWidth) {
                     for (int j = y; j < endY; j+=gridHeight) {
                         ConvexShape cshape(4);
-                        cshape.setFillColor(sf::Color::Transparent);
-                        cshape.setOutlineColor(sf::Color(75, 75, 75));
+                        cshape.setFillColor(Color::Transparent);
+                        cshape.setOutlineColor(Color(75, 75, 75));
                         cshape.setOutlineThickness(1.f);
                         Vec3f points[4];
                         points[0] = Vec2f(0, 0);
@@ -1150,7 +1161,7 @@ void ODFAEGCreator::onDisplay(RenderWindow* window) {
                         }
                         for (unsigned int n = 0; n < 4; n++) {
                             points[n] += Vec3f(i, j, 0);
-                            cshape.setPoint(n, sf::Vector3f(points[n].x, points[n].y, 0));
+                            cshape.setPoint(n, Vec3f(points[n].x(), points[n].y(), 0));
                         }
                         cshapes.push_back(cshape);
                     }
@@ -1177,18 +1188,18 @@ Vec3f ODFAEGCreator::getGridCellPos(Vec3f pos) {
     BaseChangementMatrix bcm = getWorld()->getBaseChangementMatrix();
     Vec3f c = bcm.unchangeOfBase(pos);
     Vec3f v1, p;
-    p.x = (int) c.x / gridWidth;
-    p.y = (int) c.y / gridHeight;
-    if (c.x < 0)
-        p.x--;
-    if (c.y < 0)
-        p.y--;
-    v1.x = p.x * gridWidth;
-    v1.y = p.y * gridHeight;
-    Vec3f ve1(v1.x, v1.y, 0);
-    Vec3f ve2(v1.x + gridWidth, v1.y, 0);
-    Vec3f ve3(v1.x + gridWidth, v1.y + gridHeight, 0);
-    Vec3f ve4(v1.x, v1.y + gridHeight, 0);
+    p.x() = (int) c.x() / gridWidth;
+    p.y() = (int) c.y() / gridHeight;
+    if (c.x() < 0)
+        p.x()--;
+    if (c.y() < 0)
+        p.y()--;
+    v1.x() = p.x() * gridWidth;
+    v1.y() = p.y() * gridHeight;
+    Vec3f ve1(v1.x(), v1.y(), 0);
+    Vec3f ve2(v1.x() + gridWidth, v1.y(), 0);
+    Vec3f ve3(v1.x() + gridWidth, v1.y() + gridHeight, 0);
+    Vec3f ve4(v1.x(), v1.y() + gridHeight, 0);
     Vec3f p1 = bcm.changeOfBase(ve1);
     Vec3f p2 = bcm.changeOfBase(ve2);
     Vec3f p3 = bcm.changeOfBase(ve3);
@@ -1317,11 +1328,11 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
             if (selectedObject != nullptr) {
                 Vec3f position;
                 if (dpSelectComponent->getSelectedItem() == "MAIN WINDOW") {
-                    position = getRenderWindow().mapPixelToCoords(Vec3f(cursor.getPosition().x, getRenderWindow().getSize().y - cursor.getPosition().y, 0))+getRenderWindow().getView().getSize()*0.5f;
+                    position = getRenderWindow().mapPixelToCoords(Vec3f(cursor.getPosition().x(), getRenderWindow().getSize().y() - cursor.getPosition().y(), 0))+getRenderWindow().getView().getSize()*0.5f;
                 } else {
                     for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
                         if (getRenderComponentManager().getRenderComponent(i) != nullptr && getRenderComponentManager().getRenderComponent(i)->getName() == dpSelectComponent->getSelectedItem()) {
-                            position = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(cursor.getPosition().x, getRenderWindow().getSize().y - cursor.getPosition().y, 0))+getRenderWindow().getView().getSize()*0.5f;
+                            position = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(cursor.getPosition().x(), getRenderWindow().getSize().y() - cursor.getPosition().y(), 0))+getRenderWindow().getView().getSize()*0.5f;
                         }
                     }
                 }
@@ -1427,27 +1438,27 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
         setEventContextActivated(true);
     }
     if (&getRenderWindow() == window && event.type == IEvent::MOUSE_BUTTON_EVENT && event.mouseButton.type == IEvent::BUTTON_EVENT_PRESSED && event.mouseButton.button == IMouse::Left) {
-        sf::Vector2f mousePos (event.mouseButton.x, event.mouseButton.y);
+        Vec2f mousePos (event.mouseButton.x(), event.mouseButton.y());
         getListener().setCommandSlotParams("MoveCursor", this, mousePos);
     }
     if (&getRenderWindow() == window && event.type == IEvent::MOUSE_MOTION_EVENT && IMouse::isButtonPressed(IMouse::Left)) {
-        sf::Vector2f mousePos (event.mouseMotion.x, event.mouseMotion.y);
-        Vec3f halfWSize(getRenderWindow().getView().getSize().x * 0.5f, getRenderWindow().getView().getSize().y * 0.5f, 0);
-        Vec3f ext(mousePos.x - getRenderWindow().getView().getSize().x * 0.5f, mousePos.y - getRenderWindow().getView().getSize().y * 0.5f, 0);
-        Vec3f orig (mousePos.x - getRenderWindow().getView().getSize().x * 0.5f, mousePos.y - getRenderWindow().getView().getSize().y * 0.5f, 1);
+        Vec2f mousePos (event.mouseMotion.x(), event.mouseMotion.y());
+        Vec3f halfWSize(getRenderWindow().getView().getSize().x() * 0.5f, getRenderWindow().getView().getSize().y() * 0.5f, 0);
+        Vec3f ext(mousePos.x() - getRenderWindow().getView().getSize().x() * 0.5f, mousePos.y() - getRenderWindow().getView().getSize().y() * 0.5f, 0);
+        Vec3f orig (mousePos.x() - getRenderWindow().getView().getSize().x() * 0.5f, mousePos.y() - getRenderWindow().getView().getSize().y() * 0.5f, 1);
         if (dpSelectComponent->getSelectedItem() == "MAIN WINDOW") {
-            orig = getRenderWindow().mapPixelToCoords(Vec3f(orig.x, getRenderWindow().getSize().y-orig.y, orig.z))+halfWSize;
-            ext = getRenderWindow().mapPixelToCoords(Vec3f(ext.x, getRenderWindow().getSize().y-ext.y, ext.z))+halfWSize;
+            orig = getRenderWindow().mapPixelToCoords(Vec3f(orig.x(), getRenderWindow().getSize().y()-orig.y(), orig.z()))+halfWSize;
+            ext = getRenderWindow().mapPixelToCoords(Vec3f(ext.x(), getRenderWindow().getSize().y()-ext.y(), ext.z()))+halfWSize;
         } else {
             for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
                 if (getRenderComponentManager().getRenderComponent(i) != nullptr && getRenderComponentManager().getRenderComponent(i)->getName() == dpSelectComponent->getSelectedItem()) {
                     if(getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->getView().isOrtho()) {
-                        orig = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(orig.x, getRenderWindow().getSize().y - orig.y, orig.z))+halfWSize;
-                        ext = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(ext.x, getRenderWindow().getSize().y - ext.y, ext.z))+halfWSize;
+                        orig = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(orig.x(), getRenderWindow().getSize().y() - orig.y(), orig.z()))+halfWSize;
+                        ext = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(ext.x(), getRenderWindow().getSize().y() - ext.y(), ext.z()))+halfWSize;
                     } else {
-                        orig = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(0, 0, orig.z));
+                        orig = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(0, 0, orig.z()));
                         ext += halfWSize;
-                        ext = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(ext.x, getRenderWindow().getSize().y - ext.y, ext.z));
+                        ext = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(ext.x(), getRenderWindow().getSize().y() - ext.y(), ext.z()));
                     }
                 }
             }
@@ -1464,72 +1475,72 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
             prevAngle = angle;
         }
         if (isMovingXPos && translationGuismo.intersectsXArrow(ray, _near)) {
-            float mx = _near.x - prevObjectPos.x;
+            float mx = _near.x() - prevObjectPos.x();
             translationGuismo.move(Vec3f(mx, 0, 0));
             getWorld()->moveEntity(selectedObject, mx, 0, 0);
-            prevObjectPos.x = _near.x;
+            prevObjectPos.x() = _near.x();
         }
         if (isMovingYPos && translationGuismo.intersectsYArrow(ray, _near)) {
-            float my = _near.y - prevObjectPos.y;
+            float my = _near.y() - prevObjectPos.y();
             translationGuismo.move(Vec3f(0, my, 0));
             getWorld()->moveEntity(selectedObject, my, 0, 0);
-            prevObjectPos.y = _near.y;
+            prevObjectPos.y() = _near.y();
         }
         if (isMovingZPos && translationGuismo.intersectsZArrow(ray, _near)) {
-            float mz = _near.z - prevObjectPos.z;
+            float mz = _near.z() - prevObjectPos.z();
             translationGuismo.move(Vec3f(0, 0, mz));
             getWorld()->moveEntity(selectedObject, 0, 0, mz);
-            prevObjectPos.z = _near.z;
+            prevObjectPos.z() = _near.z();
         }
         if (isScalingX && scaleGuismo.intersectsXRect(ray, _near)) {
-            float sx = _near.x / prevObjectScale.x;
+            float sx = _near.x() / prevObjectScale.x();
             getWorld()->scaleEntity(selectedObject, sx, 1, 1);
             scaleGuismo.setCenterSize(selectedObject->getPosition()+selectedObject->getSize()*0.5f, selectedObject->getSize());
-            prevObjectScale.x = _near.x;
+            prevObjectScale.x() = _near.x();
         }
         if (isScalingY && scaleGuismo.intersectsYRect(ray, _near)) {
-            float sy = _near.y / prevObjectScale.y;
+            float sy = _near.y() / prevObjectScale.y();
             getWorld()->scaleEntity(selectedObject, 1, sy, 1);
             scaleGuismo.setCenterSize(selectedObject->getPosition()+selectedObject->getSize()*0.5f, selectedObject->getSize());
-            prevObjectScale.y = _near.y;
+            prevObjectScale.y() = _near.y();
         }
         if (isScalingZ && scaleGuismo.intersectsZRect(ray, _near)) {
-            float sz = _near.z / prevObjectScale.z;
+            float sz = _near.z() / prevObjectScale.z();
             getWorld()->scaleEntity(selectedObject, 1, 1, sz);
             scaleGuismo.setCenterSize(selectedObject->getPosition()+selectedObject->getSize()*0.5f, selectedObject->getSize());
-            prevObjectScale.z = _near.z;
+            prevObjectScale.z() = _near.z();
         }
     }
     if (&getRenderWindow() == window && event.type == IEvent::MOUSE_BUTTON_EVENT && event.mouseButton.type == IEvent::BUTTON_EVENT_PRESSED && event.mouseButton.button == IMouse::Left) {
         if (tabPane->getSelectedTab() == "Collisions") {
-            sf::Vector2f mousePos (event.mouseButton.x, event.mouseButton.y);
-            Vec3f pos(mousePos.x, mousePos.y, 0);
+            Vec2f mousePos (event.mouseButton.x(), event.mouseButton.y());
+            Vec3f pos(mousePos.x(), mousePos.y(), 0);
             if (dpSelectComponent->getSelectedItem() == "MAIN WINDOW") {
-                pos = getRenderWindow().mapPixelToCoords(Vec3f(mousePos.x, getRenderWindow().getSize().y-mousePos.y, 0))+getRenderWindow().getView().getSize()*0.5f;
+                pos = getRenderWindow().mapPixelToCoords(Vec3f(mousePos.x(), getRenderWindow().getSize().y()-mousePos.y(), 0))+getRenderWindow().getView().getSize()*0.5f;
             } else {
                 for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
                     if (getRenderComponentManager().getRenderComponent(i) != nullptr && getRenderComponentManager().getRenderComponent(i)->getName() == dpSelectComponent->getSelectedItem()) {
-                        pos = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(cursor.getPosition().x, getRenderWindow().getSize().y - cursor.getPosition().y, 0))+getRenderWindow().getView().getSize()*0.5f;
+                        pos = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(cursor.getPosition().x(), getRenderWindow().getSize().y() - cursor.getPosition().y(), 0))+getRenderWindow().getView().getSize()*0.5f;
                     }
                 }
             }
             /*bool isOk;
             do {
-                pos = getRenderWindow().mapPixelToCoords(Vec3f(mousePos.x, getRenderWindow().getSize().y-mousePos.y, 0));
+                pos = getRenderWindow().mapPixelToCoords(Vec3f(mousePos.x(), getRenderWindow().getSize().y()-mousePos.y(), 0));
                 Vec3f delta = viewPos-getRenderWindow().getView().getPosition();
                 pos += delta;
                 isOk = true;
-                if ((int) delta.x / gridWidth != 0 || delta.x < 0) {
-                    viewPos.x = (int) getRenderWindow().getView().getPosition().x / gridWidth * gridWidth;
-                    if (getRenderWindow().getView().getPosition().x > viewPos.x)
-                        viewPos.x += gridWidth;
+                if ((int) delta.x() / gridWidth != 0 || delta.x() < 0) {
+                    viewPos.x() = (int) getRenderWindow().getView().getPosition().x() / gridWidth * gridWidth;
+                    if (getRenderWindow().getView().getPosition().x() > viewPos.x())
+                        viewPos.x() += gridWidth;
                     isOk = false;
                 }
 
-                if ((int) delta.y / gridHeight != 0 || delta.y < 0) {
-                    viewPos.y = (int) getRenderWindow().getView().getPosition().y / gridHeight * gridHeight;
-                    if (getRenderWindow().getView().getPosition().y > viewPos.y)
-                        viewPos.y += gridHeight;
+                if ((int) delta.y() / gridHeight != 0 || delta.y() < 0) {
+                    viewPos.y() = (int) getRenderWindow().getView().getPosition().y() / gridHeight * gridHeight;
+                    if (getRenderWindow().getView().getPosition().y() > viewPos.y())
+                        viewPos.y() += gridHeight;
                     isOk = false;
                 }
             } while (!isOk);*/
@@ -1545,24 +1556,24 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
                 }
             }
         } else {
-            sf::Vector2f mousePos (event.mouseButton.x, event.mouseButton.y);
-            Vec3f halfWSize(getRenderWindow().getView().getSize().x * 0.5f, getRenderWindow().getView().getSize().y * 0.5f, 0);
-            Vec3f ext(mousePos.x-getRenderWindow().getView().getSize().x * 0.5f, mousePos.y - getRenderWindow().getView().getSize().y * 0.5f, 0);
-            Vec3f orig = Vec3f(mousePos.x-getRenderWindow().getView().getSize().x * 0.5f, mousePos.y - getRenderWindow().getView().getSize().y * 0.5f, 1);
+            Vec2f mousePos (event.mouseButton.x(), event.mouseButton.y());
+            Vec3f halfWSize(getRenderWindow().getView().getSize().x() * 0.5f, getRenderWindow().getView().getSize().y() * 0.5f, 0);
+            Vec3f ext(mousePos.x()-getRenderWindow().getView().getSize().x() * 0.5f, mousePos.y() - getRenderWindow().getView().getSize().y() * 0.5f, 0);
+            Vec3f orig = Vec3f(mousePos.x()-getRenderWindow().getView().getSize().x() * 0.5f, mousePos.y() - getRenderWindow().getView().getSize().y() * 0.5f, 1);
             //std::cout<<"ray window coords : "<<orig<<ext<<std::endl;
             if (dpSelectComponent->getSelectedItem() == "MAIN WINDOW") {
-                orig = getRenderWindow().mapPixelToCoords(Vec3f(orig.x, getRenderWindow().getSize().y-orig.y, orig.z))+halfWSize;
-                ext = getRenderWindow().mapPixelToCoords(Vec3f(ext.x, getRenderWindow().getSize().y-ext.y, ext.z))+halfWSize;
+                orig = getRenderWindow().mapPixelToCoords(Vec3f(orig.x(), getRenderWindow().getSize().y()-orig.y(), orig.z()))+halfWSize;
+                ext = getRenderWindow().mapPixelToCoords(Vec3f(ext.x(), getRenderWindow().getSize().y()-ext.y(), ext.z()))+halfWSize;
             } else {
                 for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
                     if (getRenderComponentManager().getRenderComponent(i) != nullptr && getRenderComponentManager().getRenderComponent(i)->getName() == dpSelectComponent->getSelectedItem()) {
                         if(getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->getView().isOrtho()) {
-                            orig = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(orig.x, getRenderWindow().getSize().y - orig.y, orig.z))+halfWSize;
-                            ext = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(ext.x, getRenderWindow().getSize().y - ext.y, ext.z))+halfWSize;
+                            orig = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(orig.x(), getRenderWindow().getSize().y() - orig.y(), orig.z()))+halfWSize;
+                            ext = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(ext.x(), getRenderWindow().getSize().y() - ext.y(), ext.z()))+halfWSize;
                         } else {
-                            orig = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(0, 0, orig.z));
+                            orig = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(0, 0, orig.z()));
                             ext += halfWSize;
-                            ext = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(ext.x, getRenderWindow().getSize().y - ext.y, ext.z));
+                            ext = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(ext.x(), getRenderWindow().getSize().y() - ext.y(), ext.z()));
                         }
                     }
                 }
@@ -1596,155 +1607,155 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
         }
     }
     if (&getRenderWindow() == window && event.type == IEvent::MOUSE_BUTTON_EVENT && event.mouseButton.type == IEvent::BUTTON_EVENT_PRESSED && event.mouseButton.button == IMouse::Right) {
-        sf::Vector2f mousePos (event.mouseButton.x, event.mouseButton.y);
-        if (showRectSelect && !pScriptsFiles->isPointInside(Vec3f(mousePos.x, mousePos.y, 0))) {
+        Vec2f mousePos (event.mouseButton.x(), event.mouseButton.y());
+        if (showRectSelect && !pScriptsFiles->isPointInside(Vec3f(mousePos.x(), mousePos.y(), 0))) {
             if (alignToGrid) {
                 if (getWorld()->getCurrentSceneManager() == nullptr) {
-                    int x = mousePos.x - getRenderWindow().getSize().x * 0.5f;
-                    int y = mousePos.y - getRenderWindow().getSize().y * 0.5f;
+                    int x = mousePos.x() - getRenderWindow().getSize().x() * 0.5f;
+                    int y = mousePos.y() - getRenderWindow().getSize().y() * 0.5f;
                     Vec3f coordsCaseP = getWorld()->getCoordinatesAt(Vec3f(x, y, 0));
                     Vec3f p = getWorld()->getBaseChangementMatrix().unchangeOfBase(Vec3f(x, y, 0));
 
                     Vec3f v1;
-                    v1.x = (int) p.x / gridWidth;
-                    v1.y =  (int) p.y / gridHeight;
-                    if (p.x < 0)
-                        v1.x--;
-                    if (p.y < 0)
-                        v1.y--;
-                    v1.x *= gridWidth;
-                    v1.y *= gridHeight;
+                    v1.x() = (int) p.x() / gridWidth;
+                    v1.y() =  (int) p.y() / gridHeight;
+                    if (p.x() < 0)
+                        v1.x()--;
+                    if (p.y() < 0)
+                        v1.y()--;
+                    v1.x() *= gridWidth;
+                    v1.y() *= gridHeight;
                     v1 = getWorld()->getBaseChangementMatrix().changeOfBase(v1);
-                    mousePosition = Vec3f(v1.x, v1.y, 0);
+                    mousePosition = Vec3f(v1.x(), v1.y(), 0);
                 } else {
-                    int x = mousePos.x - getRenderWindow().getSize().x * 0.5f;
-                    int y = mousePos.y - getRenderWindow().getSize().y * 0.5f;
+                    int x = mousePos.x() - getRenderWindow().getSize().x() * 0.5f;
+                    int y = mousePos.y() - getRenderWindow().getSize().y() * 0.5f;
                     mousePosition = getGridCellPos(Vec3f(x, y, 0));
                 }
             } else {
-                int x = mousePos.x-getRenderWindow().getSize().x * 0.5f;
-                int y = mousePos.y-getRenderWindow().getSize().y * 0.5f;
+                int x = mousePos.x()-getRenderWindow().getSize().x() * 0.5f;
+                int y = mousePos.y()-getRenderWindow().getSize().y() * 0.5f;
                 mousePosition = Vec3f(x, y, 0);
             }
-        } else if (pScriptsFiles->isPointInside(Vec3f(mousePos.x, mousePos.y, 0))) {
+        } else if (pScriptsFiles->isPointInside(Vec3f(mousePos.x(), mousePos.y(), 0))) {
             if (alignToGrid) {
 
-                int x = ((int) mousePos.x / gridWidth * gridWidth);
-                int y = ((int) mousePos.y / gridHeight * gridHeight);
-                int deltaX = 0, deltaX2 = - ((int) pMaterial->getDeltas().x % gridWidth);
-                while (deltaX < pScriptsFiles->getPosition().x-gridWidth) {
+                int x = ((int) mousePos.x() / gridWidth * gridWidth);
+                int y = ((int) mousePos.y() / gridHeight * gridHeight);
+                int deltaX = 0, deltaX2 = - ((int) pMaterial->getDeltas().x() % gridWidth);
+                while (deltaX < pScriptsFiles->getPosition().x()-gridWidth) {
                     deltaX += gridWidth;
                 }
-                while (deltaX2 < mousePos.x-gridWidth) {
+                while (deltaX2 < mousePos.x()-gridWidth) {
                     deltaX2 += gridWidth;
                 }
-                deltaX = pScriptsFiles->getPosition().x - deltaX + (deltaX2 - x);
-                int deltaY = 0, deltaY2 = - ((int) pMaterial->getDeltas().y % gridHeight);
-                while (deltaY < bChooseText->getPosition().y + bChooseText->getSize().y+10-gridHeight) {
+                deltaX = pScriptsFiles->getPosition().x() - deltaX + (deltaX2 - x);
+                int deltaY = 0, deltaY2 = - ((int) pMaterial->getDeltas().y() % gridHeight);
+                while (deltaY < bChooseText->getPosition().y() + bChooseText->getSize().y()+10-gridHeight) {
                     deltaY += gridHeight;
                 }
-                while (deltaY2 < mousePos.y-gridHeight) {
+                while (deltaY2 < mousePos.y()-gridHeight) {
                     deltaY2 += gridHeight;
                 }
-                //std::cout<<"sprite pos, old delta Y, pmat delta y : "<<(bChooseText->getPosition().y + bChooseText->getSize().y+10)<<","<<deltaY<<","<<pMaterial->getDeltas().y<<std::endl;
-                deltaY = (bChooseText->getPosition().y + bChooseText->getSize().y+10) - deltaY + (deltaY2 - y);
+                //std::cout<<"sprite pos, old delta Y, pmat delta y : "<<(bChooseText->getPosition().y() + bChooseText->getSize().y()+10)<<","<<deltaY<<","<<pMaterial->getDeltas().y()<<std::endl;
+                deltaY = (bChooseText->getPosition().y() + bChooseText->getSize().y()+10) - deltaY + (deltaY2 - y);
 
                 mousePosition = Vec3f(x+deltaX, y+deltaY, 0);
             } else {
-                int x = mousePos.x;
-                int y = mousePos.y;
+                int x = mousePos.x();
+                int y = mousePos.y();
                 mousePosition = Vec3f(x, y, 0);
             }
         }
     }
     if (&getRenderWindow() == window && event.type == IEvent::MOUSE_MOTION_EVENT && IMouse::isButtonPressed(IMouse::Right)) {
-        sf::Vector2f mousePos (event.mouseMotion.x, event.mouseMotion.y);
+        Vec2f mousePos (event.mouseMotion.x(), event.mouseMotion.y());
         if (showRectSelect && !pScriptsFiles->isPointInside(mousePosition)) {
             if (alignToGrid) {
                 if (getWorld()->getCurrentSceneManager() == nullptr) {
-                    int x = mousePos.x - getRenderWindow().getSize().x * 0.5f;
-                    int y = mousePos.y - getRenderWindow().getSize().y * 0.5f;
+                    int x = mousePos.x() - getRenderWindow().getSize().x() * 0.5f;
+                    int y = mousePos.y() - getRenderWindow().getSize().y() * 0.5f;
                     Vec3f coordsCaseP = getWorld()->getCoordinatesAt(Vec3f(x, y, 0));
                     Vec3f p = getWorld()->getBaseChangementMatrix().unchangeOfBase(Vec3f(x, y, 0));
 
                     Vec3f v1;
-                    v1.x = (int) p.x / gridWidth;
-                    v1.y =  (int) p.y / gridHeight;
-                    if (p.x < 0)
-                        v1.x--;
-                    if (p.y < 0)
-                        v1.y--;
-                    v1.x *= gridWidth;
-                    v1.y *= gridHeight;
+                    v1.x() = (int) p.x() / gridWidth;
+                    v1.y() =  (int) p.y() / gridHeight;
+                    if (p.x() < 0)
+                        v1.x()--;
+                    if (p.y() < 0)
+                        v1.y()--;
+                    v1.x() *= gridWidth;
+                    v1.y() *= gridHeight;
                     v1 = getWorld()->getBaseChangementMatrix().changeOfBase(v1);
-                    int width = v1.x - mousePosition.x;
-                    int height = v1.y - mousePosition.y;
+                    int width = v1.x() - mousePosition.x();
+                    int height = v1.y() - mousePosition.y();
                     if (width > 0 && height > 0)
-                        rectSelect.setRect(mousePosition.x, mousePosition.y, 0, width, height, getRenderWindow().getView().getDepth());
+                        rectSelect.setRect(mousePosition.x(), mousePosition.y(), 0, width, height, getRenderWindow().getView().getDepth());
                 } else {
-                    int x = mousePos.x - getRenderWindow().getSize().x * 0.5f;
-                    int y = mousePos.y - getRenderWindow().getSize().y * 0.5f;
+                    int x = mousePos.x() - getRenderWindow().getSize().x() * 0.5f;
+                    int y = mousePos.y() - getRenderWindow().getSize().y() * 0.5f;
                     Vec3f pos = getGridCellPos(Vec3f(x, y, 0));
-                    int width = pos.x - mousePosition.x;
-                    int height = pos.y - mousePosition.y;
+                    int width = pos.x() - mousePosition.x();
+                    int height = pos.y() - mousePosition.y();
                     if (width > 0 && height > 0)
-                        rectSelect.setRect(mousePosition.x, mousePosition.y, 0, width, height, getRenderWindow().getView().getDepth());
+                        rectSelect.setRect(mousePosition.x(), mousePosition.y(), 0, width, height, getRenderWindow().getView().getDepth());
                 }
 
             } else {
-                int x = mousePos.x-getRenderWindow().getSize().x * 0.5f;
-                int y = mousePos.y-getRenderWindow().getSize().y * 0.5f;
-                int width = x - mousePosition.x;
-                int height = y - mousePosition.y;
+                int x = mousePos.x()-getRenderWindow().getSize().x() * 0.5f;
+                int y = mousePos.y()-getRenderWindow().getSize().y() * 0.5f;
+                int width = x - mousePosition.x();
+                int height = y - mousePosition.y();
                 if (width > 0 && height > 0)
-                    rectSelect.setRect(mousePosition.x, mousePosition.y, 0,  width, height, getRenderWindow().getView().getDepth());
+                    rectSelect.setRect(mousePosition.x(), mousePosition.y(), 0,  width, height, getRenderWindow().getView().getDepth());
             }
             //std::cout<<"rect size : "<<rectSelect.getSelectionRect().getSize()<<std::endl;
         } else if (pScriptsFiles->isPointInside(mousePosition)) {
             if (alignToGrid) {
-                int x = ((int) mousePos.x / gridWidth * gridWidth);
-                int y = ((int) mousePos.y / gridHeight * gridHeight);
-                int deltaX = 0, deltaX2 = - ((int) pMaterial->getDeltas().x % gridWidth);
-                while (deltaX < pScriptsFiles->getPosition().x-gridWidth) {
+                int x = ((int) mousePos.x() / gridWidth * gridWidth);
+                int y = ((int) mousePos.y() / gridHeight * gridHeight);
+                int deltaX = 0, deltaX2 = - ((int) pMaterial->getDeltas().x() % gridWidth);
+                while (deltaX < pScriptsFiles->getPosition().x()-gridWidth) {
                     deltaX += gridWidth;
                 }
-                while (deltaX2 < mousePos.x-gridWidth) {
+                while (deltaX2 < mousePos.x()-gridWidth) {
                     deltaX2 += gridWidth;
                 }
-                deltaX = pScriptsFiles->getPosition().x - deltaX + (deltaX2 - x);
-                int deltaY = 0, deltaY2 = - ((int) pMaterial->getDeltas().y % gridHeight);
-                while (deltaY < bChooseText->getPosition().y + bChooseText->getSize().y+10-gridHeight) {
+                deltaX = pScriptsFiles->getPosition().x() - deltaX + (deltaX2 - x);
+                int deltaY = 0, deltaY2 = - ((int) pMaterial->getDeltas().y() % gridHeight);
+                while (deltaY < bChooseText->getPosition().y() + bChooseText->getSize().y()+10-gridHeight) {
                     deltaY += gridHeight;
                 }
-                while (deltaY2 < mousePos.y-gridHeight) {
+                while (deltaY2 < mousePos.y()-gridHeight) {
                     deltaY2 += gridHeight;
                 }
-                //std::cout<<"sprite pos, old delta Y, pmat delta y : "<<(bChooseText->getPosition().y + bChooseText->getSize().y+10)<<","<<deltaY<<","<<pMaterial->getDeltas().y<<std::endl;
-                deltaY = (bChooseText->getPosition().y + bChooseText->getSize().y+10) - deltaY + (deltaY2 - y);
+                //std::cout<<"sprite pos, old delta Y, pmat delta y : "<<(bChooseText->getPosition().y() + bChooseText->getSize().y()+10)<<","<<deltaY<<","<<pMaterial->getDeltas().y()<<std::endl;
+                deltaY = (bChooseText->getPosition().y() + bChooseText->getSize().y()+10) - deltaY + (deltaY2 - y);
 
-                //std::cout<<"mousePos, y, deltaY, y + delta: "<<mousePos.y<<","<<y<<","<<deltaY<<","<<(y + deltaY)<<std::endl;
+                //std::cout<<"mousePos, y, deltaY, y + delta: "<<mousePos.y()<<","<<y<<","<<deltaY<<","<<(y + deltaY)<<std::endl;
 
-                int width = x + deltaX - mousePosition.x;
-                int height = y + deltaY - mousePosition.y;
+                int width = x + deltaX - mousePosition.x();
+                int height = y + deltaY - mousePosition.y();
                 if (width > 0 && height > 0 && sTextRect != nullptr) {
-                    sTextRect->setPosition(Vec3f(mousePosition.x, mousePosition.y, 0));
+                    sTextRect->setPosition(Vec3f(mousePosition.x(), mousePosition.y(), 0));
                     sTextRect->setSize(Vec3f(width, height, 0));
                     //std::cout<<"sTextRect : "<<sTextRect->getSize()<<std::endl;
                 }
             } else {
-                int x = mousePos.x;
-                int y = mousePos.y;
-                int width = x - mousePosition.x;
-                int height = y - mousePosition.y;
+                int x = mousePos.x();
+                int y = mousePos.y();
+                int width = x - mousePosition.x();
+                int height = y - mousePosition.y();
                 if (width > 0 && height > 0 && sTextRect != nullptr) {
-                    sTextRect->setPosition(Vec3f(mousePosition.x, mousePosition.y, 0));
+                    sTextRect->setPosition(Vec3f(mousePosition.x(), mousePosition.y(), 0));
                     sTextRect->setSize(Vec3f(width, height, 0));
                 }
             }
         }
         if (!showRectSelect) {
-            int relX = (event.mouseMotion.x - oldX) * sensivity;
-            int relY = (event.mouseMotion.y - oldY) * sensivity;
+            int relX = (event.mouseMotion.x() - oldX) * sensivity;
+            int relY = (event.mouseMotion.y() - oldY) * sensivity;
             //Rotate the view, (Polar coordinates) but you can also use the lookAt function to look at a point.
             /*View view = getRenderWindow().getView();
             if (!view.isOrtho()) {
@@ -1782,9 +1793,9 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
             if (dpSelectComponent->getSelectedItem() == "MAIN WINDOW") {
                 for (unsigned int v = 0; v < 8; v++) {
                     if (v < 4)
-                        obbVerts[v] = getRenderWindow().mapPixelToCoords(Vec3f(bbVerts[v].x, getRenderWindow().getSize().y-bbVerts[v].y, 1))+Vec3f(getRenderWindow().getView().getSize().x*0.5f, getRenderWindow().getView().getSize().y*0.5f, getRenderWindow().getView().getSize().z*0.5f);
+                        obbVerts[v] = getRenderWindow().mapPixelToCoords(Vec3f(bbVerts[v].x(), getRenderWindow().getSize().y()-bbVerts[v].y(), 1))+Vec3f(getRenderWindow().getView().getSize().x()*0.5f, getRenderWindow().getView().getSize().y()*0.5f, getRenderWindow().getView().getSize().z()*0.5f);
                     else
-                        obbVerts[v] = getRenderWindow().mapPixelToCoords(Vec3f(bbVerts[v].x, getRenderWindow().getSize().y-bbVerts[v].y, 0))+Vec3f(getRenderWindow().getView().getSize().x*0.5f, getRenderWindow().getView().getSize().y*0.5f, getRenderWindow().getView().getSize().z*0.5f);
+                        obbVerts[v] = getRenderWindow().mapPixelToCoords(Vec3f(bbVerts[v].x(), getRenderWindow().getSize().y()-bbVerts[v].y(), 0))+Vec3f(getRenderWindow().getView().getSize().x()*0.5f, getRenderWindow().getView().getSize().y()*0.5f, getRenderWindow().getView().getSize().z()*0.5f);
                 }
             } else {
                 std::string name = dpSelectComponent->getSelectedItem();
@@ -1794,9 +1805,9 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
                         if(components[i]->getFrameBuffer()->getView().isOrtho()) {
                             for (unsigned int v = 0; v < 8; v++) {
                                 if (v < 4)
-                                    obbVerts[v] = components[i]->getFrameBuffer()->mapPixelToCoords(Vec3f(bbVerts[v].x, getRenderWindow().getSize().y-bbVerts[v].y, 1))+Vec3f(getRenderWindow().getView().getSize().x*0.5f, getRenderWindow().getView().getSize().y*0.5f, getRenderWindow().getView().getSize().z*0.5f);
+                                    obbVerts[v] = components[i]->getFrameBuffer()->mapPixelToCoords(Vec3f(bbVerts[v].x(), getRenderWindow().getSize().y()-bbVerts[v].y(), 1))+Vec3f(getRenderWindow().getView().getSize().x()*0.5f, getRenderWindow().getView().getSize().y()*0.5f, getRenderWindow().getView().getSize().z()*0.5f);
                                 else
-                                    obbVerts[v] = components[i]->getFrameBuffer()->mapPixelToCoords(Vec3f(bbVerts[v].x, getRenderWindow().getSize().y-bbVerts[v].y, 0))+Vec3f(getRenderWindow().getView().getSize().x*0.5f, getRenderWindow().getView().getSize().y*0.5f, getRenderWindow().getView().getSize().z*0.5f);
+                                    obbVerts[v] = components[i]->getFrameBuffer()->mapPixelToCoords(Vec3f(bbVerts[v].x(), getRenderWindow().getSize().y()-bbVerts[v].y(), 0))+Vec3f(getRenderWindow().getView().getSize().x()*0.5f, getRenderWindow().getView().getSize().y()*0.5f, getRenderWindow().getView().getSize().z()*0.5f);
 
 
                             }
@@ -1806,9 +1817,9 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
                                 //std::cout<<"bb verts : "<<bbVerts[v]<<std::endl;
                                 bbVerts[v] += getRenderWindow().getView().getSize()*0.5f;
                                 if (v < 4)
-                                    obbVerts[v] = components[i]->getFrameBuffer()->mapPixelToCoords(Vec3f(bbVerts[v].x, getRenderWindow().getSize().y-bbVerts[v].y, 1));
+                                    obbVerts[v] = components[i]->getFrameBuffer()->mapPixelToCoords(Vec3f(bbVerts[v].x(), getRenderWindow().getSize().y()-bbVerts[v].y(), 1));
                                 else
-                                    obbVerts[v] = components[i]->getFrameBuffer()->mapPixelToCoords(Vec3f(bbVerts[v].x, getRenderWindow().getSize().y-bbVerts[v].y, 0));
+                                    obbVerts[v] = components[i]->getFrameBuffer()->mapPixelToCoords(Vec3f(bbVerts[v].x(), getRenderWindow().getSize().y()-bbVerts[v].y(), 0));
                                 //std::cout<<"obb verts : "<<obbVerts[v]<<std::endl;
                             }
                             //system("PAUSE");
@@ -1875,49 +1886,49 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
             }
             if (tabPane->getSelectedTab() == "Collisions") {
                 BoundingBox selectRect = rectSelect.getSelectionRect();
-                taBoundingBoxColX->setText(conversionFloatString(selectRect.getPosition().x));
-                taBoundingBoxColY->setText(conversionFloatString(selectRect.getPosition().y));
-                taBoundingBoxColZ->setText(conversionFloatString(selectRect.getPosition().z));
-                taBoundingBoxColW->setText(conversionFloatString(selectRect.getSize().x));
-                taBoundingBoxColH->setText(conversionFloatString(selectRect.getSize().y));
-                taBoundingBoxColZ->setText(conversionFloatString(selectRect.getSize().z));
+                taBoundingBoxColX->setText(conversionFloatString(selectRect.getPosition().x()));
+                taBoundingBoxColY->setText(conversionFloatString(selectRect.getPosition().y()));
+                taBoundingBoxColZ->setText(conversionFloatString(selectRect.getPosition().z()));
+                taBoundingBoxColW->setText(conversionFloatString(selectRect.getSize().x()));
+                taBoundingBoxColH->setText(conversionFloatString(selectRect.getSize().y()));
+                taBoundingBoxColZ->setText(conversionFloatString(selectRect.getSize().z()));
             }
         }
         if (pScriptsFiles->isPointInside(mousePosition) && sTextRect != nullptr) {
             //std::cout<<"deltas : "<<pMaterial->getDeltas()<<std::endl;
-            int x = mousePosition.x - pScriptsFiles->getPosition().x+pMaterial->getDeltas().x;
-            int y = mousePosition.y - (bChooseText->getPosition().y + bChooseText->getSize().y+10)+pMaterial->getDeltas().y;
+            int x = mousePosition.x() - pScriptsFiles->getPosition().x()+pMaterial->getDeltas().x();
+            int y = mousePosition.y() - (bChooseText->getPosition().y() + bChooseText->getSize().y()+10)+pMaterial->getDeltas().y();
 
-            //std::cout<<"mouse pos : "<<mousePosition.x<<" x : "<<x<<" delta : "<<pMaterial->getDeltas().x<<std::endl;
-            //std::cout<<pMaterial->getDeltas().y<<std::endl;
+            //std::cout<<"mouse pos : "<<mousePosition.x()<<" x : "<<x<<" delta : "<<pMaterial->getDeltas().x()<<std::endl;
+            //std::cout<<pMaterial->getDeltas().y()<<std::endl;
             tTexCoordX->setText(conversionIntString(x));
             tTexCoordY->setText(conversionIntString(y));
-            tTexCoordW->setText(conversionIntString(sTextRect->getSize().x));
-            tTexCoordH->setText(conversionIntString(sTextRect->getSize().y));
+            tTexCoordW->setText(conversionIntString(sTextRect->getSize().x()));
+            tTexCoordH->setText(conversionIntString(sTextRect->getSize().y()));
         }
     }
     if (&getRenderWindow() == window && event.type == IEvent::WINDOW_EVENT && event.window.type == IEvent::WINDOW_EVENT_RESIZED) {
-        getRenderWindow().getDefaultView().reset(BoundingBox(0, 0, getRenderWindow().getDefaultView().getPosition().z, event.window.data1, event.window.data2, getRenderWindow().getDefaultView().getDepth()));
-        getRenderWindow().getDefaultView().setPerspective(-event.window.data1 * 0.5f, event.window.data1 * 0.5f, -event.window.data2 * 0.5f, event.window.data2 * 0.5f, getRenderWindow().getDefaultView().getViewport().getPosition().z, getRenderWindow().getDefaultView().getViewport().getSize().z);
+        getRenderWindow().getDefaultView().reset(BoundingBox(0, 0, getRenderWindow().getDefaultView().getPosition().z(), event.window.data1, event.window.data2, getRenderWindow().getDefaultView().getDepth()));
+        getRenderWindow().getDefaultView().setPerspective(-event.window.data1 * 0.5f, event.window.data1 * 0.5f, -event.window.data2 * 0.5f, event.window.data2 * 0.5f, getRenderWindow().getDefaultView().getViewport().getPosition().z(), getRenderWindow().getDefaultView().getViewport().getSize().z());
         View view = getRenderWindow().getView();
-        view.reset(BoundingBox(0, 0, getRenderWindow().getView().getPosition().z, event.window.data1, event.window.data2, getRenderWindow().getView().getDepth()));
-        view.setPerspective(-event.window.data1 * 0.5f, event.window.data1 * 0.5f, -event.window.data2 * 0.5f, event.window.data2 * 0.5f, getRenderWindow().getView().getViewport().getPosition().z, getRenderWindow().getView().getViewport().getSize().z);
+        view.reset(BoundingBox(0, 0, getRenderWindow().getView().getPosition().z(), event.window.data1, event.window.data2, getRenderWindow().getView().getDepth()));
+        view.setPerspective(-event.window.data1 * 0.5f, event.window.data1 * 0.5f, -event.window.data2 * 0.5f, event.window.data2 * 0.5f, getRenderWindow().getView().getViewport().getPosition().z(), getRenderWindow().getView().getViewport().getSize().z());
         getRenderWindow().setView(view);
     }
     if (&getRenderWindow() == window && isSelectingPolyhedron && event.type == IEvent::MOUSE_BUTTON_EVENT && event.mouseButton.type == IEvent::BUTTON_EVENT_RELEASED && event.mouseButton.button == IMouse::Left) {
         if (isSecondClick) {
-            sf::Vector2f mousePos (event.mouseButton.x, event.mouseButton.y);
-            int x = IMouse::getPosition(getRenderWindow()).x;
-            int y = IMouse::getPosition(getRenderWindow()).y;
-            bpPoints.append(Vertex(sf::Vector3f(x - getRenderWindow().getSize().x*0.5f, y-getRenderWindow().getSize().y*0.5f, getRenderWindow().getDefaultView().getPosition().z), sf::Color::Red));
-            bpLines.setPrimitiveType(sf::LinesStrip);
+            Vec2f mousePos (event.mouseButton.x(), event.mouseButton.y());
+            int x = IMouse::getPosition(getRenderWindow()).x();
+            int y = IMouse::getPosition(getRenderWindow()).y();
+            bpPoints.append(Vertex(Vec3f(x - getRenderWindow().getSize().x()*0.5f, y-getRenderWindow().getSize().y()*0.5f, getRenderWindow().getDefaultView().getPosition().z()), Color::Red));
+            bpLines.setPrimitiveType(LinesStrip);
             if (bpPoints.getVertexCount() == 2) {
-                bpLines.append(Vertex(sf::Vector3f(bpPoints[0].position.x, bpPoints[0].position.y, bpPoints[0].position.z), sf::Color::Red));
-                bpLines.append(Vertex(sf::Vector3f(bpPoints[1].position.x, bpPoints[1].position.y, bpPoints[1].position.z), sf::Color::Red));
+                bpLines.append(Vertex(Vec3f(bpPoints[0].position.x(), bpPoints[0].position.y(), bpPoints[0].position.z()), Color::Red));
+                bpLines.append(Vertex(Vec3f(bpPoints[1].position.x(), bpPoints[1].position.y(), bpPoints[1].position.z()), Color::Red));
 
             } else if (bpPoints.getVertexCount() > 2) {
                 unsigned int last = bpPoints.getVertexCount() - 1;
-                bpLines.append(Vertex(sf::Vector3f(bpPoints[last].position.x, bpPoints[last].position.y, bpPoints[last].position.z), sf::Color::Red));
+                bpLines.append(Vertex(Vec3f(bpPoints[last].position.x(), bpPoints[last].position.y(), bpPoints[last].position.z()), Color::Red));
             }
             BoundingSphere bs (Vec3f(x, y, 0), 5);
             selectBpPoints.push_back(bs);
@@ -1925,9 +1936,9 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
             if (selectBpPoints.size() > 2 && selectBpPoints[0].intersects(selectBpPoints[selectBpPoints.size()-1], info)) {
                 BoundingPolyhedron bp;
                 for (unsigned int i = 0; i < selectBpPoints.size()-2; i++) {
-                    bp.addTriangle(getRenderWindow().mapPixelToCoords(Vec3f(selectBpPoints[0].getCenter().x, getRenderWindow().getSize().y - selectBpPoints[0].getCenter().y, selectBpPoints[0].getCenter().z)),
-                                   getRenderWindow().mapPixelToCoords(Vec3f(selectBpPoints[i+1].getCenter().x, getRenderWindow().getSize().y - selectBpPoints[i+1].getCenter().y, selectBpPoints[i+1].getCenter().z)),
-                                   getRenderWindow().mapPixelToCoords(Vec3f(selectBpPoints[i+2].getCenter().x, getRenderWindow().getSize().y - selectBpPoints[i+2].getCenter().y, selectBpPoints[i+2].getCenter().z)));
+                    bp.addTriangle(getRenderWindow().mapPixelToCoords(Vec3f(selectBpPoints[0].getCenter().x(), getRenderWindow().getSize().y() - selectBpPoints[0].getCenter().y(), selectBpPoints[0].getCenter().z())),
+                                   getRenderWindow().mapPixelToCoords(Vec3f(selectBpPoints[i+1].getCenter().x(), getRenderWindow().getSize().y() - selectBpPoints[i+1].getCenter().y(), selectBpPoints[i+1].getCenter().z())),
+                                   getRenderWindow().mapPixelToCoords(Vec3f(selectBpPoints[i+2].getCenter().x(), getRenderWindow().getSize().y() - selectBpPoints[i+2].getCenter().y(), selectBpPoints[i+2].getCenter().z())));
                 }
                 tmpBps.push_back(bp);
                 isSelectingPolyhedron = false;
@@ -2122,7 +2133,7 @@ void ODFAEGCreator::onExec() {
                             face->getMaterial().setTexId(alias);
                         } else {
                             face->getMaterial().clearTextures();
-                            face->getMaterial().addTexture(nullptr, sf::IntRect(0, 0, 0, 0));
+                            face->getMaterial().addTexture(nullptr, IntRect(0, 0, 0, 0));
                         }
                     }
                 }
@@ -2200,26 +2211,47 @@ void ODFAEGCreator::onExec() {
                     Label* lab = new Label(getRenderWindow(),Vec3f(0,0,0),Vec3f(200, 17, 0),fm.getResourceByAlias(Fonts::Serif),line, 15);
                     Node* node = new Node("test",lab,Vec2f(0, 0),Vec2f(1.f, 0.025f),rootNode.get());
                     lab->setParent(pProjects);
-                    lab->setForegroundColor(sf::Color::Red);
-                    lab->setBackgroundColor(sf::Color::White);
+                    lab->setForegroundColor(Color::Red);
+                    lab->setBackgroundColor(Color::White);
                     pProjects->addChild(lab);
                     Action a(Action::EVENT_TYPE::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
                     Command cmd(a, FastDelegate<bool>(&Label::isMouseInside, lab), FastDelegate<void>(&ODFAEGCreator::showProjectsFiles, this, lab));
                     lab->getListener().connect("SHOWPFILES", cmd);
                     Label* labScene = new Label(getRenderWindow(), Vec3f(0, 0, 0), Vec3f(200, 35, 0), fm.getResourceByAlias(Fonts::Serif), "Scenes", 15);
-                    labScene->setBackgroundColor(sf::Color::White);
+                    labScene->setBackgroundColor(Color::White);
                     Node* rSceneNode = new Node ("Scenes", labScene, Vec2f(0.f, 0.f), Vec2f(1.f, 0.025f), node);
                     rootScenesNode = rSceneNode;
-                    labScene->setForegroundColor(sf::Color::Red);
+                    labScene->setForegroundColor(Color::Red);
                     labScene->setParent(pProjects);
                     pProjects->addChild(labScene);
                     Action a2(Action::EVENT_TYPE::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
+
+                    FontManager<Fonts>& fm = cache.resourceManager<Font, Fonts>("FontManager");
+                    std::vector<LightComponent*> children = pProjects->getChildren();
+                    Label* lHeaders = new Label(getRenderWindow(),Vec3f(0, 0, 0),Vec3f(200,17,0),fm.getResourceByAlias(Fonts::Serif),"headers", 15);
+                    Label* lSources = new Label(getRenderWindow(),Vec3f(0, 0,0),Vec3f(200,17,0),fm.getResourceByAlias(Fonts::Serif),"sources", 15);
+                    lHeaders->setBackgroundColor(Color::White);
+                    lSources->setBackgroundColor(Color::White);
+                    lHeaders->setParent(pProjects);
+                    Node* hNode = new Node ("headers", lHeaders, Vec2f(0, 0), Vec2f(1.f, 0.025f), node);
+                    pProjects->addChild(lHeaders);
+                    lSources->setParent(pProjects);
+                    Node* sNode = new Node("sources",lSources,Vec2f(0, 0), Vec2f(1.f, 0.025f), node);
+                    pProjects->addChild(lSources);
+                    lHeaders->setForegroundColor(Color::Green);
+                    lSources->setForegroundColor(Color::Green);
+                    pProjects->setAutoResized(true);
+                    Action a3(Action::EVENT_TYPE::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
+                    Command cmd1(a3, FastDelegate<bool>(&Label::isMouseInside, lHeaders), FastDelegate<void>(&ODFAEGCreator::showHeadersFiles, this, lHeaders));
+                    lHeaders->getListener().connect("SHOWHFILES", cmd1);
+                    Command cmd2(a3, FastDelegate<bool>(&Label::isMouseInside, lSources), FastDelegate<void>(&ODFAEGCreator::showSourcesFiles, this, lSources));
+                    lSources->getListener().connect("SHOWSFILES", cmd2);
                     //std::cout<<"label : "<<lab<<std::endl;
 
 
                     appliname = line;
-                    Command cmd2(a2, FastDelegate<bool>(&Label::isMouseInside, lab), FastDelegate<void>(&ODFAEGCreator::showScenes, this, labScene));
-                    lab->getListener().connect("SHOWSCENES"+appliname, cmd2);
+                    Command cmd3(a2, FastDelegate<bool>(&Label::isMouseInside, lab), FastDelegate<void>(&ODFAEGCreator::showScenes, this, labScene));
+                    lab->getListener().connect("SHOWSCENES"+appliname, cmd3);
                     std::unique_ptr<World> world = std::make_unique<World>();
                     world->projectName = appliname;
                     worlds.push_back(std::move(world));
@@ -2285,9 +2317,9 @@ void ODFAEGCreator::onExec() {
                     maps[i]->setRenderComponentManager(&getRenderComponentManager());
                     getWorld()->addSceneManager(maps[i]);
                     Label* lab = new Label(getRenderWindow(), Vec3f(0, 0, 0), Vec3f(200, 35, 0), fm.getResourceByAlias(Fonts::Serif), maps[i]->getName(), 15);
-                    lab->setBackgroundColor(sf::Color::White);
+                    lab->setBackgroundColor(Color::White);
                     Node* node = new Node(maps[i]->getName(), lab, Vec2f(0.f, 0.f), Vec2f(1.f, 0.025f), rootScenesNode);
-                    lab->setForegroundColor(sf::Color::Blue);
+                    lab->setForegroundColor(Color::Blue);
                     lab->setParent(pProjects);
                     pProjects->addChild(lab);
 
@@ -2301,37 +2333,37 @@ void ODFAEGCreator::onExec() {
             }
             if (getWorld()->getCurrentSceneManager() != nullptr) {
                 cshapes.clear();
-                for (int i = 0; i < getRenderWindow().getSize().x; i+=gridWidth*0.5) {
-                    for (int j = 0; j < getRenderWindow().getSize().y; j+=gridHeight*0.5) {
+                for (int i = 0; i < getRenderWindow().getSize().x(); i+=gridWidth*0.5) {
+                    for (int j = 0; j < getRenderWindow().getSize().y(); j+=gridHeight*0.5) {
                         Vec3f coordsCaseP = getWorld()->getCoordinatesAt(Vec3f(i, j, 0));
                         Vec3f p = getWorld()->getBaseChangementMatrix().unchangeOfBase(Vec3f(i, j, 0));
 
                         Vec3f v1;
-                        v1.x = (int) p.x / gridWidth;
-                        v1.y =  (int) p.y / gridHeight;
-                        if (p.x < 0)
-                            v1.x--;
-                        if (p.y < 0)
-                            v1.y--;
-                        v1.x *= gridWidth;
-                        v1.y *= gridHeight;
+                        v1.x() = (int) p.x() / gridWidth;
+                        v1.y() =  (int) p.y() / gridHeight;
+                        if (p.x() < 0)
+                            v1.x()--;
+                        if (p.y() < 0)
+                            v1.y()--;
+                        v1.x() *= gridWidth;
+                        v1.y() *= gridHeight;
                         Vec3f v[4];
-                        v[0] = Vec3f (v1.x, v1.y, v1.z);
-                        v[1] = Vec3f (v1.x + gridWidth, v1.y, v1.z);
-                        v[2] = Vec3f (v1.x + gridWidth, v1.y + gridHeight, v1.z);
-                        v[3] = Vec3f (v1.x, v1.y + gridHeight, v1.z);
+                        v[0] = Vec3f (v1.x(), v1.y(), v1.z());
+                        v[1] = Vec3f (v1.x() + gridWidth, v1.y(), v1.z());
+                        v[2] = Vec3f (v1.x() + gridWidth, v1.y() + gridHeight, v1.z());
+                        v[3] = Vec3f (v1.x(), v1.y() + gridHeight, v1.z());
 
                         for (unsigned int i = 0; i < 4; i++) {
                             v[i] = getWorld()->getBaseChangementMatrix().changeOfBase(v[i]);
                         }
 
                         ConvexShape cshape(4);
-                        cshape.setFillColor(sf::Color::Transparent);
-                        cshape.setOutlineColor(sf::Color(75, 75, 75));
+                        cshape.setFillColor(Color::Transparent);
+                        cshape.setOutlineColor(Color(75, 75, 75));
                         cshape.setOutlineThickness(1.f);
                         for (unsigned int n = 0; n < 4; n++) {
                             //std::cout<<"point : "<<v[n]<<std::endl;
-                            cshape.setPoint(n, sf::Vector3f(v[n].x, v[n].y, 0));
+                            cshape.setPoint(n, Vec3f(v[n].x(), v[n].y(), 0));
                         }
                         cshapes.push_back(cshape);
                     }
@@ -2357,7 +2389,7 @@ void ODFAEGCreator::onExec() {
                         face->getMaterial().setTexId(alias);
                     } else {
                         face->getMaterial().clearTextures();
-                        face->getMaterial().addTexture(nullptr, sf::IntRect(0, 0, 0, 0));
+                        face->getMaterial().addTexture(nullptr, IntRect(0, 0, 0, 0));
                     }
                 }
             }
@@ -2514,7 +2546,7 @@ void ODFAEGCreator::onExec() {
                     emitterParams.push_back(parameters[i]);
                     //std::cout<<"i : "<<i<<std::endl<<"size : "<<parameters.size()<<std::endl<<"psname : "<<parameters[i]<<std::endl;
                     i++;
-                    emitter.setParticleLifetime(Distributions::uniform(sf::seconds(conversionStringFloat(parameters[i])), sf::seconds(conversionStringFloat(parameters[i+1]))));
+                    emitter.setParticleLifetime(Distributions::uniform(seconds(conversionStringFloat(parameters[i])), seconds(conversionStringFloat(parameters[i+1]))));
                     emitterParams.push_back(parameters[i]);
                     emitterParams.push_back(parameters[i+1]);
                     //std::cout<<"i : "<<i<<std::endl<<"size : "<<parameters.size()<<std::endl<<"psname : "<<parameters[i]<<","<<parameters[i+1]<<std::endl;
@@ -2703,7 +2735,7 @@ void ODFAEGCreator::onExec() {
             Entity* heightMap = entities[0]->getRootEntity();
             float height;
             model->move(Vec3f(0, 0, -10));
-            bool isOnHeightMap = heightMap->getHeight(Vec2f(model->getPosition().x, model->getPosition().z), height);
+            bool isOnHeightMap = heightMap->getHeight(Vec2f(model->getPosition().x(), model->getPosition().z()), height);
 
             model->move(Vec3f(0, height, 0));
         }
@@ -2718,19 +2750,19 @@ void ODFAEGCreator::onExec() {
             }
         }
         if (selectedComponentView.isOrtho()) {
-            Vec3f position = getRenderWindow().mapPixelToCoords(Vec3f(cursor.getPosition().x, cursor.getPosition().y, 1), selectedComponentView)+getRenderWindow().getView().getSize() * 0.5f;
+            Vec3f position = getRenderWindow().mapPixelToCoords(Vec3f(cursor.getPosition().x(), cursor.getPosition().y(), 1), selectedComponentView)+getRenderWindow().getView().getSize() * 0.5f;
             model->setPosition(position);
         } else {
             Vec3f cursorPos = cursor.getPosition() + getRenderWindow().getView().getSize() * 0.5f;
-            Vec3f position = getRenderWindow().mapPixelToCoords(Vec3f(cursorPos.x, cursorPos.y, 1), selectedComponentView);
+            Vec3f position = getRenderWindow().mapPixelToCoords(Vec3f(cursorPos.x(), cursorPos.y(), 1), selectedComponentView);
             //std::cout<<"position : "<<position<<std::endl;
             model->setPosition(position);
             std::vector<Entity*> entities = getWorld()->getEntities("E_BIGTILE");
             if (entities.size() > 0) {
                 Entity* heightMap = entities[0]->getRootEntity();
                 float height;
-                bool isOnHeightMap = heightMap->getHeight(Vec2f(model->getPosition().x, model->getPosition().z), height);
-                model->setPosition(Vec3f(model->getPosition().x, height, model->getPosition().z));
+                bool isOnHeightMap = heightMap->getHeight(Vec2f(model->getPosition().x(), model->getPosition().z()), height);
+                model->setPosition(Vec3f(model->getPosition().x(), height, model->getPosition().z()));
             }
             selectedObject = model;
             model->setSelected(true);
@@ -2742,8 +2774,8 @@ void ODFAEGCreator::onExec() {
     if (getWorld() != nullptr) {
         getWorld()->update();
     }
-    oldX = IMouse::getPosition(getRenderWindow()).x;
-    oldY = IMouse::getPosition(getRenderWindow()).y;
+    oldX = IMouse::getPosition(getRenderWindow()).x();
+    oldY = IMouse::getPosition(getRenderWindow()).y();
 }
 void ODFAEGCreator::showScenes(Label* label) {
     Node* node = rootNode->findNode(label);
@@ -2771,28 +2803,7 @@ void ODFAEGCreator::showProjectsFiles(Label* label) {
     isGuiShown = false;
     pScriptsEdit->setVisible(true);
     Node* node = rootNode->findNode(label);
-    if (node->getNodes().size() == 1) {
-        FontManager<Fonts>& fm = cache.resourceManager<Font, Fonts>("FontManager");
-        std::vector<LightComponent*> children = pProjects->getChildren();
-        Label* lHeaders = new Label(getRenderWindow(),Vec3f(0, 0, 0),Vec3f(200,17,0),fm.getResourceByAlias(Fonts::Serif),"headers", 15);
-        Label* lSources = new Label(getRenderWindow(),Vec3f(0, 0,0),Vec3f(200,17,0),fm.getResourceByAlias(Fonts::Serif),"sources", 15);
-        lHeaders->setBackgroundColor(sf::Color::White);
-        lSources->setBackgroundColor(sf::Color::White);
-        lHeaders->setParent(pProjects);
-        Node* hNode = new Node ("headers", lHeaders, Vec2f(0, 0), Vec2f(1.f, 0.025f), node);
-        pProjects->addChild(lHeaders);
-        lSources->setParent(pProjects);
-        Node* sNode = new Node("sources",lSources,Vec2f(0, 0), Vec2f(1.f, 0.025f), node);
-        pProjects->addChild(lSources);
-        lHeaders->setForegroundColor(sf::Color::Green);
-        lSources->setForegroundColor(sf::Color::Green);
-        pProjects->setAutoResized(true);
-        Action a(Action::EVENT_TYPE::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
-        Command cmd1(a, FastDelegate<bool>(&Label::isMouseInside, lHeaders), FastDelegate<void>(&ODFAEGCreator::showHeadersFiles, this, lHeaders));
-        lHeaders->getListener().connect("SHOWHFILES", cmd1);
-        Command cmd2(a, FastDelegate<bool>(&Label::isMouseInside, lSources), FastDelegate<void>(&ODFAEGCreator::showSourcesFiles, this, lSources));
-        lSources->getListener().connect("SHOWSFILES", cmd2);
-    } else if (!node->isNodeVisible()) {
+    if (!node->isNodeVisible()) {
         node->showAllNodes();
     } else {
         node->hideAllNodes();
@@ -2820,8 +2831,8 @@ void ODFAEGCreator::showHeadersFiles(Label* label) {
             std::string path = files[i].substr(pos+1, files[i].size()-pos-1);
             Label* lab = new Label(getRenderWindow(), Vec3f(0, 0, 0), Vec3f(200, 17, 0),fm.getResourceByAlias(Fonts::Serif), path, 15);
             lab->setParent(pProjects);
-            lab->setBackgroundColor(sf::Color::White);
-            lab->setForegroundColor(sf::Color::Yellow);
+            lab->setBackgroundColor(Color::White);
+            lab->setForegroundColor(Color::Yellow);
             Node* lnode = new Node("header files", lab, Vec2f(0, 0),Vec2f(1,0.025f),node);
             pProjects->addChild(lab);
             Action a(Action::EVENT_TYPE::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
@@ -2850,8 +2861,8 @@ void ODFAEGCreator::showSourcesFiles(Label* label) {
             std::string path = files[i].substr(pos+1, files[i].size()-pos-1);
             Label* lab = new Label(getRenderWindow(), Vec3f(0, 0, 0), Vec3f(200, 17, 0),fm.getResourceByAlias(Fonts::Serif), path, 15);
             Node* lNode = new Node("source files", lab, Vec2f(0, 0), Vec2f(1.f, 0.025f), node);
-            lab->setBackgroundColor(sf::Color::White);
-            lab->setForegroundColor(sf::Color::Yellow);
+            lab->setBackgroundColor(Color::White);
+            lab->setForegroundColor(Color::Yellow);
             lab->setParent(pProjects);
             pProjects->addChild(lab);
             Action a(Action::EVENT_TYPE::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
@@ -2880,10 +2891,10 @@ void ODFAEGCreator::showFileContent(Label* lab) {
         tScriptEdit->setTextSize(20);
         tScriptEdit->setText(it->second);
         Vec3f textSize = tScriptEdit->getTextSize();
-        if (textSize.x > tScriptEdit->getSize().x)
-            tScriptEdit->setSize(Vec3f(textSize.x, tScriptEdit->getSize().y, tScriptEdit->getSize().z));
-        if (textSize.y > tScriptEdit->getSize().y)
-            tScriptEdit->setSize(Vec3f(tScriptEdit->getSize().x, textSize.y, tScriptEdit->getSize().z));
+        if (textSize.x() > tScriptEdit->getSize().x())
+            tScriptEdit->setSize(Vec3f(textSize.x(), tScriptEdit->getSize().y(), tScriptEdit->getSize().z()));
+        if (textSize.y() > tScriptEdit->getSize().y())
+            tScriptEdit->setSize(Vec3f(tScriptEdit->getSize().x(), textSize.y(), tScriptEdit->getSize().z()));
         pScriptsEdit->updateScrolls();
     }
 }
@@ -2901,7 +2912,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         wGenerateTerrain->setVisible(false);
         getRenderComponentManager().setEventContextActivated(false, *wGenerateTerrain);
         getRenderComponentManager().setEventContextActivated(true, getRenderWindow());
-        Tile* tile = factory.make_entity<Tile>(nullptr, Vec3f(0, 0, 0), Vec3f(120, 60, 0),sf::IntRect(0, 0, 100, 50), factory);
+        Tile* tile = factory.make_entity<Tile>(nullptr, Vec3f(0, 0, 0), Vec3f(120, 60, 0),IntRect(0, 0, 100, 50), factory);
         selectedObject = tile;
         ground.push_back(tile);
         displayTileInfos(tile);
@@ -2911,7 +2922,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         wGenerate3DTerrain->setVisible(false);
         getRenderComponentManager().setEventContextActivated(false, *wGenerate3DTerrain);
         getRenderComponentManager().setEventContextActivated(true, getRenderWindow());
-        Tile* tile = factory.make_entity<Tile>(nullptr, Vec3f(0, 0, 0), Vec3f(50, 0, 50),sf::IntRect(0, 0, 50, 50), factory);
+        Tile* tile = factory.make_entity<Tile>(nullptr, Vec3f(0, 0, 0), Vec3f(50, 0, 50),IntRect(0, 0, 50, 50), factory);
         selectedObject = tile;
         ground.push_back(tile);
         displayTileInfos(tile);
@@ -2955,38 +2966,38 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         getRenderComponentManager().setEventContextActivated(true, getRenderWindow());
         if (dpSelectWallType->getSelectedItem() == "top bottom") {
             std::cout<<"top bottom"<<std::endl;
-            Wall* wall = factory.make_entity<g2d::Wall>(factory.make_entity<Tile>(nullptr, Vec3f(0, 0, 0), Vec3f(100, 100, 0), sf::IntRect(100, 0, 100, 100), factory),g2d::Wall::TOP_BOTTOM,&g2d::AmbientLight::getAmbientLight(), factory);
+            Wall* wall = factory.make_entity<g2d::Wall>(factory.make_entity<Tile>(nullptr, Vec3f(0, 0, 0), Vec3f(100, 100, 0), IntRect(100, 0, 100, 100), factory),g2d::Wall::TOP_BOTTOM,&g2d::AmbientLight::getAmbientLight(), factory);
             walls[g2d::Wall::TOP_BOTTOM] = wall;
             selectedObject = wall->getChildren()[0];
             displayTileInfos(wall->getChildren()[0]);
         }
         else if (dpSelectWallType->getSelectedItem() == "right left") {
             std::cout<<"right left"<<std::endl;
-            Wall* wall = factory.make_entity<g2d::Wall>(factory.make_entity<Tile>(nullptr, Vec3f(0, 0, 0), Vec3f(100, 100, 0), sf::IntRect(100, 100, 100, 100), factory),g2d::Wall::RIGHT_LEFT,&g2d::AmbientLight::getAmbientLight(), factory);
+            Wall* wall = factory.make_entity<g2d::Wall>(factory.make_entity<Tile>(nullptr, Vec3f(0, 0, 0), Vec3f(100, 100, 0), IntRect(100, 100, 100, 100), factory),g2d::Wall::RIGHT_LEFT,&g2d::AmbientLight::getAmbientLight(), factory);
             walls[g2d::Wall::RIGHT_LEFT] = wall;
             selectedObject = wall->getChildren()[0];
             displayTileInfos(wall->getChildren()[0]);
         } else if (dpSelectWallType->getSelectedItem() == "bottom right") {
             std::cout<<"bottom right"<<std::endl;
-            Wall* wall = factory.make_entity<g2d::Wall>(factory.make_entity<Tile>(nullptr, Vec3f(0, 0, 0), Vec3f(100, 100, 0), sf::IntRect(100, 200, 100, 100), factory),g2d::Wall::BOTTOM_RIGHT,&g2d::AmbientLight::getAmbientLight(), factory);
+            Wall* wall = factory.make_entity<g2d::Wall>(factory.make_entity<Tile>(nullptr, Vec3f(0, 0, 0), Vec3f(100, 100, 0), IntRect(100, 200, 100, 100), factory),g2d::Wall::BOTTOM_RIGHT,&g2d::AmbientLight::getAmbientLight(), factory);
             walls[g2d::Wall::BOTTOM_RIGHT] = wall;
             selectedObject = wall->getChildren()[0];
             displayTileInfos(wall->getChildren()[0]);
         } else if (dpSelectWallType->getSelectedItem() == "top left") {
             std::cout<<"top left"<<std::endl;
-            Wall* wall = factory.make_entity<g2d::Wall>(factory.make_entity<Tile>(nullptr, Vec3f(0, 0, 0), Vec3f(100, 100, 0), sf::IntRect(100, 300, 100, 100), factory),g2d::Wall::TOP_LEFT,&g2d::AmbientLight::getAmbientLight(), factory);
+            Wall* wall = factory.make_entity<g2d::Wall>(factory.make_entity<Tile>(nullptr, Vec3f(0, 0, 0), Vec3f(100, 100, 0), IntRect(100, 300, 100, 100), factory),g2d::Wall::TOP_LEFT,&g2d::AmbientLight::getAmbientLight(), factory);
             walls[g2d::Wall::TOP_LEFT] = wall;
             selectedObject = wall->getChildren()[0];
             displayTileInfos(wall->getChildren()[0]);
         } else if (dpSelectWallType->getSelectedItem() == "top right") {
             std::cout<<"top right"<<std::endl;
-            Wall* wall = factory.make_entity<g2d::Wall>(factory.make_entity<Tile>(nullptr, Vec3f(0, 0, 0), Vec3f(100, 100, 0), sf::IntRect(100, 400, 100, 100), factory),g2d::Wall::TOP_RIGHT,&g2d::AmbientLight::getAmbientLight(), factory);
+            Wall* wall = factory.make_entity<g2d::Wall>(factory.make_entity<Tile>(nullptr, Vec3f(0, 0, 0), Vec3f(100, 100, 0), IntRect(100, 400, 100, 100), factory),g2d::Wall::TOP_RIGHT,&g2d::AmbientLight::getAmbientLight(), factory);
             walls[g2d::Wall::TOP_RIGHT] = wall;
             selectedObject = wall->getChildren()[0];
             displayTileInfos(wall->getChildren()[0]);
         } else if (dpSelectWallType->getSelectedItem() == "bottom left") {
             std::cout<<"bottom left"<<std::endl;
-            Wall* wall = factory.make_entity<g2d::Wall>(factory.make_entity<Tile>(nullptr, Vec3f(0, 0, 0), Vec3f(100, 100, 0), sf::IntRect(100, 500, 100, 100), factory),g2d::Wall::BOTTOM_LEFT,&g2d::AmbientLight::getAmbientLight(), factory);
+            Wall* wall = factory.make_entity<g2d::Wall>(factory.make_entity<Tile>(nullptr, Vec3f(0, 0, 0), Vec3f(100, 100, 0), IntRect(100, 500, 100, 100), factory),g2d::Wall::BOTTOM_LEFT,&g2d::AmbientLight::getAmbientLight(), factory);
             walls[g2d::Wall::BOTTOM_LEFT] = wall;
             selectedObject = wall->getChildren()[0];
             displayTileInfos(wall->getChildren()[0]);
@@ -3046,8 +3057,8 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         Label* lab = new Label(getRenderWindow(),Vec3f(0,0,0),Vec3f(200, 17, 0),fm.getResourceByAlias(Fonts::Serif),appliname, 15);
         Node* node = new Node("test",lab,Vec2f(0, 0),Vec2f(1.f, 0.025f),rootNode.get());
         lab->setParent(pProjects);
-        lab->setForegroundColor(sf::Color::Red);
-        lab->setBackgroundColor(sf::Color::White);
+        lab->setForegroundColor(Color::Red);
+        lab->setBackgroundColor(Color::White);
         pProjects->addChild(lab);
         Action a(Action::EVENT_TYPE::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
         Command cmd(a, FastDelegate<bool>(&Label::isMouseInside, lab), FastDelegate<void>(&ODFAEGCreator::showProjectsFiles, this, lab));
@@ -3055,7 +3066,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         Node* rSceneNode = new Node("test",labScene,Vec2f(0, 0),Vec2f(1.f, 0.025f),rootNode.get());
         rootScenesNode = rSceneNode;
         labScene->getListener().connect("SHOWPFILES", cmd);
-        labScene->setForegroundColor(sf::Color::Red);
+        labScene->setForegroundColor(Color::Red);
         labScene->setParent(pProjects);
         pProjects->addChild(labScene);
         Action a2(Action::EVENT_TYPE::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
@@ -3075,7 +3086,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
             oss<<"#include \"odfaeg/Core/application.h\""<<std::endl;
             oss<<"class "<<appliname<<" : public odfaeg::core::Application {"<<std::endl;
             oss<<"   public : "<<std::endl;
-            oss<<"   "<<appliname<<"(sf::VideoMode vm, std::string title);"<<std::endl;
+            oss<<"   "<<appliname<<"(VideoMode vm, std::string title);"<<std::endl;
             oss<<"   void onLoad();"<<std::endl;
             oss<<"   void onInit();"<<std::endl;
             oss<<"   void onRender(odfaeg::graphic::RenderComponentManager* cm);"<<std::endl;
@@ -3101,8 +3112,8 @@ void ODFAEGCreator::actionPerformed(Button* button) {
             oss<<"using namespace odfaeg::graphic;"<<std::endl;
             oss<<"using namespace odfaeg::math;"<<std::endl;
             oss<<"using namespace odfaeg::window;"<<std::endl;
-            oss<<appliname<<"::"<<appliname<<"(sf::VideoMode vm, std::string title) : "<<std::endl;
-            oss<<"Application (vm, title, sf::Style::Resize|sf::Style::Close, ContextSettings(0, 0, 0, 3, 0)) {"<<std::endl;
+            oss<<appliname<<"::"<<appliname<<"(VideoMode vm, std::string title) : "<<std::endl;
+            oss<<"Application (vm, title, Style::Resize|Style::Close, ContextSettings(0, 0, 0, 3, 0)) {"<<std::endl;
             oss<<"}"<<std::endl;
             oss<<"void "<<appliname<<"::onLoad() {"<<std::endl;
             oss<<"}"<<std::endl;
@@ -3133,7 +3144,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
             #endif // if
             oss<<"#include \""<<minAppliname<<".hpp\""<<std::endl;
             oss<<"int main(int argc, char* argv[]) {"<<std::endl;
-            oss<<"    "<<appliname<<" app(sf::VideoMode("<<width<<","<<height<<"),\""<<appliname<<"\");"<<std::endl;
+            oss<<"    "<<appliname<<" app(VideoMode("<<width<<","<<height<<"),\""<<appliname<<"\");"<<std::endl;
             oss<<"    return app.exec();"<<std::endl;
             oss<<"}"<<std::endl;
             main<<oss.str();
@@ -3170,18 +3181,18 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         Label* lab = new Label(getRenderWindow(),Vec3f(0,0,0),Vec3f(200, 17, 0),fm.getResourceByAlias(Fonts::Serif),taMapName->getText(), 15);
         Node* node = new Node(taMapName->getText(),lab,Vec2f(0, 0),Vec2f(1.f, 0.025f),rootScenesNode);
         lab->setParent(pProjects);
-        lab->setForegroundColor(sf::Color::Blue);
-        lab->setBackgroundColor(sf::Color::White);
+        lab->setForegroundColor(Color::Blue);
+        lab->setBackgroundColor(Color::White);
         pProjects->addChild(lab);
         Action a(Action::EVENT_TYPE::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
         Command cmd(a, FastDelegate<bool>(&Label::isMouseInside, lab), FastDelegate<void>(&ODFAEGCreator::showScene, this, lab));
         lab->getListener().connect("SHOWPFILES", cmd);
         cshapes.clear();
-        for (int i = 0; i < getRenderWindow().getSize().x; i+=100) {
-            for (int j = 0; j < getRenderWindow().getSize().y; j+=50) {
+        for (int i = 0; i < getRenderWindow().getSize().x(); i+=100) {
+            for (int j = 0; j < getRenderWindow().getSize().y(); j+=50) {
                 ConvexShape cshape(4);
-                cshape.setFillColor(sf::Color::Transparent);
-                cshape.setOutlineColor(sf::Color(75, 75, 75));
+                cshape.setFillColor(Color::Transparent);
+                cshape.setOutlineColor(Color(75, 75, 75));
                 cshape.setOutlineThickness(1.f);
                 Vec2f points[4];
                 points[0] = Vec2f(0, 0);
@@ -3191,7 +3202,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
                 for (unsigned int n = 0; n < 4; n++) {
                     points[n] = bcm.changeOfBase(points[n]);
                     points[n] += Vec2f(i, j);
-                    cshape.setPoint(n, sf::Vector3f(points[n].x, points[n].y, 0));
+                    cshape.setPoint(n, Vec3f(points[n].x(), points[n].y(), 0));
                 }
                 cshapes.push_back(cshape);
             }
@@ -3265,7 +3276,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         UniversalEmitter emitter;
         emitter.setEmissionRate(conversionStringFloat(taEmissionRate->getText()));
         emitterParams.push_back(taEmissionRate->getText());
-        emitter.setParticleLifetime(Distributions::uniform(sf::seconds(conversionStringFloat(taMinLifeTime->getText())), sf::seconds(conversionStringFloat(taMaxLifeTime->getText()))));
+        emitter.setParticleLifetime(Distributions::uniform(seconds(conversionStringFloat(taMinLifeTime->getText())), seconds(conversionStringFloat(taMaxLifeTime->getText()))));
         emitterParams.push_back(taMinLifeTime->getText());
         emitterParams.push_back(taMaxLifeTime->getText());
         if (dpSelectPPType->getSelectedItem() == "Rect") {
@@ -3335,7 +3346,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         }
     }
     if (button == bAddTexRect) {
-        sf::IntRect rect;
+        IntRect rect;
         rect.left = conversionStringInt(tTexCoordX->getText());
         rect.top = conversionStringInt(tTexCoordY->getText());
         rect.width = conversionStringInt(tTexCoordW->getText());
@@ -3771,7 +3782,7 @@ void ODFAEGCreator::addExternalEntity(Entity* entity, std::string type) {
     getWorld()->addEntity(entity);*/
     std::map<std::string, std::vector<Entity*>>::iterator it = toAdd.find(type);
     if (it == toAdd.end()) {
-        Vec3f position = getRenderWindow().mapPixelToCoords(Vec3f(cursor.getPosition().x, getRenderWindow().getSize().y - cursor.getPosition().y, 0))+getRenderWindow().getView().getSize()*0.5f;
+        Vec3f position = getRenderWindow().mapPixelToCoords(Vec3f(cursor.getPosition().x(), getRenderWindow().getSize().y() - cursor.getPosition().y(), 0))+getRenderWindow().getView().getSize()*0.5f;
         entity->setPosition(position);
         entity->setClassName(type);
         toAdd.insert(std::make_pair(type, std::vector<Entity*>()));
@@ -3819,8 +3830,8 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
     if (item->getText() == "Tile") {
         if (appliname != "" && getWorld()->getCurrentSceneManager() != nullptr) {
             if (!showRectSelect) {
-                Vec3f position = getRenderWindow().mapPixelToCoords(Vec3f(cursor.getPosition().x, getRenderWindow().getSize().y - cursor.getPosition().y, 0))+getRenderWindow().getView().getSize()*0.5f;
-                Tile* tile = factory.make_entity<Tile>(nullptr, position,Vec3f(gridWidth, gridHeight, 0), sf::IntRect(0, 0, gridWidth, gridHeight), factory);
+                Vec3f position = getRenderWindow().mapPixelToCoords(Vec3f(cursor.getPosition().x(), getRenderWindow().getSize().y() - cursor.getPosition().y(), 0))+getRenderWindow().getView().getSize()*0.5f;
+                Tile* tile = factory.make_entity<Tile>(nullptr, position,Vec3f(gridWidth, gridHeight, 0), IntRect(0, 0, gridWidth, gridHeight), factory);
                 selectedObject = tile;
                 //std::cout << "wall center : " << tile->getCenter()<< std::endl;
                 displayTileInfos(tile);
@@ -3831,25 +3842,25 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
                 BoundingBox rect = rectSelect.getSelectionRect();
                 Vec3f savedPos = rectSelect.getSelectionRect().getPosition();
                 Vec3f pos = rectSelect.getSelectionRect().getPosition();
-                pos = getRenderWindow().mapPixelToCoords(Vec3f(pos.x, getRenderWindow().getSize().y - pos.y, 0))+getRenderWindow().getView().getSize()*0.5f;
-                rectSelect.setRect(pos.x, pos.y, pos.z, rectSelect.getSelectionRect().getSize().x,rectSelect.getSelectionRect().getSize().y, rectSelect.getSelectionRect().getSize().z);
+                pos = getRenderWindow().mapPixelToCoords(Vec3f(pos.x(), getRenderWindow().getSize().y() - pos.y(), 0))+getRenderWindow().getView().getSize()*0.5f;
+                rectSelect.setRect(pos.x(), pos.y(), pos.z(), rectSelect.getSelectionRect().getSize().x(),rectSelect.getSelectionRect().getSize().y(), rectSelect.getSelectionRect().getSize().z());
                 //In 2D iso the tiles are in a staggered arrangement so we need to shift the x position every two times in the loop.
                 if (getWorld()->getBaseChangementMatrix().isIso2DMatrix()) {
                     int i = 0;
-                    int x = rect.getPosition().x;
-                    int y = rect.getPosition().y;
-                    int endX = rect.getPosition().x + rect.getSize().x;
-                    int endY = rect.getPosition().y + rect.getSize().y;
+                    int x = rect.getPosition().x();
+                    int y = rect.getPosition().y();
+                    int endX = rect.getPosition().x() + rect.getSize().x();
+                    int endY = rect.getPosition().y() + rect.getSize().y();
                     while (y <= endY) {
                         int offsetX;
                         if (i%2==0)
                             offsetX = 0;
                         else
                             offsetX = gridWidth*0.5f;
-                        x = rect.getPosition().x+offsetX;
+                        x = rect.getPosition().x()+offsetX;
                         while (x <= endX) {
                             Vec3f position = getGridCellPos(Vec3f(x, y, 0));
-                            Tile* tile = factory.make_entity<Tile>(nullptr,position,Vec3f(gridWidth, gridHeight, 0),sf::IntRect(0, 0, gridWidth, gridHeight), factory);
+                            Tile* tile = factory.make_entity<Tile>(nullptr,position,Vec3f(gridWidth, gridHeight, 0),IntRect(0, 0, gridWidth, gridHeight), factory);
                             rectSelect.addItem(tile);
                             if (rectSelect.getItems().size() == 1) {
                                 selectedObject = tile;
@@ -3862,10 +3873,10 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
                         i++;
                     }
                 } else {
-                    for (int x = rect.getPosition().x; x < rect.getPosition().x + rect.getSize().x; x+=gridWidth) {
-                        for (int y = rect.getPosition().y; y <  rect.getPosition().y + rect.getSize().y; y+=gridHeight) {
+                    for (int x = rect.getPosition().x(); x < rect.getPosition().x() + rect.getSize().x(); x+=gridWidth) {
+                        for (int y = rect.getPosition().y(); y <  rect.getPosition().y() + rect.getSize().y(); y+=gridHeight) {
                             Vec3f position = getGridCellPos(Vec3f(x, y, 0));
-                            Tile* tile = factory.make_entity<Tile>(nullptr,position,Vec3f(gridWidth, gridHeight, 0),sf::IntRect(0, 0, gridWidth, gridHeight), factory);
+                            Tile* tile = factory.make_entity<Tile>(nullptr,position,Vec3f(gridWidth, gridHeight, 0),IntRect(0, 0, gridWidth, gridHeight), factory);
                             rectSelect.addItem(tile);
                             if (rectSelect.getItems().size() == 1) {
                                 selectedObject = tile;
@@ -3875,7 +3886,7 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
                         }
                     }
                 }
-                rectSelect.setRect(savedPos.x, savedPos.y, savedPos.z, rectSelect.getSelectionRect().getSize().x,rectSelect.getSelectionRect().getSize().y, rectSelect.getSelectionRect().getSize().z);
+                rectSelect.setRect(savedPos.x(), savedPos.y(), savedPos.z(), rectSelect.getSelectionRect().getSize().x(),rectSelect.getSelectionRect().getSize().y(), rectSelect.getSelectionRect().getSize().z());
             }
         }
     }
@@ -3884,7 +3895,7 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
             if (!showRectSelect) {
                 Decor* decor = factory.make_entity<Decor>(factory);
                 decor->setName("HOUSE");
-                Vec3f position = getRenderWindow().mapPixelToCoords(Vec3f(cursor.getPosition().x, getRenderWindow().getSize().y - cursor.getPosition().y, 0))+getRenderWindow().getView().getSize()*0.5f;
+                Vec3f position = getRenderWindow().mapPixelToCoords(Vec3f(cursor.getPosition().x(), getRenderWindow().getSize().y() - cursor.getPosition().y(), 0))+getRenderWindow().getView().getSize()*0.5f;
                 decor->setPosition(position);
                 selectedObject = decor;
                 displayDecorInfos(decor);
@@ -3894,10 +3905,10 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
                 BoundingBox rect = rectSelect.getSelectionRect();
                 Vec3f savedPos = rectSelect.getSelectionRect().getPosition();
                 Vec3f pos = rectSelect.getSelectionRect().getPosition();
-                pos = getRenderWindow().mapPixelToCoords(Vec3f(pos.x, getRenderWindow().getSize().y - pos.y, 0))+getRenderWindow().getView().getSize()*0.5f;
-                rectSelect.setRect(pos.x, pos.y, pos.z, rectSelect.getSelectionRect().getSize().x,rectSelect.getSelectionRect().getSize().y, rectSelect.getSelectionRect().getSize().z);
-                for (int x = rect.getPosition().x; x < rect.getPosition().x + rect.getSize().x-gridWidth; x+=gridWidth) {
-                    for (int y = rect.getPosition().y; y <  rect.getPosition().y + rect.getSize().y-gridHeight; y+=gridHeight) {
+                pos = getRenderWindow().mapPixelToCoords(Vec3f(pos.x(), getRenderWindow().getSize().y() - pos.y(), 0))+getRenderWindow().getView().getSize()*0.5f;
+                rectSelect.setRect(pos.x(), pos.y(), pos.z(), rectSelect.getSelectionRect().getSize().x(),rectSelect.getSelectionRect().getSize().y(), rectSelect.getSelectionRect().getSize().z());
+                for (int x = rect.getPosition().x(); x < rect.getPosition().x() + rect.getSize().x()-gridWidth; x+=gridWidth) {
+                    for (int y = rect.getPosition().y(); y <  rect.getPosition().y() + rect.getSize().y()-gridHeight; y+=gridHeight) {
                         Decor* decor = factory.make_entity<Decor>(factory);
                         rectSelect.addItem(decor);
                         if (rectSelect.getItems().size() == 1) {
@@ -3907,7 +3918,7 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
                         getWorld()->addEntity(decor);
                     }
                 }
-                rectSelect.setRect(savedPos.x, savedPos.y, savedPos.z, rectSelect.getSelectionRect().getSize().x,rectSelect.getSelectionRect().getSize().y, rectSelect.getSelectionRect().getSize().z);
+                rectSelect.setRect(savedPos.x(), savedPos.y(), savedPos.z(), rectSelect.getSelectionRect().getSize().x(),rectSelect.getSelectionRect().getSize().y(), rectSelect.getSelectionRect().getSize().z());
             }
         }
     }
@@ -3915,7 +3926,7 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
          if (appliname != "" && getWorld()->getCurrentSceneManager() != nullptr) {
             if (!showRectSelect) {
                 Wall* wall = factory.make_entity<Wall>(factory);
-                Vec3f position = getRenderWindow().mapPixelToCoords(Vec3f(cursor.getPosition().x, getRenderWindow().getSize().y - cursor.getPosition().y, 0))+getRenderWindow().getView().getSize()*0.5f;
+                Vec3f position = getRenderWindow().mapPixelToCoords(Vec3f(cursor.getPosition().x(), getRenderWindow().getSize().y() - cursor.getPosition().y(), 0))+getRenderWindow().getView().getSize()*0.5f;
                 wall->setPosition(position);
                 selectedObject = wall;
                 displayWallInfos(wall);
@@ -3925,10 +3936,10 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
                 BoundingBox rect = rectSelect.getSelectionRect();
                 Vec3f savedPos = rectSelect.getSelectionRect().getPosition();
                 Vec3f pos = rectSelect.getSelectionRect().getPosition();
-                pos = getRenderWindow().mapPixelToCoords(Vec3f(pos.x, getRenderWindow().getSize().y - pos.y, 0))+getRenderWindow().getView().getSize()*0.5f;
-                rectSelect.setRect(pos.x, pos.y, pos.z, rectSelect.getSelectionRect().getSize().x,rectSelect.getSelectionRect().getSize().y, rectSelect.getSelectionRect().getSize().z);
-                for (int x = rect.getPosition().x; x < rect.getPosition().x + rect.getSize().x-gridWidth; x+=gridWidth) {
-                    for (int y = rect.getPosition().y; y <  rect.getPosition().y + rect.getSize().y-gridHeight; y+=gridHeight) {
+                pos = getRenderWindow().mapPixelToCoords(Vec3f(pos.x(), getRenderWindow().getSize().y() - pos.y(), 0))+getRenderWindow().getView().getSize()*0.5f;
+                rectSelect.setRect(pos.x(), pos.y(), pos.z(), rectSelect.getSelectionRect().getSize().x(),rectSelect.getSelectionRect().getSize().y(), rectSelect.getSelectionRect().getSize().z());
+                for (int x = rect.getPosition().x(); x < rect.getPosition().x() + rect.getSize().x()-gridWidth; x+=gridWidth) {
+                    for (int y = rect.getPosition().y(); y <  rect.getPosition().y() + rect.getSize().y()-gridHeight; y+=gridHeight) {
                         Wall* wall = factory.make_entity<Wall>(factory);
                         rectSelect.addItem(wall);
                         if (rectSelect.getItems().size() == 1) {
@@ -3938,7 +3949,7 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
                         getWorld()->addEntity(wall);
                     }
                 }
-                rectSelect.setRect(savedPos.x, savedPos.y, savedPos.z, rectSelect.getSelectionRect().getSize().x,rectSelect.getSelectionRect().getSize().y, rectSelect.getSelectionRect().getSize().z);
+                rectSelect.setRect(savedPos.x(), savedPos.y(), savedPos.z(), rectSelect.getSelectionRect().getSize().x(),rectSelect.getSelectionRect().getSize().y(), rectSelect.getSelectionRect().getSize().z());
             }
         }
     }
@@ -3946,7 +3957,7 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
         if (appliname != "" && getWorld()->getCurrentSceneManager() != nullptr) {
             if (!showRectSelect) {
                 Anim* anim = factory.make_entity<Anim>(factory);
-                Vec3f position = getRenderWindow().mapPixelToCoords(Vec3f(cursor.getPosition().x, getRenderWindow().getSize().y - cursor.getPosition().y, 0))+getRenderWindow().getView().getSize()*0.5f;
+                Vec3f position = getRenderWindow().mapPixelToCoords(Vec3f(cursor.getPosition().x(), getRenderWindow().getSize().y() - cursor.getPosition().y(), 0))+getRenderWindow().getView().getSize()*0.5f;
                 anim->setPosition(position);
                 selectedObject = anim;
                 displayAnimInfos(anim);
@@ -3956,10 +3967,10 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
                 BoundingBox rect = rectSelect.getSelectionRect();
                 Vec3f savedPos = rectSelect.getSelectionRect().getPosition();
                 Vec3f pos = rectSelect.getSelectionRect().getPosition();
-                pos = getRenderWindow().mapPixelToCoords(Vec3f(pos.x, getRenderWindow().getSize().y - pos.y, 0))+getRenderWindow().getView().getSize()*0.5f;
-                rectSelect.setRect(pos.x, pos.y, pos.z, rectSelect.getSelectionRect().getSize().x,rectSelect.getSelectionRect().getSize().y, rectSelect.getSelectionRect().getSize().z);
-                for (int x = rect.getPosition().x; x < rect.getPosition().x + rect.getSize().x-gridWidth; x+=gridWidth) {
-                    for (int y = rect.getPosition().y; y <  rect.getPosition().y + rect.getSize().y-gridHeight; y+=gridHeight) {
+                pos = getRenderWindow().mapPixelToCoords(Vec3f(pos.x(), getRenderWindow().getSize().y() - pos.y(), 0))+getRenderWindow().getView().getSize()*0.5f;
+                rectSelect.setRect(pos.x(), pos.y(), pos.z(), rectSelect.getSelectionRect().getSize().x(),rectSelect.getSelectionRect().getSize().y(), rectSelect.getSelectionRect().getSize().z());
+                for (int x = rect.getPosition().x(); x < rect.getPosition().x() + rect.getSize().x()-gridWidth; x+=gridWidth) {
+                    for (int y = rect.getPosition().y(); y <  rect.getPosition().y() + rect.getSize().y()-gridHeight; y+=gridHeight) {
                         Anim* anim = factory.make_entity<Anim>(factory);
                         rectSelect.addItem(anim);
                         if (rectSelect.getItems().size() == 1) {
@@ -3969,7 +3980,7 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
                         getWorld()->addEntity(anim);
                     }
                 }
-                rectSelect.setRect(savedPos.x, savedPos.y, savedPos.z, rectSelect.getSelectionRect().getSize().x,rectSelect.getSelectionRect().getSize().y, rectSelect.getSelectionRect().getSize().z);
+                rectSelect.setRect(savedPos.x(), savedPos.y(), savedPos.z(), rectSelect.getSelectionRect().getSize().x(),rectSelect.getSelectionRect().getSize().y(), rectSelect.getSelectionRect().getSize().z());
             }
         }
     }
@@ -3995,7 +4006,7 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
     if (item->getText() == "Ponctual Light") {
         if (appliname != "" && getWorld()->getCurrentSceneManager() != nullptr) {
             if (!showRectSelect) {
-                PonctualLight* pl = factory.make_entity<PonctualLight>(Vec3f(-50, 420, 420), 100, 50, 0, 255, sf::Color::Yellow, 16, factory);
+                PonctualLight* pl = factory.make_entity<PonctualLight>(Vec3f(-50, 420, 420), 100, 50, 0, 255, Color::Yellow, 16, factory);
                 selectedObject = pl;
                 displayPonctualLightInfos(pl);
                 getWorld()->addEntity(pl);
@@ -4257,12 +4268,12 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
      if (item == item61) {
         if (selectedObject != nullptr) {
             BoundingBox globalBounds = selectedObject->getGlobalBounds();
-            BoundingVolume* bv = new BoundingBox(globalBounds.getPosition().x, globalBounds.getPosition().y, globalBounds.getPosition().z, globalBounds.getSize().x, globalBounds.getSize().y, globalBounds.getSize().z);
+            BoundingVolume* bv = new BoundingBox(globalBounds.getPosition().x(), globalBounds.getPosition().y(), globalBounds.getPosition().z(), globalBounds.getSize().x(), globalBounds.getSize().y(), globalBounds.getSize().z());
             boundingVolumes.push_back(bv);
             selectedBoundingVolume = bv;
             collisionBox = RectangleShape(bv->getSize());
             collisionBox.setPosition(bv->getPosition());
-            collisionBox.setFillColor(sf::Color(255, 0, 0, 128));
+            collisionBox.setFillColor(Color(255, 0, 0, 128));
             if (selectedObject->getType() == "E_TILE") {
                 displayTileInfos(selectedObject);
             } else if (selectedObject->getType() == "E_BIGTILE") {
@@ -4324,8 +4335,8 @@ void ODFAEGCreator::addTile(Tile* tile) {
             std::string subs = content.substr(pos);
             pos += subs.find_first_of('\n') + 1;
         }
-        std::string toInsert = "Tile* tile"+conversionUIntString(tile->getId())+" = new Tile (nullptr,Vec3f("+conversionFloatString(cursor.getPosition().x)+","+
-        conversionFloatString(cursor.getPosition().y)+","+conversionFloatString(cursor.getPosition().z)+"),Vec3f(100,50,0),sf::IntRect(0, 0, "+conversionIntString(gridWidth)+","+
+        std::string toInsert = "Tile* tile"+conversionUIntString(tile->getId())+" = new Tile (nullptr,Vec3f("+conversionFloatString(cursor.getPosition().x())+","+
+        conversionFloatString(cursor.getPosition().y())+","+conversionFloatString(cursor.getPosition().z())+"),Vec3f(100,50,0),IntRect(0, 0, "+conversionIntString(gridWidth)+","+
         conversionIntString(gridHeight)+"));\n"+"World::addEntity(tile"+conversionUIntString(tile->getId())+");\n";
         content.insert(pos, toInsert);
 
@@ -4555,7 +4566,7 @@ void ODFAEGCreator::displayTransformInfos(Transformable* tile) {
     lOrigX->setParent(pTransform);
     Node* nOrigX = new Node("ORIGINX", lOrigX, Vec2f(0, 0), Vec2f(0.25, 0.025), rootPropNode.get());
     pTransform->addChild(lOrigX);
-    taOriginX = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0), fm.getResourceByAlias(Fonts::Serif),conversionFloatString(tile->getOrigin().x), getRenderWindow());
+    taOriginX = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0), fm.getResourceByAlias(Fonts::Serif),conversionFloatString(tile->getOrigin().x()), getRenderWindow());
     taOriginX->setParent(pTransform);
     pTransform->addChild(taOriginX);
     taOriginX->setTextSize(15);
@@ -4565,7 +4576,7 @@ void ODFAEGCreator::displayTransformInfos(Transformable* tile) {
     lOrigY->setParent(pTransform);
     Node* nOrigY = new Node("ORIGINY", lOrigY, Vec2f(0, 0), Vec2f(0.25, 0.025), rootPropNode.get());
     pTransform->addChild(lOrigY);
-    taOriginY = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0), fm.getResourceByAlias(Fonts::Serif),conversionFloatString(tile->getOrigin().y), getRenderWindow());
+    taOriginY = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0), fm.getResourceByAlias(Fonts::Serif),conversionFloatString(tile->getOrigin().y()), getRenderWindow());
     taOriginY->setParent(pTransform);
     pTransform->addChild(taOriginY);
     taOriginY->setTextSize(15);
@@ -4575,7 +4586,7 @@ void ODFAEGCreator::displayTransformInfos(Transformable* tile) {
     lOrigZ->setParent(pTransform);
     Node* nOrigZ = new Node("ORIGINZ", lOrigZ, Vec2f(0, 0), Vec2f(0.25, 0.025), rootPropNode.get());
     pTransform->addChild(lOrigZ);
-    taOriginZ = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0), fm.getResourceByAlias(Fonts::Serif),conversionFloatString(tile->getOrigin().z), getRenderWindow());
+    taOriginZ = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0), fm.getResourceByAlias(Fonts::Serif),conversionFloatString(tile->getOrigin().z()), getRenderWindow());
     taOriginZ->setParent(pTransform);
     pTransform->addChild(taOriginZ);
     taOriginZ->setTextSize(15);
@@ -4597,7 +4608,7 @@ void ODFAEGCreator::displayTransformInfos(Transformable* tile) {
     lPosX->setParent(pTransform);
     Node* lPosXNode = new Node("LabX",lPosX,Vec2f(0, 0),Vec2f(0.25, 0.025), rootPropNode.get());
     pTransform->addChild(lPosX);
-    tPosX = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),conversionFloatString(tile->getPosition().x),getRenderWindow());
+    tPosX = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),conversionFloatString(tile->getPosition().x()),getRenderWindow());
     tPosX->setParent(pTransform);
     tPosX->setTextSize(15);
     lPosXNode->addOtherComponent(tPosX, Vec2f(0.75, 0.025));
@@ -4607,7 +4618,7 @@ void ODFAEGCreator::displayTransformInfos(Transformable* tile) {
     lPosY->setParent(pTransform);
     Node* lPosYNode = new Node("LabY",lPosY,Vec2f(0, 0),Vec2f(0.25, 0.025), rootPropNode.get());
     pTransform->addChild(lPosY);
-    tPosY = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),conversionFloatString(tile->getPosition().y),getRenderWindow());
+    tPosY = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),conversionFloatString(tile->getPosition().y()),getRenderWindow());
     tPosY->setParent(pTransform);
     tPosY->setTextSize(15);
     lPosYNode->addOtherComponent(tPosY, Vec2f(0.75, 0.025));
@@ -4617,7 +4628,7 @@ void ODFAEGCreator::displayTransformInfos(Transformable* tile) {
     lPosZ->setParent(pTransform);
     Node* lPosZNode = new Node("LabZ",lPosZ,Vec2f(0, 0),Vec2f(0.25, 0.025), rootPropNode.get());
     pTransform->addChild(lPosZ);
-    tPosZ = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),conversionFloatString(tile->getPosition().z),getRenderWindow());
+    tPosZ = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),conversionFloatString(tile->getPosition().z()),getRenderWindow());
     tPosZ->setParent(pTransform);
     tPosZ->setTextSize(15);
     lPosZNode->addOtherComponent(tPosZ, Vec2f(0.75, 0.025));
@@ -4639,7 +4650,7 @@ void ODFAEGCreator::displayTransformInfos(Transformable* tile) {
     lSizeW->setParent(pTransform);
     Node* lSizeWNode = new Node("LabW",lSizeW,Vec2f(0, 0),Vec2f(0.25, 0.025), rootPropNode.get());
     pTransform->addChild(lSizeW);
-    tSizeW = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),conversionFloatString(tile->getSize().x),getRenderWindow());
+    tSizeW = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),conversionFloatString(tile->getSize().x()),getRenderWindow());
     tSizeW->setParent(pTransform);
     tSizeW->setTextSize(15);
     lSizeWNode->addOtherComponent(tSizeW, Vec2f(0.75, 0.025));
@@ -4649,7 +4660,7 @@ void ODFAEGCreator::displayTransformInfos(Transformable* tile) {
     lSizeH->setParent(pTransform);
     Node* lSizeHNode = new Node("LabH",lSizeH,Vec2f(0, 0),Vec2f(0.25, 0.025), rootPropNode.get());
     pTransform->addChild(lSizeH);
-    tSizeH = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),conversionFloatString(tile->getSize().y),getRenderWindow());
+    tSizeH = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),conversionFloatString(tile->getSize().y()),getRenderWindow());
     tSizeH->setParent(pTransform);
     tSizeH->setTextSize(15);
     lSizeHNode->addOtherComponent(tSizeH, Vec2f(0.75, 0.025));
@@ -4659,7 +4670,7 @@ void ODFAEGCreator::displayTransformInfos(Transformable* tile) {
     lSizeD->setParent(pTransform);
     Node* lSizeDNode = new Node("LabD",lSizeD,Vec2f(0, 0),Vec2f(0.25, 0.025), rootPropNode.get());
     pTransform->addChild(lSizeD);
-    tSizeD = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),conversionFloatString(tile->getSize().z),getRenderWindow());
+    tSizeD = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),conversionFloatString(tile->getSize().z()),getRenderWindow());
     tSizeD->setParent(pTransform);
     tSizeD->setTextSize(15);
     lSizeDNode->addOtherComponent(tSizeD, Vec2f(0.75, 0.025));
@@ -4681,7 +4692,7 @@ void ODFAEGCreator::displayTransformInfos(Transformable* tile) {
     lMoveX->setParent(pTransform);
     Node* lMoveXNode = new Node("MOVEX",lMoveX,Vec2f(0, 0),Vec2f(0.25, 0.025), rootPropNode.get());
     pTransform->addChild(lMoveX);
-    tMoveX = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),conversionFloatString(tile->getTranslation().x),getRenderWindow());
+    tMoveX = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),conversionFloatString(tile->getTranslation().x()),getRenderWindow());
     tMoveX->setParent(pTransform);
     tMoveX->setTextSize(15);
     lMoveXNode->addOtherComponent(tMoveX, Vec2f(0.75, 0.025));
@@ -4691,7 +4702,7 @@ void ODFAEGCreator::displayTransformInfos(Transformable* tile) {
     lMoveY->setParent(pTransform);
     Node* lMoveYNode = new Node("MOVEY",lMoveY,Vec2f(0, 0),Vec2f(0.25, 0.025), rootPropNode.get());
     pTransform->addChild(lMoveY);
-    tMoveY = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),conversionFloatString(tile->getTranslation().y),getRenderWindow());
+    tMoveY = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),conversionFloatString(tile->getTranslation().y()),getRenderWindow());
     tMoveY->setParent(pTransform);
     tMoveY->setTextSize(15);
     lMoveYNode->addOtherComponent(tMoveY, Vec2f(0.75, 0.025));
@@ -4701,7 +4712,7 @@ void ODFAEGCreator::displayTransformInfos(Transformable* tile) {
     lMoveZ->setParent(pTransform);
     Node* lMoveZNode = new Node("MOVEZ",lMoveZ,Vec2f(0, 0),Vec2f(0.25, 0.025), rootPropNode.get());
     pTransform->addChild(lMoveZ);
-    tMoveZ = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),conversionFloatString(tile->getTranslation().z),getRenderWindow());
+    tMoveZ = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),conversionFloatString(tile->getTranslation().z()),getRenderWindow());
     tMoveZ->setParent(pTransform);
     tMoveZ->setTextSize(15);
     lMoveZNode->addOtherComponent(tMoveZ, Vec2f(0.75, 0.025));
@@ -4723,7 +4734,7 @@ void ODFAEGCreator::displayTransformInfos(Transformable* tile) {
     lScaleX->setParent(pTransform);
     Node* lScaleXNode = new Node("SCALEX",lScaleX,Vec2f(0, 0),Vec2f(0.25, 0.025), rootPropNode.get());
     pTransform->addChild(lScaleX);
-    tScaleX = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),conversionFloatString(tile->getScale().x),getRenderWindow());
+    tScaleX = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),conversionFloatString(tile->getScale().x()),getRenderWindow());
     tScaleX->setParent(pTransform);
     tScaleX->setTextSize(15);
     lScaleXNode->addOtherComponent(tScaleX, Vec2f(0.75, 0.025));
@@ -4733,7 +4744,7 @@ void ODFAEGCreator::displayTransformInfos(Transformable* tile) {
     lScaleY->setParent(pTransform);
     Node* lScaleYNode = new Node("SCALEY",lScaleY,Vec2f(0, 0),Vec2f(0.25, 0.025), rootPropNode.get());
     pTransform->addChild(lScaleY);
-    tScaleY = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),conversionFloatString(tile->getScale().y),getRenderWindow());
+    tScaleY = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),conversionFloatString(tile->getScale().y()),getRenderWindow());
     tScaleY->setParent(pTransform);
     tScaleY->setTextSize(15);
     lScaleYNode->addOtherComponent(tScaleY, Vec2f(0.75, 0.025));
@@ -4743,7 +4754,7 @@ void ODFAEGCreator::displayTransformInfos(Transformable* tile) {
     lScaleZ->setParent(pTransform);
     Node* lScaleZNode = new Node("SCALEZ",lScaleZ,Vec2f(0, 0),Vec2f(0.25, 0.025), rootPropNode.get());
     pTransform->addChild(lScaleZ);
-    tScaleZ = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),conversionFloatString(tile->getScale().z),getRenderWindow());
+    tScaleZ = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),conversionFloatString(tile->getScale().z()),getRenderWindow());
     tScaleZ->setParent(pTransform);
     tScaleZ->setTextSize(15);
     lScaleZNode->addOtherComponent(tScaleZ, Vec2f(0.75, 0.025));
@@ -4880,7 +4891,7 @@ void ODFAEGCreator::displayEntityInfos(Entity* tile) {
     Node* nXShadowCenter = new Node("XShadowCenter", lXShadowCenter, Vec2f(0, 0), Vec2f(0.25, 0.025), rootShadowsNode.get());
     lXShadowCenter->setParent(pShadows);
     pShadows->addChild(lXShadowCenter);
-    taXShadowCenter = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),conversionFloatString(tile->getShadowCenter().x),getRenderWindow());
+    taXShadowCenter = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),conversionFloatString(tile->getShadowCenter().x()),getRenderWindow());
     nXShadowCenter->addOtherComponent(taXShadowCenter, Vec2f(0.75, 0.025));
     taXShadowCenter->setTextSize(15);
     taXShadowCenter->setParent(pShadows);
@@ -4890,7 +4901,7 @@ void ODFAEGCreator::displayEntityInfos(Entity* tile) {
     Node* nYShadowCenter = new Node("YShadowCenter", lYShadowCenter, Vec2f(0, 0), Vec2f(0.25, 0.025), rootShadowsNode.get());
     lYShadowCenter->setParent(pShadows);
     pShadows->addChild(lYShadowCenter);
-    taYShadowCenter = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),conversionFloatString(tile->getShadowCenter().y),getRenderWindow());
+    taYShadowCenter = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),conversionFloatString(tile->getShadowCenter().y()),getRenderWindow());
     nYShadowCenter->addOtherComponent(taYShadowCenter, Vec2f(0.75, 0.025));
     taYShadowCenter->setTextSize(15);
     taYShadowCenter->setParent(pShadows);
@@ -4900,7 +4911,7 @@ void ODFAEGCreator::displayEntityInfos(Entity* tile) {
     Node* nZShadowCenter = new Node("ZShadowCenter", lZShadowCenter, Vec2f(0, 0), Vec2f(0.25, 0.025), rootShadowsNode.get());
     lZShadowCenter->setParent(pShadows);
     pShadows->addChild(lZShadowCenter);
-    taZShadowCenter = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),conversionFloatString(tile->getShadowCenter().z),getRenderWindow());
+    taZShadowCenter = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),conversionFloatString(tile->getShadowCenter().z()),getRenderWindow());
     nZShadowCenter->addOtherComponent(taZShadowCenter, Vec2f(0.75, 0.025));
     taZShadowCenter->setTextSize(15);
     taZShadowCenter->setParent(pShadows);
@@ -4921,7 +4932,7 @@ void ODFAEGCreator::displayEntityInfos(Entity* tile) {
     Node* nXShadowScale = new Node("XShadowCenter", lXShadowScale, Vec2f(0, 0), Vec2f(0.25, 0.025), rootShadowsNode.get());
     lXShadowScale->setParent(pShadows);
     pShadows->addChild(lXShadowScale);
-    taXShadowScale = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),conversionFloatString(tile->getShadowScale().x),getRenderWindow());
+    taXShadowScale = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),conversionFloatString(tile->getShadowScale().x()),getRenderWindow());
     nXShadowScale->addOtherComponent(taXShadowScale, Vec2f(0.75, 0.025));
     taXShadowScale->setTextSize(15);
     taXShadowScale->setParent(pShadows);
@@ -4931,7 +4942,7 @@ void ODFAEGCreator::displayEntityInfos(Entity* tile) {
     Node* nYShadowScale = new Node("YShadowScale", lYShadowScale, Vec2f(0, 0), Vec2f(0.25, 0.025), rootShadowsNode.get());
     lYShadowScale->setParent(pShadows);
     pShadows->addChild(lYShadowScale);
-    taYShadowScale = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),conversionFloatString(tile->getShadowScale().y),getRenderWindow());
+    taYShadowScale = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),conversionFloatString(tile->getShadowScale().y()),getRenderWindow());
     nYShadowScale->addOtherComponent(taYShadowScale, Vec2f(0.75, 0.025));
     taYShadowScale->setTextSize(15);
     taYShadowScale->setParent(pShadows);
@@ -4941,7 +4952,7 @@ void ODFAEGCreator::displayEntityInfos(Entity* tile) {
     Node* nZShadowScale = new Node("ZShadowScale", lZShadowScale, Vec2f(0, 0), Vec2f(0.25, 0.025), rootShadowsNode.get());
     lZShadowScale->setParent(pShadows);
     pShadows->addChild(lZShadowScale);
-    taZShadowScale = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),conversionFloatString(tile->getShadowScale().z),getRenderWindow());
+    taZShadowScale = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),conversionFloatString(tile->getShadowScale().z()),getRenderWindow());
     nZShadowScale->addOtherComponent(taZShadowScale, Vec2f(0.75, 0.025));
     taZShadowScale->setTextSize(15);
     taZShadowScale->setParent(pShadows);
@@ -4972,7 +4983,7 @@ void ODFAEGCreator::displayEntityInfos(Entity* tile) {
     if (selectedBoundingVolume != nullptr) {
         collisionBox = RectangleShape(selectedBoundingVolume->getSize());
         collisionBox.setPosition(selectedBoundingVolume->getPosition());
-        collisionBox.setFillColor(sf::Color(255, 0, 0, 128));
+        collisionBox.setFillColor(Color(255, 0, 0, 128));
         //Parent collision volume.
         //std::cout<<"parent : "<<selectedBoundingVolume->getParent()<<std::endl;
         lParentCV = new Label(getRenderWindow(), Vec3f(0, 0, 0), Vec3f(100, 50, 0), fm.getResourceByAlias(Fonts::Serif), "parent : " + (selectedBoundingVolume->getParent() == nullptr) ? "NONE" : selectedBoundingVolume->getParent()->getName(), 15);
@@ -5041,7 +5052,7 @@ void ODFAEGCreator::displayEntityInfos(Entity* tile) {
         Node* nCollisionPosX = new Node("CollisionPosX", lCollisionXPos,Vec2f(0, 0), Vec2f(0.25, 0.025),rootCollisionNode.get());
         lCollisionXPos->setParent(pCollisions);
         pCollisions->addChild(lCollisionXPos);
-        taBoundingBoxColX = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0), fm.getResourceByAlias(Fonts::Serif), (selectedBoundingVolume != nullptr) ? conversionFloatString(selectedBoundingVolume->getPosition().x) : "0",getRenderWindow());
+        taBoundingBoxColX = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0), fm.getResourceByAlias(Fonts::Serif), (selectedBoundingVolume != nullptr) ? conversionFloatString(selectedBoundingVolume->getPosition().x()) : "0",getRenderWindow());
         taBoundingBoxColX->setTextSize(15);
         nCollisionPosX->addOtherComponent(taBoundingBoxColX, Vec2f(0.75, 0.025));
         taBoundingBoxColX->setParent(pCollisions);
@@ -5051,7 +5062,7 @@ void ODFAEGCreator::displayEntityInfos(Entity* tile) {
         Node* nCollisionPosY = new Node("CollisionPosY", lCollisionYPos,Vec2f(0, 0), Vec2f(0.25, 0.025),rootCollisionNode.get());
         lCollisionYPos->setParent(pCollisions);
         pCollisions->addChild(lCollisionYPos);
-        taBoundingBoxColY = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0), fm.getResourceByAlias(Fonts::Serif), (selectedBoundingVolume != nullptr) ? conversionFloatString(selectedBoundingVolume->getPosition().y) : "0",getRenderWindow());
+        taBoundingBoxColY = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0), fm.getResourceByAlias(Fonts::Serif), (selectedBoundingVolume != nullptr) ? conversionFloatString(selectedBoundingVolume->getPosition().y()) : "0",getRenderWindow());
         taBoundingBoxColY->setTextSize(15);
         nCollisionPosY->addOtherComponent(taBoundingBoxColY, Vec2f(0.75, 0.025));
         taBoundingBoxColY->setParent(pCollisions);
@@ -5061,7 +5072,7 @@ void ODFAEGCreator::displayEntityInfos(Entity* tile) {
         Node* nCollisionPosZ = new Node("CollisionPosZ", lCollisionZPos,Vec2f(0, 0), Vec2f(0.25, 0.025),rootCollisionNode.get());
         lCollisionZPos->setParent(pCollisions);
         pCollisions->addChild(lCollisionZPos);
-        taBoundingBoxColZ = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0), fm.getResourceByAlias(Fonts::Serif), (selectedBoundingVolume != nullptr) ? conversionFloatString(selectedBoundingVolume->getPosition().z) : "0",getRenderWindow());
+        taBoundingBoxColZ = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0), fm.getResourceByAlias(Fonts::Serif), (selectedBoundingVolume != nullptr) ? conversionFloatString(selectedBoundingVolume->getPosition().z()) : "0",getRenderWindow());
         taBoundingBoxColZ->setTextSize(15);
         nCollisionPosZ->addOtherComponent(taBoundingBoxColZ, Vec2f(0.75, 0.025));
         taBoundingBoxColZ->setParent(pCollisions);
@@ -5071,7 +5082,7 @@ void ODFAEGCreator::displayEntityInfos(Entity* tile) {
         Node* nCollisionPosW = new Node("CollisionPosW", lCollisionWPos,Vec2f(0, 0), Vec2f(0.25, 0.025),rootCollisionNode.get());
         lCollisionWPos->setParent(pCollisions);
         pCollisions->addChild(lCollisionWPos);
-        taBoundingBoxColW = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0), fm.getResourceByAlias(Fonts::Serif), (selectedBoundingVolume != nullptr) ? conversionFloatString(selectedBoundingVolume->getSize().x) : "0",getRenderWindow());
+        taBoundingBoxColW = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0), fm.getResourceByAlias(Fonts::Serif), (selectedBoundingVolume != nullptr) ? conversionFloatString(selectedBoundingVolume->getSize().x()) : "0",getRenderWindow());
         taBoundingBoxColW->setTextSize(15);
         nCollisionPosW->addOtherComponent(taBoundingBoxColW, Vec2f(0.75, 0.025));
         taBoundingBoxColW->setParent(pCollisions);
@@ -5081,7 +5092,7 @@ void ODFAEGCreator::displayEntityInfos(Entity* tile) {
         Node* nCollisionPosH = new Node("CollisionPosH", lCollisionHPos,Vec2f(0, 0), Vec2f(0.25, 0.025),rootCollisionNode.get());
         lCollisionHPos->setParent(pCollisions);
         pCollisions->addChild(lCollisionHPos);
-        taBoundingBoxColH = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0), fm.getResourceByAlias(Fonts::Serif), (selectedBoundingVolume != nullptr) ? conversionFloatString(selectedBoundingVolume->getSize().y) : "0",getRenderWindow());
+        taBoundingBoxColH = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0), fm.getResourceByAlias(Fonts::Serif), (selectedBoundingVolume != nullptr) ? conversionFloatString(selectedBoundingVolume->getSize().y()) : "0",getRenderWindow());
         taBoundingBoxColH->setTextSize(15);
         nCollisionPosH->addOtherComponent(taBoundingBoxColH, Vec2f(0.75, 0.025));
         taBoundingBoxColH->setParent(pCollisions);
@@ -5097,7 +5108,7 @@ void ODFAEGCreator::displayEntityInfos(Entity* tile) {
         pCollisions->addChild(lCollisionDPos);
 
 
-        taBoundingBoxColD = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0), fm.getResourceByAlias(Fonts::Serif), (tile->getCollisionVolume() != nullptr) ? conversionFloatString(tile->getCollisionVolume()->getSize().z) : "0",getRenderWindow());
+        taBoundingBoxColD = new TextArea(Vec3f(0, 0, 0), Vec3f(100, 50, 0), fm.getResourceByAlias(Fonts::Serif), (tile->getCollisionVolume() != nullptr) ? conversionFloatString(tile->getCollisionVolume()->getSize().z()) : "0",getRenderWindow());
 
         taBoundingBoxColD->setTextSize(15);
 
@@ -5569,23 +5580,23 @@ void ODFAEGCreator::displayTileInfos (Entity* tile) {
         std::cerr << erreur.what() << std::endl;
     }
 }
-void ODFAEGCreator::moveCursor(sf::Vector2f mousePos) {
-    BoundingBox bb (guiPos.x, guiPos.y, guiPos.z, guiSize.x, guiSize.y, guiSize.z);
+void ODFAEGCreator::moveCursor(Vec2f mousePos) {
+    BoundingBox bb (guiPos.x(), guiPos.y(), guiPos.z(), guiSize.x(), guiSize.y(), guiSize.z());
     //std::cout<<"move cursor"<<std::endl;
-    if (bb.isPointInside(Vec3f(mousePos.x, mousePos.y, 0))) {
+    if (bb.isPointInside(Vec3f(mousePos.x(), mousePos.y(), 0))) {
 
         if (getWorld()->getCurrentSceneManager() == nullptr) {
-            int x = mousePos.x-getRenderWindow().getView().getSize().x * 0.5f;
-            int y = mousePos.y-getRenderWindow().getView().getSize().y * 0.5f;
+            int x = mousePos.x()-getRenderWindow().getView().getSize().x() * 0.5f;
+            int y = mousePos.y()-getRenderWindow().getView().getSize().y() * 0.5f;
             cursor.setPosition(Vec3f(x, y, 0));
         } else {
             if (!alignToGrid) {
-                int x = mousePos.x-getRenderWindow().getView().getSize().x * 0.5f;
-                int y = mousePos.y-getRenderWindow().getView().getSize().y * 0.5f;
+                int x = mousePos.x()-getRenderWindow().getView().getSize().x() * 0.5f;
+                int y = mousePos.y()-getRenderWindow().getView().getSize().y() * 0.5f;
                 cursor.setPosition(Vec3f(x, y, 0));
             } else {
-                int x = ((int) mousePos.x/gridWidth*gridWidth)-getRenderWindow().getView().getSize().x * 0.5f;
-                int y = ((int) mousePos.y/gridHeight*gridHeight)-getRenderWindow().getView().getSize().y * 0.5f;
+                int x = ((int) mousePos.x()/gridWidth*gridWidth)-getRenderWindow().getView().getSize().x() * 0.5f;
+                int y = ((int) mousePos.y()/gridHeight*gridHeight)-getRenderWindow().getView().getSize().y() * 0.5f;
                 cursor.setPosition(Vec3f(x, y, 0));
             }
         }
@@ -5602,8 +5613,8 @@ void ODFAEGCreator::moveCursor(sf::Vector2f mousePos) {
                 if (pos != std::string::npos) {
                     std::string subs = content.substr(pos);
                     pos += subs.find_first_of('\n') + 1;
-                    content.insert(pos,"    shape"+conversionUIntString(static_cast<Shape*>(shape)->getId())+"->setPosition(Vec3f("+conversionIntString(shape->getPosition().x)+","
-                    +conversionIntString(shape->getPosition().y)+","+conversionIntString(shape->getPosition().z)+");\n");
+                    content.insert(pos,"    shape"+conversionUIntString(static_cast<Shape*>(shape)->getId())+"->setPosition(Vec3f("+conversionIntString(shape->getPosition().x())+","
+                    +conversionIntString(shape->getPosition().y())+","+conversionIntString(shape->getPosition().z())+");\n");
                 }
             } else {
                 unsigned int pos = content.find("shape"+conversionUIntString(static_cast<Shape*>(shape)->getId())+"->setPosition");
@@ -5611,8 +5622,8 @@ void ODFAEGCreator::moveCursor(sf::Vector2f mousePos) {
                     std::string subs = content.substr(pos);
                     unsigned int endpos = subs.find_first_of('\n') + pos + 1;
                     content.erase(pos, endpos - pos);
-                    content.insert(pos,"shape"+conversionUIntString(static_cast<Shape*>(shape)->getId())+"->setPosition(Vec3f("+conversionIntString(shape->getPosition().x)+","
-                    +conversionIntString(shape->getPosition().y)+","+conversionIntString(shape->getPosition().z)+"));\n");
+                    content.insert(pos,"shape"+conversionUIntString(static_cast<Shape*>(shape)->getId())+"->setPosition(Vec3f("+conversionIntString(shape->getPosition().x())+","
+                    +conversionIntString(shape->getPosition().y())+","+conversionIntString(shape->getPosition().z())+"));\n");
                 }
             }
         }
@@ -5622,8 +5633,8 @@ void ODFAEGCreator::moveCursor(sf::Vector2f mousePos) {
                 if (pos != std::string::npos) {
                     std::string subs = content.substr(pos);
                     pos += subs.find_first_of('\n') + 1;
-                    content.insert(pos,"    tile"+conversionUIntString(static_cast<Tile*>(shape)->getId())+"->setPosition(Vec3f("+conversionIntString(shape->getPosition().x)+","
-                    +conversionIntString(shape->getPosition().y)+","+conversionIntString(shape->getPosition().z)+");\n");
+                    content.insert(pos,"    tile"+conversionUIntString(static_cast<Tile*>(shape)->getId())+"->setPosition(Vec3f("+conversionIntString(shape->getPosition().x())+","
+                    +conversionIntString(shape->getPosition().y())+","+conversionIntString(shape->getPosition().z())+");\n");
                 }
             } else {
                 unsigned int pos = content.find("tile"+conversionUIntString(static_cast<Tile*>(shape)->getId())+"->setPosition");
@@ -5631,8 +5642,8 @@ void ODFAEGCreator::moveCursor(sf::Vector2f mousePos) {
                     std::string subs = content.substr(pos);
                     unsigned int endpos = subs.find_first_of('\n') + pos + 1;
                     content.erase(pos, endpos - pos);
-                    content.insert(pos,"tile"+conversionUIntString(static_cast<Tile*>(shape)->getId())+"->setPosition(Vec3f("+conversionIntString(shape->getPosition().x)+","
-                    +conversionIntString(shape->getPosition().y)+","+conversionIntString(shape->getPosition().z)+"));\n");
+                    content.insert(pos,"tile"+conversionUIntString(static_cast<Tile*>(shape)->getId())+"->setPosition(Vec3f("+conversionIntString(shape->getPosition().x())+","
+                    +conversionIntString(shape->getPosition().y())+","+conversionIntString(shape->getPosition().z())+"));\n");
                 }
             }
         }
@@ -5645,18 +5656,18 @@ void ODFAEGCreator::onShadowScaleChanged(TextArea* ta) {
             StateGroup* sg = new StateGroup("SGCHANGEXSHADSCALE"+conversionFloatString(xShadScale));
             State* state = new State("SCHANGEXSHADSCALE", &se);
             state->addParameter("OBJECT", selectedObject);
-            state->addParameter("OLDVALUE", selectedObject->getShadowScale().x);
+            state->addParameter("OLDVALUE", selectedObject->getShadowScale().x());
             state->addParameter("NEWVALUE", xShadScale);
             sg->addState(state);
             stateStack.addStateGroup(sg);
-            selectedObject->setShadowScale(Vec3f(xShadScale, selectedObject->getShadowScale().y, selectedObject->getShadowScale().z));
+            selectedObject->setShadowScale(Vec3f(xShadScale, selectedObject->getShadowScale().y(), selectedObject->getShadowScale().z()));
             //updateScriptPos(selectedObject);
             for (unsigned int i = 1; i < rectSelect.getItems().size(); i++) {
                 State* selectState = new State("SCHANGEXSHADSCALE", &se);
                 selectState->addParameter("OBJECT", rectSelect.getItems()[i]);
-                selectState->addParameter("OLDVALUE", rectSelect.getItems()[i]->getShadowScale().x);
+                selectState->addParameter("OLDVALUE", rectSelect.getItems()[i]->getShadowScale().x());
                 selectState->addParameter("NEWVALUE", xShadScale);
-                rectSelect.getItems()[i]->setShadowScale(Vec3f(xShadScale, rectSelect.getItems()[i]->getShadowScale().y, rectSelect.getItems()[i]->getShadowScale().z));
+                rectSelect.getItems()[i]->setShadowScale(Vec3f(xShadScale, rectSelect.getItems()[i]->getShadowScale().y(), rectSelect.getItems()[i]->getShadowScale().z()));
                 sg->addState(selectState);
             }
         }
@@ -5667,18 +5678,18 @@ void ODFAEGCreator::onShadowScaleChanged(TextArea* ta) {
             StateGroup* sg = new StateGroup("SGCHANGEYSHADSCALE"+conversionFloatString(yShadScale));
             State* state = new State("SCHANGEYSHADSCALE", &se);
             state->addParameter("OBJECT", selectedObject);
-            state->addParameter("OLDVALUE", selectedObject->getShadowScale().y);
+            state->addParameter("OLDVALUE", selectedObject->getShadowScale().y());
             state->addParameter("NEWVALUE", yShadScale);
             sg->addState(state);
             stateStack.addStateGroup(sg);
-            selectedObject->setShadowScale(Vec3f(selectedObject->getShadowScale().x, yShadScale, selectedObject->getShadowScale().z));
+            selectedObject->setShadowScale(Vec3f(selectedObject->getShadowScale().x(), yShadScale, selectedObject->getShadowScale().z()));
             //updateScriptPos(selectedObject);
             for (unsigned int i = 1; i < rectSelect.getItems().size(); i++) {
                 State* selectState = new State("SCHANGEYSHADSCALE", &se);
                 selectState->addParameter("OBJECT", rectSelect.getItems()[i]);
-                selectState->addParameter("OLDVALUE", rectSelect.getItems()[i]->getShadowScale().y);
+                selectState->addParameter("OLDVALUE", rectSelect.getItems()[i]->getShadowScale().y());
                 selectState->addParameter("NEWVALUE", yShadScale);
-                rectSelect.getItems()[i]->setShadowScale(Vec3f(rectSelect.getItems()[i]->getShadowScale().x, yShadScale, rectSelect.getItems()[i]->getShadowScale().z));
+                rectSelect.getItems()[i]->setShadowScale(Vec3f(rectSelect.getItems()[i]->getShadowScale().x(), yShadScale, rectSelect.getItems()[i]->getShadowScale().z()));
                 sg->addState(selectState);
             }
         }
@@ -5689,18 +5700,18 @@ void ODFAEGCreator::onShadowScaleChanged(TextArea* ta) {
             StateGroup* sg = new StateGroup("SGCHANGEZSHADSCALE"+conversionFloatString(zShadScale));
             State* state = new State("SCHANGEZSHADSCALE", &se);
             state->addParameter("OBJECT", selectedObject);
-            state->addParameter("OLDVALUE", selectedObject->getShadowScale().z);
+            state->addParameter("OLDVALUE", selectedObject->getShadowScale().z());
             state->addParameter("NEWVALUE", zShadScale);
             sg->addState(state);
             stateStack.addStateGroup(sg);
-            selectedObject->setShadowScale(Vec3f(selectedObject->getShadowScale().x, selectedObject->getShadowScale().y, zShadScale));
+            selectedObject->setShadowScale(Vec3f(selectedObject->getShadowScale().x(), selectedObject->getShadowScale().y(), zShadScale));
             //updateScriptPos(selectedObject);
             for (unsigned int i = 1; i < rectSelect.getItems().size(); i++) {
                 State* selectState = new State("SCHANGEZSHADSCALE", &se);
                 selectState->addParameter("OBJECT", rectSelect.getItems()[i]);
-                selectState->addParameter("OLDVALUE", rectSelect.getItems()[i]->getShadowScale().z);
+                selectState->addParameter("OLDVALUE", rectSelect.getItems()[i]->getShadowScale().z());
                 selectState->addParameter("NEWVALUE", zShadScale);
-                rectSelect.getItems()[i]->setShadowScale(Vec3f(rectSelect.getItems()[i]->getShadowScale().x, rectSelect.getItems()[i]->getShadowScale().y, zShadScale));
+                rectSelect.getItems()[i]->setShadowScale(Vec3f(rectSelect.getItems()[i]->getShadowScale().x(), rectSelect.getItems()[i]->getShadowScale().y(), zShadScale));
                 sg->addState(selectState);
             }
         }
@@ -5737,18 +5748,18 @@ void ODFAEGCreator::onShadowCenterChanged(TextArea* ta) {
             StateGroup* sg = new StateGroup("SGCHANGEXSHADCENTER"+conversionFloatString(xShadCenter));
             State* state = new State("SCHANGEXSHADCENTER", &se);
             state->addParameter("OBJECT", selectedObject);
-            state->addParameter("OLDVALUE", selectedObject->getShadowCenter().x);
+            state->addParameter("OLDVALUE", selectedObject->getShadowCenter().x());
             state->addParameter("NEWVALUE", xShadCenter);
             sg->addState(state);
             stateStack.addStateGroup(sg);
-            selectedObject->setShadowCenter(Vec3f(xShadCenter, selectedObject->getShadowCenter().y, selectedObject->getShadowCenter().z));
+            selectedObject->setShadowCenter(Vec3f(xShadCenter, selectedObject->getShadowCenter().y(), selectedObject->getShadowCenter().z()));
             //updateScriptPos(selectedObject);
             for (unsigned int i = 1; i < rectSelect.getItems().size(); i++) {
                 State* selectState = new State("SCHANGEXSHADCENTER", &se);
                 selectState->addParameter("OBJECT", rectSelect.getItems()[i]);
-                selectState->addParameter("OLDVALUE", rectSelect.getItems()[i]->getShadowCenter().x);
+                selectState->addParameter("OLDVALUE", rectSelect.getItems()[i]->getShadowCenter().x());
                 selectState->addParameter("NEWVALUE", xShadCenter);
-                rectSelect.getItems()[i]->setShadowCenter(Vec3f(xShadCenter, rectSelect.getItems()[i]->getShadowCenter().y, rectSelect.getItems()[i]->getShadowCenter().z));
+                rectSelect.getItems()[i]->setShadowCenter(Vec3f(xShadCenter, rectSelect.getItems()[i]->getShadowCenter().y(), rectSelect.getItems()[i]->getShadowCenter().z()));
                 sg->addState(selectState);
             }
         }
@@ -5758,18 +5769,18 @@ void ODFAEGCreator::onShadowCenterChanged(TextArea* ta) {
             StateGroup* sg = new StateGroup("SGCHANGEYSHADCENTER"+conversionFloatString(yShadCenter));
             State* state = new State("SCHANGEYSHADCENTER", &se);
             state->addParameter("OBJECT", selectedObject);
-            state->addParameter("OLDVALUE", selectedObject->getShadowCenter().y);
+            state->addParameter("OLDVALUE", selectedObject->getShadowCenter().y());
             state->addParameter("NEWVALUE", yShadCenter);
             sg->addState(state);
             stateStack.addStateGroup(sg);
-            selectedObject->setShadowCenter(Vec3f(selectedObject->getShadowCenter().x, yShadCenter, selectedObject->getShadowCenter().z));
+            selectedObject->setShadowCenter(Vec3f(selectedObject->getShadowCenter().x(), yShadCenter, selectedObject->getShadowCenter().z()));
             //updateScriptPos(selectedObject);
             for (unsigned int i = 1; i < rectSelect.getItems().size(); i++) {
                 State* selectState = new State("SCHANGEYSHADCENTER", &se);
                 selectState->addParameter("OBJECT", rectSelect.getItems()[i]);
-                selectState->addParameter("OLDVALUE", rectSelect.getItems()[i]->getShadowCenter().x);
+                selectState->addParameter("OLDVALUE", rectSelect.getItems()[i]->getShadowCenter().x());
                 selectState->addParameter("NEWVALUE", yShadCenter);
-                rectSelect.getItems()[i]->setShadowCenter(Vec3f(rectSelect.getItems()[i]->getShadowCenter().x, yShadCenter, rectSelect.getItems()[i]->getShadowCenter().z));
+                rectSelect.getItems()[i]->setShadowCenter(Vec3f(rectSelect.getItems()[i]->getShadowCenter().x(), yShadCenter, rectSelect.getItems()[i]->getShadowCenter().z()));
                 sg->addState(selectState);
             }
         }
@@ -5779,18 +5790,18 @@ void ODFAEGCreator::onShadowCenterChanged(TextArea* ta) {
             StateGroup* sg = new StateGroup("SGCHANGEZSHADCENTER"+conversionFloatString(zShadCenter));
             State* state = new State("SCHANGEZSHADCENTER", &se);
             state->addParameter("OBJECT", selectedObject);
-            state->addParameter("OLDVALUE", selectedObject->getShadowCenter().z);
+            state->addParameter("OLDVALUE", selectedObject->getShadowCenter().z());
             state->addParameter("NEWVALUE", zShadCenter);
             sg->addState(state);
             stateStack.addStateGroup(sg);
-            selectedObject->setShadowCenter(Vec3f(selectedObject->getShadowCenter().x, selectedObject->getShadowCenter().y, zShadCenter));
+            selectedObject->setShadowCenter(Vec3f(selectedObject->getShadowCenter().x(), selectedObject->getShadowCenter().y(), zShadCenter));
             //updateScriptPos(selectedObject);
             for (unsigned int i = 1; i < rectSelect.getItems().size(); i++) {
                 State* selectState = new State("SCHANGEYSHADCENTER", &se);
                 selectState->addParameter("OBJECT", rectSelect.getItems()[i]);
-                selectState->addParameter("OLDVALUE", rectSelect.getItems()[i]->getShadowCenter().z);
+                selectState->addParameter("OLDVALUE", rectSelect.getItems()[i]->getShadowCenter().z());
                 selectState->addParameter("NEWVALUE", zShadCenter);
-                rectSelect.getItems()[i]->setShadowCenter(Vec3f(rectSelect.getItems()[i]->getShadowCenter().x, rectSelect.getItems()[i]->getShadowCenter().y, zShadCenter));
+                rectSelect.getItems()[i]->setShadowCenter(Vec3f(rectSelect.getItems()[i]->getShadowCenter().x(), rectSelect.getItems()[i]->getShadowCenter().y(), zShadCenter));
                 sg->addState(selectState);
             }
         }
@@ -5803,21 +5814,21 @@ void ODFAEGCreator::onObjectPosChanged(TextArea* ta) {
             StateGroup* sg = new StateGroup("SGCHANGEXPOS"+conversionFloatString(newXPos));
             State* state = new State("SCHANGEXPOS", &se);
             state->addParameter("OBJECT", selectedObject);
-            state->addParameter("OLDVALUE", selectedObject->getPosition().x);
+            state->addParameter("OLDVALUE", selectedObject->getPosition().x());
             state->addParameter("NEWVALUE", newXPos);
             sg->addState(state);
             stateStack.addStateGroup(sg);
             getWorld()->removeEntity(selectedObject);
-            selectedObject->setPosition(Vec3f(newXPos, selectedObject->getPosition().y, selectedObject->getPosition().z));
+            selectedObject->setPosition(Vec3f(newXPos, selectedObject->getPosition().y(), selectedObject->getPosition().z()));
             getWorld()->addEntity(selectedObject);
             //updateScriptPos(selectedObject);
             for (unsigned int i = 1; i < rectSelect.getItems().size(); i++) {
                 State* selectState = new State("SCHANGEXPOS", &se);
                 selectState->addParameter("OBJECT", rectSelect.getItems()[i]);
-                selectState->addParameter("OLDVALUE", rectSelect.getItems()[i]->getPosition().x);
+                selectState->addParameter("OLDVALUE", rectSelect.getItems()[i]->getPosition().x());
                 selectState->addParameter("NEWVALUE", newXPos);
                 getWorld()->removeEntity(rectSelect.getItems()[i]);
-                rectSelect.getItems()[i]->setPosition(Vec3f(newXPos, rectSelect.getItems()[i]->getPosition().y, rectSelect.getItems()[i]->getPosition().z));
+                rectSelect.getItems()[i]->setPosition(Vec3f(newXPos, rectSelect.getItems()[i]->getPosition().y(), rectSelect.getItems()[i]->getPosition().z()));
                 getWorld()->addEntity(rectSelect.getItems()[i]);
                 sg->addState(selectState);
             }
@@ -5828,21 +5839,21 @@ void ODFAEGCreator::onObjectPosChanged(TextArea* ta) {
             StateGroup* sg = new StateGroup("SGCHANGEYPOS"+conversionFloatString(newYPos));
             State* state = new State("SCHANGEYPOS", &se);
             state->addParameter("OBJECT", selectedObject);
-            state->addParameter("OLDVALUE", selectedObject->getPosition().y);
+            state->addParameter("OLDVALUE", selectedObject->getPosition().y());
             state->addParameter("NEWVALUE", newYPos);
             sg->addState(state);
             stateStack.addStateGroup(sg);
             getWorld()->removeEntity(selectedObject);
-            selectedObject->setPosition(Vec3f(selectedObject->getPosition().x, newYPos, selectedObject->getPosition().z));
+            selectedObject->setPosition(Vec3f(selectedObject->getPosition().x(), newYPos, selectedObject->getPosition().z()));
             getWorld()->addEntity(selectedObject);
             //updateScriptPos(selectedObject);
             for (unsigned int i = 1; i < rectSelect.getItems().size(); i++) {
                 State* selectState = new State("SCHANGEYPOS", &se);
                 selectState->addParameter("OBJECT", rectSelect.getItems()[i]);
-                selectState->addParameter("OLDVALUE", rectSelect.getItems()[i]->getPosition().y);
+                selectState->addParameter("OLDVALUE", rectSelect.getItems()[i]->getPosition().y());
                 selectState->addParameter("NEWVALUE", newYPos);
                 getWorld()->removeEntity(rectSelect.getItems()[i]);
-                rectSelect.getItems()[i]->setPosition(Vec3f(rectSelect.getItems()[i]->getPosition().x, newYPos, rectSelect.getItems()[i]->getPosition().z));
+                rectSelect.getItems()[i]->setPosition(Vec3f(rectSelect.getItems()[i]->getPosition().x(), newYPos, rectSelect.getItems()[i]->getPosition().z()));
                 getWorld()->addEntity(rectSelect.getItems()[i]);
                 sg->addState(selectState);
             }
@@ -5853,21 +5864,21 @@ void ODFAEGCreator::onObjectPosChanged(TextArea* ta) {
             StateGroup* sg = new StateGroup("SGCHANGEZPOS"+conversionFloatString(newZPos));
             State* state = new State("SCHANGEZPOS", &se);
             state->addParameter("OBJECT", selectedObject);
-            state->addParameter("OLDVALUE", selectedObject->getPosition().z);
+            state->addParameter("OLDVALUE", selectedObject->getPosition().z());
             state->addParameter("NEWVALUE", newZPos);
             sg->addState(state);
             stateStack.addStateGroup(sg);
             getWorld()->removeEntity(selectedObject);
-            selectedObject->setPosition(Vec3f(selectedObject->getPosition().x, selectedObject->getPosition().y, newZPos));
+            selectedObject->setPosition(Vec3f(selectedObject->getPosition().x(), selectedObject->getPosition().y(), newZPos));
             getWorld()->addEntity(selectedObject);
             //updateScriptPos(selectedObject);
             for (unsigned int i = 1; i < rectSelect.getItems().size(); i++) {
                 State* selectState = new State("SCHANGEZPOS", &se);
                 selectState->addParameter("OBJECT", rectSelect.getItems()[i]);
-                selectState->addParameter("OLDVALUE", rectSelect.getItems()[i]->getPosition().z);
+                selectState->addParameter("OLDVALUE", rectSelect.getItems()[i]->getPosition().z());
                 selectState->addParameter("NEWVALUE", newZPos);
                 getWorld()->removeEntity(rectSelect.getItems()[i]);
-                rectSelect.getItems()[i]->setPosition(Vec3f(rectSelect.getItems()[i]->getPosition().x, rectSelect.getItems()[i]->getPosition().y, newZPos));
+                rectSelect.getItems()[i]->setPosition(Vec3f(rectSelect.getItems()[i]->getPosition().x(), rectSelect.getItems()[i]->getPosition().y(), newZPos));
                 getWorld()->addEntity(rectSelect.getItems()[i]);
                 sg->addState(selectState);
             }
@@ -5909,13 +5920,13 @@ void ODFAEGCreator::onObjectSizeChanged(TextArea* ta) {
             StateGroup* sg = new StateGroup("SGCHANGESIZEW"+conversionFloatString(newSizeW));
             State* state = new State("SCHANGESIZEW", &se);
             state->addParameter("OBJECT", selectedObject);
-            state->addParameter("OLDVALUE", selectedObject->getSize().x);
+            state->addParameter("OLDVALUE", selectedObject->getSize().x());
             state->addParameter("NEWVALUE", newSizeW);
             sg->addState(state);
             stateStack.addStateGroup(sg);
             Vec3f oldSize = selectedObject->getSize();
             getWorld()->removeEntity(selectedObject);
-            selectedObject->setSize(Vec3f(newSizeW, selectedObject->getSize().y, selectedObject->getSize().z));
+            selectedObject->setSize(Vec3f(newSizeW, selectedObject->getSize().y(), selectedObject->getSize().z()));
             getWorld()->addEntity(selectedObject);
             //std::cout<<"size  : "<<oldSize * selectedObject->getScale()<<std::endl;
             //updateScriptPos(selectedObject);
@@ -5923,11 +5934,11 @@ void ODFAEGCreator::onObjectSizeChanged(TextArea* ta) {
 
                 State* selectState = new State("SCHANGESIZEW", &se);
                 selectState->addParameter("OBJECT", rectSelect.getItems()[i]);
-                selectState->addParameter("OLDVALUE", rectSelect.getItems()[i]->getSize().x);
+                selectState->addParameter("OLDVALUE", rectSelect.getItems()[i]->getSize().x());
                 selectState->addParameter("NEWVALUE", newSizeW);
                 Vec3f oldSize = rectSelect.getItems()[i]->getSize();
                 getWorld()->removeEntity(rectSelect.getItems()[i]);
-                rectSelect.getItems()[i]->setSize(Vec3f(newSizeW, rectSelect.getItems()[i]->getSize().y, rectSelect.getItems()[i]->getSize().z));
+                rectSelect.getItems()[i]->setSize(Vec3f(newSizeW, rectSelect.getItems()[i]->getSize().y(), rectSelect.getItems()[i]->getSize().z()));
                 getWorld()->addEntity(rectSelect.getItems()[i]);
                 //std::cout<<"size  : "<<oldSize * rectSelect.getItems()[i]->getScale()<<std::endl;
                 sg->addState(selectState);
@@ -5940,21 +5951,21 @@ void ODFAEGCreator::onObjectSizeChanged(TextArea* ta) {
             StateGroup* sg = new StateGroup("SGCHANGESIZEW"+conversionFloatString(newSizeH));
             State* state = new State("SCHANGESIZEW", &se);
             state->addParameter("OBJECT", selectedObject);
-            state->addParameter("OLDVALUE", selectedObject->getSize().y);
+            state->addParameter("OLDVALUE", selectedObject->getSize().y());
             state->addParameter("NEWVALUE", newSizeH);
             sg->addState(state);
             stateStack.addStateGroup(sg);
             getWorld()->removeEntity(selectedObject);
-            selectedObject->setSize(Vec3f(selectedObject->getSize().x, newSizeH, selectedObject->getSize().z));
+            selectedObject->setSize(Vec3f(selectedObject->getSize().x(), newSizeH, selectedObject->getSize().z()));
             getWorld()->addEntity(selectedObject);
             //updateScriptPos(selectedObject);
             for (unsigned int i = 1; i < rectSelect.getItems().size(); i++) {
                 State* selectState = new State("SCHANGESIZEH", &se);
                 selectState->addParameter("OBJECT", rectSelect.getItems()[i]);
-                selectState->addParameter("OLDVALUE", rectSelect.getItems()[i]->getSize().y);
+                selectState->addParameter("OLDVALUE", rectSelect.getItems()[i]->getSize().y());
                 selectState->addParameter("NEWVALUE", newSizeH);
                 getWorld()->removeEntity(rectSelect.getItems()[i]);
-                rectSelect.getItems()[i]->setSize(Vec3f(rectSelect.getItems()[i]->getSize().x, newSizeH, rectSelect.getItems()[i]->getSize().z));
+                rectSelect.getItems()[i]->setSize(Vec3f(rectSelect.getItems()[i]->getSize().x(), newSizeH, rectSelect.getItems()[i]->getSize().z()));
                 getWorld()->addEntity(rectSelect.getItems()[i]);
                 sg->addState(selectState);
             }
@@ -5965,21 +5976,21 @@ void ODFAEGCreator::onObjectSizeChanged(TextArea* ta) {
             StateGroup* sg = new StateGroup("SGCHANGESIZEZ"+conversionFloatString(newSizeD));
             State* state = new State("SCHANGESIZEZ", &se);
             state->addParameter("OBJECT", selectedObject);
-            state->addParameter("OLDVALUE", selectedObject->getSize().z);
+            state->addParameter("OLDVALUE", selectedObject->getSize().z());
             state->addParameter("NEWVALUE", newSizeD);
             sg->addState(state);
             stateStack.addStateGroup(sg);
             getWorld()->removeEntity(selectedObject);
-            selectedObject->setSize(Vec3f(selectedObject->getSize().x, selectedObject->getSize().y, newSizeD));
+            selectedObject->setSize(Vec3f(selectedObject->getSize().x(), selectedObject->getSize().y(), newSizeD));
             getWorld()->addEntity(selectedObject);
             //updateScriptPos(selectedObject);
             for (unsigned int i = 1; i < rectSelect.getItems().size(); i++) {
                 State* selectState = new State("SCHANGESIZEZ", &se);
                 selectState->addParameter("OBJECT", rectSelect.getItems()[i]);
-                selectState->addParameter("OLDVALUE", rectSelect.getItems()[i]->getSize().z);
+                selectState->addParameter("OLDVALUE", rectSelect.getItems()[i]->getSize().z());
                 selectState->addParameter("NEWVALUE", newSizeD);
                 getWorld()->removeEntity(rectSelect.getItems()[i]);
-                rectSelect.getItems()[i]->setSize(Vec3f(rectSelect.getItems()[i]->getSize().x, rectSelect.getItems()[i]->getSize().y, newSizeD));
+                rectSelect.getItems()[i]->setSize(Vec3f(rectSelect.getItems()[i]->getSize().x(), rectSelect.getItems()[i]->getSize().y(), newSizeD));
                 getWorld()->addEntity(rectSelect.getItems()[i]);
                 sg->addState(selectState);
             }
@@ -5993,21 +6004,21 @@ void ODFAEGCreator::onObjectScaleChanged(TextArea* ta) {
             StateGroup* sg = new StateGroup("SGCHANGESCALEX"+conversionFloatString(newScaleX));
             State* state = new State("SCHANGESCALEX", &se);
             state->addParameter("OBJECT", selectedObject);
-            state->addParameter("OLDVALUE", selectedObject->getScale().x);
+            state->addParameter("OLDVALUE", selectedObject->getScale().x());
             state->addParameter("NEWVALUE", newScaleX);
             sg->addState(state);
             stateStack.addStateGroup(sg);
             getWorld()->removeEntity(selectedObject);
-            selectedObject->scale(Vec3f(newScaleX / selectedObject->getScale().x, selectedObject->getScale().y, selectedObject->getScale().z));
+            selectedObject->scale(Vec3f(newScaleX / selectedObject->getScale().x(), selectedObject->getScale().y(), selectedObject->getScale().z()));
             getWorld()->addEntity(selectedObject);
             //updateScriptPos(selectedObject);
             for (unsigned int i = 1; i < rectSelect.getItems().size(); i++) {
                 State* selectState = new State("SCHANGESCALEX", &se);
                 selectState->addParameter("OBJECT", rectSelect.getItems()[i]);
-                selectState->addParameter("OLDVALUE", rectSelect.getItems()[i]->getScale().x);
+                selectState->addParameter("OLDVALUE", rectSelect.getItems()[i]->getScale().x());
                 selectState->addParameter("NEWVALUE", newScaleX);
                 getWorld()->removeEntity(rectSelect.getItems()[i]);
-                rectSelect.getItems()[i]->scale(Vec3f(newScaleX / rectSelect.getItems()[i]->getScale().x, rectSelect.getItems()[i]->getScale().y, rectSelect.getItems()[i]->getScale().z));
+                rectSelect.getItems()[i]->scale(Vec3f(newScaleX / rectSelect.getItems()[i]->getScale().x(), rectSelect.getItems()[i]->getScale().y(), rectSelect.getItems()[i]->getScale().z()));
                 getWorld()->addEntity(rectSelect.getItems()[i]);
                 sg->addState(selectState);
             }
@@ -6018,21 +6029,21 @@ void ODFAEGCreator::onObjectScaleChanged(TextArea* ta) {
             StateGroup* sg = new StateGroup("SGCHANGESCALEY"+conversionFloatString(newScaleY));
             State* state = new State("SCHANGESCALEY", &se);
             state->addParameter("OBJECT", selectedObject);
-            state->addParameter("OLDVALUE", selectedObject->getScale().y);
+            state->addParameter("OLDVALUE", selectedObject->getScale().y());
             state->addParameter("NEWVALUE", newScaleY);
             sg->addState(state);
             stateStack.addStateGroup(sg);
             getWorld()->removeEntity(selectedObject);
-            selectedObject->scale(Vec3f(selectedObject->getScale().x, newScaleY/selectedObject->getScale().y, selectedObject->getScale().z));
+            selectedObject->scale(Vec3f(selectedObject->getScale().x(), newScaleY/selectedObject->getScale().y(), selectedObject->getScale().z()));
             getWorld()->addEntity(selectedObject);
             //updateScriptPos(selectedObject);
             for (unsigned int i = 1; i < rectSelect.getItems().size(); i++) {
                 State* selectState = new State("SCHANGESCALEY", &se);
                 selectState->addParameter("OBJECT", rectSelect.getItems()[i]);
-                selectState->addParameter("OLDVALUE", rectSelect.getItems()[i]->getScale().y);
+                selectState->addParameter("OLDVALUE", rectSelect.getItems()[i]->getScale().y());
                 selectState->addParameter("NEWVALUE", newScaleY);
                 getWorld()->removeEntity(rectSelect.getItems()[i]);
-                rectSelect.getItems()[i]->scale(Vec3f(rectSelect.getItems()[i]->getScale().x, newScaleY/rectSelect.getItems()[i]->getScale().y, rectSelect.getItems()[i]->getScale().z));
+                rectSelect.getItems()[i]->scale(Vec3f(rectSelect.getItems()[i]->getScale().x(), newScaleY/rectSelect.getItems()[i]->getScale().y(), rectSelect.getItems()[i]->getScale().z()));
                 getWorld()->addEntity(rectSelect.getItems()[i]);
                 sg->addState(selectState);
             }
@@ -6043,21 +6054,21 @@ void ODFAEGCreator::onObjectScaleChanged(TextArea* ta) {
             StateGroup* sg = new StateGroup("SGCHANGESCALEZ"+conversionFloatString(newScaleZ));
             State* state = new State("SCHANGESCALEZ", &se);
             state->addParameter("OBJECT", selectedObject);
-            state->addParameter("OLDVALUE", selectedObject->getScale().z);
+            state->addParameter("OLDVALUE", selectedObject->getScale().z());
             state->addParameter("NEWVALUE", newScaleZ);
             sg->addState(state);
             stateStack.addStateGroup(sg);
             getWorld()->removeEntity(selectedObject);
-            selectedObject->scale(Vec3f(selectedObject->getScale().x, selectedObject->getScale().y, newScaleZ/selectedObject->getScale().z));
+            selectedObject->scale(Vec3f(selectedObject->getScale().x(), selectedObject->getScale().y(), newScaleZ/selectedObject->getScale().z()));
             getWorld()->addEntity(selectedObject);
             //updateScriptPos(selectedObject);
             for (unsigned int i = 1; i < rectSelect.getItems().size(); i++) {
                 State* selectState = new State("SCHANGESCALEZ", &se);
                 selectState->addParameter("OBJECT", rectSelect.getItems()[i]);
-                selectState->addParameter("OLDVALUE", rectSelect.getItems()[i]->getScale().z);
+                selectState->addParameter("OLDVALUE", rectSelect.getItems()[i]->getScale().z());
                 selectState->addParameter("NEWVALUE", newScaleZ);
                 getWorld()->removeEntity(rectSelect.getItems()[i]);
-                rectSelect.getItems()[i]->setPosition(Vec3f(rectSelect.getItems()[i]->getScale().x, rectSelect.getItems()[i]->getScale().y, newScaleZ/rectSelect.getItems()[i]->getScale().z));
+                rectSelect.getItems()[i]->setPosition(Vec3f(rectSelect.getItems()[i]->getScale().x(), rectSelect.getItems()[i]->getScale().y(), newScaleZ/rectSelect.getItems()[i]->getScale().z()));
                 getWorld()->addEntity(rectSelect.getItems()[i]);
                 sg->addState(selectState);
             }
@@ -6071,18 +6082,18 @@ void ODFAEGCreator::onObjectMoveChanged(TextArea* ta) {
             StateGroup* sg = new StateGroup("SGCHANGEXTRANS"+conversionFloatString(newMoveX));
             State* state = new State("SCHANGEXTRANS", &se);
             state->addParameter("OBJECT", selectedObject);
-            state->addParameter("OLDVALUE", selectedObject->getTranslation().x);
+            state->addParameter("OLDVALUE", selectedObject->getTranslation().x());
             state->addParameter("NEWVALUE", newMoveX);
             sg->addState(state);
             stateStack.addStateGroup(sg);
-            selectedObject->move(Vec3f(newMoveX-selectedObject->getTranslation().x, selectedObject->getTranslation().y, selectedObject->getTranslation().z));
+            selectedObject->move(Vec3f(newMoveX-selectedObject->getTranslation().x(), selectedObject->getTranslation().y(), selectedObject->getTranslation().z()));
             //updateScriptPos(selectedObject);
             for (unsigned int i = 1; i < rectSelect.getItems().size(); i++) {
                 State* selectState = new State("SCHANGEXTRANS", &se);
                 selectState->addParameter("OBJECT", rectSelect.getItems()[i]);
-                selectState->addParameter("OLDVALUE", rectSelect.getItems()[i]->getTranslation().x);
+                selectState->addParameter("OLDVALUE", rectSelect.getItems()[i]->getTranslation().x());
                 selectState->addParameter("NEWVALUE", newMoveX);
-                rectSelect.getItems()[i]->setPosition(Vec3f(newMoveX-rectSelect.getItems()[i]->getTranslation().x, rectSelect.getItems()[i]->getTranslation().y, rectSelect.getItems()[i]->getTranslation().z));
+                rectSelect.getItems()[i]->setPosition(Vec3f(newMoveX-rectSelect.getItems()[i]->getTranslation().x(), rectSelect.getItems()[i]->getTranslation().y(), rectSelect.getItems()[i]->getTranslation().z()));
                 sg->addState(selectState);
             }
         }
@@ -6092,18 +6103,18 @@ void ODFAEGCreator::onObjectMoveChanged(TextArea* ta) {
             StateGroup* sg = new StateGroup("SGCHANGEYTRANS"+conversionFloatString(newMoveY));
             State* state = new State("SCHANGEYTRANS", &se);
             state->addParameter("OBJECT", selectedObject);
-            state->addParameter("OLDVALUE", selectedObject->getTranslation().y);
+            state->addParameter("OLDVALUE", selectedObject->getTranslation().y());
             state->addParameter("NEWVALUE", newMoveY);
             sg->addState(state);
             stateStack.addStateGroup(sg);
-            selectedObject->move(Vec3f(selectedObject->getTranslation().x, newMoveY-selectedObject->getTranslation().y, selectedObject->getTranslation().z));
+            selectedObject->move(Vec3f(selectedObject->getTranslation().x(), newMoveY-selectedObject->getTranslation().y(), selectedObject->getTranslation().z()));
             //updateScriptPos(selectedObject);
             for (unsigned int i = 1; i < rectSelect.getItems().size(); i++) {
                 State* selectState = new State("SCHANGEYTRANS", &se);
                 selectState->addParameter("OBJECT", rectSelect.getItems()[i]);
-                selectState->addParameter("OLDVALUE", rectSelect.getItems()[i]->getTranslation().y);
+                selectState->addParameter("OLDVALUE", rectSelect.getItems()[i]->getTranslation().y());
                 selectState->addParameter("NEWVALUE", newMoveY);
-                rectSelect.getItems()[i]->move(Vec3f(rectSelect.getItems()[i]->getTranslation().x, newMoveY-rectSelect.getItems()[i]->getTranslation().y, rectSelect.getItems()[i]->getTranslation().z));
+                rectSelect.getItems()[i]->move(Vec3f(rectSelect.getItems()[i]->getTranslation().x(), newMoveY-rectSelect.getItems()[i]->getTranslation().y(), rectSelect.getItems()[i]->getTranslation().z()));
                 sg->addState(selectState);
             }
         }
@@ -6113,18 +6124,18 @@ void ODFAEGCreator::onObjectMoveChanged(TextArea* ta) {
             StateGroup* sg = new StateGroup("SGCHANGEZTRANS"+conversionFloatString(newMoveZ));
             State* state = new State("SCHANGEZTRANS", &se);
             state->addParameter("OBJECT", selectedObject);
-            state->addParameter("OLDVALUE", selectedObject->getTranslation().z);
+            state->addParameter("OLDVALUE", selectedObject->getTranslation().z());
             state->addParameter("NEWVALUE", newMoveZ);
             sg->addState(state);
             stateStack.addStateGroup(sg);
-            selectedObject->move(Vec3f(selectedObject->getTranslation().x, selectedObject->getTranslation().y, newMoveZ-selectedObject->getTranslation().z));
+            selectedObject->move(Vec3f(selectedObject->getTranslation().x(), selectedObject->getTranslation().y(), newMoveZ-selectedObject->getTranslation().z()));
             //updateScriptPos(selectedObject);
             for (unsigned int i = 1; i < rectSelect.getItems().size(); i++) {
                 State* selectState = new State("SCHANGEMOVEZ", &se);
                 selectState->addParameter("OBJECT", rectSelect.getItems()[i]);
-                selectState->addParameter("OLDVALUE", rectSelect.getItems()[i]->getTranslation().z);
+                selectState->addParameter("OLDVALUE", rectSelect.getItems()[i]->getTranslation().z());
                 selectState->addParameter("NEWVALUE", newMoveZ);
-                rectSelect.getItems()[i]->setPosition(Vec3f(rectSelect.getItems()[i]->getTranslation().x, rectSelect.getItems()[i]->getTranslation().y, newMoveZ-rectSelect.getItems()[i]->getTranslation().z));
+                rectSelect.getItems()[i]->setPosition(Vec3f(rectSelect.getItems()[i]->getTranslation().x(), rectSelect.getItems()[i]->getTranslation().y(), newMoveZ-rectSelect.getItems()[i]->getTranslation().z()));
                 sg->addState(selectState);
             }
         }
@@ -6140,14 +6151,14 @@ void ODFAEGCreator::onObjectMoveChanged(TextArea* ta) {
                 unsigned int pos = content.find("shape"+conversionUIntString(static_cast<Shape*>(shape)->getId())+" = std::make_unique<RectangleShape>");
                 std::string subs = content.substr(pos);
                 pos += subs.find_first_of('\n') + 1;
-                content.insert(pos,"    shape"+conversionUIntString(static_cast<Shape*>(shape)->getId())+"->setFillColor(sf::Color("+conversionIntString(static_cast<Shape*>(shape)->getFillColor().r)+","
+                content.insert(pos,"    shape"+conversionUIntString(static_cast<Shape*>(shape)->getId())+"->setFillColor(Color("+conversionIntString(static_cast<Shape*>(shape)->getFillColor().r)+","
                 +conversionIntString(static_cast<Shape*>(shape)->getFillColor().g)+","+conversionIntString(static_cast<Shape*>(shape)->getFillColor().b)+","+conversionIntString(static_cast<Shape*>(shape)->getFillColor().a)+"));\n");
             } else {
                 unsigned int pos = content.find("shape"+conversionUIntString(static_cast<Shape*>(shape)->getId())+"->setFillColor");
                 std::string subs = content.substr(pos);
                 unsigned int endpos = subs.find_first_of('\n') + pos + 1;
                 content.erase(pos, endpos - pos);
-                content.insert(pos,"    shape"+conversionUIntString(static_cast<Shape*>(shape)->getId())+"->setFillColor(sf::Color("+conversionIntString(static_cast<Shape*>(shape)->getFillColor().r)+","
+                content.insert(pos,"    shape"+conversionUIntString(static_cast<Shape*>(shape)->getId())+"->setFillColor(Color("+conversionIntString(static_cast<Shape*>(shape)->getFillColor().r)+","
                 +conversionIntString(static_cast<Shape*>(shape)->getFillColor().g)+","+conversionIntString(static_cast<Shape*>(shape)->getFillColor().b)+","+conversionIntString(static_cast<Shape*>(shape)->getFillColor().a)+"));\n");
             }
         }
@@ -6156,14 +6167,14 @@ void ODFAEGCreator::onObjectMoveChanged(TextArea* ta) {
                 unsigned int pos = content.find("tile"+conversionUIntString(static_cast<Tile*>(shape)->getId())+" = new Tile");
                 std::string subs = content.substr(pos);
                 pos += subs.find_first_of('\n') + 1;
-                content.insert(pos,"    tile"+conversionUIntString(static_cast<Tile*>(shape)->getId())+"->setColor(sf::Color("+conversionIntString(static_cast<Tile*>(shape)->getColor().r)+","
+                content.insert(pos,"    tile"+conversionUIntString(static_cast<Tile*>(shape)->getId())+"->setColor(Color("+conversionIntString(static_cast<Tile*>(shape)->getColor().r)+","
                 +conversionIntString(static_cast<Tile*>(shape)->getColor().g)+","+conversionIntString(static_cast<Tile*>(shape)->getColor().b)+","+conversionIntString(static_cast<Tile*>(shape)->getColor().a)+"));\n");
             } else {
                 unsigned int pos = content.find("tile"+conversionUIntString(static_cast<Tile*>(shape)->getId())+"->setPosition");
                 std::string subs = content.substr(pos);
                 unsigned int endpos = subs.find_first_of('\n') + pos + 1;
                 content.erase(pos, endpos - pos);
-                content.insert(pos,"    tile"+conversionUIntString(static_cast<Tile*>(shape)->getId())+"->setColor(sf::Color("+conversionIntString(static_cast<Tile*>(shape)->getColor().r)+","
+                content.insert(pos,"    tile"+conversionUIntString(static_cast<Tile*>(shape)->getId())+"->setColor(Color("+conversionIntString(static_cast<Tile*>(shape)->getColor().r)+","
                 +conversionIntString(static_cast<Tile*>(shape)->getColor().g)+","+conversionIntString(static_cast<Tile*>(shape)->getColor().b)+","+conversionIntString(static_cast<Tile*>(shape)->getColor().a)+"));\n");
             }
         }
@@ -6222,11 +6233,11 @@ void ODFAEGCreator::onObjectColorChanged(TextArea* ta) {
             sg->addState(state);
 
             if (dynamic_cast<Tile*>(selectedObject)) {
-                static_cast<Tile*>(selectedObject)->setColor(sf::Color(Math::clamp(color, 0, 255), static_cast<Tile*>(selectedObject)->getColor().g,static_cast<Tile*>(selectedObject)->getColor().b, static_cast<Tile*>(selectedObject)->getColor().a));
+                static_cast<Tile*>(selectedObject)->setColor(Color(Math::clamp(color, 0, 255), static_cast<Tile*>(selectedObject)->getColor().g,static_cast<Tile*>(selectedObject)->getColor().b, static_cast<Tile*>(selectedObject)->getColor().a));
 
             }
             if (dynamic_cast<PonctualLight*>(selectedObject)) {
-                static_cast<PonctualLight*>(selectedObject)->setColor(sf::Color(Math::clamp(color, 0, 255), static_cast<Tile*>(selectedObject)->getColor().g,static_cast<Tile*>(selectedObject)->getColor().b, static_cast<Tile*>(selectedObject)->getColor().a));
+                static_cast<PonctualLight*>(selectedObject)->setColor(Color(Math::clamp(color, 0, 255), static_cast<Tile*>(selectedObject)->getColor().g,static_cast<Tile*>(selectedObject)->getColor().b, static_cast<Tile*>(selectedObject)->getColor().a));
 
             }
             //updateScriptColor(selectedObject);
@@ -6236,12 +6247,12 @@ void ODFAEGCreator::onObjectColorChanged(TextArea* ta) {
 
                 if (dynamic_cast<Tile*>(rectSelect.getItems()[i])) {
                     selectState->addParameter("OLDVALUE", static_cast<Tile*>(rectSelect.getItems()[i])->getColor().r);
-                    static_cast<Tile*>(rectSelect.getItems()[i])->setColor(sf::Color(Math::clamp(color, 0, 255), static_cast<Tile*>(rectSelect.getItems()[i])->getColor().g,static_cast<Tile*>(rectSelect.getItems()[i])->getColor().b, static_cast<Tile*>(rectSelect.getItems()[i])->getColor().a));
+                    static_cast<Tile*>(rectSelect.getItems()[i])->setColor(Color(Math::clamp(color, 0, 255), static_cast<Tile*>(rectSelect.getItems()[i])->getColor().g,static_cast<Tile*>(rectSelect.getItems()[i])->getColor().b, static_cast<Tile*>(rectSelect.getItems()[i])->getColor().a));
 
                 }
                 if (dynamic_cast<PonctualLight*>(rectSelect.getItems()[i])) {
                     selectState->addParameter("OLDVALUE", static_cast<PonctualLight*>(rectSelect.getItems()[i])->getColor().r);
-                    static_cast<PonctualLight*>(rectSelect.getItems()[i])->setColor(sf::Color(Math::clamp(color, 0, 255), static_cast<PonctualLight*>(rectSelect.getItems()[i])->getColor().g,static_cast<PonctualLight*>(rectSelect.getItems()[i])->getColor().b, static_cast<PonctualLight*>(rectSelect.getItems()[i])->getColor().a));
+                    static_cast<PonctualLight*>(rectSelect.getItems()[i])->setColor(Color(Math::clamp(color, 0, 255), static_cast<PonctualLight*>(rectSelect.getItems()[i])->getColor().g,static_cast<PonctualLight*>(rectSelect.getItems()[i])->getColor().b, static_cast<PonctualLight*>(rectSelect.getItems()[i])->getColor().a));
 
                 }
                 selectState->addParameter("NEWVALUE", color);
@@ -6268,11 +6279,11 @@ void ODFAEGCreator::onObjectColorChanged(TextArea* ta) {
             sg->addState(state);
 
             if (dynamic_cast<Tile*>(selectedObject)) {
-                static_cast<Tile*>(selectedObject)->setColor(sf::Color(static_cast<Tile*>(selectedObject)->getColor().r, Math::clamp(color, 0, 255),static_cast<Tile*>(selectedObject)->getColor().b, static_cast<Tile*>(selectedObject)->getColor().a));
+                static_cast<Tile*>(selectedObject)->setColor(Color(static_cast<Tile*>(selectedObject)->getColor().r, Math::clamp(color, 0, 255),static_cast<Tile*>(selectedObject)->getColor().b, static_cast<Tile*>(selectedObject)->getColor().a));
 
             }
             if (dynamic_cast<PonctualLight*>(selectedObject)) {
-                static_cast<PonctualLight*>(selectedObject)->setColor(sf::Color(static_cast<PonctualLight*>(selectedObject)->getColor().r, Math::clamp(color, 0, 255),static_cast<PonctualLight*>(selectedObject)->getColor().b, static_cast<PonctualLight*>(selectedObject)->getColor().a));
+                static_cast<PonctualLight*>(selectedObject)->setColor(Color(static_cast<PonctualLight*>(selectedObject)->getColor().r, Math::clamp(color, 0, 255),static_cast<PonctualLight*>(selectedObject)->getColor().b, static_cast<PonctualLight*>(selectedObject)->getColor().a));
 
             }
             for (unsigned int i = 1; i < rectSelect.getItems().size(); i++) {
@@ -6281,12 +6292,12 @@ void ODFAEGCreator::onObjectColorChanged(TextArea* ta) {
 
                 if (dynamic_cast<Tile*>(rectSelect.getItems()[i])) {
                     selectState->addParameter("OLDVALUE", static_cast<Tile*>(rectSelect.getItems()[i])->getColor().g);
-                    static_cast<Tile*>(rectSelect.getItems()[i])->setColor(sf::Color(static_cast<Tile*>(rectSelect.getItems()[i])->getColor().r, Math::clamp(color, 0, 255),static_cast<Tile*>(rectSelect.getItems()[i])->getColor().b, static_cast<Tile*>(rectSelect.getItems()[i])->getColor().a));
+                    static_cast<Tile*>(rectSelect.getItems()[i])->setColor(Color(static_cast<Tile*>(rectSelect.getItems()[i])->getColor().r, Math::clamp(color, 0, 255),static_cast<Tile*>(rectSelect.getItems()[i])->getColor().b, static_cast<Tile*>(rectSelect.getItems()[i])->getColor().a));
 
                 }
                 if (dynamic_cast<PonctualLight*>(rectSelect.getItems()[i])) {
                     selectState->addParameter("OLDVALUE", static_cast<PonctualLight*>(rectSelect.getItems()[i])->getColor().g);
-                    static_cast<PonctualLight*>(rectSelect.getItems()[i])->setColor(sf::Color(static_cast<PonctualLight*>(rectSelect.getItems()[i])->getColor().r, Math::clamp(color, 0, 255),static_cast<PonctualLight*>(rectSelect.getItems()[i])->getColor().b, static_cast<PonctualLight*>(rectSelect.getItems()[i])->getColor().a));
+                    static_cast<PonctualLight*>(rectSelect.getItems()[i])->setColor(Color(static_cast<PonctualLight*>(rectSelect.getItems()[i])->getColor().r, Math::clamp(color, 0, 255),static_cast<PonctualLight*>(rectSelect.getItems()[i])->getColor().b, static_cast<PonctualLight*>(rectSelect.getItems()[i])->getColor().a));
 
                 }
                 selectState->addParameter("NEWVALUE", color);
@@ -6313,11 +6324,11 @@ void ODFAEGCreator::onObjectColorChanged(TextArea* ta) {
             sg->addState(state);
 
             if (dynamic_cast<Tile*>(selectedObject)) {
-                static_cast<Tile*>(selectedObject)->setColor(sf::Color(static_cast<Tile*>(selectedObject)->getColor().r, static_cast<Tile*>(selectedObject)->getColor().g, Math::clamp(color, 0, 255), static_cast<Tile*>(selectedObject)->getColor().a));
+                static_cast<Tile*>(selectedObject)->setColor(Color(static_cast<Tile*>(selectedObject)->getColor().r, static_cast<Tile*>(selectedObject)->getColor().g, Math::clamp(color, 0, 255), static_cast<Tile*>(selectedObject)->getColor().a));
 
             }
             if (dynamic_cast<PonctualLight*>(selectedObject)) {
-                static_cast<PonctualLight*>(selectedObject)->setColor(sf::Color(static_cast<PonctualLight*>(selectedObject)->getColor().r, static_cast<PonctualLight*>(selectedObject)->getColor().g, Math::clamp(color, 0, 255), static_cast<PonctualLight*>(selectedObject)->getColor().a));
+                static_cast<PonctualLight*>(selectedObject)->setColor(Color(static_cast<PonctualLight*>(selectedObject)->getColor().r, static_cast<PonctualLight*>(selectedObject)->getColor().g, Math::clamp(color, 0, 255), static_cast<PonctualLight*>(selectedObject)->getColor().a));
 
             }
             for (unsigned int i = 1; i < rectSelect.getItems().size(); i++) {
@@ -6326,12 +6337,12 @@ void ODFAEGCreator::onObjectColorChanged(TextArea* ta) {
 
                 if (dynamic_cast<Tile*>(rectSelect.getItems()[i])) {
                     selectState->addParameter("OLDVALUE", static_cast<Tile*>(rectSelect.getItems()[i])->getColor().b);
-                    static_cast<Tile*>(rectSelect.getItems()[i])->setColor(sf::Color(static_cast<Tile*>(rectSelect.getItems()[i])->getColor().r, static_cast<Tile*>(rectSelect.getItems()[i])->getColor().g, Math::clamp(color, 0, 255), static_cast<Tile*>(rectSelect.getItems()[i])->getColor().a));
+                    static_cast<Tile*>(rectSelect.getItems()[i])->setColor(Color(static_cast<Tile*>(rectSelect.getItems()[i])->getColor().r, static_cast<Tile*>(rectSelect.getItems()[i])->getColor().g, Math::clamp(color, 0, 255), static_cast<Tile*>(rectSelect.getItems()[i])->getColor().a));
 
                 }
                 if (dynamic_cast<PonctualLight*>(rectSelect.getItems()[i])) {
                     selectState->addParameter("OLDVALUE", static_cast<PonctualLight*>(rectSelect.getItems()[i])->getColor().b);
-                    static_cast<PonctualLight*>(rectSelect.getItems()[i])->setColor(sf::Color(static_cast<PonctualLight*>(rectSelect.getItems()[i])->getColor().r, static_cast<PonctualLight*>(rectSelect.getItems()[i])->getColor().g, Math::clamp(color, 0, 255), static_cast<PonctualLight*>(rectSelect.getItems()[i])->getColor().a));
+                    static_cast<PonctualLight*>(rectSelect.getItems()[i])->setColor(Color(static_cast<PonctualLight*>(rectSelect.getItems()[i])->getColor().r, static_cast<PonctualLight*>(rectSelect.getItems()[i])->getColor().g, Math::clamp(color, 0, 255), static_cast<PonctualLight*>(rectSelect.getItems()[i])->getColor().a));
 
                 }
                 selectState->addParameter("NEWVALUE", color);
@@ -6358,11 +6369,11 @@ void ODFAEGCreator::onObjectColorChanged(TextArea* ta) {
             sg->addState(state);
 
             if (dynamic_cast<Tile*>(selectedObject)) {
-                static_cast<Tile*>(selectedObject)->setColor(sf::Color(static_cast<Tile*>(selectedObject)->getColor().r, static_cast<Tile*>(selectedObject)->getColor().g,static_cast<Tile*>(selectedObject)->getColor().b, Math::clamp(color, 0, 255)));
+                static_cast<Tile*>(selectedObject)->setColor(Color(static_cast<Tile*>(selectedObject)->getColor().r, static_cast<Tile*>(selectedObject)->getColor().g,static_cast<Tile*>(selectedObject)->getColor().b, Math::clamp(color, 0, 255)));
 
             }
             if (dynamic_cast<PonctualLight*>(selectedObject)) {
-                static_cast<PonctualLight*>(selectedObject)->setColor(sf::Color(static_cast<PonctualLight*>(selectedObject)->getColor().r, static_cast<PonctualLight*>(selectedObject)->getColor().g,static_cast<PonctualLight*>(selectedObject)->getColor().b, Math::clamp(color, 0, 255)));
+                static_cast<PonctualLight*>(selectedObject)->setColor(Color(static_cast<PonctualLight*>(selectedObject)->getColor().r, static_cast<PonctualLight*>(selectedObject)->getColor().g,static_cast<PonctualLight*>(selectedObject)->getColor().b, Math::clamp(color, 0, 255)));
 
             }
             for (unsigned int i = 1; i < rectSelect.getItems().size(); i++) {
@@ -6371,12 +6382,12 @@ void ODFAEGCreator::onObjectColorChanged(TextArea* ta) {
 
                 if (dynamic_cast<Tile*>(rectSelect.getItems()[i])) {
                     selectState->addParameter("OLDVALUE", static_cast<Tile*>(rectSelect.getItems()[i])->getColor().a);
-                    static_cast<Tile*>(rectSelect.getItems()[i])->setColor(sf::Color(static_cast<Tile*>(rectSelect.getItems()[i])->getColor().r, static_cast<Tile*>(rectSelect.getItems()[i])->getColor().g,static_cast<Tile*>(rectSelect.getItems()[i])->getColor().b, Math::clamp(color, 0, 255)));
+                    static_cast<Tile*>(rectSelect.getItems()[i])->setColor(Color(static_cast<Tile*>(rectSelect.getItems()[i])->getColor().r, static_cast<Tile*>(rectSelect.getItems()[i])->getColor().g,static_cast<Tile*>(rectSelect.getItems()[i])->getColor().b, Math::clamp(color, 0, 255)));
 
                 }
                 if (dynamic_cast<PonctualLight*>(rectSelect.getItems()[i])) {
                     selectState->addParameter("OLDVALUE", static_cast<PonctualLight*>(rectSelect.getItems()[i])->getColor().a);
-                    static_cast<PonctualLight*>(rectSelect.getItems()[i])->setColor(sf::Color(static_cast<PonctualLight*>(rectSelect.getItems()[i])->getColor().r, static_cast<PonctualLight*>(rectSelect.getItems()[i])->getColor().g,static_cast<PonctualLight*>(rectSelect.getItems()[i])->getColor().b, Math::clamp(color, 0, 255)));
+                    static_cast<PonctualLight*>(rectSelect.getItems()[i])->setColor(Color(static_cast<PonctualLight*>(rectSelect.getItems()[i])->getColor().r, static_cast<PonctualLight*>(rectSelect.getItems()[i])->getColor().g,static_cast<PonctualLight*>(rectSelect.getItems()[i])->getColor().b, Math::clamp(color, 0, 255)));
 
                 }
                 selectState->addParameter("NEWVALUE", color);
@@ -6498,7 +6509,7 @@ void ODFAEGCreator::onSelectedTextureChanged(DropDownList* dp) {
         if (dynamic_cast<Tile*>(selectedObject)) {
             Tile* selectedTile = static_cast<Tile*>(selectedObject);
             selectedTile->getFace(0)->getMaterial().clearTextures();
-            selectedTile->getFace(0)->getMaterial().addTexture(nullptr, sf::IntRect(0, 0, gridWidth, gridHeight));
+            selectedTile->getFace(0)->getMaterial().addTexture(nullptr, IntRect(0, 0, gridWidth, gridHeight));
             static_cast<Tile*>(selectedObject)->getFace(0)->getMaterial().setTexId("");
             //updateScriptText(static_cast<Tile*>(selectedObject), nullptr);
         }
@@ -6510,22 +6521,22 @@ void ODFAEGCreator::onSelectedTextureChanged(DropDownList* dp) {
                 const Texture* text = tm.getResourceByAlias(dp->getSelectedItem());
                 std::vector<std::string> alias = tm.getAliasByResource(const_cast<Texture*>(text));
                 pMaterial->clearDrawables();
-                Sprite sprite (*text, Vec3f(pScriptsFiles->getPosition().x, bChooseText->getPosition().y + bChooseText->getSize().y+10, 0),Vec3f(text->getSize().x, text->getSize().y, 0),sf::IntRect(0, 0, text->getSize().x,text->getSize().y));
+                Sprite sprite (*text, Vec3f(pScriptsFiles->getPosition().x(), bChooseText->getPosition().y() + bChooseText->getSize().y()+10, 0),Vec3f(text->getSize().x(), text->getSize().y(), 0),IntRect(0, 0, text->getSize().x(),text->getSize().y()));
                 pMaterial->addSprite(sprite);
-                sf::IntRect textRect;
+                IntRect textRect;
 
                 if (dynamic_cast<Tile*>(selectedObject)) {
                     //std::cout<<"add texture"<<std::endl;
                     static_cast<Tile*>(selectedObject)->getFace(0)->getMaterial().clearTextures();
-                    static_cast<Tile*>(selectedObject)->getFace(0)->getMaterial().addTexture(text, sf::IntRect(0, 0, text->getSize().x, text->getSize().y));
+                    static_cast<Tile*>(selectedObject)->getFace(0)->getMaterial().addTexture(text, IntRect(0, 0, text->getSize().x(), text->getSize().y()));
                     static_cast<Tile*>(selectedObject)->getFace(0)->getMaterial().setTexId(alias[0]);
-                    textRect = sf::IntRect(0, 0, text->getSize().x, text->getSize().y);
+                    textRect = IntRect(0, 0, text->getSize().x(), text->getSize().y());
                     std::cout<<"tile texture set"<<std::endl;
                     //updateScriptText(static_cast<Tile*>(selectedObject), text);
                 }
                 if (dynamic_cast<ParticleSystem*>(selectedObject)) {
                     static_cast<ParticleSystem*>(selectedObject)->setTexture(*text);
-                    textRect = sf::IntRect(0, 0, text->getSize().x, text->getSize().y);
+                    textRect = IntRect(0, 0, text->getSize().x(), text->getSize().y());
                     static_cast<ParticleSystem*>(selectedObject)->getFace(0)->getMaterial().setTexId(alias[0]);
                 }
                 tTexCoordX->setText(conversionIntString(textRect.left));
@@ -6533,16 +6544,16 @@ void ODFAEGCreator::onSelectedTextureChanged(DropDownList* dp) {
                 tTexCoordW->setText(conversionIntString(textRect.width));
                 tTexCoordH->setText(conversionIntString(textRect.height));
                 sTextRect = new RectangleShape(Vec3f(textRect.width, textRect.height, 0));
-                sTextRect->setPosition(Vec3f(textRect.left+pScriptsFiles->getPosition().x, textRect.top + bChooseText->getPosition().y + bChooseText->getSize().y+10, 0));
-                sTextRect->setFillColor(sf::Color::Transparent);
-                sTextRect->setOutlineColor(sf::Color::Red);
+                sTextRect->setPosition(Vec3f(textRect.left+pScriptsFiles->getPosition().x(), textRect.top + bChooseText->getPosition().y() + bChooseText->getSize().y()+10, 0));
+                sTextRect->setFillColor(Color::Transparent);
+                sTextRect->setOutlineColor(Color::Red);
                 sTextRect->setOutlineThickness(1);
                 sTextRect->setName("TexRect");
                 pMaterial->addShape(sTextRect);
             /*}
         }*/
     }
-    StateGroup* sg = new StateGroup("SGCHANGETEXTURE"+conversionLongString(reinterpret_cast<sf::Int64>(oldTexture)));
+    StateGroup* sg = new StateGroup("SGCHANGETEXTURE"+conversionLongString(reinterpret_cast<Int64>(oldTexture)));
     State* state = new State("SCHANGETEXTURE", &se);
     state->addParameter("OLDVALUE",oldTexture);
 
@@ -6562,7 +6573,7 @@ void ODFAEGCreator::onSelectedTextureChanged(DropDownList* dp) {
             if (dynamic_cast<Tile*>(rectSelect.getItems()[i])) {
                 Tile* selectedTile = static_cast<Tile*>(rectSelect.getItems()[i]);
                 selectedTile->getFace(0)->getMaterial().clearTextures();
-                selectedTile->getFace(0)->getMaterial().addTexture(nullptr, sf::IntRect(0, 0, gridWidth, gridHeight));
+                selectedTile->getFace(0)->getMaterial().addTexture(nullptr, IntRect(0, 0, gridWidth, gridHeight));
             }
         } else {
             TextureManager<>& tm = cache.resourceManager<Texture, std::string>("TextureManager");
@@ -6572,7 +6583,7 @@ void ODFAEGCreator::onSelectedTextureChanged(DropDownList* dp) {
             if (dynamic_cast<Tile*>(rectSelect.getItems()[i])) {
                 //std::cout<<"add texture"<<std::endl;
                 static_cast<Tile*>(rectSelect.getItems()[i])->getFace(0)->getMaterial().clearTextures();
-                static_cast<Tile*>(rectSelect.getItems()[i])->getFace(0)->getMaterial().addTexture(text, sf::IntRect(0, 0, text->getSize().x, text->getSize().y));
+                static_cast<Tile*>(rectSelect.getItems()[i])->getFace(0)->getMaterial().addTexture(text, IntRect(0, 0, text->getSize().x(), text->getSize().y()));
                 static_cast<Tile*>(rectSelect.getItems()[i])->getFace(0)->getMaterial().setTexId(alias[0]);
             }
         }
@@ -6592,11 +6603,11 @@ void ODFAEGCreator::onSelectedTextureChanged(DropDownList* dp) {
 }
 void ODFAEGCreator::onTexCoordsChanged (TextArea* ta) {
     const Texture* tex = nullptr;
-    sf::IntRect texRect;
+    IntRect texRect;
 
     if (selectedObject->getFaces().size() > 0) {
         tex = selectedObject->getFace(0)->getMaterial().getTexture();
-        texRect = sf::IntRect(conversionStringInt(tTexCoordX->getText()),conversionStringInt(tTexCoordY->getText()),conversionStringInt(tTexCoordW->getText()),conversionStringInt(tTexCoordH->getText()));
+        texRect = IntRect(conversionStringInt(tTexCoordX->getText()),conversionStringInt(tTexCoordY->getText()),conversionStringInt(tTexCoordW->getText()),conversionStringInt(tTexCoordH->getText()));
     }
     if (tex != nullptr) {
         if (ta == tTexCoordX) {
@@ -6616,7 +6627,7 @@ void ODFAEGCreator::onTexCoordsChanged (TextArea* ta) {
 
 
                 if (dynamic_cast<Tile*>(selectedObject)) {
-                    static_cast<Tile*>(selectedObject)->setTexRect(sf::IntRect(Math::abs(texCoordX), texRect.top, texRect.width, texRect.height));
+                    static_cast<Tile*>(selectedObject)->setTexRect(IntRect(Math::abs(texCoordX), texRect.top, texRect.width, texRect.height));
                 }
                 for (unsigned int i = 1; i < rectSelect.getItems().size(); i++) {
                     State* selectState = new State("SCHANGEXTEXCOORD", &se);
@@ -6629,7 +6640,7 @@ void ODFAEGCreator::onTexCoordsChanged (TextArea* ta) {
                     sg->addState(state);
 
                     if (dynamic_cast<Tile*>(rectSelect.getItems()[i])) {
-                        static_cast<Tile*>(rectSelect.getItems()[i])->setTexRect(sf::IntRect(Math::abs(texCoordX), texRect.top, texRect.width, texRect.height));
+                        static_cast<Tile*>(rectSelect.getItems()[i])->setTexRect(IntRect(Math::abs(texCoordX), texRect.top, texRect.width, texRect.height));
                     }
                 }
                 stateStack.addStateGroup(sg);
@@ -6651,7 +6662,7 @@ void ODFAEGCreator::onTexCoordsChanged (TextArea* ta) {
 
 
                 if (dynamic_cast<Tile*>(selectedObject)) {
-                    static_cast<Tile*>(selectedObject)->setTexRect(sf::IntRect(texRect.left, Math::abs(texCoordY), texRect.width, texRect.height));
+                    static_cast<Tile*>(selectedObject)->setTexRect(IntRect(texRect.left, Math::abs(texCoordY), texRect.width, texRect.height));
                 }
                 for (unsigned int i = 1; i < rectSelect.getItems().size(); i++) {
                     State* selectState = new State("SCHANGEXTEYCOORD", &se);
@@ -6664,7 +6675,7 @@ void ODFAEGCreator::onTexCoordsChanged (TextArea* ta) {
                     sg->addState(state);
 
                     if (dynamic_cast<Tile*>(rectSelect.getItems()[i])) {
-                        static_cast<Tile*>(rectSelect.getItems()[i])->setTexRect(sf::IntRect(texRect.left, Math::abs(texCoordY), texRect.width, texRect.height));
+                        static_cast<Tile*>(rectSelect.getItems()[i])->setTexRect(IntRect(texRect.left, Math::abs(texCoordY), texRect.width, texRect.height));
                     }
                 }
                 stateStack.addStateGroup(sg);
@@ -6686,7 +6697,7 @@ void ODFAEGCreator::onTexCoordsChanged (TextArea* ta) {
 
 
                 if (dynamic_cast<Tile*>(selectedObject)) {
-                    static_cast<Tile*>(selectedObject)->setTexRect(sf::IntRect(texRect.left, texRect.top, Math::abs(texCoordW), texRect.height));
+                    static_cast<Tile*>(selectedObject)->setTexRect(IntRect(texRect.left, texRect.top, Math::abs(texCoordW), texRect.height));
                 }
                 for (unsigned int i = 1; i < rectSelect.getItems().size(); i++) {
                     State* selectState = new State("SCHANGEWTEXCOORD", &se);
@@ -6699,7 +6710,7 @@ void ODFAEGCreator::onTexCoordsChanged (TextArea* ta) {
                     sg->addState(state);
 
                     if (dynamic_cast<Tile*>(rectSelect.getItems()[i])) {
-                        static_cast<Tile*>(rectSelect.getItems()[i])->setTexRect(sf::IntRect(texRect.left, texRect.top, Math::abs(texCoordW), texRect.height));
+                        static_cast<Tile*>(rectSelect.getItems()[i])->setTexRect(IntRect(texRect.left, texRect.top, Math::abs(texCoordW), texRect.height));
                     }
                 }
                 stateStack.addStateGroup(sg);
@@ -6721,7 +6732,7 @@ void ODFAEGCreator::onTexCoordsChanged (TextArea* ta) {
 
 
                 if (dynamic_cast<Tile*>(selectedObject)) {
-                    static_cast<Tile*>(selectedObject)->setTexRect(sf::IntRect(texRect.left, texRect.top, texRect.width, Math::abs(texCoordH)));
+                    static_cast<Tile*>(selectedObject)->setTexRect(IntRect(texRect.left, texRect.top, texRect.width, Math::abs(texCoordH)));
                 }
                 for (unsigned int i = 1; i < rectSelect.getItems().size(); i++) {
                     State* selectState = new State("SCHANGEHTEXCOORD", &se);
@@ -6734,7 +6745,7 @@ void ODFAEGCreator::onTexCoordsChanged (TextArea* ta) {
                     sg->addState(state);
 
                     if (dynamic_cast<Tile*>(rectSelect.getItems()[i])) {
-                        static_cast<Tile*>(rectSelect.getItems()[i])->setTexRect(sf::IntRect(texRect.left, texRect.top, texRect.width, Math::abs(texCoordH)));
+                        static_cast<Tile*>(rectSelect.getItems()[i])->setTexRect(IntRect(texRect.left, texRect.top, texRect.width, Math::abs(texCoordH)));
                     }
                 }
                 stateStack.addStateGroup(sg);
@@ -6744,7 +6755,7 @@ void ODFAEGCreator::onTexCoordsChanged (TextArea* ta) {
         if ((ta == tTexCoordX || ta == tTexCoordY || ta == tTexCoordW || ta == tTexCoordH)
             && is_number(tTexCoordX->getText()) && is_number(tTexCoordY->getText()) && is_number(tTexCoordW->getText()) && is_number(tTexCoordH->getText())) {
 
-            sTextRect->setPosition(Vec3f(conversionStringInt(tTexCoordX->getText())+pScriptsFiles->getPosition().x-pMaterial->getDeltas().x, conversionStringInt(tTexCoordY->getText()) + bChooseText->getPosition().y + bChooseText->getSize().y+10-pMaterial->getDeltas().y, 0));
+            sTextRect->setPosition(Vec3f(conversionStringInt(tTexCoordX->getText())+pScriptsFiles->getPosition().x()-pMaterial->getDeltas().x(), conversionStringInt(tTexCoordY->getText()) + bChooseText->getPosition().y() + bChooseText->getSize().y()+10-pMaterial->getDeltas().y(), 0));
             sTextRect->setSize(Vec3f(conversionStringInt(tTexCoordW->getText()), conversionStringInt(tTexCoordH->getText()), 0));
         }
     }
@@ -6765,7 +6776,7 @@ void ODFAEGCreator::onTexCoordsChanged (TextArea* ta) {
                 if (pos != std::string::npos) {
                     std::string subs = content.substr(pos);
                     pos += subs.find_first_of('\n') + 1;
-                    content.insert(pos,"    shape"+conversionUIntString(static_cast<Shape*>(shape)->getId())+"->setTextureRect(sf::IntRect("+conversionIntString(static_cast<Shape*>(shape)->getTextureRect().left)+","
+                    content.insert(pos,"    shape"+conversionUIntString(static_cast<Shape*>(shape)->getId())+"->setTextureRect(IntRect("+conversionIntString(static_cast<Shape*>(shape)->getTextureRect().left)+","
                     +conversionIntString(static_cast<Shape*>(shape)->getTextureRect().top)+","+conversionIntString(static_cast<Shape*>(shape)->getTextureRect().width)+","+conversionIntString(static_cast<Shape*>(shape)->getTextureRect().height)+"));\n");
                 }
             } else {
@@ -6774,7 +6785,7 @@ void ODFAEGCreator::onTexCoordsChanged (TextArea* ta) {
                     std::string subs = content.substr(pos);
                     unsigned int endpos = subs.find_first_of('\n') + pos + 1;
                     content.erase(pos, endpos - pos);
-                    content.insert(pos,"    shape"+conversionUIntString(static_cast<Shape*>(shape)->getId())+"->setTextureRect(sf::IntRect("+conversionIntString(static_cast<Shape*>(shape)->getTextureRect().left)+","
+                    content.insert(pos,"    shape"+conversionUIntString(static_cast<Shape*>(shape)->getId())+"->setTextureRect(IntRect("+conversionIntString(static_cast<Shape*>(shape)->getTextureRect().left)+","
                     +conversionIntString(static_cast<Shape*>(shape)->getTextureRect().top)+","+conversionIntString(static_cast<Shape*>(shape)->getTextureRect().width)+","+conversionIntString(static_cast<Shape*>(shape)->getTextureRect().height)+"));\n");
                 }
             }
@@ -6785,7 +6796,7 @@ void ODFAEGCreator::onTexCoordsChanged (TextArea* ta) {
                 if (pos != std::string::npos) {
                     std::string subs = content.substr(pos);
                     pos += subs.find_first_of('\n') + 1;
-                    content.insert(pos,"    tile"+conversionUIntString(static_cast<Tile*>(shape)->getId())+"->setTexRect(sf::IntRect("+conversionIntString(static_cast<Tile*>(shape)->getTexCoords().left)+","
+                    content.insert(pos,"    tile"+conversionUIntString(static_cast<Tile*>(shape)->getId())+"->setTexRect(IntRect("+conversionIntString(static_cast<Tile*>(shape)->getTexCoords().left)+","
                     +conversionIntString(static_cast<Tile*>(shape)->getTexCoords().top)+","+conversionIntString(static_cast<Tile*>(shape)->getTexCoords().width)+","+conversionIntString(static_cast<Tile*>(shape)->getTexCoords().height)+"));\n");
                 }
             } else {
@@ -6794,7 +6805,7 @@ void ODFAEGCreator::onTexCoordsChanged (TextArea* ta) {
                     std::string subs = content.substr(pos);
                     unsigned int endpos = subs.find_first_of('\n') + pos + 1;
                     content.erase(pos, endpos - pos);
-                    content.insert(pos,"    tile"+conversionUIntString(static_cast<Tile*>(shape)->getId())+"->setTexRect(sf::IntRect("+conversionIntString(static_cast<Tile*>(shape)->getTexCoords().left)+","
+                    content.insert(pos,"    tile"+conversionUIntString(static_cast<Tile*>(shape)->getId())+"->setTexRect(IntRect("+conversionIntString(static_cast<Tile*>(shape)->getTexCoords().left)+","
                     +conversionIntString(static_cast<Tile*>(shape)->getTexCoords().top)+","+conversionIntString(static_cast<Tile*>(shape)->getTexCoords().width)+","+conversionIntString(static_cast<Tile*>(shape)->getTexCoords().height)+"));\n");
                 }
             }
@@ -6833,7 +6844,7 @@ void ODFAEGCreator::onCollisionBoundingBoxChanged(TextArea* ta) {
         selectedBoundingVolume->scale(s);
         collisionBox.setSize(selectedBoundingVolume->getSize());
         collisionBox.setPosition(selectedBoundingVolume->getPosition());
-        collisionBox.setFillColor(sf::Color(255, 0, 0, 128));
+        collisionBox.setFillColor(Color(255, 0, 0, 128));
     }
 }
 void ODFAEGCreator::displayChildrenCV(DropDownList* dp) {
@@ -7078,7 +7089,7 @@ void ODFAEGCreator::onViewPerspectiveChanged(DropDownList* dp) {
         std::vector<Component*> components = getRenderComponentManager().getRenderComponents();
         for (unsigned int i = 0; i < components.size(); i++) {
             if (name == components[i]->getName() && dynamic_cast<HeavyComponent*>(components[i])) {
-                View view(getRenderWindow().getSize().x, getRenderWindow().getSize().y, getRenderWindow().getView().getViewport().getPosition().z, getRenderWindow().getView().getDepth());
+                View view(getRenderWindow().getSize().x(), getRenderWindow().getSize().y(), getRenderWindow().getView().getViewport().getPosition().z(), getRenderWindow().getView().getDepth());
                 static_cast<HeavyComponent*>(components[i])->setView(view);
                 selectedComponentView = view;
             }
@@ -7088,7 +7099,7 @@ void ODFAEGCreator::onViewPerspectiveChanged(DropDownList* dp) {
         std::vector<Component*> components = getRenderComponentManager().getRenderComponents();
         for (unsigned int i = 0; i < components.size(); i++) {
             if (name == components[i]->getName() && dynamic_cast<HeavyComponent*>(components[i])) {
-                View view(getRenderWindow().getSize().x, getRenderWindow().getSize().y, 80, 1, 1000);
+                View view(getRenderWindow().getSize().x(), getRenderWindow().getSize().y(), 80, 1, 1000);
                 view.setConstrains(80, 0);
                 static_cast<HeavyComponent*>(components[i])->setView(view);
                 selectedComponentView = view;
@@ -7104,9 +7115,9 @@ void ODFAEGCreator::onViewPerspectiveChanged(DropDownList* dp) {
                if (!getRenderComponentManager().getRenderComponent(i)->getView().isOrtho()) {
                     View view = getRenderComponentManager().getRenderComponent(i)->getView();
                     float height;
-                    bool isOnHeightMap = heightMap->getHeight(Vec2f(view.getPosition().x, view.getPosition().z), height);
+                    bool isOnHeightMap = heightMap->getHeight(Vec2f(view.getPosition().x(), view.getPosition().z()), height);
                     if (isOnHeightMap) {
-                        view.setCenter(Vec3f(view.getPosition().x, height + 10, view.getPosition().z));
+                        view.setCenter(Vec3f(view.getPosition().x(), height + 10, view.getPosition().z()));
                         getRenderComponentManager().getRenderComponent(i)->setView(view);
                     }
                }
@@ -7151,18 +7162,18 @@ void ODFAEGCreator::onObjectOriginChanged(TextArea* ta) {
             StateGroup* sg = new StateGroup("SGCHANGEXPOS"+conversionFloatString(newXPos));
             State* state = new State("SCHANGEXPOS", &se);
             state->addParameter("OBJECT", selectedObject);
-            state->addParameter("OLDVALUE", selectedObject->getOrigin().x);
+            state->addParameter("OLDVALUE", selectedObject->getOrigin().x());
             state->addParameter("NEWVALUE", newXPos);
             sg->addState(state);
             stateStack.addStateGroup(sg);
-            selectedObject->setOrigin(Vec3f(newXPos, selectedObject->getOrigin().y, selectedObject->getOrigin().z));
+            selectedObject->setOrigin(Vec3f(newXPos, selectedObject->getOrigin().y(), selectedObject->getOrigin().z()));
             //updateScriptPos(selectedObject);
             for (unsigned int i = 1; i < rectSelect.getItems().size(); i++) {
                 State* selectState = new State("SCHANGEXPOS", &se);
                 selectState->addParameter("OBJECT", rectSelect.getItems()[i]);
-                selectState->addParameter("OLDVALUE", rectSelect.getItems()[i]->getPosition().x);
+                selectState->addParameter("OLDVALUE", rectSelect.getItems()[i]->getPosition().x());
                 selectState->addParameter("NEWVALUE", newXPos);
-                rectSelect.getItems()[i]->setOrigin(Vec3f(newXPos, rectSelect.getItems()[i]->getOrigin().y, rectSelect.getItems()[i]->getOrigin().z));
+                rectSelect.getItems()[i]->setOrigin(Vec3f(newXPos, rectSelect.getItems()[i]->getOrigin().y(), rectSelect.getItems()[i]->getOrigin().z()));
                 sg->addState(selectState);
             }
         }
@@ -7172,19 +7183,19 @@ void ODFAEGCreator::onObjectOriginChanged(TextArea* ta) {
             StateGroup* sg = new StateGroup("SGCHANGEYPOS"+conversionFloatString(newYPos));
             State* state = new State("SCHANGEYPOS", &se);
             state->addParameter("OBJECT", selectedObject);
-            state->addParameter("OLDVALUE", selectedObject->getOrigin().y);
+            state->addParameter("OLDVALUE", selectedObject->getOrigin().y());
             state->addParameter("NEWVALUE", newYPos);
             sg->addState(state);
             stateStack.addStateGroup(sg);
-            selectedObject->setOrigin(Vec3f(selectedObject->getOrigin().x, newYPos, selectedObject->getOrigin().z));
+            selectedObject->setOrigin(Vec3f(selectedObject->getOrigin().x(), newYPos, selectedObject->getOrigin().z()));
             std::cout<<"center wall : "<<selectedObject->getCenter()<<std::endl;
             //updateScriptPos(selectedObject);
             for (unsigned int i = 1; i < rectSelect.getItems().size(); i++) {
                 State* selectState = new State("SCHANGEYPOS", &se);
                 selectState->addParameter("OBJECT", rectSelect.getItems()[i]);
-                selectState->addParameter("OLDVALUE", rectSelect.getItems()[i]->getOrigin().y);
+                selectState->addParameter("OLDVALUE", rectSelect.getItems()[i]->getOrigin().y());
                 selectState->addParameter("NEWVALUE", newYPos);
-                rectSelect.getItems()[i]->setOrigin(Vec3f(rectSelect.getItems()[i]->getOrigin().x, newYPos, rectSelect.getItems()[i]->getOrigin().z));
+                rectSelect.getItems()[i]->setOrigin(Vec3f(rectSelect.getItems()[i]->getOrigin().x(), newYPos, rectSelect.getItems()[i]->getOrigin().z()));
                 sg->addState(selectState);
             }
         }
@@ -7194,18 +7205,18 @@ void ODFAEGCreator::onObjectOriginChanged(TextArea* ta) {
             StateGroup* sg = new StateGroup("SGCHANGEZPOS"+conversionFloatString(newZPos));
             State* state = new State("SCHANGEZPOS", &se);
             state->addParameter("OBJECT", selectedObject);
-            state->addParameter("OLDVALUE", selectedObject->getOrigin().z);
+            state->addParameter("OLDVALUE", selectedObject->getOrigin().z());
             state->addParameter("NEWVALUE", newZPos);
             sg->addState(state);
             stateStack.addStateGroup(sg);
-            selectedObject->setOrigin(Vec3f(selectedObject->getOrigin().x, selectedObject->getOrigin().y, newZPos));
+            selectedObject->setOrigin(Vec3f(selectedObject->getOrigin().x(), selectedObject->getOrigin().y(), newZPos));
             //updateScriptPos(selectedObject);
             for (unsigned int i = 1; i < rectSelect.getItems().size(); i++) {
                 State* selectState = new State("SCHANGEZPOS", &se);
                 selectState->addParameter("OBJECT", rectSelect.getItems()[i]);
-                selectState->addParameter("OLDVALUE", rectSelect.getItems()[i]->getOrigin().z);
+                selectState->addParameter("OLDVALUE", rectSelect.getItems()[i]->getOrigin().z());
                 selectState->addParameter("NEWVALUE", newZPos);
-                rectSelect.getItems()[i]->setOrigin(Vec3f(rectSelect.getItems()[i]->getOrigin().x, rectSelect.getItems()[i]->getOrigin().y, newZPos));
+                rectSelect.getItems()[i]->setOrigin(Vec3f(rectSelect.getItems()[i]->getOrigin().x(), rectSelect.getItems()[i]->getOrigin().y(), newZPos));
                 sg->addState(selectState);
             }
         }
@@ -7247,7 +7258,7 @@ void ODFAEGCreator::onParentClickedCV (Label* label) {
 void ODFAEGCreator::makeTransparent(Entity* entity) {
     for (unsigned int  j = 0; j < entity->getNbFaces(); j++) {
         for (unsigned int k = 0; k < entity->getFace(j)->getVertexArray().getVertexCount(); k++) {
-            entity->getFace(j)->getVertexArray()[k].color = sf::Color::Transparent;
+            entity->getFace(j)->getVertexArray()[k].color = Color::Transparent;
         }
     }
     std::vector<Entity*> children = entity->getChildren();
@@ -7310,4 +7321,4 @@ void ODFAEGCreator::addBoundingVolumes(BoundingVolume* bv) {
         addBoundingVolumes(bv->getChildren()[i]);
     }
 }
-#endif
+

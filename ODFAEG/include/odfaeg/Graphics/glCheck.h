@@ -29,6 +29,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "../../../include/odfaeg/config.hpp"
+#ifndef VULKAN
 #include <string>
 #include "export.hpp"
 
@@ -70,5 +71,5 @@ namespace odfaeg {
 } // namespace sf
 
 
-
+#endif
 #endif // ODFAEG_GLCHECK_HPP

@@ -25,7 +25,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "../../../include/odfaeg/config.hpp"
 #include "glCheck.h"
+#ifndef VULKAN
 #include <GL/glew.h>
 #include <iostream>
 namespace odfaeg
@@ -129,4 +131,4 @@ namespace odfaeg
     } // namespace priv
 
 } // namespace sf
-
+#endif

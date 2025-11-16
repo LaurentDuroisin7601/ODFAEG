@@ -1,6 +1,5 @@
 #ifndef ODFAEG_SHADOW_RENDER_COMPONENT_HPP
 #define ODFAEG_SHADOW_RENDER_COMPONENT_HPP
-#include "GL/glew.h"
 #include "renderWindow.h"
 #include "renderTexture.h"
 #include "sprite.h"

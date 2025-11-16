@@ -1,8 +1,6 @@
 #ifndef ODFAEG_REFLECT_REFRACT_RENDER_COMPONENT
 #define ODFAEG_REFLECT_REFRACT_RENDER_COMPONENT
 
-#include "GL/glew.h"
-#include "../openGL.hpp"
 
 #include "heavyComponent.h"
 #include "renderTexture.h"
