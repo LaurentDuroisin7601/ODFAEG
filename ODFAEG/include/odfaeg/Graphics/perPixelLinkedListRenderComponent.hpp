@@ -82,6 +82,12 @@ namespace odfaeg {
             void loadTextureIndexes() {}
             void loadSkybox(Entity* skybox);
             std::vector<Entity*> getEntities();
+            /**
+            * \fn int getLayer()
+            * \brief get the layer of the component.
+            * \return the number of the layer.
+            */
+            int getLayer();
             virtual ~PerPixelLinkedListRenderComponent();
             private :
             GLMatrix4f toVulkanMatrix(const math::Matrix4f& mat) {

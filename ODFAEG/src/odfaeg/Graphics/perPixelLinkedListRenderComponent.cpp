@@ -5620,6 +5620,9 @@ namespace odfaeg {
                 throw core::Erreur(0, "échec de la création d'une command pool!", 1);
             }
         }
+        int PerPixelLinkedListRenderComponent::getLayer() {
+            return getPosition().z();
+        }
         PerPixelLinkedListRenderComponent::~PerPixelLinkedListRenderComponent() {
             //////std::cout<<"ppll destructor"<<std::endl;
             for (unsigned int i = 0; i < events.size(); i++) {

@@ -5,6 +5,9 @@
 #include <string>
 #include "export.hpp"
 #include "fastDelegate.h"
+#include <boost/preprocessor/seq/for_each.hpp>
+#include <boost/preprocessor/seq/enum.hpp>
+#include <boost/preprocessor/cat.hpp>
 /**\file factory.h
 *  \brief This file register types of derived objects
 *  and instanciate the polymorphic objects of the right type with the given type id.
@@ -23,21 +26,33 @@
 * \param BASE : the base type of the derived class.
 * \param DERIVED : the derived type of the derived class.
 */
+// Exemple de macro qui affiche chaque élément
+#define PRINT_PARAM(r, data, elem) std::cout << #elem << " ";
 #define REGISTER_TYPE_(ID, BASE, DERIVED, PARAMS, ARGS) \
 { \
-DERIVED *derived##ID = nullptr; \
-odfaeg::core::Allocator<BASE> allocator##ID; \
-BASE*(odfaeg::core::Allocator<BASE>::*f##ID)(DERIVED*, PARAMS) = &odfaeg::core::Allocator<BASE>::allocate<DERIVED, PARAMS>; \
-odfaeg::core::FastDelegate<BASE*> allocatorDelegate##ID(f##ID, &allocator##ID, derived##ID, ARGS); \
-odfaeg::core::BaseFactory<BASE>::register_type(typeid(DERIVED).name(), allocatorDelegate##ID); \
+    DERIVED *derived##ID = nullptr; \
+    odfaeg::core::Allocator<BASE> allocator##ID; \
+    /* Dérouler la liste des types PARAMS */                                \
+    BOOST_PP_SEQ_FOR_EACH(PRINT_PARAM, _, PARAMS) \
+    /* Construire l’appel avec les arguments ARGS */                        \
+    BASE*(odfaeg::core::Allocator<BASE>::*f##ID)(DERIVED*,                  \
+        BOOST_PP_SEQ_ENUM(PARAMS)) =                                        \
+        &odfaeg::core::Allocator<BASE>::allocate<DERIVED,                   \
+        BOOST_PP_SEQ_ENUM(PARAMS)>;                                         \
+                                                                            \
+    odfaeg::core::FastDelegate<BASE*> allocatorDelegate##ID(                \
+        f##ID, &allocator##ID, derived##ID, BOOST_PP_SEQ_ENUM(ARGS));       \
+                                                                            \
+    odfaeg::core::BaseFactory<BASE>::register_type(                         \
+        typeid(DERIVED).name(), allocatorDelegate##ID);                     \
 }
 #define REGISTER_TYPE(ID, BASE, DERIVED) \
 { \
-DERIVED *derived##ID = nullptr; \
-odfaeg::core::Allocator<BASE> allocator##ID; \
-BASE*(odfaeg::core::Allocator<BASE>::*f##ID)(DERIVED*) = &odfaeg::core::Allocator<BASE>::allocate<DERIVED>; \
-odfaeg::core::FastDelegate<BASE*> allocatorDelegate##ID(f##ID, &allocator##ID, derived##ID); \
-odfaeg::core::BaseFactory<BASE>::register_type(typeid(DERIVED).name(), allocatorDelegate##ID); \
+    DERIVED *derived##ID = nullptr; \
+    odfaeg::core::Allocator<BASE> allocator##ID; \
+    BASE*(odfaeg::core::Allocator<BASE>::*f##ID)(DERIVED*) = &odfaeg::core::Allocator<BASE>::allocate<DERIVED>; \
+    odfaeg::core::FastDelegate<BASE*> allocatorDelegate##ID(f##ID, &allocator##ID, derived##ID); \
+    odfaeg::core::BaseFactory<BASE>::register_type(typeid(DERIVED).name(), allocatorDelegate##ID); \
 }
 /**fn
 * \brief This is an helper function like macro which register a function in the dynamic factory.

@@ -119,7 +119,7 @@ namespace odfaeg {
             unsigned int getNbEntitiesTypes() {
                 return nbEntitiesTypes;
             }
-            void addWindow(graphic::RenderWindow* window, bool holdWindow) {
+            void addWindow(graphic::RenderWindow* window, bool holdWindow=true) {
                 if (windows.size() != 0) {
                     windows.push_back(std::make_pair(window, holdWindow));
                     componentManager->addWindow(*window);

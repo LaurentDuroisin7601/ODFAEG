@@ -24,7 +24,6 @@
 *   etc...
 *   Abstract derived classes cannot be exported.
 */
-#define VA_LIST(...) __VA_ARGS__
 #define EXPORT_CLASS_GUID_(ID, BASE, DERIVED, PARAMS, ARGS) \
 { \
 REGISTER_TYPE_(ID, BASE, DERIVED, PARAMS , ARGS) \

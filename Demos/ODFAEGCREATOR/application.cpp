@@ -15,9 +15,9 @@ using namespace odfaeg::graphic::g2d;
 using namespace odfaeg::physic;
 using namespace odfaeg::window;
 ODFAEGCreator::ODFAEGCreator(VideoMode vm, std::string title) :
-Application (vm, title, Style::Resize|Style::Close, ContextSettings(0, 8, 4, 4, 6)), isGuiShown (false), cursor(10), se(this), rtc("create"), rotationGuismo(), translationGuismo(10), scaleGuismo(10) {
+Application (vm, title, Style::Resize|Style::Close, ContextSettings(0, 8, 4, 4, 6)), loader(getDevice()), isGuiShown (false), cursor(10), se(this), rtc("create"), rotationGuismo(), translationGuismo(10), scaleGuismo(10) {
     //Command::sname = "modified by process";
-    loader = g3d::Model();
+
     isSelectingPolyhedron = false;
     isSecondClick = false;
     isGeneratingTerrain = false;
@@ -88,13 +88,26 @@ Application (vm, title, Style::Resize|Style::Close, ContextSettings(0, 8, 4, 4, 
 	isMovingXPos = isMovingYPos = isMovingZPos = isScalingX = isScalingY = isScalingZ = false;
 
 	EXPORT_CLASS_GUID(BoundingVolumeBoundingBox, BoundingVolume, BoundingBox)
-    EXPORT_CLASS_GUID_(EntityTile, Entity, Tile, VA_LIST(EntityFactory&), VA_LIST(std::ref(factory)))
-    EXPORT_CLASS_GUID_(EntityBigTile, Entity, BigTile, VA_LIST(EntityFactory&), VA_LIST(std::ref(factory)))
-    EXPORT_CLASS_GUID_(EntityWall, Entity, g2d::Wall, VA_LIST(EntityFactory&), VA_LIST(std::ref(factory)))
-    EXPORT_CLASS_GUID_(EntityDecor, Entity, g2d::Decor, VA_LIST(EntityFactory&), VA_LIST(std::ref(factory)))
-    EXPORT_CLASS_GUID_(EntityAnimation, Entity, Anim, VA_LIST(EntityFactory&), VA_LIST(std::ref(factory)))
-    EXPORT_CLASS_GUID_(EntityMesh, Entity, Mesh, VA_LIST(EntityFactory&), VA_LIST(std::ref(factory)))
-    EXPORT_CLASS_GUID_(EntityParticleSystem, Entity, ParticleSystem, VA_LIST(EntityFactory&), VA_LIST(std::ref(factory)))
+    EXPORT_CLASS_GUID_(EntityTile, Entity, Tile,
+                       (EntityFactory&),
+                       (std::ref(factory)))
+    EXPORT_CLASS_GUID_(EntityBigTile, Entity, BigTile,
+                       (EntityFactory&), (std::ref(factory)))
+    EXPORT_CLASS_GUID_(EntityWall, Entity, g2d::Wall,
+                       (EntityFactory&),
+                       (std::ref(factory)))
+    EXPORT_CLASS_GUID_(EntityDecor, Entity, g2d::Decor,
+                       (EntityFactory&),
+                       (std::ref(factory)))
+    EXPORT_CLASS_GUID_(EntityAnimation, Entity, Anim,
+                       (EntityFactory&),
+                       (std::ref(factory)))
+    EXPORT_CLASS_GUID_(EntityMesh, Entity, Mesh,
+                       (EntityFactory&),
+                       (std::ref(factory)))
+    EXPORT_CLASS_GUID_(EntityParticleSystem, Entity, ParticleSystem,
+                       (Device&)(EntityFactory&),
+                       (getDevice())(std::ref(factory)))
     EXPORT_CLASS_GUID(ShapeRectangleShape, Shape, RectangleShape)
 }
 void ODFAEGCreator::onLoad() {
@@ -285,23 +298,23 @@ void ODFAEGCreator::onInit() {
         Action combined = a1 || a2 || a3 || a4;
         Command moveAction(combined, FastDelegate<void>(&ODFAEGCreator::processKeyHeldDown, this, IKeyboard::Unknown));
         getListener().connect("MoveAction", moveAction);
-        fdTexturePath = new FileDialog(Vec3f(0, 0, 0), Vec3f(800, 600, 0), fm.getResourceByAlias(Fonts::Serif));
+        fdTexturePath = new FileDialog(getDevice(),Vec3f(0, 0, 0), Vec3f(800, 600, 0), fm.getResourceByAlias(Fonts::Serif));
         fdTexturePath->setVisible(false);
         fdTexturePath->setEventContextActivated(false);
         addWindow(&fdTexturePath->getWindow(), false);
         getRenderComponentManager().addComponent(fdTexturePath);
-        fdProjectPath = new FileDialog(Vec3f(0, 0, 0), Vec3f(800, 600, 0), fm.getResourceByAlias(Fonts::Serif));
+        fdProjectPath = new FileDialog(getDevice(), Vec3f(0, 0, 0), Vec3f(800, 600, 0), fm.getResourceByAlias(Fonts::Serif));
         fdProjectPath->setVisible(false);
         fdProjectPath->setEventContextActivated(false);
         fdProjectPath->setName("fd open project");
         addWindow(&fdProjectPath->getWindow(), false);
         getRenderComponentManager().addComponent(fdProjectPath);
-        fdImport3DModel = new FileDialog(Vec3f(0, 0, 0), Vec3f(800, 600, 0), fm.getResourceByAlias(Fonts::Serif));
+        fdImport3DModel = new FileDialog(getDevice(), Vec3f(0, 0, 0), Vec3f(800, 600, 0), fm.getResourceByAlias(Fonts::Serif));
         fdImport3DModel->setVisible(false);
         fdImport3DModel->setEventContextActivated(false);
         addWindow(&fdImport3DModel->getWindow(), false);
         getRenderComponentManager().addComponent(fdImport3DModel);
-        wApplicationNew = new RenderWindow(VideoMode(400, 300), "Create ODFAEG Application", Style::Default, ContextSettings(0, 0, 0, 3, 0));
+        wApplicationNew = new RenderWindow(VideoMode(400, 300), "Create ODFAEG Application", getDevice(), Style::Default, ContextSettings(0, 0, 0, 3, 0));
         //New application.
         Label* label = new Label(*wApplicationNew, Vec3f(0, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "Application name : ", 15);
         getRenderComponentManager().addComponent(label);
@@ -328,7 +341,7 @@ void ODFAEGCreator::onInit() {
         wApplicationNew->setVisible(false);
         getRenderComponentManager().setEventContextActivated(false, *wApplicationNew);
         //Create map window.
-        wNewMap = new RenderWindow(VideoMode(400, 400), "Create new scene", Style::Default, ContextSettings(0, 0, 0, 3, 0));
+        wNewMap = new RenderWindow(VideoMode(400, 400), "Create new scene", getDevice(),Style::Default, ContextSettings(0, 0, 0, 3, 0));
         Label* labMapName = new Label(*wNewMap, Vec3f(0, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "Map name : ", 15);
         getRenderComponentManager().addComponent(labMapName);
         taMapName = new TextArea(Vec3f(200, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "", *wNewMap);
@@ -358,7 +371,7 @@ void ODFAEGCreator::onInit() {
         wNewMap->setVisible(false);
         getRenderComponentManager().setEventContextActivated(false, *wNewMap);
         //Create component.
-        wNewComponent = new RenderWindow(VideoMode(1000, 300), "Create new render component", Style::Default, ContextSettings(0, 0, 0, 3, 0));
+        wNewComponent = new RenderWindow(VideoMode(1000, 300), "Create new render component", getDevice(), Style::Default, ContextSettings(0, 0, 0, 3, 0));
         Label* labComponentExpression = new Label(*wNewComponent, Vec3f(0, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "entity's type(s) : ", 15);
         getRenderComponentManager().addComponent(labComponentExpression);
         taComponentExpression = new TextArea(Vec3f(200, 0, 0), Vec3f(800, 50, 0), fm.getResourceByAlias(Fonts::Serif), "", *wNewComponent);
@@ -385,7 +398,7 @@ void ODFAEGCreator::onInit() {
         wNewComponent->setVisible(false);
         getRenderComponentManager().setEventContextActivated(false, *wNewComponent);
         //Create entities updater.
-        wNewEntitiesUpdater = new RenderWindow(VideoMode(400, 300), "Create new entities updater", Style::Default, ContextSettings(0, 0, 0, 3, 0));
+        wNewEntitiesUpdater = new RenderWindow(VideoMode(400, 300), "Create new entities updater", getDevice(), Style::Default, ContextSettings(0, 0, 0, 3, 0));
         Label* lEntitiesUpdaterName = new Label(*wNewEntitiesUpdater, Vec3f(0, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "entities updater name : ", 15);
         getRenderComponentManager().addComponent(lEntitiesUpdaterName);
         taEntitiesUpdaterName = new TextArea(Vec3f(200, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "", *wNewEntitiesUpdater);
@@ -397,7 +410,7 @@ void ODFAEGCreator::onInit() {
         wNewEntitiesUpdater->setVisible(false);
         getRenderComponentManager().setEventContextActivated(false, *wNewEntitiesUpdater);
         //Create animation updater.
-        wNewAnimUpdater = new RenderWindow(VideoMode(400, 300), "Create new anim updater", Style::Default, ContextSettings(0, 0, 0, 3, 0));
+        wNewAnimUpdater = new RenderWindow(VideoMode(400, 300), "Create new anim updater", getDevice(), Style::Default, ContextSettings(0, 0, 0, 3, 0));
         Label* lAnimUpdaterName = new Label(*wNewAnimUpdater, Vec3f(0, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "animation updater name : ", 15);
         getRenderComponentManager().addComponent(lAnimUpdaterName);
         taAnimUpdaterName = new TextArea(Vec3f(200, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "", *wNewAnimUpdater);
@@ -409,7 +422,7 @@ void ODFAEGCreator::onInit() {
         wNewAnimUpdater->setVisible(false);
         getRenderComponentManager().setEventContextActivated(false, *wNewAnimUpdater);
         //Create particle system updater.
-        wNewParticleSystemUpdater = new RenderWindow(VideoMode(400, 300), "Create new particle system updater", Style::Default, ContextSettings(0, 0, 0, 3, 0));
+        wNewParticleSystemUpdater = new RenderWindow(VideoMode(400, 300), "Create new particle system updater", getDevice(), Style::Default, ContextSettings(0, 0, 0, 3, 0));
         Label* lPartSysUpdName = new Label(*wNewParticleSystemUpdater, Vec3f(0, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "particle system updater name : ", 15);
         getRenderComponentManager().addComponent(lPartSysUpdName);
         taParticleSystemUpdaterName = new TextArea(Vec3f(200, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "", *wNewParticleSystemUpdater);
@@ -421,7 +434,7 @@ void ODFAEGCreator::onInit() {
         wNewParticleSystemUpdater->setVisible(false);
         getRenderComponentManager().setEventContextActivated(false, *wNewParticleSystemUpdater);
         //Create emitter for particle systems.
-        wNewEmitter = new RenderWindow(VideoMode(800, 800), "Create new emitter", Style::Default, ContextSettings(0, 0, 0, 3, 0));
+        wNewEmitter = new RenderWindow(VideoMode(800, 800), "Create new emitter", getDevice(), Style::Default, ContextSettings(0, 0, 0, 3, 0));
         //Particle system name.
         Label* lParticleSystemName = new Label(*wNewEmitter, Vec3f(0, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "particle system name : ", 15);
         getRenderComponentManager().addComponent(lParticleSystemName);
@@ -552,7 +565,7 @@ void ODFAEGCreator::onInit() {
         addWindow(wNewEmitter);
         getRenderComponentManager().setEventContextActivated(false, *wNewEmitter);
         //Create new window.
-        wCreateNewWindow = new RenderWindow(VideoMode(400, 300), "Create new window", Style::Default, ContextSettings(0, 0, 4, 3, 0));
+        wCreateNewWindow = new RenderWindow(VideoMode(400, 300), "Create new window", getDevice(), Style::Default, ContextSettings(0, 0, 4, 3, 0));
         //Title.
         Label* lWindowTitle = new Label(*wCreateNewWindow, Vec3f(0, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "Title : ", 15);
         getRenderComponentManager().addComponent(lWindowTitle);
@@ -581,7 +594,7 @@ void ODFAEGCreator::onInit() {
         addWindow(wCreateNewWindow);
         getRenderComponentManager().setEventContextActivated(false, *wCreateNewWindow);
         //Create new object.
-        wCreateNewObject = new RenderWindow(VideoMode(400, 1000), "Create new object", Style::Default, ContextSettings(0, 0, 4, 3, 0));
+        wCreateNewObject = new RenderWindow(VideoMode(400, 1000), "Create new object", getDevice(), Style::Default, ContextSettings(0, 0, 4, 3, 0));
         Label* objectName = new Label(*wCreateNewObject, Vec3f(0, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "Name : ", 15);
         getRenderComponentManager().addComponent(objectName);
         taObjectName = new TextArea(Vec3f(200, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "", *wCreateNewObject);
@@ -623,7 +636,7 @@ void ODFAEGCreator::onInit() {
         addWindow(wCreateNewObject);
         getRenderComponentManager().setEventContextActivated(false, *wCreateNewObject);
         //Modify object.
-        wModifyObject = new RenderWindow(VideoMode(400, 1000), "Modify object", Style::Default, ContextSettings(0, 0, 4, 3, 0));
+        wModifyObject = new RenderWindow(VideoMode(400, 1000), "Modify object", getDevice(), Style::Default, ContextSettings(0, 0, 4, 3, 0));
         Label* lMObjectName = new Label(*wModifyObject, Vec3f(0, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "Object name : ", 15);
         getRenderComponentManager().addComponent(lMObjectName);
         taMObjectName = new TextArea(Vec3f(200, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "", *wModifyObject);
@@ -659,7 +672,7 @@ void ODFAEGCreator::onInit() {
         addWindow(wModifyObject);
         getRenderComponentManager().setEventContextActivated(false, *wModifyObject);
         //Generate terrain.
-        wGenerateTerrain = new RenderWindow(VideoMode(400, 800), "Generate terrain", Style::Default, ContextSettings(0, 0, 4, 3, 0));
+        wGenerateTerrain = new RenderWindow(VideoMode(400, 800), "Generate terrain", getDevice(), Style::Default, ContextSettings(0, 0, 4, 3, 0));
         Label* lTileWidth = new Label(*wGenerateTerrain, Vec3f(0, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "Tile width : ", 15);
         getRenderComponentManager().addComponent(lTileWidth);
         taTileWidth = new TextArea(Vec3f(200, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "", *wGenerateTerrain);
@@ -729,7 +742,7 @@ void ODFAEGCreator::onInit() {
         addWindow(wGenerateTerrain);
         getRenderComponentManager().setEventContextActivated(false, *wGenerateTerrain);
 
-        wGenerate3DTerrain = new RenderWindow(VideoMode(400, 800), "Generate 3D terrain", Style::Default, ContextSettings(0, 0, 4, 3, 0));
+        wGenerate3DTerrain = new RenderWindow(VideoMode(400, 800), "Generate 3D terrain", getDevice(), Style::Default, ContextSettings(0, 0, 4, 3, 0));
         Label* lTileWidth3D = new Label(*wGenerate3DTerrain, Vec3f(0, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "Tile width : ", 15);
         getRenderComponentManager().addComponent(lTileWidth3D);
         taTileWidth3D = new TextArea(Vec3f(200, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "", *wGenerate3DTerrain);
@@ -798,7 +811,7 @@ void ODFAEGCreator::onInit() {
         addWindow(wGenerate3DTerrain);
         getRenderComponentManager().setEventContextActivated(false, *wGenerate3DTerrain);
 
-        wCreateScript = new RenderWindow(VideoMode(400, 800), "Generate terrain", Style::Default, ContextSettings(0, 0, 4, 3, 0));
+        wCreateScript = new RenderWindow(VideoMode(400, 800), "Generate terrain", getDevice(), Style::Default, ContextSettings(0, 0, 4, 3, 0));
         Label* lScriptFileName = new Label(*wCreateScript, Vec3f(0, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "Script file name : ", 15);
         getRenderComponentManager().addComponent(lScriptFileName);
         taScriptFileName = new TextArea(Vec3f(200, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "", *wCreateScript);
@@ -1438,11 +1451,11 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
         setEventContextActivated(true);
     }
     if (&getRenderWindow() == window && event.type == IEvent::MOUSE_BUTTON_EVENT && event.mouseButton.type == IEvent::BUTTON_EVENT_PRESSED && event.mouseButton.button == IMouse::Left) {
-        Vec2f mousePos (event.mouseButton.x(), event.mouseButton.y());
+        Vec2f mousePos (event.mouseButton.x, event.mouseButton.y);
         getListener().setCommandSlotParams("MoveCursor", this, mousePos);
     }
     if (&getRenderWindow() == window && event.type == IEvent::MOUSE_MOTION_EVENT && IMouse::isButtonPressed(IMouse::Left)) {
-        Vec2f mousePos (event.mouseMotion.x(), event.mouseMotion.y());
+        Vec2f mousePos (event.mouseMotion.x, event.mouseMotion.y);
         Vec3f halfWSize(getRenderWindow().getView().getSize().x() * 0.5f, getRenderWindow().getView().getSize().y() * 0.5f, 0);
         Vec3f ext(mousePos.x() - getRenderWindow().getView().getSize().x() * 0.5f, mousePos.y() - getRenderWindow().getView().getSize().y() * 0.5f, 0);
         Vec3f orig (mousePos.x() - getRenderWindow().getView().getSize().x() * 0.5f, mousePos.y() - getRenderWindow().getView().getSize().y() * 0.5f, 1);
@@ -1513,7 +1526,7 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
     }
     if (&getRenderWindow() == window && event.type == IEvent::MOUSE_BUTTON_EVENT && event.mouseButton.type == IEvent::BUTTON_EVENT_PRESSED && event.mouseButton.button == IMouse::Left) {
         if (tabPane->getSelectedTab() == "Collisions") {
-            Vec2f mousePos (event.mouseButton.x(), event.mouseButton.y());
+            Vec2f mousePos (event.mouseButton.x, event.mouseButton.y);
             Vec3f pos(mousePos.x(), mousePos.y(), 0);
             if (dpSelectComponent->getSelectedItem() == "MAIN WINDOW") {
                 pos = getRenderWindow().mapPixelToCoords(Vec3f(mousePos.x(), getRenderWindow().getSize().y()-mousePos.y(), 0))+getRenderWindow().getView().getSize()*0.5f;
@@ -1556,7 +1569,7 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
                 }
             }
         } else {
-            Vec2f mousePos (event.mouseButton.x(), event.mouseButton.y());
+            Vec2f mousePos (event.mouseButton.x, event.mouseButton.y);
             Vec3f halfWSize(getRenderWindow().getView().getSize().x() * 0.5f, getRenderWindow().getView().getSize().y() * 0.5f, 0);
             Vec3f ext(mousePos.x()-getRenderWindow().getView().getSize().x() * 0.5f, mousePos.y() - getRenderWindow().getView().getSize().y() * 0.5f, 0);
             Vec3f orig = Vec3f(mousePos.x()-getRenderWindow().getView().getSize().x() * 0.5f, mousePos.y() - getRenderWindow().getView().getSize().y() * 0.5f, 1);
@@ -1607,7 +1620,7 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
         }
     }
     if (&getRenderWindow() == window && event.type == IEvent::MOUSE_BUTTON_EVENT && event.mouseButton.type == IEvent::BUTTON_EVENT_PRESSED && event.mouseButton.button == IMouse::Right) {
-        Vec2f mousePos (event.mouseButton.x(), event.mouseButton.y());
+        Vec2f mousePos (event.mouseButton.x, event.mouseButton.y);
         if (showRectSelect && !pScriptsFiles->isPointInside(Vec3f(mousePos.x(), mousePos.y(), 0))) {
             if (alignToGrid) {
                 if (getWorld()->getCurrentSceneManager() == nullptr) {
@@ -1669,7 +1682,7 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
         }
     }
     if (&getRenderWindow() == window && event.type == IEvent::MOUSE_MOTION_EVENT && IMouse::isButtonPressed(IMouse::Right)) {
-        Vec2f mousePos (event.mouseMotion.x(), event.mouseMotion.y());
+        Vec2f mousePos (event.mouseMotion.x, event.mouseMotion.y);
         if (showRectSelect && !pScriptsFiles->isPointInside(mousePosition)) {
             if (alignToGrid) {
                 if (getWorld()->getCurrentSceneManager() == nullptr) {
@@ -1754,8 +1767,8 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
             }
         }
         if (!showRectSelect) {
-            int relX = (event.mouseMotion.x() - oldX) * sensivity;
-            int relY = (event.mouseMotion.y() - oldY) * sensivity;
+            int relX = (event.mouseMotion.x - oldX) * sensivity;
+            int relY = (event.mouseMotion.y - oldY) * sensivity;
             //Rotate the view, (Polar coordinates) but you can also use the lookAt function to look at a point.
             /*View view = getRenderWindow().getView();
             if (!view.isOrtho()) {
@@ -1917,7 +1930,7 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
     }
     if (&getRenderWindow() == window && isSelectingPolyhedron && event.type == IEvent::MOUSE_BUTTON_EVENT && event.mouseButton.type == IEvent::BUTTON_EVENT_RELEASED && event.mouseButton.button == IMouse::Left) {
         if (isSecondClick) {
-            Vec2f mousePos (event.mouseButton.x(), event.mouseButton.y());
+            Vec2f mousePos (event.mouseButton.x, event.mouseButton.y);
             int x = IMouse::getPosition(getRenderWindow()).x();
             int y = IMouse::getPosition(getRenderWindow()).y();
             bpPoints.append(Vertex(Vec3f(x - getRenderWindow().getSize().x()*0.5f, y-getRenderWindow().getSize().y()*0.5f, getRenderWindow().getDefaultView().getPosition().z()), Color::Red));
@@ -2525,7 +2538,7 @@ void ODFAEGCreator::onExec() {
                             }
 
                         }
-                        getWorld()->addWorker(psu);
+                        getWorld()->addTimer(psu);
                     }
                 }
                 ifs6.close();
@@ -3337,7 +3350,8 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         std::string name = taParticleSystemUpdaterName->getText();
         ParticleSystemUpdater* psu = new ParticleSystemUpdater();
         psu->setName(name);
-        getWorld()->addWorker(psu);
+        psu->setInterval(seconds(0.01f));
+        getWorld()->addTimer(psu);
         wNewParticleSystemUpdater->setVisible(false);
         getRenderComponentManager().setEventContextActivated(false, *wNewParticleSystemUpdater);
         tScriptEdit->setEventContextActivated(true);
@@ -6489,7 +6503,7 @@ void ODFAEGCreator::onAnimUpdaterChanged(DropDownList* dp) {
     }
 }
 void ODFAEGCreator::onParticleSystemUpdaterChanged(DropDownList* dp) {
-    EntitySystem* worker = getWorld()->getWorker(dp->getSelectedItem());
+    Timer* worker = getWorld()->getTimer(dp->getSelectedItem());
     if (dynamic_cast<ParticleSystemUpdater*>(worker) && dynamic_cast<ParticleSystem*>(selectedObject)) {
         std::cout<<"add particle system to updater"<<std::endl;
         static_cast<ParticleSystemUpdater*>(worker)->addParticleSystem(static_cast<ParticleSystem*>(selectedObject));
@@ -6553,7 +6567,7 @@ void ODFAEGCreator::onSelectedTextureChanged(DropDownList* dp) {
             /*}
         }*/
     }
-    StateGroup* sg = new StateGroup("SGCHANGETEXTURE"+conversionLongString(reinterpret_cast<Int64>(oldTexture)));
+    StateGroup* sg = new StateGroup("SGCHANGETEXTURE"+conversionLongString(reinterpret_cast<uint64_t>(oldTexture)));
     State* state = new State("SCHANGETEXTURE", &se);
     state->addParameter("OLDVALUE",oldTexture);
 
