@@ -107,13 +107,14 @@ Application (vm, title, Style::Resize|Style::Close, ContextSettings(0, 8, 4, 4, 
                        (std::ref(factory)))
     EXPORT_CLASS_GUID_(EntityParticleSystem, Entity, ParticleSystem,
                        (Device&)(EntityFactory&),
-                       (getDevice())(std::ref(factory)))
+                       (std::ref(getDevice()))(std::ref(factory)))
     EXPORT_CLASS_GUID(ShapeRectangleShape, Shape, RectangleShape)
 }
 void ODFAEGCreator::onLoad() {
+    std::tuple<std::reference_wrapper<Device>> rArgs = std::make_tuple(std::ref(getDevice()));
     FontManager<Fonts> fm;
     try {
-        fm.fromFileWithAlias("fonts/FreeSerif.ttf", Serif);
+        fm.fromFileWithAlias("fonts/FreeSerif.ttf", Serif, rArgs);
     }
     catch (Erreur& erreur) {
         std::cerr << erreur.what() << std::endl;
@@ -946,6 +947,7 @@ void ODFAEGCreator::onInit() {
         Action moveCursorAction(Action::EVENT_TYPE::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
         Command moveCursorCommand(moveCursorAction, FastDelegate<void>(&ODFAEGCreator::moveCursor, this, Vec2f(-1, -1)));
         getListener().connect("MoveCursor", moveCursorCommand);
+        createWindowsDescriptorsAndPipelines();
     }
     catch (Erreur& erreur) {
         std::cerr << erreur.what() << std::endl;
@@ -2178,11 +2180,12 @@ void ODFAEGCreator::onExec() {
         fdTexturePath->setEventContextActivated(false);
         TextureManager<>& tm = cache.resourceManager<Texture, std::string>("TextureManager");
         if (!tm.exists(path)) {
+            std::tuple<std::reference_wrapper<Device>> rArgs = std::make_tuple(std::ref(getDevice()));
             if (tTexId->getText() == "") {
-                tm.fromFileWithAlias(path, ImgName);
+                tm.fromFileWithAlias(path, ImgName, rArgs);
                 textPaths.push_back(ImgName);
             } else {
-                tm.fromFileWithAlias(path, tTexId->getText());
+                tm.fromFileWithAlias(path, tTexId->getText(), rArgs);
                 textPaths.push_back(tTexId->getText());
             }
 
@@ -2310,9 +2313,10 @@ void ODFAEGCreator::onExec() {
                 ia(paths);
                 ia(textPaths);
                 for (unsigned int i = 0; i < paths.size(); i++) {
+                    std::tuple<std::reference_wrapper<Device>> rArgs = std::make_tuple(std::ref(getDevice()));
                     //std::cout<<"load texture : "<<paths[i]<<std::endl;
                     //std::cout<<"alias : "<<ImgName<<std::endl;
-                    tm.fromFileWithAlias(paths[i], textPaths[i]);
+                    tm.fromFileWithAlias(paths[i], textPaths[i], rArgs);
                 }
                 ifs.close();
             }
@@ -2620,10 +2624,10 @@ void ODFAEGCreator::onExec() {
                     std::vector<std::string> color2 = split(parameters[i+1], ";");
                     emitterParams.push_back(parameters[i]);
                     emitterParams.push_back(parameters[i+1]);
-                    Vec3f c1(conversionStringInt(color1[0]), conversionStringInt(color1[1]), conversionStringInt(color1[2]), conversionStringInt(color1[3]));
+                    Vec4f c1(conversionStringInt(color1[0]), conversionStringInt(color1[1]), conversionStringInt(color1[2]), conversionStringInt(color1[3]));
                     //std::cout<<"i : "<<i<<std::endl<<"size : "<<parameters.size()<<std::endl<<"psname : "<<parameters[i]<<","<<parameters[i+1]<<","<<parameters[i+2]<<","<<parameters[i+3]<<std::endl;
 
-                    Vec3f c2(conversionStringInt(color2[0]), conversionStringInt(color2[1]), conversionStringInt(color2[2]), conversionStringInt(color2[3]));
+                    Vec4f c2(conversionStringInt(color2[0]), conversionStringInt(color2[1]), conversionStringInt(color2[2]), conversionStringInt(color2[3]));
                     emitter.setParticleColor(Distributions::color(c1, c2));
                     //std::cout<<"i : "<<i<<std::endl<<"size : "<<parameters.size()<<std::endl<<"psname : "<<parameters[i]<<","<<parameters[i+1]<<","<<parameters[i+2]<<","<<parameters[i+3]<<std::endl;
                     i += 2;
@@ -3332,8 +3336,8 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         emitterParams.push_back(taScaleMaxZ->getText());
         std::vector<std::string> color1 = split(taColor1->getText(), ";");
         std::vector<std::string> color2 = split(taColor2->getText(), ";");
-        Vec3f c1(conversionStringInt(color1[0]), conversionStringInt(color1[1]), conversionStringInt(color1[2]), conversionStringInt(color1[3]));
-        Vec3f c2(conversionStringInt(color2[0]), conversionStringInt(color2[1]), conversionStringInt(color2[2]), conversionStringInt(color2[3]));
+        Vec4f c1(conversionStringInt(color1[0]), conversionStringInt(color1[1]), conversionStringInt(color1[2]), conversionStringInt(color1[3]));
+        Vec4f c2(conversionStringInt(color2[0]), conversionStringInt(color2[1]), conversionStringInt(color2[2]), conversionStringInt(color2[3]));
         emitter.setParticleColor(Distributions::color(c1, c2));
         emitterParams.push_back(taColor1->getText());
         emitterParams.push_back(taColor2->getText());
@@ -4001,7 +4005,7 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
     if (item->getText() == "Particle System") {
         if (appliname != "" && getWorld()->getCurrentSceneManager() != nullptr) {
             if (!showRectSelect) {
-                ParticleSystem* ps = factory.make_entity<ParticleSystem>(Vec3f(0, 0, 0),Vec3f(100, 100, 0), factory);
+                ParticleSystem* ps = factory.make_entity<ParticleSystem>(getDevice(), Vec3f(0, 0, 0),Vec3f(100, 100, 0), factory);
                 selectedObject = ps;
                 displayParticleSystemInfos(ps);
                 getWorld()->addEntity(ps);

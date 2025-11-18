@@ -160,6 +160,10 @@ namespace odfaeg {
                 for(unsigned int i = 0; i < windows.size(); i++)
                     windows[i].first->close();
             }
+            void createWindowsDescriptorsAndPipelines() {
+                for(unsigned int i = 0; i < windows.size(); i++)
+                    windows[i].first->createDescriptorsAndPipelines();
+            }
             /** \fn void load()
             *   \brief call the onLoad function, this is where all resources used by the application are loaded.
             */

@@ -5,6 +5,7 @@
 #include <string>
 #include "export.hpp"
 #include "fastDelegate.h"
+#include <boost/preprocessor.hpp>
 #include <boost/preprocessor/seq/for_each.hpp>
 #include <boost/preprocessor/seq/enum.hpp>
 #include <boost/preprocessor/cat.hpp>
