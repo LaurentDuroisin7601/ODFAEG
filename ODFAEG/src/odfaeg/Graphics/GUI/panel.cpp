@@ -204,8 +204,6 @@ namespace odfaeg {
                     #endif
                 }
                 #ifdef VULKAN
-                target.getScissors()[0].offset = {getPosition().x(), (getPosition().y() + getSize().y()) };
-                target.getScissors()[0].extent = {getSize().x(), getSize().y()};
                 target.beginRecordCommandBuffers();
                 #endif // VULKAN
                 rect.setPosition(getPosition());
@@ -214,6 +212,10 @@ namespace odfaeg {
                 #ifdef VULKAN
                 target.submit(false);
                 #endif // VULKAN
+                #ifdef VULKAN
+                target.getScissors()[0].offset = {getPosition().x(), (getPosition().y() + getSize().y()) };
+                target.getScissors()[0].extent = {getSize().x(), getSize().y()};
+                #endif
                 for (unsigned int i = 0; i < sprites.size(); i++) {
                     #ifdef VULKAN
                     target.beginRecordCommandBuffers();
@@ -265,10 +267,10 @@ namespace odfaeg {
                     #endif // VULKAN
                 }
                 #ifdef VULKAN
-                target.beginRecordCommandBuffers();
+                //target.beginRecordCommandBuffers();
                 target.getScissors()[0].offset = {0, 0};
                 target.getScissors()[0].extent = {target.getSize().x(), target.getSize().y()};
-                target.submit(false);
+                //target.submit(false);
                 #endif // VULKAN
                 if (disableScissor) {
                     #ifndef VULKAN
