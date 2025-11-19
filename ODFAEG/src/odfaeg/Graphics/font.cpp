@@ -147,7 +147,7 @@ namespace odfaeg
         ////////////////////////////////////////////////////////////
         bool Font::loadFromFile(const std::string& filename)
         {
-            #ifndef ODFAEG_SYSTEM_ANDROID
+            //#ifndef ODFAEG_SYSTEM_ANDROID
 
             // Cleanup the previous resources
             cleanup();
@@ -199,7 +199,7 @@ namespace odfaeg
 
             return true;
 
-            #else
+            /*#else
 
             if (m_stream)
                 delete (priv::ResourceStream*)m_stream;
@@ -207,7 +207,7 @@ namespace odfaeg
             m_stream = new priv::ResourceStream(filename);
             return loadFromStream(*(priv::ResourceStream*)m_stream);
 
-            #endif
+            #endif*/
         }
 
 
@@ -355,7 +355,9 @@ namespace odfaeg
         const Glyph& Font::getGlyph(std::uint32_t codePoint, unsigned int characterSize, bool bold, float outlineThickness) const
         {
             // Get the page corresponding to the character size
-
+            if (m_pages[characterSize] == nullptr) {
+                m_pages[characterSize] = new Page(vkDevice);
+            }
             GlyphTable& glyphs = m_pages[characterSize]->glyphs;
 
             // Build the key by combining the glyph index (based on code point), bold flag, and outline thickness
@@ -744,6 +746,7 @@ namespace odfaeg
 
                     if ((textureWidth * 2 <= page.texture.getMaximumSize()) && (textureHeight * 2 <= page.texture.getMaximumSize()))
                     {
+
                         // Make the texture 2 times bigger
                         Texture newTexture(vkDevice);
                         newTexture.create(textureWidth * 2, textureHeight * 2);
