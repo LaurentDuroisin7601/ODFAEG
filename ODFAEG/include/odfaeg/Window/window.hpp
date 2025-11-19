@@ -51,7 +51,6 @@ namespace odfaeg {
             void setSize(const math::Vector2u& size);
             void setTitle(const core::String& title);
             void setVisible(bool visible);
-            bool setActive(bool active=true);
             void display ();
             #ifdef VULKAN
             VkSurfaceKHR createSurface(VkInstance instance);

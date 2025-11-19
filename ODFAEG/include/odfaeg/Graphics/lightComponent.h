@@ -61,7 +61,7 @@ namespace odfaeg {
             }
             void draw(RenderTarget& target, RenderStates states) {
                 //states.transform = getTransform();
-                getWindow().setActive(true);
+
 
                 onDraw(target, states);
                 /*if (getName() == "TAB_PANE") {

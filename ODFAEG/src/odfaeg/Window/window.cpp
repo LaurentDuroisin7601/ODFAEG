@@ -188,25 +188,7 @@ namespace odfaeg {
         }
 
 
-        ////////////////////////////////////////////////////////////
-        bool Window::setActive(bool active)
-        {
-            if (m_window)
-            {
-                if (m_window->setActive(active)) {
-                    return true;
-                }
-                else
-                {
-                    std::cerr << "Failed to activate the window's context" << std::endl;
-                    return false;
-                }
-            }
-            else
-            {
-                return false;
-            }
-        }
+
 
 
         ////////////////////////////////////////////////////////////
