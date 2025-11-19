@@ -812,11 +812,14 @@ void ODFAEGCreator::onInit() {
         addWindow(wGenerate3DTerrain);
         getRenderComponentManager().setEventContextActivated(false, *wGenerate3DTerrain);
 
-        wCreateScript = new RenderWindow(VideoMode(400, 800), "Generate terrain", getDevice(), Style::Default, ContextSettings(0, 0, 4, 3, 0));
+        wCreateScript = new RenderWindow(VideoMode(400, 800), "Create scripts", getDevice(), Style::Default, ContextSettings(0, 0, 4, 3, 0));
         Label* lScriptFileName = new Label(*wCreateScript, Vec3f(0, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "Script file name : ", 15);
         getRenderComponentManager().addComponent(lScriptFileName);
         taScriptFileName = new TextArea(Vec3f(200, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "", *wCreateScript);
         getRenderComponentManager().addComponent(taScriptFileName);
+        wCreateScript->setVisible(false);
+        addWindow(wCreateScript);
+        getRenderComponentManager().setEventContextActivated(false, *wCreateScript);
 
         //Create panel for project files.
         pProjects = new Panel(getRenderWindow(), Vec3f(0, 0, 0), Vec3f(200, 700, 0), 0);
