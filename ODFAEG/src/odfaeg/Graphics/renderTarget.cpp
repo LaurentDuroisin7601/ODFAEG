@@ -317,7 +317,6 @@ namespace odfaeg {
                     vertexBuffer[type].addIndex(vertexBuffer[type].getVertexCount()-1);
                  }
              }
-             vertexBuffer[type].addIndex(0xFFFF);
              if (states.shader == nullptr) {
                 if (states.texture != nullptr) {
                     states.shader = &defaultShader;
@@ -707,7 +706,7 @@ namespace odfaeg {
             VkPrimitiveTopology modes[] = {VK_PRIMITIVE_TOPOLOGY_POINT_LIST, VK_PRIMITIVE_TOPOLOGY_LINE_LIST, VK_PRIMITIVE_TOPOLOGY_LINE_STRIP, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN};
 
             inputAssembly.topology = modes[type];
-            inputAssembly.primitiveRestartEnable = VK_TRUE;
+            inputAssembly.primitiveRestartEnable = VK_FALSE;
 
 
 

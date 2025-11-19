@@ -26,6 +26,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "../../../include/odfaeg/Graphics/font.h"
+#include "../../../include/odfaeg/Core/inputStream.hpp"
 #include "glCheck.h"
 
 #include <ft2build.h>
@@ -45,24 +46,13 @@ namespace
     // FreeType callbacks that operate on a std::istream
     unsigned long read(FT_Stream rec, unsigned long offset, unsigned char* buffer, unsigned long count)
     {
-        std::istream* stream = static_cast<std::istream*>(rec->descriptor.pointer);
-        stream->seekg(offset, stream->cur);
-        if (static_cast<unsigned long>(stream->tellg()) == offset)
+        odfaeg::core::InputStream* stream = static_cast<odfaeg::core::InputStream*>(rec->descriptor.pointer);
+        if (static_cast<unsigned long>(stream->seek(offset)) == offset)
         {
-            if (count > 0) {
-                stream->seekg(0, stream->end);
-                unsigned int size = stream->tellg();
-                stream->seekg(0, stream->beg);
-                buffer = new unsigned char[size];
-                size = 0;
-                while (!stream->eof()) {
-                    (*stream)>>buffer[size];
-                    size++;
-                }
-                return size;
-            } else {
+            if (count > 0)
+                return static_cast<unsigned long>(stream->read(reinterpret_cast<char*>(buffer), count));
+            else
                 return 0;
-            }
         }
         else
             return count > 0 ? 0 : 1; // error code is 0 if we're reading, or nonzero if we're seeking
@@ -147,7 +137,7 @@ namespace odfaeg
         ////////////////////////////////////////////////////////////
         bool Font::loadFromFile(const std::string& filename)
         {
-            //#ifndef ODFAEG_SYSTEM_ANDROID
+            #ifndef ODFAEG_SYSTEM_ANDROID
 
             // Cleanup the previous resources
             cleanup();
@@ -199,7 +189,7 @@ namespace odfaeg
 
             return true;
 
-            /*#else
+            #else
 
             if (m_stream)
                 delete (priv::ResourceStream*)m_stream;
@@ -207,7 +197,7 @@ namespace odfaeg
             m_stream = new priv::ResourceStream(filename);
             return loadFromStream(*(priv::ResourceStream*)m_stream);
 
-            #endif*/
+            #endif
         }
 
 
@@ -750,8 +740,8 @@ namespace odfaeg
                         // Make the texture 2 times bigger
                         Texture newTexture(vkDevice);
                         newTexture.create(textureWidth * 2, textureHeight * 2);
-                        newTexture.setSmooth(true);
                         newTexture.update(page.texture);
+                        newTexture.setSmooth(true);
                         page.texture.swap(newTexture);
                     }
                     else

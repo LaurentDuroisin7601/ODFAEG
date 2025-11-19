@@ -1073,26 +1073,21 @@ int main(int argc, char *argv[]) {
     FastDelegate<void> fd(&f, std::move(ptr));*/
 
 
-    /*VkSettup instance;
+    VkSettup instance;
     Device device(instance);
 
     RenderWindow window(VideoMode(800, 600), "test", device, Style::Default, ContextSettings(0, 0, 4, 4, 6));
-    //RenderComponentManager rcm(window);
-    Texture texture(device);
-    texture.loadFromFile("tilesets/eau.png");
-    Sprite sprite(texture, Vec3f(0, 0, 0), Vec3f(100, 50, 0), IntRect(0, 0, 100, 50));
-    Sprite sprite2(texture, Vec3f(100, 50, 0), Vec3f(100, 50, 0), IntRect(0, 0, 100, 50));
+    Font font(device);
+    font.loadFromFile("fonts/FreeSerif.ttf");
+    Text text("ODFAEG", font, 30);
+    text.setFillColor(Color::Red);
     window.createDescriptorsAndPipelines();
-    CircleShape circle(50);
-    window.setPosition(Vector2i(10, 50));
-    window.setSize(Vector2u(640, 480));
-    window.setVerticalSyncEnabled(true);
-    window.setFramerateLimit(30);
+
+    //RenderComponentManager rcm(window);
+
     while(window.isOpen()) {
         window.clear(Color::Black);
-        window.draw(sprite);
-
-        window.draw(sprite2);
+        window.draw(text);
         window.submit(true);
         window.display();
         odfaeg::window::IEvent event;
@@ -1105,13 +1100,10 @@ int main(int argc, char *argv[]) {
 
         }
 
-    }*/
+    }
 
-
-        //std::cout<<"size : "<<sizeof(std::chrono::time_point<std::chrono::high_resolution_clock, std::chrono::duration<float>>)<<std::endl;
-
-    MyAppli app(VideoMode(800, 600), "Test odfaeg");
-    return app.exec();
+    /*MyAppli app(VideoMode(800, 600), "Test odfaeg");
+    return app.exec();*/
 }
 
 

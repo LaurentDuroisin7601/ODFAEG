@@ -27,13 +27,13 @@ namespace sorrok {
         //
         //FastDelegate<void> fd(&Allocator<Entity>::allocate<Tile, EntityFactory&>,tile, std::ref(entityFactory));
         EXPORT_CLASS_GUID(BoundingVolumeBoundingBox, BoundingVolume, BoundingBox)
-        EXPORT_CLASS_GUID_(EntityTile, Entity, Tile, VA_LIST(EntityFactory&), VA_LIST(std::ref(entityFactory)))
-        EXPORT_CLASS_GUID_(EntityTile, Entity, BigTile, VA_LIST(EntityFactory&), VA_LIST(std::ref(entityFactory)))
-        EXPORT_CLASS_GUID_(EntityWall, Entity, g2d::Wall, VA_LIST(EntityFactory&), VA_LIST(std::ref(entityFactory)))
-        EXPORT_CLASS_GUID_(EntityDecor, Entity, g2d::Decor, VA_LIST(EntityFactory&), VA_LIST(std::ref(entityFactory)))
-        EXPORT_CLASS_GUID_(EntityAnimation, Entity, Anim, VA_LIST(EntityFactory&), VA_LIST(std::ref(entityFactory)))
-        EXPORT_CLASS_GUID_(EntityHero, Entity, Hero, VA_LIST(EntityFactory&), VA_LIST(std::ref(entityFactory)))
-        EXPORT_CLASS_GUID_(EntityMesh, Entity, Mesh, VA_LIST(EntityFactory&), VA_LIST(std::ref(entityFactory)))
+        EXPORT_CLASS_GUID_(EntityTile, Entity, Tile, (EntityFactory&), (std::ref(entityFactory)))
+        EXPORT_CLASS_GUID_(EntityTile, Entity, BigTile, (EntityFactory&), (std::ref(entityFactory)))
+        EXPORT_CLASS_GUID_(EntityWall, Entity, g2d::Wall, (EntityFactory&), (std::ref(entityFactory)))
+        EXPORT_CLASS_GUID_(EntityDecor, Entity, g2d::Decor, (EntityFactory&), (std::ref(entityFactory)))
+        EXPORT_CLASS_GUID_(EntityAnimation, Entity, Anim, (EntityFactory&), (std::ref(entityFactory)))
+        EXPORT_CLASS_GUID_(EntityHero, Entity, Hero, (EntityFactory&), (std::ref(entityFactory)))
+        EXPORT_CLASS_GUID_(EntityMesh, Entity, Mesh, (EntityFactory&), (std::ref(entityFactory)))
 
     }
     void MyAppli::gaignedFocus(gui::TextArea* textArea) {
