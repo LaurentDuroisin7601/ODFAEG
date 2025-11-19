@@ -175,7 +175,7 @@ namespace odfaeg {
                 setAutoResized(true);
             }
             void FileDialog::clear() {
-                rw.clear();
+                //rw.clear();
                 pTop->clear();
                 pBottom->clear();
                 pDirectories->clear();
