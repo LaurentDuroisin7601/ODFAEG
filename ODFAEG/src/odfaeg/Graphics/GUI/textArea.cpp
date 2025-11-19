@@ -136,7 +136,7 @@ namespace odfaeg {
                 #endif
                 #ifdef VULKAN
                 target.submit(false);
-                target.getScissors()[1].offset = {getPosition().x(), (getPosition().y() + getSize().y())};
+                target.getScissors()[1].offset = {getPosition().x(), getPosition().y()};
                 target.getScissors()[1].extent = {getSize().x(), getSize().y()};
                 target.beginRecordCommandBuffers();
                 #endif

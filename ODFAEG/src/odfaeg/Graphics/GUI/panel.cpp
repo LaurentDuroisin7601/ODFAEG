@@ -213,7 +213,7 @@ namespace odfaeg {
                 target.submit(false);
                 #endif // VULKAN
                 #ifdef VULKAN
-                target.getScissors()[0].offset = {getPosition().x(), (getPosition().y() + getSize().y()) };
+                target.getScissors()[0].offset = {getPosition().x(), getPosition().y() };
                 target.getScissors()[0].extent = {getSize().x(), getSize().y()};
                 #endif
                 for (unsigned int i = 0; i < sprites.size(); i++) {
