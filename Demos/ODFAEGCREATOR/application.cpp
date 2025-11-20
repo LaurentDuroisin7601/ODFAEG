@@ -3154,6 +3154,14 @@ void ODFAEGCreator::actionPerformed(Button* button) {
             oss<<"    EXPORT_CLASS_GUID_(EntityAnimation, odfaeg::graphic::Entity, odfaeg::graphic::Anim, (odfaeg::graphic::EntityFactory&), (std::ref(c->getEntityFactory())))"<<std::endl;;
             oss<<"    EXPORT_CLASS_GUID_(EntityMesh, odfaeg::graphic::Entity, odfaeg::graphic::Mesh, (odfaeg::graphic::EntityFactory&), (std::ref(c->getEntityFactory())))"<<std::endl;;
             oss<<"    EXPORT_CLASS_GUID_(EntityParticleSystem, odfaeg::graphic::Entity, odfaeg::physic::ParticleSystem, (odfaeg::window::Device&)(odfaeg::graphic::EntityFactory&), (std::ref(c->getDevice()))(std::ref(c->getEntityFactory())))"<<std::endl;
+            oss<<"    std::ifstream ifs("+appliname+"\\scenes.oc);"<<std::endl;
+            oss<<"    if (ifs2) {"<<std::endl;
+            oss<<"        ITextArchive ia2(ifs2);"<<std::endl;
+            oss<<"        std::vector<Scene*> maps;"<<std::endl;
+            oss<<"        ia2(maps);"<<std::endl;
+            oss<<"        for (unsigned int i = 0; i < maps.size(); i++) "<<std::endl;
+            oss<<"             getWorld()->addSceneManager(maps[i]);"<<std::endl;
+            oss<<"    }"<<std::endl;
             oss<<"}"<<std::endl;
             oss<<"void "<<appliname<<"::onLoad() {"<<std::endl;
             oss<<"}"<<std::endl;
@@ -3550,8 +3558,18 @@ void ODFAEGCreator::actionPerformed(Button* button) {
                     toInsert2 += "   std::ifstream if"+cl.getName()+" (\""+cl.getName()+".oc\");\n";
                     toInsert2 += "   odfaeg::core::ITextArchive ia"+cl.getName()+" (if"+cl.getName()+");\n";
                     toInsert2 += "   ia"+cl.getName()+"(v"+cl.getName()+");\n";
-                    toInsert2 += "   for (unsigned int i = 0; i < v"+cl.getName()+".size(); i++) \n";
-                    toInsert2 += "      getWorld()->addEntity(v"+cl.getName()+"[i]);"
+                    toInsert2 += "   for (unsigned int i = 0; i < v"+cl.getName()+".size(); i++) { \n";
+                    toInsert2 += "      getWorld()->setCurrentSceneManager(v"+cl.getName()+"[i]->currentScene);\n";
+                    toInsert2 += "      getWorld()->addEntity(v"+cl.getName()+"[i]);\n";
+                    toInsert2 += "   }\n";
+                    toFind = "";
+                    toFind +="    if (ifs2) {"<<std::endl;
+                    toFind +="        ITextArchive ia2(ifs2);"<<std::endl;
+                    toFind +="        std::vector<Scene*> maps;"<<std::endl;
+                    toFind +="        ia2(maps);"<<std::endl;
+                    toFind +="        for (unsigned int i = 0; i < maps.size(); i++) "<<std::endl;
+                    toFind +="             getWorld()->addSceneManager(maps[i]);"<<std::endl;
+                    toFind +="    }"<<std::endl;
                     int pos2 = it->second.find(toFind)+toFind.size();
                     it->second.insert(pos2, toInsert2);
                 }
@@ -3857,6 +3875,7 @@ void ODFAEGCreator::addExternalEntity(Entity* entity, std::string type) {
         Vec3f position = getRenderWindow().mapPixelToCoords(Vec3f(cursor.getPosition().x(), getRenderWindow().getSize().y() - cursor.getPosition().y(), 0))+getRenderWindow().getView().getSize()*0.5f;
         entity->setPosition(position);
         entity->setClassName(type);
+        entity->currentScene = getWorld()->getCurrentSceneManager()->getName();
         toAdd.insert(std::make_pair(type, std::vector<Entity*>()));
         it = toAdd.find(type);
         it->second.push_back(entity);

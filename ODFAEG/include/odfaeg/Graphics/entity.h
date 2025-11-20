@@ -404,6 +404,7 @@ namespace odfaeg {
                 #ifdef VULKAN
                 virtual void computeParticles(std::mutex* mtx, std::condition_variable* cv2, VertexBuffer& frameVertexBuffer, unsigned int currentRrame, VkSemaphore computeSemaphore, VkFence computeFence) {}
                 #endif
+                std::string currentScene;
             protected :
                 /** \fn Entity(math::Vec3f position, math::Vec3f size, math::Vec3f origin, std::string type, Entity* parent)
                  * \brief constructor.
