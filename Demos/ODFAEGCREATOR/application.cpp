@@ -3169,15 +3169,23 @@ void ODFAEGCreator::actionPerformed(Button* button) {
             oss<<"void "<<appliname<<"::onLoad() {"<<std::endl;
             oss<<"}"<<std::endl;
             oss<<"void "<<appliname<<"::onInit() {"<<std::endl;
+            oss<<"    std::vector<Entity*> entities = getWorld()->getRootEntities(\"*\");"<<std::endl;
+            oss<<"    for (unsigned int i = 0; i < entities.size(); i++) {"<<std::endl;
+            oss<<"         entities[i]->onInit();"<<std::endl;
+            oss<<"    }"<<std::endl;
             oss<<"}"<<std::endl;
             oss<<"void "<<appliname<<"::onRender(RenderComponentManager *cm) {"<<std::endl;
             oss<<"}"<<std::endl;
             oss<<"void "<<appliname<<"::onDisplay(RenderWindow* window) {"<<std::endl;
             oss<<"}"<<std::endl;
             oss<<"void "<<appliname<<"::onUpdate (RenderWindow* window, IEvent& event) {"<<std::endl;
-            oss<<" if (&getRenderWindow() == window && event.type == IEvent::WINDOW_EVENT && event.window.type == IEvent::WINDOW_EVENT_CLOSED) {"<<std::endl;
-            oss<<"  stop();"<<std::endl;
-            oss<<" }"<<std::endl;
+            oss<<"    std::vector<Entity*> entities = getWorld()->getRootEntities(\"*\");"<<std::endl;
+            oss<<"    for (unsigned int i = 0; i < entities.size(); i++) {"<<std::endl;
+            oss<<"         entities[i]->onUpdate();"<<std::endl;
+            oss<<"    }"<<std::endl;
+            oss<<"    if (&getRenderWindow() == window && event.type == IEvent::WINDOW_EVENT && event.window.type == IEvent::WINDOW_EVENT_CLOSED) {"<<std::endl;
+            oss<<"      stop();"<<std::endl;
+            oss<<"    }"<<std::endl;
             oss<<"}"<<std::endl;
             oss<<"void "<<appliname<<"::onExec () {"<<std::endl;
             oss<<"}"<<std::endl;
@@ -3566,13 +3574,13 @@ void ODFAEGCreator::actionPerformed(Button* button) {
                     toInsert2 += "      getWorld()->addEntity(v"+cl.getName()+"[i]);\n";
                     toInsert2 += "   }\n";
                     toFind = "";
-                    toFind +="    if (ifs2) {"<<std::endl;
-                    toFind +="        ITextArchive ia2(ifs2);"<<std::endl;
-                    toFind +="        std::vector<Scene*> maps;"<<std::endl;
-                    toFind +="        ia2(maps);"<<std::endl;
-                    toFind +="        for (unsigned int i = 0; i < maps.size(); i++) "<<std::endl;
-                    toFind +="             getWorld()->addSceneManager(maps[i]);"<<std::endl;
-                    toFind +="    }"<<std::endl;
+                    toFind +="    if (ifs2) {\n";
+                    toFind +="        ITextArchive ia2(ifs2);\n";
+                    toFind +="        std::vector<Scene*> maps;\n";
+                    toFind +="        ia2(maps);\n";
+                    toFind +="        for (unsigned int i = 0; i < maps.size(); i++) \n";
+                    toFind +="             getWorld()->addSceneManager(maps[i]);\n";
+                    toFind +="    }\n";
                     int pos2 = it->second.find(toFind)+toFind.size();
                     it->second.insert(pos2, toInsert2);
                 }
@@ -7218,14 +7226,14 @@ void ODFAEGCreator::onSelectedScriptChanged(DropDownList* dp) {
     std::map<std::pair<std::string, std::string>, std::string>::iterator it;
     it = cppAppliContent.find(std::make_pair(getWorld()->projectName, minAppliname+".cpp"));
     if (it != cppAppliContent.end()) {
-        if (it->second.find("if(entities[i]->getScript() == "+dp->getText()+") {\n") == std::string::npos) {
+        if (it->second.find("if(entities[i]->getScript() == "+dp->getSelectedItem()+") {\n") == std::string::npos) {
             std::string toFind = "";
             toFind += "    std::vector<Entity*> entities = getWorld()->getRootEntities(\"*\");\n";
             toFind += "    for (unsigned int i = 0; i < entities.size(); i++) {\n";
             int pos = it->second.find(toFind)+toFind.size();
             std::string toInsert = "";
-            toInsert += "    if(entities[i]->getScript() == "+dp->getText()+") {\n";
-            toInsert += "       MonoBehaviour* behaviour = new "+dp->getText()+"();\n";
+            toInsert += "    if(entities[i]->getScript() == "+dp->getSelectedItem()+") {\n";
+            toInsert += "       MonoBehaviour* behaviour = new "+dp->getSelectedItem()+"();\n";
             toInsert += "       entities[i]->setBehaviour(behaviour);\n";
             toInsert += "    }";
         }

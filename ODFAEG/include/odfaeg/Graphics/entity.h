@@ -396,7 +396,7 @@ namespace odfaeg {
                 virtual void setWaitComputeFinished() {};
                 EntityId getEnttID();
                 void setEnttID(EntityId enttID);
-                 void attachScript(std::string scriptClassName);
+                void attachScript(std::string scriptClassName);
                 std::string getScript();
                 void setBehaviour(MonoBehaviour* behaviour);
                 void onInit();
