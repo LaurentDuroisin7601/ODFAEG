@@ -819,11 +819,15 @@ void ODFAEGCreator::onInit() {
         addWindow(wGenerate3DTerrain);
         getRenderComponentManager().setEventContextActivated(false, *wGenerate3DTerrain);
 
+        //Create scripts window.
         wCreateScript = new RenderWindow(VideoMode(400, 800), "Create scripts", getDevice(), Style::Default, ContextSettings(0, 0, 4, 3, 0));
         Label* lScriptFileName = new Label(*wCreateScript, Vec3f(0, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "Script file name : ", 15);
         getRenderComponentManager().addComponent(lScriptFileName);
         taScriptFileName = new TextArea(Vec3f(200, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "", *wCreateScript);
         getRenderComponentManager().addComponent(taScriptFileName);
+        bCreateScript = new Button(Vec3f(0, 50, 0), Vec3f(400, 50, 0), fm.getResourceByAlias(Fonts::Serif), "Create script file", 15, *wCreateScript);
+        bCreateScript->addActionListener(this);
+        getRenderComponentManager().addComponent(bCreateScript);
         wCreateScript->setVisible(false);
         addWindow(wCreateScript);
         getRenderComponentManager().setEventContextActivated(false, *wCreateScript);
@@ -3798,6 +3802,9 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         getRenderComponentManager().setEventContextActivated(false, *wGenerate3DTerrain);
         getRenderComponentManager().setEventContextActivated(true, getRenderWindow());
     }
+    if (button == bCreateScript) {
+        cppAppliContent.insert(std::make_pair(std::make_pair(appliname, taScriptFileName->getText()), ""));
+    }
 }
 void ODFAEGCreator::updateNb(std::string name, unsigned int nb) {
     nbs.insert(std::make_pair(name, nb));
@@ -4893,9 +4900,41 @@ void ODFAEGCreator::displayEntityInfos(Entity* tile) {
     dpSelectEm->getListener().connect("EmChanged", cmdEmChanged);
     dpSelectEm->setPriority(-2);
     lEmListNode->addOtherComponent(dpSelectEm, Vec2f(0.75, 0.025));
+
+    //Script selection.
+
+    Label* lSelectScriptLabel = new Label(getRenderWindow(), Vec3f(0, 0, 0),Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),"Script : ",15);
+    lSelectScriptLabel->setParent(pInfos);
+    pInfos->addChild(lSelectScriptLabel);
+    Node* nSelectScript = new Node("SelectScript",lSelectScriptLabel,Vec2f(0, 0),Vec2f(0.25, 0.025),rootInfosNode.get());
+    dpSelectScript = new DropDownList(getRenderWindow(),Vec3f(0, 0, 0), Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),"NONE", 15);
+    std::vector<std::string> classes = Class::getClasses(appliname+"\\Scripts");
+    for (unsigned int i = 0; i < classes.size(); i++) {
+        Class cl = Class::getClass(classes[i]);
+        bool isMonoBehaviourScript = false;
+        std::vector<Class> superClasses = cl.getSuperClasses();
+        for (unsigned int j = 0; j < superClasses.size(); j++) {
+            if (superClasses[j].getName() == "MonoBehaviour")
+                isMonoBehaviourScript = true;
+        }
+        if (isMonoBehaviourScript) {
+            if (cl.getNamespace() == "") {
+                dpSelectScript->addItem(classes[i], 15);
+            } else {
+                dpSelectScript->addItem(cl.getNamespace()+"::"+classes[i], 15);
+            }
+        }
+    }
+    dpSelectScript->setParent(pInfos);
+    pInfos->addChild(dpSelectScript);
+    nSelectScript->addOtherComponent(dpSelectScript,Vec2f(0.75, 0.025));
+
     Label* lSelectParent = new Label(getRenderWindow(),Vec3f(0, 0, 0),Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),"Parent : ",15);
     lSelectParent->setParent(pInfos);
     pInfos->addChild(lSelectParent);
+
+
+
     Node* selectParentNode = new Node("SelectParent",lSelectParent,Vec2f(0, 0),Vec2f(0.25, 0.025),rootInfosNode.get());
     dpSelectParent = new DropDownList(getRenderWindow(),Vec3f(0, 0, 0), Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),"NONE", 15);
     std::vector<Entity*> parents = getWorld()->getEntities("*");
@@ -4910,6 +4949,8 @@ void ODFAEGCreator::displayEntityInfos(Entity* tile) {
     Command cmdParentChanged(FastDelegate<bool>(&DropDownList::isValueChanged, dpSelectParent), FastDelegate<void>(&ODFAEGCreator::onSelectedParentChanged, this, dpSelectParent));
     dpSelectParent->getListener().connect("ParentChanged",cmdParentChanged);
     selectParentNode->addOtherComponent(dpSelectParent,Vec2f(0.75, 0.025));
+
+
     //Shadow center.
 
     Label* lShadowCenter = new Label(getRenderWindow(), Vec3f(0, 0, 0), Vec3f(100, 50, 0), fm.getResourceByAlias(Fonts::Serif), "Shadow center : ", 15);

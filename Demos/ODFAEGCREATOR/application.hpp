@@ -153,7 +153,7 @@ class ODFAEGCreator : public odfaeg::core::Application<ODFAEGCreator>,
         *taParticleSystemUpdaterName, *taTileWidth, *taTileHeight, *taZoneXPos, *taZoneYPos, *taZoneZPos, *taZoneWidth, *taZoneHeight, *taZoneDepth, *taFrameRate,
         *taTileWidth3D, *taTileDepth3D, *taZoneXPos3D, *taZoneYPos3D, *taZoneZPos3D, *taZoneWidth3D, *taZoneHeight3D, *taZoneDepth3D;
         odfaeg::graphic::gui::DropDownList *dpScriptType, *dpList, *dpSelectTexture, *dpMapTypeList, *dpComponentType, *dpSelectEm, *dpSelectComponent, *dpSelectParent, *dpSelectAU, *dpSelectPPType, *dpSelectPSU, *dpSelectClass, *dpSelectFunction, *dpSelectMClass,
-        *dpSelectMFunction, *dpSelectRClass, *dpSelectPointerType, *dpSelectViewPerspective, *dpScriptBaseClass, *dpSelectWallType, *dpWallType, *dpSelectWallType3D, *dpChildren, *dpChildrenCV, *dpSelectParentCV;
+        *dpSelectMFunction, *dpSelectRClass, *dpSelectPointerType, *dpSelectViewPerspective, *dpScriptBaseClass, *dpSelectWallType, *dpWallType, *dpSelectWallType3D, *dpChildren, *dpChildrenCV, *dpSelectParentCV, *dpSelectScript;
         odfaeg::graphic::gui::Label *lWidth, *lHeight, *lMapWidth, *lMapHeight, *lMapDepth, *lOrigX, *lOrigY, *lOrigZ, *lOrigin, *lParentCV;
         odfaeg::graphic::gui::TextArea *taWidth, *taHeight, *tScriptEdit, *taMapName, *taMapWidth, *taMapHeight, *taMapDepth, *taIntensity, *taQuality, *taWindowPos, *taWindowSize, *taWindowTitle, *taWindowName, *taObjectName, *taMObjectName, *taRObjectName, *taSelectExpression, *taNameCV;
         odfaeg::graphic::gui::Panel *pProjects, *pScriptsFiles, *pScriptsEdit, *pInfos, *pTransform, *pMaterial, *pShadows, *pCollisions, *pComponent, *pObjectsParameters, *pMObjectsParameters;
@@ -180,7 +180,7 @@ class ODFAEGCreator : public odfaeg::core::Application<ODFAEGCreator>,
         *lGColor, *lBColor, *lAColor, *lTexture, *lTexCoordX, *lTexCoordY, *lTexCoordW, *lTexCoordH, *lTexImage, *lParent, *lTexId;
         odfaeg::graphic::gui::TabPane* tabPane;
         odfaeg::graphic::gui::Button* bChooseText, *bAddTexRect, *bCreateComponent, *bCreateScene, *bCreateEntitiesUpdater, *bCreateAppli, *bCreateAnimUpdater, *bCreateEmitter, *bCreateParticleSystemUpdater, *bCreateWindow, *bCreateObject, *bModifyObject,
-        *bGenerateTerrain, *bGenerate3DTerrain, *bRemoveObject, *bAddTileGround, *bAddWall, *bAddTileGround3D, *bAddWall3D, *bSetTexRect, *bAssignCollisionVolume;
+        *bGenerateTerrain, *bGenerate3DTerrain, *bRemoveObject, *bAddTileGround, *bAddWall, *bAddTileGround3D, *bAddWall3D, *bSetTexRect, *bAssignCollisionVolume, *bCreateScript;
         odfaeg::graphic::Shape* sTextRect;
         odfaeg::core::StateStack stateStack;
         ODFAEGCreatorStateExecutor se;
