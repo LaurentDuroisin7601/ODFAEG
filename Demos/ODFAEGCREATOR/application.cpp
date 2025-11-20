@@ -3116,7 +3116,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
             oss<<"#ifndef "<<majAppliname<<"_HPP"<<std::endl;
             oss<<"#define "<<majAppliname<<"_HPP"<<std::endl;
             oss<<"#include \"odfaeg/Core/application.h\""<<std::endl;
-            oss<<"class "<<appliname<<" : public odfaeg::core::Application {"<<std::endl;
+            oss<<"class "<<appliname<<" : public odfaeg::core::Application<"+appliname+"> {"<<std::endl;
             oss<<"   public : "<<std::endl;
             oss<<"   "<<appliname<<"(VideoMode vm, std::string title);"<<std::endl;
             oss<<"   void onLoad();"<<std::endl;
@@ -3146,6 +3146,14 @@ void ODFAEGCreator::actionPerformed(Button* button) {
             oss<<"using namespace odfaeg::window;"<<std::endl;
             oss<<appliname<<"::"<<appliname<<"(VideoMode vm, std::string title) : "<<std::endl;
             oss<<"Application (vm, title, Style::Resize|Style::Close, ContextSettings(0, 0, 0, 3, 0)) {"<<std::endl;
+            oss<<"    EXPORT_CLASS_GUID(BoundingVolumeBoundingBox, odfaeg::physic::BoundingVolume, odfaeg::physic::BoundingBox)"<<std::endl;
+            oss<<"    EXPORT_CLASS_GUID_(EntityTile, odfaeg::graphic::Entity, odfaeg::graphic::Tile, (odfaeg::graphic::EntityFactory&), (std::ref(c->getEntityFactory())))"<<std::endl;;
+            oss<<"    EXPORT_CLASS_GUID_(EntityBigTile, odfaeg::graphic::Entity, odfaeg::graphic::BigTile, (odfaeg::graphic::EntityFactory&), (std::ref(c->getEntityFactory())))"<<std::endl;;
+            oss<<"    EXPORT_CLASS_GUID_(EntityWall, odfaeg::graphic::Entity, odfaeg::graphic::g2d::Wall, (odfaeg::graphic::EntityFactory&), (std::ref(c->getEntityFactory())))"<<std::endl;;
+            oss<<"    EXPORT_CLASS_GUID_(EntityDecor, odfaeg::graphic::Entity, odfaeg::graphic::g2d::Decor, (odfaeg::graphic::EntityFactory&), (std::ref(c->getEntityFactory())))"<<std::endl;;
+            oss<<"    EXPORT_CLASS_GUID_(EntityAnimation, odfaeg::graphic::Entity, odfaeg::graphic::Anim, (odfaeg::graphic::EntityFactory&), (std::ref(c->getEntityFactory())))"<<std::endl;;
+            oss<<"    EXPORT_CLASS_GUID_(EntityMesh, odfaeg::graphic::Entity, odfaeg::graphic::Mesh, (odfaeg::graphic::EntityFactory&), (std::ref(c->getEntityFactory())))"<<std::endl;;
+            oss<<"    EXPORT_CLASS_GUID_(EntityParticleSystem, odfaeg::graphic::Entity, odfaeg::physic::ParticleSystem, (odfaeg::window::Device&)(odfaeg::graphic::EntityFactory&), (std::ref(c->getDevice()))(std::ref(c->getEntityFactory())))"<<std::endl;
             oss<<"}"<<std::endl;
             oss<<"void "<<appliname<<"::onLoad() {"<<std::endl;
             oss<<"}"<<std::endl;
@@ -3496,6 +3504,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
                 std::vector<std::string> parts = split(dpSelectPointerType->getSelectedItem(), "::");
                 std::string name = parts[parts.size()-1];
                 toInsert += "   EXPORT_CLASS_GUID_("+name+cl.getName()+","+dpSelectPointerType->getSelectedItem()+","+dpSelectClass->getSelectedItem()+", (odfaeg::graphic::EntityFactory&), (c->getEntityFactory()))\n";
+
                 if (found) {
                     toInsert += "       std::map<std::string, std::vector<odfaeg::graphic::Entity*>>::iterator it"+cl.getName()+" = c->getExternals().find(\""+cl.getName()+"\");\n";
                 } else {
@@ -3533,10 +3542,35 @@ void ODFAEGCreator::actionPerformed(Button* button) {
                 std::vector<std::string> parts = split(dpSelectPointerType->getSelectedItem(), "::");
                 std::string name = parts[parts.size()-1];
                 toInsert += "   EXPORT_CLASS_GUID_("+name+cl.getName()+","+dpSelectPointerType->getSelectedItem()+","+dpSelectClass->getSelectedItem()+", (odfaeg::graphic::EntityFactory&), (std::ref(c->getEntityFactory())))\n";
+                std::map<std::pair<std::string, std::string>, std::string>::iterator it;
+                it = cppAppliContent.find(std::make_pair(getWorld()->projectName, minAppliname+".cpp"));
+                if (it != cppAppliContent.end()) {
+                    std::string toInsert2 = toInsert;
+                    toInsert2 += "   std::vector<"+dpSelectPointerType->getSelectedItem()+"*> v"+cl.getName()+";\n";
+                    toInsert2 += "   std::ifstream if"+cl.getName()+" (\""+cl.getName()+".oc\");\n";
+                    toInsert2 += "   odfaeg::core::ITextArchive ia"+cl.getName()+" (if"+cl.getName()+");\n";
+                    toInsert2 += "   ia"+cl.getName()+"(v"+cl.getName()+");\n";
+                    toInsert2 += "   for (unsigned int i = 0; i < v"+cl.getName()+".size(); i++) \n";
+                    toInsert2 += "      getWorld()->addEntity(v"+cl.getName()+"[i]);"
+                    int pos2 = it->second.find(toFind)+toFind.size();
+                    it->second.insert(pos2, toInsert2);
+                }
             }
             toInsert += "   std::ifstream if"+cl.getName()+" (\""+cl.getName()+".oc\");\n";
             toInsert += "   odfaeg::core::ITextArchive ia"+cl.getName()+" (if"+cl.getName()+");\n";
             toInsert += "   ia"+cl.getName()+"(v"+cl.getName()+");\n";
+
+            toFind = "";
+            toFind += "    EXPORT_CLASS_GUID(BoundingVolumeBoundingBox, odfaeg::physic::BoundingVolume, odfaeg::physic::BoundingBox)\n";
+            toFind += "    EXPORT_CLASS_GUID_(EntityTile, odfaeg::graphic::Entity, odfaeg::graphic::Tile, (odfaeg::graphic::EntityFactory&), (std::ref(c->getEntityFactory())))\n";
+            toFind += "    EXPORT_CLASS_GUID_(EntityBigTile, odfaeg::graphic::Entity, odfaeg::graphic::BigTile, (odfaeg::graphic::EntityFactory&), (std::ref(c->getEntityFactory())))\n";
+            toFind += "    EXPORT_CLASS_GUID_(EntityWall, odfaeg::graphic::Entity, odfaeg::graphic::g2d::Wall, (odfaeg::graphic::EntityFactory&), (std::ref(c->getEntityFactory())))\n";
+            toFind += "    EXPORT_CLASS_GUID_(EntityDecor, odfaeg::graphic::Entity, odfaeg::graphic::g2d::Decor, (odfaeg::graphic::EntityFactory&), (std::ref(c->getEntityFactory())))\n";
+            toFind += "    EXPORT_CLASS_GUID_(EntityAnimation, odfaeg::graphic::Entity, odfaeg::graphic::Anim, (odfaeg::graphic::EntityFactory&), (std::ref(c->getEntityFactory())))\n";
+            toFind += "    EXPORT_CLASS_GUID_(EntityMesh, odfaeg::graphic::Entity, odfaeg::graphic::Mesh, (odfaeg::graphic::EntityFactory&), (std::ref(c->getEntityFactory())))\n";
+            toFind += "    EXPORT_CLASS_GUID_(EntityParticleSystem, odfaeg::graphic::Entity, odfaeg::physic::ParticleSystem, (odfaeg::window::Device&)(odfaeg::graphic::EntityFactory&), (std::ref(c->getDevice()))(std::ref(c->getEntityFactory())))\n";
+
+
             if (found) {
                 //toInsert += "   c->getExternals().insert(std::make_pair(\""+cl.getName()+"\",v"+cl.getName()+"));\n";
                 toInsert += "   for (unsigned int i = 0; i < v"+cl.getName()+".size(); i++)\n";
@@ -3617,10 +3651,11 @@ void ODFAEGCreator::actionPerformed(Button* button) {
             }
             sourceCode.insert(pos, toInsert);
         }
-        //std::cout<<"source code : "<<sourceCode<<std::endl;
+
         std::ofstream file(appliname+"\\sourceCode.cpp");
         file<<sourceCode;
         file.close();
+
         rtc.addSourceFile(appliname+"\\sourceCode");
         rtc.compile();
         std::string errors = rtc.getCompileErrors();
