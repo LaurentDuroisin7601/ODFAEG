@@ -81,6 +81,7 @@ namespace odfaeg {
             void loadTextureIndexes();
             void createDescriptorsAndPipelines();
             void launchRenderer();
+            void stopRenderer();
             std::vector<Entity*> getEntities();
             bool loadEntitiesOnComponent(std::vector<Entity*> visibleEntities);
             void loadSkybox(Entity* skybox);

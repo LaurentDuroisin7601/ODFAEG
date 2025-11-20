@@ -829,10 +829,15 @@ namespace odfaeg {
             }
             void ReflectRefractRenderComponent::launchRenderer() {
                 if (useThread) {
+                    stop = false;
                     getListener().launch();
                 }
             }
-
+            void ReflectRefractRenderComponent::stopRenderer() {
+                stop = true;
+                cv.notify_all();
+                getListener().stop();
+            }
             VkCommandBuffer ReflectRefractRenderComponent::beginSingleTimeCommands() {
                 VkCommandBufferAllocateInfo allocInfo{};
                 allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;

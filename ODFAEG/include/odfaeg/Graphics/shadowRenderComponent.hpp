@@ -76,6 +76,7 @@ namespace odfaeg {
                 ShadowRenderComponent (RenderWindow& window, int layer, std::string expression,window::ContextSettings settings = window::ContextSettings(0, 0, 4, 3, 0), bool useThread = true);
                 void loadTextureIndexes();
                 void launchRenderer();
+                void stopRenderer();
                 void drawNextFrame();
 
                 void drawInstanced();

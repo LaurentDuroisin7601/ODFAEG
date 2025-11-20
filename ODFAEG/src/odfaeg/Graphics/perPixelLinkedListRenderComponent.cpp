@@ -550,8 +550,15 @@ namespace odfaeg {
         }
         void PerPixelLinkedListRenderComponent::launchRenderer () {
             if (useThread) {
+                stop = false;
                 getListener().launch();
             }
+        }
+        void PerPixelLinkedListRenderComponent::stopRenderer() {
+            stop = true;
+            cv.notify_all();
+            cv2.notify_all();
+            getListener().stop();
         }
         void PerPixelLinkedListRenderComponent::loadSkybox(Entity* skybox) {
             this->skybox = skybox;

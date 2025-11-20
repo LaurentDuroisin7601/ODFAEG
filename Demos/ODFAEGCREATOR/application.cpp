@@ -44,30 +44,37 @@ Application (vm, title, Style::Resize|Style::Close, ContextSettings(0, 8, 4, 4, 
     rtc.addOption("std=c++20");
     rtc.addMacro("ODFAEG_STATIC");
     rtc.addIncludeDir("\"C:\\Program Files (x86)\\ODFAEG\\include\"");
-    rtc.addIncludeDir("..\\..\\ODFAEG-master\\ODFAEG\\extlibs\\headers");
+    rtc.addIncludeDir("..\\..\\ODFAEG-master2\\ODFAEG\\extlibs\\headers");
     rtc.addLibraryDir("\"C:\\Program Files (x86)\\ODFAEG\\lib\"");
-    rtc.addLibraryDir("..\\..\\ODFAEG-master\\ODFAEG\\extlibs\\libs-mingw\\x64");
-    rtc.addLibrary("odfaeg-network-s");
-	rtc.addLibrary("odfaeg-audio-s");
-	rtc.addLibrary("odfaeg-graphics-s");
-	rtc.addLibrary("odfaeg-physics-s");
-	rtc.addLibrary("odfaeg-core-s");
-	rtc.addLibrary("odfaeg-window-s");
-	rtc.addLibrary("odfaeg-math-s");
-	rtc.addLibrary("sfml-network");
-	rtc.addLibrary("sfml-audio");
-	rtc.addLibrary("sfml-graphics");
-	rtc.addLibrary("sfml-window");
-	rtc.addLibrary("sfml-system");
+    rtc.addLibraryDir("..\\..\\ODFAEG-master2\\ODFAEG\\extlibs\\libs-mingw\\x64");
+    rtc.addLibrary("odfaeg-network-s-d");
+	rtc.addLibrary("odfaeg-audio-s-d");
+	rtc.addLibrary("odfaeg-graphics-s-d");
+	rtc.addLibrary("odfaeg-physics-s-d");
+	rtc.addLibrary("odfaeg-core-s-d");
+	rtc.addLibrary("odfaeg-window-s-d");
+	rtc.addLibrary("odfaeg-math-s-d");
 	rtc.addLibrary("assimp");
+	rtc.addLibrary("FLAC");
+	rtc.addLibrary("vorbis");
+	rtc.addLibrary("vorbisenc");
+	rtc.addLibrary("vorbisfile");
+	rtc.addLibrary("glfw3.dll");
+	rtc.addLibrary("SDL3.dll");
+	rtc.addLibrary("shaderc_shared.dll");
+    rtc.addLibrary("jpeg");
+    rtc.addLibrary("ogg");
 	rtc.addLibrary("crypto.dll");
 	rtc.addLibrary("ssl.dll");
 	rtc.addLibrary("freetype");
 	rtc.addLibrary("glew32");
 	rtc.addLibrary("opengl32");
+	rtc.addLibrary("vulkan-1.dll");
+	rtc.addLibrary("openal32");
+	rtc.addLibrary("ws2_32");
 	rtc.addLibrary("gdi32");
 	rtc.addLibrary("dl.dll");
-	rtc.addLibrary("sndfile");
+	rtc.addLibrary("sndfile.dll");
 	rtc.addRuntimeFunction("createObject");
 	rtc.addRuntimeFunction("readObjects");
 	rtc.addSourceFile("../../ODFAEG-master/Demos/ODFAEGCREATOR/application");
@@ -2512,6 +2519,7 @@ void ODFAEGCreator::onExec() {
                         taChangeComponentExpression->setText(expression);
                     }
                 }
+                getRenderComponentManager().recreateDescriptorsAndPipelines();
                 ifs5.close();
             }
             std::cout<<"load workers"<<std::endl;
@@ -3268,6 +3276,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
                 selectedComponentView = getRenderComponentManager().getComponents()[i]->getFrameBuffer()->getView();
             }
         }
+        getRenderComponentManager().recreateDescriptorsAndPipelines();
     }
     if(button==bCreateEntitiesUpdater) {
         std::string name = taEntitiesUpdaterName->getText();

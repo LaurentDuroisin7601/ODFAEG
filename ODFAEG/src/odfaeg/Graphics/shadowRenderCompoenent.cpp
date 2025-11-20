@@ -651,8 +651,14 @@ namespace odfaeg {
              }
              void ShadowRenderComponent::launchRenderer() {
                  if (useThread) {
+                    stop = false;
                     getListener().launch();
                  }
+             }
+             void ShadowRenderComponent::stopRenderer() {
+                stop = true;
+                cv.notify_all();
+                getListener().stop();
              }
              unsigned int ShadowRenderComponent::align(unsigned int offset) {
             ////std::cout << "alignment = " << alignment << std::endl;

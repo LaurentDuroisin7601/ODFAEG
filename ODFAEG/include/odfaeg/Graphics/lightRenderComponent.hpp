@@ -95,6 +95,7 @@ namespace odfaeg {
                 void createDescriptorsAndPipelines();
                 void loadTextureIndexes() {}
                 void launchRenderer();
+                void stopRenderer();
                 void onVisibilityChanged(bool visible);
                 void pushEvent(window::IEvent event, RenderWindow& rw);
                 bool needToUpdate();

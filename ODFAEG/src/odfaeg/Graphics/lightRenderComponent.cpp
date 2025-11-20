@@ -1465,8 +1465,14 @@ namespace odfaeg {
             }
             void LightRenderComponent::launchRenderer() {
                 if (useThread) {
+                    stop = false;
                     getListener().launch();
                 }
+            }
+            void LightRenderComponent::stopRenderer() {
+                stop = true;
+                cv.notify_all();
+                getListener().stop();
             }
             unsigned int LightRenderComponent::align(unsigned int offset) {
             ////std::cout << "alignment = " << alignment << std::endl;

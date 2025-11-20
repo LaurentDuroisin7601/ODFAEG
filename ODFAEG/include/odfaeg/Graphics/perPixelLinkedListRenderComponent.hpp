@@ -69,6 +69,7 @@ namespace odfaeg {
             PerPixelLinkedListRenderComponent (RenderWindow& window, int layer, std::string expression, window::ContextSettings settings, bool useThread = true);
             void createDescriptorsAndPipelines();
             void launchRenderer();
+            void stopRenderer();
             void drawNextFrame();
             bool loadEntitiesOnComponent(std::vector<Entity*> visibleEntities);
             bool needToUpdate();

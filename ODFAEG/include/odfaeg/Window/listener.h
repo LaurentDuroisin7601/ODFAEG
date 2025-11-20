@@ -235,6 +235,9 @@ namespace odfaeg {
                  if (useThread)
                     stop();
              }
+             bool isRunning() {
+                 return running;
+             }
              private :
              /** \fn void stopListen()
              *   \brief stop the thread which triggers and execute commands.

@@ -97,6 +97,7 @@ namespace odfaeg {
             */
             unsigned int getNbComponents();
             void updateComponents();
+            void recreateDescriptorsAndPipelines();
             virtual ~RenderComponentManager();
         protected :
             std::multimap<int, std::unique_ptr<Component>, std::greater<int>> components; /**> the components.*/

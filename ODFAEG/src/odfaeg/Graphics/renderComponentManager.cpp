@@ -155,6 +155,16 @@ namespace odfaeg {
            }
            //core::Command::clearEventsStack();
         }
+        void RenderComponentManager::recreateDescriptorsAndPipelines() {
+            std::multimap<int, std::unique_ptr<Component>, std::greater<int>>::iterator it;
+            for (it = components.begin(); it != components.end(); it++) {
+                if (it->second->getListener().isRunning()) {
+                    it->second->stopRenderer();
+                }
+                it->second->createDescriptorsAndPipelines();
+                it->second->launchRenderer();
+            }
+        }
         RenderComponentManager::~RenderComponentManager() {
             //////std::cout<<"rcm desrtructor"<<std::endl;
 

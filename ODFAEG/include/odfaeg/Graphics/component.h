@@ -105,6 +105,7 @@ namespace odfaeg {
             virtual void loadTextureIndexes();
             virtual void createDescriptorsAndPipelines(){}
             virtual void launchRenderer(){}
+            virtual void stopRenderer() {}
             virtual RenderTexture* getFrameBuffer() {
                 return nullptr;
             }
