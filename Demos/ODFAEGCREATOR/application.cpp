@@ -3162,6 +3162,9 @@ void ODFAEGCreator::actionPerformed(Button* button) {
             oss<<"        for (unsigned int i = 0; i < maps.size(); i++) "<<std::endl;
             oss<<"             getWorld()->addSceneManager(maps[i]);"<<std::endl;
             oss<<"    }"<<std::endl;
+            oss<<"    std::vector<Entity*> entities = getWorld()->getRootEntities(\"*\");"<<std::endl;
+            oss<<"    for (unsigned int i = 0; i < entities.size(); i++) {"<<std::endl;
+            oss<<"    }"<<std::endl;
             oss<<"}"<<std::endl;
             oss<<"void "<<appliname<<"::onLoad() {"<<std::endl;
             oss<<"}"<<std::endl;
@@ -7211,6 +7214,22 @@ void ODFAEGCreator::onSelectPointerType(DropDownList* dp) {
     bCreateObject->setEventContextActivated(true);
 }
 void ODFAEGCreator::onSelectedScriptChanged(DropDownList* dp) {
+    selectedObject->attachScript(dp->getSelectedItem());
+    std::map<std::pair<std::string, std::string>, std::string>::iterator it;
+    it = cppAppliContent.find(std::make_pair(getWorld()->projectName, minAppliname+".cpp"));
+    if (it != cppAppliContent.end()) {
+        if (it->second.find("if(entities[i]->getScript() == "+dp->getText()+") {\n") == std::string::npos) {
+            std::string toFind = "";
+            toFind += "    std::vector<Entity*> entities = getWorld()->getRootEntities(\"*\");\n";
+            toFind += "    for (unsigned int i = 0; i < entities.size(); i++) {\n";
+            int pos = it->second.find(toFind)+toFind.size();
+            std::string toInsert = "";
+            toInsert += "    if(entities[i]->getScript() == "+dp->getText()+") {\n";
+            toInsert += "       MonoBehaviour* behaviour = new "+dp->getText()+"();\n";
+            toInsert += "       entities[i]->setBehaviour(behaviour);\n";
+            toInsert += "    }";
+        }
+    }
 }
 void ODFAEGCreator::onViewPerspectiveChanged(DropDownList* dp) {
     if (dp->getSelectedItem() == "Ortho 2D") {
