@@ -3414,33 +3414,33 @@ void ODFAEGCreator::actionPerformed(Button* button) {
             sourceCode += "#include <string>\n";
             sourceCode += "#include \"odfaeg/Core/archive.h\"\n";
             sourceCode += "#include \"odfaeg/Core/class.hpp\"\n";
-            sourceCode += "#include \"../../../ODFAEG-master/Demos/ODFAEGCREATOR/application.hpp\"\n";
+            sourceCode += "#include \"../../../ODFAEG-master2/Demos/ODFAEGCREATOR/application.hpp\"\n";
             sourceCode += "extern \"C\" {\n";
             sourceCode += "    void createObject(ODFAEGCreator* c, bool save);\n";
             sourceCode += "    void readObjects (ODFAEGCreator* c);\n";
             sourceCode += "}\n";
             sourceCode += "void createObject(ODFAEGCreator *c, bool save) {\n";
             sourceCode += "    EXPORT_CLASS_GUID(BoundingVolumeBoundingBox, odfaeg::physic::BoundingVolume, odfaeg::physic::BoundingBox)\n";
-            sourceCode += "    EXPORT_CLASS_GUID_(EntityTile, odfaeg::graphic::Entity, odfaeg::graphic::Tile, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
-            sourceCode += "    EXPORT_CLASS_GUID_(EntityBigTile, odfaeg::graphic::Entity, odfaeg::graphic::BigTile, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
-            sourceCode += "    EXPORT_CLASS_GUID_(EntityWall, odfaeg::graphic::Entity, odfaeg::graphic::g2d::Wall, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
-            sourceCode += "    EXPORT_CLASS_GUID_(EntityDecor, odfaeg::graphic::Entity, odfaeg::graphic::g2d::Decor, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
-            sourceCode += "    EXPORT_CLASS_GUID_(EntityAnimation, odfaeg::graphic::Entity, odfaeg::graphic::Anim, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
-            sourceCode += "    EXPORT_CLASS_GUID_(EntityMesh, odfaeg::graphic::Entity, odfaeg::graphic::Mesh, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
-            sourceCode += "    EXPORT_CLASS_GUID_(EntityParticleSystem, odfaeg::graphic::Entity, odfaeg::physic::ParticleSystem, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
+            sourceCode += "    EXPORT_CLASS_GUID_(EntityTile, odfaeg::graphic::Entity, odfaeg::graphic::Tile, (odfaeg::graphic::EntityFactory&), (std::ref(c->getEntityFactory())))\n";
+            sourceCode += "    EXPORT_CLASS_GUID_(EntityBigTile, odfaeg::graphic::Entity, odfaeg::graphic::BigTile, (odfaeg::graphic::EntityFactory&), (std::ref(c->getEntityFactory())))\n";
+            sourceCode += "    EXPORT_CLASS_GUID_(EntityWall, odfaeg::graphic::Entity, odfaeg::graphic::g2d::Wall, (odfaeg::graphic::EntityFactory&), (std::ref(c->getEntityFactory())))\n";
+            sourceCode += "    EXPORT_CLASS_GUID_(EntityDecor, odfaeg::graphic::Entity, odfaeg::graphic::g2d::Decor, (odfaeg::graphic::EntityFactory&), (std::ref(c->getEntityFactory())))\n";
+            sourceCode += "    EXPORT_CLASS_GUID_(EntityAnimation, odfaeg::graphic::Entity, odfaeg::graphic::Anim, (odfaeg::graphic::EntityFactory&), (std::ref(c->getEntityFactory())))\n";
+            sourceCode += "    EXPORT_CLASS_GUID_(EntityMesh, odfaeg::graphic::Entity, odfaeg::graphic::Mesh, (odfaeg::graphic::EntityFactory&), (std::ref(c->getEntityFactory())))\n";
+            sourceCode += "    EXPORT_CLASS_GUID_(EntityParticleSystem, odfaeg::graphic::Entity, odfaeg::physic::ParticleSystem, (odfaeg::window::Device&)(odfaeg::graphic::EntityFactory&), (std::ref(c->getDevice()))(std::ref(c->getEntityFactory())))\n";
             sourceCode += "    odfaeg::core::Application::app = c;\n";
             sourceCode += "    if(save) {\n";
             sourceCode += "    }\n";
             sourceCode += "}\n";
             sourceCode += "void readObjects (ODFAEGCreator *c) {\n";
             sourceCode += "    EXPORT_CLASS_GUID(BoundingVolumeBoundingBox, odfaeg::physic::BoundingVolume, odfaeg::physic::BoundingBox)\n";
-            sourceCode += "    EXPORT_CLASS_GUID_(EntityTile, odfaeg::graphic::Entity, odfaeg::graphic::Tile, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
-            sourceCode += "    EXPORT_CLASS_GUID_(EntityBigTile, odfaeg::graphic::Entity, odfaeg::graphic::BigTile, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
-            sourceCode += "    EXPORT_CLASS_GUID_(EntityWall, odfaeg::graphic::Entity, odfaeg::graphic::g2d::Wall, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
-            sourceCode += "    EXPORT_CLASS_GUID_(EntityDecor, odfaeg::graphic::Entity, odfaeg::graphic::g2d::Decor, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
-            sourceCode += "    EXPORT_CLASS_GUID_(EntityAnimation, odfaeg::graphic::Entity, odfaeg::graphic::Anim, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
-            sourceCode += "    EXPORT_CLASS_GUID_(EntityMesh, odfaeg::graphic::Entity, odfaeg::graphic::Mesh, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
-            sourceCode += "    EXPORT_CLASS_GUID_(EntityParticleSystem, odfaeg::graphic::Entity, odfaeg::physic::ParticleSystem, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
+            sourceCode += "    EXPORT_CLASS_GUID_(EntityTile, odfaeg::graphic::Entity, odfaeg::graphic::Tile, (odfaeg::graphic::EntityFactory&), (std::ref(c->getEntityFactory())))\n";
+            sourceCode += "    EXPORT_CLASS_GUID_(EntityBigTile, odfaeg::graphic::Entity, odfaeg::graphic::BigTile, (odfaeg::graphic::EntityFactory&), (std::ref(c->getEntityFactory())))\n";
+            sourceCode += "    EXPORT_CLASS_GUID_(EntityWall, odfaeg::graphic::Entity, odfaeg::graphic::g2d::Wall, (odfaeg::graphic::EntityFactory&), (std::ref(c->getEntityFactory())))\n";
+            sourceCode += "    EXPORT_CLASS_GUID_(EntityDecor, odfaeg::graphic::Entity, odfaeg::graphic::g2d::Decor, (odfaeg::graphic::EntityFactory&), (std::ref(c->getEntityFactory())))\n";
+            sourceCode += "    EXPORT_CLASS_GUID_(EntityAnimation, odfaeg::graphic::Entity, odfaeg::graphic::Anim, (odfaeg::graphic::EntityFactory&), (std::ref(c->getEntityFactory())))\n";
+            sourceCode += "    EXPORT_CLASS_GUID_(EntityMesh, odfaeg::graphic::Entity, odfaeg::graphic::Mesh, (odfaeg::graphic::EntityFactory&), (std::ref(c->getEntityFactory())))\n";
+            sourceCode += "    EXPORT_CLASS_GUID_(EntityParticleSystem, odfaeg::graphic::Entity, odfaeg::physic::ParticleSystem, (odfaeg::window::Device&)(odfaeg::graphic::EntityFactory&), (std::ref(c->getDevice()))(std::ref(c->getEntityFactory())))\n";
             sourceCode += "    odfaeg::core::Application::app = c;\n";
             sourceCode += "}\n";
         }
@@ -3483,19 +3483,19 @@ void ODFAEGCreator::actionPerformed(Button* button) {
             toInsert = "";
             toFind = "void createObject(ODFAEGCreator *c, bool save) {\n";
             toFind += "    EXPORT_CLASS_GUID(BoundingVolumeBoundingBox, odfaeg::physic::BoundingVolume, odfaeg::physic::BoundingBox)\n";
-            toFind += "    EXPORT_CLASS_GUID_(EntityTile, odfaeg::graphic::Entity, odfaeg::graphic::Tile, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
-            toFind += "    EXPORT_CLASS_GUID_(EntityBigTile, odfaeg::graphic::Entity, odfaeg::graphic::BigTile, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
-            toFind += "    EXPORT_CLASS_GUID_(EntityWall, odfaeg::graphic::Entity, odfaeg::graphic::g2d::Wall, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
-            toFind += "    EXPORT_CLASS_GUID_(EntityDecor, odfaeg::graphic::Entity, odfaeg::graphic::g2d::Decor, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
-            toFind += "    EXPORT_CLASS_GUID_(EntityAnimation, odfaeg::graphic::Entity, odfaeg::graphic::Anim, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
-            toFind += "    EXPORT_CLASS_GUID_(EntityMesh, odfaeg::graphic::Entity, odfaeg::graphic::Mesh, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
-            toFind += "    EXPORT_CLASS_GUID_(EntityParticleSystem, odfaeg::graphic::Entity, odfaeg::physic::ParticleSystem, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
+            toFind += "    EXPORT_CLASS_GUID_(EntityTile, odfaeg::graphic::Entity, odfaeg::graphic::Tile, (odfaeg::graphic::EntityFactory&), (std::ref(c->getEntityFactory())))\n";
+            toFind += "    EXPORT_CLASS_GUID_(EntityBigTile, odfaeg::graphic::Entity, odfaeg::graphic::BigTile, (odfaeg::graphic::EntityFactory&), (std::ref(c->getEntityFactory())))\n";
+            toFind += "    EXPORT_CLASS_GUID_(EntityWall, odfaeg::graphic::Entity, odfaeg::graphic::g2d::Wall, (odfaeg::graphic::EntityFactory&), (std::ref(c->getEntityFactory())))\n";
+            toFind += "    EXPORT_CLASS_GUID_(EntityDecor, odfaeg::graphic::Entity, odfaeg::graphic::g2d::Decor, (odfaeg::graphic::EntityFactory&), (std::ref(c->getEntityFactory())))\n";
+            toFind += "    EXPORT_CLASS_GUID_(EntityAnimation, odfaeg::graphic::Entity, odfaeg::graphic::Anim, (odfaeg::graphic::EntityFactory&), (std::ref(c->getEntityFactory())))\n";
+            toFind += "    EXPORT_CLASS_GUID_(EntityMesh, odfaeg::graphic::Entity, odfaeg::graphic::Mesh, (odfaeg::graphic::EntityFactory&), (std::ref(c->getEntityFactory())))\n";
+            toFind += "    EXPORT_CLASS_GUID_(EntityParticleSystem, odfaeg::graphic::Entity, odfaeg::physic::ParticleSystem, (odfaeg::window::Device&)(odfaeg::graphic::EntityFactory&), (std::ref(c->getDevice()))(std::ref(c->getEntityFactory())))\n";
             toFind += "    odfaeg::core::Application::app = c;\n";
             pos = sourceCode.find(toFind)+toFind.size();
             if (dpSelectPointerType->getSelectedItem() != "No pointer" && dpSelectPointerType->getSelectedItem() != dpSelectClass->getSelectedItem()) {
                 std::vector<std::string> parts = split(dpSelectPointerType->getSelectedItem(), "::");
                 std::string name = parts[parts.size()-1];
-                toInsert += "   EXPORT_CLASS_GUID_("+name+cl.getName()+","+dpSelectPointerType->getSelectedItem()+","+dpSelectClass->getSelectedItem()+", VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(c->getEntityFactory()))\n";
+                toInsert += "   EXPORT_CLASS_GUID_("+name+cl.getName()+","+dpSelectPointerType->getSelectedItem()+","+dpSelectClass->getSelectedItem()+", (odfaeg::graphic::EntityFactory&), (c->getEntityFactory()))\n";
                 if (found) {
                     toInsert += "       std::map<std::string, std::vector<odfaeg::graphic::Entity*>>::iterator it"+cl.getName()+" = c->getExternals().find(\""+cl.getName()+"\");\n";
                 } else {
@@ -3520,19 +3520,19 @@ void ODFAEGCreator::actionPerformed(Button* button) {
             toInsert = "";
             toFind = "void readObjects (ODFAEGCreator *c) {\n";
             toFind += "    EXPORT_CLASS_GUID(BoundingVolumeBoundingBox, odfaeg::physic::BoundingVolume, odfaeg::physic::BoundingBox)\n";
-            toFind += "    EXPORT_CLASS_GUID_(EntityTile, odfaeg::graphic::Entity, odfaeg::graphic::Tile, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
-            toFind += "    EXPORT_CLASS_GUID_(EntityBigTile, odfaeg::graphic::Entity, odfaeg::graphic::BigTile, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
-            toFind += "    EXPORT_CLASS_GUID_(EntityWall, odfaeg::graphic::Entity, odfaeg::graphic::g2d::Wall, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
-            toFind += "    EXPORT_CLASS_GUID_(EntityDecor, odfaeg::graphic::Entity, odfaeg::graphic::g2d::Decor, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
-            toFind += "    EXPORT_CLASS_GUID_(EntityAnimation, odfaeg::graphic::Entity, odfaeg::graphic::Anim, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
-            toFind += "    EXPORT_CLASS_GUID_(EntityMesh, odfaeg::graphic::Entity, odfaeg::graphic::Mesh, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
-            toFind += "    EXPORT_CLASS_GUID_(EntityParticleSystem, odfaeg::graphic::Entity, odfaeg::physic::ParticleSystem, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
+            toFind += "    EXPORT_CLASS_GUID_(EntityTile, odfaeg::graphic::Entity, odfaeg::graphic::Tile, (odfaeg::graphic::EntityFactory&), (std::ref(c->getEntityFactory())))\n";
+            toFind += "    EXPORT_CLASS_GUID_(EntityBigTile, odfaeg::graphic::Entity, odfaeg::graphic::BigTile, (odfaeg::graphic::EntityFactory&), (std::ref(c->getEntityFactory())))\n";
+            toFind += "    EXPORT_CLASS_GUID_(EntityWall, odfaeg::graphic::Entity, odfaeg::graphic::g2d::Wall, (odfaeg::graphic::EntityFactory&), (std::ref(c->getEntityFactory())))\n";
+            toFind += "    EXPORT_CLASS_GUID_(EntityDecor, odfaeg::graphic::Entity, odfaeg::graphic::g2d::Decor, (odfaeg::graphic::EntityFactory&), (std::ref(c->getEntityFactory())))\n";
+            toFind += "    EXPORT_CLASS_GUID_(EntityAnimation, odfaeg::graphic::Entity, odfaeg::graphic::Anim, (odfaeg::graphic::EntityFactory&), (std::ref(c->getEntityFactory())))\n";
+            toFind += "    EXPORT_CLASS_GUID_(EntityMesh, odfaeg::graphic::Entity, odfaeg::graphic::Mesh, (odfaeg::graphic::EntityFactory&), (std::ref(c->getEntityFactory())))\n";
+            toFind += "    EXPORT_CLASS_GUID_(EntityParticleSystem, odfaeg::graphic::Entity, odfaeg::physic::ParticleSystem, (odfaeg::window::Device&)(odfaeg::graphic::EntityFactory&), (std::ref(c->getDevice()))(std::ref(c->getEntityFactory())))\n";
             toFind += "    odfaeg::core::Application::app = c;\n";
             pos = sourceCode.find(toFind)+toFind.size();
             if (dpSelectPointerType->getSelectedItem() != "No pointer" && dpSelectPointerType->getSelectedItem() != dpSelectClass->getSelectedItem()) {
                 std::vector<std::string> parts = split(dpSelectPointerType->getSelectedItem(), "::");
                 std::string name = parts[parts.size()-1];
-                toInsert += "   EXPORT_CLASS_GUID_("+name+cl.getName()+","+dpSelectPointerType->getSelectedItem()+","+dpSelectClass->getSelectedItem()+", VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
+                toInsert += "   EXPORT_CLASS_GUID_("+name+cl.getName()+","+dpSelectPointerType->getSelectedItem()+","+dpSelectClass->getSelectedItem()+", (odfaeg::graphic::EntityFactory&), (std::ref(c->getEntityFactory())))\n";
             }
             toInsert += "   std::ifstream if"+cl.getName()+" (\""+cl.getName()+".oc\");\n";
             toInsert += "   odfaeg::core::ITextArchive ia"+cl.getName()+" (if"+cl.getName()+");\n";
@@ -3547,13 +3547,13 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         }
         toFind = "void createObject(ODFAEGCreator *c, bool save) {\n";
         toFind += "    EXPORT_CLASS_GUID(BoundingVolumeBoundingBox, odfaeg::physic::BoundingVolume, odfaeg::physic::BoundingBox)\n";
-        toFind += "    EXPORT_CLASS_GUID_(EntityTile, odfaeg::graphic::Entity, odfaeg::graphic::Tile, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
-        toFind += "    EXPORT_CLASS_GUID_(EntityBigTile, odfaeg::graphic::Entity, odfaeg::graphic::BigTile, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
-        toFind += "    EXPORT_CLASS_GUID_(EntityWall, odfaeg::graphic::Entity, odfaeg::graphic::g2d::Wall, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
-        toFind += "    EXPORT_CLASS_GUID_(EntityDecor, odfaeg::graphic::Entity, odfaeg::graphic::g2d::Decor, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
-        toFind += "    EXPORT_CLASS_GUID_(EntityAnimation, odfaeg::graphic::Entity, odfaeg::graphic::Anim, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
-        toFind += "    EXPORT_CLASS_GUID_(EntityMesh, odfaeg::graphic::Entity, odfaeg::graphic::Mesh, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
-        toFind += "    EXPORT_CLASS_GUID_(EntityParticleSystem, odfaeg::graphic::Entity, odfaeg::physic::ParticleSystem, VA_LIST(odfaeg::graphic::EntityFactory&), VA_LIST(std::ref(c->getEntityFactory())))\n";
+        toFind += "    EXPORT_CLASS_GUID_(EntityTile, odfaeg::graphic::Entity, odfaeg::graphic::Tile, (odfaeg::graphic::EntityFactory&), (std::ref(c->getEntityFactory())))\n";
+        toFind += "    EXPORT_CLASS_GUID_(EntityBigTile, odfaeg::graphic::Entity, odfaeg::graphic::BigTile, (odfaeg::graphic::EntityFactory&), (std::ref(c->getEntityFactory())))\n";
+        toFind += "    EXPORT_CLASS_GUID_(EntityWall, odfaeg::graphic::Entity, odfaeg::graphic::g2d::Wall, (odfaeg::graphic::EntityFactory&), (std::ref(c->getEntityFactory())))\n";
+        toFind += "    EXPORT_CLASS_GUID_(EntityDecor, odfaeg::graphic::Entity, odfaeg::graphic::g2d::Decor, (odfaeg::graphic::EntityFactory&), (std::ref(c->getEntityFactory())))\n";
+        toFind += "    EXPORT_CLASS_GUID_(EntityAnimation, odfaeg::graphic::Entity, odfaeg::graphic::Anim, (odfaeg::graphic::EntityFactory&), (std::ref(c->getEntityFactory())))\n";
+        toFind += "    EXPORT_CLASS_GUID_(EntityMesh, odfaeg::graphic::Entity, odfaeg::graphic::Mesh, (odfaeg::graphic::EntityFactory&), (std::ref(c->getEntityFactory())))\n";
+        toFind += "    EXPORT_CLASS_GUID_(EntityParticleSystem, odfaeg::graphic::Entity, odfaeg::physic::ParticleSystem, (odfaeg::window::Device&)(odfaeg::graphic::EntityFactory&), (std::ref(c->getDevice()))(std::ref(c->getEntityFactory())))\n";
         toFind += "    odfaeg::core::Application::app = c;\n";
         pos = sourceCode.find(toFind)+toFind.size();
         /*if (found) {
@@ -4925,6 +4925,8 @@ void ODFAEGCreator::displayEntityInfos(Entity* tile) {
             }
         }
     }
+    Command cmdScriptChanged(FastDelegate<bool>(&DropDownList::isValueChanged, dpSelectScript), FastDelegate<void>(&ODFAEGCreator::onSelectedEmChanged, this, dpSelectScript));
+    dpSelectScript->getListener().connect("ScriptChanged", cmdScriptChanged);
     dpSelectScript->setParent(pInfos);
     pInfos->addChild(dpSelectScript);
     nSelectScript->addOtherComponent(dpSelectScript,Vec2f(0.75, 0.025));
@@ -7153,6 +7155,8 @@ void ODFAEGCreator::convertSlash(std::string& path) {
 }
 void ODFAEGCreator::onSelectPointerType(DropDownList* dp) {
     bCreateObject->setEventContextActivated(true);
+}
+void ODFAEGCreator::onSelectedScriptChanged(DropDownList* dp) {
 }
 void ODFAEGCreator::onViewPerspectiveChanged(DropDownList* dp) {
     if (dp->getSelectedItem() == "Ortho 2D") {

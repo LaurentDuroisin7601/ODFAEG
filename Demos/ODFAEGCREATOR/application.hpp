@@ -120,6 +120,7 @@ class ODFAEGCreator : public odfaeg::core::Application<ODFAEGCreator>,
     void onParentClickedCV(odfaeg::graphic::gui::Label* label);
     void onNameCVChanged(odfaeg::graphic::gui::TextArea* ta);
     void onSelectedParentCV (odfaeg::graphic::gui::DropDownList* dp);
+    void onSelectedScriptChanged(odfaeg::graphic::gui::DropDownList* dp);
     std::map<std::string, std::vector<odfaeg::graphic::Entity*>>& getExternals();
     odfaeg::graphic::EntityFactory& getEntityFactory();
     void addId (unsigned int id);
