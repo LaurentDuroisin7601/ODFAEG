@@ -7490,7 +7490,7 @@ std::string ODFAEGCreator::getHeaderContent(std::string content) {
     }
     return "";
 }
-void ODFAEGCreator::findLastBracket(std::string& fileContent, unsigned int nbBlocks, unsigned int& p) {
+void ODFAEGCreator::findLastBracket(std::string& fileContent, unsigned int nbBlocks, int& p) {
     unsigned int pos, pos2;
     do {
         pos = fileContent.find("{");
