@@ -7470,21 +7470,56 @@ void ODFAEGCreator::addBoundingVolumes(BoundingVolume* bv) {
         addBoundingVolumes(bv->getChildren()[i]);
     }
 }
-std::string ODFAEGCreator::getHeaderContent(std::string content) {
+std::string ODFAEGCreator::getHeaderContent(std::string content, unsigned int posInFile) {
     //On recherche si le contenu est celui d'un fichier .h sinon on recherche le fichier .h correspondant.
     std::map<std::pair<std::string, std::string>, std::string>::iterator it;
     for (it = cppAppliContent.begin(); it != cppAppliContent.end(); it++) {
         if (it->second == content);
             return it->second;
     }
+    //Extract class names :
     std::vector<std::string> parts = split(content, "::");
-    for (unsigned int i = 0; i < parts.size(); i+=2) {
-        //Extract class name :
+    for (unsigned int i = 0; i < parts.size(); i++) {
+
         std::vector<std::string> names = split(parts[i], " ");
-        //Check where the class is defined.
-        for (it = cppAppliContent.begin(); it != cppAppliContent.end(); it++) {
-            if (it->second.find("class "+names[names.size()-1]) != std::string::npos) {
-                return it->second;
+        int pos = content.find(parts[i]);
+        std::string subContent = content.substr(pos, content.size()-pos);
+        int pos2 = 0;
+        findLastBracket(subContent, 0, pos2);
+        //If we are arrived at the class definition.
+        if (pos < posInFile && posInFile < pos2) {
+            //Check where the class is defined.
+            for (it = cppAppliContent.begin(); it != cppAppliContent.end(); it++) {
+                std::string subContent2 = it->second;
+                int posC = subContent2.find("class");
+                while (posC != std::string::npos) {
+                    int pos2 = subContent2.find(names[names.size()-1]);
+                    int pos3 = subContent2.find("{");
+                    if (pos2 != std::string::npos && pos3 != std::string::npos) {
+                        if (posC < pos2 && pos2 < pos3)
+                            return it->second;
+                    }
+                    subContent2.erase(0, pos);
+                    posC = subContent2.find("class");
+                }
+            }
+        }
+    }
+    //Free functions : extract function names.
+    parts = split(content, "(");
+    for (unsigned int i = 0; i < parts.size(); i++) {
+        std::vector<std::string> names = split(parts[i], " ");
+        int pos = content.find(parts[i]);
+        std::string subContent = content.substr(pos, content.size()-pos);
+        int pos2 = 0;
+        findLastBracket(subContent, 0, pos2);
+        //If we are arrived at the function definition.
+        if (pos < posInFile && posInFile < pos2) {
+            for (it = cppAppliContent.begin(); it != cppAppliContent.end(); it++) {
+                std::string subContent2 = it->second;
+                if (it->second.find(names[names.size()-1]) != std::string::npos && (it->second.find("{") != std::string::npos || it->second.find(";") != std::string::npos)) {
+                    return it->second;
+                }
             }
         }
     }
@@ -7510,23 +7545,16 @@ void ODFAEGCreator::findLastBracket(std::string& fileContent, unsigned int nbBlo
 }
 void ODFAEGCreator::checkCompletionNames(std::string letters, unsigned int posInFile) {
     std::string content = tScriptEdit->getText();
-    std::string hcontent = getHeaderContent(content);
-    //On recherche dans quel fonction membre de quelle classe on se trouve.
-    std::vector<std::string> classes = Class::getClassesFromMemory(hcontent);
+    //Contenu du fichier.h
+    std::string header_content = getHeaderContent(content,posInFile);
+    //On recherche dans quel bloc de quel fonction de quelle classe on se trouve.
+    std::vector<std::string> classes = Class::getClassesFromMemory(header_content);
+    std::string cpContent = content;
     for (unsigned int i = 0; i < classes.size(); i++) {
-        Class classs = Class::getClassFromMemory(classes[i], "", hcontent);
+        Class classs = Class::getClassFromMemory(classes[i], "", header_content);
         std::vector<MemberFunction> functions = classs.getMembersFunctions();
-        for (unsigned int i = 0; i < functions.size(); i++) {
-            std::string name = functions[i].getReturnType()+" "+functions[i].getName()+"(";
-            std::vector<std::string> argsTypes = functions[i].getArgsTypes();
-            for (unsigned int j = 0; j < argsTypes.size(); j++) {
-                name += argsTypes[j];
-                if (j != argsTypes.size() - 1) {
-                    name += ",";
-                }
-            }
-            name += ")";
-            int pos = content.find(name);
+        for (unsigned int f = 0; f < functions.size(); f++) {
+            int pos = cpContent.find(functions[f].getName());
             std::string subContent = content.substr(pos, content.size()-pos);
             pos = subContent.find("{");
             int pos2 = 0;
@@ -7535,6 +7563,8 @@ void ODFAEGCreator::checkCompletionNames(std::string letters, unsigned int posIn
             if (pos < posInFile && posInFile < pos2) {
                 std::string bloc = subContent.substr(pos, pos2-pos);
                 findComplVarsInBloc(bloc, posInFile);
+            } else {
+                cpContent.erase(0, pos2);
             }
         }
     }

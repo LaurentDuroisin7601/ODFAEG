@@ -139,7 +139,7 @@ class ODFAEGCreator : public odfaeg::core::Application<ODFAEGCreator>,
         Serif
     };
     private :
-        std::string getHeaderContent(std::string content);
+        std::string getHeaderContent(std::string content, unsigned int posInFile);
         void findLastBracket(std::string& fileContent, unsigned int nbBlocks, int& p);
         void findComplVarsInBloc(std::string bloc, unsigned int nbBlocks);
         void checkCompletionNames(std::string letters, unsigned int posInFile);
