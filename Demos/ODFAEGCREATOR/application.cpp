@@ -7528,14 +7528,15 @@ void ODFAEGCreator::checkCompletionNames(std::string letters, unsigned int posIn
             int pos = content.find(name);
             std::string subContent = content.substr(pos, content.size()-pos);
             pos = subContent.find("{");
-            int pos2 = findLastBracket(subContent, 0);
+            std::string cSubContent = subContent;
+            int pos2 = findLastBracket(cSubContent, 0);
             if (pos < posInFile && posInFile < pos2) {
                 std::string bloc = subContent.substr(pos, pos2-pos);
-                findComplVarsInBloc(bloc);
+                findComplVarsInBloc(bloc, posInFile);
             }
         }
     }
 }
-void ODFAEGCreator::findComplVarsInBloc(std::string bloc) {
+void ODFAEGCreator::findComplVarsInBloc(std::string bloc, unsigned int posInFile) {
 }
 
