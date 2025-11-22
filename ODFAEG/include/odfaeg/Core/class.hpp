@@ -32,6 +32,7 @@ namespace odfaeg {
             *  \return the vector of the classes names.
             */
             static std::vector<std::string> getClasses(std::string filePath);
+            static std::vector<std::string> getClassesFromMemory(std::string content);
             /**\fn Class getClass(std::string name, std::string nspc="", std::string path="");
             *  \brief get a class object which contains informations about a c++ class.
             *  \param std::string name : the name of the c++ class.
@@ -40,6 +41,7 @@ namespace odfaeg {
             *  \return Class : class object with informations about the c++ class.
             */
             static Class getClass(std::string name, std::string nspc="", std::string path="");
+            static Class getClassFromMemory(std::string name, std::string nspc="", std::string content="");
             /**\fn std::string getName()
             *  \brief get the class's name.
             *  \return std::string : the class's name.

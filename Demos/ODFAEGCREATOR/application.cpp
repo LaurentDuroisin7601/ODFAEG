@@ -3619,14 +3619,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         toFind += "    EXPORT_CLASS_GUID_(EntityParticleSystem, odfaeg::graphic::Entity, odfaeg::physic::ParticleSystem, (odfaeg::window::Device&)(odfaeg::graphic::EntityFactory&), (std::ref(c->getDevice()))(std::ref(c->getEntityFactory())))\n";
         toFind += "    odfaeg::core::Application::app = c;\n";
         pos = sourceCode.find(toFind)+toFind.size();
-        /*if (found) {
-            toInsert = "   std::map<std::string, std::vector<odfaeg::graphic::Entity*>>::iterator it"+cl.getName()+" = c->getExternals().find(\""+cl.getName()+"\");\n";
-            toInsert += "   if (it"+cl.getName()+" == c->getExternals().end()) {\n";
-            toInsert += "       c->getExternals().insert(std::make_pair(\""+cl.getName()+"\","+"v"+cl.getName()+"));\n";
-            toInsert += "       it"+cl.getName()+" = c->getExternals().find(\""+cl.getName()+"\");\n";
-            toInsert += "   }\n";
-            sourceCode.insert(pos, toInsert);
-        }*/
+
         std::vector<std::string> argValues;
         unsigned int j = 0;
         for (unsigned int i = 0; i < argsTps.size(); i++) {
@@ -7476,5 +7469,73 @@ void ODFAEGCreator::addBoundingVolumes(BoundingVolume* bv) {
     for (unsigned int i = 0; i <  bv->getChildren().size(); i++) {
         addBoundingVolumes(bv->getChildren()[i]);
     }
+}
+std::string ODFAEGCreator::getHeaderContent(std::string content) {
+    //On recherche si le contenu est celui d'un fichier .h sinon on recherche le fichier .h correspondant.
+    std::map<std::pair<std::string, std::string>, std::string>::iterator it;
+    for (it = cppAppliContent.begin(); it != cppAppliContent.end(); it++) {
+        if (it->second == content);
+            return it->second;
+    }
+    std::vector<std::string> parts = split(content, "::");
+    for (unsigned int i = 0; i < parts.size(); i+=2) {
+        //Extract class name :
+        std::vector<std::string> names = split(parts[i], " ");
+        //Check where the class is defined.
+        for (it = cppAppliContent.begin(); it != cppAppliContent.end(); it++) {
+            if (it->second.find("class "+names[names.size()-1]) != std::string::npos) {
+                return it->second;
+            }
+        }
+    }
+    return "";
+}
+unsigned int ODFAEGCreator::findLastBracket(std::string& fileContent, unsigned int nbBlocks) {
+    unsigned int pos, pos2;
+    do {
+        pos = fileContent.find("{");
+        pos2 = fileContent.find("}");
+        if (pos != std::string::npos && pos2 != std::string::npos) {
+            if (pos < pos2) {
+                nbBlocks++;
+                fileContent.erase(pos, 1);
+            } else {
+                fileContent.erase(pos2, 1);
+                nbBlocks--;
+            }
+        }
+    } while (nbBlocks > 0 || pos == std::string::npos || pos2 == std::string::npos);
+    return pos2;
+}
+void ODFAEGCreator::checkCompletionNames(std::string letters, unsigned int posInFile) {
+    std::string content = tScriptEdit->getText();
+    std::string hcontent = getHeaderContent(content);
+    //On recherche dans quel fonction membre de quelle classe on se trouve.
+    std::vector<std::string> classes = Class::getClassesFromMemory(hcontent);
+    for (unsigned int i = 0; i < classes.size(); i++) {
+        Class classs = Class::getClassFromMemory(classes[i], "", hcontent);
+        std::vector<MemberFunction> functions = classs.getMembersFunctions();
+        for (unsigned int i = 0; i < functions.size(); i++) {
+            std::string name = functions[i].getReturnType()+" "+functions[i].getName()+"(";
+            std::vector<std::string> argsTypes = functions[i].getArgsTypes();
+            for (unsigned int j = 0; j < argsTypes.size(); j++) {
+                name += argsTypes[j];
+                if (j != argsTypes.size() - 1) {
+                    name += ",";
+                }
+            }
+            name += ")";
+            int pos = content.find(name);
+            std::string subContent = content.substr(pos, content.size()-pos);
+            pos = subContent.find("{");
+            int pos2 = findLastBracket(subContent, 0);
+            if (pos < posInFile && posInFile < pos2) {
+                std::string bloc = subContent.substr(pos, pos2-pos);
+                findComplVarsInBloc(bloc);
+            }
+        }
+    }
+}
+void ODFAEGCreator::findComplVarsInBloc(std::string bloc) {
 }
 

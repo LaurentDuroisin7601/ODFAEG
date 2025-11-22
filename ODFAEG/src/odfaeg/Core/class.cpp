@@ -5,6 +5,33 @@ namespace odfaeg {
         Class::Class(std::string name, std::string filePath) : name(name), filePath(filePath) {
 
         }
+        std::vector<std::string> Class::getClassesFromMemory(std::string content) {
+            std::vector<std::string> classes;
+            //Read header files.
+            istringstream iss;
+            iss.str(content);
+
+            std::string line;
+            //Read file's lines.
+            while(getline(iss, line)) {
+                //check if we find the c++ class keyword and the beginning of a class definition.
+                if (line.find("class") != std::string::npos && line.find("{") != std::string::npos) {
+                    //remove spaces at the beginning of the line.
+                    while (line.size() > 0 && line.at(0) == ' ') {
+                        line.erase(0, 1);
+                    }
+                    //split the std::string to get the class name.
+                    std::vector<std::string> parts = split(line, " ");
+                    //remove spaces before the class name.
+                    while (parts[1].size() > 0 && parts[1].at(0) == ' ') {
+                        parts[1].erase(0, 1);
+                    }
+                    //add the class name to the vector.
+                    classes.push_back(parts[1]);
+                }
+            }
+            return classes;
+        }
         std::vector<std::string> Class::getClasses(std::string path) {
             std::vector<std::string> classes;
             //We get the project directory, and concat it with the folder path.
@@ -39,6 +66,127 @@ namespace odfaeg {
                 }
             }
             return classes;
+        }
+        Class Class::getClassFromMemory(std::string name, std::string nspc, std::string content) {
+
+            bool found=false;
+            std::string fileContent;
+            std::string headerFile;
+            std::string namespc="";
+
+            istringstream iss;
+            iss.str(content);
+            std::string line;
+            fileContent="";
+            //Read lines.
+            while(getline(iss, line)) {
+                //Ignore c++ comments.
+                if (line.find("/*") != std::string::npos || line.find("/**") != std::string::npos) {
+                    while(line.find("*/") == std::string::npos && getline(iss, line)) {
+
+                    }
+                }
+                //We must also ignore single line comments.
+                if (line.find("//") == std::string::npos && line.find("*/") == std::string::npos) {
+                    //Remove template declaration.
+                    if (line.find("template ") != std::string::npos) {
+                        //check begin and end of template declaration and remove it.
+                        int pos = line.find("template ");
+                        int pos2 = line.find(">");
+                        line.erase(pos, pos2 - pos+1);
+                    }
+                    //If the template declaration contains other template declarations, we remove them too.
+                    if (line.find("<") != std::string::npos) {
+                        //check begin and end of template declaration and remove it.
+                        int pos = line.find("<");
+                        int pos2 = line.find(">");
+                        line.erase(pos, pos2 - pos+1);
+                    }
+                    //split string if the class inherits from base classes.
+                    std::vector<std::string> parts = split(line, ":");
+                    //if we find the class or struct keywork and the name of the c++ class match, we have found the class.
+                    if (parts.size() > 0 && (parts[0].find("class ") != std::string::npos || parts[0].find("struct ") != std::string::npos) && parts[0].find(name) != std::string::npos) {
+
+                        //Remove everything which is after class definition.
+                        if (parts[0].find("{") != std::string::npos) {
+                            int pos = parts[0].find("{");
+                            parts[0].erase(pos);
+                        }
+                        //split the string.
+                        std::vector<std::string> parts2 = split(parts[0], " ");
+                        //remove space before and after class name.
+                        while(parts2[parts2.size()-1].size() > 0 && parts2[parts2.size()-1].at(0) == ' ') {
+                            parts2[parts2.size()-1].erase(0, 1);
+                        }
+                        while(parts2[parts2.size()-1].size() > 0 && parts2[parts2.size()-1].at(parts2[parts2.size()-1].size()-1) == ' ') {
+                            parts2[parts2.size()-1].erase(parts2[parts2.size()-1].size()-1, 1);
+                        }
+                        //We have found the class name, we set the header file path and the boolean to stop the loop.
+                        if (parts2[parts2.size()-1] == name) {
+                            found = true;
+                        }
+                    }
+                    //put every lines of the file header file to a string.
+                    fileContent += line+"\n";
+
+                }
+            }
+            int j= 0;
+            //If we have found the class we check informations about the class.
+            if (found) {
+
+                //check each namespaces englobing the class.
+                while(fileContent.find("namespace ") != std::string::npos && found) {
+                    //Find the namespace pos.
+                    unsigned int pos = fileContent.find("namespace ");
+                    //Check the namespace name.
+                    fileContent = fileContent.substr(pos+9, fileContent.size()-pos-9);
+
+                    while(fileContent.size() > 0 && fileContent.at(0) == ' ') {
+                        fileContent.erase(0, 1);
+                    }
+                    std::vector<std::string> parts = split(fileContent, " ");
+                    //We add :: for each sub namespaces found.
+                    if (j == 0)
+                        namespc += parts[0];
+                    else
+                        namespc += "::"+parts[0];
+                    //we must check if the namespace is declared before the class.
+                    pos = fileContent.find_first_of("{");
+                    fileContent = fileContent.substr(pos+1, fileContent.size()-pos-1);
+                    pos = fileContent.find("namespace ");
+                    unsigned int pos2 = fileContent.find(name+" ");
+
+                    found = true;
+                    //if there is no more namespace declaration after the class name we can check if the class is in the given namespace.
+                    if (pos > pos2) {
+                        //if the class is contained in a namespace we must check if a class which the same name is not present in an another namespace.
+                        if (nspc != "" && namespc != nspc) {
+                            found = false;
+                        }
+                        //Erase eveything which is before the namespace declaration.
+                        fileContent = fileContent.substr(pos2);
+                    }
+                    j++;
+                }
+                //We have found the class in the specified namespace, we can get class's informations.
+                if (found) {
+
+                    Class cl(name, headerFile);
+                    cl.setNamespace(namespc);
+                    checkSuperClasses(fileContent, cl);
+                    std::string innerClass = "";
+                    std::string type = "";
+                    int lvl = 0;
+                    //At the first recursion the inner class name is empty, the recursion lvl is 0 and the class type is empty.
+                    checkInnerClass(innerClass, type, fileContent, lvl,  cl);
+                    checkConstructors(fileContent, cl);
+                    checkMembersFunctions(fileContent, cl);
+                    return cl;
+                }
+            }
+            //Launch an error it the c++ class is not found.
+            throw Erreur(70, "Class "+name+"not found in project files!", 3);
         }
         Class Class::getClass(std::string name, std::string nspc, std::string path) {
             std::string appiDir;

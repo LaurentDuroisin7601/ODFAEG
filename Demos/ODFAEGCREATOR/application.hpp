@@ -42,6 +42,11 @@ class ODFAEGCreator : public odfaeg::core::Application<ODFAEGCreator>,
                       public odfaeg::graphic::gui::MenuItemListener,
                       public odfaeg::graphic::gui::ActionListener {
     public :
+    struct BlocInfo {
+        std::map<std::string, std::string> blocInstances;
+        unsigned int blocStart, blocEnd;
+        std::vector<BlocInfo> subBlocs;
+    };
     ODFAEGCreator (odfaeg::window::VideoMode vm, std::string title);
     void moveCursor(odfaeg::math::Vec2f mousePos);
     void onLoad();
@@ -134,6 +139,10 @@ class ODFAEGCreator : public odfaeg::core::Application<ODFAEGCreator>,
         Serif
     };
     private :
+        std::string getHeaderContent(std::string content);
+        unsigned int findLastBracket(std::string& fileContent, unsigned int nbBlocks);
+        void findComplVarsInBloc(std::string bloc);
+        void checkCompletionNames(std::string letters, unsigned int posInFile);
         void makeTransparent(odfaeg::graphic::Entity* entity);
         void convertSlash(std::string& path);
         odfaeg::math::Vec3f getGridCellPos(odfaeg::math::Vec3f pos);
