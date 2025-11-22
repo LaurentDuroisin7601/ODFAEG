@@ -7490,7 +7490,7 @@ std::string ODFAEGCreator::getHeaderContent(std::string content) {
     }
     return "";
 }
-unsigned int ODFAEGCreator::findLastBracket(std::string& fileContent, unsigned int nbBlocks) {
+void ODFAEGCreator::findLastBracket(std::string& fileContent, unsigned int nbBlocks, unsigned int& p) {
     unsigned int pos, pos2;
     do {
         pos = fileContent.find("{");
@@ -7499,13 +7499,14 @@ unsigned int ODFAEGCreator::findLastBracket(std::string& fileContent, unsigned i
             if (pos < pos2) {
                 nbBlocks++;
                 fileContent.erase(pos, 1);
+                p += pos;
             } else {
                 fileContent.erase(pos2, 1);
                 nbBlocks--;
+                p += pos2;
             }
         }
     } while (nbBlocks > 0 || pos == std::string::npos || pos2 == std::string::npos);
-    return pos2;
 }
 void ODFAEGCreator::checkCompletionNames(std::string letters, unsigned int posInFile) {
     std::string content = tScriptEdit->getText();
@@ -7528,8 +7529,9 @@ void ODFAEGCreator::checkCompletionNames(std::string letters, unsigned int posIn
             int pos = content.find(name);
             std::string subContent = content.substr(pos, content.size()-pos);
             pos = subContent.find("{");
+            int pos2 = 0;
             std::string cSubContent = subContent;
-            int pos2 = findLastBracket(cSubContent, 0);
+            findLastBracket(cSubContent, 0, pos2);
             if (pos < posInFile && posInFile < pos2) {
                 std::string bloc = subContent.substr(pos, pos2-pos);
                 findComplVarsInBloc(bloc, posInFile);

@@ -140,7 +140,7 @@ class ODFAEGCreator : public odfaeg::core::Application<ODFAEGCreator>,
     };
     private :
         std::string getHeaderContent(std::string content);
-        unsigned int findLastBracket(std::string& fileContent, unsigned int nbBlocks);
+        void findLastBracket(std::string& fileContent, unsigned int nbBlocks, unsigned int& p);
         void findComplVarsInBloc(std::string bloc, unsigned int nbBlocks);
         void checkCompletionNames(std::string letters, unsigned int posInFile);
         void makeTransparent(odfaeg::graphic::Entity* entity);
