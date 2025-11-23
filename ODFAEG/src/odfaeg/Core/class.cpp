@@ -182,6 +182,7 @@ namespace odfaeg {
                     checkInnerClass(innerClass, type, fileContent, lvl,  cl);
                     checkConstructors(fileContent, cl);
                     checkMembersFunctions(fileContent, cl);
+                    checkMembersVariables(fileContent, cl);
                     return cl;
                 }
             }
