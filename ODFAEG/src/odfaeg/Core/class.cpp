@@ -319,6 +319,7 @@ namespace odfaeg {
                     checkInnerClass(innerClass, type, fileContent, lvl,  cl);
                     checkConstructors(fileContent, cl);
                     checkMembersFunctions(fileContent, cl);
+                    checkMembersVariables(fileContent, cl);
                     return cl;
                 }
             }
@@ -524,7 +525,7 @@ namespace odfaeg {
             return pos2;
         }
         void Class::checkMembersFunctions(std::string& fileContent, Class& cl) {
-            //The function definition can be at the same file than the constructor declaration, in this case, we need to split the string.
+            //The function definition can be at the same file than the member function declaration, in this case, we need to split the string.
 
             while (fileContent.find("{") != std::string::npos) {
                 //Count the number of sub blocks (introduced by if, while, etc...) and remove they definition.
@@ -691,6 +692,78 @@ namespace odfaeg {
                 cl.addInnerClass(innerCl);
             }
         }
+        void Class::checkMembersVariables(std::string& fileContent, Class& cl) {
+            std::vector<std::string> parts = split(fileContent, ";");
+            for (unsigned int i = 0; i < parts[i].size(); i++) {
+                std::string fullTypeName="";
+                if (parts[i].find(",") != std::string::npos) {
+                    std::vector<std::string> argsComa = split(parts[i], ",");
+                    for (unsigned int j = 0; j < argsComa.size(); j++) {
+                        std::string argName = "";
+                        if (argsComa[j].find("=") != std::string::npos) {
+                            std::vector<std::string> argsEqual = split(argsComa[j], "=");
+                            std::vector<std::string> argTypeName = split(argsEqual[0], " ");
+                            if (j == 0) {
+                                if (argTypeName[0] == "const" || argTypeName[0] == "unsigned") {
+                                    fullTypeName = argTypeName[0]+" "+argTypeName[1];
+                                    argName = argTypeName[2];
+                                } else {
+                                    fullTypeName = argTypeName[0];
+                                    argName = argTypeName[1];
+                                }
+                            } else {
+                                argName = argTypeName[0];
+                            }
+                        } else {
+                            std::vector<std::string> argTypeName = split(argsComa[j], " ");
+                            if (j == 0) {
+                                if (argTypeName[0] == "const" || argTypeName[0] == "unsigned") {
+                                    fullTypeName = argTypeName[0]+" "+argTypeName[1];
+                                    argName = argTypeName[2];
+                                } else {
+                                    fullTypeName = argTypeName[0];
+                                    argName = argTypeName[1];
+                                }
+                            } else {
+                                argName = argTypeName[0];
+                            }
+                        }
+                        MemberVariable mb;
+                        mb.setVarType(fullTypeName);
+                        mb.setVarName(argName);
+                        cl.addMemberVariable(mb);
+                    }
+                } else {
+                    std::string argName = "";
+                    if (parts[i].find("=") != std::string::npos) {
+                        std::vector<std::string> argsEqual = split(parts[i], "=");
+                        std::vector<std::string> argTypeName = split(argsEqual[0], " ");
+                        //check if there is a const qualifier.
+                        if (argTypeName[0] == "const" || argTypeName[0] == "unsigned") {
+                            fullTypeName = argTypeName[0]+" "+argTypeName[1];
+                            argName = argTypeName[2];
+                        } else {
+                            fullTypeName = argTypeName[0];
+                            argName = argTypeName[1];
+                        }
+                    } else {
+                        std::vector<std::string> argTypeName = split(parts[i], " ");
+                        //check if there is a const qualifier.
+                        if (argTypeName[0] == "const" || argTypeName[0] == "unsigned") {
+                            fullTypeName = argTypeName[0]+" "+argTypeName[1];
+                            argName = argTypeName[2];
+                        } else {
+                            fullTypeName = argTypeName[0];
+                            argName = argTypeName[1];
+                        }
+                    }
+                    MemberVariable mb;
+                    mb.setVarType(fullTypeName);
+                    mb.setVarName(argName);
+                    cl.addMemberVariable(mb);
+                }
+            }
+        }
         void Class::addSuperClass(Class cl) {
             superClasses.push_back(cl);
         }
@@ -707,6 +780,9 @@ namespace odfaeg {
         void Class::addMemberFunction(MemberFunction mf) {
             memberFunctions.push_back(mf);
         }
+        void Class::addMemberVariable(MemberVariable mb) {
+            memberVariables.push_back(mb);
+        }
         std::string Class::getName() {
             return name;
         }
@@ -718,6 +794,9 @@ namespace odfaeg {
         }
         std::vector<MemberFunction> Class::getMembersFunctions() {
             return memberFunctions;
+        }
+        std::vector<MemberVariable> Class::getMembersVariables() {
+            return memberVariables;
         }
         std::string Class::getNamespace() {
             return namespc;

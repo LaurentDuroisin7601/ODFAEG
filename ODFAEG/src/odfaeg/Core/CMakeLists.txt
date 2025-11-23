@@ -41,6 +41,8 @@ set(SRC
 	${SRCROOT}/constructor.cpp
 	${INCROOT}/memberFunction.hpp
 	${SRCROOT}/memberFunction.cpp
+	${INCROOT}/memberVariable.hpp
+	${SRCROOT}/memberVariable.cpp
 	${INCROOT}/runtimeCompiler.hpp
 	${SRCROOT}/runtimeCompiler.cpp
 	${INCROOT}/fastDelegate.h	

@@ -8,6 +8,7 @@
 #include <string>
 #include "constructor.hpp"
 #include "memberFunction.hpp"
+#include "memberVariable.hpp"
 namespace odfaeg {
     namespace core {
         /**
@@ -66,6 +67,7 @@ namespace odfaeg {
             *  \brief get every bases classes of the class.
             *  \return std::vector<Class> : the base classes of the class.
             */
+            std::vector<MemberVariable> getMembersVariables();
             std::vector<Class> getSuperClasses();
             /**\fn std::string getNamespace();
             *  \brief get the namespace of the class.
@@ -105,6 +107,7 @@ namespace odfaeg {
             *   \brief add an inner class to the class.
             *   \param Class innerClass : the inner class to add.
             */
+            static void checkMembersVariables(std::string& fileContent, Class& cl);
             void addInnerClass(Class innerClass);
             /** \fn setNamespace(std::string namespc)
             *   \brief set the namespace name of the class.
@@ -125,6 +128,7 @@ namespace odfaeg {
             *   \brief add a base class.
             *   \param Class cl : the class.
             */
+            void addMemberVariable(MemberVariable mv);
             void addSuperClass(Class cl);
             std::string name; /**> the name of the class.*/
             std::string filePath; /**> the file path of the class's header.*/
@@ -133,6 +137,7 @@ namespace odfaeg {
             std::vector<Class> superClasses; /**> the base classes.*/
             std::vector<Constructor> constructors; /** the constructors. */
             std::vector<MemberFunction> memberFunctions; /** the member functions. */
+            std::vector<MemberVariable> memberVariables;
         };
     }
 }
