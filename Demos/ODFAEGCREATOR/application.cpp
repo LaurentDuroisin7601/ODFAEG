@@ -7615,7 +7615,7 @@ std::vector<std::string> ODFAEGCreator::checkCompletionNames(std::string letters
                     //Recherche les informations sur les variables dans les blocs.
                     findComplVarsInBloc(instructions, parentBloc, currentInst, currentPos);
                     //Recherche des noms que l'on peut proposer pour la completion.
-                    checkNamesToPropose(parentBloc, namesToPropose, letters);
+                    checkNamesToPropose(parentBloc, namesToPropose, letters, posInFile);
                 } else {
                     //Contenu traité on l'efface.
                     cpContent.erase(0, pos2);
@@ -7726,6 +7726,34 @@ void ODFAEGCreator::processInst(std::string inst, unsigned int currentPos, BlocI
         }
     }
 }
-void ODFAEGCreator::checkNamesToPropose(BlocInfo parentBloc, std::vector<std::string>& namesToPropose, std::string strsearch) {
+void ODFAEGCreator::checkNamesToPropose(BlocInfo parentBloc, std::vector<std::string>& namesToPropose, std::string strsearch, unsigned int posInFile) {
+    if (strsearch.find(".") != std::string::npos) {
+
+    } else {
+        std::map<unsigned int, std::pair<std::string, std::string>>::iterator it;
+        //Parcours de toutes les instances du bloc.
+        for (it = parentBloc.blocInstances.begin(); it != parentBloc.blocInstances.end(); it++) {
+            //Si on est après la position de la déclaration de la variable et dans le bloc on peut rechercher.
+            if (posInFile > it->first && parentBloc.blocStart < posInFile && parentBloc.blocEnd > posInFile) {
+                //Si les caractères correspondent on peut proposer le nom de la variable.
+                bool charsOk = true;
+                if (strsearch.size() <= it->second.second.size()) {
+                    for (unsigned int i = 0; i < strsearch.size(); i++) {
+                        if(strsearch.at(i) != it->second.second.at(i)) {
+                            charsOk = false;
+                        }
+                    }
+                } else {
+                    charsOk = false;
+                }
+                if (charsOk) {
+                    namesToPropose.push_back(it->second.second);
+                }
+            }
+        }
+    }
+    for (unsigned int i = 0; i < parentBloc.subBlocs.size(); i++) {
+        checkNamesToPropose(parentBloc.subBlocs[i], namesToPropose, strsearch, posInFile);
+    }
 }
 
