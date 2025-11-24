@@ -145,8 +145,8 @@ class ODFAEGCreator : public odfaeg::core::Application<ODFAEGCreator>,
         std::string getNamespaceIn(std::string content, unsigned int posInFile);
         std::string getHeaderContent(std::string content, unsigned int posInFile);
         void findLastBracket(std::string& fileContent, unsigned int nbBlocks, int& p);
-        void findComplVarsInBloc(std::string bloc, unsigned int nbBlocks);
-        void checkCompletionNames(std::string letters, unsigned int posInFile);
+        std::vector<std::string> checkCompletionNames(std::string letters, unsigned int posInFile);
+        void checkNamesToPropose(BlocInfo parentBloc, std::vector<std::string>& namesToPropose, std::string strsearch);
         void makeTransparent(odfaeg::graphic::Entity* entity);
         void convertSlash(std::string& path);
         odfaeg::math::Vec3f getGridCellPos(odfaeg::math::Vec3f pos);
