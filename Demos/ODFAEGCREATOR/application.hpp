@@ -139,7 +139,7 @@ class ODFAEGCreator : public odfaeg::core::Application<ODFAEGCreator>,
         Serif
     };
     private :
-        void processInst(std::string inst, BlocInfo& bloc);
+        void processInst(std::string inst, unsigned int currentPos, BlocInfo& bloc);
         void removeSpacesChars(std::string& str);
         void findComplVarsInBloc(std::vector<std::string>& instructions, BlocInfo& parentBloc, unsigned int& currentInst, unsigned int& currentPos);
         std::string getNamespaceIn(std::string content, unsigned int posInFile);

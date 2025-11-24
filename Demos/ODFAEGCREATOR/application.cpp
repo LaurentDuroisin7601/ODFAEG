@@ -7518,6 +7518,7 @@ std::string ODFAEGCreator::getHeaderContent(std::string content, unsigned int po
         std::vector<std::string> names = split(parts[i], " ");
         int pos = content.find(parts[i]);
         std::string subContent = content.substr(pos, content.size()-pos);
+        posInFile -= pos;
         int pos2 = 0;
         findLastBracket(subContent, 0, pos2);
         //If we are arrived at the class definition.
@@ -7601,6 +7602,7 @@ void ODFAEGCreator::checkCompletionNames(std::string letters, unsigned int posIn
             for (unsigned int f = 0; f < functions.size(); f++) {
                 int pos = cpContent.find(functions[f].getName());
                 std::string subContent = content.substr(pos, content.size()-pos);
+                posInFile -= pos;
                 pos = subContent.find("{");
                 int pos2 = 0;
                 std::string cSubContent = subContent;
@@ -7619,18 +7621,19 @@ void ODFAEGCreator::checkCompletionNames(std::string letters, unsigned int posIn
                     findComplVarsInBloc(instructions, parentBloc, currentInst, currentPos);
                 } else {
                     cpContent.erase(0, pos2);
+                    posInFile -= pos2;
                 }
             }
         }
     }
 }
 void ODFAEGCreator::findComplVarsInBloc(std::vector<std::string>& instructions, BlocInfo& parentBloc, unsigned int& currentInst, unsigned int& currentPos) {
+    BlocInfo subBloc;
     while (currentInst < instructions.size()) {
         std::string inst = instructions[currentInst];
         removeSpacesChars(inst);
         int pos = inst.find("{");
         int pos2 = inst.find("}");
-        BlocInfo subBloc;
         if (pos != std::string::npos) {
             inst.erase(0, 1);
             subBloc.blocStart = currentPos;
@@ -7641,12 +7644,88 @@ void ODFAEGCreator::findComplVarsInBloc(std::vector<std::string>& instructions, 
             parentBloc.subBlocs.push_back(subBloc);
             return;
         } else {
-            processInst(inst, subBloc);
+            processInst(inst, currentPos, subBloc);
             currentInst++;
         }
         currentPos += instructions[currentInst].size();
     }
 }
-void ODFAEGCreator::processInst(std::string inst, BlocInfo& bloc) {
+void ODFAEGCreator::processInst(std::string inst, unsigned int currentPos, BlocInfo& bloc) {
+    std::vector<std::string> classes = Class::getClasses("");
+    std::vector<std::string> allTypeNames;
+    for (unsigned int i = 0; i < classes.size(); i++) {
+        allTypeNames.push_back(classes[i]);
+    }
+    for (unsigned int i = 0; i < allTypeNames.size(); i++) {
+        if (inst.find(allTypeNames[i]) != std::string::npos) {
+            if (inst.find(",") != std::string::npos) {
+                std::vector<std::string> argsComa = split(inst, ",");
+                for (unsigned int j = 0; j < argsComa.size(); j++) {
+                    removeSpacesChars(argsComa[j]);
+                    std::string argName = "";
+                    if (argsComa[j].find("=") != std::string::npos) {
+                        std::vector<std::string> argsEqual = split(argsComa[j], "=");
+                        removeSpacesChars(argsEqual[0]);
+                        std::vector<std::string> argTypeName = split(argsEqual[0], " ");
+                        for (unsigned int k = 0; k < argTypeName.size(); k++) {
+                            removeSpacesChars(argTypeName[k]);
+                        }
+                        if (j == 0) {
+                            if (argTypeName[0] == "const" || argTypeName[0] == "unsigned") {
+                                argName = argTypeName[2];
+                            } else {
+                                argName = argTypeName[1];
+                            }
+                        } else {
+                            argName = argTypeName[0];
+                        }
+                    } else {
+                        std::vector<std::string> argTypeName = split(argsComa[j], " ");
+                        for (unsigned int k = 0; k < argTypeName.size(); k++) {
+                            removeSpacesChars(argTypeName[k]);
+                        }
+                        if (j == 0) {
+                            if (argTypeName[0] == "const" || argTypeName[0] == "unsigned") {
+                                argName = argTypeName[2];
+                            } else {
+                                argName = argTypeName[1];
+                            }
+                        } else {
+                            argName = argTypeName[0];
+                        }
+                    }
+                    bloc.blocInstances.insert(std::make_pair(currentPos, std::make_pair(allTypeNames[i], argName)));
+                }
+            } else {
+                std::string argName = "";
+                if (inst.find("=") != std::string::npos) {
+                    std::vector<std::string> argsEqual = split(inst, "=");
+                    removeSpacesChars(argsEqual[0]);
+                    std::vector<std::string> argTypeName = split(argsEqual[0], " ");
+                    for (unsigned int k = 0; k < argTypeName.size(); k++) {
+                        removeSpacesChars(argTypeName[k]);
+                    }
+                    //check if there is a const qualifier.
+                    if (argTypeName[0] == "const" || argTypeName[0] == "unsigned") {
+                        argName = argTypeName[2];
+                    } else {
+                        argName = argTypeName[1];
+                    }
+                } else {
+                    std::vector<std::string> argTypeName = split(inst, " ");
+                    for (unsigned int k = 0; k < argTypeName.size(); k++) {
+                        removeSpacesChars(argTypeName[k]);
+                    }
+                    //check if there is a const qualifier.
+                    if (argTypeName[0] == "const" || argTypeName[0] == "unsigned") {
+                        argName = argTypeName[2];
+                    } else {
+                        argName = argTypeName[1];
+                    }
+                }
+                bloc.blocInstances.insert(std::make_pair(currentPos, std::make_pair(allTypeNames[i], argName)));
+            }
+        }
+    }
 }
 

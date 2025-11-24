@@ -35,7 +35,7 @@ namespace odfaeg {
         std::vector<std::string> Class::getClasses(std::string path) {
             std::vector<std::string> classes;
             //We get the project directory, and concat it with the folder path.
-            std::string appiDir = getCurrentPath()+"\\"+path;
+            std::string appiDir = path != "" ? getCurrentPath()+"\\"+path : getCurrentPath();
             std::vector<std::string> files;
             //find each header files.
             findFiles(".hpp .h", files, appiDir);
