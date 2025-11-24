@@ -139,6 +139,7 @@ class ODFAEGCreator : public odfaeg::core::Application<ODFAEGCreator>,
         Serif
     };
     private :
+        bool isCharsOk(std::string strsearch, std::string str);
         void processInst(std::string inst, unsigned int currentPos, BlocInfo& bloc);
         void removeSpacesChars(std::string& str);
         void findComplVarsInBloc(std::vector<std::string>& instructions, BlocInfo& parentBloc, unsigned int& currentInst, unsigned int& currentPos);

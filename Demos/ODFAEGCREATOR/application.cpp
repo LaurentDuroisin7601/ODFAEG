@@ -6,6 +6,7 @@
 #include <sys/stat.h>
 #include <stdlib.h>
 #include "odfaeg/Core/utilities.h"
+#include <queue>
 
 using namespace odfaeg::core;
 using namespace odfaeg::math;
@@ -3481,10 +3482,10 @@ void ODFAEGCreator::actionPerformed(Button* button) {
                 std::vector<odfaeg::core::Class> tmpSuperClasses = superClasses[i].getSuperClasses();
                 for (unsigned int j = 0; j < tmpSuperClasses.size(); j++) {
                     superClasses.push_back(tmpSuperClasses[j]);
-                 }
-                 if (superClasses.size() > 0)  {
-                    superClasses.erase(superClasses.begin(), superClasses.begin()+1);
-                 }
+                }
+                if (superClasses.size() > 0)  {
+                   superClasses.erase(superClasses.begin(), superClasses.begin()+1);
+                }
             }
         }
         std::string toInsert = "";
@@ -7609,6 +7610,7 @@ std::vector<std::string> ODFAEGCreator::checkCompletionNames(std::string letters
                     for (unsigned int a = 0; a < functions[f].getArgsTypes().size(); a++) {
                         parentBloc.blocInstances.insert(std::make_pair(pos, std::make_pair(functions[f].getArgsTypes()[a], functions[f].getArgsNames()[a])));
                     }
+                    parentBloc.blocInstances.insert(std::make_pair(pos, std::make_pair(classs.getName(), "this")));
                     std::vector<std::string> instructions = split(bloc, ";");
                     unsigned int currentInst = 0;
                     unsigned int currentPos = 0;
@@ -7727,9 +7729,60 @@ void ODFAEGCreator::processInst(std::string inst, unsigned int currentPos, BlocI
         }
     }
 }
+bool ODFAEGCreator::isCharsOk(std::string strsearch, std::string str) {
+    if (strsearch.size() <= str.size()) {
+        for (unsigned int i = 0; i < strsearch.size(); i++) {
+            if(strsearch.at(i) != str.at(i)) {
+                return false;
+            }
+        }
+        return true;
+    }
+    return false;
+}
 void ODFAEGCreator::checkNamesToPropose(BlocInfo parentBloc, std::vector<std::string>& namesToPropose, std::string strsearch, unsigned int posInFile) {
     if (strsearch.find(".") != std::string::npos) {
-
+        std::vector<std::string> parts = split(strsearch, ".");
+        std::string name = parts[0];
+        std::map<unsigned int, std::pair<std::string, std::string>>::iterator it;
+        for (it = parentBloc.blocInstances.begin(); it != parentBloc.blocInstances.end(); it++) {
+            if (posInFile > it->first && parentBloc.blocStart < posInFile && parentBloc.blocEnd > posInFile) {
+                if (it->second.second == name && it->second.second.find("*") == std::string::npos) {
+                    Class classs = Class::getClass(it->second.first);
+                    for (unsigned int i = 0; i < classs.getMembersFunctions().size(); i++) {
+                        bool charsOk = isCharsOk(strsearch, classs.getMembersFunctions()[i].getName());
+                        if (charsOk)
+                            namesToPropose.push_back(classs.getMembersFunctions()[i].getName());
+                    }
+                    for (unsigned int i = 0; i < classs.getMembersVariables().size(); i++) {
+                        bool charsOk = isCharsOk(strsearch, classs.getMembersVariables()[i].getVarName());
+                        if (charsOk)
+                        namesToPropose.push_back(classs.getMembersVariables()[i].getVarName());
+                    }
+                    std::queue<Class> q;
+                    for(auto& sc : classs.getSuperClasses())
+                        q.push(sc);
+                    while (!q.empty()) {
+                        Class current = q.front();
+                        for (unsigned int i = 0; i < current.getMembersFunctions().size(); i++) {
+                            bool charsOk = isCharsOk(strsearch, current.getMembersFunctions()[i].getName());
+                            if (charsOk)
+                                namesToPropose.push_back(current.getMembersFunctions()[i].getName());
+                        }
+                        for (unsigned int i = 0; i < current.getMembersVariables().size(); i++) {
+                            bool charsOk = isCharsOk(strsearch, current.getMembersVariables()[i].getVarName());
+                            if (charsOk)
+                            namesToPropose.push_back(current.getMembersVariables()[i].getVarName());
+                        }
+                        q.pop();
+                        // Ajouter ses super-classes dans la file
+                        for (auto& sc : current.getSuperClasses()) {
+                            q.push(sc);
+                        }
+                    }
+                }
+            }
+        }
     } else {
         std::map<unsigned int, std::pair<std::string, std::string>>::iterator it;
         //Parcours de toutes les instances du bloc.
@@ -7737,16 +7790,7 @@ void ODFAEGCreator::checkNamesToPropose(BlocInfo parentBloc, std::vector<std::st
             //Si on est après la position de la déclaration de la variable et dans le bloc on peut rechercher.
             if (posInFile > it->first && parentBloc.blocStart < posInFile && parentBloc.blocEnd > posInFile) {
                 //Si les caractères correspondent on peut proposer le nom de la variable.
-                bool charsOk = true;
-                if (strsearch.size() <= it->second.second.size()) {
-                    for (unsigned int i = 0; i < strsearch.size(); i++) {
-                        if(strsearch.at(i) != it->second.second.at(i)) {
-                            charsOk = false;
-                        }
-                    }
-                } else {
-                    charsOk = false;
-                }
+                bool charsOk = isCharsOk(strsearch, it->second.second);
                 if (charsOk) {
                     namesToPropose.push_back(it->second.second);
                 }
