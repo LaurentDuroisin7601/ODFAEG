@@ -3472,19 +3472,21 @@ void ODFAEGCreator::actionPerformed(Button* button) {
             sourceCode += "    odfaeg::core::Application::app = c;\n";
             sourceCode += "}\n";
         }
-        std::vector<odfaeg::core::Class> superClasses = cl.getSuperClasses();
+        std::queue<Class> q;
+        for (auto& sc : cl.getSuperClasses()) {
+            q.push(sc);
+        }
         bool found = false;
-        while (superClasses.size() > 0 && !found) {
-            for (unsigned int i = 0; i < superClasses.size() && !found; i++) {
-                if (superClasses[i].getName() == "Entity") {
-                    found = true;
-                }
-                std::vector<odfaeg::core::Class> tmpSuperClasses = superClasses[i].getSuperClasses();
-                for (unsigned int j = 0; j < tmpSuperClasses.size(); j++) {
-                    superClasses.push_back(tmpSuperClasses[j]);
-                }
-                if (superClasses.size() > 0)  {
-                   superClasses.erase(superClasses.begin(), superClasses.begin()+1);
+        while (!q.empty() && !found) {
+            Class current = q.front();
+            q.pop();
+            if (current.getName() == "Entity") {
+                found = true;
+            }
+            if (!found) {
+                // Ajouter ses super-classes dans la file
+                for (auto& sc : current.getSuperClasses()) {
+                    q.push(sc);
                 }
             }
         }
@@ -3692,19 +3694,22 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         std::vector<std::string> parts = split(dpSelectMClass->getSelectedItem(), "::");
         Class cl = Class::getClass(parts[parts.size()-1]);
         std::vector<odfaeg::core::Class> superClasses = cl.getSuperClasses();
+        std::queue<Class> q;
+        for (auto& sc : cl.getSuperClasses()) {
+            q.push(sc);
+        }
         bool found = false;
-        while (superClasses.size() > 0 && !found) {
-            for (unsigned int i = 0; i < superClasses.size() && !found; i++) {
-                if (superClasses[i].getName() == "Entity") {
-                    found = true;
+        while (!q.empty() && !found) {
+            Class current = q.front();
+            q.pop();
+            if (current.getName() == "Entity") {
+                found = true;
+            }
+            if (!found) {
+                // Ajouter ses super-classes dans la file
+                for (auto& sc : current.getSuperClasses()) {
+                    q.push(sc);
                 }
-                std::vector<odfaeg::core::Class> tmpSuperClasses = superClasses[i].getSuperClasses();
-                for (unsigned int j = 0; j < tmpSuperClasses.size(); j++) {
-                    superClasses.push_back(tmpSuperClasses[j]);
-                 }
-                 if (superClasses.size() > 0)  {
-                    superClasses.erase(superClasses.begin(), superClasses.begin()+1);
-                 }
             }
         }
         std::string sourceCode="", toInsert = "";
@@ -3780,18 +3785,21 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         std::vector<std::string> parts = split(dpSelectRClass->getSelectedItem(), "::");
         Class cl = Class::getClass(parts[parts.size()-1]);
         std::vector<odfaeg::core::Class> superClasses = cl.getSuperClasses();
+        std::queue<Class> q;
+        for (auto& sc : cl.getSuperClasses()) {
+            q.push(sc);
+        }
         bool found = false;
-        while (superClasses.size() > 0 && !found) {
-            for (unsigned int i = 0; i < superClasses.size() && !found; i++) {
-                if (superClasses[i].getName() == "Entity") {
-                    found = true;
-                }
-                std::vector<odfaeg::core::Class> tmpSuperClasses = superClasses[i].getSuperClasses();
-                for (unsigned int j = 0; j < tmpSuperClasses.size(); j++) {
-                    superClasses.push_back(tmpSuperClasses[j]);
-                }
-                if (superClasses.size() > 0)  {
-                   superClasses.erase(superClasses.begin(), superClasses.begin()+1);
+        while (!q.empty() && !found) {
+            Class current = q.front();
+            q.pop();
+            if (current.getName() == "Entity") {
+                found = true;
+            }
+            if (!found) {
+                // Ajouter ses super-classes dans la file
+                for (auto& sc : current.getSuperClasses()) {
+                    q.push(sc);
                 }
             }
         }
@@ -7764,6 +7772,7 @@ void ODFAEGCreator::checkNamesToPropose(BlocInfo parentBloc, std::vector<std::st
                         q.push(sc);
                     while (!q.empty()) {
                         Class current = q.front();
+                        q.pop();
                         for (unsigned int i = 0; i < current.getMembersFunctions().size(); i++) {
                             bool charsOk = isCharsOk(strsearch, current.getMembersFunctions()[i].getName());
                             if (charsOk)
@@ -7774,7 +7783,6 @@ void ODFAEGCreator::checkNamesToPropose(BlocInfo parentBloc, std::vector<std::st
                             if (charsOk)
                             namesToPropose.push_back(current.getMembersVariables()[i].getVarName());
                         }
-                        q.pop();
                         // Ajouter ses super-classes dans la file
                         for (auto& sc : current.getSuperClasses()) {
                             q.push(sc);
