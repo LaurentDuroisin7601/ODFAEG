@@ -186,8 +186,8 @@ namespace odfaeg {
                     return cl;
                 }
             }
-            //Launch an error it the c++ class is not found.
-            throw Erreur(70, "Class "+name+"not found in project files!", 3);
+            Class cl("", "");
+            return cl;
         }
         Class Class::getClass(std::string name, std::string nspc, std::string path) {
             std::string appiDir;
@@ -324,8 +324,8 @@ namespace odfaeg {
                     return cl;
                 }
             }
-            //Launch an error it the c++ class is not found.
-            throw Erreur(70, "Class "+name+"not found in project files!", 3);
+            Class cl("", "");
+            return cl;
         }
         void Class::checkSuperClasses (std::string &fileContent, Class& cl) {
 

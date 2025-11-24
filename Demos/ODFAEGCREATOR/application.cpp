@@ -7634,6 +7634,7 @@ std::vector<std::string> ODFAEGCreator::checkCompletionNames(std::string letters
             }
         }
     }
+    return namesToPropose;
 }
 void ODFAEGCreator::findComplVarsInBloc(std::vector<std::string>& instructions, BlocInfo& parentBloc, unsigned int& currentInst, unsigned int& currentPos) {
     BlocInfo subBloc;
@@ -7662,9 +7663,13 @@ void ODFAEGCreator::findComplVarsInBloc(std::vector<std::string>& instructions, 
 void ODFAEGCreator::processInst(std::string inst, unsigned int currentPos, BlocInfo& bloc) {
     std::vector<std::string> classes = Class::getClasses("");
     std::vector<std::string> allTypeNames;
+    for (unsigned int i = 0; i < primtiveTypes.size(); i++) {
+        allTypeNames.push_back(primtiveTypes[i]);
+    }
     for (unsigned int i = 0; i < classes.size(); i++) {
         allTypeNames.push_back(classes[i]);
     }
+
     for (unsigned int i = 0; i < allTypeNames.size(); i++) {
         if (inst.find(allTypeNames[i]) != std::string::npos) {
             if (inst.find(",") != std::string::npos) {

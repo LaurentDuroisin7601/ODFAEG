@@ -139,6 +139,7 @@ class ODFAEGCreator : public odfaeg::core::Application<ODFAEGCreator>,
         Serif
     };
     private :
+        bool isPrimitiveType(std::string type);
         bool isCharsOk(std::string strsearch, std::string str);
         void processInst(std::string inst, unsigned int currentPos, BlocInfo& bloc);
         void removeSpacesChars(std::string& str);
@@ -239,6 +240,19 @@ class ODFAEGCreator : public odfaeg::core::Application<ODFAEGCreator>,
         odfaeg::physic::OrientedBoundingBox selectionBox;
         std::vector<std::unique_ptr<odfaeg::graphic::World>> worlds;
         std::string selectedProject;
+        std::array<std::string, 24> primitiveTypes = {
+            "bool",
+            "char", "signed char", "unsigned char",
+            "short", "unsigned short",
+            "int", "unsigned int",
+            "long", "unsigned long",
+            "long long", "unsigned long long",
+            "float", "double", "long double",
+            "size_t", "int8_t", "uint8_t",
+            "int16_t", "uint16_t", "int32_t",
+            "uint32_t", "int64_t", "uint64_t"
+        };
+    };
 };
 #endif
 
