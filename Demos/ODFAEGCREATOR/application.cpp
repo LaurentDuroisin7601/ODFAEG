@@ -7749,13 +7749,13 @@ bool ODFAEGCreator::isCharsOk(std::string strsearch, std::string str) {
     return false;
 }
 void ODFAEGCreator::checkNamesToPropose(BlocInfo parentBloc, std::vector<std::string>& namesToPropose, std::string strsearch, unsigned int posInFile) {
-    if (strsearch.find(".") != std::string::npos) {
+    if (strsearch.find(".") != std::string::npos || strsearch.find("->") != std::string::npos) {
         std::vector<std::string> parts = split(strsearch, ".");
         std::string name = parts[0];
         std::map<unsigned int, std::pair<std::string, std::string>>::iterator it;
         for (it = parentBloc.blocInstances.begin(); it != parentBloc.blocInstances.end(); it++) {
             if (posInFile > it->first && parentBloc.blocStart < posInFile && parentBloc.blocEnd > posInFile) {
-                if (it->second.second == name && it->second.second.find("*") == std::string::npos) {
+                if (it->second.second == name) {
                     Class classs = Class::getClass(it->second.first);
                     for (unsigned int i = 0; i < classs.getMembersFunctions().size(); i++) {
                         bool charsOk = isCharsOk(strsearch, classs.getMembersFunctions()[i].getName());
