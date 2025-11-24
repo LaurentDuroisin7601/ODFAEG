@@ -7620,7 +7620,7 @@ std::vector<std::string> ODFAEGCreator::checkCompletionNames(std::string letters
                     unsigned int currentInst = 0;
                     unsigned int currentPos = 0;
                     findComplVarsInBloc(instructions, parentBloc, currentInst, currentPos);
-                    checkNamesToPropose(parentBloc, namesToPropose);
+                    checkNamesToPropose(parentBloc, namesToPropose, letters);
                 } else {
                     cpContent.erase(0, pos2);
                     posInFile -= pos2;
