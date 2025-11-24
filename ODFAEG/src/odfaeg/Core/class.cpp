@@ -693,17 +693,33 @@ namespace odfaeg {
                 cl.addInnerClass(innerCl);
             }
         }
+        void Class::removeSpacesChars(std::string& str) {
+            //remove spaces and \n at the beginning and at the end.
+            while (str.size() > 0 && str.at(0) == ' ' || str.at(0) == '\n') {
+                str = str.erase(0, 1);
+            }
+            while (str.size() > 0 && str.at(str.size()-1) == ' ' || str.at(str.size()-1) == '\n') {
+                str = str.erase(str.size()-1, 1);
+            }
+        }
         void Class::checkMembersVariables(std::string& fileContent, Class& cl) {
             std::vector<std::string> parts = split(fileContent, ";");
+
             for (unsigned int i = 0; i < parts[i].size(); i++) {
+                removeSpacesChars(parts[i]);
                 std::string fullTypeName="";
                 if (parts[i].find(",") != std::string::npos) {
                     std::vector<std::string> argsComa = split(parts[i], ",");
                     for (unsigned int j = 0; j < argsComa.size(); j++) {
+                        removeSpacesChars(argsComa[j]);
                         std::string argName = "";
                         if (argsComa[j].find("=") != std::string::npos) {
                             std::vector<std::string> argsEqual = split(argsComa[j], "=");
+                            removeSpacesChars(argsEqual[0]);
                             std::vector<std::string> argTypeName = split(argsEqual[0], " ");
+                            for (unsigned int k = 0; k < argTypeName.size(); k++) {
+                                removeSpacesChars(argTypeName[k]);
+                            }
                             if (j == 0) {
                                 if (argTypeName[0] == "const" || argTypeName[0] == "unsigned") {
                                     fullTypeName = argTypeName[0]+" "+argTypeName[1];
@@ -717,6 +733,9 @@ namespace odfaeg {
                             }
                         } else {
                             std::vector<std::string> argTypeName = split(argsComa[j], " ");
+                            for (unsigned int k = 0; k < argTypeName.size(); k++) {
+                                removeSpacesChars(argTypeName[k]);
+                            }
                             if (j == 0) {
                                 if (argTypeName[0] == "const" || argTypeName[0] == "unsigned") {
                                     fullTypeName = argTypeName[0]+" "+argTypeName[1];
@@ -738,7 +757,11 @@ namespace odfaeg {
                     std::string argName = "";
                     if (parts[i].find("=") != std::string::npos) {
                         std::vector<std::string> argsEqual = split(parts[i], "=");
+                        removeSpacesChars(argsEqual[0]);
                         std::vector<std::string> argTypeName = split(argsEqual[0], " ");
+                        for (unsigned int k = 0; k < argTypeName.size(); k++) {
+                            removeSpacesChars(argTypeName[k]);
+                        }
                         //check if there is a const qualifier.
                         if (argTypeName[0] == "const" || argTypeName[0] == "unsigned") {
                             fullTypeName = argTypeName[0]+" "+argTypeName[1];
@@ -749,6 +772,9 @@ namespace odfaeg {
                         }
                     } else {
                         std::vector<std::string> argTypeName = split(parts[i], " ");
+                        for (unsigned int k = 0; k < argTypeName.size(); k++) {
+                            removeSpacesChars(argTypeName[k]);
+                        }
                         //check if there is a const qualifier.
                         if (argTypeName[0] == "const" || argTypeName[0] == "unsigned") {
                             fullTypeName = argTypeName[0]+" "+argTypeName[1];

@@ -76,6 +76,7 @@ namespace odfaeg {
             std::string getNamespace();
         private :
             static unsigned int findLastBracket(std::string& fileContent, unsigned int nbBlocks);
+            static void removeSpacesChars(std::string& str);
             /** \fn void checkInnerClass(std::string innerClass, std::string type, std::string& fileContent, int lvl, Class& cl)
             *   \brief check every inner classes, structs or enums of the given c++ class.
             *   \param std::string innerClass : the name of the c++ class from which to check inner c++ classes, structs or enums.
