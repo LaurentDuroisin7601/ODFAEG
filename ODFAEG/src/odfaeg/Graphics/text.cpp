@@ -329,6 +329,7 @@ namespace odfaeg
                     return i;
                 }
             }
+            return m_string.getSize() - 1;
         }
         ////////////////////////////////////////////////////////////
         math::Vec2f Text::findCharacterPos(std::size_t index)
