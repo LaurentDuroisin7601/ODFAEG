@@ -7645,7 +7645,8 @@ void ODFAEGCreator::findComplVarsInBloc(std::vector<std::string>& instructions, 
             processInst(inst, currentPos, subBloc);
             currentInst++;
         }
-        currentPos += instructions[currentInst].size();
+        if (currentInst < instructions[currentInst].size())
+            currentPos += instructions[currentInst].size();
     }
 }
 void ODFAEGCreator::processInst(std::string inst, unsigned int currentPos, BlocInfo& bloc) {
