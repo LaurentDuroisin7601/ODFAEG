@@ -7508,6 +7508,7 @@ std::string ODFAEGCreator::getHeaderContent(std::string content, unsigned int po
     //On recherche si le contenu est celui d'un fichier .h sinon on recherche le fichier .h correspondant.
     std::map<std::pair<std::string, std::string>, std::string>::iterator it;
     for (it = cppAppliContent.begin(); it != cppAppliContent.end(); it++) {
+        //On est déjà dans un fichier.h on le retourne.
         if ((it->first.second.find(".h") || it->first.second.find(".hpp")) && it->second == content);
             return it->second;
     }
@@ -7540,42 +7541,31 @@ std::string ODFAEGCreator::getHeaderContent(std::string content, unsigned int po
             }
         }
     }
-    //Free functions : extract function names.
-    parts = split(content, "(");
-    for (unsigned int i = 0; i < parts.size(); i++) {
-        std::vector<std::string> names = split(parts[i], " ");
-        int pos = content.find(parts[i]);
-        std::string subContent = content.substr(pos, content.size()-pos);
-        int pos2 = 0;
-        findLastBracket(subContent, 0, pos2);
-        //If we are arrived at the function definition.
-        if (pos < posInFile && posInFile < pos2) {
-            for (it = cppAppliContent.begin(); it != cppAppliContent.end(); it++) {
-                std::string subContent2 = it->second;
-                if (it->second.find(names[names.size()-1]) != std::string::npos && (it->second.find("{") != std::string::npos || it->second.find(";") != std::string::npos)) {
-                    return it->second;
-                }
-            }
-        }
-    }
     return "";
 }
 void ODFAEGCreator::findLastBracket(std::string& fileContent, unsigned int nbBlocks, int& p) {
+    //Recherche la position du dernier crochet fermant d'un ensemble de blocs.
     unsigned int pos, pos2;
     do {
+
         pos = fileContent.find("{");
         pos2 = fileContent.find("}");
         if (pos != std::string::npos && pos2 != std::string::npos) {
+            //Crocher ouvrant avant crochet fermant : nouveau sous bloc.
             if (pos < pos2) {
                 nbBlocks++;
+                //On supprime le crochet car il a déjà été traité.
                 fileContent.erase(pos, 1);
                 p += pos;
             } else {
-                fileContent.erase(pos2, 1);
+                //Crochet fermant après crochet ouvrant :  fin du bloc.
                 nbBlocks--;
+                //On supprime le crochet car il a déjà été traité.
+                fileContent.erase(pos2, 1);
                 p += pos2;
             }
         }
+        //On répète tant que l'on trouve des crochets et qu'ils sont dans le premier bloc de fileContent.
     } while (nbBlocks > 0 || pos == std::string::npos || pos2 == std::string::npos);
 }
 void ODFAEGCreator::removeSpacesChars(std::string& str) {
@@ -7592,22 +7582,25 @@ std::vector<std::string> ODFAEGCreator::checkCompletionNames(std::string letters
     std::string content = tScriptEdit->getText();
     //Contenu du fichier.h
     std::string header_content = getHeaderContent(content,posInFile);
+    //Recherche du namespace dans lequel on se trouver.
     std::string namespc = getNamespaceIn(content, posInFile);
-    //On recherche dans quel bloc de quel fonction de quelle classe on se trouve.
+    //On recherche dans quel bloc de quelle fonction de quelle classe on se trouve.
     std::vector<std::string> classes = Class::getClassesFromMemory(header_content);
     std::string cpContent = content;
     for (unsigned int i = 0; i < classes.size(); i++) {
         Class classs = Class::getClassFromMemory(classes[i], "", header_content);
+        //Ok si la classe est dans le même namespace que dans le fichier.
         if (classs.getNamespace() == namespc) {
             std::vector<MemberFunction> functions = classs.getMembersFunctions();
             for (unsigned int f = 0; f < functions.size(); f++) {
                 int pos = cpContent.find(functions[f].getName());
-                std::string subContent = content.substr(pos, content.size()-pos);
-                posInFile -= pos;
+                std::string subContent = cpContent.substr(pos, content.size()-pos);
                 pos = subContent.find("{");
+                posInFile -= pos;
                 int pos2 = 0;
                 std::string cSubContent = subContent;
                 findLastBracket(cSubContent, 0, pos2);
+                //Si on est entre les crochets d'ouverture et de fermeture de la fonction on est dans le bon bloc.
                 if (pos < posInFile && posInFile < pos2) {
                     std::string bloc = subContent.substr(pos, pos2-pos);
                     BlocInfo parentBloc;
@@ -7619,9 +7612,12 @@ std::vector<std::string> ODFAEGCreator::checkCompletionNames(std::string letters
                     std::vector<std::string> instructions = split(bloc, ";");
                     unsigned int currentInst = 0;
                     unsigned int currentPos = 0;
+                    //Recherche les informations sur les variables dans les blocs.
                     findComplVarsInBloc(instructions, parentBloc, currentInst, currentPos);
+                    //Recherche des noms que l'on peut proposer pour la completion.
                     checkNamesToPropose(parentBloc, namesToPropose, letters);
                 } else {
+                    //Contenu traité on l'efface.
                     cpContent.erase(0, pos2);
                     posInFile -= pos2;
                 }
