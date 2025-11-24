@@ -7639,6 +7639,7 @@ void ODFAEGCreator::findComplVarsInBloc(std::vector<std::string>& instructions, 
             inst.erase(0, 1);
             subBloc.blocEnd = currentPos;
             parentBloc.subBlocs.push_back(subBloc);
+            return;
         } else {
             processInst(inst, subBloc);
             currentInst++;
