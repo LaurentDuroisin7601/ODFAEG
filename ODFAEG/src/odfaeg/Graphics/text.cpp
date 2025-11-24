@@ -322,8 +322,14 @@ namespace odfaeg
         {
             return m_outlineThickness;
         }
-
-
+        unsigned int Text::findCharacterAt(math::Vec2f cursorPos) {
+            for (unsigned int i = 0; i < m_string.getSize(); i++) {
+                math::Vec2f pos = findCharacterPos(i);
+                if (pos.computeDist(cursorPos) < m_characterSize) {
+                    return i;
+                }
+            }
+        }
         ////////////////////////////////////////////////////////////
         math::Vec2f Text::findCharacterPos(std::size_t index)
         {

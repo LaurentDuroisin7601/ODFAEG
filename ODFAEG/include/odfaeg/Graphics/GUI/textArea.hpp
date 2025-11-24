@@ -35,6 +35,7 @@ namespace odfaeg {
                 bool isTextChanged();
                 void onEventPushed(window::IEvent event, RenderWindow& window);
                 math::Vec3f getTextSize();
+                unsigned int getCharacterIndexAtCursorPos();
             private :
                 int scrollX, scrollY;
                 int currentIndex, currentIndex2;

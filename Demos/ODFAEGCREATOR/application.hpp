@@ -135,6 +135,7 @@ class ODFAEGCreator : public odfaeg::core::Application<ODFAEGCreator>,
     std::vector<odfaeg::physic::BoundingPolyhedron> getTmpBps();
     unsigned int findLine(std::string toFind, std::string content);
     void removeLine(unsigned int line, std::string& content);
+    void onTextEntered(char caracter);
     enum Fonts {
         Serif
     };
@@ -175,7 +176,7 @@ class ODFAEGCreator : public odfaeg::core::Application<ODFAEGCreator>,
         odfaeg::graphic::gui::Panel *pProjects, *pScriptsFiles, *pScriptsEdit, *pInfos, *pTransform, *pMaterial, *pShadows, *pCollisions, *pComponent, *pObjectsParameters, *pMObjectsParameters;
         std::string appliname, minAppliname;
         std::string applitype;
-        std::string path;
+        std::string path, strsearch="";
         std::map<std::pair<std::string, std::string>, std::string> cppAppliContent;
         std::vector<std::string> openedProjects;
         std::vector<std::string> textPaths;
@@ -252,7 +253,7 @@ class ODFAEGCreator : public odfaeg::core::Application<ODFAEGCreator>,
             "int16_t", "uint16_t", "int32_t",
             "uint32_t", "int64_t", "uint64_t"
         };
-    };
 };
+
 #endif
 

@@ -948,6 +948,9 @@ void ODFAEGCreator::onInit() {
         rootCollisionNode = std::make_unique<Node>("Collisions", pCollisions, Vec2f(0.f, 0.05f), Vec2f(1.f, 1.f - 0.05f));
         tabPane->addTab(pCollisions, "Collisions", *fm.getResourceByAlias(Fonts::Serif));
         tScriptEdit = new TextArea(Vec3f(200, 20, 0), Vec3f(790, 650, 0), fm.getResourceByAlias(Fonts::Serif), "", getRenderWindow());
+        Action a5 (Action::TEXT_ENTERED);
+        Command cmd5(a5, FastDelegate<bool>(&TextArea::hasFocus, tScriptEdit), FastDelegate<void>(&ODFAEGCreator::onTextEntered, this, 'a'));
+        getListener().connect("CONTEXTENTERED", cmd5);
         tScriptEdit->setParent(pScriptsEdit);
         tScriptEdit->setRelPosition(0.f, 0.f);
         tScriptEdit->setRelSize(0.9f, 0.9f);
@@ -1243,6 +1246,9 @@ Vec3f ODFAEGCreator::getGridCellPos(Vec3f pos) {
     return Vec3f (extends[0][0], extends[1][0], extends[2][0]);
 }
 void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
+    if (&getRenderWindow() == window && event.type == IEvent::TEXT_INPUT_EVENT) {
+        getListener().setCommandSlotParams("CONTEXTENTERED", this, static_cast<char>(event.text.unicode));
+    }
     if(&getRenderWindow() == window && event.type == IEvent::MOUSE_WHEEL_EVENT && event.mouseWheel.type == IEvent::MOUSE_WHEEL_MOVED && isGuiShown) {
         if (event.mouseWheel.direction > 0) {
             if (selectedObject != nullptr) {
@@ -7663,8 +7669,8 @@ void ODFAEGCreator::findComplVarsInBloc(std::vector<std::string>& instructions, 
 void ODFAEGCreator::processInst(std::string inst, unsigned int currentPos, BlocInfo& bloc) {
     std::vector<std::string> classes = Class::getClasses("");
     std::vector<std::string> allTypeNames;
-    for (unsigned int i = 0; i < primtiveTypes.size(); i++) {
-        allTypeNames.push_back(primtiveTypes[i]);
+    for (unsigned int i = 0; i < primitiveTypes.size(); i++) {
+        allTypeNames.push_back(primitiveTypes[i]);
     }
     for (unsigned int i = 0; i < classes.size(); i++) {
         allTypeNames.push_back(classes[i]);
@@ -7812,6 +7818,18 @@ void ODFAEGCreator::checkNamesToPropose(BlocInfo parentBloc, std::vector<std::st
     }
     for (unsigned int i = 0; i < parentBloc.subBlocs.size(); i++) {
         checkNamesToPropose(parentBloc.subBlocs[i], namesToPropose, strsearch, posInFile);
+    }
+}
+void ODFAEGCreator::onTextEntered(char caracter) {
+    if (!std::isalpha(caracter) && caracter != '.' && caracter != '-' && caracter != '>' && caracter != ':') {
+        strsearch = "";
+    } else {
+        strsearch += caracter;
+    }
+    unsigned int charPosInFile = tScriptEdit->getCharacterIndexAtCursorPos();
+    std::vector<std::string> completionNames = checkCompletionNames(strsearch, charPosInFile);
+    for (unsigned int i = 0; i < completionNames.size(); i++) {
+        std::cout<<"completion name "<<i<<" : "<<completionNames[i]<<std::endl;
     }
 }
 

@@ -219,6 +219,9 @@ namespace odfaeg {
                 textChanged = false;
                 return b;
             }
+            unsigned int TextArea::getCharacterIndexAtCursorPos() {
+                return text.findCharacterAt(cursorPos);
+            }
         }
     }
 }
