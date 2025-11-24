@@ -43,7 +43,7 @@ class ODFAEGCreator : public odfaeg::core::Application<ODFAEGCreator>,
                       public odfaeg::graphic::gui::ActionListener {
     public :
     struct BlocInfo {
-        std::map<std::string, std::string> blocInstances;
+        std::map<unsigned int, std::pair<std::string, std::string>> blocInstances;
         unsigned int blocStart, blocEnd;
         std::vector<BlocInfo> subBlocs;
     };
@@ -139,6 +139,7 @@ class ODFAEGCreator : public odfaeg::core::Application<ODFAEGCreator>,
         Serif
     };
     private :
+        std::string getNamespaceIn(std::string content, unsigned int posInFile);
         std::string getHeaderContent(std::string content, unsigned int posInFile);
         void findLastBracket(std::string& fileContent, unsigned int nbBlocks, int& p);
         void findComplVarsInBloc(std::string bloc, unsigned int nbBlocks);

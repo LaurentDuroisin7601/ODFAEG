@@ -7470,11 +7470,45 @@ void ODFAEGCreator::addBoundingVolumes(BoundingVolume* bv) {
         addBoundingVolumes(bv->getChildren()[i]);
     }
 }
+std::string ODFAEGCreator::getNamespaceIn(std::string fileContent, unsigned int posInFile) {
+    //check each namespaces englobing the class.
+    std::string namespc="";
+    int j= 0;
+    while(fileContent.find("namespace ") != std::string::npos) {
+        //Find the namespace pos.
+        unsigned int pos = fileContent.find("namespace ");
+        //Check the namespace name.
+        fileContent = fileContent.substr(pos+9, fileContent.size()-pos-9);
+
+        while(fileContent.size() > 0 && fileContent.at(0) == ' ') {
+            fileContent.erase(0, 1);
+        }
+        std::vector<std::string> parts = split(fileContent, " ");
+        //We add :: for each sub namespaces found.
+        if (j == 0)
+            namespc += parts[0];
+        else
+            namespc += "::"+parts[0];
+        //we must check if the namespace is declared before the class.
+        pos = fileContent.find_first_of("{");
+        fileContent = fileContent.substr(pos+1, fileContent.size()-pos-1);
+        pos = fileContent.find("namespace ");
+        unsigned int pos2 = posInFile;
+
+        //if there is no more namespace declaration after the class name we can check if the class is in the given namespace.
+        if (pos > pos2) {
+            //Erase eveything which is before the namespace declaration.
+            fileContent = fileContent.substr(pos2);
+        }
+        j++;
+    }
+    return namespc;
+}
 std::string ODFAEGCreator::getHeaderContent(std::string content, unsigned int posInFile) {
     //On recherche si le contenu est celui d'un fichier .h sinon on recherche le fichier .h correspondant.
     std::map<std::pair<std::string, std::string>, std::string>::iterator it;
     for (it = cppAppliContent.begin(); it != cppAppliContent.end(); it++) {
-        if (it->second == content);
+        if ((it->first.second.find(".h") || it->first.second.find(".hpp")) && it->second == content);
             return it->second;
     }
     //Extract class names :
@@ -7547,24 +7581,27 @@ void ODFAEGCreator::checkCompletionNames(std::string letters, unsigned int posIn
     std::string content = tScriptEdit->getText();
     //Contenu du fichier.h
     std::string header_content = getHeaderContent(content,posInFile);
+    std::string namespc = getNamespaceIn(content, posInFile);
     //On recherche dans quel bloc de quel fonction de quelle classe on se trouve.
     std::vector<std::string> classes = Class::getClassesFromMemory(header_content);
     std::string cpContent = content;
     for (unsigned int i = 0; i < classes.size(); i++) {
         Class classs = Class::getClassFromMemory(classes[i], "", header_content);
-        std::vector<MemberFunction> functions = classs.getMembersFunctions();
-        for (unsigned int f = 0; f < functions.size(); f++) {
-            int pos = cpContent.find(functions[f].getName());
-            std::string subContent = content.substr(pos, content.size()-pos);
-            pos = subContent.find("{");
-            int pos2 = 0;
-            std::string cSubContent = subContent;
-            findLastBracket(cSubContent, 0, pos2);
-            if (pos < posInFile && posInFile < pos2) {
-                std::string bloc = subContent.substr(pos, pos2-pos);
-                findComplVarsInBloc(bloc, posInFile);
-            } else {
-                cpContent.erase(0, pos2);
+        if (classs.getNamespace() == namespc) {
+            std::vector<MemberFunction> functions = classs.getMembersFunctions();
+            for (unsigned int f = 0; f < functions.size(); f++) {
+                int pos = cpContent.find(functions[f].getName());
+                std::string subContent = content.substr(pos, content.size()-pos);
+                pos = subContent.find("{");
+                int pos2 = 0;
+                std::string cSubContent = subContent;
+                findLastBracket(cSubContent, 0, pos2);
+                if (pos < posInFile && posInFile < pos2) {
+                    std::string bloc = subContent.substr(pos, pos2-pos);
+                    findComplVarsInBloc(bloc, posInFile);
+                } else {
+                    cpContent.erase(0, pos2);
+                }
             }
         }
     }
