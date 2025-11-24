@@ -139,6 +139,9 @@ class ODFAEGCreator : public odfaeg::core::Application<ODFAEGCreator>,
         Serif
     };
     private :
+        void processInst(std::string inst, BlocInfo& bloc);
+        void removeSpacesChars(std::string& str);
+        void findComplVarsInBloc(std::vector<std::string>& instructions, BlocInfo& parentBloc, unsigned int& currentInst, unsigned int& currentPos);
         std::string getNamespaceIn(std::string content, unsigned int posInFile);
         std::string getHeaderContent(std::string content, unsigned int posInFile);
         void findLastBracket(std::string& fileContent, unsigned int nbBlocks, int& p);

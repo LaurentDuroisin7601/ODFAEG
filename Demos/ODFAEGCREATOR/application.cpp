@@ -7577,6 +7577,15 @@ void ODFAEGCreator::findLastBracket(std::string& fileContent, unsigned int nbBlo
         }
     } while (nbBlocks > 0 || pos == std::string::npos || pos2 == std::string::npos);
 }
+void ODFAEGCreator::removeSpacesChars(std::string& str) {
+    //remove spaces and \n at the beginning and at the end.
+    while (str.size() > 0 && str.at(0) == ' ' || str.at(0) == '\n') {
+        str = str.erase(0, 1);
+    }
+    while (str.size() > 0 && str.at(str.size()-1) == ' ' || str.at(str.size()-1) == '\n') {
+        str = str.erase(str.size()-1, 1);
+    }
+}
 void ODFAEGCreator::checkCompletionNames(std::string letters, unsigned int posInFile) {
     std::string content = tScriptEdit->getText();
     //Contenu du fichier.h
@@ -7598,7 +7607,16 @@ void ODFAEGCreator::checkCompletionNames(std::string letters, unsigned int posIn
                 findLastBracket(cSubContent, 0, pos2);
                 if (pos < posInFile && posInFile < pos2) {
                     std::string bloc = subContent.substr(pos, pos2-pos);
-                    findComplVarsInBloc(bloc, posInFile);
+                    BlocInfo parentBloc;
+                    parentBloc.blocStart = pos;
+                    parentBloc.blocEnd = pos2;
+                    for (unsigned int a = 0; a < functions[f].getArgsTypes().size(); a++) {
+                        parentBloc.blocInstances.insert(std::make_pair(pos, std::make_pair(functions[f].getArgsTypes()[a], functions[f].getArgsNames()[a])));
+                    }
+                    std::vector<std::string> instructions = split(bloc, ";");
+                    unsigned int currentInst = 0;
+                    unsigned int currentPos = 0;
+                    findComplVarsInBloc(instructions, parentBloc, currentInst, currentPos);
                 } else {
                     cpContent.erase(0, pos2);
                 }
@@ -7606,6 +7624,28 @@ void ODFAEGCreator::checkCompletionNames(std::string letters, unsigned int posIn
         }
     }
 }
-void ODFAEGCreator::findComplVarsInBloc(std::string bloc, unsigned int posInFile) {
+void ODFAEGCreator::findComplVarsInBloc(std::vector<std::string>& instructions, BlocInfo& parentBloc, unsigned int& currentInst, unsigned int& currentPos) {
+    while (currentInst < instructions.size()) {
+        std::string inst = instructions[currentInst];
+        removeSpacesChars(inst);
+        int pos = inst.find("{");
+        int pos2 = inst.find("}");
+        BlocInfo subBloc;
+        if (pos != std::string::npos) {
+            inst.erase(0, 1);
+            subBloc.blocStart = currentPos;
+            findComplVarsInBloc(instructions, subBloc, currentInst, currentPos);
+        } else if (pos2 != std::string::npos) {
+            inst.erase(0, 1);
+            subBloc.blocEnd = currentPos;
+            parentBloc.subBlocs.push_back(subBloc);
+        } else {
+            processInst(inst, subBloc);
+            currentInst++;
+        }
+        currentPos += instructions[currentInst].size();
+    }
+}
+void ODFAEGCreator::processInst(std::string inst, BlocInfo& bloc) {
 }
 
