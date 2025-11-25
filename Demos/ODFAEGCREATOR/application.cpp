@@ -7585,7 +7585,7 @@ void ODFAEGCreator::findLastBracket(std::string& fileContent, unsigned int nbBlo
         }
         //On répète tant que l'on trouve des crochets et qu'ils sont dans le premier bloc de fileContent.
     } while (nbBlocks > 0 || pos == std::string::npos || pos2 == std::string::npos);
-    p = pos2;
+    p += pos2;
 }
 void ODFAEGCreator::removeSpacesChars(std::string& str) {
     //remove spaces and \n at the beginning and at the end.
