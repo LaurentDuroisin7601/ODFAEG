@@ -7610,13 +7610,14 @@ std::vector<std::string> ODFAEGCreator::checkCompletionNames(std::string letters
             for (unsigned int f = 0; f < functions.size(); f++) {
                 int pos = cpContent.find(functions[f].getName());
                 std::string subContent = cpContent.substr(pos, content.size()-pos);
-                pos = subContent.find("{");
                 posInFile -= pos;
+                pos = subContent.find("{");
+
                 int pos2 = 0;
                 std::string cSubContent = subContent;
                 findLastBracket(cSubContent, 0, pos2);
                 //Si on est entre les crochets d'ouverture et de fermeture de la fonction on est dans le bon bloc.
-                if (posInFile > 0 && posInFile < pos2) {
+                if (pos < posInFile && posInFile < pos2) {
                     std::string bloc = subContent.substr(pos, pos2-pos);
                     BlocInfo parentBloc;
                     parentBloc.blocStart = pos;
