@@ -7538,7 +7538,7 @@ std::string ODFAEGCreator::getHeaderContent(std::string content, unsigned int po
         int pos2 = 0;
         findLastBracket(subContent, 0, pos2);
         //If we are arrived at the class definition.
-        if (pos < posInFile && posInFile < pos2) {
+        if (posInFile > 0 && posInFile < pos2) {
             //Check where the class is defined.
             for (it = cppAppliContent.begin(); it != cppAppliContent.end(); it++) {
                 std::string subContent2 = it->second;
