@@ -134,7 +134,11 @@
             struct Attaquer {
                 template <typename... Components, typename T> requires CONTAINS<WeaponComponent, Components...>
                 void operator()(EntityId entityId, ComponentMapping& cmapping, T& params) {
-                    //On attaque l'ennemi.
+                    Entity* ennemi = std::get<0>(params);
+                    if (cmapping.getComponent<WeaponComponent>(entityId).has_value()) {
+                      WeaponComponent& wc = cmapping.getComponent<WeaponComponent>(entityId).value().get();
+                      //On attaque l'ennemi.
+                    }                        
                 }
                 template <typename... Components, typename T> requires NOTCONTAINS<WeaponComponent, Components...>
                 void operator()(EntityId entityId, ComponentMapping& cmapping, T& params) {
