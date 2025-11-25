@@ -7615,6 +7615,8 @@ std::vector<std::string> ODFAEGCreator::checkCompletionNames(std::string letters
                 int p = content.find(functions[f].getName());
                 std::string subContent = content.substr(p, content.size()-p);
                 int pos = subContent.find("{");
+                subContent = subContent.substr(pos, subContent.size() - pos);
+                cumPos = cumPos + p + pos;
 
 
                 int pos2 = 0;
@@ -7640,7 +7642,7 @@ std::vector<std::string> ODFAEGCreator::checkCompletionNames(std::string letters
                 }
                 //Contenu traité on l'efface.
                 content.erase(0, pos2);
-                cumPos = cumPos + p + pos + pos2;
+                cumPos += pos2;
             }
         }
     }
