@@ -7557,7 +7557,7 @@ std::string ODFAEGCreator::getHeaderContent(std::string content, unsigned int po
             }
         }
         content.erase(0, pos2);
-        cumPos += pos2;
+        cumPos = cumPos + pos + pos2;
     }
     return "";
 }
@@ -7611,15 +7611,16 @@ std::vector<std::string> ODFAEGCreator::checkCompletionNames(std::string letters
         if (classs.getNamespace() == namespc) {
             std::vector<MemberFunction> functions = classs.getMembersFunctions();
             for (unsigned int f = 0; f < functions.size(); f++) {
-                int pos = content.find(functions[f].getName());
-                std::string subContent = content.substr(pos, content.size()-pos);
-                pos = subContent.find("{");
+                int p = content.find(functions[f].getName());
+                std::string subContent = content.substr(p, content.size()-p);
+                int pos = subContent.find("{");
+
 
                 int pos2 = 0;
                 std::string cSubContent = subContent;
                 findLastBracket(cSubContent, 0, pos2);
                 //Si on est entre les crochets d'ouverture et de fermeture de la fonction on est dans le bon bloc.
-                if (cumPos+pos < posInFile && posInFile < cumPos + pos2) {
+                if (cumPos < posInFile && posInFile < cumPos + pos2) {
                     std::string bloc = subContent.substr(pos, pos2-pos);
                     BlocInfo parentBloc;
                     parentBloc.blocStart = cumPos + pos;
@@ -7638,7 +7639,7 @@ std::vector<std::string> ODFAEGCreator::checkCompletionNames(std::string letters
                 }
                 //Contenu traité on l'efface.
                 content.erase(0, pos2);
-                cumPos += pos2;
+                cumPos = cumPos + p + pos + pos2;
             }
         }
     }
