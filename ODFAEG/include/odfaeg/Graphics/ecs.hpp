@@ -186,8 +186,8 @@ namespace odfaeg {
                             }
                         }
                     }
-                    entity = entt::null;
                     removeComponents<0, Components...>(entity);
+                    entity = entt::null;
                 }
             }
             template <size_t I, typename... Components> requires NOTLASTELEM<I, Components...>

@@ -316,11 +316,57 @@ namespace odfaeg {
                         type = factory.updateTypes(type.second);
                     }
                 }
-                ComponentMapping& getComponentMapping();
                 /** \fn void onLoad()
                 *   \brief load the entities.
                 */
                 void onLoad();
+                template<typename T>
+                void addComponent(T component) {
+                    componentMapping.addComponent(enttID, component);
+                }
+                template<typename T>
+                std::optional<std::reference_wrapper<T>> getComponent() {
+                    return componentMapping.getComponent<T>(enttID);
+                }
+                template<typename T>
+                void removeComponent() {
+                    componentMapping.removeComponent<T>(enttID);
+                }
+                void addEnttChild(EntityId child) {
+                    componentMapping.addChild(enttID, child);
+                }
+                template <typename Archive, typename... Components>
+                void readEntities(Archive& ar) {
+                    std::vector<EntityId> entities;
+                    entities.push_back(enttID);
+                    componentMapping.readEntities(ar, entities);
+                }
+                template <typename Archive, typename... Components>
+                void writeEntities(Archive& ar) {
+                    std::vector<EntityId> entities;
+                    entities.push_back(enttID);
+                    componentMapping.writeEntities(ar, entities);
+                }
+                template <typename... Signature>
+                EntityId clone() {
+                    return componentMapping.clone<Signature...>(enttID);
+                }
+                template <typename... Signature>
+                EntityId merge(EntityId toMerge) {
+                    return componentMapping.merge<Signature...>(enttID, toMerge);
+                }
+                template <typename... Signature, typename System, typename... Params>
+                void apply(System& system, std::tuple<Params...>& params) {
+                    std::vector<EntityId> entities;
+                    entities.push_back(enttID);
+                    componentMapping.apply<Signature...>(system, entities, params);
+                }
+                template <typename... Signature, typename System, typename... Params, typename R>
+                void apply(System& system, std::tuple<Params...>& params, std::vector<R>& ret) {
+                    std::vector<EntityId> entities;
+                    entities.push_back(enttID);
+                    componentMapping.apply<Signature...>(system, entities, params, ret);
+                }
                 virtual void getCombinedTransform(TransformMatrix& tm);
                  /**
                   *\fn setShadowCenter(math::Vec3f shadowCenter)

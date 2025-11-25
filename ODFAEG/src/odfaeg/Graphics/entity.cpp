@@ -41,9 +41,7 @@ namespace odfaeg {
             selected = false;
             behaviour = nullptr;
         }
-        ComponentMapping& Entity::getComponentMapping() {
-            return componentMapping;
-        }
+
         EntityId Entity::getEnttID() {
             return enttID;
         }
