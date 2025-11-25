@@ -7628,7 +7628,7 @@ std::vector<std::string> ODFAEGCreator::checkCompletionNames(std::string letters
                     parentBloc.blocInstances.insert(std::make_pair(pos, std::make_pair(classs.getName(), "this")));
                     std::vector<std::string> instructions = split(bloc, ";");
                     unsigned int currentInst = 0;
-                    unsigned int currentPos = 0;
+                    unsigned int currentPos = pos;
                     //Recherche les informations sur les variables dans les blocs.
                     findComplVarsInBloc(instructions, parentBloc, currentInst, currentPos);
                     //Recherche des noms que l'on peut proposer pour la completion.
