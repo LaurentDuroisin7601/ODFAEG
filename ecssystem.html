@@ -88,7 +88,7 @@
             Entity* file = new File();
             folder->addComponent(datasFolder);
             file->addComponent(datasFile);
-            folder->addEnttChild(file->EnttID());
+            folder->addEnttChild(file->getEnttID());
       </code></pre>
           Il suffit de récupérer le handle de l'entité enfant et d'appeler la méthode addEnttChild et de lui passer le handle de l'entité enfant.<br/>
           Ceci permet par exemple, si vous voulez appliquer des systèmes sur les entités parents et enfants, que le système soit appliqué sur les deux entités à la fois sans<br/>
