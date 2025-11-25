@@ -7528,17 +7528,18 @@ std::string ODFAEGCreator::getHeaderContent(std::string content, unsigned int po
             return it->second;
     }
     //Extract class names :
+    unsigned int cumPos = 0;
     std::vector<std::string> parts = split(content, "::");
     for (unsigned int i = 0; i < parts.size(); i++) {
 
         std::vector<std::string> names = split(parts[i], " ");
         int pos = content.find(parts[i]);
+
         std::string subContent = content.substr(pos, content.size()-pos);
-        posInFile -= pos;
         int pos2 = 0;
         findLastBracket(subContent, 0, pos2);
         //If we are arrived at the class definition.
-        if (posInFile > 0 && posInFile < pos2) {
+        if (cumPos < posInFile && posInFile < cumPos + pos2) {
             //Check where the class is defined.
             for (it = cppAppliContent.begin(); it != cppAppliContent.end(); it++) {
                 std::string subContent2 = it->second;
@@ -7555,6 +7556,8 @@ std::string ODFAEGCreator::getHeaderContent(std::string content, unsigned int po
                 }
             }
         }
+        content.erase(0, pos2);
+        cumPos += pos2;
     }
     return "";
 }
@@ -7601,43 +7604,41 @@ std::vector<std::string> ODFAEGCreator::checkCompletionNames(std::string letters
     std::string namespc = getNamespaceIn(content, posInFile);
     //On recherche dans quel bloc de quelle fonction de quelle classe on se trouve.
     std::vector<std::string> classes = Class::getClassesFromMemory(header_content);
-    std::string cpContent = content;
+    unsigned int cumPos = 0;
     for (unsigned int i = 0; i < classes.size(); i++) {
         Class classs = Class::getClassFromMemory(classes[i], "", header_content);
         //Ok si la classe est dans le même namespace que dans le fichier.
         if (classs.getNamespace() == namespc) {
             std::vector<MemberFunction> functions = classs.getMembersFunctions();
             for (unsigned int f = 0; f < functions.size(); f++) {
-                int pos = cpContent.find(functions[f].getName());
-                std::string subContent = cpContent.substr(pos, content.size()-pos);
-                posInFile -= pos;
+                int pos = content.find(functions[f].getName());
+                std::string subContent = content.substr(pos, content.size()-pos);
                 pos = subContent.find("{");
 
                 int pos2 = 0;
                 std::string cSubContent = subContent;
                 findLastBracket(cSubContent, 0, pos2);
                 //Si on est entre les crochets d'ouverture et de fermeture de la fonction on est dans le bon bloc.
-                if (pos < posInFile && posInFile < pos2) {
+                if (cumPos+pos < posInFile && posInFile < cumPos + pos2) {
                     std::string bloc = subContent.substr(pos, pos2-pos);
                     BlocInfo parentBloc;
-                    parentBloc.blocStart = pos;
-                    parentBloc.blocEnd = pos2;
+                    parentBloc.blocStart = cumPos + pos;
+                    parentBloc.blocEnd = cumPos + pos2;
                     for (unsigned int a = 0; a < functions[f].getArgsTypes().size(); a++) {
                         parentBloc.blocInstances.insert(std::make_pair(pos, std::make_pair(functions[f].getArgsTypes()[a], functions[f].getArgsNames()[a])));
                     }
                     parentBloc.blocInstances.insert(std::make_pair(pos, std::make_pair(classs.getName(), "this")));
                     std::vector<std::string> instructions = split(bloc, ";");
                     unsigned int currentInst = 0;
-                    unsigned int currentPos = pos;
+                    unsigned int currentPos = cumPos + pos;
                     //Recherche les informations sur les variables dans les blocs.
                     findComplVarsInBloc(instructions, parentBloc, currentInst, currentPos);
                     //Recherche des noms que l'on peut proposer pour la completion.
                     checkNamesToPropose(parentBloc, namesToPropose, letters, posInFile);
-                } else {
-                    //Contenu traité on l'efface.
-                    cpContent.erase(0, pos2);
-                    posInFile -= pos2;
                 }
+                //Contenu traité on l'efface.
+                content.erase(0, pos2);
+                cumPos += pos2;
             }
         }
     }
