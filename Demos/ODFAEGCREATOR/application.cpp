@@ -7624,7 +7624,7 @@ std::vector<std::string> ODFAEGCreator::checkCompletionNames(std::string letters
                 if (cumPos < posInFile && posInFile < cumPos + pos2) {
                     std::string bloc = subContent.substr(pos, pos2-pos);
                     BlocInfo parentBloc;
-                    parentBloc.blocStart = cumPos + pos;
+                    parentBloc.blocStart = cumPos;
                     parentBloc.blocEnd = cumPos + pos2;
                     for (unsigned int a = 0; a < functions[f].getArgsTypes().size(); a++) {
                         parentBloc.blocInstances.insert(std::make_pair(pos, std::make_pair(functions[f].getArgsTypes()[a], functions[f].getArgsNames()[a])));
