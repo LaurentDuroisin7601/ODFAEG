@@ -348,7 +348,7 @@ namespace odfaeg {
                     componentMapping.writeEntities(ar, entities);
                 }
                 template <typename... Signature>
-                EntityId clone() {
+                EntityId cloneEntt() {
                     return componentMapping.clone<Signature...>(enttID);
                 }
                 template <typename... Signature>
