@@ -1,1 +1,156 @@
-
+<!doctype html>
+<!-- The Time Machine GitHub pages theme was designed and developed by Jon Rohan, on Feb 7, 2012. -->
+<!-- Follow him for fun. http://twitter.com/jonrohan. Tail his code on https://github.com/jonrohan -->
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="stylesheet" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" href="stylesheets/github-dark.css">
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script type="text/javascript" src="javascripts/script.js"></script>
+    <title>Odfaeg</title>
+    <meta name="description" content="ODFAEG">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+  </head>
+  <body>
+  <div class="wrapper">
+  <header>
+    <h1 class="title">LastProject : ODFAEG</h1>
+    <p class="tagline">Les composants de rendu : </p>
+  </header>
+  <div id="container">
+        <div id="main" role="main">
+          <div class="download-bar">
+            <div class="inner">
+              <a href="https://github.com/LaurentDuroisin/ODFAEG/tarball/master" class="download-button tar"><span>Download</span></a>
+              <a href="https://github.com/LaurentDuroisin/ODFAEG/zipball/master" class="download-button zip"><span>Download</span></a>
+              <a href="menu">Documentation</a>
+              <a href="http://odfaeg.yourboardpro.com/index.php">Forum</a>
+              <a href="https://github.com/LaurentDuroisin/ODFAEG" class="code">View Odfaeg on GitHub</a>
+              <a href="cv">CV</a>
+              <a href="tfe">Travail de fin d'études</a>
+            </div>
+          <span class="blc"></span><span class="trc"></span>
+        </div>
+          <article class="markdown-body">
+  <body>
+    <h1>La néssecité d'avoir un système ECS par rapport à l'héritage.</h1>
+    <p>Le problème de l'héritage c'est que ça peut devenir très lourd dans le cas de jeux par exemple,<br/>
+      ou vous avez différents objets ou encore différents sorts, et chaque objets ou sorts affectent une statisitque<br/>
+      différente. Avec l'héritage il faudrait un nombre de classes filles qui soit égale aux nombres d'effets différents<br/>
+      que peuvent fournir les sorts ou les objets. (Stats différentes, etc...) ou encore faire un test avec le nom de l'objet<br/>
+      ou du sort et appliquer un effet différent en fonction du nom ce qui serait trop lourd à mettre en place. C'est là que le système ECS (Entity,Component,System)  de ODFAEG intervient.<br/>
+      Le système ECS de ODFAEG permet de pouvoir attacher à chaque entité, des composants. De ce fait vous pouvez bénéficier à la fois des bénéfices de l'héritage (redéfinition de comportements) et<br/>
+      du système ECS car ODFAEG n'est pas purement ECS car certains jeux ne nécessitent pas obligatoiremen d'avoir un système ECS.(Jeux d'échec, ...)<br/>
+      
+      D'ailleurs ODFAEG est basé sur la SFML à la base pour créer des jeux simples donc tout ce qui est transformable et les sommets<br/>
+      sont définits à l'aide de l'héritage mais pour certains jeux plus complexe il est nécessaire de rajouter la couche ECS.<br/>
+      C'est la classe Entity qui permet de faire le pont entre l'héritage et le monde ECS mais attention de ne pas dupliquer les données<br/>
+      c'est à dire ajouter un composant HP par exemple à une entité hors que vous avez déclaré une variable membre de type hp pour cette entité.<br/>      
+    </p> 
+    <h1>Comment utilisé le système ECS de ODFAEG.</h1>
+    Grâce aux handle sur l'EntityId dans la classe Entity et à l'objet componentMapping vous pouvez facilement manipuler des composants.
+    <h2>Ajouter des composants aux entités : </h2>
+    Imaginons que vous ayez une entité item, vous souhaîtez lui ajouter une stat (HP par exemple) et que vous ayez définit un composant<br/>
+    HPStat comme ceci :
+    <pre><code>
+      struct HPStat {
+          int hp;
+      };
+    </code></pre>
+    Pour ajouter le composant HPStat à l'objet item il suffit d'appeler la méthode addComponent : 
+    <pre><code>
+      Entity* potion = new Item("Hp potion");
+      HPStat hpToResotre;
+      hpToRestore.hp = 100;
+      potion->addComponent(hpToResotre);
+    </code></pre>
+    <h2>Récupérer des composants : </h2>
+    Pour récupérer des componsants vous devez utiliser la méthode getComponent attention que celle-ci peut ne pas renvoyé de composant<br/>
+    si cette entité ne possède pas de composant de ce type.<br/>
+    Voici un exemple qui varifie si l'entité potion possède un composant HPStat et affiche le nombre d'hp à restaurer:
+    <pre><code>
+      if (potion->getComponent<HPStat>().has_value()) {
+          std::cout<<"hp to restore : "<<potion->getComponent<HPStat>().value().get().hp<<std::endl;
+      }
+    </code></pre>
+    J'utilise value pour extraire l'objet qui contient la valeur du composant et get pour extraire la référence vers le composant.<br/>
+    <h2>Supprimer un composant</h2>
+    Pour ce faire il faut appeler la méthode removeComponent comme ceci :
+    <code><pre>
+      potion->removeComponent<HPStat>();
+    </pre></code>
+      <h2>Ajouter une entité enfant.</h2>
+            Tout comme les entités ODFAEG, les entités ECS peuvent avoir des entités enfants, par exemple :
+      <pre><code>
+            Entity* folder = new Folder();
+            Entity* file = new File();
+            folder->addComponent(datasFolder);
+            file->addComponent(datasFile);
+            folder->addEnttChild(file->EnttID());
+      </code></pre>
+          Il suffit de récupérer le handle de l'entité enfant et d'appeler la méthode addEnttChild et de lui passer le handle de l'entité enfant.<br/>
+          Ceci permet par exemple, si vous voulez appliquer des systèmes sur les entités parents et enfants, que le système soit appliqué sur les deux entités à la fois sans<br/>
+          devoir le faire exmplicitement!<br/>
+      <h2>Sérializer des composants.</h2>
+            Tout comme les entités, les composants peuvent être sérialisés, pour cela il faut, comme pour les entités, définir une méthode<br/>
+            serialize avec comme paramètre template l'Archive dans la classe de votre composant. (voir le chapitre sur la sérialisation)<br/>
+            Pour sérializer des composants d'une entité, il faut appeler la méthode writeEntities en lui passant comme paramètre template, <br>
+            la liste des composants à sérialiser (cela sérialize aussi les composants enfants) : 
+            <pre><code>
+              folder->writeEntities<Data>(outputArchive);
+            </code></pre>
+            Et pour les lires, il suffit d'appeler la méthode readEntities
+            <pre><code>
+              folder->readEntities<Data>(inputArchive);
+            </code></pre>
+            Attention que la lecture et l'écriture sont symétriques vous devez donc, lire les entités dans le même order que vous les avez écrites.
+            <h2>Clôner et fusionner des composants.</h2>
+            Comme pour les entités vous pouvez clôner des composants par exemple :
+            <pre><code>
+              Entity* clonedFolder = folder->clone();
+              clonedFolder->setEnttID(folder->cloneEntt<Data>());
+            </code></pre>
+            Il suffit d'appeler la méthode cloneEntt et de lui passez la liste des composants à clôner et de passer le handle retourné par la méthode cloneEntt à l'entité clônée.<br/>
+            Et pour la fusion :
+            <pre><code>
+              Entity* mergedFolder = new Folder();
+              mergedFolder->setEnttID(gitFolder.merge<Data>(localFolder));
+            </code></pre>
+            Comme vous pouvez le constatez, ceci est vraiment pratique si vous souhaitez, fusionner deux répertoires comme lorsque vous<br/>
+            pusher votre travail depuis votre PC sur un dépôt git par exemple.<br/>
+            <h2>Appliquer un système aux entités.</h2>
+            Pour modifier des composants on utilise des systèmes que l'on applique sur les composants, vous devez définir les systèmes comme ceci : <br>
+            <pre><code>
+            template <typename T, typename... Components>
+            concept CONTAINS = requires {
+                typename std::enable_if_t<contains<T, Components...>::value>;
+            };
+            template <typename T, typename... Components>
+            concept NOTCONTAINS = requires {
+                typename std::enable_if_t<!contains<T, Components...>::value>;
+            };  
+            struct Attaquer {
+                template <typename... Components, typename T> requires CONTAINS<WeaponComponent, Components...>
+                void operator()(EntityId entityId, ComponentMapping& cmapping, T& params) {
+                    //On attaque l'ennemi.
+                }
+                template <typename... Components, typename T> requires NOTCONTAINS<WeaponComponent, Components...>
+                void operator()(EntityId entityId, ComponentMapping& cmapping, T& params) {
+                   //On n'attaque pas l'ennemi.
+                }
+            };
+            </code></pre>
+            Pour créer des systèmes, il faut redéfinir l'opérateur() et celui-ci prend 3 paramètres : l'entité courante pour lequel le système<br/>
+            est appelé, component mapping qui est l'objet utilisé pour récupérer les composants de l'entité courante et params qui<br>
+            est un tuple pouvant contenir des paramètres supplémentaires à passer au système lors de l'appel à celui-ci.<br/>
+            Voilà maintenant il ne reste plus qu'à appeler notre système sur l'entité comme ceci :
+            <pre><code>
+            std::tuple<Entity*> ennemies = std::make_tuple(ennemi);
+            Attaquer attaquer;
+            hero.apply<WeaponComponent>(attaquer, ennemies);
+            </code></pre>
+            Voilà c'est tout pour ce chapitre!
+  </body>
+  </html>
