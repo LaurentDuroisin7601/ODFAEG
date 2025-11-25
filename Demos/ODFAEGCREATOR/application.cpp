@@ -7535,9 +7535,11 @@ std::string ODFAEGCreator::getHeaderContent(std::string content, unsigned int po
         std::vector<std::string> names = split(parts[i], " ");
         int pos = content.find(parts[i]);
 
-        std::string subContent = content.substr(pos, content.size()-pos);
+        std::string content = content.substr(pos, content.size()-pos);
+        cumPos += pos;
         int pos2 = 0;
-        findLastBracket(subContent, 0, pos2);
+        std::string cpContent = content;
+        findLastBracket(cpContent, 0, pos2);
         //If we are arrived at the class definition.
         if (cumPos < posInFile && posInFile < cumPos + pos2) {
             //Check where the class is defined.
@@ -7557,7 +7559,7 @@ std::string ODFAEGCreator::getHeaderContent(std::string content, unsigned int po
             }
         }
         content.erase(0, pos2);
-        cumPos = cumPos + pos + pos2;
+        cumPos += pos2;
     }
     return "";
 }
