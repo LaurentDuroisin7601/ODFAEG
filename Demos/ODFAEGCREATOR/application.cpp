@@ -7534,32 +7534,34 @@ std::string ODFAEGCreator::getHeaderContent(std::string content, unsigned int po
 
         std::vector<std::string> names = split(parts[i], " ");
         int pos = content.find(parts[i]);
+        if (pos != std::string::npos) {
 
-        std::string content = content.substr(pos, content.size()-pos);
-        cumPos += pos;
-        int pos2 = 0;
-        std::string cpContent = content;
-        findLastBracket(cpContent, 0, pos2);
-        //If we are arrived at the class definition.
-        if (cumPos < posInFile && posInFile < cumPos + pos2) {
-            //Check where the class is defined.
-            for (it = cppAppliContent.begin(); it != cppAppliContent.end(); it++) {
-                std::string subContent2 = it->second;
-                int posC = subContent2.find("class");
-                while (posC != std::string::npos) {
-                    int pos2 = subContent2.find(names[names.size()-1]);
-                    int pos3 = subContent2.find("{");
-                    if (pos2 != std::string::npos && pos3 != std::string::npos) {
-                        if (posC < pos2 && pos2 < pos3)
-                            return it->second;
+            std::string content = content.substr(pos, content.size()-pos);
+            cumPos += pos;
+            int pos2 = 0;
+            std::string cpContent = content;
+            findLastBracket(cpContent, 0, pos2);
+            //If we are arrived at the class definition.
+            if (cumPos < posInFile && posInFile < cumPos + pos2) {
+                //Check where the class is defined.
+                for (it = cppAppliContent.begin(); it != cppAppliContent.end(); it++) {
+                    std::string subContent2 = it->second;
+                    int posC = subContent2.find("class");
+                    while (posC != std::string::npos) {
+                        int pos2 = subContent2.find(names[names.size()-1]);
+                        int pos3 = subContent2.find("{");
+                        if (pos2 != std::string::npos && pos3 != std::string::npos) {
+                            if (posC < pos2 && pos2 < pos3)
+                                return it->second;
+                        }
+                        subContent2.erase(0, pos);
+                        posC = subContent2.find("class");
                     }
-                    subContent2.erase(0, pos);
-                    posC = subContent2.find("class");
                 }
             }
+            content.erase(0, pos2);
+            cumPos += pos2;
         }
-        content.erase(0, pos2);
-        cumPos += pos2;
     }
     return "";
 }
