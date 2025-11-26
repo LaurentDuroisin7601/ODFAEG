@@ -20,13 +20,10 @@ namespace odfaeg {
                     rect.setFillColor(background);
             }
             void MenuBar::onDraw(RenderTarget& target, RenderStates states) {
-                #ifdef VULKAN
-                target.beginRecordCommandBuffers();
-                #endif // VULKAN
                 target.draw(rect);
                 #ifdef VULKAN
                 target.submit(false);
-                #endif // VULKAN
+                #endif
             }
             void MenuBar::onEventPushed(window::IEvent event, RenderWindow& window) {
                 if (&window == &getWindow()) {

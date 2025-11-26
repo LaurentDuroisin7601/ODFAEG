@@ -440,6 +440,13 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < va.getVertexCount(); i++) {
                     math::Vec3f t = shadowProjMatrix.transform(va[i].position);
                     Vertex v (t, va[i].color, va[i].texCoords);
+                    v.normal = va[i].normal;
+                    for (unsigned int b = 0; b < MAX_BONE_INFLUENCE; b++) {
+                        v.m_BoneIDs[b] = va[i].m_BoneIDs[b];
+                        v.m_Weights[b] = va[i].m_Weights[b];
+                    }
+                    v.entityId = va[i].entityId;
+                    v.particleId = va[i].particleId;
                     vertices.append(v);
                 }
                 for (unsigned int i = 0; i < va.getIndexes().size(); i++) {

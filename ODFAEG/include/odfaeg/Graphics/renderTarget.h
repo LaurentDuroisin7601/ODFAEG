@@ -53,10 +53,23 @@ namespace odfaeg {
         #ifdef VULKAN
         class ODFAEG_GRAPHICS_API RenderTarget {
             public :
-            RenderTarget(window::Device& vkDevice);
+            struct alignas(16) GLMatrix4f {
+                float data[16]; // row-major ou column-major, selon ton convention
+            };
+            struct DrawableData {
+                GLMatrix4f projMatrix;
+                GLMatrix4f viewMatrix;
+                GLMatrix4f modelMatrix;
+                math::Vec2f uvScale;
+                math::Vec2f uvOffset;
+                unsigned int textureID;
+                unsigned int pad[3];
+            };
+            RenderTarget(window::Device& vkDevice, bool useSecondaryCmds = false);
             virtual ~RenderTarget ();
             void createDescriptorsAndPipelines();
             virtual void clear(const Color& color = Color(0, 0, 0, 255)) = 0;
+
             void clearDepth();
             void setView(View view);
 
@@ -228,13 +241,15 @@ namespace odfaeg {
             void updateCommandBuffers(VkCommandPool commandPool, std::vector<VkCommandBuffer> commandBuffers);
             void createDescriptorSetLayout(RenderStates states);
             void createDescriptorPool(RenderStates states);
-            void createDescriptorSets(RenderStates states);
+            void allocateDescriptorSets(RenderStates states);
+            void updateDescriptorSets(RenderStates states);
             unsigned int getId();
             static unsigned int getNbRenderTargets();
             void enableStencilTest(bool enabled);
             void enableDepthTest(bool enable);
             void beginRecordCommandBuffers();
             void beginRecordSecondaryCommandBuffers();
+            void endRecordCommandBuffers();
             void endRecordSecondaryCommandBuffers();
             void executeSecondaryCommandBuffers();
             void beginRenderPass();
@@ -247,12 +262,13 @@ namespace odfaeg {
                         std::vector<uint64_t> signalValues = std::vector<uint64_t>(),
                         std::vector<uint64_t> waitValues = std::vector<uint64_t>(), std::vector<VkFence> fences = std::vector<VkFence>()) = 0;
             ViewportMatrix getViewportMatrix(View* view);
-            void setUsePushDescriptorSets(bool pushDescriptorSetEnable);
             void endRenderPass();
             std::array<VkRect2D, 2>& getScissors();
 
         protected :
-
+            virtual bool isFirstSubmit() = 0;
+            bool firstDraw=true;
+            virtual void registerClearCommands(const Color& color = Color(0, 0, 0, 255))=0;
             void initialize();
 
             window::Device& vkDevice;
@@ -265,15 +281,15 @@ namespace odfaeg {
 
             Color clearColor;
             bool depthTestEnabled, stencilTestEnabled;
-            struct alignas(16) GLMatrix4f {
-                float data[16]; // row-major ou column-major, selon ton convention
-            };
+
             std::vector<bool> commandsOnRecordedState;
             std::vector<bool> secondaryCommandsOnRecordedState;
             bool useSecondaryCmds;
+            std::vector<DrawableData> drawableData;
+            std::vector<VertexBuffer> vertexBuffer;
+            std::array<VkBuffer, MAX_FRAMES_IN_FLIGHT> drawableDataSSBO={}, stagingDrawableData={};
+            std::array<VkDeviceMemory, MAX_FRAMES_IN_FLIGHT> drawableDataSSBOMemory={}, stagingDrawableDataMemory={};
         private :
-            std::array<VkRect2D, 2> scissors;
-            std::array<VkViewport, 2> viewports;
             GLMatrix4f toVulkanMatrix(const math::Matrix4f& mat) {
                 GLMatrix4f flat;
                 for (int col = 0; col < 4; ++col)
@@ -281,25 +297,27 @@ namespace odfaeg {
                         flat.data[col * 4 + row] = mat[col][row];
                 return flat;
             }
+            std::array<unsigned int, MAX_FRAMES_IN_FLIGHT> maxDrawableDataSize={};
+            std::array<VkRect2D, 2> scissors;
+            std::array<VkViewport, 2> viewports;
+
+            uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+            void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
             void applyViewportAndScissor(VkCommandBuffer cmd);
             PFN_vkCmdPushDescriptorSetKHR vkCmdPushDescriptorSetKHR{ VK_NULL_HANDLE };
-            void createUniformBuffers();
-            void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
-            uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
-            struct UniformBufferObject {
-                GLMatrix4f model;
-                GLMatrix4f view;
-                GLMatrix4f proj;
-                GLMatrix4f textureMatrix;
-            };
-            void updateUniformBuffer(uint32_t imageIndex, UniformBufferObject ubo);
+
+
+            void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size, VkCommandBuffer cmd);
+
+
 
             void createCommandPool();
             void createCommandBuffers();
+
             void recordCommandBuffers(VkCommandBuffer cmd, VertexBuffer& vb, PrimitiveType primitiveType, RenderStates states);
             View        m_defaultView; ///< Default view
             View        m_view;  ///< Current view
-            Shader defaultShader, defaultShader2;
+            Shader defaultShader;
             std::vector<std::vector<std::vector<VkPipelineLayoutCreateInfo>>> pipelineLayoutInfo;
             std::vector<std::vector<std::vector<VkPipelineDepthStencilStateCreateInfo>>> depthStencil;
             std::vector<std::vector<std::vector<VkPipelineLayout>>> pipelineLayout;
@@ -307,9 +325,7 @@ namespace odfaeg {
             VkCommandPool commandPool, secondaryCommandPool;
             std::vector<VkCommandBuffer> commandBuffers;
             std::vector<VkCommandBuffer> secondaryCommandBuffers;
-            std::vector<VertexBuffer> vertexBuffer;
-            std::vector<VkBuffer> uniformBuffers;
-            std::vector<VkDeviceMemory> uniformBuffersMemory;
+
             std::vector<VkDescriptorPool> descriptorPool;
             std::vector<VkDescriptorSetLayout> descriptorSetLayout;
             std::vector<std::vector<VkDescriptorSet>> descriptorSets;
@@ -317,7 +333,7 @@ namespace odfaeg {
             unsigned int id;
             static unsigned int nbRenderTargets;
             Texture* depthTexture;
-            bool usePushDescriptorSets;
+            static const unsigned int NB_DEPTH_STENCIL = 2;
         };
         #else
         ////////////////////////////////////////////////////////////
@@ -614,6 +630,7 @@ namespace odfaeg {
 
             void setEnableCubeMap(bool enableCubeMap);
         protected :
+
             void setVersionMajor(unsigned int version);
             void setVersionMinor(unsigned int version);
             ////////////////////////////////////////////////////////////

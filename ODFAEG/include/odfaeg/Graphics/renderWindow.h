@@ -58,6 +58,7 @@ namespace odfaeg
             window::Device& getDevice();
             void clear(const Color& color = Color(0, 0, 0, 255));
             const uint32_t& getImageIndex();
+
             virtual ~RenderWindow();
             void submit(bool lastSubmit = false, std::vector<VkSemaphore> signalSemaphores = std::vector<VkSemaphore>(),
                         std::vector<VkSemaphore> waitSemaphores = std::vector<VkSemaphore>(), std::vector<VkPipelineStageFlags> waitStages = std::vector<VkPipelineStageFlags>(),
@@ -67,6 +68,8 @@ namespace odfaeg
             std::vector<VkImage> getSwapchainImages();
 
         protected:
+            bool isFirstSubmit();
+            void registerClearCommands(const Color& color = Color(0, 0, 0, 255));
             VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
             VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
             VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);

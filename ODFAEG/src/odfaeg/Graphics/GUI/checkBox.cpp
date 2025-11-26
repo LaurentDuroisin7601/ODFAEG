@@ -25,13 +25,10 @@ namespace odfaeg {
             void CheckBox::onDraw(RenderTarget& target, RenderStates states) {
                 rect.setPosition(getPosition());
                 rect.setSize(getSize());
-                #ifdef VULKAN
-                target.beginRecordCommandBuffers();
-                #endif // VULKAN
                 target.draw(rect);
                 #ifdef VULKAN
                 target.submit(false);
-                #endif // VULKAN
+                #endif
             }
             void CheckBox::setBackgroundColor(Color color)  {
                 backgroundColor = color;

@@ -23,18 +23,11 @@ namespace odfaeg {
                 bar.setFillColor(barColor);
             }
             void ProgressBar::onDraw(RenderTarget& target, RenderStates states) {
-                #ifdef VULKAN
-                target.beginRecordCommandBuffers();
-                #endif
                 target.draw(bar);
-                #ifdef VULKAN
-                target.submit(false);
-                target.beginRecordCommandBuffers();
-                #endif // VULKAN
                 target.draw(text);
                 #ifdef VULKAN
                 target.submit(false);
-                #endif // VULKAN
+                #endif
             }
             void ProgressBar::setMaximum(int maxi) {
                 text.setString(core::conversionIntString(value)+"/"+core::conversionIntString(maxi));

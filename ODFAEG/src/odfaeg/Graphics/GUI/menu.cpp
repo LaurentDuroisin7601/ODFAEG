@@ -43,24 +43,16 @@ namespace odfaeg {
                 }
             }
             void Menu::onDraw(RenderTarget& target, RenderStates states) {
-                #ifdef VULKAN
-                target.beginRecordCommandBuffers();
-                #endif // VULKAN
                 rect.setPosition(getPosition());
                 rect.setSize(getSize());
                 text.setPosition(getPosition());
                 text.setSize(getSize());
                 target.draw(rect);
-                #ifdef VULKAN
-                target.submit(false);
-                #endif // VULKAN
-                #ifdef VULKAN
-                target.beginRecordCommandBuffers();
-                #endif // VULKAN
+                text.setPosition(math::Vec3f(text.getPosition().x(), text.getPosition().y(),text.getPosition().z()+1));
                 target.draw(text);
                 #ifdef VULKAN
                 target.submit(false);
-                #endif // VULKAN
+                #endif
             }
             void Menu::onClick() {
                 if (isMouseOnMenu()) {

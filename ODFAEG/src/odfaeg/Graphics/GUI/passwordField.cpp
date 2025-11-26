@@ -77,23 +77,17 @@ namespace odfaeg {
                 return tmp_text;
             }
             void PasswordField::onDraw(RenderTarget& target, RenderStates states) {
-                #ifdef VULKAN
-                target.beginRecordCommandBuffers();
-                #endif // VULKAN
+
                 VertexArray va(Lines);
                 va.append(Vertex(math::Vec3f(cursorPos.x(), cursorPos.y(), 0), Color::Black));
                 va.append(Vertex(math::Vec3f(cursorPos.x(), cursorPos.y() + text.getCharacterSize(), 0), Color::Black));
                 rect.setPosition(getPosition());
                 rect.setSize(getSize());
                 target.draw(rect);
-                #ifdef VULKAN
-                target.submit(false);
-                target.beginRecordCommandBuffers();
-                #endif
                 target.draw(va);
                 #ifdef VULKAN
                 target.submit(false);
-                #endif // VULKAN
+                #endif
             }
             bool PasswordField::isMouseInTextArea() {
                 physic::BoundingBox bb = getGlobalBounds();

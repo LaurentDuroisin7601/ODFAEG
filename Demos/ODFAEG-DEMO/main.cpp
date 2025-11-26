@@ -1073,7 +1073,7 @@ int main(int argc, char *argv[]) {
     FastDelegate<void> fd(&f, std::move(ptr));*/
 
 
-    VkSettup instance;
+    /*VkSettup instance;
     Device device(instance);
 
     RenderWindow window(VideoMode(800, 600), "test", device, Style::Default, ContextSettings(0, 0, 4, 4, 6));
@@ -1081,14 +1081,40 @@ int main(int argc, char *argv[]) {
     font.loadFromFile("fonts/FreeSerif.ttf");
     Text text("ODFAEG", font, 30);
     text.setFillColor(Color::Red);
+    text.move(Vec3f(0, 0, 200));
+
+    Texture texture(device);
+    texture.loadFromFile("tilesets/eau.png");
+    Sprite sprite(texture, Vec3f(10, 10, 0), Vec3f(100, 50, 0), IntRect(0, 0, 100, 50));
+    RectangleShape rect(Vec3f(50, 50, 0));
+    rect.move(Vec3f(0, 0, 100));
+    rect.setOutlineThickness(1);
+    rect.setOutlineColor(Color::Red);
+    RenderTexture rt(device);
+    rt.create(800, 600);
+
     window.createDescriptorsAndPipelines();
+    rt.createDescriptorsAndPipelines();
+    rt.enableDepthTest(true);
+
+
+
 
     //RenderComponentManager rcm(window);
 
     while(window.isOpen()) {
         window.clear(Color::Black);
-        window.draw(text);
+        rt.clear();
+        rt.draw(sprite);
+        rt.draw(rect);
+        rt.draw(text);
+        rt.submit(true);
+        Sprite sprite2(rt.getTexture(rt.getCurrentFrame()), Vec3f(0, 0, 0), Vec3f(800, 600, 0), IntRect(0, 0, 800, 600));
+        sprite2.move(Vec3f(-400, -300, 0));
+
+        window.draw(sprite2);
         window.submit(true);
+        rt.display();
         window.display();
         odfaeg::window::IEvent event;
         while (window.pollEvent(event))
@@ -1100,10 +1126,10 @@ int main(int argc, char *argv[]) {
 
         }
 
-    }
+    }*/
 
-    /*MyAppli app(VideoMode(800, 600), "Test odfaeg");
-    return app.exec();*/
+    MyAppli app(VideoMode(800, 600), "Test odfaeg");
+    return app.exec();
 }
 
 

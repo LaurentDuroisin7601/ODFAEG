@@ -30,20 +30,14 @@ namespace odfaeg {
             void Button::onDraw(RenderTarget& target, RenderStates states) {
                 text.setPosition(getPosition());
                 rect.setPosition(getPosition());
+                text.setPosition(math::Vec3f(text.getPosition().x(), text.getPosition().y(),text.getPosition().z()+1));
                 //text.setSize(getSize());
                 rect.setSize(getSize());
-                #ifdef VULKAN
-                target.beginRecordCommandBuffers();
-                #endif // VULKAN
                 target.draw(rect);
-                #ifdef VULKAN
-                target.submit(false);
-                target.beginRecordCommandBuffers();
-                #endif // VULKAN
                 target.draw(text);
                 #ifdef VULKAN
                 target.submit(false);
-                #endif // VULKAN
+                #endif
             }
             std::string Button::getText() {
                 return text.getString();

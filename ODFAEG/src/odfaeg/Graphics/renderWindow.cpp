@@ -1,5 +1,6 @@
 #include "../../../include/odfaeg/openGL.hpp"
 #include "../../../include/odfaeg/Graphics/renderWindow.h"
+
 #ifndef VULKAN
 #include "glCheck.h"
 #endif
@@ -308,8 +309,20 @@ namespace odfaeg {
         void RenderWindow::clear(const Color& color) {
 
 
-             vkAcquireNextImageKHR(vkDevice.getDevice(), swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
-             firstSubmit = true;
+            vkAcquireNextImageKHR(vkDevice.getDevice(), swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+            firstSubmit = true;
+            firstDraw = true;
+            registerClearCommands(color);
+            for (unsigned int i = 0; i < 7; i++)
+                vertexBuffer[i].clear();
+            drawableData.clear();
+
+                /*if (vkEndCommandBuffer(commandBuffers[currentFrame]) != VK_SUCCESS) {
+                    throw core::Erreur(0, "failed to record command buffer!", 1);
+                }*/
+             //}
+        }
+        void RenderWindow::registerClearCommands(const Color& color) {
              clearColor = color;
              VkClearColorValue clearValue  = {clearColor.r / 255.f, clearColor.g / 255.f, clearColor.b / 255.f, clearColor.a / 255.f};
              VkClearDepthStencilValue clearDepthStencilValue = {
@@ -388,14 +401,12 @@ namespace odfaeg {
                 vkCmdPipelineBarrier(getCommandBuffers()[currentFrame], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &depthStencilToClearBarrier);
                 vkCmdClearDepthStencilImage(getCommandBuffers()[currentFrame], getDepthTexture().getImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearDepthStencilValue, 1, &imageRange2);
                 vkCmdPipelineBarrier(getCommandBuffers()[currentFrame], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &clearToDepthStencilBarrier);
-
-                /*if (vkEndCommandBuffer(commandBuffers[currentFrame]) != VK_SUCCESS) {
-                    throw core::Erreur(0, "failed to record command buffer!", 1);
-                }*/
-             //}
         }
         const uint32_t& RenderWindow::getImageIndex() {
             return imageIndex;
+        }
+        bool RenderWindow::isFirstSubmit() {
+            return firstSubmit;
         }
         void RenderWindow::submit(bool lastSubmit, std::vector<VkSemaphore> signalSemaphores,
                         std::vector<VkSemaphore> waitSemaphores, std::vector<VkPipelineStageFlags> waitStages,
@@ -404,10 +415,24 @@ namespace odfaeg {
                         std::vector<VkFence> fences) {
             if (getCommandBuffers().size() > 0) {
 
-                if (vkEndCommandBuffer(getCommandBuffers()[currentFrame]) != VK_SUCCESS) {
-                    throw core::Erreur(0, "failed to record command buffer!", 1);
-                }
 
+                if (commandsOnRecordedState[currentFrame]) {
+                    if (vkEndCommandBuffer(getCommandBuffers()[currentFrame]) != VK_SUCCESS) {
+                        throw core::Erreur(0, "failed to record command buffer!", 1);
+                    }
+                }
+                VkDeviceSize bufferSize = sizeof(DrawableData) * drawableData.size();
+                if (bufferSize > 0) {
+                    //std::cout<<"size models : "<<bufferSize<<std::endl;
+                    void* data;
+                    vkMapMemory(vkDevice.getDevice(), stagingDrawableDataMemory[getCurrentFrame()], 0, bufferSize, 0, &data);
+                    memcpy(data, drawableData.data(), (size_t)bufferSize);
+                    vkUnmapMemory(vkDevice.getDevice(), stagingDrawableDataMemory[getCurrentFrame()]);
+                }
+                for (unsigned int i = 0; i < 7; i++) {
+                    if (vertexBuffer[i].getVertexCount() > 0)
+                        vertexBuffer[i].updateStagingBuffers(currentFrame);
+                }
                 commandsOnRecordedState[currentFrame] = false;
                 VkSubmitInfo submitInfo{};
                 submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -482,9 +507,9 @@ namespace odfaeg {
                 }
                 vkWaitForFences(vkDevice.getDevice(), 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
                 vkResetFences(vkDevice.getDevice(), 1, &inFlightFences[currentFrame]);
-
-
-
+                for (unsigned int i = 0; i < 7; i++)
+                    vertexBuffer[i].clear();
+                drawableData.clear();
             }
         }
         void RenderWindow::drawVulkanFrame() {

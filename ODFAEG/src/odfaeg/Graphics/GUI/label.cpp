@@ -32,23 +32,17 @@ namespace odfaeg {
                 }
             }
             void Label::onDraw(RenderTarget& target, RenderStates states) {
-                #ifdef VULKAN
-                target.beginRecordCommandBuffers();
-                #endif // VULKAN
                 text.setPosition(getPosition());
                 rect.setPosition(getPosition());
                 //text.setSize(getSize());
                 rect.setSize(getSize());
+                text.setPosition(math::Vec3f(text.getPosition().x(), text.getPosition().y(),text.getPosition().z()+1));
                 ////////std::cout<<"sizes : "<<text.getSize()/*<<rect.getSize()*/;
                 target.draw(rect);
-                #ifdef VULKAN
-                target.submit(false);
-                target.beginRecordCommandBuffers();
-                #endif // VULKAN
                 target.draw(text);
                 #ifdef VULKAN
                 target.submit(false);
-                #endif // VULKAN
+                #endif
             }
             void Label::setText(std::string t) {
                 text.setString(t);

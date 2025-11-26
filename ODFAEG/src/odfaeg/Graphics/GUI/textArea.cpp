@@ -124,11 +124,8 @@ namespace odfaeg {
                 va.append(Vertex(math::Vec3f(cursorPos.x(), cursorPos.y(), 0), Color::Black));
                 va.append(Vertex(math::Vec3f(cursorPos.x(), cursorPos.y() + text.getCharacterSize(), 0), Color::Black));
                 rect.setPosition(getPosition());
-                text.setPosition(math::Vec3f(getPosition().x() + scrollX, getPosition().y() + scrollY, 0));
+                text.setPosition(math::Vec3f(getPosition().x() + scrollX, getPosition().y() + scrollY, getPosition().z()+1));
                 rect.setSize(getSize());
-                #ifdef VULKAN
-                target.beginRecordCommandBuffers();
-                #endif // VULKAN
                 target.draw(rect);
                 #ifndef VULKAN
                 glCheck(glEnable(GL_SCISSOR_TEST));
@@ -138,13 +135,14 @@ namespace odfaeg {
                 target.submit(false);
                 target.getScissors()[1].offset = {getPosition().x(), getPosition().y()};
                 target.getScissors()[1].extent = {getSize().x(), getSize().y()};
-                target.beginRecordCommandBuffers();
                 #endif
                 target.draw(text);
                 #ifdef VULKAN
+                target.beginRecordCommandBuffers();
+                target.submit(false);
                 target.getScissors()[1].offset = {0, 0};
                 target.getScissors()[1].extent = {target.getSize().x(), target.getSize().y()};
-                target.submit(false);
+
                 #endif // VULKAN
                 //Il faut restaurer les paramètres d'avant si un scissor test a été défini avant de dessiner la TextArea.
                 #ifndef VULKAN
@@ -155,13 +153,7 @@ namespace odfaeg {
                 }
                 #endif
                 if(haveFocus) {
-                    #ifdef VULKAN
-                    target.beginRecordCommandBuffers();
-                    #endif // VULKAN
                     target.draw(va);
-                    #ifdef VULKAN
-                    target.submit(false);
-                    #endif // VULKAN
                 }
             }
             bool TextArea::isMouseInTextArea() {

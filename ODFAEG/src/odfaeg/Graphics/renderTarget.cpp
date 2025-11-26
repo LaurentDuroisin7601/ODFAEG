@@ -75,9 +75,9 @@ namespace odfaeg {
         #ifdef VULKAN
         unsigned int RenderTarget::nbRenderTargets = 0;
 
-        RenderTarget::RenderTarget(window::Device& vkDevice) : vkDevice(vkDevice), defaultShader(vkDevice), defaultShader2(vkDevice),
+        RenderTarget::RenderTarget(window::Device& vkDevice, bool useSecondaryCmds) : vkDevice(vkDevice), defaultShader(vkDevice),
         m_defaultView(), m_view(), id(nbRenderTargets), depthTestEnabled(false), stencilTestEnabled(false), depthTexture(nullptr),
-        usePushDescriptorSets(true), useSecondaryCmds(false) {
+        useSecondaryCmds(useSecondaryCmds) {
             nbRenderTargets++;
 
         }
@@ -85,9 +85,7 @@ namespace odfaeg {
             nbRenderTargets--;
             cleanup();
         }
-        void RenderTarget::setUsePushDescriptorSets(bool pushDescriptorSetEnable) {
-            usePushDescriptorSets = pushDescriptorSetEnable;
-        }
+
         void RenderTarget::enableDepthTest(bool enabled) {
             depthTestEnabled = enabled;
         }
@@ -102,76 +100,70 @@ namespace odfaeg {
             m_view = m_defaultView;
             const std::string defaultVertexShader = R"(#version 450
                                                        #extension GL_EXT_debug_printf : enable
-                                                        layout(binding = 0) uniform UniformBufferObject {
-                                                            mat4 model;
-                                                            mat4 view;
-                                                            mat4 proj;
-                                                            mat4 textureMatrix;
-                                                        } ubo;
+                                                       struct DrawableData {
+                                                            mat4 projMatrix;
+                                                            mat4 viewMatrix;
+                                                            mat4 modelMatrix;
+                                                            vec2 uvScale;
+                                                            vec2 uvOffset;
+                                                            uint textureID;
+                                                            uint pad[3];
+                                                        };
                                                         layout(location = 0) in vec3 inPosition;
                                                         layout(location = 1) in vec4 inColor;
                                                         layout(location = 2) in vec2 inTexCoord;
                                                         layout(location = 3) in vec3 normals;
+                                                        layout(location = 4) in int drawableDataID;
 
                                                         layout(location = 0) out vec4 fragColor;
                                                         layout(location = 1) out vec2 fragTexCoord;
                                                         layout(location = 2) out vec3 normal;
+                                                        layout(location = 3) out uint outTextureID;
+
+                                                        layout (std430, set = 0, binding = 0) buffer DrawableDataSSBO {
+                                                            DrawableData drawableData[];
+                                                        };
 
 
                                                         void main() {
+                                                             //debugPrintfEXT("matrix: %v4f \n %v4f \n %v4f \n %v4f", drawableData[drawableDataID].projMatrix[0], drawableData[drawableDataID].projMatrix[1], drawableData[drawableDataID].projMatrix[2], drawableData[drawableDataID].projMatrix[3]);
+                                                             //debugPrintfEXT("drawable id : %i", drawableDataID);
                                                              gl_PointSize = 2.0f;
 
-                                                             gl_Position =  vec4(inPosition, 1.0) * ubo.model * ubo.view * ubo.proj;
-                                                             fragColor = inColor;
-                                                             fragTexCoord = (vec4(inTexCoord.xy, 0, 1) * ubo.textureMatrix).xy;
-                                                             normal = normals;
+                                                             gl_Position =  vec4(inPosition, 1.0) * drawableData[drawableDataID].modelMatrix * drawableData[drawableDataID].viewMatrix * drawableData[drawableDataID].projMatrix;
                                                              //debugPrintfEXT("position : %v4f", gl_Position);
+                                                             fragColor = inColor;
+                                                             fragTexCoord = inTexCoord * drawableData[drawableDataID].uvScale + drawableData[drawableDataID].uvOffset;
+                                                             normal = normals;
+                                                             outTextureID = drawableData[drawableDataID].textureID;
                                                         }
                                                         )";
              const std::string defaultFragmentShader = R"(#version 450
                                                           #extension GL_ARB_separate_shader_objects : enable
+                                                          #extension GL_EXT_nonuniform_qualifier : enable
                                                           #extension GL_EXT_debug_printf : enable
-                                                          layout(binding = 1) uniform sampler2D texSampler;
+                                                          const uint MAX_TEXTURES = 128;
+                                                          layout(set = 0, binding = 1) uniform sampler2D textures[MAX_TEXTURES];
                                                           layout(location = 0) in vec4 fragColor;
                                                           layout(location = 1) in vec2 fragTexCoord;
                                                           layout(location = 2) in vec3 normal;
+                                                          layout(location = 3) in flat uint inTextureID;
                                                           layout(location = 0) out vec4 outColor;
                                                           void main() {
-                                                             outColor = texture(texSampler, fragTexCoord) * fragColor;
-
-                                                          })";
-             const std::string defaultFragmentShader2 = R"(#version 450
-                                                          #extension GL_ARB_separate_shader_objects : enable
-                                                          layout(location = 0) in vec4 fragColor;
-                                                          layout(location = 1) in vec2 fragTexCoord;
-                                                          layout(location = 2) in vec3 normal;
-                                                          layout(location = 0) out vec4 outColor;
-                                                          void main() {
-                                                             outColor = fragColor;
+                                                             //debugPrintfEXT("fragment shader");
+                                                             outColor = (inTextureID == 0) ? fragColor : texture(textures[inTextureID-1], fragTexCoord) * fragColor;
                                                           })";
              if (!defaultShader.loadFromMemory(defaultVertexShader, defaultFragmentShader)) {
                   throw core::Erreur (0, "Failed to load default shader", 1);
              }
              ////////std::cout<<"size : "<<Shader::getNbShaders()<<std::endl;
-             if (!defaultShader2.loadFromMemory(defaultVertexShader, defaultFragmentShader2)) {
-                  throw core::Erreur (0, "Failed to load default shader 2", 1);
-             }
-             ////////std::cout<<"size : "<<Shader::getNbShaders()<<std::endl;
 
              createCommandPool();
              createCommandBuffers();
-             createUniformBuffers();
              for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
                  VertexBuffer vb(vkDevice);
                  vb.setPrimitiveType(static_cast<PrimitiveType>(i));
-                 vb.append(Vertex(math::Vec3f(0, 0, 0)));
-                 vb.addIndex(0);
-                 vb.addIndex(0);
-                 vb.addIndex(0);
-                 vb.addIndex(0);
-                 vb.addIndex(0);
-                 vb.addIndex(0);
-                 vb.update();
+
                  vertexBuffer.push_back(std::move(vb));
              }
 
@@ -192,6 +184,49 @@ namespace odfaeg {
                 viewports[i].maxDepth = 1.0f;
              }
         }
+        void RenderTarget::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory) {
+            VkBufferCreateInfo bufferInfo{};
+            bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+            bufferInfo.size = size;
+            bufferInfo.usage = usage;
+            bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+            if (vkCreateBuffer(vkDevice.getDevice(), &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
+                throw std::runtime_error("failed to create buffer!");
+            }
+
+            VkMemoryRequirements memRequirements;
+            vkGetBufferMemoryRequirements(vkDevice.getDevice(), buffer, &memRequirements);
+
+            VkMemoryAllocateInfo allocInfo{};
+            allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+            allocInfo.allocationSize = memRequirements.size;
+            allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
+
+            if (vkAllocateMemory(vkDevice.getDevice(), &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
+                throw std::runtime_error("failed to allocate buffer memory!");
+            }
+
+            vkBindBufferMemory(vkDevice.getDevice(), buffer, bufferMemory, 0);
+        }
+        uint32_t RenderTarget::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
+            VkPhysicalDeviceMemoryProperties memProperties;
+            vkGetPhysicalDeviceMemoryProperties(vkDevice.getPhysicalDevice(), &memProperties);
+            for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
+                if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
+                    return i;
+                }
+            }
+            throw std::runtime_error("aucun type de memoire ne satisfait le buffer!");
+        }
+        void RenderTarget::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size, VkCommandBuffer cmd) {
+            //std::cout<<"opy buffers"<<std::endl;
+            if (srcBuffer != nullptr && dstBuffer != nullptr) {
+                VkBufferCopy copyRegion{};
+                copyRegion.size = size;
+                vkCmdCopyBuffer(cmd, srcBuffer, dstBuffer, 1, &copyRegion);
+            }
+        }
         std::array<VkRect2D, 2>& RenderTarget::getScissors() {
             return scissors;
         }
@@ -200,12 +235,7 @@ namespace odfaeg {
              states.shader = &defaultShader;
              createDescriptorPool(states);
              createDescriptorSetLayout(states);
-
-             states.shader = &defaultShader2;
-             createDescriptorPool(states);
-             createDescriptorSetLayout(states);
-
-
+             allocateDescriptorSets(states);
 
 
              BlendMode none = BlendNone;
@@ -224,16 +254,35 @@ namespace odfaeg {
                  system("PAUSE");*/
                  states.shader = &defaultShader;
                  for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
-                    createGraphicPipeline(static_cast<PrimitiveType>(i), states);
+                    createGraphicPipeline(static_cast<PrimitiveType>(i), states, 0, NB_DEPTH_STENCIL);
                  }
+            }
+            depthTestEnabled = true;
+            if ((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders() > depthStencil.size()) {
+                depthStencil.resize((Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders());
+            }
+            for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
+                depthStencil[i].resize(1);
+            }
+            for (unsigned int i = 0; i < (Batcher::nbPrimitiveTypes - 1) * Shader::getNbShaders(); i++) {
+                for (unsigned int j = 0; j < 1; j++) {
+                    if (NB_DEPTH_STENCIL*none.nbBlendModes > pipelineLayoutInfo[i][j].size()) {
+                        depthStencil[i][j].resize(NB_DEPTH_STENCIL*none.nbBlendModes);
+                    }
+                }
             }
             for (unsigned int b = 0; b < blendModes.size(); b++) {
                  states.blendMode = blendModes[b];
-                 states.shader = &defaultShader2;
+                 /*////std::cout<<"blendmode id : "<<states.blendMode.id<<std::endl;
+                 system("PAUSE");*/
+                 states.shader = &defaultShader;
                  for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
-                    createGraphicPipeline(static_cast<PrimitiveType>(i), states);
+                    depthStencil[defaultShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][1*none.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_GREATER_OR_EQUAL;
+                    depthStencil[defaultShader.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][1*none.nbBlendModes+states.blendMode.id].depthWriteEnable = VK_TRUE;
+                    createGraphicPipeline(static_cast<PrimitiveType>(i), states, 1, NB_DEPTH_STENCIL);
                  }
-             }
+            }
+            depthTestEnabled = false;
         }
         void RenderTarget::clearDepth() {
         }
@@ -298,11 +347,22 @@ namespace odfaeg {
         void RenderTarget::draw(const Vertex* vertices, unsigned int vertexCount, PrimitiveType type,
                       RenderStates states) {
              ////std::cout<<"draw vertices"<<std::endl;
-             beginRecordCommandBuffers();
+             if (states.shader == nullptr) {
+                states.shader = &defaultShader;
+             }
+             DrawableData datas;
+             datas.projMatrix = toVulkanMatrix(m_view.getProjMatrix().getMatrix());
+             datas.viewMatrix = toVulkanMatrix(m_view.getViewMatrix().getMatrix());
+             datas.modelMatrix = toVulkanMatrix(states.transform.getMatrix());
+             datas.textureID = (states.texture != nullptr) ? states.texture->getId() : 0;
+             datas.uvScale = (states.texture != nullptr) ? math::Vec2f(1.f / states.texture->getSize().x(), 1.f / states.texture->getSize().y()) : math::Vec2f(0, 0);
+             datas.uvOffset = math::Vec2f(0, 0);
+             drawableData.push_back(datas);
              if (type == Quads) {
                 type = Triangles;
                 for (unsigned int i = 0; i < vertexCount; i++) {
                     vertexBuffer[type].append(vertices[i]);
+                    vertexBuffer[type][vertexBuffer[type].getVertexCount()-1].padding = drawableData.size() - 1;
                 }
                 vertexBuffer[type].addIndex(vertexBuffer[type].getVertexCount()-4);
                 vertexBuffer[type].addIndex(vertexBuffer[type].getVertexCount()-3);
@@ -315,42 +375,81 @@ namespace odfaeg {
                  for (unsigned int i = 0; i < vertexCount; i++) {
                     vertexBuffer[type].append(vertices[i]);
                     vertexBuffer[type].addIndex(vertexBuffer[type].getVertexCount()-1);
+                    vertexBuffer[type][vertexBuffer[type].getVertexCount()-1].padding = drawableData.size() - 1;
                  }
              }
-             if (states.shader == nullptr) {
-                if (states.texture != nullptr) {
-                    states.shader = &defaultShader;
-                } else {
-                    states.shader = &defaultShader2;
+             if (type == TriangleFan || type == TriangleStrip || type == LineStrip)
+                vertexBuffer[type].addIndex(0xFFFF);
+
+
+             VkDeviceSize bufferSize = sizeof(DrawableData) * drawableData.size();
+             if (bufferSize > maxDrawableDataSize[getCurrentFrame()]) {
+
+                if (stagingDrawableData[getCurrentFrame()] != nullptr) {
+                    vkDestroyBuffer(vkDevice.getDevice(), stagingDrawableData[getCurrentFrame()], nullptr);
+                    vkFreeMemory(vkDevice.getDevice(), stagingDrawableDataMemory[getCurrentFrame()], nullptr);
+                }
+
+                createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingDrawableData[getCurrentFrame()], stagingDrawableDataMemory[getCurrentFrame()]);
+
+                if (drawableDataSSBO[getCurrentFrame()] != nullptr) {
+                    vkDestroyBuffer(vkDevice.getDevice(), drawableDataSSBO[getCurrentFrame()], nullptr);
+                    vkFreeMemory(vkDevice.getDevice(), drawableDataSSBOMemory[getCurrentFrame()], nullptr);
+                }
+
+                createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, drawableDataSSBO[getCurrentFrame()], drawableDataSSBOMemory[getCurrentFrame()]);
+                maxDrawableDataSize[getCurrentFrame()] = bufferSize;
+                updateDescriptorSets(states);
+             }
+
+             if (useSecondaryCmds)
+                beginRecordSecondaryCommandBuffers();
+             else {
+                beginRecordCommandBuffers();
+                if (!firstDraw && isFirstSubmit()) {
+                    registerClearCommands(clearColor);
                 }
              }
-             if (secondaryCommandsOnRecordedState[getCurrentFrame()])
-                vertexBuffer[type].update(getCurrentFrame(), secondaryCommandBuffers[getCurrentFrame()]);
-             else if(commandsOnRecordedState[getCurrentFrame()])
-                vertexBuffer[type].update(getCurrentFrame(), commandBuffers[getCurrentFrame()]);
-             vertexBuffer[type].updateStagingBuffers(getCurrentFrame());
+
+             if (secondaryCommandsOnRecordedState[getCurrentFrame()]) {
+                copyBuffer(stagingDrawableData[getCurrentFrame()], drawableDataSSBO[getCurrentFrame()], bufferSize, secondaryCommandBuffers[getCurrentFrame()]);
+                for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
+                    if (vertexBuffer[p].getVertexCount() > 0)
+                        vertexBuffer[p].update(getCurrentFrame(), secondaryCommandBuffers[getCurrentFrame()]);
+                }
+             } else if(commandsOnRecordedState[getCurrentFrame()]) {
+                copyBuffer(stagingDrawableData[getCurrentFrame()], drawableDataSSBO[getCurrentFrame()], bufferSize, commandBuffers[getCurrentFrame()]);
+                for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
+                    if (vertexBuffer[p].getVertexCount() > 0)
+                        vertexBuffer[p].update(getCurrentFrame(), commandBuffers[getCurrentFrame()]);
+                }
+             }
+
              if (!useSecondaryCmds)
                 beginRenderPass();
 
-             if (secondaryCommandsOnRecordedState[getCurrentFrame()])
-                recordCommandBuffers(secondaryCommandBuffers[getCurrentFrame()], vertexBuffer[type], type, states);
-             else if(commandsOnRecordedState[getCurrentFrame()])
-                recordCommandBuffers(commandBuffers[getCurrentFrame()], vertexBuffer[type], type, states);
+             if (secondaryCommandsOnRecordedState[getCurrentFrame()]) {
+                for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
+                    if (vertexBuffer[p].getVertexCount() > 0)
+                        recordCommandBuffers(secondaryCommandBuffers[getCurrentFrame()], vertexBuffer[p], static_cast<PrimitiveType>(p), states);
+                }
+             } else if(commandsOnRecordedState[getCurrentFrame()]) {
+                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
+                    if (vertexBuffer[p].getVertexCount() > 0)
+                        recordCommandBuffers(commandBuffers[getCurrentFrame()], vertexBuffer[p], static_cast<PrimitiveType>(p), states);
+                 }
+             }
              if (!useSecondaryCmds)
                 endRenderPass();
-             ////std::cout<<"drawn"<<std::endl;
-
-
+             if (secondaryCommandsOnRecordedState[getCurrentFrame()])
+                endRecordSecondaryCommandBuffers();
+             else if (commandsOnRecordedState[getCurrentFrame()])
+                endRecordCommandBuffers();
+            firstDraw = false;
         }
         void RenderTarget::drawVertexBuffer(VertexBuffer& vb, RenderStates states) {
 
-             if (states.shader == nullptr) {
-                if (states.texture != nullptr) {
-                    states.shader = &defaultShader;
-                } else {
-                    states.shader = &defaultShader2;
-                }
-             }
+
              if (secondaryCommandsOnRecordedState[getCurrentFrame()])
                 recordCommandBuffers(secondaryCommandBuffers[getCurrentFrame()], vb, vb.getPrimitiveType(), states);
              else if(commandsOnRecordedState[getCurrentFrame()])
@@ -445,138 +544,126 @@ namespace odfaeg {
 
         void RenderTarget::createDescriptorSetLayout(RenderStates states) {
             Shader* shader = const_cast<Shader*>(states.shader);
-            descriptorSetLayout.resize(shader->getNbShaders() * nbRenderTargets);
+            if (shader->getNbShaders() > descriptorSetLayout.size())
+                descriptorSetLayout.resize(shader->getNbShaders());
+
+            std::vector<VkDescriptorBindingFlags> bindingFlags(2, 0); // 2 binding, flags par défaut à 0
+            bindingFlags[1] = VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
+                  VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT; // seulement pour sampler[]
+
+            VkDescriptorSetLayoutBindingFlagsCreateInfo bindingFlagsInfo{};
+            bindingFlagsInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
+            bindingFlagsInfo.bindingCount = static_cast<uint32_t>(bindingFlags.size());
+            bindingFlagsInfo.pBindingFlags = bindingFlags.data();
+
+            VkDescriptorSetLayoutBinding ssboLayoutBinding{};
+            ssboLayoutBinding.binding = 0;
+            ssboLayoutBinding.descriptorCount = 1;
+            ssboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+            ssboLayoutBinding.pImmutableSamplers = nullptr;
+            ssboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+            VkDescriptorSetLayoutBinding samplerLayoutBinding{};
+            samplerLayoutBinding.binding = 1;
+            samplerLayoutBinding.descriptorCount = MAX_TEXTURES;
+            samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            samplerLayoutBinding.pImmutableSamplers = nullptr;
+            samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+            std::array<VkDescriptorSetLayoutBinding, 2> bindings = {ssboLayoutBinding, samplerLayoutBinding};
+
+            VkDescriptorSetLayoutCreateInfo layoutInfo{};
+            layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+            layoutInfo.pNext = &bindingFlagsInfo;
+            layoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT;
+            layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());;
+            layoutInfo.pBindings = bindings.data();
+
+            if (vkCreateDescriptorSetLayout(vkDevice.getDevice(), &layoutInfo, nullptr, &descriptorSetLayout[shader->getId()]) != VK_SUCCESS) {
+                throw std::runtime_error("failed to create descriptor set layout!");
+            }
+        }
+        void RenderTarget::allocateDescriptorSets(RenderStates states) {
+            Shader* shader = const_cast<Shader*>(states.shader);
+            if (shader->getNbShaders() > descriptorSets.size()) {
+                descriptorSets.resize(shader->getNbShaders());
+
+                for (unsigned int i = 0; i < descriptorSets.size(); i++) {
+                    descriptorSets[i].resize(MAX_FRAMES_IN_FLIGHT);
+                }
+            }
             unsigned int descriptorId = shader->getId();
-            if (states.shader == &defaultShader) {
-                VkDescriptorSetLayoutBinding uboLayoutBinding{};
-                uboLayoutBinding.binding = 0;
-                uboLayoutBinding.descriptorCount = 1;
-                uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-                uboLayoutBinding.pImmutableSamplers = nullptr;
-                uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+            std::vector<uint32_t> variableCounts(MAX_FRAMES_IN_FLIGHT, MAX_TEXTURES);
 
-                VkDescriptorSetLayoutBinding samplerLayoutBinding{};
-                samplerLayoutBinding.binding = 1;
-                samplerLayoutBinding.descriptorCount = 1;
-                samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                samplerLayoutBinding.pImmutableSamplers = nullptr;
-                samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-
-                std::array<VkDescriptorSetLayoutBinding, 2> bindings = {uboLayoutBinding, samplerLayoutBinding};
-
-                VkDescriptorSetLayoutCreateInfo layoutInfo{};
-                layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-                layoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR;
-                layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());;
-                layoutInfo.pBindings = bindings.data();
-
-                if (vkCreateDescriptorSetLayout(vkDevice.getDevice(), &layoutInfo, nullptr, &descriptorSetLayout[descriptorId]) != VK_SUCCESS) {
-                    throw std::runtime_error("failed to create descriptor set layout!");
-                }
-            } else {
-                VkDescriptorSetLayoutBinding uboLayoutBinding{};
-                uboLayoutBinding.binding = 0;
-                uboLayoutBinding.descriptorCount = 1;
-                uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-                uboLayoutBinding.pImmutableSamplers = nullptr;
-                uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-
-
-                std::array<VkDescriptorSetLayoutBinding, 1> bindings = {uboLayoutBinding};
-
-                VkDescriptorSetLayoutCreateInfo layoutInfo{};
-                layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-                layoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR;
-                layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());;
-                layoutInfo.pBindings = bindings.data();
-
-                if (vkCreateDescriptorSetLayout(vkDevice.getDevice(), &layoutInfo, nullptr, &descriptorSetLayout[descriptorId]) != VK_SUCCESS) {
-                    throw std::runtime_error("failed to create descriptor set layout!");
-                }
+            VkDescriptorSetVariableDescriptorCountAllocateInfo variableCountInfo{};
+            variableCountInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO;
+            variableCountInfo.descriptorSetCount = static_cast<uint32_t>(variableCounts.size());
+            variableCountInfo.pDescriptorCounts = variableCounts.data();
+            std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, descriptorSetLayout[descriptorId]);
+            VkDescriptorSetAllocateInfo allocInfo{};
+            allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+            allocInfo.pNext = &variableCountInfo;
+            allocInfo.descriptorPool = descriptorPool[descriptorId];
+            allocInfo.descriptorSetCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+            allocInfo.pSetLayouts = layouts.data();
+            if (vkAllocateDescriptorSets(vkDevice.getDevice(), &allocInfo, descriptorSets[descriptorId].data()) != VK_SUCCESS) {
+                throw std::runtime_error("echec de l'allocation d'un set de descripteurs!");
             }
         }
         void RenderTarget::createDescriptorPool(RenderStates states) {
-
             Shader* shader = const_cast<Shader*>(states.shader);
-            descriptorPool.resize(shader->getNbShaders()*nbRenderTargets);
+            if (shader->getNbShaders() > descriptorPool.size())
+                descriptorPool.resize(shader->getNbShaders()*nbRenderTargets);
             unsigned int descriptorId = shader->getId();
-            if (states.shader == &defaultShader) {
-                std::array<VkDescriptorPoolSize, 2> poolSizes{};
-                poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-                poolSizes[0].descriptorCount = static_cast<uint32_t>(getMaxFramesInFlight());
-                poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                poolSizes[1].descriptorCount = static_cast<uint32_t>(getMaxFramesInFlight());
+            std::array<VkDescriptorPoolSize, 2> poolSizes{};
+            poolSizes[0].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+            poolSizes[0].descriptorCount = static_cast<uint32_t>(getMaxFramesInFlight());
+            poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            poolSizes[1].descriptorCount = MAX_TEXTURES * static_cast<uint32_t>(getMaxFramesInFlight());
 
-                VkDescriptorPoolCreateInfo poolInfo{};
-                poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-                poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
-                poolInfo.pPoolSizes = poolSizes.data();
-                poolInfo.maxSets = static_cast<uint32_t>(getMaxFramesInFlight());
-                if (vkCreateDescriptorPool(vkDevice.getDevice(), &poolInfo, nullptr, &descriptorPool[descriptorId]) != VK_SUCCESS) {
-                    throw std::runtime_error("echec de la creation de la pool de descripteurs!");
-                }
-            } else {
-                std::array<VkDescriptorPoolSize, 1> poolSizes{};
-                poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-                poolSizes[0].descriptorCount = static_cast<uint32_t>(getMaxFramesInFlight());
 
-                VkDescriptorPoolCreateInfo poolInfo{};
-                poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-                poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
-                poolInfo.pPoolSizes = poolSizes.data();
-                poolInfo.maxSets = static_cast<uint32_t>(getMaxFramesInFlight());
-                if (vkCreateDescriptorPool(vkDevice.getDevice(), &poolInfo, nullptr, &descriptorPool[descriptorId]) != VK_SUCCESS) {
-                    throw std::runtime_error("echec de la creation de la pool de descripteurs!");
-                }
+            VkDescriptorPoolCreateInfo poolInfo{};
+            poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+            poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT;
+            poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+            poolInfo.pPoolSizes = poolSizes.data();
+            poolInfo.maxSets = static_cast<uint32_t>(getMaxFramesInFlight());
+            if (vkCreateDescriptorPool(vkDevice.getDevice(), &poolInfo, nullptr, &descriptorPool[descriptorId]) != VK_SUCCESS) {
+                throw std::runtime_error("echec de la creation de la pool de descripteurs!");
             }
         }
-        void RenderTarget::createDescriptorSets(RenderStates states) {
+        void RenderTarget::updateDescriptorSets(RenderStates states) {
             Shader* shader = const_cast<Shader*>(states.shader);
-            for (size_t i = 0; i < getMaxFramesInFlight(); i++) {
-                VkDescriptorBufferInfo bufferInfo{};
-                bufferInfo.buffer = uniformBuffers[i];
-                bufferInfo.offset = 0;
-                bufferInfo.range = sizeof(UniformBufferObject);
-                if (states.shader == &defaultShader) {
-                    VkDescriptorImageInfo imageInfo{};
-                    imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                    imageInfo.imageView = const_cast<Texture*>(states.texture)->getImageView();
-                    imageInfo.sampler = const_cast<Texture*>(states.texture)->getSampler();
-                    std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
-
-                    descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                    descriptorWrites[0].dstSet = descriptorSets[shader->getId()][i];
-                    descriptorWrites[0].dstBinding = 0;
-                    descriptorWrites[0].dstArrayElement = 0;
-                    descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-                    descriptorWrites[0].descriptorCount = 1;
-                    descriptorWrites[0].pBufferInfo = &bufferInfo;
-
-
-
-                    descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                    descriptorWrites[1].dstSet = descriptorSets[shader->getId()][i];
-                    descriptorWrites[1].dstBinding = 1;
-                    descriptorWrites[1].dstArrayElement = 0;
-                    descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                    descriptorWrites[1].descriptorCount = 1;
-                    descriptorWrites[1].pImageInfo = &imageInfo;
-
-                    vkUpdateDescriptorSets(vkDevice.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
-                }  else {
-                    std::array<VkWriteDescriptorSet, 1> descriptorWrites{};
-
-                    descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                    descriptorWrites[0].dstSet = descriptorSets[i][shader->getId()];
-                    descriptorWrites[0].dstBinding = 0;
-                    descriptorWrites[0].dstArrayElement = 0;
-                    descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-                    descriptorWrites[0].descriptorCount = 1;
-                    descriptorWrites[0].pBufferInfo = &bufferInfo;
-
-                    vkUpdateDescriptorSets(vkDevice.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
-                }
+            std::vector<Texture*> allTextures = Texture::getAllTextures();
+            std::vector<VkDescriptorImageInfo> imageInfos{};
+            imageInfos.resize (allTextures.size());
+            for (unsigned int j = 0; j < imageInfos.size(); j++) {
+                imageInfos[j].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                imageInfos[j].imageView = const_cast<Texture*>(allTextures[j])->getImageView();
+                imageInfos[j].sampler = const_cast<Texture*>(allTextures[j])->getSampler();
             }
+            std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
+            VkDescriptorBufferInfo bufferInfo;
+            bufferInfo.buffer = drawableDataSSBO[getCurrentFrame()];
+            bufferInfo.offset = 0;
+            bufferInfo.range = drawableData.size() * sizeof(DrawableData);
+            descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            descriptorWrites[0].dstSet = descriptorSets[shader->getId()][getCurrentFrame()];
+            descriptorWrites[0].dstBinding = 0;
+            descriptorWrites[0].dstArrayElement = 0;
+            descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+            descriptorWrites[0].descriptorCount = 1;
+            descriptorWrites[0].pBufferInfo = &bufferInfo;
+
+            descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            descriptorWrites[1].dstSet = descriptorSets[shader->getId()][getCurrentFrame()];
+            descriptorWrites[1].dstBinding = 1;
+            descriptorWrites[1].dstArrayElement = 0;
+            descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            descriptorWrites[1].descriptorCount = imageInfos.size();
+            descriptorWrites[1].pImageInfo = imageInfos.data();
+
+            vkUpdateDescriptorSets(vkDevice.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
         }
         void RenderTarget::createGraphicPipeline(PrimitiveType type,
                       RenderStates states, unsigned int depthStencilId, unsigned int nbDepthStencil, unsigned int id) {
@@ -633,17 +720,10 @@ namespace odfaeg {
             VkShaderModule geomShaderModule=nullptr;
 
             if (states.shader == nullptr) {
-                if (states.texture != nullptr) {
-                    defaultShader.createShaderModules();
-                    vertShaderModule = defaultShader.getVertexShaderModule();
-                    fragShaderModule = defaultShader.getFragmentShaderModule();
-                    states.shader = &defaultShader;
-                } else {
-                    defaultShader2.createShaderModules();
-                    vertShaderModule = defaultShader2.getVertexShaderModule();
-                    fragShaderModule = defaultShader2.getFragmentShaderModule();
-                    states.shader = &defaultShader2;
-                }
+                defaultShader.createShaderModules();
+                vertShaderModule = defaultShader.getVertexShaderModule();
+                fragShaderModule = defaultShader.getFragmentShaderModule();
+                states.shader = &defaultShader;
             } else {
                 shader->createShaderModules();
                 vertShaderModule = shader->getVertexShaderModule();
@@ -706,7 +786,11 @@ namespace odfaeg {
             VkPrimitiveTopology modes[] = {VK_PRIMITIVE_TOPOLOGY_POINT_LIST, VK_PRIMITIVE_TOPOLOGY_LINE_LIST, VK_PRIMITIVE_TOPOLOGY_LINE_STRIP, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN};
 
             inputAssembly.topology = modes[type];
-            inputAssembly.primitiveRestartEnable = VK_FALSE;
+            inputAssembly.primitiveRestartEnable =
+            (inputAssembly.topology == VK_PRIMITIVE_TOPOLOGY_LINE_STRIP ||
+             inputAssembly.topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP ||
+             inputAssembly.topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN)
+            ? VK_TRUE : VK_FALSE;
 
 
 
@@ -770,6 +854,7 @@ namespace odfaeg {
             pipelineLayoutInfo[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId*nbBlendMode+blendModeId].sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
             pipelineLayoutInfo[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId*nbBlendMode+blendModeId].setLayoutCount = 1;
             pipelineLayoutInfo[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId*nbBlendMode+blendModeId].pSetLayouts = &descriptorSetLayout[descriptorId];
+
             //std::cout<<"ids : "<<shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type<<","<<id<<","<<depthStencilId*nbBlendMode+blendModeId<<std::endl;
             if (pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId*nbBlendMode+blendModeId] != nullptr) {
                 //std::cout<<"destroy pipeline layout ids : "<<shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type<<","<<id<<","<<depthStencilId*nbBlendMode+blendModeId<<std::endl;
@@ -841,58 +926,6 @@ namespace odfaeg {
                 throw core::Erreur(0, "échec de la création d'une command pool!", 1);
             }
         }
-        void RenderTarget::createUniformBuffers() {
-            VkDeviceSize bufferSize = sizeof(UniformBufferObject);
-            uniformBuffers.resize(getMaxFramesInFlight());
-            uniformBuffersMemory.resize(getMaxFramesInFlight());
-
-            for (size_t i = 0; i < getMaxFramesInFlight(); i++) {
-                createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffers[i], uniformBuffersMemory[i]);
-                ////////std::cout<<"uniform buffer : "<<ubos[i]<<std::endl;
-            }
-        }
-        void RenderTarget::updateUniformBuffer(uint32_t currentImage, UniformBufferObject ubo) {
-            void* data;
-            vkMapMemory(vkDevice.getDevice(), uniformBuffersMemory[currentImage], 0, sizeof(ubo), 0, &data);
-                memcpy(data, &ubo, sizeof(ubo));
-            vkUnmapMemory(vkDevice.getDevice(), uniformBuffersMemory[currentImage]);
-
-        }
-        void RenderTarget::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory) {
-            VkBufferCreateInfo bufferInfo{};
-            bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-            bufferInfo.size = size;
-            bufferInfo.usage = usage;
-            bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-            if (vkCreateBuffer(vkDevice.getDevice(), &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
-                throw std::runtime_error("failed to create buffer!");
-            }
-
-            VkMemoryRequirements memRequirements;
-            vkGetBufferMemoryRequirements(vkDevice.getDevice(), buffer, &memRequirements);
-
-            VkMemoryAllocateInfo allocInfo{};
-            allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-            allocInfo.allocationSize = memRequirements.size;
-            allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
-
-            if (vkAllocateMemory(vkDevice.getDevice(), &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
-                throw std::runtime_error("failed to allocate buffer memory!");
-            }
-
-            vkBindBufferMemory(vkDevice.getDevice(), buffer, bufferMemory, 0);
-        }
-        uint32_t RenderTarget::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
-            VkPhysicalDeviceMemoryProperties memProperties;
-            vkGetPhysicalDeviceMemoryProperties(vkDevice.getPhysicalDevice(), &memProperties);
-            for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
-                if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
-                    return i;
-                }
-            }
-            throw std::runtime_error("aucun type de memoire ne satisfait le buffer!");
-        }
         void RenderTarget::createCommandBuffers() {
             commandBuffers.resize(getMaxFramesInFlight());
             commandsOnRecordedState.resize(getMaxFramesInFlight(), false);
@@ -931,9 +964,6 @@ namespace odfaeg {
                 }
                 commandsOnRecordedState[getCurrentFrame()] = true;
             }
-            for (unsigned int i = 0; i < vertexBuffer.size(); i++) {
-                vertexBuffer[i].clear();
-            }
         }
         void RenderTarget::beginRecordSecondaryCommandBuffers() {
             if (!secondaryCommandsOnRecordedState[getCurrentFrame()]) {
@@ -955,6 +985,14 @@ namespace odfaeg {
                 }
                 secondaryCommandsOnRecordedState[getCurrentFrame()] = true;
             }
+        }
+        void RenderTarget::endRecordCommandBuffers() {
+            if (commandsOnRecordedState[getCurrentFrame()]) {
+                if (vkEndCommandBuffer(commandBuffers[getCurrentFrame()]) != VK_SUCCESS) {
+                    throw core::Erreur(0, "failed to record command buffer!", 1);
+                }
+            }
+            commandsOnRecordedState[getCurrentFrame()] = false;
         }
         void RenderTarget::endRecordSecondaryCommandBuffers() {
             if (vkEndCommandBuffer(getSecondaryCommandBuffers()[getCurrentFrame()]) != VK_SUCCESS) {
@@ -988,6 +1026,7 @@ namespace odfaeg {
         void RenderTarget::endRenderPass() {
             vkCmdEndRenderPass(getCommandBuffers()[getCurrentFrame()]);
         }
+
         void RenderTarget::applyViewportAndScissor(VkCommandBuffer cmd) {
 
             ////////std::cout<<(m_view.getViewport().getSize().x == 800 && m_view.getViewport().getSize().y == 800)<<std::endl;
@@ -997,8 +1036,10 @@ namespace odfaeg {
         }
         void RenderTarget::recordCommandBuffers(VkCommandBuffer cmd, VertexBuffer& vb, PrimitiveType primitiveType, RenderStates states) {
             //std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+
             Shader* shader = const_cast<Shader*>(states.shader);
             states.blendMode.updateIds();
+
             /*////std::cout<<"blend mode : "<<states.blendMode.colorSrcFactor<<","<<states.blendMode.colorDstFactor<<std::endl;
             system("PAUSE");*/
 
@@ -1017,74 +1058,21 @@ namespace odfaeg {
                     //////std::cout<<"render pass cmd rt : "<<getRenderPass()<<std::endl;*/
                 /*std::cout<<"ids : "<<shader->getId()<<","<<vb.getPrimitiveType()<<","<<id<<","<<states.blendMode.id<<std::endl;
                 system("PAUSE");*/
-                vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+primitiveType][0][states.blendMode.id]);
+                /*if (depthTestEnabled)
+                    std::cout<<"depth test enabled"<<std::endl;*/
+
+                vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+primitiveType][0][(depthTestEnabled) ? states.blendMode.nbBlendModes + states.blendMode.id : states.blendMode.id]);
                 ////////std::cout<<"buffer : "<<this->vertexBuffers[selectedBuffer]->getVertexBuffer()<<std::endl;
 
                 VkBuffer vertexBuffers[] = {vb.getVertexBuffer(getCurrentFrame())};
                 VkDeviceSize offsets[] = {0};
                 vkCmdBindVertexBuffers(cmd, 0, 1, vertexBuffers, offsets);
-                if (usePushDescriptorSets) {
-                    UniformBufferObject ubo;
-                    ubo.proj = toVulkanMatrix(m_view.getProjMatrix().getMatrix())/*.transpose()*/;
-                    //ubo.proj.m22 *= -1;
-                    ubo.view = toVulkanMatrix(m_view.getViewMatrix().getMatrix())/*.transpose()*/;
-                    ubo.model = toVulkanMatrix(states.transform.getMatrix())/*.transpose()*/;
-                    if (states.texture != nullptr)
-                       ubo.textureMatrix = toVulkanMatrix(states.texture->getTextureMatrix());
-                    else
-                       ubo.textureMatrix = toVulkanMatrix(math::Matrix4f());
-
-                    updateUniformBuffer(getCurrentFrame(), ubo);
-                    VkDescriptorBufferInfo bufferInfo{};
-                    bufferInfo.buffer = uniformBuffers[getCurrentFrame()];
-                    bufferInfo.offset = 0;
-                    bufferInfo.range = sizeof(UniformBufferObject);
-                    if (states.texture != nullptr) {
-                        VkDescriptorImageInfo imageInfo{};
-                        imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                        imageInfo.imageView = const_cast<Texture*>(states.texture)->getImageView();
-                        imageInfo.sampler = const_cast<Texture*>(states.texture)->getSampler();
-                        std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
-
-                        descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                        descriptorWrites[0].dstSet = 0;
-                        descriptorWrites[0].dstBinding = 0;
-                        descriptorWrites[0].dstArrayElement = 0;
-                        descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-                        descriptorWrites[0].descriptorCount = 1;
-                        descriptorWrites[0].pBufferInfo = &bufferInfo;
+                unsigned int descriptorId = shader->getId();
 
 
+                vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+primitiveType][0][(depthTestEnabled) ? states.blendMode.nbBlendModes + states.blendMode.id : states.blendMode.id], 0, 1, &descriptorSets[shader->getId()][getCurrentFrame()], 0, nullptr);
 
-                        descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                        descriptorWrites[1].dstSet = 0;
-                        descriptorWrites[1].dstBinding = 1;
-                        descriptorWrites[1].dstArrayElement = 0;
-                        descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                        descriptorWrites[1].descriptorCount = 1;
-                        descriptorWrites[1].pImageInfo = &imageInfo;
-
-                        vkCmdPushDescriptorSetKHR(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+primitiveType][0][states.blendMode.id], 0, 2, descriptorWrites.data());
-                    }  else {
-                        std::array<VkWriteDescriptorSet, 1> descriptorWrites{};
-
-                        descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                        descriptorWrites[0].dstSet = 0;
-                        descriptorWrites[0].dstBinding = 0;
-                        descriptorWrites[0].dstArrayElement = 0;
-                        descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-                        descriptorWrites[0].descriptorCount = 1;
-                        descriptorWrites[0].pBufferInfo = &bufferInfo;
-
-                        vkCmdPushDescriptorSetKHR(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+primitiveType][0][states.blendMode.id], 0, 1, descriptorWrites.data());
-                    }
-                } else {
-                    unsigned int descriptorId = shader->getId();
-                    vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+primitiveType][id][states.blendMode.id], 0, 1, &descriptorSets[descriptorId][getCurrentFrame()], 0, nullptr);
-                }
                 applyViewportAndScissor(cmd);
-
-
                 if(vb.getIndicesSize() > 0) {
                     vkCmdBindIndexBuffer(cmd, vb.getIndexBuffer(getCurrentFrame()), 0, VK_INDEX_TYPE_UINT16);
                 }
@@ -1148,9 +1136,11 @@ namespace odfaeg {
             for (unsigned int i = 0; i < descriptorPool.size(); i++) {
                 vkDestroyDescriptorPool(vkDevice.getDevice(), descriptorPool[i], nullptr);
             }
-            for (unsigned int i = 0; i < uniformBuffers.size(); i++) {
-                vkDestroyBuffer(vkDevice.getDevice(), uniformBuffers[i], nullptr);
-                vkFreeMemory(vkDevice.getDevice(), uniformBuffersMemory[i], nullptr);
+            for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+                vkDestroyBuffer(vkDevice.getDevice(), drawableDataSSBO[i], nullptr);
+                vkFreeMemory(vkDevice.getDevice(), drawableDataSSBOMemory[i], nullptr);
+                vkDestroyBuffer(vkDevice.getDevice(), stagingDrawableData[i], nullptr);
+                vkFreeMemory(vkDevice.getDevice(), stagingDrawableDataMemory[i], nullptr);
             }
         }
         std::vector<VkCommandBuffer>& RenderTarget::getCommandBuffers() {

@@ -305,6 +305,7 @@ namespace odfaeg {
                                                                              layout (location = 1) in vec4 color;
                                                                              layout (location = 2) in vec2 texCoords;
                                                                              layout (location = 3) in vec3 normals;
+                                                                             layout (location = 4) in int drawableDataID;
                                                                              struct ModelData {
                                                                                 mat4 modelMatrix;
                                                                              };
@@ -337,6 +338,7 @@ namespace odfaeg {
                                                                              layout (location = 2) out uint texIndex;
                                                                              layout (location = 3) out uint layer;
                                                                              layout (location = 4) out vec3 normal;
+                                                                             layout (location = 5) out int drawableID;
                                                                              void main() {
                                                                                  gl_PointSize = 2.0f;
                                                                                  ModelData model = modelDatas[gl_InstanceIndex];
@@ -350,6 +352,7 @@ namespace odfaeg {
                                                                                  texIndex = textureIndex;
                                                                                  layer = l;
                                                                                  normal = normals;
+                                                                                 drawableID = drawableDataID;
                                                                              }
                                                                              )";
                         const std::string bumpIndirectRenderingVertexShader = R"(#version 460
@@ -357,6 +360,7 @@ namespace odfaeg {
                                                                              layout (location = 1) in vec4 color;
                                                                              layout (location = 2) in vec2 texCoords;
                                                                              layout (location = 3) in vec3 normals;
+                                                                             layout (location = 4) in int drawableDataID;
 
                                                                              struct ModelData {
                                                                                 mat4 modelMatrix;
@@ -391,6 +395,7 @@ namespace odfaeg {
                                                                              layout (location = 2) out uint texIndex;
                                                                              layout (location = 3) out uint layer;
                                                                              layout (location = 4) out vec3 normal;
+                                                                             layout (location = 5) out int drawableID;
                                                                              void main() {
                                                                                  gl_PointSize = 2.0f;
                                                                                  ModelData model = modelDatas[gl_InstanceIndex];
@@ -404,6 +409,7 @@ namespace odfaeg {
                                                                                  texIndex = textureIndex;
                                                                                  layer = l;
                                                                                  normal = normals;
+                                                                                 drawableID = drawableDataID;
                                                                              }
                                                                              )";
                         const std::string specularIndirectRenderingVertexShader = R"(#version 460
@@ -411,6 +417,7 @@ namespace odfaeg {
                                                                                      layout (location = 1) in vec4 color;
                                                                                      layout (location = 2) in vec2 texCoords;
                                                                                      layout (location = 3) in vec3 normals;
+                                                                                     layout (location = 4) in int drawableDataID;
                                                                                      struct ModelData {
                                                                                         mat4 modelMatrix;
                                                                                      };
@@ -445,6 +452,7 @@ namespace odfaeg {
                                                                                      layout (location = 3) out uint layer;
                                                                                      layout (location = 4) out vec3 normal;
                                                                                      layout (location = 5) out vec2 specular;
+                                                                                     layout (location = 6) out int drawableID;
                                                                                      void main() {
                                                                                          gl_PointSize = 2.0f;
                                                                                          ModelData model = modelDatas[gl_InstanceIndex];
@@ -459,6 +467,7 @@ namespace odfaeg {
                                                                                          layer = l;
                                                                                          specular = vec2(material.specularIntensity, material.specularPower);
                                                                                          normal = normals;
+                                                                                         drawableID = drawableDataID;
                                                                                      }
                                                                                      )";
                         const std::string perPixLightingIndirectRenderingVertexShader = R"(#version 460
@@ -467,6 +476,7 @@ namespace odfaeg {
                                                                                       layout (location = 1) in vec4 color;
                                                                                       layout (location = 2) in vec2 texCoords;
                                                                                       layout (location = 3) in vec3 normals;
+                                                                                      layout (location = 4) in int drawableDataID;
                                                                                       layout (push_constant)uniform PushConsts {
                                                                                          mat4 projectionMatrix;
                                                                                          layout (offset = 64) mat4 viewMatrix;
@@ -504,6 +514,7 @@ namespace odfaeg {
                                                                                       layout (location = 5) out vec4 lightPos;
                                                                                       layout (location = 6) out vec4 lightColor;
                                                                                       layout (location = 7) out float isOrthoProj;
+                                                                                      layout (location = 8) out int drawableID;
                                                                                       void main() {
                                                                                          gl_PointSize = 2.0f;
                                                                                          ModelData model = modelDatas[gl_InstanceIndex];
@@ -527,6 +538,7 @@ namespace odfaeg {
                                                                                          lightColor = material.lightColor;
 
                                                                                          normal = normals;
+                                                                                         drawableID = drawableDataID;
                                                                                          isOrthoProj = pushConsts.projectionMatrix[3][3];
                                                                                       }
                                                                                       )";
@@ -541,6 +553,7 @@ namespace odfaeg {
                                                                           layout (location = 2) in flat uint texIndex;
                                                                           layout (location = 3) in flat uint layer;
                                                                           layout (location = 4) in vec3 normal;
+                                                                          layout (location = 5) in flat int drawableID;
                                                                           layout(set = 0, binding = 3) uniform sampler2D textures[];
                                                                           layout(set = 0, binding = 2, rgba32f) uniform coherent image2D depthBuffer;
                                                                           layout (location = 0) out vec4 fColor;
@@ -574,6 +587,7 @@ namespace odfaeg {
                                                                       layout (location = 2) in flat uint texIndex;
                                                                       layout (location = 3) in flat uint layer;
                                                                       layout (location = 4) in vec3 normal;
+                                                                      layout (location = 5) in flat int drawableID;
                                                                       layout(set = 0, binding = 4) uniform sampler2D textures[];
                                                                       layout(binding = 2, rgba32f) uniform coherent image2D alphaBuffer;
                                                                       layout(set = 0, binding =3) uniform sampler2D depthBuffer[];
@@ -612,6 +626,7 @@ namespace odfaeg {
                                                                      layout (location = 3) in flat uint layer;
                                                                      layout (location = 4) in vec3 normal;
                                                                      layout (location = 5) in vec2 specular;
+                                                                     layout (location = 6) in flat int drawableID;
                                                                      layout (push_constant) uniform PushConsts {
                                                                          layout (offset = 128) vec4 resolution;
                                                                          layout (offset = 144) float maxM;
@@ -642,6 +657,7 @@ namespace odfaeg {
                                                                  layout (location = 2) in flat uint texIndex;
                                                                  layout (location = 3) in flat uint layer;
                                                                  layout (location = 4) in vec3 normal;
+                                                                 layout (location = 5) in flat int drawableID;
                                                                  layout(set = 0, binding = 2) uniform sampler2D depthBuffer[];
                                                                  layout (push_constant) uniform PushConsts {
                                                                     layout (offset = 128) vec4 resolution;
@@ -670,6 +686,7 @@ namespace odfaeg {
                                                                  layout (location = 5) in flat vec4 lightPos;
                                                                  layout (location = 6) in flat vec4 lightColor;
                                                                  layout (location = 7) in float isOrthoProj;
+                                                                 layout (location = 8) in flat int drawableID;
                                                                  const vec2 size = vec2(2.0,0.0);
                                                                  const ivec3 off = ivec3(-1,0,1);
                                                                  layout(set = 0, binding = 0) uniform sampler2D depthTexture[];

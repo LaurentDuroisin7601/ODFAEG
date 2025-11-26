@@ -106,9 +106,7 @@ namespace odfaeg {
                 selectedItem = nullptr;
             }
             void DropDownList::onDraw(RenderTarget& target, RenderStates states) {
-                #ifdef VULKAN
-                target.beginRecordCommandBuffers();
-                #endif // VULKAN
+
                 rect.setPosition(getPosition());
                 rect.setSize(getSize());
                 shape = ConvexShape(3);
@@ -124,9 +122,7 @@ namespace odfaeg {
                 }
                 bp = physic::BoundingPolyhedron(points[1], points[0], points[2],true);
                 target.draw(rect, states);
-                #ifdef VULKAN
-                target.submit(false);
-                #endif // VULKAN
+
                 if (!dropDown && selectedItem != nullptr) {
                     /*if (getName() == "FUNCTION")
                         //////std::cout<<"draw items"<<std::endl;*/
@@ -142,14 +138,10 @@ namespace odfaeg {
                         target.draw(*items[i], states);
                     }
                 }
-                #ifdef VULKAN
-                target.beginRecordCommandBuffers();
-                #endif // VULKAN
                 target.draw(shape, states);
                 #ifdef VULKAN
                 target.submit(false);
-                #endif // VULKAN
-
+                #endif
             }
             void DropDownList::onEventPushed(window::IEvent event, RenderWindow& window) {
                 if(&window == &getWindow())

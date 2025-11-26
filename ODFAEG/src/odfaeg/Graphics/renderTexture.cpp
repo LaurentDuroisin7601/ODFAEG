@@ -327,7 +327,20 @@ namespace odfaeg
 
         }
         void RenderTexture::clear(const Color& color) {
-             firstSubmit = true;
+            firstSubmit = true;
+            firstDraw = true;
+            registerClearCommands(color);
+            for (unsigned int i = 0; i < 7; i++)
+                vertexBuffer[i].clear();
+            drawableData.clear();
+
+
+                /*if (vkEndCommandBuffer(commandBuffers[currentFrame]) != VK_SUCCESS) {
+                    throw core::Erreur(0, "failed to record command buffer!", 1);
+                }*/
+             //}
+        }
+        void RenderTexture::registerClearCommands(const Color& color) {
              clearColor = color;
              VkClearColorValue clearValue = {clearColor.r / 255.f, clearColor.g / 255.f, clearColor.b / 255.f, clearColor.a / 255.f};
              VkClearDepthStencilValue clearDepthStencilValue = {
@@ -404,11 +417,6 @@ namespace odfaeg
                 vkCmdPipelineBarrier(getCommandBuffers()[currentFrame], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &depthStencilToClearBarrier);
                 vkCmdClearDepthStencilImage(getCommandBuffers()[currentFrame], getDepthTexture().getImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearDepthStencilValue, 1, &imageRange2);
                 vkCmdPipelineBarrier(getCommandBuffers()[currentFrame], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &clearToDepthStencilBarrier);
-
-                /*if (vkEndCommandBuffer(commandBuffers[currentFrame]) != VK_SUCCESS) {
-                    throw core::Erreur(0, "failed to record command buffer!", 1);
-                }*/
-             //}
         }
         const uint32_t& RenderTexture::getImageIndex() {
             return imageIndex;
@@ -420,15 +428,32 @@ namespace odfaeg
             currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
             imageIndex = (imageIndex + 1) % NB_SWAPCHAIN_IMAGES;
         }
+        bool RenderTexture::isFirstSubmit() {
+            return firstSubmit;
+        }
         void RenderTexture::submit(bool lastSubmit, std::vector<VkSemaphore> signalSemaphores,
                          std::vector<VkSemaphore> waitSemaphores, std::vector<VkPipelineStageFlags> waitStages,
                          std::vector<uint64_t> signalValues,
                          std::vector<uint64_t> waitValues, std::vector<VkFence> fences) {
             if (getCommandBuffers().size() > 0) {
-                ////////std::cout<<"render texture end command buffer"<<std::endl;
 
-                if (vkEndCommandBuffer(getCommandBuffers()[currentFrame]) != VK_SUCCESS) {
-                    throw core::Erreur(0, "failed to record command buffer!", 1);
+                ////////std::cout<<"render texture end command buffer"<<std::endl;
+                if (commandsOnRecordedState[currentFrame]) {
+                    if (vkEndCommandBuffer(getCommandBuffers()[currentFrame]) != VK_SUCCESS) {
+                        throw core::Erreur(0, "failed to record command buffer!", 1);
+                    }
+                }
+                VkDeviceSize bufferSize = sizeof(DrawableData) * drawableData.size();
+                if (bufferSize > 0) {
+                    //std::cout<<"size models : "<<bufferSize<<std::endl;
+                    void* data;
+                    vkMapMemory(vkDevice.getDevice(), stagingDrawableDataMemory[getCurrentFrame()], 0, bufferSize, 0, &data);
+                    memcpy(data, drawableData.data(), (size_t)bufferSize);
+                    vkUnmapMemory(vkDevice.getDevice(), stagingDrawableDataMemory[getCurrentFrame()]);
+                }
+                for (unsigned int i = 0; i < 7; i++) {
+                    if (vertexBuffer[i].getVertexCount() > 0)
+                        vertexBuffer[i].updateStagingBuffers(currentFrame);
                 }
                 if (firstSubmit) {
                     if (waitValues.size() == 0 && waitSemaphores.size() > 0) {
@@ -481,6 +506,9 @@ namespace odfaeg
                 }
                 vkWaitForFences(vkDevice.getDevice(), 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
                 vkResetFences(vkDevice.getDevice(), 1, &inFlightFences[currentFrame]);
+                for (unsigned int i = 0; i < 7; i++)
+                    vertexBuffer[i].clear();
+                drawableData.clear();
             }
         }
         RenderTexture::~RenderTexture() {

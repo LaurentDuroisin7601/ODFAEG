@@ -51,27 +51,15 @@ namespace odfaeg {
             }
             void OptionPane::onDraw(RenderTarget& target, RenderStates states) {
                 //if (rw.isOpen()) {
-                    #ifdef VULKAN
-                    target.beginRecordCommandBuffers();
-                    #endif // VULKAN
+
                     target.draw(text, states);
-                    #ifdef VULKAN
-                    target.submit(false);
-                    #endif // VULKAN
+
                     if (type == CONFIRMATION_DIALOG)  {
-                        #ifdef VULKAN
-                        target.beginRecordCommandBuffers();
-                        #endif // VULKAN
+
                         target.draw(*yes, states);
-                        #ifdef VULKAN
-                        target.submit(false);
-                        target.beginRecordCommandBuffers();
-                        #endif // VULKAN
                         target.draw(*no, states);
-                        #ifdef VULKAN
-                        target.submit(false);
-                        #endif // VULKAN
                     }
+
                 //}
             }
             void OptionPane::onEnter() {

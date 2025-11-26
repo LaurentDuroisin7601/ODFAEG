@@ -5731,7 +5731,7 @@ void ODFAEGCreator::moveCursor(Vec2f mousePos) {
     //std::cout<<"move cursor"<<std::endl;
     if (bb.isPointInside(Vec3f(mousePos.x(), mousePos.y(), 0))) {
 
-        if (getWorld()->getCurrentSceneManager() == nullptr) {
+        if (getWorld() != nullptr && getWorld()->getCurrentSceneManager() == nullptr) {
             int x = mousePos.x()-getRenderWindow().getView().getSize().x() * 0.5f;
             int y = mousePos.y()-getRenderWindow().getView().getSize().y() * 0.5f;
             cursor.setPosition(Vec3f(x, y, 0));

@@ -403,18 +403,20 @@ namespace odfaeg
             {
                 ensureGeometryUpdate();
                 states.transform.combine(getTransform().getMatrix());
-                target.beginRecordCommandBuffers();
+                //target.beginRecordCommandBuffers();
                 target.draw(m_backgroundVertices, states);
-                target.submit(false);
+                //target.submit(false);
                 states.texture = &m_font->getTexture(m_characterSize);
                 // Only draw the outline if there is something to draw
                 if (m_outlineThickness != 0) {
-                    target.beginRecordCommandBuffers();
+                    //target.beginRecordCommandBuffers();
                     target.draw(m_outlineVertices, states);
-                    target.submit(false);
+                    //target.submit(false);
                 }
-                target.beginRecordCommandBuffers();
+                //target.beginRecordCommandBuffers();
+
                 target.draw(m_vertices, states);
+                //target.submit(false);
             }
         }
         void Text::setSelected(int indexMin, int indexMax) {

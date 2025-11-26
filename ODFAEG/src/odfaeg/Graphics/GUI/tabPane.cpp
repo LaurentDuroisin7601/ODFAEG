@@ -103,14 +103,11 @@ namespace odfaeg {
             }
             void TabPane::drawOn(RenderTarget& target, RenderStates states) {
                 if (scrollX) {
-                    #ifdef VULKAN
-                    target.beginRecordCommandBuffers();
-                    #endif // VULKAN
                     target.draw(vertScrollBar, states);
-                    #ifdef VULKAN
-                    target.submit(false);
-                    #endif // VULKAN
                 }
+                #ifdef VULKAN
+                target.submit(false);
+                #endif
             }
         }
     }

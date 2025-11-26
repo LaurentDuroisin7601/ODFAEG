@@ -110,6 +110,9 @@ namespace odfaeg {
             #endif
             }*/
             ~RenderTexture();
+        protected :
+            bool isFirstSubmit();
+            void registerClearCommands(const Color& clearColor = Color(0, 0, 0, 255));
         private :
 
             void createSyncObjects();

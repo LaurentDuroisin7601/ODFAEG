@@ -6,15 +6,12 @@ namespace odfaeg {
                 mousePos = math::Vec3f(0, 0, 0);
             }
             void Icon::onDraw (RenderTarget& target, RenderStates states) {
-                #ifdef VULKAN
-                target.beginRecordCommandBuffers();
-                #endif // VULKAN
                 icon.setPosition(getPosition());
                 icon.setSize(getSize());
                 target.draw(icon, states);
                 #ifdef VULKAN
                 target.submit(false);
-                #endif // VULKAN
+                #endif
             }
             bool Icon::isMouseInside() {
                 physic::BoundingBox bb(getPosition().x(), getPosition().y(), 0, getSize().x(), getSize().y(), 0);

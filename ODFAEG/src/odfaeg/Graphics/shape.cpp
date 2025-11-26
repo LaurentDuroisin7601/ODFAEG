@@ -211,8 +211,11 @@ namespace odfaeg
             if (m_outlineThickness != 0)
             {
                 states.texture = nullptr;
+
                 target.draw(m_outlineVertices, states);
+
             }
+
         }
 
 

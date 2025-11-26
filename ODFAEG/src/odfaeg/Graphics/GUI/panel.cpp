@@ -203,75 +203,46 @@ namespace odfaeg {
                     glCheck(glScissor(getPosition().x(), getWindow().getSize().y() - (getPosition().y() + getSize().y()), getSize().x(), getSize().y()));
                     #endif
                 }
-                #ifdef VULKAN
+                /*#ifdef VULKAN
                 target.beginRecordCommandBuffers();
-                #endif // VULKAN
+                #endif // VULKAN*/
                 rect.setPosition(getPosition());
                 rect.setSize(getSize());
                 target.draw(rect, states);
                 #ifdef VULKAN
                 target.submit(false);
-                #endif // VULKAN
-                #ifdef VULKAN
                 target.getScissors()[0].offset = {getPosition().x(), getPosition().y() };
                 target.getScissors()[0].extent = {getSize().x(), getSize().y()};
                 #endif
                 for (unsigned int i = 0; i < sprites.size(); i++) {
-                    #ifdef VULKAN
-                    target.beginRecordCommandBuffers();
-                    #endif // VULKAN
                     target.draw(sprites[i], states);
-                    #ifdef VULKAN
-                    target.submit(false);
-                    #endif // VULKAN
                 }
                 for (unsigned int i = 0; i < shapes.size(); i++) {
-                    #ifdef VULKAN
-                    target.beginRecordCommandBuffers();
-                    #endif // VULKAN
                     target.draw(*shapes[i], states);
-                    #ifdef VULKAN
-                    target.submit(false);
-                    #endif // VULKAN
                 }
             }
             void Panel::drawOn(RenderTarget& target, RenderStates states) {
+                #ifdef VULKAN
+                target.beginRecordCommandBuffers();
+                target.submit(false);
+                target.getScissors()[0].offset = {0, 0};
+                target.getScissors()[0].extent = {target.getSize().x(), target.getSize().y()};
+                #endif // VULKAN
                 if (scrollX || scrollY) {
                     corner.setFillColor(Color::Red);
-                    #ifdef VULKAN
-                    target.beginRecordCommandBuffers();
-                    #endif // VULKAN
                     target.draw(corner, states);
-                    #ifdef VULKAN
-                    target.submit(false);
-                    #endif // VULKAN
                 }
                 if (scrollX) {
                     vertScrollBar.setFillColor(Color::Red);
-                    #ifdef VULKAN
-                    target.beginRecordCommandBuffers();
-                    #endif // VULKAN
                     target.draw(vertScrollBar, states);
-                    #ifdef VULKAN
-                    target.submit(false);
-                    #endif // VULKAN
                 }
                 if (scrollY) {
                     horScrollBar.setFillColor(Color::Red);
-                    #ifdef VULKAN
-                    target.beginRecordCommandBuffers();
-                    #endif // VULKAN
                     target.draw(horScrollBar, states);
-                    #ifdef VULKAN
-                    target.submit(false);
-                    #endif // VULKAN
+
                 }
-                #ifdef VULKAN
-                //target.beginRecordCommandBuffers();
-                target.getScissors()[0].offset = {0, 0};
-                target.getScissors()[0].extent = {target.getSize().x(), target.getSize().y()};
-                //target.submit(false);
-                #endif // VULKAN
+
+
                 if (disableScissor) {
                     #ifndef VULKAN
                     glCheck(glDisable(GL_SCISSOR_TEST));

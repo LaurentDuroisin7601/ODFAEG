@@ -1530,9 +1530,11 @@ namespace odfaeg {
                                                          layout (location = 1) in vec4 color;
                                                          layout (location = 2) in vec2 texCoords;
                                                          layout (location = 3) in vec3 normals;
+                                                         layout (location = 4) in int drawableDataID;
                                                          layout(location = 0) out vec4 frontColor;
                                                          layout(location = 1) out vec3 fTexCoords;
                                                          layout(location = 2) out vec3 normal;
+                                                         layout(location = 3) out int drawableID;
 
                                                          layout (push_constant) uniform PushConsts {
                                                             mat4 projectionMatrix;
@@ -1545,8 +1547,9 @@ namespace odfaeg {
                                                              gl_PointSize = 2.0f;
                                                              frontColor = color;
                                                              normal = normals;
+                                                             fTexCoords = vec3(texCoords.xy, 0);
                                                              fTexCoords = aPos;
-
+                                                             drawableID = drawableDataID;
                                                              gl_Position = vec4(aPos, 1.0) * mat4(mat3(pushConsts.viewMatrix)) * pushConsts.projectionMatrix;
                                                              //debugPrintfEXT("vertex %v4f", gl_Position);
                                                          }
@@ -1559,6 +1562,7 @@ namespace odfaeg {
                                                             layout (location = 1) in vec4 color;
                                                             layout (location = 2) in vec2 texCoords;
                                                             layout (location = 3) in vec3 normals;
+                                                            layout (location = 4) in int drawableDataID;
 
                                                             layout (push_constant) uniform PushConsts {
                                                                 mat4 projectionMatrix;
@@ -1587,6 +1591,7 @@ namespace odfaeg {
                                                             layout(location = 1) out vec2 fTexCoords;
                                                             layout(location = 2) out uint texIndex;
                                                             layout(location = 3) out vec3 normal;
+                                                            layout(location = 4) out int drawableID;
 
 
                                                             void main() {
@@ -1609,9 +1614,7 @@ namespace odfaeg {
                                                                 frontColor = color;
                                                                 texIndex = textureIndex;
                                                                 normal = normals;
-
-
-
+                                                                drawableID = drawableDataID;
                                                             }
                                                             )";
                 const std::string  simpleVertexShader = R"(#version 460
@@ -1619,10 +1622,12 @@ namespace odfaeg {
                                                         layout (location = 1) in vec4 color;
                                                         layout (location = 2) in vec2 texCoords;
                                                         layout (location = 3) in vec3 normals;
+                                                        layout (location = 4) in int drawableDataID;
 
                                                         layout(location = 0) out vec4 frontColor;
                                                         layout(location = 1) out vec2 fTexCoords;
                                                         layout(location = 2) out vec3 normal;
+                                                        layout(location = 3) out int drawableID;
                                                         layout (push_constant) uniform PushConsts {
                                                             mat4 projectionMatrix;
                                                             mat4 viewMatrix;
@@ -1634,15 +1639,17 @@ namespace odfaeg {
                                                              gl_PointSize = 2.0f;
                                                              frontColor = color;
                                                              fTexCoords = texCoords;
-
-                                                            normal = normals;
+                                                             normal = normals;
+                                                             drawableID = drawableDataID;
                                                         })";
                 const std::string skyboxFragmentShader = R"(#version 460
                                                             #extension GL_EXT_debug_printf : enable
+                                                            #extension GL_EXT_nonuniform_qualifier : enable
                                                             layout (location = 0) out vec4 fcolor;
                                                             layout(location = 0) in vec4 frontColor;
                                                             layout(location = 1) in vec3 fTexCoords;
                                                             layout(location = 2) in vec3 normal;
+                                                            layout(location = 3) in flat int drawableID;
                                                             layout (binding = 0) uniform samplerCube skybox;
                                                             void main() {
                                                                 //debugPrintfEXT("cubemap fragment shader");
@@ -1672,6 +1679,7 @@ namespace odfaeg {
                                                       layout(location = 1) in vec2 fTexCoords;
                                                       layout(location = 2) in flat uint texIndex;
                                                       layout(location = 3) in vec3 normal;
+                                                      layout(location = 4) in flat int drawableID;
                                                       void main() {
                                                            uint nodeIdx = atomicAdd(count, 1);
                                                            vec4 color = (texIndex != 0) ? frontColor * texture(textures[texIndex-1], fTexCoords.xy) : frontColor;
@@ -1691,6 +1699,7 @@ namespace odfaeg {
                                                    R"(
                                                    #version 460
                                                    #extension GL_ARB_separate_shader_objects : enable
+                                                   #extension GL_EXT_nonuniform_qualifier : enable
                                                    #extension GL_EXT_debug_printf : enable
                                                    #define MAX_FRAGMENTS 20
                                                    struct NodeType {
@@ -1705,6 +1714,7 @@ namespace odfaeg {
                                                    layout(location = 0) in vec4 frontColor;
                                                    layout(location = 1) in vec2 fTexCoords;
                                                    layout(location = 2) in vec3 normal;
+                                                   layout(location = 3) in flat int drawableID;
                                                    layout(location = 0) out vec4 fcolor;
                                                    void main() {
                                                       //debugPrintfEXT("color = ");
