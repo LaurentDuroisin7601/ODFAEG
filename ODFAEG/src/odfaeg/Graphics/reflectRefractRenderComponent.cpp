@@ -4753,7 +4753,7 @@ namespace odfaeg {
                         unsigned int p = m_indexed[i].getAllVertices().getPrimitiveType();
                         MaterialData material;
                         {
-                        std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                            std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                             material.textureIndex = (m_indexed[i].getMaterial().getTexture() != nullptr) ? m_indexed[i].getMaterial().getTexture()->getId() : 0;
                             material.layer = m_indexed[i].getMaterial().getLayer();
                             material.uvScale = (m_indexed[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_indexed[i].getMaterial().getTexture()->getSize().x(), 1.f / m_indexed[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);

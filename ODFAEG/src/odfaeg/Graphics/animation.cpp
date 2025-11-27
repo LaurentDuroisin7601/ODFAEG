@@ -59,6 +59,7 @@ namespace odfaeg {
             return currentFrameIndex;
         }
         void Anim::setCurrentFrame (int index) {
+            std::lock_guard<std::recursive_mutex> lock(rec_mutex);
             if (getChildren().size() >= 2) {
                 previousFrame = getChildren()[(index -1 < 0) ? 0 : index - 1];
                 currentFrame = getChildren()[index];
@@ -79,6 +80,7 @@ namespace odfaeg {
             return running;
         }
         void Anim::play (bool loop) {
+            std::lock_guard<std::recursive_mutex> lock(rec_mutex);
             if (getChildren().size() > 1 && !running) {
                 running = true;
                 ////////std::cout<<"play : "<<running<<std::endl;
