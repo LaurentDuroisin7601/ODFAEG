@@ -620,7 +620,7 @@ namespace sorrok {
                 //World::update("EntitiesUpdater");
             }
         }
-        eu->needToUpdate();
+        //eu->needToUpdate();
         fpsCounter++;
         if (getClock("FPS").getElapsedTime() >= seconds(1.f)) {
             std::cout<<"FPS : "<<fpsCounter<<std::endl;
