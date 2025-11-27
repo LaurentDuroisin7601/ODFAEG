@@ -121,8 +121,8 @@ namespace odfaeg {
             }
             void TextArea::onDraw(RenderTarget& target, RenderStates states) {
                 VertexArray va(Lines);
-                va.append(Vertex(math::Vec3f(cursorPos.x(), cursorPos.y(), 0), Color::Black));
-                va.append(Vertex(math::Vec3f(cursorPos.x(), cursorPos.y() + text.getCharacterSize(), 0), Color::Black));
+                va.append(Vertex(math::Vec3f(cursorPos.x(), cursorPos.y(), getPosition().z()+1), Color::Black));
+                va.append(Vertex(math::Vec3f(cursorPos.x(), cursorPos.y() + text.getCharacterSize(), getPosition().z()+1), Color::Black));
                 rect.setPosition(getPosition());
                 text.setPosition(math::Vec3f(getPosition().x() + scrollX, getPosition().y() + scrollY, getPosition().z()+1));
                 rect.setSize(getSize());

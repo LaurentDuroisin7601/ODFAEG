@@ -761,6 +761,7 @@ namespace odfaeg {
                                 CellMap* cell = getGridCellAt(point);
                                 if (cell != nullptr) {
                                     for (unsigned int n = 0; n < cell->getNbEntitiesInside(); n++) {
+                                       std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                                        Entity* entity = cell->getEntityInside(n);
                                        if (visibleEntities[entity->getRootTypeInt()][entity->getId()] == nullptr) {
                                             visibleEntities[entity->getRootTypeInt()][entity->getId()] = entity;
@@ -783,6 +784,7 @@ namespace odfaeg {
 
                 if (c < frcm->getNbComponents() && frcm->getRenderComponent(c) != nullptr) {
                     //////////std::cout<<"get entities on component : "<<c<<std::endl;
+                    std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                     std::vector<Entity*> entities = getVisibleEntities(frcm->getRenderComponent(c)->getExpression(), factory);
                     frcm->getRenderComponent(c)->loadEntitiesOnComponent(entities);
                 }

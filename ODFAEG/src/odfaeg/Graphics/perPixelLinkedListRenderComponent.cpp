@@ -2120,10 +2120,13 @@ namespace odfaeg {
                     indirectDrawPushConsts.time = time;
 
                     MaterialData material;
-                    material.textureIndex = (m_instancesIndexed[i].getMaterial().getTexture() != nullptr) ? m_instancesIndexed[i].getMaterial().getTexture()->getId() : 0;
-                    material.materialType = m_instancesIndexed[i].getMaterial().getType();
-                    material.uvScale = (m_instancesIndexed[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_instancesIndexed[i].getMaterial().getTexture()->getSize().x(), 1.f / m_instancesIndexed[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
-                    material.uvOffset = math::Vec2f(0, 0);
+                    {
+                        std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                        material.textureIndex = (m_instancesIndexed[i].getMaterial().getTexture() != nullptr) ? m_instancesIndexed[i].getMaterial().getTexture()->getId() : 0;
+                        material.materialType = m_instancesIndexed[i].getMaterial().getType();
+                        material.uvScale = (m_instancesIndexed[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_instancesIndexed[i].getMaterial().getTexture()->getSize().x(), 1.f / m_instancesIndexed[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
+                        material.uvOffset = math::Vec2f(0, 0);
+                    }
                     materialDatas[p].push_back(material);
 
                     std::vector<TransformMatrix*> tm = m_instancesIndexed[i].getTransforms();
@@ -2137,6 +2140,7 @@ namespace odfaeg {
 
                     unsigned int indexCount = 0, vertexCount = 0;
                     if (m_instancesIndexed[i].getEntities().size() > 0) {
+                        std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                         Entity* firstInstance = m_instancesIndexed[i].getEntities()[0];
                         for (unsigned int j = 0; j < firstInstance->getFaces().size(); j++) {
                             for (unsigned int k = 0; k < firstInstance->getFace(j)->getVertexArray().getVertexCount(); k++) {

@@ -510,6 +510,7 @@ namespace sorrok {
         window->draw(rect2);*/
     }
     void MyAppli::onUpdate (RenderWindow* rw, IEvent& event) {
+        //std::lock_guard<std::recursive_mutex> lock(rec_mutex);
         // check all the window's events that were triggered since the last iteration of the loop
         if (rw == &getRenderWindow() && event.type == IEvent::WINDOW_EVENT && event.window.type == IEvent::WINDOW_EVENT_CLOSED) {
             std::cout<<"close"<<std::endl;
@@ -557,6 +558,7 @@ namespace sorrok {
         }
     }
     void MyAppli::onExec () {
+        //std::lock_guard<std::recursive_mutex> lock(rec_mutex);
         std::int64_t t = getClock("LoopTime").getElapsedTime().asMicroseconds();
 
         if (caracter->isMoving()) {

@@ -4195,11 +4195,14 @@ namespace odfaeg {
                     DrawElementsIndirectCommand drawElementsIndirectCommand;
                     unsigned int p = m_instancesIndexed[i].getAllVertices().getPrimitiveType();
                     MaterialData material;
-                    material.textureIndex = (m_instancesIndexed[i].getMaterial().getTexture() != nullptr) ? m_instancesIndexed[i].getMaterial().getTexture()->getId() : 0;
-                    material.bumpTextureIndex = (m_instancesIndexed[i].getMaterial().getBumpTexture() != nullptr) ? m_instancesIndexed[i].getMaterial().getBumpTexture()->getId() : 0;
-                    material.layer = m_instancesIndexed[i].getMaterial().getLayer();
-                    material.uvScale = (m_instancesIndexed[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_instancesIndexed[i].getMaterial().getTexture()->getSize().x(), 1.f / m_instancesIndexed[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
-                    material.uvOffset = math::Vec2f(0, 0);
+                    {
+                        std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                        material.textureIndex = (m_instancesIndexed[i].getMaterial().getTexture() != nullptr) ? m_instancesIndexed[i].getMaterial().getTexture()->getId() : 0;
+                        material.bumpTextureIndex = (m_instancesIndexed[i].getMaterial().getBumpTexture() != nullptr) ? m_instancesIndexed[i].getMaterial().getBumpTexture()->getId() : 0;
+                        material.layer = m_instancesIndexed[i].getMaterial().getLayer();
+                        material.uvScale = (m_instancesIndexed[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_instancesIndexed[i].getMaterial().getTexture()->getSize().x(), 1.f / m_instancesIndexed[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
+                        material.uvOffset = math::Vec2f(0, 0);
+                    }
                     materialDatas[p].push_back(material);
                     std::vector<TransformMatrix*> tm = m_instancesIndexed[i].getTransforms();
                     for (unsigned int j = 0; j < tm.size(); j++) {
@@ -5866,6 +5869,7 @@ namespace odfaeg {
                     }
                     unsigned int vertexCount = 0, indexCount = 0;
                     if (m_instancesIndexed[i].getVertexArrays().size() > 0) {
+                        std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                         Entity* entity = m_instancesIndexed[i].getVertexArrays()[0]->getEntity();
                         for (unsigned int j = 0; j < m_instancesIndexed[i].getVertexArrays().size(); j++) {
                             if (entity == m_instancesIndexed[i].getVertexArrays()[j]->getEntity()) {

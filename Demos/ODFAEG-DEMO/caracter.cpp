@@ -127,6 +127,7 @@ namespace sorrok {
         return clockAtkSpeed.getElapsedTime();
     }
     void Caracter::setDir (Vec2f dir) {
+
         float angleRadians = dir.getAngleBetween(Vec3f::yAxis);
         int angle = Math::toDegrees(angleRadians);
         unsigned int previousAnimIndex = currentAnimIndex;

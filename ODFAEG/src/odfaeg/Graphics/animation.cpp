@@ -105,6 +105,7 @@ namespace odfaeg {
             onFrameChanged();
         }
         void Anim::onFrameChanged() {
+            std::lock_guard<std::recursive_mutex> lock(rec_mutex);
             if (getChildren().size() >= 2) {
 
                 if (previousFrame == nullptr) {
@@ -131,6 +132,7 @@ namespace odfaeg {
             }
         }
         void Anim::createFirstInterpolatedFrame (Entity* currentFrame) {
+            std::lock_guard<std::recursive_mutex> lock(rec_mutex);
             if (currentFrame->getChildren().size() > 0) {
                 for (unsigned int i = 0; i < currentFrame->getChildren().size(); i++) {
                     createFirstInterpolatedFrame(currentFrame->getChildren()[i]);
@@ -138,7 +140,7 @@ namespace odfaeg {
             }
             if (currentFrame->isLeaf()) {
                 for (unsigned int i = 0; i < currentFrame->getFaces().size(); i++) {
-                    std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+
                     VertexArray va = currentFrame->getFaces()[i].getVertexArray();
                     Face face (va,currentFrame->getFaces()[i].getMaterial(), currentFrame->getTransform());
                     interpolatedFrame->addFace(face);
@@ -152,7 +154,7 @@ namespace odfaeg {
             }
         }
         void Anim::changeInterpolatedFrame(Entity* currentFrame) {
-
+            std::lock_guard<std::recursive_mutex> lock(rec_mutex);
             if (currentFrame->getChildren().size() > 0) {
                 for (unsigned int i = 0; i < currentFrame->getChildren().size(); i++) {
                     changeInterpolatedFrame(currentFrame->getChildren()[i]);
@@ -160,7 +162,7 @@ namespace odfaeg {
             }
             if (currentFrame->isLeaf()) {
 
-                std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+
                 interpolatedFrame->getFaces().clear();
                 for (unsigned int i = 0; i < currentFrame->getFaces().size(); i++) {
                     VertexArray va = currentFrame->getFaces()[i].getVertexArray();
@@ -196,7 +198,7 @@ namespace odfaeg {
                                 /*if (currentFrame->getRootType() == "E_MONSTER")
                                     //////std::cout<<"interpolation tex coords : "<<interpolatedFrame->getFace(i)->getVertexArray()[j].texCoords.x<<","<<interpolatedFrame->getFace(i)->getVertexArray()[j].texCoords.y<<std::endl;*/
                             }
-                            std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+
                             interpolatedFrame->getFace(i)->setMaterial(currentFrame->getFace(i)->getMaterial());
                             interpolatedFrame->getFace(i)->setTransformMatrix(currentFrame->getFace(i)->getTransformMatrix());
                         }

@@ -3872,10 +3872,13 @@ namespace odfaeg {
                         DrawArraysIndirectCommand drawArraysIndirectCommand;
                         unsigned int p = m_instances[i].getAllVertices().getPrimitiveType();
                         MaterialData material;
-                        material.textureIndex = (m_instances[i].getMaterial().getTexture() != nullptr) ? m_instances[i].getMaterial().getTexture()->getId() : 0;
-                        material.layer = m_instances[i].getMaterial().getLayer();
-                        material.uvScale = (m_instances[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_instances[i].getMaterial().getTexture()->getSize().x(), 1.f / m_instances[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
-                        material.uvOffset = math::Vec2f(0, 0);
+                        {
+                            std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                            material.textureIndex = (m_instances[i].getMaterial().getTexture() != nullptr) ? m_instances[i].getMaterial().getTexture()->getId() : 0;
+                            material.layer = m_instances[i].getMaterial().getLayer();
+                            material.uvScale = (m_instances[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_instances[i].getMaterial().getTexture()->getSize().x(), 1.f / m_instances[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
+                            material.uvOffset = math::Vec2f(0, 0);
+                        }
                         materialDatas[p].push_back(material);
                         std::vector<TransformMatrix*> tm = m_instances[i].getTransforms();
                         for (unsigned int j = 0; j < tm.size(); j++) {
@@ -4134,10 +4137,13 @@ namespace odfaeg {
                         DrawElementsIndirectCommand drawElementsIndirectCommand;
                         unsigned int p = m_instancesIndexed[i].getAllVertices().getPrimitiveType();
                         MaterialData material;
-                        material.textureIndex = (m_instancesIndexed[i].getMaterial().getTexture() != nullptr) ? m_instancesIndexed[i].getMaterial().getTexture()->getId() : 0;
-                        material.uvScale = (m_instancesIndexed[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_instancesIndexed[i].getMaterial().getTexture()->getSize().x(), 1.f / m_instancesIndexed[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
-                        material.uvOffset = math::Vec2f(0, 0);
-                        material.layer = m_instancesIndexed[i].getMaterial().getLayer();
+                        {
+                            std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                            material.textureIndex = (m_instancesIndexed[i].getMaterial().getTexture() != nullptr) ? m_instancesIndexed[i].getMaterial().getTexture()->getId() : 0;
+                            material.uvScale = (m_instancesIndexed[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_instancesIndexed[i].getMaterial().getTexture()->getSize().x(), 1.f / m_instancesIndexed[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
+                            material.uvOffset = math::Vec2f(0, 0);
+                            material.layer = m_instancesIndexed[i].getMaterial().getLayer();
+                        }
                         materialDatas[p].push_back(material);
                         std::vector<TransformMatrix*> tm = m_instancesIndexed[i].getTransforms();
                         for (unsigned int j = 0; j < tm.size(); j++) {
@@ -4151,6 +4157,7 @@ namespace odfaeg {
                         }
                         unsigned int vertexCount = 0, indexCount = 0;
                         if (m_instancesIndexed[i].getEntities().size() > 0) {
+                            std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                             Entity* firstInstance = m_instancesIndexed[i].getEntities()[0];
                             for (unsigned int j = 0; j < firstInstance->getFaces().size(); j++) {
                                 for (unsigned int k = 0; k < firstInstance->getFace(j)->getVertexArray().getVertexCount(); k++) {
@@ -4359,10 +4366,13 @@ namespace odfaeg {
                         DrawArraysIndirectCommand drawArraysIndirectCommand;
                         unsigned int p = m_shadow_normals[i].getAllVertices().getPrimitiveType();
                         MaterialData material;
-                        material.textureIndex = (m_shadow_normals[i].getMaterial().getTexture() != nullptr) ? m_shadow_normals[i].getMaterial().getTexture()->getId() : 0;
-                        material.layer = m_shadow_normals[i].getMaterial().getLayer();
-                        material.uvScale = (m_shadow_normals[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_shadow_normals[i].getMaterial().getTexture()->getSize().x(), 1.f / m_shadow_normals[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
-                        material.uvOffset = math::Vec2f(0, 0);
+                        {
+                            std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                            material.textureIndex = (m_shadow_normals[i].getMaterial().getTexture() != nullptr) ? m_shadow_normals[i].getMaterial().getTexture()->getId() : 0;
+                            material.layer = m_shadow_normals[i].getMaterial().getLayer();
+                            material.uvScale = (m_shadow_normals[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_shadow_normals[i].getMaterial().getTexture()->getSize().x(), 1.f / m_shadow_normals[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
+                            material.uvOffset = math::Vec2f(0, 0);
+                        }
                         materialDatas[p].push_back(material);
                         TransformMatrix tm;
                         ModelData model;
@@ -4391,10 +4401,13 @@ namespace odfaeg {
                         DrawArraysIndirectCommand drawArraysIndirectCommand;
                         unsigned int p = m_shadow_instances[i].getAllVertices().getPrimitiveType();
                         MaterialData material;
-                        material.textureIndex = (m_shadow_instances[i].getMaterial().getTexture() != nullptr) ? m_shadow_instances[i].getMaterial().getTexture()->getId() : 0;
-                        material.layer = m_shadow_instances[i].getMaterial().getLayer();
-                        material.uvScale = (m_shadow_instances[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_shadow_instances[i].getMaterial().getTexture()->getSize().x(), 1.f / m_shadow_instances[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
-                        material.uvOffset = math::Vec2f(0, 0);
+                        {
+                            std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                            material.textureIndex = (m_shadow_instances[i].getMaterial().getTexture() != nullptr) ? m_shadow_instances[i].getMaterial().getTexture()->getId() : 0;
+                            material.layer = m_shadow_instances[i].getMaterial().getLayer();
+                            material.uvScale = (m_shadow_instances[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_shadow_instances[i].getMaterial().getTexture()->getSize().x(), 1.f / m_shadow_instances[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
+                            material.uvOffset = math::Vec2f(0, 0);
+                        }
                         materialDatas[p].push_back(material);
                         std::vector<TransformMatrix*> tm = m_shadow_instances[i].getTransforms();
                         std::vector<TransformMatrix> tm2 = m_shadow_instances[i].getShadowProjMatrix();
@@ -4655,10 +4668,13 @@ namespace odfaeg {
                     if (m_shadow_instances_indexed[i].getAllVertices().getVertexCount() > 0) {
                         unsigned int p = m_shadow_instances_indexed[i].getAllVertices().getPrimitiveType();
                         MaterialData material;
-                        material.textureIndex = (m_shadow_instances_indexed[i].getMaterial().getTexture() != nullptr) ? m_shadow_instances_indexed[i].getMaterial().getTexture()->getId() : 0;
-                        material.layer = m_shadow_instances_indexed[i].getMaterial().getLayer();
-                        material.uvScale = (m_shadow_instances_indexed[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_shadow_instances[i].getMaterial().getTexture()->getSize().x(), 1.f / m_shadow_instances_indexed[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
-                        material.uvOffset = math::Vec2f(0, 0);
+                        {
+                            std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                            material.textureIndex = (m_shadow_instances_indexed[i].getMaterial().getTexture() != nullptr) ? m_shadow_instances_indexed[i].getMaterial().getTexture()->getId() : 0;
+                            material.layer = m_shadow_instances_indexed[i].getMaterial().getLayer();
+                            material.uvScale = (m_shadow_instances_indexed[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_shadow_instances_indexed[i].getMaterial().getTexture()->getSize().x(), 1.f / m_shadow_instances_indexed[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
+                            material.uvOffset = math::Vec2f(0, 0);
+                        }
                         materialDatas[p].push_back(material);
                         std::vector<TransformMatrix*> tm = m_shadow_instances_indexed[i].getTransforms();
                         std::vector<TransformMatrix> tm2 = m_shadow_instances_indexed[i].getShadowProjMatrix();
@@ -4673,6 +4689,7 @@ namespace odfaeg {
                         }
                         unsigned int vertexCount = 0, indexCount = 0;
                         if (m_shadow_instances_indexed[i].getEntities().size() > 0) {
+                            std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                             Entity* firstInstance = m_shadow_instances_indexed[i].getEntities()[0];
                             for (unsigned int j = 0; j < firstInstance->getFaces().size(); j++) {
                                 for (unsigned int k = 0; k < firstInstance->getFace(j)->getVertexArray().getVertexCount(); k++) {
