@@ -200,8 +200,9 @@ namespace odfaeg {
                 if (faceIndex == -1)
                     return false;
                 math::Plane p(faceNormals[faceIndex], faceBissectors[faceIndex]);
-                if (p.whichSide(point) == 0)
+                if (p.whichSide(point) == 0) {
                     return true;
+                }
                 return false;
             }
 

@@ -451,7 +451,9 @@ namespace odfaeg {
                 return 0;
                 if (*this == -other)
                     return PI;
-                float dotProduct = dot(other);
+                VecN<T, N> n1 = normalize();
+                VecN<T, N> n2 = other.normalize();
+                float dotProduct = n1.dot(n2);
                 Vec3f v1 (x(), y(), 0);
                 Vec3f v2 (other.x(), other.y(), 0);
                 Vec3f v3 = v1.cross(v2);
@@ -463,7 +465,9 @@ namespace odfaeg {
             float getAngleBetween (const VecN<T, N> &other, const VecN<T, N> &n) {
                 if(isNulVector() || other.isNulVector())
                 return 0;
-                float cosinus = dot(other);
+                VecN<T, N> n1 = normalize();
+                VecN<T, N> n2 = other.normalize();
+                float cosinus = n1.dot(n2);
                 if (cosinus == 1)
                     return 0;
                 if (cosinus == -1)
@@ -481,7 +485,9 @@ namespace odfaeg {
             *   \return the result of the projection.
             */
             float projOnAxis (const VecN<T, N> &other) {
-                return dot(other) * magnitude();
+                VecN<T, N> n1 = normalize();
+                VecN<T, N> n2 = other.normalize();
+                return n1.dot(n2) * magnitude();
             }
             /** \fn float* getVec3 () const;
             *   \brief return the vector's components to an array.
