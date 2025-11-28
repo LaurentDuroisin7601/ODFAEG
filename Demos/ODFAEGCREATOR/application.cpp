@@ -7554,8 +7554,10 @@ std::string ODFAEGCreator::getHeaderContent(std::string content, unsigned int po
                             int pos2 = subContent2.find(names[names.size()-1]);
                             int pos3 = subContent2.find("{");
                             if (pos2 != std::string::npos && pos3 != std::string::npos) {
-                                if (posC < pos2 && pos2 < pos3)
+                                if (posC < pos2 && pos2 < pos3) {
+                                    std::cout<<"header found : "<<std::endl;
                                     return it->second;
+                                }
                             }
                             subContent2.erase(0, pos);
                             posC = subContent2.find("class");
@@ -7637,6 +7639,7 @@ std::vector<std::string> ODFAEGCreator::checkCompletionNames(std::string letters
 
                             //Si on est entre les crochets d'ouverture et de fermeture de la fonction on est dans le bon bloc.
                             if (cumPos < posInFile && posInFile < cumPos + pos2) {
+                                std::cout<<"bloc found"<<std::endl;
                                 std::string bloc = subContent.substr(pos, pos2-pos);
                                 BlocInfo parentBloc;
                                 parentBloc.blocStart = cumPos;
@@ -7672,15 +7675,18 @@ void ODFAEGCreator::findComplVarsInBloc(std::vector<std::string>& instructions, 
         int pos = inst.find("{");
         int pos2 = inst.find("}");
         if (pos != std::string::npos) {
+            std::cout<<"new bloc"<<std::endl;
             inst.erase(0, 1);
             subBloc.blocStart = currentPos;
             findComplVarsInBloc(instructions, subBloc, currentInst, currentPos);
         } else if (pos2 != std::string::npos) {
+            std::cout<<"end of bloc"<<std::endl;
             inst.erase(0, 1);
             subBloc.blocEnd = currentPos;
             parentBloc.subBlocs.push_back(subBloc);
             return;
         } else {
+            std::cout<<"process inst"<<std::endl;
             processInst(inst, currentPos, subBloc);
             currentInst++;
         }
@@ -7849,6 +7855,7 @@ void ODFAEGCreator::onTextEntered(char caracter) {
         strsearch += caracter;
     }
     unsigned int charPosInFile = tScriptEdit->getCharacterIndexAtCursorPos();
+    std::cout<<"char pos in file : "<<charPosInFile<<std::endl;
     std::vector<std::string> completionNames = checkCompletionNames(strsearch, charPosInFile);
     for (unsigned int i = 0; i < completionNames.size(); i++) {
         std::cout<<"completion name "<<i<<" : "<<completionNames[i]<<std::endl;

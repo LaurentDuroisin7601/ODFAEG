@@ -125,6 +125,7 @@ namespace odfaeg {
                 va.append(Vertex(math::Vec3f(cursorPos.x(), cursorPos.y() + text.getCharacterSize(), getPosition().z()+1), Color::Black));
                 rect.setPosition(getPosition());
                 text.setPosition(math::Vec3f(getPosition().x() + scrollX, getPosition().y() + scrollY, getPosition().z()+1));
+
                 rect.setSize(getSize());
                 target.draw(rect);
                 #ifndef VULKAN
@@ -135,10 +136,10 @@ namespace odfaeg {
                 target.submit(false);
                 target.getScissors()[1].offset = {getPosition().x(), getPosition().y()};
                 target.getScissors()[1].extent = {getSize().x(), getSize().y()};
+                target.beginRecordCommandBuffers();
                 #endif
                 target.draw(text);
                 #ifdef VULKAN
-                target.beginRecordCommandBuffers();
                 target.submit(false);
                 target.getScissors()[1].offset = {0, 0};
                 target.getScissors()[1].extent = {target.getSize().x(), target.getSize().y()};
