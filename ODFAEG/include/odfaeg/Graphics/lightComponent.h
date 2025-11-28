@@ -43,6 +43,7 @@ namespace odfaeg {
                         ppx = getWindow().getPosition().x();
                         ppy = getWindow().getPosition().y();
                     }
+                    //std::cout<<"npy : "<<npy<<std::endl;
                     setSize(math::Vec3f(nsx, nsy, 0.f));
                     setPosition(math::Vec3f(npx, npy, getPosition().z()));
                     /*if (getName() == "LFILE") {
@@ -139,9 +140,8 @@ namespace odfaeg {
             }
             virtual void processEvents() {
                 if (isEventContextActivated()) {
-                    if (name == "fd open project")
-                        getListener().name = "fd open project";
                     getListener().processEvents();
+                    recomputeSize();
                 }
                 for (unsigned int i = 0; i < children.size(); i++) {
                     children[i]->processEvents();

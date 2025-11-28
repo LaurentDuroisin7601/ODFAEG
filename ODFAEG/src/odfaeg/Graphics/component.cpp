@@ -41,8 +41,10 @@ namespace odfaeg {
             return visible;
         }
         void Component::processEvents() {
-           if (activateEventContext)
+           if (activateEventContext) {
                listener.processEvents();
+               //recomputeSize();
+           }
         }
         void Component::onVisibilityChanged(bool visible) {}
         void Component::onEventContextActivated(bool activate) {}
