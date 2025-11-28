@@ -114,7 +114,7 @@ namespace odfaeg {
             /// \see mapCoordsToPixel
             ///
             ////////////////////////////////////////////////////////////
-            math::Vec4f mapPixelToCoords(math::Vec4f& point);
+            math::Vec4f mapPixelToCoords(math::Vec4f point);
 
             ////////////////////////////////////////////////////////////
             /// \brief Convert a point from target coordinates to world coordinates
@@ -145,7 +145,7 @@ namespace odfaeg {
             /// \see mapCoordsToPixel
             ///
             ////////////////////////////////////////////////////////////
-            math::Vec4f mapPixelToCoords(math::Vec4f& point, View& view);
+            math::Vec4f mapPixelToCoords(math::Vec4f point, View& view);
             ////////////////////////////////////////////////////////////
             /// \brief Convert a point from world coordinates to target
             ///        coordinates, using the current view
@@ -164,7 +164,7 @@ namespace odfaeg {
             /// \see mapPixelToCoords
             ///
             ////////////////////////////////////////////////////////////
-            math::Vec4f mapCoordsToPixel(math::Vec4f& point);
+            math::Vec4f mapCoordsToPixel(math::Vec4f point);
 
             ////////////////////////////////////////////////////////////
             /// \brief Convert a point from world coordinates to target coordinates
@@ -191,7 +191,7 @@ namespace odfaeg {
             /// \see mapPixelToCoords
             ///
             ////////////////////////////////////////////////////////////
-            math::Vec4f mapCoordsToPixel(math::Vec4f& point, View& view);
+            math::Vec4f mapCoordsToPixel(math::Vec4f point, View& view);
             ////////////////////////////////////////////////////////////
             /// \brief Draw a drawable object to the render-target
             ///

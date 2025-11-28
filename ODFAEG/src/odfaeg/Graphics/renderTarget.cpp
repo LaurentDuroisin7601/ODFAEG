@@ -296,13 +296,13 @@ namespace odfaeg {
         View& RenderTarget::getDefaultView() {
             return m_defaultView;
         }
-         math::Vec4f RenderTarget::mapPixelToCoords(math::Vec4f& point)
+         math::Vec4f RenderTarget::mapPixelToCoords(math::Vec4f point)
         {
             return mapPixelToCoords(point, getView());
         }
 
 
-        math::Vec4f RenderTarget::mapPixelToCoords(math::Vec4f& point, View& view)
+        math::Vec4f RenderTarget::mapPixelToCoords(math::Vec4f point, View& view)
         {
             point[3] = 1;
             ViewportMatrix vpm;
@@ -315,13 +315,13 @@ namespace odfaeg {
             return coords;
         }
 
-        math::Vec4f RenderTarget::mapCoordsToPixel(math::Vec4f& point)
+        math::Vec4f RenderTarget::mapCoordsToPixel(math::Vec4f point)
         {
             return mapCoordsToPixel(point, getView());
         }
 
 
-        math::Vec4f RenderTarget::mapCoordsToPixel(math::Vec4f& point, View& view) {
+        math::Vec4f RenderTarget::mapCoordsToPixel(math::Vec4f point, View& view) {
             point[3] = 1;
             ViewportMatrix vpm;
             vpm.setViewport(math::Vec3f(view.getViewport().getPosition().x(), view.getViewport().getPosition().y(), 0),
