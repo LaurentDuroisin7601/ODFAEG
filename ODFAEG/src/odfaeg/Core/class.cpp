@@ -35,7 +35,12 @@ namespace odfaeg {
         std::vector<std::string> Class::getClasses(std::string path) {
             std::vector<std::string> classes;
             //We get the project directory, and concat it with the folder path.
-            std::string appiDir = path != "" ? getCurrentPath()+"\\"+path : getCurrentPath();
+
+            std::string appiDir;
+            if (path.find("C:\\") == std::string::npos)
+                appiDir = path != "" ? getCurrentPath()+"\\"+path : getCurrentPath();
+            else
+                appiDir = path;
             std::vector<std::string> files;
             //find each header files.
             findFiles(".hpp .h", files, appiDir);
@@ -190,10 +195,11 @@ namespace odfaeg {
             return cl;
         }
         Class Class::getClass(std::string name, std::string nspc, std::string path) {
-            std::string appiDir;
+
             //If the path is not specified the folder to search c++ classes in is the project's directory.
-            if (path == "")
-                appiDir = getCurrentPath();
+            std::string appiDir;
+            if (path.find("C:\\") == std::string::npos)
+                appiDir = path != "" ? getCurrentPath()+"\\"+path : getCurrentPath();
             else
                 appiDir = path;
             std::vector<std::string> files;
