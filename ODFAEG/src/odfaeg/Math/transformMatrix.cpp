@@ -85,7 +85,7 @@ namespace odfaeg {
         math::Vec3f TransformMatrix::getScale() {
             return s3d;
         }
-        math::Vec4f TransformMatrix::transform (const math::Vec4f vec4) {
+        math::Vec4f TransformMatrix::transform (math::Vec4f vec4) {
             vec4[3] = 1;
             update();
             return matrix4f * vec4;
@@ -94,7 +94,7 @@ namespace odfaeg {
             update();
             return matrix4f;
         }
-        math::Vec4f TransformMatrix::inverseTransform (const math::Vec4f vec4) {
+        math::Vec4f TransformMatrix::inverseTransform (math::Vec4f vec4) {
             vec4[3] = 1;
             if (inverseNeedToUpdate3D) {
                 try {

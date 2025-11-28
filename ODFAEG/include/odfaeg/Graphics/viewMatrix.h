@@ -60,12 +60,12 @@ namespace odfaeg {
             *   \brief convert a 3D vector with world coordinates to a 3D vector with view coordinates
             *   \return the  vector of view coordinates.
             */
-            math::Vec4f transform (const math::Vec4f vec3);
+            math::Vec4f transform (math::Vec4f vec3);
             /** \fn Vec3f inverseTransform (const Vec3f vec3)
             *   \brief convert a 3D vector with view coordinates to a 3D vector with world coordinates
             *   \return the  vector of world coordinates.
             */
-            math::Vec4f inverseTransform (const math::Vec4f vec3);
+            math::Vec4f inverseTransform (math::Vec4f vec3);
             /** \fn Matrix3f get3DMatrix()
             *   \brief return the 3D view matrix
             *   \return the 3D view matrix.

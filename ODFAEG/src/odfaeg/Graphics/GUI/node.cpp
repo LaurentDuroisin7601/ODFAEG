@@ -94,6 +94,7 @@ namespace odfaeg {
                     if (nodes[i].get() != selectedNode && nodes[i]->component->isVisible()
                         && nodes[i]->component->getRelPosition().y() >= selectedNode->component->getRelPosition().y()) {
                         nodeRelPos[1] += nodes[i]->component->getRelSize().y();
+                        std::cout<<"node rel pos : "<<nodeRelPos[1]<<std::endl;
                         nodes[i]->component->setRelPosition(nodes[i]->component->getRelPosition().x(), nodeRelPos.y());
                         for (unsigned int j = 0; j < nodes[i]->components.size(); j++) {
                             nodes[i]->components[j]->setRelPosition(nodes[i]->components[j]->getRelPosition().x(), nodeRelPos.y());

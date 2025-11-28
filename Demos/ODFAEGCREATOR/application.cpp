@@ -3063,6 +3063,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         tScriptEdit->setEventContextActivated(true);
     }
     if (button->getText() == "Create") {
+
         appliname = ta->getText();
         applitype = dpList->getSelectedItem();
         #if defined (ODFAEG_SYSTEM_LINUX)
@@ -7760,6 +7761,7 @@ void ODFAEGCreator::processInst(std::string inst, unsigned int currentPos, BlocI
                         argName = argTypeName[1];
                     }
                 } else {
+                    std::cout<<"process inst"<<std::endl;
                     std::vector<std::string> argTypeName = split(inst, " ");
                     for (unsigned int k = 0; k < argTypeName.size(); k++) {
                         removeSpacesChars(argTypeName[k]);

@@ -102,7 +102,7 @@ namespace odfaeg
             * \param the point to be transformed.
             * \return the resulting point.
             */
-            math::Vec4f transform (const  math::Vec4f vec4);
+            math::Vec4f transform (math::Vec4f vec4);
             void update();
             /**
             * \fn void combine (Matrix3f matrix)
@@ -116,7 +116,7 @@ namespace odfaeg
             * \param the point to be transformed.
             * \return the resulting point.
             */
-            math::Vec4f inverseTransform (const  math::Vec4f vec4);
+            math::Vec4f inverseTransform (math::Vec4f vec4);
             /**
             *   \fn Matrix4f get2DMatrix() const
             *   \brief return the 3D transformation matrix

@@ -27,7 +27,7 @@ namespace odfaeg {
             invMat4f.identity();
             needToUpdate3D = false;
         }
-        math::Vec4f ViewMatrix::transform (const math::Vec4f vec4) {
+        math::Vec4f ViewMatrix::transform (math::Vec4f vec4) {
             vec4[3] = 1;
             update();
             return matrix4f * vec4;
@@ -101,7 +101,7 @@ namespace odfaeg {
             update();
             return matrix4f;
         }
-        math::Vec4f ViewMatrix::inverseTransform (const math::Vec4f vec4) {
+        math::Vec4f ViewMatrix::inverseTransform (math::Vec4f vec4) {
             vec4[3] = 1;
             update();
             return invMat4f * vec4;

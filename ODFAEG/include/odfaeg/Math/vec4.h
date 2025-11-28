@@ -145,8 +145,8 @@ namespace odfaeg {
             T& operator[] (unsigned int i) {
                 return data[i];
             }
-            T& operator[] (unsigned int i) const {
-                return const_cast<std::array<T, N>&>(data)[i];
+            const T& operator[] (unsigned int i) const {
+                return data[i];
             }
             /**
             * \fn Vec4 operator+ (const Vec4 &other)
