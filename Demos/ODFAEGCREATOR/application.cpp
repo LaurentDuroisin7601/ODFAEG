@@ -1364,11 +1364,11 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
             if (selectedObject != nullptr) {
                 Vec3f position;
                 if (dpSelectComponent->getSelectedItem() == "MAIN WINDOW") {
-                    position = getRenderWindow().mapPixelToCoords(Vec3f(cursor.getPosition().x(), getRenderWindow().getSize().y() - cursor.getPosition().y(), 0))+getRenderWindow().getView().getSize()*0.5f;
+                    position = getRenderWindow().mapPixelToCoords(Vec3f(cursor.getPosition().x(), /*getRenderWindow().getSize().y() -*/ cursor.getPosition().y(), 0))+getRenderWindow().getView().getSize()*0.5f;
                 } else {
                     for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
                         if (getRenderComponentManager().getRenderComponent(i) != nullptr && getRenderComponentManager().getRenderComponent(i)->getName() == dpSelectComponent->getSelectedItem()) {
-                            position = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(cursor.getPosition().x(), getRenderWindow().getSize().y() - cursor.getPosition().y(), 0))+getRenderWindow().getView().getSize()*0.5f;
+                            position = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(cursor.getPosition().x(), /*getRenderWindow().getSize().y() -*/ cursor.getPosition().y(), 0))+getRenderWindow().getView().getSize()*0.5f;
                         }
                     }
                 }
@@ -1483,18 +1483,18 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
         Vec3f ext(mousePos.x() - getRenderWindow().getView().getSize().x() * 0.5f, mousePos.y() - getRenderWindow().getView().getSize().y() * 0.5f, 0);
         Vec3f orig (mousePos.x() - getRenderWindow().getView().getSize().x() * 0.5f, mousePos.y() - getRenderWindow().getView().getSize().y() * 0.5f, 1);
         if (dpSelectComponent->getSelectedItem() == "MAIN WINDOW") {
-            orig = getRenderWindow().mapPixelToCoords(Vec3f(orig.x(), getRenderWindow().getSize().y()-orig.y(), orig.z()))+halfWSize;
-            ext = getRenderWindow().mapPixelToCoords(Vec3f(ext.x(), getRenderWindow().getSize().y()-ext.y(), ext.z()))+halfWSize;
+            orig = getRenderWindow().mapPixelToCoords(Vec3f(orig.x(), /*getRenderWindow().getSize().y()-*/orig.y(), orig.z()))+halfWSize;
+            ext = getRenderWindow().mapPixelToCoords(Vec3f(ext.x(), /*getRenderWindow().getSize().y()-*/ext.y(), ext.z()))+halfWSize;
         } else {
             for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
                 if (getRenderComponentManager().getRenderComponent(i) != nullptr && getRenderComponentManager().getRenderComponent(i)->getName() == dpSelectComponent->getSelectedItem()) {
                     if(getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->getView().isOrtho()) {
-                        orig = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(orig.x(), getRenderWindow().getSize().y() - orig.y(), orig.z()))+halfWSize;
-                        ext = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(ext.x(), getRenderWindow().getSize().y() - ext.y(), ext.z()))+halfWSize;
+                        orig = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(orig.x(), /*getRenderWindow().getSize().y() -*/ orig.y(), orig.z()))+halfWSize;
+                        ext = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(ext.x(), /*getRenderWindow().getSize().y() -*/ ext.y(), ext.z()))+halfWSize;
                     } else {
                         orig = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(0, 0, orig.z()));
                         ext += halfWSize;
-                        ext = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(ext.x(), getRenderWindow().getSize().y() - ext.y(), ext.z()));
+                        ext = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(ext.x(), /*getRenderWindow().getSize().y() -*/ ext.y(), ext.z()));
                     }
                 }
             }
@@ -1552,11 +1552,11 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
             Vec2f mousePos (event.mouseButton.x, event.mouseButton.y);
             Vec3f pos(mousePos.x(), mousePos.y(), 0);
             if (dpSelectComponent->getSelectedItem() == "MAIN WINDOW") {
-                pos = getRenderWindow().mapPixelToCoords(Vec3f(mousePos.x(), getRenderWindow().getSize().y()-mousePos.y(), 0))+getRenderWindow().getView().getSize()*0.5f;
+                pos = getRenderWindow().mapPixelToCoords(Vec3f(mousePos.x(), /*getRenderWindow().getSize().y()-*/mousePos.y(), 0))+getRenderWindow().getView().getSize()*0.5f;
             } else {
                 for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
                     if (getRenderComponentManager().getRenderComponent(i) != nullptr && getRenderComponentManager().getRenderComponent(i)->getName() == dpSelectComponent->getSelectedItem()) {
-                        pos = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(cursor.getPosition().x(), getRenderWindow().getSize().y() - cursor.getPosition().y(), 0))+getRenderWindow().getView().getSize()*0.5f;
+                        pos = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(cursor.getPosition().x(), /*getRenderWindow().getSize().y() -*/ cursor.getPosition().y(), 0))+getRenderWindow().getView().getSize()*0.5f;
                     }
                 }
             }
@@ -1598,18 +1598,18 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
             Vec3f orig = Vec3f(mousePos.x()-getRenderWindow().getView().getSize().x() * 0.5f, mousePos.y() - getRenderWindow().getView().getSize().y() * 0.5f, 1);
             //std::cout<<"ray window coords : "<<orig<<ext<<std::endl;
             if (dpSelectComponent->getSelectedItem() == "MAIN WINDOW") {
-                orig = getRenderWindow().mapPixelToCoords(Vec3f(orig.x(), getRenderWindow().getSize().y()-orig.y(), orig.z()))+halfWSize;
-                ext = getRenderWindow().mapPixelToCoords(Vec3f(ext.x(), getRenderWindow().getSize().y()-ext.y(), ext.z()))+halfWSize;
+                orig = getRenderWindow().mapPixelToCoords(Vec3f(orig.x(), /*getRenderWindow().getSize().y()-*/orig.y(), orig.z()))+halfWSize;
+                ext = getRenderWindow().mapPixelToCoords(Vec3f(ext.x(), /*getRenderWindow().getSize().y()-*/ext.y(), ext.z()))+halfWSize;
             } else {
                 for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
                     if (getRenderComponentManager().getRenderComponent(i) != nullptr && getRenderComponentManager().getRenderComponent(i)->getName() == dpSelectComponent->getSelectedItem()) {
                         if(getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->getView().isOrtho()) {
-                            orig = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(orig.x(), getRenderWindow().getSize().y() - orig.y(), orig.z()))+halfWSize;
-                            ext = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(ext.x(), getRenderWindow().getSize().y() - ext.y(), ext.z()))+halfWSize;
+                            orig = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(orig.x(), /*getRenderWindow().getSize().y() -*/ orig.y(), orig.z()))+halfWSize;
+                            ext = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(ext.x(), /*getRenderWindow().getSize().y() -*/ ext.y(), ext.z()))+halfWSize;
                         } else {
                             orig = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(0, 0, orig.z()));
                             ext += halfWSize;
-                            ext = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(ext.x(), getRenderWindow().getSize().y() - ext.y(), ext.z()));
+                            ext = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(ext.x(), /*getRenderWindow().getSize().y() -*/ ext.y(), ext.z()));
                         }
                     }
                 }
@@ -1829,9 +1829,9 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
             if (dpSelectComponent->getSelectedItem() == "MAIN WINDOW") {
                 for (unsigned int v = 0; v < 8; v++) {
                     if (v < 4)
-                        obbVerts[v] = getRenderWindow().mapPixelToCoords(Vec3f(bbVerts[v].x(), getRenderWindow().getSize().y()-bbVerts[v].y(), 1))+Vec3f(getRenderWindow().getView().getSize().x()*0.5f, getRenderWindow().getView().getSize().y()*0.5f, getRenderWindow().getView().getSize().z()*0.5f);
+                        obbVerts[v] = getRenderWindow().mapPixelToCoords(Vec3f(bbVerts[v].x(), /*getRenderWindow().getSize().y()-*/bbVerts[v].y(), 1))+Vec3f(getRenderWindow().getView().getSize().x()*0.5f, getRenderWindow().getView().getSize().y()*0.5f, getRenderWindow().getView().getSize().z()*0.5f);
                     else
-                        obbVerts[v] = getRenderWindow().mapPixelToCoords(Vec3f(bbVerts[v].x(), getRenderWindow().getSize().y()-bbVerts[v].y(), 0))+Vec3f(getRenderWindow().getView().getSize().x()*0.5f, getRenderWindow().getView().getSize().y()*0.5f, getRenderWindow().getView().getSize().z()*0.5f);
+                        obbVerts[v] = getRenderWindow().mapPixelToCoords(Vec3f(bbVerts[v].x(), /*getRenderWindow().getSize().y()-*/bbVerts[v].y(), 0))+Vec3f(getRenderWindow().getView().getSize().x()*0.5f, getRenderWindow().getView().getSize().y()*0.5f, getRenderWindow().getView().getSize().z()*0.5f);
                 }
             } else {
                 std::string name = dpSelectComponent->getSelectedItem();
@@ -1841,9 +1841,9 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
                         if(components[i]->getFrameBuffer()->getView().isOrtho()) {
                             for (unsigned int v = 0; v < 8; v++) {
                                 if (v < 4)
-                                    obbVerts[v] = components[i]->getFrameBuffer()->mapPixelToCoords(Vec3f(bbVerts[v].x(), getRenderWindow().getSize().y()-bbVerts[v].y(), 1))+Vec3f(getRenderWindow().getView().getSize().x()*0.5f, getRenderWindow().getView().getSize().y()*0.5f, getRenderWindow().getView().getSize().z()*0.5f);
+                                    obbVerts[v] = components[i]->getFrameBuffer()->mapPixelToCoords(Vec3f(bbVerts[v].x(), /*getRenderWindow().getSize().y()-*/bbVerts[v].y(), 1))+Vec3f(getRenderWindow().getView().getSize().x()*0.5f, getRenderWindow().getView().getSize().y()*0.5f, getRenderWindow().getView().getSize().z()*0.5f);
                                 else
-                                    obbVerts[v] = components[i]->getFrameBuffer()->mapPixelToCoords(Vec3f(bbVerts[v].x(), getRenderWindow().getSize().y()-bbVerts[v].y(), 0))+Vec3f(getRenderWindow().getView().getSize().x()*0.5f, getRenderWindow().getView().getSize().y()*0.5f, getRenderWindow().getView().getSize().z()*0.5f);
+                                    obbVerts[v] = components[i]->getFrameBuffer()->mapPixelToCoords(Vec3f(bbVerts[v].x(), /*getRenderWindow().getSize().y()-*/bbVerts[v].y(), 0))+Vec3f(getRenderWindow().getView().getSize().x()*0.5f, getRenderWindow().getView().getSize().y()*0.5f, getRenderWindow().getView().getSize().z()*0.5f);
 
 
                             }
@@ -1853,9 +1853,9 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
                                 //std::cout<<"bb verts : "<<bbVerts[v]<<std::endl;
                                 bbVerts[v] += getRenderWindow().getView().getSize()*0.5f;
                                 if (v < 4)
-                                    obbVerts[v] = components[i]->getFrameBuffer()->mapPixelToCoords(Vec3f(bbVerts[v].x(), getRenderWindow().getSize().y()-bbVerts[v].y(), 1));
+                                    obbVerts[v] = components[i]->getFrameBuffer()->mapPixelToCoords(Vec3f(bbVerts[v].x(), /*getRenderWindow().getSize().y()-*/bbVerts[v].y(), 1));
                                 else
-                                    obbVerts[v] = components[i]->getFrameBuffer()->mapPixelToCoords(Vec3f(bbVerts[v].x(), getRenderWindow().getSize().y()-bbVerts[v].y(), 0));
+                                    obbVerts[v] = components[i]->getFrameBuffer()->mapPixelToCoords(Vec3f(bbVerts[v].x(), /*getRenderWindow().getSize().y()-*/bbVerts[v].y(), 0));
                                 //std::cout<<"obb verts : "<<obbVerts[v]<<std::endl;
                             }
                             //system("PAUSE");
