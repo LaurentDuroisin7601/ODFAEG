@@ -3103,7 +3103,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         Action a(Action::EVENT_TYPE::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
         Command cmd(a, FastDelegate<bool>(&Label::isMouseInside, lab), FastDelegate<void>(&ODFAEGCreator::showProjectsFiles, this, lab));
         Label* labScene = new Label(getRenderWindow(),Vec3f(0,0,0),Vec3f(200, 17, 0),fm.getResourceByAlias(Fonts::Serif),"Scenes", 15);
-        Node* rSceneNode = new Node("test",labScene,Vec2f(0, 0),Vec2f(1.f, 0.025f),rootNode.get());
+        Node* rSceneNode = new Node("test",labScene,Vec2f(0, 0),Vec2f(1.f, 0.025f),node);
         rootScenesNode = rSceneNode;
         labScene->getListener().connect("SHOWPFILES", cmd);
         labScene->setForegroundColor(Color::Red);
@@ -3114,6 +3114,26 @@ void ODFAEGCreator::actionPerformed(Button* button) {
 
         Command cmd2(a, FastDelegate<bool>(&Label::isMouseInside, labScene), FastDelegate<void>(&ODFAEGCreator::showScenes, this, labScene));
         labScene->getListener().connect("SHOWSCENES"+appliname, cmd2);
+
+        std::vector<LightComponent*> children = pProjects->getChildren();
+        Label* lHeaders = new Label(getRenderWindow(),Vec3f(0, 0, 0),Vec3f(200,17,0),fm.getResourceByAlias(Fonts::Serif),"headers", 15);
+        Label* lSources = new Label(getRenderWindow(),Vec3f(0, 0,0),Vec3f(200,17,0),fm.getResourceByAlias(Fonts::Serif),"sources", 15);
+        lHeaders->setBackgroundColor(Color::White);
+        lSources->setBackgroundColor(Color::White);
+        lHeaders->setParent(pProjects);
+        Node* hNode = new Node ("headers", lHeaders, Vec2f(0, 0), Vec2f(1.f, 0.025f), node);
+        pProjects->addChild(lHeaders);
+        lSources->setParent(pProjects);
+        Node* sNode = new Node("sources",lSources,Vec2f(0, 0), Vec2f(1.f, 0.025f), node);
+        pProjects->addChild(lSources);
+        lHeaders->setForegroundColor(Color::Green);
+        lSources->setForegroundColor(Color::Green);
+        pProjects->setAutoResized(true);
+        Action a3(Action::EVENT_TYPE::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
+        Command cmd3(a3, FastDelegate<bool>(&Label::isMouseInside, lHeaders), FastDelegate<void>(&ODFAEGCreator::showHeadersFiles, this, lHeaders));
+        lHeaders->getListener().connect("SHOWHFILES", cmd3);
+        Command cmd4(a3, FastDelegate<bool>(&Label::isMouseInside, lSources), FastDelegate<void>(&ODFAEGCreator::showSourcesFiles, this, lSources));
+        lSources->getListener().connect("SHOWSFILES", cmd4);
         if (applitype == "Normal") {
             #if defined (ODFAEG_SYSTEM_LINUX)
             std::ofstream header(path+"/"+minAppliname+".hpp");
