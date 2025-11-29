@@ -6,6 +6,7 @@ namespace odfaeg {
             LightComponent (window, position, size, size * 0.5f) {
                 text.setFont(*font);
                 text.setString(t);
+
                 //text.setSize(size);
                 text.setCharacterSize(charSize);
                 rect = RectangleShape (size);
@@ -36,7 +37,8 @@ namespace odfaeg {
                 rect.setPosition(getPosition());
                 //text.setSize(getSize());
                 rect.setSize(getSize());
-                text.setPosition(math::Vec3f(text.getPosition().x(), text.getPosition().y(),text.getPosition().z()+100));
+                text.setPosition(math::Vec3f(getPosition().x(), getPosition().y(),getPosition().z()+100));
+
                 ////////std::cout<<"sizes : "<<text.getSize()/*<<rect.getSize()*/;
                 target.draw(rect);
                 target.draw(text);
