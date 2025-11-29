@@ -128,13 +128,13 @@ namespace odfaeg {
                 }
                 ////////std::cout<<"corner"<<std::endl;
                 if (maxSize.x() > getSize().x() || maxSize.y() > getSize().y()) {
-                    corner = RectangleShape(math::Vec3f(10, 10, 0));
+                    corner = RectangleShape(math::Vec3f(10, 10, getPosition().z()+200));
                     corner.setPosition(math::Vec3f(getPosition().x() + getSize().x() - 10, getPosition().y() + getSize().y() - 10, 0));
                 }
                 ////////std::cout<<"vert scroll"<<std::endl;
                 if (maxSize.x() > getSize().x()) {
                     unsigned int scrollXSize = (getSize().x() - 10) / maxSize.x() * (getSize().x() - 10);
-                    vertScrollBar = RectangleShape(math::Vec3f(scrollXSize, 10, 0));
+                    vertScrollBar = RectangleShape(math::Vec3f(scrollXSize, 10, getPosition().z()+200));
                     vertScrollBar.setPosition(math::Vec3f(getPosition().x(), getPosition().y() + getSize().y() - 10, 0));
                     scrollX = true;
                 } else {
@@ -143,7 +143,7 @@ namespace odfaeg {
                 ////////std::cout<<"horizontal scroll"<<std::endl;
                 if (maxSize.y() > getSize().y()) {
                     unsigned int scrollYSize = (getSize().y() - 10) / maxSize.y() * (getSize().y() - 10);
-                    horScrollBar = RectangleShape(math::Vec3f(10, scrollYSize, 0));
+                    horScrollBar = RectangleShape(math::Vec3f(10, scrollYSize, getPosition().z()+200));
                     horScrollBar.setPosition(math::Vec3f(getPosition().x() + getSize().x() - 10, getPosition().y(), 0));
                     scrollY = true;
                 } else {
