@@ -2927,7 +2927,7 @@ void ODFAEGCreator::showFileContent(Label* lab) {
     std::map<std::pair<std::string, std::string>, std::string>::iterator it;
     it = cppAppliContent.find(std::make_pair(getWorld()->projectName, lab->getText()));
     if (it != cppAppliContent.end()) {
-        tScriptEdit->setTextSize(20);
+        tScriptEdit->setTextSize(15);
         tScriptEdit->setText(it->second);
         Vec3f textSize = tScriptEdit->getTextSize();
         if (textSize.x() > tScriptEdit->getSize().x())
