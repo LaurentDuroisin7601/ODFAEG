@@ -73,8 +73,8 @@ namespace odfaeg
                 default:
                 case 0: return math::Vec3f(0, 0, 0);
                 case 1: return math::Vec3f(m_size.x(), 0, 0);
-                case 2: return math::Vec3f(m_size.x(), m_size.y(), m_size.z());
-                case 3: return math::Vec3f(0, m_size.y(), m_size.z());
+                case 2: return math::Vec3f(m_size.x(), m_size.y(), 0);
+                case 3: return math::Vec3f(0, m_size.y(), 0);
             }
         }
     }
