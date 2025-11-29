@@ -241,7 +241,9 @@ namespace odfaeg {
                     target.draw(horScrollBar, states);
 
                 }
-
+                #ifndef VULKAN
+                target.submit(false);
+                #endif // VULKAN
 
                 if (disableScissor) {
                     #ifndef VULKAN

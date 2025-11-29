@@ -683,7 +683,7 @@ namespace odfaeg {
             blitInfo.pRegions = &blitRegion;
             VkCommandBuffer cmd = beginSingleTimeCommands();
             transitionImageLayout(cmd, texture.textureImage, m_format, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-            transitionImageLayout(cmd, textureImage, m_format, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+            transitionImageLayout(cmd, textureImage, m_format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
             vkCmdBlitImage2(cmd, &blitInfo);
             transitionImageLayout(cmd, texture.textureImage, m_format, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);

@@ -156,6 +156,9 @@ namespace odfaeg {
                 if(haveFocus) {
                     target.draw(va);
                 }
+                #ifndef VULKAN
+                target.submit(false);
+                #endif // VULKAN
             }
             bool TextArea::isMouseInTextArea() {
                 physic::BoundingBox bb = getGlobalBounds();
