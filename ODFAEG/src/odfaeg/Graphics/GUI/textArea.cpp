@@ -11,6 +11,7 @@ namespace odfaeg {
                 text.setString(t);
                 text.setColor(Color::Black);
                 text.setPosition(position);
+                text.setCharacterSize(15);
                 //text.setSize(math::Vec3f(size);
                 rect = RectangleShape(size);
                 /*rect.setOutlineThickness(5.f);

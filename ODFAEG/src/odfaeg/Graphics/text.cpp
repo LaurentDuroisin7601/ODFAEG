@@ -436,12 +436,6 @@ namespace odfaeg
             if (!m_geometryNeedUpdate && m_font->getTexture(m_characterSize).m_cacheId == m_fontTextureId)
                 return;
 
-            // Save the current fonts texture id
-            m_fontTextureId = m_font->getTexture(m_characterSize).m_cacheId;
-
-            // Mark geometry as updated
-            m_geometryNeedUpdate = false;
-
             // Clear the previous geometry
             m_vertices.clear();
             m_outlineVertices.clear();
@@ -601,6 +595,11 @@ namespace odfaeg
 
             // Update the bounding rectangle
             m_bounds = physic::BoundingBox(minX, minY, 0, maxX - minX, maxY - minY, 0);
+            // Save the current fonts texture id
+            m_fontTextureId = m_font->getTexture(m_characterSize).m_cacheId;
+
+            // Mark geometry as updated
+            m_geometryNeedUpdate = false;
         }
     }
 

@@ -345,24 +345,30 @@ namespace odfaeg
         const Glyph& Font::getGlyph(std::uint32_t codePoint, unsigned int characterSize, bool bold, float outlineThickness) const
         {
             // Get the page corresponding to the character size
-            if (m_pages[characterSize] == nullptr) {
+            if (m_pages[characterSize] != nullptr) {
+                GlyphTable& glyphs = m_pages[characterSize]->glyphs;
+
+                // Build the key by combining the glyph index (based on code point), bold flag, and outline thickness
+                std::uint64_t key = combine(outlineThickness, bold, FT_Get_Char_Index(static_cast<FT_Face>(m_face), codePoint));
+
+                // Search the glyph into the cache
+                GlyphTable::const_iterator it = glyphs.find(key);
+                if (it != glyphs.end())
+                {
+                    // Found: just return it
+                    return it->second;
+                }
+                else
+                {
+                    // Not found: we have to load it
+                    Glyph glyph = loadGlyph(codePoint, characterSize, bold, outlineThickness);
+                    return glyphs.insert(std::make_pair(key, glyph)).first->second;
+                }
+            } else {
                 m_pages[characterSize] = new Page(vkDevice);
-            }
-            GlyphTable& glyphs = m_pages[characterSize]->glyphs;
-
-            // Build the key by combining the glyph index (based on code point), bold flag, and outline thickness
-            std::uint64_t key = combine(outlineThickness, bold, FT_Get_Char_Index(static_cast<FT_Face>(m_face), codePoint));
-
-            // Search the glyph into the cache
-            GlyphTable::const_iterator it = glyphs.find(key);
-            if (it != glyphs.end())
-            {
-                // Found: just return it
-                return it->second;
-            }
-            else
-            {
+                GlyphTable& glyphs = m_pages[characterSize]->glyphs;
                 // Not found: we have to load it
+                std::uint64_t key = combine(outlineThickness, bold, FT_Get_Char_Index(static_cast<FT_Face>(m_face), codePoint));
                 Glyph glyph = loadGlyph(codePoint, characterSize, bold, outlineThickness);
                 return glyphs.insert(std::make_pair(key, glyph)).first->second;
             }
@@ -462,8 +468,9 @@ namespace odfaeg
         ////////////////////////////////////////////////////////////
         const Texture& Font::getTexture(unsigned int characterSize) const
         {
-            if (m_pages[characterSize] == nullptr)
+            /*if (m_pages[characterSize] == nullptr) {
                 m_pages[characterSize] = new Page(vkDevice);
+            }*/
             return m_pages[characterSize]->texture;
         }
 

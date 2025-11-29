@@ -1079,7 +1079,8 @@ int main(int argc, char *argv[]) {
     RenderWindow window(VideoMode(800, 600), "test", device, Style::Default, ContextSettings(0, 0, 4, 4, 6));
     Font font(device);
     font.loadFromFile("fonts/FreeSerif.ttf");
-    Text text("ODFAEG", font, 30);
+    Text text("ODFAEG", font, 15);
+
     text.setFillColor(Color::Red);
     text.move(Vec3f(0, 0, 200));
 
@@ -1092,6 +1093,7 @@ int main(int argc, char *argv[]) {
     rect.setOutlineColor(Color::Red);
     RenderTexture rt(device);
     rt.create(800, 600);
+    text.setCharacterSize(30);
 
     window.createDescriptorsAndPipelines();
     rt.createDescriptorsAndPipelines();
@@ -1117,6 +1119,7 @@ int main(int argc, char *argv[]) {
         rt.display();
         window.display();
         odfaeg::window::IEvent event;
+
         while (window.pollEvent(event))
         {
             // évènement "fermeture demandée" : on ferme la fenêtre
@@ -1125,6 +1128,7 @@ int main(int argc, char *argv[]) {
 
 
         }
+
 
     }*/
 
