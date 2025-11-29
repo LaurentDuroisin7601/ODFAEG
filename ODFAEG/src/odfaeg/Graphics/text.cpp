@@ -48,7 +48,7 @@ namespace
     }
 
     // Add a glyph quad to the vertex array
-    void addGlyphQuad(odfaeg::graphic::VertexArray& vertices, odfaeg::math::Vec2f position, const odfaeg::graphic::Color& color, const odfaeg::graphic::Glyph& glyph, float italicShear, float outlineThickness = 0)
+    void addGlyphQuad(odfaeg::graphic::VertexArray& vertices, odfaeg::math::Vec3f position, const odfaeg::graphic::Color& color, const odfaeg::graphic::Glyph& glyph, float italicShear, float outlineThickness = 0)
     {
         float padding = 1.0;
 
@@ -62,12 +62,12 @@ namespace
         float u2 = static_cast<float>(glyph.textureRect.left + glyph.textureRect.width) + padding;
         float v2 = static_cast<float>(glyph.textureRect.top  + glyph.textureRect.height) + padding;
 
-        vertices.append(odfaeg::graphic::Vertex(odfaeg::math::Vec3f(position.x() + left  - italicShear * top    - outlineThickness, position.y() + top    - outlineThickness, 0), color, odfaeg::math::Vec2f(u1, v1)));
-        vertices.append(odfaeg::graphic::Vertex(odfaeg::math::Vec3f(position.x() + right - italicShear * top    - outlineThickness, position.y() + top    - outlineThickness, 0), color, odfaeg::math::Vec2f(u2, v1)));
-        vertices.append(odfaeg::graphic::Vertex(odfaeg::math::Vec3f(position.x() + left  - italicShear * bottom - outlineThickness, position.y() + bottom - outlineThickness, 0), color, odfaeg::math::Vec2f(u1, v2)));
-        vertices.append(odfaeg::graphic::Vertex(odfaeg::math::Vec3f(position.x() + left  - italicShear * bottom - outlineThickness, position.y() + bottom - outlineThickness, 0), color, odfaeg::math::Vec2f(u1, v2)));
-        vertices.append(odfaeg::graphic::Vertex(odfaeg::math::Vec3f(position.x() + right - italicShear * top    - outlineThickness, position.y() + top    - outlineThickness, 0), color, odfaeg::math::Vec2f(u2, v1)));
-        vertices.append(odfaeg::graphic::Vertex(odfaeg::math::Vec3f(position.x() + right - italicShear * bottom - outlineThickness, position.y() + bottom - outlineThickness, 0), color, odfaeg::math::Vec2f(u2, v2)));
+        vertices.append(odfaeg::graphic::Vertex(odfaeg::math::Vec3f(position.x() + left  - italicShear * top    - outlineThickness, position.y() + top    - outlineThickness, position.z()), color, odfaeg::math::Vec2f(u1, v1)));
+        vertices.append(odfaeg::graphic::Vertex(odfaeg::math::Vec3f(position.x() + right - italicShear * top    - outlineThickness, position.y() + top    - outlineThickness, position.z()), color, odfaeg::math::Vec2f(u2, v1)));
+        vertices.append(odfaeg::graphic::Vertex(odfaeg::math::Vec3f(position.x() + left  - italicShear * bottom - outlineThickness, position.y() + bottom - outlineThickness, position.z()), color, odfaeg::math::Vec2f(u1, v2)));
+        vertices.append(odfaeg::graphic::Vertex(odfaeg::math::Vec3f(position.x() + left  - italicShear * bottom - outlineThickness, position.y() + bottom - outlineThickness, position.z()), color, odfaeg::math::Vec2f(u1, v2)));
+        vertices.append(odfaeg::graphic::Vertex(odfaeg::math::Vec3f(position.x() + right - italicShear * top    - outlineThickness, position.y() + top    - outlineThickness, position.z()), color, odfaeg::math::Vec2f(u2, v1)));
+        vertices.append(odfaeg::graphic::Vertex(odfaeg::math::Vec3f(position.x() + right - italicShear * bottom - outlineThickness, position.y() + bottom - outlineThickness, position.z()), color, odfaeg::math::Vec2f(u2, v2)));
     }
 }
 namespace odfaeg
@@ -402,6 +402,7 @@ namespace odfaeg
             if (m_font)
             {
                 ensureGeometryUpdate();
+                states.texture = nullptr;
                 states.transform.combine(getTransform().getMatrix());
                 //target.beginRecordCommandBuffers();
                 target.draw(m_backgroundVertices, states);
@@ -554,12 +555,12 @@ namespace odfaeg
                 // Extract the current glyph's description
                 const Glyph& glyph = m_font->getGlyph(curChar, m_characterSize, isBold);
                 if (i >= indexMin && i < indexMax) {
-                    addGlyphQuad(m_vertices, math::Vec2f(x, y), Color::White, glyph, italicShear);
-                    addGlyphQuad(m_backgroundVertices, math::Vec2f(x, y), Color::Blue, glyph, italicShear);
+                    addGlyphQuad(m_vertices, math::Vec3f(x, y, getPosition().z()), Color::White, glyph, italicShear);
+                    addGlyphQuad(m_backgroundVertices, math::Vec3f(x, y, getPosition().z()), Color::Blue, glyph, italicShear);
                 } else {
                     // Add the glyph to the vertices
-                    addGlyphQuad(m_vertices, math::Vec2f(x, y), m_fillColor, glyph, italicShear);
-                    addGlyphQuad(m_backgroundVertices, math::Vec2f(x, y), m_backgroundColor, glyph, italicShear);
+                    addGlyphQuad(m_vertices, math::Vec3f(x, y, getPosition().z()), m_fillColor, glyph, italicShear);
+                    addGlyphQuad(m_backgroundVertices, math::Vec3f(x, y, getPosition().z()), m_backgroundColor, glyph, italicShear);
                 }
 
                 // Update the current bounds with the non outlined glyph bounds

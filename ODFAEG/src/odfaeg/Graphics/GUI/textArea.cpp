@@ -124,7 +124,7 @@ namespace odfaeg {
                 va.append(Vertex(math::Vec3f(cursorPos.x(), cursorPos.y(), getPosition().z()+1), Color::Black));
                 va.append(Vertex(math::Vec3f(cursorPos.x(), cursorPos.y() + text.getCharacterSize(), getPosition().z()+1), Color::Black));
                 rect.setPosition(getPosition());
-                text.setPosition(math::Vec3f(getPosition().x() + scrollX, getPosition().y() + scrollY, getPosition().z()+1));
+                text.setPosition(math::Vec3f(getPosition().x() + scrollX, getPosition().y() + scrollY, getPosition().z()+100));
 
                 rect.setSize(getSize());
                 target.draw(rect);

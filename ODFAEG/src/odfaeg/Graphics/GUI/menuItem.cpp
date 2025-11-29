@@ -35,7 +35,7 @@ namespace odfaeg {
                 void MenuItem::onDraw(RenderTarget& target, RenderStates states) {
                     rect.setPosition(getPosition());
                     rect.setSize(getSize());
-                    text.setPosition(math::Vec3f(text.getPosition().x(), text.getPosition().y(),text.getPosition().z()+1));
+                    text.setPosition(math::Vec3f(text.getPosition().x(), text.getPosition().y(),text.getPosition().z()+100));
                     target.draw(rect);
                     target.draw(text);
                     #ifdef VULKAN

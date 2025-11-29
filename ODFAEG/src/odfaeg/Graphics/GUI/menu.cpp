@@ -48,7 +48,7 @@ namespace odfaeg {
                 text.setPosition(getPosition());
                 text.setSize(getSize());
                 target.draw(rect);
-                text.setPosition(math::Vec3f(text.getPosition().x(), text.getPosition().y(),text.getPosition().z()+1));
+                text.setPosition(math::Vec3f(text.getPosition().x(), text.getPosition().y(),text.getPosition().z()+100));
                 target.draw(text);
                 #ifdef VULKAN
                 target.submit(false);

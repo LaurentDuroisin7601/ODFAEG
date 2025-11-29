@@ -30,7 +30,7 @@ namespace odfaeg {
             void Button::onDraw(RenderTarget& target, RenderStates states) {
                 text.setPosition(getPosition());
                 rect.setPosition(getPosition());
-                text.setPosition(math::Vec3f(text.getPosition().x(), text.getPosition().y(),text.getPosition().z()+1));
+                text.setPosition(math::Vec3f(text.getPosition().x(), text.getPosition().y(),text.getPosition().z()+100));
                 //text.setSize(getSize());
                 rect.setSize(getSize());
                 target.draw(rect);
