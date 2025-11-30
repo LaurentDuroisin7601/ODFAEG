@@ -135,8 +135,13 @@ namespace odfaeg {
                 #endif
                 #ifdef VULKAN
                 target.submit(false);
-                target.getScissors()[1].offset = {getPosition().x(), getPosition().y()};
-                target.getScissors()[1].extent = {getSize().x(), getSize().y()};
+                if (getParent() != nullptr) {
+                    target.getScissors()[1].offset = {(getPosition().x() < getParent()->getPosition().x()) ? getParent()->getPosition().x() : getPosition().x(), (getPosition().y() < getParent()->getPosition().y()) ? getParent()->getPosition().y() : getPosition().y()};
+                    target.getScissors()[1].extent = {(getSize().x() > getParent()->getSize().x()) ? getParent()->getSize().x() : getSize().x(), (getSize().y() > getParent()->getSize().y()) ? getParent()->getSize().y() : getSize().y()};
+                } else {
+                    target.getScissors()[1].offset = {getPosition().x(), getPosition().y()};
+                    target.getScissors()[1].extent = {getSize().x(), getSize().y()};
+                }
                 target.beginRecordCommandBuffers();
                 #endif
                 target.draw(text);
