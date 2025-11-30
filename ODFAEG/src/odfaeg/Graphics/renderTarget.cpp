@@ -401,6 +401,10 @@ namespace odfaeg {
                 maxDrawableDataSize[getCurrentFrame()] = bufferSize;
                 updateDescriptorSets(states);
              }
+             if (Texture::getAllTextures().size() > maxTexturesInUse) {
+                updateDescriptorSets(states);
+                maxTexturesInUse = Texture::getAllTextures().size();
+             }
 
              if (useSecondaryCmds)
                 beginRecordSecondaryCommandBuffers();

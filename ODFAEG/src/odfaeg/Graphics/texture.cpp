@@ -636,21 +636,17 @@ namespace odfaeg {
         }
         void Texture::update(const Texture& texture) {
            update(texture, 0, 0);
+
         }
         void Texture::updateCubeMap(const Texture& texture) {
            updateCubeMap(texture, 0, 0);
         }
         void Texture::update(const Texture& texture, unsigned int x, unsigned int y) {
-            VkImageSubresourceLayers subResourceLayers = {
-                .aspectMask = imageAspectFlags,
-                .mipLevel = 0,
-                .baseArrayLayer = 0,
-                .layerCount = 1
-            };
+
             VkImageBlit2 blitRegion{ .sType = VK_STRUCTURE_TYPE_IMAGE_BLIT_2, .pNext = nullptr };
 
-            blitRegion.srcOffsets[0].x = x;
-            blitRegion.srcOffsets[0].y = y;
+            blitRegion.srcOffsets[0].x = 0;
+            blitRegion.srcOffsets[0].y = 0;
             blitRegion.srcOffsets[0].z = 0;
             blitRegion.srcOffsets[1].x = texture.m_size.x();
             blitRegion.srcOffsets[1].y = texture.m_size.y();
@@ -659,11 +655,11 @@ namespace odfaeg {
             blitRegion.dstOffsets[0].x = x;
             blitRegion.dstOffsets[0].y = y;
             blitRegion.dstOffsets[0].z = 0;
-            blitRegion.dstOffsets[1].x = m_size.x();
-            blitRegion.dstOffsets[1].y = m_size.y();
+            blitRegion.dstOffsets[1].x = x + texture.m_size.x();
+            blitRegion.dstOffsets[1].y = y + texture.m_size.y();
             blitRegion.dstOffsets[1].z = 1;
 
-            blitRegion.srcSubresource.aspectMask = imageAspectFlags;
+            blitRegion.srcSubresource.aspectMask = texture.imageAspectFlags;
             blitRegion.srcSubresource.baseArrayLayer = 0;
             blitRegion.srcSubresource.layerCount = 1;
             blitRegion.srcSubresource.mipLevel = 0;
@@ -699,8 +695,8 @@ namespace odfaeg {
             };
             VkImageBlit2 blitRegion{ .sType = VK_STRUCTURE_TYPE_IMAGE_BLIT_2, .pNext = nullptr };
 
-            blitRegion.srcOffsets[0].x = x;
-            blitRegion.srcOffsets[0].y = y;
+            blitRegion.srcOffsets[0].x = 0;
+            blitRegion.srcOffsets[0].y = 0;
             blitRegion.srcOffsets[0].z = 0;
             blitRegion.srcOffsets[1].x = texture.m_size.x();
             blitRegion.srcOffsets[1].y = texture.m_size.y();
@@ -709,11 +705,11 @@ namespace odfaeg {
             blitRegion.dstOffsets[0].x = x;
             blitRegion.dstOffsets[0].y = y;
             blitRegion.dstOffsets[0].z = 0;
-            blitRegion.dstOffsets[1].x = m_size.x();
-            blitRegion.dstOffsets[1].y = m_size.y();
+            blitRegion.dstOffsets[1].x = x + texture.m_size.x();
+            blitRegion.dstOffsets[1].y = y + texture.m_size.y();
             blitRegion.dstOffsets[1].z = 1;
 
-            blitRegion.srcSubresource.aspectMask = imageAspectFlags;
+            blitRegion.srcSubresource.aspectMask = texture.imageAspectFlags;
             blitRegion.srcSubresource.baseArrayLayer = 0;
             blitRegion.srcSubresource.layerCount = 6;
             blitRegion.srcSubresource.mipLevel = 0;
@@ -795,7 +791,7 @@ namespace odfaeg {
             }
         }
         void Texture::swap(Texture& right) {
-            std::swap(id, right.id);
+            //std::swap(id, right.id);
             std::swap(m_size,          right.m_size);
             std::swap(m_actualSize,    right.m_actualSize);
             std::swap(textureImage,       right.textureImage);

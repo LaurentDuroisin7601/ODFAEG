@@ -329,7 +329,7 @@ namespace odfaeg {
             std::vector<VkDescriptorPool> descriptorPool;
             std::vector<VkDescriptorSetLayout> descriptorSetLayout;
             std::vector<std::vector<VkDescriptorSet>> descriptorSets;
-            unsigned int selectedBuffer;
+            unsigned int selectedBuffer, maxTexturesInUse=0;
             unsigned int id;
             static unsigned int nbRenderTargets;
             Texture* depthTexture;

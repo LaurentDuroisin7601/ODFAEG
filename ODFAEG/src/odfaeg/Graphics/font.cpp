@@ -705,6 +705,7 @@ namespace odfaeg
         ////////////////////////////////////////////////////////////
         IntRect Font::findGlyphRect(Page& page, unsigned int width, unsigned int height) const
         {
+
             // Find the line that fits well the glyph
             Row* row = NULL;
             float bestRatio = 0;
@@ -743,6 +744,7 @@ namespace odfaeg
 
                     if ((textureWidth * 2 <= page.texture.getMaximumSize()) && (textureHeight * 2 <= page.texture.getMaximumSize()))
                     {
+                        //std::cout<<"find glyph rect"<<std::endl;
 
                         // Make the texture 2 times bigger
                         Texture newTexture(vkDevice);
