@@ -66,7 +66,6 @@ void MyAppli::onInit() {
     TextureManager<TEXTURES> &tm = cache.resourceManager<Texture, TEXTURES>("TextureManager");
     theMap = new Scene(&getRenderComponentManager(), "Map test", 100, 100, 100);
     BaseChangementMatrix bcm;
-    //bcm.set3DMatrix();
     theMap->setBaseChangementMatrix(bcm);
     getWorld()->addSceneManager(theMap);
     getWorld()->setCurrentSceneManager("Map test");

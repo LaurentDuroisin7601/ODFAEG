@@ -48,6 +48,7 @@ namespace odfaeg {
                 }
             }
             bool TextArea::hasFocus() {
+
                 return haveFocus;
             }
             void TextArea::setCursorPos() {
@@ -93,11 +94,16 @@ namespace odfaeg {
                 }
             }
             void TextArea::gaignedFocus() {
+
                 haveFocus = true;
+                /*if (getName() == "TSCRIPTEDIT")
+                    std::cout<<"has focus : "<<haveFocus<<std::endl;*/
                 onGaignedFocus();
             }
             void TextArea::lostFocus() {
                 haveFocus = false;
+                /*if (getName() == "TSCRIPTEDIT")
+                    std::cout<<"has focus : "<<haveFocus<<std::endl;*/
                 onLostFocus();
             }
             void TextArea::onGaignedFocus() {
@@ -122,8 +128,8 @@ namespace odfaeg {
             }
             void TextArea::onDraw(RenderTarget& target, RenderStates states) {
                 VertexArray va(Lines);
-                va.append(Vertex(math::Vec3f(cursorPos.x(), cursorPos.y(), getPosition().z()+1), Color::Black));
-                va.append(Vertex(math::Vec3f(cursorPos.x(), cursorPos.y() + text.getCharacterSize(), getPosition().z()+1), Color::Black));
+                va.append(Vertex(math::Vec3f(cursorPos.x(), cursorPos.y(), getPosition().z()+200), Color::Black));
+                va.append(Vertex(math::Vec3f(cursorPos.x(), cursorPos.y() + text.getCharacterSize(), getPosition().z()+200), Color::Black));
                 rect.setPosition(getPosition());
                 text.setPosition(math::Vec3f(getPosition().x() + scrollX, getPosition().y() + scrollY, getPosition().z()+100));
 
@@ -168,7 +174,12 @@ namespace odfaeg {
             }
             bool TextArea::isMouseInTextArea() {
                 physic::BoundingBox bb = getGlobalBounds();
-                math::Vec2f mousePos = math::Vec2f(window::IMouse::getPosition(getWindow()).x(), window::IMouse::getPosition(getWindow()).y());
+
+
+
+                math::Vec3f mousePos = math::Vec3f(window::IMouse::getPosition(getWindow()).x(), window::IMouse::getPosition(getWindow()).y(), getPosition().z());
+                /*if (name == "TSCRIPTEDIT")
+                        std::cout<<"bb : "<<bb.getPosition()<<std::endl<<bb.getSize()<<std::endl<<"mouse pos : "<<mousePos<<std::endl<<bb.isPointInside(mousePos)<<std::endl;*/
                 if (bb.isPointInside(mousePos)) {
 
                     return true;
@@ -177,7 +188,7 @@ namespace odfaeg {
             }
             bool TextArea::isMouseOutTextArea() {
                 physic::BoundingBox bb = getGlobalBounds();
-                math::Vec2f mousePos = math::Vec2f(window::IMouse::getPosition(getWindow()).x(), window::IMouse::getPosition(getWindow()).y());
+                math::Vec3f mousePos = math::Vec3f(window::IMouse::getPosition(getWindow()).x(), window::IMouse::getPosition(getWindow()).y(), getPosition().z());
                 if (bb.isPointInside(mousePos)) {
                     return false;
                 }
@@ -189,9 +200,9 @@ namespace odfaeg {
                 }
             }
             void TextArea::onTextEntered(char caracter) {
-                if (getName() == "TANAME") {
-                    getListener().name = "TANAMELISTENER";
-                }
+                /*if (getName() == "TSCRIPTEDIT") {
+                    std::cout<<"text entered"<<std::endl;
+                }*/
                 if (tmp_text.getSize() > 0 && currentIndex-1 >= 0 && caracter == 8) {
                     currentIndex--;
                     tmp_text.erase(currentIndex, 1);

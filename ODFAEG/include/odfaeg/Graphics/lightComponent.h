@@ -139,6 +139,7 @@ namespace odfaeg {
                 }
             }
             virtual void processEvents() {
+
                 if (isEventContextActivated()) {
                     getListener().processEvents();
                     recomputeSize();

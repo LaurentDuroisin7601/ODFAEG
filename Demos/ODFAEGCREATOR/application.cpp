@@ -947,14 +947,15 @@ void ODFAEGCreator::onInit() {
         pCollisions->setBackgroundColor(Color::White);
         rootCollisionNode = std::make_unique<Node>("Collisions", pCollisions, Vec2f(0.f, 0.05f), Vec2f(1.f, 1.f - 0.05f));
         tabPane->addTab(pCollisions, "Collisions", *fm.getResourceByAlias(Fonts::Serif));
-        tScriptEdit = new TextArea(Vec3f(200, 20, 0), Vec3f(790, 650, 0), fm.getResourceByAlias(Fonts::Serif), "", getRenderWindow());
+        tScriptEdit = new TextArea(Vec3f(200, 20, 100), Vec3f(790, 650, 0), fm.getResourceByAlias(Fonts::Serif), "", getRenderWindow());
         Action a5 (Action::TEXT_ENTERED);
         Command cmd5(a5, FastDelegate<bool>(&TextArea::hasFocus, tScriptEdit), FastDelegate<void>(&ODFAEGCreator::onTextEntered, this, 'a'));
-        getListener().connect("CONTEXTENTERED", cmd5);
+        tScriptEdit->getListener().connect("CONTEXTENTERED", cmd5);
         tScriptEdit->setParent(pScriptsEdit);
         tScriptEdit->setRelPosition(0.f, 0.f);
         tScriptEdit->setRelSize(0.9f, 0.9f);
         pScriptsEdit->addChild(tScriptEdit);
+        tScriptEdit->setName("TSCRIPTEDIT");
         guiSize.x() = getRenderWindow().getSize().x() - pProjects->getSize().x() - pScriptsFiles->getSize().x();
         guiSize.y() = getRenderWindow().getSize().y() - menuBar->getSize().y();
         guiPos.x() = pProjects->getSize().x();
@@ -1051,77 +1052,13 @@ void ODFAEGCreator::onDisplay(RenderWindow* window) {
 
         if (isGuiShown) {
             //std::cout<<"get visible tiles : "<<std::endl;
-           /* for (unsigned int i = 0; i < selectionBorders.size(); i++) {
-                delete selectionBorders[i];
-            }
-            selectionBorders.clear();*/
-            //std::vector<Transformable*> entities = rectSelect.getItems();
-            //std::cout<<"create borders"<<std::endl;
-            /*for (unsigned int i = 0; i < entities.size(); i++) {
-                RectangleShape rect(entities[i]->getSize());
-                rect.setPosition(entities[i]->getPosition());
-                rect.setFillColor(Color::Transparent);
-                rect.setOutlineThickness(5);
-                rect.setOutlineColor(Color::Cyan);
-                window->draw(rect);*/
-                /*if (dynamic_cast<Entity*>(entities[i])) {
-                    Entity* border = dynamic_cast<Entity*>(entities[i])->clone();
-                    for (unsigned int f = 0; f < border->getNbFaces(); f++) {
-                        if (border->getFace(f)->getMaterial().getTexture() != nullptr) {
-                            border->getFace(f)->getMaterial().clearTextures();
-                            border->getFace(f)->getMaterial().addTexture(nullptr, IntRect(0, 0, 0, 0));
-                        }
-                        //std::cout<<"get va"<<std::endl;
-                        VertexArray& va = border->getFace(f)->getVertexArray();
-                        //std::cout<<"change color"<<std::endl;
-                        for (unsigned int j = 0; j < va.getVertexCount(); j++) {
 
-                            va[j].color = Color::Cyan;
-                        }
-                        //std::cout<<"color changed"<<std::endl;
-                    }
-                    border->setOrigin(border->getSize() * 0.5f);
-                    border->setScale(Vec3f(1.1f, 1.1f, 1.1f));
-                    selectionBorders.push_back(border);
-                }*/
-            //}
             //std::cout<<"tiles size : "<<tiles.size()<<std::endl;
-            /*glCheck(glEnable(GL_STENCIL_TEST));
-            glCheck(glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE));
-            glStencilFunc(GL_ALWAYS, 1, 0xFF);
-            glStencilMask(0xFF);
-            glDisable(GL_ALPHA_TEST);
-            //std::cout<<"draw transparent entities"<<std::endl;
-            for (unsigned int i = 0; i < entities.size(); i++) {
-                //std::cout<<"dynamic cast test : "<<entities[i]<<std::endl;
-                if (dynamic_cast<Entity*>(entities[i])) {
-                    //std::cout<<"dynamic cast : "<<entities[i]<<std::endl;
-                    Entity* entity = dynamic_cast<Entity*>(entities[i])->clone();
-                    //std::cout<<"make transparent"<<std::endl;
-                    makeTransparent(entity);
-                    window->draw(*entity);
-                    delete entity;
-                }
-            }
-            //std::cout<<"draw borders : "<<selectionBorders.size()<<std::endl;
-            glCheck(glStencilFunc(GL_NOTEQUAL, 1, 0xFF));
-            glCheck(glStencilMask(0x00));
-            for (unsigned int i = 0; i < selectionBorders.size(); i++) {
-                window->draw(*selectionBorders[i]);
-            }
-            //std::cout<<"borders drawn"<<std::endl;
-            glCheck(glDisable(GL_STENCIL_TEST));
-            glEnable(GL_ALPHA_TEST);*/
+
             if (tabPane->getSelectedTab() == "Collisions") {
                 //window->setView(defaultView);
                 BoundingBox view = selectedComponentView.getViewVolume();
-                /*Vec3f delta = defaultView.getPosition()-selectedComponentView.getPosition();
-                int moveX = (int) delta.x() / (int) (gridWidth) * (int) (gridWidth);
-                int moveY = (int) delta.y() / (int) (gridHeight) * (int) (gridHeight);
-                if (delta.x() < 0)
-                    moveX-=gridWidth;
-                if (delta.y() < 0)
-                    moveY-=gridHeight;*/
+
                 int x = view.getPosition().x();
                 int y = view.getPosition().y();
                 int endX = view.getPosition().x() + view.getWidth();
@@ -1189,8 +1126,6 @@ void ODFAEGCreator::onDisplay(RenderWindow* window) {
                             if (getWorld()->getCurrentSceneManager() != nullptr) {
                                 points[i] = getWorld()->getCurrentSceneManager()->getBaseChangementMatrix().changeOfBase(points[i]);
                             }
-                            /*if (i < 4)
-                                //std::cout<<"point "<<i<<" : "<<v[i]<<std::endl;*/
                         }
                         for (unsigned int n = 0; n < 4; n++) {
                             points[n] += Vec3f(i, j, 0);
@@ -2929,6 +2864,7 @@ void ODFAEGCreator::showFileContent(Label* lab) {
     if (it != cppAppliContent.end()) {
         tScriptEdit->setText(it->second);
         tScriptEdit->setTextSize(20);
+        //tScriptEdit->setEventContextActivated(true);
         Vec3f textSize = tScriptEdit->getTextSize();
         if (textSize.x() > tScriptEdit->getSize().x())
             tScriptEdit->setSize(Vec3f(textSize.x(), tScriptEdit->getSize().y(), tScriptEdit->getSize().z()));

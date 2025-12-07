@@ -280,6 +280,8 @@ namespace odfaeg {
             * \brief get the local bounding box of the transformable object (without its transformation)
             */
             void recomputeBounds() {
+                /*if (name == "TSCRIPTEDIT")
+                    globalBounds.setName("TSCRIPTEDIT");*/
                 ////////std::cout<<"tranform : "<<getTransform().getMatrix()<<std::endl;
                 ////////std::cout<<"local bounds : "<<localBounds.getPosition()<<std::endl<<localBounds.getSize()<<std::endl;
                 globalBounds = localBounds.transform(getTransform());
