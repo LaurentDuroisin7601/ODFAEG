@@ -438,6 +438,7 @@ namespace odfaeg
 
             // Clear the previous geometry
             m_vertices.clear();
+            m_backgroundVertices.clear();
             m_outlineVertices.clear();
             m_bounds = physic::BoundingBox();
 
