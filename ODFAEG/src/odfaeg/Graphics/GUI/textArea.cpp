@@ -128,8 +128,8 @@ namespace odfaeg {
             }
             void TextArea::onDraw(RenderTarget& target, RenderStates states) {
                 VertexArray va(Lines);
-                va.append(Vertex(math::Vec3f(cursorPos.x(), cursorPos.y(), getPosition().z()+200), Color::Black));
-                va.append(Vertex(math::Vec3f(cursorPos.x(), cursorPos.y() + text.getCharacterSize(), getPosition().z()+200), Color::Black));
+                va.append(Vertex(math::Vec3f(cursorPos.x(), cursorPos.y(), getPosition().z()+50), Color::Black));
+                va.append(Vertex(math::Vec3f(cursorPos.x(), cursorPos.y() + text.getCharacterSize(), getPosition().z()+50), Color::Black));
                 rect.setPosition(getPosition());
                 text.setPosition(math::Vec3f(getPosition().x() + scrollX, getPosition().y() + scrollY, getPosition().z()+100));
 
@@ -168,9 +168,12 @@ namespace odfaeg {
                 if(haveFocus) {
                     target.draw(va);
                 }
-                #ifndef VULKAN
+                #ifdef VULKAN
+                if (!haveFocus)
+                    target.beginRecordCommandBuffers();
                 target.submit(false);
                 #endif // VULKAN
+
             }
             bool TextArea::isMouseInTextArea() {
                 physic::BoundingBox bb = getGlobalBounds();

@@ -947,7 +947,7 @@ void ODFAEGCreator::onInit() {
         pCollisions->setBackgroundColor(Color::White);
         rootCollisionNode = std::make_unique<Node>("Collisions", pCollisions, Vec2f(0.f, 0.05f), Vec2f(1.f, 1.f - 0.05f));
         tabPane->addTab(pCollisions, "Collisions", *fm.getResourceByAlias(Fonts::Serif));
-        tScriptEdit = new TextArea(Vec3f(200, 20, 100), Vec3f(790, 650, 0), fm.getResourceByAlias(Fonts::Serif), "", getRenderWindow());
+        tScriptEdit = new TextArea(Vec3f(200, 20, 0), Vec3f(790, 650, 0), fm.getResourceByAlias(Fonts::Serif), "", getRenderWindow());
         Action a5 (Action::TEXT_ENTERED);
         Command cmd5(a5, FastDelegate<bool>(&TextArea::hasFocus, tScriptEdit), FastDelegate<void>(&ODFAEGCreator::onTextEntered, this, 'a'));
         tScriptEdit->getListener().connect("CONTEXTENTERED", cmd5);
