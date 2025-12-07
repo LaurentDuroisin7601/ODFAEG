@@ -223,6 +223,7 @@ namespace odfaeg {
             }
             void Panel::drawOn(RenderTarget& target, RenderStates states) {
                 #ifdef VULKAN
+
                 target.beginRecordCommandBuffers();
                 target.submit(false);
                 target.getScissors()[0].offset = {0, 0};
@@ -241,9 +242,11 @@ namespace odfaeg {
                     target.draw(horScrollBar, states);
 
                 }
-                #ifndef VULKAN
+                /*#ifdef VULKAN
+                if (!(scrollX || scrollY))
+                    target.beginRecordCommandBuffers();
                 target.submit(false);
-                #endif // VULKAN
+                #endif // VULKAN*/
 
                 if (disableScissor) {
                     #ifndef VULKAN

@@ -148,7 +148,8 @@ namespace odfaeg {
                     target.getScissors()[1].offset = {getPosition().x(), getPosition().y()};
                     target.getScissors()[1].extent = {getSize().x(), getSize().y()};
                 }
-                target.beginRecordCommandBuffers();
+                if (text.getString().getSize() == 0)
+                    target.beginRecordCommandBuffers();
                 #endif
                 target.draw(text);
                 #ifdef VULKAN
@@ -169,9 +170,9 @@ namespace odfaeg {
                     target.draw(va);
                 }
                 #ifdef VULKAN
-                if (!haveFocus)
-                    target.beginRecordCommandBuffers();
-                target.submit(false);
+                if (haveFocus) {
+                    target.submit(false);
+                }
                 #endif // VULKAN
 
             }
