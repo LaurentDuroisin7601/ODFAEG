@@ -53,33 +53,16 @@ namespace odfaeg {
             }
             void TextArea::setCursorPos() {
                 math::Vec2f mousePos = math::Vec2f(window::IMouse::getPosition(getWindow()).x(), window::IMouse::getPosition(getWindow()).y());
-                bool found = false;
-                for (unsigned int i = 0; i < tmp_text.getSize() && !found; i++) {
-                    math::Vec2f pos = text.findCharacterPos(i);
-                    if (pos.x() > mousePos.x() && pos.y() > mousePos.y() - text.getCharacterSize()) {
-                        cursorPos = math::Vec3f(pos.x(), pos.y(), 0);
-                        currentIndex = i;
-                        found = true;
-                    }
-                }
-                if (!found) {
-                    currentIndex = tmp_text.getSize();
-                    math::Vec2f pos = text.findCharacterPos(currentIndex);
-                    cursorPos = math::Vec3f(pos.x(), pos.y(), 0);
-                }
-                text.setSelected(currentIndex, currentIndex);
+                currentIndex = text.findCharacterAt(mousePos);
+                math::Vec2f pos = text.findCharacterPos(currentIndex);
+                cursorPos = math::Vec3f(pos.x(), pos.y(), 0);
+                //text.setSelected(currentIndex, currentIndex);
             }
             void TextArea::setCursorPos2() {
                 math::Vec2f mousePos = math::Vec2f(window::IMouse::getPosition(getWindow()).x(), window::IMouse::getPosition(getWindow()).y());
-                bool found = false;
-                for (unsigned int i = 0; i < tmp_text.getSize() && !found; i++) {
-                    math::Vec2f pos = text.findCharacterPos(i);
-                    if (pos.x() > mousePos.x() && pos.y() > mousePos.y() - text.getCharacterSize()) {
-                        cursorPos = math::Vec3f(pos.x(), pos.y(), 0);
-                        currentIndex2 = i;
-                        found = true;
-                    }
-                }
+                currentIndex2 = text.findCharacterAt(mousePos);
+                math::Vec2f pos = text.findCharacterPos(currentIndex2);
+                cursorPos = math::Vec3f(pos.x(), pos.y(), 0);
                 if (currentIndex2 > currentIndex) {
                     ////////std::cout<<"set selected text : "<<currentIndex<<","<<currentIndex2<<std::endl;
                     text.setSelected(currentIndex, currentIndex2);

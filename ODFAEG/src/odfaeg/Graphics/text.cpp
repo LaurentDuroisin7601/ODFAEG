@@ -323,13 +323,49 @@ namespace odfaeg
             return m_outlineThickness;
         }
         unsigned int Text::findCharacterAt(math::Vec2f cursorPos) {
+            math::Vec2f position;
+            std::uint32_t prevChar = 0;
+
             for (unsigned int i = 0; i < m_string.getSize(); i++) {
-                math::Vec2f pos = findCharacterPos(i);
-                if (pos.computeDist(cursorPos) < m_characterSize) {
+                std::uint32_t curChar = m_string[i];
+
+                // Kerning
+                position.x() += m_font->getKerning(prevChar, curChar, m_characterSize);
+                prevChar = curChar;
+
+                // Gestion des retours à la ligne
+                if (curChar == '\n') {
+                    position.y() += m_font->getLineSpacing(m_characterSize) * m_lineSpacingFactor;
+                    position.x() = 0;
+                    continue;
+                }
+
+                // Largeur du caractère (advance)
+                float advance;
+                if (curChar == ' ')
+                    advance = m_font->getGlyph(L' ', m_characterSize, m_style & Bold).advance;
+                else
+                    advance = m_font->getGlyph(curChar, m_characterSize, m_style & Bold).advance;
+
+                advance += (m_font->getGlyph(L' ', m_characterSize, m_style & Bold).advance / 3.f) * (m_letterSpacingFactor - 1.f);
+
+                // Rectangle du caractère
+                math::Vec2f charPos = getTransform().transform(math::Vec3f(position.x(), position.y(), 0));
+                math::Vec2f charSize(advance, m_characterSize);
+
+                // Test si le curseur est dans ce rectangle
+                if (cursorPos.x() >= charPos.x() &&
+                    cursorPos.x() <= charPos.x() + charSize.x() &&
+                    cursorPos.y() >= charPos.y() &&
+                    cursorPos.y() <= charPos.y() + charSize.y()) {
                     return i;
                 }
+
+                // Avancer pour le prochain caractère
+                position.x() += advance;
             }
-            return m_string.getSize() - 1;
+
+            return m_string.getSize(); // après le dernier caractère
         }
         ////////////////////////////////////////////////////////////
         math::Vec2f Text::findCharacterPos(std::size_t index)
