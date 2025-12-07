@@ -335,37 +335,47 @@ namespace odfaeg
 
                 // Gestion des retours à la ligne
                 if (curChar == '\n') {
+                    //  Test fin de ligne avant de descendre
+                    math::Vec2f endPos = getTransform().transform(math::Vec3f(position.x(), position.y(), 0));
+                    if (cursorPos.x() >= endPos.x() &&
+                        cursorPos.y() >= endPos.y() &&
+                        cursorPos.y() <= endPos.y() + m_characterSize) {
+                        return i; // insertion à la fin de cette ligne
+                    }
+
                     position.y() += m_font->getLineSpacing(m_characterSize) * m_lineSpacingFactor;
                     position.x() = 0;
                     continue;
                 }
 
-                // Largeur du caractère (advance)
-                float advance;
-                if (curChar == ' ')
-                    advance = m_font->getGlyph(L' ', m_characterSize, m_style & Bold).advance;
-                else
-                    advance = m_font->getGlyph(curChar, m_characterSize, m_style & Bold).advance;
-
+                // Largeur du caractère
+                float advance = m_font->getGlyph(curChar, m_characterSize, m_style & Bold).advance;
                 advance += (m_font->getGlyph(L' ', m_characterSize, m_style & Bold).advance / 3.f) * (m_letterSpacingFactor - 1.f);
 
-                // Rectangle du caractère
+                // Position globale
                 math::Vec2f charPos = getTransform().transform(math::Vec3f(position.x(), position.y(), 0));
-                math::Vec2f charSize(advance, m_characterSize);
 
-                // Test si le curseur est dans ce rectangle
+                // Test si curseur est dans la boîte
                 if (cursorPos.x() >= charPos.x() &&
-                    cursorPos.x() <= charPos.x() + charSize.x() &&
+                    cursorPos.x() <= charPos.x() + advance &&
                     cursorPos.y() >= charPos.y() &&
-                    cursorPos.y() <= charPos.y() + charSize.y()) {
+                    cursorPos.y() <= charPos.y() + m_characterSize) {
                     return i;
                 }
 
-                // Avancer pour le prochain caractère
+                // Avancer
                 position.x() += advance;
             }
 
-            return m_string.getSize(); // après le dernier caractère
+            // Fin du texte global
+            math::Vec2f endPos = getTransform().transform(math::Vec3f(position.x(), position.y(), 0));
+            if (cursorPos.x() >= endPos.x() &&
+                cursorPos.y() >= endPos.y() &&
+                cursorPos.y() <= endPos.y() + m_characterSize) {
+                return m_string.getSize();
+            }
+
+            return m_string.getSize() - 1;
         }
         ////////////////////////////////////////////////////////////
         math::Vec2f Text::findCharacterPos(std::size_t index)
