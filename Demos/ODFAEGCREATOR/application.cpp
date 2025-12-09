@@ -3087,7 +3087,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
             oss<<"   void onInit();"<<std::endl;
             oss<<"   void onRender(odfaeg::graphic::RenderComponentManager* cm);"<<std::endl;
             oss<<"   void onDisplay(odfaeg::graphic::RenderWindow* window);"<<std::endl;
-            oss<<"   void onUpdate (odfaeg::graphic::RenderWindow*, odfaeg::window::IEvent& event);"<<std::endl;
+            oss<<"   void onUpdate (odfaeg::graphic::RenderWindow* rw, odfaeg::window::IEvent& event);"<<std::endl;
             oss<<"   void onExec ();"<<std::endl;
             oss<<"   private : "<<std::endl;
             oss<<"   std::vector<std::unique_ptr<Drawable>> drawables;"<<std::endl;

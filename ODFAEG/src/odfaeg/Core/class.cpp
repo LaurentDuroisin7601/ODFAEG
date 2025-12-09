@@ -138,8 +138,9 @@ namespace odfaeg {
             //If we have found the class we check informations about the class.
             if (found) {
                 //check each namespaces englobing the class.
-                std::cout<<"content : "<<content<<std::endl;
-                while(content.find("namespace") != std::string::npos && found) {
+                std::cout<<"content : "<<content.size()<<std::endl;
+                size_t pos;
+                while(found && (pos = content.find("namespace")) != std::string::npos) {
                     //Find the namespace pos.
                     std::cout<<"pos : "<<std::endl;
                     unsigned int pos = content.find("namespace");
@@ -184,15 +185,21 @@ namespace odfaeg {
 
                     Class cl(name, headerFile);
                     cl.setNamespace(namespc);
+
                     checkSuperClasses(content, cl);
+                    std::cout<<"sub classes checked"<<std::endl;
                     std::string innerClass = "";
                     std::string type = "";
                     int lvl = 0;
                     //At the first recursion the inner class name is empty, the recursion lvl is 0 and the class type is empty.
                     checkInnerClass(innerClass, type, content, lvl,  cl);
+                    std::cout<<"inner classes check"<<std::endl;
                     checkConstructors(content, cl);
+                    std::cout<<"constructor checked"<<std::endl;
                     checkMembersFunctions(content, cl);
+                    std::cout<<"member function checked"<<std::endl;
                     checkMembersVariables(content, cl);
+                    std::cout<<"member variable checked"<<std::endl;
                     return cl;
                 }
             }
@@ -538,13 +545,20 @@ namespace odfaeg {
         }
         void Class::checkMembersFunctions(std::string& fileContent, Class& cl) {
             //The function definition can be at the same file than the member function declaration, in this case, we need to split the string.
-
+            //std::cout<<"content : "<<fileContent<<std::endl;
             while (fileContent.find("{") != std::string::npos) {
                 //Count the number of sub blocks (introduced by if, while, etc...) and remove they definition.
                 unsigned int pos = fileContent.find("{");
                 unsigned int pos2 = findLastBracket(fileContent, 0);
+                //std::cout<<"erase"<<std::endl;
                 fileContent.erase(pos, pos2 - pos-1);
+                //std::cout<<"erased"<<std::endl;
                 fileContent.insert(pos-1, ";");
+                //std::cout<<"inserted"<<std::endl;
+            }
+            while (fileContent.at(0) == ' ' || fileContent.at(0) == '\n') {
+                fileContent = fileContent.erase(0, 1);
+
             }
             //we also need to split when the member function definition is not in the header.
             std::vector<std::string> parts2 = split(fileContent, ";");
@@ -553,11 +567,13 @@ namespace odfaeg {
                 if(parts2[j].find("(") != std::string::npos) {
                     int pos = parts2[j].find("(");
                     str = parts2[j].substr(0, pos+1);
+                    //std::cout<<"str sub"<<std::endl;
                     //Erase spaces before the \n.
                     while (str.size() > 1 && str.at(str.size()-2) == ' ') {
                         str = str.erase(str.size()-2, 1);
 
                     }
+                    //std::cout<<"space removed"<<std::endl;
                 }
                 if (str == "") {
                     str = parts2[j];
@@ -567,9 +583,11 @@ namespace odfaeg {
                 int index = parts2[j].find("(");
                 if (index != std::string::npos) {
                     //Remove the (.
-                    std::string name = parts2[j].substr(0, index);
+                    std::string name = parts2[j];
+                    name.erase(index, 1);
+                    index = name.find(")");
+                    name.erase(index, 1);
 
-                    name.erase(0, 1);
                     //remove spaces and \n at the beginning and at the end.
                     while (name.size() > 0 && name.at(0) == ' ' || name.at(0) == '\n') {
                         name = name.erase(0, 1);
@@ -578,9 +596,9 @@ namespace odfaeg {
                         name = name.erase(name.size()-1, 1);
                     }
                     //split to get argument list.
+                    //std::cout<<"name : "<<name<<std::endl;
 
-
-                    std::vector<std::string> parts3 = split(name, "(");
+                    std::vector<std::string> parts3 = split(name, ",");
                     parts3 = split(parts3[0], " ");
                     if (parts3.size() > 1) {
                         MemberFunction mf(parts3[0], parts3[1]);
