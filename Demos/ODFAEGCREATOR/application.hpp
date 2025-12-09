@@ -135,7 +135,7 @@ class ODFAEGCreator : public odfaeg::core::Application<ODFAEGCreator>,
     std::vector<odfaeg::physic::BoundingPolyhedron> getTmpBps();
     unsigned int findLine(std::string toFind, std::string content);
     void removeLine(unsigned int line, std::string& content);
-    void onTextEntered(char caracter);
+    void onTextEntered(odfaeg::graphic::gui::TextArea* ta, char caracter);
     enum Fonts {
         Serif
     };

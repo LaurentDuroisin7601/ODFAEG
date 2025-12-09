@@ -949,7 +949,7 @@ void ODFAEGCreator::onInit() {
         tabPane->addTab(pCollisions, "Collisions", *fm.getResourceByAlias(Fonts::Serif));
         tScriptEdit = new TextArea(Vec3f(200, 20, 0), Vec3f(790, 650, 0), fm.getResourceByAlias(Fonts::Serif), "", getRenderWindow());
         Action a5 (Action::TEXT_ENTERED);
-        Command cmd5(a5, FastDelegate<bool>(&TextArea::hasFocus, tScriptEdit), FastDelegate<void>(&ODFAEGCreator::onTextEntered, this, 'a'));
+        Command cmd5(a5, FastDelegate<bool>(&TextArea::hasFocus, tScriptEdit), FastDelegate<void>(&ODFAEGCreator::onTextEntered, this, tScriptEdit, 'a'));
         tScriptEdit->getListener().connect("CONTEXTENTERED", cmd5);
         tScriptEdit->setParent(pScriptsEdit);
         tScriptEdit->setRelPosition(0.f, 0.f);
@@ -7518,7 +7518,7 @@ std::string ODFAEGCreator::getHeaderContent(std::string content, unsigned int po
             if (pos != std::string::npos) {
                 cumPos += pos;
 
-                content = content.substr(pos, content.size()-pos);
+                content = content.substr(pos);
 
 
                 //std::cout<<"pos : "<<cumPos<<std::endl<<"part : "<<parts[i]<<std::endl<<"pos in file : "<<posInFile<<std::endl<<"pos 2 "<<pos2<<std::endl;
@@ -7601,14 +7601,19 @@ std::vector<std::string> ODFAEGCreator::checkCompletionNames(std::string letters
     //std::cout<<"header content : "<<header_content<<std::endl;
     //Recherche du namespace dans lequel on se trouver.
     std::string namespc = getNamespaceIn(content, posInFile);
+    std::cout<<"name space : "<<namespc<<std::endl;
     //On recherche dans quel bloc de quelle fonction de quelle classe on se trouve.
     std::vector<std::string> classes = Class::getClassesFromMemory(header_content);
+    std::cout<<"get classes from memory"<<std::endl;
     unsigned int cumPos = 0;
     for (unsigned int i = 0; i < classes.size(); i++) {
         Class classs = Class::getClassFromMemory(classes[i], "", header_content);
+         std::cout<<"get class from memory"<<std::endl;
         //Ok si la classe est dans le même namespace que dans le fichier.
         if (classs.getNamespace() == namespc) {
+            std::cout<<"get functions"<<std::endl;
             std::vector<MemberFunction> functions = classs.getMembersFunctions();
+            std::cout<<"functions get"<<std::endl;
             for (unsigned int f = 0; f < functions.size(); f++) {
                 std::cout<<"content : "<<content<<std::endl;
                 int p = content.find(functions[f].getName());
@@ -7618,6 +7623,7 @@ std::vector<std::string> ODFAEGCreator::checkCompletionNames(std::string letters
                     int pos = subContent.find("{");
                     if (pos != std::string::npos) {
                         subContent = subContent.substr(pos, subContent.size() - pos);
+                        std::cout<<"content : "<<subContent<<std::endl;
 
                         cumPos += pos;
 
@@ -7838,17 +7844,19 @@ void ODFAEGCreator::checkNamesToPropose(BlocInfo parentBloc, std::vector<std::st
         checkNamesToPropose(parentBloc.subBlocs[i], namesToPropose, strsearch, posInFile);
     }
 }
-void ODFAEGCreator::onTextEntered(char caracter) {
-    if (!std::isalpha(caracter) && caracter != '.' && caracter != '-' && caracter != '>' && caracter != ':') {
-        strsearch = "";
-    } else {
-        strsearch += caracter;
-    }
-    unsigned int charPosInFile = tScriptEdit->getCharacterIndexAtCursorPos();
-    std::cout<<"char pos in file : "<<charPosInFile<<std::endl;
-    std::vector<std::string> completionNames = checkCompletionNames(strsearch, charPosInFile);
-    for (unsigned int i = 0; i < completionNames.size(); i++) {
-        std::cout<<"completion name "<<i<<" : "<<completionNames[i]<<std::endl;
+void ODFAEGCreator::onTextEntered(TextArea* ta, char caracter) {
+    if (ta == tScriptEdit) {
+        if (!std::isalpha(caracter) && caracter != '.' && caracter != '-' && caracter != '>' && caracter != ':') {
+            strsearch = "";
+        } else {
+            strsearch += caracter;
+        }
+        unsigned int charPosInFile = tScriptEdit->getCharacterIndexAtCursorPos();
+        std::cout<<"char pos in file : "<<charPosInFile<<std::endl;
+        std::vector<std::string> completionNames = checkCompletionNames(strsearch, charPosInFile);
+        for (unsigned int i = 0; i < completionNames.size(); i++) {
+            std::cout<<"completion name "<<i<<" : "<<completionNames[i]<<std::endl;
+        }
     }
 }
 

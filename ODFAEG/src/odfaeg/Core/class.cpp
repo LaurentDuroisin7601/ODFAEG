@@ -75,16 +75,16 @@ namespace odfaeg {
         Class Class::getClassFromMemory(std::string name, std::string nspc, std::string content) {
 
             bool found=false;
-            std::string fileContent;
             std::string headerFile;
             std::string namespc="";
 
             istringstream iss;
             iss.str(content);
             std::string line;
-            fileContent="";
             //Read lines.
+
             while(getline(iss, line)) {
+                //std::cout<<"get line"<<std::endl;
                 //Ignore c++ comments.
                 if (line.find("/*") != std::string::npos || line.find("/**") != std::string::npos) {
                     while(line.find("*/") == std::string::npos && getline(iss, line)) {
@@ -131,36 +131,39 @@ namespace odfaeg {
                             found = true;
                         }
                     }
-                    //put every lines of the file header file to a string.
-                    fileContent += line+"\n";
 
                 }
             }
             int j= 0;
             //If we have found the class we check informations about the class.
             if (found) {
-
                 //check each namespaces englobing the class.
-                while(fileContent.find("namespace ") != std::string::npos && found) {
+                std::cout<<"content : "<<content<<std::endl;
+                while(content.find("namespace") != std::string::npos && found) {
                     //Find the namespace pos.
-                    unsigned int pos = fileContent.find("namespace ");
-                    //Check the namespace name.
-                    fileContent = fileContent.substr(pos+9, fileContent.size()-pos-9);
+                    std::cout<<"pos : "<<std::endl;
+                    unsigned int pos = content.find("namespace");
 
-                    while(fileContent.size() > 0 && fileContent.at(0) == ' ') {
-                        fileContent.erase(0, 1);
+                    //Check the namespace name.
+                    content = content.substr(pos+9, content.size()-pos-9);
+                    std::cout<<"namespace substr"<<std::endl;
+
+                    while(content.size() > 0 && content.at(0) == ' ') {
+                        content.erase(0, 1);
                     }
-                    std::vector<std::string> parts = split(fileContent, " ");
+                    std::cout<<"removing space"<<std::endl;
+                    std::vector<std::string> parts = split(content, " ");
                     //We add :: for each sub namespaces found.
                     if (j == 0)
                         namespc += parts[0];
                     else
                         namespc += "::"+parts[0];
                     //we must check if the namespace is declared before the class.
-                    pos = fileContent.find_first_of("{");
-                    fileContent = fileContent.substr(pos+1, fileContent.size()-pos-1);
-                    pos = fileContent.find("namespace ");
-                    unsigned int pos2 = fileContent.find(name+" ");
+                    pos = content.find("{");
+                    content = content.substr(pos+1, content.size()-pos-1);
+                    std::cout<<"brack found"<<std::endl;
+                    //pos = fileContent.find("namespace ");
+                    unsigned int pos2 = content.find(name+" ");
 
                     found = true;
                     //if there is no more namespace declaration after the class name we can check if the class is in the given namespace.
@@ -170,8 +173,10 @@ namespace odfaeg {
                             found = false;
                         }
                         //Erase eveything which is before the namespace declaration.
-                        fileContent = fileContent.substr(pos2);
+
                     }
+                    content = content.substr(pos);
+                    std::cout<<"last substr"<<std::endl;
                     j++;
                 }
                 //We have found the class in the specified namespace, we can get class's informations.
@@ -179,15 +184,15 @@ namespace odfaeg {
 
                     Class cl(name, headerFile);
                     cl.setNamespace(namespc);
-                    checkSuperClasses(fileContent, cl);
+                    checkSuperClasses(content, cl);
                     std::string innerClass = "";
                     std::string type = "";
                     int lvl = 0;
                     //At the first recursion the inner class name is empty, the recursion lvl is 0 and the class type is empty.
-                    checkInnerClass(innerClass, type, fileContent, lvl,  cl);
-                    checkConstructors(fileContent, cl);
-                    checkMembersFunctions(fileContent, cl);
-                    checkMembersVariables(fileContent, cl);
+                    checkInnerClass(innerClass, type, content, lvl,  cl);
+                    checkConstructors(content, cl);
+                    checkMembersFunctions(content, cl);
+                    checkMembersVariables(content, cl);
                     return cl;
                 }
             }
