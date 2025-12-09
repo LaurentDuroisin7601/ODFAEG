@@ -192,7 +192,9 @@ namespace odfaeg {
                 }*/
                 if (tmp_text.getSize() > 0 && currentIndex-1 >= 0 && caracter == 8) {
                     currentIndex--;
-                    tmp_text.erase(currentIndex, 1);
+                    if (currentIndex < tmp_text.getSize()) {
+                        tmp_text.erase(currentIndex, 1);
+                    }
                 }
                 else if (caracter != 8) {
                     if (caracter == 13) {
