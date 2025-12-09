@@ -187,10 +187,11 @@ namespace odfaeg {
                 }
             }
             void TextArea::onTextEntered(char caracter) {
-                /*if (getName() == "TSCRIPTEDIT") {
-                    std::cout<<"text entered"<<std::endl;
-                }*/
+                //if (getName() == "TSCRIPTEDIT") {
+
+                //}
                 if (tmp_text.getSize() > 0 && currentIndex-1 >= 0 && caracter == 8) {
+                    //std::cout<<"erase"<<std::endl;
                     currentIndex--;
                     if (currentIndex < tmp_text.getSize()) {
                         tmp_text.erase(currentIndex, 1);
@@ -200,7 +201,9 @@ namespace odfaeg {
                     if (caracter == 13) {
                         tmp_text.insert(currentIndex, "\n");
                     } else {
+                        //std::cout<<"insert : "<<currentIndex<<std::endl;
                         tmp_text.insert(currentIndex, core::String(caracter));
+                        //std::cout<<"inserted : "<<currentIndex<<std::endl;
                     }
                     currentIndex++;
                 }
@@ -213,7 +216,7 @@ namespace odfaeg {
             }
             void TextArea::setText(std::string text) {
                 tmp_text = text;
-                this->text.setString(text);
+                this->text.setString(tmp_text);
                 textChanged = true;
             }
             bool TextArea::isTextChanged() {
