@@ -7445,34 +7445,41 @@ void ODFAEGCreator::addBoundingVolumes(BoundingVolume* bv) {
 std::string ODFAEGCreator::getNamespaceIn(std::string fileContent, unsigned int posInFile) {
     //check each namespaces englobing the class.
     std::string namespc="";
-    int j= 0;
-    while(fileContent.find("namespace ") != std::string::npos) {
+    unsigned int cumPos = 0;
+    //Remove using namespace.
+    while (fileContent.find("using") != std::string::npos) {
+        int pos = fileContent.find("using");
+        fileContent = fileContent.substr(pos);
+        int pos2 = fileContent.find(";");
+        fileContent = fileContent.substr(pos2+1);
+    }
+    while(fileContent.find("namespace") != std::string::npos) {
         //Find the namespace pos.
-        unsigned int pos = fileContent.find("namespace ");
+        unsigned int pos = fileContent.find("namespace");
         //Check the namespace name.
         fileContent = fileContent.substr(pos+9, fileContent.size()-pos-9);
+        cumPos += 9;
 
         while(fileContent.size() > 0 && fileContent.at(0) == ' ') {
             fileContent.erase(0, 1);
+            cumPos++;
         }
         std::vector<std::string> parts = split(fileContent, " ");
         //We add :: for each sub namespaces found.
-        if (j == 0)
-            namespc += parts[0];
-        else
-            namespc += "::"+parts[0];
-        //we must check if the namespace is declared before the class.
-        pos = fileContent.find_first_of("{");
-        fileContent = fileContent.substr(pos+1, fileContent.size()-pos-1);
-        pos = fileContent.find("namespace ");
-        unsigned int pos2 = posInFile;
 
+        //we must check if the namespace is declared before the class.
+        pos = fileContent.find("{");
+        fileContent = fileContent.substr(pos+1, fileContent.size()-pos-1);
+        cumPos += pos;
         //if there is no more namespace declaration after the class name we can check if the class is in the given namespace.
-        if (pos > pos2) {
+        if (pos < posInFile) {
             //Erase eveything which is before the namespace declaration.
-            fileContent = fileContent.substr(pos2);
+            if (namespc == "")
+                namespc += parts[0];
+            else
+                namespc += "::"+parts[0];
         }
-        j++;
+        fileContent = fileContent.substr(pos, fileContent.size()-pos);
     }
     return namespc;
 }
@@ -7603,6 +7610,7 @@ std::vector<std::string> ODFAEGCreator::checkCompletionNames(std::string letters
         if (classs.getNamespace() == namespc) {
             std::vector<MemberFunction> functions = classs.getMembersFunctions();
             for (unsigned int f = 0; f < functions.size(); f++) {
+                std::cout<<"content : "<<content<<std::endl;
                 int p = content.find(functions[f].getName());
                 if (p != std::string::npos) {
                     cumPos += p;
