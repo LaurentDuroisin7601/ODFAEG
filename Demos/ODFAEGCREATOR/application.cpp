@@ -7481,50 +7481,72 @@ std::string ODFAEGCreator::getHeaderContent(std::string content, unsigned int po
     std::map<std::pair<std::string, std::string>, std::string>::iterator it;
     for (it = cppAppliContent.begin(); it != cppAppliContent.end(); it++) {
         //On est déjà dans un fichier.h on le retourne.
-        if ((it->first.second.find(".h") || it->first.second.find(".hpp")) && it->second == content);
+        /*std::cout<<"content : "<<content<<std::endl;
+        std::cout<<"file : "<<it->second<<std::endl;*/
+        if ((it->first.second.find(".h") != std::string::npos || it->first.second.find(".hpp") != std::string::npos) && it->second == content) {
+            //std::cout<<"file : "<<it->second<<std::endl;
             return it->second;
+        }
     }
     //Extract class names :
     unsigned int cumPos = 0;
-    std::vector<std::string> parts = split(content, "::");
-    for (unsigned int i = 0; i < parts.size(); i++) {
 
-        std::vector<std::string> names = split(parts[i], " ");
-        int pos = content.find(parts[i]);
-        if (pos != std::string::npos) {
-            cumPos += pos;
 
-            std::string content = content.substr(pos, content.size()-pos);
+    std::string cpContent = content;
 
-            int pos2 = 0;
-            std::string cpContent = content;
-            findLastBracket(cpContent, 0, pos2);
-            if (pos2 != std::string::npos) {
+    while (cpContent.find("}") != std::string::npos) {
+        content = cpContent;
+        int pos2 = 0;
+        std::string cpContent2 = content;
+        findLastBracket(cpContent2, 0, pos2);
+        std::vector<std::string> parts = split(content, "::");
+        bool isInBlock = true;
+        for (unsigned int i = 0; i < parts.size() && isInBlock; i++) {
 
-                //If we are arrived at the class definition.
-                if (cumPos < posInFile && posInFile < cumPos + pos2) {
-                    //Check where the class is defined.
-                    for (it = cppAppliContent.begin(); it != cppAppliContent.end(); it++) {
-                        std::string subContent2 = it->second;
-                        int posC = subContent2.find("class");
-                        while (posC != std::string::npos) {
-                            int pos2 = subContent2.find(names[names.size()-1]);
-                            int pos3 = subContent2.find("{");
-                            if (pos2 != std::string::npos && pos3 != std::string::npos) {
-                                if (posC < pos2 && pos2 < pos3) {
-                                    std::cout<<"header found : "<<std::endl;
-                                    return it->second;
+            std::vector<std::string> names = split(parts[i], " ");
+            int pos = content.find(parts[i]);
+            isInBlock = pos < pos2;
+            //std::cout<<"pos : "<<pos<<std::endl<<parts[i]<<std::endl;
+
+            if (pos != std::string::npos) {
+                cumPos += pos;
+
+                content = content.substr(pos, content.size()-pos);
+
+
+                //std::cout<<"pos : "<<cumPos<<std::endl<<"part : "<<parts[i]<<std::endl<<"pos in file : "<<posInFile<<std::endl<<"pos 2 "<<pos2<<std::endl;
+                if (pos2 != std::string::npos) {
+
+                    //If we are arrived at the class definition.
+                    //std::cout<<"positions : "<<cumPos<<std::endl<<posInFile<<std::endl<<cumPos + pos2<<std::endl;
+                    if (cumPos < posInFile && posInFile < cumPos + pos2) {
+                        //Check where the class is defined.
+                        //std::cout<<"find f"<<std::endl;
+                        for (it = cppAppliContent.begin(); it != cppAppliContent.end(); it++) {
+                            std::string subContent2 = it->second;
+                            int posC = subContent2.find("class");
+                            while (posC != std::string::npos) {
+                                /*std::cout<<"parts :  "<<parts[i]<<std::endl;
+                                std::cout<<"name : "<<names[names.size()-1]<<std::endl;*/
+                                int pos2 = subContent2.find(names[names.size()-1]);
+                                int pos3 = subContent2.find("{");
+                                if (pos2 != std::string::npos && pos3 != std::string::npos) {
+                                    if (posC < pos2 && pos2 < pos3) {
+                                        //std::cout<<"header found : "<<std::endl;
+                                        return it->second;
+                                    }
                                 }
+                                subContent2.erase(0, pos3);
+                                posC = subContent2.find("class");
                             }
-                            subContent2.erase(0, pos);
-                            posC = subContent2.find("class");
                         }
                     }
+                    content.erase(0, parts[i].size());
+                    cumPos += parts[i].size();
                 }
-                content.erase(0, pos2);
-                cumPos += pos2;
             }
         }
+        cpContent.erase(0, pos2);
     }
     return "";
 }
@@ -7567,7 +7589,9 @@ std::vector<std::string> ODFAEGCreator::checkCompletionNames(std::string letters
     std::vector<std::string> namesToPropose;
     std::string content = tScriptEdit->getText();
     //Contenu du fichier.h
+
     std::string header_content = getHeaderContent(content,posInFile);
+    //std::cout<<"header content : "<<header_content<<std::endl;
     //Recherche du namespace dans lequel on se trouver.
     std::string namespc = getNamespaceIn(content, posInFile);
     //On recherche dans quel bloc de quelle fonction de quelle classe on se trouve.
