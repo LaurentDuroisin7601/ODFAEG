@@ -7593,7 +7593,7 @@ void ODFAEGCreator::removeSpacesChars(std::string& str) {
     }
 }
 std::vector<std::string> ODFAEGCreator::checkCompletionNames(std::string letters, unsigned int posInFile) {
-    std::cout<<"check : "<<std::endl;
+    //std::cout<<"check : "<<std::endl;
     std::vector<std::string> namesToPropose;
     std::string content = tScriptEdit->getText();
     //Contenu du fichier.h
@@ -7683,7 +7683,7 @@ void ODFAEGCreator::findComplVarsInBloc(std::vector<std::string>& instructions, 
             findComplVarsInBloc(instructions, subBloc, currentInst, currentPos);
         } else if (pos2 != std::string::npos) {
             std::cout<<"end of bloc"<<std::endl;
-            inst.erase(0, 1);
+            inst.erase(inst.size()-1, 1);
             subBloc.blocEnd = currentPos;
             parentBloc.subBlocs.push_back(subBloc);
             return;
