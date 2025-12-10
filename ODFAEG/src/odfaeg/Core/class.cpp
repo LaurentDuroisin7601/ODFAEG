@@ -173,7 +173,8 @@ namespace odfaeg {
                         found = false;
                     }
                 }
-
+                if (nspc == "")
+                    found = true;
                 //We have found the class in the specified namespace, we can get class's informations.
                 if (found) {
 
@@ -320,7 +321,8 @@ namespace odfaeg {
                         found = false;
                     }
                 }
-
+                if (nspc == "")
+                    found = true;
                 //We have found the class in the specified namespace, we can get class's informations.
                 if (found) {
 
