@@ -7601,21 +7601,21 @@ std::vector<std::string> ODFAEGCreator::checkCompletionNames(std::string letters
     //std::cout<<"header content : "<<header_content<<std::endl;
     //Recherche du namespace dans lequel on se trouver.
     std::string namespc = getNamespaceIn(content, posInFile);
-    std::cout<<"name space : "<<namespc<<std::endl;
+    //std::cout<<"name space : "<<namespc<<std::endl;
     //On recherche dans quel bloc de quelle fonction de quelle classe on se trouve.
     std::vector<std::string> classes = Class::getClassesFromMemory(header_content);
-    std::cout<<"get classes from memory"<<std::endl;
+    //std::cout<<"get classes from memory"<<std::endl;
     unsigned int cumPos = 0;
     for (unsigned int i = 0; i < classes.size(); i++) {
         Class classs = Class::getClassFromMemory(classes[i], "", header_content);
-         std::cout<<"get class from memory"<<std::endl;
+        //std::cout<<"get class from memory"<<std::endl;
         //Ok si la classe est dans le même namespace que dans le fichier.
         if (classs.getNamespace() == namespc) {
-            std::cout<<"get functions"<<std::endl;
+            //std::cout<<"get functions"<<std::endl;
             std::vector<MemberFunction> functions = classs.getMembersFunctions();
-            std::cout<<"functions get"<<std::endl;
+            //std::cout<<"functions get"<<std::endl;
             for (unsigned int f = 0; f < functions.size(); f++) {
-                std::cout<<"content : "<<content<<std::endl;
+                //std::cout<<"content : "<<content<<std::endl;
                 int p = content.find(functions[f].getName());
                 if (p != std::string::npos) {
                     cumPos += p;
@@ -7623,7 +7623,7 @@ std::vector<std::string> ODFAEGCreator::checkCompletionNames(std::string letters
                     int pos = subContent.find("{");
                     if (pos != std::string::npos) {
                         subContent = subContent.substr(pos, subContent.size() - pos);
-                        std::cout<<"content : "<<subContent<<std::endl;
+                        //std::cout<<"content : "<<subContent<<std::endl;
 
                         cumPos += pos;
 

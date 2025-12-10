@@ -138,21 +138,21 @@ namespace odfaeg {
             //If we have found the class we check informations about the class.
             if (found) {
                 //check each namespaces englobing the class.
-                std::cout<<"content : "<<content.size()<<std::endl;
+                //std::cout<<"content : "<<content.size()<<std::endl;
                 size_t pos;
                 while(found && (pos = content.find("namespace")) != std::string::npos) {
                     //Find the namespace pos.
-                    std::cout<<"pos : "<<std::endl;
+                    //std::cout<<"pos : "<<std::endl;
                     unsigned int pos = content.find("namespace");
 
                     //Check the namespace name.
                     content = content.substr(pos+9, content.size()-pos-9);
-                    std::cout<<"namespace substr"<<std::endl;
+                    //std::cout<<"namespace substr"<<std::endl;
 
                     while(content.size() > 0 && content.at(0) == ' ') {
                         content.erase(0, 1);
                     }
-                    std::cout<<"removing space"<<std::endl;
+                    //std::cout<<"removing space"<<std::endl;
                     std::vector<std::string> parts = split(content, " ");
                     //We add :: for each sub namespaces found.
                     if (j == 0)
@@ -162,7 +162,7 @@ namespace odfaeg {
                     //we must check if the namespace is declared before the class.
                     pos = content.find("{");
                     content = content.substr(pos+1, content.size()-pos-1);
-                    std::cout<<"brack found"<<std::endl;
+                    //std::cout<<"brack found"<<std::endl;
                     //pos = fileContent.find("namespace ");
                     unsigned int pos2 = content.find(name+" ");
 
@@ -177,7 +177,7 @@ namespace odfaeg {
 
                     }
                     content = content.substr(pos);
-                    std::cout<<"last substr"<<std::endl;
+                    //std::cout<<"last substr"<<std::endl;
                     j++;
                 }
                 //We have found the class in the specified namespace, we can get class's informations.
@@ -187,15 +187,15 @@ namespace odfaeg {
                     cl.setNamespace(namespc);
 
                     checkSuperClasses(content, cl);
-                    std::cout<<"sub classes checked"<<std::endl;
+                    //std::cout<<"sub classes checked"<<std::endl;
                     std::string innerClass = "";
                     std::string type = "";
                     int lvl = 0;
                     //At the first recursion the inner class name is empty, the recursion lvl is 0 and the class type is empty.
                     checkInnerClass(innerClass, type, content, lvl,  cl);
-                    std::cout<<"inner classes check"<<std::endl;
+                    //std::cout<<"inner classes check"<<std::endl;
                     checkConstructors(content, cl);
-                    std::cout<<"constructor checked"<<std::endl;
+                    //std::cout<<"constructor checked"<<std::endl;
                     checkMembersFunctions(content, cl);
                     std::cout<<"member function checked"<<std::endl;
                     checkMembersVariables(content, cl);
@@ -407,19 +407,23 @@ namespace odfaeg {
 
             if(fileContent.find("public") != std::string::npos) {
                 int pos = fileContent.find("public");
-                int pos2 = fileContent.find(":");
-                fileContent = fileContent.erase(pos, pos2 - pos + 1);
+                int pos2 = fileContent.find(":", pos);
+                fileContent.erase(pos,pos2 - pos + 1);
+                //std::cout<<"public file content : "<<fileContent<<std::endl;
             }
             if(fileContent.find("private") != std::string::npos) {
                 int pos = fileContent.find("private");
-                int pos2 = fileContent.find(":");
-                fileContent = fileContent.erase(pos, pos2 - pos + 1);
+                int pos2 = fileContent.find(":", pos);
+                fileContent.erase(pos,pos2 - pos + 1);
+                //std::cout<<"private file content : "<<fileContent<<std::endl;
             }
             if(fileContent.find("protected") != std::string::npos) {
                 int pos = fileContent.find("protected");
-                int pos2 = fileContent.find(":");
-                fileContent = fileContent.erase(pos, pos2 - pos + 1);
+                int pos2 = fileContent.find(":", pos);
+                fileContent.erase(pos,pos2 - pos + 1);
+                //std::cout<<"protected file content : "<<fileContent<<std::endl;
             }
+
             //The constructor definition can be at the same file than the constructor declaration, in this case, we need to split the string.
             while (fileContent.find("{") != std::string::npos) {
                 //Count the number of sub blocks (introduced by if, while, etc...) and remove they definition.
@@ -427,7 +431,9 @@ namespace odfaeg {
                 unsigned int pos2 = findLastBracket(fileContent, 0);
                 fileContent.erase(pos, pos2 - pos-1);
                 fileContent.insert(pos-1, ";");
-            }                //We also need to erase the encapsulation keywords because we don't need it.
+            }
+            //We also need to erase the encapsulation keywords because we don't need it.
+
 
             //we also need to split when the constructor definition is not in the header.
             std::vector<std::string> parts2 = split(fileContent, ";");
@@ -517,7 +523,7 @@ namespace odfaeg {
                            //Remove constructor from the string we don't need it anymore we've got every informations needed.
                            if (pos != std::string::npos) {
                                 pos2 = fileContent.find(";");
-                                fileContent = fileContent.erase(pos, pos2-pos+1);
+                                fileContent.erase(pos, pos2-pos+1);
                            }
                            //add the constructor to the class.
                            cl.addConstructor(constructor);
@@ -545,7 +551,7 @@ namespace odfaeg {
         }
         void Class::checkMembersFunctions(std::string& fileContent, Class& cl) {
             //The function definition can be at the same file than the member function declaration, in this case, we need to split the string.
-            //std::cout<<"content : "<<fileContent<<std::endl;
+
             while (fileContent.find("{") != std::string::npos) {
                 //Count the number of sub blocks (introduced by if, while, etc...) and remove they definition.
                 unsigned int pos = fileContent.find("{");
@@ -582,18 +588,18 @@ namespace odfaeg {
                 //check the position of the function member arguments.
                 int index = parts2[j].find("(");
                 if (index != std::string::npos) {
-                    //Remove the (.
+                    //Remove the ().
                     std::string name = parts2[j];
                     name.erase(index, 1);
-                    index = name.find(")");
+                    index = name.find_last_of(")");
                     name.erase(index, 1);
 
                     //remove spaces and \n at the beginning and at the end.
                     while (name.size() > 0 && name.at(0) == ' ' || name.at(0) == '\n') {
-                        name = name.erase(0, 1);
+                        name.erase(0, 1);
                     }
                     while (name.size() > 0 && name.at(name.size()-1) == ' ' || name.at(name.size()-1) == '\n') {
-                        name = name.erase(name.size()-1, 1);
+                        name.erase(name.size()-1, 1);
                     }
                     //split to get argument list.
                     //std::cout<<"name : "<<name<<std::endl;
@@ -645,7 +651,7 @@ namespace odfaeg {
                                     mf.addArgName(argName);
                                 }
                            }
-                           pos = fileContent.find(name);
+                           pos = fileContent.find(parts2[j]);
                            if (pos != std::string::npos) {
                                //Remove the member function from the string we don't need it anymore after extracting the informations.
                                if (fileContent.find(";") != std::string::npos) {
@@ -660,6 +666,7 @@ namespace odfaeg {
                     }
                 }
             }
+            std::cout<<"after member file content : "<<fileContent<<std::endl;
         }
         void Class::checkInnerClass(std::string innerClass, std::string type, std::string& fileContent, int lvl, Class& cl) {
             //Remove template parameters and template template parameters.
@@ -732,6 +739,7 @@ namespace odfaeg {
             }
         }
         void Class::checkMembersVariables(std::string& fileContent, Class& cl) {
+            //std::cout<<"file content : "<<fileContent<<std::endl;
             std::vector<std::string> parts = split(fileContent, ";");
 
             for (unsigned int i = 0; i < parts[i].size(); i++) {
