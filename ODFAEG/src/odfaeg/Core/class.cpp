@@ -197,9 +197,9 @@ namespace odfaeg {
                     checkConstructors(content, cl);
                     //std::cout<<"constructor checked"<<std::endl;
                     checkMembersFunctions(content, cl);
-                    std::cout<<"member function checked"<<std::endl;
+                    //std::cout<<"member function checked"<<std::endl;
                     checkMembersVariables(content, cl);
-                    std::cout<<"member variable checked"<<std::endl;
+                    //std::cout<<"member variable checked"<<std::endl;
                     return cl;
                 }
             }
@@ -588,23 +588,20 @@ namespace odfaeg {
                 //check the position of the function member arguments.
                 int index = parts2[j].find("(");
                 if (index != std::string::npos) {
-                    //Remove the ().
-                    std::string name = parts2[j];
-                    name.erase(index, 1);
-                    index = name.find_last_of(")");
-                    name.erase(index, 1);
+
+
 
                     //remove spaces and \n at the beginning and at the end.
-                    while (name.size() > 0 && name.at(0) == ' ' || name.at(0) == '\n') {
-                        name.erase(0, 1);
+                    while (parts2[j].size() > 0 && parts2[j].at(0) == ' ' || parts2[j].at(0) == '\n') {
+                        parts2[j].erase(0, 1);
                     }
-                    while (name.size() > 0 && name.at(name.size()-1) == ' ' || name.at(name.size()-1) == '\n') {
-                        name.erase(name.size()-1, 1);
+                    while (parts2[j].size() > 0 && parts2[j].at(parts2[j].size()-1) == ' ' || parts2[j].at(parts2[j].size()-1) == '\n') {
+                        parts2[j].erase(parts2[j].size()-1, 1);
                     }
                     //split to get argument list.
                     //std::cout<<"name : "<<name<<std::endl;
 
-                    std::vector<std::string> parts3 = split(name, ",");
+                    std::vector<std::string> parts3 = split(parts2[j], "(");
                     parts3 = split(parts3[0], " ");
                     if (parts3.size() > 1) {
                         MemberFunction mf(parts3[0], parts3[1]);
@@ -666,7 +663,7 @@ namespace odfaeg {
                     }
                 }
             }
-            std::cout<<"after member file content : "<<fileContent<<std::endl;
+            //std::cout<<"after member file content : "<<fileContent<<std::endl;
         }
         void Class::checkInnerClass(std::string innerClass, std::string type, std::string& fileContent, int lvl, Class& cl) {
             //Remove template parameters and template template parameters.

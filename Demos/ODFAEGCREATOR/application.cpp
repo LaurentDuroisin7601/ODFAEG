@@ -7611,49 +7611,54 @@ std::vector<std::string> ODFAEGCreator::checkCompletionNames(std::string letters
         //std::cout<<"get class from memory"<<std::endl;
         //Ok si la classe est dans le même namespace que dans le fichier.
         if (classs.getNamespace() == namespc) {
+            std::string cpContent = content;
             //std::cout<<"get functions"<<std::endl;
             std::vector<MemberFunction> functions = classs.getMembersFunctions();
-            //std::cout<<"functions get"<<std::endl;
-            for (unsigned int f = 0; f < functions.size(); f++) {
-                //std::cout<<"content : "<<content<<std::endl;
-                int p = content.find(functions[f].getName());
-                if (p != std::string::npos) {
-                    cumPos += p;
-                    std::string subContent = content.substr(p, content.size()-p);
-                    int pos = subContent.find("{");
-                    if (pos != std::string::npos) {
-                        subContent = subContent.substr(pos, subContent.size() - pos);
-                        //std::cout<<"content : "<<subContent<<std::endl;
+            while (content.find("}") != std::string::npos) {
+                content = cpContent;
+                //std::cout<<"functions get"<<std::endl;
+                for (unsigned int f = 0; f < functions.size(); f++) {
+                    //std::cout<<"content : "<<content<<std::endl;
+                    int p = content.find(functions[f].getName());
+                    std::cout<<"f name : "<<functions[f].getName()<<std::endl;
+                    if (p != std::string::npos) {
+                        cumPos += p;
+                        std::string subContent = content.substr(p, content.size()-p);
+                        int pos = subContent.find("{");
+                        if (pos != std::string::npos) {
+                            subContent = subContent.substr(pos, subContent.size() - pos);
+                            //std::cout<<"content : "<<subContent<<std::endl;
 
-                        cumPos += pos;
+                            cumPos += pos;
 
-                        int pos2 = 0;
-                        std::string cSubContent = subContent;
-                        findLastBracket(cSubContent, 0, pos2);
-                        if (pos2 != std::string::npos) {
+                            int pos2 = 0;
+                            std::string cSubContent = subContent;
+                            findLastBracket(cSubContent, 0, pos2);
+                            if (pos2 != std::string::npos) {
 
-                            //Si on est entre les crochets d'ouverture et de fermeture de la fonction on est dans le bon bloc.
-                            if (cumPos < posInFile && posInFile < cumPos + pos2) {
-                                std::cout<<"bloc found"<<std::endl;
-                                std::string bloc = subContent.substr(pos, pos2-pos);
-                                BlocInfo parentBloc;
-                                parentBloc.blocStart = cumPos;
-                                parentBloc.blocEnd = cumPos + pos2;
-                                for (unsigned int a = 0; a < functions[f].getArgsTypes().size(); a++) {
-                                    parentBloc.blocInstances.insert(std::make_pair(pos, std::make_pair(functions[f].getArgsTypes()[a], functions[f].getArgsNames()[a])));
+                                //Si on est entre les crochets d'ouverture et de fermeture de la fonction on est dans le bon bloc.
+                                if (cumPos < posInFile && posInFile < cumPos + pos2) {
+                                    std::cout<<"bloc found"<<std::endl;
+                                    std::string bloc = subContent.substr(pos, pos2-pos);
+                                    BlocInfo parentBloc;
+                                    parentBloc.blocStart = cumPos;
+                                    parentBloc.blocEnd = cumPos + pos2;
+                                    for (unsigned int a = 0; a < functions[f].getArgsTypes().size(); a++) {
+                                        parentBloc.blocInstances.insert(std::make_pair(pos, std::make_pair(functions[f].getArgsTypes()[a], functions[f].getArgsNames()[a])));
+                                    }
+                                    parentBloc.blocInstances.insert(std::make_pair(pos, std::make_pair(classs.getName(), "this")));
+                                    std::vector<std::string> instructions = split(bloc, ";");
+                                    unsigned int currentInst = 0;
+                                    unsigned int currentPos = cumPos;
+                                    //Recherche les informations sur les variables dans les blocs.
+                                    findComplVarsInBloc(instructions, parentBloc, currentInst, currentPos);
+                                    //Recherche des noms que l'on peut proposer pour la completion.
+                                    checkNamesToPropose(parentBloc, namesToPropose, letters, posInFile);
                                 }
-                                parentBloc.blocInstances.insert(std::make_pair(pos, std::make_pair(classs.getName(), "this")));
-                                std::vector<std::string> instructions = split(bloc, ";");
-                                unsigned int currentInst = 0;
-                                unsigned int currentPos = cumPos;
-                                //Recherche les informations sur les variables dans les blocs.
-                                findComplVarsInBloc(instructions, parentBloc, currentInst, currentPos);
-                                //Recherche des noms que l'on peut proposer pour la completion.
-                                checkNamesToPropose(parentBloc, namesToPropose, letters, posInFile);
+                                //Contenu traité on l'efface.
+                                content.erase(0, pos2);
+                                cumPos += pos2;
                             }
-                            //Contenu traité on l'efface.
-                            content.erase(0, pos2);
-                            cumPos += pos2;
                         }
                     }
                 }
