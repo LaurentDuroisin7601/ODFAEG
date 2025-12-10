@@ -7446,7 +7446,6 @@ void ODFAEGCreator::addBoundingVolumes(BoundingVolume* bv) {
 std::string ODFAEGCreator::getNamespaceIn(std::string fileContent, unsigned int posInFile) {
     //check each namespaces englobing the class.
     std::string namespc="";
-    unsigned int cumPos = 0;
     //Remove using namespace.
     while (fileContent.find("using") != std::string::npos) {
         int pos = fileContent.find("using");

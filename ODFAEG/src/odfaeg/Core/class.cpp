@@ -137,7 +137,7 @@ namespace odfaeg {
 
             //If we have found the class we check informations about the class.
             if (found) {
-
+                found = false;
 
                 //check each namespaces englobing the class.
                 while(content.find("namespace") != std::string::npos && found) {
@@ -165,11 +165,15 @@ namespace odfaeg {
                         else
                             namespc += "::"+parts[0];
                     }
+                    if (nspc != "") {
+                        if (namespc == nspc) {
+                            found = true;
+                        }
+                    } else {
+                        found = true;
+                    }
                 }
-                //if the class is contained in a namespace we must check if a class which the same name is not present in an another namespace.
-                if (nspc != "" && namespc != nspc) {
-                    found = false;
-                }
+
                 //We have found the class in the specified namespace, we can get class's informations.
                 if (found) {
 
@@ -277,11 +281,12 @@ namespace odfaeg {
 
                 }
             }
+
             //If we have found the class we check informations about the class.
             if (found) {
-
+                found = false;
                 //check each namespaces englobing the class.
-                while(fileContent.find("namespace") != std::string::npos && found) {
+                while(fileContent.find("namespace") != std::string::npos) {
                     //Find the namespace pos.
                     unsigned int pos = fileContent.find("namespace");
                     //Check the namespace name.
@@ -306,11 +311,16 @@ namespace odfaeg {
                         else
                             namespc += "::"+parts[0];
                     }
+                    //if the class is contained in a namespace we must check if a class which the same name is not present in an another namespace.
+                    if (nspc != "") {
+                        if (namespc == nspc) {
+                            found = true;
+                        }
+                    } else {
+                        found = true;
+                    }
                 }
-                //if the class is contained in a namespace we must check if a class which the same name is not present in an another namespace.
-                if (nspc != "" && namespc != nspc) {
-                    found = false;
-                }
+
                 //We have found the class in the specified namespace, we can get class's informations.
                 if (found) {
 
