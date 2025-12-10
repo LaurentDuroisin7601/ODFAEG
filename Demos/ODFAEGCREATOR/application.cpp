@@ -2630,9 +2630,9 @@ void ODFAEGCreator::onExec() {
                     }
                 }
             }
-            std::vector<std::string> classes = Class::getClasses(appliname+"\\Scripts");
+            std::vector<std::string> classes = Class::getClasses(rtc.getIncludeDirs(), appliname+"\\Scripts");
             for (unsigned int i = 0; i < classes.size(); i++) {
-                Class cl = Class::getClass(classes[i]);
+                Class cl = Class::getClass(rtc.getIncludeDirs(), classes[i]);
                 if (cl.getNamespace() == "") {
                     dpSelectClass->addItem(classes[i], 15);
                     dpSelectMClass->addItem(classes[i], 15);
@@ -2861,6 +2861,7 @@ void ODFAEGCreator::showFileContent(Label* lab) {
     pScriptsEdit->setVisible(true);
     std::map<std::pair<std::string, std::string>, std::string>::iterator it;
     it = cppAppliContent.find(std::make_pair(getWorld()->projectName, lab->getText()));
+    virtualFile = getWorld()->projectName+"\\"+lab->getText();
     if (it != cppAppliContent.end()) {
         tScriptEdit->setText(it->second);
         tScriptEdit->getListener().setCommandSlotParams("CONTEXTENTERED", this, tScriptEdit, '\0');
@@ -3383,7 +3384,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
     }
     if (button == bCreateObject) {
         std::vector<std::string> parts = split(dpSelectClass->getSelectedItem(), "::");
-        Class cl = Class::getClass(parts[parts.size()-1]);
+        Class cl = Class::getClass(rtc.getIncludeDirs(), parts[parts.size()-1]);
         std::string headerFile = cl.getFilePath();
         /*std::cout<<"header file : "<<headerFile<<std::endl;
         system("PAUSE");*/
@@ -3656,7 +3657,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
     }
     if (button == bModifyObject) {
         std::vector<std::string> parts = split(dpSelectMClass->getSelectedItem(), "::");
-        Class cl = Class::getClass(parts[parts.size()-1]);
+        Class cl = Class::getClass(rtc.getIncludeDirs(), parts[parts.size()-1]);
         std::vector<odfaeg::core::Class> superClasses = cl.getSuperClasses();
         std::queue<Class> q;
         for (auto& sc : cl.getSuperClasses()) {
@@ -3747,7 +3748,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
     }
     if (button == bRemoveObject) {
         std::vector<std::string> parts = split(dpSelectRClass->getSelectedItem(), "::");
-        Class cl = Class::getClass(parts[parts.size()-1]);
+        Class cl = Class::getClass(rtc.getIncludeDirs(), parts[parts.size()-1]);
         std::vector<odfaeg::core::Class> superClasses = cl.getSuperClasses();
         std::queue<Class> q;
         for (auto& sc : cl.getSuperClasses()) {
@@ -4939,9 +4940,9 @@ void ODFAEGCreator::displayEntityInfos(Entity* tile) {
     pInfos->addChild(lSelectScriptLabel);
     Node* nSelectScript = new Node("SelectScript",lSelectScriptLabel,Vec2f(0, 0),Vec2f(0.25, 0.025),rootInfosNode.get());
     dpSelectScript = new DropDownList(getRenderWindow(),Vec3f(0, 0, 0), Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),"NONE", 15);
-    std::vector<std::string> classes = Class::getClasses(appliname+"\\Scripts");
+    std::vector<std::string> classes = Class::getClasses(rtc.getIncludeDirs(), appliname+"\\Scripts");
     for (unsigned int i = 0; i < classes.size(); i++) {
-        Class cl = Class::getClass(classes[i]);
+        Class cl = Class::getClass(rtc.getIncludeDirs(), classes[i]);
         bool isMonoBehaviourScript = false;
         std::vector<Class> superClasses = cl.getSuperClasses();
         for (unsigned int j = 0; j < superClasses.size(); j++) {
@@ -6987,7 +6988,7 @@ void ODFAEGCreator::onSelectedClassChanged(DropDownList* dp) {
         dpSelectPointerType->removeAllItems();
         std::string selectedItem = dp->getSelectedItem();
         std::vector<std::string> parts = split(selectedItem, "::");
-        Class cl = Class::getClass(parts[parts.size() - 1]);
+        Class cl = Class::getClass(rtc.getIncludeDirs(), parts[parts.size() - 1]);
         std::vector<Constructor> constructors = cl.getConstructors();
         dpSelectFunction->addItem("Select function", 15);
         //std::cout<<"size : "<<constructors.size()<<std::endl;
@@ -7043,7 +7044,7 @@ void ODFAEGCreator::onSelectedFunctionChanged(DropDownList* dp) {
         std::string selectedItem = dpSelectClass->getSelectedItem();
         std::vector<std::string> parts = split(selectedItem, "::");
         //std::cout<<"parts : "<<parts[parts.size() - 1]<<std::endl;
-        Class cl = Class::getClass(parts[parts.size() - 1]);
+        Class cl = Class::getClass(rtc.getIncludeDirs(), parts[parts.size() - 1]);
         tmpTextAreas.clear();
         std::vector<Constructor> constructors = cl.getConstructors();
         bool found = false;
@@ -7103,7 +7104,7 @@ void ODFAEGCreator::onSelectedMClassChanged(DropDownList *dp) {
         dpSelectMFunction->removeAllItems();
         std::string selectedItem = dp->getSelectedItem();
         std::vector<std::string> parts = split(selectedItem, "::");
-        Class cl = Class::getClass(parts[parts.size() - 1]);
+        Class cl = Class::getClass(rtc.getIncludeDirs(), parts[parts.size() - 1]);
         std::vector<MemberFunction> functions = cl.getMembersFunctions();
         dpSelectMFunction->addItem("Select function", 15);
         for (unsigned int i = 0; i < functions.size(); i++) {
@@ -7130,7 +7131,7 @@ void ODFAEGCreator::onSelectedMFunctionChanged(DropDownList *dp) {
         std::string selectedItem = dpSelectMClass->getSelectedItem();
         std::vector<std::string> parts = split(selectedItem, "::");
         //std::cout<<"parts : "<<parts[parts.size() - 1]<<std::endl;
-        Class cl = Class::getClass(parts[parts.size() - 1]);
+        Class cl = Class::getClass(rtc.getIncludeDirs(), parts[parts.size() - 1]);
         tmpTextAreas.clear();
         std::vector<MemberFunction> functions = cl.getMembersFunctions();
         bool found = false;
@@ -7443,7 +7444,7 @@ void ODFAEGCreator::addBoundingVolumes(BoundingVolume* bv) {
         addBoundingVolumes(bv->getChildren()[i]);
     }
 }
-std::string ODFAEGCreator::getNamespaceIn(std::string fileContent, unsigned int posInFile) {
+/*std::string ODFAEGCreator::getNamespaceIn(std::string fileContent, unsigned int posInFile) {
     //check each namespaces englobing the class.
     std::string namespc="";
     //Remove using namespace.
@@ -7486,8 +7487,7 @@ std::string ODFAEGCreator::getHeaderContent(std::string content, unsigned int po
     std::map<std::pair<std::string, std::string>, std::string>::iterator it;
     for (it = cppAppliContent.begin(); it != cppAppliContent.end(); it++) {
         //On est déjà dans un fichier.h on le retourne.
-        /*std::cout<<"content : "<<content<<std::endl;
-        std::cout<<"file : "<<it->second<<std::endl;*/
+
         if ((it->first.second.find(".h") != std::string::npos || it->first.second.find(".hpp") != std::string::npos) && it->second == content) {
             //std::cout<<"file : "<<it->second<<std::endl;
             return it->second;
@@ -7531,8 +7531,7 @@ std::string ODFAEGCreator::getHeaderContent(std::string content, unsigned int po
                             std::string subContent2 = it->second;
                             int posC = subContent2.find("class");
                             while (posC != std::string::npos) {
-                                /*std::cout<<"parts :  "<<parts[i]<<std::endl;
-                                std::cout<<"name : "<<names[names.size()-1]<<std::endl;*/
+
                                 int pos2 = subContent2.find(names[names.size()-1]);
                                 int pos3 = subContent2.find("{");
                                 if (pos2 != std::string::npos && pos3 != std::string::npos) {
@@ -7589,11 +7588,94 @@ void ODFAEGCreator::removeSpacesChars(std::string& str) {
     while (str.size() > 0 && str.at(str.size()-1) == ' ' || str.at(str.size()-1) == '\n') {
         str = str.erase(str.size()-1, 1);
     }
+}*/
+std::pair<unsigned, unsigned> ODFAEGCreator::indexToLineColumn(const std::string& text, unsigned pos) {
+    unsigned line = 0;
+    unsigned column = 0;
+
+    for (unsigned i = 0; i < pos && i < text.size(); ++i) {
+        if (text[i] == '\n') {
+            line++;
+            column = 0; // reset colonne
+        } else {
+            column++;
+        }
+    }
+
+    return {line, column};
 }
-std::vector<std::string> ODFAEGCreator::checkCompletionNames(std::string letters, unsigned int posInFile) {
+std::vector<std::string> ODFAEGCreator::checkCompletionNames(unsigned int posInFile) {
     //std::cout<<"check : "<<std::endl;
     std::vector<std::string> namesToPropose;
-    std::string content = tScriptEdit->getText();
+    CXIndex index = clang_createIndex(0, 0);
+    std::vector<std::string> includePaths = rtc.getIncludeDirs();
+    const char* args[includePaths.size()+1];
+    for (unsigned int i = 0; i < includePaths.size(); i++) {
+        args[i] = includePaths[i].c_str();
+    }
+    args[includePaths.size()] = "-std=c++20";
+    CXUnsavedFile unsaved;
+    unsaved.Filename = virtualFile.c_str();        // nom virtuel
+    unsaved.Contents = tScriptEdit->getText().c_str();        // contenu de ta TextArea
+    unsaved.Length   = tScriptEdit->getText().size();
+
+    CXTranslationUnit tu = clang_parseTranslationUnit(
+        index,
+        virtualFile.c_str(),            // ton fichier source
+        args, includePaths.size()+1,                 // options
+        &unsaved, 1,              // pas de fichiers précompilés
+        CXTranslationUnit_None
+    );
+    std::pair<unsigned, unsigned> lineColumn = indexToLineColumn(tScriptEdit->getText(), posInFile);
+    CXCodeCompleteResults* results = clang_codeCompleteAt(
+        tu,
+        virtualFile.c_str(), lineColumn.first, lineColumn.second,
+        nullptr, 0,
+        CXCodeComplete_IncludeMacros | CXCodeComplete_IncludeCodePatterns
+    );
+    if (results) {
+        for (unsigned i = 0; i < results->NumResults; ++i) {
+            CXCompletionResult& r = results->Results[i];
+            CXCompletionString str = r.CompletionString;
+            unsigned numChunks = clang_getNumCompletionChunks(str);
+            std::string resultType;
+            std::string signature;
+            for (unsigned j = 0; j < numChunks; ++j) {
+                CXCompletionChunkKind kind = clang_getCompletionChunkKind(str, j);
+                CXString chunkText = clang_getCompletionChunkText(str, j);
+                const char* text = clang_getCString(chunkText);
+
+                if (!text) {
+                    clang_disposeString(chunkText);
+                    continue;
+                }
+
+                switch (kind) {
+                    case CXCompletionChunk_ResultType:
+                        resultType = text;
+                        break;
+                    case CXCompletionChunk_TypedText:
+                        signature += text;
+                        break;
+                    case CXCompletionChunk_Text:
+                        signature += "(" + std::string(text) + ")";
+                        break;
+                    default:
+                        signature += text;
+                        break;
+                }
+
+                clang_disposeString(chunkText);
+            }
+
+            if (!resultType.empty())
+                namesToPropose.push_back(resultType+" "+signature);
+            else
+                namesToPropose.push_back(signature);
+        }
+        clang_disposeCodeCompleteResults(results);
+    }
+    /*std::string content = tScriptEdit->getText();
     //Contenu du fichier.h
 
     std::string header_content = getHeaderContent(content,posInFile);
@@ -7664,10 +7746,10 @@ std::vector<std::string> ODFAEGCreator::checkCompletionNames(std::string letters
                 cumPos += pos2;
             }
         }
-    }
+    }*/
     return namesToPropose;
 }
-void ODFAEGCreator::findComplVarsInBloc(std::vector<std::string>& instructions, BlocInfo& parentBloc, unsigned int& currentInst, unsigned int& currentPos) {
+/*void ODFAEGCreator::findComplVarsInBloc(std::vector<std::string>& instructions, BlocInfo& parentBloc, unsigned int& currentInst, unsigned int& currentPos) {
 
     while (currentInst < instructions.size()) {
         std::string& inst = instructions[currentInst];
@@ -7872,17 +7954,17 @@ void ODFAEGCreator::checkNamesToPropose(BlocInfo parentBloc, std::vector<std::st
     for (unsigned int i = 0; i < parentBloc.subBlocs.size(); i++) {
         checkNamesToPropose(parentBloc.subBlocs[i], namesToPropose, strsearch, posInFile);
     }
-}
+}*/
 void ODFAEGCreator::onTextEntered(TextArea* ta, char caracter) {
     //std::cout<<"text entered : "<<caracter<<std::endl;
     if (ta == tScriptEdit) {
-        if (std::isalpha(caracter) || caracter == '.' || caracter == '-' || caracter == '>' && caracter == ':') {
+        /*if (std::isalpha(caracter) || caracter == '.' || caracter == '-' || caracter == '>' && caracter == ':') {
             strsearch += caracter;
         } else {
             strsearch = "";
-        }
+        }*/
         unsigned int charPosInFile = tScriptEdit->getCharacterIndexAtCursorPos();
-        std::vector<std::string> completionNames = checkCompletionNames(strsearch, charPosInFile);
+        std::vector<std::string> completionNames = checkCompletionNames(charPosInFile);
         for (unsigned int i = 0; i < completionNames.size(); i++) {
             std::cout<<"completion name "<<i<<" : "<<completionNames[i]<<std::endl;
         }

@@ -9,6 +9,7 @@
 #include "constructor.hpp"
 #include "memberFunction.hpp"
 #include "memberVariable.hpp"
+#include <clang-c/Index.h>
 namespace odfaeg {
     namespace core {
         /**
@@ -32,8 +33,8 @@ namespace odfaeg {
             *  \param the file path of the folder.
             *  \return the vector of the classes names.
             */
-            static std::vector<std::string> getClasses(std::string filePath);
-            static std::vector<std::string> getClassesFromMemory(std::string content);
+            static std::vector<std::string> getClasses(std::vector<std::string> includePaths, std::string filePath);
+            static std::vector<std::string> getClassesFromMemory(std::vector<std::string> includePaths, std::string virtualFile, std::string content);
             /**\fn Class getClass(std::string name, std::string nspc="", std::string path="");
             *  \brief get a class object which contains informations about a c++ class.
             *  \param std::string name : the name of the c++ class.
@@ -41,8 +42,8 @@ namespace odfaeg {
             *  \param std::string path : the folder's path from where to seach the c++ class. (empty by default)
             *  \return Class : class object with informations about the c++ class.
             */
-            static Class getClass(std::string name, std::string nspc="", std::string path="");
-            static Class getClassFromMemory(std::string name, std::string nspc="", std::string content="");
+            static Class getClass(std::vector<std::string> includePaths,  std::string name, std::string path="", std::string nspc="");
+            static Class getClassFromMemory(std::vector<std::string> includePaths, std::string virtualFile, std::string name, std::string nspc="", std::string content="");
             /**\fn std::string getName()
             *  \brief get the class's name.
             *  \return std::string : the class's name.
@@ -75,10 +76,13 @@ namespace odfaeg {
             */
             std::string getNamespace();
         private :
-
-
-            static unsigned int findLastBracket(std::string& fileContent, unsigned int nbBlocks);
-            static void removeSpacesChars(std::string& str);
+            static std::string getQualifiedNamespace(CXCursor cursor);
+            static CXChildVisitResult memberFonctionVisitor(CXCursor cursor, CXCursor parent, CXClientData client_data);
+            static CXChildVisitResult constructorVisitor(CXCursor cursor, CXCursor parent, CXClientData client_data);
+            static CXChildVisitResult classesVisitor(CXCursor cursor, CXCursor parent, CXClientData client_data);
+            static CXChildVisitResult classVisitor(CXCursor cursor, CXCursor parent, CXClientData client_data);
+            //static unsigned int findLastBracket(std::string& fileContent, unsigned int nbBlocks);
+            //static void removeSpacesChars(std::string& str);
             /** \fn void checkInnerClass(std::string innerClass, std::string type, std::string& fileContent, int lvl, Class& cl)
             *   \brief check every inner classes, structs or enums of the given c++ class.
             *   \param std::string innerClass : the name of the c++ class from which to check inner c++ classes, structs or enums.
@@ -87,30 +91,30 @@ namespace odfaeg {
             *   \param lvl : the recursion lvl.
             *   \param Class& cl : the englobing class.
             */
-            static void checkInnerClass(std::string innerClass, std::string type, std::string& fileContent, int lvl, Class& cl);
+            //static void checkInnerClass(std::string innerClass, std::string type, std::string& fileContent, int lvl, Class& cl);
             /** \fn void checkConstructors(std::string& fileContent, Class& cl)
             *   \brief check every constructors of the given class.
             *   \param std::string& fileContent : the remaining file content.
             *   \param Class& cl : the class.
             */
-            static void checkConstructors(std::string& fileContent, Class& cl);
+            //static void checkConstructors(std::string& fileContent, Class& cl);
             /** \fn void checkMembersFunctions(std::string& fileContent, Class& cl);
             *   \brief check every functions of the given class.
             *   \param std::string& fileContent : the remaining file content.
             *   \param Class& cl : the class.
             */
-            static void checkMembersFunctions(std::string& fileContent, Class& cl);
+            //static void checkMembersFunctions(std::string& fileContent, Class& cl);
             /** \fn void checkSuperClasses(std::string& fileContent, Class& cl);
             *   \brief check every bases classes of the given class.
             *   \param std::string& fileContent : the remaining file content.
             *   \param Class& cl : the class.
             */
-            static void checkSuperClasses(std::string& fileContent, Class& cl);
+            //static void checkSuperClasses(std::string& fileContent, Class& cl);
             /** \fn addInnerClass(Class innerClass);
             *   \brief add an inner class to the class.
             *   \param Class innerClass : the inner class to add.
             */
-            static void checkMembersVariables(std::string& fileContent, Class& cl);
+            //static void checkMembersVariables(std::string& fileContent, Class& cl);
             void addInnerClass(Class innerClass);
             /** \fn setNamespace(std::string namespc)
             *   \brief set the namespace name of the class.

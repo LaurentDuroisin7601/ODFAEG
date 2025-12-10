@@ -124,6 +124,7 @@ namespace odfaeg {
             */
             ODFAEG_CORE_API ~RuntimeCompiler();
             ODFAEG_CORE_API void setOutputDir(std::string outputDir);
+            ODFAEG_CORE_API std::vector<std::string> getIncludeDirs();
             private :
             #if defined (ODFAEG_SYSTEM_LINUX)
             FILE* flib;

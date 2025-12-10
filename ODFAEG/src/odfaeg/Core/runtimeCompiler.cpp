@@ -179,6 +179,9 @@ namespace odfaeg {
         void RuntimeCompiler::setOutputDir(std::string outputDir) {
             this->outputDir = outputDir;
         }
+        std::vector<std::string> RuntimeCompiler::getIncludeDirs() {
+            return includeDirs;
+        }
         RuntimeCompiler::~RuntimeCompiler() {
             if (isDllOpened)
                 #if defined (ODFAEG_SYSTEM_LINUX)
