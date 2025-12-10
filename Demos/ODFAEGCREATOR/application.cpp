@@ -2863,6 +2863,7 @@ void ODFAEGCreator::showFileContent(Label* lab) {
     it = cppAppliContent.find(std::make_pair(getWorld()->projectName, lab->getText()));
     if (it != cppAppliContent.end()) {
         tScriptEdit->setText(it->second);
+        tScriptEdit->getListener().setCommandSlotParams("CONTEXTENTERED", this, tScriptEdit, '\0');
         tScriptEdit->setTextSize(20);
         //tScriptEdit->setEventContextActivated(true);
         Vec3f textSize = tScriptEdit->getTextSize();
@@ -7640,7 +7641,7 @@ std::vector<std::string> ODFAEGCreator::checkCompletionNames(std::string letters
                                 //std::cout<<"positions : "<<cumPos+pos+p<<std::endl<<posInFile<<std::endl<<cumPos+pos2<<std::endl;
                                 if (cumPos + pos + p < posInFile && posInFile < cumPos + pos2) {
                                     std::string bloc = subContent.substr(0, pos2-pos);
-                                    std::cout<<"bloc found : "<<bloc<<std::endl;
+                                    //std::cout<<"bloc found : "<<bloc<<std::endl;
                                     BlocInfo parentBloc;
                                     parentBloc.blocStart = cumPos + p + pos;
                                     parentBloc.blocEnd = cumPos + pos2;
@@ -7677,19 +7678,20 @@ void ODFAEGCreator::findComplVarsInBloc(std::vector<std::string>& instructions, 
         int pos = inst.find("{");
         int pos2 = inst.find("}");
         if (pos != std::string::npos) {
-            std::cout<<"new bloc"<<std::endl;
+            //std::cout<<"new bloc"<<std::endl;
             inst.erase(0, 1);
             subBloc.blocStart = currentPos;
+            parentBloc.subBlocs.push_back(subBloc);
             findComplVarsInBloc(instructions, subBloc, currentInst, currentPos);
         } else if (pos2 != std::string::npos) {
-            std::cout<<"end of bloc"<<std::endl;
+            //std::cout<<"end of bloc"<<std::endl;
             inst.erase(inst.size()-1, 1);
             subBloc.blocEnd = currentPos;
-            parentBloc.subBlocs.push_back(subBloc);
             return;
         } else {
-            std::cout<<"process inst"<<std::endl;
-            processInst(inst, currentPos, subBloc);
+            //std::cout<<"process inst"<<std::endl;
+            processInst(inst, currentPos, parentBloc.subBlocs.back());
+            //std::cout<<"nb insts : "<<parentBloc.subBlocs.back().blocInstances.size()<<std::endl;
             currentInst++;
         }
         if (currentInst < instructions[currentInst].size())
@@ -7697,6 +7699,7 @@ void ODFAEGCreator::findComplVarsInBloc(std::vector<std::string>& instructions, 
     }
 }
 void ODFAEGCreator::processInst(std::string inst, unsigned int currentPos, BlocInfo& bloc) {
+    //std::cout<<"process inst : "<<inst<<std::endl;
     std::vector<std::string> classes = Class::getClasses("");
     std::vector<std::string> allTypeNames;
     for (unsigned int i = 0; i < primitiveTypes.size(); i++) {
@@ -7705,9 +7708,9 @@ void ODFAEGCreator::processInst(std::string inst, unsigned int currentPos, BlocI
     for (unsigned int i = 0; i < classes.size(); i++) {
         allTypeNames.push_back(classes[i]);
     }
-
     for (unsigned int i = 0; i < allTypeNames.size(); i++) {
-        if (inst.find(allTypeNames[i]) != std::string::npos) {
+        if (allTypeNames[i].find(inst) != std::string::npos) {
+
             if (inst.find(",") != std::string::npos) {
                 std::vector<std::string> argsComa = split(inst, ",");
                 for (unsigned int j = 0; j < argsComa.size(); j++) {
@@ -7720,28 +7723,32 @@ void ODFAEGCreator::processInst(std::string inst, unsigned int currentPos, BlocI
                         for (unsigned int k = 0; k < argTypeName.size(); k++) {
                             removeSpacesChars(argTypeName[k]);
                         }
-                        if (j == 0) {
-                            if (argTypeName[0] == "const" || argTypeName[0] == "unsigned") {
-                                argName = argTypeName[2];
+                        if (argTypeName.size() > 1) {
+                            if (j == 0) {
+                                if (argTypeName[0] == "const" || argTypeName[0] == "unsigned") {
+                                    argName = argTypeName[2];
+                                } else {
+                                    argName = argTypeName[1];
+                                }
                             } else {
-                                argName = argTypeName[1];
+                                argName = argTypeName[0];
                             }
-                        } else {
-                            argName = argTypeName[0];
                         }
                     } else {
                         std::vector<std::string> argTypeName = split(argsComa[j], " ");
                         for (unsigned int k = 0; k < argTypeName.size(); k++) {
                             removeSpacesChars(argTypeName[k]);
                         }
-                        if (j == 0) {
-                            if (argTypeName[0] == "const" || argTypeName[0] == "unsigned") {
-                                argName = argTypeName[2];
+                        if (argTypeName.size() > 1) {
+                            if (j == 0) {
+                                if (argTypeName[0] == "const" || argTypeName[0] == "unsigned") {
+                                    argName = argTypeName[2];
+                                } else {
+                                    argName = argTypeName[1];
+                                }
                             } else {
-                                argName = argTypeName[1];
+                                argName = argTypeName[0];
                             }
-                        } else {
-                            argName = argTypeName[0];
                         }
                     }
                     bloc.blocInstances.insert(std::make_pair(currentPos, std::make_pair(allTypeNames[i], argName)));
@@ -7755,23 +7762,27 @@ void ODFAEGCreator::processInst(std::string inst, unsigned int currentPos, BlocI
                     for (unsigned int k = 0; k < argTypeName.size(); k++) {
                         removeSpacesChars(argTypeName[k]);
                     }
-                    //check if there is a const qualifier.
-                    if (argTypeName[0] == "const" || argTypeName[0] == "unsigned") {
-                        argName = argTypeName[2];
-                    } else {
-                        argName = argTypeName[1];
+                    if (argTypeName.size() > 1) {
+                        //check if there is a const qualifier.
+                        if (argTypeName[0] == "const" || argTypeName[0] == "unsigned") {
+                            argName = argTypeName[2];
+                        } else {
+                            argName = argTypeName[1];
+                        }
                     }
                 } else {
-                    std::cout<<"process inst"<<std::endl;
+                    //std::cout<<"add inst : "<<allTypeNames[i]<<std::endl;
                     std::vector<std::string> argTypeName = split(inst, " ");
                     for (unsigned int k = 0; k < argTypeName.size(); k++) {
                         removeSpacesChars(argTypeName[k]);
                     }
-                    //check if there is a const qualifier.
-                    if (argTypeName[0] == "const" || argTypeName[0] == "unsigned") {
-                        argName = argTypeName[2];
-                    } else {
-                        argName = argTypeName[1];
+                    if (argTypeName.size() > 1) {
+                        //check if there is a const qualifier.
+                        if (argTypeName[0] == "const" || argTypeName[0] == "unsigned") {
+                            argName = argTypeName[2];
+                        } else {
+                            argName = argTypeName[1];
+                        }
                     }
                 }
                 bloc.blocInstances.insert(std::make_pair(currentPos, std::make_pair(allTypeNames[i], argName)));
@@ -7780,12 +7791,15 @@ void ODFAEGCreator::processInst(std::string inst, unsigned int currentPos, BlocI
     }
 }
 bool ODFAEGCreator::isCharsOk(std::string strsearch, std::string str) {
+    //std::cout<<"strs : "<<strsearch<<std::endl<<str<<std::endl;
     if (strsearch.size() <= str.size()) {
         for (unsigned int i = 0; i < strsearch.size(); i++) {
             if(strsearch.at(i) != str.at(i)) {
+                //std::cout<<strsearch.at(i)<<std::endl<<str.at(i)<<std::endl;
                 return false;
             }
         }
+        //std::cout<<"ok"<<std::endl;
         return true;
     }
     return false;
@@ -7794,7 +7808,7 @@ void ODFAEGCreator::checkNamesToPropose(BlocInfo parentBloc, std::vector<std::st
     if (strsearch.find(".") != std::string::npos || strsearch.find("->") != std::string::npos) {
         std::vector<std::string> parts = split(strsearch, ".");
         std::string name = parts[0];
-        std::map<unsigned int, std::pair<std::string, std::string>>::iterator it;
+        std::multimap<unsigned int, std::pair<std::string, std::string>>::iterator it;
         for (it = parentBloc.blocInstances.begin(); it != parentBloc.blocInstances.end(); it++) {
             if (posInFile > it->first && parentBloc.blocStart < posInFile && parentBloc.blocEnd > posInFile) {
                 if (it->second.second == name) {
@@ -7834,7 +7848,7 @@ void ODFAEGCreator::checkNamesToPropose(BlocInfo parentBloc, std::vector<std::st
             }
         }
     } else {
-        std::map<unsigned int, std::pair<std::string, std::string>>::iterator it;
+        std::multimap<unsigned int, std::pair<std::string, std::string>>::iterator it;
         //Parcours de toutes les instances du bloc.
         for (it = parentBloc.blocInstances.begin(); it != parentBloc.blocInstances.end(); it++) {
             //Si on est après la position de la déclaration de la variable et dans le bloc on peut rechercher.
@@ -7847,17 +7861,28 @@ void ODFAEGCreator::checkNamesToPropose(BlocInfo parentBloc, std::vector<std::st
             }
         }
     }
+    std::multimap<unsigned int, std::pair<std::string, std::string>>::iterator it;
+    //Parcours de toutes les instances du bloc.
+    for (it = parentBloc.blocInstances.begin(); it != parentBloc.blocInstances.end(); it++) {
+
+        bool charsOk = isCharsOk(strsearch, it->second.first);
+        if (charsOk) {
+            //std::cout<<"bloc inst : "<<it->second.first<<std::endl;
+            namesToPropose.push_back(it->second.first);
+        }
+    }
+
     for (unsigned int i = 0; i < parentBloc.subBlocs.size(); i++) {
         checkNamesToPropose(parentBloc.subBlocs[i], namesToPropose, strsearch, posInFile);
     }
 }
 void ODFAEGCreator::onTextEntered(TextArea* ta, char caracter) {
-    std::cout<<"text entered : "<<caracter<<std::endl;
+    //std::cout<<"text entered : "<<caracter<<std::endl;
     if (ta == tScriptEdit) {
-        if (!std::isalpha(caracter) && caracter != '.' && caracter != '-' && caracter != '>' && caracter != ':') {
-            strsearch = "";
-        } else {
+        if (std::isalpha(caracter) || caracter == '.' || caracter == '-' || caracter == '>' && caracter == ':') {
             strsearch += caracter;
+        } else {
+            strsearch = "";
         }
         unsigned int charPosInFile = tScriptEdit->getCharacterIndexAtCursorPos();
         std::vector<std::string> completionNames = checkCompletionNames(strsearch, charPosInFile);

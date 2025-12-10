@@ -43,7 +43,7 @@ class ODFAEGCreator : public odfaeg::core::Application<ODFAEGCreator>,
                       public odfaeg::graphic::gui::ActionListener {
     public :
     struct BlocInfo {
-        std::map<unsigned int, std::pair<std::string, std::string>> blocInstances;
+        std::multimap<unsigned int, std::pair<std::string, std::string>> blocInstances;
         unsigned int blocStart, blocEnd;
         std::vector<BlocInfo> subBlocs;
     };
