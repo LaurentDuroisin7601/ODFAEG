@@ -7675,7 +7675,7 @@ void ODFAEGCreator::findComplVarsInBloc(std::vector<std::string>& instructions, 
         int pos = inst.find("{");
         int pos2 = inst.find("}");
         if (pos != std::string::npos) {
-            std::cout<<"new bloc"<<std::endl;
+            //std::cout<<"new bloc"<<std::endl;
             inst.erase(0, 1);
             BlocInfo subBloc;
             subBloc.blocStart = currentPos;
