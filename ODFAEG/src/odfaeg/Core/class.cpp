@@ -140,7 +140,7 @@ namespace odfaeg {
                 found = false;
 
                 //check each namespaces englobing the class.
-                while(content.find("namespace") != std::string::npos && found) {
+                while(content.find("namespace") != std::string::npos && !found) {
                     //Find the namespace pos.
                     unsigned int pos = content.find("namespace");
                     //Check the namespace name.
@@ -170,7 +170,7 @@ namespace odfaeg {
                             found = true;
                         }
                     } else {
-                        found = true;
+                        found = false;
                     }
                 }
 
@@ -286,7 +286,7 @@ namespace odfaeg {
             if (found) {
                 found = false;
                 //check each namespaces englobing the class.
-                while(fileContent.find("namespace") != std::string::npos) {
+                while(fileContent.find("namespace") != std::string::npos && !found) {
                     //Find the namespace pos.
                     unsigned int pos = fileContent.find("namespace");
                     //Check the namespace name.
@@ -317,7 +317,7 @@ namespace odfaeg {
                             found = true;
                         }
                     } else {
-                        found = true;
+                        found = false;
                     }
                 }
 
