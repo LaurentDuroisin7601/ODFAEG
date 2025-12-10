@@ -7459,28 +7459,26 @@ std::string ODFAEGCreator::getNamespaceIn(std::string fileContent, unsigned int 
         unsigned int pos = fileContent.find("namespace");
         //Check the namespace name.
         fileContent = fileContent.substr(pos+9, fileContent.size()-pos-9);
-        cumPos += 9;
 
-        while(fileContent.size() > 0 && fileContent.at(0) == ' ') {
+        while(fileContent.size() > 0 && (fileContent.at(0) == ' ' || fileContent.at(0) == '\n')) {
             fileContent.erase(0, 1);
-            cumPos++;
         }
-        std::vector<std::string> parts = split(fileContent, " ");
+        std::vector<std::string> parts = split(fileContent, "{");
         //We add :: for each sub namespaces found.
 
         //we must check if the namespace is declared before the class.
         pos = fileContent.find("{");
-        fileContent = fileContent.substr(pos+1, fileContent.size()-pos-1);
-        cumPos += pos;
+        int pos2 = 0;
+        std::string cpFileContent = fileContent;
+        findLastBracket(cpFileContent, 0, pos2);
         //if there is no more namespace declaration after the class name we can check if the class is in the given namespace.
-        if (pos < posInFile) {
+        if (pos > posInFile && posInFile < pos2) {
             //Erase eveything which is before the namespace declaration.
             if (namespc == "")
                 namespc += parts[0];
             else
                 namespc += "::"+parts[0];
         }
-        fileContent = fileContent.substr(pos, fileContent.size()-pos);
     }
     return namespc;
 }

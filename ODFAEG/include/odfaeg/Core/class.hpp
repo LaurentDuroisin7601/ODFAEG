@@ -75,6 +75,8 @@ namespace odfaeg {
             */
             std::string getNamespace();
         private :
+
+
             static unsigned int findLastBracket(std::string& fileContent, unsigned int nbBlocks);
             static void removeSpacesChars(std::string& str);
             /** \fn void checkInnerClass(std::string innerClass, std::string type, std::string& fileContent, int lvl, Class& cl)

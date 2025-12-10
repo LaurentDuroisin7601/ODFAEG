@@ -134,51 +134,41 @@ namespace odfaeg {
 
                 }
             }
-            int j= 0;
+
             //If we have found the class we check informations about the class.
             if (found) {
-                //check each namespaces englobing the class.
-                //std::cout<<"content : "<<content.size()<<std::endl;
-                size_t pos;
-                while(found && (pos = content.find("namespace")) != std::string::npos) {
-                    //Find the namespace pos.
-                    //std::cout<<"pos : "<<std::endl;
-                    unsigned int pos = content.find("namespace");
 
+
+                //check each namespaces englobing the class.
+                while(content.find("namespace") != std::string::npos && found) {
+                    //Find the namespace pos.
+                    unsigned int pos = content.find("namespace");
                     //Check the namespace name.
                     content = content.substr(pos+9, content.size()-pos-9);
-                    //std::cout<<"namespace substr"<<std::endl;
 
-                    while(content.size() > 0 && content.at(0) == ' ') {
+                    while(content.size() > 0 && (content.at(0) == ' ' || content.at(0) == '\n')) {
                         content.erase(0, 1);
                     }
-                    //std::cout<<"removing space"<<std::endl;
-                    std::vector<std::string> parts = split(content, " ");
+                    std::vector<std::string> parts = split(content, "{");
                     //We add :: for each sub namespaces found.
-                    if (j == 0)
-                        namespc += parts[0];
-                    else
-                        namespc += "::"+parts[0];
+
                     //we must check if the namespace is declared before the class.
                     pos = content.find("{");
-                    content = content.substr(pos+1, content.size()-pos-1);
-                    //std::cout<<"brack found"<<std::endl;
-                    //pos = fileContent.find("namespace ");
-                    unsigned int pos2 = content.find(name+" ");
+                    int pos2 = findLastBracket(content, 0);
 
-                    found = true;
+                    unsigned int pos3 = content.find(name);
+
                     //if there is no more namespace declaration after the class name we can check if the class is in the given namespace.
-                    if (pos > pos2) {
-                        //if the class is contained in a namespace we must check if a class which the same name is not present in an another namespace.
-                        if (nspc != "" && namespc != nspc) {
-                            found = false;
-                        }
-                        //Erase eveything which is before the namespace declaration.
-
+                    if (pos < pos3 && pos2 > pos3) {
+                        if (namespc == "")
+                            namespc += parts[0];
+                        else
+                            namespc += "::"+parts[0];
                     }
-                    content = content.substr(pos);
-                    //std::cout<<"last substr"<<std::endl;
-                    j++;
+                }
+                //if the class is contained in a namespace we must check if a class which the same name is not present in an another namespace.
+                if (nspc != "" && namespc != nspc) {
+                    found = false;
                 }
                 //We have found the class in the specified namespace, we can get class's informations.
                 if (found) {
@@ -287,43 +277,39 @@ namespace odfaeg {
 
                 }
             }
-            int j= 0;
             //If we have found the class we check informations about the class.
             if (found) {
 
                 //check each namespaces englobing the class.
-                while(fileContent.find("namespace ") != std::string::npos && found) {
+                while(fileContent.find("namespace") != std::string::npos && found) {
                     //Find the namespace pos.
-                    unsigned int pos = fileContent.find("namespace ");
+                    unsigned int pos = fileContent.find("namespace");
                     //Check the namespace name.
                     fileContent = fileContent.substr(pos+9, fileContent.size()-pos-9);
 
-                    while(fileContent.size() > 0 && fileContent.at(0) == ' ') {
+                    while(fileContent.size() > 0 && (fileContent.at(0) == ' ' || fileContent.at(0) == '\n')) {
                         fileContent.erase(0, 1);
                     }
-                    std::vector<std::string> parts = split(fileContent, " ");
+                    std::vector<std::string> parts = split(fileContent, "{");
                     //We add :: for each sub namespaces found.
-                    if (j == 0)
-                        namespc += parts[0];
-                    else
-                        namespc += "::"+parts[0];
-                    //we must check if the namespace is declared before the class.
-                    pos = fileContent.find_first_of("{");
-                    fileContent = fileContent.substr(pos+1, fileContent.size()-pos-1);
-                    pos = fileContent.find("namespace ");
-                    unsigned int pos2 = fileContent.find(name+" ");
 
-                    found = true;
+                    //we must check if the namespace is declared before the class.
+                    pos = fileContent.find("{");
+                    int pos2 = findLastBracket(fileContent, 0);
+
+                    unsigned int pos3 = fileContent.find(name);
+
                     //if there is no more namespace declaration after the class name we can check if the class is in the given namespace.
-                    if (pos > pos2) {
-                        //if the class is contained in a namespace we must check if a class which the same name is not present in an another namespace.
-                        if (nspc != "" && namespc != nspc) {
-                            found = false;
-                        }
-                        //Erase eveything which is before the namespace declaration.
-                        fileContent = fileContent.substr(pos2);
+                    if (pos < pos3 && pos2 > pos3) {
+                        if (namespc == "")
+                            namespc += parts[0];
+                        else
+                            namespc += "::"+parts[0];
                     }
-                    j++;
+                }
+                //if the class is contained in a namespace we must check if a class which the same name is not present in an another namespace.
+                if (nspc != "" && namespc != nspc) {
+                    found = false;
                 }
                 //We have found the class in the specified namespace, we can get class's informations.
                 if (found) {
