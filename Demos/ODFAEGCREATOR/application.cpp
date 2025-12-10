@@ -7957,7 +7957,7 @@ void ODFAEGCreator::checkNamesToPropose(BlocInfo parentBloc, std::vector<std::st
 }*/
 void ODFAEGCreator::onTextEntered(TextArea* ta, char caracter) {
     //std::cout<<"text entered : "<<caracter<<std::endl;
-    if (ta == tScriptEdit) {
+    if (ta == tScriptEdit && caracter != '\0') {
         /*if (std::isalpha(caracter) || caracter == '.' || caracter == '-' || caracter == '>' && caracter == ':') {
             strsearch += caracter;
         } else {
