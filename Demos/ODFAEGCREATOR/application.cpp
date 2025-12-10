@@ -7668,7 +7668,7 @@ std::vector<std::string> ODFAEGCreator::checkCompletionNames(std::string letters
     return namesToPropose;
 }
 void ODFAEGCreator::findComplVarsInBloc(std::vector<std::string>& instructions, BlocInfo& parentBloc, unsigned int& currentInst, unsigned int& currentPos) {
-    BlocInfo subBloc;
+
     while (currentInst < instructions.size()) {
         std::string& inst = instructions[currentInst];
         removeSpacesChars(inst);
@@ -7677,16 +7677,17 @@ void ODFAEGCreator::findComplVarsInBloc(std::vector<std::string>& instructions, 
         if (pos != std::string::npos) {
             std::cout<<"new bloc"<<std::endl;
             inst.erase(0, 1);
+            BlocInfo subBloc;
             subBloc.blocStart = currentPos;
             parentBloc.subBlocs.push_back(subBloc);
-            findComplVarsInBloc(instructions, subBloc, currentInst, currentPos);
+            findComplVarsInBloc(instructions, parentBloc.subBlocs.back(), currentInst, currentPos);
         } else if (pos2 != std::string::npos) {
             inst.erase(inst.size()-1, 1);
-            subBloc.blocEnd = currentPos;
+            parentBloc.blocEnd = currentPos;
             return;
         } else {
             //std::cout<<"process inst"<<std::endl;
-            processInst(inst, currentPos, parentBloc.subBlocs.back());
+            processInst(inst, currentPos, parentBloc);
             //std::cout<<"nb insts : "<<parentBloc.subBlocs.back().blocInstances.size()<<std::endl;
             currentInst++;
         }
