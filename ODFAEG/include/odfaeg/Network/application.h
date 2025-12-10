@@ -189,7 +189,7 @@ namespace odfaeg {
                     if (eventContextActivated) {
                        listener->processEvents();
                     }
-                    componentManager->updateComponents();
+                    //componentManager->updateComponents();
                     componentManager->drawRenderComponents();
                     ////std::cout<<"render components drawn"<<std::endl;
                     static_cast<A*>(this)->onDisplay(windows[0].first);
@@ -241,6 +241,7 @@ namespace odfaeg {
                             static_cast<A*>(this)->onUpdate(it->first, it->second);
                         }
                     }
+                    componentManager->updateComponents();
                 }
                 //world.updateTimers();
             }

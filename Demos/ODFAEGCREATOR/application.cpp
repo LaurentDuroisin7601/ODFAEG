@@ -948,8 +948,8 @@ void ODFAEGCreator::onInit() {
         rootCollisionNode = std::make_unique<Node>("Collisions", pCollisions, Vec2f(0.f, 0.05f), Vec2f(1.f, 1.f - 0.05f));
         tabPane->addTab(pCollisions, "Collisions", *fm.getResourceByAlias(Fonts::Serif));
         tScriptEdit = new TextArea(Vec3f(200, 20, 0), Vec3f(790, 650, 0), fm.getResourceByAlias(Fonts::Serif), "", getRenderWindow());
-        Action a5 (Action::TEXT_ENTERED);
-        Command cmd5(a5, FastDelegate<bool>(&TextArea::hasFocus, tScriptEdit), FastDelegate<void>(&ODFAEGCreator::onTextEntered, this, tScriptEdit, 'a'));
+
+        Command cmd5(FastDelegate<bool>(&TextArea::isTextChanged, tScriptEdit), FastDelegate<void>(&ODFAEGCreator::onTextEntered, this, tScriptEdit, 'a'));
         tScriptEdit->getListener().connect("CONTEXTENTERED", cmd5);
         tScriptEdit->setParent(pScriptsEdit);
         tScriptEdit->setRelPosition(0.f, 0.f);
@@ -1182,7 +1182,7 @@ Vec3f ODFAEGCreator::getGridCellPos(Vec3f pos) {
 }
 void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
     if (&getRenderWindow() == window && event.type == IEvent::TEXT_INPUT_EVENT) {
-        getListener().setCommandSlotParams("CONTEXTENTERED", this, static_cast<char>(event.text.unicode));
+        tScriptEdit->getListener().setCommandSlotParams("CONTEXTENTERED", this, tScriptEdit, static_cast<char>(event.text.unicode));
     }
     if(&getRenderWindow() == window && event.type == IEvent::MOUSE_WHEEL_EVENT && event.mouseWheel.type == IEvent::MOUSE_WHEEL_MOVED && isGuiShown) {
         if (event.mouseWheel.direction > 0) {
@@ -7593,6 +7593,7 @@ void ODFAEGCreator::removeSpacesChars(std::string& str) {
     }
 }
 std::vector<std::string> ODFAEGCreator::checkCompletionNames(std::string letters, unsigned int posInFile) {
+    std::cout<<"check : "<<std::endl;
     std::vector<std::string> namesToPropose;
     std::string content = tScriptEdit->getText();
     //Contenu du fichier.h
@@ -7616,6 +7617,7 @@ std::vector<std::string> ODFAEGCreator::checkCompletionNames(std::string letters
             std::vector<MemberFunction> functions = classs.getMembersFunctions();
             while (cpContent.find("}") != std::string::npos) {
                 content = cpContent;
+                //std::cout<<"content : "<<content<<std::endl;
                 std::string cp2Content = content;
                 int pos2 = 0;
                 findLastBracket(cp2Content, 0, pos2);
@@ -7625,7 +7627,7 @@ std::vector<std::string> ODFAEGCreator::checkCompletionNames(std::string letters
                     for (unsigned int f = 0; f < functions.size(); f++) {
                         //std::cout<<"content : "<<content<<std::endl;
                         int p = content.find(functions[f].getName());
-                        std::cout<<"f pos : "<<p<<std::endl;
+                        //std::cout<<"f pos : "<<p<<std::endl;
                         if (p != std::string::npos) {
                             std::string subContent = content.substr(p, content.size()-p);
                             int pos = subContent.find("{");
@@ -7636,9 +7638,9 @@ std::vector<std::string> ODFAEGCreator::checkCompletionNames(std::string letters
 
                                 //Si on est entre les crochets d'ouverture et de fermeture de la fonction on est dans le bon bloc.
                                 //std::cout<<"positions : "<<cumPos+pos+p<<std::endl<<posInFile<<std::endl<<cumPos+pos2<<std::endl;
-                                if (cumPos + pos + p <= posInFile && posInFile < cumPos + pos2) {
+                                if (cumPos + pos + p < posInFile && posInFile < cumPos + pos2) {
                                     std::string bloc = subContent.substr(0, pos2-pos);
-                                    //std::cout<<"bloc found : "<<bloc<<std::endl;
+                                    std::cout<<"bloc found : "<<bloc<<std::endl;
                                     BlocInfo parentBloc;
                                     parentBloc.blocStart = cumPos + p + pos;
                                     parentBloc.blocEnd = cumPos + pos2;
@@ -7850,6 +7852,7 @@ void ODFAEGCreator::checkNamesToPropose(BlocInfo parentBloc, std::vector<std::st
     }
 }
 void ODFAEGCreator::onTextEntered(TextArea* ta, char caracter) {
+    std::cout<<"text entered : "<<caracter<<std::endl;
     if (ta == tScriptEdit) {
         if (!std::isalpha(caracter) && caracter != '.' && caracter != '-' && caracter != '>' && caracter != ':') {
             strsearch = "";
@@ -7857,7 +7860,6 @@ void ODFAEGCreator::onTextEntered(TextArea* ta, char caracter) {
             strsearch += caracter;
         }
         unsigned int charPosInFile = tScriptEdit->getCharacterIndexAtCursorPos();
-        std::cout<<"char pos in file : "<<charPosInFile<<std::endl;
         std::vector<std::string> completionNames = checkCompletionNames(strsearch, charPosInFile);
         for (unsigned int i = 0; i < completionNames.size(); i++) {
             std::cout<<"completion name "<<i<<" : "<<completionNames[i]<<std::endl;
