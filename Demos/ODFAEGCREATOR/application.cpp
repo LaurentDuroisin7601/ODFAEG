@@ -7686,7 +7686,7 @@ void ODFAEGCreator::findComplVarsInBloc(std::vector<std::string>& instructions, 
         } else if (pos2 != std::string::npos) {
             //std::cout<<"end of bloc"<<std::endl;
             inst.erase(inst.size()-1, 1);
-            subBloc.blocEnd = currentPos;
+            parentBloc.subBlocs.back().blocEnd = currentPos;
             return;
         } else {
             //std::cout<<"process inst"<<std::endl;
