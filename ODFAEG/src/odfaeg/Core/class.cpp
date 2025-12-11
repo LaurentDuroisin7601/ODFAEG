@@ -56,6 +56,7 @@ namespace odfaeg {
                     ctx->cl.namespc = ns;
                     ctx->datas[0] = ns;
                     clang_disposeString(filename);
+                    clang_visitChildren(cursor, classVisitor, ctx);
 
                 } else {
                     CXCursor parentCursor = clang_getNullCursor(), parent=cursor;
