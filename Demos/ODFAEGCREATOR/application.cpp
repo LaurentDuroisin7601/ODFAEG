@@ -7970,9 +7970,6 @@ void ODFAEGCreator::onTextEntered(TextArea* ta, char caracter) {
         }
         unsigned int charPosInFile = tScriptEdit->getCharacterIndexAtCursorPos();
         std::vector<std::string> completionNames = checkCompletionNames(strsearch, charPosInFile);
-        for (unsigned int i = 0; i < completionNames.size(); i++) {
-            std::cout<<"completion name "<<i<<" : "<<completionNames[i]<<std::endl;
-        }
     }
 }
 

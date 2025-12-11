@@ -83,22 +83,32 @@ namespace odfaeg {
                     }
                 }
             } else if (kind == CXCursor_CXXBaseSpecifier) {
-                CXType baseType = clang_getCursorType(cursor);
-                CXString baseName = clang_getTypeSpelling(baseType);
-                std::string ns = getQualifiedNamespace(cursor);
-                CXSourceLocation loc = clang_getCursorLocation(cursor);
-                CXFile file;
-                unsigned line, column, offset;
-                clang_getFileLocation(loc, &file, &line, &column, &offset);
-                CXString filename = clang_getFileName(file);
-                Class superClass(clang_getCString(baseName), clang_getCString(filename));
-                superClass.namespc = ns;
-                ctx->cl.addSuperClass(superClass);
-                Context superCtx(ctx->cl.superClasses.back());
-                superCtx.datas = ctx->datas;
-                clang_disposeString(baseName);
-                clang_disposeString(filename);
-                clang_visitChildren(cursor, classVisitor, &superCtx);
+                CXCursor parentCursor = clang_getNullCursor(), parent=cursor;
+                while (!clang_Cursor_isNull(parent)) {
+                    parent = clang_getCursorSemanticParent(parent);
+                    CXCursorKind kind = clang_getCursorKind(parent);
+                    if (kind == CXCursor_ClassDecl || kind == CXCursor_StructDecl) {
+                        parentCursor = parent;
+                    }
+                }
+                if (!clang_Cursor_isNull(parentCursor) && ctx->datas[0] == getQualifiedNamespace(parentCursor) && ctx->datas[1] == clang_getCString(clang_getCursorSpelling(parentCursor))) {
+                    CXType baseType = clang_getCursorType(cursor);
+                    CXString baseName = clang_getTypeSpelling(baseType);
+                    std::string ns = getQualifiedNamespace(cursor);
+                    CXSourceLocation loc = clang_getCursorLocation(cursor);
+                    CXFile file;
+                    unsigned line, column, offset;
+                    clang_getFileLocation(loc, &file, &line, &column, &offset);
+                    CXString filename = clang_getFileName(file);
+                    Class superClass(clang_getCString(baseName), clang_getCString(filename));
+                    superClass.namespc = ns;
+                    ctx->cl.addSuperClass(superClass);
+                    Context superCtx(ctx->cl.superClasses.back());
+                    superCtx.datas = ctx->datas;
+                    clang_disposeString(baseName);
+                    clang_disposeString(filename);
+                    clang_visitChildren(cursor, classVisitor, &superCtx);
+                }
             } else if (kind == CXCursor_Constructor) {
                 Constructor c(clang_getCString(spelling));
                 clang_visitChildren(cursor, constructorVisitor, &c);
