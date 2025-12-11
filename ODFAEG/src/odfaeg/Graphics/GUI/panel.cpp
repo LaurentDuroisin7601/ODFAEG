@@ -55,6 +55,7 @@ namespace odfaeg {
                     for (unsigned int i = 0; i < shapes.size(); i++) {
                         shapes[i]->move(math::Vec3f(-(maxSize.x() / (getSize().x() - 10) * mouseDeltaX), 0, 0));
                     }
+                    deltas.x() += (maxSize.x() / (getSize().x() - 10) * mouseDeltaX);
                 } else if (mouseDeltaX < 0 && vertScrollBar.getPosition().x() +  mouseDeltaX >= getPosition().x()) {
                     vertScrollBar.move(math::Vec3f(mouseDeltaX, 0, 0));
                     if (moveComponents) {
@@ -68,6 +69,7 @@ namespace odfaeg {
                     for (unsigned int i = 0; i < shapes.size(); i++) {
                         shapes[i]->move(math::Vec3f(-(maxSize.x() / (getSize().x() - 10) * mouseDeltaX), 0, 0));
                     }
+                    deltas.x() += (maxSize.x() / (getSize().x() - 10) * mouseDeltaX);
                 }
             }
             void Panel::moveYItems() {
@@ -84,6 +86,7 @@ namespace odfaeg {
                     for (unsigned int i = 0; i < shapes.size(); i++) {
                         shapes[i]->move(math::Vec3f(0, -(maxSize.y() / (getSize().y() - 10) * mouseDeltaY), 0));
                     }
+                    deltas.y() += (maxSize.y() / (getSize().y() - 10) * mouseDeltaY);
                 } else if (mouseDeltaY < 0 && horScrollBar.getPosition().y() +  mouseDeltaY >= getPosition().y()) {
                     horScrollBar.move(math::Vec3f(0, mouseDeltaY, 0));
                     if (moveComponents) {
@@ -97,6 +100,7 @@ namespace odfaeg {
                     for (unsigned int i = 0; i < shapes.size(); i++) {
                         shapes[i]->move(math::Vec3f(0, -(maxSize.y() / (getSize().y() - 10) * mouseDeltaY), 0));
                     }
+                    deltas.y() += (maxSize.y() / (getSize().y() - 10) * mouseDeltaY);
                 }
             }
             void Panel::setMoveComponents(bool moveComponents) {
@@ -106,11 +110,16 @@ namespace odfaeg {
                 maxSize = math::Vec3f(0, 0, 0);
                 std::vector<LightComponent*> children = getChildren();
                 ////////std::cout<<"update children"<<std::endl;
+                float dx = deltas.x();
+                float dy = deltas.y();
+                float vScrollX = (vertScrollBar.getPosition().x() == 0) ? getPosition().x() : vertScrollBar.getPosition().x();
+                float hScrollY = (horScrollBar.getPosition().y() == 0) ? getPosition().y() : horScrollBar.getPosition().y();
                 for (unsigned int i = 0; i < children.size(); i++) {
-                    if (children[i]->getPosition().y() - getPosition().y() + children[i]->getSize().y() > maxSize.y())
-                        maxSize.y() = children[i]->getPosition().y() - getPosition().y() + children[i]->getSize().y();
-                    if (children[i]->getPosition().x() - getPosition().x() + children[i]->getSize().x() > maxSize.x())
-                        maxSize.x() = children[i]->getPosition().x() - getPosition().x() + children[i]->getSize().x();
+                    //std::cout<<"positions : "<<children[i]->getPosition().y()<<","<<getPosition().y()<<","<<dy<<std::endl;
+                    if (children[i]->getPosition().y() - getPosition().y() + dy + children[i]->getSize().y() > maxSize.y())
+                        maxSize.y() = children[i]->getPosition().y() - getPosition().y() + dy + children[i]->getSize().y();
+                    if (children[i]->getPosition().x() - getPosition().x() + dx + children[i]->getSize().x() > maxSize.x())
+                        maxSize.x() = children[i]->getPosition().x() - getPosition().x() + dx + children[i]->getSize().x();
                 }
                 ////////std::cout<<"update sprites"<<std::endl;
                 for (unsigned int i = 0; i < sprites.size(); i++) {
@@ -129,22 +138,23 @@ namespace odfaeg {
                 ////////std::cout<<"corner"<<std::endl;
                 if (maxSize.x() > getSize().x() || maxSize.y() > getSize().y()) {
                     corner = RectangleShape(math::Vec3f(10, 10, 0));
-                    corner.setPosition(math::Vec3f(getPosition().x() + getSize().x() - 10, getPosition().y() + getSize().y() - 10, getPosition().z()+200));
+                    corner.setPosition(math::Vec3f(getPosition().x() + getSize().x() - 10 - rect.getOutlineThickness(), getPosition().y() + getSize().y() - 10 - rect.getOutlineThickness(), getPosition().z()+200));
                 }
                 ////////std::cout<<"vert scroll"<<std::endl;
                 if (maxSize.x() > getSize().x()) {
                     unsigned int scrollXSize = (getSize().x() - 10) / maxSize.x() * (getSize().x() - 10);
                     vertScrollBar = RectangleShape(math::Vec3f(scrollXSize, 10, 0));
-                    vertScrollBar.setPosition(math::Vec3f(getPosition().x(), getPosition().y() + getSize().y() - 10 - rect.getOutlineThickness(), getPosition().z()+200));
+                    vertScrollBar.setPosition(math::Vec3f(vScrollX, getPosition().y() + getSize().y() - 10 - rect.getOutlineThickness(), getPosition().z()+200));
                     scrollX = true;
                 } else {
                     scrollX = false;
                 }
                 ////////std::cout<<"horizontal scroll"<<std::endl;
+
                 if (maxSize.y() > getSize().y()) {
                     unsigned int scrollYSize = (getSize().y() - 10) / maxSize.y() * (getSize().y() - 10);
                     horScrollBar = RectangleShape(math::Vec3f(10, scrollYSize, 0));
-                    horScrollBar.setPosition(math::Vec3f(getPosition().x() + getSize().x() - 10, getPosition().y(), getPosition().z()+200));
+                    horScrollBar.setPosition(math::Vec3f(getPosition().x() + getSize().x() - 10 - rect.getOutlineThickness(), hScrollY, getPosition().z()+200));
                     scrollY = true;
                 } else {
                     scrollY = false;
@@ -278,16 +288,7 @@ namespace odfaeg {
                 shapes.clear();
             }
             math::Vec3f Panel::getDeltas() {
-                if(moveComponents && getChildren().size() > 0) {
-                    return math::Vec3f(getChildren()[0]->getPosition().x() - getPosition().x(), getChildren()[0]->getPosition().y() - getPosition().y(), 0);
-                } else if (sprites.size() > 0) {
-                    ////////std::cout<<"sprite pos : "<<sprites[0].getPosition()<<"pan pos : "<<getPosition()<<"delta : "<<deltas<<std::endl;
-                    return math::Vec3f(deltas.x() - (sprites[0].getPosition().x() - getPosition().x() + sprites[0].getSize().x()), deltas.y() - (sprites[0].getPosition().y() - getPosition().y() + sprites[0].getSize().y()), 0);
-                } else if (shapes.size() > 0) {
-                    return math::Vec3f(shapes[0]->getPosition().x() - getPosition().x(), shapes[0]->getPosition().y() - getPosition().y(), 0);
-                } else {
-                    return math::Vec3f(0, 0, 0);
-                }
+                return deltas;
             }
         }
     }

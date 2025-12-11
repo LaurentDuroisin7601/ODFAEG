@@ -4370,6 +4370,12 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
          tScriptEdit->setText(buffer);
          tScriptEdit->setCursorPosition(prefixStart+completion.size());
          floatingMenu.setVisible(false);
+         Vec3f textSize = tScriptEdit->getTextSize();
+         if (textSize.x() > tScriptEdit->getSize().x())
+            tScriptEdit->setSize(Vec3f(textSize.x(), tScriptEdit->getSize().y(), tScriptEdit->getSize().z()));
+         if (textSize.y() > tScriptEdit->getSize().y())
+            tScriptEdit->setSize(Vec3f(tScriptEdit->getSize().x(), textSize.y(), tScriptEdit->getSize().z()));
+         pScriptsEdit->updateScrolls();
      }
 }
 /*void ODFAEGCreator::addShape(Shape *shape) {
@@ -7997,6 +8003,13 @@ void ODFAEGCreator::onTextEntered(TextArea* ta, char caracter) {
         floatingMenu.setPosition(tScriptEdit->getCursorPos() + tScriptEdit->getCharacterSize());
         //std::cout<<"position : "<<floatingMenu.getPosition()<<std::endl;
         floatingMenu.setVisible(true);
+
     }
+    Vec3f textSize = tScriptEdit->getTextSize();
+    if (textSize.x() > tScriptEdit->getSize().x())
+        tScriptEdit->setSize(Vec3f(textSize.x(), tScriptEdit->getSize().y(), tScriptEdit->getSize().z()));
+    if (textSize.y() > tScriptEdit->getSize().y())
+        tScriptEdit->setSize(Vec3f(tScriptEdit->getSize().x(), textSize.y(), tScriptEdit->getSize().z()));
+    pScriptsEdit->updateScrolls();
 }
 
