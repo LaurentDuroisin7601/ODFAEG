@@ -141,15 +141,15 @@ class ODFAEGCreator : public odfaeg::core::Application<ODFAEGCreator>,
     };
     private :
         std::pair<unsigned, unsigned> indexToLineColumn(const std::string& text, unsigned pos);
-        /*bool isPrimitiveType(std::string type);
-        bool isCharsOk(std::string strsearch, std::string str);
-        void processInst(std::string inst, unsigned int currentPos, BlocInfo& bloc);
+        //bool isPrimitiveType(std::string type);
+        bool startWith(std::string strsearch, std::string str);
+        /*void processInst(std::string inst, unsigned int currentPos, BlocInfo& bloc);
         void removeSpacesChars(std::string& str);
         void findComplVarsInBloc(std::vector<std::string>& instructions, BlocInfo& parentBloc, unsigned int& currentInst, unsigned int& currentPos);
         std::string getNamespaceIn(std::string content, unsigned int posInFile);
         std::string getHeaderContent(std::string content, unsigned int posInFile);
         void findLastBracket(std::string& fileContent, int nbBlocks, int& p);*/
-        std::vector<std::string> checkCompletionNames(unsigned int posInFile);
+        std::vector<std::string> checkCompletionNames(std::string strsearch, unsigned int posInFile);
         //void checkNamesToPropose(BlocInfo parentBloc, std::vector<std::string>& namesToPropose, std::string strsearch, unsigned int posInFile);
         void makeTransparent(odfaeg::graphic::Entity* entity);
         void convertSlash(std::string& path);

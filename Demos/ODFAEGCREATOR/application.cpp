@@ -7604,7 +7604,7 @@ std::pair<unsigned, unsigned> ODFAEGCreator::indexToLineColumn(const std::string
 
     return {line, column};
 }
-std::vector<std::string> ODFAEGCreator::checkCompletionNames(unsigned int posInFile) {
+std::vector<std::string> ODFAEGCreator::checkCompletionNames(std::string strsearch, unsigned int posInFile) {
     //std::cout<<"check : "<<std::endl;
     std::vector<std::string> namesToPropose;
     CXIndex index = clang_createIndex(0, 0);
@@ -7668,10 +7668,15 @@ std::vector<std::string> ODFAEGCreator::checkCompletionNames(unsigned int posInF
                 clang_disposeString(chunkText);
             }
 
-            if (!resultType.empty())
-                namesToPropose.push_back(resultType+" "+signature);
-            else
-                namesToPropose.push_back(signature);
+            if (!resultType.empty()) {
+                std::string name = resultType+" "+signature;
+                if (startWith(strsearch, name))
+                    namesToPropose.push_back(name);
+            } else {
+                std::string name = signature;
+                if (startWith(strsearch, name))
+                    namesToPropose.push_back(name);
+            }
         }
         clang_disposeCodeCompleteResults(results);
     }
@@ -7868,8 +7873,8 @@ void ODFAEGCreator::processInst(std::string inst, unsigned int currentPos, BlocI
             }
         }
     }
-}
-bool ODFAEGCreator::isCharsOk(std::string strsearch, std::string str) {
+}*/
+bool ODFAEGCreator::startWith(std::string strsearch, std::string str) {
     //std::cout<<"strs : "<<strsearch<<std::endl<<str<<std::endl;
     if (strsearch.size() <= str.size()) {
         for (unsigned int i = 0; i < strsearch.size(); i++) {
@@ -7883,7 +7888,7 @@ bool ODFAEGCreator::isCharsOk(std::string strsearch, std::string str) {
     }
     return false;
 }
-void ODFAEGCreator::checkNamesToPropose(BlocInfo parentBloc, std::vector<std::string>& namesToPropose, std::string strsearch, unsigned int posInFile) {
+/*void ODFAEGCreator::checkNamesToPropose(BlocInfo parentBloc, std::vector<std::string>& namesToPropose, std::string strsearch, unsigned int posInFile) {
     if (strsearch.find(".") != std::string::npos || strsearch.find("->") != std::string::npos) {
         std::vector<std::string> parts = split(strsearch, ".");
         std::string name = parts[0];
@@ -7958,13 +7963,13 @@ void ODFAEGCreator::checkNamesToPropose(BlocInfo parentBloc, std::vector<std::st
 void ODFAEGCreator::onTextEntered(TextArea* ta, char caracter) {
     //std::cout<<"text entered : "<<caracter<<std::endl;
     if (ta == tScriptEdit && caracter != '\0') {
-        /*if (std::isalpha(caracter) || caracter == '.' || caracter == '-' || caracter == '>' && caracter == ':') {
+        if (std::isalpha(caracter)) {
             strsearch += caracter;
         } else {
             strsearch = "";
-        }*/
+        }
         unsigned int charPosInFile = tScriptEdit->getCharacterIndexAtCursorPos();
-        std::vector<std::string> completionNames = checkCompletionNames(charPosInFile);
+        std::vector<std::string> completionNames = checkCompletionNames(strsearch, charPosInFile);
         for (unsigned int i = 0; i < completionNames.size(); i++) {
             std::cout<<"completion name "<<i<<" : "<<completionNames[i]<<std::endl;
         }
