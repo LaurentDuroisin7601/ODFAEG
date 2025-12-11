@@ -135,7 +135,7 @@ namespace odfaeg {
                 if (maxSize.x() > getSize().x()) {
                     unsigned int scrollXSize = (getSize().x() - 10) / maxSize.x() * (getSize().x() - 10);
                     vertScrollBar = RectangleShape(math::Vec3f(scrollXSize, 10, 0));
-                    vertScrollBar.setPosition(math::Vec3f(getPosition().x(), getPosition().y() + getSize().y() - 10, getPosition().z()+200));
+                    vertScrollBar.setPosition(math::Vec3f(getPosition().x(), getPosition().y() + getSize().y() - 10 - rect.getOutlineThickness(), getPosition().z()+200));
                     scrollX = true;
                 } else {
                     scrollX = false;

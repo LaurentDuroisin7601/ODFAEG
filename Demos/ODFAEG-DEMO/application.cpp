@@ -19,7 +19,7 @@ namespace sorrok {
         fpsCounter = 0;
         getView().move(0, 300, 0);
         addClock(Clock(), "FPS");
-        day = false;
+        day = true;
         audio::Listener::setUpVector(0.f, 0.f, 1.f);
         ps = entityFactory.make_entity<ParticleSystem>(getDevice(), Vec3f(0, 0, 150),Vec3f(100, 100, 0), entityFactory);
         m_world = std::make_unique<World>();
