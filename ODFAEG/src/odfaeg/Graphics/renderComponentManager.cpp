@@ -49,7 +49,7 @@ namespace odfaeg {
                     it2 = components.erase(it2);
                     return true;
                 } else {
-                    it++;
+                    it2++;
                 }
             }
             return false;
