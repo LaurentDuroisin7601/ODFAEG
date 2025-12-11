@@ -38,6 +38,7 @@ namespace odfaeg {
                 unsigned int getCharacterIndexAtCursorPos();
                 math::Vec3f getCursorPos();
                 unsigned int getCharacterSize();
+                void setCursorPosition(unsigned int currentIndex);
             private :
                 int scrollX, scrollY;
                 int currentIndex, currentIndex2;

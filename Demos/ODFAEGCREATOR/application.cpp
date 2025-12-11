@@ -118,6 +118,7 @@ Application (vm, title, Style::Resize|Style::Close, ContextSettings(0, 8, 4, 4, 
                        (Device&)(EntityFactory&),
                        (std::ref(getDevice()))(std::ref(factory)))
     EXPORT_CLASS_GUID(ShapeRectangleShape, Shape, RectangleShape)
+    prefixStart = 0;
 }
 void ODFAEGCreator::onLoad() {
     std::tuple<std::reference_wrapper<Device>> rArgs = std::make_tuple(std::ref(getDevice()));
@@ -950,7 +951,7 @@ void ODFAEGCreator::onInit() {
         tabPane->addTab(pCollisions, "Collisions", *fm.getResourceByAlias(Fonts::Serif));
         tScriptEdit = new TextArea(Vec3f(200, 20, 0), Vec3f(790, 650, 0), fm.getResourceByAlias(Fonts::Serif), "", getRenderWindow());
 
-        Command cmd5(FastDelegate<bool>(&TextArea::isTextChanged, tScriptEdit), FastDelegate<void>(&ODFAEGCreator::onTextEntered, this, tScriptEdit, 'a'));
+        Command cmd5(FastDelegate<bool>(&TextArea::isTextChanged, tScriptEdit), FastDelegate<void>(&ODFAEGCreator::onTextEntered, this, tScriptEdit, '\0'));
         tScriptEdit->getListener().connect("CONTEXTENTERED", cmd5);
         tScriptEdit->setParent(pScriptsEdit);
         tScriptEdit->setRelPosition(0.f, 0.f);
@@ -4362,6 +4363,13 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
                 displayExternalEntityInfo(selectedObject);
             }
         }
+     } else {
+         std::string buffer = tScriptEdit->getText();
+         std::string completion = item->getText();
+         buffer.replace(prefixStart, tScriptEdit->getCharacterIndexAtCursorPos() - prefixStart-1, completion);
+         tScriptEdit->setText(buffer);
+         tScriptEdit->setCursorPosition(prefixStart+completion.size());
+         floatingMenu.setVisible(false);
      }
 }
 /*void ODFAEGCreator::addShape(Shape *shape) {
@@ -7962,9 +7970,12 @@ bool ODFAEGCreator::startWith(std::string strsearch, std::string str) {
     }
 }*/
 void ODFAEGCreator::onTextEntered(TextArea* ta, char caracter) {
-    //std::cout<<"text entered : "<<caracter<<std::endl;
-    if (ta == tScriptEdit && caracter != '\0') {
-        if (std::isalpha(caracter)) {
+    //std::cout<<"text entered : "<<(int)caracter<<std::endl;
+    if (ta == tScriptEdit && caracter != 0 && caracter != 13) {
+        //std::cout<<"completion"<<std::endl;
+        if (std::isalnum(caracter)) {
+            if (strsearch == "")
+                prefixStart = tScriptEdit->getCharacterIndexAtCursorPos();
             strsearch += caracter;
         } else {
             strsearch = "";
@@ -7981,10 +7992,10 @@ void ODFAEGCreator::onTextEntered(TextArea* ta, char caracter) {
             MenuItem* menuItem = new MenuItem(getRenderWindow(), fm.getResourceByAlias(Fonts::Serif),completionNames[i]);
             getRenderComponentManager().addComponent(menuItem);
             floatingMenu.addMenuItem(menuItem);
+            menuItem->addMenuItemListener(this);
         }
         floatingMenu.setPosition(tScriptEdit->getCursorPos() + tScriptEdit->getCharacterSize());
-        std::cout<<"position : "<<floatingMenu.getPosition()<<std::endl;
-        items = floatingMenu.getItems();
+        //std::cout<<"position : "<<floatingMenu.getPosition()<<std::endl;
         floatingMenu.setVisible(true);
     }
 }

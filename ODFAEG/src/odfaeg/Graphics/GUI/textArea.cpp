@@ -233,6 +233,10 @@ namespace odfaeg {
             unsigned int TextArea::getCharacterSize() {
                 return text.getCharacterSize();
             }
+            void TextArea::setCursorPosition(unsigned int currentIndex) {
+                this->currentIndex = currentIndex;
+                cursorPos = text.findCharacterPos(currentIndex);
+            }
         }
     }
 }

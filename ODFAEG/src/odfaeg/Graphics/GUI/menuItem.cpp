@@ -35,7 +35,7 @@ namespace odfaeg {
                 void MenuItem::onDraw(RenderTarget& target, RenderStates states) {
                     rect.setPosition(getPosition());
                     rect.setSize(getSize());
-                    text.setPosition(math::Vec3f(getPosition().x(), getPosition().y(),getPosition().z()+100));
+                    text.setPosition(math::Vec3f(getPosition().x(), getPosition().y(),getPosition().z()+200));
                     target.draw(rect);
                     target.draw(text);
                     #ifdef VULKAN
@@ -51,7 +51,7 @@ namespace odfaeg {
                 }
                 bool MenuItem::isMouseOnMenu() {
                     physic::BoundingBox bb = getGlobalBounds();
-                    math::Vec2f mousePos = math::Vec2f(window::IMouse::getPosition(getWindow()).x(), window::IMouse::getPosition(getWindow()).y());
+                    math::Vec3f mousePos = math::Vec3f(window::IMouse::getPosition(getWindow()).x(), window::IMouse::getPosition(getWindow()).y(), getPosition().z());
                     if (bb.isPointInside(mousePos)) {
                         return true;
                     }
