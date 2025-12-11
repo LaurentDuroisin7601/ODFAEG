@@ -42,6 +42,7 @@ namespace odfaeg {
             void addWindow(RenderWindow& window);
             void setEventContextActivated(bool activated, RenderWindow& window);
             bool removeComponent(unsigned int layer);
+            bool removeComponent(Component* component);
             bool removeECSComponent(unsigned int layer);
             /**
             * \fn RenderWindow& getWindow()

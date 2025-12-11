@@ -273,7 +273,7 @@ namespace odfaeg {
             VecN<T, N> operator+ (T number) {
                 VecN<T, N> result;
                 for (unsigned int i = 0; i < N; i++) {
-                    result[i] += number;
+                    result[i] = data[i] + number;
                 }
                 return result;
             }

@@ -3,6 +3,7 @@
 #include "odfaeg/Network/application.h"
 #include "odfaeg/Core/stateStack.h"
 #include "odfaeg/Graphics/GUI/menubar.hpp"
+#include "odfaeg/Graphics/GUI/floatingMenu.hpp"
 #include "odfaeg/Graphics/GUI/menuItem.hpp"
 #include "odfaeg/Graphics/GUI/filedialog.hpp"
 #include "odfaeg/Graphics/GUI/textArea.hpp"
@@ -243,6 +244,7 @@ class ODFAEGCreator : public odfaeg::core::Application<ODFAEGCreator>,
         std::vector<std::unique_ptr<odfaeg::graphic::World>> worlds;
         std::string selectedProject;
         std::string virtualFile;
+        odfaeg::graphic::gui::FloatingMenu floatingMenu;
         /*std::array<std::string, 24> primitiveTypes = {
             "bool",
             "char", "signed char", "unsigned char",

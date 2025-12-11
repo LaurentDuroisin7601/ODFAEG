@@ -5,7 +5,7 @@ namespace odfaeg {
         namespace gui {
             Menu::Menu(RenderWindow& rw, const Font* font, std::string t) :
                 LightComponent(rw, math::Vec3f(0, 0, 0), math::Vec3f(t.length() * 10, 20, 0), math::Vec3f(0, 0, 0), -2, -2)
-{
+            {
                 text.setString(t);
                 text.setCharacterSize(15);
                 text.setFont(*font);

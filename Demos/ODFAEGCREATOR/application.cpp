@@ -76,14 +76,15 @@ Application (vm, title, Style::Resize|Style::Close, ContextSettings(0, 8, 4, 4, 
 	rtc.addLibrary("gdi32");
 	rtc.addLibrary("dl.dll");
 	rtc.addLibrary("sndfile.dll");
+	rtc.addLibrary("clang");
 	rtc.addRuntimeFunction("createObject");
 	rtc.addRuntimeFunction("readObjects");
-	rtc.addSourceFile("../../ODFAEG-master/Demos/ODFAEGCREATOR/application");
-    rtc.addSourceFile("../../ODFAEG-master/Demos/ODFAEGCREATOR/odfaegCreatorStateExecutor");
-    rtc.addSourceFile("../../ODFAEG-master/Demos/ODFAEGCREATOR/rectangularSelection");
-    rtc.addSourceFile("../../ODFAEG-master/Demos/ODFAEGCREATOR/rotationGismo");
-    rtc.addSourceFile("../../ODFAEG-master/Demos/ODFAEGCREATOR/scaleGuismo");
-    rtc.addSourceFile("../../ODFAEG-master/Demos/ODFAEGCREATOR/translationGismo");
+	rtc.addSourceFile("../../ODFAEG-master2/Demos/ODFAEGCREATOR/application");
+    rtc.addSourceFile("../../ODFAEG-master2/Demos/ODFAEGCREATOR/odfaegCreatorStateExecutor");
+    rtc.addSourceFile("../../ODFAEG-master2/Demos/ODFAEGCREATOR/rectangularSelection");
+    rtc.addSourceFile("../../ODFAEG-master2/Demos/ODFAEGCREATOR/rotationGismo");
+    rtc.addSourceFile("../../ODFAEG-master2/Demos/ODFAEGCREATOR/scaleGuismo");
+    rtc.addSourceFile("../../ODFAEG-master2/Demos/ODFAEGCREATOR/translationGismo");
 	speed = 10.f;
     sensivity = 0.5f;
     /*oldX = IMouse::getPosition(getRenderWindow()).x();
@@ -7970,6 +7971,21 @@ void ODFAEGCreator::onTextEntered(TextArea* ta, char caracter) {
         }
         unsigned int charPosInFile = tScriptEdit->getCharacterIndexAtCursorPos();
         std::vector<std::string> completionNames = checkCompletionNames(strsearch, charPosInFile);
+        std::vector<MenuItem*> items = floatingMenu.getItems();
+        for (unsigned int i = 0; i < items.size(); i++) {
+            getRenderComponentManager().removeComponent(items[i]);
+        }
+        floatingMenu.clear();
+        FontManager<Fonts>& fm = cache.resourceManager<Font, Fonts>("FontManager");
+        for(unsigned int i = 0; i < completionNames.size(); i++) {
+            MenuItem* menuItem = new MenuItem(getRenderWindow(), fm.getResourceByAlias(Fonts::Serif),completionNames[i]);
+            getRenderComponentManager().addComponent(menuItem);
+            floatingMenu.addMenuItem(menuItem);
+        }
+        floatingMenu.setPosition(tScriptEdit->getCursorPos() + tScriptEdit->getCharacterSize());
+        std::cout<<"position : "<<floatingMenu.getPosition()<<std::endl;
+        items = floatingMenu.getItems();
+        floatingMenu.setVisible(true);
     }
 }
 

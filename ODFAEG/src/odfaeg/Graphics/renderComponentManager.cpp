@@ -35,6 +35,18 @@ namespace odfaeg {
             }
             return false;
         }
+        bool RenderComponentManager::removeComponent(Component* component) {
+            std::multimap<int, std::unique_ptr<Component>, std::greater<int>>::iterator it;
+            for (it = components.begin(); it != components.end();) {
+                if (it->second.get() == component) {
+                    it = components.erase(it);
+                    return true;
+                } else {
+                    it++;
+                }
+            }
+            return false;
+        }
         RenderWindow& RenderComponentManager::getWindow() {
             return *windows[0];
         }

@@ -56,7 +56,7 @@ namespace odfaeg {
                 currentIndex = text.findCharacterAt(mousePos);
                 math::Vec2f pos = text.findCharacterPos(currentIndex);
                 cursorPos = math::Vec3f(pos.x(), pos.y(), 0);
-                //text.setSelected(currentIndex, currentIndex);
+                text.setSelected(currentIndex, currentIndex);
             }
             void TextArea::setCursorPos2() {
                 math::Vec2f mousePos = math::Vec2f(window::IMouse::getPosition(getWindow()).x(), window::IMouse::getPosition(getWindow()).y());
@@ -226,6 +226,12 @@ namespace odfaeg {
             }
             unsigned int TextArea::getCharacterIndexAtCursorPos() {
                 return text.findCharacterAt(cursorPos);
+            }
+            math::Vec3f TextArea::getCursorPos() {
+                return cursorPos;
+            }
+            unsigned int TextArea::getCharacterSize() {
+                return text.getCharacterSize();
             }
         }
     }
