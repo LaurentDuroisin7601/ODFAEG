@@ -36,10 +36,17 @@ namespace odfaeg {
             return false;
         }
         bool RenderComponentManager::removeComponent(Component* component) {
-            std::multimap<int, std::unique_ptr<Component>, std::greater<int>>::iterator it;
-            for (it = components.begin(); it != components.end();) {
-                if (it->second.get() == component) {
-                    it = components.erase(it);
+            std::multimap<int, Component*, std::greater<int>>::iterator it;
+            for (it = eventComponents.begin(); it != eventComponents.end();) {
+                if (it->second == component)
+                    it = eventComponents.erase(it);
+                else
+                    it++;
+            }
+            std::multimap<int, std::unique_ptr<Component>, std::greater<int>>::iterator it2;
+            for (it2 = components.begin(); it2 != components.end();) {
+                if (it2->second.get() == component) {
+                    it2 = components.erase(it2);
                     return true;
                 } else {
                     it++;
