@@ -87,6 +87,7 @@ namespace odfaeg {
         }
 
         void RenderTarget::enableDepthTest(bool enabled) {
+            //std::cout<<"enabled ? "<<enabled<<std::endl;
             depthTestEnabled = enabled;
         }
         void RenderTarget::enableStencilTest (bool enabled) {
@@ -233,6 +234,33 @@ namespace odfaeg {
             return scissors;
         }
         void RenderTarget::createDescriptorsAndPipelines() {
+            /*for (unsigned int i = 0; i < pipelineLayout.size(); i++) {
+                for (unsigned int j = 0; j < pipelineLayout[i].size(); j++) {
+                    for (unsigned int k = 0; k < pipelineLayout[i][j].size(); k++) {
+                        if (pipelineLayout[i][j][k] != nullptr)
+                            vkDestroyPipelineLayout(vkDevice.getDevice(), pipelineLayout[i][j][k], nullptr);
+
+                    }
+                }
+            }
+
+            for (unsigned int i = 0; i < graphicsPipeline.size(); i++) {
+                for (unsigned int j = 0; j < graphicsPipeline[i].size(); j++) {
+                    for (unsigned int k = 0; k < graphicsPipeline[i][j].size(); k++) {
+                        if (graphicsPipeline[i][j][k] != nullptr)
+                            vkDestroyPipeline(vkDevice.getDevice(), graphicsPipeline[i][j][k], nullptr);
+
+                    }
+                }
+            }
+            for (unsigned int i = 0; i < descriptorSetLayout.size(); i++) {
+                if (descriptorSetLayout[i] != nullptr)
+                    vkDestroyDescriptorSetLayout(vkDevice.getDevice(), descriptorSetLayout[i], nullptr);
+            }
+            for (unsigned int i = 0; i < descriptorPool.size(); i++) {
+                if (descriptorPool[i] != nullptr)
+                    vkDestroyDescriptorPool(vkDevice.getDevice(), descriptorPool[i], nullptr);
+            }*/
              RenderStates states;
              states.shader = &defaultShader;
              createDescriptorPool(states);
@@ -1008,7 +1036,7 @@ namespace odfaeg {
             }
         }
         void RenderTarget::beginRenderPass() {
-            ////std::cout<<"render pass depth ? "<<(depthTestEnabled || stencilTestEnabled)<<std::endl;
+            //std::cout<<"render pass depth ? "<<(depthTestEnabled)<<","<<(stencilTestEnabled)<<std::endl;
             VkRenderPassBeginInfo renderPassInfo{};
             renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
             renderPassInfo.renderPass = (depthTestEnabled || stencilTestEnabled) ? getRenderPass(1) : getRenderPass(0);

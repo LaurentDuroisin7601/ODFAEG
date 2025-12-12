@@ -76,14 +76,15 @@ Application (vm, title, Style::Resize|Style::Close, ContextSettings(0, 8, 4, 4, 
 	rtc.addLibrary("gdi32");
 	rtc.addLibrary("dl.dll");
 	rtc.addLibrary("sndfile.dll");
+	rtc.addLibrary("clang");
 	rtc.addRuntimeFunction("createObject");
 	rtc.addRuntimeFunction("readObjects");
-	rtc.addSourceFile("../../ODFAEG-master/Demos/ODFAEGCREATOR/application");
-    rtc.addSourceFile("../../ODFAEG-master/Demos/ODFAEGCREATOR/odfaegCreatorStateExecutor");
-    rtc.addSourceFile("../../ODFAEG-master/Demos/ODFAEGCREATOR/rectangularSelection");
-    rtc.addSourceFile("../../ODFAEG-master/Demos/ODFAEGCREATOR/rotationGismo");
-    rtc.addSourceFile("../../ODFAEG-master/Demos/ODFAEGCREATOR/scaleGuismo");
-    rtc.addSourceFile("../../ODFAEG-master/Demos/ODFAEGCREATOR/translationGismo");
+	rtc.addSourceFile("../../ODFAEG-master2/Demos/ODFAEGCREATOR/application");
+    rtc.addSourceFile("../../ODFAEG-master2/Demos/ODFAEGCREATOR/odfaegCreatorStateExecutor");
+    rtc.addSourceFile("../../ODFAEG-master2/Demos/ODFAEGCREATOR/rectangularSelection");
+    rtc.addSourceFile("../../ODFAEG-master2/Demos/ODFAEGCREATOR/rotationGismo");
+    rtc.addSourceFile("../../ODFAEG-master2/Demos/ODFAEGCREATOR/scaleGuismo");
+    rtc.addSourceFile("../../ODFAEG-master2/Demos/ODFAEGCREATOR/translationGismo");
 	speed = 10.f;
     sensivity = 0.5f;
     /*oldX = IMouse::getPosition(getRenderWindow()).x();
@@ -117,6 +118,7 @@ Application (vm, title, Style::Resize|Style::Close, ContextSettings(0, 8, 4, 4, 
                        (Device&)(EntityFactory&),
                        (std::ref(getDevice()))(std::ref(factory)))
     EXPORT_CLASS_GUID(ShapeRectangleShape, Shape, RectangleShape)
+    prefixStart = 0;
 }
 void ODFAEGCreator::onLoad() {
     std::tuple<std::reference_wrapper<Device>> rArgs = std::make_tuple(std::ref(getDevice()));
@@ -845,7 +847,7 @@ void ODFAEGCreator::onInit() {
         //system("PAUSE");
         getRenderComponentManager().addComponent(pProjects);
         pScriptsEdit = new Panel(getRenderWindow(), Vec3f(200, 10, 0), Vec3f(800, 700, 0));
-        pScriptsEdit->setRelPosition(1.f / 6.f, 0.015f);
+        pScriptsEdit->setRelPosition(1.f / 6.f, menuBar->getSize().y() / getRenderWindow().getSize().y());
         pScriptsEdit->setRelSize(0.60f, 0.75f);
         pScriptsEdit->setBorderColor(Color(128, 128, 128));
         pScriptsEdit->setBackgroundColor(Color::White);
@@ -947,9 +949,9 @@ void ODFAEGCreator::onInit() {
         pCollisions->setBackgroundColor(Color::White);
         rootCollisionNode = std::make_unique<Node>("Collisions", pCollisions, Vec2f(0.f, 0.05f), Vec2f(1.f, 1.f - 0.05f));
         tabPane->addTab(pCollisions, "Collisions", *fm.getResourceByAlias(Fonts::Serif));
-        tScriptEdit = new TextArea(Vec3f(200, 20, 0), Vec3f(790, 650, 0), fm.getResourceByAlias(Fonts::Serif), "", getRenderWindow());
+        tScriptEdit = new TextArea(Vec3f(200, 10, 0), Vec3f(790, 650, 0), fm.getResourceByAlias(Fonts::Serif), "", getRenderWindow());
 
-        Command cmd5(FastDelegate<bool>(&TextArea::isTextChanged, tScriptEdit), FastDelegate<void>(&ODFAEGCreator::onTextEntered, this, tScriptEdit, 'a'));
+        Command cmd5(FastDelegate<bool>(&TextArea::isTextChanged, tScriptEdit), FastDelegate<void>(&ODFAEGCreator::onTextEntered, this, tScriptEdit, '\0'));
         tScriptEdit->getListener().connect("CONTEXTENTERED", cmd5);
         tScriptEdit->setParent(pScriptsEdit);
         tScriptEdit->setRelPosition(0.f, 0.f);
@@ -1149,7 +1151,7 @@ void ODFAEGCreator::onDisplay(RenderWindow* window) {
         if (showRectSelect) {
             window->draw(rectSelect);
         }
-
+        window->submit(false);
     }
 }
 Vec3f ODFAEGCreator::getGridCellPos(Vec3f pos) {
@@ -2630,9 +2632,9 @@ void ODFAEGCreator::onExec() {
                     }
                 }
             }
-            std::vector<std::string> classes = Class::getClasses(appliname+"\\Scripts");
+            std::vector<std::string> classes = Class::getClasses(rtc.getIncludeDirs(), appliname+"\\Scripts");
             for (unsigned int i = 0; i < classes.size(); i++) {
-                Class cl = Class::getClass(classes[i]);
+                Class cl = Class::getClass(rtc.getIncludeDirs(), classes[i]);
                 if (cl.getNamespace() == "") {
                     dpSelectClass->addItem(classes[i], 15);
                     dpSelectMClass->addItem(classes[i], 15);
@@ -2861,11 +2863,12 @@ void ODFAEGCreator::showFileContent(Label* lab) {
     pScriptsEdit->setVisible(true);
     std::map<std::pair<std::string, std::string>, std::string>::iterator it;
     it = cppAppliContent.find(std::make_pair(getWorld()->projectName, lab->getText()));
+    virtualFile = getWorld()->projectName+"\\"+lab->getText();
     if (it != cppAppliContent.end()) {
         tScriptEdit->setText(it->second);
         tScriptEdit->getListener().setCommandSlotParams("CONTEXTENTERED", this, tScriptEdit, '\0');
         tScriptEdit->setTextSize(20);
-        //tScriptEdit->setEventContextActivated(true);
+        tScriptEdit->setEventContextActivated(true);
         Vec3f textSize = tScriptEdit->getTextSize();
         if (textSize.x() > tScriptEdit->getSize().x())
             tScriptEdit->setSize(Vec3f(textSize.x(), tScriptEdit->getSize().y(), tScriptEdit->getSize().z()));
@@ -3000,7 +3003,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         tScriptEdit->setEventContextActivated(true);
     }
     if (button->getText() == "Create") {
-
+        //std::cout<<"create new project"<<std::endl;
         appliname = ta->getText();
         applitype = dpList->getSelectedItem();
         #if defined (ODFAEG_SYSTEM_LINUX)
@@ -3030,7 +3033,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         FontManager<Fonts>& fm = cache.resourceManager<Font, Fonts>("FontManager");
         wApplicationNew->setVisible(false);
         getRenderComponentManager().setEventContextActivated(false, *wApplicationNew);
-        tScriptEdit->setEventContextActivated(true);
+
         Label* lab = new Label(getRenderWindow(),Vec3f(0,0,0),Vec3f(200, 17, 0),fm.getResourceByAlias(Fonts::Serif),appliname, 15);
         Node* node = new Node("test",lab,Vec2f(0, 0),Vec2f(1.f, 0.025f),rootNode.get());
         lab->setParent(pProjects);
@@ -3182,6 +3185,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
             world->projectName = appliname;
             worlds.push_back(std::move(world));
             setCurrentWorld(worlds.back().get());
+            tScriptEdit->setEventContextActivated(true);
         }
     }
     if (button->getText() == "New texture") {
@@ -3267,12 +3271,13 @@ void ODFAEGCreator::actionPerformed(Button* button) {
             dpSelectComponent->addItem(taComponentName->getText(), 15);
             dpSelectComponent->setSelectedItem(taComponentName->getText());
         }
-        for (unsigned int i = 0; i < getRenderComponentManager().getComponents().size(); i++) {
-            if (getRenderComponentManager().getComponents()[i]->getName() == dpSelectComponent->getSelectedItem()) {
-                selectedComponentView = getRenderComponentManager().getComponents()[i]->getFrameBuffer()->getView();
-            }
-        }
         getRenderComponentManager().recreateDescriptorsAndPipelines();
+        /*for (unsigned int i = 0; i < getRenderComponentManager().getRenderComponents().size(); i++) {
+            if (getRenderComponentManager().getRenderComponents()[i]->getName() == dpSelectComponent->getSelectedItem()) {
+                selectedComponentView = getRenderComponentManager().getRenderComponents()[i]->getView();
+            }
+        }*/
+
     }
     if(button==bCreateEntitiesUpdater) {
         std::string name = taEntitiesUpdaterName->getText();
@@ -3383,7 +3388,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
     }
     if (button == bCreateObject) {
         std::vector<std::string> parts = split(dpSelectClass->getSelectedItem(), "::");
-        Class cl = Class::getClass(parts[parts.size()-1]);
+        Class cl = Class::getClass(rtc.getIncludeDirs(), parts[parts.size()-1]);
         std::string headerFile = cl.getFilePath();
         /*std::cout<<"header file : "<<headerFile<<std::endl;
         system("PAUSE");*/
@@ -3656,7 +3661,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
     }
     if (button == bModifyObject) {
         std::vector<std::string> parts = split(dpSelectMClass->getSelectedItem(), "::");
-        Class cl = Class::getClass(parts[parts.size()-1]);
+        Class cl = Class::getClass(rtc.getIncludeDirs(), parts[parts.size()-1]);
         std::vector<odfaeg::core::Class> superClasses = cl.getSuperClasses();
         std::queue<Class> q;
         for (auto& sc : cl.getSuperClasses()) {
@@ -3747,7 +3752,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
     }
     if (button == bRemoveObject) {
         std::vector<std::string> parts = split(dpSelectRClass->getSelectedItem(), "::");
-        Class cl = Class::getClass(parts[parts.size()-1]);
+        Class cl = Class::getClass(rtc.getIncludeDirs(), parts[parts.size()-1]);
         std::vector<odfaeg::core::Class> superClasses = cl.getSuperClasses();
         std::queue<Class> q;
         for (auto& sc : cl.getSuperClasses()) {
@@ -3866,11 +3871,12 @@ std::map<std::string, std::vector<Entity*>>& ODFAEGCreator::getExternals() {
 void ODFAEGCreator::actionPerformed(MenuItem* item) {
     if (item->getText() == "New application") {
         std::cout<<"new application"<<std::endl;
+        tScriptEdit->setEventContextActivated(false);
         wApplicationNew->setVisible(true);
         getRenderComponentManager().setEventContextActivated(true, *wApplicationNew);
-        tScriptEdit->setEventContextActivated(false);
+
     }
-    if (item->getText() == "Build") {
+    else if (item->getText() == "Build") {
         std::string command = "clang++-3.6 -Wall -std=c++14 -g "+appliname+"/"+"*.cpp -o "+appliname+"/"+minAppliname+".out "
         "/usr/local/lib/libodfaeg-network-s-d.a /usr/local/lib/libodfaeg-audio-s-d.a /usr/local/lib/libodfaeg-graphics-s-d.a "
         "/usr/local/lib/libodfaeg-physics-s-d.a /usr/local/lib/libodfaeg-math-s-d.a /usr/local/lib/libodfaeg-core-s-d.a "
@@ -3879,11 +3885,11 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
         "-lGL -lssl -lcrypto /usr/lib/x86_64-linux-gnu/libSDL2.so 2> errors.err";
         std::system(command.c_str());
     }
-    if (item->getText() == "Run") {
+    else if (item->getText() == "Run") {
         std::string command = std::string("./"+appliname+"/"+minAppliname+".out");
         std::system(command.c_str());
     }
-    if (item->getText() == "Build and run") {
+    else if (item->getText() == "Build and run") {
         std::string command = "clang++-3.6 -Wall -std=c++14 -g "+appliname+"/"+"*.cpp -o "+appliname+"/"+minAppliname+".out "
         "/usr/local/lib/libodfaeg-network-s-d.a /usr/local/lib/libodfaeg-audio-s-d.a /usr/local/lib/libodfaeg-graphics-s-d.a "
         "/usr/local/lib/libodfaeg-physics-s-d.a /usr/local/lib/libodfaeg-math-s-d.a /usr/local/lib/libodfaeg-core-s-d.a "
@@ -3895,7 +3901,7 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
         std::system(command.c_str());
     }
 
-    if (item->getText() == "Tile") {
+    else if (item->getText() == "Tile") {
         if (appliname != "" && getWorld()->getCurrentSceneManager() != nullptr) {
             if (!showRectSelect) {
                 Vec3f position = getRenderWindow().mapPixelToCoords(Vec3f(cursor.getPosition().x(), getRenderWindow().getSize().y() - cursor.getPosition().y(), 0))+getRenderWindow().getView().getSize()*0.5f;
@@ -3958,7 +3964,7 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
             }
         }
     }
-    if(item->getText() == "Decor") {
+    else if(item->getText() == "Decor") {
         if (appliname != "" && getWorld()->getCurrentSceneManager() != nullptr) {
             if (!showRectSelect) {
                 Decor* decor = factory.make_entity<Decor>(factory);
@@ -3990,7 +3996,7 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
             }
         }
     }
-    if (item->getText() == "Wall") {
+    else if (item->getText() == "Wall") {
          if (appliname != "" && getWorld()->getCurrentSceneManager() != nullptr) {
             if (!showRectSelect) {
                 Wall* wall = factory.make_entity<Wall>(factory);
@@ -4021,7 +4027,7 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
             }
         }
     }
-    if (item->getText() == "Animation") {
+    else if (item->getText() == "Animation") {
         if (appliname != "" && getWorld()->getCurrentSceneManager() != nullptr) {
             if (!showRectSelect) {
                 Anim* anim = factory.make_entity<Anim>(factory);
@@ -4052,7 +4058,7 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
             }
         }
     }
-    if (item->getText() == "Particle System") {
+    else if (item->getText() == "Particle System") {
         if (appliname != "" && getWorld()->getCurrentSceneManager() != nullptr) {
             if (!showRectSelect) {
                 ParticleSystem* ps = factory.make_entity<ParticleSystem>(getDevice(), Vec3f(0, 0, 0),Vec3f(100, 100, 0), factory);
@@ -4063,15 +4069,15 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
             }
         }
     }
-    if (item->getText() == "Emitter") {
+    else if (item->getText() == "Emitter") {
         wNewEmitter->setVisible(true);
         getRenderComponentManager().setEventContextActivated(true, *wNewEmitter);
         tScriptEdit->setEventContextActivated(false);
     }
-    if (item->getText() == "Affector") {
+    else if (item->getText() == "Affector") {
         //wNewAffector->setVisbile(true);
     }
-    if (item->getText() == "Ponctual Light") {
+    else if (item->getText() == "Ponctual Light") {
         if (appliname != "" && getWorld()->getCurrentSceneManager() != nullptr) {
             if (!showRectSelect) {
                 PonctualLight* pl = factory.make_entity<PonctualLight>(Vec3f(-50, 420, 420), 100, 50, 0, 255, Color::Yellow, 16, factory);
@@ -4081,13 +4087,13 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
             }
         }
     }
-    if (item->getText() == "Undo") {
+    else if (item->getText() == "Undo") {
         stateStack.undo();
     }
-    if (item->getText() == "Redo") {
+    else if (item->getText() == "Redo") {
         stateStack.redo();
     }
-    if (item == item43) {
+    else if (item == item43) {
         showGrid = !showGrid;
         if (showGrid) {
             item43->setText("v Show grid");
@@ -4095,7 +4101,7 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
             item43->setText("Show grid");
         }
     }
-    if (item == item44) {
+    else if (item == item44) {
         alignToGrid = !alignToGrid;
         if (alignToGrid) {
             item44->setText("v Align to grid");
@@ -4103,7 +4109,7 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
             item44->setText("Align to grid");
         }
     }
-    if (item == item45) {
+    else if (item == item45) {
         showRectSelect = !showRectSelect;
         if (showRectSelect) {
             item45->setText("v Rect selection");
@@ -4111,36 +4117,36 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
             item45->setText("Rect selection");
         }
     }
-    if (item->getText() == "New scene") {
+    else if (item->getText() == "New scene") {
         wNewMap->setVisible(true);
         getRenderComponentManager().setEventContextActivated(true, *wNewMap);
         setEventContextActivated(false);
     }
-    if (item->getText() == "New component") {
+    else if (item->getText() == "New component") {
         wNewComponent->setVisible(true);
         getRenderComponentManager().setEventContextActivated(true, *wNewComponent);
         tScriptEdit->setEventContextActivated(false);
     }
-    if (item->getText() == "New entities updater") {
+    else if (item->getText() == "New entities updater") {
         wNewEntitiesUpdater->setVisible(true);
         getRenderComponentManager().setEventContextActivated(true, *wNewEntitiesUpdater);
         tScriptEdit->setEventContextActivated(false);
     }
-    if (item->getText() == "3D Model") {
+    else if (item->getText() == "3D Model") {
         fdImport3DModel->setVisible(true);
         fdImport3DModel->setEventContextActivated(true);
     }
-    if (item == item15) {
+    else if (item == item15) {
         fdProjectPath->setVisible(true);
         fdProjectPath->setEventContextActivated(true);
         tScriptEdit->setEventContextActivated(false);
     }
-    if (item == item16) {
+    else if (item == item16) {
         wNewAnimUpdater->setVisible(true);
         getRenderComponentManager().setEventContextActivated(true, *wNewAnimUpdater);
         tScriptEdit->setEventContextActivated(false);
     }
-    if (item == item17) {
+    else if (item == item17) {
         //Save textures.
         TextureManager<>& tm = cache.resourceManager<Texture, std::string>("TextureManager");
         std::vector<std::string> paths = tm.getPaths();
@@ -4289,23 +4295,23 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
         oa8(currentBp);
         file9.close();
      }
-     if (item == item18) {
+     else if (item == item18) {
         wNewParticleSystemUpdater->setVisible(true);
         getRenderComponentManager().setEventContextActivated(true, *wNewParticleSystemUpdater);
         tScriptEdit->setEventContextActivated(false);
      }
-     if (item == item51) {
+     else if (item == item51) {
         wCreateNewObject->setVisible(true);
         getRenderComponentManager().setEventContextActivated(true, *wCreateNewObject);
         std::cout<<"desactive context"<<std::endl;
         setEventContextActivated(false);
      }
-     if (item == item52) {
+     else if (item == item52) {
         wModifyObject->setVisible(true);
         getRenderComponentManager().setEventContextActivated(true, *wModifyObject);
         tScriptEdit->setEventContextActivated(false);
      }
-     if (item == item46) {
+     else if (item == item46) {
         for (unsigned int i = 0; i < ground.size(); i++)
             if (ground[i] != nullptr)
                 delete ground[i];
@@ -4319,7 +4325,7 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
         getRenderComponentManager().setEventContextActivated(true, *wGenerateTerrain);
         getRenderComponentManager().setEventContextActivated(false, getRenderWindow());
      }
-     if (item == item47) {
+     else if (item == item47) {
         for (unsigned int i = 0; i < ground.size(); i++)
             if (ground[i] != nullptr)
                 delete ground[i];
@@ -4333,7 +4339,7 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
         getRenderComponentManager().setEventContextActivated(true, *wGenerate3DTerrain);
         getRenderComponentManager().setEventContextActivated(false, getRenderWindow());
      }
-     if (item == item61) {
+     else if (item == item61) {
         if (selectedObject != nullptr) {
             BoundingBox globalBounds = selectedObject->getGlobalBounds();
             BoundingVolume* bv = new BoundingBox(globalBounds.getPosition().x(), globalBounds.getPosition().y(), globalBounds.getPosition().z(), globalBounds.getSize().x(), globalBounds.getSize().y(), globalBounds.getSize().z());
@@ -4360,6 +4366,19 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
                 displayExternalEntityInfo(selectedObject);
             }
         }
+     } else {
+         std::string buffer = tScriptEdit->getText();
+         std::string completion = item->getText();
+         buffer.replace(prefixStart, tScriptEdit->getCharacterIndexAtCursorPos() - prefixStart + 1, completion);
+         tScriptEdit->setText(buffer);
+         tScriptEdit->setCursorPosition(prefixStart+completion.size());
+         floatingMenu.setVisible(false);
+         Vec3f textSize = tScriptEdit->getTextSize();
+         if (textSize.x() > tScriptEdit->getSize().x())
+            tScriptEdit->setSize(Vec3f(textSize.x(), tScriptEdit->getSize().y(), tScriptEdit->getSize().z()));
+         if (textSize.y() > tScriptEdit->getSize().y())
+            tScriptEdit->setSize(Vec3f(tScriptEdit->getSize().x(), textSize.y(), tScriptEdit->getSize().z()));
+         pScriptsEdit->updateScrolls();
      }
 }
 /*void ODFAEGCreator::addShape(Shape *shape) {
@@ -4939,9 +4958,9 @@ void ODFAEGCreator::displayEntityInfos(Entity* tile) {
     pInfos->addChild(lSelectScriptLabel);
     Node* nSelectScript = new Node("SelectScript",lSelectScriptLabel,Vec2f(0, 0),Vec2f(0.25, 0.025),rootInfosNode.get());
     dpSelectScript = new DropDownList(getRenderWindow(),Vec3f(0, 0, 0), Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),"NONE", 15);
-    std::vector<std::string> classes = Class::getClasses(appliname+"\\Scripts");
+    std::vector<std::string> classes = Class::getClasses(rtc.getIncludeDirs(), appliname+"\\Scripts");
     for (unsigned int i = 0; i < classes.size(); i++) {
-        Class cl = Class::getClass(classes[i]);
+        Class cl = Class::getClass(rtc.getIncludeDirs(), classes[i]);
         bool isMonoBehaviourScript = false;
         std::vector<Class> superClasses = cl.getSuperClasses();
         for (unsigned int j = 0; j < superClasses.size(); j++) {
@@ -6987,7 +7006,7 @@ void ODFAEGCreator::onSelectedClassChanged(DropDownList* dp) {
         dpSelectPointerType->removeAllItems();
         std::string selectedItem = dp->getSelectedItem();
         std::vector<std::string> parts = split(selectedItem, "::");
-        Class cl = Class::getClass(parts[parts.size() - 1]);
+        Class cl = Class::getClass(rtc.getIncludeDirs(), parts[parts.size() - 1]);
         std::vector<Constructor> constructors = cl.getConstructors();
         dpSelectFunction->addItem("Select function", 15);
         //std::cout<<"size : "<<constructors.size()<<std::endl;
@@ -7043,7 +7062,7 @@ void ODFAEGCreator::onSelectedFunctionChanged(DropDownList* dp) {
         std::string selectedItem = dpSelectClass->getSelectedItem();
         std::vector<std::string> parts = split(selectedItem, "::");
         //std::cout<<"parts : "<<parts[parts.size() - 1]<<std::endl;
-        Class cl = Class::getClass(parts[parts.size() - 1]);
+        Class cl = Class::getClass(rtc.getIncludeDirs(), parts[parts.size() - 1]);
         tmpTextAreas.clear();
         std::vector<Constructor> constructors = cl.getConstructors();
         bool found = false;
@@ -7103,7 +7122,7 @@ void ODFAEGCreator::onSelectedMClassChanged(DropDownList *dp) {
         dpSelectMFunction->removeAllItems();
         std::string selectedItem = dp->getSelectedItem();
         std::vector<std::string> parts = split(selectedItem, "::");
-        Class cl = Class::getClass(parts[parts.size() - 1]);
+        Class cl = Class::getClass(rtc.getIncludeDirs(), parts[parts.size() - 1]);
         std::vector<MemberFunction> functions = cl.getMembersFunctions();
         dpSelectMFunction->addItem("Select function", 15);
         for (unsigned int i = 0; i < functions.size(); i++) {
@@ -7130,7 +7149,7 @@ void ODFAEGCreator::onSelectedMFunctionChanged(DropDownList *dp) {
         std::string selectedItem = dpSelectMClass->getSelectedItem();
         std::vector<std::string> parts = split(selectedItem, "::");
         //std::cout<<"parts : "<<parts[parts.size() - 1]<<std::endl;
-        Class cl = Class::getClass(parts[parts.size() - 1]);
+        Class cl = Class::getClass(rtc.getIncludeDirs(), parts[parts.size() - 1]);
         tmpTextAreas.clear();
         std::vector<MemberFunction> functions = cl.getMembersFunctions();
         bool found = false;
@@ -7443,10 +7462,9 @@ void ODFAEGCreator::addBoundingVolumes(BoundingVolume* bv) {
         addBoundingVolumes(bv->getChildren()[i]);
     }
 }
-std::string ODFAEGCreator::getNamespaceIn(std::string fileContent, unsigned int posInFile) {
+/*std::string ODFAEGCreator::getNamespaceIn(std::string fileContent, unsigned int posInFile) {
     //check each namespaces englobing the class.
     std::string namespc="";
-    unsigned int cumPos = 0;
     //Remove using namespace.
     while (fileContent.find("using") != std::string::npos) {
         int pos = fileContent.find("using");
@@ -7487,8 +7505,7 @@ std::string ODFAEGCreator::getHeaderContent(std::string content, unsigned int po
     std::map<std::pair<std::string, std::string>, std::string>::iterator it;
     for (it = cppAppliContent.begin(); it != cppAppliContent.end(); it++) {
         //On est déjà dans un fichier.h on le retourne.
-        /*std::cout<<"content : "<<content<<std::endl;
-        std::cout<<"file : "<<it->second<<std::endl;*/
+
         if ((it->first.second.find(".h") != std::string::npos || it->first.second.find(".hpp") != std::string::npos) && it->second == content) {
             //std::cout<<"file : "<<it->second<<std::endl;
             return it->second;
@@ -7532,8 +7549,7 @@ std::string ODFAEGCreator::getHeaderContent(std::string content, unsigned int po
                             std::string subContent2 = it->second;
                             int posC = subContent2.find("class");
                             while (posC != std::string::npos) {
-                                /*std::cout<<"parts :  "<<parts[i]<<std::endl;
-                                std::cout<<"name : "<<names[names.size()-1]<<std::endl;*/
+
                                 int pos2 = subContent2.find(names[names.size()-1]);
                                 int pos3 = subContent2.find("{");
                                 if (pos2 != std::string::npos && pos3 != std::string::npos) {
@@ -7590,11 +7606,99 @@ void ODFAEGCreator::removeSpacesChars(std::string& str) {
     while (str.size() > 0 && str.at(str.size()-1) == ' ' || str.at(str.size()-1) == '\n') {
         str = str.erase(str.size()-1, 1);
     }
+}*/
+std::pair<unsigned, unsigned> ODFAEGCreator::indexToLineColumn(const std::string& text, unsigned pos) {
+    unsigned line = 0;
+    unsigned column = 0;
+
+    for (unsigned i = 0; i < pos && i < text.size(); ++i) {
+        if (text[i] == '\n') {
+            line++;
+            column = 0; // reset colonne
+        } else {
+            column++;
+        }
+    }
+
+    return {line, column};
 }
-std::vector<std::string> ODFAEGCreator::checkCompletionNames(std::string letters, unsigned int posInFile) {
+std::vector<std::string> ODFAEGCreator::checkCompletionNames(std::string strsearch, unsigned int posInFile) {
     //std::cout<<"check : "<<std::endl;
     std::vector<std::string> namesToPropose;
-    std::string content = tScriptEdit->getText();
+    CXIndex index = clang_createIndex(0, 0);
+    std::vector<std::string> includePaths = rtc.getIncludeDirs();
+    const char* args[includePaths.size()+1];
+    for (unsigned int i = 0; i < includePaths.size(); i++) {
+        args[i] = includePaths[i].c_str();
+    }
+    args[includePaths.size()] = "-std=c++20";
+    CXUnsavedFile unsaved;
+    unsaved.Filename = virtualFile.c_str();        // nom virtuel
+    unsaved.Contents = tScriptEdit->getText().c_str();        // contenu de ta TextArea
+    unsaved.Length   = tScriptEdit->getText().size();
+
+    CXTranslationUnit tu = clang_parseTranslationUnit(
+        index,
+        virtualFile.c_str(),            // ton fichier source
+        args, includePaths.size()+1,                 // options
+        &unsaved, 1,              // pas de fichiers précompilés
+        CXTranslationUnit_None
+    );
+    std::pair<unsigned, unsigned> lineColumn = indexToLineColumn(tScriptEdit->getText(), posInFile);
+    CXCodeCompleteResults* results = clang_codeCompleteAt(
+        tu,
+        virtualFile.c_str(), lineColumn.first, lineColumn.second,
+        nullptr, 0,
+        CXCodeComplete_IncludeMacros | CXCodeComplete_IncludeCodePatterns
+    );
+    if (results) {
+        for (unsigned i = 0; i < results->NumResults; ++i) {
+            CXCompletionResult& r = results->Results[i];
+            CXCompletionString str = r.CompletionString;
+            unsigned numChunks = clang_getNumCompletionChunks(str);
+            std::string resultType;
+            std::string signature;
+            for (unsigned j = 0; j < numChunks; ++j) {
+                CXCompletionChunkKind kind = clang_getCompletionChunkKind(str, j);
+                CXString chunkText = clang_getCompletionChunkText(str, j);
+                const char* text = clang_getCString(chunkText);
+
+                if (!text) {
+                    clang_disposeString(chunkText);
+                    continue;
+                }
+
+                switch (kind) {
+                    case CXCompletionChunk_ResultType:
+                        resultType = text;
+                        break;
+                    case CXCompletionChunk_TypedText:
+                        signature += text;
+                        break;
+                    case CXCompletionChunk_Text:
+                        signature += "(" + std::string(text) + ")";
+                        break;
+                    default:
+                        signature += text;
+                        break;
+                }
+
+                clang_disposeString(chunkText);
+            }
+
+            if (!resultType.empty()) {
+                std::string name = resultType+" "+signature;
+                if (startWith(strsearch, name))
+                    namesToPropose.push_back(name);
+            } else {
+                std::string name = signature;
+                if (startWith(strsearch, name))
+                    namesToPropose.push_back(name);
+            }
+        }
+        clang_disposeCodeCompleteResults(results);
+    }
+    /*std::string content = tScriptEdit->getText();
     //Contenu du fichier.h
 
     std::string header_content = getHeaderContent(content,posInFile);
@@ -7665,11 +7769,11 @@ std::vector<std::string> ODFAEGCreator::checkCompletionNames(std::string letters
                 cumPos += pos2;
             }
         }
-    }
+    }*/
     return namesToPropose;
 }
-void ODFAEGCreator::findComplVarsInBloc(std::vector<std::string>& instructions, BlocInfo& parentBloc, unsigned int& currentInst, unsigned int& currentPos) {
-    BlocInfo subBloc;
+/*void ODFAEGCreator::findComplVarsInBloc(std::vector<std::string>& instructions, BlocInfo& parentBloc, unsigned int& currentInst, unsigned int& currentPos) {
+
     while (currentInst < instructions.size()) {
         std::string& inst = instructions[currentInst];
         removeSpacesChars(inst);
@@ -7678,17 +7782,17 @@ void ODFAEGCreator::findComplVarsInBloc(std::vector<std::string>& instructions, 
         if (pos != std::string::npos) {
             //std::cout<<"new bloc"<<std::endl;
             inst.erase(0, 1);
+            BlocInfo subBloc;
             subBloc.blocStart = currentPos;
             parentBloc.subBlocs.push_back(subBloc);
-            findComplVarsInBloc(instructions, subBloc, currentInst, currentPos);
+            findComplVarsInBloc(instructions, parentBloc.subBlocs.back(), currentInst, currentPos);
         } else if (pos2 != std::string::npos) {
-            //std::cout<<"end of bloc"<<std::endl;
             inst.erase(inst.size()-1, 1);
-            parentBloc.subBlocs.back().blocEnd = currentPos;
+            parentBloc.blocEnd = currentPos;
             return;
         } else {
             //std::cout<<"process inst"<<std::endl;
-            processInst(inst, currentPos, parentBloc.subBlocs.back());
+            processInst(inst, currentPos, parentBloc);
             //std::cout<<"nb insts : "<<parentBloc.subBlocs.back().blocInstances.size()<<std::endl;
             currentInst++;
         }
@@ -7787,8 +7891,8 @@ void ODFAEGCreator::processInst(std::string inst, unsigned int currentPos, BlocI
             }
         }
     }
-}
-bool ODFAEGCreator::isCharsOk(std::string strsearch, std::string str) {
+}*/
+bool ODFAEGCreator::startWith(std::string strsearch, std::string str) {
     //std::cout<<"strs : "<<strsearch<<std::endl<<str<<std::endl;
     if (strsearch.size() <= str.size()) {
         for (unsigned int i = 0; i < strsearch.size(); i++) {
@@ -7802,7 +7906,7 @@ bool ODFAEGCreator::isCharsOk(std::string strsearch, std::string str) {
     }
     return false;
 }
-void ODFAEGCreator::checkNamesToPropose(BlocInfo parentBloc, std::vector<std::string>& namesToPropose, std::string strsearch, unsigned int posInFile) {
+/*void ODFAEGCreator::checkNamesToPropose(BlocInfo parentBloc, std::vector<std::string>& namesToPropose, std::string strsearch, unsigned int posInFile) {
     if (strsearch.find(".") != std::string::npos || strsearch.find("->") != std::string::npos) {
         std::vector<std::string> parts = split(strsearch, ".");
         std::string name = parts[0];
@@ -7873,20 +7977,42 @@ void ODFAEGCreator::checkNamesToPropose(BlocInfo parentBloc, std::vector<std::st
     for (unsigned int i = 0; i < parentBloc.subBlocs.size(); i++) {
         checkNamesToPropose(parentBloc.subBlocs[i], namesToPropose, strsearch, posInFile);
     }
-}
+}*/
 void ODFAEGCreator::onTextEntered(TextArea* ta, char caracter) {
-    //std::cout<<"text entered : "<<caracter<<std::endl;
-    if (ta == tScriptEdit) {
-        if (std::isalpha(caracter) || caracter == '.' || caracter == '-' || caracter == '>' && caracter == ':') {
+    //std::cout<<"text entered : "<<(int)caracter<<std::endl;
+    if (ta == tScriptEdit && caracter != 0 && caracter != 13) {
+        //std::cout<<"completion"<<std::endl;
+        if (std::isalnum(caracter)) {
+            if (strsearch == "")
+                prefixStart = tScriptEdit->getCharacterIndexAtCursorPos();
             strsearch += caracter;
         } else {
             strsearch = "";
         }
         unsigned int charPosInFile = tScriptEdit->getCharacterIndexAtCursorPos();
         std::vector<std::string> completionNames = checkCompletionNames(strsearch, charPosInFile);
-        for (unsigned int i = 0; i < completionNames.size(); i++) {
-            std::cout<<"completion name "<<i<<" : "<<completionNames[i]<<std::endl;
+        std::vector<MenuItem*> items = floatingMenu.getItems();
+        for (unsigned int i = 0; i < items.size(); i++) {
+            getRenderComponentManager().removeComponent(items[i]);
         }
+        floatingMenu.clear();
+        FontManager<Fonts>& fm = cache.resourceManager<Font, Fonts>("FontManager");
+        for(unsigned int i = 0; i < completionNames.size(); i++) {
+            MenuItem* menuItem = new MenuItem(getRenderWindow(), fm.getResourceByAlias(Fonts::Serif),completionNames[i]);
+            getRenderComponentManager().addComponent(menuItem);
+            floatingMenu.addMenuItem(menuItem);
+            menuItem->addMenuItemListener(this);
+        }
+        floatingMenu.setPosition(tScriptEdit->getCursorPos() + tScriptEdit->getCharacterSize());
+        //std::cout<<"position : "<<floatingMenu.getPosition()<<std::endl;
+        floatingMenu.setVisible(true);
+
     }
+    Vec3f textSize = tScriptEdit->getTextSize();
+    if (textSize.x() > tScriptEdit->getSize().x())
+        tScriptEdit->setSize(Vec3f(textSize.x(), tScriptEdit->getSize().y(), tScriptEdit->getSize().z()));
+    if (textSize.y() > tScriptEdit->getSize().y())
+        tScriptEdit->setSize(Vec3f(tScriptEdit->getSize().x(), textSize.y(), tScriptEdit->getSize().z()));
+    pScriptsEdit->updateScrolls();
 }
 

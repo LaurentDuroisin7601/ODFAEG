@@ -322,6 +322,7 @@ namespace sorrok {
         std::cout<<"entity added to the world"<<std::endl;
         View view = getView();
         //view.rotate(0, 0, 20);
+        getRenderWindow().createDescriptorsAndPipelines();
         PerPixelLinkedListRenderComponent *frc1 = new PerPixelLinkedListRenderComponent(getRenderWindow(),0, "E_BIGTILE", ContextSettings(0, 0, 4, 4, 6));
         std::cout<<"ppll1 component created"<<std::endl;
         PerPixelLinkedListRenderComponent *frc2 = new PerPixelLinkedListRenderComponent(getRenderWindow(), 1, "E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PARTICLES", ContextSettings(24, 8, 4, 4, 6));
@@ -333,7 +334,7 @@ namespace sorrok {
         std::cout<<"shadow component created"<<std::endl;
         LightRenderComponent *lrc = new LightRenderComponent(getRenderWindow(), 4, "E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PONCTUAL_LIGHT", ContextSettings(0, 0, 4, 4, 6));
         std::cout<<"light component created"<<std::endl;
-        getRenderWindow().createDescriptorsAndPipelines();
+
         frc1->createDescriptorsAndPipelines();
         frc2->createDescriptorsAndPipelines();
         src->createDescriptorsAndPipelines();

@@ -185,6 +185,9 @@ namespace odfaeg {
                 it->second->createDescriptorsAndPipelines();
                 it->second->launchRenderer();
             }
+            /*for (unsigned int i = 0; i < windows.size(); i++) {
+                windows[i]->createDescriptorsAndPipelines();
+            }*/
         }
         RenderComponentManager::~RenderComponentManager() {
             //////std::cout<<"rcm desrtructor"<<std::endl;

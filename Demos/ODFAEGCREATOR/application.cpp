@@ -1151,7 +1151,7 @@ void ODFAEGCreator::onDisplay(RenderWindow* window) {
         if (showRectSelect) {
             window->draw(rectSelect);
         }
-
+        window->submit(false);
     }
 }
 Vec3f ODFAEGCreator::getGridCellPos(Vec3f pos) {
@@ -2063,7 +2063,7 @@ void ODFAEGCreator::onExec() {
     }
     for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
         if (getRenderComponentManager().getRenderComponent(i) != nullptr && getRenderComponentManager().getRenderComponent(i)->getName() == dpSelectComponent->getSelectedItem()) {
-            selectedComponentView = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->getView();
+            selectedComponentView = getRenderComponentManager().getRenderComponent(i)->getView();
         }
     }
     std::map<std::string, std::vector<Entity*>>::iterator it;
@@ -3245,13 +3245,16 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         tScriptEdit->setEventContextActivated(true);
         if (dpComponentType->getSelectedItem() == "LinkedList") {
             PerPixelLinkedListRenderComponent* ppll = new PerPixelLinkedListRenderComponent(getRenderWindow(),conversionStringInt(taComponentLayer->getText()),taComponentExpression->getText(),ContextSettings(24, 8, 4, 4, 6));
+
             getRenderComponentManager().addComponent(ppll);
+
             ppll->setName(taComponentName->getText());
             dpSelectComponent->addItem(taComponentName->getText(), 15);
             dpSelectComponent->setSelectedItem(taComponentName->getText());
         }
         if (dpComponentType->getSelectedItem() == "Shadow") {
             ShadowRenderComponent* src = new ShadowRenderComponent(getRenderWindow(),conversionStringInt(taComponentLayer->getText()),taComponentExpression->getText(),ContextSettings(0, 0, 4, 4, 6));
+
             getRenderComponentManager().addComponent(src);
             src->setName(taComponentName->getText());
             dpSelectComponent->addItem(taComponentName->getText(), 15);
@@ -3259,6 +3262,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         }
         if (dpComponentType->getSelectedItem() == "Light") {
             LightRenderComponent* lrc = new LightRenderComponent(getRenderWindow(),conversionStringInt(taComponentLayer->getText()),taComponentExpression->getText(),ContextSettings(0, 0, 4, 4, 6));
+
             getRenderComponentManager().addComponent(lrc);
             lrc->setName(taComponentName->getText());
             dpSelectComponent->addItem(taComponentName->getText(), 15);
@@ -3266,17 +3270,19 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         }
         if (dpComponentType->getSelectedItem() == "Refraction") {
             ReflectRefractRenderComponent* rrrc = new ReflectRefractRenderComponent(getRenderWindow(),conversionStringInt(taComponentLayer->getText()),taComponentExpression->getText(),ContextSettings(0, 0, 4, 4, 6));
+
             getRenderComponentManager().addComponent(rrrc);
             rrrc->setName(taComponentName->getText());
             dpSelectComponent->addItem(taComponentName->getText(), 15);
             dpSelectComponent->setSelectedItem(taComponentName->getText());
         }
-        for (unsigned int i = 0; i < getRenderComponentManager().getComponents().size(); i++) {
-            if (getRenderComponentManager().getComponents()[i]->getName() == dpSelectComponent->getSelectedItem()) {
-                selectedComponentView = getRenderComponentManager().getComponents()[i]->getFrameBuffer()->getView();
+        getRenderComponentManager().recreateDescriptorsAndPipelines();
+        for (unsigned int i = 0; i < getRenderComponentManager().getRenderComponents().size(); i++) {
+            if (getRenderComponentManager().getRenderComponents()[i]->getName() == dpSelectComponent->getSelectedItem()) {
+                selectedComponentView = getRenderComponentManager().getRenderComponents()[i]->getView();
             }
         }
-        getRenderComponentManager().recreateDescriptorsAndPipelines();
+
     }
     if(button==bCreateEntitiesUpdater) {
         std::string name = taEntitiesUpdaterName->getText();
