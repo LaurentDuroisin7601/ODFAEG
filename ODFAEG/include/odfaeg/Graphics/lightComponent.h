@@ -93,6 +93,7 @@ namespace odfaeg {
                         && it->second->getPosition().y() <= getPosition().y() + getSize().y()) {
 
                         it->second->draw(target, states);
+                        //std::cout<<"child drawn"<<std::endl;
                     }
                 }
                 /*if (enableScissorTest) {

@@ -497,7 +497,7 @@ namespace odfaeg {
                     submitInfo.signalSemaphoreCount = 0;
                     submitInfo.pSignalSemaphores = nullptr;
                 }*/
-                firstSubmit = false;
+
                 if (fences.size() > 0) {
                     vkWaitForFences(vkDevice.getDevice(), fences.size(), fences.data(), VK_TRUE, UINT64_MAX);
                     vkResetFences(vkDevice.getDevice(), fences.size(), fences.data());
@@ -510,6 +510,8 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < 7; i++)
                     vertexBuffer[i].clear();
                 drawableData.clear();
+                firstSubmit = false;
+                //firstDraw = false;
             }
         }
         void RenderWindow::drawVulkanFrame() {

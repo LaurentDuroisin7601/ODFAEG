@@ -401,13 +401,8 @@ namespace odfaeg {
 
                 createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, drawableDataSSBO[getCurrentFrame()], drawableDataSSBOMemory[getCurrentFrame()]);
                 maxDrawableDataSize[getCurrentFrame()] = bufferSize;
-                updateDescriptorSets(states);
              }
-             if (Texture::getAllTextures().size() > maxTexturesInUse) {
-                updateDescriptorSets(states);
-                maxTexturesInUse = Texture::getAllTextures().size();
-             }
-
+             updateDescriptorSets(states);
              if (useSecondaryCmds)
                 beginRecordSecondaryCommandBuffers();
              else {
@@ -451,7 +446,7 @@ namespace odfaeg {
                 endRecordSecondaryCommandBuffers();
              else if (commandsOnRecordedState[getCurrentFrame()])
                 endRecordCommandBuffers();
-            firstDraw = false;
+             firstDraw = false;
         }
         void RenderTarget::drawVertexBuffer(VertexBuffer& vb, RenderStates states) {
 

@@ -124,25 +124,26 @@ namespace odfaeg {
                 #endif
                 #ifdef VULKAN
                 target.submit(false);
-                if (getParent() != nullptr) {
+                if (text.getString().getSize() != 0) {
+                    if (getParent() != nullptr) {
 
-                    target.getScissors()[1].offset = {(getPosition().x() < getParent()->getPosition().x()) ? getParent()->getPosition().x() : getPosition().x(), (getPosition().y() < getParent()->getPosition().y()) ? getParent()->getPosition().y() : getPosition().y()};
-                    //std::cout<<"offsets : "<<target.getScissors()[0].offset.x<<","<<target.getScissors()[0].offset.y<<std::endl;
-                    target.getScissors()[1].extent = {(getSize().x() > getParent()->getSize().x()) ? getParent()->getSize().x() : getSize().x(), (getSize().y() > getParent()->getSize().y()) ? getParent()->getSize().y() : getSize().y()};
-                } else {
-                    target.getScissors()[1].offset = {getPosition().x(), getPosition().y()};
-                    target.getScissors()[1].extent = {getSize().x(), getSize().y()};
+                        target.getScissors()[1].offset = {(getPosition().x() < getParent()->getPosition().x()) ? getParent()->getPosition().x() : getPosition().x(), (getPosition().y() < getParent()->getPosition().y()) ? getParent()->getPosition().y() : getPosition().y()};
+                        //std::cout<<"offsets : "<<target.getScissors()[0].offset.x<<","<<target.getScissors()[0].offset.y<<std::endl;
+                        target.getScissors()[1].extent = {(getSize().x() > getParent()->getSize().x()) ? getParent()->getSize().x() : getSize().x(), (getSize().y() > getParent()->getSize().y()) ? getParent()->getSize().y() : getSize().y()};
+                    } else {
+                        target.getScissors()[1].offset = {getPosition().x(), getPosition().y()};
+                        target.getScissors()[1].extent = {getSize().x(), getSize().y()};
+                    }
+
+                    #endif
+                    target.draw(text);
+                    #ifdef VULKAN
+                    target.submit(false);
+                    target.getScissors()[1].offset = {0, 0};
+                    target.getScissors()[1].extent = {target.getSize().x(), target.getSize().y()};
+
+                    #endif // VULKAN
                 }
-                if (text.getString().getSize() == 0)
-                    target.beginRecordCommandBuffers();
-                #endif
-                target.draw(text);
-                #ifdef VULKAN
-                target.submit(false);
-                target.getScissors()[1].offset = {0, 0};
-                target.getScissors()[1].extent = {target.getSize().x(), target.getSize().y()};
-
-                #endif // VULKAN
                 //Il faut restaurer les paramètres d'avant si un scissor test a été défini avant de dessiner la TextArea.
                 #ifndef VULKAN
                 if (sctest == false) {
@@ -155,12 +156,10 @@ namespace odfaeg {
                     target.draw(va);
                 }
                 #ifdef VULKAN
-                if (!haveFocus)
-                    target.beginRecordCommandBuffers();
-                //if (haveFocus) {
-                target.submit(false);
-                //}
-                #endif // VULKAN
+                if (haveFocus) {
+                    target.submit(false);
+                }
+                #endif // VULKAN*/
 
             }
             bool TextArea::isMouseInTextArea() {

@@ -147,7 +147,7 @@ namespace odfaeg {
                 if (maxSize.x() > getSize().x()) {
                     unsigned int scrollXSize = (getSize().x() - 10) / maxSize.x() * (getSize().x() - 10);
                     vertScrollBar = RectangleShape(math::Vec3f(scrollXSize, 10, 0));
-                    vertScrollBar.setPosition(math::Vec3f(vScrollX, getPosition().y() + getSize().y() - 10 - rect.getOutlineThickness(), getPosition().z()+200));
+                    vertScrollBar.setPosition(math::Vec3f(vScrollX, getPosition().y() + getSize().y() - 10 - rect.getOutlineThickness(), getPosition().z()+500));
                     scrollX = true;
                 } else {
                     scrollX = false;
@@ -158,7 +158,7 @@ namespace odfaeg {
                     unsigned int scrollYSize = (getSize().y() - 10) / maxSize.y() * (getSize().y() - 10);
 
                     horScrollBar = RectangleShape(math::Vec3f(10, scrollYSize, 0));
-                    horScrollBar.setPosition(math::Vec3f(getPosition().x() + getSize().x() - 10 - rect.getOutlineThickness(), hScrollY, getPosition().z()+200));
+                    horScrollBar.setPosition(math::Vec3f(getPosition().x() + getSize().x() - 10 - rect.getOutlineThickness(), hScrollY, getPosition().z()+500));
                     scrollY = true;
                 } else {
                     scrollY = false;
@@ -217,9 +217,9 @@ namespace odfaeg {
                     glCheck(glScissor(getPosition().x(), getWindow().getSize().y() - (getPosition().y() + getSize().y()), getSize().x(), getSize().y()));
                     #endif
                 }
-                /*#ifdef VULKAN
-                target.beginRecordCommandBuffers();
-                #endif // VULKAN*/
+                //std::cout<<"draw panel"<<std::endl;
+
+
                 rect.setPosition(getPosition());
                 rect.setSize(getSize());
                 target.draw(rect, states);
@@ -237,10 +237,8 @@ namespace odfaeg {
                 }
             }
             void Panel::drawOn(RenderTarget& target, RenderStates states) {
-                #ifdef VULKAN
 
-                /*target.beginRecordCommandBuffers();
-                target.submit(false);*/
+                #ifdef VULKAN
                 target.getScissors()[0].offset = {0, 0};
                 target.getScissors()[0].extent = {target.getSize().x(), target.getSize().y()};
                 #endif // VULKAN
@@ -257,12 +255,12 @@ namespace odfaeg {
                     target.draw(horScrollBar, states);
 
                 }
-                /*#ifdef VULKAN
-                if (!scrollX && !scrollY)
-                    target.beginRecordCommandBuffers();
-                //if (scrollX || scrollY)
+                #ifdef VULKAN
+                if (scrollX || scrollY) {
+                    //std::cout<<"submit panel : "<<std::endl;
                     target.submit(false);
-                #endif // VULKAN*/
+                }
+                #endif // VULKAN
 
                 if (disableScissor) {
                     #ifndef VULKAN

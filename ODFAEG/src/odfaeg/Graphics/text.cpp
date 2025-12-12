@@ -482,15 +482,17 @@ namespace odfaeg
             if (!m_geometryNeedUpdate && m_font->getTexture(m_characterSize).m_cacheId == m_fontTextureId)
                 return;
 
+
+
+            // No text: nothing to draw
+            if (m_string.isEmpty())
+                return;
+
             // Clear the previous geometry
             m_vertices.clear();
             m_backgroundVertices.clear();
             m_outlineVertices.clear();
             m_bounds = physic::BoundingBox();
-
-            // No text: nothing to draw
-            if (m_string.isEmpty())
-                return;
 
             // Compute values related to the text style
             bool  isBold             = m_style & Bold;
@@ -584,7 +586,7 @@ namespace odfaeg
                     float bottom = glyph.bounds.top  + glyph.bounds.height;
 
                     // Add the outline glyph to the vertices
-                    addGlyphQuad(m_outlineVertices, math::Vec2f(x, y), m_outlineColor, glyph, italicShear, m_outlineThickness);
+                    addGlyphQuad(m_outlineVertices, math::Vec3f(x, y, getPosition().z()), m_outlineColor, glyph, italicShear, m_outlineThickness);
 
                     // Update the current bounds with the outlined glyph bounds
                     minX = std::min(minX, x + left   - italicShear * bottom - m_outlineThickness);
@@ -596,11 +598,11 @@ namespace odfaeg
                 // Extract the current glyph's description
                 const Glyph& glyph = m_font->getGlyph(curChar, m_characterSize, isBold);
                 if (i >= indexMin && i < indexMax) {
-                    addGlyphQuad(m_vertices, math::Vec3f(x, y, getPosition().z()), Color::White, glyph, italicShear);
+                    addGlyphQuad(m_vertices, math::Vec3f(x, y, getPosition().z()+10), Color::White, glyph, italicShear);
                     addGlyphQuad(m_backgroundVertices, math::Vec3f(x, y, getPosition().z()), Color::Blue, glyph, italicShear);
                 } else {
                     // Add the glyph to the vertices
-                    addGlyphQuad(m_vertices, math::Vec3f(x, y, getPosition().z()), m_fillColor, glyph, italicShear);
+                    addGlyphQuad(m_vertices, math::Vec3f(x, y, getPosition().z()+10), m_fillColor, glyph, italicShear);
                     addGlyphQuad(m_backgroundVertices, math::Vec3f(x, y, getPosition().z()), m_backgroundColor, glyph, italicShear);
                 }
 

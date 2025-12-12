@@ -1040,6 +1040,13 @@ namespace odfaeg {
                 vkDestroyImage(vkDevice.getDevice(), textureImage, nullptr);
                 vkFreeMemory(vkDevice.getDevice(), textureImageMemory, nullptr);
             }
+            std::vector<Texture*>::iterator it;
+            for (it = allTextures.begin(); it != allTextures.end();) {
+                if (*it == this)
+                    it = allTextures.erase(it);
+                else
+                    it++;
+            }
         }
         #else // VULKAN
         unsigned int Texture::nbTextures = 0;
