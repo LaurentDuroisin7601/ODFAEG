@@ -61,8 +61,8 @@ namespace odfaeg {
                     node->components[i]->setVisible(true);
                     node->components[i]->setEventContextActivated(true);
                 }
-                /*if (node->isNodeVisible())
-                    node->showAllNodes();*/
+                if (node->isNodeVisible())
+                    node->showAllNodes();
             }
             void Node::findNodePos (Node* node, math::Vec2f& nodeRelPos) {
                 for (unsigned int i = 0; i < nodes.size(); i++) {
@@ -91,7 +91,7 @@ namespace odfaeg {
                     node->components[i]->setVisible(false);
                     node->components[i]->setEventContextActivated(false);
                 }
-                //node->hideAllNodes();
+                node->hideAllNodes();
             }
             void Node::displaceNodes(Node* selectedNode, math::Vec2f& nodeRelPos) {
                 for (unsigned int i = 0; i < nodes.size(); i++) {

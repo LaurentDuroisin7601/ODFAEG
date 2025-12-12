@@ -3003,7 +3003,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         tScriptEdit->setEventContextActivated(true);
     }
     if (button->getText() == "Create") {
-
+        //std::cout<<"create new project"<<std::endl;
         appliname = ta->getText();
         applitype = dpList->getSelectedItem();
         #if defined (ODFAEG_SYSTEM_LINUX)
