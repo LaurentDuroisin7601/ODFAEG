@@ -1540,7 +1540,7 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
             } else {
                 for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
                     if (getRenderComponentManager().getRenderComponent(i) != nullptr && getRenderComponentManager().getRenderComponent(i)->getName() == dpSelectComponent->getSelectedItem()) {
-                        if(getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->getView().isOrtho()) {
+                        if(getRenderComponentManager().getRenderComponent(i)->getView().isOrtho()) {
                             orig = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(orig.x(), /*getRenderWindow().getSize().y() -*/ orig.y(), orig.z()))+halfWSize;
                             ext = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(ext.x(), /*getRenderWindow().getSize().y() -*/ ext.y(), ext.z()))+halfWSize;
                         } else {
@@ -2417,7 +2417,7 @@ void ODFAEGCreator::onExec() {
                         getRenderComponentManager().addComponent(ppll);
                         dpSelectComponent->addItem(name, 15);
                         dpSelectComponent->setSelectedItem(name);
-                        selectedComponentView = ppll->getFrameBuffer()->getView();
+                        selectedComponentView = ppll->getView();
                         std::cout<<"set text : "<<expression<<std::endl;
                         taChangeComponentExpression->setText(expression);
                     }
@@ -2433,7 +2433,7 @@ void ODFAEGCreator::onExec() {
                         getRenderComponentManager().addComponent(ppll);
                         dpSelectComponent->addItem(name, 15);
                         dpSelectComponent->setSelectedItem(name);
-                        selectedComponentView = ppll->getFrameBuffer()->getView();
+                        selectedComponentView = ppll->getView();
                         taChangeComponentExpression->setText(expression);
                     }
                     if (type == "ReflectRefract") {
@@ -2448,7 +2448,7 @@ void ODFAEGCreator::onExec() {
                         getRenderComponentManager().addComponent(ppll);
                         dpSelectComponent->addItem(name, 15);
                         dpSelectComponent->setSelectedItem(name);
-                        selectedComponentView = ppll->getFrameBuffer()->getView();
+                        selectedComponentView = ppll->getView();
                         taChangeComponentExpression->setText(expression);
                     }
                     if (type == "Light") {
@@ -2463,7 +2463,7 @@ void ODFAEGCreator::onExec() {
                         getRenderComponentManager().addComponent(ppll);
                         dpSelectComponent->addItem(name, 15);
                         dpSelectComponent->setSelectedItem(name);
-                        selectedComponentView = ppll->getFrameBuffer()->getView();
+                        selectedComponentView = ppll->getView();
                         taChangeComponentExpression->setText(expression);
                     }
                 }

@@ -5644,6 +5644,9 @@ namespace odfaeg {
         int PerPixelLinkedListRenderComponent::getLayer() {
             return getPosition().z();
         }
+        RenderTexture* PerPixelLinkedListRenderComponent::getFrameBuffer() {
+            return &frameBuffer;
+        }
         PerPixelLinkedListRenderComponent::~PerPixelLinkedListRenderComponent() {
             //////std::cout<<"ppll destructor"<<std::endl;
             for (unsigned int i = 0; i < events.size(); i++) {

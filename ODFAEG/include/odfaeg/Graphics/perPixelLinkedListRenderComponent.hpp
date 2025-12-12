@@ -89,6 +89,7 @@ namespace odfaeg {
             * \return the number of the layer.
             */
             int getLayer();
+            RenderTexture* getFrameBuffer();
             virtual ~PerPixelLinkedListRenderComponent();
             private :
             GLMatrix4f toVulkanMatrix(const math::Matrix4f& mat) {
