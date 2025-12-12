@@ -258,7 +258,9 @@ namespace odfaeg {
 
                 }
                 /*#ifdef VULKAN
-                if (scrollX || scrollY)
+                if (!scrollX && !scrollY)
+                    target.beginRecordCommandBuffers();
+                //if (scrollX || scrollY)
                     target.submit(false);
                 #endif // VULKAN*/
 

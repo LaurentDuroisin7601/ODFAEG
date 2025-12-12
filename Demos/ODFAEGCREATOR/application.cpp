@@ -847,7 +847,7 @@ void ODFAEGCreator::onInit() {
         //system("PAUSE");
         getRenderComponentManager().addComponent(pProjects);
         pScriptsEdit = new Panel(getRenderWindow(), Vec3f(200, 10, 0), Vec3f(800, 700, 0));
-        pScriptsEdit->setRelPosition(1.f / 6.f, 0.015f);
+        pScriptsEdit->setRelPosition(1.f / 6.f, menuBar->getSize().y() / getRenderWindow().getSize().y());
         pScriptsEdit->setRelSize(0.60f, 0.75f);
         pScriptsEdit->setBorderColor(Color(128, 128, 128));
         pScriptsEdit->setBackgroundColor(Color::White);
