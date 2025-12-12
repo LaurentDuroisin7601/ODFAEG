@@ -67,7 +67,7 @@ namespace odfaeg {
                 if (it->second->getComponentType() == 0 && it->second->isVisible()) {
                     for (unsigned int i = 0; i < windows.size(); i++) {
                         if (windows[i] == &it->second->getWindow()) {
-                            windows[i]->enableDepthTest(false);
+                            it->second->getWindow().enableDepthTest(false);
                             //std::cout<<"draw on window : "<<it->second->getPosition().z()<<std::endl;
                             it->second->getWindow().draw(*it->second.get());
                             //std::cout<<"drawed on window : "<<i<<std::endl;
@@ -87,8 +87,8 @@ namespace odfaeg {
                 if (it->second->getComponentType() == 1 && it->second->isVisible()) {
                     for (unsigned int i = 0; i < windows.size(); i++) {
                         if (windows[i] == &it->second->getWindow()) {
-                            windows[i]->enableDepthTest(true);
-                            windows[i]->clearDepth();
+                            it->second->getWindow().enableDepthTest(true);
+                            it->second->getWindow().clearDepth();
                             View view = it->second->getWindow().getView();
                             View defaultView = it->second->getWindow().getDefaultView();
                             defaultView.setCenter(math::Vec3f(it->second->getWindow().getSize().x() * 0.5f, it->second->getWindow().getSize().y() * 0.5f, 0));

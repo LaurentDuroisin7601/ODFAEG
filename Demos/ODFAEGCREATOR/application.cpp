@@ -3033,7 +3033,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         FontManager<Fonts>& fm = cache.resourceManager<Font, Fonts>("FontManager");
         wApplicationNew->setVisible(false);
         getRenderComponentManager().setEventContextActivated(false, *wApplicationNew);
-        tScriptEdit->setEventContextActivated(true);
+
         Label* lab = new Label(getRenderWindow(),Vec3f(0,0,0),Vec3f(200, 17, 0),fm.getResourceByAlias(Fonts::Serif),appliname, 15);
         Node* node = new Node("test",lab,Vec2f(0, 0),Vec2f(1.f, 0.025f),rootNode.get());
         lab->setParent(pProjects);
@@ -3185,6 +3185,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
             world->projectName = appliname;
             worlds.push_back(std::move(world));
             setCurrentWorld(worlds.back().get());
+            tScriptEdit->setEventContextActivated(true);
         }
     }
     if (button->getText() == "New texture") {
@@ -3873,7 +3874,7 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
         getRenderComponentManager().setEventContextActivated(true, *wApplicationNew);
         tScriptEdit->setEventContextActivated(false);
     }
-    if (item->getText() == "Build") {
+    else if (item->getText() == "Build") {
         std::string command = "clang++-3.6 -Wall -std=c++14 -g "+appliname+"/"+"*.cpp -o "+appliname+"/"+minAppliname+".out "
         "/usr/local/lib/libodfaeg-network-s-d.a /usr/local/lib/libodfaeg-audio-s-d.a /usr/local/lib/libodfaeg-graphics-s-d.a "
         "/usr/local/lib/libodfaeg-physics-s-d.a /usr/local/lib/libodfaeg-math-s-d.a /usr/local/lib/libodfaeg-core-s-d.a "
@@ -3882,11 +3883,11 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
         "-lGL -lssl -lcrypto /usr/lib/x86_64-linux-gnu/libSDL2.so 2> errors.err";
         std::system(command.c_str());
     }
-    if (item->getText() == "Run") {
+    else if (item->getText() == "Run") {
         std::string command = std::string("./"+appliname+"/"+minAppliname+".out");
         std::system(command.c_str());
     }
-    if (item->getText() == "Build and run") {
+    else if (item->getText() == "Build and run") {
         std::string command = "clang++-3.6 -Wall -std=c++14 -g "+appliname+"/"+"*.cpp -o "+appliname+"/"+minAppliname+".out "
         "/usr/local/lib/libodfaeg-network-s-d.a /usr/local/lib/libodfaeg-audio-s-d.a /usr/local/lib/libodfaeg-graphics-s-d.a "
         "/usr/local/lib/libodfaeg-physics-s-d.a /usr/local/lib/libodfaeg-math-s-d.a /usr/local/lib/libodfaeg-core-s-d.a "
@@ -3898,7 +3899,7 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
         std::system(command.c_str());
     }
 
-    if (item->getText() == "Tile") {
+    else if (item->getText() == "Tile") {
         if (appliname != "" && getWorld()->getCurrentSceneManager() != nullptr) {
             if (!showRectSelect) {
                 Vec3f position = getRenderWindow().mapPixelToCoords(Vec3f(cursor.getPosition().x(), getRenderWindow().getSize().y() - cursor.getPosition().y(), 0))+getRenderWindow().getView().getSize()*0.5f;
@@ -3961,7 +3962,7 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
             }
         }
     }
-    if(item->getText() == "Decor") {
+    else if(item->getText() == "Decor") {
         if (appliname != "" && getWorld()->getCurrentSceneManager() != nullptr) {
             if (!showRectSelect) {
                 Decor* decor = factory.make_entity<Decor>(factory);
@@ -3993,7 +3994,7 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
             }
         }
     }
-    if (item->getText() == "Wall") {
+    else if (item->getText() == "Wall") {
          if (appliname != "" && getWorld()->getCurrentSceneManager() != nullptr) {
             if (!showRectSelect) {
                 Wall* wall = factory.make_entity<Wall>(factory);
@@ -4024,7 +4025,7 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
             }
         }
     }
-    if (item->getText() == "Animation") {
+    else if (item->getText() == "Animation") {
         if (appliname != "" && getWorld()->getCurrentSceneManager() != nullptr) {
             if (!showRectSelect) {
                 Anim* anim = factory.make_entity<Anim>(factory);
@@ -4055,7 +4056,7 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
             }
         }
     }
-    if (item->getText() == "Particle System") {
+    else if (item->getText() == "Particle System") {
         if (appliname != "" && getWorld()->getCurrentSceneManager() != nullptr) {
             if (!showRectSelect) {
                 ParticleSystem* ps = factory.make_entity<ParticleSystem>(getDevice(), Vec3f(0, 0, 0),Vec3f(100, 100, 0), factory);
@@ -4066,15 +4067,15 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
             }
         }
     }
-    if (item->getText() == "Emitter") {
+    else if (item->getText() == "Emitter") {
         wNewEmitter->setVisible(true);
         getRenderComponentManager().setEventContextActivated(true, *wNewEmitter);
         tScriptEdit->setEventContextActivated(false);
     }
-    if (item->getText() == "Affector") {
+    else if (item->getText() == "Affector") {
         //wNewAffector->setVisbile(true);
     }
-    if (item->getText() == "Ponctual Light") {
+    else if (item->getText() == "Ponctual Light") {
         if (appliname != "" && getWorld()->getCurrentSceneManager() != nullptr) {
             if (!showRectSelect) {
                 PonctualLight* pl = factory.make_entity<PonctualLight>(Vec3f(-50, 420, 420), 100, 50, 0, 255, Color::Yellow, 16, factory);
@@ -4084,13 +4085,13 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
             }
         }
     }
-    if (item->getText() == "Undo") {
+    else if (item->getText() == "Undo") {
         stateStack.undo();
     }
-    if (item->getText() == "Redo") {
+    else if (item->getText() == "Redo") {
         stateStack.redo();
     }
-    if (item == item43) {
+    else if (item == item43) {
         showGrid = !showGrid;
         if (showGrid) {
             item43->setText("v Show grid");
@@ -4098,7 +4099,7 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
             item43->setText("Show grid");
         }
     }
-    if (item == item44) {
+    else if (item == item44) {
         alignToGrid = !alignToGrid;
         if (alignToGrid) {
             item44->setText("v Align to grid");
@@ -4106,7 +4107,7 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
             item44->setText("Align to grid");
         }
     }
-    if (item == item45) {
+    else if (item == item45) {
         showRectSelect = !showRectSelect;
         if (showRectSelect) {
             item45->setText("v Rect selection");
@@ -4114,36 +4115,36 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
             item45->setText("Rect selection");
         }
     }
-    if (item->getText() == "New scene") {
+    else if (item->getText() == "New scene") {
         wNewMap->setVisible(true);
         getRenderComponentManager().setEventContextActivated(true, *wNewMap);
         setEventContextActivated(false);
     }
-    if (item->getText() == "New component") {
+    else if (item->getText() == "New component") {
         wNewComponent->setVisible(true);
         getRenderComponentManager().setEventContextActivated(true, *wNewComponent);
         tScriptEdit->setEventContextActivated(false);
     }
-    if (item->getText() == "New entities updater") {
+    else if (item->getText() == "New entities updater") {
         wNewEntitiesUpdater->setVisible(true);
         getRenderComponentManager().setEventContextActivated(true, *wNewEntitiesUpdater);
         tScriptEdit->setEventContextActivated(false);
     }
-    if (item->getText() == "3D Model") {
+    else if (item->getText() == "3D Model") {
         fdImport3DModel->setVisible(true);
         fdImport3DModel->setEventContextActivated(true);
     }
-    if (item == item15) {
+    else if (item == item15) {
         fdProjectPath->setVisible(true);
         fdProjectPath->setEventContextActivated(true);
         tScriptEdit->setEventContextActivated(false);
     }
-    if (item == item16) {
+    else if (item == item16) {
         wNewAnimUpdater->setVisible(true);
         getRenderComponentManager().setEventContextActivated(true, *wNewAnimUpdater);
         tScriptEdit->setEventContextActivated(false);
     }
-    if (item == item17) {
+    else if (item == item17) {
         //Save textures.
         TextureManager<>& tm = cache.resourceManager<Texture, std::string>("TextureManager");
         std::vector<std::string> paths = tm.getPaths();
@@ -4292,23 +4293,23 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
         oa8(currentBp);
         file9.close();
      }
-     if (item == item18) {
+     else if (item == item18) {
         wNewParticleSystemUpdater->setVisible(true);
         getRenderComponentManager().setEventContextActivated(true, *wNewParticleSystemUpdater);
         tScriptEdit->setEventContextActivated(false);
      }
-     if (item == item51) {
+     else if (item == item51) {
         wCreateNewObject->setVisible(true);
         getRenderComponentManager().setEventContextActivated(true, *wCreateNewObject);
         std::cout<<"desactive context"<<std::endl;
         setEventContextActivated(false);
      }
-     if (item == item52) {
+     else if (item == item52) {
         wModifyObject->setVisible(true);
         getRenderComponentManager().setEventContextActivated(true, *wModifyObject);
         tScriptEdit->setEventContextActivated(false);
      }
-     if (item == item46) {
+     else if (item == item46) {
         for (unsigned int i = 0; i < ground.size(); i++)
             if (ground[i] != nullptr)
                 delete ground[i];
@@ -4322,7 +4323,7 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
         getRenderComponentManager().setEventContextActivated(true, *wGenerateTerrain);
         getRenderComponentManager().setEventContextActivated(false, getRenderWindow());
      }
-     if (item == item47) {
+     else if (item == item47) {
         for (unsigned int i = 0; i < ground.size(); i++)
             if (ground[i] != nullptr)
                 delete ground[i];
@@ -4336,7 +4337,7 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
         getRenderComponentManager().setEventContextActivated(true, *wGenerate3DTerrain);
         getRenderComponentManager().setEventContextActivated(false, getRenderWindow());
      }
-     if (item == item61) {
+     else if (item == item61) {
         if (selectedObject != nullptr) {
             BoundingBox globalBounds = selectedObject->getGlobalBounds();
             BoundingVolume* bv = new BoundingBox(globalBounds.getPosition().x(), globalBounds.getPosition().y(), globalBounds.getPosition().z(), globalBounds.getSize().x(), globalBounds.getSize().y(), globalBounds.getSize().z());
@@ -4366,18 +4367,16 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
      } else {
          std::string buffer = tScriptEdit->getText();
          std::string completion = item->getText();
-         if (buffer.size() > 0) {
-             buffer.replace(prefixStart, tScriptEdit->getCharacterIndexAtCursorPos() - prefixStart + 1, completion);
-             tScriptEdit->setText(buffer);
-             tScriptEdit->setCursorPosition(prefixStart+completion.size());
-             floatingMenu.setVisible(false);
-             Vec3f textSize = tScriptEdit->getTextSize();
-             if (textSize.x() > tScriptEdit->getSize().x())
-                tScriptEdit->setSize(Vec3f(textSize.x(), tScriptEdit->getSize().y(), tScriptEdit->getSize().z()));
-             if (textSize.y() > tScriptEdit->getSize().y())
-                tScriptEdit->setSize(Vec3f(tScriptEdit->getSize().x(), textSize.y(), tScriptEdit->getSize().z()));
-             pScriptsEdit->updateScrolls();
-         }
+         buffer.replace(prefixStart, tScriptEdit->getCharacterIndexAtCursorPos() - prefixStart + 1, completion);
+         tScriptEdit->setText(buffer);
+         tScriptEdit->setCursorPosition(prefixStart+completion.size());
+         floatingMenu.setVisible(false);
+         Vec3f textSize = tScriptEdit->getTextSize();
+         if (textSize.x() > tScriptEdit->getSize().x())
+            tScriptEdit->setSize(Vec3f(textSize.x(), tScriptEdit->getSize().y(), tScriptEdit->getSize().z()));
+         if (textSize.y() > tScriptEdit->getSize().y())
+            tScriptEdit->setSize(Vec3f(tScriptEdit->getSize().x(), textSize.y(), tScriptEdit->getSize().z()));
+         pScriptsEdit->updateScrolls();
      }
 }
 /*void ODFAEGCreator::addShape(Shape *shape) {
