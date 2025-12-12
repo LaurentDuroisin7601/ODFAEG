@@ -155,9 +155,11 @@ namespace odfaeg {
                     target.draw(va);
                 }
                 #ifdef VULKAN
-                if (haveFocus) {
-                    target.submit(false);
-                }
+                if (!haveFocus)
+                    target.beginRecordCommandBuffers();
+                //if (haveFocus) {
+                target.submit(false);
+                //}
                 #endif // VULKAN
 
             }

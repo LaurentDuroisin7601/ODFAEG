@@ -3870,9 +3870,10 @@ std::map<std::string, std::vector<Entity*>>& ODFAEGCreator::getExternals() {
 void ODFAEGCreator::actionPerformed(MenuItem* item) {
     if (item->getText() == "New application") {
         std::cout<<"new application"<<std::endl;
+        tScriptEdit->setEventContextActivated(false);
         wApplicationNew->setVisible(true);
         getRenderComponentManager().setEventContextActivated(true, *wApplicationNew);
-        tScriptEdit->setEventContextActivated(false);
+
     }
     else if (item->getText() == "Build") {
         std::string command = "clang++-3.6 -Wall -std=c++14 -g "+appliname+"/"+"*.cpp -o "+appliname+"/"+minAppliname+".out "
