@@ -176,6 +176,8 @@ namespace odfaeg {
              for (unsigned int i = 0; i < scissors.size(); i++) {
                 scissors[i].offset = {0, 0};
                 scissors[i].extent = getSwapchainExtents();
+             }
+             for (unsigned int i = 0; i < viewports.size(); i++) {
                 viewports[i].x = m_view.getViewport().getPosition().x();
                 viewports[i].y = m_view.getViewport().getPosition().y();
                 viewports[i].width = m_view.getViewport().getSize().x();
@@ -1032,7 +1034,14 @@ namespace odfaeg {
         }
 
         void RenderTarget::applyViewportAndScissor(VkCommandBuffer cmd) {
-
+            for (unsigned int i = 0; i < viewports.size(); i++) {
+                viewports[i].x = m_view.getViewport().getPosition().x();
+                viewports[i].y = m_view.getViewport().getPosition().y();
+                viewports[i].width = m_view.getViewport().getSize().x();
+                viewports[i].height = m_view.getViewport().getSize().y();
+                viewports[i].minDepth = 0.0f;
+                viewports[i].maxDepth = 1.0f;
+            }
             ////////std::cout<<(m_view.getViewport().getSize().x == 800 && m_view.getViewport().getSize().y == 800)<<std::endl;
             vkCmdSetViewport(cmd, 0, viewports.size(), viewports.data());
 

@@ -111,8 +111,8 @@ namespace odfaeg {
             }
             void TextArea::onDraw(RenderTarget& target, RenderStates states) {
                 VertexArray va(Lines);
-                va.append(Vertex(math::Vec3f(cursorPos.x(), cursorPos.y(), getPosition().z()+200), Color::Black));
-                va.append(Vertex(math::Vec3f(cursorPos.x(), cursorPos.y() + text.getCharacterSize(), getPosition().z()+200), Color::Black));
+                va.append(Vertex(math::Vec3f(cursorPos.x(), cursorPos.y(), getPosition().z()+300), Color::Black));
+                va.append(Vertex(math::Vec3f(cursorPos.x(), cursorPos.y() + text.getCharacterSize(), getPosition().z()+300), Color::Black));
                 rect.setPosition(getPosition());
                 text.setPosition(math::Vec3f(getPosition().x() + scrollX, getPosition().y() + scrollY, getPosition().z()+100));
 
@@ -125,7 +125,9 @@ namespace odfaeg {
                 #ifdef VULKAN
                 target.submit(false);
                 if (getParent() != nullptr) {
+
                     target.getScissors()[1].offset = {(getPosition().x() < getParent()->getPosition().x()) ? getParent()->getPosition().x() : getPosition().x(), (getPosition().y() < getParent()->getPosition().y()) ? getParent()->getPosition().y() : getPosition().y()};
+                    //std::cout<<"offsets : "<<target.getScissors()[1].offset.x<<","<<target.getScissors()[1].offset.y<<std::endl;
                     target.getScissors()[1].extent = {(getSize().x() > getParent()->getSize().x()) ? getParent()->getSize().x() : getSize().x(), (getSize().y() > getParent()->getSize().y()) ? getParent()->getSize().y() : getSize().y()};
                 } else {
                     target.getScissors()[1].offset = {getPosition().x(), getPosition().y()};

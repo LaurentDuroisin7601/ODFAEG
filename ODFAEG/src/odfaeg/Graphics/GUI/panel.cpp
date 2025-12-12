@@ -114,8 +114,7 @@ namespace odfaeg {
                 float dy = deltas.y();
                 float vScrollX = (vertScrollBar.getPosition().x() == 0) ? getPosition().x() : vertScrollBar.getPosition().x();
                 float hScrollY = (horScrollBar.getPosition().y() == 0) ? getPosition().y() : horScrollBar.getPosition().y();
-                float hPScrollY = (maxSize.y() == 0) ? 0 : dy / (maxSize.y() - horScrollBar.getSize().y());
-                std::cout<<hPScrollY<<std::endl;
+
                 maxSize = math::Vec3f(0, 0, 0);
 
                 for (unsigned int i = 0; i < children.size(); i++) {
@@ -157,7 +156,7 @@ namespace odfaeg {
 
                 if (maxSize.y() > getSize().y()) {
                     unsigned int scrollYSize = (getSize().y() - 10) / maxSize.y() * (getSize().y() - 10);
-                    //hScrollY = getPosition().y() + scrollYSize * hPScrollY;
+
                     horScrollBar = RectangleShape(math::Vec3f(10, scrollYSize, 0));
                     horScrollBar.setPosition(math::Vec3f(getPosition().x() + getSize().x() - 10 - rect.getOutlineThickness(), hScrollY, getPosition().z()+200));
                     scrollY = true;
@@ -226,7 +225,7 @@ namespace odfaeg {
                 target.draw(rect, states);
                 #ifdef VULKAN
                 target.submit(false);
-                target.getScissors()[0].offset = {getPosition().x(), getPosition().y() };
+                target.getScissors()[0].offset = {getPosition().x(), getPosition().y()};
                 target.getScissors()[0].extent = {getSize().x(), getSize().y()};
                 #endif
                 for (unsigned int i = 0; i < sprites.size(); i++) {
