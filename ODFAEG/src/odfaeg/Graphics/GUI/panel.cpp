@@ -226,6 +226,7 @@ namespace odfaeg {
                 #ifdef VULKAN
                 target.submit(false);
                 target.getScissors()[0].offset = {getPosition().x(), getPosition().y()};
+                //std::cout<<"offsets : "<<target.getScissors()[0].offset.x<<","<<target.getScissors()[0].offset.y<<std::endl;
                 target.getScissors()[0].extent = {getSize().x(), getSize().y()};
                 #endif
                 for (unsigned int i = 0; i < sprites.size(); i++) {
