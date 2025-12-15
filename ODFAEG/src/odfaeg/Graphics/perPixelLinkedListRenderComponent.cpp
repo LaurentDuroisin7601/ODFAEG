@@ -559,6 +559,7 @@ namespace odfaeg {
             cv.notify_all();
             cv2.notify_all();
             getListener().stop();
+            areThreadRelaunched = true;
         }
         void PerPixelLinkedListRenderComponent::loadSkybox(Entity* skybox) {
             this->skybox = skybox;
@@ -4957,6 +4958,7 @@ namespace odfaeg {
 
             for (unsigned int p = 0; p < (Batcher::nbPrimitiveTypes - 1); p++)
                 needToUpdateDSs[p][currentFrame] = false;
+            areThreadRelaunched = false;
         }
         void PerPixelLinkedListRenderComponent::createCommandBuffersIndirect(unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, PPLLDepthStencilID depthStencilID, RenderStates currentStates) {
             //////std::cout<<"draw indirect"<<std::endl;
@@ -5266,7 +5268,7 @@ namespace odfaeg {
             return view;
         }
         void PerPixelLinkedListRenderComponent::draw(RenderTarget& target, RenderStates states) {
-            if (useThread) {
+            if (useThread && !areThreadRelaunched) {
                 std::unique_lock<std::mutex> lock(mtx);
                 std::unique_lock<std::mutex> lock2(mtx2);
                 cv.wait(lock, [this] { return commandBufferReady[frameBuffer.getCurrentFrame()].load() || stop.load(); });

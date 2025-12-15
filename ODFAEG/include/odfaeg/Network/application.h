@@ -186,9 +186,7 @@ namespace odfaeg {
                     }
                     static_cast<A*>(this)->onRender(componentManager.get());
                     componentManager->clearComponents();
-                    if (eventContextActivated) {
-                       listener->processEvents();
-                    }
+
                     //componentManager->updateComponents();
                     componentManager->drawRenderComponents();
                     ////std::cout<<"render components drawn"<<std::endl;
@@ -240,6 +238,9 @@ namespace odfaeg {
                             }
                             static_cast<A*>(this)->onUpdate(it->first, it->second);
                         }
+                    }
+                    if (eventContextActivated) {
+                       listener->processEvents();
                     }
                     componentManager->updateComponents();
                 }

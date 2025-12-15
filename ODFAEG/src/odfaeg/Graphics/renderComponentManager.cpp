@@ -182,6 +182,8 @@ namespace odfaeg {
                 if (it->second->getListener().isRunning()) {
                     it->second->stopRenderer();
                 }
+            }
+            for (it = components.begin(); it != components.end(); it++) {
                 it->second->createDescriptorsAndPipelines();
                 it->second->launchRenderer();
             }
