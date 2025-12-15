@@ -559,7 +559,82 @@ namespace odfaeg {
             cv.notify_all();
             cv2.notify_all();
             getListener().stop();
-            areThreadRelaunched = true;
+            unsigned int currentFrame = frameBuffer.getCurrentFrame();
+            VkCommandBufferInheritanceInfo inheritanceInfo{};
+
+            VkCommandBufferBeginInfo beginInfo{};
+
+            if (skybox != nullptr) {
+                inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+                inheritanceInfo.renderPass = frameBuffer.getRenderPass(1);
+                inheritanceInfo.framebuffer = VK_NULL_HANDLE;
+                beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+                beginInfo.pInheritanceInfo = &inheritanceInfo;
+                beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT | VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+                vkResetCommandBuffer(skyboxCommandBuffer[currentFrame], 0);
+                if (vkBeginCommandBuffer(skyboxCommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
+
+                    throw core::Erreur(0, "failed to begin recording command buffer!", 1);
+                }
+                if (vkEndCommandBuffer(skyboxCommandBuffer[currentFrame]) != VK_SUCCESS) {
+                    throw core::Erreur(0, "failed to record command buffer!", 1);
+                }
+            }
+            inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+            inheritanceInfo.renderPass = frameBuffer.getRenderPass(1);
+            inheritanceInfo.framebuffer = VK_NULL_HANDLE;
+            beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+            beginInfo.pInheritanceInfo = &inheritanceInfo;
+            beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT | VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+            vkResetCommandBuffer(ppllCommandBuffer[currentFrame], 0);
+            if (vkBeginCommandBuffer(ppllCommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
+
+                throw core::Erreur(0, "failed to begin recording command buffer!", 1);
+            }
+            if (vkEndCommandBuffer(ppllCommandBuffer[currentFrame]) != VK_SUCCESS) {
+                throw core::Erreur(0, "failed to record command buffer!", 1);
+            }
+            inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+            inheritanceInfo.renderPass = frameBuffer.getRenderPass(1);
+            inheritanceInfo.framebuffer = VK_NULL_HANDLE;
+            beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+            beginInfo.pInheritanceInfo = &inheritanceInfo;
+            beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT | VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+            vkResetCommandBuffer(ppllSelectedCommandBuffer[currentFrame], 0);
+            if (vkBeginCommandBuffer(ppllSelectedCommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
+
+                throw core::Erreur(0, "failed to begin recording command buffer!", 1);
+            }
+            if (vkEndCommandBuffer(ppllSelectedCommandBuffer[currentFrame]) != VK_SUCCESS) {
+                throw core::Erreur(0, "failed to record command buffer!", 1);
+            }
+            inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+            inheritanceInfo.renderPass = frameBuffer.getRenderPass(1);
+            inheritanceInfo.framebuffer = VK_NULL_HANDLE;
+            beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+            beginInfo.pInheritanceInfo = &inheritanceInfo;
+            beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT | VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+            vkResetCommandBuffer(ppllOutlineCommandBuffer[currentFrame], 0);
+            if (vkBeginCommandBuffer(ppllOutlineCommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
+
+                throw core::Erreur(0, "failed to begin recording command buffer!", 1);
+            }
+            if (vkEndCommandBuffer(ppllOutlineCommandBuffer[currentFrame]) != VK_SUCCESS) {
+                throw core::Erreur(0, "failed to record command buffer!", 1);
+            }
+            inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+            inheritanceInfo.renderPass = frameBuffer.getRenderPass(1);
+            inheritanceInfo.framebuffer = VK_NULL_HANDLE;
+            beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+            beginInfo.pInheritanceInfo = &inheritanceInfo;
+            beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT | VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+            if (vkBeginCommandBuffer(ppllPass2CommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
+                throw core::Erreur(0, "failed to begin recording command buffer!", 1);
+            }
+            if (vkEndCommandBuffer(ppllPass2CommandBuffer[currentFrame]) != VK_SUCCESS) {
+                throw core::Erreur(0, "failed to record command buffer!", 1);
+            }
+
         }
         void PerPixelLinkedListRenderComponent::loadSkybox(Entity* skybox) {
             this->skybox = skybox;
@@ -644,7 +719,8 @@ namespace odfaeg {
             memoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
             memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
             vkCmdPipelineBarrier(frameBuffer.getCommandBuffers()[currentFrame], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
-
+            registerFrameJob[frameBuffer.getCurrentFrame()] = true;
+            cv.notify_one();
 
             ////std::cout<<"cleared"<<std::endl;
         }
@@ -4958,7 +5034,6 @@ namespace odfaeg {
 
             for (unsigned int p = 0; p < (Batcher::nbPrimitiveTypes - 1); p++)
                 needToUpdateDSs[p][currentFrame] = false;
-            areThreadRelaunched = false;
         }
         void PerPixelLinkedListRenderComponent::createCommandBuffersIndirect(unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, PPLLDepthStencilID depthStencilID, RenderStates currentStates) {
             //////std::cout<<"draw indirect"<<std::endl;
@@ -5268,7 +5343,7 @@ namespace odfaeg {
             return view;
         }
         void PerPixelLinkedListRenderComponent::draw(RenderTarget& target, RenderStates states) {
-            if (useThread && !areThreadRelaunched) {
+            if (useThread) {
                 std::unique_lock<std::mutex> lock(mtx);
                 std::unique_lock<std::mutex> lock2(mtx2);
                 cv.wait(lock, [this] { return commandBufferReady[frameBuffer.getCurrentFrame()].load() || stop.load(); });
@@ -5620,8 +5695,7 @@ namespace odfaeg {
             target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
             frameBuffer.display();
             //std::cout<<"next frame"<<std::endl;
-            registerFrameJob[frameBuffer.getCurrentFrame()] = true;
-            cv.notify_one();
+
 
 
             //std::cout<<"submit ok"<<std::endl;
