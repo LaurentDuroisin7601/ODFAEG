@@ -837,6 +837,112 @@ namespace odfaeg {
                 stop = true;
                 cv.notify_all();
                 getListener().stop();
+                unsigned int currentFrame = depthBuffer.getCurrentFrame();
+                VkCommandBufferInheritanceInfo inheritanceInfo{};
+
+                VkCommandBufferBeginInfo beginInfo{};
+
+
+                inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+                inheritanceInfo.renderPass = depthBuffer.getRenderPass(1);
+                inheritanceInfo.framebuffer = VK_NULL_HANDLE;
+                beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+                beginInfo.pInheritanceInfo = &inheritanceInfo;
+                beginInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+                if (vkBeginCommandBuffer(depthBufferCommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
+
+                    throw core::Erreur(0, "failed to begin recording command buffer!", 1);
+                }
+
+                if (vkEndCommandBuffer(depthBufferCommandBuffer[currentFrame]) != VK_SUCCESS) {
+                    throw core::Erreur(0, "failed to record command buffer!", 1);
+                }
+
+
+
+
+                inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+                inheritanceInfo.renderPass = alphaBuffer.getRenderPass(1);
+                inheritanceInfo.framebuffer = VK_NULL_HANDLE;
+
+                beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+                beginInfo.pInheritanceInfo = &inheritanceInfo;
+                beginInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+                if (vkBeginCommandBuffer(alphaBufferCommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
+
+                    throw core::Erreur(0, "failed to begin recording command buffer!", 1);
+                }
+
+                if (vkEndCommandBuffer(alphaBufferCommandBuffer[currentFrame]) != VK_SUCCESS) {
+                    throw core::Erreur(0, "failed to record command buffer!", 1);
+                }
+                if (skybox != nullptr) {
+                    for (unsigned int i = 0; i < nbReflRefrEntities; i++) {
+
+                        inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+                        inheritanceInfo.renderPass = environmentMap.getRenderPass(1);
+                        inheritanceInfo.framebuffer = VK_NULL_HANDLE;
+                        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+                        beginInfo.pInheritanceInfo = &inheritanceInfo;
+                        beginInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+                        vkResetCommandBuffer(skyboxCommandBuffer[i][currentFrame], 0);
+                        if (vkBeginCommandBuffer(skyboxCommandBuffer[i][currentFrame], &beginInfo) != VK_SUCCESS) {
+                            throw core::Erreur(0, "failed to begin recording command buffer!", 1);
+                        }
+                        if (vkEndCommandBuffer(skyboxCommandBuffer[i][currentFrame]) != VK_SUCCESS) {
+                            throw core::Erreur(0, "failed to record command buffer!", 1);
+                        }
+
+                    }
+                }
+                for (unsigned int i = 0; i < nbReflRefrEntities; i++) {
+
+                    inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+                    inheritanceInfo.renderPass = environmentMap.getRenderPass(1);
+                    inheritanceInfo.framebuffer = VK_NULL_HANDLE;
+
+                    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+                    beginInfo.pInheritanceInfo = &inheritanceInfo;
+                    beginInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+                    if (vkBeginCommandBuffer(environmentMapCommandBuffer[i][currentFrame], &beginInfo) != VK_SUCCESS) {
+                        throw core::Erreur(0, "failed to begin recording command buffer!", 1);
+                    }
+
+                    if (vkEndCommandBuffer(environmentMapCommandBuffer[i][currentFrame]) != VK_SUCCESS) {
+                        throw core::Erreur(0, "failed to record command buffer!", 1);
+                    }
+                }
+                inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+                inheritanceInfo.renderPass = environmentMap.getRenderPass(1);
+                inheritanceInfo.framebuffer = VK_NULL_HANDLE;
+
+                beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+                beginInfo.pInheritanceInfo = &inheritanceInfo;
+                beginInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+                if (vkBeginCommandBuffer(environmentMapPass2CommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
+                    throw core::Erreur(0, "failed to begin recording command buffer!", 1);
+                }
+                if (vkEndCommandBuffer(environmentMapPass2CommandBuffer[currentFrame]) != VK_SUCCESS) {
+                    throw core::Erreur(0, "failed to record command buffer!", 1);
+                }
+                for (unsigned int i = 0; i < nbReflRefrEntities; i++) {
+
+
+                    inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+                    inheritanceInfo.renderPass = reflectRefractTex.getRenderPass(1);
+                    inheritanceInfo.framebuffer = VK_NULL_HANDLE;
+
+                    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+                    beginInfo.pInheritanceInfo = &inheritanceInfo;
+                    beginInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+                    if (vkBeginCommandBuffer(reflectRefractCommandBuffer[i][currentFrame], &beginInfo) != VK_SUCCESS) {
+                        throw core::Erreur(0, "failed to begin recording command buffer!", 1);
+                    }
+
+                    if (vkEndCommandBuffer(reflectRefractCommandBuffer[i][currentFrame]) != VK_SUCCESS) {
+                        throw core::Erreur(0, "failed to record command buffer!", 1);
+                    }
+                }
             }
             VkCommandBuffer ReflectRefractRenderComponent::beginSingleTimeCommands() {
                 VkCommandBufferAllocateInfo allocInfo{};
@@ -3379,6 +3485,8 @@ namespace odfaeg {
                 reflectRefractTex.beginRecordCommandBuffers();
                 const_cast<Texture&>(reflectRefractTex.getTexture(reflectRefractTex.getImageIndex())).toColorAttachmentOptimal(reflectRefractTex.getCommandBuffers()[reflectRefractTex.getCurrentFrame()]);
                 reflectRefractTex.clear(Color::Transparent);
+                registerFrameJob[reflectRefractTex.getCurrentFrame()] = true;
+                cv.notify_one();
             }
             void ReflectRefractRenderComponent::resetBuffers() {
                 for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
@@ -7811,8 +7919,6 @@ namespace odfaeg {
                 environmentMap.display();
                 reflectRefractTex.display();
                 //std::cout<<"job wake up : "<<depthBuffer.getCurrentFrame()<<std::endl;
-                registerFrameJob[depthBuffer.getCurrentFrame()] = true;
-                cv.notify_one();
             }
             std::string ReflectRefractRenderComponent::getExpression() {
                 return expression;

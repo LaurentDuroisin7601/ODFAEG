@@ -669,6 +669,64 @@ namespace odfaeg {
                 stop = true;
                 cv.notify_all();
                 getListener().stop();
+                unsigned int currentFrame = depthBuffer.getCurrentFrame();
+                VkCommandBufferInheritanceInfo inheritanceInfo{};
+
+                VkCommandBufferBeginInfo beginInfo{};
+
+                inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+                inheritanceInfo.renderPass = depthBuffer.getRenderPass(1);
+                inheritanceInfo.framebuffer = VK_NULL_HANDLE;
+                beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+                beginInfo.pInheritanceInfo = &inheritanceInfo;
+                beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT | VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+                vkResetCommandBuffer(depthCommandBuffer[currentFrame], 0);
+                if (vkBeginCommandBuffer(depthCommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
+
+                    throw core::Erreur(0, "failed to begin recording command buffer!", 1);
+                }
+
+
+                if (vkEndCommandBuffer(depthCommandBuffer[currentFrame]) != VK_SUCCESS) {
+                    throw core::Erreur(0, "failed to record command buffer!", 1);
+                }
+
+                inheritanceInfo.renderPass = stencilBuffer.getRenderPass(1);
+                inheritanceInfo.framebuffer = VK_NULL_HANDLE;
+                beginInfo.pInheritanceInfo = &inheritanceInfo;
+                vkResetCommandBuffer(stencilCommandBuffer[currentFrame], 0);
+                if (vkBeginCommandBuffer(stencilCommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
+
+                    throw core::Erreur(0, "failed to begin recording command buffer!", 1);
+                }
+
+                if (vkEndCommandBuffer(stencilCommandBuffer[currentFrame]) != VK_SUCCESS) {
+                    throw core::Erreur(0, "failed to record command buffer!", 1);
+                }
+
+                inheritanceInfo.renderPass = alphaBuffer.getRenderPass(1);
+                inheritanceInfo.framebuffer = VK_NULL_HANDLE;
+                beginInfo.pInheritanceInfo = &inheritanceInfo;
+                vkResetCommandBuffer(alphaCommandBuffer[currentFrame], 0);
+                if (vkBeginCommandBuffer(alphaCommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
+
+                    throw core::Erreur(0, "failed to begin recording command buffer!", 1);
+                }
+                if (vkEndCommandBuffer(alphaCommandBuffer[currentFrame]) != VK_SUCCESS) {
+                    throw core::Erreur(0, "failed to record command buffer!", 1);
+                }
+
+                inheritanceInfo.renderPass = shadowMap.getRenderPass(1);
+                inheritanceInfo.framebuffer = VK_NULL_HANDLE;
+                beginInfo.pInheritanceInfo = &inheritanceInfo;
+                vkResetCommandBuffer(shadowCommandBuffer[currentFrame], 0);
+                if (vkBeginCommandBuffer(shadowCommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
+
+                    throw core::Erreur(0, "failed to begin recording command buffer!", 1);
+                }
+                if (vkEndCommandBuffer(shadowCommandBuffer[currentFrame]) != VK_SUCCESS) {
+                    throw core::Erreur(0, "failed to record command buffer!", 1);
+                }
              }
              unsigned int ShadowRenderComponent::align(unsigned int offset) {
             ////std::cout << "alignment = " << alignment << std::endl;
@@ -4935,6 +4993,8 @@ namespace odfaeg {
                 shadowMap.beginRecordCommandBuffers();
                 const_cast<Texture&>(shadowMap.getTexture(shadowMap.getImageIndex())).toColorAttachmentOptimal(shadowMap.getCommandBuffers()[shadowMap.getCurrentFrame()]);
                 shadowMap.clear(Color::White);
+                registerFrameJob[depthBuffer.getCurrentFrame()] = true;
+                cv.notify_one();
             }
             void ShadowRenderComponent::drawBuffers() {
                unsigned int currentFrame = depthBuffer.getCurrentFrame();
@@ -5519,8 +5579,7 @@ namespace odfaeg {
                 alphaBuffer.display();
                 stencilBuffer.display();
                 shadowMap.display();
-                registerFrameJob[depthBuffer.getCurrentFrame()] = true;
-                cv.notify_one();
+
             }
             void ShadowRenderComponent::loadTextureIndexes() {
             }
