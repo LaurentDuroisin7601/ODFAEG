@@ -31,6 +31,7 @@ namespace odfaeg {
                 core::Command cmd(a, core::FastDelegate<bool> (&DropDownList::isMouseOnTriangle, this), core::FastDelegate<void>(&DropDownList::onTriangleClicked, this));
                 getListener().connect("ITEMSELECTED"+t, cmd);
                 dropDown = valueChanged = false;
+                //getListener().launch();
             }
             bool DropDownList::isValueChanged() {
                 bool b = valueChanged;
@@ -82,7 +83,7 @@ namespace odfaeg {
                 /*if (getName() == "POINTERTYPE")
                     //////std::cout<<"add item : "<<t<<std::endl;*/
                 Label* label = new Label (getWindow(), getPosition(), math::Vec3f(getSize().x() - 50, getSize().y(), 0), font, t, charSize);
-                label->setPosition(math::Vec3f(getPosition().x(), getPosition().y() + getSize().y() * nbItems, 0));
+                label->setPosition(math::Vec3f(getPosition().x(), getPosition().y() + getSize().y() * nbItems, getPosition().z()+150));
                 label->setForegroundColor(Color::Black);
                 items.push_back(label);
                 nbItems++;
@@ -133,7 +134,7 @@ namespace odfaeg {
                     /*if (getName() == "FUNCTION")
                         //////std::cout<<"draw items"<<std::endl;*/
                     for (unsigned int i = 0; i < items.size(); i++) {
-                        items[i]->setPosition(math::Vec3f(getPosition().x(), getPosition().y() + getSize().y() * i, getPosition().z()));
+                        items[i]->setPosition(math::Vec3f(getPosition().x(), getPosition().y() + getSize().y() * i, getPosition().z()+150));
                         items[i]->setSize(math::Vec3f(getSize().x() - 50, getSize().y(), getSize().z()));
                         target.draw(*items[i], states);
                     }
@@ -175,6 +176,7 @@ namespace odfaeg {
                 return dropDown;
             }
             DropDownList::~DropDownList() {
+                //getListener().stop();
                 for (unsigned int i = 0; i < items.size(); i++) {
                     delete items[i];
                 }
