@@ -160,12 +160,10 @@ namespace odfaeg {
                 }
             }
             void DropDownList::processEvents() {
-                if (isEventContextActivated()) {
-                    getListener().processEvents();
-                    for (unsigned int i = 0; i < items.size(); i++) {
-                        if (items[i]->isEventContextActivated()) {
-                            items[i]->processEvents();
-                        }
+                LightComponent::processEvents();
+                for (unsigned int i = 0; i < items.size(); i++) {
+                    if (items[i]->isEventContextActivated()) {
+                        items[i]->processEvents();
                     }
                 }
             }
