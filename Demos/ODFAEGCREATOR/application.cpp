@@ -4125,7 +4125,7 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
     else if (item->getText() == "New scene") {
         wNewMap->setVisible(true);
         getRenderComponentManager().setEventContextActivated(true, *wNewMap);
-        setEventContextActivated(false);
+        tScriptEdit->setEventContextActivated(false);
     }
     else if (item->getText() == "New component") {
         wNewComponent->setVisible(true);
