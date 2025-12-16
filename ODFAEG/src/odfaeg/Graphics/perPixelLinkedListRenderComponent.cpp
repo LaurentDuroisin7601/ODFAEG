@@ -2363,19 +2363,19 @@ namespace odfaeg {
 
                     ////std::cout<<"buffer size : "<<bufferSize<<std::endl<<"max : "<<maxBufferSizeIndexedDrawCommand[p]<<std::endl;
                     if (totalBufferSizeIndexedDrawCommand[p] > maxBufferSizeIndexedDrawCommand[p][currentFrame]) {
-                        for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-                            if (vboIndexedIndirectStagingBufferMT[p][currentFrame] != nullptr) {
-                                    vkDestroyBuffer(vkDevice.getDevice(), vboIndexedIndirectStagingBufferMT[p][currentFrame], nullptr);
-                                    vkFreeMemory(vkDevice.getDevice(), vboIndexedIndirectStagingBufferMemoryMT[p][currentFrame], nullptr);
-                                }
-                                createBuffer(totalBufferSizeIndexedDrawCommand[p], VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, vboIndexedIndirectStagingBufferMT[p][currentFrame], vboIndexedIndirectStagingBufferMemoryMT[p][currentFrame]);
 
-                            if (drawCommandBufferIndexedMT[p][i] != nullptr) {
-                                vkDestroyBuffer(vkDevice.getDevice(),drawCommandBufferIndexedMT[p][currentFrame], nullptr);
-                                vkFreeMemory(vkDevice.getDevice(), drawCommandBufferIndexedMemoryMT[p][currentFrame], nullptr);
+                        if (vboIndexedIndirectStagingBufferMT[p][currentFrame] != nullptr) {
+                                vkDestroyBuffer(vkDevice.getDevice(), vboIndexedIndirectStagingBufferMT[p][currentFrame], nullptr);
+                                vkFreeMemory(vkDevice.getDevice(), vboIndexedIndirectStagingBufferMemoryMT[p][currentFrame], nullptr);
                             }
-                            createBuffer(totalBufferSizeIndexedDrawCommand[p], VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, drawCommandBufferIndexedMT[p][currentFrame], drawCommandBufferIndexedMemoryMT[p][currentFrame]);
+                            createBuffer(totalBufferSizeIndexedDrawCommand[p], VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, vboIndexedIndirectStagingBufferMT[p][currentFrame], vboIndexedIndirectStagingBufferMemoryMT[p][currentFrame]);
+
+                        if (drawCommandBufferIndexedMT[p][currentFrame] != nullptr) {
+                            vkDestroyBuffer(vkDevice.getDevice(),drawCommandBufferIndexedMT[p][currentFrame], nullptr);
+                            vkFreeMemory(vkDevice.getDevice(), drawCommandBufferIndexedMemoryMT[p][currentFrame], nullptr);
                         }
+                        createBuffer(totalBufferSizeIndexedDrawCommand[p], VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, drawCommandBufferIndexedMT[p][currentFrame], drawCommandBufferIndexedMemoryMT[p][currentFrame]);
+
                         maxBufferSizeIndexedDrawCommand[p][currentFrame] = totalBufferSizeIndexedDrawCommand[p];
                     }
 
@@ -2553,7 +2553,7 @@ namespace odfaeg {
                 throw core::Erreur(0, "failed to begin recording command buffer!", 1);
             }
             for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
-                if (nbDrawCommandBuffer[p][0] > 0) {
+                if (nbDrawCommandBuffer[p][1] > 0) {
 
                      VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
 
@@ -2827,7 +2827,7 @@ namespace odfaeg {
                 throw core::Erreur(0, "failed to begin recording command buffer!", 1);
             }
             for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
-                if (nbIndexedDrawCommandBuffer[p][0] > 0) {
+                if (nbIndexedDrawCommandBuffer[p][1] > 0) {
 
                      VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
 
@@ -2894,25 +2894,24 @@ namespace odfaeg {
                     memcpy(data, materialDatas[p].data(), (size_t)bufferSize);
                     vkUnmapMemory(vkDevice.getDevice(), materialDataStagingBufferMemory);*/
 
-                    bufferSize = sizeof(DrawArraysIndirectCommand) * drawArraysIndirectCommands[p].size();
+                    bufferSize = sizeof(DrawElementsIndirectCommand) * drawElementsIndirectCommands[p].size();
 
-                    totalBufferSizeDrawCommand[p] = bufferSize;
+                    totalBufferSizeIndexedDrawCommand[p] = bufferSize;
 
-                    if (totalBufferSizeDrawCommand[p] > maxBufferSizeDrawCommand[p][currentFrame]) {
-                        for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-                            if (vboIndirectStagingBufferMT[p][currentFrame] != nullptr) {
-                                vkDestroyBuffer(vkDevice.getDevice(), vboIndirectStagingBufferMT[p][currentFrame], nullptr);
-                                vkFreeMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemoryMT[p][currentFrame], nullptr);
-                            }
-                            createBuffer(totalBufferSizeDrawCommand[p], VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, vboIndirectStagingBufferMT[p][currentFrame], vboIndirectStagingBufferMemoryMT[p][currentFrame]);
-
-                            if (drawCommandBufferMT[p][currentFrame] != nullptr) {
-                                vkDestroyBuffer(vkDevice.getDevice(),drawCommandBufferMT[p][currentFrame], nullptr);
-                                vkFreeMemory(vkDevice.getDevice(), drawCommandBufferMemoryMT[p][currentFrame], nullptr);
-                            }
-                            createBuffer(totalBufferSizeDrawCommand[p], VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, drawCommandBufferMT[p][currentFrame], drawCommandBufferMemoryMT[p][currentFrame]);
+                    if (totalBufferSizeIndexedDrawCommand[p] > maxBufferSizeIndexedDrawCommand[p][currentFrame]) {
+                        if (vboIndexedIndirectStagingBufferMT[p][currentFrame] != nullptr) {
+                            vkDestroyBuffer(vkDevice.getDevice(), vboIndexedIndirectStagingBufferMT[p][currentFrame], nullptr);
+                            vkFreeMemory(vkDevice.getDevice(), vboIndexedIndirectStagingBufferMemoryMT[p][currentFrame], nullptr);
                         }
-                        maxBufferSizeDrawCommand[p][currentFrame] = totalBufferSizeDrawCommand[p];
+                        createBuffer(totalBufferSizeIndexedDrawCommand[p], VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, vboIndexedIndirectStagingBufferMT[p][currentFrame], vboIndexedIndirectStagingBufferMemoryMT[p][currentFrame]);
+
+                        if (drawCommandBufferIndexedMT[p][currentFrame] != nullptr) {
+                            vkDestroyBuffer(vkDevice.getDevice(),drawCommandBufferIndexedMT[p][currentFrame], nullptr);
+                            vkFreeMemory(vkDevice.getDevice(), drawCommandBufferIndexedMemoryMT[p][currentFrame], nullptr);
+                        }
+                        createBuffer(totalBufferSizeIndexedDrawCommand[p], VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, drawCommandBufferIndexedMT[p][currentFrame], drawCommandBufferIndexedMemoryMT[p][currentFrame]);
+
+                        maxBufferSizeIndexedDrawCommand[p][currentFrame] = totalBufferSizeIndexedDrawCommand[p];
                     }
 
                 }
@@ -3078,7 +3077,7 @@ namespace odfaeg {
                 throw core::Erreur(0, "failed to begin recording command buffer!", 1);
             }
             for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
-                if (nbDrawCommandBuffer[p][0] > 0) {
+                if (nbDrawCommandBuffer[p][2] > 0) {
 
                      VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
 
@@ -3352,7 +3351,7 @@ namespace odfaeg {
             }
 
             for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
-                if (nbIndexedDrawCommandBuffer[p][0] > 0) {
+                if (nbIndexedDrawCommandBuffer[p][2] > 0) {
 
                     VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
 
@@ -3419,25 +3418,25 @@ namespace odfaeg {
                     memcpy(data, materialDatas[p].data(), (size_t)bufferSize);
                     vkUnmapMemory(vkDevice.getDevice(), materialDataStagingBufferMemory);*/
 
-                    bufferSize = sizeof(DrawArraysIndirectCommand) * drawArraysIndirectCommands[p].size();
+                    bufferSize = sizeof(DrawElementsIndirectCommand) * drawElementsIndirectCommands[p].size();
 
-                    totalBufferSizeDrawCommand[p] = bufferSize;
+                    totalBufferSizeIndexedDrawCommand[p] = bufferSize;
 
-                    if (totalBufferSizeDrawCommand[p] > maxBufferSizeDrawCommand[p][currentFrame]) {
-                        for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-                            if (vboIndirectStagingBufferMT[p][currentFrame] != nullptr) {
-                                vkDestroyBuffer(vkDevice.getDevice(), vboIndirectStagingBufferMT[p][currentFrame], nullptr);
-                                vkFreeMemory(vkDevice.getDevice(), vboIndirectStagingBufferMemoryMT[p][currentFrame], nullptr);
-                            }
-                            createBuffer(totalBufferSizeDrawCommand[p], VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, vboIndirectStagingBufferMT[p][currentFrame], vboIndirectStagingBufferMemoryMT[p][currentFrame]);
+                    if (totalBufferSizeIndexedDrawCommand[p] > maxBufferSizeIndexedDrawCommand[p][currentFrame]) {
 
-                            if (drawCommandBufferMT[p][currentFrame] != nullptr) {
-                                vkDestroyBuffer(vkDevice.getDevice(),drawCommandBufferMT[p][currentFrame], nullptr);
-                                vkFreeMemory(vkDevice.getDevice(), drawCommandBufferMemoryMT[p][currentFrame], nullptr);
-                            }
-                            createBuffer(totalBufferSizeDrawCommand[p], VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, drawCommandBufferMT[p][currentFrame], drawCommandBufferMemoryMT[p][currentFrame]);
+                        if (vboIndexedIndirectStagingBufferMT[p][currentFrame] != nullptr) {
+                            vkDestroyBuffer(vkDevice.getDevice(), vboIndexedIndirectStagingBufferMT[p][currentFrame], nullptr);
+                            vkFreeMemory(vkDevice.getDevice(), vboIndexedIndirectStagingBufferMemoryMT[p][currentFrame], nullptr);
                         }
-                        maxBufferSizeDrawCommand[p][currentFrame] = totalBufferSizeDrawCommand[p];
+                        createBuffer(totalBufferSizeIndexedDrawCommand[p], VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, vboIndexedIndirectStagingBufferMT[p][currentFrame], vboIndexedIndirectStagingBufferMemoryMT[p][currentFrame]);
+
+                        if (drawCommandBufferIndexedMT[p][currentFrame] != nullptr) {
+                            vkDestroyBuffer(vkDevice.getDevice(),drawCommandBufferIndexedMT[p][currentFrame], nullptr);
+                            vkFreeMemory(vkDevice.getDevice(), drawCommandBufferIndexedMemoryMT[p][currentFrame], nullptr);
+                        }
+                        createBuffer(totalBufferSizeIndexedDrawCommand[p], VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, drawCommandBufferIndexedMT[p][currentFrame], drawCommandBufferIndexedMemoryMT[p][currentFrame]);
+
+                        maxBufferSizeIndexedDrawCommand[p][currentFrame] = totalBufferSizeIndexedDrawCommand[p];
                     }
 
                 }
