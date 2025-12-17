@@ -2632,8 +2632,9 @@ void ODFAEGCreator::onExec() {
                     }
                 }
             }
-            std::vector<std::string> classes = Class::getClasses(rtc.getIncludeDirs(), appliname+"\\Scripts");
+            std::vector<std::string> classes = Class::getClasses(rtc.getIncludeDirs(), appliname+"\\Scripts", "sorrok");
             for (unsigned int i = 0; i < classes.size(); i++) {
+                std::cout<<"get class : "<<classes[i]<<std::endl;
                 Class cl = Class::getClass(rtc.getIncludeDirs(), classes[i]);
                 if (cl.getNamespace() == "") {
                     dpSelectClass->addItem(classes[i], 15);
@@ -4963,7 +4964,7 @@ void ODFAEGCreator::displayEntityInfos(Entity* tile) {
     pInfos->addChild(lSelectScriptLabel);
     Node* nSelectScript = new Node("SelectScript",lSelectScriptLabel,Vec2f(0, 0),Vec2f(0.25, 0.025),rootInfosNode.get());
     dpSelectScript = new DropDownList(getRenderWindow(),Vec3f(0, 0, 0), Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),"NONE", 15);
-    std::vector<std::string> classes = Class::getClasses(rtc.getIncludeDirs(), appliname+"\\Scripts");
+    std::vector<std::string> classes = Class::getClasses(rtc.getIncludeDirs(), appliname+"\\Scripts", "sorrok");
     for (unsigned int i = 0; i < classes.size(); i++) {
         Class cl = Class::getClass(rtc.getIncludeDirs(), classes[i]);
         bool isMonoBehaviourScript = false;

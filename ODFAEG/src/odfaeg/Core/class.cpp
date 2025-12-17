@@ -8,8 +8,18 @@ namespace odfaeg {
             std::vector<std::string> datas;
             Class& cl;
         };
+        struct Context2 {
+            std::vector<std::string> datas;
+            std::vector<std::string> classes;
+        };
         Class::Class(std::string name, std::string filePath) : name(name), filePath(filePath) {
 
+        }
+        void Class::setName(std::string name) {
+            this->name = name;
+        }
+        void Class::setFilePath(std::string filePath) {
+            this->filePath = filePath;
         }
         std::string Class::getQualifiedNamespace(CXCursor cursor) {
             std::string ns;
@@ -33,9 +43,18 @@ namespace odfaeg {
             CXCursorKind kind = clang_getCursorKind(cursor);
             CXString spelling = clang_getCursorSpelling(cursor);
 
-            std::vector<std::string>* classes = static_cast<std::vector<std::string>*>(client_data);
+            Context2* ctx = static_cast<Context2*>(client_data);
             if (kind == CXCursor_ClassDecl) {
-                classes->push_back(clang_getCString(spelling));
+                std::string ns = getQualifiedNamespace(cursor);
+                if (ctx->datas[0] == "" || ctx->datas[0] == ns) {
+                    bool contains = false;
+                    for (unsigned int i = 0; i < ctx->classes.size() && !contains; i++) {
+                        if (ctx->classes[i] == clang_getCString(spelling))
+                            contains = true;
+                    }
+                    if (!contains)
+                        ctx->classes.push_back(clang_getCString(spelling));
+                }
             }
             clang_disposeString(spelling);
             return CXChildVisit_Recurse; // continue à descendre dans l’AST
@@ -52,7 +71,8 @@ namespace odfaeg {
                     unsigned line, column, offset;
                     clang_getFileLocation(loc, &file, &line, &column, &offset);
                     CXString filename = clang_getFileName(file);
-                    ctx->cl = Class(clang_getCString(spelling), clang_getCString(filename));
+                    ctx->cl.setName(clang_getCString(spelling));
+                    ctx->cl.setFilePath(clang_getCString(filename));
                     ctx->cl.namespc = ns;
                     ctx->datas[0] = ns;
                     clang_disposeString(filename);
@@ -61,13 +81,15 @@ namespace odfaeg {
                 } else {
                     CXCursor parentCursor = clang_getNullCursor(), parent=cursor;
                     while (!clang_Cursor_isNull(parent)) {
-                        parent = clang_getCursorSemanticParent(parent);
                         CXCursorKind kind = clang_getCursorKind(parent);
-                        if (kind == CXCursor_ClassDecl || kind == CXCursor_StructDecl) {
+                        if (kind == CXCursor_ClassDecl || kind == CXCursor_StructDecl
+                            && ctx->datas[0] == getQualifiedNamespace(parent)
+                            && ctx->datas[1] == clang_getCString(clang_getCursorSpelling(parent))) {
                             parentCursor = parent;
                         }
+                        parent = clang_getCursorSemanticParent(parent);
                     }
-                    if (!clang_Cursor_isNull(parentCursor) && ctx->datas[0] == getQualifiedNamespace(parentCursor) && ctx->datas[1] == clang_getCString(clang_getCursorSpelling(parentCursor))) {
+                    if (!clang_Cursor_isNull(parentCursor)) {
 
                         CXSourceLocation loc = clang_getCursorLocation(cursor);
                         CXFile file;
@@ -86,13 +108,15 @@ namespace odfaeg {
             } else if (kind == CXCursor_CXXBaseSpecifier) {
                 CXCursor parentCursor = clang_getNullCursor(), parent=cursor;
                 while (!clang_Cursor_isNull(parent)) {
-                    parent = clang_getCursorSemanticParent(parent);
                     CXCursorKind kind = clang_getCursorKind(parent);
-                    if (kind == CXCursor_ClassDecl || kind == CXCursor_StructDecl) {
+                    if (kind == CXCursor_ClassDecl || kind == CXCursor_StructDecl
+                        && ctx->datas[0] == getQualifiedNamespace(parent)
+                        && ctx->datas[1] == clang_getCString(clang_getCursorSpelling(parent))) {
                         parentCursor = parent;
                     }
+                    parent = clang_getCursorSemanticParent(parent);
                 }
-                if (!clang_Cursor_isNull(parentCursor) && ctx->datas[0] == getQualifiedNamespace(parentCursor) && ctx->datas[1] == clang_getCString(clang_getCursorSpelling(parentCursor))) {
+                if (!clang_Cursor_isNull(parentCursor)) {
                     CXType baseType = clang_getCursorType(cursor);
                     CXString baseName = clang_getTypeSpelling(baseType);
                     std::string ns = getQualifiedNamespace(cursor);
@@ -179,8 +203,9 @@ namespace odfaeg {
             return CXChildVisit_Recurse;
 
         }
-        std::vector<std::string> Class::getClassesFromMemory(std::vector<std::string> includePaths, std::string virtualFile, std::string content) {
-            std::vector<std::string> classes;
+        std::vector<std::string> Class::getClassesFromMemory(std::vector<std::string> includePaths, std::string virtualFile, std::string content, std::string nspc) {
+            Context2 ctx;
+            ctx.datas.push_back(nspc);
             CXIndex index = clang_createIndex(0, 0);
             const char* args[includePaths.size()+1];
             for (unsigned int i = 0; i < includePaths.size(); i++) {
@@ -200,7 +225,7 @@ namespace odfaeg {
                 CXTranslationUnit_None
             );
             CXCursor rootCursor = clang_getTranslationUnitCursor(tu);
-            clang_visitChildren(rootCursor, classesVisitor, &classes);
+            clang_visitChildren(rootCursor, classesVisitor, &ctx);
             //Read header files.
             /*istringstream iss;
             iss.str(content);
@@ -224,18 +249,19 @@ namespace odfaeg {
                     classes.push_back(parts[1]);
                 }
             }*/
-            return classes;
+            return ctx.classes;
         }
 
-        std::vector<std::string> Class::getClasses(std::vector<std::string> includePaths, std::string path) {
-            std::vector<std::string> classes;
+        std::vector<std::string> Class::getClasses(std::vector<std::string> includePaths, std::string path, std::string nspc) {
+            Context2 ctx;
+            ctx.datas.push_back(nspc);
             std::string appiDir;
             if (path.find("C:\\") == std::string::npos)
                 appiDir = path != "" ? getCurrentPath()+"\\"+path : getCurrentPath();
             else
                 appiDir = path;
             std::vector<std::string> files;
-            findFiles(".hpp .h", files, appiDir);
+            findFiles(".cpp .c", files, appiDir);
             for (unsigned int i = 0; i < files.size(); i++) {
                 CXIndex index = clang_createIndex(0, 0);
                 const char* args[includePaths.size()+1];
@@ -251,7 +277,7 @@ namespace odfaeg {
                     CXTranslationUnit_None
                 );
                 CXCursor rootCursor = clang_getTranslationUnitCursor(tu);
-                clang_visitChildren(rootCursor, classesVisitor, &classes);
+                clang_visitChildren(rootCursor, classesVisitor, &ctx);
             }
             //We get the project directory, and concat it with the folder path.
 
@@ -288,9 +314,9 @@ namespace odfaeg {
                     }
                 }
             }*/
-            return classes;
+            return ctx.classes;
         }
-        Class Class::getClassFromMemory(std::vector<std::string> includePaths, std::string virtualFile, std::string name, std::string nspc, std::string content) {
+        Class Class::getClassFromMemory(std::vector<std::string> includePaths, std::string virtualFile, std::string name, std::string content, std::string nspc) {
             std::vector<std::string> datas;
             datas.push_back(nspc);
             datas.push_back(name);
@@ -454,7 +480,7 @@ namespace odfaeg {
                 appiDir = path;
             std::vector<std::string> files;
             //Find headers c++ files in the specified folder's path.
-            findFiles(".hpp .h", files, appiDir);
+            findFiles(".cpp .c", files, appiDir);
             Class cl("", "");
             //browse every header files.
             for (unsigned int i = 0; i < files.size(); i++) {

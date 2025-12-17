@@ -33,8 +33,8 @@ namespace odfaeg {
             *  \param the file path of the folder.
             *  \return the vector of the classes names.
             */
-            static std::vector<std::string> getClasses(std::vector<std::string> includePaths, std::string filePath);
-            static std::vector<std::string> getClassesFromMemory(std::vector<std::string> includePaths, std::string virtualFile, std::string content);
+            static std::vector<std::string> getClasses(std::vector<std::string> includePaths, std::string filePath, std::string namespc="");
+            static std::vector<std::string> getClassesFromMemory(std::vector<std::string> includePaths, std::string virtualFile, std::string content, std::string namespc="");
             /**\fn Class getClass(std::string name, std::string nspc="", std::string path="");
             *  \brief get a class object which contains informations about a c++ class.
             *  \param std::string name : the name of the c++ class.
@@ -43,12 +43,14 @@ namespace odfaeg {
             *  \return Class : class object with informations about the c++ class.
             */
             static Class getClass(std::vector<std::string> includePaths,  std::string name, std::string path="", std::string nspc="");
-            static Class getClassFromMemory(std::vector<std::string> includePaths, std::string virtualFile, std::string name, std::string nspc="", std::string content="");
+            static Class getClassFromMemory(std::vector<std::string> includePaths, std::string virtualFile, std::string name, std::string content="", std::string namespc ="");
+            void setName(std::string name);
             /**\fn std::string getName()
             *  \brief get the class's name.
             *  \return std::string : the class's name.
             */
             std::string getName();
+            void setFilePath(std::string filePath);
             /**\fn std::string getFilePath()
             *  \brief return the file path of the class's header.
             *  \return std::string : the file path of the header's class.
