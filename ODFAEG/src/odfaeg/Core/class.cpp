@@ -1182,7 +1182,23 @@ namespace odfaeg {
             }
         }
         void Class::addMemberFunction(MemberFunction mf) {
-            memberFunctions.push_back(mf);
+            bool contains = false;
+            for (unsigned int i = 0; i < memberFunctions.size() && !contains; i++) {
+                if (memberFunctions[i].getName() == mf.getName() && memberFunctions[i].getArgsTypes().size() == mf.getArgsTypes().size()) {
+                    bool equals = true;
+                    for (unsigned int j = 0; j < memberFunctions[i].getArgsTypes().size() && equals; j++) {
+                        if (memberFunctions[i].getArgsTypes()[j] != mf.getArgsTypes()[j]) {
+                            equals = false;
+                        }
+                    }
+                    if (equals) {
+                        contains = true;
+                    }
+                }
+            }
+            if (!contains) {
+                memberFunctions.push_back(mf);
+            }
         }
         void Class::addMemberVariable(MemberVariable mb) {
             memberVariables.push_back(mb);
