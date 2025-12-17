@@ -63,9 +63,14 @@ namespace odfaeg {
             CXCursorKind kind = clang_getCursorKind(cursor);
             CXString spelling = clang_getCursorSpelling(cursor);
             Context* ctx = static_cast<Context*>(client_data);
+            if (kind == CXCursor_Namespace) {
+                return CXChildVisit_Recurse;
+            }
             if (kind == CXCursor_ClassDecl || kind == CXCursor_StructDecl || kind == CXCursor_EnumDecl) {
                 std::string ns = getQualifiedNamespace(cursor);
                 if ((ctx->datas[0] == "" ||  ctx->datas[0] == ns) && ctx->datas[1] == clang_getCString(spelling)) {
+                    //std::cout<<"infos : "<<ctx->datas[0]<<","<<ctx->datas[1]<<","<<clang_getCString(spelling)<<std::endl;
+
                     CXSourceLocation loc = clang_getCursorLocation(cursor);
                     CXFile file;
                     unsigned line, column, offset;
@@ -104,6 +109,7 @@ namespace odfaeg {
                         clang_disposeString(filename);
                         clang_visitChildren(cursor, classVisitor, &innerCtx);
                     }
+                    return CXChildVisit_Recurse;
                 }
             } else if (kind == CXCursor_CXXBaseSpecifier) {
                 CXCursor parentCursor = clang_getNullCursor(), parent=cursor;
@@ -263,6 +269,7 @@ namespace odfaeg {
             std::vector<std::string> files;
             findFiles(".cpp .c", files, appiDir);
             for (unsigned int i = 0; i < files.size(); i++) {
+                //std::cout<<"get classes : "<<files[i]<<std::endl;
                 CXIndex index = clang_createIndex(0, 0);
                 const char* args[includePaths.size()+1];
                 for (unsigned int i = 0; i < includePaths.size(); i++) {
@@ -278,7 +285,10 @@ namespace odfaeg {
                 );
                 CXCursor rootCursor = clang_getTranslationUnitCursor(tu);
                 clang_visitChildren(rootCursor, classesVisitor, &ctx);
+                clang_disposeTranslationUnit(tu);
+                clang_disposeIndex(index);
             }
+
             //We get the project directory, and concat it with the folder path.
 
             /*std::string appiDir;
@@ -470,9 +480,10 @@ namespace odfaeg {
             return cl;
         }
         Class Class::getClass(std::vector<std::string> includePaths, std::string name, std::string path, std::string nspc) {
-            std::vector<std::string> datas;
-            datas.push_back(nspc);
-            datas.push_back(name);
+            Class cl("", "");
+            Context ctx(cl);
+            ctx.datas.push_back(nspc);
+            ctx.datas.push_back(name);
             std::string appiDir;
             if (path.find("C:\\") == std::string::npos)
                 appiDir = path != "" ? getCurrentPath()+"\\"+path : getCurrentPath();
@@ -481,9 +492,10 @@ namespace odfaeg {
             std::vector<std::string> files;
             //Find headers c++ files in the specified folder's path.
             findFiles(".cpp .c", files, appiDir);
-            Class cl("", "");
+
             //browse every header files.
             for (unsigned int i = 0; i < files.size(); i++) {
+                //std::cout<<"get classes : "<<files[i]<<std::endl;
                 CXIndex index = clang_createIndex(0, 0);
                 const char* args[includePaths.size()+1];
                 for (unsigned int i = 0; i < includePaths.size(); i++) {
@@ -497,12 +509,12 @@ namespace odfaeg {
                     nullptr, 0,              // pas de fichiers précompilés
                     CXTranslationUnit_None
                 );
-
-                Context ctx(cl);
-                ctx.datas = datas;
                 CXCursor rootCursor = clang_getTranslationUnitCursor(tu);
                 clang_visitChildren(rootCursor, classVisitor, &ctx);
+                clang_disposeTranslationUnit(tu);
+                clang_disposeIndex(index);
             }
+
             //If the path is not specified the folder to search c++ classes in is the project's directory.
             /*std::string appiDir;
             if (path.find("C:\\") == std::string::npos)

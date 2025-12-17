@@ -2634,8 +2634,8 @@ void ODFAEGCreator::onExec() {
             }
             std::vector<std::string> classes = Class::getClasses(rtc.getIncludeDirs(), appliname+"\\Scripts", "sorrok");
             for (unsigned int i = 0; i < classes.size(); i++) {
-                std::cout<<"get class : "<<classes[i]<<std::endl;
-                Class cl = Class::getClass(rtc.getIncludeDirs(), classes[i]);
+                //std::cout<<"get class : "<<classes[i]<<std::endl;
+                Class cl = Class::getClass(rtc.getIncludeDirs(), classes[i], appliname+"\\Scripts", "sorrok");
                 if (cl.getNamespace() == "") {
                     dpSelectClass->addItem(classes[i], 15);
                     dpSelectMClass->addItem(classes[i], 15);
@@ -7012,7 +7012,8 @@ void ODFAEGCreator::onSelectedClassChanged(DropDownList* dp) {
         dpSelectPointerType->removeAllItems();
         std::string selectedItem = dp->getSelectedItem();
         std::vector<std::string> parts = split(selectedItem, "::");
-        Class cl = Class::getClass(rtc.getIncludeDirs(), parts[parts.size() - 1]);
+        Class cl = Class::getClass(rtc.getIncludeDirs(), parts[parts.size() - 1],appliname+"\\Scripts","sorrok");
+        std::cout<<"class : "<<parts[parts.size() - 1]<<std::endl<<"found : "<<cl.getName()<<std::endl;
         std::vector<Constructor> constructors = cl.getConstructors();
         dpSelectFunction->addItem("Select function", 15);
         //std::cout<<"size : "<<constructors.size()<<std::endl;
