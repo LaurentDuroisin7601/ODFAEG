@@ -63,7 +63,7 @@ namespace odfaeg {
             CXCursorKind kind = clang_getCursorKind(cursor);
             CXString spelling = clang_getCursorSpelling(cursor);
             Context* ctx = static_cast<Context*>(client_data);
-            if (kind == CXCursor_Namespace) {
+            if (kind == CXCursor_TranslationUnit || kind == CXCursor_Namespace) {
                 return CXChildVisit_Recurse;
             }
             if (kind == CXCursor_ClassDecl || kind == CXCursor_StructDecl || kind == CXCursor_EnumDecl) {
@@ -141,30 +141,48 @@ namespace odfaeg {
                     clang_visitChildren(cursor, classVisitor, &superCtx);
                 }
             } else if (kind == CXCursor_Constructor) {
-                Constructor c(clang_getCString(spelling));
-                clang_visitChildren(cursor, constructorVisitor, &c);
-                ctx->cl.addConstructor(c);
+                CXCursor parentCursor = clang_getCursorSemanticParent(cursor);
+                CXString parentName = clang_getCursorSpelling(parentCursor);
+                std::string parentNs = getQualifiedNamespace(parentCursor);
+                if (ctx->cl.getName() == clang_getCString(parentName) && ctx->cl.namespc == parentNs) {
+                    Constructor c(clang_getCString(spelling));
+                    clang_visitChildren(cursor, constructorVisitor, &c);
+                    ctx->cl.addConstructor(c);
+                }
+                clang_disposeString(parentName);
             } else if (kind == CXCursor_CXXMethod) {
-                // Type de retour
-                CXType funcType = clang_getCursorType(cursor);
-                CXType returnType = clang_getResultType(funcType);
+                CXCursor parentCursor = clang_getCursorSemanticParent(cursor);
+                CXString parentName = clang_getCursorSpelling(parentCursor);
+                std::string parentNs = getQualifiedNamespace(parentCursor);
+                if (ctx->cl.getName() == clang_getCString(parentName) && ctx->cl.namespc == parentNs) {
+                    // Type de retour
+                    CXType funcType = clang_getCursorType(cursor);
+                    CXType returnType = clang_getResultType(funcType);
 
-                CXString typeStr = clang_getTypeSpelling(returnType);
+                    CXString typeStr = clang_getTypeSpelling(returnType);
 
-                MemberFunction m(clang_getCString(typeStr), clang_getCString(spelling));
-                clang_visitChildren(cursor, memberFonctionVisitor, &m);
-                ctx->cl.addMemberFunction(m);
-                clang_disposeString(typeStr);
+                    MemberFunction m(clang_getCString(typeStr), clang_getCString(spelling));
+                    clang_visitChildren(cursor, memberFonctionVisitor, &m);
+                    ctx->cl.addMemberFunction(m);
+                    clang_disposeString(typeStr);
+                }
+                clang_disposeString(parentName);
             } else if (kind == CXCursor_FieldDecl) {
-                CXString fname = clang_getCursorSpelling(cursor);
-                CXType ftype = clang_getCursorType(cursor);
-                CXString typeStr = clang_getTypeSpelling(ftype);
-                MemberVariable mb;
-                mb.setVarName(clang_getCString(fname));
-                mb.setVarType(clang_getCString(typeStr));
-                ctx->cl.addMemberVariable(mb);
-                clang_disposeString(typeStr);
-                clang_disposeString(fname);
+                CXCursor parentCursor = clang_getCursorSemanticParent(cursor);
+                CXString parentName = clang_getCursorSpelling(parentCursor);
+                std::string parentNs = getQualifiedNamespace(parentCursor);
+                if (ctx->cl.getName() == clang_getCString(parentName) && ctx->cl.namespc == parentNs) {
+                    CXString fname = clang_getCursorSpelling(cursor);
+                    CXType ftype = clang_getCursorType(cursor);
+                    CXString typeStr = clang_getTypeSpelling(ftype);
+                    MemberVariable mb;
+                    mb.setVarName(clang_getCString(fname));
+                    mb.setVarType(clang_getCString(typeStr));
+                    ctx->cl.addMemberVariable(mb);
+                    clang_disposeString(typeStr);
+                    clang_disposeString(fname);
+                }
+                clang_disposeString(parentName);
             }
             clang_disposeString(spelling);
             return CXChildVisit_Continue;
@@ -1145,8 +1163,23 @@ namespace odfaeg {
             innerClasses.push_back(innerClass);
         }
         void Class::addConstructor(Constructor c) {
-            std::vector<std::string> argsTypes = c.getArgsTypes();
-            constructors.push_back(c);
+            bool contains = false;
+            for (unsigned int i = 0; i < constructors.size() && !contains; i++) {
+                if (constructors[i].getName() == c.getName() && constructors[i].getArgsTypes().size() == c.getArgsTypes().size()) {
+                    bool equals = true;
+                    for (unsigned int j = 0; j < constructors[i].getArgsTypes().size() && equals; j++) {
+                        if (constructors[i].getArgsTypes()[j] != c.getArgsTypes()[j]) {
+                            equals = false;
+                        }
+                    }
+                    if (equals) {
+                        contains = true;
+                    }
+                }
+            }
+            if (!contains) {
+                constructors.push_back(c);
+            }
         }
         void Class::addMemberFunction(MemberFunction mf) {
             memberFunctions.push_back(mf);
