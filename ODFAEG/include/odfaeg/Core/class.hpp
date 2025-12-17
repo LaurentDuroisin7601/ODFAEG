@@ -148,6 +148,16 @@ namespace odfaeg {
             std::vector<MemberFunction> memberFunctions; /** the member functions. */
             std::vector<MemberVariable> memberVariables;
         };
+        struct Context {
+            Context(Class& cl) : cl(cl) {
+            }
+            std::vector<std::string> datas;
+            Class& cl;
+        };
+        struct Context2 {
+            std::vector<std::string> datas;
+            std::vector<std::string> classes;
+        };
     }
 }
 #endif // ODFAEG_CLASS_HPP

@@ -2,16 +2,7 @@
 namespace odfaeg {
     namespace core {
         using namespace std;
-        struct Context {
-            Context(Class& cl) : cl(cl) {
-            }
-            std::vector<std::string> datas;
-            Class& cl;
-        };
-        struct Context2 {
-            std::vector<std::string> datas;
-            std::vector<std::string> classes;
-        };
+
         Class::Class(std::string name, std::string filePath) : name(name), filePath(filePath) {
 
         }
@@ -84,15 +75,17 @@ namespace odfaeg {
                     clang_visitChildren(cursor, classVisitor, ctx);
 
                 } else {
-                    CXCursor parentCursor = clang_getNullCursor(), parent=cursor;
-                    while (!clang_Cursor_isNull(parent)) {
-                        CXCursorKind kind = clang_getCursorKind(parent);
-                        if (kind == CXCursor_ClassDecl || kind == CXCursor_StructDecl
-                            && ctx->datas[0] == getQualifiedNamespace(parent)
-                            && ctx->datas[1] == clang_getCString(clang_getCursorSpelling(parent))) {
-                            parentCursor = parent;
+                    CXCursor parentCursor = clang_getNullCursor(), p=parent;
+                    while (!clang_Cursor_isNull(p)) {
+                        CXCursorKind kind = clang_getCursorKind(p);
+                        //std::cout<<"datas : "<<ctx->datas[0]<<","<<getQualifiedNamespace(p)<<","<<ctx->datas[1]<<","<<clang_getCString(clang_getCursorSpelling(p))<<std::endl;
+                        if ((kind == CXCursor_ClassDecl || kind == CXCursor_StructDecl)
+                            && ctx->datas[0] == getQualifiedNamespace(p)
+                            && ctx->datas[1] == clang_getCString(clang_getCursorSpelling(p))) {
+
+                            parentCursor = p;
                         }
-                        parent = clang_getCursorSemanticParent(parent);
+                        p = clang_getCursorSemanticParent(p);
                     }
                     if (!clang_Cursor_isNull(parentCursor)) {
 
@@ -112,15 +105,17 @@ namespace odfaeg {
                     return CXChildVisit_Recurse;
                 }
             } else if (kind == CXCursor_CXXBaseSpecifier) {
-                CXCursor parentCursor = clang_getNullCursor(), parent=cursor;
-                while (!clang_Cursor_isNull(parent)) {
-                    CXCursorKind kind = clang_getCursorKind(parent);
-                    if (kind == CXCursor_ClassDecl || kind == CXCursor_StructDecl
-                        && ctx->datas[0] == getQualifiedNamespace(parent)
-                        && ctx->datas[1] == clang_getCString(clang_getCursorSpelling(parent))) {
-                        parentCursor = parent;
+                CXCursor parentCursor = clang_getNullCursor(), p=parent;
+                while (!clang_Cursor_isNull(p)) {
+                    CXCursorKind kind = clang_getCursorKind(p);
+
+                    if ((kind == CXCursor_ClassDecl || kind == CXCursor_StructDecl)
+                        && ctx->datas[0] == getQualifiedNamespace(p)
+                        && ctx->datas[1] == clang_getCString(clang_getCursorSpelling(p))) {
+                        std::cout<<"datas : "<<ctx->datas[0]<<","<<getQualifiedNamespace(p)<<","<<ctx->datas[1]<<","<<clang_getCString(clang_getCursorSpelling(p))<<std::endl;
+                        parentCursor = p;
                     }
-                    parent = clang_getCursorSemanticParent(parent);
+                    p = clang_getCursorSemanticParent(p);
                 }
                 if (!clang_Cursor_isNull(parentCursor)) {
                     CXType baseType = clang_getCursorType(cursor);
@@ -140,6 +135,7 @@ namespace odfaeg {
                     clang_disposeString(filename);
                     clang_visitChildren(cursor, classVisitor, &superCtx);
                 }
+                return CXChildVisit_Recurse;
             } else if (kind == CXCursor_Constructor) {
                 CXCursor parentCursor = clang_getCursorSemanticParent(cursor);
                 CXString parentName = clang_getCursorSpelling(parentCursor);
