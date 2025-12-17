@@ -112,7 +112,7 @@ namespace odfaeg {
                     if ((kind == CXCursor_ClassDecl || kind == CXCursor_StructDecl)
                         && ctx->datas[0] == getQualifiedNamespace(p)
                         && ctx->datas[1] == clang_getCString(clang_getCursorSpelling(p))) {
-                        std::cout<<"datas : "<<ctx->datas[0]<<","<<getQualifiedNamespace(p)<<","<<ctx->datas[1]<<","<<clang_getCString(clang_getCursorSpelling(p))<<std::endl;
+                        //std::cout<<"datas : "<<ctx->datas[0]<<","<<getQualifiedNamespace(p)<<","<<ctx->datas[1]<<","<<clang_getCString(clang_getCursorSpelling(p))<<std::endl;
                         parentCursor = p;
                     }
                     p = clang_getCursorSemanticParent(p);
