@@ -3,7 +3,7 @@ namespace odfaeg {
     namespace core {
         using namespace std;
 
-        Class::Class(std::string name, std::string filePath) : name(name), filePath(filePath) {
+        Class::Class(std::string name, std::string filePath) : name(name), filePath(filePath), implFilePath("") {
 
         }
         void Class::setName(std::string name) {
@@ -11,6 +11,9 @@ namespace odfaeg {
         }
         void Class::setFilePath(std::string filePath) {
             this->filePath = filePath;
+        }
+        void Class::setImplFilePath(std::string filePath) {
+            implFilePath = filePath;
         }
         std::string Class::getQualifiedNamespace(CXCursor cursor) {
             std::string ns;
@@ -151,6 +154,11 @@ namespace odfaeg {
                 CXString parentName = clang_getCursorSpelling(parentCursor);
                 std::string parentNs = getQualifiedNamespace(parentCursor);
                 if (ctx->cl.getName() == clang_getCString(parentName) && ctx->cl.namespc == parentNs) {
+                    CXSourceLocation loc = clang_getCursorLocation(cursor);
+                    CXFile file;
+                    unsigned line, col, offset;
+                    clang_getFileLocation(loc, &file, &line, &col, &offset);
+                    ctx->cl.setImplFilePath(clang_getCString(clang_getFileName(file)));
                     // Type de retour
                     CXType funcType = clang_getCursorType(cursor);
                     CXType returnType = clang_getResultType(funcType);
@@ -367,6 +375,9 @@ namespace odfaeg {
             ctx.datas = datas;
             CXCursor rootCursor = clang_getTranslationUnitCursor(tu);
             clang_visitChildren(rootCursor, classVisitor, &ctx);
+            if (ctx.cl.getName() != "") {
+                ctx.cl.setImplFilePath(virtualFile);
+            }
             /*std::string headerFile;
             std::string namespc="";
 
@@ -1204,6 +1215,9 @@ namespace odfaeg {
         }
         std::string Class::getFilePath() {
             return filePath;
+        }
+        std::string Class::getImplFilePath() {
+            return implFilePath;
         }
         std::vector<Constructor> Class::getConstructors() {
             return constructors;

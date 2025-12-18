@@ -51,11 +51,13 @@ namespace odfaeg {
             */
             std::string getName();
             void setFilePath(std::string filePath);
+            void setImplFilePath(std::string filePath);
             /**\fn std::string getFilePath()
             *  \brief return the file path of the class's header.
             *  \return std::string : the file path of the header's class.
             */
             std::string getFilePath();
+            std::string getImplFilePath();
             /**\fn std::vector<Constructor> getConstructors()
             *  \brief get every constructors of the class.
             *  \return std::vector<Constructor> : the constructors of the class.
@@ -141,6 +143,7 @@ namespace odfaeg {
             void addSuperClass(Class cl);
             std::string name; /**> the name of the class.*/
             std::string filePath; /**> the file path of the class's header.*/
+            std::string implFilePath;
             std::string namespc; /**> the namespace name.*/
             std::vector<Class> innerClasses; /**> the inner classes.*/
             std::vector<Class> superClasses; /**> the base classes.*/

@@ -59,6 +59,8 @@ namespace odfaeg {
             void updateStagingBuffers(unsigned int currentFrame);
             Vertex& operator [](unsigned int index);
             void draw(RenderTarget& target, RenderStates states);
+            void reserve(unsigned int size);
+            void reserveIdx(unsigned int size);
             void cleanup();
             ~VertexBuffer();
             std::string name;

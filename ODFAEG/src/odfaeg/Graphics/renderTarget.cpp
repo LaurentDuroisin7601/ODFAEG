@@ -387,21 +387,28 @@ namespace odfaeg {
              datas.textureID = (states.texture != nullptr) ? states.texture->getId() : 0;
              datas.uvScale = (states.texture != nullptr) ? math::Vec2f(1.f / states.texture->getSize().x(), 1.f / states.texture->getSize().y()) : math::Vec2f(0, 0);
              datas.uvOffset = math::Vec2f(0, 0);
+             //drawableData.reserve(drawableData.size()+1);
              drawableData.push_back(datas);
              if (type == Quads) {
                 type = Triangles;
+                //vertexBuffer[type].reserve(vertexBuffer[type].getVertexCount()+vertexCount);
                 for (unsigned int i = 0; i < vertexCount; i++) {
                     vertexBuffer[type].append(vertices[i]);
                     vertexBuffer[type][vertexBuffer[type].getVertexCount()-1].padding = drawableData.size() - 1;
                 }
+                //vertexBuffer[type].reserveIdx(vertexBuffer[type].getIndicesSize()+6);
                 vertexBuffer[type].addIndex(vertexBuffer[type].getVertexCount()-4);
                 vertexBuffer[type].addIndex(vertexBuffer[type].getVertexCount()-3);
                 vertexBuffer[type].addIndex(vertexBuffer[type].getVertexCount()-2);
                 vertexBuffer[type].addIndex(vertexBuffer[type].getVertexCount()-4);
                 vertexBuffer[type].addIndex(vertexBuffer[type].getVertexCount()-2);
                 vertexBuffer[type].addIndex(vertexBuffer[type].getVertexCount()-1);
-
              } else {
+                 /*vertexBuffer[type].reserve(vertexBuffer[type].getVertexCount()+vertexCount);
+                 if (type == TriangleFan || type == TriangleStrip || type == LineStrip)
+                    vertexBuffer[type].reserveIdx(vertexBuffer[type].getIndicesSize()+vertexCount+1);
+                 else
+                    vertexBuffer[type].reserveIdx(vertexBuffer[type].getIndicesSize()+vertexCount);*/
                  for (unsigned int i = 0; i < vertexCount; i++) {
                     vertexBuffer[type].append(vertices[i]);
                     vertexBuffer[type].addIndex(vertexBuffer[type].getVertexCount()-1);
@@ -414,7 +421,7 @@ namespace odfaeg {
 
              VkDeviceSize bufferSize = sizeof(DrawableData) * drawableData.size();
              if (bufferSize > maxDrawableDataSize[getCurrentFrame()]) {
-
+                //std::cout<<"recreate drawable buffers"<<std::endl;
                 if (stagingDrawableData[getCurrentFrame()] != nullptr) {
                     vkDestroyBuffer(vkDevice.getDevice(), stagingDrawableData[getCurrentFrame()], nullptr);
                     vkFreeMemory(vkDevice.getDevice(), stagingDrawableDataMemory[getCurrentFrame()], nullptr);
@@ -429,8 +436,14 @@ namespace odfaeg {
 
                 createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, drawableDataSSBO[getCurrentFrame()], drawableDataSSBOMemory[getCurrentFrame()]);
                 maxDrawableDataSize[getCurrentFrame()] = bufferSize;
+
+                //updateDescriptorSets(states);
              }
-             updateDescriptorSets(states);
+             //if (Texture::getAllTextures().size() > maxTexturesInUse || Texture::getIsOneTextureSwapped()) {
+                updateDescriptorSets(states);
+                /*maxTexturesInUse = Texture::getAllTextures().size();
+                Texture::resetIsOneTextureSwapped();
+             }*/
              if (useSecondaryCmds)
                 beginRecordSecondaryCommandBuffers();
              else {

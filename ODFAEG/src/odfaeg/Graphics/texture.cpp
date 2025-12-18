@@ -64,6 +64,7 @@ namespace odfaeg {
         #ifdef VULKAN
         std::vector<Texture*> Texture::allTextures = std::vector<Texture*>();
         unsigned int Texture::nbTextures = 0;
+        bool Texture::isOneTextureSwapped = false;
         Texture::Texture(window::Device& vkDevice) : vkDevice(vkDevice), id(0), textureImage(nullptr), textureImageView(nullptr), m_cacheId (getUniqueId()), ct(NORM), isCubeMap(false), isFBOTexture(false) {
             createCommandPool();
         }
@@ -807,6 +808,7 @@ namespace odfaeg {
             std::swap(ct, right.ct);
             m_cacheId = getUniqueId();
             right.m_cacheId = getUniqueId();
+            isOneTextureSwapped = true;
         }
         Texture& Texture::operator=(const Texture& right) {
             Texture temp(right);
@@ -1006,6 +1008,12 @@ namespace odfaeg {
         }
         std::vector<Texture*> Texture::getAllTextures() {
             return allTextures;
+        }
+        bool Texture::getIsOneTextureSwapped() {
+            return isOneTextureSwapped;
+        }
+        void Texture::resetIsOneTextureSwapped() {
+            isOneTextureSwapped = false;
         }
         void Texture::createCommandPool() {
 

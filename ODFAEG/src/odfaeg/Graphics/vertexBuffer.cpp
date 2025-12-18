@@ -410,6 +410,12 @@ namespace odfaeg {
             void VertexBuffer::draw(RenderTarget& target, RenderStates states) {
                 target.drawVertexBuffer(*this, states);
             }
+            void VertexBuffer::reserve(unsigned int size) {
+                m_vertices.reserve(size);
+            }
+            void VertexBuffer::reserveIdx(unsigned int size) {
+                indices.reserve(size);
+            }
             void VertexBuffer::cleanup() {
                 vkDestroyCommandPool(vkDevice.getDevice(), commandPool, nullptr);
                 for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {

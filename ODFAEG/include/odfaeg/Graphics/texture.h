@@ -98,6 +98,8 @@ namespace odfaeg
             void toShaderReadOnlyOptimal(VkCommandBuffer cmd);
             void toColorAttachmentOptimal(VkCommandBuffer cmd);
             math::Matrix4f getTextureMatrix() const;
+            static bool getIsOneTextureSwapped();
+            static void resetIsOneTextureSwapped();
             ~Texture();
         private :
 
@@ -141,6 +143,7 @@ namespace odfaeg
             VkImageAspectFlags imageAspectFlags;
             static std::vector<Texture*> allTextures;
             static unsigned int nbTextures;
+            static bool isOneTextureSwapped;
             VkCommandPool commandPool;
             CoordinateType ct;
             bool isCubeMap, isFBOTexture;

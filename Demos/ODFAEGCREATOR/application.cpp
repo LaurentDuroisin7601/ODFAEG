@@ -119,6 +119,8 @@ Application (vm, title, Style::Resize|Style::Close, ContextSettings(0, 8, 4, 4, 
                        (std::ref(getDevice()))(std::ref(factory)))
     EXPORT_CLASS_GUID(ShapeRectangleShape, Shape, RectangleShape)
     prefixStart = 0;
+    fpsCounter = 0;
+    addClock(Clock(), "FPS");
 }
 void ODFAEGCreator::onLoad() {
     std::tuple<std::reference_wrapper<Device>> rArgs = std::make_tuple(std::ref(getDevice()));
@@ -2636,6 +2638,7 @@ void ODFAEGCreator::onExec() {
             for (unsigned int i = 0; i < classes.size(); i++) {
                 //std::cout<<"get class : "<<classes[i]<<std::endl;
                 Class cl = Class::getClass(rtc.getIncludeDirs(), classes[i], appliname+"\\Scripts", "sorrok");
+                std::cout<<"class file path : "<<cl.getName()<<","<<cl.getImplFilePath()<<std::endl;
                 if (cl.getNamespace() == "") {
                     dpSelectClass->addItem(classes[i], 15);
                     dpSelectMClass->addItem(classes[i], 15);
@@ -2753,6 +2756,12 @@ void ODFAEGCreator::onExec() {
     }
     oldX = IMouse::getPosition(getRenderWindow()).x();
     oldY = IMouse::getPosition(getRenderWindow()).y();
+    fpsCounter++;
+    if (getClock("FPS").getElapsedTime() >= seconds(1.f)) {
+        std::cout<<"FPS : "<<fpsCounter<<std::endl;
+        fpsCounter = 0;
+        getClock("FPS").restart();
+    }
 }
 void ODFAEGCreator::showScenes(Label* label) {
     Node* node = rootNode->findNode(label);
