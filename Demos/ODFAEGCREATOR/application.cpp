@@ -139,6 +139,8 @@ void ODFAEGCreator::onInit() {
     FontManager<Fonts>& fm = cache.resourceManager<Font, Fonts>("FontManager");
     menuBar = new MenuBar(getRenderWindow());
     getRenderComponentManager().addComponent(menuBar);
+    toolBar = new ToolBar(getRenderWindow());
+    getRenderComponentManager().addComponent(toolBar);
     try {
         menu1 = new Menu(getRenderWindow(), fm.getResourceByAlias(Fonts::Serif), "File");
         getRenderComponentManager().addComponent(menu1);
@@ -160,6 +162,8 @@ void ODFAEGCreator::onInit() {
         menuBar->addMenu(menu4);
         menuBar->addMenu(menu5);
         menuBar->addMenu(menu6);
+
+
 
         Action amom(Action::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
         item11 = new MenuItem(getRenderWindow(), fm.getResourceByAlias(Fonts::Serif), "New application");
@@ -839,7 +843,7 @@ void ODFAEGCreator::onInit() {
 
         //Create panel for project files.
         pProjects = new Panel(getRenderWindow(), Vec3f(0, 0, 0), Vec3f(200, 700, 0), 0);
-        rootNode = std::make_unique<Node>("projects", pProjects, Vec2f(0.f, 0.015f), Vec2f(1.f / 6.f, 1.f));
+        rootNode = std::make_unique<Node>("projects", pProjects, Vec2f(0.f, 0.030f), Vec2f(1.f / 6.f, 1.f));
         pProjects->setBorderColor(Color(128, 128, 128));
         pProjects->setBackgroundColor(Color::White);
         pProjects->setBorderThickness(5);
@@ -849,7 +853,7 @@ void ODFAEGCreator::onInit() {
         //system("PAUSE");
         getRenderComponentManager().addComponent(pProjects);
         pScriptsEdit = new Panel(getRenderWindow(), Vec3f(200, 10, 0), Vec3f(800, 700, 0));
-        pScriptsEdit->setRelPosition(1.f / 6.f, menuBar->getSize().y() / getRenderWindow().getSize().y());
+        pScriptsEdit->setRelPosition(1.f / 6.f, (menuBar->getSize().y() + toolBar->getSize().y()) / getRenderWindow().getSize().y());
         pScriptsEdit->setRelSize(0.60f, 0.75f);
         pScriptsEdit->setBorderColor(Color(128, 128, 128));
         pScriptsEdit->setBackgroundColor(Color::White);
@@ -860,7 +864,7 @@ void ODFAEGCreator::onInit() {
         pScriptsFiles->setBorderColor(Color(128, 128, 128));
         pScriptsFiles->setBackgroundColor(Color::White);
         pScriptsFiles->setBorderThickness(5);
-        pScriptsFiles->setRelPosition(5.f / 6.5f, 0.015f);
+        pScriptsFiles->setRelPosition(5.f / 6.5f, 0.030f);
         pScriptsFiles->setRelSize(1.5f / 6.f, 1.f);
         pScriptsFiles->setName("PSCRIPTFILES");
         getRenderComponentManager().addComponent(pScriptsFiles);
@@ -951,7 +955,7 @@ void ODFAEGCreator::onInit() {
         pCollisions->setBackgroundColor(Color::White);
         rootCollisionNode = std::make_unique<Node>("Collisions", pCollisions, Vec2f(0.f, 0.05f), Vec2f(1.f, 1.f - 0.05f));
         tabPane->addTab(pCollisions, "Collisions", *fm.getResourceByAlias(Fonts::Serif));
-        tScriptEdit = new TextArea(Vec3f(200, 10, 0), Vec3f(790, 650, 0), fm.getResourceByAlias(Fonts::Serif), "", getRenderWindow());
+        tScriptEdit = new TextArea(Vec3f(200, 40, 0), Vec3f(790, 650, 0), fm.getResourceByAlias(Fonts::Serif), "", getRenderWindow());
 
         Command cmd5(FastDelegate<bool>(&TextArea::isTextChanged, tScriptEdit), FastDelegate<void>(&ODFAEGCreator::onTextEntered, this, tScriptEdit, '\0'));
         tScriptEdit->getListener().connect("CONTEXTENTERED", cmd5);

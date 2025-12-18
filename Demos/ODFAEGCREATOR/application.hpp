@@ -3,6 +3,7 @@
 #include "odfaeg/Network/application.h"
 #include "odfaeg/Core/stateStack.h"
 #include "odfaeg/Graphics/GUI/menubar.hpp"
+#include "odfaeg/Graphics/GUI/toolBar.hpp"
 #include "odfaeg/Graphics/GUI/floatingMenu.hpp"
 #include "odfaeg/Graphics/GUI/menuItem.hpp"
 #include "odfaeg/Graphics/GUI/filedialog.hpp"
@@ -159,6 +160,7 @@ class ODFAEGCreator : public odfaeg::core::Application<ODFAEGCreator>,
         float speed, sensivity;
         odfaeg::graphic::gui::CheckBox *cbIsPointer;
         odfaeg::graphic::gui::MenuBar* menuBar;
+        odfaeg::graphic::gui::ToolBar* toolBar;
         odfaeg::graphic::gui::Menu *menu1, *menu2, *menu3, *menu4, *menu5, *menu6;
         odfaeg::graphic::gui::MenuItem *item11, *item12, *item13, *item14, *item15, *item16, *item17, *item18, *item19, *item21, *item22, *item23, *item31, *item32, *item33,
         *item34, *item35, *item36, *item37, *item38, *item39, *item310, *item311, *item312, *item41, *item42, *item43, *item44, *item45, *item46, *item47, *item51, *item52, *item61;
@@ -172,7 +174,7 @@ class ODFAEGCreator : public odfaeg::core::Application<ODFAEGCreator>,
         *taParticleSystemUpdaterName, *taTileWidth, *taTileHeight, *taZoneXPos, *taZoneYPos, *taZoneZPos, *taZoneWidth, *taZoneHeight, *taZoneDepth, *taFrameRate,
         *taTileWidth3D, *taTileDepth3D, *taZoneXPos3D, *taZoneYPos3D, *taZoneZPos3D, *taZoneWidth3D, *taZoneHeight3D, *taZoneDepth3D;
         odfaeg::graphic::gui::DropDownList *dpScriptType, *dpList, *dpSelectTexture, *dpMapTypeList, *dpComponentType, *dpSelectEm, *dpSelectComponent, *dpSelectParent, *dpSelectAU, *dpSelectPPType, *dpSelectPSU, *dpSelectClass, *dpSelectFunction, *dpSelectMClass,
-        *dpSelectMFunction, *dpSelectRClass, *dpSelectPointerType, *dpSelectViewPerspective, *dpScriptBaseClass, *dpSelectWallType, *dpWallType, *dpSelectWallType3D, *dpChildren, *dpChildrenCV, *dpSelectParentCV, *dpSelectScript;
+        *dpSelectMFunction, *dpSelectRClass, *dpSelectPointerType, *dpSelectViewPerspective, *dpScriptBaseClass, *dpSelectWallType, *dpWallType, *dpSelectWallType3D, *dpChildren, *dpChildrenCV, *dpSelectParentCV, *dpSelectScript, *dpGoToMFunc;
         odfaeg::graphic::gui::Label *lWidth, *lHeight, *lMapWidth, *lMapHeight, *lMapDepth, *lOrigX, *lOrigY, *lOrigZ, *lOrigin, *lParentCV;
         odfaeg::graphic::gui::TextArea *taWidth, *taHeight, *tScriptEdit, *taMapName, *taMapWidth, *taMapHeight, *taMapDepth, *taIntensity, *taQuality, *taWindowPos, *taWindowSize, *taWindowTitle, *taWindowName, *taObjectName, *taMObjectName, *taRObjectName, *taSelectExpression, *taNameCV;
         odfaeg::graphic::gui::Panel *pProjects, *pScriptsFiles, *pScriptsEdit, *pInfos, *pTransform, *pMaterial, *pShadows, *pCollisions, *pComponent, *pObjectsParameters, *pMObjectsParameters;
