@@ -111,9 +111,9 @@ namespace odfaeg {
                 rect.setPosition(getPosition());
                 rect.setSize(getSize());
                 shape = ConvexShape(3);
-                shape.setPoint(0, math::Vec3f(getSize().x() - 25, getSize().y(), 0));
-                shape.setPoint(1, math::Vec3f(getSize().x() - 50, 0, 0));
-                shape.setPoint(2, math::Vec3f(getSize().x(), 0, 0));
+                shape.setPoint(0, math::Vec3f(getSize().x() - 25, getSize().y(), getPosition().z()+100));
+                shape.setPoint(1, math::Vec3f(getSize().x() - 50, 0, getPosition().z()+100));
+                shape.setPoint(2, math::Vec3f(getSize().x(), 0, getPosition().z()+100));
                 shape.setPosition(getPosition());
                 std::vector<math::Vec3f> points;
                 points.resize(shape.getPointCount());

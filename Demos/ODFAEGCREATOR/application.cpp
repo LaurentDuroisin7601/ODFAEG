@@ -974,6 +974,10 @@ void ODFAEGCreator::onInit() {
         Action moveCursorAction(Action::EVENT_TYPE::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
         Command moveCursorCommand(moveCursorAction, FastDelegate<void>(&ODFAEGCreator::moveCursor, this, Vec2f(-1, -1)));
         getListener().connect("MoveCursor", moveCursorCommand);
+
+        dpGoToMFunc = new DropDownList(getRenderWindow(), Vec3f(0, 20, 0), Vec3f(200, 20, 0), fm.getResourceByAlias(Fonts::Serif), "Select Function", 15);
+        toolBar->addItem(dpGoToMFunc);
+        getRenderComponentManager().addComponent(dpGoToMFunc);
         createWindowsDescriptorsAndPipelines();
     }
     catch (Erreur& erreur) {

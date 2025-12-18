@@ -13,7 +13,7 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < items.size(); i++) {
                     posX += items[i]->getSize().x();
                 }
-                item->setPosition(math::Vec3f(posX, 0, 0));
+                item->setPosition(math::Vec3f(posX, 20, 0));
                 items.push_back(item);
             }
             void ToolBar::clear() {
