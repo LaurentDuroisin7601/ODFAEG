@@ -349,9 +349,11 @@ namespace odfaeg {
             return ctx.classes;
         }
         Class Class::getClassFromMemory(std::vector<std::string> includePaths, std::string virtualFile, std::string name, std::string content, std::string nspc) {
-            std::vector<std::string> datas;
-            datas.push_back(nspc);
-            datas.push_back(name);
+
+            Class cl("", "");
+            Context ctx(cl);
+            ctx.datas.push_back(nspc);
+            ctx.datas.push_back(name);
             CXIndex index = clang_createIndex(0, 0);
             const char* args[includePaths.size()+1];
             for (unsigned int i = 0; i < includePaths.size(); i++) {
@@ -370,14 +372,8 @@ namespace odfaeg {
                 &unsaved, 1,              // pas de fichiers précompilés
                 CXTranslationUnit_None
             );
-            Class cl("", "");
-            Context ctx(cl);
-            ctx.datas = datas;
             CXCursor rootCursor = clang_getTranslationUnitCursor(tu);
             clang_visitChildren(rootCursor, classVisitor, &ctx);
-            if (ctx.cl.getName() != "") {
-                ctx.cl.setImplFilePath(virtualFile);
-            }
             /*std::string headerFile;
             std::string namespc="";
 
@@ -502,7 +498,7 @@ namespace odfaeg {
                 }
             }
             Class cl("", "");*/
-            return cl;
+            return ctx.cl;
         }
         Class Class::getClass(std::vector<std::string> includePaths, std::string name, std::string path, std::string nspc) {
             Class cl("", "");

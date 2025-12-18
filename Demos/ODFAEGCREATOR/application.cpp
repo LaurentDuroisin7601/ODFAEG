@@ -2898,9 +2898,11 @@ void ODFAEGCreator::showFileContent(Label* lab) {
         pScriptsEdit->updateScrolls();
     }
     std::vector<std::string> classes = Class::getClassesFromMemory(rtc.getIncludeDirs(), virtualFile, tScriptEdit->getText(), "sorrok");
-    std::cout<<"class : "<<classes.size()<<std::endl;
+
     for (unsigned int i = 0; i < classes.size(); i++) {
-        std::cout<<"class : "<<classes[i]<<std::endl;
+        Class cl = Class::getClassFromMemory(rtc.getIncludeDirs(), virtualFile, classes[i], tScriptEdit->getText(), "sorrok");
+        if (cl.getImplFilePath() == virtualFile || cl.getFilePath() == virtualFile)
+            std::cout<<"class : "<<cl.getName()<<std::endl;
     }
 }
 void ODFAEGCreator::processKeyHeldDown (IKeyboard::Key key) {
