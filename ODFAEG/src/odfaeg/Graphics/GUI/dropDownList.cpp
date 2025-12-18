@@ -118,7 +118,7 @@ namespace odfaeg {
                 std::vector<math::Vec3f> points;
                 points.resize(shape.getPointCount());
                 for (unsigned int i = 0; i < shape.getPointCount(); i++) {
-                    math::Vec3f position = shape.getPoint(i);
+                    math::Vec3f position = math::Vec3f(shape.getPoint(i).x(), shape.getPoint(i).y(), 0);
                     points[i] = shape.getTransform().transform(math::Vec3f(position.x(), position.y(), position.z()));
                 }
                 bp = physic::BoundingPolyhedron(points[1], points[0], points[2],true);
