@@ -2638,7 +2638,7 @@ void ODFAEGCreator::onExec() {
             for (unsigned int i = 0; i < classes.size(); i++) {
                 //std::cout<<"get class : "<<classes[i]<<std::endl;
                 Class cl = Class::getClass(rtc.getIncludeDirs(), classes[i], appliname+"\\Scripts", "sorrok");
-                std::cout<<"class file path : "<<cl.getName()<<","<<cl.getImplFilePath()<<std::endl;
+                //std::cout<<"class file path : "<<cl.getName()<<","<<cl.getImplFilePath()<<std::endl;
                 if (cl.getNamespace() == "") {
                     dpSelectClass->addItem(classes[i], 15);
                     dpSelectMClass->addItem(classes[i], 15);
@@ -2873,7 +2873,10 @@ void ODFAEGCreator::showFileContent(Label* lab) {
     pScriptsEdit->setVisible(true);
     std::map<std::pair<std::string, std::string>, std::string>::iterator it;
     it = cppAppliContent.find(std::make_pair(getWorld()->projectName, lab->getText()));
-    virtualFile = getWorld()->projectName+"\\"+lab->getText();
+    std::vector<std::string> files;
+    findFiles(lab->getText(), files, getWorld()->projectName);
+    virtualFile = getCurrentPath() + "\\" + files[0];
+    //std::cout<<"virtual file : "<<virtualFile<<std::endl;
     if (it != cppAppliContent.end()) {
         tScriptEdit->setText(it->second);
         tScriptEdit->getListener().setCommandSlotParams("CONTEXTENTERED", this, tScriptEdit, '\0');
