@@ -864,7 +864,7 @@ void ODFAEGCreator::onInit() {
         pScriptsFiles->setBorderColor(Color(128, 128, 128));
         pScriptsFiles->setBackgroundColor(Color::White);
         pScriptsFiles->setBorderThickness(5);
-        pScriptsFiles->setRelPosition(5.f / 6.5f, 0.030f);
+        pScriptsFiles->setRelPosition(5.f / 6.5f, 0.040f);
         pScriptsFiles->setRelSize(1.5f / 6.f, 1.f);
         pScriptsFiles->setName("PSCRIPTFILES");
         getRenderComponentManager().addComponent(pScriptsFiles);
@@ -2896,6 +2896,11 @@ void ODFAEGCreator::showFileContent(Label* lab) {
         if (textSize.y() > tScriptEdit->getSize().y())
             tScriptEdit->setSize(Vec3f(tScriptEdit->getSize().x(), textSize.y(), tScriptEdit->getSize().z()));
         pScriptsEdit->updateScrolls();
+    }
+    std::vector<std::string> classes = Class::getClassesFromMemory(rtc.getIncludeDirs(), virtualFile, tScriptEdit->getText(), "sorrok");
+    std::cout<<"class : "<<classes.size()<<std::endl;
+    for (unsigned int i = 0; i < classes.size(); i++) {
+        std::cout<<"class : "<<classes[i]<<std::endl;
     }
 }
 void ODFAEGCreator::processKeyHeldDown (IKeyboard::Key key) {
