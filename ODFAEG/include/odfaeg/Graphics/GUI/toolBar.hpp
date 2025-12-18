@@ -1,22 +1,23 @@
-#ifndef ODFAEG_MENU_BAR_HPP
-#define ODFAEG_MENU_BAR_HPP
-#include "menu.hpp"
+#ifndef ODFAEG_TOOLBAR_HPP
+#define ODFAEG_TOOLBAR_HPP
+#include "../lightComponent.h"
+#include "../rectangleShape.h"
 namespace odfaeg {
     namespace graphic {
         namespace gui {
-            class ODFAEG_GRAPHICS_API MenuBar : public LightComponent {
+            class ODFAEG_GRAPHICS_API ToolBar : public LightComponent {
             public :
-                MenuBar(RenderWindow& rw);
-                void addMenu(Menu* menu);
+                ToolBar(RenderWindow& rw);
+                void addItem(LightComponent* item);
                 void clear();
                 void onDraw(RenderTarget& target, RenderStates states=RenderStates::Default);
                 void onEventPushed(window::IEvent event, RenderWindow& window);
             private :
                 RectangleShape rect;
                 Color background;
-                std::vector<Menu*> menus;
+                std::vector<LightComponent*> items;
             };
         }
     }
 }
-#endif
+#endif // ODFAEG_TOOLBAR_HPP

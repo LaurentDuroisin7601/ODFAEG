@@ -41,6 +41,12 @@ namespace odfaeg {
                 }
                 return false;
             }
+            void Panel::setScrollPosition(math::Vec3f position) {
+                mouseDeltaX = deltas.x() - position.x();
+                moveXItems();
+                mouseDeltaY = deltas.y() - position.y();
+                moveYItems();
+            }
             void Panel::moveXItems() {
                 if (mouseDeltaX > 0 && vertScrollBar.getPosition().x() + vertScrollBar.getSize().x() + mouseDeltaX <= getPosition().x() + getSize().x() - 10) {
                     vertScrollBar.move(math::Vec3f(mouseDeltaX, 0, 0));

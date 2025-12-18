@@ -211,7 +211,9 @@ set(SRC_GUI
 	${INCROOT}/GUI/checkBox.hpp
 	${SRCROOT}/GUI/checkBox.cpp
 	${INCROOT}/GUI/floatingMenu.hpp
-	${SRCROOT}/GUI/floatingMenu.cpp)
+	${SRCROOT}/GUI/floatingMenu.cpp
+	${INCROOT}/GUI/toolBar.hpp
+	${SRCROOT}/GUI/toolbar.cpp)
 source_group ("gui" FILES ${SRC_GUI})
 
 set(SRC_VULKAN

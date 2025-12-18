@@ -33,6 +33,7 @@ namespace odfaeg {
                 void setScissorDisable(bool scissor);
                 void setMoveComponents(bool moveComponents);
                 math::Vec3f getDeltas();
+                void setScrollPosition(math::Vec3f position);
             private :
                 bool disableScissor, moveComponents;
                 math::Vec3f mousePos, deltas;
