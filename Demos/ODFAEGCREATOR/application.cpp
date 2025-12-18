@@ -2897,12 +2897,30 @@ void ODFAEGCreator::showFileContent(Label* lab) {
             tScriptEdit->setSize(Vec3f(tScriptEdit->getSize().x(), textSize.y(), tScriptEdit->getSize().z()));
         pScriptsEdit->updateScrolls();
     }
+    dpGoToMFunc->removeAllItems();
     std::vector<std::string> classes = Class::getClassesFromMemory(rtc.getIncludeDirs(), virtualFile, tScriptEdit->getText(), "sorrok");
 
     for (unsigned int i = 0; i < classes.size(); i++) {
         Class cl = Class::getClassFromMemory(rtc.getIncludeDirs(), virtualFile, classes[i], tScriptEdit->getText(), "sorrok");
-        if (cl.getImplFilePath() == virtualFile || cl.getFilePath() == virtualFile)
-            std::cout<<"class : "<<cl.getName()<<std::endl;
+        if (cl.getImplFilePath() == virtualFile || cl.getFilePath() == virtualFile) {
+            std::vector<MemberFunction> mf = cl.getMembersFunctions();
+            for (unsigned int f = 0; f < mf.size(); f++) {
+                std::string signature = cl.getNamespace()+"::"+cl.getName()+"::"+mf[f].getName();
+                if (mf[f].getArgsTypes().size() == 0) {
+                    signature += "()";
+                } else {
+                    for (unsigned int a = 0; a < mf[f].getArgsTypes().size(); a++) {
+                        if (a == 0)
+                            signature += "("+mf[f].getArgsTypes()[a];
+                        if (a == mf[f].getArgsTypes().size() - 1)
+                            signature += ")";
+                        else
+                            signature += ","+mf[f].getArgsTypes()[a];
+                    }
+                }
+                dpGoToMFunc->addItem(signature, 15);
+            }
+        }
     }
 }
 void ODFAEGCreator::processKeyHeldDown (IKeyboard::Key key) {
