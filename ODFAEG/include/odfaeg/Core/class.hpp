@@ -9,7 +9,7 @@
 #include "constructor.hpp"
 #include "memberFunction.hpp"
 #include "memberVariable.hpp"
-#include <clang-c/Index.h>
+
 namespace odfaeg {
     namespace core {
         /**
@@ -156,6 +156,7 @@ namespace odfaeg {
             }
             std::vector<std::string> datas;
             Class& cl;
+            CXTranslationUnit tu;
         };
         struct Context2 {
             std::vector<std::string> datas;

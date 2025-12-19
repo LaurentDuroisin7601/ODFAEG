@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include "export.hpp"
+#include <clang-c/Index.h>
 namespace odfaeg {
     namespace core {
         /**
@@ -45,6 +46,7 @@ namespace odfaeg {
             *   \return the constructor's name.
             */
             std::string getName();
+            CXTranslationUnit tu;
         private:
             std::string name; /**> constructor's name.*/
             std::vector<std::string> argsTypes; /**> constructor's arguments types.*/

@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include "export.hpp"
+#include <clang-c/Index.h>
 namespace odfaeg {
     namespace core {
         class ODFAEG_CORE_API MemberFunction {
@@ -14,6 +15,7 @@ namespace odfaeg {
             std::string getName();
             std::vector<std::string> getArgsTypes();
             std::vector<std::string> getArgsNames();
+            CXTranslationUnit tu;
         private :
             std::string m_name;
             std::string m_returnType;

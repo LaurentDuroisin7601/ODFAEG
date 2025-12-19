@@ -1,6 +1,7 @@
 #ifndef MEMBER_VARIABLE_HPP
 #define MEMBER_VARIABLE_HPP
 #include <string>
+#include <clang-c/Index.h>
 namespace odfaeg {
     namespace core {
         class MemberVariable {
@@ -9,6 +10,7 @@ namespace odfaeg {
             std::string getVarType();
             void setVarName(std::string varName);
             std::string getVarName();
+            CXTranslationUnit tu;
         private :
             std::string varType;
             std::string varName;

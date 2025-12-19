@@ -2912,6 +2912,7 @@ void ODFAEGCreator::showFileContent(Label* lab) {
                     signature += "()";
                 } else {
                     for (unsigned int a = 0; a < mf[f].getArgsTypes().size(); a++) {
+                        //std::cout<<"arg type : "<<mf[f].getArgsTypes()[a]<<std::endl;
                         if (a == 0)
                             signature += "("+mf[f].getArgsTypes()[a];
                         if (a == mf[f].getArgsTypes().size() - 1)

@@ -145,6 +145,7 @@ namespace odfaeg {
                 std::string parentNs = getQualifiedNamespace(parentCursor);
                 if (ctx->cl.getName() == clang_getCString(parentName) && ctx->cl.namespc == parentNs) {
                     Constructor c(clang_getCString(spelling));
+                    c.tu = ctx->tu;
                     clang_visitChildren(cursor, constructorVisitor, &c);
                     ctx->cl.addConstructor(c);
                 }
@@ -168,6 +169,7 @@ namespace odfaeg {
                     MemberFunction m(clang_getCString(typeStr), clang_getCString(spelling));
                     clang_visitChildren(cursor, memberFonctionVisitor, &m);
                     ctx->cl.addMemberFunction(m);
+                    m.tu = ctx->tu;
                     clang_disposeString(typeStr);
                 }
                 clang_disposeString(parentName);
@@ -176,15 +178,24 @@ namespace odfaeg {
                 CXString parentName = clang_getCursorSpelling(parentCursor);
                 std::string parentNs = getQualifiedNamespace(parentCursor);
                 if (ctx->cl.getName() == clang_getCString(parentName) && ctx->cl.namespc == parentNs) {
-                    CXString fname = clang_getCursorSpelling(cursor);
-                    CXType ftype = clang_getCursorType(cursor);
-                    CXString typeStr = clang_getTypeSpelling(ftype);
-                    MemberVariable mb;
-                    mb.setVarName(clang_getCString(fname));
-                    mb.setVarType(clang_getCString(typeStr));
-                    ctx->cl.addMemberVariable(mb);
-                    clang_disposeString(typeStr);
-                    clang_disposeString(fname);
+                    CXToken* tokens = nullptr;
+                    unsigned numTokens = 0;
+                    CXSourceRange range = clang_getCursorExtent(cursor);
+                    clang_tokenize(ctx->tu, range, &tokens, &numTokens);
+                    std::string type = "";
+                    CXString spelling = clang_getTokenSpelling(ctx->tu, tokens[numTokens-1]);
+                    std::string name = clang_getCString(spelling);
+                    clang_disposeString(spelling);
+                    for (unsigned i = 0; i < numTokens-1; ++i) {
+                        CXString spelling = clang_getTokenSpelling(ctx->tu, tokens[i]);
+                        type += clang_getCString(spelling);
+                        clang_disposeString(spelling);
+                    }
+                    clang_disposeTokens(ctx->tu, tokens, numTokens);
+                    MemberVariable mv;
+                    mv.setVarName(name);
+                    mv.setVarType(type);
+                    ctx->cl.addMemberVariable(mv);
                 }
                 clang_disposeString(parentName);
             }
@@ -195,18 +206,23 @@ namespace odfaeg {
             if (clang_getCursorKind(cursor) == CXCursor_ParmDecl) {
                 Constructor* c = static_cast<Constructor*>(client_data);
 
-                CXString pname = clang_getCursorSpelling(cursor);
-                const char* pnameStr = clang_getCString(pname);
+                CXToken* tokens = nullptr;
+                unsigned numTokens = 0;
+                CXSourceRange range = clang_getCursorExtent(cursor);
+                clang_tokenize(c->tu, range, &tokens, &numTokens);
+                std::string type = "";
+                CXString spelling = clang_getTokenSpelling(c->tu, tokens[numTokens-1]);
+                std::string name = clang_getCString(spelling);
+                clang_disposeString(spelling);
+                for (unsigned i = 0; i < numTokens-1; ++i) {
+                    CXString spelling = clang_getTokenSpelling(c->tu, tokens[i]);
+                    type += clang_getCString(spelling);
+                    clang_disposeString(spelling);
+                }
+                clang_disposeTokens(c->tu, tokens, numTokens);
 
-                CXType ptype = clang_getCursorType(cursor);
-                CXString typeStr = clang_getTypeSpelling(ptype);
-                const char* ptypeStr = clang_getCString(typeStr);
-
-                c->addArgName(std::string(pnameStr));
-                c->addArgType(std::string(ptypeStr));
-
-                clang_disposeString(pname);
-                clang_disposeString(typeStr);
+                c->addArgName(std::string(type));
+                c->addArgType(std::string(name));
             }
             return CXChildVisit_Recurse;
 
@@ -214,19 +230,22 @@ namespace odfaeg {
         CXChildVisitResult Class::memberFonctionVisitor(CXCursor cursor, CXCursor parent, CXClientData client_data) {
             if (clang_getCursorKind(cursor) == CXCursor_ParmDecl) {
                 MemberFunction* m = static_cast<MemberFunction*>(client_data);
-
-                CXString pname = clang_getCursorSpelling(cursor);
-                const char* pnameStr = clang_getCString(pname);
-
-                CXType ptype = clang_getCursorType(cursor);
-                CXString typeStr = clang_getTypeSpelling(ptype);
-                const char* ptypeStr = clang_getCString(typeStr);
-
-                m->addArgName(std::string(pnameStr));
-                m->addArgType(std::string(ptypeStr));
-
-                clang_disposeString(pname);
-                clang_disposeString(typeStr);
+                CXSourceRange range = clang_getCursorExtent(cursor);
+                CXToken* tokens = nullptr;
+                unsigned numTokens = 0;
+                clang_tokenize(m->tu, range, &tokens, &numTokens);
+                std::string type = "";
+                CXString spelling = clang_getTokenSpelling(m->tu, tokens[numTokens-1]);
+                std::string name = clang_getCString(spelling);
+                clang_disposeString(spelling);
+                for (unsigned i = 0; i < numTokens-1; ++i) {
+                    CXString spelling = clang_getTokenSpelling(m->tu, tokens[i]);
+                    type += clang_getCString(spelling);
+                    clang_disposeString(spelling);
+                }
+                clang_disposeTokens(m->tu, tokens, numTokens);
+                m->addArgName(std::string(name));
+                m->addArgType(std::string(type));
             }
             return CXChildVisit_Recurse;
 
@@ -372,6 +391,7 @@ namespace odfaeg {
                 &unsaved, 1,              // pas de fichiers précompilés
                 CXTranslationUnit_None
             );
+            ctx.tu = tu;
             CXCursor rootCursor = clang_getTranslationUnitCursor(tu);
             clang_visitChildren(rootCursor, classVisitor, &ctx);
             /*std::string headerFile;
@@ -530,6 +550,7 @@ namespace odfaeg {
                     nullptr, 0,              // pas de fichiers précompilés
                     CXTranslationUnit_None
                 );
+                ctx.tu = tu;
                 CXCursor rootCursor = clang_getTranslationUnitCursor(tu);
                 clang_visitChildren(rootCursor, classVisitor, &ctx);
                 clang_disposeTranslationUnit(tu);
