@@ -228,7 +228,8 @@ namespace odfaeg {
                 return b;
             }
             unsigned int TextArea::getCharacterIndexAtCursorPos() {
-                return text.findCharacterAt(cursorPos);
+                math::Vec2f pos = text.findCharacterPos(currentIndex);
+                return text.findCharacterAt(pos);
             }
             math::Vec3f TextArea::getCursorPos() {
                 return cursorPos;

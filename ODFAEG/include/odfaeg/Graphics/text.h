@@ -461,6 +461,13 @@ namespace odfaeg
             mutable std::uint64_t      m_fontTextureId;       ///< The font texture id
             int indexMin, indexMax;
         };
+        struct LineRun {
+            unsigned int iStart;     // index du premier char de la ligne
+            unsigned int iEnd;       // index du '\n' ou fin (exclusif)
+            float baselineY;
+            float xStart;
+            float xEnd;              // position.x à la fin visuelle de la ligne
+        };
     }
 
 } // namespace sf

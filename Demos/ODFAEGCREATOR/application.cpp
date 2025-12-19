@@ -118,7 +118,7 @@ Application (vm, title, Style::Resize|Style::Close, ContextSettings(0, 8, 4, 4, 
                        (Device&)(EntityFactory&),
                        (std::ref(getDevice()))(std::ref(factory)))
     EXPORT_CLASS_GUID(ShapeRectangleShape, Shape, RectangleShape)
-    prefixStart = 0;
+
     fpsCounter = 0;
     addClock(Clock(), "FPS");
 }
@@ -4441,9 +4441,15 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
          tScriptEdit->getListener().setCommandSlotParams("CONTEXTENTERED", this, tScriptEdit, '\0');
          std::string buffer = tScriptEdit->getText();
          std::string completion = item->getText();
-         buffer.replace(prefixStart, tScriptEdit->getCharacterIndexAtCursorPos() - prefixStart, completion);
+         unsigned int start = tScriptEdit->getCharacterIndexAtCursorPos();
+         while (std::isalnum(buffer.at(start-1))) {
+            std::cout<<"caracter at : "<<start<<buffer.at(start)<<std::endl;
+            start--;
+         }
+         std::cout<<"length : "<<tScriptEdit->getCharacterIndexAtCursorPos()<<","<<start<<std::endl;
+         buffer.replace(start, tScriptEdit->getCharacterIndexAtCursorPos() - start, completion);
          tScriptEdit->setText(buffer);
-         tScriptEdit->setCursorPosition(prefixStart+completion.size());
+         tScriptEdit->setCursorPosition(start+completion.size());
          floatingMenu.setVisible(false);
          Vec3f textSize = tScriptEdit->getTextSize();
          if (textSize.x() > tScriptEdit->getSize().x())
@@ -8068,8 +8074,6 @@ void ODFAEGCreator::onTextEntered(TextArea* ta, char caracter) {
     if (ta == tScriptEdit && caracter != 0 && caracter != 13) {
         //std::cout<<"completion"<<std::endl;
         if (std::isalnum(caracter)) {
-            if (strsearch == "")
-                prefixStart = tScriptEdit->getCharacterIndexAtCursorPos();
             strsearch += caracter;
         } else {
             strsearch = "";

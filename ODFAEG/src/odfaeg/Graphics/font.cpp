@@ -816,6 +816,19 @@ namespace odfaeg
 
              return true;
         }
+        float Font::getAscender(unsigned int characterSize) const {
+            // units_per_EM = taille de la police en unités internes
+            FT_Face face = static_cast<FT_Face>(m_face);
+            float scale = static_cast<float>(characterSize) / face->units_per_EM;
+            return face->ascender * scale;
+        }
+
+        float Font::getDescender(unsigned int characterSize) const {
+            FT_Face face = static_cast<FT_Face>(m_face);
+            float scale = static_cast<float>(characterSize) / face->units_per_EM;
+            return face->descender * scale;
+        }
+
 
 
         ////////////////////////////////////////////////////////////

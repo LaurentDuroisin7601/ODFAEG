@@ -249,7 +249,7 @@ class ODFAEGCreator : public odfaeg::core::Application<ODFAEGCreator>,
         std::string selectedProject;
         std::string virtualFile;
         odfaeg::graphic::gui::FloatingMenu floatingMenu;
-        unsigned int prefixStart, fpsCounter;
+        unsigned int fpsCounter;
         /*std::array<std::string, 24> primitiveTypes = {
             "bool",
             "char", "signed char", "unsigned char",

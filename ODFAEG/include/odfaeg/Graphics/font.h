@@ -203,7 +203,8 @@ namespace odfaeg
                 ///
                 ////////////////////////////////////////////////////////////
                 float getKerning(std::uint32_t first, std::uint32_t second, unsigned int characterSize) const;
-
+                float getAscender(unsigned int characterSize) const;
+                float getDescender(unsigned int characterSize) const;
                 ////////////////////////////////////////////////////////////
                 /// \brief Get the line spacing
                 ///
