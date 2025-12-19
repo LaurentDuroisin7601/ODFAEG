@@ -42,10 +42,22 @@ namespace odfaeg {
                 return false;
             }
             void Panel::setScrollPosition(math::Vec3f position) {
-                mouseDeltaX = deltas.x() - position.x();
-                moveXItems();
-                mouseDeltaY = deltas.y() - position.y();
-                moveYItems();
+                // Clamp la position dans les bornes
+                float maxX = (getSize().x() - 10) - vertScrollBar.getSize().x();
+                float maxY = (getSize().y() - 10) - horScrollBar.getSize().y();
+                deltas.x() = std::max(0.f, std::min(position.x(), maxX));
+                deltas.y() = std::max(0.f, std::min(position.y(), maxY));
+                //std::cout<<"start positions : "<<vertScrollBar.getPosition()<<std::endl<<horScrollBar.getPosition()<<std::endl;
+                // Positionner directement les scrollbars
+                vertScrollBar.setPosition(math::Vec3f(getPosition().x() + deltas.x(), vertScrollBar.getPosition().y(), getPosition().z()+500));
+                horScrollBar.setPosition(math::Vec3f(horScrollBar.getPosition().x(), getPosition().y() + deltas.y(), getPosition().z()+500));
+                //std::cout<<"final positions : "<<vertScrollBar.getPosition()<<std::endl<<horScrollBar.getPosition()<<std::endl;
+                // Replacer les enfants en fonction de deltas
+                float offsetX = -(deltas.x() * maxSize.x() / (getSize().x() - 10));
+                float offsetY = -(deltas.y() * maxSize.y() / (getSize().y() - 10));
+                for (auto* child : getChildren()) {
+                    child->setPosition(child->getBasePosition() + math::Vec3f(offsetX, offsetY, 0));
+                }
             }
             void Panel::moveXItems() {
                 if (mouseDeltaX > 0 && vertScrollBar.getPosition().x() + vertScrollBar.getSize().x() + mouseDeltaX <= getPosition().x() + getSize().x() - 10) {
@@ -174,6 +186,7 @@ namespace odfaeg {
             void Panel::addChild(LightComponent* child) {
                 ////////std::cout<<"add child"<<std::endl;
                 LightComponent::addChild(child);
+                child->setBasePosition(child->getPosition());
                 ////////std::cout<<"recompute size"<<std::endl;
                 recomputeSize();
                 ////////std::cout<<"update scrolls"<<std::endl;

@@ -181,10 +181,17 @@ namespace odfaeg {
             unsigned int getComponentType() const {
                 return 1;
             }
+            void setBasePosition(math::Vec3f basePosition) {
+                this->basePosition = basePosition;
+            }
+            math::Vec3f getBasePosition() {
+                return basePosition;
+            }
             private :
             bool enableScissorTest;
             LightComponent* parent;
             std::vector<std::unique_ptr<LightComponent>> children;
+            math::Vec3f basePosition;
         };
     }
 }

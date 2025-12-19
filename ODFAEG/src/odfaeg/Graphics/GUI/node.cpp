@@ -80,7 +80,7 @@ namespace odfaeg {
                     math::Vec2f nodeRelPos = component->getRelPosition();
                     getRootNode()->displaceNodes(this, nodeRelPos);
                 }
-                getRootNode()->affiche();
+                //getRootNode()->affiche();
 
                 //component->setAutoResized(true);
             }
