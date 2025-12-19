@@ -4443,11 +4443,11 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
          std::string completion = item->getText();
          unsigned int start = tScriptEdit->getCharacterIndexAtCursorPos();
          while (std::isalnum(buffer.at(start))) {
-            std::cout<<"caracter at : "<<start<<buffer.at(start)<<std::endl;
+            //std::cout<<"caracter at : "<<start<<buffer.at(start)<<std::endl;
             start--;
          }
-         std::cout<<"length : "<<tScriptEdit->getCharacterIndexAtCursorPos()<<","<<start<<std::endl;
-         buffer.replace(start, tScriptEdit->getCharacterIndexAtCursorPos() - start, completion);
+         //std::cout<<"length : "<<tScriptEdit->getCharacterIndexAtCursorPos()<<","<<start<<std::endl;
+         buffer.replace(start+1, tScriptEdit->getCharacterIndexAtCursorPos() - start, completion);
          tScriptEdit->setText(buffer);
          tScriptEdit->setCursorPosition(start+completion.size());
          floatingMenu.setVisible(false);
@@ -4457,9 +4457,10 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
          if (textSize.y() > tScriptEdit->getSize().y())
             tScriptEdit->setSize(Vec3f(tScriptEdit->getSize().x(), textSize.y(), tScriptEdit->getSize().z()));
          pScriptsEdit->updateScrolls();
-         Action a (Action::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
+         /*Action a (Action::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
          Command cmd(a, FastDelegate<bool>(&TextArea::isMouseInTextArea, tScriptEdit), FastDelegate<void>(&TextArea::setCursorPos, tScriptEdit));
-         tScriptEdit->getListener().connect("CMOUSECLICKED", cmd);
+         tScriptEdit->getListener().connect("CMOUSECLICKED", cmd);*/
+         tScriptEdit->getListener().blockCommand("CMOUSECLICKED", false);
      }
 }
 /*void ODFAEGCreator::addShape(Shape *shape) {
@@ -8098,7 +8099,8 @@ void ODFAEGCreator::onTextEntered(TextArea* ta, char caracter) {
             floatingMenu.setPosition(tScriptEdit->getCursorPos() + tScriptEdit->getCharacterSize());
             //std::cout<<"position : "<<floatingMenu.getPosition()<<std::endl;
             floatingMenu.setVisible(true);
-            tScriptEdit->getListener().removeCommand("CMOUSECLICKED");
+            //tScriptEdit->getListener().removeCommand("CMOUSECLICKED");
+            tScriptEdit->getListener().blockCommand("CMOUSECLICKED", true);
         }
 
     }

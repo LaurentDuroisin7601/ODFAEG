@@ -51,6 +51,33 @@ namespace odfaeg {
 
                 toAdd.insert(std::make_pair(key, command));
              }
+             void blockCommand(std::string key, bool blocked) {
+                 if (blocked) {
+                    //std::cout<<"block command"<<std::endl;
+                    std::map<std::string, Command>::iterator it = commands.find(key);
+                    std::map<std::string, Command>::iterator it2 = toAdd.find(key);
+                    if (it != commands.end() || it2 != toAdd.end()) {
+                        bool found = false;
+                        for (unsigned int i = 0; i < blockedCommands.size() && !found; i++) {
+                            if (blockedCommands[i] == key) {
+                                found = true;
+                            }
+                        }
+                        if (!found) {
+                            blockedCommands.push_back(key);
+                        }
+                    }
+                 } else {
+                     std::vector<std::string>::iterator it;
+                     for (it = blockedCommands.begin(); it != blockedCommands.end();){
+                        if (*it == key) {
+                            it = blockedCommands.erase(it);
+                        } else {
+                            it++;
+                        }
+                     }
+                 }
+             }
              /**
              * \fn void setCommandParams (std::string key,
              * \brief connect an identifier to a command.
@@ -137,7 +164,7 @@ namespace odfaeg {
              void tProcessEvents() {
                  running = true;
                  while(running) {
-                    std::map<std::string, Command>::iterator it;
+                     std::map<std::string, Command>::iterator it;
                      for (unsigned int i = 0; i < toRemove.size(); i++) {
                         it = commands.find(toRemove[i]);
                         if (it != commands.end()) {
@@ -153,14 +180,21 @@ namespace odfaeg {
                      for (it = commands.begin(); it != commands.end(); it++) {
                         /*if (it->second.getName() == "IconMoved")
                             //////std::cout<<"is icon moved triggered ? "<<std::endl;*/
-                        if (it->second.isTriggered()) {
-                            (it->second)();
-                            if (removeListener) {
-                                break;
-                            }
+                        bool found = false;
+                        for (unsigned int i = 0; i < blockedCommands.size() && !found; i++) {
+                            if (it->first == blockedCommands[i])
+                                found = true;
                         }
-                        if (!removeListener) {
-                            it->second.clearEventsStack();
+                        if (!found) {
+                            if (it->second.isTriggered()) {
+                                (it->second)();
+                                if (removeListener) {
+                                    break;
+                                }
+                            }
+                            if (!removeListener) {
+                                it->second.clearEventsStack();
+                            }
                         }
                         /*Action* action = it->second.getAction();
                         if (action != nullptr) {
@@ -189,16 +223,25 @@ namespace odfaeg {
                  }
                  toAdd.clear();
                  for (it = commands.begin(); it != commands.end(); it++) {
-                    /*if (it->second.getName() == "IconMoved")
-                        //////std::cout<<"is icon moved triggered ? "<<std::endl;*/
-                    if (it->second.isTriggered()) {
-                        (it->second)();
-                        if (removeListener) {
-                            break;
+                    bool found = false;
+                    for (unsigned int i = 0; i < blockedCommands.size() && !found; i++) {
+                        if (it->first == blockedCommands[i]) {
+                            //std::cout<<"block command : "<<it->first<<std::endl;
+                            found = true;
                         }
                     }
-                    if (!removeListener) {
-                        it->second.clearEventsStack();
+                    if (!found) {
+                        /*if (it->second.getName() == "IconMoved")
+                            //////std::cout<<"is icon moved triggered ? "<<std::endl;*/
+                        if (it->second.isTriggered()) {
+                            (it->second)();
+                            if (removeListener) {
+                                break;
+                            }
+                        }
+                        if (!removeListener) {
+                            it->second.clearEventsStack();
+                        }
                     }
                     /*Action* action = it->second.getAction();
                     if (action != nullptr) {
@@ -244,6 +287,7 @@ namespace odfaeg {
              */
              std::map<std::string, Command> commands; /**> stores and execute commands.*/
              std::vector<std::string> toRemove;
+             std::vector<std::string> blockedCommands;
              std::map<std::string, Command> toAdd;
              bool removeListener, useThread, running;
              std::thread m_thread;
