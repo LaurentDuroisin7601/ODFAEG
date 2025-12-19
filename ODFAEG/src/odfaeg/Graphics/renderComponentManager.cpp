@@ -165,10 +165,12 @@ namespace odfaeg {
         }
         void RenderComponentManager::updateComponents() {
            std::multimap<int, Component*, std::greater<int>>::iterator it;
+           //std::cout<<"process events"<<std::endl;
            for (it = eventComponents.begin(); it != eventComponents.end(); it++) {
                if (it->second->isEventContextActivated() && it->second->isVisible()) {
                    if (!it->second->getListener().isUsingThread()) {
-                        ////std::cout<<"update"<<std::endl;
+                       /*if (it->second->getName() != "")
+                           std::cout<<"process events of : "<<it->second->getName()<<std::endl;*/
                        it->second->processEvents();
                    }
                    //it->second->recomputeSize();

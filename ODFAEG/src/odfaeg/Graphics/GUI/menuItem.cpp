@@ -2,8 +2,8 @@
 namespace odfaeg {
     namespace graphic {
         namespace gui {
-            MenuItem::MenuItem(RenderWindow& rw, const Font* font, std::string t) :
-                LightComponent(rw, math::Vec3f(0, 0, 0), math::Vec3f(t.length() * 10, 20, 0), math::Vec3f(0, 0, 0), -1, -1)
+            MenuItem::MenuItem(RenderWindow& rw, const Font* font, std::string t, int eventPriority) :
+                LightComponent(rw, math::Vec3f(0, 0, 0), math::Vec3f(t.length() * 10, 20, 0), math::Vec3f(0, 0, 0), -1, eventPriority)
                 {
                     text.setFont(*font);
                     text.setCharacterSize(15);

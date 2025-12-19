@@ -866,7 +866,7 @@ void ODFAEGCreator::onInit() {
         pScriptsFiles->setBorderThickness(5);
         pScriptsFiles->setRelPosition(5.f / 6.5f, 0.040f);
         pScriptsFiles->setRelSize(1.5f / 6.f, 1.f);
-        pScriptsFiles->setName("PSCRIPTFILES");
+        //pScriptsFiles->setName("PSCRIPTFILES");
         getRenderComponentManager().addComponent(pScriptsFiles);
         pComponent = new Panel(getRenderWindow(), Vec3f(0, 0, 0), Vec3f(500, 200, 0), 0);
         pComponent->setBorderColor(Color(128, 128, 128));
@@ -931,7 +931,7 @@ void ODFAEGCreator::onInit() {
         pScriptsFiles->setBackgroundColor(Color::Black);
         pInfos = new Panel(getRenderWindow(), Vec3f(0, 0, 0), Vec3f(200, 700, 0), 0);
         pInfos->setBackgroundColor(Color::White);
-        pInfos->setName("PINFOS");
+        //pInfos->setName("PINFOS");
         //pInfos->setScissorEnabled(false);
         rootInfosNode = std::make_unique<Node>("Infos", pInfos, Vec2f(0.f, 0.05f), Vec2f(1.f, 1.f - 0.05f));
         tabPane->addTab(pInfos, "Informations", *fm.getResourceByAlias(Fonts::Serif));
@@ -4449,7 +4449,7 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
          //std::cout<<"length : "<<tScriptEdit->getCharacterIndexAtCursorPos()<<","<<start<<std::endl;
          buffer.replace(start+1, tScriptEdit->getCharacterIndexAtCursorPos() - start, completion);
          tScriptEdit->setText(buffer);
-         tScriptEdit->setCursorPosition(start+completion.size());
+         tScriptEdit->setCursorPosition(start+completion.size()+1);
          floatingMenu.setVisible(false);
          Vec3f textSize = tScriptEdit->getTextSize();
          if (textSize.x() > tScriptEdit->getSize().x())
@@ -4461,6 +4461,7 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
          Command cmd(a, FastDelegate<bool>(&TextArea::isMouseInTextArea, tScriptEdit), FastDelegate<void>(&TextArea::setCursorPos, tScriptEdit));
          tScriptEdit->getListener().connect("CMOUSECLICKED", cmd);*/
          tScriptEdit->getListener().blockCommand("CMOUSECLICKED", false);
+         tScriptEdit->getListener().clearEventsStack();
      }
 }
 /*void ODFAEGCreator::addShape(Shape *shape) {
@@ -8091,7 +8092,8 @@ void ODFAEGCreator::onTextEntered(TextArea* ta, char caracter) {
             floatingMenu.clear();
             FontManager<Fonts>& fm = cache.resourceManager<Font, Fonts>("FontManager");
             for(unsigned int i = 0; i < completionNames.size(); i++) {
-                MenuItem* menuItem = new MenuItem(getRenderWindow(), fm.getResourceByAlias(Fonts::Serif),completionNames[i]);
+                MenuItem* menuItem = new MenuItem(getRenderWindow(), fm.getResourceByAlias(Fonts::Serif),completionNames[i], 1);
+                menuItem->setName("MenuItem");
                 getRenderComponentManager().addComponent(menuItem);
                 floatingMenu.addMenuItem(menuItem);
                 menuItem->addMenuItemListener(this);

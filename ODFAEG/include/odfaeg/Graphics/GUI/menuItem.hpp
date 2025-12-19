@@ -11,7 +11,7 @@ namespace odfaeg {
         namespace gui {
             class ODFAEG_GRAPHICS_API MenuItem : public LightComponent {
             public :
-                MenuItem(RenderWindow& rw, const Font* font, std::string text);
+                MenuItem(RenderWindow& rw, const Font* font, std::string text, int eventPriority=-1);
                 void clear();
                 void setPosition (math::Vec3f position);
                 void onDraw(RenderTarget& target, RenderStates states=RenderStates::Default);
