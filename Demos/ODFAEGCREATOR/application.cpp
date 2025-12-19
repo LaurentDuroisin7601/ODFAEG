@@ -4437,9 +4437,11 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
             }
         }
      } else {
+         strsearch="";
+         tScriptEdit->getListener().setCommandSlotParams("CONTEXTENTERED", this, tScriptEdit, '\0');
          std::string buffer = tScriptEdit->getText();
          std::string completion = item->getText();
-         buffer.replace(prefixStart, tScriptEdit->getCharacterIndexAtCursorPos() - prefixStart + 1, completion);
+         buffer.replace(prefixStart, tScriptEdit->getCharacterIndexAtCursorPos() - prefixStart+1, completion);
          tScriptEdit->setText(buffer);
          tScriptEdit->setCursorPosition(prefixStart+completion.size());
          floatingMenu.setVisible(false);
@@ -4449,6 +4451,7 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
          if (textSize.y() > tScriptEdit->getSize().y())
             tScriptEdit->setSize(Vec3f(tScriptEdit->getSize().x(), textSize.y(), tScriptEdit->getSize().z()));
          pScriptsEdit->updateScrolls();
+
      }
 }
 /*void ODFAEGCreator::addShape(Shape *shape) {
@@ -8061,7 +8064,7 @@ bool ODFAEGCreator::startWith(std::string strsearch, std::string str) {
     }
 }*/
 void ODFAEGCreator::onTextEntered(TextArea* ta, char caracter) {
-    //std::cout<<"text entered : "<<(int)caracter<<std::endl;
+
     if (ta == tScriptEdit && caracter != 0 && caracter != 13) {
         //std::cout<<"completion"<<std::endl;
         if (std::isalnum(caracter)) {
@@ -8071,23 +8074,25 @@ void ODFAEGCreator::onTextEntered(TextArea* ta, char caracter) {
         } else {
             strsearch = "";
         }
-        unsigned int charPosInFile = tScriptEdit->getCharacterIndexAtCursorPos();
-        std::vector<std::string> completionNames = checkCompletionNames(strsearch, charPosInFile);
-        std::vector<MenuItem*> items = floatingMenu.getItems();
-        for (unsigned int i = 0; i < items.size(); i++) {
-            getRenderComponentManager().removeComponent(items[i]);
+        if (strsearch != "") {
+            unsigned int charPosInFile = tScriptEdit->getCharacterIndexAtCursorPos();
+            std::vector<std::string> completionNames = checkCompletionNames(strsearch, charPosInFile);
+            std::vector<MenuItem*> items = floatingMenu.getItems();
+            for (unsigned int i = 0; i < items.size(); i++) {
+                getRenderComponentManager().removeComponent(items[i]);
+            }
+            floatingMenu.clear();
+            FontManager<Fonts>& fm = cache.resourceManager<Font, Fonts>("FontManager");
+            for(unsigned int i = 0; i < completionNames.size(); i++) {
+                MenuItem* menuItem = new MenuItem(getRenderWindow(), fm.getResourceByAlias(Fonts::Serif),completionNames[i]);
+                getRenderComponentManager().addComponent(menuItem);
+                floatingMenu.addMenuItem(menuItem);
+                menuItem->addMenuItemListener(this);
+            }
+            floatingMenu.setPosition(tScriptEdit->getCursorPos() + tScriptEdit->getCharacterSize());
+            //std::cout<<"position : "<<floatingMenu.getPosition()<<std::endl;
+            floatingMenu.setVisible(true);
         }
-        floatingMenu.clear();
-        FontManager<Fonts>& fm = cache.resourceManager<Font, Fonts>("FontManager");
-        for(unsigned int i = 0; i < completionNames.size(); i++) {
-            MenuItem* menuItem = new MenuItem(getRenderWindow(), fm.getResourceByAlias(Fonts::Serif),completionNames[i]);
-            getRenderComponentManager().addComponent(menuItem);
-            floatingMenu.addMenuItem(menuItem);
-            menuItem->addMenuItemListener(this);
-        }
-        floatingMenu.setPosition(tScriptEdit->getCursorPos() + tScriptEdit->getCharacterSize());
-        //std::cout<<"position : "<<floatingMenu.getPosition()<<std::endl;
-        floatingMenu.setVisible(true);
 
     }
     Vec3f textSize = tScriptEdit->getTextSize();
