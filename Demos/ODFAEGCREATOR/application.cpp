@@ -4441,7 +4441,7 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
          tScriptEdit->getListener().setCommandSlotParams("CONTEXTENTERED", this, tScriptEdit, '\0');
          std::string buffer = tScriptEdit->getText();
          std::string completion = item->getText();
-         buffer.replace(prefixStart, tScriptEdit->getCharacterIndexAtCursorPos() - prefixStart+1, completion);
+         buffer.replace(prefixStart, tScriptEdit->getCharacterIndexAtCursorPos() - prefixStart, completion);
          tScriptEdit->setText(buffer);
          tScriptEdit->setCursorPosition(prefixStart+completion.size());
          floatingMenu.setVisible(false);
