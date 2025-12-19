@@ -144,6 +144,7 @@ class ODFAEGCreator : public odfaeg::core::Application<ODFAEGCreator>,
     };
     private :
         std::pair<unsigned, unsigned> indexToLineColumn(const std::string& text, unsigned pos);
+        unsigned lineColumnToIndex(const std::string& text, unsigned line, unsigned column);
         //bool isPrimitiveType(std::string type);
         bool startWith(std::string strsearch, std::string str);
         /*void processInst(std::string inst, unsigned int currentPos, BlocInfo& bloc);

@@ -7694,6 +7694,16 @@ std::pair<unsigned, unsigned> ODFAEGCreator::indexToLineColumn(const std::string
 
     return {line, column};
 }
+unsigned ODFAEGCreator::lineColumnToIndex(const std::string& text, unsigned line, unsigned column) {
+    unsigned currentLine = 0; unsigned index = 0; // Parcours du texte jusqu'à la ligne demandée
+    while (currentLine < line && index < text.size()) {
+        if (text[index] == '\n') {
+            currentLine++;
+        }
+        index++;
+    } // Maintenant on est au début de la ligne demandée
+    return index + column;
+}
 std::vector<std::string> ODFAEGCreator::checkCompletionNames(std::string strsearch, unsigned int posInFile) {
     //std::cout<<"check : "<<std::endl;
     std::vector<std::string> namesToPropose;
@@ -8117,7 +8127,8 @@ void ODFAEGCreator::onGoToFunctionSelected(DropDownList* dp) {
                 }
             }
             if (signature == signatureToFind) {
-                std::cout<<"function found!"<<std::endl;
+                int index = lineColumnToIndex(tScriptEdit->getText(), mf[f].location.first, mf[f].location.second);
+                std::cout<<"index of function : "<<index<<std::endl;
             }
         }
     }

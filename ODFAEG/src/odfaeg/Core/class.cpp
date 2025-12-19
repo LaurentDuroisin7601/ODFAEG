@@ -157,22 +157,30 @@ namespace odfaeg {
                 CXString parentName = clang_getCursorSpelling(parentCursor);
                 std::string parentNs = getQualifiedNamespace(parentCursor);
                 if (ctx->cl.getName() == clang_getCString(parentName) && ctx->cl.namespc == parentNs) {
-                    CXSourceLocation loc = clang_getCursorLocation(cursor);
-                    CXFile file;
-                    unsigned line, col, offset;
-                    clang_getFileLocation(loc, &file, &line, &col, &offset);
-                    ctx->cl.setImplFilePath(clang_getCString(clang_getFileName(file)));
-                    // Type de retour
-                    CXType funcType = clang_getCursorType(cursor);
-                    CXType returnType = clang_getResultType(funcType);
+                    if (clang_isCursorDefinition(cursor)) {
+                        // Type de retour
+                        CXType funcType = clang_getCursorType(cursor);
+                        CXType returnType = clang_getResultType(funcType);
 
-                    CXString typeStr = clang_getTypeSpelling(returnType);
+                        CXString typeStr = clang_getTypeSpelling(returnType);
 
-                    MemberFunction m(clang_getCString(typeStr), clang_getCString(spelling));
-                    clang_visitChildren(cursor, memberFonctionVisitor, &m);
-                    ctx->cl.addMemberFunction(m);
-                    m.tu = ctx->tu;
-                    clang_disposeString(typeStr);
+                        MemberFunction m(clang_getCString(typeStr), clang_getCString(spelling));
+
+                        CXSourceLocation loc = clang_getCursorLocation(cursor);
+                        CXFile file;
+                        unsigned line, col, offset;
+                        clang_getFileLocation(loc, &file, &line, &col, &offset);
+
+                        ctx->cl.setImplFilePath(clang_getCString(clang_getFileName(file)));
+                        m.location = std::make_pair(line, col);
+
+
+                        //std::cout<<"found function definition at : "<<m.location.first<<","<<m.location.second<<std::endl;
+                        clang_visitChildren(cursor, memberFonctionVisitor, &m);
+                        ctx->cl.addMemberFunction(m);
+                        m.tu = ctx->tu;
+                        clang_disposeString(typeStr);
+                    }
                 }
                 clang_disposeString(parentName);
             } else if (kind == CXCursor_FieldDecl) {

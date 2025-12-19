@@ -16,6 +16,7 @@ namespace odfaeg {
             std::vector<std::string> getArgsTypes();
             std::vector<std::string> getArgsNames();
             CXTranslationUnit tu;
+            std::pair<unsigned int, unsigned int> location;
         private :
             std::string m_name;
             std::string m_returnType;
