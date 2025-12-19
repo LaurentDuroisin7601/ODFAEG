@@ -234,7 +234,7 @@ namespace odfaeg {
                     for (unsigned i = 0; i < numTokens-1; ++i) {
                         CXString spelling = clang_getTokenSpelling(c->tu, tokens[i]);
                         type += clang_getCString(spelling);
-                        std::cout<<"type : "<<type<<std::endl;
+                        //std::cout<<"type : "<<type<<std::endl;
                         clang_disposeString(spelling);
                     }
                     clang_disposeTokens(c->tu, tokens, numTokens);

@@ -8128,7 +8128,9 @@ void ODFAEGCreator::onGoToFunctionSelected(DropDownList* dp) {
             }
             if (signature == signatureToFind) {
                 int index = lineColumnToIndex(tScriptEdit->getText(), mf[f].location.first, mf[f].location.second);
-                std::cout<<"index of function : "<<index<<std::endl;
+                tScriptEdit->setCursorPosition(index);
+                Vec3f cursorPos = tScriptEdit->getCursorPos();
+                pScriptsEdit->setScrollPosition(cursorPos);
             }
         }
     }
