@@ -976,6 +976,8 @@ void ODFAEGCreator::onInit() {
         getListener().connect("MoveCursor", moveCursorCommand);
 
         dpGoToMFunc = new DropDownList(getRenderWindow(), Vec3f(0, 20, 0), Vec3f(200, 20, 0), fm.getResourceByAlias(Fonts::Serif), "Select Function", 15);
+        Command cmdGoToFuncion(FastDelegate<bool>(&DropDownList::isValueChanged, dpGoToMFunc), FastDelegate<void>(&ODFAEGCreator::onGoToFunctionSelected, this, dpGoToMFunc));
+        dpGoToMFunc->getListener().connect("GOTOFUNCCHANGED", cmdGoToFuncion);
         toolBar->addItem(dpGoToMFunc);
         getRenderComponentManager().addComponent(dpGoToMFunc);
         createWindowsDescriptorsAndPipelines();
@@ -8083,5 +8085,44 @@ void ODFAEGCreator::onTextEntered(TextArea* ta, char caracter) {
     if (textSize.y() > tScriptEdit->getSize().y())
         tScriptEdit->setSize(Vec3f(tScriptEdit->getSize().x(), textSize.y(), tScriptEdit->getSize().z()));
     pScriptsEdit->updateScrolls();
+}
+void ODFAEGCreator::onGoToFunctionSelected(DropDownList* dp) {
+    if (dp == dpGoToMFunc) {
+        std::string signature = dp->getSelectedItem();
+        std::vector<std::string> parts = split(signature, "::");
+        bool found = false;
+        Class cl("", "");
+        for (unsigned int i = 0; i < parts.size() && !found; i++) {
+            cl = Class::getClassFromMemory(rtc.getIncludeDirs(), virtualFile, parts[i], tScriptEdit->getText(), minAppliname);
+            if (cl.getName() != "" && (cl.getImplFilePath() == virtualFile || cl.getFilePath() == virtualFile)) {
+                found = true;
+            }
+        }
+        std::vector<std::string> name = split(parts[parts.size()-1], "(");
+        //std::cout<<"name : "<<name[0]<<std::endl;
+        std::vector<std::string> argsTypes;
+        int pos1 = parts[parts.size()-1].find("(");
+        int pos2 = parts[parts.size()-1].find(")");
+        if (pos1 != (pos2-1)) {
+            name[1].erase(name[1].size()-1, 1);
+            argsTypes = split(name[1], ",");
+        }
+        //std::cout<<"nb args types : "<<argsTypes.size()<<std::endl;
+        std::vector<MemberFunction> mf = cl.getMembersFunctions();
+        for (unsigned int f = 0; f < mf.size(); f++) {
+            if (mf[f].getName() == name[0] && mf[f].getArgsTypes().size() == argsTypes.size()) {
+                bool equals = true;
+                for (unsigned int a = 0; a < mf[f].getArgsTypes().size() && equals; a++) {
+                    std::cout<<"arg type = "<<mf[f].getArgsTypes()[a]<<","<<argsTypes[a]<<std::endl;
+                    if (mf[f].getArgsTypes()[a] != argsTypes[a]) {
+                        equals = false;
+                    }
+                }
+                if (equals) {
+                    std::cout<<"function found!"<<std::endl;
+                }
+            }
+        }
+    }
 }
 

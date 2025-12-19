@@ -138,6 +138,7 @@ class ODFAEGCreator : public odfaeg::core::Application<ODFAEGCreator>,
     unsigned int findLine(std::string toFind, std::string content);
     void removeLine(unsigned int line, std::string& content);
     void onTextEntered(odfaeg::graphic::gui::TextArea* ta, char caracter);
+    void onGoToFunctionSelected(odfaeg::graphic::gui::DropDownList* dp);
     enum Fonts {
         Serif
     };
