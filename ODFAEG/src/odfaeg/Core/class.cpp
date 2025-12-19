@@ -214,15 +214,17 @@ namespace odfaeg {
                 CXString spelling = clang_getTokenSpelling(c->tu, tokens[numTokens-1]);
                 std::string name = clang_getCString(spelling);
                 clang_disposeString(spelling);
-                for (unsigned i = 0; i < numTokens-1; ++i) {
-                    CXString spelling = clang_getTokenSpelling(c->tu, tokens[i]);
-                    type += clang_getCString(spelling);
-                    clang_disposeString(spelling);
-                }
-                clang_disposeTokens(c->tu, tokens, numTokens);
+                if (numTokens > 1) {
+                    for (unsigned i = 0; i < numTokens-1; ++i) {
+                        CXString spelling = clang_getTokenSpelling(c->tu, tokens[i]);
+                        type += clang_getCString(spelling);
+                        clang_disposeString(spelling);
+                    }
+                    clang_disposeTokens(c->tu, tokens, numTokens);
 
-                c->addArgName(std::string(type));
-                c->addArgType(std::string(name));
+                    c->addArgName(std::string(type));
+                    c->addArgType(std::string(name));
+                }
             }
             return CXChildVisit_Recurse;
 
@@ -238,14 +240,16 @@ namespace odfaeg {
                 CXString spelling = clang_getTokenSpelling(m->tu, tokens[numTokens-1]);
                 std::string name = clang_getCString(spelling);
                 clang_disposeString(spelling);
-                for (unsigned i = 0; i < numTokens-1; ++i) {
-                    CXString spelling = clang_getTokenSpelling(m->tu, tokens[i]);
-                    type += clang_getCString(spelling);
-                    clang_disposeString(spelling);
+                if (numTokens > 1)  {
+                    for (unsigned i = 0; i < numTokens-1; ++i) {
+                        CXString spelling = clang_getTokenSpelling(m->tu, tokens[i]);
+                        type += clang_getCString(spelling);
+                        clang_disposeString(spelling);
+                    }
+                    clang_disposeTokens(m->tu, tokens, numTokens);
+                    m->addArgName(std::string(name));
+                    m->addArgType(std::string(type));
                 }
-                clang_disposeTokens(m->tu, tokens, numTokens);
-                m->addArgName(std::string(name));
-                m->addArgType(std::string(type));
             }
             return CXChildVisit_Recurse;
 
