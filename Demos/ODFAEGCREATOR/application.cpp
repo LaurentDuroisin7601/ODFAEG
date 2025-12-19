@@ -4442,7 +4442,7 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
          std::string buffer = tScriptEdit->getText();
          std::string completion = item->getText();
          unsigned int start = tScriptEdit->getCharacterIndexAtCursorPos();
-         while (std::isalnum(buffer.at(start-1))) {
+         while (std::isalnum(buffer.at(start))) {
             std::cout<<"caracter at : "<<start<<buffer.at(start)<<std::endl;
             start--;
          }
@@ -4457,7 +4457,9 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
          if (textSize.y() > tScriptEdit->getSize().y())
             tScriptEdit->setSize(Vec3f(tScriptEdit->getSize().x(), textSize.y(), tScriptEdit->getSize().z()));
          pScriptsEdit->updateScrolls();
-
+         Action a (Action::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
+         Command cmd(a, FastDelegate<bool>(&TextArea::isMouseInTextArea, tScriptEdit), FastDelegate<void>(&TextArea::setCursorPos, tScriptEdit));
+         tScriptEdit->getListener().connect("CMOUSECLICKED", cmd);
      }
 }
 /*void ODFAEGCreator::addShape(Shape *shape) {
@@ -8096,6 +8098,7 @@ void ODFAEGCreator::onTextEntered(TextArea* ta, char caracter) {
             floatingMenu.setPosition(tScriptEdit->getCursorPos() + tScriptEdit->getCharacterSize());
             //std::cout<<"position : "<<floatingMenu.getPosition()<<std::endl;
             floatingMenu.setVisible(true);
+            tScriptEdit->getListener().removeCommand("CMOUSECLICKED");
         }
 
     }
