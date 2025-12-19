@@ -8089,8 +8089,8 @@ void ODFAEGCreator::onTextEntered(TextArea* ta, char caracter) {
 }
 void ODFAEGCreator::onGoToFunctionSelected(DropDownList* dp) {
     if (dp == dpGoToMFunc) {
-        std::string signature = dp->getSelectedItem();
-        std::vector<std::string> parts = split(signature, "::");
+        std::string signatureToFind = dp->getSelectedItem();
+        std::vector<std::string> parts = split(signatureToFind, "::");
         bool found = false;
         Class cl("", "");
         for (unsigned int i = 0; i < parts.size() && !found; i++) {
@@ -8099,29 +8099,25 @@ void ODFAEGCreator::onGoToFunctionSelected(DropDownList* dp) {
                 found = true;
             }
         }
-        std::vector<std::string> name = split(parts[parts.size()-1], "(");
-        //std::cout<<"name : "<<name[0]<<std::endl;
-        std::vector<std::string> argsTypes;
-        int pos1 = parts[parts.size()-1].find("(");
-        int pos2 = parts[parts.size()-1].find(")");
-        if (pos1 != (pos2-1)) {
-            name[1].erase(name[1].size()-1, 1);
-            argsTypes = split(name[1], ",");
-        }
         //std::cout<<"nb args types : "<<argsTypes.size()<<std::endl;
         std::vector<MemberFunction> mf = cl.getMembersFunctions();
         for (unsigned int f = 0; f < mf.size(); f++) {
-            if (mf[f].getName() == name[0] && mf[f].getArgsTypes().size() == argsTypes.size()) {
-                bool equals = true;
-                for (unsigned int a = 0; a < mf[f].getArgsTypes().size() && equals; a++) {
-                    std::cout<<"arg type = "<<mf[f].getArgsTypes()[a]<<","<<argsTypes[a]<<std::endl;
-                    if (mf[f].getArgsTypes()[a] != argsTypes[a]) {
-                        equals = false;
-                    }
+            std::string signature = cl.getNamespace()+"::"+cl.getName()+"::"+mf[f].getName();
+            if (mf[f].getArgsTypes().size() == 0) {
+                signature += "()";
+            } else {
+                for (unsigned int a = 0; a < mf[f].getArgsTypes().size(); a++) {
+                    //std::cout<<"arg type : "<<mf[f].getArgsTypes()[a]<<std::endl;
+                    if (a == 0)
+                        signature += "("+mf[f].getArgsTypes()[a];
+                    if (a == mf[f].getArgsTypes().size() - 1)
+                        signature += ")";
+                    else
+                        signature += ","+mf[f].getArgsTypes()[a];
                 }
-                if (equals) {
-                    std::cout<<"function found!"<<std::endl;
-                }
+            }
+            if (signature == signatureToFind) {
+                std::cout<<"function found!"<<std::endl;
             }
         }
     }
