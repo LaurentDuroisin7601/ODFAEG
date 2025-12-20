@@ -978,6 +978,8 @@ void ODFAEGCreator::onInit() {
         dpGoToMFunc = new DropDownList(getRenderWindow(), Vec3f(0, 20, 0), Vec3f(200, 20, 0), fm.getResourceByAlias(Fonts::Serif), "Select Function", 15);
         Command cmdGoToFuncion(FastDelegate<bool>(&DropDownList::isValueChanged, dpGoToMFunc), FastDelegate<void>(&ODFAEGCreator::onGoToFunctionSelected, this, dpGoToMFunc));
         dpGoToMFunc->getListener().connect("GOTOFUNCCHANGED", cmdGoToFuncion);
+        Command cmdGoToFuncDroppedDown(FastDelegate<bool>(&DropDownList::isDroppedDown, dpGoToMFunc), FastDelegate<void>(&ODFAEGCreator::onGoToFunctionDroppedDown, this, dpGoToMFunc));
+        dpGoToMFunc->getListener().connect("GOTOFUNCDROPPEDDOWN", cmdGoToFuncDroppedDown);
         toolBar->addItem(dpGoToMFunc);
         getRenderComponentManager().addComponent(dpGoToMFunc);
         createWindowsDescriptorsAndPipelines();
@@ -8151,6 +8153,12 @@ void ODFAEGCreator::onGoToFunctionSelected(DropDownList* dp) {
                 //std::cout<<"scroll pos set"<<std::endl;
             }
         }
+    }
+    tScriptEdit->setEventContextActivated(true);
+}
+void ODFAEGCreator::onGoToFunctionDroppedDown(DropDownList* dp) {
+    if (dp == dpGoToMFunc) {
+        tScriptEdit->setEventContextActivated(false);
     }
 }
 
