@@ -7718,22 +7718,7 @@ unsigned ODFAEGCreator::lineColumnToIndex(const std::string& text, unsigned line
         if (text[index] == '\n') {
             currentLine++;
         }
-        unsigned char c = text[index];
-        // Tabulation
-        if (c == '\t') {
-            index+=4;
-        } else {
-            index++;
-        }
-
-        /*// UTF-8 : avancer d'un codepoint
-        unsigned char byte = text[index];
-        unsigned advance = 1;
-
-        if ((byte & 0xE0) == 0xC0) advance = 2;
-        else if ((byte & 0xF0) == 0xE0) advance = 3;
-        else if ((byte & 0xF8) == 0xF0) advance = 4;
-        index += advance;*/
+        index++;
     }
 
     // Maintenant on est au début de la ligne
@@ -7741,17 +7726,25 @@ unsigned ODFAEGCreator::lineColumnToIndex(const std::string& text, unsigned line
 
     while (index < text.size() && col < column) {
         unsigned char c = text[index];
-        //Tabulation.
-        if (c == '\t') {
-            col += 4;
-            index+=4;
-        } else {
-            col++;
+
+        // Gestion CRLF
+        if (c == '\r') {
             index++;
+            continue;
+        }
+        if (c == '\n') {
+            break; // fin de ligne
+        }
+
+        // Tabulation
+        if (c == '\t') {
+            col += 4; // ou ta tab size
+            index++;
+            continue;
         }
 
         // UTF-8 : avancer d'un codepoint
-        /*unsigned char byte = text[index];
+        unsigned char byte = text[index];
         unsigned advance = 1;
 
         if ((byte & 0xE0) == 0xC0) advance = 2;
@@ -7759,12 +7752,12 @@ unsigned ODFAEGCreator::lineColumnToIndex(const std::string& text, unsigned line
         else if ((byte & 0xF8) == 0xF0) advance = 4;
 
         col++;
-        index += advance;*/
+        index += advance;
     }
 
     return index;
-
 }
+
 std::vector<std::string> ODFAEGCreator::checkCompletionNames(std::string strsearch, unsigned int posInFile) {
     //std::cout<<"check : "<<std::endl;
     std::vector<std::string> namesToPropose;
@@ -8192,6 +8185,7 @@ void ODFAEGCreator::onGoToFunctionSelected(DropDownList* dp) {
             }
             if (signature == signatureToFind) {
                 int index = lineColumnToIndex(tScriptEdit->getText(), mf[f].location.first, mf[f].location.second);
+                std::cout<<"index : "<<index<<std::endl;
                 tScriptEdit->setCursorPosition(index);
                 Vec3f cursorPos = tScriptEdit->getCursorPositionLocal();
                 pScriptsEdit->setScrollPosition(cursorPos-pScriptsEdit->getPosition());

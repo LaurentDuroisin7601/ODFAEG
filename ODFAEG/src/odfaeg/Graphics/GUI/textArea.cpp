@@ -109,9 +109,18 @@ namespace odfaeg {
             math::Vec3f TextArea::getTextSize() {
                 return text.getGlobalBounds().getSize();
             }
-            void TextArea::onDraw(RenderTarget& target, RenderStates states) {
+            void TextArea::onMove(math::Vec3f& t) {
+                Transformable::onMove(t);
                 math::Vec2f pos = text.findCharacterPos(currentIndex);
+                //std::cout<<"cursor pos : "<<pos<<std::endl;
                 cursorPos = math::Vec3f(pos.x(), pos.y(), 0);
+            }
+            void TextArea::onDraw(RenderTarget& target, RenderStates states) {
+
+                //math::Vec2f pos = text.findCharacterPos(currentIndex);
+                /*if (name == "TSCRIPTEDIT")
+                std::cout<<"cursor pos : "<<pos<<std::endl;*/
+                //cursorPos = math::Vec3f(pos.x(), pos.y(), 0);
                 VertexArray va(Lines);
                 va.append(Vertex(math::Vec3f(cursorPos.x()+1, cursorPos.y(), getPosition().z()+300), Color::Black));
                 va.append(Vertex(math::Vec3f(cursorPos.x()+1, cursorPos.y() + text.getCharacterSize(), getPosition().z()+300), Color::Black));
