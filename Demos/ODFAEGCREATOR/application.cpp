@@ -7694,21 +7694,49 @@ void ODFAEGCreator::removeSpacesChars(std::string& str) {
         str = str.erase(str.size()-1, 1);
     }
 }*/
-std::pair<unsigned, unsigned> ODFAEGCreator::indexToLineColumn(const std::string& text, unsigned pos) {
+
+std::pair<unsigned, unsigned> ODFAEGCreator::indexToLineColumn(const std::string& text, unsigned index) {
     unsigned line = 0;
     unsigned column = 0;
 
-    for (unsigned i = 0; i < pos && i < text.size(); ++i) {
-        if (text[i] == '\n') {
-            line++;
-            column = 0; // reset colonne
-        } else {
-            column++;
+    unsigned i = 0;
+
+    while (i < index && i < text.size()) {
+        unsigned char c = text[i];
+
+        // CRLF
+        if (c == '\r') {
+            i++;
+            continue;
         }
+
+        if (c == '\n') {
+            line++;
+            column = 0;
+            i++;
+            continue;
+        }
+
+        // Tabulation
+        if (c == '\t') {
+            column += 4; // même tab size que dans lineColumnToIndex()
+            i++;
+            continue;
+        }
+
+        // UTF-8 : avancer d'un codepoint
+        unsigned advance = 1;
+        if ((c & 0xE0) == 0xC0) advance = 2;
+        else if ((c & 0xF0) == 0xE0) advance = 3;
+        else if ((c & 0xF8) == 0xF0) advance = 4;
+
+        column++;
+        i += advance;
     }
 
-    return {line, column};
+    return { line, column };
 }
+
 unsigned ODFAEGCreator::lineColumnToIndex(const std::string& text, unsigned line, unsigned column) {
     unsigned index = 0;
     unsigned currentLine = 0;
@@ -8185,7 +8213,7 @@ void ODFAEGCreator::onGoToFunctionSelected(DropDownList* dp) {
             }
             if (signature == signatureToFind) {
                 int index = lineColumnToIndex(tScriptEdit->getText(), mf[f].location.first, mf[f].location.second);
-                std::cout<<"index : "<<index<<std::endl;
+                //std::cout<<"index : "<<index<<std::endl;
                 tScriptEdit->setCursorPosition(index);
                 Vec3f cursorPos = tScriptEdit->getCursorPositionLocal();
                 pScriptsEdit->setScrollPosition(cursorPos-pScriptsEdit->getPosition());
