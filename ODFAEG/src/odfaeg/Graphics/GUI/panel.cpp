@@ -60,9 +60,6 @@ namespace odfaeg {
                 deltas.y() = math::Math::clamp(scrollY * maxY, 0.f, maxY);
                 //std::cout<<"final positions : "<<vertScrollBar.getPosition()<<std::endl<<horScrollBar.getPosition()<<std::endl;
                 // Replacer les enfants en fonction de deltas
-                float offsetX = -(deltas.x() * maxSize.x() / (getSize().x() - 10));
-                float offsetY = -(deltas.y() * maxSize.y() / (getSize().y() - 10));
-                //std::cout<<"deltas : "<<deltas<<std::endl;
                 for (auto* child : getChildren()) {
                     child->setPosition(child->getBasePosition() - deltas);
                 }

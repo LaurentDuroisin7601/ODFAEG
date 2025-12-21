@@ -7710,14 +7710,54 @@ std::pair<unsigned, unsigned> ODFAEGCreator::indexToLineColumn(const std::string
     return {line, column};
 }
 unsigned ODFAEGCreator::lineColumnToIndex(const std::string& text, unsigned line, unsigned column) {
-    unsigned currentLine = 0; unsigned index = 0; // Parcours du texte jusqu'à la ligne demandée
+    unsigned lineColumnToIndex(const std::string& text, unsigned line, unsigned column) {
+    unsigned index = 0;
+    unsigned currentLine = 0;
+
+    // Aller jusqu'à la ligne demandée
     while (currentLine < line && index < text.size()) {
         if (text[index] == '\n') {
             currentLine++;
         }
         index++;
-    } // Maintenant on est au début de la ligne demandée
-    return index + column;
+    }
+
+    // Maintenant on est au début de la ligne
+    unsigned col = 0;
+
+    while (index < text.size() && col < column) {
+        unsigned char c = text[index];
+
+        // Gestion CRLF
+        if (c == '\r') {
+            index++;
+            continue;
+        }
+        if (c == '\n') {
+            break; // fin de ligne
+        }
+
+        // Tabulation
+        if (c == '\t') {
+            col += 4; // ou ta tab size
+            index++;
+            continue;
+        }
+
+        // UTF-8 : avancer d'un codepoint
+        unsigned char byte = text[index];
+        unsigned advance = 1;
+
+        if ((byte & 0xE0) == 0xC0) advance = 2;
+        else if ((byte & 0xF0) == 0xE0) advance = 3;
+        else if ((byte & 0xF8) == 0xF0) advance = 4;
+
+        col++;
+        index += advance;
+    }
+
+    return index;
+
 }
 std::vector<std::string> ODFAEGCreator::checkCompletionNames(std::string strsearch, unsigned int posInFile) {
     //std::cout<<"check : "<<std::endl;
