@@ -37,6 +37,7 @@ namespace odfaeg {
                 math::Vec3f getTextSize();
                 unsigned int getCharacterIndexAtCursorPos();
                 math::Vec3f getCursorPos();
+                math::Vec3f getCursorPositionLocal();
                 unsigned int getCharacterSize();
                 void setCursorPosition(unsigned int currentIndex);
             private :

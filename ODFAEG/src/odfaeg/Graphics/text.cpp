@@ -377,6 +377,41 @@ namespace odfaeg
 
             return (m_string.getSize() != 0) ? (m_string.getSize() - 1) : 0;
         }
+        math::Vec2f Text::findCharacterPosLocal(std::size_t index)
+        {
+            if (!m_font)
+                return math::Vec2f();
+
+            if (index > m_string.getSize())
+                index = m_string.getSize();
+
+            bool  isBold          = m_style & Bold;
+            float whitespaceWidth = m_font->getGlyph(L' ', m_characterSize, isBold).advance;
+            float letterSpacing   = ( whitespaceWidth / 3.f ) * ( m_letterSpacingFactor - 1.f );
+            whitespaceWidth      += letterSpacing;
+            float lineSpacing     = m_font->getLineSpacing(m_characterSize) * m_lineSpacingFactor;
+
+            math::Vec2f position;
+            std::uint32_t prevChar = 0;
+            for (std::size_t i = 0; i < index; ++i)
+            {
+                std::uint32_t curChar = m_string[i];
+
+                position[0] += m_font->getKerning(prevChar, curChar, m_characterSize);
+                prevChar = curChar;
+
+                switch (curChar)
+                {
+                    case ' ':  position[0] += whitespaceWidth;             continue;
+                    case '\t': position[0] += whitespaceWidth * 4;         continue;
+                    case '\n': position[1] += lineSpacing; position[0] = 0; continue;
+                }
+
+                position[0] += m_font->getGlyph(curChar, m_characterSize, isBold).advance + letterSpacing;
+            }
+
+            return position;
+        }
         ////////////////////////////////////////////////////////////
         math::Vec2f Text::findCharacterPos(std::size_t index)
         {

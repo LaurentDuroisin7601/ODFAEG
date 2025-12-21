@@ -389,6 +389,7 @@ namespace odfaeg
             ///
             ////////////////////////////////////////////////////////////
             math::Vec2f findCharacterPos(std::size_t index);
+            math::Vec2f findCharacterPosLocal(std::size_t index);
             unsigned int findCharacterAt(math::Vec2f cursorPos);
 
             ////////////////////////////////////////////////////////////
