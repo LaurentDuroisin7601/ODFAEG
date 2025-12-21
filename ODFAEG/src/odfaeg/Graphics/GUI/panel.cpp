@@ -43,27 +43,28 @@ namespace odfaeg {
             }
             void Panel::setScrollPosition(math::Vec3f position) {
                 // Clamp la position dans les bornes
-                float maxX = maxSize.x() /*- getSize().x()*/;
-                float maxY = maxSize.y() /*- getSize().y()*/;
+                float maxX = maxSize.x();
+                float maxY = maxSize.y();
                 float scrollX = math::Math::clamp(position.x() / maxX, 0.f, 1.f);
                 float scrollY = math::Math::clamp(position.y() / maxY, 0.f, 1.f);
-                std::cout<<"maxs in % : "<<scrollX<<","<<scrollY<<","<<position.y() / maxY<<std::endl;
+                //std::cout<<"maxs in % : "<<scrollX<<","<<scrollY<<","<<position.y() / maxY<<std::endl;
                 math::Vec2f scrollDeltas;
                 scrollDeltas.x() = math::Math::clamp(scrollX * (getSize().x() - 10 - vertScrollBar.getSize().x()), 0.f, (getSize().x() - 10 - vertScrollBar.getSize().x()));
-                scrollDeltas.y() = math::Math::clamp(scrollY * (getSize().y() - 10 - horScrollBar.getSize().y()), 0.f, (getSize().y() - 10 - vertScrollBar.getSize().y()));
+                scrollDeltas.y() = math::Math::clamp(scrollY * (getSize().y() - 10 - horScrollBar.getSize().y()), 0.f, (getSize().y() - 10 - horScrollBar.getSize().y()));
                 //std::cout<<"start positions : "<<vertScrollBar.getPosition()<<std::endl<<horScrollBar.getPosition()<<std::endl;
                 // Positionner directement les scrollbars
                 vertScrollBar.setPosition(math::Vec3f(getPosition().x() + scrollDeltas.x(), vertScrollBar.getPosition().y(), getPosition().z()+500));
                 horScrollBar.setPosition(math::Vec3f(horScrollBar.getPosition().x(), getPosition().y() + scrollDeltas.y(), getPosition().z()+500));
 
-                deltas.x() = math::Math::clamp(position.x() * maxX, 0.f, maxX);
-                deltas.y() = math::Math::clamp(position.y() * maxY, 0.f, maxY);
+                deltas.x() = math::Math::clamp(scrollX * maxX, 0.f, maxX);
+                deltas.y() = math::Math::clamp(scrollY * maxY, 0.f, maxY);
                 //std::cout<<"final positions : "<<vertScrollBar.getPosition()<<std::endl<<horScrollBar.getPosition()<<std::endl;
                 // Replacer les enfants en fonction de deltas
                 float offsetX = -(deltas.x() * maxSize.x() / (getSize().x() - 10));
                 float offsetY = -(deltas.y() * maxSize.y() / (getSize().y() - 10));
+                //std::cout<<"deltas : "<<deltas<<std::endl;
                 for (auto* child : getChildren()) {
-                    child->setPosition(child->getBasePosition() + math::Vec3f(offsetX, offsetY, 0));
+                    child->setPosition(child->getBasePosition() - deltas);
                 }
             }
             void Panel::moveXItems() {
