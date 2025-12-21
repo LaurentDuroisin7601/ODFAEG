@@ -149,11 +149,11 @@ namespace odfaeg {
             float z = Math::sinus(phi);
             return Vec3f (x, y, z);
         }
-        int Math::clamp (int value, int min, int max) {
+        float Math::clamp (float value, float min, float max) {
             if (value < min)
                 value = min;
-            if (value >= max)
-                value = max - 1;
+            if (value > max)
+                value = max;
             return value;
         }
     }

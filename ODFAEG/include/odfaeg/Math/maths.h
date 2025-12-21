@@ -178,7 +178,7 @@ namespace odfaeg {
             * \param max : the maximum value of the interval.
             * \return the value of the number in the specified interval.
             */
-            static int clamp (int value, int min, int max);
+            static float clamp (float value, float min, float max);
             /**
             * \fn float random (float max, float min = 0)
             * \brief get a random value in a specified interval.
