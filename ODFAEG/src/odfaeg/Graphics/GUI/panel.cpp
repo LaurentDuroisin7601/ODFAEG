@@ -56,8 +56,8 @@ namespace odfaeg {
                 vertScrollBar.setPosition(math::Vec3f(getPosition().x() + scrollDeltas.x(), vertScrollBar.getPosition().y(), getPosition().z()+500));
                 horScrollBar.setPosition(math::Vec3f(horScrollBar.getPosition().x(), getPosition().y() + scrollDeltas.y(), getPosition().z()+500));
 
-                deltas.x() = math::Math::clamp(scrollX * maxX, 0.f, maxX);
-                deltas.y() = math::Math::clamp(scrollY * maxY, 0.f, maxY);
+                deltas.x() = math::Math::clamp(scrollX * maxX, 0.f, (maxX-getSize().x()));
+                deltas.y() = math::Math::clamp(scrollY * maxY, 0.f, (maxY-getSize().y()));
                 //std::cout<<"final positions : "<<vertScrollBar.getPosition()<<std::endl<<horScrollBar.getPosition()<<std::endl;
                 // Replacer les enfants en fonction de deltas
                 for (auto* child : getChildren()) {
