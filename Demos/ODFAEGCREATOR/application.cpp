@@ -7710,7 +7710,6 @@ std::pair<unsigned, unsigned> ODFAEGCreator::indexToLineColumn(const std::string
     return {line, column};
 }
 unsigned ODFAEGCreator::lineColumnToIndex(const std::string& text, unsigned line, unsigned column) {
-    unsigned lineColumnToIndex(const std::string& text, unsigned line, unsigned column) {
     unsigned index = 0;
     unsigned currentLine = 0;
 
