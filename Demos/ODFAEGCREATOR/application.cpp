@@ -7718,7 +7718,22 @@ unsigned ODFAEGCreator::lineColumnToIndex(const std::string& text, unsigned line
         if (text[index] == '\n') {
             currentLine++;
         }
-        index++;
+        unsigned char c = text[index];
+        // Tabulation
+        if (c == '\t') {
+            index+=4;
+        } else {
+            index++;
+        }
+
+        /*// UTF-8 : avancer d'un codepoint
+        unsigned char byte = text[index];
+        unsigned advance = 1;
+
+        if ((byte & 0xE0) == 0xC0) advance = 2;
+        else if ((byte & 0xF0) == 0xE0) advance = 3;
+        else if ((byte & 0xF8) == 0xF0) advance = 4;
+        index += advance;*/
     }
 
     // Maintenant on est au début de la ligne
@@ -7726,25 +7741,17 @@ unsigned ODFAEGCreator::lineColumnToIndex(const std::string& text, unsigned line
 
     while (index < text.size() && col < column) {
         unsigned char c = text[index];
-
-        // Gestion CRLF
-        if (c == '\r') {
-            index++;
-            continue;
-        }
-        if (c == '\n') {
-            break; // fin de ligne
-        }
-
-        // Tabulation
         if (c == '\t') {
-            col += 4; // ou ta tab size
-            index++;
+            col += 4;
+            index+=4;
             continue;
+        } else {
+            col++;
+            index++;
         }
 
         // UTF-8 : avancer d'un codepoint
-        unsigned char byte = text[index];
+        /*unsigned char byte = text[index];
         unsigned advance = 1;
 
         if ((byte & 0xE0) == 0xC0) advance = 2;
@@ -7752,7 +7759,7 @@ unsigned ODFAEGCreator::lineColumnToIndex(const std::string& text, unsigned line
         else if ((byte & 0xF8) == 0xF0) advance = 4;
 
         col++;
-        index += advance;
+        index += advance;*/
     }
 
     return index;
