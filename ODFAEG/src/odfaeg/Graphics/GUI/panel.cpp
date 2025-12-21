@@ -49,8 +49,8 @@ namespace odfaeg {
                 float scrollY = math::Math::clamp(position.y() / maxY, 0.f, 1.f);
                 //std::cout<<"maxs in % : "<<scrollX<<","<<scrollY<<","<<position.y() / maxY<<std::endl;
                 math::Vec2f scrollDeltas;
-                scrollDeltas.x() = math::Math::clamp(scrollX * (getSize().x() - 10 - vertScrollBar.getSize().x()), 0.f, (getSize().x() - 10 - vertScrollBar.getSize().x()));
-                scrollDeltas.y() = math::Math::clamp(scrollY * (getSize().y() - 10 - horScrollBar.getSize().y()), 0.f, (getSize().y() - 10 - horScrollBar.getSize().y()));
+                scrollDeltas.x() = math::Math::clamp(scrollX * getSize().x() /*- 10 - vertScrollBar.getSize().x())*/, 0.f, (getSize().x() - 10 - vertScrollBar.getSize().x()));
+                scrollDeltas.y() = math::Math::clamp(scrollY * getSize().y() /*- 10 - horScrollBar.getSize().y())*/, 0.f, (getSize().y() - 10 - horScrollBar.getSize().y()));
                 //std::cout<<"start positions : "<<vertScrollBar.getPosition()<<std::endl<<horScrollBar.getPosition()<<std::endl;
                 // Positionner directement les scrollbars
                 vertScrollBar.setPosition(math::Vec3f(getPosition().x() + scrollDeltas.x(), vertScrollBar.getPosition().y(), getPosition().z()+500));
