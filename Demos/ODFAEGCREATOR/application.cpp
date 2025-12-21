@@ -975,7 +975,7 @@ void ODFAEGCreator::onInit() {
         Command moveCursorCommand(moveCursorAction, FastDelegate<void>(&ODFAEGCreator::moveCursor, this, Vec2f(-1, -1)));
         getListener().connect("MoveCursor", moveCursorCommand);
 
-        dpGoToMFunc = new DropDownList(getRenderWindow(), Vec3f(0, 20, 0), Vec3f(200, 20, 0), fm.getResourceByAlias(Fonts::Serif), "Select Function", 15);
+        dpGoToMFunc = new DropDownList(getRenderWindow(), Vec3f(0, 20, 0), Vec3f(500, 20, 0), fm.getResourceByAlias(Fonts::Serif), "Select Function", 15);
         Command cmdGoToFuncion(FastDelegate<bool>(&DropDownList::isValueChanged, dpGoToMFunc), FastDelegate<void>(&ODFAEGCreator::onGoToFunctionSelected, this, dpGoToMFunc));
         dpGoToMFunc->getListener().connect("GOTOFUNCCHANGED", cmdGoToFuncion);
         Command cmdGoToFuncDroppedDown(FastDelegate<bool>(&DropDownList::isDroppedDown, dpGoToMFunc), FastDelegate<void>(&ODFAEGCreator::onGoToFunctionDroppedDown, this, dpGoToMFunc));
