@@ -961,7 +961,7 @@ void ODFAEGCreator::onInit() {
         tScriptEdit->getListener().connect("CONTEXTENTERED", cmd5);
         tScriptEdit->setParent(pScriptsEdit);
         tScriptEdit->setRelPosition(0.f, 0.f);
-        tScriptEdit->setRelSize(0.9f, 0.8f);
+        tScriptEdit->setRelSize(0.8f, 0.8f);
         pScriptsEdit->addChild(tScriptEdit);
         tScriptEdit->setName("TSCRIPTEDIT");
         guiSize.x() = getRenderWindow().getSize().x() - pProjects->getSize().x() - pScriptsFiles->getSize().x();
