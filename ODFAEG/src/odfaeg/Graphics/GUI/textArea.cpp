@@ -110,6 +110,8 @@ namespace odfaeg {
                 return text.getGlobalBounds().getSize();
             }
             void TextArea::onDraw(RenderTarget& target, RenderStates states) {
+                math::Vec2f pos = text.findCharacterPos(currentIndex);
+                cursorPos = math::Vec3f(pos.x(), pos.y(), 0);
                 VertexArray va(Lines);
                 va.append(Vertex(math::Vec3f(cursorPos.x()+1, cursorPos.y(), getPosition().z()+300), Color::Black));
                 va.append(Vertex(math::Vec3f(cursorPos.x()+1, cursorPos.y() + text.getCharacterSize(), getPosition().z()+300), Color::Black));
