@@ -8223,7 +8223,7 @@ void ODFAEGCreator::onGoToFunctionSelected(DropDownList* dp) {
     tScriptEdit->setEventContextActivated(true);
     pProjects->setEventContextActivated(true);
     tScriptEdit->getListener().clearEventsStack();
-    tScriptEdit->gaignedFocus();
+    //tScriptEdit->gaignedFocus();
 }
 void ODFAEGCreator::onGoToFunctionDroppedDown(DropDownList* dp) {
     if (dp == dpGoToMFunc) {
