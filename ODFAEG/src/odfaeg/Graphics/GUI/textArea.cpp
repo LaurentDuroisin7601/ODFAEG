@@ -240,7 +240,7 @@ namespace odfaeg {
             void TextArea::setCursorPosition(unsigned int currentIndex) {
                 this->currentIndex = currentIndex;
                 math::Vec2f pos = text.findCharacterPos(currentIndex);
-                //std::cout<<"pos : "<<pos<<std::endl;
+                std::cout<<"cursor pos : "<<pos<<std::endl;
                 cursorPos = math::Vec3f(pos.x(), pos.y(), 0);
             }
         }

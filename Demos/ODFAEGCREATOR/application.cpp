@@ -854,7 +854,7 @@ void ODFAEGCreator::onInit() {
         getRenderComponentManager().addComponent(pProjects);
         pScriptsEdit = new Panel(getRenderWindow(), Vec3f(200, 10, 0), Vec3f(800, 700, 0));
         pScriptsEdit->setRelPosition(1.f / 6.f, (menuBar->getSize().y() + toolBar->getSize().y()) / getRenderWindow().getSize().y());
-        pScriptsEdit->setRelSize(0.60f, 0.75f);
+        pScriptsEdit->setRelSize(0.60f, 0.70f);
         pScriptsEdit->setBorderColor(Color(128, 128, 128));
         pScriptsEdit->setBackgroundColor(Color::White);
         pScriptsEdit->setBorderThickness(5);
@@ -961,7 +961,7 @@ void ODFAEGCreator::onInit() {
         tScriptEdit->getListener().connect("CONTEXTENTERED", cmd5);
         tScriptEdit->setParent(pScriptsEdit);
         tScriptEdit->setRelPosition(0.f, 0.f);
-        tScriptEdit->setRelSize(0.9f, 0.9f);
+        tScriptEdit->setRelSize(0.9f, 0.8f);
         pScriptsEdit->addChild(tScriptEdit);
         tScriptEdit->setName("TSCRIPTEDIT");
         guiSize.x() = getRenderWindow().getSize().x() - pProjects->getSize().x() - pScriptsFiles->getSize().x();
@@ -8149,16 +8149,19 @@ void ODFAEGCreator::onGoToFunctionSelected(DropDownList* dp) {
                 tScriptEdit->setCursorPosition(index);
                 Vec3f cursorPos = tScriptEdit->getCursorPos();
                 //std::cout<<"cursor pos : "<<cursorPos<<std::endl;
-                pScriptsEdit->setScrollPosition(cursorPos);
+                //pScriptsEdit->setScrollPosition(cursorPos);
                 //std::cout<<"scroll pos set"<<std::endl;
             }
         }
     }
     tScriptEdit->setEventContextActivated(true);
+    pProjects->setEventContextActivated(true);
+    tScriptEdit->getListener().clearEventsStack();
 }
 void ODFAEGCreator::onGoToFunctionDroppedDown(DropDownList* dp) {
     if (dp == dpGoToMFunc) {
         tScriptEdit->setEventContextActivated(false);
+        pProjects->setEventContextActivated(false);
     }
 }
 
