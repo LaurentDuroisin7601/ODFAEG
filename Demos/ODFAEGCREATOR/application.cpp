@@ -7741,10 +7741,10 @@ unsigned ODFAEGCreator::lineColumnToIndex(const std::string& text, unsigned line
 
     while (index < text.size() && col < column) {
         unsigned char c = text[index];
+        //Tabulation.
         if (c == '\t') {
             col += 4;
             index+=4;
-            continue;
         } else {
             col++;
             index++;
