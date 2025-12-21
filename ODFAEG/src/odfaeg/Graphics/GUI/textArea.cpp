@@ -57,8 +57,8 @@ namespace odfaeg {
                 math::Vec2f pos = text.findCharacterPos(currentIndex);
                 cursorPos = math::Vec3f(pos.x(), pos.y(), 0);
                 text.setSelected(currentIndex, currentIndex);
-                if (getName() == "TSCRIPTEDIT")
-                    std::cout<<"index : "<<currentIndex<<std::endl<<"cursor pos : "<<pos<<std::endl;
+                /*if (getName() == "TSCRIPTEDIT")
+                    std::cout<<"index : "<<currentIndex<<std::endl<<"cursor pos : "<<pos<<std::endl;*/
 
             }
             void TextArea::setCursorPos2() {
@@ -114,17 +114,15 @@ namespace odfaeg {
             }
             void TextArea::onMove(math::Vec3f& t) {
                 Transformable::onMove(t);
-                //math::Vec2f pos = text.findCharacterPos(currentIndex);
-
                 cursorPos += math::Vec3f(t.x(), t.y(), 0);
-                if (getName() == "TSCRIPTEDIT")
-                    std::cout<<"index : "<<currentIndex<<std::endl<<"cursor pos : "<<cursorPos<<std::endl;
+                /*if (getName() == "TSCRIPTEDIT")
+                    std::cout<<"index : "<<currentIndex<<std::endl<<"cursor pos : "<<cursorPos<<std::endl;*/
             }
             void TextArea::onDraw(RenderTarget& target, RenderStates states) {
 
                 //math::Vec2f pos = text.findCharacterPos(currentIndex);
                 /*if (name == "TSCRIPTEDIT")
-                std::cout<<"cursor pos : "<<pos<<std::endl;*/
+                    std::cout<<"draw cursor pos : "<<cursorPos<<std::endl;*/
                 //cursorPos = math::Vec3f(pos.x(), pos.y(), 0);
                 VertexArray va(Lines);
                 va.append(Vertex(math::Vec3f(cursorPos.x()+1, cursorPos.y(), getPosition().z()+300), Color::Black));
