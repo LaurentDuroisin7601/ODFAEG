@@ -8218,7 +8218,7 @@ void ODFAEGCreator::onGoToFunctionSelected(DropDownList* dp) {
                 //std::cout<<"index : "<<index<<std::endl;
                 tScriptEdit->setCursorPosition(index);
                 Vec3f cursorPos = tScriptEdit->getCursorPositionLocal();
-                pScriptsEdit->setScrollPosition(cursorPos/*-pScriptsEdit->getPosition()*/);
+                pScriptsEdit->setScrollPosition(cursorPos);
             }
         }
     }
