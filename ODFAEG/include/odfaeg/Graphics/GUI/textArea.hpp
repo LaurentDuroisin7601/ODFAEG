@@ -41,6 +41,7 @@ namespace odfaeg {
                 unsigned int getCharacterSize();
                 void setCursorPosition(unsigned int currentIndex);
                 void onMove(math::Vec3f& t);
+                void setFocus(bool focus);
             private :
                 int scrollX, scrollY;
                 int currentIndex, currentIndex2;

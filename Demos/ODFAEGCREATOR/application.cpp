@@ -980,6 +980,8 @@ void ODFAEGCreator::onInit() {
         dpGoToMFunc->getListener().connect("GOTOFUNCCHANGED", cmdGoToFuncion);
         Command cmdGoToFuncDroppedDown(FastDelegate<bool>(&DropDownList::isDroppedDown, dpGoToMFunc), FastDelegate<void>(&ODFAEGCreator::onGoToFunctionDroppedDown, this, dpGoToMFunc));
         dpGoToMFunc->getListener().connect("GOTOFUNCDROPPEDDOWN", cmdGoToFuncDroppedDown);
+        Command cmdGoToFuncNotDroppedDown(FastDelegate<bool>(&DropDownList::isNotDroppedDown, dpGoToMFunc), FastDelegate<void>(&ODFAEGCreator::onGoToFunctionNotDroppedDown, this, dpGoToMFunc));
+        dpGoToMFunc->getListener().connect("GOTOFUNCNOTDROPPEDDOWN", cmdGoToFuncNotDroppedDown);
         toolBar->addItem(dpGoToMFunc);
         getRenderComponentManager().addComponent(dpGoToMFunc);
         createWindowsDescriptorsAndPipelines();
@@ -8220,10 +8222,13 @@ void ODFAEGCreator::onGoToFunctionSelected(DropDownList* dp) {
             }
         }
     }
-    tScriptEdit->setEventContextActivated(true);
-    pProjects->setEventContextActivated(true);
-    tScriptEdit->getListener().clearEventsStack();
-    //tScriptEdit->gaignedFocus();
+}
+void ODFAEGCreator::onGoToFunctionNotDroppedDown(DropDownList* dp) {
+    if (dp == dpGoToMFunc) {
+        tScriptEdit->setEventContextActivated(true);
+        pProjects->setEventContextActivated(true);
+        tScriptEdit->setFocus(true);
+    }
 }
 void ODFAEGCreator::onGoToFunctionDroppedDown(DropDownList* dp) {
     if (dp == dpGoToMFunc) {

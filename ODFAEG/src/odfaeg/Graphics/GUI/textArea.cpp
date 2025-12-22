@@ -261,6 +261,9 @@ namespace odfaeg {
                 math::Vec2f pos = text.findCharacterPosLocal(currentIndex);
                 return math::Vec3f(pos.x(), pos.y(), 0);
             }
+            void TextArea::setFocus(bool focus) {
+                haveFocus = focus;
+            }
         }
     }
 }
