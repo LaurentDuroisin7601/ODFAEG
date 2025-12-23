@@ -260,6 +260,19 @@ namespace odfaeg {
                     clang_disposeString(spelling);
                     for (unsigned i = 0; i < numTokens-1; ++i) {
                         CXString spelling = clang_getTokenSpelling(m->tu, tokens[i]);
+                        CXTokenKind kind = clang_getTokenKind(tokens[i]);
+                        if (i  > 0) {
+                            CXTokenKind prevKind = clang_getTokenKind(tokens[i - 1]);
+                            bool needSpace = // identifiant + identifiant
+                            (prevKind == CXToken_Identifier && kind == CXToken_Identifier) || // identifiant + mot-clé
+                            (prevKind == CXToken_Identifier && kind == CXToken_Keyword) || // mot-clé + identifiant
+                            (prevKind == CXToken_Keyword && kind == CXToken_Identifier) || // mot-clé + mot-clé
+                            (prevKind == CXToken_Keyword && kind == CXToken_Keyword);
+                             // Pas d'espace avant ponctuation
+                             if (kind == CXToken_Punctuation) { needSpace = false; }
+                             if (needSpace)
+                                type += " ";
+                        }
                         type += clang_getCString(spelling);
                         clang_disposeString(spelling);
                     }
