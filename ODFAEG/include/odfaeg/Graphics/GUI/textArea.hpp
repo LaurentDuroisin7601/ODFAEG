@@ -12,6 +12,12 @@ namespace odfaeg {
         namespace gui {
             class ODFAEG_GRAPHICS_API TextArea : public LightComponent {
             public :
+                struct Token {
+                    unsigned int startTok;
+                    unsigned int endTok;
+                    std::string spelling;
+                    Color colorTok;
+                };
                 TextArea(math::Vec3f position, math::Vec3f size, const Font* font, std::string s, RenderWindow& rw);
                 void clear();
                 void onDraw(RenderTarget& target, RenderStates states);
@@ -42,9 +48,12 @@ namespace odfaeg {
                 void setCursorPosition(unsigned int currentIndex);
                 void onMove(math::Vec3f& t);
                 void setFocus(bool focus);
+                void resetTokens();
+                void addToken(Token token);
+                void applySyntaxSuggar();
             private :
                 int scrollX, scrollY;
-                int currentIndex, currentIndex2;
+                int currentIndex, currentIndex2, caracterSize;
                 core::String tmp_text, selected_text;
                 math::Vec3f size;
                 Text text;
@@ -52,6 +61,9 @@ namespace odfaeg {
                 Color background;
                 math::Vec3f cursorPos;
                 bool haveFocus, textChanged;
+                std::vector<Token> tokens;
+                std::vector<Text> views;
+                const Font* font;
             };
         }
     }

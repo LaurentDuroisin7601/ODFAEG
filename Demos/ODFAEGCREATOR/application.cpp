@@ -2929,6 +2929,82 @@ void ODFAEGCreator::showFileContent(Label* lab) {
             }
         }
     }
+
+    CXIndex index = clang_createIndex(0, 0);
+
+    // Unsaved file
+    CXUnsavedFile unsaved;
+    unsaved.Filename = virtualFile.c_str();
+    unsaved.Contents = tScriptEdit->getText().c_str();
+    unsaved.Length = tScriptEdit->getText().size();
+
+    CXTranslationUnit tu = clang_parseTranslationUnit(
+        index,
+        virtualFile.c_str(),
+        nullptr, 0,
+        &unsaved, 1,
+        CXTranslationUnit_None
+    );
+
+    CXFile file = clang_getFile(tu, virtualFile.c_str());
+
+    // Range = tout le buffer
+    CXSourceRange range = clang_getRange(
+        clang_getLocationForOffset(tu, file, 0),
+        clang_getLocationForOffset(tu, file, tScriptEdit->getText().size())
+    );
+
+    CXToken* tokens = nullptr;
+    unsigned tokenCount = 0;
+    clang_tokenize(tu, range, &tokens, &tokenCount);
+    tScriptEdit->resetTokens();
+    for (unsigned i = 0; i < tokenCount; ++i) {
+        CXToken tok = tokens[i];
+
+        CXSourceRange extent = clang_getTokenExtent(tu, tok);
+        CXSourceLocation start = clang_getRangeStart(extent);
+        CXSourceLocation end   = clang_getRangeEnd(extent);
+
+        unsigned startOffset = 0;
+        unsigned endOffset   = 0;
+
+        // On récupère l’offset dans le buffer
+        clang_getFileLocation(start, nullptr, nullptr, nullptr, &startOffset);
+        clang_getFileLocation(end,   nullptr, nullptr, nullptr, &endOffset);
+
+        CXString spelling = clang_getTokenSpelling(tu, tok);
+        std::string text = clang_getCString(spelling);
+
+        TextArea::Token token;
+        token.startTok = startOffset;
+        token.endTok = endOffset;
+        token.spelling = text;
+        CXTokenKind kind = clang_getTokenKind(tok);
+        if (kind == CXToken_Keyword) {
+            token.colorTok = Color::Blue;
+        } else if (kind == CXToken_Identifier) {
+            token.colorTok = Color::Green;
+        } else if (kind == CXToken_Literal) {
+            token.colorTok = Color::Magenta;
+        } else if (kind == CXToken_Comment) {
+            token.colorTok = Color(128, 128, 128);
+        } else if (kind == CXToken_Punctuation) {
+            token.colorTok = Color::Red;
+        } else {
+            token.colorTok = Color::Black;
+        }
+        tScriptEdit->addToken(token);
+        /*std::cout << "Token '" << text
+                  << "' start=" << startOffset
+                  << " end=" << endOffset << "\n";*/
+
+        clang_disposeString(spelling);
+    }
+    tScriptEdit->applySyntaxSuggar();
+    clang_disposeTokens(tu, tokens, tokenCount);
+    clang_disposeTranslationUnit(tu);
+    clang_disposeIndex(index);
+
 }
 void ODFAEGCreator::processKeyHeldDown (IKeyboard::Key key) {
 

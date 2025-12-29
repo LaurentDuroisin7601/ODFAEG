@@ -5,6 +5,8 @@ namespace odfaeg {
         namespace gui {
             TextArea::TextArea(math::Vec3f position, math::Vec3f size, const Font* font, std::string t, RenderWindow& rw) :
                 LightComponent(rw, position, size, math::Vec3f(0, 0, 0)) {
+                this->font = font;
+                caracterSize = 15;
                 tmp_text = t;
                 background = Color::White;
                 text.setFont(*font);
@@ -99,8 +101,11 @@ namespace odfaeg {
             void TextArea::clear() {
                 if (background != rect.getFillColor())
                     rect.setFillColor(background);
+                if (views.size() > 0)
+                    text.setColor(Color::Transparent);
             }
             void TextArea::setTextSize(unsigned int size) {
+                caracterSize = size;
                 text.setCharacterSize(size);
             }
             void TextArea::setTextColor(Color color) {
@@ -115,6 +120,9 @@ namespace odfaeg {
             void TextArea::onMove(math::Vec3f& t) {
                 Transformable::onMove(t);
                 cursorPos += math::Vec3f(t.x(), t.y(), 0);
+                for (unsigned int i = 0; i < views.size(); i++) {
+                    views[i].move(math::Vec3f(t.x(), t.y(), 0));
+                }
                 /*if (getName() == "TSCRIPTEDIT")
                     std::cout<<"index : "<<currentIndex<<std::endl<<"cursor pos : "<<cursorPos<<std::endl;*/
             }
@@ -129,6 +137,7 @@ namespace odfaeg {
                 va.append(Vertex(math::Vec3f(cursorPos.x()+1, cursorPos.y() + text.getCharacterSize(), getPosition().z()+300), Color::Black));
                 rect.setPosition(getPosition());
                 text.setPosition(math::Vec3f(getPosition().x() + scrollX, getPosition().y() + scrollY, getPosition().z()+100));
+
 
                 rect.setSize(getSize());
                 target.draw(rect);
@@ -151,6 +160,9 @@ namespace odfaeg {
 
                     #endif
                     target.draw(text);
+                    for (unsigned int i = 0; i < views.size(); i++) {
+                        target.draw(views[i]);
+                    }
                     #ifdef VULKAN
                     target.submit(false);
                     target.getScissors()[1].offset = {0, 0};
@@ -263,6 +275,25 @@ namespace odfaeg {
             }
             void TextArea::setFocus(bool focus) {
                 haveFocus = focus;
+            }
+            void TextArea::resetTokens() {
+                tokens.clear();
+                views.clear();
+            }
+            void TextArea::addToken(Token token) {
+                tokens.push_back(token);
+            }
+            void TextArea::applySyntaxSuggar() {
+                for (unsigned int i = 0; i < tokens.size(); i++) {
+                    Text subText;
+                    subText.setString(tokens[i].spelling);
+                    subText.setFont(*font);
+                    subText.setColor(tokens[i].colorTok);
+                    subText.setCharacterSize(caracterSize);
+                    math::Vec2f position = text.findCharacterPos(tokens[i].startTok);
+                    subText.setPosition(math::Vec3f(position.x(), position.y(), getPosition().z()+100));
+                    views.push_back(subText);
+                }
             }
         }
     }
