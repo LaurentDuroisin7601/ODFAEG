@@ -3390,12 +3390,14 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         tScriptEdit->setEventContextActivated(true);
         if (dpComponentType->getSelectedItem() == "LinkedList") {
             PerPixelLinkedListRenderComponent* ppll = new PerPixelLinkedListRenderComponent(getRenderWindow(),conversionStringInt(taComponentLayer->getText()),taComponentExpression->getText(),ContextSettings(24, 8, 4, 4, 6));
-
+            //std::cout<<"ppll component created"<<std::endl;
             getRenderComponentManager().addComponent(ppll);
+            //std::cout<<"ppll component added"<<std::endl;
 
             ppll->setName(taComponentName->getText());
             dpSelectComponent->addItem(taComponentName->getText(), 15);
             dpSelectComponent->setSelectedItem(taComponentName->getText());
+            //std::cout<<"dp select component done"<<std::endl;
         }
         if (dpComponentType->getSelectedItem() == "Shadow") {
             ShadowRenderComponent* src = new ShadowRenderComponent(getRenderWindow(),conversionStringInt(taComponentLayer->getText()),taComponentExpression->getText(),ContextSettings(0, 0, 4, 4, 6));
@@ -3427,7 +3429,6 @@ void ODFAEGCreator::actionPerformed(Button* button) {
                 selectedComponentView = getRenderComponentManager().getRenderComponents()[i]->getView();
             }
         }
-
     }
     if(button==bCreateEntitiesUpdater) {
         std::string name = taEntitiesUpdaterName->getText();

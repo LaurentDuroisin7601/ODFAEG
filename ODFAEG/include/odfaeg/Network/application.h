@@ -136,9 +136,8 @@ namespace odfaeg {
                 while (running) {
 
                     if (windows.size() != 0 && windows[0].first->isOpen()) {
-                        //rendering_thread = std::thread(Application::render, this);
-                        render();
                         update();
+                        render();
                     }
                     if (network::Network::getCliInstance().isRunning()) {
                         network::Network::getCliInstance().checkMessages();
