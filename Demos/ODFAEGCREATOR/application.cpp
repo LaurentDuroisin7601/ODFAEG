@@ -2185,7 +2185,7 @@ void ODFAEGCreator::onExec() {
     std::string projectPath = (fdProjectPath != nullptr) ? fdProjectPath->getPathChosen() : "";
 
     if (projectPath != "" && projectPath.find(".poc") != std::string::npos) {
-        std::cout<<"open project"<<std::endl;
+        //std::cout<<"open project"<<std::endl;
         FontManager<Fonts>& fm = cache.resourceManager<Font, Fonts>("FontManager");
         std::ifstream applis(projectPath);
         std::string line;
@@ -2199,7 +2199,7 @@ void ODFAEGCreator::onExec() {
                 }
                 if (!opened) {
                     Label* lab = new Label(getRenderWindow(),Vec3f(0,0,0),Vec3f(200, 17, 0),fm.getResourceByAlias(Fonts::Serif),line, 15);
-                    Node* node = new Node("test",lab,Vec2f(0, 0),Vec2f(1.f, 0.025f),rootNode.get());
+                    Node* node = new Node(lab->getText().toAnsiString(),lab,Vec2f(0, 0),Vec2f(1.f, 0.025f),rootNode.get());
                     lab->setParent(pProjects);
                     lab->setForegroundColor(Color::Red);
                     lab->setBackgroundColor(Color::White);
@@ -2209,7 +2209,7 @@ void ODFAEGCreator::onExec() {
                     lab->getListener().connect("SHOWPFILES", cmd);
                     Label* labScene = new Label(getRenderWindow(), Vec3f(0, 0, 0), Vec3f(200, 35, 0), fm.getResourceByAlias(Fonts::Serif), "Scenes", 15);
                     labScene->setBackgroundColor(Color::White);
-                    Node* rSceneNode = new Node ("Scenes", labScene, Vec2f(0.f, 0.f), Vec2f(1.f, 0.025f), node);
+                    Node* rSceneNode = new Node ("Scenes"+lab->getText().toAnsiString(), labScene, Vec2f(0.f, 0.f), Vec2f(1.f, 0.025f), node);
                     rootScenesNode = rSceneNode;
                     labScene->setForegroundColor(Color::Red);
                     labScene->setParent(pProjects);
@@ -2240,8 +2240,8 @@ void ODFAEGCreator::onExec() {
 
 
                     appliname = line;
-                    Command cmd3(a2, FastDelegate<bool>(&Label::isMouseInside, lab), FastDelegate<void>(&ODFAEGCreator::showScenes, this, labScene));
-                    lab->getListener().connect("SHOWSCENES"+appliname, cmd3);
+                    Command cmd3(a2, FastDelegate<bool>(&Label::isMouseInside, labScene), FastDelegate<void>(&ODFAEGCreator::showScenes, this, labScene));
+                    labScene->getListener().connect("SHOWSCENES"+appliname, cmd3);
                     std::unique_ptr<World> world = std::make_unique<World>();
                     world->projectName = appliname;
                     worlds.push_back(std::move(world));
@@ -2779,6 +2779,7 @@ void ODFAEGCreator::onExec() {
 }
 void ODFAEGCreator::showScenes(Label* label) {
     Node* node = rootNode->findNode(label);
+    //std::cout<<"node visible ? "<<label->getText().toAnsiString()<<","<<node->isNodeVisible()<<std::endl;
     if (node->getNodes().size() > 0 && node->isNodeVisible()) {
         node->hideAllNodes();
     } else if (node->getNodes().size() > 0 && !node->isNodeVisible()) {
@@ -2804,8 +2805,10 @@ void ODFAEGCreator::showProjectsFiles(Label* label) {
     pScriptsEdit->setVisible(true);
     Node* node = rootNode->findNode(label);
     if (!node->isNodeVisible()) {
+        std::cout<<"show nodes : "<<label->getText().toAnsiString()<<std::endl;
         node->showAllNodes();
     } else {
+        std::cout<<"hide nodes : "<<label->getText().toAnsiString()<<std::endl;
         node->hideAllNodes();
     }
     for (unsigned int i = 0; i < worlds.size(); i++) {
@@ -3353,13 +3356,14 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         FontManager<Fonts>& fm = cache.resourceManager<Font, Fonts>("FontManager");
         Label* lab = new Label(getRenderWindow(),Vec3f(0,0,0),Vec3f(200, 17, 0),fm.getResourceByAlias(Fonts::Serif),taMapName->getText(), 15);
         Node* node = new Node(taMapName->getText(),lab,Vec2f(0, 0),Vec2f(1.f, 0.025f),rootScenesNode);
+
         lab->setParent(pProjects);
         lab->setForegroundColor(Color::Blue);
         lab->setBackgroundColor(Color::White);
         pProjects->addChild(lab);
         Action a(Action::EVENT_TYPE::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
         Command cmd(a, FastDelegate<bool>(&Label::isMouseInside, lab), FastDelegate<void>(&ODFAEGCreator::showScene, this, lab));
-        lab->getListener().connect("SHOWPFILES", cmd);
+        lab->getListener().connect("SHOWSCENES", cmd);
         cshapes.clear();
         for (int i = 0; i < getRenderWindow().getSize().x(); i+=100) {
             for (int j = 0; j < getRenderWindow().getSize().y(); j+=50) {

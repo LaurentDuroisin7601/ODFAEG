@@ -854,7 +854,7 @@ void ODFAEGCreator::onInit() {
         getRenderComponentManager().addComponent(pProjects);
         pScriptsEdit = new Panel(getRenderWindow(), Vec3f(200, 10, 0), Vec3f(800, 700, 0));
         pScriptsEdit->setRelPosition(1.f / 6.f, (menuBar->getSize().y() + toolBar->getSize().y()) / getRenderWindow().getSize().y());
-        pScriptsEdit->setRelSize(0.60f, 0.75f);
+        pScriptsEdit->setRelSize(0.60f, 0.70f);
         pScriptsEdit->setBorderColor(Color(128, 128, 128));
         pScriptsEdit->setBackgroundColor(Color::White);
         pScriptsEdit->setBorderThickness(5);
@@ -866,7 +866,7 @@ void ODFAEGCreator::onInit() {
         pScriptsFiles->setBorderThickness(5);
         pScriptsFiles->setRelPosition(5.f / 6.5f, 0.040f);
         pScriptsFiles->setRelSize(1.5f / 6.f, 1.f);
-        pScriptsFiles->setName("PSCRIPTFILES");
+        //pScriptsFiles->setName("PSCRIPTFILES");
         getRenderComponentManager().addComponent(pScriptsFiles);
         pComponent = new Panel(getRenderWindow(), Vec3f(0, 0, 0), Vec3f(500, 200, 0), 0);
         pComponent->setBorderColor(Color(128, 128, 128));
@@ -931,7 +931,7 @@ void ODFAEGCreator::onInit() {
         pScriptsFiles->setBackgroundColor(Color::Black);
         pInfos = new Panel(getRenderWindow(), Vec3f(0, 0, 0), Vec3f(200, 700, 0), 0);
         pInfos->setBackgroundColor(Color::White);
-        pInfos->setName("PINFOS");
+        //pInfos->setName("PINFOS");
         //pInfos->setScissorEnabled(false);
         rootInfosNode = std::make_unique<Node>("Infos", pInfos, Vec2f(0.f, 0.05f), Vec2f(1.f, 1.f - 0.05f));
         tabPane->addTab(pInfos, "Informations", *fm.getResourceByAlias(Fonts::Serif));
@@ -961,7 +961,7 @@ void ODFAEGCreator::onInit() {
         tScriptEdit->getListener().connect("CONTEXTENTERED", cmd5);
         tScriptEdit->setParent(pScriptsEdit);
         tScriptEdit->setRelPosition(0.f, 0.f);
-        tScriptEdit->setRelSize(0.9f, 0.9f);
+        tScriptEdit->setRelSize(0.8f, 0.8f);
         pScriptsEdit->addChild(tScriptEdit);
         tScriptEdit->setName("TSCRIPTEDIT");
         guiSize.x() = getRenderWindow().getSize().x() - pProjects->getSize().x() - pScriptsFiles->getSize().x();
@@ -975,9 +975,13 @@ void ODFAEGCreator::onInit() {
         Command moveCursorCommand(moveCursorAction, FastDelegate<void>(&ODFAEGCreator::moveCursor, this, Vec2f(-1, -1)));
         getListener().connect("MoveCursor", moveCursorCommand);
 
-        dpGoToMFunc = new DropDownList(getRenderWindow(), Vec3f(0, 20, 0), Vec3f(200, 20, 0), fm.getResourceByAlias(Fonts::Serif), "Select Function", 15);
+        dpGoToMFunc = new DropDownList(getRenderWindow(), Vec3f(0, 20, 0), Vec3f(500, 20, 0), fm.getResourceByAlias(Fonts::Serif), "Select Function", 15);
         Command cmdGoToFuncion(FastDelegate<bool>(&DropDownList::isValueChanged, dpGoToMFunc), FastDelegate<void>(&ODFAEGCreator::onGoToFunctionSelected, this, dpGoToMFunc));
         dpGoToMFunc->getListener().connect("GOTOFUNCCHANGED", cmdGoToFuncion);
+        Command cmdGoToFuncDroppedDown(FastDelegate<bool>(&DropDownList::isDroppedDown, dpGoToMFunc), FastDelegate<void>(&ODFAEGCreator::onGoToFunctionDroppedDown, this, dpGoToMFunc));
+        dpGoToMFunc->getListener().connect("GOTOFUNCDROPPEDDOWN", cmdGoToFuncDroppedDown);
+        Command cmdGoToFuncNotDroppedDown(FastDelegate<bool>(&DropDownList::isNotDroppedDown, dpGoToMFunc), FastDelegate<void>(&ODFAEGCreator::onGoToFunctionNotDroppedDown, this, dpGoToMFunc));
+        dpGoToMFunc->getListener().connect("GOTOFUNCNOTDROPPEDDOWN", cmdGoToFuncNotDroppedDown);
         toolBar->addItem(dpGoToMFunc);
         getRenderComponentManager().addComponent(dpGoToMFunc);
         createWindowsDescriptorsAndPipelines();
@@ -2181,7 +2185,7 @@ void ODFAEGCreator::onExec() {
     std::string projectPath = (fdProjectPath != nullptr) ? fdProjectPath->getPathChosen() : "";
 
     if (projectPath != "" && projectPath.find(".poc") != std::string::npos) {
-        std::cout<<"open project"<<std::endl;
+        //std::cout<<"open project"<<std::endl;
         FontManager<Fonts>& fm = cache.resourceManager<Font, Fonts>("FontManager");
         std::ifstream applis(projectPath);
         std::string line;
@@ -2195,7 +2199,7 @@ void ODFAEGCreator::onExec() {
                 }
                 if (!opened) {
                     Label* lab = new Label(getRenderWindow(),Vec3f(0,0,0),Vec3f(200, 17, 0),fm.getResourceByAlias(Fonts::Serif),line, 15);
-                    Node* node = new Node("test",lab,Vec2f(0, 0),Vec2f(1.f, 0.025f),rootNode.get());
+                    Node* node = new Node(lab->getText().toAnsiString(),lab,Vec2f(0, 0),Vec2f(1.f, 0.025f),rootNode.get());
                     lab->setParent(pProjects);
                     lab->setForegroundColor(Color::Red);
                     lab->setBackgroundColor(Color::White);
@@ -2205,7 +2209,7 @@ void ODFAEGCreator::onExec() {
                     lab->getListener().connect("SHOWPFILES", cmd);
                     Label* labScene = new Label(getRenderWindow(), Vec3f(0, 0, 0), Vec3f(200, 35, 0), fm.getResourceByAlias(Fonts::Serif), "Scenes", 15);
                     labScene->setBackgroundColor(Color::White);
-                    Node* rSceneNode = new Node ("Scenes", labScene, Vec2f(0.f, 0.f), Vec2f(1.f, 0.025f), node);
+                    Node* rSceneNode = new Node ("Scenes"+labScene->getText().toAnsiString(), labScene, Vec2f(0.f, 0.f), Vec2f(1.f, 0.025f), node);
                     rootScenesNode = rSceneNode;
                     labScene->setForegroundColor(Color::Red);
                     labScene->setParent(pProjects);
@@ -2775,6 +2779,7 @@ void ODFAEGCreator::onExec() {
 }
 void ODFAEGCreator::showScenes(Label* label) {
     Node* node = rootNode->findNode(label);
+    //std::cout<<"node visible ? "<<label->getText().toAnsiString()<<","<<node->isNodeVisible()<<std::endl;
     if (node->getNodes().size() > 0 && node->isNodeVisible()) {
         node->hideAllNodes();
     } else if (node->getNodes().size() > 0 && !node->isNodeVisible()) {
@@ -2925,6 +2930,82 @@ void ODFAEGCreator::showFileContent(Label* lab) {
             }
         }
     }
+
+    CXIndex index = clang_createIndex(0, 0);
+
+    // Unsaved file
+    CXUnsavedFile unsaved;
+    unsaved.Filename = virtualFile.c_str();
+    unsaved.Contents = tScriptEdit->getText().c_str();
+    unsaved.Length = tScriptEdit->getText().size();
+
+    CXTranslationUnit tu = clang_parseTranslationUnit(
+        index,
+        virtualFile.c_str(),
+        nullptr, 0,
+        &unsaved, 1,
+        CXTranslationUnit_None
+    );
+
+    CXFile file = clang_getFile(tu, virtualFile.c_str());
+
+    // Range = tout le buffer
+    CXSourceRange range = clang_getRange(
+        clang_getLocationForOffset(tu, file, 0),
+        clang_getLocationForOffset(tu, file, tScriptEdit->getText().size())
+    );
+
+    CXToken* tokens = nullptr;
+    unsigned tokenCount = 0;
+    clang_tokenize(tu, range, &tokens, &tokenCount);
+    tScriptEdit->resetTokens();
+    for (unsigned i = 0; i < tokenCount; ++i) {
+        CXToken tok = tokens[i];
+
+        CXSourceRange extent = clang_getTokenExtent(tu, tok);
+        CXSourceLocation start = clang_getRangeStart(extent);
+        CXSourceLocation end   = clang_getRangeEnd(extent);
+
+        unsigned startOffset = 0;
+        unsigned endOffset   = 0;
+
+        // On récupère l’offset dans le buffer
+        clang_getFileLocation(start, nullptr, nullptr, nullptr, &startOffset);
+        clang_getFileLocation(end,   nullptr, nullptr, nullptr, &endOffset);
+
+        CXString spelling = clang_getTokenSpelling(tu, tok);
+        std::string text = clang_getCString(spelling);
+
+        TextArea::Token token;
+        token.startTok = startOffset;
+        token.endTok = endOffset;
+        token.spelling = text;
+        CXTokenKind kind = clang_getTokenKind(tok);
+        if (kind == CXToken_Keyword) {
+            token.colorTok = Color::Blue;
+        } else if (kind == CXToken_Identifier) {
+            token.colorTok = Color::Green;
+        } else if (kind == CXToken_Literal) {
+            token.colorTok = Color::Magenta;
+        } else if (kind == CXToken_Comment) {
+            token.colorTok = Color(128, 128, 128);
+        } else if (kind == CXToken_Punctuation) {
+            token.colorTok = Color::Red;
+        } else {
+            token.colorTok = Color::Black;
+        }
+        tScriptEdit->addToken(token);
+        /*std::cout << "Token '" << text
+                  << "' start=" << startOffset
+                  << " end=" << endOffset << "\n";*/
+
+        clang_disposeString(spelling);
+    }
+    tScriptEdit->applySyntaxSuggar();
+    clang_disposeTokens(tu, tokens, tokenCount);
+    clang_disposeTranslationUnit(tu);
+    clang_disposeIndex(index);
+
 }
 void ODFAEGCreator::processKeyHeldDown (IKeyboard::Key key) {
 
@@ -3273,6 +3354,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         FontManager<Fonts>& fm = cache.resourceManager<Font, Fonts>("FontManager");
         Label* lab = new Label(getRenderWindow(),Vec3f(0,0,0),Vec3f(200, 17, 0),fm.getResourceByAlias(Fonts::Serif),taMapName->getText(), 15);
         Node* node = new Node(taMapName->getText(),lab,Vec2f(0, 0),Vec2f(1.f, 0.025f),rootScenesNode);
+
         lab->setParent(pProjects);
         lab->setForegroundColor(Color::Blue);
         lab->setBackgroundColor(Color::White);
@@ -3310,12 +3392,14 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         tScriptEdit->setEventContextActivated(true);
         if (dpComponentType->getSelectedItem() == "LinkedList") {
             PerPixelLinkedListRenderComponent* ppll = new PerPixelLinkedListRenderComponent(getRenderWindow(),conversionStringInt(taComponentLayer->getText()),taComponentExpression->getText(),ContextSettings(24, 8, 4, 4, 6));
-
+            //std::cout<<"ppll component created"<<std::endl;
             getRenderComponentManager().addComponent(ppll);
+            //std::cout<<"ppll component added"<<std::endl;
 
             ppll->setName(taComponentName->getText());
             dpSelectComponent->addItem(taComponentName->getText(), 15);
             dpSelectComponent->setSelectedItem(taComponentName->getText());
+            //std::cout<<"dp select component done"<<std::endl;
         }
         if (dpComponentType->getSelectedItem() == "Shadow") {
             ShadowRenderComponent* src = new ShadowRenderComponent(getRenderWindow(),conversionStringInt(taComponentLayer->getText()),taComponentExpression->getText(),ContextSettings(0, 0, 4, 4, 6));
@@ -3347,7 +3431,6 @@ void ODFAEGCreator::actionPerformed(Button* button) {
                 selectedComponentView = getRenderComponentManager().getRenderComponents()[i]->getView();
             }
         }
-
     }
     if(button==bCreateEntitiesUpdater) {
         std::string name = taEntitiesUpdaterName->getText();
@@ -4443,13 +4526,13 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
          std::string completion = item->getText();
          unsigned int start = tScriptEdit->getCharacterIndexAtCursorPos();
          while (std::isalnum(buffer.at(start))) {
-            std::cout<<"caracter at : "<<start<<buffer.at(start)<<std::endl;
+            //std::cout<<"caracter at : "<<start<<buffer.at(start)<<std::endl;
             start--;
          }
-         std::cout<<"length : "<<tScriptEdit->getCharacterIndexAtCursorPos()<<","<<start<<std::endl;
-         buffer.replace(start, tScriptEdit->getCharacterIndexAtCursorPos() - start, completion);
+         //std::cout<<"length : "<<tScriptEdit->getCharacterIndexAtCursorPos()<<","<<start<<std::endl;
+         buffer.replace(start+1, tScriptEdit->getCharacterIndexAtCursorPos() - start, completion);
          tScriptEdit->setText(buffer);
-         tScriptEdit->setCursorPosition(start+completion.size());
+         tScriptEdit->setCursorPosition(start+completion.size()+1);
          floatingMenu.setVisible(false);
          Vec3f textSize = tScriptEdit->getTextSize();
          if (textSize.x() > tScriptEdit->getSize().x())
@@ -4457,8 +4540,11 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
          if (textSize.y() > tScriptEdit->getSize().y())
             tScriptEdit->setSize(Vec3f(tScriptEdit->getSize().x(), textSize.y(), tScriptEdit->getSize().z()));
          pScriptsEdit->updateScrolls();
-         tScriptEdit->setEventContextActivated(false);
-
+         /*Action a (Action::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
+         Command cmd(a, FastDelegate<bool>(&TextArea::isMouseInTextArea, tScriptEdit), FastDelegate<void>(&TextArea::setCursorPos, tScriptEdit));
+         tScriptEdit->getListener().connect("CMOUSECLICKED", cmd);*/
+         tScriptEdit->getListener().blockCommand("CMOUSECLICKED", false);
+         tScriptEdit->getListener().clearEventsStack();
      }
 }
 /*void ODFAEGCreator::addShape(Shape *shape) {
@@ -7689,31 +7775,98 @@ void ODFAEGCreator::removeSpacesChars(std::string& str) {
         str = str.erase(str.size()-1, 1);
     }
 }*/
-std::pair<unsigned, unsigned> ODFAEGCreator::indexToLineColumn(const std::string& text, unsigned pos) {
+
+std::pair<unsigned, unsigned> ODFAEGCreator::indexToLineColumn(const std::string& text, unsigned index) {
     unsigned line = 0;
     unsigned column = 0;
 
-    for (unsigned i = 0; i < pos && i < text.size(); ++i) {
-        if (text[i] == '\n') {
-            line++;
-            column = 0; // reset colonne
-        } else {
-            column++;
+    unsigned i = 0;
+
+    while (i < index && i < text.size()) {
+        unsigned char c = text[i];
+
+        // CRLF
+        if (c == '\r') {
+            i++;
+            continue;
         }
+
+        if (c == '\n') {
+            line++;
+            column = 0;
+            i++;
+            continue;
+        }
+
+        // Tabulation
+        if (c == '\t') {
+            column += 4; // même tab size que dans lineColumnToIndex()
+            i++;
+            continue;
+        }
+
+        // UTF-8 : avancer d'un codepoint
+        unsigned advance = 1;
+        if ((c & 0xE0) == 0xC0) advance = 2;
+        else if ((c & 0xF0) == 0xE0) advance = 3;
+        else if ((c & 0xF8) == 0xF0) advance = 4;
+
+        column++;
+        i += advance;
     }
 
-    return {line, column};
+    return { line, column };
 }
+
 unsigned ODFAEGCreator::lineColumnToIndex(const std::string& text, unsigned line, unsigned column) {
-    unsigned currentLine = 0; unsigned index = 0; // Parcours du texte jusqu'à la ligne demandée
+    unsigned index = 0;
+    unsigned currentLine = 0;
+
+    // Aller jusqu'à la ligne demandée
     while (currentLine < line && index < text.size()) {
         if (text[index] == '\n') {
             currentLine++;
         }
         index++;
-    } // Maintenant on est au début de la ligne demandée
-    return index + column;
+    }
+
+    // Maintenant on est au début de la ligne
+    unsigned col = 0;
+
+    while (index < text.size() && col < column) {
+        unsigned char c = text[index];
+
+        // Gestion CRLF
+        if (c == '\r') {
+            index++;
+            continue;
+        }
+        if (c == '\n') {
+            break; // fin de ligne
+        }
+
+        // Tabulation
+        if (c == '\t') {
+            col += 4; // ou ta tab size
+            index++;
+            continue;
+        }
+
+        // UTF-8 : avancer d'un codepoint
+        unsigned char byte = text[index];
+        unsigned advance = 1;
+
+        if ((byte & 0xE0) == 0xC0) advance = 2;
+        else if ((byte & 0xF0) == 0xE0) advance = 3;
+        else if ((byte & 0xF8) == 0xF0) advance = 4;
+
+        col++;
+        index += advance;
+    }
+
+    return index;
 }
+
 std::vector<std::string> ODFAEGCreator::checkCompletionNames(std::string strsearch, unsigned int posInFile) {
     //std::cout<<"check : "<<std::endl;
     std::vector<std::string> namesToPropose;
@@ -8089,7 +8242,8 @@ void ODFAEGCreator::onTextEntered(TextArea* ta, char caracter) {
             floatingMenu.clear();
             FontManager<Fonts>& fm = cache.resourceManager<Font, Fonts>("FontManager");
             for(unsigned int i = 0; i < completionNames.size(); i++) {
-                MenuItem* menuItem = new MenuItem(getRenderWindow(), fm.getResourceByAlias(Fonts::Serif),completionNames[i]);
+                MenuItem* menuItem = new MenuItem(getRenderWindow(), fm.getResourceByAlias(Fonts::Serif),completionNames[i], 1);
+                menuItem->setName("MenuItem");
                 getRenderComponentManager().addComponent(menuItem);
                 floatingMenu.addMenuItem(menuItem);
                 menuItem->addMenuItemListener(this);
@@ -8097,7 +8251,8 @@ void ODFAEGCreator::onTextEntered(TextArea* ta, char caracter) {
             floatingMenu.setPosition(tScriptEdit->getCursorPos() + tScriptEdit->getCharacterSize());
             //std::cout<<"position : "<<floatingMenu.getPosition()<<std::endl;
             floatingMenu.setVisible(true);
-            tScriptEdit->setEventContextActivated(false);
+            //tScriptEdit->getListener().removeCommand("CMOUSECLICKED");
+            tScriptEdit->getListener().blockCommand("CMOUSECLICKED", true);
         }
 
     }
@@ -8139,13 +8294,25 @@ void ODFAEGCreator::onGoToFunctionSelected(DropDownList* dp) {
             }
             if (signature == signatureToFind) {
                 int index = lineColumnToIndex(tScriptEdit->getText(), mf[f].location.first, mf[f].location.second);
+                //std::cout<<"index : "<<index<<std::endl;
                 tScriptEdit->setCursorPosition(index);
-                Vec3f cursorPos = tScriptEdit->getCursorPos();
-                //std::cout<<"cursor pos : "<<cursorPos<<std::endl;
+                Vec3f cursorPos = tScriptEdit->getCursorPositionLocal();
                 pScriptsEdit->setScrollPosition(cursorPos);
-                //std::cout<<"scroll pos set"<<std::endl;
             }
         }
+    }
+}
+void ODFAEGCreator::onGoToFunctionNotDroppedDown(DropDownList* dp) {
+    if (dp == dpGoToMFunc) {
+        tScriptEdit->setEventContextActivated(true);
+        pProjects->setEventContextActivated(true);
+        tScriptEdit->setFocus(true);
+    }
+}
+void ODFAEGCreator::onGoToFunctionDroppedDown(DropDownList* dp) {
+    if (dp == dpGoToMFunc) {
+        tScriptEdit->setEventContextActivated(false);
+        pProjects->setEventContextActivated(false);
     }
 }
 

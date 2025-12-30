@@ -6,9 +6,18 @@ namespace odfaeg {
             : name(name), component(component), relNodePos(relNodePos), relNodeSize(relNodeSize), parent(parent) {
                 component->setRelPosition(relNodePos.x(), relNodePos.y());
                 component->setRelSize(relNodeSize.x(), relNodeSize.y());
-                if (parent != nullptr)
+                if (parent != nullptr) {
+                    if (!parent->isNodeVisible()) {
+                        component->setEventContextActivated(false);
+                        component->setVisible(false);
+                        nodeVisible = false;
+                    } else {
+                        nodeVisible = true;
+                    }
                     parent->addNode(this);
-                nodeVisible = true;
+                } else {
+                    nodeVisible = true;
+                }
             }
             bool Node::isNodeVisible() {
                 return nodeVisible;
@@ -41,6 +50,7 @@ namespace odfaeg {
                     return parent->getRootNode();
                 return this;
             }
+
             void Node::addNode(Node* node) {
                 math::Vec2f nodeRelPos = component->getRelPosition();
                 if (this != getRootNode())
@@ -48,6 +58,7 @@ namespace odfaeg {
                 findNodePos(this, nodeRelPos);
                 node->component->setRelPosition(node->component->getRelPosition().x(), nodeRelPos.y());
                 getRootNode()->displaceNodes (node, nodeRelPos);
+
                 std::unique_ptr<Node> ptr;
                 ptr.reset(node);
                 nodes.push_back(std::move(ptr));
@@ -55,14 +66,17 @@ namespace odfaeg {
 
             }
             void Node::showNode(Node* node) {
+                //std::cout<<"show node : "<<name<<","<<node->name<<std::endl;
                 node->component->setVisible(true);
                 node->component->setEventContextActivated(true);
                 for (unsigned int i = 0; i < node->components.size(); i++) {
                     node->components[i]->setVisible(true);
                     node->components[i]->setEventContextActivated(true);
                 }
-                if (node->isNodeVisible())
+                if (node->isNodeVisible()) {
+                    //std::cout<<"node visible ? "<<name<<","<<node->isNodeVisible()<<std::endl;
                     node->showAllNodes();
+                }
             }
             void Node::findNodePos (Node* node, math::Vec2f& nodeRelPos) {
                 for (unsigned int i = 0; i < nodes.size(); i++) {
@@ -85,6 +99,7 @@ namespace odfaeg {
                 //component->setAutoResized(true);
             }
             void Node::hideNode(Node* node) {
+                std::cout<<"hide node : "<<node->name<<std::endl;
                 node->component->setVisible(false);
                 node->component->setEventContextActivated(false);
                 for (unsigned int i = 0; i < node->components.size(); i++) {
@@ -121,7 +136,7 @@ namespace odfaeg {
                     math::Vec2f nodeRelPos = component->getRelPosition();
                     getRootNode()->displaceNodes(this, nodeRelPos);
                 }
-                getRootNode()->affiche();
+                //getRootNode()->affiche();
                 //component->setAutoResized(true);
             }
             void Node::addOtherComponent(LightComponent* component, math::Vec2f relSize) {
@@ -131,8 +146,13 @@ namespace odfaeg {
                 }
                 component->setRelPosition(relXPos, this->component->getRelPosition().y());
                 component->setRelSize(relSize.x(), relSize.y());
-                if (parent != nullptr)
+                if (parent != nullptr) {
                     parent->component->setAutoResized(true);
+                    if (!parent->isNodeVisible()) {
+                        component->setEventContextActivated(false);
+                        component->setVisible(false);
+                    }
+                }
             }
             void Node::deleteAllNodes() {
                 nodes.clear();
