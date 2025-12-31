@@ -2964,7 +2964,7 @@ bool ODFAEGCreator::isFilePath(const std::string& s) {
 }
 
 void ODFAEGCreator::applySyntaxSuggar() {
-    std::cout<<"virtual file : "<<virtualFile<<std::endl;
+    //std::cout<<"virtual file : "<<virtualFile<<std::endl;
     CXIndex index = clang_createIndex(0, 0);
 
     // Unsaved file
