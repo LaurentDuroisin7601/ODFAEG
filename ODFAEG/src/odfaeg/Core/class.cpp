@@ -173,6 +173,7 @@ namespace odfaeg {
 
                         ctx->cl.setImplFilePath(clang_getCString(clang_getFileName(file)));
                         m.location = std::make_pair(line, col);
+                        m.offset = offset;
 
 
                         //std::cout<<"found function definition at : "<<m.location.first<<","<<m.location.second<<std::endl;

@@ -2977,6 +2977,7 @@ void ODFAEGCreator::showFileContent(Label* lab) {
 
         CXString spelling = clang_getTokenSpelling(tu, tok);
         std::string text = clang_getCString(spelling);
+        //std::cout<<"text : "<<text<<std::endl;
 
         TextArea::Token token;
         token.startTok = startOffset;
@@ -8295,7 +8296,7 @@ void ODFAEGCreator::onGoToFunctionSelected(DropDownList* dp) {
                 }
             }
             if (signature == signatureToFind) {
-                int index = lineColumnToIndex(tScriptEdit->getText(), mf[f].location.first, mf[f].location.second);
+                int index = mf[f].offset;
                 //std::cout<<"index : "<<index<<std::endl;
                 tScriptEdit->setCursorPosition(index);
                 Vec3f cursorPos = tScriptEdit->getCursorPositionLocal();
