@@ -145,6 +145,7 @@ class ODFAEGCreator : public odfaeg::core::Application<ODFAEGCreator>,
         Serif
     };
     private :
+        void applySyntaxSuggar();
         std::pair<unsigned, unsigned> indexToLineColumn(const std::string& text, unsigned pos);
         unsigned lineColumnToIndex(const std::string& text, unsigned line, unsigned column);
         //bool isPrimitiveType(std::string type);

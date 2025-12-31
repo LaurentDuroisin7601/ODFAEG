@@ -2932,7 +2932,9 @@ void ODFAEGCreator::showFileContent(Label* lab) {
             }
         }
     }
-
+    applySyntaxSuggar();
+}
+void ODFAEGCreator::applySyntaxSuggar() {
     CXIndex index = clang_createIndex(0, 0);
 
     // Unsaved file
@@ -2976,7 +2978,7 @@ void ODFAEGCreator::showFileContent(Label* lab) {
         clang_getFileLocation(end,   nullptr, nullptr, nullptr, &endOffset);
 
         CXString spelling = clang_getTokenSpelling(tu, tok);
-        std::string text = clang_getCString(spelling);
+        std::string text(clang_getCString(spelling));
         //std::cout<<"text : "<<text<<std::endl;
 
         TextArea::Token token;
@@ -3008,7 +3010,6 @@ void ODFAEGCreator::showFileContent(Label* lab) {
     clang_disposeTokens(tu, tokens, tokenCount);
     clang_disposeTranslationUnit(tu);
     clang_disposeIndex(index);
-
 }
 void ODFAEGCreator::processKeyHeldDown (IKeyboard::Key key) {
 
@@ -7823,49 +7824,37 @@ std::pair<unsigned, unsigned> ODFAEGCreator::indexToLineColumn(const std::string
 
 unsigned ODFAEGCreator::lineColumnToIndex(const std::string& text, unsigned line, unsigned column) {
     unsigned index = 0;
-    unsigned currentLine = 0;
+    unsigned currentLine = 1;
+    //std::cout<<"line : "<<line<<std::endl;
 
     // Aller jusqu'à la ligne demandée
     while (currentLine < line && index < text.size()) {
-        if (text[index] == '\n') {
+        unsigned char byte = text[index];
+        if (byte == '\n') {
             currentLine++;
         }
         index++;
     }
-
     // Maintenant on est au début de la ligne
-    unsigned col = 0;
+    unsigned col = 1;
 
     while (index < text.size() && col < column) {
-        unsigned char c = text[index];
-
-        // Gestion CRLF
-        if (c == '\r') {
-            index++;
-            continue;
-        }
-        if (c == '\n') {
-            break; // fin de ligne
-        }
-
-        // Tabulation
-        if (c == '\t') {
-            col += 4; // ou ta tab size
-            index++;
-            continue;
-        }
-
-        // UTF-8 : avancer d'un codepoint
         unsigned char byte = text[index];
         unsigned advance = 1;
-
+        if (byte == '\n') {
+            break;
+        }
+        // Tabulation
+        if (byte == '\t') {
+            advance = 4;
+        }
         if ((byte & 0xE0) == 0xC0) advance = 2;
         else if ((byte & 0xF0) == 0xE0) advance = 3;
         else if ((byte & 0xF8) == 0xF0) advance = 4;
-
-        col++;
-        index += advance;
+        index++;
+        col += advance;
     }
+    std::cout<<"col : "<<col<<","<<column<<std::endl;
 
     return index;
 }
@@ -8296,7 +8285,7 @@ void ODFAEGCreator::onGoToFunctionSelected(DropDownList* dp) {
                 }
             }
             if (signature == signatureToFind) {
-                int index = mf[f].offset;
+                int index = lineColumnToIndex(tScriptEdit->getText(), mf[f].location.first, mf[f].location.second);
                 //std::cout<<"index : "<<index<<std::endl;
                 tScriptEdit->setCursorPosition(index);
                 Vec3f cursorPos = tScriptEdit->getCursorPositionLocal();
