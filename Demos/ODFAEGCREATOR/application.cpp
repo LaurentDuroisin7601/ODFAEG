@@ -2934,6 +2934,35 @@ void ODFAEGCreator::showFileContent(Label* lab) {
     }
     applySyntaxSuggar();
 }
+bool ODFAEGCreator::isWindowsPath(const std::string& s) {
+    return s.size() > 3 &&
+           std::isalpha(s[0]) &&
+           s[1] == ':' &&
+           (s[2] == '\\' || s[2] == '/');
+}
+bool ODFAEGCreator::isUnixPath(const std::string& s) {
+    return !s.empty() && s[0] == '/';
+}
+bool ODFAEGCreator::isRelativePath(const std::string& s) {
+    return s.rfind("./", 0) == 0 || s.rfind("../", 0) == 0;
+}
+bool ODFAEGCreator::hasFileExtension(const std::string& s) {
+    static const std::vector<std::string> exts = {
+        ".h",".hpp",".c",".cpp"
+    };
+    for (auto& e : exts)
+        if (s.size() > e.size() &&
+            s.compare(s.size() - e.size(), e.size(), e) == 0)
+            return true;
+    return false;
+}
+bool ODFAEGCreator::isFilePath(const std::string& s) {
+    return isWindowsPath(s) ||
+           isUnixPath(s) ||
+           isRelativePath(s) ||
+           hasFileExtension(s);
+}
+
 void ODFAEGCreator::applySyntaxSuggar() {
     CXIndex index = clang_createIndex(0, 0);
 
@@ -2970,36 +2999,40 @@ void ODFAEGCreator::applySyntaxSuggar() {
         CXSourceLocation start = clang_getRangeStart(extent);
         CXSourceLocation end   = clang_getRangeEnd(extent);
 
-        unsigned startOffset = 0;
-        unsigned endOffset   = 0;
+        unsigned startOffset=0;
+        unsigned endOffset=0;
+
 
         // On récupère l’offset dans le buffer
-        clang_getFileLocation(start, nullptr, nullptr, nullptr, &startOffset);
-        clang_getFileLocation(end,   nullptr, nullptr, nullptr, &endOffset);
+        clang_getSpellingLocation(start, nullptr, nullptr, nullptr, &startOffset);
+        clang_getSpellingLocation(end, nullptr, nullptr, nullptr, &endOffset);
 
         CXString spelling = clang_getTokenSpelling(tu, tok);
         std::string text(clang_getCString(spelling));
-        //std::cout<<"text : "<<text<<std::endl;
+        if (!isFilePath(text)) {
 
-        TextArea::Token token;
-        token.startTok = startOffset;
-        token.endTok = endOffset;
-        token.spelling = text;
-        CXTokenKind kind = clang_getTokenKind(tok);
-        if (kind == CXToken_Keyword) {
-            token.colorTok = Color::Blue;
-        } else if (kind == CXToken_Identifier) {
-            token.colorTok = Color::Green;
-        } else if (kind == CXToken_Literal) {
-            token.colorTok = Color::Magenta;
-        } else if (kind == CXToken_Comment) {
-            token.colorTok = Color(128, 128, 128);
-        } else if (kind == CXToken_Punctuation) {
-            token.colorTok = Color::Red;
-        } else {
-            token.colorTok = Color::Black;
+            //std::cout<<"text : "<<text<<std::endl;
+
+            TextArea::Token token;
+            token.startTok = startOffset;
+            token.endTok = endOffset;
+            token.spelling = text;
+            CXTokenKind kind = clang_getTokenKind(tok);
+            if (kind == CXToken_Keyword) {
+                token.colorTok = Color::Blue;
+            } else if (kind == CXToken_Identifier) {
+                token.colorTok = Color::Green;
+            } else if (kind == CXToken_Literal) {
+                token.colorTok = Color::Magenta;
+            } else if (kind == CXToken_Comment) {
+                token.colorTok = Color(128, 128, 128);
+            } else if (kind == CXToken_Punctuation) {
+                token.colorTok = Color::Red;
+            } else {
+                token.colorTok = Color::Black;
+            }
+            tScriptEdit->addToken(token);
         }
-        tScriptEdit->addToken(token);
         /*std::cout << "Token '" << text
                   << "' start=" << startOffset
                   << " end=" << endOffset << "\n";*/

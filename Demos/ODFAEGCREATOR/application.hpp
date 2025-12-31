@@ -145,6 +145,11 @@ class ODFAEGCreator : public odfaeg::core::Application<ODFAEGCreator>,
         Serif
     };
     private :
+        bool isWindowsPath(const std::string& s);
+        bool isUnixPath(const std::string& s);
+        bool isRelativePath(const std::string& s);
+        bool hasFileExtension(const std::string& s);
+        bool isFilePath(const std::string& s);
         void applySyntaxSuggar();
         std::pair<unsigned, unsigned> indexToLineColumn(const std::string& text, unsigned pos);
         unsigned lineColumnToIndex(const std::string& text, unsigned line, unsigned column);
