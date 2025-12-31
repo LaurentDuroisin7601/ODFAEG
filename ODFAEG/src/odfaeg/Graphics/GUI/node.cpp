@@ -7,17 +7,18 @@ namespace odfaeg {
                 component->setRelPosition(relNodePos.x(), relNodePos.y());
                 component->setRelSize(relNodeSize.x(), relNodeSize.y());
                 if (parent != nullptr) {
-                    if (!parent->isNodeVisible()) {
+                    if (!parent->childNodeVisible) {
                         component->setEventContextActivated(false);
                         component->setVisible(false);
-                        nodeVisible = false;
+                        childNodeVisible = false;
                     } else {
-                        nodeVisible = true;
+                        childNodeVisible = true;
                     }
                     parent->addNode(this);
                 } else {
-                    nodeVisible = true;
+                    childNodeVisible = true;
                 }
+                nodeVisible = true;
             }
             bool Node::isNodeVisible() {
                 return nodeVisible;
@@ -73,6 +74,7 @@ namespace odfaeg {
                     node->components[i]->setVisible(true);
                     node->components[i]->setEventContextActivated(true);
                 }
+                node->childNodeVisible = true;
                 if (node->isNodeVisible()) {
                     //std::cout<<"node visible ? "<<name<<","<<node->isNodeVisible()<<std::endl;
                     node->showAllNodes();
@@ -99,13 +101,14 @@ namespace odfaeg {
                 //component->setAutoResized(true);
             }
             void Node::hideNode(Node* node) {
-                std::cout<<"hide node : "<<node->name<<std::endl;
+                //std::cout<<"hide node : "<<node->name<<std::endl;
                 node->component->setVisible(false);
                 node->component->setEventContextActivated(false);
                 for (unsigned int i = 0; i < node->components.size(); i++) {
                     node->components[i]->setVisible(false);
                     node->components[i]->setEventContextActivated(false);
                 }
+                node->childNodeVisible = false;
                 node->hideAllNodes();
             }
             void Node::displaceNodes(Node* selectedNode, math::Vec2f& nodeRelPos) {

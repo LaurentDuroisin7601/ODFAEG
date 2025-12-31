@@ -2805,10 +2805,10 @@ void ODFAEGCreator::showProjectsFiles(Label* label) {
     pScriptsEdit->setVisible(true);
     Node* node = rootNode->findNode(label);
     if (!node->isNodeVisible()) {
-        std::cout<<"show nodes : "<<label->getText().toAnsiString()<<std::endl;
+        //std::cout<<"show nodes : "<<label->getText().toAnsiString()<<std::endl;
         node->showAllNodes();
     } else {
-        std::cout<<"hide nodes : "<<label->getText().toAnsiString()<<std::endl;
+        //std::cout<<"hide nodes : "<<label->getText().toAnsiString()<<std::endl;
         node->hideAllNodes();
     }
     for (unsigned int i = 0; i < worlds.size(); i++) {

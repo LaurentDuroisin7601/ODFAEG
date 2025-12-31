@@ -20,7 +20,7 @@ namespace odfaeg {
                 void addOtherComponent(LightComponent* component, math::Vec2f relSize);
                 void affiche();
                 private :
-                bool nodeVisible;
+                bool nodeVisible, childNodeVisible;
                 void hideNode(Node* node);
                 void showNode (Node* node);
                 void displaceNodes(Node* selectedNode, math::Vec2f& nodePos);
