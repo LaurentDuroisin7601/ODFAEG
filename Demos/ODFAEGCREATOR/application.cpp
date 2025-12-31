@@ -2964,6 +2964,7 @@ bool ODFAEGCreator::isFilePath(const std::string& s) {
 }
 
 void ODFAEGCreator::applySyntaxSuggar() {
+    std::cout<<"virtual file : "<<virtualFile<<std::endl;
     CXIndex index = clang_createIndex(0, 0);
 
     // Unsaved file
@@ -3009,7 +3010,7 @@ void ODFAEGCreator::applySyntaxSuggar() {
 
         CXString spelling = clang_getTokenSpelling(tu, tok);
         std::string text(clang_getCString(spelling));
-        if (!isFilePath(text)) {
+        //if (!isFilePath(text)) {
 
             //std::cout<<"text : "<<text<<std::endl;
 
@@ -3032,7 +3033,7 @@ void ODFAEGCreator::applySyntaxSuggar() {
                 token.colorTok = Color::Black;
             }
             tScriptEdit->addToken(token);
-        }
+        //}
         /*std::cout << "Token '" << text
                   << "' start=" << startOffset
                   << " end=" << endOffset << "\n";*/
