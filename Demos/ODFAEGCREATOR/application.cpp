@@ -7854,7 +7854,7 @@ unsigned ODFAEGCreator::lineColumnToIndex(const std::string& text, unsigned line
         index++;
         col += advance;
     }
-    std::cout<<"col : "<<col<<","<<column<<std::endl;
+    //std::cout<<"col : "<<col<<","<<column<<std::endl;
 
     return index;
 }
