@@ -7781,14 +7781,14 @@ void ODFAEGCreator::removeSpacesChars(std::string& str) {
 }*/
 
 std::pair<unsigned, unsigned> ODFAEGCreator::indexToLineColumn(const std::string& text, unsigned index) {
-    unsigned line = 0;
-    unsigned column = 0;
+    unsigned line = 1;
+    unsigned column = 1;
 
     unsigned i = 0;
 
     while (i < index && i < text.size()) {
         unsigned char c = text[i];
-
+        unsigned advance = 1;
         // CRLF
         if (c == '\r') {
             i++;
@@ -7797,7 +7797,7 @@ std::pair<unsigned, unsigned> ODFAEGCreator::indexToLineColumn(const std::string
 
         if (c == '\n') {
             line++;
-            column = 0;
+            column = 1;
             i++;
             continue;
         }
@@ -7810,7 +7810,7 @@ std::pair<unsigned, unsigned> ODFAEGCreator::indexToLineColumn(const std::string
         }
 
         // UTF-8 : avancer d'un codepoint
-        unsigned advance = 1;
+
         if ((c & 0xE0) == 0xC0) advance = 2;
         else if ((c & 0xF0) == 0xE0) advance = 3;
         else if ((c & 0xF8) == 0xF0) advance = 4;
