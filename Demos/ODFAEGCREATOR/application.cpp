@@ -8288,6 +8288,7 @@ void ODFAEGCreator::onTextEntered(TextArea* ta, char caracter) {
     if (textSize.y() > tScriptEdit->getSize().y())
         tScriptEdit->setSize(Vec3f(tScriptEdit->getSize().x(), textSize.y(), tScriptEdit->getSize().z()));
     pScriptsEdit->updateScrolls();
+    applySyntaxSuggar();
 }
 void ODFAEGCreator::onGoToFunctionSelected(DropDownList* dp) {
     if (dp == dpGoToMFunc) {
