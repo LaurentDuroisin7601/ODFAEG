@@ -286,7 +286,8 @@ namespace odfaeg {
             void TextArea::applySyntaxSuggar() {
                 for (unsigned int i = 0; i < tokens.size(); i++) {
                     Text subText;
-                    subText.setString(tokens[i].spelling);
+                    //subText.setString(tokens[i].spelling);
+                    subText.setString(tmp_text.substring(tokens[i].startTok, tokens[i].endTok - tokens[i].startTok));
                     subText.setFont(*font);
                     subText.setColor(tokens[i].colorTok);
                     subText.setCharacterSize(caracterSize);
