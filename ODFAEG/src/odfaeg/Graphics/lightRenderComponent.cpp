@@ -3690,7 +3690,7 @@ namespace odfaeg {
 
                 ////////std::cout<<"draw on db"<<std::endl;
                 if (!lightDepth) {
-                    std::cout<<"depth buffer recorded"<<std::endl;
+                    //std::cout<<"depth buffer recorded"<<std::endl;
                     layerPC.nbLayers = GameObject::getNbLayers();
                     vkCmdPushConstants(commandBuffer, depthBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][0][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectRenderingPC), &indirectRenderingPC);
                     vkCmdPushConstants(commandBuffer, depthBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][0][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(LayerPC), &layerPC);
@@ -5021,7 +5021,7 @@ namespace odfaeg {
                     vbBindlessTexIndexed[p].updateStagingBuffers(currentFrame);
                 }
             }
-            std::cout<<"updating staging buffer ok"<<std::endl;
+            //std::cout<<"updating staging buffer ok"<<std::endl;
             maxTexturesInUse[currentFrame] = texturesInUse;
             VkCommandBufferInheritanceInfo inheritanceInfo{};
 
@@ -5263,7 +5263,7 @@ namespace odfaeg {
                }
 
            }
-            std::cout<<"data ready ok"<<std::endl;
+            //std::cout<<"data ready ok"<<std::endl;
             //glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo));
             /*if (!view.isOrtho())
                 view.setPerspective(80, view.getViewport().getSize().x() / view.getViewport().getSize().y(), 0.1, view.getViewport().getSize().z());*/
@@ -5280,12 +5280,12 @@ namespace odfaeg {
                 registerFrameJob[lightDepthBuffer.getCurrentFrame()] = false;
                 //std::cout<<"draw buffers"<<std::endl;
                 resetBuffers();
-                std::cout<<"reset buffer ok"<<std::endl;
+                //std::cout<<"reset buffer ok"<<std::endl;
                 fillBuffersMT();
                 fillIndexedBuffersMT();
                 fillLightBuffersMT();
                 fillLightBuffersIndexedMT();
-                std::cout<<"fill buffer ok"<<std::endl;
+                //std::cout<<"fill buffer ok"<<std::endl;
                 //std::cout<<"buffer filled"<<std::endl;
                 lightIndirectRenderingPC.projMatrix = projMatrix;
                 lightIndirectRenderingPC.viewMatrix = viewMatrix;
@@ -5295,7 +5295,7 @@ namespace odfaeg {
                 resolutionPC.far = view.getViewport().getSize().z();
 
                 drawBuffers();
-                std::cout<<"draw buffer ok"<<std::endl;
+                //std::cout<<"draw buffer ok"<<std::endl;
                 //std::cout<<"current frame : "<<lightDepthBuffer.getCurrentFrame()<<std::endl;
                 commandBufferReady[lightDepthBuffer.getCurrentFrame()] = true;
                 cv.notify_one();

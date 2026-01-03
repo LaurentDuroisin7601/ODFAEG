@@ -31,6 +31,7 @@ namespace odfaeg {
 
                 VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo;
                 if (enableValidationLayers) {
+                    std::cout<<"enable validation layers"<<std::endl;
                     createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
                     createInfo.ppEnabledLayerNames = validationLayers.data();
                     const char* setting_debug_action[] = {"VK_DBG_LAYER_ACTION_LOG_MSG"};
@@ -57,14 +58,19 @@ namespace odfaeg {
                     populateDebugMessengerCreateInfo(debugCreateInfo);
                     features.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
                     createInfo.pNext = &layer_settings_create_info;
+                    //createInfo.pNext = &features;
+                    //std::cout<<"create instance"<<std::endl;
+                    if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
+                        throw core::Erreur(0, "Failed to create vulkan instance", 1);
+                    }
+                    //std::cout<<"instance created"<<std::endl;
                 }
                 else {
                     createInfo.enabledLayerCount = 0;
-
                     createInfo.pNext = nullptr;
-                }
-                if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
-                    throw core::Erreur(0, "Failed to create vulkan instance", 1);
+                    if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
+                        throw core::Erreur(0, "Failed to create vulkan instance", 1);
+                    }
                 }
                 setupDebugMessenger();
             }
@@ -88,6 +94,8 @@ namespace odfaeg {
 
             if (enableValidationLayers) {
                 extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+                extensions.push_back(VK_EXT_VALIDATION_FEATURES_EXTENSION_NAME);
+                extensions.push_back(VK_EXT_LAYER_SETTINGS_EXTENSION_NAME);
             }
             extensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
             #ifdef ODFAEG_SYSTEM_WINDOWS

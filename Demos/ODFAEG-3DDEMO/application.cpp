@@ -284,7 +284,7 @@ void MyAppli::onUpdate (RenderWindow* window, IEvent& event) {
             //std::cout<<"rotate"<<std::endl;
             int relX = (event.mouseMotion.x - oldX) * sensivity;
             int relY = (event.mouseMotion.y - oldY) * sensivity;
-            std::cout<<"rel : "<<relX<<","<<relY<<std::endl;
+            //std::cout<<"rel : "<<relX<<","<<relY<<std::endl;
             //Rotate the view, (Polar coordinates) but you can also use the lookAt function to look at a point.
             for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
                 View view = getRenderComponentManager().getRenderComponent(i)->getView();
