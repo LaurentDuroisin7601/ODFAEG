@@ -312,8 +312,9 @@ namespace odfaeg
                     renderPassInfo.dependencyCount = 1;
                     renderPassInfo.pDependencies = &dependency;
                     VkRenderPassMultiviewCreateInfo multiviewInfo{};
+                    uint32_t viewMask = 0; // en dehors du if
                     if (isCubeMap) {
-                        const uint32_t viewMask = 0b00111111;
+                        viewMask = 0b00111111;
                         multiviewInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO;
                         multiviewInfo.subpassCount = 1;
                         multiviewInfo.pViewMasks = &viewMask;

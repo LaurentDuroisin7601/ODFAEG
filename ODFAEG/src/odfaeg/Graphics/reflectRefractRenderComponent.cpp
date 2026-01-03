@@ -1309,6 +1309,8 @@ namespace odfaeg {
                                                                layout (location = 3) out vec3 normal;
                                                                layout (location = 4) out int drawableID;
                                                                void main() {
+                                                                    /*if (gl_ViewIndex != 1)
+                                                                    debugPrintfEXT("view index : %i\n", gl_ViewIndex);*/
                                                                     gl_PointSize = 2.0f;
                                                                     MaterialData material = materialDatas[gl_DrawID];
                                                                     ModelData model = modelDatas[gl_InstanceIndex];
@@ -1561,7 +1563,9 @@ namespace odfaeg {
                                                       void main() {
                                                            uint nodeIdx = atomicAdd(count[gl_ViewIndex], 1);
                                                            vec4 texel = (texIndex != 0) ? frontColor * texture(textures[texIndex-1], fTexCoords.xy) : frontColor;
+                                                           //debugPrintfEXT("indirect alpha fragment shader");
                                                            if (nodeIdx < maxNodes) {
+
                                                                 uint prevHead = imageAtomicExchange(headPointers, ivec3(gl_FragCoord.xy, gl_ViewIndex), nodeIdx);
                                                                 nodes[nodeIdx+gl_ViewIndex*maxNodes].color = texel;
                                                                 nodes[nodeIdx+gl_ViewIndex*maxNodes].depth = gl_FragCoord.z;
@@ -7747,6 +7751,7 @@ namespace odfaeg {
                     //std::cout<<"alpha buffer current frame : "<<currentFrame<<std::endl;
 
                     for (unsigned int i = 0; i < environmentMapCommandBuffer.size(); i++) {
+                        //std::cout<<"draw environment map"<<std::endl;
 
                         commandBuffers = environmentMap.getCommandBuffers();
                         currentFrame = environmentMap.getCurrentFrame();
