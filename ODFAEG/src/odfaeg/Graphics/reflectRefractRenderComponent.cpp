@@ -3485,8 +3485,7 @@ namespace odfaeg {
                 reflectRefractTex.beginRecordCommandBuffers();
                 const_cast<Texture&>(reflectRefractTex.getTexture(reflectRefractTex.getImageIndex())).toColorAttachmentOptimal(reflectRefractTex.getCommandBuffers()[reflectRefractTex.getCurrentFrame()]);
                 reflectRefractTex.clear(Color::Transparent);
-                registerFrameJob[reflectRefractTex.getCurrentFrame()] = true;
-                cv.notify_one();
+
             }
             void ReflectRefractRenderComponent::resetBuffers() {
                 for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
@@ -7914,6 +7913,8 @@ namespace odfaeg {
                 alphaBuffer.display();
                 environmentMap.display();
                 reflectRefractTex.display();
+                registerFrameJob[reflectRefractTex.getCurrentFrame()] = true;
+                cv.notify_one();
                 //std::cout<<"job wake up : "<<depthBuffer.getCurrentFrame()<<std::endl;
             }
             std::string ReflectRefractRenderComponent::getExpression() {

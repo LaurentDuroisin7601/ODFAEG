@@ -383,11 +383,8 @@ namespace odfaeg {
                 unsigned int baseVertex = vertices.getVertexCount();
                 for (unsigned int i = 0; i < va.getVertexCount(); i++) {
 
-                    /*#ifdef VULKAN
-                    m = m.toLeftHanded();
-                    math::Vec3f t = m * (math::Vec3f(va[i].position.x, va[i].position.y, va[i].position.z));
-                    Vertex v (math::Vec3f(t.x, t.y, t.z), va[i].color, va[i].texCoords);
-                    #else*/
+                    /*va[i].padding = m_transforms.size() - 1;
+                    vertices.append(va[i]);*/
                     math::Vec3f t = tm.transform(va[i].position);
                     ////////std::cout<<"position : "<<t<<std::endl;
                     Vertex v (t, va[i].color, va[i].texCoords);
@@ -398,27 +395,14 @@ namespace odfaeg {
                     }
                     v.entityId = va[i].entityId;
                     v.particleId = va[i].particleId;
-                    /*if (va.getEntity()->getType() == "E_PONCTUAL_LIGHT")
-                        ////std::cout<<"position : "<<t<<std::endl;*/
-                    //#endif // VULKAN
 
 
 
 
-                    /*if (va.getEntity() != nullptr && va.getEntity()->getType() == "E_PARTICLES") {
-                        //////std::cout<<"position : "<<t<<std::endl;
-                        system("PAUSE");
-                    }*/
-                    /*if (va.getEntity()->getRootType() == "E_HERO")
-                        //////std::cout<<"v : "<<v.position.x<<","<<v.position.y<<","<<v.position.z<<std::endl;*/
+
                     vertices.append(v);
 
-                    ////////std::cout<<"nb indexes : "<<nbIndexes<<std::endl;
-                    //if (i < va.m_indexes.size() /*&& *va.m_indexes[i] < nbIndexes*/) {
-                        ////////std::cout<<"add index to batcher"<<va.m_indexes[i]<<std::endl;
-                        /*m_indexes.back().push_back(va.m_indexes[i]);
-                        allIndexes.push_back(va.m_indexes[i]);*/
-                    //}
+
                 }
                 for (unsigned int i = 0; i < va.getIndexes().size(); i++) {
                     vertices.addIndex(baseVertex + va.getIndexes()[i]);

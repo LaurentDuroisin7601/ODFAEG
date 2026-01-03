@@ -4991,8 +4991,7 @@ namespace odfaeg {
                 shadowMap.beginRecordCommandBuffers();
                 const_cast<Texture&>(shadowMap.getTexture(shadowMap.getImageIndex())).toColorAttachmentOptimal(shadowMap.getCommandBuffers()[shadowMap.getCurrentFrame()]);
                 shadowMap.clear(Color::White);
-                registerFrameJob[depthBuffer.getCurrentFrame()] = true;
-                cv.notify_one();
+
             }
             void ShadowRenderComponent::drawBuffers() {
                unsigned int currentFrame = depthBuffer.getCurrentFrame();
@@ -5577,6 +5576,8 @@ namespace odfaeg {
                 alphaBuffer.display();
                 stencilBuffer.display();
                 shadowMap.display();
+                registerFrameJob[depthBuffer.getCurrentFrame()] = true;
+                cv.notify_one();
 
             }
             void ShadowRenderComponent::loadTextureIndexes() {

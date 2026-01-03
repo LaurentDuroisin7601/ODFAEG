@@ -719,8 +719,7 @@ namespace odfaeg {
             memoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
             memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
             vkCmdPipelineBarrier(frameBuffer.getCommandBuffers()[currentFrame], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
-            registerFrameJob[frameBuffer.getCurrentFrame()] = true;
-            cv.notify_one();
+
 
             ////std::cout<<"cleared"<<std::endl;
         }
@@ -5693,6 +5692,8 @@ namespace odfaeg {
             signalValues.push_back(values[frameBuffer.getCurrentFrame()]);
             target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
             frameBuffer.display();
+            registerFrameJob[frameBuffer.getCurrentFrame()] = true;
+            cv.notify_one();
             //std::cout<<"next frame"<<std::endl;
 
 

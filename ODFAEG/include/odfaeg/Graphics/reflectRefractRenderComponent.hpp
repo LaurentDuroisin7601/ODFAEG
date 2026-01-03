@@ -284,7 +284,7 @@ namespace odfaeg {
             std::mutex mtx;
             std::condition_variable cv;
             std::array<std::atomic<bool>, MAX_FRAMES_IN_FLIGHT> commandBufferReady = {};
-            std::array<std::atomic<bool>, MAX_FRAMES_IN_FLIGHT> registerFrameJob = {false, false};
+            std::array<std::atomic<bool>, MAX_FRAMES_IN_FLIGHT> registerFrameJob = {true, false};
             std::atomic<bool> stop = false;
             std::array<unsigned int, MAX_FRAMES_IN_FLIGHT> maxTexturesInUse={0, 0};
         };

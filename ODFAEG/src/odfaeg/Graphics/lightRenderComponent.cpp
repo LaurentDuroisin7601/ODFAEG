@@ -926,8 +926,7 @@ namespace odfaeg {
                 lightMap.beginRecordCommandBuffers();
                 const_cast<Texture&>(lightMap.getTexture(lightMap.getImageIndex())).toColorAttachmentOptimal(lightMap.getCommandBuffers()[lightMap.getCurrentFrame()]);
                 lightMap.clear(ambientColor);
-                registerFrameJob[lightDepthBuffer.getCurrentFrame()] = true;
-                cv.notify_one();
+
             }
             void LightRenderComponent::resetBuffers() {
                 for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
@@ -6928,6 +6927,8 @@ namespace odfaeg {
             bumpTexture.display();
             specularTexture.display();
             lightMap.display();
+            registerFrameJob[lightDepthBuffer.getCurrentFrame()] = true;
+            cv.notify_one();
             //std::cout<<"next frame"<<std::endl;
 
         }
