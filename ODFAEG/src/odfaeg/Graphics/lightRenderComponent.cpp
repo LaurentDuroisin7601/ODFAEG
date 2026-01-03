@@ -198,7 +198,6 @@ namespace odfaeg {
                     const_cast<Texture&>(lightMap.getTexture(i)).toShaderReadOnlyOptimal(lightDepthBuffer.getCommandBuffers()[lightDepthBuffer.getCurrentFrame()]);
                 }
 
-
                 VkSemaphoreCreateInfo semaphoreInfo{};
                 semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
                 VkSemaphoreTypeCreateInfo timelineCreateInfo{};
@@ -2357,10 +2356,10 @@ namespace odfaeg {
                     descriptorWrites[1].pBufferInfo = &materialDataStorageBufferInfoLastFrame;
 
                     //std::cout<<"light depth ? "<<lightDepth<<std::endl;
-
+                    VkDescriptorImageInfo headPtrDescriptorImageInfo{};
                     if (!lightDepth) {
 
-                        VkDescriptorImageInfo headPtrDescriptorImageInfo;
+
                         headPtrDescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
                         headPtrDescriptorImageInfo.imageView = depthTextureImageView[currentFrame];
                         headPtrDescriptorImageInfo.sampler = depthTextureSampler[currentFrame];
@@ -2374,7 +2373,6 @@ namespace odfaeg {
                         descriptorWrites[2].pImageInfo = &headPtrDescriptorImageInfo;
                         //std::cout<<"nb ds : "<<descriptorSets[descriptorId].size()<<std::endl;
                     } else {
-                        VkDescriptorImageInfo headPtrDescriptorImageInfo;
                         headPtrDescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
                         headPtrDescriptorImageInfo.imageView = lightDepthTextureImageView[currentFrame];
                         headPtrDescriptorImageInfo.sampler = lightDepthTextureSampler[currentFrame];
