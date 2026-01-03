@@ -2356,8 +2356,10 @@ namespace odfaeg {
                     descriptorWrites[1].descriptorCount = 1;
                     descriptorWrites[1].pBufferInfo = &materialDataStorageBufferInfoLastFrame;
 
+                    //std::cout<<"light depth ? "<<lightDepth<<std::endl;
 
                     if (!lightDepth) {
+
                         VkDescriptorImageInfo headPtrDescriptorImageInfo;
                         headPtrDescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
                         headPtrDescriptorImageInfo.imageView = depthTextureImageView[currentFrame];
@@ -2370,6 +2372,7 @@ namespace odfaeg {
                         descriptorWrites[2].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
                         descriptorWrites[2].descriptorCount = 1;
                         descriptorWrites[2].pImageInfo = &headPtrDescriptorImageInfo;
+                        //std::cout<<"nb ds : "<<descriptorSets[descriptorId].size()<<std::endl;
                     } else {
                         VkDescriptorImageInfo headPtrDescriptorImageInfo;
                         headPtrDescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
@@ -2383,6 +2386,7 @@ namespace odfaeg {
                         descriptorWrites[2].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
                         descriptorWrites[2].descriptorCount = 1;
                         descriptorWrites[2].pImageInfo = &headPtrDescriptorImageInfo;
+                        //std::cout<<"light nb ds : "<<descriptorSets[descriptorId].size()<<std::endl;
                     }
 
 
@@ -2401,8 +2405,9 @@ namespace odfaeg {
                     descriptorWrites[3].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
                     descriptorWrites[3].descriptorCount = allTextures.size();
                     descriptorWrites[3].pImageInfo = descriptorImageInfos.data();
-
+                    //std::cout<<"vk update descriptor sets"<<std::endl;
                     vkUpdateDescriptorSets(vkDevice.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+                    //std::cout<<"vk descriptor sets updated"<<std::endl;
 
                 } else if (shader == &buildAlphaBufferGenerator) {
                         std::vector<std::vector<VkDescriptorSet>>& descriptorSets = alphaBuffer.getDescriptorSet();
@@ -3685,12 +3690,14 @@ namespace odfaeg {
 
                 ////////std::cout<<"draw on db"<<std::endl;
                 if (!lightDepth) {
+                    std::cout<<"depth buffer recorded"<<std::endl;
                     layerPC.nbLayers = GameObject::getNbLayers();
                     vkCmdPushConstants(commandBuffer, depthBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][0][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(IndirectRenderingPC), &indirectRenderingPC);
                     vkCmdPushConstants(commandBuffer, depthBuffer.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][0][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_FRAGMENT_BIT, 128, sizeof(LayerPC), &layerPC);
                     std::vector<unsigned int> dynamicBufferOffsets;
                     dynamicBufferOffsets.push_back(modelDataOffset);
                     dynamicBufferOffsets.push_back(materialDataOffset);
+
                     if (indexOffset == -1)
                         depthBuffer.drawIndirect(commandBuffer, currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], drawCommandBufferMT[p][currentFrame], depthStencilID,currentStates, p, vertexOffset, drawCommandOffset, dynamicBufferOffsets);
                     else
@@ -5014,6 +5021,7 @@ namespace odfaeg {
                     vbBindlessTexIndexed[p].updateStagingBuffers(currentFrame);
                 }
             }
+            std::cout<<"updating staging buffer ok"<<std::endl;
             maxTexturesInUse[currentFrame] = texturesInUse;
             VkCommandBufferInheritanceInfo inheritanceInfo{};
 
@@ -5030,28 +5038,36 @@ namespace odfaeg {
 
                 throw core::Erreur(0, "failed to begin recording command buffer!", 1);
             }
-
+            //std::cout<<"begin draw depth ok"<<std::endl;
             RenderStates currentStates;
             currentStates.blendMode = BlendNone;
             currentStates.shader = &depthBufferGenerator;
             for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes-1; p++) {
 
-                if (needToUpdateDSs[p][currentFrame])
+                if (needToUpdateDSs[p][currentFrame]) {
+                    //std::cout<<"update ds : "<<p<<std::endl;
+
                     updateDescriptorSets(currentFrame, p, currentStates);
+                    //std::cout<<"descriptor set updated : "<<p<<std::endl;
+                }
+                //std::cout<<"descriptor set updated"<<std::endl;
 
                 if (nbDrawCommandBuffer[p][0] > 0) {
                     recordCommandBufferIndirect(currentFrame, p, nbDrawCommandBuffer[p][0], sizeof(DrawArraysIndirectCommand), LIGHTNBDEPTHSTENCIL, 0, -1, -1, modelDataOffsets[p][0], materialDataOffsets[p][0],drawCommandBufferOffsets[p][0], currentStates, depthCommandBuffer[currentFrame]);
                 }
+
                 if (nbIndexedDrawCommandBuffer[p][0] > 0) {
                     recordCommandBufferIndirect(currentFrame, p, nbIndexedDrawCommandBuffer[p][0], sizeof(DrawElementsIndirectCommand), LIGHTNODEPTHNOSTENCIL, 0, 0, -1, modelDataOffsets[p][1], materialDataOffsets[p][1],drawIndexedCommandBufferOffsets[p][0], currentStates, depthCommandBuffer[currentFrame]);
                 }
+                //std::cout<<"command registered"<<std::endl;
 
             }
+            //std::cout<<"end record cmd"<<std::endl;
             if (vkEndCommandBuffer(depthCommandBuffer[currentFrame]) != VK_SUCCESS) {
                 throw core::Erreur(0, "failed to record command buffer!", 1);
             }
 
-
+            //std::cout<<"register draw depth ok"<<std::endl;
 
             inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
             inheritanceInfo.renderPass = lightDepthBuffer.getRenderPass(1);
@@ -5073,7 +5089,10 @@ namespace odfaeg {
                     updateDescriptorSets(currentFrame, p, currentStates, true);
 
                 if (nbDrawCommandBuffer[p][1] > 0) {
-                    recordCommandBufferIndirect(currentFrame, p, nbDrawCommandBuffer[p][1], sizeof(DrawArraysIndirectCommand), LIGHTNODEPTHNOSTENCIL, 0, -1, -1, modelDataOffsets[p][2], materialDataOffsets[p][2],drawCommandBufferOffsets[p][1], currentStates, lightDepthCommandBuffer[currentFrame]);
+                    recordCommandBufferIndirect(currentFrame, p, nbDrawCommandBuffer[p][1], sizeof(DrawArraysIndirectCommand), LIGHTNODEPTHNOSTENCIL, 0, -1, -1, modelDataOffsets[p][2], materialDataOffsets[p][2],drawCommandBufferOffsets[p][1], currentStates, lightDepthCommandBuffer[currentFrame], true);
+                }
+                if (nbIndexedDrawCommandBuffer[p][1] > 0) {
+                    recordCommandBufferIndirect(currentFrame, p, nbIndexedDrawCommandBuffer[p][1], sizeof(DrawElementsIndirectCommand), LIGHTNODEPTHNOSTENCIL, 0, 0, -1, modelDataOffsets[p][3], materialDataOffsets[p][3],drawIndexedCommandBufferOffsets[p][1], currentStates, lightDepthCommandBuffer[currentFrame], true);
                 }
 
             }
@@ -5231,9 +5250,10 @@ namespace odfaeg {
 
 
            {
-               std::lock_guard<std::recursive_mutex> lock(rec_mutex);
-               if (datasReady) {
+
+               if (datasReady.load()) {
                    datasReady = false;
+                   std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                    m_instances = batcher.getInstances();
                    m_normals = normalBatcher.getInstances();
                    m_instancesIndexed = indexedBatcher.getInstances();
@@ -5243,6 +5263,7 @@ namespace odfaeg {
                }
 
            }
+            std::cout<<"data ready ok"<<std::endl;
             //glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo));
             /*if (!view.isOrtho())
                 view.setPerspective(80, view.getViewport().getSize().x() / view.getViewport().getSize().y(), 0.1, view.getViewport().getSize().z());*/
@@ -5259,10 +5280,12 @@ namespace odfaeg {
                 registerFrameJob[lightDepthBuffer.getCurrentFrame()] = false;
                 //std::cout<<"draw buffers"<<std::endl;
                 resetBuffers();
+                std::cout<<"reset buffer ok"<<std::endl;
                 fillBuffersMT();
                 fillIndexedBuffersMT();
                 fillLightBuffersMT();
                 fillLightBuffersIndexedMT();
+                std::cout<<"fill buffer ok"<<std::endl;
                 //std::cout<<"buffer filled"<<std::endl;
                 lightIndirectRenderingPC.projMatrix = projMatrix;
                 lightIndirectRenderingPC.viewMatrix = viewMatrix;
@@ -5272,6 +5295,7 @@ namespace odfaeg {
                 resolutionPC.far = view.getViewport().getSize().z();
 
                 drawBuffers();
+                std::cout<<"draw buffer ok"<<std::endl;
                 //std::cout<<"current frame : "<<lightDepthBuffer.getCurrentFrame()<<std::endl;
                 commandBufferReady[lightDepthBuffer.getCurrentFrame()] = true;
                 cv.notify_one();

@@ -220,7 +220,7 @@ void MyAppli::onInit() {
 
     billboard->setView(view3D);
     //std::cout<<"screen coords : "<<getRenderWindow().mapCoordsToPixel(model->getPosition(), view3D);
-    g2d::AmbientLight::getAmbientLight().setColor(Color::White);
+    g2d::AmbientLight::getAmbientLight().setColor(Color::Blue);
     animUpdater = new AnimUpdater();
     animUpdater->addBoneAnim(animator);
     getWorld()->addTimer(animUpdater);
@@ -279,9 +279,12 @@ void MyAppli::onUpdate (RenderWindow* window, IEvent& event) {
         {
             // Ajust the viewport size when the window is resized.
             getView().reset(BoundingBox(0, 0, getView().getViewport().getPosition().z(),event.window.data1, event.window.data2, getView().getViewport().getDepth()));
-        } else if (event.type == IEvent::MOUSE_MOTION_EVENT && IMouse::isButtonPressed(IMouse::Right)) {
+        }
+        if (event.type == IEvent::MOUSE_MOTION_EVENT && IMouse::isButtonPressed(IMouse::Right)) {
+            //std::cout<<"rotate"<<std::endl;
             int relX = (event.mouseMotion.x - oldX) * sensivity;
             int relY = (event.mouseMotion.y - oldY) * sensivity;
+            std::cout<<"rel : "<<relX<<","<<relY<<std::endl;
             //Rotate the view, (Polar coordinates) but you can also use the lookAt function to look at a point.
             for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
                 View view = getRenderComponentManager().getRenderComponent(i)->getView();
@@ -295,6 +298,8 @@ void MyAppli::onUpdate (RenderWindow* window, IEvent& event) {
             float phi = view.getPhi() - relX;
             view.rotate(teta, phi);
             billboard->setView(view);
+            oldX = IMouse::getPosition(getRenderWindow()).x();
+            oldY = IMouse::getPosition(getRenderWindow()).y();
 
         } /*else if (event.type == sf::Event::MouseWheelMoved) {
             if (event.mouseWheel.delta > 0) {
@@ -403,8 +408,8 @@ void MyAppli::onExec() {
         getRenderWindow().setView(view);*/
 
     }
-    eu->needToUpdate();
-    //getWorld()->update();
+    //eu->needToUpdate();
+    getWorld()->update();
     /*ps->update(clock.getElapsedTime());
     animUpdater->update();*/
     /*if (clock2.getElapsedTime() > timeBeforeStoppingVerticalMotion) {
@@ -418,7 +423,6 @@ void MyAppli::onExec() {
         view.move(0, 0, -verticalMotionDirection * speed * clock2.getElapsedTime().asSeconds());
         getRenderComponentManager().getRenderComponent(i)->setView(view);
     }*/
-    oldX = IMouse::getPosition(getRenderWindow()).x();
-    oldY = IMouse::getPosition(getRenderWindow()).y();
+
     clock.restart();
 }
