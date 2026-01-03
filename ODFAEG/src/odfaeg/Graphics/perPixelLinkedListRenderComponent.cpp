@@ -4685,7 +4685,7 @@ namespace odfaeg {
                 std::unique_lock<std::mutex> lock(mtx);
                 //std::unique_lock<std::mutex> lock2(mtx2);
                 cv.wait(lock, [this](){return registerFrameJob[frameBuffer.getCurrentFrame()].load() || stop.load();});
-                //std::cout<<"register frame"<<std::endl;
+                //std::cout<<"register frame : "<<frameBuffer.getCurrentFrame()<<std::endl;
                 registerFrameJob[frameBuffer.getCurrentFrame()] = false;
                 resetBuffers();
                 fillBuffersMT();
@@ -5305,7 +5305,7 @@ namespace odfaeg {
             std::lock_guard<std::mutex> lock(mtx);
             visibleEntities = vEntities;
             datasReady = true;
-            cv.notify_one();
+            //cv.notify_one();
             //std::cout<<"load entities data ready : "<<datasReady<<std::endl;
             return true;
         }
@@ -5346,7 +5346,7 @@ namespace odfaeg {
                 std::unique_lock<std::mutex> lock2(mtx2);
                 cv.wait(lock, [this] { return commandBufferReady[frameBuffer.getCurrentFrame()].load() || stop.load(); });
                 commandBufferReady[frameBuffer.getCurrentFrame()] = false;
-                //std::cout<<"copy"<<std::endl;
+                //std::cout<<"draw : "<<frameBuffer.getCurrentFrame()<<std::endl;
 
 
                 frameBuffer.beginRecordCommandBuffers();

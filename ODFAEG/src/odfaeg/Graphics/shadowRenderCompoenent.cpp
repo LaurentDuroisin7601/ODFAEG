@@ -5663,8 +5663,8 @@ namespace odfaeg {
                         }
                     }
                 }
-                visibleEntities = vEntities;
                 std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                visibleEntities = vEntities;
                 datasReady = true;
                 return true;
             }
