@@ -40,7 +40,7 @@ namespace odfaeg {
             bool isUsingThread;
         private:
             std::string name;
-            bool m_needToUpdate, running;
+            std::atomic<bool> m_needToUpdate, running;
             std::thread m_thread;
         };
     }

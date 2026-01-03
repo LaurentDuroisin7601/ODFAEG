@@ -4963,6 +4963,7 @@ namespace odfaeg {
                     recordCommandBufferIndirect(currentFrame, p, nbDrawCommandBuffer[p][0], sizeof(DrawArraysIndirectCommand), PPLLNODEPTHNOSTENCIL, 0, -1, -1, modelDataOffsets[p][0], materialDataOffsets[p][0],drawCommandBufferOffsets[p][0], currentStates, ppllCommandBuffer[currentFrame]);
                 }
                 if (nbIndexedDrawCommandBuffer[p][0] > 0) {
+                    //std::cout<<"register indexed"<<std::endl;
                     recordCommandBufferIndirect(currentFrame, p, nbIndexedDrawCommandBuffer[p][0], sizeof(DrawElementsIndirectCommand), PPLLNODEPTHNOSTENCIL, 0, 0, -1, modelDataOffsets[p][1], materialDataOffsets[p][1],drawIndexedCommandBufferOffsets[p][0], currentStates, ppllCommandBuffer[currentFrame]);
                 }
             }
@@ -5164,6 +5165,7 @@ namespace odfaeg {
                 skyboxBatcher.clear();
                 visibleSelectedScaleEntities.clear();
             }
+            //std::cout<<"load entities on component"<<std::endl;
             if (skybox != nullptr) {
                 for (unsigned int i = 0; i <  skybox->getNbFaces(); i++) {
                     skyboxBatcher.addFace(skybox->getFace(i));
@@ -5305,6 +5307,7 @@ namespace odfaeg {
             std::lock_guard<std::mutex> lock(mtx);
             visibleEntities = vEntities;
             datasReady = true;
+            //std::cout<<"data ready"<<std::endl;
             //cv.notify_one();
             //std::cout<<"load entities data ready : "<<datasReady<<std::endl;
             return true;

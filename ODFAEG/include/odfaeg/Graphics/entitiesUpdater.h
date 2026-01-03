@@ -26,7 +26,7 @@ namespace odfaeg {
             * \brief update all the entities which are in the current view.
             */
             void onUpdate () {
-                ////////std::cout<<"update world"<<std::endl;
+                //std::cout<<"update world"<<std::endl;
                 world.checkVisibleEntities(factory);
                 ////////std::cout<<"world updated"<<std::endl;
             }

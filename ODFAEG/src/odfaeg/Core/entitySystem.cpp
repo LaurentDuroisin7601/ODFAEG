@@ -9,21 +9,24 @@ namespace odfaeg {
         }
         void EntitySystem::needToUpdate() {
             m_needToUpdate = true;
+            //std::cout<<"update : "<<m_needToUpdate<<std::endl;
         }
         void EntitySystem::update() {
             onUpdate();
         }
         void EntitySystem::tUpdate() {
             running = true;
-            while (running) {
-                if (m_needToUpdate) {
+            while (running.load()) {
+                //std::cout<<"update : "<<m_needToUpdate<<std::endl;
+                if (m_needToUpdate.load()) {
+                    //std::cout<<"update : "<<std::endl;
                     onUpdate();
                     m_needToUpdate = false;
                 }
             }
         }
         void EntitySystem::stop() {
-            if (isUsingThread && running) {
+            if (isUsingThread && running.load()) {
                 running = false;
                 m_thread.join();
             }
