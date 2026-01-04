@@ -150,6 +150,7 @@ class ODFAEGCreator : public odfaeg::core::Application<ODFAEGCreator>,
         bool isRelativePath(const std::string& s);
         bool hasFileExtension(const std::string& s);
         bool isFilePath(const std::string& s);
+        size_t byteToCodepoint(const std::string& s, size_t byteOffset);
         void applySyntaxSuggar();
         std::pair<unsigned, unsigned> indexToLineColumn(const std::string& text, unsigned pos);
         unsigned lineColumnToIndex(const std::string& text, unsigned line, unsigned column);

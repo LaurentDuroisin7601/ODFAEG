@@ -287,6 +287,7 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < tokens.size(); i++) {
                     Text subText;
                     //subText.setString(tokens[i].spelling);
+                    //std::cout<<"tokens : "<<tokens[i].startTok<<","<<tokens[i].endTok<<std::endl;
                     subText.setString(tmp_text.substring(tokens[i].startTok, tokens[i].endTok - tokens[i].startTok));
                     subText.setFont(*font);
                     subText.setColor(tokens[i].colorTok);

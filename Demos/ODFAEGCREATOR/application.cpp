@@ -2962,6 +2962,19 @@ bool ODFAEGCreator::isFilePath(const std::string& s) {
            isRelativePath(s) ||
            hasFileExtension(s);
 }
+size_t ODFAEGCreator::byteToCodepoint(const std::string& s, size_t byteOffset) {
+    size_t cp = 0;
+    for (size_t i = 0; i < byteOffset; ) {
+        unsigned char c = s[i];
+        if ((c & 0x80) == 0) i += 1;          // 1 byte
+        else if ((c & 0xE0) == 0xC0) i += 2;  // 2 bytes
+        else if ((c & 0xF0) == 0xE0) i += 3;  // 3 bytes
+        else if ((c & 0xF8) == 0xF0) i += 4;  // 4 bytes
+        else i += 1; // fallback
+        cp++;
+    }
+    return cp;
+}
 
 void ODFAEGCreator::applySyntaxSuggar() {
     //std::cout<<"virtual file : "<<virtualFile<<std::endl;
@@ -3015,8 +3028,8 @@ void ODFAEGCreator::applySyntaxSuggar() {
             //std::cout<<"text : "<<text<<std::endl;
 
             TextArea::Token token;
-            token.startTok = startOffset;
-            token.endTok = endOffset;
+            token.startTok = byteToCodepoint(tScriptEdit->getText(), startOffset);
+            token.endTok = byteToCodepoint(tScriptEdit->getText(), endOffset);
             token.spelling = text;
             CXTokenKind kind = clang_getTokenKind(tok);
             if (kind == CXToken_Keyword) {
