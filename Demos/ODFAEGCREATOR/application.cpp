@@ -2978,13 +2978,15 @@ size_t ODFAEGCreator::byteToCodepoint(const std::string& s, size_t byteOffset) {
 
 void ODFAEGCreator::applySyntaxSuggar() {
     //std::cout<<"virtual file : "<<virtualFile<<std::endl;
+    std::string text = tScriptEdit->getText();
     CXIndex index = clang_createIndex(0, 0);
 
     // Unsaved file
     CXUnsavedFile unsaved;
     unsaved.Filename = virtualFile.c_str();
-    unsaved.Contents = tScriptEdit->getText().c_str();
-    unsaved.Length = tScriptEdit->getText().size();
+    unsaved.Contents = text.c_str();
+    unsaved.Length = text.size();
+    //std::cout<<"text size : "<<tScriptEdit->getText().size()<<std::endl;
 
     CXTranslationUnit tu = clang_parseTranslationUnit(
         index,
@@ -2999,7 +3001,7 @@ void ODFAEGCreator::applySyntaxSuggar() {
     // Range = tout le buffer
     CXSourceRange range = clang_getRange(
         clang_getLocationForOffset(tu, file, 0),
-        clang_getLocationForOffset(tu, file, tScriptEdit->getText().size())
+        clang_getLocationForOffset(tu, file, text.size())
     );
 
     CXToken* tokens = nullptr;
@@ -3022,15 +3024,15 @@ void ODFAEGCreator::applySyntaxSuggar() {
         clang_getSpellingLocation(end, nullptr, nullptr, nullptr, &endOffset);
 
         CXString spelling = clang_getTokenSpelling(tu, tok);
-        std::string text(clang_getCString(spelling));
+        std::string s(clang_getCString(spelling));
         //if (!isFilePath(text)) {
 
             //std::cout<<"text : "<<text<<std::endl;
 
             TextArea::Token token;
-            token.startTok = byteToCodepoint(tScriptEdit->getText(), startOffset);
-            token.endTok = byteToCodepoint(tScriptEdit->getText(), endOffset);
-            token.spelling = text;
+            token.startTok = byteToCodepoint(text, startOffset);
+            token.endTok = byteToCodepoint(text, endOffset);
+            token.spelling = s;
             CXTokenKind kind = clang_getTokenKind(tok);
             if (kind == CXToken_Keyword) {
                 token.colorTok = Color::Blue;

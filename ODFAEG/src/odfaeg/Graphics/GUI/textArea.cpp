@@ -287,6 +287,7 @@ namespace odfaeg {
                 tokens.push_back(token);
             }
             void TextArea::applySyntaxSuggar() {
+                //std::cout<<"display tokens"<<std::endl;
                 for (unsigned int i = 0; i < tokens.size(); i++) {
                     Text subText;
                     //std::cout<<"tokens : "<<tokens[i].startTok<<","<<tokens[i].endTok<<std::endl;
