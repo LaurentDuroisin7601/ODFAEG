@@ -41,7 +41,7 @@ namespace odfaeg {
                 math::Vec2f pos = text.findCharacterPos(currentIndex);
                 cursorPos = math::Vec3f(pos.x(), pos.y(), 0);
                 //setSize(text.getSize());
-                haveFocus = textChanged = false;
+                haveFocus = textChanged = viewUpdated = false;
                 scrollX = scrollY = 0;
             }
             void TextArea::onEventPushed(window::IEvent event, RenderWindow& window) {
@@ -160,8 +160,10 @@ namespace odfaeg {
 
                     #endif
                     target.draw(text);
-                    for (unsigned int i = 0; i < views.size(); i++) {
-                        target.draw(views[i]);
+                    if (viewUpdated) {
+                        for (unsigned int i = 0; i < views.size(); i++) {
+                            target.draw(views[i]);
+                        }
                     }
                     #ifdef VULKAN
                     target.submit(false);
@@ -277,6 +279,7 @@ namespace odfaeg {
                 haveFocus = focus;
             }
             void TextArea::resetTokens() {
+                viewUpdated = false;
                 tokens.clear();
                 views.clear();
             }
@@ -286,8 +289,9 @@ namespace odfaeg {
             void TextArea::applySyntaxSuggar() {
                 for (unsigned int i = 0; i < tokens.size(); i++) {
                     Text subText;
-                    //subText.setString(tokens[i].spelling);
                     //std::cout<<"tokens : "<<tokens[i].startTok<<","<<tokens[i].endTok<<std::endl;
+                    //std::cout<<"token text : "<<tmp_text.substring(tokens[i].startTok, tokens[i].endTok - tokens[i].startTok).toAnsiString()<<std::endl;
+                    //subText.setString(core::String::fromUtf8(tokens[i].spelling.begin(), tokens[i].spelling.end()));
                     subText.setString(tmp_text.substring(tokens[i].startTok, tokens[i].endTok - tokens[i].startTok));
                     subText.setFont(*font);
                     subText.setColor(tokens[i].colorTok);
@@ -296,6 +300,7 @@ namespace odfaeg {
                     subText.setPosition(math::Vec3f(position.x(), position.y(), getPosition().z()+100));
                     views.push_back(subText);
                 }
+                viewUpdated = true;
             }
         }
     }

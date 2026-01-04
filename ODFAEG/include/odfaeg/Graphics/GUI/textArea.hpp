@@ -60,7 +60,7 @@ namespace odfaeg {
                 RectangleShape rect;
                 Color background;
                 math::Vec3f cursorPos;
-                bool haveFocus, textChanged;
+                bool haveFocus, textChanged, viewUpdated;
                 std::vector<Token> tokens;
                 std::vector<Text> views;
                 const Font* font;

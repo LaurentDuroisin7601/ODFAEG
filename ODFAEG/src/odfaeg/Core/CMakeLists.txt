@@ -47,7 +47,9 @@ set(SRC
 	${SRCROOT}/runtimeCompiler.cpp
 	${INCROOT}/fastDelegate.h	
 	${INCROOT}/utf.hpp
+	${INCROOT}/utf.inl
 	${INCROOT}/string.hpp
+	${INCROOT}/string.inl
 	${SRCROOT}/string.cpp	
 	${INCROOT}/inputStream.hpp
 	${INCROOT}/fileInputStream.hpp

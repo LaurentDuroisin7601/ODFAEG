@@ -574,4 +574,5 @@ namespace odfaeg {
         ODFAEG_CORE_API String operator +(const String& left, const String& right);
     }
 }
+#include "string.inl"
 #endif // ODFAEG_STRING_HPP
