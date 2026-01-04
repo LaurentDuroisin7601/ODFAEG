@@ -31,7 +31,7 @@ namespace odfaeg {
                     delete triangles[i];
                 }
                 triangles.clear();
-                /*float angle = math::Math::toRadians(360) / quality;
+                float angle = math::Math::toRadians(360) / quality;
 
                 Color color2 (color.r, color.g, color.b, 0);
                 int end = quality;
@@ -57,9 +57,9 @@ namespace odfaeg {
                     (*triangle)[1] = Vertex(v2, color);
                     (*triangle)[2] = Vertex(v3, color);
                     addTriangle(triangle);
-                }*/
+                }
 
-                const int stacks = quality, slices = quality;
+                /*const int stacks = quality, slices = quality;
                 const int vertexCount = (stacks + 1) * (slices + 1);
                 VertexArray* vertices = new VertexArray(Triangles, vertexCount, this);
 
@@ -100,7 +100,7 @@ namespace odfaeg {
                     }
                 }
 
-                addTriangle(vertices);
+                addTriangle(vertices);*/
             }
             //Ajoute un triangle à la source lumineuse.
             void PonctualLight::addTriangle (VertexArray *triangle) {

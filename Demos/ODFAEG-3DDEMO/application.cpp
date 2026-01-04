@@ -104,10 +104,9 @@ void MyAppli::onInit() {
     emitter.setParticleTextureIndex(Distributions::uniformui(0, 9));
     emitter.setParticleScale(Distributions::rect(Vec3f(2.1f, 2.1f, 2.f), Vec3f(2.f, 2.f, 2.f)));
     ps->addEmitter(emitter);
-    g3d::PonctualLight* light = factory.make_entity<g3d::PonctualLight>(Vec3f(0, 0, 0), 200, 200, 200, 255, Color::Yellow, 32, factory);
-    float h;
-    isOnHeightMap = heightmap->getHeight(Vec2f(light->getPosition().x(), light->getPosition().z()), h);
-    light->move(Vec3f(0, h+light->getSize().x()*0.5f, 0));
+    g3d::PonctualLight* light = factory.make_entity<g3d::PonctualLight>(Vec3f(0, 25, 10), 200, 200, 200, 255, Color::Yellow, 32, factory);
+
+
     getWorld()->addEntity(light);
     eu = new EntitiesUpdater(factory, *getWorld());
     getWorld()->addWorker(eu);

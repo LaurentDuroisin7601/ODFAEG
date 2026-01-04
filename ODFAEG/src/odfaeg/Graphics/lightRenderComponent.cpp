@@ -731,7 +731,7 @@ namespace odfaeg {
                                                              vec3 pixPos = vec3 (gl_FragCoord.x, gl_FragCoord.y, pixelViewZ);
                                                              vec3 viewPos = vec3(pushConsts.resolution.x * 0.5f, pushConsts.resolution.y * 0.5f, 0);
                                                              vec3 vertexToLight = sLightPos - pixPos;
-                                                             //debugPrintfEXT("light pos : %v3f pix pos : %v3f", sLightPos, pixPos);
+
 
                                                              if (bump.x != 0 || bump.y != 0 || bump.z != 0) {
                                                                  vec3 tmpNormal = (n.xyz);
@@ -741,8 +741,9 @@ namespace odfaeg {
                                                                  n.y = dot(bump.xyz, binomial);
                                                                  n.z = dot(bump.xyz, tmpNormal);
                                                              }
-                                                             //debugPrintfEXT("depth : %f", depth.z);
+                                                             //debugPrintfEXT("depth : %f,%f", gl_FragCoord.z, depth.z);
                                                              if (/*layer > depth.y || layer == depth.y &&*/ gl_FragCoord.z > depth.z) {
+                                                                 debugPrintfEXT("light pos : %v3f pix pos : %v3f", sLightPos, pixPos);
                                                                  vec4 specularColor = vec4(0, 0, 0, 0);
 
                                                                  float attenuation = 1.f - length(vertexToLight) / radius;
@@ -5223,7 +5224,7 @@ namespace odfaeg {
                     updateDescriptorSets(currentFrame, p, currentStates);
 
                 if (nbDrawCommandBuffer[p][1] > 0) {
-
+                    //std::cout<<"record light"<<std::endl;
                     recordCommandBufferIndirect(currentFrame, p, nbDrawCommandBuffer[p][1], sizeof(DrawArraysIndirectCommand), LIGHTNODEPTHNOSTENCIL, 0, -1, -1, modelDataOffsets[p][2], materialDataOffsets[p][2],drawCommandBufferOffsets[p][1], currentStates, lightCommandBuffer[currentFrame]);
                 }
                 if (nbIndexedDrawCommandBuffer[p][1] > 0) {
