@@ -4110,7 +4110,17 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
     else if (item->getText() == "Tile") {
         if (appliname != "" && getWorld()->getCurrentSceneManager() != nullptr) {
             if (!showRectSelect) {
-                Vec3f position = getRenderWindow().mapPixelToCoords(Vec3f(cursor.getPosition().x(), getRenderWindow().getSize().y() - cursor.getPosition().y(), 0))+getRenderWindow().getView().getSize()*0.5f;
+
+                Vec3f position;
+                if(dpSelectComponent->getSelectedItem() == "MAIN WINDOW") {
+                    position = getRenderWindow().mapPixelToCoords(Vec3f(cursor.getPosition().x(), /*getRenderWindow().getSize().y() -*/ cursor.getPosition().y(), 0))+getRenderWindow().getView().getSize()*0.5f;
+                } else {
+                    for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
+                        if (getRenderComponentManager().getRenderComponent(i) != nullptr && getRenderComponentManager().getRenderComponent(i)->getName() == dpSelectComponent->getSelectedItem()) {
+                            position = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(cursor.getPosition().x(), /*getRenderWindow().getSize().y() -*/ cursor.getPosition().y(), 0))+getRenderWindow().getView().getSize()*0.5f;
+                        }
+                    }
+                }
                 Tile* tile = factory.make_entity<Tile>(nullptr, position,Vec3f(gridWidth, gridHeight, 0), IntRect(0, 0, gridWidth, gridHeight), factory);
                 selectedObject = tile;
                 //std::cout << "wall center : " << tile->getCenter()<< std::endl;
@@ -4122,10 +4132,36 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
                 BoundingBox rect = rectSelect.getSelectionRect();
                 Vec3f savedPos = rectSelect.getSelectionRect().getPosition();
                 Vec3f pos = rectSelect.getSelectionRect().getPosition();
-                pos = getRenderWindow().mapPixelToCoords(Vec3f(pos.x(), getRenderWindow().getSize().y() - pos.y(), 0))+getRenderWindow().getView().getSize()*0.5f;
+                if(dpSelectComponent->getSelectedItem() == "MAIN WINDOW") {
+                    pos = getRenderWindow().mapPixelToCoords(Vec3f(cursor.getPosition().x(), /*getRenderWindow().getSize().y() -*/ cursor.getPosition().y(), 0))+getRenderWindow().getView().getSize()*0.5f;
+                } else {
+                    for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
+                        if (getRenderComponentManager().getRenderComponent(i) != nullptr && getRenderComponentManager().getRenderComponent(i)->getName() == dpSelectComponent->getSelectedItem()) {
+                            pos = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(cursor.getPosition().x(), /*getRenderWindow().getSize().y() -*/ cursor.getPosition().y(), 0))+getRenderWindow().getView().getSize()*0.5f;
+                        }
+                    }
+                }
+                pos = getRenderWindow().mapPixelToCoords(Vec3f(pos.x(), /*getRenderWindow().getSize().y() -*/ pos.y(), 0))+getRenderWindow().getView().getSize()*0.5f;
                 rectSelect.setRect(pos.x(), pos.y(), pos.z(), rectSelect.getSelectionRect().getSize().x(),rectSelect.getSelectionRect().getSize().y(), rectSelect.getSelectionRect().getSize().z());
+                int x = rect.getPosition().x();
+                int y = rect.getPosition().y();
+                int endX = rect.getPosition().x() + rect.getSize().x();
+                int endY = rect.getPosition().y() + rect.getSize().y();
+                for (int i = x; i < endX; i+=gridWidth*0.5f) {
+                    for(int j = y; j < endY; j+= gridHeight*0.5f) {
+                        Vec3f position = getGridCellPos(Vec3f(i, j, 0));
+                        Tile* tile = factory.make_entity<Tile>(nullptr,position,Vec3f(gridWidth, gridHeight, 0),IntRect(0, 0, gridWidth, gridHeight), factory);
+                        rectSelect.addItem(tile);
+                        if (rectSelect.getItems().size() == 1) {
+                            selectedObject = tile;
+                            displayTileInfos(tile);
+                        }
+                        getWorld()->addEntity(tile);
+                    }
+                }
+                rectSelect.setRect(savedPos.x(), savedPos.y(), savedPos.z(), rectSelect.getSelectionRect().getSize().x(),rectSelect.getSelectionRect().getSize().y(), rectSelect.getSelectionRect().getSize().z());
                 //In 2D iso the tiles are in a staggered arrangement so we need to shift the x position every two times in the loop.
-                if (getWorld()->getBaseChangementMatrix().isIso2DMatrix()) {
+                /*if (getWorld()->getBaseChangementMatrix().isIso2DMatrix()) {
                     int i = 0;
                     int x = rect.getPosition().x();
                     int y = rect.getPosition().y();
@@ -4151,8 +4187,8 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
                         }
                         y += gridHeight*0.5f;
                         i++;
-                    }
-                } else {
+                    }*/
+                } /*else {
                     for (int x = rect.getPosition().x(); x < rect.getPosition().x() + rect.getSize().x(); x+=gridWidth) {
                         for (int y = rect.getPosition().y(); y <  rect.getPosition().y() + rect.getSize().y(); y+=gridHeight) {
                             Vec3f position = getGridCellPos(Vec3f(x, y, 0));
@@ -4166,8 +4202,8 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
                         }
                     }
                 }
-                rectSelect.setRect(savedPos.x(), savedPos.y(), savedPos.z(), rectSelect.getSelectionRect().getSize().x(),rectSelect.getSelectionRect().getSize().y(), rectSelect.getSelectionRect().getSize().z());
-            }
+                //rectSelect.setRect(savedPos.x(), savedPos.y(), savedPos.z(), rectSelect.getSelectionRect().getSize().x(),rectSelect.getSelectionRect().getSize().y(), rectSelect.getSelectionRect().getSize().z());
+            }*/
         }
     }
     else if(item->getText() == "Decor") {
@@ -4175,7 +4211,7 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
             if (!showRectSelect) {
                 Decor* decor = factory.make_entity<Decor>(factory);
                 decor->setName("HOUSE");
-                Vec3f position = getRenderWindow().mapPixelToCoords(Vec3f(cursor.getPosition().x(), getRenderWindow().getSize().y() - cursor.getPosition().y(), 0))+getRenderWindow().getView().getSize()*0.5f;
+                Vec3f position = getRenderWindow().mapPixelToCoords(Vec3f(cursor.getPosition().x(), /*getRenderWindow().getSize().y() -*/ cursor.getPosition().y(), 0))+getRenderWindow().getView().getSize()*0.5f;
                 decor->setPosition(position);
                 selectedObject = decor;
                 displayDecorInfos(decor);
