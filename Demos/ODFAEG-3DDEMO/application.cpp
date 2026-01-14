@@ -221,6 +221,7 @@ void MyAppli::onInit() {
     //std::cout<<"screen coords : "<<getRenderWindow().mapCoordsToPixel(model->getPosition(), view3D);
     g2d::AmbientLight::getAmbientLight().setColor(Color::Blue);
     animUpdater = new AnimUpdater();
+    animUpdater->setInterval(seconds(0.01f));
     animUpdater->addBoneAnim(animator);
     getWorld()->addTimer(animUpdater);
     eu->needToUpdate();
