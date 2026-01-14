@@ -112,7 +112,7 @@ void MyAppli::onInit() {
     getWorld()->addWorker(eu);
 
     model = loader.loadModel("tilesets\\mesh_puddingmill\\puddingmill.obj", factory);
-    //model->setSelected(true);
+    model->setSelected(true);
 
     animatedModel = loader.loadModel("tilesets\\vampire\\dancing_vampire.dae", factory);
     g3d::Animation* danceAnimation = new g3d::Animation("tilesets\\vampire\\dancing_vampire.dae", animatedModel);

@@ -7543,7 +7543,7 @@ namespace odfaeg {
                     if (skybox != nullptr)
                         vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copySkyboxCommandBuffer[currentFrame]);
                     VkBufferMemoryBarrier bufferMemoryBarrier{};
-                    bufferMemoryBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+                    /*bufferMemoryBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
                     bufferMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
                     bufferMemoryBarrier.dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
                     bufferMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -7684,26 +7684,26 @@ namespace odfaeg {
                         0, nullptr,
                         1, &uboBarrier,
                         0, nullptr
-                    );
+                    );*/
                     std::vector<VkSemaphore> signalSemaphores;
-                    signalSemaphores.push_back(copyFinishedSemaphore[currentFrame]);
+                    //signalSemaphores.push_back(copyFinishedSemaphore[currentFrame]);
                     std::vector<VkSemaphore> waitSemaphores;
-                    waitSemaphores.push_back(offscreenRenderingFinishedSemaphore[reflectRefractTex.getCurrentFrame()]);
+                    //waitSemaphores.push_back(offscreenRenderingFinishedSemaphore[reflectRefractTex.getCurrentFrame()]);
                     std::vector<VkPipelineStageFlags> waitStages;
-                    waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+                    //waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
                     std::vector<uint64_t> signalValues;
                     std::vector<uint64_t> waitValues;
-                    waitValues.push_back(values[reflectRefractTex.getCurrentFrame()]);
+                    /*waitValues.push_back(values[reflectRefractTex.getCurrentFrame()]);
                     valuesCopy[currentFrame]++;
-                    signalValues.push_back(valuesCopy[depthBuffer.getCurrentFrame()]);
+                    signalValues.push_back(valuesCopy[depthBuffer.getCurrentFrame()]);*/
                     //std::cout<<"value : "<<depthBuffer.getCurrentFrame()<<","<<valuesCopy[depthBuffer.getCurrentFrame()]<<std::endl;
-                    depthBuffer.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
+                    depthBuffer.submit(false/*, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues*/);
                     //std::cout<<"copy ok"<<std::endl;
 
 
                     depthBuffer.beginRecordCommandBuffers();
 
-                    signalSemaphores.clear();
+                    /*signalSemaphores.clear();
                     signalSemaphores.push_back(offscreenDepthPassFinishedSemaphore[currentFrame]);
                     signalValues.clear();
                     waitSemaphores.clear();
@@ -7711,11 +7711,11 @@ namespace odfaeg {
                     waitStages.clear();
                     waitStages.push_back(VK_PIPELINE_STAGE_VERTEX_SHADER_BIT);
                     waitValues.clear();
-                    waitValues.push_back(valuesCopy[currentFrame]);
+                    waitValues.push_back(valuesCopy[currentFrame]);*/
                     depthBuffer.beginRenderPass();
                     vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &depthBufferCommandBuffer[currentFrame]);
                     depthBuffer.endRenderPass();
-                    depthBuffer.submit(true, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
+                    depthBuffer.submit(true/*, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues*/);
 
                     alphaBuffer.beginRecordCommandBuffers();
 
@@ -7740,14 +7740,14 @@ namespace odfaeg {
                     vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &alphaBufferCommandBuffer[currentFrame]);
                     alphaBuffer.endRenderPass();
                     const_cast<Texture&>(depthBuffer.getTexture(depthBuffer.getImageIndex())).toColorAttachmentOptimal(alphaBuffer.getCommandBuffers()[alphaBuffer.getCurrentFrame()]);
-                    signalSemaphores.clear();
+                    /*signalSemaphores.clear();
                     signalSemaphores.push_back(offscreenAlphaPassFinishedSemaphore[currentFrame]);
                     waitSemaphores.clear();
                     waitStages.clear();
                     waitSemaphores.push_back(offscreenDepthPassFinishedSemaphore[currentFrame]);
-                    waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+                    waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);*/
 
-                    alphaBuffer.submit(true, signalSemaphores, waitSemaphores, waitStages);
+                    alphaBuffer.submit(true/*, signalSemaphores, waitSemaphores, waitStages*/);
                     //std::cout<<"alpha buffer current frame : "<<currentFrame<<std::endl;
 
                     for (unsigned int i = 0; i < environmentMapCommandBuffer.size(); i++) {
@@ -7779,7 +7779,7 @@ namespace odfaeg {
                             environmentMap.beginRenderPass();
                             vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &skyboxCommandBuffer[i][currentFrame]);
                             environmentMap.endRenderPass();
-                            signalSemaphores.clear();
+                            /*signalSemaphores.clear();
                             signalSemaphores.push_back(offscreenRenderingFinishedSemaphore[currentFrame]);
                             signalValues.clear();
                             waitSemaphores.clear();
@@ -7789,15 +7789,15 @@ namespace odfaeg {
                             waitValues.clear();
                             waitValues.push_back(valuesCopy[currentFrame]);
                             values[currentFrame]++;
-                            signalValues.push_back(values[currentFrame]);
-                            environmentMap.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
+                            signalValues.push_back(values[currentFrame]);*/
+                            environmentMap.submit(false/*, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues*/);
                         }
 
                         environmentMap.beginRecordCommandBuffers();
                         environmentMap.beginRenderPass();
                         vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &environmentMapCommandBuffer[i][currentFrame]);
                         environmentMap.endRenderPass();
-                        signalSemaphores.clear();
+                        /*signalSemaphores.clear();
                         waitSemaphores.clear();
                         waitStages.clear();
 
@@ -7812,8 +7812,8 @@ namespace odfaeg {
                         waitValues.push_back(values[reflectRefractTex.getCurrentFrame()]);
                         waitValues.push_back(valuesCopy[depthBuffer.getCurrentFrame()]);
                         values[reflectRefractTex.getCurrentFrame()]++;
-                        signalValues.push_back(values[reflectRefractTex.getCurrentFrame()]);
-                        environmentMap.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
+                        signalValues.push_back(values[reflectRefractTex.getCurrentFrame()]);*/
+                        environmentMap.submit(false/*, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues*/);
 
                         environmentMap.beginRecordCommandBuffers();
                         vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 0, nullptr);
@@ -7826,7 +7826,7 @@ namespace odfaeg {
                         environmentMap.beginRenderPass();
                         vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &environmentMapPass2CommandBuffer[currentFrame]);
                         environmentMap.endRenderPass();
-                        waitSemaphores.clear();
+                        /*waitSemaphores.clear();
                         waitStages.clear();
                         waitSemaphores.push_back(offscreenRenderingFinishedSemaphore[reflectRefractTex.getCurrentFrame()]);
                         waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
@@ -7835,8 +7835,8 @@ namespace odfaeg {
 
                         values[reflectRefractTex.getCurrentFrame()]++;
                         signalValues.clear();
-                        signalValues.push_back(values[reflectRefractTex.getCurrentFrame()]);
-                        environmentMap.submit(true, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
+                        signalValues.push_back(values[reflectRefractTex.getCurrentFrame()]);*/
+                        environmentMap.submit(true/*, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues*/);
 
                         reflectRefractTex.beginRecordCommandBuffers();
 
@@ -7862,19 +7862,19 @@ namespace odfaeg {
                         reflectRefractTex.endRenderPass();
                         const_cast<Texture&>(alphaBuffer.getTexture(alphaBuffer.getImageIndex())).toColorAttachmentOptimal(reflectRefractTex.getCommandBuffers()[reflectRefractTex.getCurrentFrame()]);
                         const_cast<Texture&>(environmentMap.getTexture(environmentMap.getImageIndex())).toColorAttachmentOptimal(reflectRefractTex.getCommandBuffers()[reflectRefractTex.getCurrentFrame()]);
-                        waitValues.clear();
+                        /*waitValues.clear();
                         waitValues.push_back(values[currentFrame]);
                         waitSemaphores.push_back(offscreenAlphaPassFinishedSemaphore[currentFrame]);
                         waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
                         waitValues.push_back(0);
                         values[currentFrame]++;
                         signalValues.clear();
-                        signalValues.push_back(values[currentFrame]);
-                        reflectRefractTex.submit((i == nbReflRefrEntities - 1) ? true : false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
+                        signalValues.push_back(values[currentFrame]);*/
+                        reflectRefractTex.submit((i == nbReflRefrEntities - 1) ? true : false/*, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues*/);
 
                         isSomethingDrawn = true;
                     }
-                    if (!isSomethingDrawn) {
+                    /*if (!isSomethingDrawn) {
 
                         reflectRefractTex.beginRecordCommandBuffers();
                         waitSemaphores.clear();
@@ -7889,7 +7889,7 @@ namespace odfaeg {
                         signalValues.push_back(values[reflectRefractTex.getCurrentFrame()]);
                         reflectRefractTex.submit(true, signalSemaphores, waitSemaphores, waitStages, signalValues);
                         //std::cout<<"reflect refract current frame : "<<reflectRefractTex.getCurrentFrame()<<std::endl;
-                    }
+                    }*/
                     isSomethingDrawn  = false;
                 }
                 target.beginRecordCommandBuffers();
@@ -7902,7 +7902,7 @@ namespace odfaeg {
                 target.draw(reflectRefractTexSprite, states);
                 /*if (&target == &window)
                     window.endRenderPass();*/
-                std::vector<VkSemaphore> signalSemaphores;
+                /*std::vector<VkSemaphore> signalSemaphores;
                 std::vector<VkSemaphore> waitSemaphores;
                 std::vector<VkPipelineStageFlags> waitStages;
                 std::vector<uint64_t> waitValues, signalValues;
@@ -7911,8 +7911,8 @@ namespace odfaeg {
                 waitValues.push_back(values[reflectRefractTex.getCurrentFrame()]);
                 signalSemaphores.push_back(offscreenRenderingFinishedSemaphore[reflectRefractTex.getCurrentFrame()]);
                 values[reflectRefractTex.getCurrentFrame()]++;
-                signalValues.push_back(values[reflectRefractTex.getCurrentFrame()]);
-                target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
+                signalValues.push_back(values[reflectRefractTex.getCurrentFrame()]);*/
+                target.submit(false/*, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues*/);
 
                 depthBuffer.display();
                 alphaBuffer.display();
