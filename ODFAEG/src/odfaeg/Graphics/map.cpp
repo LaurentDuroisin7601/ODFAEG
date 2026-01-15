@@ -730,14 +730,18 @@ namespace odfaeg {
             entity->move(math::Vec3f(dx, dy, dz));
             addEntity(entity);
         }
-        void Scene::checkVisibleEntities(EntityFactory& factory, View& view) {
-            //for (unsigned int c = 0; c < frcm->getNbComponents() + 1; c++) {
-                //if (c == frcm->getNbComponents() || c < frcm->getNbComponents() && frcm->getRenderComponent(c) != nullptr) {
-                    physic::BoundingBox viewVolume = view.getViewVolume();
-                    /*if (c == frcm->getNbComponents())
-                        view = frcm->getWindow().getView().getViewVolume();
+        void Scene::checkVisibleEntities(EntityFactory& factory) {
+            for (unsigned int c = 0; c < frcm->getNbComponents() + 1; c++) {
+                if (c == frcm->getNbComponents() || c < frcm->getNbComponents() && frcm->getRenderComponent(c) != nullptr) {
+                    physic::BoundingBox viewVolume;
+                    /*{
+                       std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                       viewVolume = view.getViewVolume();
+                    }*/
+                    if (c == frcm->getNbComponents())
+                        viewVolume = frcm->getWindow().getView().getViewVolume();
                     else
-                        view = frcm->getRenderComponent(c)->getView().getViewVolume();*/
+                        viewVolume = frcm->getRenderComponent(c)->getView().getViewVolume();
 
                     visibleEntities.clear();
                     //visibleEntities.resize(core::Application::app->getNbEntitiesTypes());
@@ -771,8 +775,9 @@ namespace odfaeg {
                                 }
                             }
                         }
-                    //}
-                //}
+                    }
+                }
+            }
 
                 /*for (unsigned int i = 0; i < visibleEntities.size(); i++) {
                     if (i == 0) {
@@ -782,7 +787,7 @@ namespace odfaeg {
                         }
                     }
                 }*/
-            for (unsigned int c = 0; c < frcm->getNbComponents(); c++)
+            for (unsigned int c = 0; c < frcm->getNbComponents(); c++) {
                 if (c < frcm->getNbComponents() && frcm->getRenderComponent(c) != nullptr) {
                     //////////std::cout<<"get entities on component : "<<c<<std::endl;
                     std::lock_guard<std::recursive_mutex> lock(rec_mutex);

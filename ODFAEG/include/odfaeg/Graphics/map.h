@@ -157,7 +157,7 @@ class ODFAEG_GRAPHICS_API Scene : public SceneManager {
         * \fn  void checkVisibleEntities();
         * \brief check the entities which are visible. (Which are in the field of view of the camera)
         */
-        void checkVisibleEntities(EntityFactory& factory, View& view);
+        void checkVisibleEntities(EntityFactory& factory);
         /**
         * \fn  Entity* getEntity(int id);
         * \brief get an entity from its id.

@@ -36,7 +36,7 @@ namespace odfaeg {
             * \brief virtual function to redefine to check visible entities.
             * \param an expression which determine which entities types to get.
             */
-            virtual void checkVisibleEntities (EntityFactory& factory, View& view) = 0;
+            virtual void checkVisibleEntities (EntityFactory& factory) = 0;
             /**
             * \fn std::vector<Entity*>  getVisibleEntities (std::string expression)
             * \brief get the visible entities.

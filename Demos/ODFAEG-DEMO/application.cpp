@@ -24,7 +24,6 @@ namespace sorrok {
         ps = entityFactory.make_entity<ParticleSystem>(getDevice(), Vec3f(0, 0, 150),Vec3f(100, 100, 0), entityFactory);
         m_world = std::make_unique<World>();
         setCurrentWorld(m_world.get());
-
         //
         //FastDelegate<void> fd(&Allocator<Entity>::allocate<Tile, EntityFactory&>,tile, std::ref(entityFactory));
         EXPORT_CLASS_GUID(BoundingVolumeBoundingBox, BoundingVolume, BoundingBox)
@@ -156,7 +155,7 @@ namespace sorrok {
         theMap->setBaseChangementMatrix(bm);
         getWorld()->addSceneManager(theMap);
         getWorld()->setCurrentSceneManager("Map test");
-        eu = new EntitiesUpdater(entityFactory, *getWorld(), false);
+        eu = new EntitiesUpdater(entityFactory, *getWorld());
         eu->setName("EntitiesUpdater");
         getWorld()->addWorker(eu);
         au = new AnimUpdater();
@@ -321,7 +320,7 @@ namespace sorrok {
         //ps->move(Vec3f(0, -125, 0));
         getWorld()->addEntity(ps);
         std::cout<<"entity added to the world"<<std::endl;
-        view = getView();
+        View view = getView();
         //view.rotate(0, 0, 20);
         getRenderWindow().createDescriptorsAndPipelines();
         PerPixelLinkedListRenderComponent *frc1 = new PerPixelLinkedListRenderComponent(getRenderWindow(),0, "E_BIGTILE", ContextSettings(0, 0, 4, 4, 6));
@@ -352,9 +351,9 @@ namespace sorrok {
         //std::cout<<"component created"<<std::endl;
         //frc1->setVisible(false);
         //frc2->setVisible(false);
-        /*rrrc->setVisible(false);
-        src->setVisible(false);
-        lrc->setVisible(false);*/
+        //rrrc->setVisible(false);
+        //src->setVisible(false);
+        //lrc->setVisible(false);
         /*gui::TextArea* textArea = new gui::TextArea(Vec3f(350, 275, 0),Vec3f(100, 50, 0),fm.getResourceByAlias("FreeSerif"), "Test",getRenderWindow());
         textArea->addFocusListener(this);
         textArea->setVisible(false);
@@ -419,8 +418,7 @@ namespace sorrok {
         getWorld()->addEntity(light2);
         //getView().move(d.x() * 0.5f, d.y() * 0.5f, 0);
         getWorld()->addEntity(caracter);
-        //view = getRenderWindow().getView();
-        eu->setView(view);
+        eu->needToUpdate();
 
         //World::computeIntersectionsWithWalls();
         //getWorld()->update();
@@ -580,16 +578,15 @@ namespace sorrok {
                 if (getWorld()->collide(caracter, r, cinfos)) {
                     newPos = actualPos;
                 }
-                Vec3f d = newPos - view.getPosition();
-                view.move(d.x(), d.y(), d.y());
                 for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
                     if (getRenderComponentManager().getRenderComponent(i) != nullptr) {
-                        //View view = getRenderComponentManager().getRenderComponent(i)->getView();
-
+                        View view = getRenderComponentManager().getRenderComponent(i)->getView();
+                        Vec3f d = newPos - view.getPosition();
+                        view.move(d.x(), d.y(), d.y());
                         getRenderComponentManager().getRenderComponent(i)->setView(view);
                     }
                 }
-                d = newPos - caracter->getCenter();
+                Vec3f d = newPos - caracter->getCenter();
                 //getView().move(d.x(), d.y(), d.y());
                 getWorld()->moveEntity(caracter, d.x(), d.y(), d.y());
                 audio::Listener::setPosition(newPos.x(), newPos.y(), 0);
@@ -605,11 +602,10 @@ namespace sorrok {
                 //std::cout<<"position : "<<caracter->getPosition().z<<std::endl;
                 if (dir != caracter->getDir())
                     caracter->setDir(dir);
-                view.move(d.x(), d.y(), d.y());
                 for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
                     if (getRenderComponentManager().getRenderComponent(i) != nullptr) {
-                        //View view = getRenderComponentManager().getRenderComponent(i)->getView();
-
+                        View view = getRenderComponentManager().getRenderComponent(i)->getView();
+                        view.move(d.x(), d.y(), d.y());
                         getRenderComponentManager().getRenderComponent(i)->setView(view);
                     }
                 }
@@ -634,7 +630,6 @@ namespace sorrok {
             fpsCounter = 0;
             getClock("FPS").restart();
         }
-        eu->setView(view);
         getWorld()->update();
         /*getWorld()->updateTimers();*/
         //ps->update(getClock("LoopTime").getElapsedTime());
