@@ -587,7 +587,7 @@ namespace sorrok {
                     }
                 }
                 Vec3f d = newPos - caracter->getCenter();
-                //getView().move(d.x(), d.y(), d.y());
+                getView().move(d.x(), d.y(), d.y());
                 getWorld()->moveEntity(caracter, d.x(), d.y(), d.y());
                 audio::Listener::setPosition(newPos.x(), newPos.y(), 0);
                 //World::update("EntitiesUpdater");
@@ -609,7 +609,7 @@ namespace sorrok {
                         getRenderComponentManager().getRenderComponent(i)->setView(view);
                     }
                 }
-                //getView().move(d.x(), d.y(), d.y());
+                getView().move(d.x(), d.y(), d.y());
                 Vec2f actualPos2 = Vec2f(caracter->getCenter().x(), caracter->getCenter().y());
                 audio::Listener::setDirection(dir.x(), dir.y(), 0);
                 audio::Listener::setPosition(actualPos.x(), actualPos.y(), 0);

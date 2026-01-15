@@ -731,6 +731,7 @@ namespace odfaeg {
             addEntity(entity);
         }
         void Scene::checkVisibleEntities(EntityFactory& factory) {
+            //std::cout<<"update!"<<std::endl;
             for (unsigned int c = 0; c < frcm->getNbComponents() + 1; c++) {
                 if (c == frcm->getNbComponents() || c < frcm->getNbComponents() && frcm->getRenderComponent(c) != nullptr) {
                     physic::BoundingBox viewVolume;
