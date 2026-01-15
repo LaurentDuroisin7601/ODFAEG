@@ -27,10 +27,16 @@ namespace odfaeg {
             */
             void onUpdate () {
                 //std::cout<<"update world"<<std::endl;
-                world.checkVisibleEntities(factory);
+                //std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                world.checkVisibleEntities(factory, view);
                 ////////std::cout<<"world updated"<<std::endl;
             }
+            void setView(View view) {
+                std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                this->view = view;
+            }
         private :
+            View view;
             World& world;
             EntityFactory& factory;
         };

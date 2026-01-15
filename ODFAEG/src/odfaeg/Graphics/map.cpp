@@ -730,14 +730,14 @@ namespace odfaeg {
             entity->move(math::Vec3f(dx, dy, dz));
             addEntity(entity);
         }
-        void Scene::checkVisibleEntities(EntityFactory& factory) {
-            for (unsigned int c = 0; c < frcm->getNbComponents() + 1; c++) {
-                if (c == frcm->getNbComponents() || c < frcm->getNbComponents() && frcm->getRenderComponent(c) != nullptr) {
-                    physic::BoundingBox view;
-                    if (c == frcm->getNbComponents())
+        void Scene::checkVisibleEntities(EntityFactory& factory, View& view) {
+            //for (unsigned int c = 0; c < frcm->getNbComponents() + 1; c++) {
+                //if (c == frcm->getNbComponents() || c < frcm->getNbComponents() && frcm->getRenderComponent(c) != nullptr) {
+                    physic::BoundingBox viewVolume = view.getViewVolume();
+                    /*if (c == frcm->getNbComponents())
                         view = frcm->getWindow().getView().getViewVolume();
                     else
-                        view = frcm->getRenderComponent(c)->getView().getViewVolume();
+                        view = frcm->getRenderComponent(c)->getView().getViewVolume();*/
 
                     visibleEntities.clear();
                     //visibleEntities.resize(core::Application::app->getNbEntitiesTypes());
@@ -746,13 +746,13 @@ namespace odfaeg {
                         //visibleEntities[i].resize(core::Application::app->getNbEntities(), nullptr);
                         visibleEntities[i].resize(factory.getNbEntities(), nullptr);
                     }
-                    int x = view.getPosition().x();
-                    int y = view.getPosition().y();
-                    int z = view.getPosition().z();
-                    int endX = view.getPosition().x() + view.getWidth();
-                    int endY = view.getPosition().y() + view.getHeight()+100;
-                    int endZ = (gridMap->getCellDepth() > 0) ? view.getPosition().z() + view.getDepth()+100 : z;
-                    physic::BoundingBox bx (x, y, z, endX-view.getPosition().x(), endY-view.getPosition().y(), endZ-view.getPosition().z());
+                    int x = viewVolume.getPosition().x();
+                    int y = viewVolume.getPosition().y();
+                    int z = viewVolume.getPosition().z();
+                    int endX = viewVolume.getPosition().x() + viewVolume.getWidth();
+                    int endY = viewVolume.getPosition().y() + viewVolume.getHeight()+100;
+                    int endZ = (gridMap->getCellDepth() > 0) ? viewVolume.getPosition().z() + viewVolume.getDepth()+100 : z;
+                    //physic::BoundingBox bx (x, y, z, endX-viewVolume.getPosition().x(), endY-viewVolume.getPosition().y(), endZ-viewVolume.getPosition().z());
 
                     for (int i = x; i <= endX; i+=gridMap->getOffsetX()) {
                         for (int j = y; j <= endY; j+=gridMap->getOffsetY()) {
@@ -771,8 +771,9 @@ namespace odfaeg {
                                 }
                             }
                         }
-                    }
-                }
+                    //}
+                //}
+
                 /*for (unsigned int i = 0; i < visibleEntities.size(); i++) {
                     if (i == 0) {
                         for (unsigned int j = 0; j < visibleEntities[0].size(); j++) {
@@ -781,7 +782,7 @@ namespace odfaeg {
                         }
                     }
                 }*/
-
+            for (unsigned int c = 0; c < frcm->getNbComponents(); c++)
                 if (c < frcm->getNbComponents() && frcm->getRenderComponent(c) != nullptr) {
                     //////////std::cout<<"get entities on component : "<<c<<std::endl;
                     std::lock_guard<std::recursive_mutex> lock(rec_mutex);

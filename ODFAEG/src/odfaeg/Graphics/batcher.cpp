@@ -366,47 +366,49 @@ namespace odfaeg {
             }
             void Instance::addVertexArray(VertexArray& va, TransformMatrix& tm) {                ////////std::cout<<"push transform"<<std::endl;
                 va.computeNormals();
-                if (!containsEntity(va.getEntity())) {
+                if (va.getEntity() != nullptr && !containsEntity(va.getEntity())) {
                     m_transforms.push_back(&tm);
-                    if (va.getEntity() != nullptr) {
-                        m_entities.push_back(va.getEntity());
+                    //if (va.getEntity() != nullptr) {
+                    m_entities.push_back(va.getEntity());
                         /*std::rec_mutex rec_mutex;
                         std::lock_guard<std::rec_mutex> lock(rec_mutex);*/
 
-                    }
+                    //}
                 }
                 ////////std::cout<<"transform pushed"<<std::endl;
-                m_vertexArrays.push_back(&va);
+                //m_vertexArrays.push_back(&va);
 
                 ////////std::cout<<"va pushed"<<std::endl;
                 //m_indexes.push_back(std::vector<unsigned int>());
-                unsigned int baseVertex = vertices.getVertexCount();
-                for (unsigned int i = 0; i < va.getVertexCount(); i++) {
+                //if (va.getEntity() == nullptr || va.getEntity()->getDrawMode() == Entity::NORMAL) {
+                    unsigned int baseVertex = vertices.getVertexCount();
+                    for (unsigned int i = 0; i < va.getVertexCount(); i++) {
 
-                    /*va[i].padding = m_transforms.size() - 1;
-                    vertices.append(va[i]);*/
-                    math::Vec3f t = tm.transform(va[i].position);
-                    ////////std::cout<<"position : "<<t<<std::endl;
-                    Vertex v (t, va[i].color, va[i].texCoords);
-                    v.normal = va[i].normal;
-                    for (unsigned int b = 0; b < MAX_BONE_INFLUENCE; b++) {
-                        v.m_BoneIDs[b] = va[i].m_BoneIDs[b];
-                        v.m_Weights[b] = va[i].m_Weights[b];
+                        /*va[i].padding = m_transforms.size() - 1;
+                        vertices.append(va[i]);*/
+                        math::Vec3f t = tm.transform(va[i].position);
+                        ////////std::cout<<"position : "<<t<<std::endl;
+                        Vertex v (t, va[i].color, va[i].texCoords);
+                        v.normal = va[i].normal;
+                        for (unsigned int b = 0; b < MAX_BONE_INFLUENCE; b++) {
+                            v.m_BoneIDs[b] = va[i].m_BoneIDs[b];
+                            v.m_Weights[b] = va[i].m_Weights[b];
+                        }
+                        v.entityId = va[i].entityId;
+                        v.particleId = va[i].particleId;
+
+
+
+
+
+                        vertices.append(v);
+
+
                     }
-                    v.entityId = va[i].entityId;
-                    v.particleId = va[i].particleId;
-
-
-
-
-
-                    vertices.append(v);
-
-
-                }
-                for (unsigned int i = 0; i < va.getIndexes().size(); i++) {
-                    vertices.addIndex(baseVertex + va.getIndexes()[i]);
-                }
+                    for (unsigned int i = 0; i < va.getIndexes().size(); i++) {
+                        vertices.addIndex(baseVertex + va.getIndexes()[i]);
+                    }
+                //}
                 ////////std::cout<<"vertices transformed"<<std::endl;
             }
             void Instance::addVertexShadowArray (VertexArray& va, TransformMatrix& tm, ViewMatrix& viewMatrix, TransformMatrix shadowProjMatrix) {

@@ -5095,7 +5095,7 @@ namespace odfaeg {
                     oldTotalVertexCount[p] = totalVertexCount[p];
                 }
                 for (unsigned int i = 0; i < m_reflNormals.size(); i++) {
-                    if (m_reflNormals[i].getVertexArrays().size() > 0) {
+                    if (m_reflNormals[i].getAllVertices().getVertexCount() > 0) {
                         DrawArraysIndirectCommand drawArraysIndirectCommand;
                         unsigned int p = m_reflNormals[i].getAllVertices().getPrimitiveType();
                         MaterialData material;
@@ -5110,7 +5110,7 @@ namespace odfaeg {
 
                         modelDatas[p].push_back(model);
                         unsigned int vertexCount = 0;
-                        if (m_reflNormals[i].getEntities().size() > 0) {
+                        if (m_reflNormals[i].getAllVertices().getVertexCount() > 0) {
                             for (unsigned int j = 0; j < m_reflNormals[i].getEntities().size(); j++) {
                                 Entity* entity = m_reflNormals[i].getEntities()[j]->getRootEntity();
                                 if (entity == reflectEntity) {

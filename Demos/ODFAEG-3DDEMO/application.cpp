@@ -224,11 +224,12 @@ void MyAppli::onInit() {
     animUpdater->setInterval(seconds(0.01f));
     animUpdater->addBoneAnim(animator);
     getWorld()->addTimer(animUpdater);
-    eu->needToUpdate();
+    //eu->needToUpdate();
     frc2->launchRenderer();    //getWorld()->update();
     rrrc->launchRenderer();
     src->launchRenderer();
     lrc->launchRenderer();
+    eu->setView(view3D);
 }
 void MyAppli::onRender(RenderComponentManager* frcm) {
     //getWorld()->drawOnComponents("E_CUBE", 0);
@@ -284,19 +285,20 @@ void MyAppli::onUpdate (RenderWindow* window, IEvent& event) {
             //std::cout<<"rotate"<<std::endl;
             int relX = (event.mouseMotion.x - oldX) * sensivity;
             int relY = (event.mouseMotion.y - oldY) * sensivity;
+            float teta = view3D.getTeta() - relY;
+            float phi = view3D.getPhi() - relX;
+            view3D.rotate(teta, phi);
             //std::cout<<"rel : "<<relX<<","<<relY<<std::endl;
             //Rotate the view, (Polar coordinates) but you can also use the lookAt function to look at a point.
             for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
-                View view = getRenderComponentManager().getRenderComponent(i)->getView();
-                float teta = view.getTeta() - relY;
-                float phi = view.getPhi() - relX;
-                view.rotate(teta, phi);
-                getRenderComponentManager().getRenderComponent(i)->setView(view);
+                //View view = getRenderComponentManager().getRenderComponent(i)->getView();
+
+                getRenderComponentManager().getRenderComponent(i)->setView(view3D);
             }
             View view = billboard->getView();
-            float teta = view.getTeta() - relY;
-            float phi = view.getPhi() - relX;
-            view.rotate(teta, phi);
+            teta = view.getTeta() - relY;
+            phi = view.getPhi() - relX;
+            //view.rotate(teta, phi);
             billboard->setView(view);
             oldX = IMouse::getPosition(getRenderWindow()).x();
             oldY = IMouse::getPosition(getRenderWindow()).y();
@@ -320,19 +322,20 @@ void MyAppli::onUpdate (RenderWindow* window, IEvent& event) {
 }
 void MyAppli::onExec() {
     if (IKeyboard::isKeyPressed(IKeyboard::Up)) {
+        view3D.move(view3D.getForward(), -speed * clock.getElapsedTime().asSeconds());
+        float y;
+        bool isOnHeightMap = heightmap->getHeight(Vec2f(view3D.getPosition().x(), view3D.getPosition().z()), y);
+        view3D.setCenter(Vec3f(view3D.getPosition().x(), y + model->getSize().y(),view3D.getPosition().z()));
         //Move the view along a vector, but you case also move the view at a point.
         for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
-            View view = getRenderComponentManager().getRenderComponent(i)->getView();
-            view.move(view.getForward(), -speed * clock.getElapsedTime().asSeconds());
-            float y;
-            bool isOnHeightMap = heightmap->getHeight(Vec2f(view.getPosition().x(), view.getPosition().z()), y);
-            view.setCenter(Vec3f(view.getPosition().x(), y + model->getSize().y(),view.getPosition().z()));
-            getRenderComponentManager().getRenderComponent(i)->setView(view);
+            //View view = getRenderComponentManager().getRenderComponent(i)->getView();
+
+            getRenderComponentManager().getRenderComponent(i)->setView(view3D);
         }
         View view = billboard->getView();
         view.move(view.getForward(), -speed * clock.getElapsedTime().asSeconds());
-        float y;
-        bool isOnHeightMap = heightmap->getHeight(Vec2f(view.getPosition().x(), view.getPosition().z()), y);
+
+        isOnHeightMap = heightmap->getHeight(Vec2f(view.getPosition().x(), view.getPosition().z()), y);
         view.setCenter(Vec3f(view.getPosition().x(), y + model->getSize().y(),view.getPosition().z()));
         billboard->setView(view);
         /*View view = getRenderWindow().getView();
@@ -342,19 +345,21 @@ void MyAppli::onExec() {
         getRenderWindow().setView(view);*/
 
     }
+
     if (IKeyboard::isKeyPressed(IKeyboard::Down)) {
+        view3D.move(view3D.getForward(), speed * clock.getElapsedTime().asSeconds());
+        float y;
+        bool isOnHeightMap = heightmap->getHeight(Vec2f(view3D.getPosition().x(), view3D.getPosition().z()), y);
+        view3D.setCenter(Vec3f(view3D.getPosition().x(), y + model->getSize().y(),view3D.getPosition().z()));
         for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
-            View view = getRenderComponentManager().getRenderComponent(i)->getView();
-            view.move(view.getForward(), speed * clock.getElapsedTime().asSeconds());
-            float y;
-            bool isOnHeightMap = heightmap->getHeight(Vec2f(view.getPosition().x(), view.getPosition().z()), y);
-            view.setCenter(Vec3f(view.getPosition().x(), y + model->getSize().y(),view.getPosition().z()));
-            getRenderComponentManager().getRenderComponent(i)->setView(view);
+            //View view = getRenderComponentManager().getRenderComponent(i)->getView();
+
+            getRenderComponentManager().getRenderComponent(i)->setView(view3D);
         }
         View view = billboard->getView();
         view.move(view.getForward(), speed * clock.getElapsedTime().asSeconds());
-        float y;
-        bool isOnHeightMap = heightmap->getHeight(Vec2f(view.getPosition().x(), view.getPosition().z()), y);
+
+        isOnHeightMap = heightmap->getHeight(Vec2f(view.getPosition().x(), view.getPosition().z()), y);
         view.setCenter(Vec3f(view.getPosition().x(), y + model->getSize().y(),view.getPosition().z()));
         billboard->setView(view);
         /*View view = getRenderWindow().getView();
@@ -364,19 +369,21 @@ void MyAppli::onExec() {
         getRenderWindow().setView(view);*/
 
     }
+
     if (IKeyboard::isKeyPressed(IKeyboard::Right)) {
+        view3D.move(view3D.getLeft(), speed * clock.getElapsedTime().asSeconds());
+        float y;
+        bool isOnHeightMap = heightmap->getHeight(Vec2f(view3D.getPosition().x(), view3D.getPosition().z()), y);
+        view3D.setCenter(Vec3f(view3D.getPosition().x(), y + model->getSize().y(),view3D.getPosition().z()));
         for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
-            View view = getRenderComponentManager().getRenderComponent(i)->getView();
-            view.move(view.getLeft(), speed * clock.getElapsedTime().asSeconds());
-            float y;
-            bool isOnHeightMap = heightmap->getHeight(Vec2f(view.getPosition().x(), view.getPosition().z()), y);
-            view.setCenter(Vec3f(view.getPosition().x(), y + model->getSize().y(),view.getPosition().z()));
-            getRenderComponentManager().getRenderComponent(i)->setView(view);
+            //View view = getRenderComponentManager().getRenderComponent(i)->getView();
+
+            getRenderComponentManager().getRenderComponent(i)->setView(view3D);
         }
         View view = billboard->getView();
         view.move(view.getLeft(), speed * clock.getElapsedTime().asSeconds());
-        float y;
-        bool isOnHeightMap = heightmap->getHeight(Vec2f(view.getPosition().x(), view.getPosition().z()), y);
+
+        isOnHeightMap = heightmap->getHeight(Vec2f(view.getPosition().x(), view.getPosition().z()), y);
         view.setCenter(Vec3f(view.getPosition().x(), y + model->getSize().y(),view.getPosition().z()));
         billboard->setView(view);
         /*View view = getRenderWindow().getView();
@@ -386,19 +393,21 @@ void MyAppli::onExec() {
         getRenderWindow().setView(view);*/
 
     }
+
     if (IKeyboard::isKeyPressed(IKeyboard::Left)) {
+        view3D.move(view3D.getLeft(), -speed * clock.getElapsedTime().asSeconds());
+        float y;
+        bool isOnHeightMap = heightmap->getHeight(Vec2f(view3D.getPosition().x(), view3D.getPosition().z()), y);
+        view3D.setCenter(Vec3f(view3D.getPosition().x(), y + model->getSize().y(),view3D.getPosition().z()));
         for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
-            View view = getRenderComponentManager().getRenderComponent(i)->getView();
-            view.move(view.getLeft(), -speed * clock.getElapsedTime().asSeconds());
-            float y;
-            bool isOnHeightMap = heightmap->getHeight(Vec2f(view.getPosition().x(), view.getPosition().z()), y);
-            view.setCenter(Vec3f(view.getPosition().x(), y + model->getSize().y(),view.getPosition().z()));
-            getRenderComponentManager().getRenderComponent(i)->setView(view);
+            //View view = getRenderComponentManager().getRenderComponent(i)->getView();
+
+            getRenderComponentManager().getRenderComponent(i)->setView(view3D);
         }
         View view = billboard->getView();
         view.move(view.getLeft(), -speed * clock.getElapsedTime().asSeconds());
-        float y;
-        bool isOnHeightMap = heightmap->getHeight(Vec2f(view.getPosition().x(), view.getPosition().z()), y);
+
+        isOnHeightMap = heightmap->getHeight(Vec2f(view.getPosition().x(), view.getPosition().z()), y);
         view.setCenter(Vec3f(view.getPosition().x(), y + model->getSize().y(),view.getPosition().z()));
         billboard->setView(view);
         /*View view = getRenderWindow().getView();
@@ -408,6 +417,7 @@ void MyAppli::onExec() {
         getRenderWindow().setView(view);*/
 
     }
+    eu->setView(view3D);
     //eu->needToUpdate();
     getWorld()->update();
     /*ps->update(clock.getElapsedTime());
