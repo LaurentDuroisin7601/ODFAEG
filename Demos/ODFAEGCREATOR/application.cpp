@@ -121,6 +121,7 @@ Application (vm, title, Style::Resize|Style::Close, ContextSettings(0, 8, 4, 4, 
 
     fpsCounter = 0;
     addClock(Clock(), "FPS");
+    eu = nullptr;
 }
 void ODFAEGCreator::onLoad() {
     std::tuple<std::reference_wrapper<Device>> rArgs = std::make_tuple(std::ref(getDevice()));
@@ -2077,11 +2078,21 @@ void ODFAEGCreator::onExec() {
             }
         }
     }
-    for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
-        if (getRenderComponentManager().getRenderComponent(i) != nullptr && getRenderComponentManager().getRenderComponent(i)->getName() == dpSelectComponent->getSelectedItem()) {
-            selectedComponentView = getRenderComponentManager().getRenderComponent(i)->getView();
+    if (dpSelectComponent->getSelectedItem() == "MAIN WINDOW") {
+        if (eu != nullptr) {
+            eu->setView(getView());
+        }
+    } else {
+        for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
+            if (getRenderComponentManager().getRenderComponent(i) != nullptr && getRenderComponentManager().getRenderComponent(i)->getName() == dpSelectComponent->getSelectedItem()) {
+                selectedComponentView = getRenderComponentManager().getRenderComponent(i)->getView();
+                if (eu != nullptr) {
+                    eu->setView(selectedComponentView);
+                }
+            }
         }
     }
+
     std::map<std::string, std::vector<Entity*>>::iterator it;
     std::map<std::string, std::vector<Entity*>>::iterator it2;
     for (it = toAdd.begin(); it != toAdd.end(); it++) {
@@ -3487,7 +3498,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
     }
     if(button==bCreateEntitiesUpdater) {
         std::string name = taEntitiesUpdaterName->getText();
-        EntitiesUpdater* eu = new EntitiesUpdater(factory, *getWorld());
+        eu = new EntitiesUpdater(factory, *getWorld());
         eu->setName(name);
         getWorld()->addWorker(eu);
         wNewEntitiesUpdater->setVisible(false);

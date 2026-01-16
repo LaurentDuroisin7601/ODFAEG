@@ -259,6 +259,7 @@ class ODFAEGCreator : public odfaeg::core::Application<ODFAEGCreator>,
         std::string virtualFile;
         odfaeg::graphic::gui::FloatingMenu floatingMenu;
         unsigned int fpsCounter;
+        odfaeg::graphic::EntitiesUpdater* eu;
         /*std::array<std::string, 24> primitiveTypes = {
             "bool",
             "char", "signed char", "unsigned char",

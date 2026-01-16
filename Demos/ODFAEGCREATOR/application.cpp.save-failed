@@ -2209,7 +2209,7 @@ void ODFAEGCreator::onExec() {
                     lab->getListener().connect("SHOWPFILES", cmd);
                     Label* labScene = new Label(getRenderWindow(), Vec3f(0, 0, 0), Vec3f(200, 35, 0), fm.getResourceByAlias(Fonts::Serif), "Scenes", 15);
                     labScene->setBackgroundColor(Color::White);
-                    Node* rSceneNode = new Node ("Scenes"+labScene->getText().toAnsiString(), labScene, Vec2f(0.f, 0.f), Vec2f(1.f, 0.025f), node);
+                    Node* rSceneNode = new Node ("Scenes"+lab->getText().toAnsiString(), labScene, Vec2f(0.f, 0.f), Vec2f(1.f, 0.025f), node);
                     rootScenesNode = rSceneNode;
                     labScene->setForegroundColor(Color::Red);
                     labScene->setParent(pProjects);
@@ -2240,8 +2240,8 @@ void ODFAEGCreator::onExec() {
 
 
                     appliname = line;
-                    Command cmd3(a2, FastDelegate<bool>(&Label::isMouseInside, lab), FastDelegate<void>(&ODFAEGCreator::showScenes, this, labScene));
-                    lab->getListener().connect("SHOWSCENES"+appliname, cmd3);
+                    Command cmd3(a2, FastDelegate<bool>(&Label::isMouseInside, labScene), FastDelegate<void>(&ODFAEGCreator::showScenes, this, labScene));
+                    labScene->getListener().connect("SHOWSCENES"+appliname, cmd3);
                     std::unique_ptr<World> world = std::make_unique<World>();
                     world->projectName = appliname;
                     worlds.push_back(std::move(world));
@@ -2805,8 +2805,10 @@ void ODFAEGCreator::showProjectsFiles(Label* label) {
     pScriptsEdit->setVisible(true);
     Node* node = rootNode->findNode(label);
     if (!node->isNodeVisible()) {
+        //std::cout<<"show nodes : "<<label->getText().toAnsiString()<<std::endl;
         node->showAllNodes();
     } else {
+        //std::cout<<"hide nodes : "<<label->getText().toAnsiString()<<std::endl;
         node->hideAllNodes();
     }
     for (unsigned int i = 0; i < worlds.size(); i++) {
@@ -2930,14 +2932,61 @@ void ODFAEGCreator::showFileContent(Label* lab) {
             }
         }
     }
+    applySyntaxSuggar();
+}
+bool ODFAEGCreator::isWindowsPath(const std::string& s) {
+    return s.size() > 3 &&
+           std::isalpha(s[0]) &&
+           s[1] == ':' &&
+           (s[2] == '\\' || s[2] == '/');
+}
+bool ODFAEGCreator::isUnixPath(const std::string& s) {
+    return !s.empty() && s[0] == '/';
+}
+bool ODFAEGCreator::isRelativePath(const std::string& s) {
+    return s.rfind("./", 0) == 0 || s.rfind("../", 0) == 0;
+}
+bool ODFAEGCreator::hasFileExtension(const std::string& s) {
+    static const std::vector<std::string> exts = {
+        ".h",".hpp",".c",".cpp"
+    };
+    for (auto& e : exts)
+        if (s.size() > e.size() &&
+            s.compare(s.size() - e.size(), e.size(), e) == 0)
+            return true;
+    return false;
+}
+bool ODFAEGCreator::isFilePath(const std::string& s) {
+    return isWindowsPath(s) ||
+           isUnixPath(s) ||
+           isRelativePath(s) ||
+           hasFileExtension(s);
+}
+size_t ODFAEGCreator::byteToCodepoint(const std::string& s, size_t byteOffset) {
+    size_t cp = 0;
+    for (size_t i = 0; i < byteOffset; ) {
+        unsigned char c = s[i];
+        if ((c & 0x80) == 0) i += 1;          // 1 byte
+        else if ((c & 0xE0) == 0xC0) i += 2;  // 2 bytes
+        else if ((c & 0xF0) == 0xE0) i += 3;  // 3 bytes
+        else if ((c & 0xF8) == 0xF0) i += 4;  // 4 bytes
+        else i += 1; // fallback
+        cp++;
+    }
+    return cp;
+}
 
+void ODFAEGCreator::applySyntaxSuggar() {
+    //std::cout<<"virtual file : "<<virtualFile<<std::endl;
+    std::string text = tScriptEdit->getText();
     CXIndex index = clang_createIndex(0, 0);
 
     // Unsaved file
     CXUnsavedFile unsaved;
     unsaved.Filename = virtualFile.c_str();
-    unsaved.Contents = tScriptEdit->getText().c_str();
-    unsaved.Length = tScriptEdit->getText().size();
+    unsaved.Contents = text.c_str();
+    unsaved.Length = text.size();
+    //std::cout<<"text size : "<<tScriptEdit->getText().size()<<std::endl;
 
     CXTranslationUnit tu = clang_parseTranslationUnit(
         index,
@@ -2952,7 +3001,7 @@ void ODFAEGCreator::showFileContent(Label* lab) {
     // Range = tout le buffer
     CXSourceRange range = clang_getRange(
         clang_getLocationForOffset(tu, file, 0),
-        clang_getLocationForOffset(tu, file, tScriptEdit->getText().size())
+        clang_getLocationForOffset(tu, file, text.size())
     );
 
     CXToken* tokens = nullptr;
@@ -2966,35 +3015,40 @@ void ODFAEGCreator::showFileContent(Label* lab) {
         CXSourceLocation start = clang_getRangeStart(extent);
         CXSourceLocation end   = clang_getRangeEnd(extent);
 
-        unsigned startOffset = 0;
-        unsigned endOffset   = 0;
+        unsigned startOffset=0;
+        unsigned endOffset=0;
+
 
         // On récupère l’offset dans le buffer
-        clang_getFileLocation(start, nullptr, nullptr, nullptr, &startOffset);
-        clang_getFileLocation(end,   nullptr, nullptr, nullptr, &endOffset);
+        clang_getSpellingLocation(start, nullptr, nullptr, nullptr, &startOffset);
+        clang_getSpellingLocation(end, nullptr, nullptr, nullptr, &endOffset);
 
         CXString spelling = clang_getTokenSpelling(tu, tok);
-        std::string text = clang_getCString(spelling);
+        std::string s(clang_getCString(spelling));
+        //if (!isFilePath(text)) {
 
-        TextArea::Token token;
-        token.startTok = startOffset;
-        token.endTok = endOffset;
-        token.spelling = text;
-        CXTokenKind kind = clang_getTokenKind(tok);
-        if (kind == CXToken_Keyword) {
-            token.colorTok = Color::Blue;
-        } else if (kind == CXToken_Identifier) {
-            token.colorTok = Color::Green;
-        } else if (kind == CXToken_Literal) {
-            token.colorTok = Color::Magenta;
-        } else if (kind == CXToken_Comment) {
-            token.colorTok = Color(128, 128, 128);
-        } else if (kind == CXToken_Punctuation) {
-            token.colorTok = Color::Red;
-        } else {
-            token.colorTok = Color::Black;
-        }
-        tScriptEdit->addToken(token);
+            //std::cout<<"text : "<<text<<std::endl;
+
+            TextArea::Token token;
+            token.startTok = byteToCodepoint(text, startOffset);
+            token.endTok = byteToCodepoint(text, endOffset);
+            token.spelling = s;
+            CXTokenKind kind = clang_getTokenKind(tok);
+            if (kind == CXToken_Keyword) {
+                token.colorTok = Color::Blue;
+            } else if (kind == CXToken_Identifier) {
+                token.colorTok = Color::Green;
+            } else if (kind == CXToken_Literal) {
+                token.colorTok = Color::Magenta;
+            } else if (kind == CXToken_Comment) {
+                token.colorTok = Color(128, 128, 128);
+            } else if (kind == CXToken_Punctuation) {
+                token.colorTok = Color::Red;
+            } else {
+                token.colorTok = Color::Black;
+            }
+            tScriptEdit->addToken(token);
+        //}
         /*std::cout << "Token '" << text
                   << "' start=" << startOffset
                   << " end=" << endOffset << "\n";*/
@@ -3005,7 +3059,6 @@ void ODFAEGCreator::showFileContent(Label* lab) {
     clang_disposeTokens(tu, tokens, tokenCount);
     clang_disposeTranslationUnit(tu);
     clang_disposeIndex(index);
-
 }
 void ODFAEGCreator::processKeyHeldDown (IKeyboard::Key key) {
 
@@ -3361,7 +3414,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         pProjects->addChild(lab);
         Action a(Action::EVENT_TYPE::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
         Command cmd(a, FastDelegate<bool>(&Label::isMouseInside, lab), FastDelegate<void>(&ODFAEGCreator::showScene, this, lab));
-        lab->getListener().connect("SHOWPFILES", cmd);
+        lab->getListener().connect("SHOWSCENES", cmd);
         cshapes.clear();
         for (int i = 0; i < getRenderWindow().getSize().x(); i+=100) {
             for (int j = 0; j < getRenderWindow().getSize().y(); j+=50) {
@@ -3434,8 +3487,9 @@ void ODFAEGCreator::actionPerformed(Button* button) {
     }
     if(button==bCreateEntitiesUpdater) {
         std::string name = taEntitiesUpdaterName->getText();
-        EntitiesUpdater* eu = new EntitiesUpdater(factory, *getWorld());
+        eu = new EntitiesUpdater(factory, *getWorld());
         eu->setName(name);
+        eu->setView(getView());
         getWorld()->addWorker(eu);
         wNewEntitiesUpdater->setVisible(false);
         getRenderComponentManager().setEventContextActivated(false, *wNewEntitiesUpdater);
@@ -4057,7 +4111,17 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
     else if (item->getText() == "Tile") {
         if (appliname != "" && getWorld()->getCurrentSceneManager() != nullptr) {
             if (!showRectSelect) {
-                Vec3f position = getRenderWindow().mapPixelToCoords(Vec3f(cursor.getPosition().x(), getRenderWindow().getSize().y() - cursor.getPosition().y(), 0))+getRenderWindow().getView().getSize()*0.5f;
+
+                Vec3f position;
+                if(dpSelectComponent->getSelectedItem() == "MAIN WINDOW") {
+                    position = getRenderWindow().mapPixelToCoords(Vec3f(cursor.getPosition().x(), /*getRenderWindow().getSize().y() -*/ cursor.getPosition().y(), 0))+getRenderWindow().getView().getSize()*0.5f;
+                } else {
+                    for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
+                        if (getRenderComponentManager().getRenderComponent(i) != nullptr && getRenderComponentManager().getRenderComponent(i)->getName() == dpSelectComponent->getSelectedItem()) {
+                            position = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(cursor.getPosition().x(), /*getRenderWindow().getSize().y() -*/ cursor.getPosition().y(), 0))+getRenderWindow().getView().getSize()*0.5f;
+                        }
+                    }
+                }
                 Tile* tile = factory.make_entity<Tile>(nullptr, position,Vec3f(gridWidth, gridHeight, 0), IntRect(0, 0, gridWidth, gridHeight), factory);
                 selectedObject = tile;
                 //std::cout << "wall center : " << tile->getCenter()<< std::endl;
@@ -4069,10 +4133,36 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
                 BoundingBox rect = rectSelect.getSelectionRect();
                 Vec3f savedPos = rectSelect.getSelectionRect().getPosition();
                 Vec3f pos = rectSelect.getSelectionRect().getPosition();
-                pos = getRenderWindow().mapPixelToCoords(Vec3f(pos.x(), getRenderWindow().getSize().y() - pos.y(), 0))+getRenderWindow().getView().getSize()*0.5f;
+                if(dpSelectComponent->getSelectedItem() == "MAIN WINDOW") {
+                    pos = getRenderWindow().mapPixelToCoords(Vec3f(cursor.getPosition().x(), /*getRenderWindow().getSize().y() -*/ cursor.getPosition().y(), 0))+getRenderWindow().getView().getSize()*0.5f;
+                } else {
+                    for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
+                        if (getRenderComponentManager().getRenderComponent(i) != nullptr && getRenderComponentManager().getRenderComponent(i)->getName() == dpSelectComponent->getSelectedItem()) {
+                            pos = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(cursor.getPosition().x(), /*getRenderWindow().getSize().y() -*/ cursor.getPosition().y(), 0))+getRenderWindow().getView().getSize()*0.5f;
+                        }
+                    }
+                }
+                pos = getRenderWindow().mapPixelToCoords(Vec3f(pos.x(), /*getRenderWindow().getSize().y() -*/ pos.y(), 0))+getRenderWindow().getView().getSize()*0.5f;
                 rectSelect.setRect(pos.x(), pos.y(), pos.z(), rectSelect.getSelectionRect().getSize().x(),rectSelect.getSelectionRect().getSize().y(), rectSelect.getSelectionRect().getSize().z());
+                int x = rect.getPosition().x();
+                int y = rect.getPosition().y();
+                int endX = rect.getPosition().x() + rect.getSize().x();
+                int endY = rect.getPosition().y() + rect.getSize().y();
+                for (int i = x; i < endX; i+=gridWidth*0.5f) {
+                    for(int j = y; j < endY; j+= gridHeight*0.5f) {
+                        Vec3f position = getGridCellPos(Vec3f(i, j, 0));
+                        Tile* tile = factory.make_entity<Tile>(nullptr,position,Vec3f(gridWidth, gridHeight, 0),IntRect(0, 0, gridWidth, gridHeight), factory);
+                        rectSelect.addItem(tile);
+                        if (rectSelect.getItems().size() == 1) {
+                            selectedObject = tile;
+                            displayTileInfos(tile);
+                        }
+                        getWorld()->addEntity(tile);
+                    }
+                }
+                rectSelect.setRect(savedPos.x(), savedPos.y(), savedPos.z(), rectSelect.getSelectionRect().getSize().x(),rectSelect.getSelectionRect().getSize().y(), rectSelect.getSelectionRect().getSize().z());
                 //In 2D iso the tiles are in a staggered arrangement so we need to shift the x position every two times in the loop.
-                if (getWorld()->getBaseChangementMatrix().isIso2DMatrix()) {
+                /*if (getWorld()->getBaseChangementMatrix().isIso2DMatrix()) {
                     int i = 0;
                     int x = rect.getPosition().x();
                     int y = rect.getPosition().y();
@@ -4098,8 +4188,8 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
                         }
                         y += gridHeight*0.5f;
                         i++;
-                    }
-                } else {
+                    }*/
+                } /*else {
                     for (int x = rect.getPosition().x(); x < rect.getPosition().x() + rect.getSize().x(); x+=gridWidth) {
                         for (int y = rect.getPosition().y(); y <  rect.getPosition().y() + rect.getSize().y(); y+=gridHeight) {
                             Vec3f position = getGridCellPos(Vec3f(x, y, 0));
@@ -4113,8 +4203,8 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
                         }
                     }
                 }
-                rectSelect.setRect(savedPos.x(), savedPos.y(), savedPos.z(), rectSelect.getSelectionRect().getSize().x(),rectSelect.getSelectionRect().getSize().y(), rectSelect.getSelectionRect().getSize().z());
-            }
+                //rectSelect.setRect(savedPos.x(), savedPos.y(), savedPos.z(), rectSelect.getSelectionRect().getSize().x(),rectSelect.getSelectionRect().getSize().y(), rectSelect.getSelectionRect().getSize().z());
+            }*/
         }
     }
     else if(item->getText() == "Decor") {
@@ -4122,7 +4212,7 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
             if (!showRectSelect) {
                 Decor* decor = factory.make_entity<Decor>(factory);
                 decor->setName("HOUSE");
-                Vec3f position = getRenderWindow().mapPixelToCoords(Vec3f(cursor.getPosition().x(), getRenderWindow().getSize().y() - cursor.getPosition().y(), 0))+getRenderWindow().getView().getSize()*0.5f;
+                Vec3f position = getRenderWindow().mapPixelToCoords(Vec3f(cursor.getPosition().x(), /*getRenderWindow().getSize().y() -*/ cursor.getPosition().y(), 0))+getRenderWindow().getView().getSize()*0.5f;
                 decor->setPosition(position);
                 selectedObject = decor;
                 displayDecorInfos(decor);
@@ -6690,12 +6780,15 @@ void ODFAEGCreator::onSelectedComponentChanged(DropDownList* dp) {
     std::string name = dp->getSelectedItem();
     if(name == "MAIN WINDOW") {
         taComponentExpression->setText("");
+        eu->setView(getView());
     } else {
         std::vector<Component*> components = getRenderComponentManager().getRenderComponents();
         for (unsigned int i = 0; i < components.size(); i++) {
             if (components[i]->getName() == name && dynamic_cast<HeavyComponent*>(components[i])) {
                 selectedComponentView = components[i]->getFrameBuffer()->getView();
                 taChangeComponentExpression->setText(static_cast<HeavyComponent*>(components[i])->getExpression());
+                if (eu != nullptr)
+                    eu->setView(selectedComponentView);
             }
         }
     }
@@ -7401,6 +7494,8 @@ void ODFAEGCreator::onViewPerspectiveChanged(DropDownList* dp) {
                 View view(getRenderWindow().getSize().x(), getRenderWindow().getSize().y(), getRenderWindow().getView().getViewport().getPosition().z(), getRenderWindow().getView().getDepth());
                 static_cast<HeavyComponent*>(components[i])->setView(view);
                 selectedComponentView = view;
+                if (eu != nullptr)
+                    eu->setView(selectedComponentView);
             }
         }
     } else {
@@ -7412,6 +7507,8 @@ void ODFAEGCreator::onViewPerspectiveChanged(DropDownList* dp) {
                 view.setConstrains(80, 0);
                 static_cast<HeavyComponent*>(components[i])->setView(view);
                 selectedComponentView = view;
+                if (eu != nullptr)
+                    eu->setView(selectedComponentView);
             }
         }
     }
@@ -7777,14 +7874,14 @@ void ODFAEGCreator::removeSpacesChars(std::string& str) {
 }*/
 
 std::pair<unsigned, unsigned> ODFAEGCreator::indexToLineColumn(const std::string& text, unsigned index) {
-    unsigned line = 0;
-    unsigned column = 0;
+    unsigned line = 1;
+    unsigned column = 1;
 
     unsigned i = 0;
 
     while (i < index && i < text.size()) {
         unsigned char c = text[i];
-
+        unsigned advance = 1;
         // CRLF
         if (c == '\r') {
             i++;
@@ -7793,7 +7890,7 @@ std::pair<unsigned, unsigned> ODFAEGCreator::indexToLineColumn(const std::string
 
         if (c == '\n') {
             line++;
-            column = 0;
+            column = 1;
             i++;
             continue;
         }
@@ -7806,7 +7903,7 @@ std::pair<unsigned, unsigned> ODFAEGCreator::indexToLineColumn(const std::string
         }
 
         // UTF-8 : avancer d'un codepoint
-        unsigned advance = 1;
+
         if ((c & 0xE0) == 0xC0) advance = 2;
         else if ((c & 0xF0) == 0xE0) advance = 3;
         else if ((c & 0xF8) == 0xF0) advance = 4;
@@ -7820,49 +7917,37 @@ std::pair<unsigned, unsigned> ODFAEGCreator::indexToLineColumn(const std::string
 
 unsigned ODFAEGCreator::lineColumnToIndex(const std::string& text, unsigned line, unsigned column) {
     unsigned index = 0;
-    unsigned currentLine = 0;
+    unsigned currentLine = 1;
+    //std::cout<<"line : "<<line<<std::endl;
 
     // Aller jusqu'à la ligne demandée
     while (currentLine < line && index < text.size()) {
-        if (text[index] == '\n') {
+        unsigned char byte = text[index];
+        if (byte == '\n') {
             currentLine++;
         }
         index++;
     }
-
     // Maintenant on est au début de la ligne
-    unsigned col = 0;
+    unsigned col = 1;
 
     while (index < text.size() && col < column) {
-        unsigned char c = text[index];
-
-        // Gestion CRLF
-        if (c == '\r') {
-            index++;
-            continue;
-        }
-        if (c == '\n') {
-            break; // fin de ligne
-        }
-
-        // Tabulation
-        if (c == '\t') {
-            col += 4; // ou ta tab size
-            index++;
-            continue;
-        }
-
-        // UTF-8 : avancer d'un codepoint
         unsigned char byte = text[index];
         unsigned advance = 1;
-
+        if (byte == '\n') {
+            break;
+        }
+        // Tabulation
+        if (byte == '\t') {
+            advance = 4;
+        }
         if ((byte & 0xE0) == 0xC0) advance = 2;
         else if ((byte & 0xF0) == 0xE0) advance = 3;
         else if ((byte & 0xF8) == 0xF0) advance = 4;
-
-        col++;
-        index += advance;
+        index++;
+        col += advance;
     }
+    //std::cout<<"col : "<<col<<","<<column<<std::endl;
 
     return index;
 }
@@ -8262,6 +8347,7 @@ void ODFAEGCreator::onTextEntered(TextArea* ta, char caracter) {
     if (textSize.y() > tScriptEdit->getSize().y())
         tScriptEdit->setSize(Vec3f(tScriptEdit->getSize().x(), textSize.y(), tScriptEdit->getSize().z()));
     pScriptsEdit->updateScrolls();
+    applySyntaxSuggar();
 }
 void ODFAEGCreator::onGoToFunctionSelected(DropDownList* dp) {
     if (dp == dpGoToMFunc) {
