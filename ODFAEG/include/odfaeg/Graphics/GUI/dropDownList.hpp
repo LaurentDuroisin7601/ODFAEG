@@ -33,7 +33,7 @@ namespace odfaeg {
                     ~DropDownList();
                 private :
                     math::Vec3f selectedItemPos;
-                    bool dropDown;
+                    bool dropDown, stateChanged;
                     const Font* font;
                     bool valueChanged;
                     unsigned int nbItems;

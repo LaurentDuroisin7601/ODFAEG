@@ -24,13 +24,13 @@ namespace odfaeg {
         void Component::setEventContextActivated(bool activateEventContext) {
             this->activateEventContext = activateEventContext;
             if (!activateEventContext) {
-                if (name == "TSCRIPTEDIT")
-                    std::cout<<"desactivate tse"<<std::endl;
+                /*if (name == "TSCRIPTEDIT")
+                    std::cout<<"desactivate tse"<<std::endl;*/
                 getListener().clearEventsStack();
-            } else {
+            }/* else {
                 if (name == "TSCRIPTEDIT")
                     std::cout<<"activate tse"<<std::endl;
-            }
+            }*/
             onEventContextActivated(activateEventContext);
         }
         bool Component::isEventContextActivated() {

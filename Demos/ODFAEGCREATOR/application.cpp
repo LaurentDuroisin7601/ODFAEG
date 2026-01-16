@@ -4385,8 +4385,7 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
     else if (item->getText() == "New component") {
         wNewComponent->setVisible(true);
         getRenderComponentManager().setEventContextActivated(true, *wNewComponent);
-        tScriptEdit->setEventContextActivated(false);
-    }
+        tScriptEdit->setEventContextActivated(false);}
     else if (item->getText() == "New entities updater") {
         wNewEntitiesUpdater->setVisible(true);
         getRenderComponentManager().setEventContextActivated(true, *wNewEntitiesUpdater);
@@ -8400,6 +8399,7 @@ void ODFAEGCreator::onGoToFunctionSelected(DropDownList* dp) {
 }
 void ODFAEGCreator::onGoToFunctionNotDroppedDown(DropDownList* dp) {
     if (dp == dpGoToMFunc) {
+        std::cout<<"activate"<<std::endl;
         tScriptEdit->setEventContextActivated(true);
         pProjects->setEventContextActivated(true);
         tScriptEdit->setFocus(true);

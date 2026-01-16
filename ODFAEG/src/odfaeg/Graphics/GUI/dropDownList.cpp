@@ -30,7 +30,7 @@ namespace odfaeg {
                 core::Action a(core::Action::EVENT_TYPE::MOUSE_BUTTON_PRESSED_ONCE, window::IMouse::Left);
                 core::Command cmd(a, core::FastDelegate<bool> (&DropDownList::isMouseOnTriangle, this), core::FastDelegate<void>(&DropDownList::onTriangleClicked, this));
                 getListener().connect("ITEMSELECTED"+t, cmd);
-                dropDown = valueChanged = false;
+                dropDown = valueChanged = stateChanged = false;
                 //getListener().launch();
             }
             bool DropDownList::isValueChanged() {
@@ -168,9 +168,13 @@ namespace odfaeg {
                 }
             }
             bool DropDownList::isNotDroppedDown() {
-                return !dropDown;
+                bool b = stateChanged;
+                stateChanged = false;
+                return !dropDown && b;
             }
             bool DropDownList::isDroppedDown() {
+                if (dropDown)
+                    stateChanged = true;
                 return dropDown;
             }
             DropDownList::~DropDownList() {
