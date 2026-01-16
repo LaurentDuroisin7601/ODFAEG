@@ -5145,6 +5145,19 @@ namespace odfaeg {
             ////std::cout<<"pass2 signal value : "<<values[frameBuffer.getCurrentFrame()]<<std::endl;
 
         }
+        Entity* PerPixelLinkedListRenderComponent::getBorder(Entity* entity) {
+            for (unsigned int i = 0; i < visibleSelectedScaleEntities.size(); i++) {
+                if (visibleSelectedScaleEntities[i]->getBorderId() == entity->getId()) {
+                    return visibleSelectedScaleEntities[i].get();
+                }
+            }
+            Entity* border = entity->clone();
+            border->setBorderId(entity->getId());
+            std::unique_ptr<Entity> ptr;
+            ptr.reset(border);
+            visibleSelectedScaleEntities.push_back(std::move(ptr));
+            return border;
+        }
         bool PerPixelLinkedListRenderComponent::loadEntitiesOnComponent(std::vector<Entity*> vEntities) {
             {
 
@@ -5163,7 +5176,6 @@ namespace odfaeg {
                 selectedInstanceIndexBatcher.clear();
                 selectedInstanceIndexScaleBatcher.clear();
                 skyboxBatcher.clear();
-                visibleSelectedScaleEntities.clear();
             }
             //std::cout<<"load entities on component"<<std::endl;
             if (skybox != nullptr) {
@@ -5174,11 +5186,11 @@ namespace odfaeg {
             for (unsigned int i = 0; i < vEntities.size(); i++) {
 
                 if ( vEntities[i] != nullptr && vEntities[i]->isLeaf()) {
-                    Entity* border;
+                    /*Entity* border;
                     if (vEntities[i]->isSelected()) {
                         border = vEntities[i]->clone();
                         border->decreaseNbEntities();
-                    }
+                    }*/
                     for (unsigned int j = 0; j <  vEntities[i]->getNbFaces(); j++) {
                          std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                          if (vEntities[i]->getDrawMode() == Entity::INSTANCED && !vEntities[i]->isSelected()) {
@@ -5203,12 +5215,14 @@ namespace odfaeg {
                            // //////std::cout<<"remove texture"<<std::endl;
 
                             ////////std::cout<<"get va"<<std::endl;
+                                Entity* border = getBorder(vEntities[i]);
                                 VertexArray& va = border->getFace(j)->getVertexArray();
                                 ////////std::cout<<"change color"<<std::endl;
                                 for (unsigned int j = 0; j < va.getVertexCount(); j++) {
 
                                     va[j].color = Color::Cyan;
                                 }
+
                                 Entity* root = (vEntities[i]->getRootEntity()->isAnimated()) ? vEntities[i]->getRootEntity() : vEntities[i];
                                 math::Vec3f oldSize = root->getSize();
                                 border->setOrigin(root->getSize() * 0.5f);
@@ -5225,12 +5239,14 @@ namespace odfaeg {
                                // //////std::cout<<"remove texture"<<std::endl;
 
                             ////////std::cout<<"get va"<<std::endl;
+                                Entity* border = getBorder(vEntities[i]);
                                 VertexArray& va = border->getFace(j)->getVertexArray();
                                 ////////std::cout<<"change color"<<std::endl;
                                 for (unsigned int j = 0; j < va.getVertexCount(); j++) {
 
                                     va[j].color = Color::Cyan;
                                 }
+
                                 Entity* root = (vEntities[i]->getRootEntity()->isAnimated()) ? vEntities[i]->getRootEntity() : vEntities[i];
                                 math::Vec3f oldSize = root->getSize();
                                 border->setOrigin(root->getSize() * 0.5f);
@@ -5251,6 +5267,7 @@ namespace odfaeg {
                            // //////std::cout<<"remove texture"<<std::endl;
 
                             ////////std::cout<<"get va"<<std::endl;
+                                Entity* border = getBorder(vEntities[i]);
                                 VertexArray& va = border->getFace(j)->getVertexArray();
                                 ////////std::cout<<"change color"<<std::endl;
                                 for (unsigned int j = 0; j < va.getVertexCount(); j++) {
@@ -5273,6 +5290,7 @@ namespace odfaeg {
                                // //////std::cout<<"remove texture"<<std::endl;
 
                             ////////std::cout<<"get va"<<std::endl;
+                                Entity* border = getBorder(vEntities[i]);
                                 VertexArray& va = border->getFace(j)->getVertexArray();
                                 ////////std::cout<<"change color"<<std::endl;
                                 for (unsigned int j = 0; j < va.getVertexCount(); j++) {
@@ -5293,11 +5311,11 @@ namespace odfaeg {
                              }
                         }
                     }
-                    if (vEntities[i]->isSelected()) {
+                    /*if (vEntities[i]->isSelected()) {
                         std::unique_ptr<Entity> ptr;
                         ptr.reset(border);
                         visibleSelectedScaleEntities.push_back(std::move(ptr));
-                    }
+                    }*/
                 }
 
             }

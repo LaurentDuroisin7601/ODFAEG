@@ -414,5 +414,11 @@ namespace odfaeg {
         bool Entity::changeHeights(physic::OrientedBoundingBox& obx, float delta) { return false; }
         Texture& Entity::getTexture() {
         }
+        void Entity::setBorderId(int id) {
+            borderID = id;
+        }
+        int Entity::getBorderId() {
+            return borderID;
+        }
     }
 }

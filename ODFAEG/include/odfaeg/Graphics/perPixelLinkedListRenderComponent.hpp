@@ -141,6 +141,7 @@ namespace odfaeg {
             void createCommandBufferVertexBuffer(RenderStates currentStates);
             uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
             void allocateCommandBuffers();
+            Entity* getBorder(Entity* entity);
             View view;
             std::string expression;
             RectangleShape quad;

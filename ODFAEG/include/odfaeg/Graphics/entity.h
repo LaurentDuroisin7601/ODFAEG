@@ -447,6 +447,8 @@ namespace odfaeg {
                 void setBehaviour(MonoBehaviour* behaviour);
                 void onInit();
                 void onUpdate();
+                void setBorderId(int borderId);
+                int getBorderId();
                 #ifdef VULKAN
                 virtual void computeParticles(std::mutex* mtx, std::condition_variable* cv2, VertexBuffer& frameVertexBuffer, unsigned int currentRrame, VkSemaphore computeSemaphore, VkFence computeFence) {}
                 #endif
@@ -469,7 +471,7 @@ namespace odfaeg {
                 std::string className;
                 static std::map<int, std::string> types; /** A list of the type's id and name's of the entities. */
                 std::pair<int, std::string> type; /** The type's id and the type's name of the entity.*/
-                int id; /** the id of the entity.*/
+                int id, borderID; /** the id of the entity.*/
                 bool selected;
                 core::State entityState;                                         /** the states of the entity.*/
                 Entity(const Entity& entity) = delete; /**> an entity if not copiable.*/
