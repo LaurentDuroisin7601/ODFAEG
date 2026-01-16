@@ -229,7 +229,7 @@ void MyAppli::onInit() {
     rrrc->launchRenderer();
     src->launchRenderer();
     lrc->launchRenderer();
-    //eu->setView(view3D);
+    eu->setView(view3D);
     getWorld()->update();
 }
 void MyAppli::onRender(RenderComponentManager* frcm) {
@@ -418,7 +418,7 @@ void MyAppli::onExec() {
         getRenderWindow().setView(view);*/
 
     }
-    //eu->setView(view3D);
+    eu->setView(view3D);
     //eu->needToUpdate();
     getWorld()->update();
     /*ps->update(clock.getElapsedTime());

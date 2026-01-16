@@ -730,19 +730,19 @@ namespace odfaeg {
             entity->move(math::Vec3f(dx, dy, dz));
             addEntity(entity);
         }
-        void Scene::checkVisibleEntities(EntityFactory& factory) {
+        void Scene::checkVisibleEntities(EntityFactory& factory, View& view) {
             //std::cout<<"update!"<<std::endl;
-            for (unsigned int c = 0; c < frcm->getNbComponents() + 1; c++) {
-                if (c == frcm->getNbComponents() || c < frcm->getNbComponents() && frcm->getRenderComponent(c) != nullptr) {
+            //for (unsigned int c = 0; c < frcm->getNbComponents() + 1; c++) {
+                //if (c == frcm->getNbComponents() || c < frcm->getNbComponents() && frcm->getRenderComponent(c) != nullptr) {
                     physic::BoundingBox viewVolume;
-                    /*{
+                    {
                        std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                        viewVolume = view.getViewVolume();
-                    }*/
-                    if (c == frcm->getNbComponents())
+                    }
+                    /*if (c == frcm->getNbComponents())
                         viewVolume = frcm->getWindow().getView().getViewVolume();
                     else
-                        viewVolume = frcm->getRenderComponent(c)->getView().getViewVolume();
+                        viewVolume = frcm->getRenderComponent(c)->getView().getViewVolume();*/
 
                     visibleEntities.clear();
                     //visibleEntities.resize(core::Application::app->getNbEntitiesTypes());
@@ -770,21 +770,25 @@ namespace odfaeg {
                                        Entity* entity = cell->getEntityInside(n);
                                        if (visibleEntities[entity->getRootTypeInt()][entity->getId()] == nullptr) {
                                             visibleEntities[entity->getRootTypeInt()][entity->getId()] = entity;
-                                       }
+                                        }
 
                                     }
                                 }
                             }
                         }
                     }
-                }
-                if (c < frcm->getNbComponents()) {
+                //}
+                //if (c < frcm->getNbComponents()) {
                     //////////std::cout<<"get entities on component : "<<c<<std::endl;
-                    std::lock_guard<std::recursive_mutex> lock(rec_mutex);
-                    std::vector<Entity*> entities = getVisibleEntities(frcm->getRenderComponent(c)->getExpression(), factory);
-                    frcm->getRenderComponent(c)->loadEntitiesOnComponent(entities);
-                }
-            }
+                    for (unsigned int c = 0; c < frcm->getNbComponents(); c++) {
+                        if (frcm->getRenderComponent(c) != nullptr) {
+                            std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                            std::vector<Entity*> entities = getVisibleEntities(frcm->getRenderComponent(c)->getExpression(), factory);
+                            frcm->getRenderComponent(c)->loadEntitiesOnComponent(entities);
+                        }
+                    }
+                //}
+            //}
 
                 /*for (unsigned int i = 0; i < visibleEntities.size(); i++) {
                     if (i == 0) {

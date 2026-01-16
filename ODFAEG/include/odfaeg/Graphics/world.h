@@ -409,9 +409,9 @@ namespace odfaeg {
                     ptr.reset(holder);
                     cache.ems.emplace_back(std::move(ptr));
                 }
-                void checkVisibleEntities(EntityFactory& factory) {
+                void checkVisibleEntities(EntityFactory& factory, View& view) {
                     if (currentEntityManager != nullptr) {
-                        currentEntityManager->checkVisibleEntities(factory);
+                        currentEntityManager->checkVisibleEntities(factory, view);
                     }
                 }
                 std::vector<Entity*> getEntitiesInRect(physic::BoundingBox rect, std::string expression) {

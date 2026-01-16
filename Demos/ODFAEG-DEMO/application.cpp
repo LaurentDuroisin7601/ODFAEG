@@ -630,6 +630,7 @@ namespace sorrok {
             fpsCounter = 0;
             getClock("FPS").restart();
         }
+        eu->setView(getView());
         getWorld()->update();
         /*getWorld()->updateTimers();*/
         //ps->update(getClock("LoopTime").getElapsedTime());
