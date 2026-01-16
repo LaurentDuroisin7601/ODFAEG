@@ -5153,6 +5153,23 @@ namespace odfaeg {
             }
             Entity* border = entity->clone();
             border->setBorderId(entity->getId());
+            for (unsigned int i = 0; i < border->getFaces().size(); i++) {
+                VertexArray& va = border->getFace(i)->getVertexArray();
+                ////////std::cout<<"change color"<<std::endl;
+                for (unsigned int j = 0; j < va.getVertexCount(); j++) {
+
+                    va[j].color = Color::Cyan;
+                }
+            }
+
+            Entity* root = (entity->getRootEntity()->isAnimated()) ? entity->getRootEntity() : entity;
+            math::Vec3f oldSize = root->getSize();
+            border->setOrigin(root->getSize() * 0.5f);
+            border->setSize(root->getSize() * 1.1f);
+            math::Vec3f offset =  root->getSize() - oldSize;
+            if (border->getSize().z() > 0) {
+                border->setPosition(root->getPosition() - offset * 0.5f);
+            }
             std::unique_ptr<Entity> ptr;
             ptr.reset(border);
             visibleSelectedScaleEntities.push_back(std::move(ptr));
@@ -5216,21 +5233,7 @@ namespace odfaeg {
 
                             ////////std::cout<<"get va"<<std::endl;
                                 Entity* border = getBorder(vEntities[i]);
-                                VertexArray& va = border->getFace(j)->getVertexArray();
-                                ////////std::cout<<"change color"<<std::endl;
-                                for (unsigned int j = 0; j < va.getVertexCount(); j++) {
 
-                                    va[j].color = Color::Cyan;
-                                }
-
-                                Entity* root = (vEntities[i]->getRootEntity()->isAnimated()) ? vEntities[i]->getRootEntity() : vEntities[i];
-                                math::Vec3f oldSize = root->getSize();
-                                border->setOrigin(root->getSize() * 0.5f);
-                                border->setSize(root->getSize() * 1.1f);
-                                math::Vec3f offset =  root->getSize() - oldSize;
-                                if (border->getSize().z() > 0) {
-                                    border->setPosition(root->getPosition() - offset * 0.5f);
-                                }
                                // //////std::cout<<"add to batcher"<<std::endl;
                                 selectedInstanceScaleBatcher.addFace(border->getFace(j));
                            // //////std::cout<<"face added"<<std::endl;
@@ -5240,21 +5243,7 @@ namespace odfaeg {
 
                             ////////std::cout<<"get va"<<std::endl;
                                 Entity* border = getBorder(vEntities[i]);
-                                VertexArray& va = border->getFace(j)->getVertexArray();
-                                ////////std::cout<<"change color"<<std::endl;
-                                for (unsigned int j = 0; j < va.getVertexCount(); j++) {
 
-                                    va[j].color = Color::Cyan;
-                                }
-
-                                Entity* root = (vEntities[i]->getRootEntity()->isAnimated()) ? vEntities[i]->getRootEntity() : vEntities[i];
-                                math::Vec3f oldSize = root->getSize();
-                                border->setOrigin(root->getSize() * 0.5f);
-                                border->setSize(root->getSize() * 1.1f);
-                                math::Vec3f offset =  root->getSize() - oldSize;
-                                if (border->getSize().z() > 0) {
-                                    border->setPosition(root->getPosition() - offset * 0.5f);
-                                }
                                // //////std::cout<<"add to batcher"<<std::endl;
 
                                // //////std::cout<<"add to batcher"<<std::endl;
@@ -5268,20 +5257,7 @@ namespace odfaeg {
 
                             ////////std::cout<<"get va"<<std::endl;
                                 Entity* border = getBorder(vEntities[i]);
-                                VertexArray& va = border->getFace(j)->getVertexArray();
-                                ////////std::cout<<"change color"<<std::endl;
-                                for (unsigned int j = 0; j < va.getVertexCount(); j++) {
 
-                                    va[j].color = Color::Cyan;
-                                }
-                                Entity* root = (vEntities[i]->getRootEntity()->isAnimated()) ? vEntities[i]->getRootEntity() : vEntities[i];
-                                math::Vec3f oldSize = root->getSize();
-                                border->setOrigin(root->getSize() * 0.5f);
-                                border->setSize(root->getSize() * 1.1f);
-                                math::Vec3f offset =  root->getSize() - oldSize;
-                                if (border->getSize().z() > 0) {
-                                    border->setPosition(root->getPosition() - offset * 0.5f);
-                                }
                                 selectedScaleBatcher.addFace(border->getFace(j));
 
                                 ////std::cout<<"face added"<<std::endl;
@@ -5291,21 +5267,7 @@ namespace odfaeg {
 
                             ////////std::cout<<"get va"<<std::endl;
                                 Entity* border = getBorder(vEntities[i]);
-                                VertexArray& va = border->getFace(j)->getVertexArray();
-                                ////////std::cout<<"change color"<<std::endl;
-                                for (unsigned int j = 0; j < va.getVertexCount(); j++) {
 
-                                    va[j].color = Color::Cyan;
-                                }
-
-                                Entity* root = (vEntities[i]->getRootEntity()->isAnimated()) ? vEntities[i]->getRootEntity() : vEntities[i];
-                                math::Vec3f oldSize = root->getSize();
-                                border->setOrigin(root->getSize() * 0.5f);
-                                border->setSize(root->getSize() * 1.1f);
-                                math::Vec3f offset =  root->getSize() - oldSize;
-                                if (border->getSize().z() > 0) {
-                                    border->setPosition(root->getPosition() - offset * 0.5f);
-                                }
                                 ////std::cout<<"add to batcher"<<std::endl;
                                 selectedIndexScaleBatcher.addFace(border->getFace(j));
                              }
