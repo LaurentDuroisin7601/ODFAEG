@@ -778,6 +778,12 @@ namespace odfaeg {
                         }
                     }
                 }
+                if (c < frcm->getNbComponents()) {
+                    //////////std::cout<<"get entities on component : "<<c<<std::endl;
+                    std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                    std::vector<Entity*> entities = getVisibleEntities(frcm->getRenderComponent(c)->getExpression(), factory);
+                    frcm->getRenderComponent(c)->loadEntitiesOnComponent(entities);
+                }
             }
 
                 /*for (unsigned int i = 0; i < visibleEntities.size(); i++) {
@@ -788,14 +794,6 @@ namespace odfaeg {
                         }
                     }
                 }*/
-            for (unsigned int c = 0; c < frcm->getNbComponents(); c++) {
-                if (c < frcm->getNbComponents() && frcm->getRenderComponent(c) != nullptr) {
-                    //////////std::cout<<"get entities on component : "<<c<<std::endl;
-                    std::lock_guard<std::recursive_mutex> lock(rec_mutex);
-                    std::vector<Entity*> entities = getVisibleEntities(frcm->getRenderComponent(c)->getExpression(), factory);
-                    frcm->getRenderComponent(c)->loadEntitiesOnComponent(entities);
-                }
-            }
         }
         void Scene::setBaseChangementMatrix (BaseChangementMatrix bm) {
             gridMap->setBaseChangementMatrix(bm);
