@@ -46,8 +46,7 @@ set(SRC
 	${INCROOT}/runtimeCompiler.hpp
 	${SRCROOT}/runtimeCompiler.cpp
 	${INCROOT}/fastDelegate.h	
-	${INCROOT}/utf.hpp
-	${INCROOT}/utf.inl
+	${INCROOT}/utf.hpp	
 	${INCROOT}/string.hpp
 	${INCROOT}/string.inl
 	${SRCROOT}/string.cpp	

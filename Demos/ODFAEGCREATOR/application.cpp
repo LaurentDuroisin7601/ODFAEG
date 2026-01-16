@@ -961,10 +961,17 @@ void ODFAEGCreator::onInit() {
         Command cmd5(FastDelegate<bool>(&TextArea::isTextChanged, tScriptEdit), FastDelegate<void>(&ODFAEGCreator::onTextEntered, this, tScriptEdit, '\0'));
         tScriptEdit->getListener().connect("CONTEXTENTERED", cmd5);
         tScriptEdit->setParent(pScriptsEdit);
-        tScriptEdit->setRelPosition(0.f, 0.f);
+        tScriptEdit->setRelPosition(0.1f, 0.f);
         tScriptEdit->setRelSize(0.8f, 0.8f);
         pScriptsEdit->addChild(tScriptEdit);
+        lLineNumbers = new Label(getRenderWindow(), Vec3f(150, 40, 0), Vec3f(790, 650, 0), fm.getResourceByAlias(Fonts::Serif), "1", 15);
+        lLineNumbers->setParent(pScriptsEdit);
+        lLineNumbers->setBackgroundColor(Color(128, 128, 128));
         tScriptEdit->setName("TSCRIPTEDIT");
+        lLineNumbers->setRelPosition(0.0f, 0.f);
+        lLineNumbers->setRelSize(0.1f, 1.f);
+        pScriptsEdit->addChild(lLineNumbers);
+
         guiSize.x() = getRenderWindow().getSize().x() - pProjects->getSize().x() - pScriptsFiles->getSize().x();
         guiSize.y() = getRenderWindow().getSize().y() - menuBar->getSize().y();
         guiPos.x() = pProjects->getSize().x();

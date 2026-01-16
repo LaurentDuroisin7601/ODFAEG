@@ -24,9 +24,12 @@ namespace odfaeg {
         void Component::setEventContextActivated(bool activateEventContext) {
             this->activateEventContext = activateEventContext;
             if (!activateEventContext) {
-                /*if (name == "TEXCOORDY")
-                    //////std::cout<<"clear tex coord y event stack"<<std::endl;*/
+                if (name == "TSCRIPTEDIT")
+                    std::cout<<"desactivate tse"<<std::endl;
                 getListener().clearEventsStack();
+            } else {
+                if (name == "TSCRIPTEDIT")
+                    std::cout<<"activate tse"<<std::endl;
             }
             onEventContextActivated(activateEventContext);
         }
