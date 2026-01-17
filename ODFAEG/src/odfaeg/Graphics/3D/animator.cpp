@@ -27,9 +27,7 @@ namespace odfaeg {
                 createComputePipeline();
 
             }
-            TransformMatrix& Animator::getChildTransform() {
-                return getChildren()[0]->getTransform();
-            }
+
             void Animator::updateAnimation(float dt)
             {
                 ////////std::cout<<"update anim"<<std::endl;

@@ -14,7 +14,6 @@ namespace odfaeg {
                     math::Matrix4f transform;
                 };
                 Animator(window::Device& vkDevice, Animation* animation, EntityFactory& factory);
-                TransformMatrix& getChildTransform();
                 void updateAnimation(float dt);
                 void playAnimation(Animation* pAnimation);
                 void calculateBoneTransform(const Animation::AssimpNodeData* node, math::Matrix4f parentTransform);
