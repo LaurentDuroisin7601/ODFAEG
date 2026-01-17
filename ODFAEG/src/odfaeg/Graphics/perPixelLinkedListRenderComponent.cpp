@@ -5557,7 +5557,7 @@ namespace odfaeg {
                         || visibleEntities[i]->getType() == "E_BONE_ANIMATION")
                         && visibleEntities[i]->isComputeFinished(frameBuffer.getCurrentFrame())) {
 
-                        visibleEntities[i]->computeParticles(&mtx2, &cv2, vbBindlessTex[Triangles], frameBuffer.getCurrentFrame(),computeSemaphores[i][frameBuffer.getCurrentFrame()], computeFences[i][frameBuffer.getCurrentFrame()]);
+                        visibleEntities[i]->computeParticles(&mtx2, &cv2, vbBindlessTex[Triangles], frameBuffer.getCurrentFrame(),visibleEntities[i]->getTransform(), (visibleEntities[i]->getDrawMode() == Entity::INSTANCED) ? true : false, computeSemaphores[i][frameBuffer.getCurrentFrame()], computeFences[i][frameBuffer.getCurrentFrame()]);
 
 
 

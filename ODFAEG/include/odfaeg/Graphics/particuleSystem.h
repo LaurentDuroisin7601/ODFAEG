@@ -100,6 +100,9 @@ namespace odfaeg
         struct ComputePC {
             float deltaTime;
             int entityId;
+            int instanced;
+            int padding;
+            math::Matrix4f transform;
         };
 
 
@@ -224,7 +227,7 @@ namespace odfaeg
                 }
             }
         }
-        void computeParticles(std::mutex* mtx, std::condition_variable* cv2, graphic::VertexBuffer& frameVertexBuffer, unsigned int currentFrame, VkSemaphore computeSemaphore, VkFence computeFence);
+        void computeParticles(std::mutex* mtx, std::condition_variable* cv2, graphic::VertexBuffer& frameVertexBuffer, unsigned int currentFrame, graphic::TransformMatrix tm, bool instanced, VkSemaphore computeSemaphore, VkFence computeFence);
         bool isComputeFinished(unsigned int currentFrame);
         ~ParticleSystem();
         // ---------------------------------------------------------------------------------------------------------------------------

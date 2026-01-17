@@ -743,7 +743,7 @@ namespace odfaeg {
                                                              }
                                                              //debugPrintfEXT("depth : %f,%f", gl_FragCoord.z, depth.z);
                                                              if (/*layer > depth.y || layer == depth.y &&*/ gl_FragCoord.z > depth.z) {
-                                                                 debugPrintfEXT("light pos : %v3f pix pos : %v3f", sLightPos, pixPos);
+                                                                 //debugPrintfEXT("light pos : %v3f pix pos : %v3f", sLightPos, pixPos);
                                                                  vec4 specularColor = vec4(0, 0, 0, 0);
 
                                                                  float attenuation = 1.f - length(vertexToLight) / radius;

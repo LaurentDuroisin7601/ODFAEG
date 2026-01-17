@@ -380,35 +380,33 @@ namespace odfaeg {
 
                 ////////std::cout<<"va pushed"<<std::endl;
                 //m_indexes.push_back(std::vector<unsigned int>());
-                //if (va.getEntity() == nullptr || va.getEntity()->getDrawMode() == Entity::NORMAL) {
-                    unsigned int baseVertex = vertices.getVertexCount();
-                    for (unsigned int i = 0; i < va.getVertexCount(); i++) {
 
-                        /*va[i].padding = m_transforms.size() - 1;
-                        vertices.append(va[i]);*/
-                        math::Vec3f t = tm.transform(va[i].position);
-                        ////////std::cout<<"position : "<<t<<std::endl;
-                        Vertex v (t, va[i].color, va[i].texCoords);
-                        v.normal = va[i].normal;
-                        for (unsigned int b = 0; b < MAX_BONE_INFLUENCE; b++) {
-                            v.m_BoneIDs[b] = va[i].m_BoneIDs[b];
-                            v.m_Weights[b] = va[i].m_Weights[b];
-                        }
-                        v.entityId = va[i].entityId;
-                        v.particleId = va[i].particleId;
+                unsigned int baseVertex = vertices.getVertexCount();
+                for (unsigned int i = 0; i < va.getVertexCount(); i++) {
 
-
-
-
-
-                        vertices.append(v);
-
-
+                    /*va[i].padding = m_transforms.size() - 1;
+                    vertices.append(va[i]);*/
+                    math::Vec3f t;
+                    if (va.getEntity() != nullptr && va.getEntity()->getDrawMode() == Entity::NORMAL
+                        && (va.getEntity()->getType() == "E_BONE_ANIMATION" || va.getEntity()->getType() == "E_PARTICLES"))
+                        t = va[i].position;
+                    else
+                        t = tm.transform(va[i].position);
+                    ////////std::cout<<"position : "<<t<<std::endl;
+                    Vertex v (t, va[i].color, va[i].texCoords);
+                    v.normal = va[i].normal;
+                    for (unsigned int b = 0; b < MAX_BONE_INFLUENCE; b++) {
+                        v.m_BoneIDs[b] = va[i].m_BoneIDs[b];
+                        v.m_Weights[b] = va[i].m_Weights[b];
                     }
-                    for (unsigned int i = 0; i < va.getIndexes().size(); i++) {
-                        vertices.addIndex(baseVertex + va.getIndexes()[i]);
-                    }
-                //}
+                    v.entityId = va[i].entityId;
+                    v.particleId = va[i].particleId;
+                    vertices.append(v);
+                }
+                for (unsigned int i = 0; i < va.getIndexes().size(); i++) {
+                    vertices.addIndex(baseVertex + va.getIndexes()[i]);
+                }
+
                 ////////std::cout<<"vertices transformed"<<std::endl;
             }
             void Instance::addVertexShadowArray (VertexArray& va, TransformMatrix& tm, ViewMatrix& viewMatrix, TransformMatrix shadowProjMatrix) {

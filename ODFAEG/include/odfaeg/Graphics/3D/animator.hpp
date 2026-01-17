@@ -8,6 +8,8 @@ namespace odfaeg {
             public :
                 struct ComputePC {
                     int entityId;
+                    int instanced;
+                    math::Matrix4f transform;
                 };
                 Animator(window::Device& vkDevice, Animation* animation, EntityFactory& factory);
                 void updateAnimation(float dt);
@@ -60,7 +62,7 @@ namespace odfaeg {
                     return false;
                 }
                 Entity* getCurrentFrame() const;
-                void computeParticles(std::mutex* mtx, std::condition_variable* cv2, VertexBuffer& frameVertexBuffer, unsigned int currentFrame, VkSemaphore computeSemaphore, VkFence computeFence);
+                void computeParticles(std::mutex* mtx, std::condition_variable* cv2, VertexBuffer& frameVertexBuffer, unsigned int currentFrame, TransformMatrix tm, bool instanced, VkSemaphore computeSemaphore, VkFence computeFence);
                 bool isComputeFinished(unsigned int currentFrame);
                 void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
                 void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size, VkCommandBuffer cmd);

@@ -180,7 +180,7 @@ namespace odfaeg {
             Entity* Animator::getCurrentFrame() const {
                 return m_CurrentAnimation->getModel();
             }
-            void Animator::computeParticles(std::mutex* mtx, std::condition_variable* cv2, VertexBuffer& frameVertexBuffer, unsigned int currentFrame, VkSemaphore computeSemaphore, VkFence computeFence) {
+            void Animator::computeParticles(std::mutex* mtx, std::condition_variable* cv2, VertexBuffer& frameVertexBuffer, unsigned int currentFrame, TransformMatrix tm, bool instanced, VkSemaphore computeSemaphore, VkFence computeFence) {
                 computeFinished[currentFrame] = false;
                 this->mtx = mtx;
                 this->cv2 = cv2;
@@ -188,6 +188,8 @@ namespace odfaeg {
                 this->currentFrame = currentFrame;
                 this->computeSemaphores = computeSemaphore;
                 this->computeFences = computeFence;
+                computeParams.instanced = (instanced) ? 1 : 0;
+                computeParams.transform = tm.getMatrix().transpose();
                 computeJob[currentFrame] = true;
             }
             bool Animator::isComputeFinished(unsigned int currentFrame) {
@@ -259,6 +261,8 @@ namespace odfaeg {
                                                    };
                                                    layout (push_constant) uniform PushConsts {
                                                          int entityId;
+                                                         int instanced;
+                                                         mat4 transform;
                                                    } pushConsts;
                                                    layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
                                                    void main() {

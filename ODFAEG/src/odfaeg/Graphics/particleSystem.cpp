@@ -165,7 +165,7 @@ namespace odfaeg
             }
             throw std::runtime_error("aucun type de memoire ne satisfait le buffer!");
         }
-        void ParticleSystem::computeParticles(std::mutex* mtx, std::condition_variable* cv2, graphic::VertexBuffer& frameVertexBuffer, unsigned int currentFrame, VkSemaphore computeSemaphore, VkFence computeFence) {
+        void ParticleSystem::computeParticles(std::mutex* mtx, std::condition_variable* cv2, graphic::VertexBuffer& frameVertexBuffer, unsigned int currentFrame, graphic::TransformMatrix tm, bool instanced, VkSemaphore computeSemaphore, VkFence computeFence) {
 
             computeFinished[currentFrame] = false;
             this->mtx = mtx;
@@ -174,6 +174,9 @@ namespace odfaeg
             this->currentFrame = currentFrame;
             this->computeSemaphores = computeSemaphore;
             this->computeFences = computeFence;
+            computeParams.instanced = (instanced) ? 1 : 0;
+            tm.update();
+            computeParams.transform = tm.getMatrix();
             computeJob[currentFrame] = true;
         }
         bool ParticleSystem::isComputeFinished(unsigned int currentFrame) {
@@ -222,6 +225,9 @@ namespace odfaeg
                                                      layout (push_constant) uniform PushConsts {
                                                          float dt;
                                                          int entityId;
+                                                         int instanced;
+                                                         int padding;
+                                                         mat4 transform;
                                                      } pushConsts;
                                                      layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
                                                      void main() {
@@ -240,7 +246,11 @@ namespace odfaeg
                                                                                          0                 , 0                  , 0      , 1);
                                                             Quad quad = quads[particles[particleIndex].textureIndex];
                                                             vec4 transformed = transpose(transformMatrix) * vec4(quad.quad[vertexIndex%6].position, 1);
+
                                                             vertices[vertexIndex].position = vertices[vertexIndex].position + vec3(transformed.xyz);
+                                                            if (pushConsts.instanced == 0)
+                                                                vertices[vertexIndex].position = (vec4(vertices[vertexIndex].position.xyz, 1) * pushConsts.transform).xyz;
+                                                            //debugPrintfEXT("position : %v3f", vertices[vertexIndex].position);
                                                             vertices[vertexIndex].texCoords = quad.quad[vertexIndex%6].texCoords;
                                                             vertices[vertexIndex].color = particles[particleIndex].color;
                                                          }
