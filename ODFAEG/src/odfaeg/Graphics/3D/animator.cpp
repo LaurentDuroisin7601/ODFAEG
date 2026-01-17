@@ -189,6 +189,7 @@ namespace odfaeg {
                 this->computeSemaphores = computeSemaphore;
                 this->computeFences = computeFence;
                 computeParams.instanced = (instanced) ? 1 : 0;
+                tm.update();
                 computeParams.transform = tm.getMatrix().transpose();
                 computeJob[currentFrame] = true;
             }
@@ -262,6 +263,8 @@ namespace odfaeg {
                                                    layout (push_constant) uniform PushConsts {
                                                          int entityId;
                                                          int instanced;
+                                                         int padding1;
+                                                         int padding2;
                                                          mat4 transform;
                                                    } pushConsts;
                                                    layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
@@ -282,12 +285,10 @@ namespace odfaeg {
                                                               totalPosition += vertices[vertexIndex].weights[i] * (vec4(vertices[vertexIndex].position.xyz, 1) * finalBonesMatrices[vertices[vertexIndex].boneIds[i]]);
 
                                                             }
-                                                            /*float totalWeight = vertices[vertexIndex].weights[0] + vertices[vertexIndex].weights[1] + vertices[vertexIndex].weights[2] + vertices[vertexIndex].weights[3];
-
-                                                            debugPrintfEXT("total weight %f", totalWeight);*/
-
-
                                                             vertices[vertexIndex].position = vec3(totalPosition.xyz);
+                                                            if (pushConsts.instanced == 0) {
+                                                                vertices[vertexIndex].position = (vec4(vertices[vertexIndex].position.xyz, 1) * pushConsts.transform).xyz;
+                                                            }
                                                        }
                                                    })";
                 if (!computeShader.loadFromMemory(computeShaderCode)) {

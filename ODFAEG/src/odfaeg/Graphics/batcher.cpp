@@ -388,7 +388,7 @@ namespace odfaeg {
                     vertices.append(va[i]);*/
                     math::Vec3f t;
                     if (va.getEntity() != nullptr && va.getEntity()->getDrawMode() == Entity::NORMAL
-                        && (va.getEntity()->getType() == "E_BONE_ANIMATION" || va.getEntity()->getType() == "E_PARTICLES"))
+                        && (va.getEntity()->getRootType() == "E_BONE_ANIMATION" || va.getEntity()->getRootType() == "E_PARTICLES"))
                         t = va[i].position;
                     else
                         t = tm.transform(va[i].position);

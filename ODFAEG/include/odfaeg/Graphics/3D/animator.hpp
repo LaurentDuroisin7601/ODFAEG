@@ -9,6 +9,8 @@ namespace odfaeg {
                 struct ComputePC {
                     int entityId;
                     int instanced;
+                    int padding1;
+                    int padding2;
                     math::Matrix4f transform;
                 };
                 Animator(window::Device& vkDevice, Animation* animation, EntityFactory& factory);
