@@ -121,7 +121,7 @@ void MyAppli::onInit() {
     //animator->setScale(Vec3f(0.1f, 0.1f, 0.1f));
     //std::cout<<"matrix : "<<animator->getCurrentFrame()->getTransform().getMatrix()<<std::endl;
     //animator->setRotation(90);
-    //animator->setDrawMode(Entity::INSTANCED);
+    animator->setDrawMode(Entity::INSTANCED);
 
     float y, z;
     model->move(Vec3f(0, 0, 10));

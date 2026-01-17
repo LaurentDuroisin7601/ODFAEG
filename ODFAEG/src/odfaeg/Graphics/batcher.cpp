@@ -388,10 +388,12 @@ namespace odfaeg {
                     vertices.append(va[i]);*/
                     math::Vec3f t;
                     if (va.getEntity() != nullptr && va.getEntity()->getDrawMode() == Entity::NORMAL
-                        && (va.getEntity()->getRootType() == "E_BONE_ANIMATION" || va.getEntity()->getRootType() == "E_PARTICLES"))
+                        && (va.getEntity()->getRootType() == "E_BONE_ANIMATION" || va.getEntity()->getRootType() == "E_PARTICLES")) {
+                        //std::cout<<"don't transform"<<std::endl;
                         t = va[i].position;
-                    else
+                    } else {
                         t = tm.transform(va[i].position);
+                    }
                     ////////std::cout<<"position : "<<t<<std::endl;
                     Vertex v (t, va[i].color, va[i].texCoords);
                     v.normal = va[i].normal;
