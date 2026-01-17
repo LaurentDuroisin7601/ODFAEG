@@ -27,7 +27,9 @@ namespace odfaeg {
                 createComputePipeline();
 
             }
-
+            TransformMatrix& Animator::getChildTransform() {
+                return getChildren()[0]->getTransform();
+            }
             void Animator::updateAnimation(float dt)
             {
                 ////////std::cout<<"update anim"<<std::endl;
@@ -191,6 +193,7 @@ namespace odfaeg {
                 computeParams.instanced = (instanced) ? 1 : 0;
                 tm.update();
                 computeParams.transform = tm.getMatrix().transpose();
+                //std::cout<<"matrix : "<<computeParams.transform<<std::endl;
                 computeJob[currentFrame] = true;
             }
             bool Animator::isComputeFinished(unsigned int currentFrame) {
@@ -287,6 +290,7 @@ namespace odfaeg {
                                                             }
                                                             vertices[vertexIndex].position = vec3(totalPosition.xyz);
                                                             if (pushConsts.instanced == 0) {
+                                                                //debugPrintfEXT("m1 : %v4f\nm2 : %v4f\nm3 : %v4f\nm4 : %v4f\n", pushConsts.transform[0],pushConsts.transform[1],pushConsts.transform[2],pushConsts.transform[3]);
                                                                 vertices[vertexIndex].position = (vec4(vertices[vertexIndex].position.xyz, 1) * pushConsts.transform).xyz;
                                                             }
                                                        }

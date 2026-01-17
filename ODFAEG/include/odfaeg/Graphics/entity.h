@@ -449,6 +449,7 @@ namespace odfaeg {
                 void onUpdate();
                 void setBorderId(int borderId);
                 int getBorderId();
+                virtual TransformMatrix& getChildTransform();
                 #ifdef VULKAN
                 virtual void computeParticles(std::mutex* mtx, std::condition_variable* cv2, VertexBuffer& frameVertexBuffer, unsigned int currentRrame, TransformMatrix tm, bool instanced, VkSemaphore computeSemaphore, VkFence computeFence) {}
                 #endif

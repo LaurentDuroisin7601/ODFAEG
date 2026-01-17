@@ -367,6 +367,8 @@ namespace odfaeg {
             void Instance::addVertexArray(VertexArray& va, TransformMatrix& tm) {                ////////std::cout<<"push transform"<<std::endl;
                 va.computeNormals();
                 if (va.getEntity() != nullptr && !containsEntity(va.getEntity())) {
+                    /*if (va.getEntity()->getRootType() == "E_BONE_ANIMATION")
+                        std::cout<<"transform : "<<tm.getMatrix()<<std::endl;*/
                     m_transforms.push_back(&tm);
                     //if (va.getEntity() != nullptr) {
                     m_entities.push_back(va.getEntity());

@@ -420,5 +420,8 @@ namespace odfaeg {
         int Entity::getBorderId() {
             return borderID;
         }
+        TransformMatrix& Entity::getChildTransform() {
+            return getTransform();
+        }
     }
 }

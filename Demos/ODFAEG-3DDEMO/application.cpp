@@ -143,20 +143,19 @@ void MyAppli::onInit() {
     angle2 = (y3 > y) ? angle2 : -angle2;
     float angle = std::max(angle1, angle2);
     model->move(Vec3f(0, y, 0));
-    animator->move(Vec3f(-10, 0, 10));
     //model->setRotation(45, Vec3f(1, 0, 0));
     model->setShadowScale(Vec3f(1, -1, 1));
     model->setShadowRotation(90 + angle * 75, Vec3f(1, 0, 0));
     //model->setShadowRotation(angle2 * 150, Vec3f(0, 0, 1));
     model->setShadowCenter(Vec3f(0, 0, -3));
-    animator->move(Vec3f(-10, 0, 10));
+    animator->move(Vec3f(-10, 0, 20));
 
     isOnHeightMap = heightmap->getHeight(Vec2f(animator->getPosition().x(), animator->getPosition().z()), z);
     //std::cout<<"animator size : "<<animator->getSize()<<std::endl;
-
-    getWorld()->addEntity(animator);
     animator->scale(Vec3f(10.f, 10.f, 10.f));
     animator->move(Vec3f(0, z, 0));
+    getWorld()->addEntity(animator);
+
 
     //std::cout<<model->getPosition()<<model->getCenter()<<std::endl;
 

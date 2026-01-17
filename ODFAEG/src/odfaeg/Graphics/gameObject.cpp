@@ -93,6 +93,7 @@ namespace odfaeg {
             return drawMode;
         }
         std::string GameObject::getRootType() {
+            //std::cout<<"parent : "<<parent<<std::endl;
             if (parent == nullptr) {
                 return getType();
             }
@@ -200,11 +201,13 @@ namespace odfaeg {
         }
         void GameObject::onOriginChanged(math::Vec3f& o) {
             for (unsigned int i = 0; i < getChildren().size(); i++) {
+                getTransform().update();
                 getChildren()[i]->setOrigin(o);
             }
         }
         void GameObject::onResize(math::Vec3f& s) {
             for (unsigned int i = 0; i < faces.size(); i++) {
+                getTransform().update();
                 faces[i].setTransformMatrix(getTransform());
             }
             for (unsigned int i = 0; i < getChildren().size(); i++) {
