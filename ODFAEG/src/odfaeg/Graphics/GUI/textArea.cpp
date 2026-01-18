@@ -136,6 +136,8 @@ namespace odfaeg {
                 va.append(Vertex(math::Vec3f(cursorPos.x()+1, cursorPos.y(), getPosition().z()+300), Color::Black));
                 va.append(Vertex(math::Vec3f(cursorPos.x()+1, cursorPos.y() + text.getCharacterSize(), getPosition().z()+300), Color::Black));
                 rect.setPosition(getPosition());
+                /*if (name == "TSCRIPTEDIT")
+                    std::cout<<"position : "<<text.getPosition()<<std::endl;*/
                 text.setPosition(math::Vec3f(getPosition().x() + scrollX, getPosition().y() + scrollY, getPosition().z()+100));
 
 

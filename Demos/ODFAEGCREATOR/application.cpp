@@ -961,7 +961,7 @@ void ODFAEGCreator::onInit() {
         Command cmd5(FastDelegate<bool>(&TextArea::isTextChanged, tScriptEdit), FastDelegate<void>(&ODFAEGCreator::onTextEntered, this, tScriptEdit, '\0'));
         tScriptEdit->getListener().connect("CONTEXTENTERED", cmd5);
         tScriptEdit->setParent(pScriptsEdit);
-        tScriptEdit->setRelPosition(0.1f, 0.f);
+        tScriptEdit->setRelPosition(0.04f, 0.04f);
         tScriptEdit->setRelSize(0.6f, 0.7f);
         tScriptEdit->recomputeSize();
         tScriptEditSize = tScriptEdit->getSize();
@@ -2919,6 +2919,7 @@ void ODFAEGCreator::showFileContent(Label* lab) {
     if (it != cppAppliContent.end()) {
         pScriptsEdit->setScrollPosition(Vec3f(0, 0, 0));
         tScriptEdit->setText(it->second);
+        std::string text = tScriptEdit->getText();
         tScriptEdit->getListener().setCommandSlotParams("CONTEXTENTERED", this, tScriptEdit, '\0');
         tScriptEdit->setTextSize(20);
         tScriptEdit->setEventContextActivated(true);
@@ -2932,7 +2933,6 @@ void ODFAEGCreator::showFileContent(Label* lab) {
 
 
         std::string lines = "1";
-        std::string text = tScriptEdit->getText();
         unsigned int index = 0, currentLine = 1;
         while(index < text.size()) {
             unsigned char c = text[index];
