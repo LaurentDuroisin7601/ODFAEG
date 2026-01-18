@@ -2917,7 +2917,7 @@ void ODFAEGCreator::showFileContent(Label* lab) {
     virtualFile = getCurrentPath() + "\\" + files[0];
     //std::cout<<"virtual file : "<<virtualFile<<std::endl;
     if (it != cppAppliContent.end()) {
-        pScriptsEdit->setScrollPosition(Vec3f(0, 0, 0));
+
         tScriptEdit->setText(it->second);
         std::string text = tScriptEdit->getText();
         tScriptEdit->getListener().setCommandSlotParams("CONTEXTENTERED", this, tScriptEdit, '\0');
@@ -2946,6 +2946,7 @@ void ODFAEGCreator::showFileContent(Label* lab) {
 
         lLineNumbers->setText(lines);
         lLineNumbers->setSize(Vec3f(lLineNumbers->getSize().x(), textSize.y(), 0));
+        pScriptsEdit->setScrollPosition(Vec3f(0, 0, 0));
         pScriptsEdit->updateScrolls();
     }
     dpGoToMFunc->removeAllItems();

@@ -136,11 +136,11 @@ namespace odfaeg {
                 va.append(Vertex(math::Vec3f(cursorPos.x()+1, cursorPos.y(), getPosition().z()+300), Color::Black));
                 va.append(Vertex(math::Vec3f(cursorPos.x()+1, cursorPos.y() + text.getCharacterSize(), getPosition().z()+300), Color::Black));
                 rect.setPosition(getPosition());
-                /*if (name == "TSCRIPTEDIT")
-                    std::cout<<"position : "<<text.getPosition()<<std::endl;*/
+
                 text.setPosition(math::Vec3f(getPosition().x() + scrollX, getPosition().y() + scrollY, getPosition().z()+100));
 
-
+                /*if (name == "TSCRIPTEDIT")
+                    std::cout<<"position : "<<text.getPosition()<<std::endl;*/
                 rect.setSize(getSize());
                 target.draw(rect);
                 #ifndef VULKAN
@@ -290,6 +290,7 @@ namespace odfaeg {
             }
             void TextArea::applySyntaxSuggar() {
                 //std::cout<<"display tokens"<<std::endl;
+                text.setPosition(math::Vec3f(getPosition().x() + scrollX, getPosition().y() + scrollY, getPosition().z()+100));
                 for (unsigned int i = 0; i < tokens.size(); i++) {
                     Text subText;
                     //std::cout<<"tokens : "<<tokens[i].startTok<<","<<tokens[i].endTok<<std::endl;
