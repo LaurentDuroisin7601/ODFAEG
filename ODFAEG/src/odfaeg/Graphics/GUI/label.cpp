@@ -33,7 +33,6 @@ namespace odfaeg {
                 }
             }
             void Label::onDraw(RenderTarget& target, RenderStates states) {
-                text.setPosition(getPosition());
                 rect.setPosition(getPosition());
                 //text.setSize(getSize());
                 rect.setSize(getSize());
@@ -51,6 +50,9 @@ namespace odfaeg {
             }
             core::String Label::getText() {
                 return text.getString();
+            }
+            math::Vec3f Label::getTextSize() {
+                return text.getSize();
             }
             bool Label::isMouseInside() {
                 physic::BoundingBox bb(getPosition().x(), getPosition().y(), 0, getSize().x(), getSize().y(), 0);

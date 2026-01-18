@@ -963,8 +963,11 @@ void ODFAEGCreator::onInit() {
         tScriptEdit->setParent(pScriptsEdit);
         tScriptEdit->setRelPosition(0.1f, 0.f);
         tScriptEdit->setRelSize(0.8f, 0.8f);
+        /*tScriptEdit->recomputeSize();
+        tScriptEditSize = tScriptEdit->getSize();*/
         pScriptsEdit->addChild(tScriptEdit);
-        lLineNumbers = new Label(getRenderWindow(), Vec3f(150, 40, 0), Vec3f(790, 650, 0), fm.getResourceByAlias(Fonts::Serif), "1", 15);
+        lLineNumbers = new Label(getRenderWindow(), Vec3f(150, 40, 0), Vec3f(790, 650, 0), fm.getResourceByAlias(Fonts::Serif), "1", 20);
+        lLineNumbers->setOrigin(Vec3f(0, 0, 0));
         lLineNumbers->setParent(pScriptsEdit);
         lLineNumbers->setBackgroundColor(Color(128, 128, 128));
         tScriptEdit->setName("TSCRIPTEDIT");
@@ -2913,15 +2916,35 @@ void ODFAEGCreator::showFileContent(Label* lab) {
     virtualFile = getCurrentPath() + "\\" + files[0];
     //std::cout<<"virtual file : "<<virtualFile<<std::endl;
     if (it != cppAppliContent.end()) {
+        pScriptsEdit->setScrollPosition(Vec3f(0, 0, 0));
         tScriptEdit->setText(it->second);
         tScriptEdit->getListener().setCommandSlotParams("CONTEXTENTERED", this, tScriptEdit, '\0');
         tScriptEdit->setTextSize(20);
         tScriptEdit->setEventContextActivated(true);
         Vec3f textSize = tScriptEdit->getTextSize();
+        tScriptEdit->setSize(pScriptsEdit->getSize());
+        //std::cout<<"text size : "<<textSize<<std::endl;
         if (textSize.x() > tScriptEdit->getSize().x())
             tScriptEdit->setSize(Vec3f(textSize.x(), tScriptEdit->getSize().y(), tScriptEdit->getSize().z()));
         if (textSize.y() > tScriptEdit->getSize().y())
             tScriptEdit->setSize(Vec3f(tScriptEdit->getSize().x(), textSize.y(), tScriptEdit->getSize().z()));
+
+
+        std::string lines = "1";
+        std::string text = tScriptEdit->getText();
+        unsigned int index = 0, currentLine = 1;
+        while(index < text.size()) {
+            unsigned char c = text[index];
+            if (c == '\n') {
+                currentLine++;
+                lines += "\n"+conversionIntString(currentLine);
+            }
+            index++;
+        }
+
+
+        lLineNumbers->setText(lines);
+        lLineNumbers->setSize(Vec3f(lLineNumbers->getSize().x(), textSize.y(), 0));
         pScriptsEdit->updateScrolls();
     }
     dpGoToMFunc->removeAllItems();
@@ -2951,6 +2974,7 @@ void ODFAEGCreator::showFileContent(Label* lab) {
         }
     }
     applySyntaxSuggar();
+
 }
 bool ODFAEGCreator::isWindowsPath(const std::string& s) {
     return s.size() > 3 &&
@@ -8355,7 +8379,7 @@ void ODFAEGCreator::onTextEntered(TextArea* ta, char caracter) {
         tScriptEdit->setSize(Vec3f(textSize.x(), tScriptEdit->getSize().y(), tScriptEdit->getSize().z()));
     if (textSize.y() > tScriptEdit->getSize().y())
         tScriptEdit->setSize(Vec3f(tScriptEdit->getSize().x(), textSize.y(), tScriptEdit->getSize().z()));
-    pScriptsEdit->updateScrolls();
+    //pScriptsEdit->updateScrolls();
     applySyntaxSuggar();
 }
 void ODFAEGCreator::onGoToFunctionSelected(DropDownList* dp) {

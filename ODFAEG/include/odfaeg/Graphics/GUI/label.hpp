@@ -20,6 +20,7 @@ namespace odfaeg {
                 void onEventPushed(window::IEvent event, RenderWindow& window);
                 void setText(std::string text);
                 core::String getText();
+                math::Vec3f getTextSize();
                 bool isMouseInside();
                 void onUpdate(RenderWindow* window, window::IEvent& event);
                 void setBorderColor(Color color);

@@ -121,6 +121,7 @@ Application (vm, title, Style::Resize|Style::Close, ContextSettings(0, 8, 4, 4, 
 
     fpsCounter = 0;
     addClock(Clock(), "FPS");
+    eu = nullptr;
 }
 void ODFAEGCreator::onLoad() {
     std::tuple<std::reference_wrapper<Device>> rArgs = std::make_tuple(std::ref(getDevice()));
@@ -960,10 +961,20 @@ void ODFAEGCreator::onInit() {
         Command cmd5(FastDelegate<bool>(&TextArea::isTextChanged, tScriptEdit), FastDelegate<void>(&ODFAEGCreator::onTextEntered, this, tScriptEdit, '\0'));
         tScriptEdit->getListener().connect("CONTEXTENTERED", cmd5);
         tScriptEdit->setParent(pScriptsEdit);
-        tScriptEdit->setRelPosition(0.f, 0.f);
+        tScriptEdit->setRelPosition(0.1f, 0.f);
         tScriptEdit->setRelSize(0.8f, 0.8f);
+        /*tScriptEdit->recomputeSize();
+        tScriptEditSize = tScriptEdit->getSize();*/
         pScriptsEdit->addChild(tScriptEdit);
+        lLineNumbers = new Label(getRenderWindow(), Vec3f(150, 40, 0), Vec3f(790, 650, 0), fm.getResourceByAlias(Fonts::Serif), "1", 20);
+        lLineNumbers->setOrigin(Vec3f(0, 0, 0));
+        lLineNumbers->setParent(pScriptsEdit);
+        lLineNumbers->setBackgroundColor(Color(128, 128, 128));
         tScriptEdit->setName("TSCRIPTEDIT");
+        lLineNumbers->setRelPosition(0.0f, 0.f);
+        lLineNumbers->setRelSize(0.1f, 1.f);
+        pScriptsEdit->addChild(lLineNumbers);
+
         guiSize.x() = getRenderWindow().getSize().x() - pProjects->getSize().x() - pScriptsFiles->getSize().x();
         guiSize.y() = getRenderWindow().getSize().y() - menuBar->getSize().y();
         guiPos.x() = pProjects->getSize().x();
@@ -2077,11 +2088,21 @@ void ODFAEGCreator::onExec() {
             }
         }
     }
-    for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
-        if (getRenderComponentManager().getRenderComponent(i) != nullptr && getRenderComponentManager().getRenderComponent(i)->getName() == dpSelectComponent->getSelectedItem()) {
-            selectedComponentView = getRenderComponentManager().getRenderComponent(i)->getView();
+    if (dpSelectComponent->getSelectedItem() == "MAIN WINDOW") {
+        if (eu != nullptr) {
+            eu->setView(getView());
+        }
+    } else {
+        for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
+            if (getRenderComponentManager().getRenderComponent(i) != nullptr && getRenderComponentManager().getRenderComponent(i)->getName() == dpSelectComponent->getSelectedItem()) {
+                selectedComponentView = getRenderComponentManager().getRenderComponent(i)->getView();
+                if (eu != nullptr) {
+                    eu->setView(selectedComponentView);
+                }
+            }
         }
     }
+
     std::map<std::string, std::vector<Entity*>>::iterator it;
     std::map<std::string, std::vector<Entity*>>::iterator it2;
     for (it = toAdd.begin(); it != toAdd.end(); it++) {
@@ -2895,15 +2916,35 @@ void ODFAEGCreator::showFileContent(Label* lab) {
     virtualFile = getCurrentPath() + "\\" + files[0];
     //std::cout<<"virtual file : "<<virtualFile<<std::endl;
     if (it != cppAppliContent.end()) {
+        pScriptsEdit->setScrollPosition(Vec3f(0, 0, 0));
         tScriptEdit->setText(it->second);
         tScriptEdit->getListener().setCommandSlotParams("CONTEXTENTERED", this, tScriptEdit, '\0');
         tScriptEdit->setTextSize(20);
         tScriptEdit->setEventContextActivated(true);
         Vec3f textSize = tScriptEdit->getTextSize();
+        tScriptEdit->setSize(pScriptsEdit->getSize());
+        //std::cout<<"text size : "<<textSize<<std::endl;
         if (textSize.x() > tScriptEdit->getSize().x())
             tScriptEdit->setSize(Vec3f(textSize.x(), tScriptEdit->getSize().y(), tScriptEdit->getSize().z()));
         if (textSize.y() > tScriptEdit->getSize().y())
             tScriptEdit->setSize(Vec3f(tScriptEdit->getSize().x(), textSize.y(), tScriptEdit->getSize().z()));
+
+
+        std::string lines = "1";
+        std::string text = tScriptEdit->getText();
+        unsigned int index = 0, currentLine = 1;
+        while(index < text.size()) {
+            unsigned char c = text[index];
+            if (c == '\n') {
+                currentLine++;
+                lines += "\n"+conversionIntString(currentLine);
+            }
+            index++;
+        }
+
+
+        lLineNumbers->setText(lines);
+        lLineNumbers->setSize(Vec3f(lLineNumbers->getSize().x(), textSize.y(), 0));
         pScriptsEdit->updateScrolls();
     }
     dpGoToMFunc->removeAllItems();
@@ -2933,6 +2974,7 @@ void ODFAEGCreator::showFileContent(Label* lab) {
         }
     }
     applySyntaxSuggar();
+
 }
 bool ODFAEGCreator::isWindowsPath(const std::string& s) {
     return s.size() > 3 &&
@@ -3489,7 +3531,6 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         std::string name = taEntitiesUpdaterName->getText();
         eu = new EntitiesUpdater(factory, *getWorld());
         eu->setName(name);
-        eu->setView(getView());
         getWorld()->addWorker(eu);
         wNewEntitiesUpdater->setVisible(false);
         getRenderComponentManager().setEventContextActivated(false, *wNewEntitiesUpdater);
@@ -4368,8 +4409,7 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
     else if (item->getText() == "New component") {
         wNewComponent->setVisible(true);
         getRenderComponentManager().setEventContextActivated(true, *wNewComponent);
-        tScriptEdit->setEventContextActivated(false);
-    }
+        tScriptEdit->setEventContextActivated(false);}
     else if (item->getText() == "New entities updater") {
         wNewEntitiesUpdater->setVisible(true);
         getRenderComponentManager().setEventContextActivated(true, *wNewEntitiesUpdater);
@@ -6780,15 +6820,12 @@ void ODFAEGCreator::onSelectedComponentChanged(DropDownList* dp) {
     std::string name = dp->getSelectedItem();
     if(name == "MAIN WINDOW") {
         taComponentExpression->setText("");
-        eu->setView(getView());
     } else {
         std::vector<Component*> components = getRenderComponentManager().getRenderComponents();
         for (unsigned int i = 0; i < components.size(); i++) {
             if (components[i]->getName() == name && dynamic_cast<HeavyComponent*>(components[i])) {
                 selectedComponentView = components[i]->getFrameBuffer()->getView();
                 taChangeComponentExpression->setText(static_cast<HeavyComponent*>(components[i])->getExpression());
-                if (eu != nullptr)
-                    eu->setView(selectedComponentView);
             }
         }
     }
@@ -7494,8 +7531,6 @@ void ODFAEGCreator::onViewPerspectiveChanged(DropDownList* dp) {
                 View view(getRenderWindow().getSize().x(), getRenderWindow().getSize().y(), getRenderWindow().getView().getViewport().getPosition().z(), getRenderWindow().getView().getDepth());
                 static_cast<HeavyComponent*>(components[i])->setView(view);
                 selectedComponentView = view;
-                if (eu != nullptr)
-                    eu->setView(selectedComponentView);
             }
         }
     } else {
@@ -7507,8 +7542,6 @@ void ODFAEGCreator::onViewPerspectiveChanged(DropDownList* dp) {
                 view.setConstrains(80, 0);
                 static_cast<HeavyComponent*>(components[i])->setView(view);
                 selectedComponentView = view;
-                if (eu != nullptr)
-                    eu->setView(selectedComponentView);
             }
         }
     }
@@ -8346,7 +8379,7 @@ void ODFAEGCreator::onTextEntered(TextArea* ta, char caracter) {
         tScriptEdit->setSize(Vec3f(textSize.x(), tScriptEdit->getSize().y(), tScriptEdit->getSize().z()));
     if (textSize.y() > tScriptEdit->getSize().y())
         tScriptEdit->setSize(Vec3f(tScriptEdit->getSize().x(), textSize.y(), tScriptEdit->getSize().z()));
-    pScriptsEdit->updateScrolls();
+    //pScriptsEdit->updateScrolls();
     applySyntaxSuggar();
 }
 void ODFAEGCreator::onGoToFunctionSelected(DropDownList* dp) {
@@ -8390,6 +8423,7 @@ void ODFAEGCreator::onGoToFunctionSelected(DropDownList* dp) {
 }
 void ODFAEGCreator::onGoToFunctionNotDroppedDown(DropDownList* dp) {
     if (dp == dpGoToMFunc) {
+        std::cout<<"activate"<<std::endl;
         tScriptEdit->setEventContextActivated(true);
         pProjects->setEventContextActivated(true);
         tScriptEdit->setFocus(true);
