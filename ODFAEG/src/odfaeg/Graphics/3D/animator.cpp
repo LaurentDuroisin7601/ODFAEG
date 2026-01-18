@@ -3,7 +3,7 @@ namespace odfaeg {
     namespace graphic {
         namespace g3d {
             Animator::Animator(window::Device& vkDevice, Animation* animation, EntityFactory& factory) :
-                GameObject (math::Vec3f(0, 0, 0), animation->getSize(), animation->getSize()*0.5f,"E_BONE_ANIMATION", factory),
+                GameObject (animation->getModel()->getPosition(), animation->getModel()->getSize(), animation->getModel()->getOrigin(),"E_BONE_ANIMATION", factory),
                 vkDevice(vkDevice),
                 computeShader(vkDevice)
             {
@@ -190,7 +190,7 @@ namespace odfaeg {
                 this->computeFences = computeFence;
                 computeParams.instanced = (instanced) ? 1 : 0;
                 tm.update();
-                computeParams.transform = tm.getMatrix().transpose();
+                computeParams.transform = tm.getMatrix()/*.transpose()*/;
                 //std::cout<<"matrix : "<<computeParams.transform<<std::endl;
                 computeJob[currentFrame] = true;
             }
