@@ -962,9 +962,9 @@ void ODFAEGCreator::onInit() {
         tScriptEdit->getListener().connect("CONTEXTENTERED", cmd5);
         tScriptEdit->setParent(pScriptsEdit);
         tScriptEdit->setRelPosition(0.1f, 0.f);
-        tScriptEdit->setRelSize(0.8f, 0.8f);
+        tScriptEdit->setRelSize(0.6f, 0.7f);
         tScriptEdit->recomputeSize();
-        /*tScriptEditSize = tScriptEdit->getSize();*/
+        tScriptEditSize = tScriptEdit->getSize();
         pScriptsEdit->addChild(tScriptEdit);
         lLineNumbers = new Label(getRenderWindow(), Vec3f(150, 40, 0), Vec3f(790, 650, 0), fm.getResourceByAlias(Fonts::Serif), "1", 20);
         lLineNumbers->setOrigin(Vec3f(0, 0, 0));
@@ -2923,7 +2923,7 @@ void ODFAEGCreator::showFileContent(Label* lab) {
         tScriptEdit->setTextSize(20);
         tScriptEdit->setEventContextActivated(true);
         Vec3f textSize = tScriptEdit->getTextSize();
-        tScriptEdit->setSize(pScriptsEdit->getSize());
+        tScriptEdit->setSize(tScriptEditSize);
         //std::cout<<"text size : "<<textSize<<std::endl;
         if (textSize.x() > tScriptEdit->getSize().x())
             tScriptEdit->setSize(Vec3f(textSize.x(), tScriptEdit->getSize().y(), tScriptEdit->getSize().z()));
