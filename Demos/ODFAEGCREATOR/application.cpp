@@ -963,8 +963,8 @@ void ODFAEGCreator::onInit() {
         tScriptEdit->setParent(pScriptsEdit);
         tScriptEdit->setRelPosition(0.1f, 0.f);
         tScriptEdit->setRelSize(0.8f, 0.8f);
-        /*tScriptEdit->recomputeSize();
-        tScriptEditSize = tScriptEdit->getSize();*/
+        tScriptEdit->recomputeSize();
+        /*tScriptEditSize = tScriptEdit->getSize();*/
         pScriptsEdit->addChild(tScriptEdit);
         lLineNumbers = new Label(getRenderWindow(), Vec3f(150, 40, 0), Vec3f(790, 650, 0), fm.getResourceByAlias(Fonts::Serif), "1", 20);
         lLineNumbers->setOrigin(Vec3f(0, 0, 0));
@@ -973,6 +973,7 @@ void ODFAEGCreator::onInit() {
         tScriptEdit->setName("TSCRIPTEDIT");
         lLineNumbers->setRelPosition(0.0f, 0.f);
         lLineNumbers->setRelSize(0.1f, 1.f);
+        lLineNumbers->recomputeSize();
         pScriptsEdit->addChild(lLineNumbers);
 
         guiSize.x() = getRenderWindow().getSize().x() - pProjects->getSize().x() - pScriptsFiles->getSize().x();
@@ -8379,7 +8380,7 @@ void ODFAEGCreator::onTextEntered(TextArea* ta, char caracter) {
         tScriptEdit->setSize(Vec3f(textSize.x(), tScriptEdit->getSize().y(), tScriptEdit->getSize().z()));
     if (textSize.y() > tScriptEdit->getSize().y())
         tScriptEdit->setSize(Vec3f(tScriptEdit->getSize().x(), textSize.y(), tScriptEdit->getSize().z()));
-    //pScriptsEdit->updateScrolls();
+    pScriptsEdit->updateScrolls();
     applySyntaxSuggar();
 }
 void ODFAEGCreator::onGoToFunctionSelected(DropDownList* dp) {
