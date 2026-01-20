@@ -835,7 +835,14 @@ void ODFAEGCreator::onInit() {
         getRenderComponentManager().addComponent(lScriptFileName);
         taScriptFileName = new TextArea(Vec3f(200, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "", *wCreateScript);
         getRenderComponentManager().addComponent(taScriptFileName);
-        bCreateScript = new Button(Vec3f(0, 50, 0), Vec3f(400, 50, 0), fm.getResourceByAlias(Fonts::Serif), "Create script file", 15, *wCreateScript);
+        Label* lScriptSelFileExt = new Label(*wCreateScript, Vec3f(0, 50, 0), Vec3f(200, 50, 0),fm.getResourceByAlias(Fonts::Serif), "Script file type : ", 15);
+        getRenderComponentManager().addComponent(lScriptSelFileExt);
+        dpSelectFileExtension = new DropDownList(*wCreateScript, Vec3f(200, 50, 0), Vec3f(200, 50, 0),fm.getResourceByAlias(Fonts::Serif), "File type", 15);
+        dpSelectFileExtension->addItem("Header file", 15);
+        dpSelectFileExtension->addItem("Source file", 15);
+        getRenderComponentManager().addComponent(dpSelectFileExtension);
+
+        bCreateScript = new Button(Vec3f(0, 100, 0), Vec3f(400, 50, 0), fm.getResourceByAlias(Fonts::Serif), "Create script file", 15, *wCreateScript);
         bCreateScript->addActionListener(this);
         getRenderComponentManager().addComponent(bCreateScript);
         wCreateScript->setVisible(false);
@@ -2842,6 +2849,7 @@ void ODFAEGCreator::showProjectsFiles(Label* label) {
 void ODFAEGCreator::showHeadersFiles(Label* label) {
     //std::cout<<"show header files"<<std::endl;
     Node* node = rootNode->findNode(label);
+    rootHeadersNode = node;
     if (node->getNodes().size() == 0) {
         FontManager<Fonts>& fm = cache.resourceManager<Font, Fonts>("FontManager");
         std::vector<std::string> files;
@@ -2872,6 +2880,7 @@ void ODFAEGCreator::showHeadersFiles(Label* label) {
 }
 void ODFAEGCreator::showSourcesFiles(Label* label) {
      Node* node = rootNode->findNode(label);
+     rootSourcesNode = node;
      if (node->getNodes().size() == 0) {
         FontManager<Fonts>& fm = cache.resourceManager<Font, Fonts>("FontManager");
         std::vector<std::string> files;
@@ -4088,7 +4097,30 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         getRenderComponentManager().setEventContextActivated(true, getRenderWindow());
     }
     if (button == bCreateScript) {
-        cppAppliContent.insert(std::make_pair(std::make_pair(appliname, taScriptFileName->getText()), ""));
+        FontManager<Fonts>& fm = cache.resourceManager<Font, Fonts>("FontManager");
+        if (dpSelectFileExtension->getSelectedItem() == "Header file") {
+            cppAppliContent.insert(std::make_pair(std::make_pair(appliname+"\\Scripts", taScriptFileName->getText()+".hpp"), "namespace "+minAppliname+" {\n}"));
+            Label* lab = new Label(getRenderWindow(), Vec3f(0, 0, 0), Vec3f(200, 17, 0),fm.getResourceByAlias(Fonts::Serif), taScriptFileName->getText()+".hpp", 15);
+            lab->setParent(pProjects);
+            lab->setBackgroundColor(Color::White);
+            lab->setForegroundColor(Color::Yellow);
+            Node* lnode = new Node("header files", lab, Vec2f(0, 0),Vec2f(1,0.025f),rootHeadersNode);
+            pProjects->addChild(lab);
+            Action a(Action::EVENT_TYPE::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
+            Command cmd(a, FastDelegate<bool>(&Label::isMouseInside, lab), FastDelegate<void>(&ODFAEGCreator::showFileContent, this, lab));
+            lab->getListener().connect("SHOWHFILECONTENT"+lab->getText(), cmd);
+        } else {
+            cppAppliContent.insert(std::make_pair(std::make_pair(appliname+"\\Scripts", taScriptFileName->getText()+".cpp"), "namespace "+minAppliname+" {\n}"));
+            Label* lab = new Label(getRenderWindow(), Vec3f(0, 0, 0), Vec3f(200, 17, 0),fm.getResourceByAlias(Fonts::Serif), taScriptFileName->getText()+".cpp", 15);
+            Node* lNode = new Node("source files", lab, Vec2f(0, 0), Vec2f(1.f, 0.025f), rootSourcesNode);
+            lab->setBackgroundColor(Color::White);
+            lab->setForegroundColor(Color::Yellow);
+            lab->setParent(pProjects);
+            pProjects->addChild(lab);
+            Action a(Action::EVENT_TYPE::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
+            Command cmd(a, FastDelegate<bool>(&Label::isMouseInside, lab), FastDelegate<void>(&ODFAEGCreator::showFileContent, this, lab));
+            lab->getListener().connect("SHOWHFILECONTENT"+lab->getText(), cmd);
+        }
     }
 }
 void ODFAEGCreator::updateNb(std::string name, unsigned int nb) {
@@ -4651,6 +4683,10 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
                 displayExternalEntityInfo(selectedObject);
             }
         }
+     } else if (item == item19) {
+         wCreateScript->setVisible(true);
+         getRenderComponentManager().setEventContextActivated(true, *wCreateScript);
+         getRenderComponentManager().setEventContextActivated(false, getRenderWindow());
      } else {
          strsearch="";
          tScriptEdit->getListener().setCommandSlotParams("CONTEXTENTERED", this, tScriptEdit, '\0');

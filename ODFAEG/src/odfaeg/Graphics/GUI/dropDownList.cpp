@@ -169,13 +169,15 @@ namespace odfaeg {
             }
             bool DropDownList::isNotDroppedDown() {
                 bool b = stateChanged;
-                stateChanged = false;
+                if (!dropDown)
+                    stateChanged = false;
                 return !dropDown && b;
             }
             bool DropDownList::isDroppedDown() {
+                bool b = stateChanged;
                 if (dropDown)
                     stateChanged = true;
-                return dropDown;
+                return dropDown && !b;
             }
             DropDownList::~DropDownList() {
                 //getListener().stop();
