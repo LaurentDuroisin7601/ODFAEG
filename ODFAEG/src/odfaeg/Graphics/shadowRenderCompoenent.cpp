@@ -522,7 +522,7 @@ namespace odfaeg {
 
                                                                     gl_Position = vec4(position, 1.f) * model.modelMatrix /** model.shadowProjMatrix*/ * ubo.viewMatrix * ubo.projectionMatrix;
                                                                     shadowCoords = vec4(position, 1.f) * model.modelMatrix /** model.shadowProjMatrix*/ * ubo.lviewMatrix * ubo.lprojectionMatrix;
-                                                                    //debugPrintfEXT("%v4f\n%v4f\n%v4f\n%v4f",ubo.lviewMatrix[0], ubo.lviewMatrix[1],ubo.lviewMatrix[2],ubo.lviewMatrix[3]);
+                                                                    //debugPrintfEXT("%v4f\n%v4f",shadowCoords,gl_Position);
                                                                     fTexCoords = texCoords * material.uvScale + material.uvOffset;
                                                                     frontColor = color;
                                                                     texIndex = textureIndex;
@@ -603,9 +603,8 @@ namespace odfaeg {
 
                                                                     vec4 stencil = texture(stencilBuffer[pushConsts.imageIndex], projCoords.xy);
                                                                     /*if (stencil.z != 0)
-                                                                        debugPrintfEXT("shadow coords : %v3f\n closest : %f", projCoords, stencil.z);*/
+                                                                        debugPrintfEXT("shadow coords : %v3f\n position : %v3f", projCoords, gl_FragCoord.xyz / pushConsts.resolution.xyz);*/
                                                                     float z = gl_FragCoord.z;
-                                                                    vec4 visibility;
                                                                     uint l = layer;
                                                                     float shadowFactor;
                                                                     vec3 lightDir = vec3(lightCenter.x, lightCenter.y, lightViewZ) - vec3(gl_FragCoord.x, gl_FragCoord.y, pixelViewZ);
