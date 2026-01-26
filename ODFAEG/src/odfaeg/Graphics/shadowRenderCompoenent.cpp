@@ -5125,11 +5125,11 @@ namespace odfaeg {
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes-1; p++) {
                     if (needToUpdateDSs[p][currentFrame])
                         updateDescriptorSets(currentFrame, p, currentStates);
-                    if (nbDrawCommandBuffer[p][1] > 0) {
-                        recordCommandBufferIndirect(currentFrame, p, nbDrawCommandBuffer[p][1], sizeof(DrawArraysIndirectCommand), SHADOWNODEPTHNOSTENCIL, 0, -1, -1, modelDataOffsets[p][2], materialDataOffsets[p][2],drawCommandBufferOffsets[p][1], currentStates, alphaCommandBuffer[currentFrame]);
+                    if (nbDrawCommandBuffer[p][0] > 0) {
+                        recordCommandBufferIndirect(currentFrame, p, nbDrawCommandBuffer[p][0], sizeof(DrawArraysIndirectCommand), SHADOWNODEPTHNOSTENCIL, 0, -1, -1, modelDataOffsets[p][0], materialDataOffsets[p][0],drawCommandBufferOffsets[p][0], currentStates, alphaCommandBuffer[currentFrame]);
                     }
-                    if (nbIndexedDrawCommandBuffer[p][1] > 0) {
-                        recordCommandBufferIndirect(currentFrame, p, nbIndexedDrawCommandBuffer[p][1], sizeof(DrawElementsIndirectCommand), SHADOWNODEPTHNOSTENCIL, 0, 0, -1, modelDataOffsets[p][3], materialDataOffsets[p][3],drawIndexedCommandBufferOffsets[p][1], currentStates, alphaCommandBuffer[currentFrame]);
+                    if (nbIndexedDrawCommandBuffer[p][0] > 0) {
+                        recordCommandBufferIndirect(currentFrame, p, nbIndexedDrawCommandBuffer[p][0], sizeof(DrawElementsIndirectCommand), SHADOWNODEPTHNOSTENCIL, 0, 0, -1, modelDataOffsets[p][1], materialDataOffsets[p][1],drawIndexedCommandBufferOffsets[p][0], currentStates, alphaCommandBuffer[currentFrame]);
                     }
                 }
                 if (vkEndCommandBuffer(alphaCommandBuffer[currentFrame]) != VK_SUCCESS) {
@@ -5149,11 +5149,11 @@ namespace odfaeg {
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes-1; p++) {
                     if (needToUpdateDSs[p][currentFrame])
                         updateDescriptorSets(currentFrame, p, currentStates);
-                    if (nbDrawCommandBuffer[p][1] > 0) {
-                        recordCommandBufferIndirect(currentFrame, p, nbDrawCommandBuffer[p][1], sizeof(DrawArraysIndirectCommand), SHADOWNODEPTHNOSTENCIL, 0, -1, -1, modelDataOffsets[p][2], materialDataOffsets[p][2],drawCommandBufferOffsets[p][1], currentStates, shadowCommandBuffer[currentFrame]);
+                    if (nbDrawCommandBuffer[p][0] > 0) {
+                        recordCommandBufferIndirect(currentFrame, p, nbDrawCommandBuffer[p][0], sizeof(DrawArraysIndirectCommand), SHADOWNODEPTHNOSTENCIL, 0, -1, -1, modelDataOffsets[p][0], materialDataOffsets[p][0],drawCommandBufferOffsets[p][0], currentStates, shadowCommandBuffer[currentFrame]);
                     }
-                    if (nbIndexedDrawCommandBuffer[p][1] > 0) {
-                        recordCommandBufferIndirect(currentFrame, p, nbIndexedDrawCommandBuffer[p][1], sizeof(DrawElementsIndirectCommand), SHADOWNODEPTHNOSTENCIL, 0, 0, -1, modelDataOffsets[p][3], materialDataOffsets[p][3],drawIndexedCommandBufferOffsets[p][1], currentStates, shadowCommandBuffer[currentFrame]);
+                    if (nbIndexedDrawCommandBuffer[p][0] > 0) {
+                        recordCommandBufferIndirect(currentFrame, p, nbIndexedDrawCommandBuffer[p][0], sizeof(DrawElementsIndirectCommand), SHADOWNODEPTHNOSTENCIL, 0, 0, -1, modelDataOffsets[p][1], materialDataOffsets[p][1],drawIndexedCommandBufferOffsets[p][0], currentStates, shadowCommandBuffer[currentFrame]);
                     }
 
                 }
@@ -5173,13 +5173,13 @@ namespace odfaeg {
                         datasReady = false;
                         m_instances = batcher.getInstances();
                         m_normals = normalBatcher.getInstances();
-                        m_shadow_instances = shadowBatcher.getInstances();
-                        m_shadow_normals = normalShadowBatcher.getInstances();
+                        /*m_shadow_instances = shadowBatcher.getInstances();
+                        m_shadow_normals = normalShadowBatcher.getInstances();*/
                         m_instancesIndexed = batcherIndexed.getInstances();
-                        m_shadow_instances_indexed = shadowBatcherIndexed.getInstances();
+                        //m_shadow_instances_indexed = shadowBatcherIndexed.getInstances();
                         m_normalsIndexed = normalBatcherIndexed.getInstances();
-                        m_shadow_normalsIndexed = normalShadowBatcherIndexed.getInstances();
-                        m_stencil_buffer = normalStencilBuffer.getInstances();
+                        /*m_shadow_normalsIndexed = normalShadowBatcherIndexed.getInstances();
+                        m_stencil_buffer = normalStencilBuffer.getInstances();*/
                     }
                 }
 
@@ -5230,8 +5230,8 @@ namespace odfaeg {
                     resetBuffers();
                     fillBuffersMT();
                     fillIndexedBuffersMT();
-                    fillShadowBuffersMT();
-                    fillShadowIndexedBuffersMT();
+                    //fillShadowBuffersMT();
+                    //fillShadowIndexedBuffersMT();
                     drawBuffers();
                     commandBufferReady[currentFrame] = true;
                     cv.notify_one();
@@ -5612,7 +5612,7 @@ namespace odfaeg {
                     std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                     if ( vEntities[i] != nullptr && vEntities[i]->isLeaf()) {
 
-                        Entity* entity = vEntities[i]->getRootEntity();
+                        /*Entity* entity = vEntities[i]->getRootEntity();
                         math::Vec3f shadowOrigin, shadowCenter, shadowScale(1.f, 1.f, 1.f), shadowRotationAxis, shadowTranslation;
                         float shadowRotationAngle = 0;
                         //if (entity != nullptr && entity->isModel()) {
@@ -5621,7 +5621,7 @@ namespace odfaeg {
                             shadowRotationAxis = entity->getShadowRotationAxis();
                             shadowRotationAngle = entity->getShadowRotationAngle();
                             shadowOrigin = entity->getPosition();
-                            shadowTranslation = entity->getPosition() + shadowCenter;
+                            shadowTranslation = entity->getPosition() + shadowCenter;*/
                             /*if (entity->getType() == "E_WALL") {
                                 //////std::cout<<"shadow center : "<<shadowCenter<<std::endl;
                                 //////std::cout<<"shadow scale : "<<shadowScale<<std::endl;
@@ -5631,11 +5631,11 @@ namespace odfaeg {
                                 //////std::cout<<"shadow translation : "<<shadowTranslation<<std::endl;
                             }*/
                         //}
-                        TransformMatrix tm;
+                        /*TransformMatrix tm;
                         tm.setOrigin(shadowOrigin);
                         tm.setScale(shadowScale);
                         tm.setRotation(shadowRotationAxis, shadowRotationAngle);
-                        tm.setTranslation(shadowTranslation);
+                        tm.setTranslation(shadowTranslation);*/
 
                         for (unsigned int j = 0; j <  vEntities[i]->getNbFaces(); j++) {
 
@@ -5643,26 +5643,26 @@ namespace odfaeg {
                                 if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0) {
 
                                     batcher.addFace( vEntities[i]->getFace(j));
-                                    shadowBatcher.addShadowFace(vEntities[i]->getFace(j),  view.getViewMatrix(), tm);
+                                    //shadowBatcher.addShadowFace(vEntities[i]->getFace(j),  view.getViewMatrix(), tm);
                                 } else {
 
                                     batcherIndexed.addFace( vEntities[i]->getFace(j));
-                                    shadowBatcherIndexed.addShadowFace(vEntities[i]->getFace(j),  view.getViewMatrix(), tm);
+                                    //shadowBatcherIndexed.addShadowFace(vEntities[i]->getFace(j),  view.getViewMatrix(), tm);
                                 }
                              } else {
                                  if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0) {
 
                                     normalBatcher.addFace( vEntities[i]->getFace(j));
-                                    if (vEntities[i]->getRootEntity()->getType() != "E_BIGTILE") {
+                                    /*if (vEntities[i]->getRootEntity()->getType() != "E_BIGTILE") {
                                         std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                                         normalShadowBatcher.addShadowFace(vEntities[i]->getFace(j), view.getViewMatrix(), tm);
                                         normalStencilBuffer.addFace(vEntities[i]->getFace(j));
-                                    }
+                                    }*/
                                  } else {
                                     ////std::cout<<"add shadow indexes"<<std::endl;
 
                                     normalBatcherIndexed.addFace( vEntities[i]->getFace(j));
-                                    normalShadowBatcherIndexed.addShadowFace(vEntities[i]->getFace(j), view.getViewMatrix(), tm);
+                                    //normalShadowBatcherIndexed.addShadowFace(vEntities[i]->getFace(j), view.getViewMatrix(), tm);
                                  }
                              }
                         }
