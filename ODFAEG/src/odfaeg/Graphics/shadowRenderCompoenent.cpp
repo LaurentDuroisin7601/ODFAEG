@@ -5204,7 +5204,7 @@ namespace odfaeg {
                 //std::cout<<lviewMatrix<<std::endl;
 
                 math::Matrix4f lprojMatrix = lightView.getProjMatrix().getMatrix()/*.transpose()*/;
-                std::cout<<lprojMatrix<<std::endl;
+                //std::cout<<lprojMatrix<<std::endl;
                 lightIndirectRenderingPC.projectionMatrix = toVulkanMatrix(lprojMatrix);
                 lightIndirectRenderingPC.viewMatrix = toVulkanMatrix(lviewMatrix);
 
