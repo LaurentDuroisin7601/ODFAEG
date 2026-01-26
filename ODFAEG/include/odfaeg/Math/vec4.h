@@ -404,7 +404,7 @@ namespace odfaeg {
                 static_assert(4 <= N, "Invalid number of arguments for vector type");
                 VecN<T, N> result;
                 if (data[3] != 0) {
-                    for (unsigned int i = 0; i < 3; i++) {
+                    for (unsigned int i = 0; i < N; i++) {
                         result[i] = data[i] / data[3];
                     }
                     return result;
@@ -418,8 +418,8 @@ namespace odfaeg {
             *   \return the dot product between the two vectors.
             */
             float dot (const VecN<T, N> &other) const {
-                if (isNulVector ())
-                    return 0.f;
+                /*if (isNulVector () || other.isNulVector())
+                    return 0.f;*/
                 float sum = 0;
                 for (unsigned int i = 0; i < N; i++) {
                     sum += data[i] * other[i];

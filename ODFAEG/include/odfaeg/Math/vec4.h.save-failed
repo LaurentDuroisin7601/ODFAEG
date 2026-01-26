@@ -28,9 +28,9 @@ namespace odfaeg {
         template<typename T, unsigned int N>
         class VecN {
             public :
-            static const VecN<T, 3> xAxis;
-            static const VecN<T, 3> yAxis;
-            static const VecN<T, 3> zAxis;
+            static const VecN<T, N> xAxis;
+            static const VecN<T, N> yAxis;
+            static const VecN<T, N> zAxis;
             /**\fn Vec4()
             *  \brief default constructror.
             * construct a null vector (with 0, 0, 0 as coordinates)
@@ -145,8 +145,8 @@ namespace odfaeg {
             T& operator[] (unsigned int i) {
                 return data[i];
             }
-            T& operator[] (unsigned int i) const {
-                return const_cast<std::array<T, N>&>(data)[i];
+            const T& operator[] (unsigned int i) const {
+                return data[i];
             }
             /**
             * \fn Vec4 operator+ (const Vec4 &other)
@@ -273,7 +273,7 @@ namespace odfaeg {
             VecN<T, N> operator+ (T number) {
                 VecN<T, N> result;
                 for (unsigned int i = 0; i < N; i++) {
-                    result[i] += number;
+                    result[i] = data[i] + number;
                 }
                 return result;
             }
@@ -385,6 +385,12 @@ namespace odfaeg {
             VecN<T, N> normalize () const {
                 VecN<T, N> result;
                 float length = magnitude();
+                if (length == 0) {
+                    for (unsigned int i = 0; i < N; i++) {
+                        result[i] = 0;
+                    }
+                    return result;
+                }
                 for (unsigned int i = 0; i < N; i++) {
                     result[i] = data[i] / length;
                 }
@@ -398,7 +404,7 @@ namespace odfaeg {
                 static_assert(4 <= N, "Invalid number of arguments for vector type");
                 VecN<T, N> result;
                 if (data[3] != 0) {
-                    for (unsigned int i = 0; i < 3; i++) {
+                    for (unsigned int i = 0; i < N; i++) {
                         result[i] = data[i] / data[3];
                     }
                     return result;
@@ -412,8 +418,8 @@ namespace odfaeg {
             *   \return the dot product between the two vectors.
             */
             float dot (const VecN<T, N> &other) const {
-                if (isNulVector ())
-                    return 0.f;
+                /*if (isNulVector () || other.isNulVector())
+                    return 0.f;*/
                 float sum = 0;
                 for (unsigned int i = 0; i < N; i++) {
                     sum += data[i] * other[i];
@@ -441,20 +447,27 @@ namespace odfaeg {
             *   \return the angle between the two vectors.
             */
              float getAngleBetween (const VecN<T, N> &other) {
-                if(isNulVector() || other.isNulVector())
-                    return 0;
-                float cosinus = dot(other);
-                if (cosinus == 1)
-                    return 0;
-                if (cosinus == -1)
+                if (isNulVector() || other.isNulVector() || *this == other)
+                return 0;
+                if (*this == -other)
                     return PI;
-                //////std::cout<<"acos  : "<<Math::acosinus(cosinus)<<std::endl;
-                return Math::acosinus(cosinus);
+                VecN<T, N> n1 = normalize();
+                VecN<T, N> n2 = other.normalize();
+                float dotProduct = n1.dot(n2);
+                Vec3f v1 (x(), y(), 0);
+                Vec3f v2 (other.x(), other.y(), 0);
+                Vec3f v3 = v1.cross(v2);
+                if (v3.z() >= 0)
+                    return Math::acosinus(dotProduct);
+                else
+                    return -Math::acosinus(dotProduct);
             }
             float getAngleBetween (const VecN<T, N> &other, const VecN<T, N> &n) {
                 if(isNulVector() || other.isNulVector())
                 return 0;
-                float cosinus = dot(other);
+                VecN<T, N> n1 = normalize();
+                VecN<T, N> n2 = other.normalize();
+                float cosinus = n1.dot(n2);
                 if (cosinus == 1)
                     return 0;
                 if (cosinus == -1)
@@ -472,7 +485,9 @@ namespace odfaeg {
             *   \return the result of the projection.
             */
             float projOnAxis (const VecN<T, N> &other) {
-                return dot(other) * magnitude();
+                VecN<T, N> n1 = normalize();
+                VecN<T, N> n2 = other.normalize();
+                return n1.dot(n2) * magnitude();
             }
             /** \fn float* getVec3 () const;
             *   \brief return the vector's components to an array.
@@ -482,9 +497,8 @@ namespace odfaeg {
             }
             VecN<T, N> mix (VecN<T, N>& other, float a) {
                 VecN<T, N> result;
-                for (unsigned int i = 0; i < N; i++) {
-                    (*this) * (1 - a) + other * a;
-                }
+                result = (*this) * (1 - a) + other * a;
+                return result;
             }
             template <typename Archive>
             void serialize (Archive &ar) {

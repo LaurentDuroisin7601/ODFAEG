@@ -163,23 +163,9 @@ namespace odfaeg {
         void View::lookAt(float x, float y, float z, math::Vec3f up) {
             target = math::Vec3f(x, y, z);
 
-            forward = position - target;
+            forward = target - position;
             forward = forward.normalize();
-            /*forward.z = -forward.z;
-            if (math::Math::abs(forward.x) < EPSILON && math::Math::abs(forward.y) < EPSILON) {
-                if (forward.z > 0)
-                    up = math::Vec3f::yAxis;
-                else
-                    up = -math::Vec3f::yAxis;
-            } else {
-                up = math::Vec3f::zAxis;
-            }*/
-            if (forward == up)
-                left = forward.cross(math::Vec3f(0, 0, -1)).normalize();
-            else if (forward == -up)
-                left = forward.cross(math::Vec3f(0, 0, 1)).normalize();
-            else
-                left = forward.cross(up).normalize();
+            left = forward.cross(up).normalize();
             up = left.cross(forward).normalize();
             viewMatrix.setAxis(left, up, forward);
             this->up = up;

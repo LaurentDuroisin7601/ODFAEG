@@ -351,7 +351,7 @@ namespace odfaeg {
                                                                     uint textureIndex = material.textureIndex;
                                                                     uint l = material.layer;
                                                                     gl_Position = vec4(position, 1.f) * model.modelMatrix * pushConsts.viewMatrix * pushConsts.projectionMatrix;
-                                                                    //debugPrintfEXT("%v4f\n%v4f\n%v4f\n%v4f", pushConsts.viewMatrix[0], pushConsts.viewMatrix[1], pushConsts.viewMatrix[2], pushConsts.viewMatrix[3]);
+                                                                    debugPrintfEXT("position : %v4f", gl_Position);
                                                                     fTexCoords = texCoords * material.uvScale + material.uvOffset;
                                                                     frontColor = color;
                                                                     texIndex = textureIndex;
@@ -5075,7 +5075,7 @@ namespace odfaeg {
                 }
 
                 RenderStates currentStates;
-                /*currentStates.blendMode = BlendNone;
+                currentStates.blendMode = BlendNone;
                 currentStates.shader = &depthGenShader;
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes-1; p++) {
                     if (needToUpdateDSs[p][currentFrame])
@@ -5087,7 +5087,7 @@ namespace odfaeg {
                         recordCommandBufferIndirect(currentFrame, p, nbIndexedDrawCommandBuffer[p][0], sizeof(DrawElementsIndirectCommand), SHADOWNODEPTHNOSTENCIL, 0, 0, -1, modelDataOffsets[p][1], materialDataOffsets[p][1],drawIndexedCommandBufferOffsets[p][0], currentStates, depthCommandBuffer[currentFrame]);
                     }
 
-                }*/
+                }
 
                 if (vkEndCommandBuffer(depthCommandBuffer[currentFrame]) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to record command buffer!", 1);
@@ -5191,7 +5191,7 @@ namespace odfaeg {
 
                 math::Vec3f centerLight = g2d::AmbientLight::getAmbientLight().getLightCenter();
 
-                View lightView = View(g2d::AmbientLight::getAmbientLight().getRadius(), g2d::AmbientLight::getAmbientLight().getRadius(), -g2d::AmbientLight::getAmbientLight().getRadius(), g2d::AmbientLight::getAmbientLight().getRadius());
+                View lightView = View(g2d::AmbientLight::getAmbientLight().getRadius(), g2d::AmbientLight::getAmbientLight().getRadius(), -g2d::AmbientLight::getAmbientLight().getHeight(), g2d::AmbientLight::getAmbientLight().getHeight());
 
                 lightView.setCenter(centerLight);
                 resolutionPC.near = view.getViewport().getPosition().z();
@@ -5204,7 +5204,7 @@ namespace odfaeg {
                 //std::cout<<lviewMatrix<<std::endl;
 
                 math::Matrix4f lprojMatrix = lightView.getProjMatrix().getMatrix()/*.transpose()*/;
-                std::cout<<lprojMatrix<<std::endl;
+                //std::cout<<lprojMatrix<<std::endl;
                 lightIndirectRenderingPC.projectionMatrix = toVulkanMatrix(lprojMatrix);
                 lightIndirectRenderingPC.viewMatrix = toVulkanMatrix(lviewMatrix);
 
