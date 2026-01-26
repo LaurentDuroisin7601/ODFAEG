@@ -522,6 +522,7 @@ namespace odfaeg {
 
                                                                     gl_Position = vec4(position, 1.f) * model.modelMatrix * model.shadowProjMatrix * ubo.viewMatrix * ubo.projectionMatrix;
                                                                     shadowCoords = vec4(position, 1.f) * model.modelMatrix * model.shadowProjMatrix * ubo.lviewMatrix * ubo.lprojectionMatrix;
+                                                                    //debugPrintfEXT("%v4f\n%v4f\n%v4f\n%v4f",ubo.lviewMatrix[0], ubo.lviewMatrix[1],ubo.lviewMatrix[2],ubo.lviewMatrix[3]);
                                                                     fTexCoords = texCoords * material.uvScale + material.uvOffset;
                                                                     frontColor = color;
                                                                     texIndex = textureIndex;
@@ -5194,6 +5195,7 @@ namespace odfaeg {
                 stencilBuffer.setView(lightView);
                 depthBuffer.setView(view);
                 math::Matrix4f lviewMatrix = lightView.getViewMatrix().getMatrix()/*.transpose()*/;
+                //std::cout<<lviewMatrix<<std::endl;
                 math::Matrix4f lprojMatrix = lightView.getProjMatrix().getMatrix()/*.transpose()*/;
                 lightIndirectRenderingPC.projectionMatrix = lprojMatrix;
                 lightIndirectRenderingPC.viewMatrix = lviewMatrix;
