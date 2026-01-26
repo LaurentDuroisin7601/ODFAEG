@@ -49,12 +49,12 @@ namespace odfaeg {
                     uint32_t _padding[2];
                 };
                 struct IndirectRenderingPC {
-                    math::Matrix4f projectionMatrix;
-                    math::Matrix4f viewMatrix;
+                    GLMatrix4f projectionMatrix;
+                    GLMatrix4f viewMatrix;
                 };
                 struct LightIndirectRenderingPC {
-                    math::Matrix4f projectionMatrix;
-                    math::Matrix4f viewMatrix;
+                    GLMatrix4f projectionMatrix;
+                    GLMatrix4f viewMatrix;
                 };
                 struct LayerPC {
                     math::Vec4f resolution;

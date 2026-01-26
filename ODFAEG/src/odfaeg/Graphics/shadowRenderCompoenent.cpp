@@ -5195,16 +5195,17 @@ namespace odfaeg {
                 stencilBuffer.setView(lightView);
                 depthBuffer.setView(view);
                 math::Matrix4f lviewMatrix = lightView.getViewMatrix().getMatrix()/*.transpose()*/;
-                //std::cout<<lviewMatrix<<std::endl;
+
                 math::Matrix4f lprojMatrix = lightView.getProjMatrix().getMatrix()/*.transpose()*/;
-                lightIndirectRenderingPC.projectionMatrix = lprojMatrix;
-                lightIndirectRenderingPC.viewMatrix = lviewMatrix;
+                //std::cout<<lprojMatrix<<std::endl;
+                lightIndirectRenderingPC.projectionMatrix = toVulkanMatrix(lprojMatrix);
+                lightIndirectRenderingPC.viewMatrix = toVulkanMatrix(lviewMatrix);
 
                 math::Matrix4f viewMatrix = view.getViewMatrix().getMatrix()/*.transpose()*/;
                 math::Matrix4f projMatrix = view.getProjMatrix().getMatrix()/*.transpose()*/;
                 math::Matrix4f viewportMatrix = view.getViewMatrix().getMatrix();
-                indirectRenderingPC.projectionMatrix = projMatrix;
-                indirectRenderingPC.viewMatrix = viewMatrix;
+                indirectRenderingPC.projectionMatrix = toVulkanMatrix(projMatrix);
+                indirectRenderingPC.viewMatrix = toVulkanMatrix(viewMatrix);
 
                 viewMatrix = view.getViewMatrix().getMatrix()/*.transpose()*/;
                 projMatrix = view.getProjMatrix().getMatrix()/*.transpose()*/;
