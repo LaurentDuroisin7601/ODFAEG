@@ -28,9 +28,9 @@ namespace odfaeg {
         template<typename T, unsigned int N>
         class VecN {
             public :
-            static const VecN<T, 3> xAxis;
-            static const VecN<T, 3> yAxis;
-            static const VecN<T, 3> zAxis;
+            static const VecN<T, N> xAxis;
+            static const VecN<T, N> yAxis;
+            static const VecN<T, N> zAxis;
             /**\fn Vec4()
             *  \brief default constructror.
             * construct a null vector (with 0, 0, 0 as coordinates)

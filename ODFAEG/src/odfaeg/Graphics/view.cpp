@@ -162,7 +162,7 @@ namespace odfaeg {
         }
         void View::lookAt(float x, float y, float z, math::Vec3f up) {
             target = math::Vec3f(x, y, z);
-            this->up = up;
+
             forward = position - target;
             forward = forward.normalize();
             /*forward.z = -forward.z;
@@ -182,6 +182,7 @@ namespace odfaeg {
                 left = forward.cross(up).normalize();
             up = left.cross(forward).normalize();
             viewMatrix.setAxis(left, up, forward);
+            this->up = up;
             viewUpdated = true;
         }
         void View::rotate(float teta, float phi) {

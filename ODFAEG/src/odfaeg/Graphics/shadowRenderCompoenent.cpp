@@ -5192,6 +5192,7 @@ namespace odfaeg {
                 resolutionPC.near = view.getViewport().getPosition().z();
                 resolutionPC.far = view.getViewport().getSize().z();
                 lightView.lookAt(view.getPosition().x(), view.getPosition().y(), view.getPosition().z());
+
                 /*stencilBuffer.setView(lightView);*/
                 /*depthBuffer.setView(view);*/
                 math::Matrix4f lviewMatrix = lightView.getViewMatrix().getMatrix()/*.transpose()*/;
