@@ -601,8 +601,8 @@ namespace odfaeg {
                                                                     //projCoords.y = 1.0 - projCoords.y;
 
                                                                     vec4 stencil = texture(stencilBuffer[pushConsts.imageIndex], projCoords.xy);
-                                                                    if (stencil.z != 0)
-                                                                        debugPrintfEXT("shadow coords : %v3f\n closest : %f", projCoords, stencil.z);
+                                                                    /*if (stencil.z != 0)
+                                                                        debugPrintfEXT("shadow coords : %v3f\n closest : %f", projCoords, stencil.z);*/
                                                                     float z = gl_FragCoord.z;
                                                                     vec4 visibility;
                                                                     uint l = layer;
