@@ -609,7 +609,7 @@ namespace odfaeg {
                                                                     uint l = layer;
                                                                     float shadowFactor;
                                                                     vec3 lightDir = vec3(lightCenter.x, lightCenter.y, lightViewZ) - vec3(gl_FragCoord.x, gl_FragCoord.y, pixelViewZ);
-                                                                    float bias = 0.005;
+                                                                    float bias = max(0.05 * (1.0 - dot(normalize(n), normalize(lightDir))), 0.005);
                                                                     if (stencil.z > projCoords.z - bias) {
                                                                         if (depth.z > z) {
                                                                             shadowFactor = 1.0;
