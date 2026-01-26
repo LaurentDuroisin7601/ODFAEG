@@ -5188,11 +5188,9 @@ namespace odfaeg {
                 View lightView = View(view.getSize().x(), view.getSize().y(), 0, g2d::AmbientLight::getAmbientLight().getHeight());
 
                 lightView.setCenter(centerLight);
-                math::Vec3f forward = (lightView.getPosition() - view.getPosition()).normalize();
                 resolutionPC.near = view.getViewport().getPosition().z();
                 resolutionPC.far = view.getViewport().getSize().z();
-                math::Vec3f target = lightView.getPosition() + forward;
-                lightView.lookAt(target.x(), target.y(), target.z());
+                lightView.lookAt(view.getPosition().x(), view.getPosition().y(), view.getPosition().z());
                 stencilBuffer.setView(lightView);
                 depthBuffer.setView(view);
                 math::Matrix4f lviewMatrix = lightView.getViewMatrix().getMatrix()/*.transpose()*/;
