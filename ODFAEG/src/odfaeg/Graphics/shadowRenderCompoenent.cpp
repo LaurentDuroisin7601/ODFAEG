@@ -381,9 +381,9 @@ namespace odfaeg {
                                                                       vec4 depth = imageLoad(depthBuffer,ivec2(gl_FragCoord.xy));
                                                                       if (l > depth.y || l == depth.y && z > depth.z) {
                                                                         if (texel.a < 0.1) discard;
-                                                                        fColor = vec4(0, l, z, texel.a);
                                                                         imageStore(depthBuffer,ivec2(gl_FragCoord.xy),vec4(0,l,z,texel.a));
                                                                         memoryBarrier();
+                                                                        fColor = vec4(0, l, z, texel.a);
                                                                       } else {
                                                                         fColor = depth;
                                                                       }
@@ -462,9 +462,10 @@ namespace odfaeg {
                                                                     float z = gl_FragCoord.z;
                                                                     if (l > alpha.y || l == alpha.y && z > alpha.z) {
                                                                         //debugPrintfEXT("stencil : %f", z);
+                                                                        if (current_alpha < 0.01) discard;
                                                                         imageStore(stencilBuffer,ivec2(gl_FragCoord.xy),vec4(0, l, z, current_alpha));
                                                                         memoryBarrier();
-                                                                        if (current_alpha < 0.01) discard;
+
                                                                         fColor = vec4(0, l, z, current_alpha);
                                                                     } else {
                                                                         fColor = alpha;
@@ -520,8 +521,8 @@ namespace odfaeg {
                                                                     uint textureIndex = material.textureIndex;
                                                                     uint l = material.layer;
 
-                                                                    gl_Position = vec4(position, 1.f) * model.modelMatrix /** model.shadowProjMatrix*/ * ubo.viewMatrix * ubo.projectionMatrix;
-                                                                    shadowCoords = vec4(position, 1.f) * model.modelMatrix /** model.shadowProjMatrix*/ * ubo.lviewMatrix * ubo.lprojectionMatrix;
+                                                                    gl_Position = vec4(position, 1.f) * model.modelMatrix * ubo.viewMatrix * ubo.projectionMatrix;
+                                                                    shadowCoords = vec4(position, 1.f) * model.modelMatrix * ubo.lviewMatrix * ubo.lprojectionMatrix;
                                                                     //debugPrintfEXT("%v4f\n%v4f",shadowCoords,gl_Position);
                                                                     fTexCoords = texCoords * material.uvScale + material.uvOffset;
                                                                     frontColor = color;
@@ -5191,9 +5192,10 @@ namespace odfaeg {
                 resolutionPC.near = view.getViewport().getPosition().z();
                 resolutionPC.far = view.getViewport().getSize().z();
                 lightView.lookAt(view.getPosition().x(), view.getPosition().y(), view.getPosition().z());
-                stencilBuffer.setView(lightView);
-                depthBuffer.setView(view);
+                /*stencilBuffer.setView(lightView);*/
+                /*depthBuffer.setView(view);*/
                 math::Matrix4f lviewMatrix = lightView.getViewMatrix().getMatrix()/*.transpose()*/;
+                //std::cout<<lviewMatrix<<std::endl;
 
                 math::Matrix4f lprojMatrix = lightView.getProjMatrix().getMatrix()/*.transpose()*/;
                 //std::cout<<lprojMatrix<<std::endl;
@@ -5560,7 +5562,9 @@ namespace odfaeg {
                 }
                 target.beginRecordCommandBuffers();
                 const_cast<Texture&>(shadowMap.getTexture(shadowMap.getImageIndex())).toShaderReadOnlyOptimal(window.getCommandBuffers()[window.getCurrentFrame()]);
+
                 shadowTile.setCenter(target.getView().getPosition());
+
                 shadowTile.setTexture(shadowMap.getTexture(shadowMap.getImageIndex()));
 
                 states.blendMode = BlendMultiply;
