@@ -419,7 +419,7 @@ namespace odfaeg {
                                                                   vec4 alpha = imageLoad(alphaBuffer, ivec2(gl_FragCoord.xy));
                                                                   vec3 projCoords = shadowCoords.xyz / shadowCoords.w;
                                                                   projCoords.xy = projCoords.xy * 0.5 + 0.5;
-                                                                  projCoords.y = 1.0 - projCoords.y;
+                                                                  //projCoords.y = 1.0 - projCoords.y;
                                                                   vec4 stencil = texture (stencilBuffer[pushConsts.imageIndex], projCoords.xy);
                                                                   float l = layer;
                                                                   float z = gl_FragCoord.z;
@@ -598,7 +598,7 @@ namespace odfaeg {
                                                                         (ndcZ * (pushConsts.near - pushConsts.far) - (pushConsts.near + pushConsts.far));
                                                                     }
                                                                     projCoords.xy = projCoords.xy * 0.5 + 0.5;
-                                                                    projCoords.y = 1.0 - projCoords.y;
+                                                                    //projCoords.y = 1.0 - projCoords.y;
 
                                                                     vec4 stencil = texture(stencilBuffer[pushConsts.imageIndex], projCoords.xy);
                                                                     if (stencil.z != 0)
@@ -5185,7 +5185,11 @@ namespace odfaeg {
 
                 math::Vec3f centerLight = g2d::AmbientLight::getAmbientLight().getLightCenter();
 
-                View lightView = View(view.getSize().x(), view.getSize().y(), 0, g2d::AmbientLight::getAmbientLight().getHeight());
+                View lightView;
+                if (view.isOrtho())
+                    lightView = View(view.getSize().x(), view.getSize().y(), 0, g2d::AmbientLight::getAmbientLight().getHeight());
+                else
+                    lightView = View(view.getSize().x(), view.getSize().y(), 0, g2d::AmbientLight::getAmbientLight().getHeight());
                 lightView.setCenter(centerLight);
                 math::Vec3f forward = (lightView.getPosition() - view.getPosition()).normalize();
                 resolutionPC.near = view.getViewport().getPosition().z();
