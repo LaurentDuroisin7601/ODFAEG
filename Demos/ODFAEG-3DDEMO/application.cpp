@@ -81,7 +81,7 @@ void MyAppli::onInit() {
     getWorld()->generate_3d_map(tGround, tWall, Vec2f(50, 50), mapZone, factory);
     std::cout<<"map generated"<<std::endl;
     heightmap = getWorld()->getEntities("E_BIGTILE")[0]->getRootEntity();
-    heightmap->setShadowScale(Vec3f(1, -1, 1));
+    //heightmap->setShadowScale(Vec3f(1, -1, 1));
     float cy;
     bool isOnHeightMap = heightmap->getHeight(Vec2f(10, 10), cy);
     cube = factory.make_entity<g3d::Cube>(Vec3f(10, cy, 10), 20, 20, 20, Color::Transparent, factory);
@@ -144,10 +144,10 @@ void MyAppli::onInit() {
     float angle = std::max(angle1, angle2);
     model->move(Vec3f(0, y, 0));
     //model->setRotation(45, Vec3f(1, 0, 0));
-    model->setShadowScale(Vec3f(1, -1, 1));
-    model->setShadowRotation(90 + angle * 75, Vec3f(1, 0, 0));
+    /*model->setShadowScale(Vec3f(1, -1, 1));
+    model->setShadowRotation(90 + angle * 75, Vec3f(1, 0, 0));*/
     //model->setShadowRotation(angle2 * 150, Vec3f(0, 0, 1));
-    model->setShadowCenter(Vec3f(0, 0, -3));
+    //model->setShadowCenter(Vec3f(0, 0, -3));
     animator->move(Vec3f(-10, 0, 20));
 
     isOnHeightMap = heightmap->getHeight(Vec2f(animator->getPosition().x(), animator->getPosition().z()), z);
@@ -218,7 +218,7 @@ void MyAppli::onInit() {
 
     billboard->setView(view3D);
     //std::cout<<"screen coords : "<<getRenderWindow().mapCoordsToPixel(model->getPosition(), view3D);
-    g2d::AmbientLight::getAmbientLight().setColor(Color::Blue);
+    g2d::AmbientLight::getAmbientLight().setColor(Color::White);
     animUpdater = new AnimUpdater();
     animUpdater->setInterval(seconds(0.01f));
     animUpdater->addBoneAnim(animator);

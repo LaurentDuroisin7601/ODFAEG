@@ -253,7 +253,7 @@ namespace sorrok {
             decor->getGlobalBounds().getSize().x(), decor->getGlobalBounds().getSize().y() * 0.25f, 0);
             //std::cout<<bb->getPosition()<<" "<<bb->getSize()<<std::endl;
             decor->setCollisionVolume(bb);
-            decor->setShadowCenter(Vec3f(0, 400, -400));
+            //decor->setShadowCenter(Vec3f(0, 400, -400));
             /*thouse->getFace(0)->getMaterial().setSpecularPower(10);
             thouse->getFace(0)->getMaterial().setSpecularIntensity(100);*/
             getWorld()->addEntity(decor);
@@ -262,19 +262,19 @@ namespace sorrok {
             tf1->setLayer(1);
             tf1->getFace(0)->getMaterial().setTexId("FIRE1");
             g2d::Decor *fire1 = entityFactory.make_entity<g2d::Decor>(tf1, &g2d::AmbientLight::getAmbientLight(), entityFactory);
-            fire1->setShadowCenter(Vec3f(0, 200, 0));
+            //fire1->setShadowCenter(Vec3f(0, 200, 0));
             //decor->changeGravityCenter(Vec3f(50, 50, 0));
             Tile* tf2 = entityFactory.make_entity<Tile>(tm.getResourceByAlias("FIRE2"), Vec3f(0, 100, 150), Vec3f(100, 100, 0), IntRect(0, 0, 150, 200), entityFactory);
             tf2->setLayer(1);
             tf2->getFace(0)->getMaterial().setTexId("FIRE2");
             g2d::Decor *fire2 = entityFactory.make_entity<g2d::Decor>(tf2, &g2d::AmbientLight::getAmbientLight(), entityFactory);
-            fire2->setShadowCenter(Vec3f(0, 200, 0));
+            //fire2->setShadowCenter(Vec3f(0, 200, 0));
             //decor->changeGravityCenter(Vec3f(50, 50, 0));
             Tile* tf3 = entityFactory.make_entity<Tile>(tm.getResourceByAlias("FIRE3"), Vec3f(0, 100, 150), Vec3f(100, 100, 0), IntRect(0, 0, 150, 200), entityFactory);
             tf3->setLayer(1);
             tf3->getFace(0)->getMaterial().setTexId("FIRE3");
             g2d::Decor *fire3 = entityFactory.make_entity<g2d::Decor>(tf3, &g2d::AmbientLight::getAmbientLight(), entityFactory);
-            fire3->setShadowCenter(Vec3f(0, 200, 0));
+            //fire3->setShadowCenter(Vec3f(0, 200, 0));
             //decor->changeGravityCenter(Vec3f(50, 50, 0));
             //fire1->setShadowCenter(Vec2f(80, 100));
             //fire2->setShadowCenter(Vec2f(80, 100));
@@ -286,8 +286,8 @@ namespace sorrok {
             fire->addFrame(fire2);
             fire->addFrame(fire3);
             fire->play(true);
-            fire->setShadowScale(Vec3f(1, -1, 1));
-            fire->setShadowCenter(Vec3f(0, 350, -150));
+            /*fire->setShadowScale(Vec3f(1, -1, 1));
+            fire->setShadowCenter(Vec3f(0, 350, -150));*/
 
             getWorld()->addEntity(fire);
             au->addAnim(fire);
@@ -407,8 +407,8 @@ namespace sorrok {
         caracter->setCenter(Vec3f(getView().getPosition().x(), getView().getPosition().y(), getView().getPosition().y()));
         //caracter->move(Vec3f(0, -50, -50));
         //caracter->setSelected(true);
-        caracter->setShadowScale(Vec3f(1, -1, 1));
-        caracter->setShadowCenter(Vec3f(0, 280, -140));
+        /*caracter->setShadowScale(Vec3f(1, -1, 1));
+        caracter->setShadowCenter(Vec3f(0, 280, -140));*/
         //std::cout<<bb2->getPosition()<<" "<<bb2->getSize()<<std::endl;
         g2d::PonctualLight* light1 = entityFactory.make_entity<g2d::PonctualLight>(Vec3f(-50, 420, 420), 100, 50, 0, 255, Color::Yellow, 16, entityFactory);
         light1->setLayer(1);

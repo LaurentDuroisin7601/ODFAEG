@@ -7,9 +7,9 @@ namespace odfaeg {
                 addChild(tile);
                 tile->setParent(this);
                 float sy = light->getHeight() / (light->getHeight() * 0.75f);
-                setShadowScale(math::Vec3f(1.f, sy, 1.f));
+                //setShadowScale(math::Vec3f(1.f, sy, 1.f));
                 int c = getSize().y() * sy;
-                setShadowCenter(math::Vec3f(0, 0, -c));
+                //setShadowCenter(math::Vec3f(0, 0, -c));
                 wType = type;
             }
             int Wall::getWallType() {

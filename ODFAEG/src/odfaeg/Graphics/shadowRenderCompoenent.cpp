@@ -419,7 +419,7 @@ namespace odfaeg {
                                                                   vec4 alpha = imageLoad(alphaBuffer, ivec2(gl_FragCoord.xy));
                                                                   vec3 projCoords = shadowCoords.xyz / shadowCoords.w;
                                                                   projCoords.xy = projCoords.xy * 0.5 + 0.5;
-                                                                  //projCoords.y = 1.0 - projCoords.y;
+                                                                  projCoords.y = 1.0 - projCoords.y;
                                                                   vec4 stencil = texture (stencilBuffer[pushConsts.imageIndex], projCoords.xy);
                                                                   float l = layer;
                                                                   float z = gl_FragCoord.z;
@@ -437,6 +437,7 @@ namespace odfaeg {
             const std::string buildShadowMapFragmentShader = R"(#version 460
                                                                 #extension GL_ARB_fragment_shader_interlock : require
                                                                 #extension GL_EXT_nonuniform_qualifier : enable
+                                                                #extension GL_EXT_debug_printf : enable
 
                                                                 layout(set = 0, binding = 3) uniform sampler2D textures[];
                                                                 layout (location = 0) in vec2 fTexCoords;
@@ -460,6 +461,7 @@ namespace odfaeg {
                                                                     float l = layer;
                                                                     float z = gl_FragCoord.z;
                                                                     if (/*l > alpha.y || l == alpha.y &&*/ z > alpha.z) {
+                                                                        debugPrintfEXT("stencil : %f", z);
                                                                         imageStore(stencilBuffer,ivec2(gl_FragCoord.xy),vec4(0, l, z, current_alpha));
                                                                         memoryBarrier();
                                                                         if (current_alpha < 0.01) discard;
@@ -596,8 +598,11 @@ namespace odfaeg {
                                                                         (ndcZ * (pushConsts.near - pushConsts.far) - (pushConsts.near + pushConsts.far));
                                                                     }
                                                                     projCoords.xy = projCoords.xy * 0.5 + 0.5;
-                                                                    //projCoords.y = 1.0 - projCoords.y;
-                                                                    vec4 stencil = texture(stencilBuffer[pushConsts.imageIndex], projCoords.xy, 0);
+                                                                    projCoords.y = 1.0 - projCoords.y;
+
+                                                                    vec4 stencil = texture(stencilBuffer[pushConsts.imageIndex], projCoords.xy);
+                                                                    if (stencil.z != 0)
+                                                                        debugPrintfEXT("shadow coords : %v3f\n closest : %f", projCoords, stencil.z);
                                                                     float z = gl_FragCoord.z;
                                                                     vec4 visibility;
                                                                     uint l = layer;
@@ -5182,7 +5187,7 @@ namespace odfaeg {
 
                 View lightView = View(view.getSize().x(), view.getSize().y(), 0, g2d::AmbientLight::getAmbientLight().getHeight());
                 lightView.setCenter(centerLight);
-                math::Vec3f forward = (view.getPosition() - lightView.getPosition()).normalize();
+                math::Vec3f forward = (lightView.getPosition() - view.getPosition()).normalize();
                 resolutionPC.near = view.getViewport().getPosition().z();
                 resolutionPC.far = view.getViewport().getSize().z();
                 math::Vec3f target = lightView.getPosition() + forward;
