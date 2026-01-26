@@ -520,8 +520,8 @@ namespace odfaeg {
                                                                     uint textureIndex = material.textureIndex;
                                                                     uint l = material.layer;
 
-                                                                    gl_Position = vec4(position, 1.f) * model.modelMatrix * model.shadowProjMatrix * ubo.viewMatrix * ubo.projectionMatrix;
-                                                                    shadowCoords = vec4(position, 1.f) * model.modelMatrix * model.shadowProjMatrix * ubo.lviewMatrix * ubo.lprojectionMatrix;
+                                                                    gl_Position = vec4(position, 1.f) * model.modelMatrix /** model.shadowProjMatrix*/ * ubo.viewMatrix * ubo.projectionMatrix;
+                                                                    shadowCoords = vec4(position, 1.f) * model.modelMatrix /** model.shadowProjMatrix*/ * ubo.lviewMatrix * ubo.lprojectionMatrix;
                                                                     //debugPrintfEXT("%v4f\n%v4f\n%v4f\n%v4f",ubo.lviewMatrix[0], ubo.lviewMatrix[1],ubo.lviewMatrix[2],ubo.lviewMatrix[3]);
                                                                     fTexCoords = texCoords * material.uvScale + material.uvOffset;
                                                                     frontColor = color;
@@ -609,8 +609,8 @@ namespace odfaeg {
                                                                     uint l = layer;
                                                                     float shadowFactor;
                                                                     vec3 lightDir = vec3(lightCenter.x, lightCenter.y, lightViewZ) - vec3(gl_FragCoord.x, gl_FragCoord.y, pixelViewZ);
-
-                                                                    if (stencil.z > projCoords.z) {
+                                                                    float bias = 0.005;
+                                                                    if (stencil.z > projCoords.z - bias) {
                                                                         if (depth.z > z) {
                                                                             shadowFactor = 1.0;
                                                                         } else {
@@ -5207,8 +5207,7 @@ namespace odfaeg {
                 indirectRenderingPC.projectionMatrix = toVulkanMatrix(projMatrix);
                 indirectRenderingPC.viewMatrix = toVulkanMatrix(viewMatrix);
 
-                viewMatrix = view.getViewMatrix().getMatrix()/*.transpose()*/;
-                projMatrix = view.getProjMatrix().getMatrix()/*.transpose()*/;
+
                 shadowUBODatas.projectionMatrix = toVulkanMatrix(projMatrix);
                 shadowUBODatas.viewMatrix = toVulkanMatrix(viewMatrix);
                 shadowUBODatas.lprojectionMatrix = toVulkanMatrix(lprojMatrix);
