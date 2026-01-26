@@ -163,7 +163,7 @@ namespace odfaeg {
         void View::lookAt(float x, float y, float z, math::Vec3f up) {
             target = math::Vec3f(x, y, z);
             this->up = up;
-            forward = target - position;
+            forward = position - target;
             forward = forward.normalize();
             /*forward.z = -forward.z;
             if (math::Math::abs(forward.x) < EPSILON && math::Math::abs(forward.y) < EPSILON) {
