@@ -5185,11 +5185,8 @@ namespace odfaeg {
 
                 math::Vec3f centerLight = g2d::AmbientLight::getAmbientLight().getLightCenter();
 
-                View lightView;
-                if (view.isOrtho())
-                    lightView = View(view.getSize().x(), view.getSize().y(), 0, g2d::AmbientLight::getAmbientLight().getHeight());
-                else
-                    lightView = View(view.getSize().x(), view.getSize().y(), 0, g2d::AmbientLight::getAmbientLight().getHeight());
+                View lightView = View(view.getSize().x(), view.getSize().y(), 0, g2d::AmbientLight::getAmbientLight().getHeight());
+
                 lightView.setCenter(centerLight);
                 math::Vec3f forward = (lightView.getPosition() - view.getPosition()).normalize();
                 resolutionPC.near = view.getViewport().getPosition().z();
