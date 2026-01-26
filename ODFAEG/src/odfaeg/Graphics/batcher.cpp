@@ -426,7 +426,7 @@ namespace odfaeg {
                 shadowProjMatrix.combine(tm.getMatrix());
                 unsigned int baseVertex = vertices.getVertexCount();
                 for (unsigned int i = 0; i < va.getVertexCount(); i++) {
-                    math::Vec3f t = shadowProjMatrix.transform(va[i].position);
+                    math::Vec3f t = tm.transform(va[i].position);
                     Vertex v (t, va[i].color, va[i].texCoords);
                     v.normal = va[i].normal;
                     for (unsigned int b = 0; b < MAX_BONE_INFLUENCE; b++) {
