@@ -379,7 +379,7 @@ namespace odfaeg {
                                                                       float l = layer;
                                                                       beginInvocationInterlockARB();
                                                                       vec4 depth = imageLoad(depthBuffer,ivec2(gl_FragCoord.xy));
-                                                                      if (/*l > depth.y || l == depth.y &&*/ z > depth.z) {
+                                                                      if (l > depth.y || l == depth.y && z > depth.z) {
                                                                         if (texel.a < 0.1) discard;
                                                                         fColor = vec4(0, l, z, texel.a);
                                                                         imageStore(depthBuffer,ivec2(gl_FragCoord.xy),vec4(0,l,z,texel.a));
@@ -423,7 +423,7 @@ namespace odfaeg {
                                                                   vec4 stencil = texture (stencilBuffer[pushConsts.imageIndex], projCoords.xy);
                                                                   float l = layer;
                                                                   float z = gl_FragCoord.z;
-                                                                  if (/*l > stencil.y || l == stencil.y &&*/ stencil.z > projCoords.z && depth.z > z && current_alpha > alpha.a) {
+                                                                  if (l > stencil.y || l == stencil.y && stencil.z > projCoords.z && depth.z > z && current_alpha > alpha.a) {
                                                                       imageStore(alphaBuffer,ivec2(gl_FragCoord.xy),vec4(0, l, z, current_alpha));
                                                                       memoryBarrier();
 
@@ -460,7 +460,7 @@ namespace odfaeg {
                                                                     vec4 alpha = imageLoad(stencilBuffer,ivec2(gl_FragCoord.xy));
                                                                     float l = layer;
                                                                     float z = gl_FragCoord.z;
-                                                                    if (/*l > alpha.y || l == alpha.y &&*/ z > alpha.z) {
+                                                                    if (l > alpha.y || l == alpha.y && z > alpha.z) {
                                                                         //debugPrintfEXT("stencil : %f", z);
                                                                         imageStore(stencilBuffer,ivec2(gl_FragCoord.xy),vec4(0, l, z, current_alpha));
                                                                         memoryBarrier();
@@ -5186,7 +5186,7 @@ namespace odfaeg {
 
                 math::Vec3f centerLight = g2d::AmbientLight::getAmbientLight().getLightCenter();
 
-                View lightView = View(view.getSize().x(), view.getSize().y(), 0, g2d::AmbientLight::getAmbientLight().getHeight());
+                View lightView = View(view.getSize().x(), view.getSize().y(), 0.1f, g2d::AmbientLight::getAmbientLight().getHeight());
 
                 lightView.setCenter(centerLight);
                 resolutionPC.near = view.getViewport().getPosition().z();
