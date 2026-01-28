@@ -5191,14 +5191,14 @@ namespace odfaeg {
 
                 math::Vec3f centerLight = g2d::AmbientLight::getAmbientLight().getLightCenter();
 
-                View lightView = View(g2d::AmbientLight::getAmbientLight().getRadius(), g2d::AmbientLight::getAmbientLight().getRadius(), -g2d::AmbientLight::getAmbientLight().getRadius(), g2d::AmbientLight::getAmbientLight().getRadius());
+                View lightView = View(g2d::AmbientLight::getAmbientLight().getRadius(), g2d::AmbientLight::getAmbientLight().getRadius(), 0.1f, g2d::AmbientLight::getAmbientLight().getRadius());
 
                 lightView.setCenter(centerLight);
                 resolutionPC.near = view.getViewport().getPosition().z();
                 resolutionPC.far = view.getViewport().getSize().z();
                 lightView.lookAt(view.getPosition().x(), view.getPosition().y(), view.getPosition().z());
 
-                /*stencilBuffer.setView(lightView);*/
+                //stencilBuffer.setView(lightView);
                 /*depthBuffer.setView(view);*/
                 math::Matrix4f lviewMatrix = lightView.getViewMatrix().getMatrix()/*.transpose()*/;
                 //std::cout<<lviewMatrix<<std::endl;
