@@ -5192,15 +5192,14 @@ namespace odfaeg {
                     }
                 }
 
-                math::Vec3f centerLight (-2.0f, 4.0f, -1.0f);
-
-                lightView = View(20, 20, 1.0f, 7.5f);
-                lightView.reset(physic::BoundingBox(0, 0, 1.f, 1024, 1024, 7.5f));
+                math::Vec3f centerLight = g2d::AmbientLight::getAmbientLight().getLightCenter();
+                lightView = View(g2d::AmbientLight::getAmbientLight().getRadius(), g2d::AmbientLight::getAmbientLight().getRadius(), 1.0f, g2d::AmbientLight::getAmbientLight().getHeight());
+                lightView.reset(physic::BoundingBox(0, 0, 1.f, 1024, 1024, g2d::AmbientLight::getAmbientLight().getHeight()));
 
                 lightView.setCenter(centerLight);
                 resolutionPC.near = view.getViewport().getPosition().z();
                 resolutionPC.far = view.getViewport().getSize().z();
-                lightView.lookAt(0, 0, 0, math::Vec3f(0, 1, 0));
+                lightView.lookAt(view.getPosition().x(), view.getPosition().y(), view.getPosition().z(), math::Vec3f(0, 1, 0));
 
                 stencilBuffer.setView(lightView);
                 /*depthBuffer.setView(view);*/
