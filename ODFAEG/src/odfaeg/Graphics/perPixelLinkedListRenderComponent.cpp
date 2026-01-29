@@ -5326,7 +5326,7 @@ namespace odfaeg {
         void PerPixelLinkedListRenderComponent::draw(RenderTarget& target, RenderStates states) {
             if (useThread) {
                 std::unique_lock<std::mutex> lock(mtx);
-                std::unique_lock<std::mutex> lock2(mtx2);
+
                 cv.wait(lock, [this] { return commandBufferReady[frameBuffer.getCurrentFrame()].load() || stop.load(); });
                 commandBufferReady[frameBuffer.getCurrentFrame()] = false;
                 //std::cout<<"draw : "<<frameBuffer.getCurrentFrame()<<std::endl;
@@ -5556,6 +5556,7 @@ namespace odfaeg {
                     if (visibleEntities[i] != nullptr && (visibleEntities[i]->getType() == "E_PARTICLES"
                         || visibleEntities[i]->getType() == "E_BONE_ANIMATION")
                         && visibleEntities[i]->isComputeFinished(frameBuffer.getCurrentFrame())) {
+                        std::unique_lock<std::mutex> lock2(mtx2);
 
                         visibleEntities[i]->computeParticles(&mtx2, &cv2, vbBindlessTex[Triangles], frameBuffer.getCurrentFrame(),visibleEntities[i]->getTransform(), (visibleEntities[i]->getDrawMode() == Entity::INSTANCED) ? true : false, computeSemaphores[i][frameBuffer.getCurrentFrame()], computeFences[i][frameBuffer.getCurrentFrame()]);
 
