@@ -127,7 +127,7 @@ namespace odfaeg
             friend class RenderTexture;
             friend class RenderTarget;
             unsigned int m_texture;
-            bool m_pixelsFlipped, m_isRepeated, m_isSmooth;
+            bool m_pixelsFlipped, m_isRepeated=false, m_isSmooth;
             Image        m_image;
             IntRect  m_area;
             math::Vector2u m_size;          ///< Public texture size

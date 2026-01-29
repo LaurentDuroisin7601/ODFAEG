@@ -7,10 +7,10 @@ namespace odfaeg {
                 m_color = color;
                 //Droite.
                 VertexArray va1(Triangles, 6, this);
-                Vertex v1(math::Vec3f(w, 0, 0), color);
-                Vertex v2(math::Vec3f(w, h, 0), color);
-                Vertex v3(math::Vec3f(w, h, d), color);
-                Vertex v4(math::Vec3f(w, 0, d), color);
+                Vertex v1(math::Vec3f(w, 0, 0), color, math::Vec2f(0.f, 0.f));
+                Vertex v2(math::Vec3f(w, h, 0), color, math::Vec2f(1.f, 0.f));
+                Vertex v3(math::Vec3f(w, h, d), color, math::Vec2f(1.f, 1.f));
+                Vertex v4(math::Vec3f(w, 0, d), color, math::Vec2f(0.f, 1.f));
                 va1[0] = v1;
                 va1[1] = v2;
                 va1[2] = v3;
@@ -22,10 +22,10 @@ namespace odfaeg {
                 Face face1 (va1, material1, getTransform());
                 //Gauche.
                 VertexArray va2(Triangles, 6, this);
-                Vertex v5(math::Vec3f(0, 0, 0), color);
-                Vertex v6(math::Vec3f(0, h, 0), color);
-                Vertex v7(math::Vec3f(0, h, d), color);
-                Vertex v8(math::Vec3f(0, 0, d), color);
+                Vertex v5(math::Vec3f(0, 0, 0), color, math::Vec2f(0.f, 0.f));
+                Vertex v6(math::Vec3f(0, h, 0), color, math::Vec2f(1.f, 0.f));
+                Vertex v7(math::Vec3f(0, h, d), color, math::Vec2f(1.f, 1.f));
+                Vertex v8(math::Vec3f(0, 0, d), color, math::Vec2f(0.f, 1.f));
                 va2[0] = v5;
                 va2[1] = v6;
                 va2[2] = v7;
@@ -37,10 +37,10 @@ namespace odfaeg {
                 Face face2 (va2, material2, getTransform());
                 //Dessus
                 VertexArray va3(Triangles, 6, this);
-                Vertex v9(math::Vec3f(0, h, 0), color);
-                Vertex v10(math::Vec3f(w, h, 0), color);
-                Vertex v11(math::Vec3f(w, h, d), color);
-                Vertex v12(math::Vec3f(0, h, d), color);
+                Vertex v9(math::Vec3f(0, h, 0), color, math::Vec2f(0.f, 0.f));
+                Vertex v10(math::Vec3f(w, h, 0), color, math::Vec2f(1.f, 0.f));
+                Vertex v11(math::Vec3f(w, h, d), color, math::Vec2f(1.f, 1.f));
+                Vertex v12(math::Vec3f(0, h, d), color, math::Vec2f(0.f, 1.f));
                 va3[0] = v9;
                 va3[1] = v10;
                 va3[2] = v11;
@@ -52,10 +52,10 @@ namespace odfaeg {
                 Face face3 (va3, material3, getTransform());
                 //Dessous.
                 VertexArray va4(Triangles, 6, this);
-                Vertex v13(math::Vec3f(0, 0, 0), color);
-                Vertex v14(math::Vec3f(w, 0, 0), color);
-                Vertex v15(math::Vec3f(w, 0, d), color);
-                Vertex v16(math::Vec3f(0, 0, d), color);
+                Vertex v13(math::Vec3f(0, 0, 0), color, math::Vec2f(0.f, 0.f));
+                Vertex v14(math::Vec3f(w, 0, 0), color, math::Vec2f(1.f, 0.f));
+                Vertex v15(math::Vec3f(w, 0, d), color, math::Vec2f(1.f, 1.f));
+                Vertex v16(math::Vec3f(0, 0, d), color, math::Vec2f(0.f, 1.f));
                 va4[0] = v13;
                 va4[1] = v14;
                 va4[2] = v15;
@@ -67,10 +67,10 @@ namespace odfaeg {
                 Face face4 (va4, material4, getTransform());
                 //Devant
                 VertexArray va5(Triangles, 6, this);
-                Vertex v17(math::Vec3f(0, 0, d), color);
-                Vertex v18(math::Vec3f(w, 0, d), color);
-                Vertex v19(math::Vec3f(w, h, d), color);
-                Vertex v20(math::Vec3f(0, h, d), color);
+                Vertex v17(math::Vec3f(0, 0, d), color, math::Vec2f(0.f, 0.f));
+                Vertex v18(math::Vec3f(w, 0, d), color, math::Vec2f(1.f, 0.f));
+                Vertex v19(math::Vec3f(w, h, d), color, math::Vec2f(1.f, 1.f));
+                Vertex v20(math::Vec3f(0, h, d), color, math::Vec2f(0.f, 1.f));
                 va5[0] = v17;
                 va5[1] = v18;
                 va5[2] = v19;
@@ -83,10 +83,10 @@ namespace odfaeg {
 
                 //Derrière.
                 VertexArray va6(Triangles, 6, this);
-                Vertex v21(math::Vec3f(0, 0, 0), color);
-                Vertex v22(math::Vec3f(w, 0, 0), color);
-                Vertex v23(math::Vec3f(w, h, 0), color);
-                Vertex v24(math::Vec3f(0, h, 0), color);
+                Vertex v21(math::Vec3f(0, 0, 0), color, math::Vec2f(0.f, 0.f));
+                Vertex v22(math::Vec3f(w, 0, 0), color, math::Vec2f(1.f, 0.f));
+                Vertex v23(math::Vec3f(w, h, 0), color, math::Vec2f(1.f, 1.f));
+                Vertex v24(math::Vec3f(0, h, 0), color, math::Vec2f(0.f, 1.f));
                 va6[0] = v21;
                 va6[1] = v22;
                 va6[2] = v23;
@@ -104,12 +104,22 @@ namespace odfaeg {
                 addFace(face5);
                 addFace(face6);
             }
-            void Cube::setTexCoords(int face, IntRect texCoords) {
-                VertexArray& va = getFace(face)->getVertexArray();
-                va[0].texCoords = math::Vec2f(texCoords.left, texCoords.top);
-                va[1].texCoords = math::Vec2f(texCoords.left + texCoords.width, texCoords.top);
-                va[2].texCoords = math::Vec2f(texCoords.left + texCoords.width, texCoords.top + texCoords.height);
-                va[3].texCoords = math::Vec2f(texCoords.left, texCoords.top + texCoords.height);
+            void Cube::setTexture(const Texture* texture) {
+                for (unsigned int i = 0; i < getFaces().size(); i++) {
+                    getFace(i)->getMaterial().clearTextures();
+                    getFace(i)->getMaterial().addTexture(texture);
+                }
+            }
+            void Cube::setTexCoords(IntRect texCoords) {
+                for (unsigned int i = 0; i < getFaces().size(); i++) {
+                    VertexArray& va = getFace(i)->getVertexArray();
+                    va[0].texCoords = math::Vec2f(texCoords.left, texCoords.top);
+                    va[1].texCoords = math::Vec2f(texCoords.left + texCoords.width, texCoords.top);
+                    va[2].texCoords = math::Vec2f(texCoords.left + texCoords.width, texCoords.top + texCoords.height);
+                    va[3].texCoords = math::Vec2f(texCoords.left, texCoords.top);
+                    va[4].texCoords = math::Vec2f(texCoords.left + texCoords.width, texCoords.top + texCoords.height);
+                    va[5].texCoords = math::Vec2f(texCoords.left, texCoords.top + texCoords.height);
+                }
             }
             void Cube::onDraw (RenderTarget &target, RenderStates states) {
                 for (unsigned int i = 0; i < getFaces().size(); i++) {

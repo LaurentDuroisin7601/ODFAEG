@@ -167,7 +167,7 @@ namespace odfaeg {
             forward = forward.normalize();
             left = forward.cross(up).normalize();
             up = left.cross(forward).normalize();
-            viewMatrix.setAxis(left, up, forward);
+            viewMatrix.setAxis(left, up, -forward);
             this->up = up;
             viewUpdated = true;
         }

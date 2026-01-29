@@ -37,7 +37,11 @@ namespace odfaeg {
             matrix4f[3][0] = 0;
             matrix4f[3][1] = 0;
             matrix4f[3][2] = 0;
+            #ifndef VULKAN
+            matrix4f[3][3] = -1;
+            #else
             matrix4f[3][3] = 1;
+            #endif
             this->l = l;
             this->r = r;
             this->b = b;

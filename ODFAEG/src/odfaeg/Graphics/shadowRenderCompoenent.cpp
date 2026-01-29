@@ -43,8 +43,8 @@ namespace odfaeg {
                 //alphaBuffer.m_name = "alphaBuffer";
                 alphaBufferSprite = Sprite(alphaBuffer.getTexture(alphaBuffer.getImageIndex()), math::Vec3f(0, 0, 0), math::Vec3f(window.getView().getSize().x(), window.getView().getSize().y(), 0), IntRect(0, 0, window.getView().getSize().x(), window.getView().getSize().y()));
 
-                stencilBuffer.create(window.getView().getSize().x(), window.getView().getSize().y());
-                stencilBuffer.setView(view);
+                stencilBuffer.create(1024, 1024);
+                //stencilBuffer.setView(view);
                 stencilBufferTile = Sprite(stencilBuffer.getTexture(stencilBuffer.getImageIndex()), math::Vec3f(0, 0, 0), math::Vec3f(window.getView().getSize().x(), window.getView().getSize().y(), 0), IntRect(0, 0, window.getView().getSize().x(), window.getView().getSize().y()));
 
                 shadowMap.create(window.getView().getSize().x(), window.getView().getSize().y());
@@ -383,13 +383,13 @@ namespace odfaeg {
                                                                       float l = layer;
                                                                       beginInvocationInterlockARB();
                                                                       vec4 depth = imageLoad(depthBuffer,ivec2(gl_FragCoord.xy));
-                                                                      if (l > depth.y || l == depth.y && z > depth.z) {
+                                                                      if (l > depth.y || l == depth.y && z >= depth.z) {
                                                                         if (texel.a < 0.1) discard;
                                                                         imageStore(depthBuffer,ivec2(gl_FragCoord.xy),vec4(0,l,z,texel.a));
                                                                         memoryBarrier();
                                                                         fColor = vec4(0, l, z, texel.a);
                                                                       } else {
-                                                                        fColor = depth;
+                                                                        discard;
                                                                       }
                                                                       endInvocationInterlockARB();
                                                                   }
@@ -427,13 +427,14 @@ namespace odfaeg {
                                                                   vec4 stencil = texture (stencilBuffer[pushConsts.imageIndex], projCoords.xy);
                                                                   float l = layer;
                                                                   float z = gl_FragCoord.z;
-                                                                  if (l > stencil.y || l == stencil.y && stencil.z > projCoords.z && depth.z > z && current_alpha > alpha.a) {
+                                                                  float bias = 0.005;
+                                                                  if (l > stencil.y || l == stencil.y && stencil.z - bias > projCoords.z && depth.z > z - bias && current_alpha > alpha.a) {
                                                                       imageStore(alphaBuffer,ivec2(gl_FragCoord.xy),vec4(0, l, z, current_alpha));
                                                                       memoryBarrier();
 
                                                                       fColor = vec4(0, 1, z, current_alpha);
                                                                   } else {
-                                                                      fColor = alpha;
+                                                                      discard;
                                                                   }
                                                                   endInvocationInterlockARB();
                                                               }
@@ -472,7 +473,7 @@ namespace odfaeg {
 
                                                                         fColor = vec4(0, l, z, current_alpha);
                                                                     } else {
-                                                                        fColor = alpha;
+                                                                        discard;
                                                                     }
                                                                     endInvocationInterlockARB();
                                                                 }
@@ -614,9 +615,9 @@ namespace odfaeg {
                                                                     uint l = layer;
                                                                     float shadowFactor;
                                                                     vec3 lightDir = vec3(lightCenter.x, lightCenter.y, lightViewZ) - vec3(gl_FragCoord.x, gl_FragCoord.y, pixelViewZ);
-                                                                    float bias = max(0.05 * (1.0 - dot(normalize(n), normalize(lightDir))), 0.005);
+                                                                    float bias = 0.005;
                                                                     if (stencil.z > projCoords.z - bias) {
-                                                                        if (depth.z > z) {
+                                                                        if (depth.z > z - bias) {
                                                                             shadowFactor = 1.0;
                                                                         } else {
                                                                             shadowFactor = clamp(dot(normalize(n), normalize(lightDir)), 0.0, 1.0);
@@ -5075,7 +5076,7 @@ namespace odfaeg {
                 }
 
                 RenderStates currentStates;
-                /*currentStates.blendMode = BlendNone;
+                currentStates.blendMode = BlendNone;
                 currentStates.shader = &depthGenShader;
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes-1; p++) {
                     if (needToUpdateDSs[p][currentFrame])
@@ -5087,7 +5088,7 @@ namespace odfaeg {
                         recordCommandBufferIndirect(currentFrame, p, nbIndexedDrawCommandBuffer[p][0], sizeof(DrawElementsIndirectCommand), SHADOWNODEPTHNOSTENCIL, 0, 0, -1, modelDataOffsets[p][1], materialDataOffsets[p][1],drawIndexedCommandBufferOffsets[p][0], currentStates, depthCommandBuffer[currentFrame]);
                     }
 
-                }*/
+                }
 
                 if (vkEndCommandBuffer(depthCommandBuffer[currentFrame]) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to record command buffer!", 1);
@@ -5189,22 +5190,25 @@ namespace odfaeg {
                     }
                 }
 
-                math::Vec3f centerLight = g2d::AmbientLight::getAmbientLight().getLightCenter();
+                math::Vec3f centerLight (-2.0f, 4.0f, -1.0f);
 
-                View lightView = View(g2d::AmbientLight::getAmbientLight().getRadius(), g2d::AmbientLight::getAmbientLight().getRadius(), 0.1f, g2d::AmbientLight::getAmbientLight().getRadius());
+                View lightView = View(20, 20, 1.0f, 7.5f);
+                lightView.reset(physic::BoundingBox(0, 0, 1.f, 1024, 1024, 7.5f));
 
                 lightView.setCenter(centerLight);
                 resolutionPC.near = view.getViewport().getPosition().z();
                 resolutionPC.far = view.getViewport().getSize().z();
-                lightView.lookAt(view.getPosition().x(), view.getPosition().y(), view.getPosition().z());
+                lightView.lookAt(0, 0, 0, math::Vec3f(0, 1, 0));
 
-                //stencilBuffer.setView(lightView);
+                stencilBuffer.setView(lightView);
                 /*depthBuffer.setView(view);*/
                 math::Matrix4f lviewMatrix = lightView.getViewMatrix().getMatrix()/*.transpose()*/;
                 //std::cout<<lviewMatrix<<std::endl;
 
                 math::Matrix4f lprojMatrix = lightView.getProjMatrix().getMatrix()/*.transpose()*/;
-                //std::cout<<lprojMatrix<<std::endl;
+                /*std::cout<<"light proj : "<<lprojMatrix<<std::endl;
+                std::cout<<"light view : "<<lviewMatrix<<std::endl;*/
+
                 lightIndirectRenderingPC.projectionMatrix = toVulkanMatrix(lprojMatrix);
                 lightIndirectRenderingPC.viewMatrix = toVulkanMatrix(lviewMatrix);
 
@@ -5297,7 +5301,7 @@ namespace odfaeg {
                 depthBuffer.setView(view);
                 alphaBuffer.setView(view);
                 shadowMap.setView(view);
-                stencilBuffer.setView(view);
+                //stencilBuffer.setView(view);
                 this->view = view;
             }
             View& ShadowRenderComponent::getView() {

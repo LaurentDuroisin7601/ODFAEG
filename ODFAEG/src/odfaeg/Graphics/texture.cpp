@@ -975,7 +975,7 @@ namespace odfaeg {
             }
         }
         bool Texture::isRepeated() const {
-            return isRepeated();
+            return m_isRepeated;
         }
         bool isCubemap() {
             return false;
@@ -1001,6 +1001,9 @@ namespace odfaeg {
             return m_format;
         }
         math::Vector2u Texture::getSize() {
+            /*if (m_isRepeated) {
+                return math::Vector2u(1, 1);
+            }*/
             return m_size;
         }
         VkImage Texture::getImage() {

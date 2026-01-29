@@ -32,9 +32,10 @@ namespace odfaeg {
                     return true;
                 }
                 void onDraw(RenderTarget &target, RenderStates states);
-                void setTexCoords (int face, IntRect texRect);
+                void setTexCoords (IntRect texRect);
                 Entity* clone();
                 Color getColor();
+                void setTexture(const Texture* texture);
             private:
                 Color m_color;
             };
