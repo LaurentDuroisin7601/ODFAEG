@@ -124,7 +124,7 @@ void MyAppli::onInit() {
     //animator->setDrawMode(Entity::INSTANCED);
 
     float y, z;
-    model->move(Vec3f(0, 0, 10));
+    model->move(Vec3f(0, 0, 50));
     //model->setScale(Vec3f(2.f, 2.f, 2.f));
 
 

@@ -427,8 +427,8 @@ namespace odfaeg {
                                                                   vec4 stencil = texture (stencilBuffer[pushConsts.imageIndex], projCoords.xy);
                                                                   float l = layer;
                                                                   float z = gl_FragCoord.z;
-                                                                  float bias = 0.005;
-                                                                  if (l > stencil.y || l == stencil.y && stencil.z - bias > 1 - projCoords.z && depth.z - bias > z - bias && current_alpha > alpha.a) {
+                                                                  float bias = 0.05;
+                                                                  if (l > stencil.y || l == stencil.y && stencil.z - bias > 1 - projCoords.z && depth.z - bias > z && current_alpha > alpha.a) {
                                                                       imageStore(alphaBuffer,ivec2(gl_FragCoord.xy),vec4(0, l, z, current_alpha));
                                                                       memoryBarrier();
 
