@@ -428,7 +428,7 @@ namespace odfaeg {
                                                                   float l = layer;
                                                                   float z = gl_FragCoord.z;
                                                                   float bias = 0.005;
-                                                                  if (l > stencil.y || l == stencil.y && stencil.z > projCoords.z - bias && depth.z > z - bias && current_alpha > alpha.a) {
+                                                                  if (l > stencil.y || l == stencil.y && stencil.z - bias > 1 - projCoords.z && depth.z - bias > z - bias && current_alpha > alpha.a) {
                                                                       imageStore(alphaBuffer,ivec2(gl_FragCoord.xy),vec4(0, l, z, current_alpha));
                                                                       memoryBarrier();
 
@@ -464,14 +464,15 @@ namespace odfaeg {
                                                                     beginInvocationInterlockARB();
                                                                     vec4 alpha = imageLoad(stencilBuffer,ivec2(gl_FragCoord.xy));
                                                                     float l = layer;
-                                                                    float z = gl_FragCoord.z;
+                                                                    float z = 1 - gl_FragCoord.z;
                                                                     if (l > alpha.y || l == alpha.y && z > alpha.z) {
                                                                         //debugPrintfEXT("stencil : %f", z);
                                                                         if (current_alpha < 0.01) discard;
                                                                         imageStore(stencilBuffer,ivec2(gl_FragCoord.xy),vec4(0, l, z, current_alpha));
                                                                         memoryBarrier();
 
-                                                                        fColor = vec4(0, l, z, current_alpha);
+                                                                        //fColor = vec4(0, l, z, current_alpha);
+                                                                        fColor = vec4(z, z, z, 1);
                                                                     } else {
                                                                         discard;
                                                                     }
@@ -616,10 +617,11 @@ namespace odfaeg {
                                                                     float shadowFactor;
                                                                     vec3 lightDir = vec3(lightCenter.x, lightCenter.y, lightViewZ) - vec3(gl_FragCoord.x, gl_FragCoord.y, pixelViewZ);
                                                                     float bias = 0.005;
-                                                                    if (stencil.z > projCoords.z - bias) {
-                                                                        if (depth.z > z - bias) {
+                                                                    if (stencil.z - bias > 1 - projCoords.z) {
+                                                                        if (depth.z - bias >= z) {
                                                                             shadowFactor = 1.0;
                                                                         } else {
+                                                                            //debugPrintfEXT("draw shadow");
                                                                             shadowFactor = clamp(dot(normalize(n), normalize(lightDir)), 0.0, 1.0);
                                                                         }
 
@@ -5102,7 +5104,7 @@ namespace odfaeg {
 
                     throw core::Erreur(0, "failed to begin recording command buffer!", 1);
                 }
-
+                currentStates.blendMode = BlendNone;
                 currentStates.shader = &buildShadowMapShader;
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes-1; p++) {
                     if (needToUpdateDSs[p][currentFrame])
@@ -5192,7 +5194,7 @@ namespace odfaeg {
 
                 math::Vec3f centerLight (-2.0f, 4.0f, -1.0f);
 
-                View lightView = View(20, 20, 1.0f, 7.5f);
+                lightView = View(20, 20, 1.0f, 7.5f);
                 lightView.reset(physic::BoundingBox(0, 0, 1.f, 1024, 1024, 7.5f));
 
                 lightView.setCenter(centerLight);
@@ -5301,7 +5303,6 @@ namespace odfaeg {
                 depthBuffer.setView(view);
                 alphaBuffer.setView(view);
                 shadowMap.setView(view);
-                //stencilBuffer.setView(view);
                 this->view = view;
             }
             View& ShadowRenderComponent::getView() {
@@ -5576,7 +5577,7 @@ namespace odfaeg {
                 shadowTile.setCenter(target.getView().getPosition());
 
 
-                shadowTile.setTexture(shadowMap.getTexture(shadowMap.getImageIndex()));
+                stencilBufferTile.setTexture(shadowMap.getTexture(shadowMap.getImageIndex()));
 
                 states.blendMode = BlendMultiply;
                 target.draw(shadowTile, states);

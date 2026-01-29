@@ -1075,6 +1075,7 @@ namespace odfaeg {
                 viewports[i].y = m_view.getViewport().getPosition().y();
                 viewports[i].width = m_view.getViewport().getSize().x();
                 viewports[i].height = m_view.getViewport().getSize().y();
+
                 viewports[i].minDepth = 0.0f;
                 viewports[i].maxDepth = 1.0f;
             }
