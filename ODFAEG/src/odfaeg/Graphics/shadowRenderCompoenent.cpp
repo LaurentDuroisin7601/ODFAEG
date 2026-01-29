@@ -428,7 +428,7 @@ namespace odfaeg {
                                                                   float l = layer;
                                                                   float z = gl_FragCoord.z;
                                                                   float bias = 0.005;
-                                                                  if (l > stencil.y || l == stencil.y && stencil.z - bias > projCoords.z && depth.z > z - bias && current_alpha > alpha.a) {
+                                                                  if (l > stencil.y || l == stencil.y && stencil.z > projCoords.z - bias && depth.z > z - bias && current_alpha > alpha.a) {
                                                                       imageStore(alphaBuffer,ivec2(gl_FragCoord.xy),vec4(0, l, z, current_alpha));
                                                                       memoryBarrier();
 
