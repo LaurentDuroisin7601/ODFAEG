@@ -142,7 +142,7 @@ namespace sorrok {
         rc.addResourceManager(fm, "FontManager");
     }
     void MyAppli::onInit () {
-
+        g2d::AmbientLight::getAmbientLight().setHeight(-7.5f);
         if (day)
             g2d::AmbientLight::getAmbientLight().setColor(Color::White);
         TextureManager<> &tm = getResourceCache().resourceManager<Texture, std::string>("TextureManager");
