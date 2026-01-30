@@ -43,6 +43,9 @@ namespace odfaeg {
             for (unsigned int i = 0; i < faces.size(); i++) {
                 gameObject->addFace(Face(faces[i].getVertexArray(), faces[i].getMaterial(), gameObject->getTransform()));
                 gameObject->getFace(i)->getVertexArray().setEntity(gameObject);
+                for(unsigned int j = 0; j < gameObject->getFace(i)->getVertexArray().getVertexCount(); j++) {
+                    gameObject->getFace(i)->getVertexArray()[j].entityId = gameObject->getId();
+                }
                 /*if (entity->getRootType() == "E_WALL")
                     //////std::cout<<"alias : "<<entity->getFace(i)->getMaterial().getTexId();*/
             }

@@ -527,8 +527,8 @@ namespace odfaeg {
                                                                     uint textureIndex = material.textureIndex;
                                                                     uint l = material.layer;
 
-                                                                    gl_Position = vec4(position, 1.f) * model.modelMatrix * ubo.viewMatrix * ubo.projectionMatrix;
-                                                                    shadowCoords = vec4(position, 1.f) * model.modelMatrix * ubo.lviewMatrix * ubo.lprojectionMatrix;
+                                                                    gl_Position = vec4(position, 1.f) * model.modelMatrix * model.shadowProjMatrix * ubo.viewMatrix * ubo.projectionMatrix;
+                                                                    shadowCoords = vec4(position, 1.f) * model.modelMatrix * model.shadowProjMatrix * ubo.lviewMatrix * ubo.lprojectionMatrix;
 
                                                                     //debugPrintfEXT("%v4f\n%v4f",shadowCoords,gl_Position);
                                                                     fTexCoords = texCoords * material.uvScale + material.uvOffset;
@@ -5663,9 +5663,9 @@ namespace odfaeg {
                     std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                     if ( vEntities[i] != nullptr && vEntities[i]->isLeaf()) {
 
-                        Entity* shadow = getShadow(vEntities[i]);
+                        //Entity* shadow = getShadow(vEntities[i]);
                         //std::cout<<"shadow get"<<std::endl;
-                        /*Entity* entity = vEntities[i]->getRootEntity();
+                        Entity* entity = vEntities[i]->getRootEntity();
                         math::Vec3f shadowOrigin, shadowCenter, shadowScale(1.f, 1.f, 1.f), shadowRotationAxis, shadowTranslation;
                         float shadowRotationAngle = 0;
                         //if (entity != nullptr && entity->isModel()) {
@@ -5675,20 +5675,20 @@ namespace odfaeg {
                             shadowRotationAngle = entity->getShadowRotationAngle();
                             shadowOrigin = entity->getPosition();
                             shadowTranslation = entity->getPosition() + shadowCenter;
-                            if (entity->getType() == "E_WALL") {
+                            //if (entity->getType() == "E_WALL") {
                                 //////std::cout<<"shadow center : "<<shadowCenter<<std::endl;
                                 //////std::cout<<"shadow scale : "<<shadowScale<<std::endl;
                                 //////std::cout<<"shadow rotation axis : "<<shadowRotationAxis<<std::endl;
                                 //////std::cout<<"shadow rotation angle : "<<shadowRotationAngle<<std::endl;
                                 //////std::cout<<"shadow origin : "<<shadowOrigin<<std::endl;
                                 //////std::cout<<"shadow translation : "<<shadowTranslation<<std::endl;
-                            }
+                            //}
                         //}
                         TransformMatrix tm;
                         tm.setOrigin(shadowOrigin);
                         tm.setScale(shadowScale);
                         tm.setRotation(shadowRotationAxis, shadowRotationAngle);
-                        tm.setTranslation(shadowTranslation);*/
+                        tm.setTranslation(shadowTranslation);
 
                         for (unsigned int j = 0; j <  vEntities[i]->getNbFaces(); j++) {
 
@@ -5696,17 +5696,17 @@ namespace odfaeg {
                                 if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0) {
 
                                     batcher.addFace( vEntities[i]->getFace(j));
-                                    shadowBatcher.addFace(shadow->getFace(j));
+                                    shadowBatcher.addShadowFace(vEntities[i]->getFace(j), view.getViewMatrix(), tm);
                                 } else {
 
                                     batcherIndexed.addFace( vEntities[i]->getFace(j));
-                                    shadowBatcherIndexed.addFace(shadow->getFace(j));
+                                    shadowBatcherIndexed.addShadowFace(vEntities[i]->getFace(j), view.getViewMatrix(), tm);
                                 }
                              } else {
                                  if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0) {
 
                                     normalBatcher.addFace( vEntities[i]->getFace(j));
-                                    normalShadowBatcher.addFace(shadow->getFace(j));
+                                    normalShadowBatcher.addShadowFace(vEntities[i]->getFace(j), view.getViewMatrix(), tm);
                                     /*if (vEntities[i]->getRootEntity()->getType() != "E_BIGTILE") {
                                         std::lock_guard<std::recursive_mutex> lock(rec_mutex);
 
@@ -5716,7 +5716,7 @@ namespace odfaeg {
                                     ////std::cout<<"add shadow indexes"<<std::endl;
 
                                     normalBatcherIndexed.addFace( vEntities[i]->getFace(j));
-                                    normalShadowBatcherIndexed.addFace(shadow->getFace(j));
+                                    normalShadowBatcherIndexed.addShadowFace(vEntities[i]->getFace(j), view.getViewMatrix(), tm);
                                  }
                              }
                         }
