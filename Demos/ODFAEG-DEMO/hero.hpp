@@ -29,6 +29,7 @@ namespace sorrok {
             ar(xp);
             ar(xpReqForNextLevel);
         }
+        Entity* clone();
         ~Hero();
     private :
         std::string factionName, sex, hairColor, eyesColor, skinColor, faceType;

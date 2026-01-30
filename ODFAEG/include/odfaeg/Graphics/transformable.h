@@ -363,6 +363,7 @@ namespace odfaeg {
             }
             void setTransform (math::Matrix4f matrix) {
                 tm.setMatrix(matrix);
+                onSetTransform(matrix);
             }
             template <typename Archive>
             void serialize (Archive & ar) {
@@ -457,6 +458,7 @@ namespace odfaeg {
             * \brief this function can be redefined in the sub-class if we need to do something when the object is moving.
             */
             virtual void onMove(math::Vec3f& t) {}
+            virtual void onSetTransform(math::Matrix4f& tm) {}
         protected :
             /**
              * m_position : the position of the top left corner of the entity

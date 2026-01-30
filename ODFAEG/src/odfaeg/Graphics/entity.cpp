@@ -420,5 +420,11 @@ namespace odfaeg {
         int Entity::getBorderId() {
             return borderID;
         }
+        void Entity::setShadowId(int id) {
+            shadowID = id;
+        }
+        int Entity::getShadowId() {
+            return shadowID;
+        }
     }
 }

@@ -214,6 +214,14 @@ namespace odfaeg {
                 getChildren()[i]->setSize(s);
             }
         }
+        void GameObject::onSetTransform(math::Matrix4f& mat) {
+            for (unsigned int i = 0; i < faces.size(); i++) {
+                faces[i].setTransformMatrix(getTransform());
+            }
+            for (unsigned int i = 0; i < getChildren().size(); i++) {
+                getChildren()[i]->setTransform(mat);
+            }
+        }
         void GameObject::onMove(math::Vec3f &t) {
             /*if (getRootType() == "E_HERO")
                 //////std::cout<<"matrix : "<<getTransform().getMatrix()<<std::endl;*/

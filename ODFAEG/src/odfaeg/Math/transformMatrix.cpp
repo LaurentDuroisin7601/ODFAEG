@@ -116,6 +116,7 @@ namespace odfaeg {
             return matrix4f == other.matrix4f;
         }
         void TransformMatrix::setMatrix(math::Matrix4f matrix4f) {
+            needToUpdate3D = false;
             this->matrix4f = matrix4f;
         }
         void TransformMatrix::update() {

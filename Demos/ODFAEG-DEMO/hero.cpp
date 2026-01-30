@@ -1,4 +1,5 @@
 #include "hero.hpp"
+using namespace odfaeg::graphic;
 namespace sorrok {
     Hero::Hero(std::string factionName, std::string name, std::string sex, std::string currentMapName, std::string hairColor,
         std::string eyesColor, std::string skinColor, std::string faceType, std::string classs, int level, odfaeg::graphic::EntityFactory& factory)
@@ -37,6 +38,12 @@ namespace sorrok {
     }
     void Hero::setIsMovingFromKeyboard(bool b) {
         moveFromKeyboard = b;
+    }
+    Entity* Hero::clone() {
+        Hero* hero = factory.make_entity<Hero>(factionName, "", sex, "", hairColor, eyesColor, skinColor, faceType,
+                                               "", 1, factory);
+        GameObject::copy(hero);
+        return hero;
     }
     Hero::~Hero() {
     }

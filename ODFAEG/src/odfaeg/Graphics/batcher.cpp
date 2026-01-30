@@ -370,6 +370,7 @@ namespace odfaeg {
                     /*if (va.getEntity()->getRootType() == "E_BONE_ANIMATION")
                         std::cout<<"transform : "<<tm.getMatrix()<<std::endl;*/
                     m_transforms.push_back(&tm);
+                    m_shadowProjMatrix.push_back(tm);
                     //if (va.getEntity() != nullptr) {
                     m_entities.push_back(va.getEntity());
                         /*std::rec_mutex rec_mutex;

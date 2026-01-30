@@ -109,6 +109,7 @@ namespace odfaeg {
                             flat.data[col * 4 + row] = mat[col][row];
                     return flat;
                 }
+                Entity* getShadow(Entity* entity);
                 std::vector<VkSemaphore> offscreenFinishedSemaphore, offscreenDepthFinishedSemaphore, offscreenAlphaFinishedSemaphore, copyFinishedSemaphore;
                 std::array<unsigned int, MAX_FRAMES_IN_FLIGHT> values, values2, copyValues;
                 RenderWindow& window;
@@ -224,6 +225,7 @@ namespace odfaeg {
                 std::atomic<bool> stop = false;
                 std::array<unsigned int, MAX_FRAMES_IN_FLIGHT> maxTexturesInUse={0, 0};
                 View lightView;
+                std::vector<std::unique_ptr<Entity>> shadows;
         };
 
         #else

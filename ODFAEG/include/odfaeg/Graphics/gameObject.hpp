@@ -57,6 +57,7 @@ namespace odfaeg {
             *   \param math::Vec3f& s : the rotation angle of the entity.
             */
             virtual void onRotate(float angle);
+            virtual void onSetTransform(math::Matrix4f& mat);
             //Return the parent of the entity.
             /** \fn Entity* getParent()
             *   \brief Entity* getParent() const;
