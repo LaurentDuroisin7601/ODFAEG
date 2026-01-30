@@ -77,7 +77,7 @@ namespace odfaeg {
 
         RenderTarget::RenderTarget(window::Device& vkDevice, bool useSecondaryCmds) : vkDevice(vkDevice), defaultShader(vkDevice),
         m_defaultView(), m_view(), id(nbRenderTargets), depthTestEnabled(false), stencilTestEnabled(false), depthTexture(nullptr),
-        useSecondaryCmds(useSecondaryCmds) {
+        useSecondaryCmds(useSecondaryCmds), cm(NONE) {
             nbRenderTargets++;
 
         }
@@ -85,7 +85,9 @@ namespace odfaeg {
             nbRenderTargets--;
             cleanup();
         }
-
+        void RenderTarget::setCullMode(CULLMODE cm) {
+            this->cm = cm;
+        }
         void RenderTarget::enableDepthTest(bool enabled) {
             //std::cout<<"enabled ? "<<enabled<<std::endl;
             depthTestEnabled = enabled;
@@ -857,7 +859,14 @@ namespace odfaeg {
             rasterizer.rasterizerDiscardEnable = VK_FALSE;
             rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
             rasterizer.lineWidth = 1.0f;
-            rasterizer.cullMode = VK_CULL_MODE_NONE;
+            if (cm == NONE)
+                rasterizer.cullMode = VK_CULL_MODE_NONE;
+            else if (cm == FRONT)
+                rasterizer.cullMode = VK_CULL_MODE_FRONT_BIT;
+            else if (cm == BACK)
+                rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
+            else
+                rasterizer.cullMode = VK_CULL_MODE_FRONT_AND_BACK;
             rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
             rasterizer.depthBiasEnable = VK_FALSE;
 

@@ -8,9 +8,9 @@ namespace odfaeg {
                 //Droite.
                 VertexArray va1(Triangles, 6, this);
                 Vertex v1(math::Vec3f(w, 0, 0), color, math::Vec2f(0.f, 0.f));
-                Vertex v2(math::Vec3f(w, h, 0), color, math::Vec2f(1.f, 0.f));
+                Vertex v2(math::Vec3f(w, 0, d), color, math::Vec2f(1.f, 0.f));
                 Vertex v3(math::Vec3f(w, h, d), color, math::Vec2f(1.f, 1.f));
-                Vertex v4(math::Vec3f(w, 0, d), color, math::Vec2f(0.f, 1.f));
+                Vertex v4(math::Vec3f(w, h, 0), color, math::Vec2f(0.f, 1.f));
                 va1[0] = v1;
                 va1[1] = v2;
                 va1[2] = v3;
@@ -22,10 +22,10 @@ namespace odfaeg {
                 Face face1 (va1, material1, getTransform());
                 //Gauche.
                 VertexArray va2(Triangles, 6, this);
-                Vertex v5(math::Vec3f(0, 0, 0), color, math::Vec2f(0.f, 0.f));
-                Vertex v6(math::Vec3f(0, h, 0), color, math::Vec2f(1.f, 0.f));
-                Vertex v7(math::Vec3f(0, h, d), color, math::Vec2f(1.f, 1.f));
-                Vertex v8(math::Vec3f(0, 0, d), color, math::Vec2f(0.f, 1.f));
+                Vertex v5(math::Vec3f(0, 0, d), color, math::Vec2f(0.f, 0.f));
+                Vertex v6(math::Vec3f(0, 0, 0), color, math::Vec2f(1.f, 0.f));
+                Vertex v7(math::Vec3f(0, h, 0), color, math::Vec2f(1.f, 1.f));
+                Vertex v8(math::Vec3f(0, h, d), color, math::Vec2f(0.f, 1.f));
                 va2[0] = v5;
                 va2[1] = v6;
                 va2[2] = v7;
@@ -53,9 +53,9 @@ namespace odfaeg {
                 //Dessous.
                 VertexArray va4(Triangles, 6, this);
                 Vertex v13(math::Vec3f(0, 0, 0), color, math::Vec2f(0.f, 0.f));
-                Vertex v14(math::Vec3f(w, 0, 0), color, math::Vec2f(1.f, 0.f));
+                Vertex v14(math::Vec3f(w, 0, d), color, math::Vec2f(1.f, 0.f));
                 Vertex v15(math::Vec3f(w, 0, d), color, math::Vec2f(1.f, 1.f));
-                Vertex v16(math::Vec3f(0, 0, d), color, math::Vec2f(0.f, 1.f));
+                Vertex v16(math::Vec3f(0, 0, 0), color, math::Vec2f(0.f, 1.f));
                 va4[0] = v13;
                 va4[1] = v14;
                 va4[2] = v15;
@@ -68,9 +68,9 @@ namespace odfaeg {
                 //Devant
                 VertexArray va5(Triangles, 6, this);
                 Vertex v17(math::Vec3f(0, 0, d), color, math::Vec2f(0.f, 0.f));
-                Vertex v18(math::Vec3f(w, 0, d), color, math::Vec2f(1.f, 0.f));
+                Vertex v18(math::Vec3f(0, h, d), color, math::Vec2f(1.f, 0.f));
                 Vertex v19(math::Vec3f(w, h, d), color, math::Vec2f(1.f, 1.f));
-                Vertex v20(math::Vec3f(0, h, d), color, math::Vec2f(0.f, 1.f));
+                Vertex v20(math::Vec3f(w, 0, d), color, math::Vec2f(0.f, 1.f));
                 va5[0] = v17;
                 va5[1] = v18;
                 va5[2] = v19;

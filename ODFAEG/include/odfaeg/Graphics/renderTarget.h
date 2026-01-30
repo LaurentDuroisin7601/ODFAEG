@@ -53,6 +53,9 @@ namespace odfaeg {
         #ifdef VULKAN
         class ODFAEG_GRAPHICS_API RenderTarget {
             public :
+            enum CULLMODE {
+                NONE, BACK, FRONT, FRONT_AND_BACK
+            };
             struct alignas(16) GLMatrix4f {
                 float data[16]; // row-major ou column-major, selon ton convention
             };
@@ -264,6 +267,7 @@ namespace odfaeg {
             ViewportMatrix getViewportMatrix(View* view);
             void endRenderPass();
             std::array<VkRect2D, 2>& getScissors();
+            void setCullMode(CULLMODE cm);
 
         protected :
             virtual bool isFirstSubmit() = 0;
@@ -307,6 +311,7 @@ namespace odfaeg {
             PFN_vkCmdPushDescriptorSetKHR vkCmdPushDescriptorSetKHR{ VK_NULL_HANDLE };
 
 
+
             void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size, VkCommandBuffer cmd);
 
 
@@ -334,6 +339,7 @@ namespace odfaeg {
             static unsigned int nbRenderTargets;
             Texture* depthTexture;
             static const unsigned int NB_DEPTH_STENCIL = 2;
+            CULLMODE cm;
         };
         #else
         ////////////////////////////////////////////////////////////
