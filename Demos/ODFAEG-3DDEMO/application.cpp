@@ -283,6 +283,7 @@ void MyAppli::onUpdate (RenderWindow* window, IEvent& event) {
         }
         if (event.type == IEvent::MOUSE_MOTION_EVENT && IMouse::isButtonPressed(IMouse::Right)) {
             //std::cout<<"rotate"<<std::endl;
+
             int relX = (event.mouseMotion.x - oldX) * sensivity;
             int relY = (event.mouseMotion.y - oldY) * sensivity;
             float teta = view3D.getTeta() - relY;
@@ -433,6 +434,7 @@ void MyAppli::onExec() {
         view.move(0, 0, -verticalMotionDirection * speed * clock2.getElapsedTime().asSeconds());
         getRenderComponentManager().getRenderComponent(i)->setView(view);
     }*/
+    //std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
     clock.restart();
 }
