@@ -53,9 +53,9 @@ namespace odfaeg {
                 //Dessous.
                 VertexArray va4(Triangles, 6, this);
                 Vertex v13(math::Vec3f(0, 0, 0), color, math::Vec2f(0.f, 0.f));
-                Vertex v14(math::Vec3f(w, 0, d), color, math::Vec2f(1.f, 0.f));
+                Vertex v14(math::Vec3f(0, 0, d), color, math::Vec2f(1.f, 0.f));
                 Vertex v15(math::Vec3f(w, 0, d), color, math::Vec2f(1.f, 1.f));
-                Vertex v16(math::Vec3f(0, 0, 0), color, math::Vec2f(0.f, 1.f));
+                Vertex v16(math::Vec3f(w, 0, 0), color, math::Vec2f(0.f, 1.f));
                 va4[0] = v13;
                 va4[1] = v14;
                 va4[2] = v15;
