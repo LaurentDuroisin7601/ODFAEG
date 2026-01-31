@@ -42,10 +42,7 @@ namespace odfaeg {
             std::vector<const char*> getRequiredExtensions();
             VkInstance instance;
             VkDebugUtilsMessengerEXT debugMessenger;
-            VkCommandPool commandPool;
-            VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
-            VkDevice device;
-            VkQueue graphicsQueue;
+
         };
     }
 }
