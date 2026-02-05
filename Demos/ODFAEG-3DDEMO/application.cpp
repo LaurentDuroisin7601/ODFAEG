@@ -15,7 +15,7 @@ MyAppli::MyAppli(Vec2f size, std::string title) :
     //Rotate the cube around a vector.
 
     //The default view have a perspective projection, but you can set another view with the setView function.
-    view3D.move(0, 0, -10);
+    view3D.move(0, 0, 10);
     ps = new ParticleSystem(getDevice(), Vec3f(0, 0, 0), Vec3f(100, 100, 100), factory);
     billboard = new BillBoard(view3D, *ps);
     view3D.setConstrains(10, 0);
@@ -84,7 +84,7 @@ void MyAppli::onInit() {
     //heightmap->setShadowScale(Vec3f(1, -1, 1));
     float cy;
     bool isOnHeightMap = heightmap->getHeight(Vec2f(10, 10), cy);
-    cube = factory.make_entity<g3d::Cube>(Vec3f(10, cy, 10), 20, 20, 20, Color::Transparent, factory);
+    cube = factory.make_entity<g3d::Cube>(Vec3f(10, cy, -10), 20, 20, 20, Color::Transparent, factory);
     for (unsigned int i = 0; i < cube->getFaces().size(); i++) {
         cube->getFace(i)->getMaterial().setRefractable(true);
         cube->getFace(i)->getMaterial().setType(Material::GLASS);
@@ -124,7 +124,7 @@ void MyAppli::onInit() {
     //animator->setDrawMode(Entity::INSTANCED);
 
     float y, z;
-    model->move(Vec3f(0, 0, 50));
+    model->move(Vec3f(0, 0, -50));
     //model->setScale(Vec3f(2.f, 2.f, 2.f));
 
 
@@ -148,7 +148,7 @@ void MyAppli::onInit() {
     model->setShadowRotation(90 + angle * 75, Vec3f(1, 0, 0));*/
     //model->setShadowRotation(angle2 * 150, Vec3f(0, 0, 1));
     //model->setShadowCenter(Vec3f(0, 0, -3));
-    animator->move(Vec3f(-10, 0, 20));
+    animator->move(Vec3f(-10, 0, -20));
 
     isOnHeightMap = heightmap->getHeight(Vec2f(animator->getPosition().x(), animator->getPosition().z()), z);
     //std::cout<<"animator size : "<<animator->getSize()<<std::endl;
