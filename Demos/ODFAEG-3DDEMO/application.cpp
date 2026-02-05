@@ -23,7 +23,7 @@ MyAppli::MyAppli(Vec2f size, std::string title) :
     //getView().setPerspective(-size.x * 0.5f, size.x * 0.5f, -size.y * 0.5f, size.y * 0.5f, -1000, 1000);
 
     speed = 10.f;
-    sensivity = 0.5f;
+    sensivity = 2.f;
 
     verticalMotionActive = false;
     verticalMotionDirection = 0;

@@ -183,7 +183,7 @@ namespace odfaeg {
                 teta = -lockTeta;
             this->teta = teta;
             computeVectorsFromAngles();
-            viewMatrix.setAxis(left, up, forward);
+            viewMatrix.setAxis(left, up, -forward);
             viewUpdated = true;
         }
         void View::rotate(float gamma) {
