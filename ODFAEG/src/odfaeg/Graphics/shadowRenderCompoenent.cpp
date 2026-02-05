@@ -464,7 +464,7 @@ namespace odfaeg {
                                                                     beginInvocationInterlockARB();
                                                                     vec4 alpha = imageLoad(stencilBuffer,ivec2(gl_FragCoord.xy));
                                                                     float l = layer;
-                                                                    float z = 1 - gl_FragCoord.z;
+                                                                    float z = gl_FragCoord.z;
                                                                     if (l > alpha.y || l == alpha.y && z > alpha.z) {
                                                                         //debugPrintfEXT("stencil : %f", z);
                                                                         if (current_alpha < 0.01) discard;
@@ -617,7 +617,7 @@ namespace odfaeg {
                                                                     float shadowFactor;
                                                                     vec3 lightDir = vec3(lightCenter.x, lightCenter.y, lightViewZ) - vec3(gl_FragCoord.x, gl_FragCoord.y, pixelViewZ);
                                                                     float bias = 0.002;
-                                                                    if (stencil.z - bias > 1 - projCoords.z) {
+                                                                    if (stencil.z - bias > projCoords.z) {
                                                                         if (depth.z - bias >= z) {
                                                                             shadowFactor = 1.0;
                                                                         } else {
@@ -926,7 +926,7 @@ namespace odfaeg {
                         }
                     }
                     states.shader = &buildShadowMapShader;
-                    stencilBuffer.setCullMode(RenderTarget::BACK);
+                    //stencilBuffer.setCullMode(RenderTarget::BACK);
                     for (unsigned int b = 0; b < blendModes.size(); b++) {
                         states.blendMode = blendModes[b];
                         states.blendMode.updateIds();

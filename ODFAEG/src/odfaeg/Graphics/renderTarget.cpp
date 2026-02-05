@@ -236,33 +236,7 @@ namespace odfaeg {
             return scissors;
         }
         void RenderTarget::createDescriptorsAndPipelines() {
-            /*for (unsigned int i = 0; i < pipelineLayout.size(); i++) {
-                for (unsigned int j = 0; j < pipelineLayout[i].size(); j++) {
-                    for (unsigned int k = 0; k < pipelineLayout[i][j].size(); k++) {
-                        if (pipelineLayout[i][j][k] != nullptr)
-                            vkDestroyPipelineLayout(vkDevice.getDevice(), pipelineLayout[i][j][k], nullptr);
 
-                    }
-                }
-            }
-
-            for (unsigned int i = 0; i < graphicsPipeline.size(); i++) {
-                for (unsigned int j = 0; j < graphicsPipeline[i].size(); j++) {
-                    for (unsigned int k = 0; k < graphicsPipeline[i][j].size(); k++) {
-                        if (graphicsPipeline[i][j][k] != nullptr)
-                            vkDestroyPipeline(vkDevice.getDevice(), graphicsPipeline[i][j][k], nullptr);
-
-                    }
-                }
-            }
-            for (unsigned int i = 0; i < descriptorSetLayout.size(); i++) {
-                if (descriptorSetLayout[i] != nullptr)
-                    vkDestroyDescriptorSetLayout(vkDevice.getDevice(), descriptorSetLayout[i], nullptr);
-            }
-            for (unsigned int i = 0; i < descriptorPool.size(); i++) {
-                if (descriptorPool[i] != nullptr)
-                    vkDestroyDescriptorPool(vkDevice.getDevice(), descriptorPool[i], nullptr);
-            }*/
              RenderStates states;
              states.shader = &defaultShader;
              createDescriptorPool(states);
@@ -1099,47 +1073,27 @@ namespace odfaeg {
             Shader* shader = const_cast<Shader*>(states.shader);
             states.blendMode.updateIds();
 
-            /*////std::cout<<"blend mode : "<<states.blendMode.colorSrcFactor<<","<<states.blendMode.colorDstFactor<<std::endl;
-            system("PAUSE");*/
 
-            //for (size_t i = 0; i < commandBuffers.size(); i++) {
-                /*VkCommandBufferBeginInfo beginInfo{};
-                beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+            vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+primitiveType][0][(depthTestEnabled) ? states.blendMode.nbBlendModes + states.blendMode.id : states.blendMode.id]);
+            ////////std::cout<<"buffer : "<<this->vertexBuffers[selectedBuffer]->getVertexBuffer()<<std::endl;
 
-                if (vkBeginCommandBuffer(commandBuffers[getCurrentFrame()], &beginInfo) != VK_SUCCESS) {
-                    throw core::Erreur(0, "failed to begin recording command buffer!", 1);
-                }*/
+            VkBuffer vertexBuffers[] = {vb.getVertexBuffer(getCurrentFrame())};
+            VkDeviceSize offsets[] = {0};
+            vkCmdBindVertexBuffers(cmd, 0, 1, vertexBuffers, offsets);
+            unsigned int descriptorId = shader->getId();
 
 
-                /*if (getSurface() != VK_NULL_HANDLE)
-                    //////std::cout<<"render pass cmd rw : "<<getRenderPass()<<std::endl;
-                else
-                    //////std::cout<<"render pass cmd rt : "<<getRenderPass()<<std::endl;*/
-                /*std::cout<<"ids : "<<shader->getId()<<","<<vb.getPrimitiveType()<<","<<id<<","<<states.blendMode.id<<std::endl;
-                system("PAUSE");*/
-                /*if (depthTestEnabled)
-                    std::cout<<"depth test enabled"<<std::endl;*/
+            vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+primitiveType][0][(depthTestEnabled) ? states.blendMode.nbBlendModes + states.blendMode.id : states.blendMode.id], 0, 1, &descriptorSets[shader->getId()][getCurrentFrame()], 0, nullptr);
 
-                vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+primitiveType][0][(depthTestEnabled) ? states.blendMode.nbBlendModes + states.blendMode.id : states.blendMode.id]);
-                ////////std::cout<<"buffer : "<<this->vertexBuffers[selectedBuffer]->getVertexBuffer()<<std::endl;
-
-                VkBuffer vertexBuffers[] = {vb.getVertexBuffer(getCurrentFrame())};
-                VkDeviceSize offsets[] = {0};
-                vkCmdBindVertexBuffers(cmd, 0, 1, vertexBuffers, offsets);
-                unsigned int descriptorId = shader->getId();
-
-
-                vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+primitiveType][0][(depthTestEnabled) ? states.blendMode.nbBlendModes + states.blendMode.id : states.blendMode.id], 0, 1, &descriptorSets[shader->getId()][getCurrentFrame()], 0, nullptr);
-
-                applyViewportAndScissor(cmd);
-                if(vb.getIndicesSize() > 0) {
-                    vkCmdBindIndexBuffer(cmd, vb.getIndexBuffer(getCurrentFrame()), 0, VK_INDEX_TYPE_UINT16);
-                }
-                if(vb.getIndicesSize() > 0) {
-                    vkCmdDrawIndexed(cmd, static_cast<uint32_t>(vb.getIndicesSize()), 1, 0, 0, 0);
-                } else {
-                    vkCmdDraw(cmd, static_cast<uint32_t>(vb.getSize()), 1, 0, 0);
-                }
+            applyViewportAndScissor(cmd);
+            if(vb.getIndicesSize() > 0) {
+                vkCmdBindIndexBuffer(cmd, vb.getIndexBuffer(getCurrentFrame()), 0, VK_INDEX_TYPE_UINT16);
+            }
+            if(vb.getIndicesSize() > 0) {
+                vkCmdDrawIndexed(cmd, static_cast<uint32_t>(vb.getIndicesSize()), 1, 0, 0, 0);
+            } else {
+                vkCmdDraw(cmd, static_cast<uint32_t>(vb.getSize()), 1, 0, 0);
+            }
 
 
 

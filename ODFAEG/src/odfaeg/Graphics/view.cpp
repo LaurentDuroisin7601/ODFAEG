@@ -7,7 +7,7 @@ namespace odfaeg {
         View::View () : viewport(0, 0, 0, 2, 2, 1), depth(1) {
             setPerspective(-1, 1, -1, 1, 0, 1);
             this->up = math::Vec3f(0.f, 1.f, 0.f);
-            this->forward = math::Vec3f(0.f, 0.f, -1.f);
+            this->forward = math::Vec3f(0.f, 0.f, 1.f);
             position = math::Vec3f (0, 0, 0);
             this->left = forward.cross(up).normalize();   // X vers la gauche
             this->up = left.cross(forward).normalize();   // recalcule up pour ortho
@@ -25,7 +25,7 @@ namespace odfaeg {
 
             setPerspective(-width * 0.5f, width * 0.5f, -height * 0.5f, height * 0.5f, zNear, zFar);
             this->up = math::Vec3f(0.f, 1.f, 0.f);
-            this->forward = math::Vec3f(0.f, 0.f, -1.f);
+            this->forward = math::Vec3f(0.f, 0.f, 1.f);
             position = math::Vec3f (0, 0, 0);
             this->left = forward.cross(up).normalize();   // X vers la gauche
             this->up = left.cross(forward).normalize();   // recalcule up pour ortho
@@ -64,7 +64,7 @@ namespace odfaeg {
         View::View (double width, double height, double fovy, double zNear, double zFar) : viewport(0, 0, zNear, width, height, zFar), depth(zFar) {
             setPerspective(fovy, width / height, zNear, zFar);
             this->position = math::Vec3f(0.f, 0.f, 0.f);
-            this->forward = math::Vec3f(0.f, 0.f, -1.f);  // vers -Z
+            this->forward = math::Vec3f(0.f, 0.f, 1.f);  // vers -Z
             this->up = math::Vec3f(0.f, 1.f, 0.f);        // Y en haut
             this->left = forward.cross(up).normalize();   // X vers la gauche
             this->up = left.cross(forward).normalize();   // recalcule up pour ortho
