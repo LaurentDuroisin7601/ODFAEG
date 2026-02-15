@@ -11,7 +11,7 @@ namespace odfaeg {
         }
 
         void ProjMatrix::setGlOrthoMatrix (double l, double r, double b, double t, double n, double f) {
-            matrix4f[0][0] = 2 / (r - l);
+            matrix4f[0][0] = -2 / (r - l);
             matrix4f[0][1] = 0;
             matrix4f[0][2] = 0;
             matrix4f[0][3] = -((r + l) / (r - l));

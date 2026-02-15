@@ -1218,6 +1218,16 @@ Vec3f ODFAEGCreator::getGridCellPos(Vec3f pos) {
     return Vec3f (extends[0][0], extends[1][0], extends[2][0]);
 }
 void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
+    if (&getRenderWindow() == window && !isGuiShown && event.mouseButton.type == IEvent::BUTTON_EVENT_PRESSED && event.mouseButton.button == IMouse::Right) {
+        floatingMenu.clear();
+        FontManager<Fonts>& fm = cache.resourceManager<Font, Fonts>("FontManager");
+        MenuItem* miCp = new MenuItem(getRenderWindow(), fm.getResourceByAlias(Fonts::Serif),"Copy");
+        miCp->addMenuItemListener(this);
+        MenuItem* miPst = new MenuItem(getRenderWindow(), fm.getResourceByAlias(Fonts::Serif),"Paste");
+        miPst->addMenuItemListener(this);
+        floatingMenu.addMenuItem(miCp);
+        floatingMenu.addMenuItem(miPst);
+    }
     if (&getRenderWindow() == window && event.type == IEvent::TEXT_INPUT_EVENT) {
         tScriptEdit->getListener().setCommandSlotParams("CONTEXTENTERED", this, tScriptEdit, static_cast<char>(event.text.unicode));
     }
@@ -8461,7 +8471,7 @@ void ODFAEGCreator::onGoToFunctionSelected(DropDownList* dp) {
 }
 void ODFAEGCreator::onGoToFunctionNotDroppedDown(DropDownList* dp) {
     if (dp == dpGoToMFunc) {
-        std::cout<<"activate"<<std::endl;
+        //std::cout<<"activate"<<std::endl;
         tScriptEdit->setEventContextActivated(true);
         pProjects->setEventContextActivated(true);
         tScriptEdit->setFocus(true);
