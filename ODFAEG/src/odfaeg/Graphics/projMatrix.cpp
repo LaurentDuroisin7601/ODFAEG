@@ -77,7 +77,7 @@ namespace odfaeg {
             invMatrix4f = matrix4f.inverse();
         }*/
         void ProjMatrix::setGlPerspectiveMatrix (double l, double r, double b, double t, double n, double f) {
-            matrix4f[0][0] = (2 * n) / (r - l);
+            matrix4f[0][0] = -(2 * n) / (r - l);
             matrix4f[0][1] = 0;
             matrix4f[0][2] = (r + l) / (r - l);
             matrix4f[0][3] = 0;
