@@ -926,7 +926,7 @@ namespace odfaeg {
                         }
                     }
                     states.shader = &buildShadowMapShader;
-                    stencilBuffer.setCullMode(RenderTarget::BACK);
+                    stencilBuffer.setCullMode(RenderTarget::FRONT);
                     for (unsigned int b = 0; b < blendModes.size(); b++) {
                         states.blendMode = blendModes[b];
                         states.blendMode.updateIds();

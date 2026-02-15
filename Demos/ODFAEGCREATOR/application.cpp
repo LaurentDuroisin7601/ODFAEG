@@ -1227,6 +1227,9 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
         miPst->addMenuItemListener(this);
         floatingMenu.addMenuItem(miCp);
         floatingMenu.addMenuItem(miPst);
+        floatingMenu.setPosition(Vec3f(event.mouseButton.x, event.mouseButton.y, 0));
+        floatingMenu.setVisible(true);
+
     }
     if (&getRenderWindow() == window && event.type == IEvent::TEXT_INPUT_EVENT) {
         tScriptEdit->getListener().setCommandSlotParams("CONTEXTENTERED", this, tScriptEdit, static_cast<char>(event.text.unicode));
