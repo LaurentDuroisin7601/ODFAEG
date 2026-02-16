@@ -51,6 +51,7 @@ namespace odfaeg {
                 void resetTokens();
                 void addToken(Token token);
                 void applySyntaxSuggar();
+                void insert(std::string text);
             private :
                 int scrollX, scrollY;
                 int currentIndex, currentIndex2, caracterSize;

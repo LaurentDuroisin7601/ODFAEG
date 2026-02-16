@@ -1227,6 +1227,8 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
         miPst->addMenuItemListener(this);
         floatingMenu.addMenuItem(miCp);
         floatingMenu.addMenuItem(miPst);
+        getRenderComponentManager().addComponent(miCp);
+        getRenderComponentManager().addComponent(miPst);
         floatingMenu.setPosition(Vec3f(event.mouseButton.x, event.mouseButton.y, 0));
         floatingMenu.setVisible(true);
 
@@ -4700,6 +4702,53 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
          wCreateScript->setVisible(true);
          getRenderComponentManager().setEventContextActivated(true, *wCreateScript);
          getRenderComponentManager().setEventContextActivated(false, getRenderWindow());
+     } else if (item->getText() == "Copy") {
+
+        if (!OpenClipboard(nullptr))
+            return;
+
+        EmptyClipboard();
+        std::string text = tScriptEdit->getSelectedText();
+
+        // Allouer un bloc global pour le texte
+        HGLOBAL hGlob = GlobalAlloc(GMEM_MOVEABLE, text.size() + 1);
+        if (!hGlob) {
+            CloseClipboard();
+            return;
+        }
+
+        // Copier le texte dans la mémoire allouée
+        memcpy(GlobalLock(hGlob), text.c_str(), text.size() + 1);
+        GlobalUnlock(hGlob);
+
+        // Mettre dans le presse-papier
+        SetClipboardData(CF_TEXT, hGlob);
+
+        CloseClipboard();
+        floatingMenu.setVisible(false);
+
+     } else if (item->getText() == "Paste") {
+        if (!OpenClipboard(nullptr))
+            return;
+
+        HANDLE hData = GetClipboardData(CF_TEXT);
+        if (!hData) {
+            CloseClipboard();
+            return;
+        }
+
+        char* pszText = static_cast<char*>(GlobalLock(hData));
+        if (!pszText) {
+            CloseClipboard();
+            return;
+        }
+
+        std::string text (pszText);
+        tScriptEdit->insert(text);
+        GlobalUnlock(hData);
+        CloseClipboard();
+        floatingMenu.setVisible(false);
+
      } else {
          strsearch="";
          tScriptEdit->getListener().setCommandSlotParams("CONTEXTENTERED", this, tScriptEdit, '\0');

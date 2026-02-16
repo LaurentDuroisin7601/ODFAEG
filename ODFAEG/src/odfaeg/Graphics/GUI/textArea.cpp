@@ -306,6 +306,9 @@ namespace odfaeg {
                 }
                 viewUpdated = true;
             }
+            void TextArea::insert(std::string text) {
+                text.insert(currentIndex, text);
+            }
         }
     }
 }
