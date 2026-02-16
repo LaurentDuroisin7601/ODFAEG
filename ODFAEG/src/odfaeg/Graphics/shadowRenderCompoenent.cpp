@@ -471,8 +471,8 @@ namespace odfaeg {
                                                                         imageStore(stencilBuffer,ivec2(gl_FragCoord.xy),vec4(0, l, z, current_alpha));
                                                                         memoryBarrier();
 
-                                                                        //fColor = vec4(0, l, z, current_alpha);
-                                                                        fColor = vec4(z, z, z, 1);
+                                                                        fColor = vec4(0, l, z, current_alpha);
+                                                                        //fColor = vec4(z, z, z, 1);
                                                                     } else {
                                                                         discard;
                                                                     }
@@ -618,7 +618,7 @@ namespace odfaeg {
                                                                     vec3 lightDir = vec3(lightCenter.x, lightCenter.y, lightViewZ) - vec3(gl_FragCoord.x, gl_FragCoord.y, pixelViewZ);
                                                                     float bias = 0.002;
                                                                     if (stencil.z - bias  > projCoords.z) {
-                                                                        if (depth.z - bias >= z) {
+                                                                        if (depth.z - bias > z) {
                                                                             shadowFactor = 1.0;
                                                                         } else {
                                                                             //debugPrintfEXT("draw shadow");
