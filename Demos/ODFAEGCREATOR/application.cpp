@@ -1885,8 +1885,10 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
                 //std::cout<<"visible entities selected"<<std::endl;
             }
 
-            if (rectSelect.getItems().size() > 0)
+            if (rectSelect.getItems().size() > 0) {
                 selectedObject = rectSelect.getItems()[0];
+                std::cout<<"selected object type : "<<selectedObject->getType()<<std::endl;
+            }
             if (selectedObject != nullptr) {
                 selectedBoundingVolume = selectedObject->getCollisionVolume();
                 if (selectedObject->getType() == "E_TILE") {
@@ -2113,6 +2115,7 @@ void ODFAEGCreator::onExec() {
     }
     if (dpSelectComponent->getSelectedItem() == "MAIN WINDOW") {
         if (eu != nullptr) {
+            //std::cout<<"set main window view"<<std::endl;
             eu->setView(getView());
         }
     } else {
@@ -2120,6 +2123,7 @@ void ODFAEGCreator::onExec() {
             if (getRenderComponentManager().getRenderComponent(i) != nullptr && getRenderComponentManager().getRenderComponent(i)->getName() == dpSelectComponent->getSelectedItem()) {
                 selectedComponentView = getRenderComponentManager().getRenderComponent(i)->getView();
                 if (eu != nullptr) {
+                    //std::cout<<"set render component window view"<<std::endl;
                     eu->setView(selectedComponentView);
                 }
             }
@@ -2366,6 +2370,8 @@ void ODFAEGCreator::onExec() {
                 }
                 ifs2.close();
             }
+            //std::vector<Entity*> tiles = getWorld()->getEntities("E_BIGTILE");
+            //std::cout<<"nb entities : "<<tiles[0]->getChildren().size()<<std::endl;
             if (getWorld()->getCurrentSceneManager() != nullptr) {
                 cshapes.clear();
                 for (int i = 0; i < getRenderWindow().getSize().x(); i+=gridWidth*0.5) {
@@ -2547,6 +2553,7 @@ void ODFAEGCreator::onExec() {
                         EntitiesUpdater* eu = new EntitiesUpdater(factory, *getWorld());
                         eu->setName(name);
                         getWorld()->addWorker(eu);
+                        this->eu = eu;
                         //std::cout<<"entities updater added"<<std::endl;
                     }
                     if (type == "ParticleSystemUpdater") {
@@ -5676,6 +5683,7 @@ void ODFAEGCreator::displayDecorInfos(Entity* decor) {
         pInfos->setEventContextActivated(false);
 }
 void ODFAEGCreator::displayBigtileInfos(Entity* bigTile) {
+    std::cout<<"display bigtile info"<<std::endl;
     displayTransformInfos(bigTile);
     displayEntityInfos(bigTile);
 }
