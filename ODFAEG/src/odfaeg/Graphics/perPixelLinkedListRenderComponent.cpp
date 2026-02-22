@@ -5565,7 +5565,7 @@ namespace odfaeg {
 
                         visibleEntities[i]->computeParticles(&mtx2, &cv2, vbBindlessTex[Triangles], frameBuffer.getCurrentFrame(),visibleEntities[i]->getTransform(), (visibleEntities[i]->getDrawMode() == Entity::INSTANCED) ? true : false, *computeSemaphores[i][frameBuffer.getCurrentFrame()].get(), *computeFences[i][frameBuffer.getCurrentFrame()].get());
 
-                        auto *entity = visibleEntities[i];
+                        auto entity = visibleEntities[i];
                         auto frame = frameBuffer.getCurrentFrame();
 
                         //std::cout<<"wait : "<<visibleEntities[i]<<" current frame : "<<frameBuffer.getCurrentFrame()<<std::endl;
