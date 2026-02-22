@@ -38,6 +38,8 @@ namespace odfaeg {
                 void setTexture(const Texture* texture);
             private:
                 Color m_color;
+                IntRect m_textRect;
+                Texture* m_texture;
             };
         }
     }

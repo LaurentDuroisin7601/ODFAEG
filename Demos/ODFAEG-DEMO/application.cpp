@@ -287,7 +287,7 @@ namespace sorrok {
             fire->addFrame(fire3);
             fire->play(true);
             fire->setShadowScale(Vec3f(1, -1, 1));
-            fire->setShadowCenter(Vec3f(0, 350, -150));
+            fire->setShadowCenter(Vec3f(0, 250, -125));
 
             getWorld()->addEntity(fire);
             au->addAnim(fire);

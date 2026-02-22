@@ -5626,6 +5626,10 @@ namespace odfaeg {
                     if (shadows[i]->getShadowId() == entity->getId()) {
 
                         shadows[i]->getRootEntity()->setTransform(tm.getMatrix());
+                        for (unsigned int f = 0; f < entity->getFaces().size(); f++) {
+                            shadows[i]->getFaces()[f].setVertexArray(entity->getFaces()[f].getVertexArray());
+                            shadows[i]->getFaces()[f].setMaterial(entity->getFaces()[f].getMaterial());
+                        }
                         return shadows[i].get();
                     }
                 }
@@ -5664,7 +5668,7 @@ namespace odfaeg {
                     std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                     if ( vEntities[i] != nullptr && vEntities[i]->isLeaf()) {
 
-                        //Entity* shadow = getShadow(vEntities[i]);
+                        Entity* shadow = getShadow(vEntities[i]);
                         //std::cout<<"shadow get"<<std::endl;
                         Entity* entity = vEntities[i]->getRootEntity();
                         math::Vec3f shadowOrigin, shadowCenter, shadowScale(1.f, 1.f, 1.f), shadowRotationAxis, shadowTranslation;
@@ -5697,17 +5701,17 @@ namespace odfaeg {
                                 if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0) {
 
                                     batcher.addFace( vEntities[i]->getFace(j));
-                                    shadowBatcher.addShadowFace(vEntities[i]->getFace(j), view.getViewMatrix(), tm);
+                                    shadowBatcher.addShadowFace(shadow->getFace(j), view.getViewMatrix(), tm);
                                 } else {
 
                                     batcherIndexed.addFace( vEntities[i]->getFace(j));
-                                    shadowBatcherIndexed.addShadowFace(vEntities[i]->getFace(j), view.getViewMatrix(), tm);
+                                    shadowBatcherIndexed.addShadowFace(shadow->getFace(j), view.getViewMatrix(), tm);
                                 }
                              } else {
                                  if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0) {
 
                                     normalBatcher.addFace( vEntities[i]->getFace(j));
-                                    normalShadowBatcher.addShadowFace(vEntities[i]->getFace(j), view.getViewMatrix(), tm);
+                                    normalShadowBatcher.addShadowFace(shadow->getFace(j), view.getViewMatrix(), tm);
                                     /*if (vEntities[i]->getRootEntity()->getType() != "E_BIGTILE") {
                                         std::lock_guard<std::recursive_mutex> lock(rec_mutex);
 
@@ -5717,7 +5721,7 @@ namespace odfaeg {
                                     ////std::cout<<"add shadow indexes"<<std::endl;
 
                                     normalBatcherIndexed.addFace( vEntities[i]->getFace(j));
-                                    normalShadowBatcherIndexed.addShadowFace(vEntities[i]->getFace(j), view.getViewMatrix(), tm);
+                                    normalShadowBatcherIndexed.addShadowFace(shadow->getFace(j), view.getViewMatrix(), tm);
                                  }
                              }
                         }

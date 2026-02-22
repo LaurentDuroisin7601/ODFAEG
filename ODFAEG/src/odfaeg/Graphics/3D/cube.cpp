@@ -5,6 +5,7 @@ namespace odfaeg {
 
             Cube::Cube (math::Vec3f position, float w, float h, float d, Color color, EntityFactory& factory) : GameObject(position,math::Vec3f(w, h, d),math::Vec3f(w*0.5f,h*0.5f,d*0.5f),"E_CUBE", factory) {
                 m_color = color;
+                m_texture = nullptr;
                 //Droite.
                 VertexArray va1(Triangles, 6, this);
                 Vertex v1(math::Vec3f(w, 0, 0), color, math::Vec2f(0.f, 0.f));
@@ -109,6 +110,7 @@ namespace odfaeg {
                     getFace(i)->getMaterial().clearTextures();
                     getFace(i)->getMaterial().addTexture(texture);
                 }
+                m_texture = const_cast<Texture*>(texture);
             }
             void Cube::setTexCoords(IntRect texCoords) {
                 for (unsigned int i = 0; i < getFaces().size(); i++) {
@@ -120,6 +122,7 @@ namespace odfaeg {
                     va[4].texCoords = math::Vec2f(texCoords.left + texCoords.width, texCoords.top + texCoords.height);
                     va[5].texCoords = math::Vec2f(texCoords.left, texCoords.top + texCoords.height);
                 }
+                m_textRect = texCoords;
             }
             void Cube::onDraw (RenderTarget &target, RenderStates states) {
                 for (unsigned int i = 0; i < getFaces().size(); i++) {
@@ -131,6 +134,12 @@ namespace odfaeg {
                 Cube* cube = factory.make_entity<Cube>(getPosition(), getSize().x(), getSize().y(), getSize().z(),m_color,factory);
                 GameObject::copy(cube);
                 cube->m_color = m_color;
+                cube->m_textRect = m_textRect;
+                cube->m_texture = m_texture;
+                if (m_texture != nullptr) {
+                    cube->setTexCoords(m_textRect);
+                    cube->setTexture(m_texture);
+                }
                 return cube;
             }
             Color Cube::getColor() {
