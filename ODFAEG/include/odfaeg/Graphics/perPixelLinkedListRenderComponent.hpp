@@ -233,8 +233,8 @@ namespace odfaeg {
             std::array<std::array<bool, MAX_FRAMES_IN_FLIGHT>, Batcher::nbPrimitiveTypes> needToUpdateDSs;
             unsigned int alignment;
             std::mutex mtx, mtx2;
-            std::vector<std::array<VkSemaphore, MAX_FRAMES_IN_FLIGHT>> computeSemaphores;
-            std::vector<std::array<VkFence, MAX_FRAMES_IN_FLIGHT>> computeFences;
+            std::vector<std::array<std::unique_ptr<VkSemaphore>, MAX_FRAMES_IN_FLIGHT>> computeSemaphores;
+            std::vector<std::array<std::unique_ptr<VkFence>, MAX_FRAMES_IN_FLIGHT>> computeFences;
             std::atomic<bool> stop = false;
             std::array<unsigned int, MAX_FRAMES_IN_FLIGHT> maxTexturesInUse={0, 0};
             bool areThreadRelaunched = false;

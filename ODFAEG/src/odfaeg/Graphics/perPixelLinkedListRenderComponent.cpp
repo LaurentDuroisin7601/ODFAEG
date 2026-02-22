@@ -5539,15 +5539,19 @@ namespace odfaeg {
                             VkFenceCreateInfo fenceInfo{};
                             fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 
-                            if (computeFences[i][j] == VK_NULL_HANDLE) {
-                                if (vkCreateFence(vkDevice.getDevice(), &fenceInfo, nullptr, &computeFences[i][j]) != VK_SUCCESS) {
+                            if (!computeFences[i][j]) {
+                                VkFence fence;
+                                if (vkCreateFence(vkDevice.getDevice(), &fenceInfo, nullptr, &fence) != VK_SUCCESS) {
                                     throw core::Erreur(0, "échec de la création des objets de synchronisation pour une entité!", 1);
                                 }
+                                computeFences[i][j] = std::make_unique<VkFence>(fence);
                             }
-                            if(computeSemaphores[i][j] == VK_NULL_HANDLE) {
-                                if(vkCreateSemaphore(vkDevice.getDevice(), &semaphoreInfo, nullptr, &computeSemaphores[i][j]) != VK_SUCCESS) {
+                            if(!computeSemaphores[i][j]) {
+                                VkSemaphore semaphore;
+                                if(vkCreateSemaphore(vkDevice.getDevice(), &semaphoreInfo, nullptr, &semaphore) != VK_SUCCESS) {
                                     throw core::Erreur(0, "échec de la création des objets de synchronisation pour une entité!", 1);
                                 }
+                                computeSemaphores[i][j] = std::make_unique<VkSemaphore>(semaphore);
                             }
                         }
                     }
@@ -5558,14 +5562,14 @@ namespace odfaeg {
                         && visibleEntities[i]->isComputeFinished(frameBuffer.getCurrentFrame())) {
                         std::unique_lock<std::mutex> lock2(mtx2);
 
-                        visibleEntities[i]->computeParticles(&mtx2, &cv2, vbBindlessTex[Triangles], frameBuffer.getCurrentFrame(),visibleEntities[i]->getTransform(), (visibleEntities[i]->getDrawMode() == Entity::INSTANCED) ? true : false, computeSemaphores[i][frameBuffer.getCurrentFrame()], computeFences[i][frameBuffer.getCurrentFrame()]);
+                        visibleEntities[i]->computeParticles(&mtx2, &cv2, vbBindlessTex[Triangles], frameBuffer.getCurrentFrame(),visibleEntities[i]->getTransform(), (visibleEntities[i]->getDrawMode() == Entity::INSTANCED) ? true : false, *computeSemaphores[i][frameBuffer.getCurrentFrame()].get(), *computeFences[i][frameBuffer.getCurrentFrame()].get());
 
 
 
                         //std::cout<<"wait : "<<visibleEntities[i]<<" current frame : "<<frameBuffer.getCurrentFrame()<<std::endl;
                         cv2.wait(lock2, [&, this](){return visibleEntities[i]->isComputeFinished(frameBuffer.getCurrentFrame()) || stop.load();});
                         //std::cout<<"wait finished"<<std::endl;
-                        waitSemaphores.push_back(computeSemaphores[i][frameBuffer.getCurrentFrame()]);
+                        waitSemaphores.push_back(*computeSemaphores[i][frameBuffer.getCurrentFrame()].get());
 
 
                         waitValues.push_back(0);
@@ -5586,7 +5590,7 @@ namespace odfaeg {
                                 );
                             }
                             firstFrame[frameBuffer.getCurrentFrame()] = false;
-                            fencesToWait.push_back(computeFences[i][currentFrame]);
+                            fencesToWait.push_back(*computeFences[i][currentFrame].get());
                         //}
                     }
 
@@ -5763,12 +5767,16 @@ namespace odfaeg {
                 vkDestroySemaphore(vkDevice.getDevice(), offscreenFinishedSemaphore[i], nullptr);
             }
             for (unsigned int i = 0; i < computeSemaphores.size(); i++) {
-                for (unsigned int j = 0; j < MAX_FRAMES_IN_FLIGHT; j++)
-                    vkDestroySemaphore(vkDevice.getDevice(), computeSemaphores[i][j], nullptr);
+                for (unsigned int j = 0; j < MAX_FRAMES_IN_FLIGHT; j++) {
+                    VkSemaphore semaphore = *computeSemaphores[i][j].release();
+                    vkDestroySemaphore(vkDevice.getDevice(), semaphore, nullptr);
+                }
             }
             for (unsigned int i = 0; i < computeFences.size(); i++) {
-                for (unsigned int j = 0; j < MAX_FRAMES_IN_FLIGHT; j++)
-                    vkDestroyFence(vkDevice.getDevice(), computeFences[i][j], nullptr);
+                for (unsigned int j = 0; j < MAX_FRAMES_IN_FLIGHT; j++) {
+                    VkFence fence = *computeFences[i][j].release();
+                    vkDestroyFence(vkDevice.getDevice(), fence, nullptr);
+                }
             }
             vkFreeCommandBuffers(vkDevice.getDevice(), secondaryBufferCommandPool, copyModelDataBufferCommandBuffer.size(), copyModelDataBufferCommandBuffer.data());
 
