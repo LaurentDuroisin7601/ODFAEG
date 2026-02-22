@@ -5526,7 +5526,7 @@ namespace odfaeg {
                 waitValues.push_back(values[currentFrame]);
                 values[currentFrame]++;
                 signalValues.push_back(values[currentFrame]);
-                std::vector<VkFence> fencesToWait;
+
                 //std::cout<<"compute"<<std::endl;
 
                 if (visibleEntities.size() > computeSemaphores.size()) {
@@ -5556,6 +5556,7 @@ namespace odfaeg {
                         }
                     }
                 }
+                std::vector<VkFence> fencesToWait;
                 for (unsigned int i = 0; i < visibleEntities.size(); i++) {
                     if (visibleEntities[i] != nullptr && (visibleEntities[i]->getType() == "E_PARTICLES"
                         || visibleEntities[i]->getType() == "E_BONE_ANIMATION")
@@ -5564,10 +5565,11 @@ namespace odfaeg {
 
                         visibleEntities[i]->computeParticles(&mtx2, &cv2, vbBindlessTex[Triangles], frameBuffer.getCurrentFrame(),visibleEntities[i]->getTransform(), (visibleEntities[i]->getDrawMode() == Entity::INSTANCED) ? true : false, *computeSemaphores[i][frameBuffer.getCurrentFrame()].get(), *computeFences[i][frameBuffer.getCurrentFrame()].get());
 
-
+                        auto *entity = visibleEntities[i];
+                        auto frame = frameBuffer.getCurrentFrame();
 
                         //std::cout<<"wait : "<<visibleEntities[i]<<" current frame : "<<frameBuffer.getCurrentFrame()<<std::endl;
-                        cv2.wait(lock2, [&, this](){return visibleEntities[i]->isComputeFinished(frameBuffer.getCurrentFrame()) || stop.load();});
+                        cv2.wait(lock2, [&, this, entity, frame](){return entity->isComputeFinished(frame) || stop.load();});
                         //std::cout<<"wait finished"<<std::endl;
                         waitSemaphores.push_back(*computeSemaphores[i][frameBuffer.getCurrentFrame()].get());
 
