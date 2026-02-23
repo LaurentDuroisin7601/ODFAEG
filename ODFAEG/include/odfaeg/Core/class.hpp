@@ -33,8 +33,8 @@ namespace odfaeg {
             *  \param the file path of the folder.
             *  \return the vector of the classes names.
             */
-            static std::vector<std::string> getClasses(std::vector<std::string> includePaths, std::string filePath, std::string namespc="");
-            static std::vector<std::string> getClassesFromMemory(std::vector<std::string> includePaths, std::string virtualFile, std::string content, std::string namespc="");
+            static std::vector<std::pair<std::string, std::string>> getClasses(std::vector<std::string> includePaths, std::string filePath, std::string namespc="");
+            static std::vector<std::pair<std::string, std::string>> getClassesFromMemory(std::vector<std::string> includePaths, std::string virtualFile, std::string content, std::string namespc="");
             /**\fn Class getClass(std::string name, std::string nspc="", std::string path="");
             *  \brief get a class object which contains informations about a c++ class.
             *  \param std::string name : the name of the c++ class.
@@ -80,6 +80,7 @@ namespace odfaeg {
             */
             std::string getNamespace();
         private :
+            static std::string normalize(const std::string& path);
             static std::string getQualifiedNamespace(CXCursor cursor);
             static CXChildVisitResult memberFonctionVisitor(CXCursor cursor, CXCursor parent, CXClientData client_data);
             static CXChildVisitResult constructorVisitor(CXCursor cursor, CXCursor parent, CXClientData client_data);
@@ -160,7 +161,7 @@ namespace odfaeg {
         };
         struct Context2 {
             std::vector<std::string> datas;
-            std::vector<std::string> classes;
+            std::vector<std::pair<std::string, std::string>> classes;
         };
     }
 }

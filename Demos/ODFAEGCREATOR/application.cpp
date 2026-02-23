@@ -2699,17 +2699,18 @@ void ODFAEGCreator::onExec() {
                     }
                 }
             }
-            std::vector<std::string> classes = Class::getClasses(rtc.getIncludeDirs(), appliname+"\\Scripts", minAppliname);
+            std::vector<std::pair<std::string, std::string>> classes = Class::getClasses(rtc.getIncludeDirs(), appliname+"\\Scripts");
+            std::cout<<"size : "<<classes.size()<<std::endl;
             for (unsigned int i = 0; i < classes.size(); i++) {
-                //std::cout<<"get class : "<<classes[i]<<std::endl;
-                Class cl = Class::getClass(rtc.getIncludeDirs(), classes[i], appliname+"\\Scripts", minAppliname);
+                std::cout<<"get class : "<<classes[i].first<<std::endl;
+                Class cl = Class::getClass(rtc.getIncludeDirs(), classes[i].first, appliname+"\\Scripts", classes[i].second);
                 //std::cout<<"class file path : "<<cl.getName()<<","<<cl.getImplFilePath()<<std::endl;
                 if (cl.getNamespace() == "") {
-                    dpSelectClass->addItem(classes[i], 15);
-                    dpSelectMClass->addItem(classes[i], 15);
+                    dpSelectClass->addItem(classes[i].first, 15);
+                    dpSelectMClass->addItem(classes[i].first, 15);
                 } else {
-                    dpSelectClass->addItem(cl.getNamespace()+"::"+classes[i], 15);
-                    dpSelectMClass->addItem(classes[i], 15);
+                    dpSelectClass->addItem(cl.getNamespace()+"::"+classes[i].first, 15);
+                    dpSelectMClass->addItem(cl.getNamespace()+"::"+classes[i].first, 15);
                 }
             }
             std::string startDir = getCurrentPath()+"\\"+appliname+"\\Scripts";
@@ -2981,10 +2982,10 @@ void ODFAEGCreator::showFileContent(Label* lab) {
         pScriptsEdit->updateScrolls();
     }
     dpGoToMFunc->removeAllItems();
-    std::vector<std::string> classes = Class::getClassesFromMemory(rtc.getIncludeDirs(), virtualFile, tScriptEdit->getText(), minAppliname);
+    std::vector<std::pair<std::string, std::string>> classes = Class::getClassesFromMemory(rtc.getIncludeDirs(), virtualFile, tScriptEdit->getText());
 
     for (unsigned int i = 0; i < classes.size(); i++) {
-        Class cl = Class::getClassFromMemory(rtc.getIncludeDirs(), virtualFile, classes[i], tScriptEdit->getText(), minAppliname);
+        Class cl = Class::getClassFromMemory(rtc.getIncludeDirs(), virtualFile, classes[i].first, tScriptEdit->getText(), classes[i].second);
         if (cl.getImplFilePath() == virtualFile || cl.getFilePath() == virtualFile) {
             std::vector<MemberFunction> mf = cl.getMembersFunctions();
             for (unsigned int f = 0; f < mf.size(); f++) {
@@ -5361,9 +5362,9 @@ void ODFAEGCreator::displayEntityInfos(Entity* tile) {
     pInfos->addChild(lSelectScriptLabel);
     Node* nSelectScript = new Node("SelectScript",lSelectScriptLabel,Vec2f(0, 0),Vec2f(0.25, 0.025),rootInfosNode.get());
     dpSelectScript = new DropDownList(getRenderWindow(),Vec3f(0, 0, 0), Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),"NONE", 15);
-    std::vector<std::string> classes = Class::getClasses(rtc.getIncludeDirs(), appliname+"\\Scripts", minAppliname);
+    std::vector<std::pair<std::string, std::string>> classes = Class::getClasses(rtc.getIncludeDirs(), appliname+"\\Scripts");
     for (unsigned int i = 0; i < classes.size(); i++) {
-        Class cl = Class::getClass(rtc.getIncludeDirs(), classes[i], appliname+"\\Scripts", minAppliname);
+        Class cl = Class::getClass(rtc.getIncludeDirs(), classes[i].first, appliname+"\\Scripts", classes[i].second);
         bool isMonoBehaviourScript = false;
         std::vector<Class> superClasses = cl.getSuperClasses();
         for (unsigned int j = 0; j < superClasses.size(); j++) {
@@ -5372,9 +5373,9 @@ void ODFAEGCreator::displayEntityInfos(Entity* tile) {
         }
         if (isMonoBehaviourScript) {
             if (cl.getNamespace() == "") {
-                dpSelectScript->addItem(classes[i], 15);
+                dpSelectScript->addItem(classes[i].first, 15);
             } else {
-                dpSelectScript->addItem(cl.getNamespace()+"::"+classes[i], 15);
+                dpSelectScript->addItem(cl.getNamespace()+"::"+classes[i].first, 15);
             }
         }
     }
@@ -7410,7 +7411,14 @@ void ODFAEGCreator::onSelectedClassChanged(DropDownList* dp) {
         dpSelectPointerType->removeAllItems();
         std::string selectedItem = dp->getSelectedItem();
         std::vector<std::string> parts = split(selectedItem, "::");
-        Class cl = Class::getClass(rtc.getIncludeDirs(), parts[parts.size() - 1],appliname+"\\Scripts","sorrok");
+        std::string ns;
+        for (unsigned int i = 0; i < parts.size()-1; i++) {
+            ns += parts[i];
+            if (i != parts.size()-1) {
+                ns += "::";
+            }
+        }
+        Class cl = Class::getClass(rtc.getIncludeDirs(), parts[parts.size() - 1],appliname+"\\Scripts",ns);
         //std::cout<<"class : "<<parts[parts.size() - 1]<<std::endl<<"found : "<<cl.getName()<<std::endl;
         //system("PAUSE");
         std::vector<Constructor> constructors = cl.getConstructors();
@@ -7467,8 +7475,14 @@ void ODFAEGCreator::onSelectedFunctionChanged(DropDownList* dp) {
         pObjectsParameters->removeAll();
         std::string selectedItem = dpSelectClass->getSelectedItem();
         std::vector<std::string> parts = split(selectedItem, "::");
-        //std::cout<<"parts : "<<parts[parts.size() - 1]<<std::endl;
-        Class cl = Class::getClass(rtc.getIncludeDirs(), parts[parts.size() - 1]);
+        std::string ns;
+        for (unsigned int i = 0; i < parts.size()-1; i++) {
+            ns += parts[i];
+            if (i != parts.size()-1) {
+                ns += "::";
+            }
+        }
+        Class cl = Class::getClass(rtc.getIncludeDirs(), parts[parts.size() - 1],appliname+"\\Scripts",ns);
         tmpTextAreas.clear();
         std::vector<Constructor> constructors = cl.getConstructors();
         bool found = false;
@@ -7528,7 +7542,14 @@ void ODFAEGCreator::onSelectedMClassChanged(DropDownList *dp) {
         dpSelectMFunction->removeAllItems();
         std::string selectedItem = dp->getSelectedItem();
         std::vector<std::string> parts = split(selectedItem, "::");
-        Class cl = Class::getClass(rtc.getIncludeDirs(), parts[parts.size() - 1]);
+        std::string ns;
+        for (unsigned int i = 0; i < parts.size()-1; i++) {
+            ns += parts[i];
+            if (i != parts.size()-1) {
+                ns += "::";
+            }
+        }
+        Class cl = Class::getClass(rtc.getIncludeDirs(), parts[parts.size() - 1],appliname+"\\Scripts",ns);
         std::vector<MemberFunction> functions = cl.getMembersFunctions();
         dpSelectMFunction->addItem("Select function", 15);
         for (unsigned int i = 0; i < functions.size(); i++) {
@@ -7554,8 +7575,14 @@ void ODFAEGCreator::onSelectedMFunctionChanged(DropDownList *dp) {
         pMObjectsParameters->removeAll();
         std::string selectedItem = dpSelectMClass->getSelectedItem();
         std::vector<std::string> parts = split(selectedItem, "::");
-        //std::cout<<"parts : "<<parts[parts.size() - 1]<<std::endl;
-        Class cl = Class::getClass(rtc.getIncludeDirs(), parts[parts.size() - 1]);
+        std::string ns;
+        for (unsigned int i = 0; i < parts.size()-1; i++) {
+            ns += parts[i];
+            if (i != parts.size()-1) {
+                ns += "::";
+            }
+        }
+        Class cl = Class::getClass(rtc.getIncludeDirs(), parts[parts.size() - 1],appliname+"\\Scripts",ns);
         tmpTextAreas.clear();
         std::vector<MemberFunction> functions = cl.getMembersFunctions();
         bool found = false;
