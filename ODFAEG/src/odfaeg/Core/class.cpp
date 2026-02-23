@@ -45,8 +45,11 @@ namespace odfaeg {
             return s;
         }
         CXChildVisitResult Class::classesVisitor(CXCursor cursor, CXCursor parent, CXClientData client_data) {
+            //std::cout<<"visit classes"<<std::endl;
             CXCursorKind kind = clang_getCursorKind(cursor);
             CXString spelling = clang_getCursorSpelling(cursor);
+            if (clang_getCString(spelling) == "Caracter")
+                std::cout<<"spelling : "<<clang_getCString(spelling)<<std::endl;
             CXSourceLocation loc = clang_getCursorLocation(cursor);
             CXFile file; clang_getSpellingLocation(loc, &file, nullptr, nullptr, nullptr);
             CXString fname = clang_getFileName(file);
@@ -55,6 +58,7 @@ namespace odfaeg {
             Context2* ctx = static_cast<Context2*>(client_data);
             bool isInOneHeaderFile = false;
             for (unsigned int i = 1; i < ctx->datas.size(); i++) {
+                //std::cout<<"paths : "<<normalize(filename)<<std::endl<<normalize(ctx->datas[i])<<std::endl;
                 if (normalize(filename) == normalize(ctx->datas[i])) {
                     isInOneHeaderFile = true;
                 }
@@ -325,18 +329,20 @@ namespace odfaeg {
             std::vector<std::string> hfiles;
             findFiles(".hpp .h", hfiles, appiDir);
             for (unsigned int i = 0; i < hfiles.size(); i++) {
+                std::replace(hfiles[i].begin(), hfiles[i].end(), '\\', '/');
                 ctx.datas.push_back(hfiles[i]);
             }
             CXIndex index = clang_createIndex(0, 0);
             std::vector<const char*> args;
             args.reserve(includePaths.size() * 2 + 1);
-            // Ajouter les include dirs
+            std::vector<std::string> stableStrings;
             for (auto& path : includePaths) {
                 std::filesystem::path p = std::filesystem::canonical(stripQuotes(std::string(path)));
                 std::string canonical = p.string();
                 std::replace(canonical.begin(), canonical.end(), '\\', '/');
+                stableStrings.push_back(canonical);
                 args.push_back("-I");
-                args.push_back(canonical.c_str());
+                args.push_back(stableStrings.back().c_str());
             }
             args.push_back("-std=c++20");
             CXUnsavedFile unsaved;
@@ -389,7 +395,7 @@ namespace odfaeg {
                 appiDir = path;
             //std::cout<<"path : "<<appiDir<<std::endl;
             std::vector<std::string> files;
-            findFiles(".h .hpp .cpp .c", files, appiDir);
+            findFiles(".cpp .c", files, appiDir);
             std::vector<std::string> hfiles;
             findFiles(".hpp .h", hfiles, appiDir);
             for (unsigned int i = 0; i < hfiles.size(); i++) {
@@ -402,15 +408,18 @@ namespace odfaeg {
                 std::vector<const char*> args;
                 args.reserve(includePaths.size() * 2 + 1);
                 // Ajouter les include dirs
+                std::vector<std::string> stableStrings;
                 for (auto& path : includePaths) {
                     std::filesystem::path p = std::filesystem::canonical(stripQuotes(std::string(path)));
                     std::string canonical = p.string();
                     std::replace(canonical.begin(), canonical.end(), '\\', '/');
+                    stableStrings.push_back(canonical);
                     args.push_back("-I");
-                    args.push_back(canonical.c_str());
+                    args.push_back(stableStrings.back().c_str());
                 }
                 args.push_back("-std=c++20");
                 std::replace(files[i].begin(), files[i].end(), '\\', '/');
+                //std::cout<<"file : "<<files[i]<<std::endl;
                 CXTranslationUnit tu = clang_parseTranslationUnit(
                     index,
                     files[i].c_str(),            // ton fichier source
@@ -418,6 +427,13 @@ namespace odfaeg {
                     nullptr, 0,              // pas de fichiers précompilés
                     CXTranslationUnit_None
                 );
+                unsigned diagCount = clang_getNumDiagnostics(tu);
+                for (unsigned i = 0; i < diagCount; i++) {
+                    CXDiagnostic diag = clang_getDiagnostic(tu, i);
+                    CXString msg = clang_formatDiagnostic(diag, clang_defaultDiagnosticDisplayOptions());
+                    std::cout << clang_getCString(msg) << std::endl; clang_disposeString(msg);
+                    clang_disposeDiagnostic(diag);
+                }
                 CXCursor rootCursor = clang_getTranslationUnitCursor(tu);
                 clang_visitChildren(rootCursor, classesVisitor, &ctx);
                 clang_disposeTranslationUnit(tu);
@@ -491,6 +507,13 @@ namespace odfaeg {
                 &unsaved, 1,              // pas de fichiers précompilés
                 CXTranslationUnit_None
             );
+            unsigned diagCount = clang_getNumDiagnostics(tu);
+            for (unsigned i = 0; i < diagCount; i++) {
+                CXDiagnostic diag = clang_getDiagnostic(tu, i);
+                CXString msg = clang_formatDiagnostic(diag, clang_defaultDiagnosticDisplayOptions());
+                std::cout << clang_getCString(msg) << std::endl; clang_disposeString(msg);
+                clang_disposeDiagnostic(diag);
+            }
             ctx.tu = tu;
             CXCursor rootCursor = clang_getTranslationUnitCursor(tu);
             clang_visitChildren(rootCursor, classVisitor, &ctx);
@@ -641,12 +664,14 @@ namespace odfaeg {
                 std::vector<const char*> args;
                 args.reserve(includePaths.size() * 2 + 1);
                 // Ajouter les include dirs
+                std::vector<std::string> stableStrings;
                 for (auto& path : includePaths) {
                     std::filesystem::path p = std::filesystem::canonical(stripQuotes(std::string(path)));
                     std::string canonical = p.string();
                     std::replace(canonical.begin(), canonical.end(), '\\', '/');
+                    stableStrings.push_back(canonical);
                     args.push_back("-I");
-                    args.push_back(canonical.c_str());
+                    args.push_back(stableStrings.back().c_str());
                 }
                 args.push_back("-std=c++20");
                 std::replace(files[i].begin(), files[i].end(), '\\', '/');

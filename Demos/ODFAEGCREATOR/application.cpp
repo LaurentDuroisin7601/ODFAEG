@@ -45,9 +45,9 @@ Application (vm, title, Style::Resize|Style::Close, ContextSettings(0, 8, 4, 4, 
     rtc.addOption("std=c++20");
     rtc.addMacro("ODFAEG_STATIC");
     rtc.addIncludeDir("\"C:\\Program Files (x86)\\ODFAEG\\include\"");
-    rtc.addIncludeDir("..\\..\\ODFAEG-master2\\ODFAEG\\extlibs\\headers");
+    rtc.addIncludeDir("\"C:\\Program Files (x86)\\ODFAEG\\extlibs\\headers");
     rtc.addLibraryDir("\"C:\\Program Files (x86)\\ODFAEG\\lib\"");
-    rtc.addLibraryDir("..\\..\\ODFAEG-master2\\ODFAEG\\extlibs\\libs-mingw\\x64");
+    rtc.addLibraryDir("\"C:\\Program Files (x86)\\ODFAEG\\extlibs\\libs-mingw\\x64");
     rtc.addLibrary("odfaeg-network-s-d");
 	rtc.addLibrary("odfaeg-audio-s-d");
 	rtc.addLibrary("odfaeg-graphics-s-d");
@@ -2727,9 +2727,9 @@ void ODFAEGCreator::onExec() {
                         q.push(sc);
                     }
                 }
-                for (unsigned int c = 0; c < superClasses.size(); c++) {
+                /*for (unsigned int c = 0; c < superClasses.size(); c++) {
                     std::cout<<"super class : "<<superClasses[c].getName()<<std::endl;
-                }
+                }*/
             }
             std::string startDir = getCurrentPath()+"\\"+appliname+"\\Scripts";
             std::vector<std::string> scriptSourceFiles;
