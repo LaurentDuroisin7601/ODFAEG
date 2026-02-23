@@ -209,12 +209,13 @@ namespace odfaeg {
                         ctx->cl.setImplFilePath(clang_getCString(clang_getFileName(file)));
                         m.location = std::make_pair(line, col);
                         m.offset = offset;
+                        m.tu = ctx->tu;
 
 
                         //std::cout<<"found function definition at : "<<m.location.first<<","<<m.location.second<<std::endl;
                         clang_visitChildren(cursor, memberFonctionVisitor, &m);
                         ctx->cl.addMemberFunction(m);
-                        m.tu = ctx->tu;
+
                         clang_disposeString(typeStr);
                     }
                 }
