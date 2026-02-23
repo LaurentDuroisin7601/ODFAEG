@@ -48,25 +48,27 @@ namespace odfaeg {
             //std::cout<<"visit classes"<<std::endl;
             CXCursorKind kind = clang_getCursorKind(cursor);
             CXString spelling = clang_getCursorSpelling(cursor);
-            if (clang_getCString(spelling) == "Caracter")
-                std::cout<<"spelling : "<<clang_getCString(spelling)<<std::endl;
-            CXSourceLocation loc = clang_getCursorLocation(cursor);
-            CXFile file; clang_getSpellingLocation(loc, &file, nullptr, nullptr, nullptr);
-            CXString fname = clang_getFileName(file);
-            std::string filename = clang_getCString(fname);
-            clang_disposeString(fname);
-            Context2* ctx = static_cast<Context2*>(client_data);
-            bool isInOneHeaderFile = false;
-            for (unsigned int i = 1; i < ctx->datas.size(); i++) {
-                //std::cout<<"paths : "<<normalize(filename)<<std::endl<<normalize(ctx->datas[i])<<std::endl;
-                if (normalize(filename) == normalize(ctx->datas[i])) {
-                    isInOneHeaderFile = true;
-                }
-            }
-            if (!isInOneHeaderFile || !clang_isCursorDefinition(cursor)) {
-                return CXChildVisit_Continue;
-            }
+            //if (clang_getCString(spelling) == "Caracter")
+                //std::cout<<"spelling : "<<clang_getCString(spelling)<<std::endl;
+
+
             if (kind == CXCursor_ClassDecl) {
+                CXSourceLocation loc = clang_getCursorLocation(cursor);
+                CXFile file; clang_getSpellingLocation(loc, &file, nullptr, nullptr, nullptr);
+                CXString fname = clang_getFileName(file);
+                std::string filename = clang_getCString(fname);
+                clang_disposeString(fname);
+                Context2* ctx = static_cast<Context2*>(client_data);
+                bool isInOneHeaderFile = false;
+                for (unsigned int i = 1; i < ctx->datas.size(); i++) {
+                    //std::cout<<"paths : "<<normalize(filename)<<std::endl<<normalize(ctx->datas[i])<<std::endl;
+                    if (normalize(filename) == normalize(ctx->datas[i])) {
+                        isInOneHeaderFile = true;
+                    }
+                }
+                if (!isInOneHeaderFile || !clang_isCursorDefinition(cursor)) {
+                    return CXChildVisit_Continue;
+                }
                 std::string ns = getQualifiedNamespace(cursor);
                 if (ctx->datas[0] == "" || ctx->datas[0] == ns) {
                     bool contains = false;
@@ -427,13 +429,13 @@ namespace odfaeg {
                     nullptr, 0,              // pas de fichiers précompilés
                     CXTranslationUnit_None
                 );
-                unsigned diagCount = clang_getNumDiagnostics(tu);
+                /*unsigned diagCount = clang_getNumDiagnostics(tu);
                 for (unsigned i = 0; i < diagCount; i++) {
                     CXDiagnostic diag = clang_getDiagnostic(tu, i);
                     CXString msg = clang_formatDiagnostic(diag, clang_defaultDiagnosticDisplayOptions());
                     std::cout << clang_getCString(msg) << std::endl; clang_disposeString(msg);
                     clang_disposeDiagnostic(diag);
-                }
+                }*/
                 CXCursor rootCursor = clang_getTranslationUnitCursor(tu);
                 clang_visitChildren(rootCursor, classesVisitor, &ctx);
                 clang_disposeTranslationUnit(tu);
