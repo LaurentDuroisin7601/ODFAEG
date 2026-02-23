@@ -154,7 +154,6 @@ namespace odfaeg {
                         return CXChildVisit_Continue;
                     std::string bname = clang_getCString(baseName);
                     std::vector<std::string> parts = split(bname, "::");
-                    std::cout<<"base name : "<<parts[parts.size()-1]<<std::endl;
 
                     std::string ns = getQualifiedNamespace(baseCursor);
                     CXSourceLocation loc = clang_getCursorLocation(baseCursor);
