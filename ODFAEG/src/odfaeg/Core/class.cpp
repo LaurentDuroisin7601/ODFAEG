@@ -303,9 +303,19 @@ namespace odfaeg {
             return CXChildVisit_Recurse;
 
         }
-        std::vector<std::pair<std::string, std::string>> Class::getClassesFromMemory(std::vector<std::string> includePaths, std::string virtualFile, std::string content, std::string nspc) {
+        std::vector<std::pair<std::string, std::string>> Class::getClassesFromMemory(std::vector<std::string> includePaths, std::string virtualFile, std::string virtualPath, std::string content, std::string nspc) {
             Context2 ctx;
             ctx.datas.push_back(nspc);
+            std::string appiDir;
+            if (virtualPath.find("C:\\") == std::string::npos)
+                appiDir = virtualPath != "" ? getCurrentPath()+"\\"+virtualPath : getCurrentPath();
+            else
+                appiDir = virtualPath;
+            std::vector<std::string> hfiles;
+            findFiles(".hpp .h", hfiles, appiDir);
+            for (unsigned int i = 0; i < hfiles.size(); i++) {
+                ctx.datas.push_back(hfiles[i]);
+            }
             CXIndex index = clang_createIndex(0, 0);
             const char* args[includePaths.size()+1];
             for (unsigned int i = 0; i < includePaths.size(); i++) {
@@ -360,6 +370,7 @@ namespace odfaeg {
                 appiDir = path != "" ? getCurrentPath()+"\\"+path : getCurrentPath();
             else
                 appiDir = path;
+            std::cout<<"path : "<<appiDir<<std::endl;
             std::vector<std::string> files;
             findFiles(".cpp .c", files, appiDir);
             std::vector<std::string> hfiles;

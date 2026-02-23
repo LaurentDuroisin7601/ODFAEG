@@ -2700,7 +2700,7 @@ void ODFAEGCreator::onExec() {
                 }
             }
             std::vector<std::pair<std::string, std::string>> classes = Class::getClasses(rtc.getIncludeDirs(), appliname+"\\Scripts");
-            std::cout<<"size : "<<classes.size()<<std::endl;
+            //std::cout<<"size : "<<classes.size()<<std::endl;
             for (unsigned int i = 0; i < classes.size(); i++) {
                 std::cout<<"get class : "<<classes[i].first<<std::endl;
                 Class cl = Class::getClass(rtc.getIncludeDirs(), classes[i].first, appliname+"\\Scripts", classes[i].second);
@@ -2982,7 +2982,7 @@ void ODFAEGCreator::showFileContent(Label* lab) {
         pScriptsEdit->updateScrolls();
     }
     dpGoToMFunc->removeAllItems();
-    std::vector<std::pair<std::string, std::string>> classes = Class::getClassesFromMemory(rtc.getIncludeDirs(), virtualFile, tScriptEdit->getText());
+    std::vector<std::pair<std::string, std::string>> classes = Class::getClassesFromMemory(rtc.getIncludeDirs(), virtualFile, appliname, tScriptEdit->getText());
 
     for (unsigned int i = 0; i < classes.size(); i++) {
         Class cl = Class::getClassFromMemory(rtc.getIncludeDirs(), virtualFile, classes[i].first, tScriptEdit->getText(), classes[i].second);
