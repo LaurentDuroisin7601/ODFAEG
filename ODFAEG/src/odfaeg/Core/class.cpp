@@ -110,19 +110,10 @@ namespace odfaeg {
                     clang_visitChildren(cursor, classVisitor, ctx);
 
                 } else {
-                    CXCursor parentCursor = clang_getNullCursor(), p=parent;
-                    while (!clang_Cursor_isNull(p)) {
-                        CXCursorKind kind = clang_getCursorKind(p);
-
-                        if ((kind == CXCursor_ClassDecl || kind == CXCursor_StructDecl)
-                            && ctx->datas[0] == getQualifiedNamespace(p)
-                            && ctx->datas[1] == clang_getCString(clang_getCursorSpelling(p))) {
-                            //std::cout<<"datas : "<<ctx->datas[0]<<","<<getQualifiedNamespace(p)<<","<<ctx->datas[1]<<","<<clang_getCString(clang_getCursorSpelling(p))<<std::endl;
-                            parentCursor = p;
-                        }
-                        p = clang_getCursorSemanticParent(p);
-                    }
-                    if (!clang_Cursor_isNull(parentCursor)) {
+                    CXCursorKind kind = clang_getCursorKind(parent);
+                    if ((kind == CXCursor_ClassDecl || kind == CXCursor_StructDecl)
+                        && ctx->cl.namespc == getQualifiedNamespace(parent)
+                        && ctx->cl.getName() == clang_getCString(clang_getCursorSpelling(parent))) {
 
                         CXSourceLocation loc = clang_getCursorLocation(cursor);
                         CXFile file;
@@ -1320,13 +1311,29 @@ namespace odfaeg {
             }
         }*/
         void Class::addSuperClass(Class cl) {
-            superClasses.push_back(cl);
+            bool contains = false;
+            for (unsigned int i = 0; i < superClasses.size(); i++) {
+                if (cl.getName() == superClasses[i].getName() && cl.getNamespace() == superClasses[i].getNamespace()) {
+                    contains = true;
+                }
+            }
+            if (!contains) {
+                superClasses.push_back(cl);
+            }
         }
         void Class::setNamespace(std::string namespc) {
             this->namespc = namespc;
         }
-        void Class::addInnerClass(Class innerClass) {
-            innerClasses.push_back(innerClass);
+        void Class::addInnerClass(Class cl) {
+            bool contains = false;
+            for (unsigned int i = 0; i < innerClasses.size(); i++) {
+                if (cl.getName() == innerClasses[i].getName() && cl.getNamespace() == innerClasses[i].getNamespace()) {
+                    contains = true;
+                }
+            }
+            if (!contains) {
+                innerClasses.push_back(cl);
+            }
         }
         void Class::addConstructor(Constructor c) {
             bool contains = false;

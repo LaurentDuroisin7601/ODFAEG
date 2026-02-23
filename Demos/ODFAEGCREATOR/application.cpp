@@ -2727,9 +2727,9 @@ void ODFAEGCreator::onExec() {
                         q.push(sc);
                     }
                 }
-                /*for (unsigned int c = 0; c < superClasses.size(); c++) {
+                for (unsigned int c = 0; c < superClasses.size(); c++) {
                     std::cout<<"super class : "<<superClasses[c].getName()<<std::endl;
-                }*/
+                }
             }
             std::string startDir = getCurrentPath()+"\\"+appliname+"\\Scripts";
             std::vector<std::string> scriptSourceFiles;
