@@ -52,7 +52,7 @@ namespace odfaeg {
                     isInOneHeaderFile = true;
                 }
             }
-            if (!isInOneHeaderFile) {
+            if (!isInOneHeaderFile || !clang_isCursorDefinition(cursor)) {
                 return CXChildVisit_Continue;
             }
             if (kind == CXCursor_ClassDecl) {
@@ -63,8 +63,10 @@ namespace odfaeg {
                         if (ctx->classes[i].first == clang_getCString(spelling) && ctx->classes[i].second == ns)
                             contains = true;
                     }
-                    if (!contains)
+                    if (!contains) {
+                        //std::cout<<"filename : "<<filename<<std::endl<<"class : "<<clang_getCString(spelling)<<std::endl;
                         ctx->classes.push_back(std::make_pair(clang_getCString(spelling), ns));
+                    }
                 }
             }
             clang_disposeString(spelling);
@@ -370,7 +372,7 @@ namespace odfaeg {
                 appiDir = path != "" ? getCurrentPath()+"\\"+path : getCurrentPath();
             else
                 appiDir = path;
-            std::cout<<"path : "<<appiDir<<std::endl;
+            //std::cout<<"path : "<<appiDir<<std::endl;
             std::vector<std::string> files;
             findFiles(".cpp .c", files, appiDir);
             std::vector<std::string> hfiles;
