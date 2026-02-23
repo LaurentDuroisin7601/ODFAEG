@@ -374,7 +374,7 @@ namespace odfaeg {
                 appiDir = path;
             //std::cout<<"path : "<<appiDir<<std::endl;
             std::vector<std::string> files;
-            findFiles(".cpp .c", files, appiDir);
+            findFiles(".h .hpp .cpp .c", files, appiDir);
             std::vector<std::string> hfiles;
             findFiles(".hpp .h", hfiles, appiDir);
             for (unsigned int i = 0; i < hfiles.size(); i++) {
