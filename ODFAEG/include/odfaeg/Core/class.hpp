@@ -80,6 +80,7 @@ namespace odfaeg {
             */
             std::string getNamespace();
         private :
+            static std::string stripQuotes(std::string s);
             static std::string normalize(const std::string& path);
             static std::string getQualifiedNamespace(CXCursor cursor);
             static CXChildVisitResult memberFonctionVisitor(CXCursor cursor, CXCursor parent, CXClientData client_data);

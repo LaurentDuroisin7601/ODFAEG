@@ -2712,6 +2712,24 @@ void ODFAEGCreator::onExec() {
                     dpSelectClass->addItem(cl.getNamespace()+"::"+classes[i].first, 15);
                     dpSelectMClass->addItem(cl.getNamespace()+"::"+classes[i].first, 15);
                 }
+                std::queue<Class> q;
+                std::vector<Class> superClasses;
+                for (auto& sc : cl.getSuperClasses()) {
+                    superClasses.push_back(sc);
+                    q.push(sc);
+                }
+                while (!q.empty()) {
+                    Class current = q.front();
+                    q.pop();
+                    // Ajouter ses super-classes dans la file
+                    for (auto& sc : current.getSuperClasses()) {
+                        superClasses.push_back(sc);
+                        q.push(sc);
+                    }
+                }
+                for (unsigned int c = 0; c < superClasses.size(); c++) {
+                    std::cout<<"super class : "<<superClasses[c].getName()<<std::endl;
+                }
             }
             std::string startDir = getCurrentPath()+"\\"+appliname+"\\Scripts";
             std::vector<std::string> scriptSourceFiles;
@@ -7550,6 +7568,8 @@ void ODFAEGCreator::onSelectedMClassChanged(DropDownList *dp) {
             }
         }
         Class cl = Class::getClass(rtc.getIncludeDirs(), parts[parts.size() - 1],appliname+"\\Scripts",ns);
+
+
         std::vector<MemberFunction> functions = cl.getMembersFunctions();
         dpSelectMFunction->addItem("Select function", 15);
         for (unsigned int i = 0; i < functions.size(); i++) {
