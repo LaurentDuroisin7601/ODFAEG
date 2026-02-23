@@ -5203,11 +5203,10 @@ namespace odfaeg {
             for (unsigned int i = 0; i < vEntities.size(); i++) {
 
                 if ( vEntities[i] != nullptr && vEntities[i]->isLeaf()) {
-                    /*Entity* border;
+                    Entity* border;
                     if (vEntities[i]->isSelected()) {
-                        border = vEntities[i]->clone();
-                        border->decreaseNbEntities();
-                    }*/
+                        border = getBorder(vEntities[i]);
+                    }
                     for (unsigned int j = 0; j <  vEntities[i]->getNbFaces(); j++) {
                          std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                          if (vEntities[i]->getDrawMode() == Entity::INSTANCED && !vEntities[i]->isSelected()) {
@@ -5232,7 +5231,7 @@ namespace odfaeg {
                            // //////std::cout<<"remove texture"<<std::endl;
 
                             ////////std::cout<<"get va"<<std::endl;
-                                Entity* border = getBorder(vEntities[i]);
+
 
                                // //////std::cout<<"add to batcher"<<std::endl;
                                 selectedInstanceScaleBatcher.addFace(border->getFace(j));
@@ -5242,7 +5241,7 @@ namespace odfaeg {
                                // //////std::cout<<"remove texture"<<std::endl;
 
                             ////////std::cout<<"get va"<<std::endl;
-                                Entity* border = getBorder(vEntities[i]);
+
 
                                // //////std::cout<<"add to batcher"<<std::endl;
 
@@ -5256,7 +5255,7 @@ namespace odfaeg {
                            // //////std::cout<<"remove texture"<<std::endl;
 
                             ////////std::cout<<"get va"<<std::endl;
-                                Entity* border = getBorder(vEntities[i]);
+
 
                                 selectedScaleBatcher.addFace(border->getFace(j));
 
@@ -5266,7 +5265,7 @@ namespace odfaeg {
                                // //////std::cout<<"remove texture"<<std::endl;
 
                             ////////std::cout<<"get va"<<std::endl;
-                                Entity* border = getBorder(vEntities[i]);
+
 
                                 ////std::cout<<"add to batcher"<<std::endl;
                                 selectedIndexScaleBatcher.addFace(border->getFace(j));
@@ -5558,14 +5557,14 @@ namespace odfaeg {
                 }
                 std::vector<VkFence> fencesToWait;
                 for (unsigned int i = 0; i < visibleEntities.size(); i++) {
-                    if (visibleEntities[i] != nullptr && (visibleEntities[i]->getType() == "E_PARTICLES"
-                        || visibleEntities[i]->getType() == "E_BONE_ANIMATION")
-                        && visibleEntities[i]->isComputeFinished(frameBuffer.getCurrentFrame())) {
+                    if (visibleEntities[i] != nullptr && visibleEntities[i]->isLeaf() && (visibleEntities[i]->getRootType() == "E_PARTICLES"
+                        || visibleEntities[i]->getRootType() == "E_BONE_ANIMATION")
+                        && visibleEntities[i]->getRootEntity()->isComputeFinished(frameBuffer.getCurrentFrame())) {
                         std::unique_lock<std::mutex> lock2(mtx2);
 
-                        visibleEntities[i]->computeParticles(&mtx2, &cv2, vbBindlessTex[Triangles], frameBuffer.getCurrentFrame(),visibleEntities[i]->getTransform(), (visibleEntities[i]->getDrawMode() == Entity::INSTANCED) ? true : false, *computeSemaphores[i][frameBuffer.getCurrentFrame()].get(), *computeFences[i][frameBuffer.getCurrentFrame()].get());
+                        visibleEntities[i]->getRootEntity()->computeParticles(&mtx2, &cv2, vbBindlessTex[Triangles], frameBuffer.getCurrentFrame(),visibleEntities[i]->getTransform(), (visibleEntities[i]->getDrawMode() == Entity::INSTANCED) ? true : false, *computeSemaphores[i][frameBuffer.getCurrentFrame()].get(), *computeFences[i][frameBuffer.getCurrentFrame()].get());
 
-                        auto entity = visibleEntities[i];
+                        auto entity = visibleEntities[i]->getRootEntity();
                         auto frame = frameBuffer.getCurrentFrame();
 
                         //std::cout<<"wait : "<<visibleEntities[i]<<" current frame : "<<frameBuffer.getCurrentFrame()<<std::endl;
