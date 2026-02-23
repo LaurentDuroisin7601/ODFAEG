@@ -684,13 +684,13 @@ namespace odfaeg {
                     nullptr, 0,              // pas de fichiers précompilés
                     CXTranslationUnit_None
                 );
-                unsigned diagCount = clang_getNumDiagnostics(tu);
+                /*unsigned diagCount = clang_getNumDiagnostics(tu);
                 for (unsigned i = 0; i < diagCount; i++) {
                     CXDiagnostic diag = clang_getDiagnostic(tu, i);
                     CXString msg = clang_formatDiagnostic(diag, clang_defaultDiagnosticDisplayOptions());
                     std::cout << clang_getCString(msg) << std::endl; clang_disposeString(msg);
                     clang_disposeDiagnostic(diag);
-                }
+                }*/
                 ctx.tu = tu;
                 CXCursor rootCursor = clang_getTranslationUnitCursor(tu);
                 clang_visitChildren(rootCursor, classVisitor, &ctx);
