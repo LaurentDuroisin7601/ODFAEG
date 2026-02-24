@@ -1,0 +1,35 @@
+In file included from C:\Program Files (x86)\ODFAEG\include/odfaeg/Physics/boundingPolyhedron.h:5,
+                 from ../../ODFAEG-master2/Demos/ODFAEGCREATOR/translationGismo.hpp:3,
+                 from ../../ODFAEG-master2/Demos/ODFAEGCREATOR/translationGismo.cpp:1:
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h: In instantiation of 'void odfaeg::math::VecN< <template-parameter-1-1>, <anonymous> >::set(Args ...) [with Args = {int, int, int}; T = float; unsigned int N = 3]':
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:56:20:   required from 'odfaeg::math::VecN< <template-parameter-1-1>, <anonymous> >::VecN(Args ...) [with Args = {int, int, int}; <template-parameter-2-2> = void; First = int; <template-parameter-2-4> = void; T = float; unsigned int N = 3]'
+   56 |                 set(args...);
+      |                 ~~~^~~~~~~~~
+C:\Program Files (x86)\ODFAEG\include/odfaeg/Physics/collisionResultSet.hpp:16:49:   required from here
+   16 |                     center = math::Vec3f(0, 0, 0);
+      |                                                 ^
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:79:28: warning: narrowing conversion of 'args#0' from 'int' to 'float' [-Wnarrowing]
+   79 |                 data = { { args... } };
+      |                            ^~~~
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:79:28: warning: narrowing conversion of 'args#1' from 'int' to 'float' [-Wnarrowing]
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:79:28: warning: narrowing conversion of 'args#2' from 'int' to 'float' [-Wnarrowing]
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h: In instantiation of 'void odfaeg::math::VecN< <template-parameter-1-1>, <anonymous> >::set(Args ...) [with Args = {int, float, float}; T = float; unsigned int N = 3]':
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:56:20:   required from 'odfaeg::math::VecN< <template-parameter-1-1>, <anonymous> >::VecN(Args ...) [with Args = {int, float, float}; <template-parameter-2-2> = void; First = int; <template-parameter-2-4> = void; T = float; unsigned int N = 3]'
+   56 |                 set(args...);
+      |                 ~~~^~~~~~~~~
+../../ODFAEG-master2/Demos/ODFAEGCREATOR/translationGismo.cpp:9:78:   required from here
+    9 |     zRect = RectangleShape(Vec3f(0, size.y() + arrowSize - size.y(), size.z()));
+      |                                                                              ^
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:79:28: warning: narrowing conversion of 'args#0' from 'int' to 'float' [-Wnarrowing]
+   79 |                 data = { { args... } };
+      |                            ^~~~
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h: In instantiation of 'void odfaeg::math::VecN< <template-parameter-1-1>, <anonymous> >::set(Args ...) [with Args = {float, float, int}; T = float; unsigned int N = 3]':
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:56:20:   required from 'odfaeg::math::VecN< <template-parameter-1-1>, <anonymous> >::VecN(Args ...) [with Args = {float, float, int}; <template-parameter-2-2> = void; First = float; <template-parameter-2-4> = void; T = float; unsigned int N = 3]'
+   56 |                 set(args...);
+      |                 ~~~^~~~~~~~~
+../../ODFAEG-master2/Demos/ODFAEGCREATOR/translationGismo.cpp:21:78:   required from here
+   21 |     xRect = RectangleShape(Vec3f(size.x(), size.y() + arrowSize - size.y(), 0));
+      |                                                                              ^
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:79:28: warning: narrowing conversion of 'args#2' from 'int' to 'float' [-Wnarrowing]
+   79 |                 data = { { args... } };
+      |                            ^~~~

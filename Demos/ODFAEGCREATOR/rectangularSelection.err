@@ -1,0 +1,19 @@
+In file included from C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/transformMatrix.h:4,
+                 from C:\Program Files (x86)\ODFAEG\include/odfaeg/Graphics/renderStates.h:57,
+                 from C:\Program Files (x86)\ODFAEG\include/odfaeg/Graphics/drawable.h:30,
+                 from C:\Program Files (x86)\ODFAEG\include/odfaeg/Graphics/shape.h:35,
+                 from C:\Program Files (x86)\ODFAEG\include/odfaeg/Graphics/rectangleShape.h:37,
+                 from ../../ODFAEG-master2/Demos/ODFAEGCREATOR/rectangularSelection.hpp:3,
+                 from ../../ODFAEG-master2/Demos/ODFAEGCREATOR/rectangularSelection.cpp:1:
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h: In instantiation of 'void odfaeg::math::VecN< <template-parameter-1-1>, <anonymous> >::set(Args ...) [with Args = {int, int, int}; T = float; unsigned int N = 3]':
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:56:20:   required from 'odfaeg::math::VecN< <template-parameter-1-1>, <anonymous> >::VecN(Args ...) [with Args = {int, int, int}; <template-parameter-2-2> = void; First = int; <template-parameter-2-4> = void; T = float; unsigned int N = 3]'
+   56 |                 set(args...);
+      |                 ~~~^~~~~~~~~
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Physics/collisionResultSet.hpp:16:49:   required from here
+   16 |                     center = math::Vec3f(0, 0, 0);
+      |                                                 ^
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:79:28: warning: narrowing conversion of 'args#0' from 'int' to 'float' [-Wnarrowing]
+   79 |                 data = { { args... } };
+      |                            ^~~~
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:79:28: warning: narrowing conversion of 'args#1' from 'int' to 'float' [-Wnarrowing]
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:79:28: warning: narrowing conversion of 'args#2' from 'int' to 'float' [-Wnarrowing]

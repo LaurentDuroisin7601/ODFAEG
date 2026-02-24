@@ -1,73 +1,215 @@
-In file included from ../../ODFAEG-master/Demos/ODFAEGCREATOR/application.hpp:35,
-                 from ../../ODFAEG-master/Demos/ODFAEGCREATOR/application.cpp:3:
+In file included from ../../ODFAEG-master2/Demos/ODFAEGCREATOR/application.hpp:36,
+                 from ../../ODFAEG-master2/Demos/ODFAEGCREATOR/application.cpp:3:
 C:\Program Files (x86)\ODFAEG\include/odfaeg/Core/runtimeCompiler.hpp:9:7: warning: extra tokens at end of #else directive [-Wendif-labels]
     9 | #else if defined (ODFAEG_SYSTEM_WINDOWS)
       |       ^~
-C:\Program Files (x86)\ODFAEG\include/odfaeg/Core/runtimeCompiler.hpp:50:23: warning: extra tokens at end of #else directive [-Wendif-labels]
+C:\Program Files (x86)\ODFAEG\include/odfaeg/Core/runtimeCompiler.hpp:50: warning: extra tokens at end of #else directive [-Wendif-labels]
    50 |                 #else if defined (ODFAEG_SYSTEM_WINDOWS)
-      |                       ^~
-C:\Program Files (x86)\ODFAEG\include/odfaeg/Core/runtimeCompiler.hpp:63:23: warning: extra tokens at end of #else directive [-Wendif-labels]
+C:\Program Files (x86)\ODFAEG\include/odfaeg/Core/runtimeCompiler.hpp:63: warning: extra tokens at end of #else directive [-Wendif-labels]
    63 |                 #else if defined (ODFAEG_SYSTEM_WINDOWS)
-      |                       ^~
-C:\Program Files (x86)\ODFAEG\include/odfaeg/Core/runtimeCompiler.hpp:130:19: warning: extra tokens at end of #else directive [-Wendif-labels]
-  130 |             #else if defined (ODFAEG_SYSTEM_WINDOWS)
-      |                   ^~
-../../ODFAEG-master/Demos/ODFAEGCREATOR/application.cpp:1945:15: warning: extra tokens at end of #else directive [-Wendif-labels]
- 1945 |         #else if defined (ODFAEG_SYSTEM_WINDOWS)
-      |               ^~
-../../ODFAEG-master/Demos/ODFAEGCREATOR/application.cpp:2026:27: warning: extra tokens at end of #else directive [-Wendif-labels]
- 2026 |                     #else if defined (ODFAEG_SYSTEM_WINDOWS
-      |                           ^~
-../../ODFAEG-master/Demos/ODFAEGCREATOR/application.cpp:2493:15: warning: extra tokens at end of #else directive [-Wendif-labels]
- 2493 |         #else if defined (ODFAEG_SYSTEM_WINDOWS)
-      |               ^~
-../../ODFAEG-master/Demos/ODFAEGCREATOR/application.cpp:2523:15: warning: extra tokens at end of #else directive [-Wendif-labels]
- 2523 |         #else if defined (ODFAEG_SYSTEM_WINDOWS)
-      |               ^~
-../../ODFAEG-master/Demos/ODFAEGCREATOR/application.cpp:2641:15: warning: extra tokens at end of #else directive [-Wendif-labels]
- 2641 |         #else if defined (ODFAEG_SYSTEM_WINDOWS)
-      |               ^~
-../../ODFAEG-master/Demos/ODFAEGCREATOR/application.cpp:2679:19: warning: extra tokens at end of #else directive [-Wendif-labels]
- 2679 |             #else if defined (ODFAEG_SYSTEM_WINDOWS)
-      |                   ^~
-../../ODFAEG-master/Demos/ODFAEGCREATOR/application.cpp:2707:19: warning: extra tokens at end of #else directive [-Wendif-labels]
- 2707 |             #else if defined (ODFAEG_SYSTEM_WINDOWS)
-      |                   ^~
-../../ODFAEG-master/Demos/ODFAEGCREATOR/application.cpp:2741:19: warning: extra tokens at end of #else directive [-Wendif-labels]
- 2741 |             #else if defined (ODFAEG_SYSTEM_WINDOWS)
-      |                   ^~
+C:\Program Files (x86)\ODFAEG\include/odfaeg/Core/runtimeCompiler.hpp:131: warning: extra tokens at end of #else directive [-Wendif-labels]
+  131 |             #else if defined (ODFAEG_SYSTEM_WINDOWS)
+../../ODFAEG-master2/Demos/ODFAEGCREATOR/application.cpp:2193: warning: extra tokens at end of #else directive [-Wendif-labels]
+ 2193 |         #else if defined (ODFAEG_SYSTEM_WINDOWS)
+../../ODFAEG-master2/Demos/ODFAEGCREATOR/application.cpp:2313: warning: extra tokens at end of #else directive [-Wendif-labels]
+ 2313 |                     #else if defined (ODFAEG_SYSTEM_WINDOWS
+../../ODFAEG-master2/Demos/ODFAEGCREATOR/application.cpp:2901: warning: extra tokens at end of #else directive [-Wendif-labels]
+ 2901 |         #else if defined (ODFAEG_SYSTEM_WINDOWS)
+../../ODFAEG-master2/Demos/ODFAEGCREATOR/application.cpp:2932: warning: extra tokens at end of #else directive [-Wendif-labels]
+ 2932 |         #else if defined (ODFAEG_SYSTEM_WINDOWS)
+../../ODFAEG-master2/Demos/ODFAEGCREATOR/application.cpp:3289: warning: extra tokens at end of #else directive [-Wendif-labels]
+ 3289 |         #else if defined (ODFAEG_SYSTEM_WINDOWS)
+../../ODFAEG-master2/Demos/ODFAEGCREATOR/application.cpp:3371: warning: extra tokens at end of #else directive [-Wendif-labels]
+ 3371 |             #else if defined (ODFAEG_SYSTEM_WINDOWS)
+../../ODFAEG-master2/Demos/ODFAEGCREATOR/application.cpp:3401: warning: extra tokens at end of #else directive [-Wendif-labels]
+ 3401 |             #else if defined (ODFAEG_SYSTEM_WINDOWS)
+../../ODFAEG-master2/Demos/ODFAEGCREATOR/application.cpp:3463: warning: extra tokens at end of #else directive [-Wendif-labels]
+ 3463 |             #else if defined (ODFAEG_SYSTEM_WINDOWS)
 In file included from C:/Program Files (x86)/ODFAEG/include/odfaeg/Window/windowFactory.hpp:3,
                  from C:/Program Files (x86)/ODFAEG/include/odfaeg/Window/window.hpp:3,
-                 from C:\Program Files (x86)\ODFAEG\include/odfaeg/Graphics/renderWindow.h:40,
-                 from C:\Program Files (x86)\ODFAEG\include/odfaeg/Graphics/application.h:8,
-                 from ../../ODFAEG-master/Demos/ODFAEGCREATOR/application.hpp:4:
+                 from C:/Program Files (x86)/ODFAEG/include/odfaeg/Graphics/renderWindow.h:40,
+                 from C:\Program Files (x86)\ODFAEG\include/odfaeg/Network/application.h:9,
+                 from ../../ODFAEG-master2/Demos/ODFAEGCREATOR/application.hpp:3:
 C:/Program Files (x86)/ODFAEG/include/odfaeg/Window/iWindow.hpp: In member function 'virtual const odfaeg::window::ContextSettings& odfaeg::window::IWindow::getSettings() const':
-C:/Program Files (x86)/ODFAEG/include/odfaeg/Window/iWindow.hpp:193:73: warning: returning reference to temporary [-Wreturn-local-addr]
-  193 |             virtual const ContextSettings& getSettings() const { return ContextSettings(0, 0, 0, 0, 0); }
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Window/iWindow.hpp:201:73: warning: returning reference to temporary [-Wreturn-local-addr]
+  201 |             virtual const ContextSettings& getSettings() const { return ContextSettings(0, 0, 0, 0, 0); }
       |                                                                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/transformMatrix.h:4,
+                 from C:/Program Files (x86)/ODFAEG/include/odfaeg/Graphics/shader.h:36,
+                 from C:/Program Files (x86)/ODFAEG/include/odfaeg/Graphics/renderTarget.h:7,
+                 from C:/Program Files (x86)/ODFAEG/include/odfaeg/Graphics/renderWindow.h:37:
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h: In instantiation of 'void odfaeg::math::VecN< <template-parameter-1-1>, <anonymous> >::set(Args ...) [with Args = {int, int, int}; T = float; unsigned int N = 3]':
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:56:20:   required from 'odfaeg::math::VecN< <template-parameter-1-1>, <anonymous> >::VecN(Args ...) [with Args = {int, int, int}; <template-parameter-2-2> = void; First = int; <template-parameter-2-4> = void; T = float; unsigned int N = 3]'
+   56 |                 set(args...);
+      |                 ~~~^~~~~~~~~
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Physics/collisionResultSet.hpp:16:49:   required from here
+   16 |                     center = math::Vec3f(0, 0, 0);
+      |                                                 ^
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:79:28: warning: narrowing conversion of 'args#0' from 'int' to 'float' [-Wnarrowing]
+   79 |                 data = { { args... } };
+      |                            ^~~~
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:79:28: warning: narrowing conversion of 'args#1' from 'int' to 'float' [-Wnarrowing]
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:79:28: warning: narrowing conversion of 'args#2' from 'int' to 'float' [-Wnarrowing]
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h: In instantiation of 'void odfaeg::math::VecN< <template-parameter-1-1>, <anonymous> >::set(Args ...) [with Args = {unsigned int, unsigned int, float}; T = float; unsigned int N = 3]':
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:56:20:   required from 'odfaeg::math::VecN< <template-parameter-1-1>, <anonymous> >::VecN(Args ...) [with Args = {unsigned int, unsigned int, float}; <template-parameter-2-2> = void; First = unsigned int; <template-parameter-2-4> = void; T = float; unsigned int N = 3]'
+   56 |                 set(args...);
+      |                 ~~~^~~~~~~~~
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Graphics/lightComponent.h:47:54:   required from here
+   47 |                     setSize(math::Vec3f(nsx, nsy, 0.f));
+      |                                                      ^
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:79:28: warning: narrowing conversion of 'args#0' from 'unsigned int' to 'float' [-Wnarrowing]
+   79 |                 data = { { args... } };
+      |                            ^~~~
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:79:28: warning: narrowing conversion of 'args#1' from 'unsigned int' to 'float' [-Wnarrowing]
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h: In instantiation of 'void odfaeg::math::VecN< <template-parameter-1-1>, <anonymous> >::set(Args ...) [with Args = {unsigned int, float, int}; T = float; unsigned int N = 3]':
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:56:20:   required from 'odfaeg::math::VecN< <template-parameter-1-1>, <anonymous> >::VecN(Args ...) [with Args = {unsigned int, float, int}; <template-parameter-2-2> = void; First = unsigned int; <template-parameter-2-4> = void; T = float; unsigned int N = 3]'
+   56 |                 set(args...);
+      |                 ~~~^~~~~~~~~
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Graphics/lightComponent.h:53:66:   required from here
+   53 |                         setSize(math::Vec3f(psx, getSize().y(), 0));
+      |                                                                  ^
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:79:28: warning: narrowing conversion of 'args#0' from 'unsigned int' to 'float' [-Wnarrowing]
+   79 |                 data = { { args... } };
+      |                            ^~~~
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:79:28: warning: narrowing conversion of 'args#2' from 'int' to 'float' [-Wnarrowing]
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h: In instantiation of 'void odfaeg::math::VecN< <template-parameter-1-1>, <anonymous> >::set(Args ...) [with Args = {float, unsigned int, int}; T = float; unsigned int N = 3]':
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:56:20:   required from 'odfaeg::math::VecN< <template-parameter-1-1>, <anonymous> >::VecN(Args ...) [with Args = {float, unsigned int, int}; <template-parameter-2-2> = void; First = float; <template-parameter-2-4> = void; T = float; unsigned int N = 3]'
+   56 |                 set(args...);
+      |                 ~~~^~~~~~~~~
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Graphics/lightComponent.h:55:66:   required from here
+   55 |                         setSize(math::Vec3f(getSize().x(), psy, 0));
+      |                                                                  ^
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:79:28: warning: narrowing conversion of 'args#1' from 'unsigned int' to 'float' [-Wnarrowing]
+   79 |                 data = { { args... } };
+      |                            ^~~~
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:79:28: warning: narrowing conversion of 'args#2' from 'int' to 'float' [-Wnarrowing]
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h: In instantiation of 'void odfaeg::math::VecN< <template-parameter-1-1>, <anonymous> >::set(Args ...) [with Args = {float, float, int}; T = float; unsigned int N = 3]':
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:56:20:   required from 'odfaeg::math::VecN< <template-parameter-1-1>, <anonymous> >::VecN(Args ...) [with Args = {float, float, int}; <template-parameter-2-2> = void; First = float; <template-parameter-2-4> = void; T = float; unsigned int N = 3]'
+   56 |                 set(args...);
+      |                 ~~~^~~~~~~~~
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Graphics/2D/wall.h:36:125:   required from here
+   36 |                     Wall(EntityFactory& factory) : Model(math::Vec3f(0, 0, 0),math::Vec3f(1, 1, 0),math::Vec3f(0.5f, 0.5f, 0), factory, "E_WALL", "") {
+      |                                                                                                                             ^
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:79:28: warning: narrowing conversion of 'args#2' from 'int' to 'float' [-Wnarrowing]
+   79 |                 data = { { args... } };
+      |                            ^~~~
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h: In instantiation of 'void odfaeg::math::VecN< <template-parameter-1-1>, <anonymous> >::set(Args ...) [with Args = {int, int}; T = float; unsigned int N = 2]':
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:56:20:   required from 'odfaeg::math::VecN< <template-parameter-1-1>, <anonymous> >::VecN(Args ...) [with Args = {int, int}; <template-parameter-2-2> = void; First = int; <template-parameter-2-4> = void; T = float; unsigned int N = 2]'
+   56 |                 set(args...);
+      |                 ~~~^~~~~~~~~
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Graphics/world.h:252:63:   required from here
+  252 |                                             math::Vec2f v(i, j);
+      |                                                               ^
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:79:28: warning: narrowing conversion of 'args#0' from 'int' to 'float' [-Wnarrowing]
+   79 |                 data = { { args... } };
+      |                            ^~~~
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:79:28: warning: narrowing conversion of 'args#1' from 'int' to 'float' [-Wnarrowing]
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h: In instantiation of 'void odfaeg::math::VecN< <template-parameter-1-1>, <anonymous> >::set(Args ...) [with Args = {int, int, float}; T = float; unsigned int N = 3]':
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:56:20:   required from 'odfaeg::math::VecN< <template-parameter-1-1>, <anonymous> >::VecN(Args ...) [with Args = {int, int, float}; <template-parameter-2-2> = void; First = int; <template-parameter-2-4> = void; T = float; unsigned int N = 3]'
+   56 |                 set(args...);
+      |                 ~~~^~~~~~~~~
+../../ODFAEG-master2/Demos/ODFAEGCREATOR/application.cpp:1482:0:   required from here
+ 1482 |                         orig = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(0, 0, orig.z()));
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:79:28: warning: narrowing conversion of 'args#0' from 'int' to 'float' [-Wnarrowing]
+   79 |                 data = { { args... } };
+      |                            ^~~~
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:79:28: warning: narrowing conversion of 'args#1' from 'int' to 'float' [-Wnarrowing]
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h: In instantiation of 'void odfaeg::math::VecN< <template-parameter-1-1>, <anonymous> >::set(Args ...) [with Args = {float, int, int}; T = float; unsigned int N = 3]':
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:56:20:   required from 'odfaeg::math::VecN< <template-parameter-1-1>, <anonymous> >::VecN(Args ...) [with Args = {float, int, int}; <template-parameter-2-2> = void; First = float; <template-parameter-2-4> = void; T = float; unsigned int N = 3]'
+   56 |                 set(args...);
+      |                 ~~~^~~~~~~~~
+../../ODFAEG-master2/Demos/ODFAEGCREATOR/application.cpp:1502:0:   required from here
+ 1502 |             translationGuismo.move(Vec3f(mx, 0, 0));
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:79:28: warning: narrowing conversion of 'args#1' from 'int' to 'float' [-Wnarrowing]
+   79 |                 data = { { args... } };
+      |                            ^~~~
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:79:28: warning: narrowing conversion of 'args#2' from 'int' to 'float' [-Wnarrowing]
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h: In instantiation of 'void odfaeg::math::VecN< <template-parameter-1-1>, <anonymous> >::set(Args ...) [with Args = {int, float, int}; T = float; unsigned int N = 3]':
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:56:20:   required from 'odfaeg::math::VecN< <template-parameter-1-1>, <anonymous> >::VecN(Args ...) [with Args = {int, float, int}; <template-parameter-2-2> = void; First = int; <template-parameter-2-4> = void; T = float; unsigned int N = 3]'
+   56 |                 set(args...);
+      |                 ~~~^~~~~~~~~
+../../ODFAEG-master2/Demos/ODFAEGCREATOR/application.cpp:1508:0:   required from here
+ 1508 |             translationGuismo.move(Vec3f(0, my, 0));
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:79:28: warning: narrowing conversion of 'args#0' from 'int' to 'float' [-Wnarrowing]
+   79 |                 data = { { args... } };
+      |                            ^~~~
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:79:28: warning: narrowing conversion of 'args#2' from 'int' to 'float' [-Wnarrowing]
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h: In instantiation of 'void odfaeg::math::VecN< <template-parameter-1-1>, <anonymous> >::set(Args ...) [with Args = {int, int, int, int}; T = float; unsigned int N = 4]':
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:56:20:   required from 'odfaeg::math::VecN< <template-parameter-1-1>, <anonymous> >::VecN(Args ...) [with Args = {int, int, int, int}; <template-parameter-2-2> = void; First = int; <template-parameter-2-4> = void; T = float; unsigned int N = 4]'
+   56 |                 set(args...);
+      |                 ~~~^~~~~~~~~
+../../ODFAEG-master2/Demos/ODFAEGCREATOR/application.cpp:2653:0:   required from here
+ 2653 |                     Vec4f c1(conversionStringInt(color1[0]), conversionStringInt(color1[1]), conversionStringInt(color1[2]), conversionStringInt(color1[3]));
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:79:28: warning: narrowing conversion of 'args#0' from 'int' to 'float' [-Wnarrowing]
+   79 |                 data = { { args... } };
+      |                            ^~~~
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:79:28: warning: narrowing conversion of 'args#1' from 'int' to 'float' [-Wnarrowing]
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:79:28: warning: narrowing conversion of 'args#2' from 'int' to 'float' [-Wnarrowing]
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:79:28: warning: narrowing conversion of 'args#3' from 'int' to 'float' [-Wnarrowing]
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h: In instantiation of 'void odfaeg::math::VecN< <template-parameter-1-1>, <anonymous> >::set(Args ...) [with Args = {int, float}; T = float; unsigned int N = 2]':
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:56:20:   required from 'odfaeg::math::VecN< <template-parameter-1-1>, <anonymous> >::VecN(Args ...) [with Args = {int, float}; <template-parameter-2-2> = void; First = int; <template-parameter-2-4> = void; T = float; unsigned int N = 2]'
+   56 |                 set(args...);
+      |                 ~~~^~~~~~~~~
+../../ODFAEG-master2/Demos/ODFAEGCREATOR/application.cpp:2911:0:   required from here
+ 2911 |             Node* lnode = new Node("header files", lab, Vec2f(0, 0),Vec2f(1,0.025f),node);
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:79:28: warning: narrowing conversion of 'args#0' from 'int' to 'float' [-Wnarrowing]
+   79 |                 data = { { args... } };
+      |                            ^~~~
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h: In instantiation of 'void odfaeg::math::VecN< <template-parameter-1-1>, <anonymous> >::set(Args ...) [with Args = {int, double}; T = float; unsigned int N = 2]':
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:56:20:   required from 'odfaeg::math::VecN< <template-parameter-1-1>, <anonymous> >::VecN(Args ...) [with Args = {int, double}; <template-parameter-2-2> = void; First = int; <template-parameter-2-4> = void; T = float; unsigned int N = 2]'
+   56 |                 set(args...);
+      |                 ~~~^~~~~~~~~
+../../ODFAEG-master2/Demos/ODFAEGCREATOR/application.cpp:4885:0:   required from here
+ 4885 |     Node* lIdNode = new Node("LabId", lId, Vec2f(0, 0), Vec2f(1, 0.025), rootInfosNode.get());
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:79:28: warning: narrowing conversion of 'args#0' from 'int' to 'float' [-Wnarrowing]
+   79 |                 data = { { args... } };
+      |                            ^~~~
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:79:28: warning: narrowing conversion of 'args#1' from 'double' to 'float' [-Wnarrowing]
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h: In instantiation of 'void odfaeg::math::VecN< <template-parameter-1-1>, <anonymous> >::set(Args ...) [with Args = {double, double}; T = float; unsigned int N = 2]':
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:56:20:   required from 'odfaeg::math::VecN< <template-parameter-1-1>, <anonymous> >::VecN(Args ...) [with Args = {double, double}; <template-parameter-2-2> = void; First = double; <template-parameter-2-4> = void; T = float; unsigned int N = 2]'
+   56 |                 set(args...);
+      |                 ~~~^~~~~~~~~
+../../ODFAEG-master2/Demos/ODFAEGCREATOR/application.cpp:5077:0:   required from here
+ 5077 |     Node* nOrigX = new Node("ORIGINX", lOrigX, Vec2f(0, 0), Vec2f(0.25, 0.025), rootPropNode.get());
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:79:28: warning: narrowing conversion of 'args#0' from 'double' to 'float' [-Wnarrowing]
+   79 |                 data = { { args... } };
+      |                            ^~~~
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:79:28: warning: narrowing conversion of 'args#1' from 'double' to 'float' [-Wnarrowing]
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h: In instantiation of 'void odfaeg::math::VecN< <template-parameter-1-1>, <anonymous> >::set(Args ...) [with Args = {unsigned int, unsigned int, int}; T = float; unsigned int N = 3]':
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:56:20:   required from 'odfaeg::math::VecN< <template-parameter-1-1>, <anonymous> >::VecN(Args ...) [with Args = {unsigned int, unsigned int, int}; <template-parameter-2-2> = void; First = unsigned int; <template-parameter-2-4> = void; T = float; unsigned int N = 3]'
+   56 |                 set(args...);
+      |                 ~~~^~~~~~~~~
+../../ODFAEG-master2/Demos/ODFAEGCREATOR/application.cpp:7071:0:   required from here
+ 7071 |                 Sprite sprite (*text, Vec3f(pScriptsFiles->getPosition().x(), bChooseText->getPosition().y() + bChooseText->getSize().y()+10, 0),Vec3f(text->getSize().x(), text->getSize().y(), 0),IntRect(0, 0, text->getSize().x(),text->getSize().y()));
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:79:28: warning: narrowing conversion of 'args#0' from 'unsigned int' to 'float' [-Wnarrowing]
+   79 |                 data = { { args... } };
+      |                            ^~~~
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:79:28: warning: narrowing conversion of 'args#1' from 'unsigned int' to 'float' [-Wnarrowing]
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:79:28: warning: narrowing conversion of 'args#2' from 'int' to 'float' [-Wnarrowing]
 In file included from C:/Program Files (x86)/ODFAEG/include/odfaeg/Core/factory.h:7,
                  from C:/Program Files (x86)/ODFAEG/include/odfaeg/Core/archive.h:7,
                  from C:/Program Files (x86)/ODFAEG/include/odfaeg/Core/serialization.h:9,
-                 from C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:8,
-                 from C:\Program Files (x86)\ODFAEG\include/odfaeg/Graphics/view.h:4,
-                 from C:\Program Files (x86)\ODFAEG\include/odfaeg/Graphics/renderTarget.h:3,
-                 from C:\Program Files (x86)\ODFAEG\include/odfaeg/Graphics/renderWindow.h:37:
+                 from C:/Program Files (x86)/ODFAEG/include/odfaeg/Math/vec4.h:8:
 C:/Program Files (x86)/ODFAEG/include/odfaeg/Core/fastDelegate.h: In member function 'R odfaeg::core::FastDelegate<R>::operator()() [with R = odfaeg::graphic::Entity*]':
-C:/Program Files (x86)/ODFAEG/include/odfaeg/Core/fastDelegate.h:809:13: warning: control reaches end of non-void function [-Wreturn-type]
-  809 |             }
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Core/fastDelegate.h:1043:13: warning: control reaches end of non-void function [-Wreturn-type]
+ 1043 |             }
       |             ^
 C:/Program Files (x86)/ODFAEG/include/odfaeg/Core/fastDelegate.h: In member function 'R odfaeg::core::FastDelegate<R>::operator()() [with R = odfaeg::physic::BoundingVolume*]':
-C:/Program Files (x86)/ODFAEG/include/odfaeg/Core/fastDelegate.h:809:13: warning: control reaches end of non-void function [-Wreturn-type]
-In file included from C:\Program Files (x86)\ODFAEG\include/odfaeg/Graphics/application.h:11:
-C:\Program Files (x86)\ODFAEG\include/odfaeg/Graphics/world.h: In member function 'odfaeg::core::Timer* odfaeg::graphic::World::getTimer(std::string)':
-C:\Program Files (x86)\ODFAEG\include/odfaeg/Graphics/world.h:366:17: warning: control reaches end of non-void function [-Wreturn-type]
-  366 |                 }
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Core/fastDelegate.h:1043:13: warning: control reaches end of non-void function [-Wreturn-type]
+In file included from C:\Program Files (x86)\ODFAEG\include/odfaeg/Network/application.h:12:
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Graphics/world.h: In member function 'odfaeg::core::Timer* odfaeg::graphic::World::getTimer(std::string)':
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Graphics/world.h:365:17: warning: control reaches end of non-void function [-Wreturn-type]
+  365 |                 }
       |                 ^
-C:\Program Files (x86)\ODFAEG\include/odfaeg/Graphics/world.h: In member function 'odfaeg::math::Vec3f odfaeg::graphic::World::getCoordinatesAt(odfaeg::math::Vec3f)':
-C:\Program Files (x86)\ODFAEG\include/odfaeg/Graphics/world.h:453:17: warning: control reaches end of non-void function [-Wreturn-type]
-  453 |                 }
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Graphics/world.h: In member function 'odfaeg::math::Vec3f odfaeg::graphic::World::getCoordinatesAt(odfaeg::math::Vec3f)':
+C:/Program Files (x86)/ODFAEG/include/odfaeg/Graphics/world.h:458:17: warning: control reaches end of non-void function [-Wreturn-type]
+  458 |                 }
       |                 ^
-../../ODFAEG-master/Demos/ODFAEGCREATOR/application.cpp: In member function 'bool ODFAEGCreator::isAlreadyCalled(unsigned int)':
-../../ODFAEG-master/Demos/ODFAEGCREATOR/application.cpp:6795:1: warning: control reaches end of non-void function [-Wreturn-type]
- 6795 | }
-      | ^
+../../ODFAEG-master2/Demos/ODFAEGCREATOR/application.cpp: In member function 'bool ODFAEGCreator::isAlreadyCalled(unsigned int)':
+../../ODFAEG-master2/Demos/ODFAEGCREATOR/application.cpp:7891: warning: control reaches end of non-void function [-Wreturn-type]
+ 7891 | }
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../x86_64-w64-mingw32/bin/as.exe: ../../ODFAEG-master2/Demos/ODFAEGCREATOR/application.o: too many sections (36714)
+C:\Users\LAUREN~1\AppData\Local\Temp\cc6oszqr.s: Assembler messages:
+C:\Users\LAUREN~1\AppData\Local\Temp\cc6oszqr.s: Fatal error: can't write 37 bytes to section .text of ../../ODFAEG-master2/Demos/ODFAEGCREATOR/application.o: 'file too big'
+C:/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/14.2.0/../../../../x86_64-w64-mingw32/bin/as.exe: ../../ODFAEG-master2/Demos/ODFAEGCREATOR/application.o: too many sections (36714)
+C:\Users\LAUREN~1\AppData\Local\Temp\cc6oszqr.s: Fatal error: ../../ODFAEG-master2/Demos/ODFAEGCREATOR/application.o: file too big
