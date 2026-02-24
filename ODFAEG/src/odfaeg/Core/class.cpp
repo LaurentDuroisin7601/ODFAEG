@@ -22,18 +22,34 @@ namespace odfaeg {
 
             while (!clang_Cursor_isNull(parent) &&
                    clang_getCursorKind(parent) == CXCursor_Namespace) {
+
+                // Skip system namespaces
+                CXSourceLocation loc = clang_getCursorLocation(parent);
+                if (clang_Location_isInSystemHeader(loc)) {
+                    parent = clang_getCursorLexicalParent(parent);
+                    continue;
+                }
+
                 CXString spelling = clang_getCursorSpelling(parent);
                 std::string name = clang_getCString(spelling);
                 clang_disposeString(spelling);
 
-                // Préfixer (on remonte du plus proche au plus haut)
-                if (!name.empty()) {
-                    ns = name + (ns.empty() ? "" : "::" + ns);
+                // Skip inline/system/anonymous namespaces
+                if (name.empty() ||
+                    name == "std" ||
+                    name.rfind("__", 0) == 0 ||   // starts with "__"
+                    name[0] == '_') {             // private/system
+                    parent = clang_getCursorLexicalParent(parent);
+                    continue;
                 }
+
+                ns = name + (ns.empty() ? "" : "::" + ns);
                 parent = clang_getCursorLexicalParent(parent);
             }
+
             return ns;
         }
+
         std::string Class::normalize(const std::string& path) {
             return std::filesystem::canonical(path).string();
         }
