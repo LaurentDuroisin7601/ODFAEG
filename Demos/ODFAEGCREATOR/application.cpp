@@ -7500,7 +7500,7 @@ void ODFAEGCreator::onSelectedFunctionChanged(DropDownList* dp) {
         std::string ns;
         for (unsigned int i = 0; i < parts.size()-1; i++) {
             ns += parts[i];
-            if (i != parts.size()-1) {
+            if (i != parts.size()-2) {
                 ns += "::";
             }
         }
@@ -7603,7 +7603,7 @@ void ODFAEGCreator::onSelectedMFunctionChanged(DropDownList *dp) {
         std::string ns;
         for (unsigned int i = 0; i < parts.size()-1; i++) {
             ns += parts[i];
-            if (i != parts.size()-1) {
+            if (i != parts.size()-2) {
                 ns += "::";
             }
         }
