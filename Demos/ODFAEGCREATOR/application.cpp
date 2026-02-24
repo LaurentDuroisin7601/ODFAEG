@@ -2702,7 +2702,7 @@ void ODFAEGCreator::onExec() {
             std::vector<std::pair<std::string, std::string>> classes = Class::getClasses(rtc.getIncludeDirs(), appliname+"\\Scripts");
             //std::cout<<"size : "<<classes.size()<<std::endl;
             for (unsigned int i = 0; i < classes.size(); i++) {
-                //std::cout<<"class file path : "<<cl.getName()<<","<<cl.getImplFilePath()<<std::endl;
+                std::cout<<"class namespace : "<<classes[i].second<<std::endl;
                 if (classes[i].second == "") {
                     dpSelectClass->addItem(classes[i].first, 15);
                     dpSelectMClass->addItem(classes[i].first, 15);

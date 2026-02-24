@@ -18,7 +18,7 @@ namespace odfaeg {
         }
         std::string Class::getQualifiedNamespace(CXCursor cursor) {
             std::string ns;
-            CXCursor parent = clang_getCursorSemanticParent(cursor);
+            CXCursor parent = clang_getCursorLexicalParent(cursor);
 
             while (!clang_Cursor_isNull(parent) &&
                    clang_getCursorKind(parent) == CXCursor_Namespace) {
@@ -30,7 +30,7 @@ namespace odfaeg {
                 if (!name.empty()) {
                     ns = name + (ns.empty() ? "" : "::" + ns);
                 }
-                parent = clang_getCursorSemanticParent(parent);
+                parent = clang_getCursorLexicalParent(parent);
             }
             return ns;
         }
