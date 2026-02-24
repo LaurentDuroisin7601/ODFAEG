@@ -7573,24 +7573,41 @@ void ODFAEGCreator::onSelectedMClassChanged(DropDownList *dp) {
             }
         }
         Class cl = Class::getClass(rtc.getIncludeDirs(), parts[parts.size() - 1],appliname+"\\Scripts",ns);
-
-
-        std::vector<MemberFunction> functions = cl.getMembersFunctions();
-        dpSelectMFunction->addItem("Select function", 15);
-        for (unsigned int i = 0; i < functions.size(); i++) {
-            std::string name = functions[i].getReturnType()+" "+functions[i].getName()+"(";
-            std::vector<std::string> argsTypes = functions[i].getArgsTypes();
-            for (unsigned int j = 0; j < argsTypes.size(); j++) {
-                //std::cout<<"add arg type : "<<argsTypes[j]<<std::endl;
-                name += argsTypes[j];
-                if (j != argsTypes.size() - 1) {
-                    name += ",";
-                }
+        std::queue<Class> q;
+        std::vector<Class> superClasses;
+        for (auto& sc : cl.getSuperClasses()) {
+            superClasses.push_back(sc);
+            q.push(sc);
+        }
+        while (!q.empty()) {
+            Class current = q.front();
+            q.pop();
+            // Ajouter ses super-classes dans la file
+            for (auto& sc : current.getSuperClasses()) {
+                superClasses.push_back(sc);
+                q.push(sc);
             }
-            name += ")";
-            //std::cout<<"add function : "<<name<<std::endl;
-            dpSelectMFunction->addItem(name, 15);
-            //std::cout<<"add function : "<<i<<" : "<<name<<std::endl;
+        }
+        superClasses.push_back(cl);
+        dpSelectMFunction->addItem("Select function", 15);
+        for (unsigned int c = 0; c < superClasses.size(); c++) {
+            std::vector<MemberFunction> functions = superClasses[c].getMembersFunctions();
+
+            for (unsigned int i = 0; i < functions.size(); i++) {
+                std::string name = functions[i].getReturnType()+" "+functions[i].getName()+"(";
+                std::vector<std::string> argsTypes = functions[i].getArgsTypes();
+                for (unsigned int j = 0; j < argsTypes.size(); j++) {
+                    //std::cout<<"add arg type : "<<argsTypes[j]<<std::endl;
+                    name += argsTypes[j];
+                    if (j != argsTypes.size() - 1) {
+                        name += ",";
+                    }
+                }
+                name += ")";
+                //std::cout<<"add function : "<<name<<std::endl;
+                dpSelectMFunction->addItem(name, 15);
+                //std::cout<<"add function : "<<i<<" : "<<name<<std::endl;
+            }
         }
     }
 }
