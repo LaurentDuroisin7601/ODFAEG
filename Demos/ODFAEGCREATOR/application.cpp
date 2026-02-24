@@ -2702,7 +2702,7 @@ void ODFAEGCreator::onExec() {
             std::vector<std::pair<std::string, std::string>> classes = Class::getClasses(rtc.getIncludeDirs(), appliname+"\\Scripts");
             //std::cout<<"size : "<<classes.size()<<std::endl;
             for (unsigned int i = 0; i < classes.size(); i++) {
-                std::cout<<"class namespace : "<<classes[i].second<<std::endl;
+                //std::cout<<"class namespace : "<<classes[i].second<<std::endl;
                 if (classes[i].second == "") {
                     dpSelectClass->addItem(classes[i].first, 15);
                     dpSelectMClass->addItem(classes[i].first, 15);
@@ -2712,8 +2712,8 @@ void ODFAEGCreator::onExec() {
                 }
                 /*std::cout<<"get class : "<<classes[i].first<<std::endl;
                 Class cl = Class::getClass(rtc.getIncludeDirs(), classes[i].first, appliname+"\\Scripts", classes[i].second);
-                std::cout<<"nb constructors : "<<cl.getConstructors().size()<<std::endl;*/
-                /*std::queue<Class> q;
+                std::cout<<"nb constructors : "<<cl.getConstructors().size()<<std::endl;
+                std::queue<Class> q;
                 std::vector<Class> superClasses;
                 for (auto& sc : cl.getSuperClasses()) {
                     superClasses.push_back(sc);
@@ -2729,7 +2729,7 @@ void ODFAEGCreator::onExec() {
                     }
                 }
                 for (unsigned int c = 0; c < superClasses.size(); c++) {
-                    std::cout<<"super class : "<<superClasses[c].getMembersFunctions().size()<<std::endl;
+                    std::cout<<"super class : "<<superClasses[c].getName()<<","<<superClasses[c].getMembersFunctions().size()<<std::endl;
                 }*/
             }
             std::string startDir = getCurrentPath()+"\\"+appliname+"\\Scripts";

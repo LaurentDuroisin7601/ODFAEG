@@ -282,8 +282,8 @@ namespace odfaeg {
                     type += tok;
                 }
                 clang_disposeTokens(c->tu, tokens, numTokens);
-                c->addArgName(std::string(type));
-                c->addArgType(std::string(name));
+                c->addArgName(std::string(name));
+                c->addArgType(std::string(type));
 
             }
             return CXChildVisit_Recurse;
