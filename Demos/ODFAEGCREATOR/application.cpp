@@ -2702,17 +2702,18 @@ void ODFAEGCreator::onExec() {
             std::vector<std::pair<std::string, std::string>> classes = Class::getClasses(rtc.getIncludeDirs(), appliname+"\\Scripts");
             //std::cout<<"size : "<<classes.size()<<std::endl;
             for (unsigned int i = 0; i < classes.size(); i++) {
-                std::cout<<"get class : "<<classes[i].first<<std::endl;
-                Class cl = Class::getClass(rtc.getIncludeDirs(), classes[i].first, appliname+"\\Scripts", classes[i].second);
                 //std::cout<<"class file path : "<<cl.getName()<<","<<cl.getImplFilePath()<<std::endl;
-                if (cl.getNamespace() == "") {
+                if (classes[i].second == "") {
                     dpSelectClass->addItem(classes[i].first, 15);
                     dpSelectMClass->addItem(classes[i].first, 15);
                 } else {
-                    dpSelectClass->addItem(cl.getNamespace()+"::"+classes[i].first, 15);
-                    dpSelectMClass->addItem(cl.getNamespace()+"::"+classes[i].first, 15);
+                    dpSelectClass->addItem(classes[i].second+"::"+classes[i].first, 15);
+                    dpSelectMClass->addItem(classes[i].second+"::"+classes[i].first, 15);
                 }
-                std::queue<Class> q;
+                /*std::cout<<"get class : "<<classes[i].first<<std::endl;
+                Class cl = Class::getClass(rtc.getIncludeDirs(), classes[i].first, appliname+"\\Scripts", classes[i].second);
+                std::cout<<"nb constructors : "<<cl.getConstructors().size()<<std::endl;*/
+                /*std::queue<Class> q;
                 std::vector<Class> superClasses;
                 for (auto& sc : cl.getSuperClasses()) {
                     superClasses.push_back(sc);
@@ -2728,8 +2729,8 @@ void ODFAEGCreator::onExec() {
                     }
                 }
                 for (unsigned int c = 0; c < superClasses.size(); c++) {
-                    std::cout<<"super class : "<<superClasses[c].getName()<<std::endl;
-                }
+                    std::cout<<"super class : "<<superClasses[c].getMembersFunctions().size()<<std::endl;
+                }*/
             }
             std::string startDir = getCurrentPath()+"\\"+appliname+"\\Scripts";
             std::vector<std::string> scriptSourceFiles;
@@ -7432,14 +7433,16 @@ void ODFAEGCreator::onSelectedClassChanged(DropDownList* dp) {
         std::string ns;
         for (unsigned int i = 0; i < parts.size()-1; i++) {
             ns += parts[i];
-            if (i != parts.size()-1) {
+            if (i != parts.size()-2) {
                 ns += "::";
             }
         }
+        std::cout<<"namespace : "<<ns<<std::endl;
         Class cl = Class::getClass(rtc.getIncludeDirs(), parts[parts.size() - 1],appliname+"\\Scripts",ns);
         //std::cout<<"class : "<<parts[parts.size() - 1]<<std::endl<<"found : "<<cl.getName()<<std::endl;
         //system("PAUSE");
         std::vector<Constructor> constructors = cl.getConstructors();
+        std::cout<<"nb constructors : "<<constructors.size()<<std::endl;
         dpSelectFunction->addItem("Select function", 15);
         //std::cout<<"size : "<<constructors.size()<<std::endl;
         for (unsigned int i = 0; i < constructors.size(); i++) {
@@ -7489,6 +7492,7 @@ void ODFAEGCreator::onSelectedClassChanged(DropDownList* dp) {
 }
 void ODFAEGCreator::onSelectedFunctionChanged(DropDownList* dp) {
     if (dp->getSelectedItem() != "Select function" && dpSelectClass->getSelectedItem() != "Select class") {
+
         rootObjectParams->deleteAllNodes();
         pObjectsParameters->removeAll();
         std::string selectedItem = dpSelectClass->getSelectedItem();
@@ -7501,6 +7505,7 @@ void ODFAEGCreator::onSelectedFunctionChanged(DropDownList* dp) {
             }
         }
         Class cl = Class::getClass(rtc.getIncludeDirs(), parts[parts.size() - 1],appliname+"\\Scripts",ns);
+
         tmpTextAreas.clear();
         std::vector<Constructor> constructors = cl.getConstructors();
         bool found = false;

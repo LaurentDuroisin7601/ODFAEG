@@ -170,6 +170,7 @@ namespace odfaeg {
                 CXString parentName = clang_getCursorSpelling(parentCursor);
                 std::string parentNs = getQualifiedNamespace(parentCursor);
                 if (ctx->cl.getName() == clang_getCString(parentName) && ctx->cl.namespc == parentNs) {
+                    //std::cout<<"add constructor : "<<ctx->cl.getName()<<std::endl;
                     Constructor c(clang_getCString(spelling));
                     c.tu = ctx->tu;
                     clang_visitChildren(cursor, constructorVisitor, &c);
@@ -1351,6 +1352,7 @@ namespace odfaeg {
                 }
             }
             if (!contains) {
+                //std::cout<<"add constructor : "<<c.getName()<<std::endl;
                 constructors.push_back(c);
             }
         }
