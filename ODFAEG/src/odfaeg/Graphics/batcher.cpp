@@ -415,7 +415,7 @@ namespace odfaeg {
                 ////////std::cout<<"vertices transformed"<<std::endl;
             }
             void Instance::addVertexShadowArray (VertexArray& va, TransformMatrix& tm, ViewMatrix& viewMatrix, TransformMatrix shadowProjMatrix) {
-
+                va.computeNormals();
                 if (!containsEntity(va.getEntity())) {
                     m_transforms.push_back(&tm);
                     m_shadowProjMatrix.push_back(shadowProjMatrix);

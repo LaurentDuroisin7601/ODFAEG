@@ -414,7 +414,8 @@ namespace odfaeg {
                                                               layout (location = 3) in flat uint layer;
                                                               layout (location = 4) in vec3 normal;
                                                               layout (location = 5) in vec4 shadowCoords;
-                                                              layout (location = 6) in flat int drawableID;
+                                                              layout (location = 6) in vec4 lightCenter;
+                                                              layout (location = 7) in flat int drawableID;
                                                               void main() {
                                                                   vec4 texel = (texIndex != 0) ? frontColor * texture(textures[texIndex-1], fTexCoords.xy) : frontColor;
                                                                   float current_alpha = texel.a;
@@ -518,8 +519,7 @@ namespace odfaeg {
                                                                  layout (location = 4) out vec3 normal;
                                                                  layout (location = 5) out vec4 shadowCoords;
                                                                  layout (location = 6) out vec4 lightCenter;
-                                                                 layout (location = 7) out float isOrthoProj;
-                                                                 layout (location = 8) out int drawableID;
+                                                                 layout (location = 7) out int drawableID;
                                                                  void main() {
                                                                     gl_PointSize = 2.0f;
                                                                     ModelData model = modelDatas[gl_InstanceIndex];
@@ -535,17 +535,13 @@ namespace odfaeg {
                                                                     frontColor = color;
                                                                     texIndex = textureIndex;
                                                                     layer = l;
-                                                                    normal = normals;
+                                                                    normal = normals * mat3(transpose(inverse(model.modelMatrix * ubo.viewMatrix)));
                                                                     drawableID = drawableDataID;
                                                                     vec4 coords = vec4(ubo.lightCenter.xyz, 1);
-                                                                    coords = ubo.projectionMatrix * ubo.viewMatrix * model.modelMatrix * coords;
+                                                                    coords = coords * ubo.viewMatrix;
 
-                                                                    coords = coords / coords.w;
-                                                                    coords = ubo.viewportMatrix * coords;
                                                                     coords.w = ubo.lightCenter.w;
                                                                     lightCenter = coords;
-                                                                    isOrthoProj = ubo.projectionMatrix[3][3];
-
                                                                  }
                                                                  )";
                 const std::string perPixShadowFragmentShader = R"(#version 460
@@ -560,8 +556,16 @@ namespace odfaeg {
                                                                   layout (location = 4) in vec3 normal;
                                                                   layout (location = 5) in vec4 shadowCoords;
                                                                   layout (location = 6) in vec4 lightCenter;
-                                                                  layout (location = 7) in float isOrthoProj;
-                                                                  layout (location = 8) in flat int drawableID;
+                                                                  layout (location = 7) in flat int drawableID;
+                                                                  layout (binding = 5) uniform UniformBufferObject {
+                                                                     mat4 projectionMatrix;
+                                                                     mat4 viewMatrix;
+                                                                     mat4 lprojectionMatrix;
+                                                                     mat4 lviewMatrix;
+                                                                     mat4 viewportMatrix;
+                                                                     vec4 lightCenter;
+                                                                  } ubo;
+
                                                                   layout (push_constant) uniform PushConsts {
                                                                        layout (offset = 0) vec4 resolution;
                                                                        layout (offset = 16) float near;
@@ -576,52 +580,50 @@ namespace odfaeg {
 
                                                                   layout (location = 0) out vec4 fColor;
 
-                                                                void main() {
+                                                                  vec3 toViewCoord(vec3 coords) {
+                                                                       vec3 ndc = vec3(
+                                                                            (coords.x / pushConsts.resolution.x) * 2.0 - 1.0,
+                                                                            (coords.y / pushConsts.resolution.y) * 2.0 - 1.0,
+                                                                            coords.z * 2.0 - 1.0
+                                                                        );
+
+                                                                        vec4 viewPos = inverse(ubo.projectionMatrix) * vec4(ndc, 1.0);
+                                                                        viewPos /= viewPos.w;
+                                                                        return viewPos.xyz;
+                                                                  }
+                                                                  void main() {
                                                                     vec4 texel = (texIndex != 0) ? frontColor * texture(textures[texIndex-1], fTexCoords) : frontColor;
 
                                                                     float color = texel.a;
                                                                     if (color < 0.01) discard;
                                                                     vec4 alpha = texture(alphaBuffer[pushConsts.imageIndex], gl_FragCoord.xy / pushConsts.resolution.xy, 0);
                                                                     vec4 depth = texture(depthBuffer[pushConsts.imageIndex], gl_FragCoord.xy / pushConsts.resolution.xy, 0);
-                                                                    float s01 = textureOffset(depthBuffer[pushConsts.imageIndex], gl_FragCoord.xy / pushConsts.resolution.xy, off.xy).z;
-                                                                    float s21 = textureOffset(depthBuffer[pushConsts.imageIndex], gl_FragCoord.xy / pushConsts.resolution.xy, off.zy).z;
-                                                                    float s10 = textureOffset(depthBuffer[pushConsts.imageIndex], gl_FragCoord.xy / pushConsts.resolution.xy, off.yx).z;
-                                                                    float s12 = textureOffset(depthBuffer[pushConsts.imageIndex], gl_FragCoord.xy / pushConsts.resolution.xy, off.yz).z;
-                                                                    vec3 va = normalize (vec3(size.xy, s21 - s01));
-                                                                    vec3 vb = normalize (vec3(size.yx, s12 - s10));
+
+                                                                    vec3 s01 = toViewCoord(vec3(gl_FragCoord.xy + off.xy, textureOffset(depthBuffer[pushConsts.imageIndex], gl_FragCoord.xy / pushConsts.resolution.xy, off.xy).z));
+                                                                    vec3 s21 = toViewCoord(vec3(gl_FragCoord.xy + off.zy, textureOffset(depthBuffer[pushConsts.imageIndex], gl_FragCoord.xy / pushConsts.resolution.xy, off.zy).z));
+                                                                    vec3 s10 = toViewCoord(vec3(gl_FragCoord.xy + off.yx, textureOffset(depthBuffer[pushConsts.imageIndex], gl_FragCoord.xy / pushConsts.resolution.xy, off.yx).z));
+                                                                    vec3 s12 = toViewCoord(vec3(gl_FragCoord.xy + off.yz, textureOffset(depthBuffer[pushConsts.imageIndex], gl_FragCoord.xy / pushConsts.resolution.xy, off.yz).z));
+                                                                    vec3 va = normalize(s21 - s01);
+                                                                    vec3 vb = normalize(s12 - s10);
                                                                     vec3 n = vec3(cross(va, vb));
 
                                                                     vec3 projCoords = shadowCoords.xyz / shadowCoords.w;
-                                                                    float pixelViewZ, lightViewZ;
-                                                                    bool useOrtho = (isOrthoProj != 0);
 
-                                                                    if (useOrtho) {
-                                                                        pixelViewZ = pushConsts.near + gl_FragCoord.z * (pushConsts.far - pushConsts.near);
-                                                                        lightViewZ = pushConsts.near + lightCenter.z * (pushConsts.far - pushConsts.near);
-                                                                    } else {
-                                                                        float ndcZ = gl_FragCoord.z * 2.0 - 1.0; // Convertit de [0,1] à [-1,1]
-                                                                        pixelViewZ = (2.0 * pushConsts.near * pushConsts.far) /
-                                                                        (ndcZ * (pushConsts.near - pushConsts.far) - (pushConsts.near + pushConsts.far));
-                                                                        ndcZ = lightCenter.z * 2.0 - 1.0; // Convertit de [0,1] à [-1,1]
-                                                                        lightViewZ = (2.0 * pushConsts.near * pushConsts.far) /
-                                                                        (ndcZ * (pushConsts.near - pushConsts.far) - (pushConsts.near + pushConsts.far));
-                                                                    }
                                                                     projCoords.xy = projCoords.xy * 0.5 + 0.5;
-                                                                    //projCoords.y = 1.0 - projCoords.y;
+
 
                                                                     vec4 stencil = texture(stencilBuffer[pushConsts.imageIndex], projCoords.xy);
-                                                                    /*if (stencil.z != 0)
-                                                                        debugPrintfEXT("shadow coords : %v3f\n position : %v3f", projCoords, gl_FragCoord.xyz / pushConsts.resolution.xyz);*/
+
                                                                     float z = gl_FragCoord.z;
                                                                     uint l = layer;
                                                                     float shadowFactor;
-                                                                    vec3 lightDir = vec3(lightCenter.x, lightCenter.y, lightViewZ) - vec3(gl_FragCoord.x, gl_FragCoord.y, pixelViewZ);
-                                                                    float bias = max(0.05 * (1.0 - dot(normalize(n), normalize(lightDir))), 0.002);
+                                                                    vec3 lightDir = lightCenter.xyz - toViewCoord(vec3(gl_FragCoord.xy, depth.z));
+                                                                    float bias = max(0.05 * (1.0 - dot(normalize(n), normalize(lightDir))), 0.005);
+                                                                    //debugPrintfEXT("normal : %v3f\nlightDir : %v3f\nlightView : %v3f", n, lightDir, lightCenter);
                                                                     if (stencil.z - bias  > projCoords.z) {
                                                                         if (depth.z - bias > z) {
                                                                             shadowFactor = 1.0;
                                                                         } else {
-                                                                            //debugPrintfEXT("draw shadow");
                                                                             shadowFactor = clamp(dot(normalize(n), normalize(lightDir)), 0.0, 1.0);
                                                                         }
 
@@ -1521,7 +1523,7 @@ namespace odfaeg {
                     uboLayoutBinding.descriptorCount = 1;
                     uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
                     uboLayoutBinding.pImmutableSamplers = nullptr;
-                    uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+                    uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 
                     std::vector<VkDescriptorBindingFlags> bindingFlags(7, 0); // 6 bindings, flags par défaut à 0
                     bindingFlags[6] = VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
