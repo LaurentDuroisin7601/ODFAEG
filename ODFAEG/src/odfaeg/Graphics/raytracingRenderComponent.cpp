@@ -318,9 +318,9 @@ namespace odfaeg {
             submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
             submitInfo.commandBufferCount = 1;
             submitInfo.pCommandBuffers = &commandBuffer;
-
-            vkQueueSubmit(vkDevice.getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
-            vkQueueWaitIdle(vkDevice.getGraphicsQueue());
+            window::Device::QueueFamilyIndices indices = vkDevice.findQueueFamilies(vkDevice.getPhysicalDevice(), nullptr);
+            vkQueueSubmit(vkDevice.getQueue(indices.graphicsFamily.value(), 0), 1, &submitInfo, VK_NULL_HANDLE);
+            vkQueueWaitIdle(vkDevice.getQueue(indices.graphicsFamily.value(), 0));
 
             vkFreeCommandBuffers(vkDevice.getDevice(), commandPool, 1, &commandBuffer);
         }
@@ -649,8 +649,9 @@ namespace odfaeg {
                 submitInfo.commandBufferCount = 1;
                 submitInfo.pCommandBuffers = &commandBuffer;
 
-                vkQueueSubmit(vkDevice.getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
-                vkQueueWaitIdle(vkDevice.getGraphicsQueue());
+                window::Device::QueueFamilyIndices indices = vkDevice.findQueueFamilies(vkDevice.getPhysicalDevice(), nullptr);
+                vkQueueSubmit(vkDevice.getQueue(indices.graphicsFamily.value(), 0), 1, &submitInfo, VK_NULL_HANDLE);
+                vkQueueWaitIdle(vkDevice.getQueue(indices.graphicsFamily.value(), 0));
 
                 vkFreeCommandBuffers(vkDevice.getDevice(), commandPool, 1, &commandBuffer);
 
@@ -903,8 +904,9 @@ namespace odfaeg {
                     submitInfo.commandBufferCount = 1;
                     submitInfo.pCommandBuffers = &commandBuffer;
 
-                    vkQueueSubmit(vkDevice.getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
-                    vkQueueWaitIdle(vkDevice.getGraphicsQueue());
+                    window::Device::QueueFamilyIndices indices = vkDevice.findQueueFamilies(vkDevice.getPhysicalDevice(), nullptr);
+                    vkQueueSubmit(vkDevice.getQueue(indices.graphicsFamily.value(), 0), 1, &submitInfo, VK_NULL_HANDLE);
+                    vkQueueWaitIdle(vkDevice.getQueue(indices.graphicsFamily.value(), 0));
 
                     vkFreeCommandBuffers(vkDevice.getDevice(), commandPool, 1, &commandBuffer);
 
@@ -1110,8 +1112,9 @@ namespace odfaeg {
             submitInfo.commandBufferCount = 1;
             submitInfo.pCommandBuffers = &commandBuffer;
 
-            vkQueueSubmit(vkDevice.getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
-            vkQueueWaitIdle(vkDevice.getGraphicsQueue());
+            window::Device::QueueFamilyIndices indices = vkDevice.findQueueFamilies(vkDevice.getPhysicalDevice(), nullptr);
+            vkQueueSubmit(vkDevice.getQueue(indices.graphicsFamily.value(), 0), 1, &submitInfo, VK_NULL_HANDLE);
+            vkQueueWaitIdle(vkDevice.getQueue(indices.graphicsFamily.value(), 0));
 
             vkFreeCommandBuffers(vkDevice.getDevice(), commandPool, 1, &commandBuffer);
 
@@ -1432,8 +1435,9 @@ namespace odfaeg {
             submitInfo.commandBufferCount = 1;
             submitInfo.pCommandBuffers = &commandBuffer;
 
-            vkQueueSubmit(vkDevice.getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
-            vkQueueWaitIdle(vkDevice.getGraphicsQueue());
+            window::Device::QueueFamilyIndices indices = vkDevice.findQueueFamilies(vkDevice.getPhysicalDevice(), nullptr);
+            vkQueueSubmit(vkDevice.getQueue(indices.graphicsFamily.value(), 0), 1, &submitInfo, VK_NULL_HANDLE);
+            vkQueueWaitIdle(vkDevice.getQueue(indices.graphicsFamily.value(), 0));
 
             vkFreeCommandBuffers(vkDevice.getDevice(), commandPool, 1, &commandBuffer);
         }

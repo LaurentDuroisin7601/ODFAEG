@@ -872,9 +872,10 @@ namespace odfaeg {
                 submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
                 submitInfo.commandBufferCount = 1;
                 submitInfo.pCommandBuffers = &commandBuffer;
+                window::Device::QueueFamilyIndices indices = vkDevice.findQueueFamilies(vkDevice.getPhysicalDevice(), nullptr);
 
-                vkQueueSubmit(vkDevice.getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
-                vkQueueWaitIdle(vkDevice.getGraphicsQueue());
+                vkQueueSubmit(vkDevice.getQueue(indices.graphicsFamily.value(), 0), 1, &submitInfo, VK_NULL_HANDLE);
+                vkQueueWaitIdle(vkDevice.getQueue(indices.graphicsFamily.value(), 0));
 
                 vkFreeCommandBuffers(vkDevice.getDevice(), commandPool, 1, &commandBuffer);
             }

@@ -435,7 +435,7 @@ namespace odfaeg
         void RenderTexture::submit(bool lastSubmit, std::vector<VkSemaphore> signalSemaphores,
                          std::vector<VkSemaphore> waitSemaphores, std::vector<VkPipelineStageFlags> waitStages,
                          std::vector<uint64_t> signalValues,
-                         std::vector<uint64_t> waitValues, std::vector<VkFence> fences) {
+                         std::vector<uint64_t> waitValues, std::vector<VkFence> fences, unsigned int queueIndex) {
             if (getCommandBuffers().size() > 0) {
 
                 ////////std::cout<<"render texture end command buffer"<<std::endl;
@@ -502,7 +502,8 @@ namespace odfaeg
                     vkWaitForFences(vkDevice.getDevice(), fences.size(), fences.data(), VK_TRUE, UINT64_MAX);
                     vkResetFences(vkDevice.getDevice(), fences.size(), fences.data());
                 }
-                if (vkQueueSubmit(vkDevice.getGraphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS) {
+                window::Device::QueueFamilyIndices indices = vkDevice.findQueueFamilies(vkDevice.getPhysicalDevice(), nullptr);
+                if (vkQueueSubmit(vkDevice.getQueue(indices.graphicsFamily.value(), queueIndex), 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS) {
                     throw core::Erreur(0, "échec de l'envoi d'un command buffer!", 1);
                 }
                 vkWaitForFences(vkDevice.getDevice(), 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
@@ -511,6 +512,9 @@ namespace odfaeg
                     vertexBuffer[i].clear();
                 drawableData.clear();
             }
+        }
+        VkFence RenderTexture::getFence() {
+            return inFlightFences[currentFrame];
         }
         RenderTexture::~RenderTexture() {
             vkDeviceWaitIdle(vkDevice.getDevice());

@@ -36,9 +36,8 @@ namespace odfaeg {
             void createLogicalDevice(VkSurfaceKHR surface);
             VkDevice getDevice();
             VkPhysicalDevice getPhysicalDevice();
-            VkQueue getGraphicsQueue();
-            VkQueue getComputeQueue();
-            VkQueue getPresentQueue();
+            VkQueue getQueue(uint32_t queueFamily, unsigned int queueIndex);
+
 
             void createInstance();
             VkInstance getInstance();
@@ -50,7 +49,7 @@ namespace odfaeg {
             VkSettup& vkSettup;
             VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
             VkDevice device;
-            VkQueue graphicsQueue, computeQueue, presentQueue;
+            std::vector<std::vector<VkQueue>> queues;
         };
     }
 }

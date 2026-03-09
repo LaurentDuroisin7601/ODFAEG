@@ -120,7 +120,8 @@ namespace odfaeg {
                     submitInfo.pSignalSemaphores = &computeSemaphores;
                     submitInfo.commandBufferCount = 1;
                     submitInfo.pCommandBuffers = &commandBuffers[currentFrame];
-                    if (vkQueueSubmit(vkDevice.getComputeQueue(), 1, &submitInfo, computeFences) != VK_SUCCESS) {
+                    window::Device::QueueFamilyIndices indices = vkDevice.findQueueFamilies(vkDevice.getPhysicalDevice(), nullptr);
+                    if (vkQueueSubmit(vkDevice.getQueue(indices.computeFamily.value(), 1), 1, &submitInfo, computeFences) != VK_SUCCESS) {
                         throw core::Erreur(0, "échec de l'envoi d'un command buffer!", 1);
                     }
                     //std::cout<<"compute finished"<<std::endl;

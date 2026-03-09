@@ -396,6 +396,7 @@ namespace odfaeg {
                 vb2.append(Vertex(math::Vec3f(0, 0, 0)));
                 vb2.update();
 
+
             }
             void ReflectRefractRenderComponent::createDescriptorsAndPipelines() {
 
@@ -982,9 +983,9 @@ namespace odfaeg {
                 submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
                 submitInfo.commandBufferCount = 1;
                 submitInfo.pCommandBuffers = &commandBuffer;
-
-                vkQueueSubmit(vkDevice.getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
-                vkQueueWaitIdle(vkDevice.getGraphicsQueue());
+                window::Device::QueueFamilyIndices indices = vkDevice.findQueueFamilies(vkDevice.getPhysicalDevice(), nullptr);
+                vkQueueSubmit(vkDevice.getQueue(indices.graphicsFamily.value(), 0), 1, &submitInfo, VK_NULL_HANDLE);
+                vkQueueWaitIdle(vkDevice.getQueue(indices.graphicsFamily.value(), 0));
 
                 vkFreeCommandBuffers(vkDevice.getDevice(), commandPool, 1, &commandBuffer);
             }
@@ -1180,9 +1181,10 @@ namespace odfaeg {
                 submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
                 submitInfo.commandBufferCount = 1;
                 submitInfo.pCommandBuffers = &commandBuffer;
+                window::Device::QueueFamilyIndices indices = vkDevice.findQueueFamilies(vkDevice.getPhysicalDevice(), nullptr);
 
-                vkQueueSubmit(vkDevice.getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
-                vkQueueWaitIdle(vkDevice.getGraphicsQueue());
+                vkQueueSubmit(vkDevice.getQueue(indices.graphicsFamily.value(), 0), 1, &submitInfo, VK_NULL_HANDLE);
+                vkQueueWaitIdle(vkDevice.getQueue(indices.graphicsFamily.value(), 0));
 
                 vkFreeCommandBuffers(vkDevice.getDevice(), commandPool, 1, &commandBuffer);
             }
@@ -3473,7 +3475,7 @@ namespace odfaeg {
                 }
             }
             void ReflectRefractRenderComponent::clear() {
-                depthBuffer.clear(Color::Transparent);
+                /*depthBuffer.clear(Color::Transparent);
                 std::vector<VkCommandBuffer> commandBuffers = depthBuffer.getCommandBuffers();
                 unsigned int currentFrame = depthBuffer.getCurrentFrame();
                 VkClearColorValue clearColor = {0.f, 0.f, 0.f, 0.f};
@@ -3502,7 +3504,7 @@ namespace odfaeg {
 
                 reflectRefractTex.beginRecordCommandBuffers();
                 const_cast<Texture&>(reflectRefractTex.getTexture(reflectRefractTex.getImageIndex())).toColorAttachmentOptimal(reflectRefractTex.getCommandBuffers()[reflectRefractTex.getCurrentFrame()]);
-                reflectRefractTex.clear(Color::Transparent);
+                reflectRefractTex.clear(Color::Transparent);*/
 
             }
             void ReflectRefractRenderComponent::resetBuffers() {
@@ -7533,176 +7535,39 @@ namespace odfaeg {
                     drawBuffers();
                     //std::cout<<"command buffer wake up : "<<currentFrame<<std::endl;
                     jobFence[currentFrame].wait();
-                    //std::cout<<"draw next frame done"<<std::endl;
-                    commandBufferReady[depthBuffer.getCurrentFrame()] = true;
-                    cv.notify_one();
-
-                } else {
-                    ////std::cout<<"draw no thread"<<std::endl;
-
-                    drawDepthReflInst();
-                    drawDepthReflIndexedInst();
-
-
-
-                    drawAlphaInst();
-                    drawAlphaIndexedInst();
-
-
-                    View reflectView;
-                    if (view.isOrtho()) {
-                        reflectView = View (squareSize, squareSize, view.getViewport().getPosition().z(), view.getViewport().getSize().z());
-                    } else {
-                        reflectView = View (squareSize, squareSize, 80, view.getViewport().getPosition().z(), view.getViewport().getSize().z());
-                    }
-                    rootEntities.clear();
-                    for (unsigned int t = 0; t < 4; t++) {
-
-                        std::vector<Instance> instances;
-                        if(t == 0)
-                            instances = m_reflInstances;
-                        else if (t == 1)
-                            instances = m_reflNormals;
-                        else if (t == 2)
-                            instances = m_reflIndexed;
-                        else
-                            instances = m_reflNormalIndexed;
-                        for (unsigned int n = 0; n < instances.size(); n++) {
-                            if (instances[n].getAllVertices().getVertexCount() > 0) {
-                                std::vector<Entity*> entities = instances[n].getEntities();
-                                for (unsigned int e = 0; e < entities.size(); e++) {
-                                    Entity* entity = entities[e]->getRootEntity();
-                                    bool contains = false;
-                                    for (unsigned int r = 0; r < rootEntities.size() && !contains; r++) {
-                                        if (rootEntities[r] == entity)
-                                            contains = true;
-                                    }
-                                    if (!contains) {
-                                        rootEntities.push_back(entity);
-                                        if (entity->getType() != "E_BIGTILE")
-                                            reflectView.setCenter(entity->getPosition()+entity->getSize()*0.5f);
-                                        else
-                                            reflectView.setCenter(view.getPosition());
-                                        math::Matrix4f projMatrices[6];
-                                        math::Matrix4f viewMatrices[6];
-
-                                        environmentMap.setView(reflectView);
-                                        for (unsigned int m = 0; m < 6; m++) {
-                                            math::Vec3f target = reflectView.getPosition() + dirs[m];
-                                            reflectView.lookAt(target.x(), target.y(), target.z(), ups[m]);
-                                            projMatrix = reflectView.getProjMatrix().getMatrix()/*.transpose()*/;
-                                            viewMatrix = reflectView.getViewMatrix().getMatrix()/*.transpose()*/;
-                                            projMatrices[m] = projMatrix;
-                                            viewMatrices[m] = viewMatrix;
-
-
-                                        }
-
-
-                                        UniformBufferObject ubo;
-                                        for (unsigned int f = 0; f < 6; f++) {
-                                            MatricesData matrices;
-                                            matrices.projMatrix = toVulkanMatrix(projMatrices[f]);
-                                            matrices.viewMatrix = toVulkanMatrix(viewMatrices[f]);
-                                            ubo.matrices[f] = matrices;
-                                        }
-                                        updateUniformBuffer(environmentMap.getCurrentFrame(), ubo);
-                                        environmentMap.clear(Color::Transparent);
-                                        environmentMap.beginRecordCommandBuffers();
-                                        VkClearColorValue clearColor;
-                                        clearColor.uint32[0] = 0xffffffff;
-                                        std::vector<VkCommandBuffer> commandBuffers = environmentMap.getCommandBuffers();
-                                        for (unsigned int j = 0; j < commandBuffers.size(); j++) {
-                                            VkImageSubresourceRange subresRange {};
-                                            subresRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-                                            subresRange.levelCount = 1;
-                                            subresRange.layerCount = 6;
-                                            vkCmdClearColorImage(commandBuffers[j], headPtrTextureImage[j], VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
-                                            for (unsigned int f = 0; f < 6; f++)
-                                                vkCmdFillBuffer(commandBuffers[j], counterShaderStorageBuffers[j], f * sizeof(uint32_t), sizeof(uint32_t), 0);
-                                            VkMemoryBarrier memoryBarrier;
-                                            memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-                                            memoryBarrier.pNext = VK_NULL_HANDLE;
-                                            memoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-                                            memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-                                            vkCmdPipelineBarrier(commandBuffers[j], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
-
-                                        }
-
-
-                                        drawEnvReflInst();
-                                        drawEnvReflIndexedInst();
-
-
-                                        vb.clear();
-                                        vb.setPrimitiveType(Triangles);
-                                        Vertex v1 (math::Vec3f(0, 0, quad.getSize().z()));
-                                        Vertex v2 (math::Vec3f(quad.getSize().x(),0, quad.getSize().z()));
-                                        Vertex v3 (math::Vec3f(quad.getSize().x(), quad.getSize().y(), quad.getSize().z()));
-                                        Vertex v4 (math::Vec3f(0, quad.getSize().y(), quad.getSize().z()));
-                                        vb.append(v1);
-                                        vb.append(v2);
-                                        vb.append(v3);
-                                        vb.append(v1);
-                                        vb.append(v3);
-                                        vb.append(v4);
-                                        vb.update();
-                                        math::Matrix4f matrix = quad.getTransform().getMatrix()/*.transpose()*/;
-                                        linkedList2PC.worldMat = toVulkanMatrix(matrix);
-                                        currentStates.shader = &sLinkedList2;
-                                        currentStates.texture = nullptr;
-                                        createCommandBufferVertexBuffer(currentStates);
-
-
-                                        buildFrameBufferPC.cameraPos = math::Vec4f(view.getPosition().x(), view.getPosition().y(), view.getPosition().z(), 1);
-                                        reflectRefractTex.beginRecordCommandBuffers();
-                                        drawReflInst(entity);
-                                        drawReflIndexedInst(entity);
-                                    }
-                                }
-                            }
-
-                        }
-                    }
-                    if (!isSomethingDrawn) {
-                        std::vector<VkSemaphore> waitSemaphores;
-                        waitSemaphores.push_back(offscreenRenderingFinishedSemaphore[depthBuffer.getCurrentFrame()]);
-                        std::vector<VkPipelineStageFlags> waitStages;
-                        waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-                        std::vector<uint64_t> waitValues;
-                        waitValues.push_back(values[depthBuffer.getCurrentFrame()]);
-                        std::vector<VkSemaphore> signalSemaphores;
-                        signalSemaphores.push_back(offscreenDepthPassFinishedSemaphore[depthBuffer.getCurrentFrame()]);
-                        std::vector<uint64_t> signalValues;
-                        depthBuffer.submit(true, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
-                        reflectRefractTex.beginRecordCommandBuffers();
-                        waitSemaphores.clear();
-                        waitStages.clear();
-                        signalSemaphores.clear();
-                        waitValues.clear();
-                        signalValues.clear();
-                        waitSemaphores.push_back(offscreenDepthPassFinishedSemaphore[reflectRefractTex.getCurrentFrame()]);
-                        waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-                        values[reflectRefractTex.getCurrentFrame()]++;
-                        signalSemaphores.push_back(offscreenRenderingFinishedSemaphore[reflectRefractTex.getCurrentFrame()]);
-                        signalValues.push_back(values[reflectRefractTex.getCurrentFrame()]);
-                        reflectRefractTex.submit(true, signalSemaphores, waitSemaphores, waitStages, signalValues);
-                    }
-                    isSomethingDrawn  = false;
-                }
-            }
-            void ReflectRefractRenderComponent::draw(RenderTarget& target, RenderStates states) {
-                if (useThread) {
-                    //std::cout<<"current frame : "<<depthBuffer.getCurrentFrame()<<std::endl;
-                    std::unique_lock<std::mutex> lock(mtx);
-
-                    cv.wait(lock, [this] { return commandBufferReady[depthBuffer.getCurrentFrame()].load() || stop.load(); });
-                    commandBufferReady[depthBuffer.getCurrentFrame()] = false;
-                    // std::cout<<"wait command buffers : "<<depthBuffer.getCurrentFrame()<<std::endl;
-                    //std::cout<<"soumission"<<std::endl;
-                    depthBuffer.beginRecordCommandBuffers();
+                    depthBuffer.clear(Color::Transparent);
                     std::vector<VkCommandBuffer> commandBuffers = depthBuffer.getCommandBuffers();
-                    unsigned int currentFrame = depthBuffer.getCurrentFrame();
+
+                    VkClearColorValue clearColor = {0.f, 0.f, 0.f, 0.f};
+                    VkImageSubresourceRange subresRange = {};
+                    subresRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                    subresRange.levelCount = 1;
+                    subresRange.layerCount = 1;
+                    vkCmdClearColorImage(commandBuffers[currentFrame], depthTextureImage[currentFrame], VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
+                    VkMemoryBarrier memoryBarrier0{};
+                    memoryBarrier0.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+                    memoryBarrier0.pNext = VK_NULL_HANDLE;
+                    memoryBarrier0.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                    memoryBarrier0.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+                    vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier0, 0, nullptr, 0, nullptr);
+
+                    alphaBuffer.clear(Color::Transparent);
+                    commandBuffers = alphaBuffer.getCommandBuffers();
+                    currentFrame = alphaBuffer.getCurrentFrame();
+                    vkCmdClearColorImage(commandBuffers[currentFrame], alphaTextureImage[currentFrame], VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
+
+                    memoryBarrier0.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+                    memoryBarrier0.pNext = VK_NULL_HANDLE;
+                    memoryBarrier0.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                    memoryBarrier0.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+                    vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier0, 0, nullptr, 0, nullptr);
+
+                    reflectRefractTex.beginRecordCommandBuffers();
+                    const_cast<Texture&>(reflectRefractTex.getTexture(reflectRefractTex.getImageIndex())).toColorAttachmentOptimal(reflectRefractTex.getCommandBuffers()[reflectRefractTex.getCurrentFrame()]);
+                    reflectRefractTex.clear(Color::Transparent);
+                    depthBuffer.beginRecordCommandBuffers();
+
+
 
                     vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyModelDataBufferCommandBuffer[currentFrame]);
 
@@ -7871,11 +7736,12 @@ namespace odfaeg {
                     valuesCopy[currentFrame]++;
                     signalValues.push_back(valuesCopy[depthBuffer.getCurrentFrame()]);
                     //std::cout<<"value : "<<depthBuffer.getCurrentFrame()<<","<<valuesCopy[depthBuffer.getCurrentFrame()]<<std::endl;
-                    depthBuffer.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
+                    depthBuffer.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, std::vector<VkFence>(), 2);
                     //std::cout<<"copy ok"<<std::endl;
 
 
                     depthBuffer.beginRecordCommandBuffers();
+                    commandBuffers = depthBuffer.getCommandBuffers();
 
                     signalSemaphores.clear();
                     signalSemaphores.push_back(offscreenDepthPassFinishedSemaphore[currentFrame]);
@@ -7889,7 +7755,8 @@ namespace odfaeg {
                     depthBuffer.beginRenderPass();
                     vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &depthBufferCommandBuffer[currentFrame]);
                     depthBuffer.endRenderPass();
-                    depthBuffer.submit(true, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
+                    depthBuffer.submit(true, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, std::vector<VkFence>(), 2);
+
                     alphaBuffer.beginRecordCommandBuffers();
 
                     const_cast<Texture&>(depthBuffer.getTexture(depthBuffer.getImageIndex())).toShaderReadOnlyOptimal(alphaBuffer.getCommandBuffers()[alphaBuffer.getCurrentFrame()]);
@@ -7920,7 +7787,7 @@ namespace odfaeg {
                     waitSemaphores.push_back(offscreenDepthPassFinishedSemaphore[currentFrame]);
                     waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
 
-                    alphaBuffer.submit(true, signalSemaphores, waitSemaphores, waitStages);
+                    alphaBuffer.submit(true, signalSemaphores, waitSemaphores, waitStages,std::vector<uint64_t>(), std::vector<uint64_t>(), std::vector<VkFence>(), 2);
                     //std::cout<<"alpha buffer current frame : "<<currentFrame<<std::endl;
 
                     for (unsigned int i = 0; i < environmentMapCommandBuffer.size(); i++) {
@@ -7963,7 +7830,7 @@ namespace odfaeg {
                             waitValues.push_back(valuesCopy[currentFrame]);
                             values[currentFrame]++;
                             signalValues.push_back(values[currentFrame]);
-                            environmentMap.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
+                            environmentMap.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, std::vector<VkFence>(), 2);
                         }
 
 
@@ -7987,7 +7854,7 @@ namespace odfaeg {
                         waitValues.push_back(valuesCopy[depthBuffer.getCurrentFrame()]);
                         values[reflectRefractTex.getCurrentFrame()]++;
                         signalValues.push_back(values[reflectRefractTex.getCurrentFrame()]);
-                        environmentMap.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
+                        environmentMap.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, std::vector<VkFence>(),2);
 
                         environmentMap.beginRecordCommandBuffers();
                         vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 0, nullptr);
@@ -8010,7 +7877,7 @@ namespace odfaeg {
                         values[reflectRefractTex.getCurrentFrame()]++;
                         signalValues.clear();
                         signalValues.push_back(values[reflectRefractTex.getCurrentFrame()]);
-                        environmentMap.submit(true, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
+                        environmentMap.submit(true, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, std::vector<VkFence>(), 2);
 
                         reflectRefractTex.beginRecordCommandBuffers();
 
@@ -8044,7 +7911,7 @@ namespace odfaeg {
                         values[currentFrame]++;
                         signalValues.clear();
                         signalValues.push_back(values[currentFrame]);
-                        reflectRefractTex.submit((i == nbReflRefrEntities - 1) ? true : false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
+                        reflectRefractTex.submit((i == nbReflRefrEntities - 1) ? true : false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, std::vector<VkFence>(),2);
 
                         isSomethingDrawn = true;
                     }
@@ -8061,11 +7928,181 @@ namespace odfaeg {
                         values[reflectRefractTex.getCurrentFrame()]++;
                         signalValues.clear();
                         signalValues.push_back(values[reflectRefractTex.getCurrentFrame()]);
-                        reflectRefractTex.submit(true, signalSemaphores, waitSemaphores, waitStages, signalValues);
+                        reflectRefractTex.submit(true, signalSemaphores, waitSemaphores, waitStages, signalValues, std::vector<uint64_t>(), std::vector<VkFence>(), 2);
                         //std::cout<<"reflect refract current frame : "<<reflectRefractTex.getCurrentFrame()<<std::endl;
                     }
                     isSomethingDrawn  = false;
+
+                    //std::cout<<"draw next frame done"<<std::endl;
+                    commandBufferReady[depthBuffer.getCurrentFrame()] = true;
+                    cv.notify_one();
+                    //std::cout<<"frame drawn"<<std::endl;
+
+                } else {
+                    ////std::cout<<"draw no thread"<<std::endl;
+
+                    drawDepthReflInst();
+                    drawDepthReflIndexedInst();
+
+
+
+                    drawAlphaInst();
+                    drawAlphaIndexedInst();
+
+
+                    View reflectView;
+                    if (view.isOrtho()) {
+                        reflectView = View (squareSize, squareSize, view.getViewport().getPosition().z(), view.getViewport().getSize().z());
+                    } else {
+                        reflectView = View (squareSize, squareSize, 80, view.getViewport().getPosition().z(), view.getViewport().getSize().z());
+                    }
+                    rootEntities.clear();
+                    for (unsigned int t = 0; t < 4; t++) {
+
+                        std::vector<Instance> instances;
+                        if(t == 0)
+                            instances = m_reflInstances;
+                        else if (t == 1)
+                            instances = m_reflNormals;
+                        else if (t == 2)
+                            instances = m_reflIndexed;
+                        else
+                            instances = m_reflNormalIndexed;
+                        for (unsigned int n = 0; n < instances.size(); n++) {
+                            if (instances[n].getAllVertices().getVertexCount() > 0) {
+                                std::vector<Entity*> entities = instances[n].getEntities();
+                                for (unsigned int e = 0; e < entities.size(); e++) {
+                                    Entity* entity = entities[e]->getRootEntity();
+                                    bool contains = false;
+                                    for (unsigned int r = 0; r < rootEntities.size() && !contains; r++) {
+                                        if (rootEntities[r] == entity)
+                                            contains = true;
+                                    }
+                                    if (!contains) {
+                                        rootEntities.push_back(entity);
+                                        if (entity->getType() != "E_BIGTILE")
+                                            reflectView.setCenter(entity->getPosition()+entity->getSize()*0.5f);
+                                        else
+                                            reflectView.setCenter(view.getPosition());
+                                        math::Matrix4f projMatrices[6];
+                                        math::Matrix4f viewMatrices[6];
+
+                                        environmentMap.setView(reflectView);
+                                        for (unsigned int m = 0; m < 6; m++) {
+                                            math::Vec3f target = reflectView.getPosition() + dirs[m];
+                                            reflectView.lookAt(target.x(), target.y(), target.z(), ups[m]);
+                                            projMatrix = reflectView.getProjMatrix().getMatrix()/*.transpose()*/;
+                                            viewMatrix = reflectView.getViewMatrix().getMatrix()/*.transpose()*/;
+                                            projMatrices[m] = projMatrix;
+                                            viewMatrices[m] = viewMatrix;
+
+
+                                        }
+
+
+                                        UniformBufferObject ubo;
+                                        for (unsigned int f = 0; f < 6; f++) {
+                                            MatricesData matrices;
+                                            matrices.projMatrix = toVulkanMatrix(projMatrices[f]);
+                                            matrices.viewMatrix = toVulkanMatrix(viewMatrices[f]);
+                                            ubo.matrices[f] = matrices;
+                                        }
+                                        updateUniformBuffer(environmentMap.getCurrentFrame(), ubo);
+                                        environmentMap.clear(Color::Transparent);
+                                        environmentMap.beginRecordCommandBuffers();
+                                        VkClearColorValue clearColor;
+                                        clearColor.uint32[0] = 0xffffffff;
+                                        std::vector<VkCommandBuffer> commandBuffers = environmentMap.getCommandBuffers();
+                                        for (unsigned int j = 0; j < commandBuffers.size(); j++) {
+                                            VkImageSubresourceRange subresRange {};
+                                            subresRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                                            subresRange.levelCount = 1;
+                                            subresRange.layerCount = 6;
+                                            vkCmdClearColorImage(commandBuffers[j], headPtrTextureImage[j], VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
+                                            for (unsigned int f = 0; f < 6; f++)
+                                                vkCmdFillBuffer(commandBuffers[j], counterShaderStorageBuffers[j], f * sizeof(uint32_t), sizeof(uint32_t), 0);
+                                            VkMemoryBarrier memoryBarrier;
+                                            memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+                                            memoryBarrier.pNext = VK_NULL_HANDLE;
+                                            memoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                                            memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+                                            vkCmdPipelineBarrier(commandBuffers[j], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
+
+                                        }
+
+
+                                        drawEnvReflInst();
+                                        drawEnvReflIndexedInst();
+
+
+                                        vb.clear();
+                                        vb.setPrimitiveType(Triangles);
+                                        Vertex v1 (math::Vec3f(0, 0, quad.getSize().z()));
+                                        Vertex v2 (math::Vec3f(quad.getSize().x(),0, quad.getSize().z()));
+                                        Vertex v3 (math::Vec3f(quad.getSize().x(), quad.getSize().y(), quad.getSize().z()));
+                                        Vertex v4 (math::Vec3f(0, quad.getSize().y(), quad.getSize().z()));
+                                        vb.append(v1);
+                                        vb.append(v2);
+                                        vb.append(v3);
+                                        vb.append(v1);
+                                        vb.append(v3);
+                                        vb.append(v4);
+                                        vb.update();
+                                        math::Matrix4f matrix = quad.getTransform().getMatrix()/*.transpose()*/;
+                                        linkedList2PC.worldMat = toVulkanMatrix(matrix);
+                                        currentStates.shader = &sLinkedList2;
+                                        currentStates.texture = nullptr;
+                                        createCommandBufferVertexBuffer(currentStates);
+
+
+                                        buildFrameBufferPC.cameraPos = math::Vec4f(view.getPosition().x(), view.getPosition().y(), view.getPosition().z(), 1);
+                                        reflectRefractTex.beginRecordCommandBuffers();
+                                        drawReflInst(entity);
+                                        drawReflIndexedInst(entity);
+                                    }
+                                }
+                            }
+
+                        }
+                    }
+                    if (!isSomethingDrawn) {
+                        std::vector<VkSemaphore> waitSemaphores;
+                        waitSemaphores.push_back(offscreenRenderingFinishedSemaphore[depthBuffer.getCurrentFrame()]);
+                        std::vector<VkPipelineStageFlags> waitStages;
+                        waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+                        std::vector<uint64_t> waitValues;
+                        waitValues.push_back(values[depthBuffer.getCurrentFrame()]);
+                        std::vector<VkSemaphore> signalSemaphores;
+                        signalSemaphores.push_back(offscreenDepthPassFinishedSemaphore[depthBuffer.getCurrentFrame()]);
+                        std::vector<uint64_t> signalValues;
+                        depthBuffer.submit(true, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
+                        reflectRefractTex.beginRecordCommandBuffers();
+                        waitSemaphores.clear();
+                        waitStages.clear();
+                        signalSemaphores.clear();
+                        waitValues.clear();
+                        signalValues.clear();
+                        waitSemaphores.push_back(offscreenDepthPassFinishedSemaphore[reflectRefractTex.getCurrentFrame()]);
+                        waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+                        values[reflectRefractTex.getCurrentFrame()]++;
+                        signalSemaphores.push_back(offscreenRenderingFinishedSemaphore[reflectRefractTex.getCurrentFrame()]);
+                        signalValues.push_back(values[reflectRefractTex.getCurrentFrame()]);
+                        reflectRefractTex.submit(true, signalSemaphores, waitSemaphores, waitStages, signalValues);
+                    }
+                    isSomethingDrawn  = false;
                 }
+            }
+            void ReflectRefractRenderComponent::draw(RenderTarget& target, RenderStates states) {
+                if (useThread) {
+                    //std::cout<<"current frame : "<<depthBuffer.getCurrentFrame()<<std::endl;
+                    std::unique_lock<std::mutex> lock(mtx);
+
+                    cv.wait(lock, [this] { return commandBufferReady[depthBuffer.getCurrentFrame()].load() || stop.load(); });
+                    commandBufferReady[depthBuffer.getCurrentFrame()] = false;
+                    // std::cout<<"wait command buffers : "<<depthBuffer.getCurrentFrame()<<std::endl;
+                    //std::cout<<"soumission"<<std::endl;
+                }
+
                 target.beginRecordCommandBuffers();
                 const_cast<Texture&>(reflectRefractTex.getTexture(reflectRefractTex.getImageIndex())).toShaderReadOnlyOptimal(window.getCommandBuffers()[window.getCurrentFrame()]);
                 reflectRefractTexSprite.setCenter(target.getView().getPosition());
@@ -8086,15 +8123,16 @@ namespace odfaeg {
                 signalSemaphores.push_back(offscreenRenderingFinishedSemaphore[reflectRefractTex.getCurrentFrame()]);
                 values[reflectRefractTex.getCurrentFrame()]++;
                 signalValues.push_back(values[reflectRefractTex.getCurrentFrame()]);
-                target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
 
+                target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
+                //std::cout<<"drawn"<<std::endl;
                 depthBuffer.display();
                 alphaBuffer.display();
                 environmentMap.display();
                 reflectRefractTex.display();
                 registerFrameJob[reflectRefractTex.getCurrentFrame()] = true;
                 cv.notify_one();
-                //std::cout<<"drawn"<<std::endl;
+
                 //std::cout<<"job wake up : "<<depthBuffer.getCurrentFrame()<<std::endl;
             }
             std::string ReflectRefractRenderComponent::getExpression() {

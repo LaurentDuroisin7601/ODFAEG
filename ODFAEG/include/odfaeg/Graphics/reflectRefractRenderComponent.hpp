@@ -292,6 +292,7 @@ namespace odfaeg {
             core::ThreadPool threadPool;
             std::array<core::JobFence, MAX_FRAMES_IN_FLIGHT> jobFence;
             static const unsigned int numThreads = 7;
+
         };
         #else
         class ODFAEG_GRAPHICS_API ReflectRefractRenderComponent : public HeavyComponent {

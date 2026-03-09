@@ -155,18 +155,26 @@ namespace odfaeg {
                 QueueFamilyIndices indices;
                 if (surface != VK_NULL_HANDLE) {
                     indices = findQueueFamilies(physicalDevice, surface);
-                    uniqueQueueFamilies = {indices.graphicsFamily.value(), indices.presentFamily.value()};
+                    uniqueQueueFamilies = {indices.graphicsFamily.value(), indices.computeFamily.value(), indices.presentFamily.value()};
                 } else {
                     indices = findQueueFamilies(physicalDevice, surface);
-                    uniqueQueueFamilies = {indices.graphicsFamily.value()};
+                    uniqueQueueFamilies = {indices.graphicsFamily.value(), indices.computeFamily.value()};
                 }
-                float queuePriority = 1.0f;
+                uint32_t queueFamilyCount = 0;
+                vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, nullptr);
+                queues.resize(queueFamilyCount);
+
+                std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+                vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, queueFamilies.data());
+                std::vector<std::vector<float>> allPriorities;
                 for (uint32_t queueFamily : uniqueQueueFamilies) {
+                    uint32_t count = queueFamilies[queueFamily].queueCount;
+                    allPriorities.emplace_back(count, 1.0f); // crée un tableau de N priorités
                     VkDeviceQueueCreateInfo queueCreateInfo{};
                     queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
                     queueCreateInfo.queueFamilyIndex = queueFamily;
-                    queueCreateInfo.queueCount = 1;
-                    queueCreateInfo.pQueuePriorities = &queuePriority;
+                    queueCreateInfo.queueCount = queueFamilies[queueFamily].queueCount;
+                    queueCreateInfo.pQueuePriorities = allPriorities.back().data();
                     queueCreateInfos.push_back(queueCreateInfo);
                 }
 
@@ -253,11 +261,15 @@ namespace odfaeg {
                 if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to create logical device!", 1);
                 }
-                vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &graphicsQueue);
-                vkGetDeviceQueue(device, indices.computeFamily.value(), 0, &computeQueue);
-                if (surface != VK_NULL_HANDLE) {
-                    vkGetDeviceQueue(device, indices.presentFamily.value(), 0, &presentQueue);
+                float queueProperty = 1.0f;
+
+                for (uint32_t queueFamily : uniqueQueueFamilies) {
+                    queues[queueFamily].resize(queueFamilies[queueFamily].queueCount);
+                    for (unsigned int i = 0; i < queueFamilies[queueFamily].queueCount; i++) {
+                        vkGetDeviceQueue(device, queueFamily, i, &queues[queueFamily][i]);
+                    }
                 }
+
             }
         }
         VkDevice Device::getDevice() {
@@ -266,14 +278,8 @@ namespace odfaeg {
         VkPhysicalDevice Device::getPhysicalDevice() {
             return physicalDevice;
         }
-        VkQueue Device::getGraphicsQueue() {
-            return graphicsQueue;
-        }
-        VkQueue Device::getComputeQueue() {
-            return computeQueue;
-        }
-        VkQueue Device::getPresentQueue() {
-            return presentQueue;
+        VkQueue Device::getQueue(uint32_t queueFamily, unsigned int queueIndex) {
+            return queues[queueFamily][queueIndex];
         }
         Device::~Device() {
             //////std::cout<<"destory device"<<std::endl;

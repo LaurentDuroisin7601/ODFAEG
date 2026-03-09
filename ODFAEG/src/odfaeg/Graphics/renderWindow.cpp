@@ -412,7 +412,7 @@ namespace odfaeg {
                         std::vector<VkSemaphore> waitSemaphores, std::vector<VkPipelineStageFlags> waitStages,
                         std::vector<uint64_t> signalValues,
                         std::vector<uint64_t> waitValues,
-                        std::vector<VkFence> fences) {
+                        std::vector<VkFence> fences, unsigned int queueIndex) {
             if (getCommandBuffers().size() > 0) {
 
 
@@ -502,7 +502,8 @@ namespace odfaeg {
                     vkWaitForFences(vkDevice.getDevice(), fences.size(), fences.data(), VK_TRUE, UINT64_MAX);
                     vkResetFences(vkDevice.getDevice(), fences.size(), fences.data());
                 }
-                if (vkQueueSubmit(vkDevice.getGraphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS) {
+                window::Device::QueueFamilyIndices indices = vkDevice.findQueueFamilies(vkDevice.getPhysicalDevice(), getSurface());
+                if (vkQueueSubmit(vkDevice.getQueue(indices.graphicsFamily.value(), queueIndex), 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS) {
                     throw core::Erreur(0, "échec de l'envoi d'un command buffer!", 1);
                 }
                 vkWaitForFences(vkDevice.getDevice(), 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
@@ -532,7 +533,8 @@ namespace odfaeg {
                 presentInfo.pSwapchains = swapChains;
                 presentInfo.pImageIndices = &imageIndex;
                 presentInfo.pResults = nullptr; // Optionnel
-                vkQueuePresentKHR(vkDevice.getPresentQueue(), &presentInfo);
+                window::Device::QueueFamilyIndices indices = vkDevice.findQueueFamilies(vkDevice.getPhysicalDevice(), getSurface());
+                vkQueuePresentKHR(vkDevice.getQueue(indices.presentFamily.value(), 0), &presentInfo);
                 currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
                 //////std::cout<<"current frame : "<<currentFrame<<std::endl;
                 //vkDeviceWaitIdle(vkDevice.getDevice());
