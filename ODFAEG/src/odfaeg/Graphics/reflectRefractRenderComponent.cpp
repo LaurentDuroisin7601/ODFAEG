@@ -262,9 +262,9 @@ namespace odfaeg {
 
 
                 }
-                for (unsigned int i = 0; i < depthBuffer.getSwapchainImagesSize(); i++) {
+                /*for (unsigned int i = 0; i < depthBuffer.getSwapchainImagesSize(); i++) {
                     const_cast<Texture&>(reflectRefractTex.getTexture(i)).toShaderReadOnlyOptimal(depthBuffer.getCommandBuffers()[depthBuffer.getCurrentFrame()]);
-                }
+                }*/
 
 
 
@@ -345,19 +345,15 @@ namespace odfaeg {
                 if (vkAllocateCommandBuffers(vkDevice.getDevice(), &bufferAllocInfo, copyMaterialDataBufferCommandBuffer.data()) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to allocate command buffers!", 1);
                 }
-                bufferAllocInfo.commandPool = secondaryBufferCommandPools[0];
                 if (vkAllocateCommandBuffers(vkDevice.getDevice(), &bufferAllocInfo, copyDrawBufferCommandBuffer.data()) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to allocate command buffers!", 1);
                 }
-                bufferAllocInfo.commandPool = secondaryBufferCommandPools[0];
                 if (vkAllocateCommandBuffers(vkDevice.getDevice(), &bufferAllocInfo, copyDrawIndexedBufferCommandBuffer.data()) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to allocate command buffers!", 1);
                 }
-                bufferAllocInfo.commandPool = secondaryBufferCommandPools[0];
                 if (vkAllocateCommandBuffers(vkDevice.getDevice(), &bufferAllocInfo, copyVbBufferCommandBuffer.data()) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to allocate command buffers!", 1);
                 }
-                bufferAllocInfo.commandPool = secondaryBufferCommandPools[0];
                 if (vkAllocateCommandBuffers(vkDevice.getDevice(), &bufferAllocInfo, copyVbIndexedBufferCommandBuffer.data()) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to allocate command buffers!", 1);
                 }
@@ -365,8 +361,10 @@ namespace odfaeg {
                 if (vkAllocateCommandBuffers(vkDevice.getDevice(), &bufferAllocInfo, copyModelDataBufferCommandBuffer.data()) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to allocate command buffers!", 1);
                 }
-                bufferAllocInfo.commandPool = secondaryBufferCommandPools[0];
                 if (vkAllocateCommandBuffers(vkDevice.getDevice(), &bufferAllocInfo, copyVbEnvPass2BufferCommandBuffer.data()) != VK_SUCCESS) {
+                    throw core::Erreur(0, "failed to allocate command buffers!", 1);
+                }
+                if (vkAllocateCommandBuffers(vkDevice.getDevice(), &bufferAllocInfo, copySkyboxCommandBuffer.data()) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to allocate command buffers!", 1);
                 }
                 bufferAllocInfo.commandPool = secondaryBufferCommandPools[1];
@@ -381,10 +379,7 @@ namespace odfaeg {
                 if (vkAllocateCommandBuffers(vkDevice.getDevice(), &bufferAllocInfo, environmentMapPass2CommandBuffer.data()) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to allocate command buffers!", 1);
                 }
-                bufferAllocInfo.commandPool = secondaryBufferCommandPools[0];
-                if (vkAllocateCommandBuffers(vkDevice.getDevice(), &bufferAllocInfo, copySkyboxCommandBuffer.data()) != VK_SUCCESS) {
-                    throw core::Erreur(0, "failed to allocate command buffers!", 1);
-                }
+
                 VkPhysicalDeviceProperties deviceProperties;
                 vkGetPhysicalDeviceProperties(vkDevice.getPhysicalDevice(), &deviceProperties);
 
@@ -7562,8 +7557,8 @@ namespace odfaeg {
                     memoryBarrier0.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
                     vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier0, 0, nullptr, 0, nullptr);
 
-                    reflectRefractTex.beginRecordCommandBuffers();
-                    const_cast<Texture&>(reflectRefractTex.getTexture(reflectRefractTex.getImageIndex())).toColorAttachmentOptimal(reflectRefractTex.getCommandBuffers()[reflectRefractTex.getCurrentFrame()]);
+                    /*reflectRefractTex.beginRecordCommandBuffers();
+                    const_cast<Texture&>(reflectRefractTex.getTexture(reflectRefractTex.getImageIndex())).toColorAttachmentOptimal(reflectRefractTex.getCommandBuffers()[reflectRefractTex.getCurrentFrame()]);*/
                     reflectRefractTex.clear(Color::Transparent);
                     depthBuffer.beginRecordCommandBuffers();
 
@@ -8104,13 +8099,14 @@ namespace odfaeg {
                 }
 
                 target.beginRecordCommandBuffers();
-                const_cast<Texture&>(reflectRefractTex.getTexture(reflectRefractTex.getImageIndex())).toShaderReadOnlyOptimal(window.getCommandBuffers()[window.getCurrentFrame()]);
+                const_cast<Texture&>(reflectRefractTex.getTexture(reflectRefractTex.getImageIndex())).toShaderReadOnlyOptimal(target.getCommandBuffers()[target.getCurrentFrame()]);
                 reflectRefractTexSprite.setCenter(target.getView().getPosition());
                 reflectRefractTexSprite.setTexture(reflectRefractTex.getTexture(reflectRefractTex.getImageIndex()));
                 /*if (&target == &window)
                     window.beginRenderPass();*/
                 states.blendMode = BlendAlpha;
                 target.draw(reflectRefractTexSprite, states);
+
                 /*if (&target == &window)
                     window.endRenderPass();*/
                 std::vector<VkSemaphore> signalSemaphores;
@@ -8124,6 +8120,14 @@ namespace odfaeg {
                 values[reflectRefractTex.getCurrentFrame()]++;
                 signalValues.push_back(values[reflectRefractTex.getCurrentFrame()]);
 
+                target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
+                target.beginRecordCommandBuffers();
+                const_cast<Texture&>(reflectRefractTex.getTexture(reflectRefractTex.getImageIndex())).toColorAttachmentOptimal(target.getCommandBuffers()[target.getCurrentFrame()]);
+                waitValues.clear();
+                signalValues.clear();
+                waitValues.push_back(values[reflectRefractTex.getCurrentFrame()]);
+                values[reflectRefractTex.getCurrentFrame()]++;
+                signalValues.push_back(values[reflectRefractTex.getCurrentFrame()]);
                 target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
                 //std::cout<<"drawn"<<std::endl;
                 depthBuffer.display();
@@ -8320,14 +8324,15 @@ namespace odfaeg {
                 vkFreeCommandBuffers(vkDevice.getDevice(), secondaryBufferCommandPools[0], copyVbBufferCommandBuffer.size(), copyVbBufferCommandBuffer.data());
                 vkFreeCommandBuffers(vkDevice.getDevice(), secondaryBufferCommandPools[0], copyVbIndexedBufferCommandBuffer.size(), copyVbIndexedBufferCommandBuffer.data());
                 vkFreeCommandBuffers(vkDevice.getDevice(), secondaryBufferCommandPools[0], copyVbEnvPass2BufferCommandBuffer.size(), copyVbEnvPass2BufferCommandBuffer.data());
+                vkFreeCommandBuffers(vkDevice.getDevice(), secondaryBufferCommandPools[0], copySkyboxCommandBuffer.size(), copySkyboxCommandBuffer.data());
                 vkFreeCommandBuffers(vkDevice.getDevice(), secondaryBufferCommandPools[1], depthBufferCommandBuffer.size(), depthBufferCommandBuffer.data());
                 vkFreeCommandBuffers(vkDevice.getDevice(), secondaryBufferCommandPools[2], alphaBufferCommandBuffer.size(), alphaBufferCommandBuffer.data());
                 vkFreeCommandBuffers(vkDevice.getDevice(), secondaryBufferCommandPools[3], environmentMapPass2CommandBuffer.size(), environmentMapPass2CommandBuffer.data());
-                vkFreeCommandBuffers(vkDevice.getDevice(), secondaryBufferCommandPools[0], copySkyboxCommandBuffer.size(), copySkyboxCommandBuffer.data());
+
                 for (unsigned int i = 0; i < environmentMapCommandBuffer.size(); i++) {
-                    vkFreeCommandBuffers(vkDevice.getDevice(), secondaryBufferCommandPools[4], skyboxCommandBuffer[i].size(), skyboxCommandBuffer[i].data());
-                    vkFreeCommandBuffers(vkDevice.getDevice(), secondaryBufferCommandPools[5], environmentMapCommandBuffer[i].size(), environmentMapCommandBuffer[i].data());
-                    vkFreeCommandBuffers(vkDevice.getDevice(), secondaryBufferCommandPools[6], reflectRefractCommandBuffer[i].size(), reflectRefractCommandBuffer[i].data());
+                    vkFreeCommandBuffers(vkDevice.getDevice(), secondaryBufferCommandPools[4], environmentMapCommandBuffer[i].size(), environmentMapCommandBuffer[i].data());
+                    vkFreeCommandBuffers(vkDevice.getDevice(), secondaryBufferCommandPools[5], reflectRefractCommandBuffer[i].size(), reflectRefractCommandBuffer[i].data());
+                    vkFreeCommandBuffers(vkDevice.getDevice(), secondaryBufferCommandPools[6], skyboxCommandBuffer[i].size(), skyboxCommandBuffer[i].data());
                 }
                 for (unsigned int i = 0; i < secondaryBufferCommandPools.size(); i++) {
                     vkDestroyCommandPool(vkDevice.getDevice(), secondaryBufferCommandPools[i], nullptr);
