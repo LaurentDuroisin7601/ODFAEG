@@ -269,7 +269,7 @@ namespace odfaeg
         void createDescriptorPool();
         void createDescriptorSetLayout();
         void allocateDescriptorSets();
-        void updateDescriptorSets();
+        void updateDescriptorSets(unsigned int currentFrame);
         void createComputePipeline();
         std::string psUpdater;
         ParticleContainer	mParticles;

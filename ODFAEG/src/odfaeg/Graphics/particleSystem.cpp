@@ -340,51 +340,50 @@ namespace odfaeg
                 throw std::runtime_error("echec de l'allocation d'un set de descripteurs!");
             }
         }
-        void ParticleSystem::updateDescriptorSets() {
-            for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-                std::array<VkWriteDescriptorSet, 3> descriptorWrites{};
+        void ParticleSystem::updateDescriptorSets(unsigned int currentFrame) {
+            std::array<VkWriteDescriptorSet, 3> descriptorWrites{};
 
-                VkDescriptorBufferInfo particleStorageBufferInfoLastFrame{};
-                particleStorageBufferInfoLastFrame.buffer = particles[i];
-                particleStorageBufferInfoLastFrame.offset = 0;
-                particleStorageBufferInfoLastFrame.range = mParticles.size() * sizeof(Particle);
+            VkDescriptorBufferInfo particleStorageBufferInfoLastFrame{};
+            particleStorageBufferInfoLastFrame.buffer = particles[currentFrame];
+            particleStorageBufferInfoLastFrame.offset = 0;
+            particleStorageBufferInfoLastFrame.range = mParticles.size() * sizeof(Particle);
 
-                descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                descriptorWrites[0].dstSet = computeDescriptorSets[i];
-                descriptorWrites[0].dstBinding = 0;
-                descriptorWrites[0].dstArrayElement = 0;
-                descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-                descriptorWrites[0].descriptorCount = 1;
-                descriptorWrites[0].pBufferInfo = &particleStorageBufferInfoLastFrame;
+            descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            descriptorWrites[0].dstSet = computeDescriptorSets[currentFrame];
+            descriptorWrites[0].dstBinding = 0;
+            descriptorWrites[0].dstArrayElement = 0;
+            descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+            descriptorWrites[0].descriptorCount = 1;
+            descriptorWrites[0].pBufferInfo = &particleStorageBufferInfoLastFrame;
 
-                VkDescriptorBufferInfo verticesStorageBufferInfoLastFrame{};
-                verticesStorageBufferInfoLastFrame.buffer = vertexBuffer.value().get().getVertexBuffer(i);
-                verticesStorageBufferInfoLastFrame.offset = 0;
-                verticesStorageBufferInfoLastFrame.range = vertexBuffer.value().get().getVertexCount() * sizeof(graphic::Vertex);
+            VkDescriptorBufferInfo verticesStorageBufferInfoLastFrame{};
+            verticesStorageBufferInfoLastFrame.buffer = vertexBuffer.value().get().getVertexBuffer(currentFrame);
+            verticesStorageBufferInfoLastFrame.offset = 0;
+            verticesStorageBufferInfoLastFrame.range = vertexBuffer.value().get().getVertexCount() * sizeof(graphic::Vertex);
 
-                descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                descriptorWrites[1].dstSet = computeDescriptorSets[i];
-                descriptorWrites[1].dstBinding = 1;
-                descriptorWrites[1].dstArrayElement = 0;
-                descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-                descriptorWrites[1].descriptorCount = 1;
-                descriptorWrites[1].pBufferInfo = &verticesStorageBufferInfoLastFrame;
+            descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            descriptorWrites[1].dstSet = computeDescriptorSets[currentFrame];
+            descriptorWrites[1].dstBinding = 1;
+            descriptorWrites[1].dstArrayElement = 0;
+            descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+            descriptorWrites[1].descriptorCount = 1;
+            descriptorWrites[1].pBufferInfo = &verticesStorageBufferInfoLastFrame;
 
-                VkDescriptorBufferInfo quadsStorageBufferInfoCurrentFrame{};
-                quadsStorageBufferInfoCurrentFrame.buffer = quads[i];
-                quadsStorageBufferInfoCurrentFrame.offset = 0;
-                quadsStorageBufferInfoCurrentFrame.range = mQuads.size() * sizeof(Quad);
+            VkDescriptorBufferInfo quadsStorageBufferInfoCurrentFrame{};
+            quadsStorageBufferInfoCurrentFrame.buffer = quads[currentFrame];
+            quadsStorageBufferInfoCurrentFrame.offset = 0;
+            quadsStorageBufferInfoCurrentFrame.range = mQuads.size() * sizeof(Quad);
 
-                descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                descriptorWrites[2].dstSet = computeDescriptorSets[i];
-                descriptorWrites[2].dstBinding = 2;
-                descriptorWrites[2].dstArrayElement = 0;
-                descriptorWrites[2].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-                descriptorWrites[2].descriptorCount = 1;
-                descriptorWrites[2].pBufferInfo = &quadsStorageBufferInfoCurrentFrame;
+            descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            descriptorWrites[2].dstSet = computeDescriptorSets[currentFrame];
+            descriptorWrites[2].dstBinding = 2;
+            descriptorWrites[2].dstArrayElement = 0;
+            descriptorWrites[2].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+            descriptorWrites[2].descriptorCount = 1;
+            descriptorWrites[2].pBufferInfo = &quadsStorageBufferInfoCurrentFrame;
 
-                vkUpdateDescriptorSets(vkDevice.getDevice(), descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
-            }
+            vkUpdateDescriptorSets(vkDevice.getDevice(), descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
+
         }
         void ParticleSystem::createComputePipeline() {
             computeShader.createComputeShaderModule();
@@ -539,7 +538,6 @@ namespace odfaeg
 
                 std::unique_lock<std::mutex> lock(*mtx);
                 computeJob[currentFrame] = false;
-
                 vkResetCommandBuffer(commandBuffers[currentFrame], 0);
                 VkCommandBufferBeginInfo beginInfo{};
                 beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -605,7 +603,8 @@ namespace odfaeg
                     memcpy(data, mQuads.data(), (size_t)bufferSize);
                     vkUnmapMemory(vkDevice.getDevice(), stagingQuadsMemory[currentFrame]);
                     copyBuffer(stagingQuads[currentFrame], quads[currentFrame], bufferSize, commandBuffers[currentFrame]);
-                    updateDescriptorSets();
+
+                    updateDescriptorSets(currentFrame);
 
                     VkBufferMemoryBarrier b{};
                     b.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;

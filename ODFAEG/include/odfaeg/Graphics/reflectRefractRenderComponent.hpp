@@ -10,6 +10,7 @@
 #include "perPixelLinkedListRenderComponent.hpp"
 #include "3D/cube.h"
 #include "3D/skybox.hpp"
+#include "../Core/threadPool.hpp"
 namespace odfaeg {
     namespace graphic {
         #ifdef VULKAN
@@ -199,7 +200,8 @@ namespace odfaeg {
             math::Vec3f dirs[6];
             math::Vec3f ups[6];
             std::vector<Entity*> rootEntities;
-            VkCommandPool commandPool, secondaryBufferCommandPool;
+            VkCommandPool commandPool;
+            std::vector<VkCommandPool> secondaryBufferCommandPools;
 
             VkBuffer modelDataBuffer, materialDataBuffer, modelDataStagingBuffer, materialDataStagingBuffer;
             VkDeviceMemory modelDataStagingBufferMemory, materialDataStagingBufferMemory;
@@ -287,6 +289,9 @@ namespace odfaeg {
             std::array<std::atomic<bool>, MAX_FRAMES_IN_FLIGHT> registerFrameJob = {true, false};
             std::atomic<bool> stop = false;
             std::array<unsigned int, MAX_FRAMES_IN_FLIGHT> maxTexturesInUse={0, 0};
+            core::ThreadPool threadPool;
+            std::array<core::JobFence, MAX_FRAMES_IN_FLIGHT> jobFence;
+            static const unsigned int numThreads = 7;
         };
         #else
         class ODFAEG_GRAPHICS_API ReflectRefractRenderComponent : public HeavyComponent {

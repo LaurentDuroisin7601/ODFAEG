@@ -85,7 +85,7 @@ namespace odfaeg {
                         memcpy(data, m_FinalBoneMatrices.data(), (size_t)bufferSize);
                         vkUnmapMemory(vkDevice.getDevice(), stagingFinalBonesMatricesMemory[currentFrame]);
                         copyBuffer(stagingFinalBonesMatrices[currentFrame], finalBonesMatrices[currentFrame], bufferSize, commandBuffers[currentFrame]);
-                        updateDescriptorSets();
+                        updateDescriptorSets(currentFrame);
                         VkBufferMemoryBarrier b{};
                         b.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
                         b.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT;
@@ -369,38 +369,37 @@ namespace odfaeg {
                     throw std::runtime_error("echec de l'allocation d'un set de descripteurs!");
                 }
             }
-            void Animator::updateDescriptorSets() {
-                for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-                    std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
+            void Animator::updateDescriptorSets(unsigned int currentFrame) {
+                std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
 
-                    VkDescriptorBufferInfo verticesStorageBufferInfoLastFrame{};
-                    verticesStorageBufferInfoLastFrame.buffer = vertexBuffer.value().get().getVertexBuffer(i);
-                    verticesStorageBufferInfoLastFrame.offset = 0;
-                    verticesStorageBufferInfoLastFrame.range = vertexBuffer.value().get().getVertexCount() * sizeof(Vertex);
+                VkDescriptorBufferInfo verticesStorageBufferInfoLastFrame{};
+                verticesStorageBufferInfoLastFrame.buffer = vertexBuffer.value().get().getVertexBuffer(currentFrame);
+                verticesStorageBufferInfoLastFrame.offset = 0;
+                verticesStorageBufferInfoLastFrame.range = vertexBuffer.value().get().getVertexCount() * sizeof(Vertex);
 
-                    descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                    descriptorWrites[0].dstSet = computeDescriptorSets[i];
-                    descriptorWrites[0].dstBinding = 0;
-                    descriptorWrites[0].dstArrayElement = 0;
-                    descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-                    descriptorWrites[0].descriptorCount = 1;
-                    descriptorWrites[0].pBufferInfo = &verticesStorageBufferInfoLastFrame;
+                descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                descriptorWrites[0].dstSet = computeDescriptorSets[currentFrame];
+                descriptorWrites[0].dstBinding = 0;
+                descriptorWrites[0].dstArrayElement = 0;
+                descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                descriptorWrites[0].descriptorCount = 1;
+                descriptorWrites[0].pBufferInfo = &verticesStorageBufferInfoLastFrame;
 
-                    VkDescriptorBufferInfo finalBonesMatricesStorageBufferInfoLastFrame{};
-                    finalBonesMatricesStorageBufferInfoLastFrame.buffer = finalBonesMatrices[i];
-                    finalBonesMatricesStorageBufferInfoLastFrame.offset = 0;
-                    finalBonesMatricesStorageBufferInfoLastFrame.range = m_FinalBoneMatrices.size() * sizeof(math::Matrix4f);
+                VkDescriptorBufferInfo finalBonesMatricesStorageBufferInfoLastFrame{};
+                finalBonesMatricesStorageBufferInfoLastFrame.buffer = finalBonesMatrices[currentFrame];
+                finalBonesMatricesStorageBufferInfoLastFrame.offset = 0;
+                finalBonesMatricesStorageBufferInfoLastFrame.range = m_FinalBoneMatrices.size() * sizeof(math::Matrix4f);
 
-                    descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                    descriptorWrites[1].dstSet = computeDescriptorSets[i];
-                    descriptorWrites[1].dstBinding = 1;
-                    descriptorWrites[1].dstArrayElement = 0;
-                    descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-                    descriptorWrites[1].descriptorCount = 1;
-                    descriptorWrites[1].pBufferInfo = &finalBonesMatricesStorageBufferInfoLastFrame;
+                descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                descriptorWrites[1].dstSet = computeDescriptorSets[currentFrame];
+                descriptorWrites[1].dstBinding = 1;
+                descriptorWrites[1].dstArrayElement = 0;
+                descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                descriptorWrites[1].descriptorCount = 1;
+                descriptorWrites[1].pBufferInfo = &finalBonesMatricesStorageBufferInfoLastFrame;
 
-                    vkUpdateDescriptorSets(vkDevice.getDevice(), descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
-                }
+                vkUpdateDescriptorSets(vkDevice.getDevice(), descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
+
             }
             void Animator::createComputePipeline() {
                 computeShader.createComputeShaderModule();

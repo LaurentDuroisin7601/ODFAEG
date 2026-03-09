@@ -56,7 +56,9 @@ set(SRC
 	${SRCROOT}/fileInputStream.cpp
 	${SRCROOT}/memoryInputStream.cpp
 	${INCROOT}/namespace.hpp
-	${SRCROOT}/namespace.cpp	
+	${SRCROOT}/namespace.cpp
+	${INCROOT}/threadPool.hpp
+	${SRCROOT}/threadPool.cpp	
 	)	
 
 

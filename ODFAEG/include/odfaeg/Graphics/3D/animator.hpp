@@ -77,7 +77,7 @@ namespace odfaeg {
                 void createDescriptorPool();
                 void createDescriptorSetLayout();
                 void allocateDescriptorSets();
-                void updateDescriptorSets();
+                void updateDescriptorSets(unsigned int currentFrame);
                 void createComputePipeline();
                 std::vector<math::Matrix4f> m_FinalBoneMatrices;
                 Animation* m_CurrentAnimation;
