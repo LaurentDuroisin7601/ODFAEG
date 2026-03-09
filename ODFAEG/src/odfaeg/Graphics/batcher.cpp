@@ -189,6 +189,7 @@ namespace odfaeg {
                     texInfos[texUnit]->setTexRect(texRect);
             }
             const Texture* Material::getTexture(int texUnit) {
+                std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                 return (texInfos.size() > 0) ? texInfos[texUnit]->getTexture() : nullptr;
             }
             IntRect Material::getTexRect(int texUnit) {
