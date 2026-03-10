@@ -543,7 +543,11 @@ namespace odfaeg {
                                                                     normal = normals * mat3(transpose(inverse(model.modelMatrix * ubo.viewMatrix)));
                                                                     drawableID = drawableDataID;
                                                                     vec4 coords = vec4(ubo.lightCenter.xyz, 1);
-                                                                    coords = coords * ubo.viewMatrix;
+                                                                    coords = transpose(ubo.projectionMatrix) * transpose(ubo.viewMatrix) * coords;
+
+                                                                    coords = coords / coords.w;
+                                                                    coords = transpose(ubo.viewportMatrix) * coords;
+                                                                    coords.w = ubo.lightCenter.w;
 
                                                                     coords.w = ubo.lightCenter.w;
                                                                     lightCenter = coords;
@@ -604,17 +608,30 @@ namespace odfaeg {
                                                                     vec4 alpha = texture(alphaBuffer[pushConsts.imageIndex], gl_FragCoord.xy / pushConsts.resolution.xy, 0);
                                                                     vec4 depth = texture(depthBuffer[pushConsts.imageIndex], gl_FragCoord.xy / pushConsts.resolution.xy, 0);
 
-                                                                    vec3 s01 = toViewCoord(vec3(gl_FragCoord.xy + off.xy, textureOffset(depthBuffer[pushConsts.imageIndex], gl_FragCoord.xy / pushConsts.resolution.xy, off.xy).z));
-                                                                    vec3 s21 = toViewCoord(vec3(gl_FragCoord.xy + off.zy, textureOffset(depthBuffer[pushConsts.imageIndex], gl_FragCoord.xy / pushConsts.resolution.xy, off.zy).z));
-                                                                    vec3 s10 = toViewCoord(vec3(gl_FragCoord.xy + off.yx, textureOffset(depthBuffer[pushConsts.imageIndex], gl_FragCoord.xy / pushConsts.resolution.xy, off.yx).z));
-                                                                    vec3 s12 = toViewCoord(vec3(gl_FragCoord.xy + off.yz, textureOffset(depthBuffer[pushConsts.imageIndex], gl_FragCoord.xy / pushConsts.resolution.xy, off.yz).z));
-                                                                    vec3 va = normalize(s21 - s01);
-                                                                    vec3 vb = normalize(s12 - s10);
+                                                                    float s01 = textureOffset(depthBuffer[pushConsts.imageIndex], gl_FragCoord.xy / pushConsts.resolution.xy, off.xy).z;
+                                                                    float s21 = textureOffset(depthBuffer[pushConsts.imageIndex], gl_FragCoord.xy / pushConsts.resolution.xy, off.zy).z;
+                                                                    float s10 = textureOffset(depthBuffer[pushConsts.imageIndex], gl_FragCoord.xy / pushConsts.resolution.xy, off.yx).z;
+                                                                    float s12 = textureOffset(depthBuffer[pushConsts.imageIndex], gl_FragCoord.xy / pushConsts.resolution.xy, off.yz).z;
+                                                                    vec3 va = normalize (vec3(size.xy, s21 - s01));
+                                                                    vec3 vb = normalize (vec3(size.yx, s12 - s10));
                                                                     vec3 n = vec3(cross(va, vb));
 
                                                                     vec3 projCoords = shadowCoords.xyz / shadowCoords.w;
 
                                                                     projCoords.xy = projCoords.xy * 0.5 + 0.5;
+                                                                    float pixelViewZ;
+                                                                    float lightViewZ;
+                                                                    if (ubo.projectionMatrix[3][3] == 1) {
+                                                                       pixelViewZ = pushConsts.near + gl_FragCoord.z * (pushConsts.far - pushConsts.near);
+                                                                       lightViewZ = pushConsts.near + lightCenter.z * (pushConsts.far - pushConsts.near);
+                                                                    } else {
+                                                                       float ndcZ = gl_FragCoord.z * 2.0 - 1.0; // Convertit de [0,1] à [-1,1]
+                                                                       pixelViewZ = (2.0 * pushConsts.near * pushConsts.far) /
+                                                                       (ndcZ * (pushConsts.near - pushConsts.far) - (pushConsts.near + pushConsts.far));
+                                                                        ndcZ = lightCenter.z * 2.0 - 1.0; // Convertit de [0,1] à [-1,1]
+                                                                        lightViewZ = (2.0 * pushConsts.near * pushConsts.far) /
+                                                                        (ndcZ * (pushConsts.near - pushConsts.far) - (pushConsts.near + pushConsts.far));
+                                                                    }
 
 
                                                                     vec4 stencil = texture(stencilBuffer[pushConsts.imageIndex], projCoords.xy);
@@ -622,7 +639,9 @@ namespace odfaeg {
                                                                     float z = gl_FragCoord.z;
                                                                     uint l = layer;
                                                                     float shadowFactor;
-                                                                    vec3 lightDir = lightCenter.xyz - toViewCoord(vec3(gl_FragCoord.xy, depth.z));
+                                                                    vec3 sLightPos = vec3 (lightCenter.x, lightCenter.y,lightViewZ);
+                                                                    vec3 pixPos = vec3 (gl_FragCoord.x, gl_FragCoord.y, pixelViewZ);
+                                                                    vec3 lightDir = sLightPos - pixPos;
                                                                     float bias = max(0.05 * (1.0 - dot(normalize(n), normalize(lightDir))), 0.005);
                                                                     //debugPrintfEXT("normal : %v3f\nlightDir : %v3f\nlightView : %v3f", n, lightDir, lightCenter);
                                                                     if (stencil.z - bias  > projCoords.z) {

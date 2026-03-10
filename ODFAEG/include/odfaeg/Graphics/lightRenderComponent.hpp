@@ -77,15 +77,13 @@ namespace odfaeg {
                     math::Matrix4f projMatrix;
                     math::Matrix4f viewMatrix;
                     math::Matrix4f viewportMatrix;
+                    math::Vec4f resolution;
+                    float near;
+                    float far;
                 };
                 struct LayerPC {
                     math::Vec4f resolution;
                     unsigned int nbLayers;
-                };
-                struct ResolutionPC {
-                    math::Vec4f resolution;
-                    float near;
-                    float far;
                 };
                 struct MaxSpecPC {
                     math::Vec4f resolution;
@@ -224,7 +222,6 @@ namespace odfaeg {
                 IndirectRenderingPC indirectRenderingPC;
                 LightIndirectRenderingPC lightIndirectRenderingPC;
                 LayerPC layerPC;
-                ResolutionPC resolutionPC;
                 MaxSpecPC maxSpecPC;
                 std::array<unsigned int, Batcher::nbPrimitiveTypes> totalBufferSizeModelData, maxAlignedSizeModelData, oldTotalBufferSizeModelData;
                 std::array<std::array<unsigned int, MAX_FRAMES_IN_FLIGHT>, Batcher::nbPrimitiveTypes> maxBufferSizeModelData;

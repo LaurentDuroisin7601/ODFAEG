@@ -298,7 +298,7 @@ namespace odfaeg {
                 VkPhysicalDeviceProperties deviceProperties;
                 vkGetPhysicalDeviceProperties(vkDevice.getPhysicalDevice(), &deviceProperties);
                 alignment = deviceProperties.limits.minStorageBufferOffsetAlignment;
-                resolutionPC.resolution = resolution;
+                lightIndirectRenderingPC.resolution = resolution;
                 layerPC.resolution = resolution;
                 needToUpdateDS = false;
                 isSomethingDrawn = false;
@@ -487,6 +487,10 @@ namespace odfaeg {
                                                                                          mat4 projectionMatrix;
                                                                                          layout (offset = 64) mat4 viewMatrix;
                                                                                          layout (offset = 128) mat4 viewportMatrix;
+                                                                                         layout (offset = 192) vec4 resolution;
+                                                                                         layout (offset = 208) float near;
+                                                                                         layout (offset = 212) float far;
+                                                                                         layout (offset = 216) uint imageIndex;
                                                                                       } pushConsts;
                                                                                       struct ModelData {
                                                                                          mat4 modelMatrix;
@@ -519,8 +523,7 @@ namespace odfaeg {
                                                                                       layout (location = 4) out vec3 normal;
                                                                                       layout (location = 5) out vec4 lightPos;
                                                                                       layout (location = 6) out vec4 lightColor;
-                                                                                      layout (location = 7) out float isOrthoProj;
-                                                                                      layout (location = 8) out int drawableID;
+                                                                                      layout (location = 7) out int drawableID;
                                                                                       void main() {
                                                                                          gl_PointSize = 2.0f;
                                                                                          ModelData model = modelDatas[gl_InstanceIndex];
@@ -545,7 +548,6 @@ namespace odfaeg {
 
                                                                                          normal = normals;
                                                                                          drawableID = drawableDataID;
-                                                                                         isOrthoProj = pushConsts.projectionMatrix[3][3];
                                                                                       }
                                                                                       )";
 
@@ -691,8 +693,7 @@ namespace odfaeg {
                                                                  layout (location = 4) in vec3 normal;
                                                                  layout (location = 5) in flat vec4 lightPos;
                                                                  layout (location = 6) in flat vec4 lightColor;
-                                                                 layout (location = 7) in float isOrthoProj;
-                                                                 layout (location = 8) in flat int drawableID;
+                                                                 layout (location = 7) in flat int drawableID;
                                                                  const vec2 size = vec2(2.0,0.0);
                                                                  const ivec3 off = ivec3(-1,0,1);
                                                                  layout(set = 0, binding = 0) uniform sampler2D depthTexture[];
@@ -701,11 +702,25 @@ namespace odfaeg {
                                                                  layout(set = 0, binding = 3) uniform sampler2D alphaMap[];
                                                                  layout (location = 0) out vec4 fColor;
                                                                  layout (push_constant) uniform PushConsts {
+                                                                     mat4 projectionMatrix;
+                                                                     layout (offset = 64) mat4 viewMatrix;
+                                                                     layout (offset = 128) mat4 viewportMatrix;
                                                                      layout (offset = 192) vec4 resolution;
                                                                      layout (offset = 208) float near;
                                                                      layout (offset = 212) float far;
                                                                      layout (offset = 216) uint imageIndex;
                                                                  } pushConsts;
+                                                                 vec3 toViewCoord(vec3 coords) {
+                                                                       vec3 ndc = vec3(
+                                                                            (coords.x / pushConsts.resolution.x) * 2.0 - 1.0,
+                                                                            (coords.y / pushConsts.resolution.y) * 2.0 - 1.0,
+                                                                            coords.z
+                                                                        );
+
+                                                                        vec4 viewPos = inverse(pushConsts.projectionMatrix) * vec4(ndc, 1.0);
+                                                                        viewPos /= viewPos.w;
+                                                                        return viewPos.xyz;
+                                                                  }
                                                          void main () {
                                                              vec4 depth = texture(depthTexture[pushConsts.imageIndex], gl_FragCoord.xy / pushConsts.resolution.xy);
                                                              vec4 alpha = texture(alphaMap[pushConsts.imageIndex], gl_FragCoord.xy / pushConsts.resolution.xy);
@@ -718,11 +733,11 @@ namespace odfaeg {
                                                              vec3 n = vec3(cross(va, vb));
                                                              vec4 bump = texture(bumpMap[pushConsts.imageIndex], gl_FragCoord.xy / pushConsts.resolution.xy);
                                                              vec4 specularInfos = texture(specularTexture[pushConsts.imageIndex], gl_FragCoord.xy / pushConsts.resolution.xy);
-                                                             bool useOrthoProj = (isOrthoProj != 0);
+
 
                                                              float pixelViewZ;
                                                              float lightViewZ;
-                                                             if (useOrthoProj) {
+                                                             if (pushConsts.projectionMatrix[3][3] == 1) {
                                                                 pixelViewZ = pushConsts.near + gl_FragCoord.z * (pushConsts.far - pushConsts.near);
                                                                 lightViewZ = pushConsts.near + lightPos.z * (pushConsts.far - pushConsts.near);
                                                              } else {
@@ -1461,26 +1476,19 @@ namespace odfaeg {
                         for (unsigned int j = 0; j < LIGHTNBDEPTHSTENCIL; j++) {
                             for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes - 1; i++) {
                                 if (j == 0) {
-                                    std::array<VkPushConstantRange, 2> push_constants;
+                                    std::array<VkPushConstantRange, 1> push_constants;
                                     VkPushConstantRange push_constant;
                                     //this push constant range starts at the beginning
                                     push_constant.offset = 0;
                                     //this push constant range takes up the size of a MeshPushConstants struct
-                                    push_constant.size = sizeof(LightIndirectRenderingPC);
+                                    push_constant.size = sizeof(LightIndirectRenderingPC) + sizeof(unsigned int);
                                     //this push constant range is accessible only in the vertex shader
-                                    push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+                                    push_constant.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
                                     push_constants[0] = push_constant;
-                                    VkPushConstantRange push_constant2;
-                                    //this push constant range starts at the beginning
-                                    push_constant2.offset = 192;
-                                    //this push constant range takes up the size of a MeshPushConstants struct
-                                    push_constant2.size = sizeof(ResolutionPC) + sizeof(unsigned int);
-                                    //this push constant range is accessible only in the vertex shader
-                                    push_constant2.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-                                    push_constants[1] = push_constant2;
+
 
                                     pipelineLayoutInfo[lightMapGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pPushConstantRanges = push_constants.data();
-                                    pipelineLayoutInfo[lightMapGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = 2;
+                                    pipelineLayoutInfo[lightMapGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].pushConstantRangeCount = push_constants.size();
                                     depthStencilCreateInfo[lightMapGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].depthCompareOp = VK_COMPARE_OP_ALWAYS;
                                     depthStencilCreateInfo[lightMapGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].front = {};
                                     depthStencilCreateInfo[lightMapGenerator.getId() * (Batcher::nbPrimitiveTypes - 1)+i][0][LIGHTNODEPTHNOSTENCIL*states.blendMode.nbBlendModes+states.blendMode.id].back = {};
@@ -3814,8 +3822,8 @@ namespace odfaeg {
 
 
             } else {
-                vkCmdPushConstants(commandBuffer, lightMap.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][0][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(LightIndirectRenderingPC), &lightIndirectRenderingPC);
-                vkCmdPushConstants(commandBuffer, lightMap.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][0][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_FRAGMENT_BIT, 192, sizeof(ResolutionPC), &resolutionPC);
+                vkCmdPushConstants(commandBuffer, lightMap.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][0][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(LightIndirectRenderingPC), &lightIndirectRenderingPC);
+
                 std::vector<unsigned int> dynamicBufferOffsets;
                 dynamicBufferOffsets.push_back(modelDataOffset);
                 dynamicBufferOffsets.push_back(materialDataOffset);
@@ -4020,7 +4028,7 @@ namespace odfaeg {
 
                 vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
                 vkCmdPushConstants(commandBuffers[currentFrame], lightMap.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][0][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(LightIndirectRenderingPC), &lightIndirectRenderingPC);
-                vkCmdPushConstants(commandBuffers[currentFrame], lightMap.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][0][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_FRAGMENT_BIT, 192, sizeof(ResolutionPC), &resolutionPC);
+                //vkCmdPushConstants(commandBuffers[currentFrame], lightMap.getPipelineLayout()[shader->getId() * (Batcher::nbPrimitiveTypes - 1) + p][0][depthStencilID*currentStates.blendMode.nbBlendModes+currentStates.blendMode.id], VK_SHADER_STAGE_FRAGMENT_BIT, 192, sizeof(ResolutionPC), &resolutionPC);
                 lightMap.beginRenderPass();
                 lightMap.drawIndirect(commandBuffers[currentFrame], currentFrame, nbIndirectCommands, stride, vbBindlessTex[p], vboIndirect, depthStencilID,currentStates);
                 lightMap.endRenderPass();
@@ -5400,8 +5408,8 @@ namespace odfaeg {
                 lightIndirectRenderingPC.viewMatrix = viewMatrix;
                 lightIndirectRenderingPC.viewportMatrix = lightMap.getViewportMatrix(&lightMap.getView()).getMatrix().transpose();
 
-                resolutionPC.near = view.getViewport().getPosition().z();
-                resolutionPC.far = view.getViewport().getSize().z();
+                lightIndirectRenderingPC.near = view.getViewport().getPosition().z();
+                lightIndirectRenderingPC.far = view.getViewport().getSize().z();
                 unsigned int currentFrame = lightDepthBuffer.getCurrentFrame();
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                     if (vbBindlessTex[p].getVertexCount() > 0)
@@ -5842,7 +5850,7 @@ namespace odfaeg {
 
                     if (nbDrawCommandBuffer[p][1] > 0) {
                         vkCmdBindPipeline(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS,lightMap.getGraphicPipeline()[lightMapGenerator.getId() * (Batcher::nbPrimitiveTypes - 1) + p][0][LIGHTNODEPTHNOSTENCIL*blendAdd.nbBlendModes+blendAdd.id]);
-                        vkCmdPushConstants(commandBuffers[currentFrame], lightMap.getPipelineLayout()[lightMapGenerator.getId() * (Batcher::nbPrimitiveTypes - 1) + p][0][LIGHTNODEPTHNOSTENCIL*blendAdd.nbBlendModes+blendAdd.id], VK_SHADER_STAGE_FRAGMENT_BIT, 216, sizeof(unsigned int), &lightMap.getImageIndex());
+                        vkCmdPushConstants(commandBuffers[currentFrame], lightMap.getPipelineLayout()[lightMapGenerator.getId() * (Batcher::nbPrimitiveTypes - 1) + p][0][LIGHTNODEPTHNOSTENCIL*blendAdd.nbBlendModes+blendAdd.id], VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 216, sizeof(unsigned int), &lightMap.getImageIndex());
                     }
 
 
@@ -5906,8 +5914,8 @@ namespace odfaeg {
                 lightIndirectRenderingPC.viewMatrix = viewMatrix;
                 lightIndirectRenderingPC.viewportMatrix = lightMap.getViewportMatrix(&lightMap.getView()).getMatrix().transpose();
 
-                resolutionPC.near = view.getViewport().getPosition().z();
-                resolutionPC.far = view.getViewport().getSize().z();
+                lightIndirectRenderingPC.near = view.getViewport().getPosition().z();
+                lightIndirectRenderingPC.far = view.getViewport().getSize().z();
 
                 drawLightInstances();
 
