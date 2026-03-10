@@ -5283,43 +5283,7 @@ namespace odfaeg {
                     }
                 }
 
-                math::Vec3f centerLight = g2d::AmbientLight::getAmbientLight().getLightCenter();
-                lightView = View(g2d::AmbientLight::getAmbientLight().getRadius(), g2d::AmbientLight::getAmbientLight().getRadius(), 1.0f, g2d::AmbientLight::getAmbientLight().getHeight());
-                lightView.reset(physic::BoundingBox(0, 0, 1.f, 1024, 1024, g2d::AmbientLight::getAmbientLight().getHeight()));
 
-                lightView.setCenter(centerLight);
-                resolutionPC.near = view.getViewport().getPosition().z();
-                resolutionPC.far = view.getViewport().getSize().z();
-                lightView.lookAt(0, 0, 0, math::Vec3f(0, 1, 0));
-
-                stencilBuffer.setView(lightView);
-                /*depthBuffer.setView(view);*/
-                math::Matrix4f lviewMatrix = lightView.getViewMatrix().getMatrix()/*.transpose()*/;
-                //std::cout<<lviewMatrix<<std::endl;
-
-                math::Matrix4f lprojMatrix = lightView.getProjMatrix().getMatrix()/*.transpose()*/;
-                /*std::cout<<"light proj : "<<lprojMatrix<<std::endl;
-                std::cout<<"light view : "<<lviewMatrix<<std::endl;*/
-
-                lightIndirectRenderingPC.projectionMatrix = toVulkanMatrix(lprojMatrix);
-                lightIndirectRenderingPC.viewMatrix = toVulkanMatrix(lviewMatrix);
-
-                math::Matrix4f viewMatrix = view.getViewMatrix().getMatrix()/*.transpose()*/;
-                math::Matrix4f projMatrix = view.getProjMatrix().getMatrix()/*.transpose()*/;
-                math::Matrix4f viewportMatrix = view.getViewMatrix().getMatrix();
-                indirectRenderingPC.projectionMatrix = toVulkanMatrix(projMatrix);
-                indirectRenderingPC.viewMatrix = toVulkanMatrix(viewMatrix);
-
-
-                shadowUBODatas.projectionMatrix = toVulkanMatrix(projMatrix);
-                shadowUBODatas.viewMatrix = toVulkanMatrix(viewMatrix);
-                shadowUBODatas.lprojectionMatrix = toVulkanMatrix(lprojMatrix);
-                shadowUBODatas.lviewMatrix = toVulkanMatrix(lviewMatrix);
-                shadowUBODatas.viewportMatrix = toVulkanMatrix(viewportMatrix);
-                shadowUBODatas.lightCenter = math::Vec4f(g2d::AmbientLight::getAmbientLight().getLightCenter().x(),
-                                                         g2d::AmbientLight::getAmbientLight().getLightCenter().y(),
-                                                         g2d::AmbientLight::getAmbientLight().getLightCenter().z(),
-                                                         g2d::AmbientLight::getAmbientLight().getRadius());
 
 
                 if (useThread) {
@@ -5327,6 +5291,43 @@ namespace odfaeg {
                     cv.wait(lock, [this](){return registerFrameJob[depthBuffer.getCurrentFrame()].load() || stop.load();});
                     unsigned int currentFrame = depthBuffer.getCurrentFrame();
                     registerFrameJob[currentFrame] = false;
+                    math::Vec3f centerLight = g2d::AmbientLight::getAmbientLight().getLightCenter();
+                    lightView = View(g2d::AmbientLight::getAmbientLight().getRadius(), g2d::AmbientLight::getAmbientLight().getRadius(), 1.0f, g2d::AmbientLight::getAmbientLight().getHeight());
+                    lightView.reset(physic::BoundingBox(0, 0, 1.f, 1024, 1024, g2d::AmbientLight::getAmbientLight().getHeight()));
+
+                    lightView.setCenter(centerLight);
+                    resolutionPC.near = view.getViewport().getPosition().z();
+                    resolutionPC.far = view.getViewport().getSize().z();
+                    lightView.lookAt(0, 0, 0, math::Vec3f(0, 1, 0));
+
+                    stencilBuffer.setView(lightView);
+                    /*depthBuffer.setView(view);*/
+                    math::Matrix4f lviewMatrix = lightView.getViewMatrix().getMatrix()/*.transpose()*/;
+                    //std::cout<<lviewMatrix<<std::endl;
+
+                    math::Matrix4f lprojMatrix = lightView.getProjMatrix().getMatrix()/*.transpose()*/;
+                    /*std::cout<<"light proj : "<<lprojMatrix<<std::endl;
+                    std::cout<<"light view : "<<lviewMatrix<<std::endl;*/
+
+                    lightIndirectRenderingPC.projectionMatrix = toVulkanMatrix(lprojMatrix);
+                    lightIndirectRenderingPC.viewMatrix = toVulkanMatrix(lviewMatrix);
+
+                    math::Matrix4f viewMatrix = view.getViewMatrix().getMatrix()/*.transpose()*/;
+                    math::Matrix4f projMatrix = view.getProjMatrix().getMatrix()/*.transpose()*/;
+                    math::Matrix4f viewportMatrix = view.getViewMatrix().getMatrix();
+                    indirectRenderingPC.projectionMatrix = toVulkanMatrix(projMatrix);
+                    indirectRenderingPC.viewMatrix = toVulkanMatrix(viewMatrix);
+
+
+                    shadowUBODatas.projectionMatrix = toVulkanMatrix(projMatrix);
+                    shadowUBODatas.viewMatrix = toVulkanMatrix(viewMatrix);
+                    shadowUBODatas.lprojectionMatrix = toVulkanMatrix(lprojMatrix);
+                    shadowUBODatas.lviewMatrix = toVulkanMatrix(lviewMatrix);
+                    shadowUBODatas.viewportMatrix = toVulkanMatrix(viewportMatrix);
+                    shadowUBODatas.lightCenter = math::Vec4f(g2d::AmbientLight::getAmbientLight().getLightCenter().x(),
+                                                             g2d::AmbientLight::getAmbientLight().getLightCenter().y(),
+                                                             g2d::AmbientLight::getAmbientLight().getLightCenter().z(),
+                                                             g2d::AmbientLight::getAmbientLight().getRadius());
 
                     VkDeviceSize bufferSize = sizeof(shadowUBODatas);
                     void* data;
@@ -5732,6 +5733,43 @@ namespace odfaeg {
                     commandBufferReady[currentFrame] = true;
                     cv.notify_one();
                 } else {
+                    math::Vec3f centerLight = g2d::AmbientLight::getAmbientLight().getLightCenter();
+                    lightView = View(g2d::AmbientLight::getAmbientLight().getRadius(), g2d::AmbientLight::getAmbientLight().getRadius(), 1.0f, g2d::AmbientLight::getAmbientLight().getHeight());
+                    lightView.reset(physic::BoundingBox(0, 0, 1.f, 1024, 1024, g2d::AmbientLight::getAmbientLight().getHeight()));
+
+                    lightView.setCenter(centerLight);
+                    resolutionPC.near = view.getViewport().getPosition().z();
+                    resolutionPC.far = view.getViewport().getSize().z();
+                    lightView.lookAt(0, 0, 0, math::Vec3f(0, 1, 0));
+
+                    stencilBuffer.setView(lightView);
+                    /*depthBuffer.setView(view);*/
+                    math::Matrix4f lviewMatrix = lightView.getViewMatrix().getMatrix()/*.transpose()*/;
+                    //std::cout<<lviewMatrix<<std::endl;
+
+                    math::Matrix4f lprojMatrix = lightView.getProjMatrix().getMatrix()/*.transpose()*/;
+                    /*std::cout<<"light proj : "<<lprojMatrix<<std::endl;
+                    std::cout<<"light view : "<<lviewMatrix<<std::endl;*/
+
+                    lightIndirectRenderingPC.projectionMatrix = toVulkanMatrix(lprojMatrix);
+                    lightIndirectRenderingPC.viewMatrix = toVulkanMatrix(lviewMatrix);
+
+                    math::Matrix4f viewMatrix = view.getViewMatrix().getMatrix()/*.transpose()*/;
+                    math::Matrix4f projMatrix = view.getProjMatrix().getMatrix()/*.transpose()*/;
+                    math::Matrix4f viewportMatrix = view.getViewMatrix().getMatrix();
+                    indirectRenderingPC.projectionMatrix = toVulkanMatrix(projMatrix);
+                    indirectRenderingPC.viewMatrix = toVulkanMatrix(viewMatrix);
+
+
+                    shadowUBODatas.projectionMatrix = toVulkanMatrix(projMatrix);
+                    shadowUBODatas.viewMatrix = toVulkanMatrix(viewMatrix);
+                    shadowUBODatas.lprojectionMatrix = toVulkanMatrix(lprojMatrix);
+                    shadowUBODatas.lviewMatrix = toVulkanMatrix(lviewMatrix);
+                    shadowUBODatas.viewportMatrix = toVulkanMatrix(viewportMatrix);
+                    shadowUBODatas.lightCenter = math::Vec4f(g2d::AmbientLight::getAmbientLight().getLightCenter().x(),
+                                                             g2d::AmbientLight::getAmbientLight().getLightCenter().y(),
+                                                             g2d::AmbientLight::getAmbientLight().getLightCenter().z(),
+                                                             g2d::AmbientLight::getAmbientLight().getRadius());
                     drawInstanced();
                     drawInstancedIndexed();
                     unsigned int currentFrame = depthBuffer.getCurrentFrame();

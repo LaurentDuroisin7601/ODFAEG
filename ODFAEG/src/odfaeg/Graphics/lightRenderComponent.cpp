@@ -5384,17 +5384,18 @@ namespace odfaeg {
             //glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo));
             /*if (!view.isOrtho())
                 view.setPerspective(80, view.getViewport().getSize().x() / view.getViewport().getSize().y(), 0.1, view.getViewport().getSize().z());*/
-            math::Matrix4f viewMatrix = view.getViewMatrix().getMatrix().transpose();
-            math::Matrix4f projMatrix = view.getProjMatrix().getMatrix().transpose();
-            indirectRenderingPC.projMatrix = projMatrix;
-            indirectRenderingPC.viewMatrix = viewMatrix;
-            layerPC.nbLayers = GameObject::getNbLayers();
-            maxSpecPC.maxM = 1;
-            maxSpecPC.maxP = 1;
+
             if (useThread) {
                 std::unique_lock<std::mutex> lock(mtx);
                 cv.wait(lock, [this](){return registerFrameJob[lightDepthBuffer.getCurrentFrame()].load() || stop.load();});
                 registerFrameJob[lightDepthBuffer.getCurrentFrame()] = false;
+                math::Matrix4f viewMatrix = view.getViewMatrix().getMatrix().transpose();
+                math::Matrix4f projMatrix = view.getProjMatrix().getMatrix().transpose();
+                indirectRenderingPC.projMatrix = projMatrix;
+                indirectRenderingPC.viewMatrix = viewMatrix;
+                layerPC.nbLayers = GameObject::getNbLayers();
+                maxSpecPC.maxM = 1;
+                maxSpecPC.maxP = 1;
                 //std::cout<<"draw buffers"<<std::endl;
                 resetBuffers();
                 //std::cout<<"reset buffer ok"<<std::endl;
@@ -5899,6 +5900,13 @@ namespace odfaeg {
                 cv.notify_one();
                 //std::cout<<"buffer drawn"<<std::endl;
             } else {
+                math::Matrix4f viewMatrix = view.getViewMatrix().getMatrix().transpose();
+                math::Matrix4f projMatrix = view.getProjMatrix().getMatrix().transpose();
+                indirectRenderingPC.projMatrix = projMatrix;
+                indirectRenderingPC.viewMatrix = viewMatrix;
+                layerPC.nbLayers = GameObject::getNbLayers();
+                maxSpecPC.maxM = 1;
+                maxSpecPC.maxP = 1;
                 drawDepthLightInstances();
 
 

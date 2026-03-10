@@ -7238,11 +7238,7 @@ namespace odfaeg {
                         m_reflNormalIndexed = reflNormalIndexedBatcher.getInstances();
                     }
                 }
-                RenderStates currentStates;
-                math::Matrix4f viewMatrix = view.getViewMatrix().getMatrix();
-                math::Matrix4f projMatrix = view.getProjMatrix().getMatrix();
-                indirectRenderingPC.projMatrix = toVulkanMatrix(projMatrix);
-                indirectRenderingPC.viewMatrix = toVulkanMatrix(viewMatrix);
+
                 ////std::cout<<"view matrix : "<<viewMatrix<<std::endl;
                 if (useThread) {
                     //commandBufferReady = false;
@@ -7250,6 +7246,11 @@ namespace odfaeg {
                     std::unique_lock<std::mutex> lock(mtx);
                     cv.wait(lock, [this] { return registerFrameJob[depthBuffer.getCurrentFrame()].load() || stop.load(); });
                     registerFrameJob[depthBuffer.getCurrentFrame()] = false;
+                    RenderStates currentStates;
+                    math::Matrix4f viewMatrix = view.getViewMatrix().getMatrix();
+                    math::Matrix4f projMatrix = view.getProjMatrix().getMatrix();
+                    indirectRenderingPC.projMatrix = toVulkanMatrix(projMatrix);
+                    indirectRenderingPC.viewMatrix = toVulkanMatrix(viewMatrix);
                     //std::cout<<"wait job : "<<depthBuffer.getCurrentFrame()<<std::endl;
                     //std::cout<<"fill buffers"<<std::endl;
                     resetBuffers();
@@ -7952,6 +7953,11 @@ namespace odfaeg {
                     //std::cout<<"frame drawn"<<std::endl;
 
                 } else {
+                    RenderStates currentStates;
+                    math::Matrix4f viewMatrix = view.getViewMatrix().getMatrix();
+                    math::Matrix4f projMatrix = view.getProjMatrix().getMatrix();
+                    indirectRenderingPC.projMatrix = toVulkanMatrix(projMatrix);
+                    indirectRenderingPC.viewMatrix = toVulkanMatrix(viewMatrix);
                     ////std::cout<<"draw no thread"<<std::endl;
 
                     drawDepthReflInst();

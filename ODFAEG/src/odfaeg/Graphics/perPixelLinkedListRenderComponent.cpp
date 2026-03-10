@@ -4698,14 +4698,7 @@ namespace odfaeg {
             vb.update();
             frameBuffer.drawVertexBuffer(vb, currentStates);
             vb.clear();*/
-            RenderStates currentStates;
-            math::Matrix4f projMatrix = view.getProjMatrix().getMatrix()/*.transpose()*/;
-            math::Matrix4f viewMatrix = view.getViewMatrix().getMatrix()/*.transpose()*/;
-            indirectDrawPushConsts.projMatrix = toVulkanMatrix(projMatrix);
-            indirectDrawPushConsts.viewMatrix = toVulkanMatrix(viewMatrix);
-            //projMatrix.identity();
-            skyboxPushConsts.projMatrix = toVulkanMatrix(projMatrix);
-            skyboxPushConsts.viewMatrix = toVulkanMatrix(viewMatrix);
+
             //indirectDrawPushConsts.projMatrix.m22 *= -1;
 
             if (useThread) {
@@ -4714,6 +4707,14 @@ namespace odfaeg {
                 cv.wait(lock, [this](){return registerFrameJob[frameBuffer.getCurrentFrame()].load() || stop.load();});
                 //std::cout<<"register frame : "<<frameBuffer.getCurrentFrame()<<std::endl;
                 registerFrameJob[frameBuffer.getCurrentFrame()] = false;
+                RenderStates currentStates;
+                math::Matrix4f projMatrix = view.getProjMatrix().getMatrix()/*.transpose()*/;
+                math::Matrix4f viewMatrix = view.getViewMatrix().getMatrix()/*.transpose()*/;
+                indirectDrawPushConsts.projMatrix = toVulkanMatrix(projMatrix);
+                indirectDrawPushConsts.viewMatrix = toVulkanMatrix(viewMatrix);
+                //projMatrix.identity();
+                skyboxPushConsts.projMatrix = toVulkanMatrix(projMatrix);
+                skyboxPushConsts.viewMatrix = toVulkanMatrix(viewMatrix);
                 resetBuffers();
                 fillBuffersMT();
                 fillIndexedBuffersMT();
@@ -5241,6 +5242,14 @@ namespace odfaeg {
                 commandBufferReady[frameBuffer.getCurrentFrame()] = true;
                 cv.notify_one();
             } else {
+                RenderStates currentStates;
+                math::Matrix4f projMatrix = view.getProjMatrix().getMatrix()/*.transpose()*/;
+                math::Matrix4f viewMatrix = view.getViewMatrix().getMatrix()/*.transpose()*/;
+                indirectDrawPushConsts.projMatrix = toVulkanMatrix(projMatrix);
+                indirectDrawPushConsts.viewMatrix = toVulkanMatrix(viewMatrix);
+                //projMatrix.identity();
+                skyboxPushConsts.projMatrix = toVulkanMatrix(projMatrix);
+                skyboxPushConsts.viewMatrix = toVulkanMatrix(viewMatrix);
 
                 drawInstances();
                 drawInstancesIndexed();
