@@ -8,6 +8,8 @@
 #include "2D/ambientLight.h"
 #include "model.h"
 #include "rectangleShape.h"
+#include "../Core/clock.h"
+#include "../Core/threadPool.hpp"
 
 /**
   *\namespace odfaeg
@@ -117,7 +119,8 @@ namespace odfaeg {
                 ResolutionPC resolutionPC;
                 IndirectRenderingPC indirectRenderingPC;
                 LightIndirectRenderingPC lightIndirectRenderingPC;
-                VkCommandPool commandPool, secondaryBufferCommandPool;
+                VkCommandPool commandPool;
+                std::vector<VkCommandPool> secondaryBufferCommandPools;
                 std::array<VkCommandBuffer, MAX_FRAMES_IN_FLIGHT> copyModelDataBufferCommandBuffer, copyMaterialDataBufferCommandBuffer, copyDrawBufferCommandBuffer, copyDrawIndexedBufferCommandBuffer,
                 copyVbBufferCommandBuffer, copyVbIndexedBufferCommandBuffer, depthCommandBuffer, alphaCommandBuffer, stencilCommandBuffer, shadowCommandBuffer;
                 ShadowUBO shadowUBODatas;
@@ -226,6 +229,9 @@ namespace odfaeg {
                 std::array<unsigned int, MAX_FRAMES_IN_FLIGHT> maxTexturesInUse={0, 0};
                 View lightView;
                 std::vector<std::unique_ptr<Entity>> shadows;
+                core::ThreadPool threadPool;
+                std::array<core::JobFence, MAX_FRAMES_IN_FLIGHT> jobFence;
+                static const unsigned int numThreads = 5;
         };
 
         #else

@@ -31,6 +31,7 @@ namespace odfaeg {
             }
 
             void jobDone() {
+                //std::cout<<"remaining : "<<remaining.load()<<std::endl;
                 if (remaining.fetch_sub(1, std::memory_order_acq_rel) == 1) {
 
                     std::lock_guard<std::mutex> lock(mtx);
