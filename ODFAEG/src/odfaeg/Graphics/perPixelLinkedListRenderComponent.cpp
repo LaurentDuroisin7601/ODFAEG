@@ -5479,8 +5479,8 @@ namespace odfaeg {
                 }
                 jobFence[currentFrame].jobDone();
             });
-            currentStates.blendMode = BlendAlpha;
-            currentStates.shader = &perPixelLinkedListP2;
+
+
             threadPool.enqueue([this, currentFrame, currentStates]{
                 VkCommandBufferInheritanceInfo inheritanceInfo{};
 
@@ -5510,6 +5510,8 @@ namespace odfaeg {
                 }
                 jobFence[currentFrame].jobDone();
             });
+            currentStates.blendMode = BlendAlpha;
+            currentStates.shader = &perPixelLinkedListP2;
             threadPool.enqueue([this, currentFrame, currentStates] {
                 VkCommandBufferInheritanceInfo inheritanceInfo{};
 
