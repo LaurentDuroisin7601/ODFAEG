@@ -484,7 +484,11 @@ namespace odfaeg {
             VkBuffer vertexBuffers[] = {vertexBuffer.getVertexBuffer(getCurrentFrame())};
             VkDeviceSize offsets[] = {0, 0};
             vkCmdBindVertexBuffers(cmd, 0, 1, vertexBuffers, offsets);
-            vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vertexBuffer.getPrimitiveType()][id][depthStencilId], 0, 1, &descriptorSets[descriptorId][getCurrentFrame()], 0, nullptr);
+            std::vector<VkDescriptorSet> shaderDescriptorSets;
+            for (unsigned int i = 0; i < descriptorSets[descriptorId].size(); i++) {
+                shaderDescriptorSets.push_back(descriptorSets[descriptorId][i][getCurrentFrame()]);
+            }
+            vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vertexBuffer.getPrimitiveType()][id][depthStencilId], 0, shaderDescriptorSets.size(), shaderDescriptorSets.data(), 0, nullptr);
 
             applyViewportAndScissor(cmd);
             if(vertexBuffer.getIndicesSize() > 0) {
@@ -513,7 +517,11 @@ namespace odfaeg {
             VkBuffer vertexBuffers[] = {vertexBuffer.getVertexBuffer(currentFrame)};
             VkDeviceSize offsets[] = {0, 0};
             vkCmdBindVertexBuffers(cmd, vertexOffset, 1, vertexBuffers, offsets);
-            vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vertexBuffer.getPrimitiveType()][id][depthStencilId*nbBlendMode+blendModeId], 0, 1, &descriptorSets[descriptorId][currentFrame], dynamicBufferOffsets.size(), dynamicBufferOffsets.data());
+            std::vector<VkDescriptorSet> shaderDescriptorSets;
+            for (unsigned int i = 0; i < descriptorSets[descriptorId].size(); i++) {
+                shaderDescriptorSets.push_back(descriptorSets[descriptorId][i][getCurrentFrame()]);
+            }
+            vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vertexBuffer.getPrimitiveType()][id][depthStencilId*nbBlendMode+blendModeId], 0, shaderDescriptorSets.size(), shaderDescriptorSets.data(), dynamicBufferOffsets.size(), dynamicBufferOffsets.data());
             ////std::cout<<"pipeline id draw : "<<depthStencilId*nbBlendMode+blendModeId<<std::endl;
             /*if (depthStencil[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vertexBuffer.getPrimitiveType()][id][depthStencilId*nbBlendMode+blendModeId].back.compareOp == VK_COMPARE_OP_NOT_EQUAL)
                 //std::cout<<"not equale"<<std::endl;*/
@@ -546,7 +554,11 @@ namespace odfaeg {
             vkCmdBindVertexBuffers(cmd, 0, 1, vertexBuffers, offsets);
             /*//////std::cout<<"draw pipeline id : "<<shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vertexBuffer.getPrimitiveType()<<","<<id<<","<<depthStencilId<<std::endl;
             system("PAUSE");*/
-            vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vertexBuffer.getPrimitiveType()][id][depthStencilId*nbBlendMode+blendModeId], 0, 1, &descriptorSets[descriptorId][currentFrame], dynamicOffsets.size(), dynamicOffsets.data());
+            std::vector<VkDescriptorSet> shaderDescriptorSets;
+            for (unsigned int i = 0; i < descriptorSets[descriptorId].size(); i++) {
+                shaderDescriptorSets.push_back(descriptorSets[descriptorId][i][getCurrentFrame()]);
+            }
+            vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vertexBuffer.getPrimitiveType()][id][depthStencilId*nbBlendMode+blendModeId], 0, shaderDescriptorSets.size(), shaderDescriptorSets.data(), dynamicOffsets.size(), dynamicOffsets.data());
 
             applyViewportAndScissor(cmd);
             if(vertexBuffer.getIndicesSize() > 0) {
@@ -564,7 +576,7 @@ namespace odfaeg {
             Shader* shader = const_cast<Shader*>(states.shader);
             if (shader->getNbShaders() > descriptorSetLayout.size())
                 descriptorSetLayout.resize(shader->getNbShaders());
-
+            descriptorSetLayout[shader->getId()].resize(1);
             std::vector<VkDescriptorBindingFlags> bindingFlags(2, 0); // 2 binding, flags par défaut à 0
             bindingFlags[1] = VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
                   VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT; // seulement pour sampler[]
@@ -597,7 +609,7 @@ namespace odfaeg {
             layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());;
             layoutInfo.pBindings = bindings.data();
 
-            if (vkCreateDescriptorSetLayout(vkDevice.getDevice(), &layoutInfo, nullptr, &descriptorSetLayout[shader->getId()]) != VK_SUCCESS) {
+            if (vkCreateDescriptorSetLayout(vkDevice.getDevice(), &layoutInfo, nullptr, &descriptorSetLayout[shader->getId()][0]) != VK_SUCCESS) {
                 throw std::runtime_error("failed to create descriptor set layout!");
             }
         }
@@ -605,26 +617,26 @@ namespace odfaeg {
             Shader* shader = const_cast<Shader*>(states.shader);
             if (shader->getNbShaders() > descriptorSets.size()) {
                 descriptorSets.resize(shader->getNbShaders());
-
-                for (unsigned int i = 0; i < descriptorSets.size(); i++) {
-                    descriptorSets[i].resize(MAX_FRAMES_IN_FLIGHT);
-                }
             }
             unsigned int descriptorId = shader->getId();
+            descriptorSets[descriptorId].resize(1);
+            for (unsigned int i = 0; i < descriptorSets[descriptorId].size(); i++) {
+                descriptorSets[descriptorId][i].resize(MAX_FRAMES_IN_FLIGHT);
+            }
             std::vector<uint32_t> variableCounts(MAX_FRAMES_IN_FLIGHT, MAX_TEXTURES);
 
             VkDescriptorSetVariableDescriptorCountAllocateInfo variableCountInfo{};
             variableCountInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO;
             variableCountInfo.descriptorSetCount = static_cast<uint32_t>(variableCounts.size());
             variableCountInfo.pDescriptorCounts = variableCounts.data();
-            std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, descriptorSetLayout[descriptorId]);
+            std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, descriptorSetLayout[descriptorId][0]);
             VkDescriptorSetAllocateInfo allocInfo{};
             allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
             allocInfo.pNext = &variableCountInfo;
-            allocInfo.descriptorPool = descriptorPool[descriptorId];
+            allocInfo.descriptorPool = descriptorPool[descriptorId][0];
             allocInfo.descriptorSetCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
             allocInfo.pSetLayouts = layouts.data();
-            if (vkAllocateDescriptorSets(vkDevice.getDevice(), &allocInfo, descriptorSets[descriptorId].data()) != VK_SUCCESS) {
+            if (vkAllocateDescriptorSets(vkDevice.getDevice(), &allocInfo, descriptorSets[descriptorId][0].data()) != VK_SUCCESS) {
                 throw std::runtime_error("echec de l'allocation d'un set de descripteurs!");
             }
         }
@@ -633,6 +645,7 @@ namespace odfaeg {
             if (shader->getNbShaders() > descriptorPool.size())
                 descriptorPool.resize(shader->getNbShaders()*nbRenderTargets);
             unsigned int descriptorId = shader->getId();
+            descriptorPool[descriptorId].resize(1);
             std::array<VkDescriptorPoolSize, 2> poolSizes{};
             poolSizes[0].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
             poolSizes[0].descriptorCount = static_cast<uint32_t>(getMaxFramesInFlight());
@@ -646,7 +659,7 @@ namespace odfaeg {
             poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
             poolInfo.pPoolSizes = poolSizes.data();
             poolInfo.maxSets = static_cast<uint32_t>(getMaxFramesInFlight());
-            if (vkCreateDescriptorPool(vkDevice.getDevice(), &poolInfo, nullptr, &descriptorPool[descriptorId]) != VK_SUCCESS) {
+            if (vkCreateDescriptorPool(vkDevice.getDevice(), &poolInfo, nullptr, &descriptorPool[descriptorId][0]) != VK_SUCCESS) {
                 throw std::runtime_error("echec de la creation de la pool de descripteurs!");
             }
         }
@@ -666,7 +679,7 @@ namespace odfaeg {
             bufferInfo.offset = 0;
             bufferInfo.range = drawableData.size() * sizeof(DrawableData);
             descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            descriptorWrites[0].dstSet = descriptorSets[shader->getId()][getCurrentFrame()];
+            descriptorWrites[0].dstSet = descriptorSets[shader->getId()][0][getCurrentFrame()];
             descriptorWrites[0].dstBinding = 0;
             descriptorWrites[0].dstArrayElement = 0;
             descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
@@ -674,7 +687,7 @@ namespace odfaeg {
             descriptorWrites[0].pBufferInfo = &bufferInfo;
 
             descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            descriptorWrites[1].dstSet = descriptorSets[shader->getId()][getCurrentFrame()];
+            descriptorWrites[1].dstSet = descriptorSets[shader->getId()][0][getCurrentFrame()];
             descriptorWrites[1].dstBinding = 1;
             descriptorWrites[1].dstArrayElement = 0;
             descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -877,8 +890,8 @@ namespace odfaeg {
 
 
             pipelineLayoutInfo[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId*nbBlendMode+blendModeId].sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-            pipelineLayoutInfo[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId*nbBlendMode+blendModeId].setLayoutCount = 1;
-            pipelineLayoutInfo[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId*nbBlendMode+blendModeId].pSetLayouts = &descriptorSetLayout[descriptorId];
+            pipelineLayoutInfo[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId*nbBlendMode+blendModeId].setLayoutCount = descriptorSetLayout[descriptorId].size();
+            pipelineLayoutInfo[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId*nbBlendMode+blendModeId].pSetLayouts = descriptorSetLayout[descriptorId].data();
 
             //std::cout<<"ids : "<<shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type<<","<<id<<","<<depthStencilId*nbBlendMode+blendModeId<<std::endl;
             if (pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+type][id][depthStencilId*nbBlendMode+blendModeId] != nullptr) {
@@ -1082,8 +1095,12 @@ namespace odfaeg {
             vkCmdBindVertexBuffers(cmd, 0, 1, vertexBuffers, offsets);
             unsigned int descriptorId = shader->getId();
 
+            std::vector<VkDescriptorSet> shaderDesriptorSets;
+            for (unsigned int i = 0; i < descriptorSets[descriptorId].size(); i++) {
+                shaderDesriptorSets.push_back(descriptorSets[descriptorId][i][getCurrentFrame()]);
+            }
 
-            vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+primitiveType][0][(depthTestEnabled) ? states.blendMode.nbBlendModes + states.blendMode.id : states.blendMode.id], 0, 1, &descriptorSets[shader->getId()][getCurrentFrame()], 0, nullptr);
+            vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+primitiveType][0][(depthTestEnabled) ? states.blendMode.nbBlendModes + states.blendMode.id : states.blendMode.id], 0, shaderDesriptorSets.size(), shaderDesriptorSets.data(), 0, nullptr);
 
             applyViewportAndScissor(cmd);
             if(vb.getIndicesSize() > 0) {
@@ -1144,10 +1161,14 @@ namespace odfaeg {
                 }
             }
             for (unsigned int i = 0; i < descriptorSetLayout.size(); i++) {
-                vkDestroyDescriptorSetLayout(vkDevice.getDevice(), descriptorSetLayout[i], nullptr);
+                for (unsigned int j = 0; j < descriptorSetLayout[i].size(); j++) {
+                    vkDestroyDescriptorSetLayout(vkDevice.getDevice(), descriptorSetLayout[i][j], nullptr);
+                }
             }
             for (unsigned int i = 0; i < descriptorPool.size(); i++) {
-                vkDestroyDescriptorPool(vkDevice.getDevice(), descriptorPool[i], nullptr);
+                for (unsigned int j = 0; j < descriptorPool[i].size(); j++) {
+                    vkDestroyDescriptorPool(vkDevice.getDevice(), descriptorPool[i][j], nullptr);
+                }
             }
             for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
                 vkDestroyBuffer(vkDevice.getDevice(), drawableDataSSBO[i], nullptr);
@@ -1174,13 +1195,13 @@ namespace odfaeg {
         std::vector<std::vector<std::vector<VkPipeline>>>& RenderTarget::getGraphicPipeline() {
             return graphicsPipeline;
         }
-        std::vector<VkDescriptorPool>& RenderTarget::getDescriptorPool() {
+        std::vector<std::vector<VkDescriptorPool>>& RenderTarget::getDescriptorPool() {
             return descriptorPool;
         }
-        std::vector<VkDescriptorSetLayout>& RenderTarget::getDescriptorSetLayout() {
+        std::vector<std::vector<VkDescriptorSetLayout>>& RenderTarget::getDescriptorSetLayout() {
             return descriptorSetLayout;
         }
-        std::vector<std::vector<VkDescriptorSet>>& RenderTarget::getDescriptorSet() {
+        std::vector<std::vector<std::vector<VkDescriptorSet>>>& RenderTarget::getDescriptorSet() {
             return descriptorSets;
         }
         unsigned int RenderTarget::getId() {

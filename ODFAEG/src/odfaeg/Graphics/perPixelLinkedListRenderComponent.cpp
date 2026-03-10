@@ -872,12 +872,13 @@ namespace odfaeg {
             return (offset + alignment - 1) & ~(alignment - 1);
         }
         void PerPixelLinkedListRenderComponent::createDescriptorPool(unsigned int p, RenderStates states) {
-            std::vector<VkDescriptorPool>& descriptorPool = frameBuffer.getDescriptorPool();
+            std::vector<std::vector<VkDescriptorPool>>& descriptorPool = frameBuffer.getDescriptorPool();
             Shader* shader = const_cast<Shader*>(states.shader);
             if (shader == &indirectRenderingShader) {
                 unsigned int descriptorId = p * shader->getNbShaders() + shader->getId();
                 if (shader->getNbShaders() * (Batcher::nbPrimitiveTypes - 1) > descriptorPool.size())
                     descriptorPool.resize(shader->getNbShaders() * (Batcher::nbPrimitiveTypes - 1));
+                descriptorPool[descriptorId].resize(1);
                 std::vector<Texture*> allTextures = Texture::getAllTextures();
                 std::array<VkDescriptorPoolSize, 6> poolSizes;
                 poolSizes[0].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
@@ -893,29 +894,30 @@ namespace odfaeg {
                 poolSizes[5].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
                 poolSizes[5].descriptorCount = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight() * MAX_TEXTURES);
 
-                if (descriptorPool[descriptorId] != nullptr) {
-                    vkDestroyDescriptorPool(vkDevice.getDevice(), descriptorPool[descriptorId], nullptr);
+                if (descriptorPool[descriptorId][0] != nullptr) {
+                    vkDestroyDescriptorPool(vkDevice.getDevice(), descriptorPool[descriptorId][0], nullptr);
                 }
                 VkDescriptorPoolCreateInfo poolInfo{};
                 poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
                 poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
                 poolInfo.pPoolSizes = poolSizes.data();
                 poolInfo.maxSets = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight());
-                if (vkCreateDescriptorPool(vkDevice.getDevice(), &poolInfo, nullptr, &descriptorPool[descriptorId]) != VK_SUCCESS) {
+                if (vkCreateDescriptorPool(vkDevice.getDevice(), &poolInfo, nullptr, &descriptorPool[descriptorId][0]) != VK_SUCCESS) {
                     throw std::runtime_error("echec de la creation de la pool de descripteurs!");
                 }
             } else if (shader == &perPixelLinkedListP2) {
                 if (shader->getNbShaders() * (Batcher::nbPrimitiveTypes - 1) > descriptorPool.size())
                     descriptorPool.resize(shader->getNbShaders() * (Batcher::nbPrimitiveTypes - 1));
                 unsigned int descriptorId =  p * shader->getNbShaders() + shader->getId();
+                descriptorPool[descriptorId].resize(1);
                 std::array<VkDescriptorPoolSize, 2> poolSizes{};
                 poolSizes[0].type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
                 poolSizes[0].descriptorCount = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight());
                 poolSizes[1].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
                 poolSizes[1].descriptorCount = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight());
 
-                if (descriptorPool[descriptorId] != nullptr) {
-                    vkDestroyDescriptorPool(vkDevice.getDevice(), descriptorPool[descriptorId], nullptr);
+                if (descriptorPool[descriptorId][0] != nullptr) {
+                    vkDestroyDescriptorPool(vkDevice.getDevice(), descriptorPool[descriptorId][0], nullptr);
                 }
 
 
@@ -924,31 +926,32 @@ namespace odfaeg {
                 poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
                 poolInfo.pPoolSizes = poolSizes.data();
                 poolInfo.maxSets = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight());
-                if (vkCreateDescriptorPool(vkDevice.getDevice(), &poolInfo, nullptr, &descriptorPool[descriptorId]) != VK_SUCCESS) {
+                if (vkCreateDescriptorPool(vkDevice.getDevice(), &poolInfo, nullptr, &descriptorPool[descriptorId][0]) != VK_SUCCESS) {
                     throw std::runtime_error("echec de la creation de la pool de descripteurs!");
                 }
             } else {
                 unsigned int descriptorId = p * shader->getNbShaders() + shader->getId();
                 if (shader->getNbShaders() * (Batcher::nbPrimitiveTypes - 1) > descriptorPool.size())
                     descriptorPool.resize(shader->getNbShaders() * (Batcher::nbPrimitiveTypes - 1));
+                descriptorPool[descriptorId].resize(1);
                 std::array<VkDescriptorPoolSize, 1> poolSizes;
                 poolSizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
                 poolSizes[0].descriptorCount = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight());
-                if (descriptorPool[descriptorId] != nullptr) {
-                    vkDestroyDescriptorPool(vkDevice.getDevice(), descriptorPool[descriptorId], nullptr);
+                if (descriptorPool[descriptorId][0] != nullptr) {
+                    vkDestroyDescriptorPool(vkDevice.getDevice(), descriptorPool[descriptorId][0], nullptr);
                 }
                 VkDescriptorPoolCreateInfo poolInfo{};
                 poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
                 poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
                 poolInfo.pPoolSizes = poolSizes.data();
                 poolInfo.maxSets = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight());
-                if (vkCreateDescriptorPool(vkDevice.getDevice(), &poolInfo, nullptr, &descriptorPool[descriptorId]) != VK_SUCCESS) {
+                if (vkCreateDescriptorPool(vkDevice.getDevice(), &poolInfo, nullptr, &descriptorPool[descriptorId][0]) != VK_SUCCESS) {
                     throw std::runtime_error("echec de la creation de la pool de descripteurs!");
                 }
             }
         }
         void PerPixelLinkedListRenderComponent::createDescriptorPool(RenderStates states) {
-            std::vector<VkDescriptorPool>& descriptorPool = frameBuffer.getDescriptorPool();
+            /*std::vector<VkDescriptorPool>& descriptorPool = frameBuffer.getDescriptorPool();
             Shader* shader = const_cast<Shader*>(states.shader);
             if (shader->getNbShaders() > descriptorPool.size())
                 descriptorPool.resize(shader->getNbShaders());
@@ -979,15 +982,16 @@ namespace odfaeg {
             poolInfo.maxSets = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight());
             if (vkCreateDescriptorPool(vkDevice.getDevice(), &poolInfo, nullptr, &descriptorPool[descriptorId]) != VK_SUCCESS) {
                 throw std::runtime_error("echec de la creation de la pool de descripteurs!");
-            }
+            }*/
         }
         void PerPixelLinkedListRenderComponent::createDescriptorSetLayout(RenderStates states) {
-            std::vector<VkDescriptorSetLayout>& descriptorSetLayout = frameBuffer.getDescriptorSetLayout();
+            std::vector<std::vector<VkDescriptorSetLayout>>& descriptorSetLayout = frameBuffer.getDescriptorSetLayout();
             Shader* shader = const_cast<Shader*>(states.shader);
             if (shader == &indirectRenderingShader) {
                 if (shader->getNbShaders() > descriptorSetLayout.size())
                     descriptorSetLayout.resize(shader->getNbShaders());
                 unsigned int descriptorId = shader->getId();
+                descriptorSetLayout[descriptorId].resize(1);
                 ////////std::cout<<"ppll descriptor id : "<<descriptorId<<std::endl;
                 std::vector<Texture*> allTextures = Texture::getAllTextures();
                 VkDescriptorSetLayoutBinding counterLayoutBinding{};
@@ -1043,8 +1047,8 @@ namespace odfaeg {
 
 
 
-                if (descriptorSetLayout[descriptorId] != nullptr) {
-                    vkDestroyDescriptorSetLayout(vkDevice.getDevice(), descriptorSetLayout[descriptorId], nullptr);
+                if (descriptorSetLayout[descriptorId][0] != nullptr) {
+                    vkDestroyDescriptorSetLayout(vkDevice.getDevice(), descriptorSetLayout[descriptorId][0], nullptr);
                 }
 
                 std::array<VkDescriptorSetLayoutBinding, 6> bindings = {counterLayoutBinding, headPtrImageLayoutBinding, linkedListLayoutBinding, modelDataLayoutBinding, materialDataLayoutBinding, samplerLayoutBinding};
@@ -1055,13 +1059,14 @@ namespace odfaeg {
                 layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());;
                 layoutInfo.pBindings = bindings.data();
 
-                if (vkCreateDescriptorSetLayout(vkDevice.getDevice(), &layoutInfo, nullptr, &descriptorSetLayout[descriptorId]) != VK_SUCCESS) {
+                if (vkCreateDescriptorSetLayout(vkDevice.getDevice(), &layoutInfo, nullptr, &descriptorSetLayout[descriptorId][0]) != VK_SUCCESS) {
                     throw std::runtime_error("failed to create descriptor set layout!");
                 }
             } else {
                 if (shader->getNbShaders() > descriptorSetLayout.size())
                     descriptorSetLayout.resize(shader->getNbShaders());
                 unsigned int descriptorId = shader->getId();
+                descriptorSetLayout[descriptorId].resize(1);
                 //std::cout<<"shader id : "<<descriptorId<<std::endl;
                 VkDescriptorSetLayoutBinding samplerLayoutBinding{};
                 samplerLayoutBinding.binding = 0;
@@ -1069,8 +1074,8 @@ namespace odfaeg {
                 samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
                 samplerLayoutBinding.pImmutableSamplers = nullptr;
                 samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-                if (descriptorSetLayout[descriptorId] != nullptr) {
-                    vkDestroyDescriptorSetLayout(vkDevice.getDevice(), descriptorSetLayout[descriptorId], nullptr);
+                if (descriptorSetLayout[descriptorId][0] != nullptr) {
+                    vkDestroyDescriptorSetLayout(vkDevice.getDevice(), descriptorSetLayout[descriptorId][0], nullptr);
                 }
 
                 std::array<VkDescriptorSetLayoutBinding, 1> bindings = {samplerLayoutBinding};
@@ -1080,23 +1085,24 @@ namespace odfaeg {
                 layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());;
                 layoutInfo.pBindings = bindings.data();
 
-                if (vkCreateDescriptorSetLayout(vkDevice.getDevice(), &layoutInfo, nullptr, &descriptorSetLayout[descriptorId]) != VK_SUCCESS) {
+                if (vkCreateDescriptorSetLayout(vkDevice.getDevice(), &layoutInfo, nullptr, &descriptorSetLayout[descriptorId][0]) != VK_SUCCESS) {
                     throw std::runtime_error("failed to create descriptor set layout!");
                 }
             }
         }
         void PerPixelLinkedListRenderComponent::allocateDescriptorSets(unsigned int p, RenderStates states) {
-            std::vector<std::vector<VkDescriptorSet>>& descriptorSets = frameBuffer.getDescriptorSet();
-            std::vector<VkDescriptorPool>& descriptorPool = frameBuffer.getDescriptorPool();
-            std::vector<VkDescriptorSetLayout>& descriptorSetLayout = frameBuffer.getDescriptorSetLayout();
+            std::vector<std::vector<std::vector<VkDescriptorSet>>>& descriptorSets = frameBuffer.getDescriptorSet();
+            std::vector<std::vector<VkDescriptorPool>>& descriptorPool = frameBuffer.getDescriptorPool();
+            std::vector<std::vector<VkDescriptorSetLayout>>& descriptorSetLayout = frameBuffer.getDescriptorSetLayout();
             Shader* shader = const_cast<Shader*>(states.shader);
             if (shader == &indirectRenderingShader) {
                 if (shader->getNbShaders()  * (Batcher::nbPrimitiveTypes - 1) > descriptorSets.size())
                     descriptorSets.resize(shader->getNbShaders() * (Batcher::nbPrimitiveTypes - 1));
                 unsigned int descriptorId = p * shader->getNbShaders() + shader->getId();
+                descriptorSets[descriptorId].resize(1);
 
-                for (unsigned int i = 0; i < descriptorSets.size(); i++) {
-                    descriptorSets[i].resize(frameBuffer.getMaxFramesInFlight());
+                for (unsigned int i = 0; i < descriptorSets[descriptorId].size(); i++) {
+                    descriptorSets[descriptorId][i].resize(frameBuffer.getMaxFramesInFlight());
                 }
                 std::vector<Texture*> allTextures = Texture::getAllTextures();
                 std::vector<uint32_t> variableCounts(frameBuffer.getMaxFramesInFlight(), static_cast<uint32_t>(MAX_TEXTURES));
@@ -1105,31 +1111,33 @@ namespace odfaeg {
                 variableCountInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO;
                 variableCountInfo.descriptorSetCount = static_cast<uint32_t>(variableCounts.size());;
                 variableCountInfo.pDescriptorCounts = variableCounts.data();
-                std::vector<VkDescriptorSetLayout> layouts(frameBuffer.getMaxFramesInFlight(), descriptorSetLayout[shader->getId()]);
+                std::vector<VkDescriptorSetLayout> layouts(frameBuffer.getMaxFramesInFlight(), descriptorSetLayout[shader->getId()][0]);
                 VkDescriptorSetAllocateInfo allocInfo{};
                 allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
                 allocInfo.pNext = &variableCountInfo;
-                allocInfo.descriptorPool = descriptorPool[descriptorId];
+                allocInfo.descriptorPool = descriptorPool[descriptorId][0];
                 allocInfo.descriptorSetCount = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight());
                 allocInfo.pSetLayouts = layouts.data();
-                if (vkAllocateDescriptorSets(vkDevice.getDevice(), &allocInfo, descriptorSets[descriptorId].data()) != VK_SUCCESS) {
+                if (vkAllocateDescriptorSets(vkDevice.getDevice(), &allocInfo, descriptorSets[descriptorId][0].data()) != VK_SUCCESS) {
                     throw std::runtime_error("echec de l'allocation d'un set de descripteurs!");
                 }
             } else if (shader == &perPixelLinkedListP2) {
                 if (shader->getNbShaders() * (Batcher::nbPrimitiveTypes - 1) > descriptorSets.size())
                     descriptorSets.resize(shader->getNbShaders() * (Batcher::nbPrimitiveTypes - 1));
                 unsigned int descriptorId = p * shader->getNbShaders() + shader->getId();
-                for (unsigned int i = 0; i < descriptorSets.size(); i++) {
-                    descriptorSets[i].resize(frameBuffer.getMaxFramesInFlight());
+                descriptorSets[descriptorId].resize(1);
+
+                for (unsigned int i = 0; i < descriptorSets[descriptorId].size(); i++) {
+                    descriptorSets[descriptorId][i].resize(frameBuffer.getMaxFramesInFlight());
                 }
-                std::vector<VkDescriptorSetLayout> layouts(frameBuffer.getMaxFramesInFlight(), descriptorSetLayout[shader->getId()]);
+                std::vector<VkDescriptorSetLayout> layouts(frameBuffer.getMaxFramesInFlight(), descriptorSetLayout[shader->getId()][0]);
                 VkDescriptorSetAllocateInfo allocInfo{};
                 allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 
-                allocInfo.descriptorPool = descriptorPool[descriptorId];
+                allocInfo.descriptorPool = descriptorPool[descriptorId][0];
                 allocInfo.descriptorSetCount = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight());
                 allocInfo.pSetLayouts = layouts.data();
-                if (vkAllocateDescriptorSets(vkDevice.getDevice(), &allocInfo, descriptorSets[descriptorId].data()) != VK_SUCCESS) {
+                if (vkAllocateDescriptorSets(vkDevice.getDevice(), &allocInfo, descriptorSets[descriptorId][0].data()) != VK_SUCCESS) {
                     throw std::runtime_error("echec de l'allocation d'un set de descripteurs!");
                 }
             } else {
@@ -1137,24 +1145,26 @@ namespace odfaeg {
                     descriptorSets.resize(shader->getNbShaders() * (Batcher::nbPrimitiveTypes - 1));
                 unsigned int descriptorId = p * shader->getNbShaders() + shader->getId();
                 //std::cout<<"descriptor skybox ids : "<<descriptorId<<","<<shader->getId()<<std::endl;
-                for (unsigned int i = 0; i < descriptorSets.size(); i++) {
-                    descriptorSets[i].resize(frameBuffer.getMaxFramesInFlight());
+                descriptorSets[descriptorId].resize(1);
+
+                for (unsigned int i = 0; i < descriptorSets[descriptorId].size(); i++) {
+                    descriptorSets[descriptorId][i].resize(frameBuffer.getMaxFramesInFlight());
                 }
-                std::vector<VkDescriptorSetLayout> layouts(frameBuffer.getMaxFramesInFlight(), descriptorSetLayout[shader->getId()]);
+                std::vector<VkDescriptorSetLayout> layouts(frameBuffer.getMaxFramesInFlight(), descriptorSetLayout[shader->getId()][0]);
                 VkDescriptorSetAllocateInfo allocInfo{};
                 allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-                allocInfo.descriptorPool = descriptorPool[descriptorId];
+                allocInfo.descriptorPool = descriptorPool[descriptorId][0];
                 allocInfo.descriptorSetCount = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight());
                 allocInfo.pSetLayouts = layouts.data();
-                if (vkAllocateDescriptorSets(vkDevice.getDevice(), &allocInfo, descriptorSets[descriptorId].data()) != VK_SUCCESS) {
+                if (vkAllocateDescriptorSets(vkDevice.getDevice(), &allocInfo, descriptorSets[descriptorId][0].data()) != VK_SUCCESS) {
                     throw std::runtime_error("echec de l'allocation d'un set de descripteurs!");
                 }
             }
         }
         void PerPixelLinkedListRenderComponent::allocateDescriptorSets(RenderStates states) {
-            std::vector<std::vector<VkDescriptorSet>>& descriptorSets = frameBuffer.getDescriptorSet();
-            std::vector<VkDescriptorPool>& descriptorPool = frameBuffer.getDescriptorPool();
-            std::vector<VkDescriptorSetLayout>& descriptorSetLayout = frameBuffer.getDescriptorSetLayout();
+            std::vector<std::vector<std::vector<VkDescriptorSet>>>& descriptorSets = frameBuffer.getDescriptorSet();
+            std::vector<std::vector<VkDescriptorPool>>& descriptorPool = frameBuffer.getDescriptorPool();
+            std::vector<std::vector<VkDescriptorSetLayout>>& descriptorSetLayout = frameBuffer.getDescriptorSetLayout();
             Shader* shader = const_cast<Shader*>(states.shader);
             if (shader->getNbShaders() > descriptorSets.size())
                 descriptorSets.resize(shader->getNbShaders());
@@ -1169,19 +1179,19 @@ namespace odfaeg {
             variableCountInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO;
             variableCountInfo.descriptorSetCount = static_cast<uint32_t>(variableCounts.size());;
             variableCountInfo.pDescriptorCounts = variableCounts.data();
-            std::vector<VkDescriptorSetLayout> layouts(frameBuffer.getMaxFramesInFlight(), descriptorSetLayout[descriptorId]);
+            std::vector<VkDescriptorSetLayout> layouts(frameBuffer.getMaxFramesInFlight(), descriptorSetLayout[descriptorId][0]);
             VkDescriptorSetAllocateInfo allocInfo{};
             allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
             allocInfo.pNext = &variableCountInfo;
-            allocInfo.descriptorPool = descriptorPool[descriptorId];
+            allocInfo.descriptorPool = descriptorPool[descriptorId][0];
             allocInfo.descriptorSetCount = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight());
             allocInfo.pSetLayouts = layouts.data();
-            if (vkAllocateDescriptorSets(vkDevice.getDevice(), &allocInfo, descriptorSets[descriptorId].data()) != VK_SUCCESS) {
+            if (vkAllocateDescriptorSets(vkDevice.getDevice(), &allocInfo, descriptorSets[descriptorId][0].data()) != VK_SUCCESS) {
                 throw std::runtime_error("echec de l'allocation d'un set de descripteurs!");
             }
         }
         void PerPixelLinkedListRenderComponent::updateDescriptorSets(unsigned int currentFrame, unsigned int p, RenderStates states) {
-            std::vector<std::vector<VkDescriptorSet>>& descriptorSets = frameBuffer.getDescriptorSet();
+            std::vector<std::vector<std::vector<VkDescriptorSet>>>& descriptorSets = frameBuffer.getDescriptorSet();
             Shader* shader = const_cast<Shader*>(states.shader);
             std::vector<Texture*> allTextures = Texture::getAllTextures();
             if (shader == &indirectRenderingShader) {
@@ -1202,7 +1212,7 @@ namespace odfaeg {
                 counterStorageBufferInfoLastFrame.range = sizeof(AtomicCounterSSBO);
 
                 descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                descriptorWrites[0].dstSet = descriptorSets[descriptorId][currentFrame];
+                descriptorWrites[0].dstSet = descriptorSets[descriptorId][0][currentFrame];
                 descriptorWrites[0].dstBinding = 0;
                 descriptorWrites[0].dstArrayElement = 0;
                 descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
@@ -1215,7 +1225,7 @@ namespace odfaeg {
                 headPtrDescriptorImageInfo.sampler = headPtrTextureSampler[currentFrame];
 
                 descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                descriptorWrites[1].dstSet = descriptorSets[descriptorId][currentFrame];
+                descriptorWrites[1].dstSet = descriptorSets[descriptorId][0][currentFrame];
                 descriptorWrites[1].dstBinding = 1;
                 descriptorWrites[1].dstArrayElement = 0;
                 descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
@@ -1229,7 +1239,7 @@ namespace odfaeg {
                 linkedListStorageBufferInfoLastFrame.range = maxNodes * nodeSize;
 
                 descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                descriptorWrites[2].dstSet = descriptorSets[descriptorId][currentFrame];
+                descriptorWrites[2].dstSet = descriptorSets[descriptorId][0][currentFrame];
                 descriptorWrites[2].dstBinding = 2;
                 descriptorWrites[2].dstArrayElement = 0;
                 descriptorWrites[2].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
@@ -1242,7 +1252,7 @@ namespace odfaeg {
                 modelDataStorageBufferInfoLastFrame.range = maxAlignedSizeModelData[p];
 
                 descriptorWrites[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                descriptorWrites[3].dstSet = descriptorSets[descriptorId][currentFrame];
+                descriptorWrites[3].dstSet = descriptorSets[descriptorId][0][currentFrame];
                 descriptorWrites[3].dstBinding = 3;
                 descriptorWrites[3].dstArrayElement = 0;
                 descriptorWrites[3].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
@@ -1255,7 +1265,7 @@ namespace odfaeg {
                 materialDataStorageBufferInfoLastFrame.range = maxAlignedSizeMaterialData[p];
 
                 descriptorWrites[4].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                descriptorWrites[4].dstSet = descriptorSets[descriptorId][currentFrame];
+                descriptorWrites[4].dstSet = descriptorSets[descriptorId][0][currentFrame];
                 descriptorWrites[4].dstBinding = 4;
                 descriptorWrites[4].dstArrayElement = 0;
                 descriptorWrites[4].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
@@ -1263,7 +1273,7 @@ namespace odfaeg {
                 descriptorWrites[4].pBufferInfo = &materialDataStorageBufferInfoLastFrame;
 
                 descriptorWrites[5].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                descriptorWrites[5].dstSet = descriptorSets[descriptorId][currentFrame];
+                descriptorWrites[5].dstSet = descriptorSets[descriptorId][0][currentFrame];
                 descriptorWrites[5].dstBinding = 5;
                 descriptorWrites[5].dstArrayElement = 0;
                 descriptorWrites[5].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -1284,7 +1294,7 @@ namespace odfaeg {
                     headPtrDescriptorImageInfo.sampler = headPtrTextureSampler[currentFrame];
 
                     descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                    descriptorWrites[0].dstSet = descriptorSets[descriptorId][currentFrame];
+                    descriptorWrites[0].dstSet = descriptorSets[descriptorId][0][currentFrame];
                     descriptorWrites[0].dstBinding = 0;
                     descriptorWrites[0].dstArrayElement = 0;
                     descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
@@ -1298,7 +1308,7 @@ namespace odfaeg {
                     linkedListStorageBufferInfoLastFrame.range = maxNodes * nodeSize;
 
                     descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                    descriptorWrites[1].dstSet = descriptorSets[descriptorId][currentFrame];
+                    descriptorWrites[1].dstSet = descriptorSets[descriptorId][0][currentFrame];
                     descriptorWrites[1].dstBinding = 1;
                     descriptorWrites[1].dstArrayElement = 0;
                     descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
@@ -1317,7 +1327,7 @@ namespace odfaeg {
                     descriptorImageInfo.sampler = skybox->getTexture().getSampler();
 
                     descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                    descriptorWrites[0].dstSet = descriptorSets[descriptorId][i];
+                    descriptorWrites[0].dstSet = descriptorSets[descriptorId][0][i];
                     descriptorWrites[0].dstBinding = 0;
                     descriptorWrites[0].dstArrayElement = 0;
                     descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -1329,7 +1339,7 @@ namespace odfaeg {
             }
         }
         void PerPixelLinkedListRenderComponent::createDescriptorSets(unsigned int p, RenderStates states) {
-            std::vector<std::vector<VkDescriptorSet>>& descriptorSets = frameBuffer.getDescriptorSet();
+            /*std::vector<std::vector<VkDescriptorSet>>& descriptorSets = frameBuffer.getDescriptorSet();
             Shader* shader = const_cast<Shader*>(states.shader);
             std::vector<Texture*> allTextures = Texture::getAllTextures();
 
@@ -1419,10 +1429,10 @@ namespace odfaeg {
                 descriptorWrites[5].pImageInfo = descriptorImageInfos.data();
 
                 vkUpdateDescriptorSets(vkDevice.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
-            }
+            }*/
         }
         void PerPixelLinkedListRenderComponent::createDescriptorPool2(RenderStates states) {
-            std::vector<VkDescriptorPool>& descriptorPool = frameBuffer.getDescriptorPool();
+            /*std::vector<VkDescriptorPool>& descriptorPool = frameBuffer.getDescriptorPool();
             Shader* shader = const_cast<Shader*>(states.shader);
             if (shader->getNbShaders() > descriptorPool.size())
                 descriptorPool.resize(shader->getNbShaders());
@@ -1445,14 +1455,15 @@ namespace odfaeg {
             poolInfo.maxSets = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight());
             if (vkCreateDescriptorPool(vkDevice.getDevice(), &poolInfo, nullptr, &descriptorPool[descriptorId]) != VK_SUCCESS) {
                 throw std::runtime_error("echec de la creation de la pool de descripteurs!");
-            }
+            }*/
         }
         void PerPixelLinkedListRenderComponent::createDescriptorSetLayout2(RenderStates states) {
-            std::vector<VkDescriptorSetLayout>& descriptorSetLayout = frameBuffer.getDescriptorSetLayout();
+            std::vector<std::vector<VkDescriptorSetLayout>>& descriptorSetLayout = frameBuffer.getDescriptorSetLayout();
             Shader* shader = const_cast<Shader*>(states.shader);
             if (shader->getNbShaders() > descriptorSetLayout.size())
                 descriptorSetLayout.resize(shader->getNbShaders());
             unsigned int descriptorId = shader->getId();
+            descriptorSetLayout[descriptorId].resize(1);
             VkDescriptorSetLayoutBinding headPtrImageLayoutBinding;
             headPtrImageLayoutBinding.binding = 0;
             headPtrImageLayoutBinding.descriptorCount = 1;
@@ -1467,8 +1478,8 @@ namespace odfaeg {
             linkedListLayoutBinding.pImmutableSamplers = nullptr;
             linkedListLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-            if (descriptorSetLayout[descriptorId] != nullptr) {
-                vkDestroyDescriptorSetLayout(vkDevice.getDevice(), descriptorSetLayout[descriptorId], nullptr);
+            if (descriptorSetLayout[descriptorId][0] != nullptr) {
+                vkDestroyDescriptorSetLayout(vkDevice.getDevice(), descriptorSetLayout[descriptorId][0], nullptr);
             }
 
             std::array<VkDescriptorSetLayoutBinding, 2> bindings = {headPtrImageLayoutBinding, linkedListLayoutBinding};
@@ -1478,12 +1489,12 @@ namespace odfaeg {
             layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());;
             layoutInfo.pBindings = bindings.data();
 
-            if (vkCreateDescriptorSetLayout(vkDevice.getDevice(), &layoutInfo, nullptr, &descriptorSetLayout[descriptorId]) != VK_SUCCESS) {
+            if (vkCreateDescriptorSetLayout(vkDevice.getDevice(), &layoutInfo, nullptr, &descriptorSetLayout[descriptorId][0]) != VK_SUCCESS) {
                 throw std::runtime_error("failed to create descriptor set layout!");
             }
         }
         void PerPixelLinkedListRenderComponent::allocateDescriptorSets2(RenderStates states) {
-            std::vector<std::vector<VkDescriptorSet>>& descriptorSets = frameBuffer.getDescriptorSet();
+            /*std::vector<std::vector<VkDescriptorSet>>& descriptorSets = frameBuffer.getDescriptorSet();
             std::vector<VkDescriptorSetLayout>& descriptorSetLayout = frameBuffer.getDescriptorSetLayout();
             std::vector<VkDescriptorPool>& descriptorPool = frameBuffer.getDescriptorPool();
             Shader* shader = const_cast<Shader*>(states.shader);
@@ -1502,10 +1513,10 @@ namespace odfaeg {
             allocInfo.pSetLayouts = layouts.data();
             if (vkAllocateDescriptorSets(vkDevice.getDevice(), &allocInfo, descriptorSets[descriptorId].data()) != VK_SUCCESS) {
                 throw std::runtime_error("echec de l'allocation d'un set de descripteurs!");
-            }
+            }*/
         }
         void PerPixelLinkedListRenderComponent::createDescriptorSets2(RenderStates states) {
-            std::vector<std::vector<VkDescriptorSet>>& descriptorSets = frameBuffer.getDescriptorSet();
+            /*std::vector<std::vector<VkDescriptorSet>>& descriptorSets = frameBuffer.getDescriptorSet();
             Shader* shader = const_cast<Shader*>(states.shader);
 
             unsigned int descriptorId = shader->getId();
@@ -1541,7 +1552,7 @@ namespace odfaeg {
                 descriptorWrites[1].pBufferInfo = &linkedListStorageBufferInfoLastFrame;
 
                 vkUpdateDescriptorSets(vkDevice.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
-            }
+            }*/
         }
         void PerPixelLinkedListRenderComponent::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory) {
             VkBufferCreateInfo bufferInfo{};

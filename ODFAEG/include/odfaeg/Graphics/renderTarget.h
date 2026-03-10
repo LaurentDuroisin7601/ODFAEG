@@ -236,9 +236,9 @@ namespace odfaeg {
             std::vector<std::vector<std::vector<VkPipelineDepthStencilStateCreateInfo>>>& getDepthStencilCreateInfo();
             std::vector<std::vector<std::vector<VkPipelineLayout>>>& getPipelineLayout();
             std::vector<std::vector<std::vector<VkPipeline>>>& getGraphicPipeline();
-            std::vector<VkDescriptorPool>& getDescriptorPool();
-            std::vector<VkDescriptorSetLayout>& getDescriptorSetLayout();
-            std::vector<std::vector<VkDescriptorSet>>& getDescriptorSet();
+            std::vector<std::vector<VkDescriptorPool>>& getDescriptorPool();
+            std::vector<std::vector<VkDescriptorSetLayout>>& getDescriptorSetLayout();
+            std::vector<std::vector<std::vector<VkDescriptorSet>>>& getDescriptorSet();
 
 
             void updateCommandBuffers(VkCommandPool commandPool, std::vector<VkCommandBuffer> commandBuffers);
@@ -331,9 +331,9 @@ namespace odfaeg {
             std::vector<VkCommandBuffer> commandBuffers;
             std::vector<VkCommandBuffer> secondaryCommandBuffers;
 
-            std::vector<VkDescriptorPool> descriptorPool;
-            std::vector<VkDescriptorSetLayout> descriptorSetLayout;
-            std::vector<std::vector<VkDescriptorSet>> descriptorSets;
+            std::vector<std::vector<VkDescriptorPool>> descriptorPool;
+            std::vector<std::vector<VkDescriptorSetLayout>> descriptorSetLayout;
+            std::vector<std::vector<std::vector<VkDescriptorSet>>> descriptorSets;
             unsigned int selectedBuffer, maxTexturesInUse=0;
             unsigned int id;
             static unsigned int nbRenderTargets;
