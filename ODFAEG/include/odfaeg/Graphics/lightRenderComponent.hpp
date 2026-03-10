@@ -12,6 +12,7 @@
 #include "heavyComponent.h"
 #include "2D/ambientLight.h"
 #include "rectangleShape.h"
+#include "../Core/threadPool.hpp"
 
 
 /**
@@ -200,7 +201,8 @@ namespace odfaeg {
                 std::vector<VkSemaphore> offscreenLightDepthAlphaFinishedSemaphore, offscreenFinishedSemaphore, copyFinishedSemaphore;
                 std::array<unsigned int, MAX_FRAMES_IN_FLIGHT> valuesFinished, valuesLightDepthAlpha, copyValues;
                 RenderWindow& window;
-                VkCommandPool commandPool, secondaryBufferCommandPool;
+                VkCommandPool commandPool;
+                std::vector<VkCommandPool> secondaryBufferCommandPools;
                 std::array<VkCommandBuffer, MAX_FRAMES_IN_FLIGHT> copyModelDataBufferCommandBuffer, copyMaterialDataBufferCommandBuffer, copyDrawBufferCommandBuffer, copyDrawIndexedBufferCommandBuffer,
                 copyVbBufferCommandBuffer, copyVbIndexedBufferCommandBuffer, lightDepthCommandBuffer,depthCommandBuffer, alphaCommandBuffer, specularCommandBuffer,
                 bumpCommandBuffer, lightCommandBuffer;
@@ -241,6 +243,9 @@ namespace odfaeg {
                 bool useThread;
                 std::atomic<bool> stop = false;
                 std::array<unsigned int, MAX_FRAMES_IN_FLIGHT> maxTexturesInUse={0, 0};
+                core::ThreadPool threadPool;
+                std::array<core::JobFence, MAX_FRAMES_IN_FLIGHT> jobFence;
+                static const unsigned int numThreads = 7;
         };
         #else
         class ODFAEG_GRAPHICS_API LightRenderComponent : public HeavyComponent {
