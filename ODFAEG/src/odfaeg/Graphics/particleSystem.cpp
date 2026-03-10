@@ -872,6 +872,7 @@ namespace odfaeg
         std::string ParticleSystem::getPsUpdater() {
             return psUpdater;
         }
+
         ParticleSystem::~ParticleSystem() {
             vkFreeCommandBuffers(vkDevice.getDevice(), commandPool, commandBuffers.size(), commandBuffers.data());
             vkDestroyCommandPool(vkDevice.getDevice(), commandPool, nullptr);

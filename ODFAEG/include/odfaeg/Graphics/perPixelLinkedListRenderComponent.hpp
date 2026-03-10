@@ -11,6 +11,7 @@
 #include <condition_variable>
 #include <mutex>
 #include "../Core/clock.h"
+#include "../Core/threadPool.hpp"
 
 namespace odfaeg {
     namespace graphic {
@@ -205,7 +206,8 @@ namespace odfaeg {
             std::vector<std::unique_ptr<Entity>> visibleSelectedScaleEntities;
             std::vector<Entity*> visibleEntities;
             math::Vec4f resolution;
-            VkCommandPool commandPool, secondaryBufferCommandPool;
+            VkCommandPool commandPool;
+            std::vector<VkCommandPool> secondaryBufferCommandPools;
             PFN_vkCmdPushDescriptorSetKHR vkCmdPushDescriptorSetKHR{ VK_NULL_HANDLE };
             core::Clock timeClock;
             std::vector<unsigned int> pipelineIds;
@@ -238,6 +240,9 @@ namespace odfaeg {
             std::atomic<bool> stop = false;
             std::array<unsigned int, MAX_FRAMES_IN_FLIGHT> maxTexturesInUse={0, 0};
             bool areThreadRelaunched = false;
+            core::ThreadPool threadPool;
+            std::array<core::JobFence, MAX_FRAMES_IN_FLIGHT> jobFence;
+            static const unsigned int numThreads = 6;
         };
         #else
         class ODFAEG_GRAPHICS_API PerPixelLinkedListRenderComponent : public HeavyComponent {

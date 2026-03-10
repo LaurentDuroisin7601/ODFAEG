@@ -451,6 +451,8 @@ namespace odfaeg {
                 void setShadowId(int shadowId);
                 int getBorderId();
                 int getShadowId();
+                void setAssociatedThreadRunning(bool running);
+                bool isAssociatedThreadRunning();
                 #ifdef VULKAN
                 virtual void computeParticles(std::mutex* mtx, std::condition_variable* cv2, VertexBuffer& frameVertexBuffer, unsigned int currentRrame, TransformMatrix tm, bool instanced, VkSemaphore computeSemaphore, VkFence computeFence) {}
                 #endif
@@ -474,7 +476,7 @@ namespace odfaeg {
                 static std::map<int, std::string> types; /** A list of the type's id and name's of the entities. */
                 std::pair<int, std::string> type; /** The type's id and the type's name of the entity.*/
                 int id, borderID, shadowID; /** the id of the entity.*/
-                bool selected;
+                bool selected, running;
                 core::State entityState;                                         /** the states of the entity.*/
                 Entity(const Entity& entity) = delete; /**> an entity if not copiable.*/
                 Entity& operator=(const Entity& entity) = delete; /**> an entity is not affectable*/

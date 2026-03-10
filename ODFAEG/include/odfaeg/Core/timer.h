@@ -33,6 +33,7 @@ namespace odfaeg {
             void update();
             void tUpdate();
             void stop();
+            virtual void onStop();
             /** \fn virtual void onUpdate() = 0;
             *   \brief the function to redefine when updating the scene.
             */

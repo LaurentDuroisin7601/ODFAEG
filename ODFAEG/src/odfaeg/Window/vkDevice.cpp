@@ -265,7 +265,7 @@ namespace odfaeg {
 
                 for (uint32_t queueFamily : uniqueQueueFamilies) {
                     queues[queueFamily].resize(queueFamilies[queueFamily].queueCount);
-                    for (unsigned int i = 0; i < queueFamilies[queueFamily].queueCount; i++) {
+                    for (unsigned int i = 0; i < queues[queueFamily].size(); i++) {
                         vkGetDeviceQueue(device, queueFamily, i, &queues[queueFamily][i]);
                     }
                 }

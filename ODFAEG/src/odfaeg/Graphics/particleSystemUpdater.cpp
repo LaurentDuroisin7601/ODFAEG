@@ -31,5 +31,10 @@ namespace odfaeg {
             }
             //World::changeVisibleEntity(nullptr, nullptr);
         }
+        void ParticleSystemUpdater::onStop() {
+            for (unsigned int i = 0; i < particleSystems.size(); i++) {
+                particleSystems[i]->setAssociatedThreadRunning(false);
+            }
+        }
     }
 }

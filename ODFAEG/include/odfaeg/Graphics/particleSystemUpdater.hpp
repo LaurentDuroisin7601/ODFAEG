@@ -30,6 +30,7 @@ namespace odfaeg {
             void removeParticleSystem (Entity* ps);
             std::vector<Entity*> getParticleSystems();
             void onUpdate ();
+            void onStop ();
         private :
             std::vector<Entity*> particleSystems;
             core::Clock timeClock;

@@ -41,6 +41,7 @@ namespace odfaeg {
                 if (isUsingThread && running) {
                     running = false;
                     m_thread.join();
+                    onStop();
                 }
             }
             /** \fn virtual void onUpdate() = 0;
@@ -51,6 +52,9 @@ namespace odfaeg {
             }
             std::string Timer::getName() {
                 return name;
+            }
+            void Timer::onStop() {
+
             }
             Timer::~Timer() {
                 stop();

@@ -229,6 +229,7 @@ namespace odfaeg
         }
         void computeParticles(std::mutex* mtx, std::condition_variable* cv2, graphic::VertexBuffer& frameVertexBuffer, unsigned int currentFrame, graphic::TransformMatrix tm, bool instanced, VkSemaphore computeSemaphore, VkFence computeFence);
         bool isComputeFinished(unsigned int currentFrame);
+
         ~ParticleSystem();
         // ---------------------------------------------------------------------------------------------------------------------------
         // Private member functions
@@ -244,6 +245,7 @@ namespace odfaeg
         /// @brief Emits a particle into the system.
         /// @param particle Particle to emit.
         virtual void	emitParticle(const Particle& particle);
+
 
         // Updates a single particle.
         void	updateParticle(Particle& particle, core::Time dt);
@@ -310,6 +312,7 @@ namespace odfaeg
         std::mutex* mtx;
         std::array<std::atomic<bool>, MAX_FRAMES_IN_FLIGHT> computeFinished={true, true};
         std::array<std::atomic<bool>, MAX_FRAMES_IN_FLIGHT> computeJob={};
+
 
         };
     }

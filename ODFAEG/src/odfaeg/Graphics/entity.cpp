@@ -40,6 +40,7 @@ namespace odfaeg {
             getTransform().setEntityId(id);
             selected = false;
             behaviour = nullptr;
+            running = true;
         }
 
         EntityId Entity::getEnttID() {
@@ -425,6 +426,12 @@ namespace odfaeg {
         }
         int Entity::getShadowId() {
             return shadowID;
+        }
+        void Entity::setAssociatedThreadRunning(bool running) {
+            this->running = running;
+        }
+        bool Entity::isAssociatedThreadRunning() {
+            return running;
         }
     }
 }

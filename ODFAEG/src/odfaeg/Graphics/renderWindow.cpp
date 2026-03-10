@@ -534,7 +534,7 @@ namespace odfaeg {
                 presentInfo.pImageIndices = &imageIndex;
                 presentInfo.pResults = nullptr; // Optionnel
                 window::Device::QueueFamilyIndices indices = vkDevice.findQueueFamilies(vkDevice.getPhysicalDevice(), getSurface());
-                vkQueuePresentKHR(vkDevice.getQueue(indices.presentFamily.value(), 0), &presentInfo);
+                vkQueuePresentKHR(vkDevice.getQueue(indices.presentFamily.value(), 1), &presentInfo);
                 currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
                 //////std::cout<<"current frame : "<<currentFrame<<std::endl;
                 //vkDeviceWaitIdle(vkDevice.getDevice());
