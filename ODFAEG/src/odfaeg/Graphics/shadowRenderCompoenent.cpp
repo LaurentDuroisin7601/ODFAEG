@@ -5222,7 +5222,7 @@ namespace odfaeg {
                     jobFence[currentFrame].jobDone();
                 });
 
-                currentStates.blendMode = BlendMultiply;
+                currentStates.blendMode = BlendNone;
                 currentStates.shader = &perPixShadowShader;
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes-1; p++) {
                     if (needToUpdateDSs[p][currentFrame])
