@@ -451,7 +451,7 @@ namespace sorrok {
         rrrc->launchRenderer();
         src->launchRenderer();
         lrc->launchRenderer();
-        getRenderWindow().setFramerateLimit(60);
+        getRenderWindow().setFramerateLimit(30);
 
         std::cout<<"appli initialised"<<std::endl;
     }
