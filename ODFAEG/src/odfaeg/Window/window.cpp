@@ -27,6 +27,8 @@ namespace odfaeg {
             m_window = WindowFactory::create();
             ////std::cout<<"factory create"<<std::endl;
             m_window->create(mode, title, style, settings);
+            verticalSynchEnabled = false;
+
             ////std::cout<<"window created"<<std::endl;
             // Perform common initializations
             initialize();
@@ -36,6 +38,7 @@ namespace odfaeg {
         {
             m_window = WindowFactory::create();
             m_window->create(handle, settings);
+            verticalSynchEnabled = false;
             initialize();
         }
         ////////////////////////////////////////////////////////////
@@ -136,8 +139,11 @@ namespace odfaeg {
         ////////////////////////////////////////////////////////////
         void Window::setVerticalSyncEnabled(bool enabled)
         {
+            #ifndef VULKAN
             if (m_window->setActive())
                 m_window->setVerticalSyncEnabled(enabled);
+            #endif
+            verticalSynchEnabled = enabled;
         }
 
 
@@ -176,7 +182,8 @@ namespace odfaeg {
         ////////////////////////////////////////////////////////////
         void Window::setFramerateLimit(unsigned int limit)
         {
-            m_window->setFramerateLimit(limit);
+            if (m_window)
+                m_window->setFramerateLimit(limit);
         }
 
 
@@ -210,8 +217,12 @@ namespace odfaeg {
 
         void Window::display()
         {
+            #ifndef VULKAN
             if (m_window->setActive())
                 m_window->display();
+            #else
+                m_window->display();
+            #endif
             drawVulkanFrame();
         }
 
@@ -243,6 +254,9 @@ namespace odfaeg {
         }
         IWindow* Window::getImpl() const {
             return m_window;
+        }
+        bool Window::isVerticalSynchEnabled() {
+            return verticalSynchEnabled;
         }
         #ifdef VULKAN
         VkSurfaceKHR Window::createSurface(VkInstance instance) {

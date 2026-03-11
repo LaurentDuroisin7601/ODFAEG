@@ -114,7 +114,7 @@ namespace odfaeg {
             /// \param enabled True to enable v-sync, false to deactivate it
             ///
             ////////////////////////////////////////////////////////////
-            //void setVerticalSyncEnabled(bool enabled);
+            void setVerticalSyncEnabled(bool enabled);
             ////////////////////////////////////////////////////////////
             /// \brief Show or hide the mouse cursor
             ///
@@ -258,8 +258,8 @@ namespace odfaeg {
             ///
             ////////////////////////////////////////////////////////////
             WindowHandle getSystemHandle() const;
-            void setVerticalSyncEnabled(bool enabled);
             IWindow* getImpl() const;
+            bool isVerticalSynchEnabled();
 
             ~Window ();
         protected :
@@ -269,6 +269,7 @@ namespace odfaeg {
             void initialize();
             bool filterEvent(const IEvent& event);
             IWindow* m_window;
+            bool verticalSynchEnabled;
         };
     }
 }

@@ -208,14 +208,16 @@ namespace odfaeg {
             m_context.display();
             #endif
             // Limit the framerate if needed
+
             if (m_frameTimeLimit != core::Time::zero)
             {
-                //////std::cout<<"limit the frame rate"<<std::endl;
-                std::this_thread::sleep_for(std::chrono::duration<std::uint32_t, std::milli>((m_frameTimeLimit - m_clock.getElapsedTime()).asMilliseconds()));
+
+                std::this_thread::sleep_for(std::chrono::duration<float>((m_frameTimeLimit - m_clock.getElapsedTime()).asSeconds()));
                 m_clock.restart();
             }
         }
         void WindowImpl::setFramerateLimit(unsigned int limit) {
+            //std::cout<<"set frame rate limit : "<<limit<<std::endl;
             if (limit > 0)
                 m_frameTimeLimit = core::seconds(1.f / limit);
             else
