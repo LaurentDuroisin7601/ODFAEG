@@ -334,6 +334,16 @@ namespace odfaeg {
                         throw std::runtime_error("failed to create compute synchronization objects for a frame!");
                     }
                 }
+                windowFences.resize(MAX_FRAMES_IN_FLIGHT);
+                VkFenceCreateInfo fenceInfo{};
+                fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+                fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+                for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+                    if (vkCreateFence(vkDevice.getDevice(), &fenceInfo, nullptr, &windowFences[i]) != VK_SUCCESS) {
+                        throw std::runtime_error("failed to create fence");
+                    }
+                }
 
 
                 isSomethingDrawn = false;
@@ -7753,7 +7763,8 @@ namespace odfaeg {
                         valuesCopy[currentFrame]++;
                         signalValues.push_back(valuesCopy[depthBuffer.getCurrentFrame()]);
                         //std::cout<<"value : "<<depthBuffer.getCurrentFrame()<<","<<valuesCopy[depthBuffer.getCurrentFrame()]<<std::endl;
-                        depthBuffer.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, std::vector<VkFence>(), getLayer()+2);
+                        std::vector<VkFence> windowInFlightFence = {windowFences[reflectRefractTex.getCurrentFrame()]};
+                        depthBuffer.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, windowInFlightFence, getLayer()+2);
                         //std::cout<<"copy ok"<<std::endl;
 
 
@@ -8173,7 +8184,7 @@ namespace odfaeg {
                 waitValues.push_back(values[reflectRefractTex.getCurrentFrame()]);
                 values[reflectRefractTex.getCurrentFrame()]++;
                 signalValues.push_back(values[reflectRefractTex.getCurrentFrame()]);
-                target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
+                target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, std::vector<VkFence>(), 0, false, windowFences[reflectRefractTex.getCurrentFrame()]);
                 //std::cout<<"drawn"<<std::endl;
                 depthBuffer.display();
                 alphaBuffer.display();

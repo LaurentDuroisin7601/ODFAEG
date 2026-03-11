@@ -236,6 +236,7 @@ namespace odfaeg {
                 std::vector<VkFence> depthBufferFences;
                 std::vector<VkFence> alphaBufferFences;
                 std::vector<VkFence> stencilBufferFences;
+                std::vector<VkFence> windowFences;
         };
 
         #else

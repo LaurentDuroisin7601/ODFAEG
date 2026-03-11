@@ -249,6 +249,7 @@ namespace odfaeg {
                 std::vector<VkFence> alphaBufferFences;
                 std::vector<VkFence> specularTextureFences;
                 std::vector<VkFence> bumpTextureFences;
+                std::vector<VkFence> windowFences;
         };
         #else
         class ODFAEG_GRAPHICS_API LightRenderComponent : public HeavyComponent {

@@ -255,6 +255,16 @@ namespace odfaeg {
                         throw std::runtime_error("failed to create compute synchronization objects for a frame!");
                     }
                 }
+                windowFences.resize(MAX_FRAMES_IN_FLIGHT);
+                VkFenceCreateInfo fenceInfo{};
+                fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+                fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+                for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+                    if (vkCreateFence(vkDevice.getDevice(), &fenceInfo, nullptr, &windowFences[i]) != VK_SUCCESS) {
+                        throw std::runtime_error("failed to create fence");
+                    }
+                }
 
                 for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
                     vbBindlessTex[i].setPrimitiveType(static_cast<PrimitiveType>(i));
@@ -5602,7 +5612,8 @@ namespace odfaeg {
                         waitValues.push_back(values[shadowMap.getCurrentFrame()]);
                         copyValues[currentFrame]++;
                         signalValues.push_back(copyValues[currentFrame]);
-                        depthBuffer.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, std::vector<VkFence>(), getLayer()+2);
+                        std::vector<VkFence> windowInFlightFence = {windowFences[shadowMap.getCurrentFrame()]};
+                        depthBuffer.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, windowInFlightFence, getLayer()+2);
 
 
                         depthBuffer.beginRecordCommandBuffers();
@@ -5888,7 +5899,7 @@ namespace odfaeg {
                 waitValues.push_back(values[shadowMap.getCurrentFrame()]);
                 values[shadowMap.getCurrentFrame()]++;
                 signalValues.push_back(values[shadowMap.getCurrentFrame()]);
-                target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
+                target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, std::vector<VkFence>(), 0, false, windowFences[shadowMap.getCurrentFrame()]);
                 depthBuffer.display();
                 alphaBuffer.display();
                 stencilBuffer.display();

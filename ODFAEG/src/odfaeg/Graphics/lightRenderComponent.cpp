@@ -236,6 +236,16 @@ namespace odfaeg {
                         throw std::runtime_error("failed to create compute synchronization objects for a frame!");
                     }
                 }
+                windowFences.resize(MAX_FRAMES_IN_FLIGHT);
+                VkFenceCreateInfo fenceInfo{};
+                fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+                fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+                for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+                    if (vkCreateFence(vkDevice.getDevice(), &fenceInfo, nullptr, &windowFences[i]) != VK_SUCCESS) {
+                        throw std::runtime_error("failed to create fence");
+                    }
+                }
 
                 for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
                     vbBindlessTex[i].setPrimitiveType(static_cast<PrimitiveType>(i));
@@ -5680,7 +5690,8 @@ namespace odfaeg {
                     waitValues.push_back(valuesLightDepthAlpha[lightMap.getCurrentFrame()]);
                     copyValues[currentFrame]++;
                     signalValues.push_back(copyValues[currentFrame]);
-                    lightDepthBuffer.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, std::vector<VkFence>(), getLayer() + 2);
+                    std::vector<VkFence> windowInFlightFence = {windowFences[lightMap.getCurrentFrame()]};
+                    lightDepthBuffer.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, windowInFlightFence, getLayer() + 2);
                     //std::cout<<"draw"<<std::endl;
 
                     lightDepthBuffer.beginRecordCommandBuffers();
@@ -7231,7 +7242,7 @@ namespace odfaeg {
             valuesLightDepthAlpha[lightMap.getCurrentFrame()]++;
             signalValues.push_back(valuesFinished[lightMap.getCurrentFrame()]);
             signalValues.push_back(valuesLightDepthAlpha[lightMap.getCurrentFrame()]);
-            target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
+            target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, std::vector<VkFence>(), 0, false, windowFences[lightMap.getCurrentFrame()]);
 
             lightDepthBuffer.display();
             depthBuffer.display();

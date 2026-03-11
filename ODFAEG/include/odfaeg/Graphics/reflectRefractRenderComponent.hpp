@@ -296,6 +296,7 @@ namespace odfaeg {
             std::vector<VkFence> depthBufferFences;
             std::vector<VkFence> alphaBufferFences;
             std::vector<VkFence> environmentMapFences;
+            std::vector<VkFence> windowFences;
         };
         #else
         class ODFAEG_GRAPHICS_API ReflectRefractRenderComponent : public HeavyComponent {

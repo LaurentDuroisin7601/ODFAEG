@@ -5083,10 +5083,10 @@ namespace odfaeg {
                     waitValues.push_back(values[currentFrame]);
                     values[currentFrame]++;
                     signalValues.push_back(values[currentFrame]);
-                    std::vector<VkFence> windowInFlightFence = {/*windowFences[frameBuffer.getCurrentFrame()]*/};
+                    std::vector<VkFence> windowInFlightFence = {windowFences[frameBuffer.getCurrentFrame()]};
                     //std::cout<<"frame buffer submit : "<<frameBuffer.getCurrentFrame()<<std::endl;
                     frameBuffer.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, windowInFlightFence, getLayer()+2);
-                    //std::cout<<"frame buffer submit!"<<std::endl;
+                    //std::cout<<"frame buffer submit! : "<<frameBuffer.getCurrentFrame()<<std::endl;
                     //std::cout<<"skybox"<<std::endl;
                     if (skybox != nullptr) {
                         frameBuffer.beginRecordCommandBuffers();
@@ -5897,7 +5897,7 @@ namespace odfaeg {
             waitValues.push_back(values[frameBuffer.getCurrentFrame()]);
             values[frameBuffer.getCurrentFrame()]++;
             signalValues.push_back(values[frameBuffer.getCurrentFrame()]);
-            target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
+            target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, std::vector<VkFence>(), 0, false, windowFences[frameBuffer.getCurrentFrame()]);
             //std::cout<<"frame drawn : "<<frameBuffer.getCurrentFrame()<<std::endl;
             frameBuffer.display();
 
