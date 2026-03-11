@@ -412,7 +412,7 @@ namespace odfaeg {
                         std::vector<VkSemaphore> waitSemaphores, std::vector<VkPipelineStageFlags> waitStages,
                         std::vector<uint64_t> signalValues,
                         std::vector<uint64_t> waitValues,
-                        std::vector<VkFence> fences, unsigned int queueIndex, bool resetFence) {
+                        std::vector<VkFence> fences, unsigned int queueIndex, bool resetFence, VkFence fenceToSubmit) {
             if (getCommandBuffers().size() > 0) {
 
 
@@ -503,12 +503,13 @@ namespace odfaeg {
                     vkResetFences(vkDevice.getDevice(), fences.size(), fences.data());
                 }
                 window::Device::QueueFamilyIndices indices = vkDevice.findQueueFamilies(vkDevice.getPhysicalDevice(), getSurface());
-                if (vkQueueSubmit(vkDevice.getQueue(indices.graphicsFamily.value(), queueIndex), 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS) {
+
+                if (vkQueueSubmit(vkDevice.getQueue(indices.graphicsFamily.value(), queueIndex), 1, &submitInfo, (fenceToSubmit == nullptr) ? inFlightFences[currentFrame] : fenceToSubmit) != VK_SUCCESS) {
                     throw core::Erreur(0, "échec de l'envoi d'un command buffer!", 1);
                 }
-                vkWaitForFences(vkDevice.getDevice(), 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
+                vkWaitForFences(vkDevice.getDevice(), 1, (fenceToSubmit == nullptr) ? &inFlightFences[currentFrame] : &fenceToSubmit, VK_TRUE, UINT64_MAX);
                 if (resetFence)
-                    vkResetFences(vkDevice.getDevice(), 1, &inFlightFences[currentFrame]);
+                    vkResetFences(vkDevice.getDevice(), 1, (fenceToSubmit == nullptr) ? &inFlightFences[currentFrame] : &fenceToSubmit);
                 for (unsigned int i = 0; i < 7; i++)
                     vertexBuffer[i].clear();
                 drawableData.clear();

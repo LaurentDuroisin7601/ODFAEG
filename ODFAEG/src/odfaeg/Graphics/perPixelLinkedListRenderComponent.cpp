@@ -186,6 +186,17 @@ namespace odfaeg {
                 }
                 ////////std::cout<<"create semaphore : "<<i<<","<<renderFinishedSemaphore[i]<<std::endl;
             }
+
+            windowFences.resize(MAX_FRAMES_IN_FLIGHT);
+            VkFenceCreateInfo fenceInfo{};
+            fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+            fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+            for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+                if (vkCreateFence(vkDevice.getDevice(), &fenceInfo, nullptr, &windowFences[i]) != VK_SUCCESS) {
+                    throw std::runtime_error("failed to create fence");
+                }
+            }
             VkCommandBufferAllocateInfo bufferAllocInfo{};
             bufferAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
             bufferAllocInfo.commandPool = secondaryBufferCommandPools[0];
@@ -4708,147 +4719,172 @@ namespace odfaeg {
                 cv.wait(lock, [this](){return registerFrameJob[frameBuffer.getCurrentFrame()].load() || stop.load();});
                 //std::cout<<"register frame : "<<frameBuffer.getCurrentFrame()<<std::endl;
                 registerFrameJob[frameBuffer.getCurrentFrame()] = false;
-                RenderStates currentStates;
-                math::Matrix4f projMatrix = view.getProjMatrix().getMatrix()/*.transpose()*/;
-                math::Matrix4f viewMatrix = view.getViewMatrix().getMatrix()/*.transpose()*/;
-                indirectDrawPushConsts.projMatrix = toVulkanMatrix(projMatrix);
-                indirectDrawPushConsts.viewMatrix = toVulkanMatrix(viewMatrix);
-                //projMatrix.identity();
-                skyboxPushConsts.projMatrix = toVulkanMatrix(projMatrix);
-                skyboxPushConsts.viewMatrix = toVulkanMatrix(viewMatrix);
-                resetBuffers();
-                fillBuffersMT();
-                fillIndexedBuffersMT();
-                fillSelectedBuffersMT();
-                fillSelectedIndexedBuffersMT();
-                fillOutlineBuffersMT();
-                fillOutlineIndexedBuffersMT();
-                ////std::cout<<"buffer filled"<<std::endl;
+                if (!stop.load()) {
+                    RenderStates currentStates;
+                    math::Matrix4f projMatrix = view.getProjMatrix().getMatrix()/*.transpose()*/;
+                    math::Matrix4f viewMatrix = view.getViewMatrix().getMatrix()/*.transpose()*/;
+                    indirectDrawPushConsts.projMatrix = toVulkanMatrix(projMatrix);
+                    indirectDrawPushConsts.viewMatrix = toVulkanMatrix(viewMatrix);
+                    //projMatrix.identity();
+                    skyboxPushConsts.projMatrix = toVulkanMatrix(projMatrix);
+                    skyboxPushConsts.viewMatrix = toVulkanMatrix(viewMatrix);
+                    resetBuffers();
+                    fillBuffersMT();
+                    fillIndexedBuffersMT();
+                    fillSelectedBuffersMT();
+                    fillSelectedIndexedBuffersMT();
+                    fillOutlineBuffersMT();
+                    fillOutlineIndexedBuffersMT();
+                    ////std::cout<<"buffer filled"<<std::endl;
 
-                skyboxVB.clear();
+                    skyboxVB.clear();
 
-                for (unsigned int i = 0; i < m_skyboxInstance.size(); i++) {
-                    if (m_skyboxInstance[i].getAllVertices().getVertexCount() > 0) {
-                        skyboxVB.setPrimitiveType(m_skyboxInstance[i].getAllVertices().getPrimitiveType());
-                        for (unsigned int j = 0; j < m_skyboxInstance[i].getAllVertices().getVertexCount(); j++) {
-                            skyboxVB.append(m_skyboxInstance[i].getAllVertices()[j]);
+                    for (unsigned int i = 0; i < m_skyboxInstance.size(); i++) {
+                        if (m_skyboxInstance[i].getAllVertices().getVertexCount() > 0) {
+                            skyboxVB.setPrimitiveType(m_skyboxInstance[i].getAllVertices().getPrimitiveType());
+                            for (unsigned int j = 0; j < m_skyboxInstance[i].getAllVertices().getVertexCount(); j++) {
+                                skyboxVB.append(m_skyboxInstance[i].getAllVertices()[j]);
+                            }
                         }
                     }
-                }
-                unsigned int currentFrame = frameBuffer.getCurrentFrame();
-                skyboxVB.updateBuffers(currentFrame);
-                vb.clear();
-                vb.setPrimitiveType(Triangles);
-                Vertex v1 (math::Vec3f(0, 0, quad.getSize().z()));
-                Vertex v2 (math::Vec3f(quad.getSize().x(),0, quad.getSize().z()));
-                Vertex v3 (math::Vec3f(quad.getSize().x(), quad.getSize().y(), quad.getSize().z()));
-                Vertex v4 (math::Vec3f(0, quad.getSize().y(), quad.getSize().z()));
-                vb.append(v1);
-                vb.append(v2);
-                vb.append(v3);
-                vb.append(v1);
-                vb.append(v3);
-                vb.append(v4);
+                    unsigned int currentFrame = frameBuffer.getCurrentFrame();
+                    skyboxVB.updateBuffers(currentFrame);
+                    vb.clear();
+                    vb.setPrimitiveType(Triangles);
+                    Vertex v1 (math::Vec3f(0, 0, quad.getSize().z()));
+                    Vertex v2 (math::Vec3f(quad.getSize().x(),0, quad.getSize().z()));
+                    Vertex v3 (math::Vec3f(quad.getSize().x(), quad.getSize().y(), quad.getSize().z()));
+                    Vertex v4 (math::Vec3f(0, quad.getSize().y(), quad.getSize().z()));
+                    vb.append(v1);
+                    vb.append(v2);
+                    vb.append(v3);
+                    vb.append(v1);
+                    vb.append(v3);
+                    vb.append(v4);
 
-                vb.updateBuffers(currentFrame);
-                math::Matrix4f matrix = quad.getTransform().getMatrix();
-                //////std::cout<<"world mat : "<<matrix<<std::endl;
-                ppll2PushConsts.worldMat = toVulkanMatrix(matrix);
+                    vb.updateBuffers(currentFrame);
+                    math::Matrix4f matrix = quad.getTransform().getMatrix();
+                    //////std::cout<<"world mat : "<<matrix<<std::endl;
+                    ppll2PushConsts.worldMat = toVulkanMatrix(matrix);
 
-                for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
-                    if (vbBindlessTex[p].getVertexCount() > 0)
-                        vbBindlessTex[p].updateBuffers(currentFrame);
-                    if (vbBindlessTexIndexed[p].getVertexCount() > 0)
-                        vbBindlessTexIndexed[p].updateBuffers(currentFrame);
-                }
-
-                jobFence[currentFrame].reset(numThreads);
-                threadPool.enqueue([this, currentFrame, currentStates]{
-                    VkCommandBufferInheritanceInfo inheritanceInfo{};
-                    inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
-                    inheritanceInfo.renderPass = VK_NULL_HANDLE; // pas de render pass
-                    inheritanceInfo.subpass = 0;
-                    inheritanceInfo.framebuffer = VK_NULL_HANDLE;
-                    inheritanceInfo.occlusionQueryEnable = VK_FALSE;
-                    inheritanceInfo.queryFlags = 0;
-                    inheritanceInfo.pipelineStatistics = 0;
-                    VkCommandBufferBeginInfo beginInfo{};
-                    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-                    beginInfo.pInheritanceInfo = &inheritanceInfo; // obligatoire pour secondaire
-
-                    vkResetCommandBuffer(copyModelDataBufferCommandBuffer[currentFrame], 0);
-                    vkResetCommandBuffer(copyMaterialDataBufferCommandBuffer[currentFrame], 0);
-                    vkResetCommandBuffer(copyDrawBufferCommandBuffer[currentFrame], 0);
-                    vkResetCommandBuffer(copyVbBufferCommandBuffer[currentFrame], 0);
-                    vkResetCommandBuffer(copyDrawIndexedBufferCommandBuffer[currentFrame], 0);
-                    vkResetCommandBuffer(copyVbIndexedBufferCommandBuffer[currentFrame], 0);
-                    if (vkBeginCommandBuffer(copyModelDataBufferCommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
-
-                        throw core::Erreur(0, "failed to begin recording command buffer!", 1);
-                    }
-                    if (vkBeginCommandBuffer(copyMaterialDataBufferCommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
-
-                        throw core::Erreur(0, "failed to begin recording command buffer!", 1);
-                    }
-                    if (vkBeginCommandBuffer(copyDrawBufferCommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
-
-                        throw core::Erreur(0, "failed to begin recording command buffer!", 1);
-                    }
-                    if (vkBeginCommandBuffer(copyVbBufferCommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
-
-                        throw core::Erreur(0, "failed to begin recording command buffer!", 1);
-                    }
-                    if (vkBeginCommandBuffer(copyDrawIndexedBufferCommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
-
-                        throw core::Erreur(0, "failed to begin recording command buffer!", 1);
-                    }
-                    if (vkBeginCommandBuffer(copyVbIndexedBufferCommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
-
-                        throw core::Erreur(0, "failed to begin recording command buffer!", 1);
-                    }
                     for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
-                        VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
-                        if (bufferSize > 0)
-                            copyBuffer(modelDataStagingBufferMT[p][currentFrame], modelDataBufferMT[p][currentFrame], bufferSize, copyModelDataBufferCommandBuffer[currentFrame]);
-                        bufferSize = sizeof(MaterialData) * materialDatas[p].size();
-                        if (bufferSize > 0)
-                            copyBuffer(materialDataStagingBufferMT[p][currentFrame],materialDataBufferMT[p][currentFrame], bufferSize, copyMaterialDataBufferCommandBuffer[currentFrame]);
-                        bufferSize = sizeof(DrawArraysIndirectCommand) * drawArraysIndirectCommands[p].size();
-
-                        if (bufferSize > 0)
-                            copyBuffer(vboIndirectStagingBufferMT[p][currentFrame], drawCommandBufferMT[p][currentFrame], totalBufferSizeDrawCommand[p], copyDrawBufferCommandBuffer[currentFrame]);
-
-                        bufferSize = sizeof(DrawElementsIndirectCommand) * drawElementsIndirectCommands[p].size();
-                        if (bufferSize > 0)
-                            copyBuffer(vboIndexedIndirectStagingBufferMT[p][currentFrame], drawCommandBufferIndexedMT[p][currentFrame], bufferSize, copyDrawIndexedBufferCommandBuffer[currentFrame]);
-
                         if (vbBindlessTex[p].getVertexCount() > 0)
-                            vbBindlessTex[p].registerCopyCmdBuffers(currentFrame, copyVbBufferCommandBuffer[currentFrame]);
+                            vbBindlessTex[p].updateBuffers(currentFrame);
                         if (vbBindlessTexIndexed[p].getVertexCount() > 0)
-                            vbBindlessTexIndexed[p].registerCopyCmdBuffers(currentFrame, copyVbIndexedBufferCommandBuffer[currentFrame]);
-
-                    }
-                    if (vkEndCommandBuffer(copyModelDataBufferCommandBuffer[currentFrame]) != VK_SUCCESS) {
-                        throw core::Erreur(0, "failed to record command buffer!", 1);
-                    }
-                    if (vkEndCommandBuffer(copyMaterialDataBufferCommandBuffer[currentFrame]) != VK_SUCCESS) {
-                        throw core::Erreur(0, "failed to record command buffer!", 1);
-                    }
-                    if (vkEndCommandBuffer(copyDrawBufferCommandBuffer[currentFrame]) != VK_SUCCESS) {
-                        throw core::Erreur(0, "failed to record command buffer!", 1);
-                    }
-                    if (vkEndCommandBuffer(copyVbBufferCommandBuffer[currentFrame]) != VK_SUCCESS) {
-                        throw core::Erreur(0, "failed to record command buffer!", 1);
-                    }
-                    if (vkEndCommandBuffer(copyDrawIndexedBufferCommandBuffer[currentFrame]) != VK_SUCCESS) {
-                        throw core::Erreur(0, "failed to record command buffer!", 1);
-                    }
-                    if (vkEndCommandBuffer(copyVbIndexedBufferCommandBuffer[currentFrame]) != VK_SUCCESS) {
-                        throw core::Erreur(0, "failed to record command buffer!", 1);
+                            vbBindlessTexIndexed[p].updateBuffers(currentFrame);
                     }
 
-                    if (skybox != nullptr) {
+                    jobFence[currentFrame].reset(numThreads);
+                    threadPool.enqueue([this, currentFrame, currentStates]{
+                        VkCommandBufferInheritanceInfo inheritanceInfo{};
+                        inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+                        inheritanceInfo.renderPass = VK_NULL_HANDLE; // pas de render pass
+                        inheritanceInfo.subpass = 0;
+                        inheritanceInfo.framebuffer = VK_NULL_HANDLE;
+                        inheritanceInfo.occlusionQueryEnable = VK_FALSE;
+                        inheritanceInfo.queryFlags = 0;
+                        inheritanceInfo.pipelineStatistics = 0;
+                        VkCommandBufferBeginInfo beginInfo{};
+                        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+                        beginInfo.pInheritanceInfo = &inheritanceInfo; // obligatoire pour secondaire
 
+                        vkResetCommandBuffer(copyModelDataBufferCommandBuffer[currentFrame], 0);
+                        vkResetCommandBuffer(copyMaterialDataBufferCommandBuffer[currentFrame], 0);
+                        vkResetCommandBuffer(copyDrawBufferCommandBuffer[currentFrame], 0);
+                        vkResetCommandBuffer(copyVbBufferCommandBuffer[currentFrame], 0);
+                        vkResetCommandBuffer(copyDrawIndexedBufferCommandBuffer[currentFrame], 0);
+                        vkResetCommandBuffer(copyVbIndexedBufferCommandBuffer[currentFrame], 0);
+                        if (vkBeginCommandBuffer(copyModelDataBufferCommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
+
+                            throw core::Erreur(0, "failed to begin recording command buffer!", 1);
+                        }
+                        if (vkBeginCommandBuffer(copyMaterialDataBufferCommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
+
+                            throw core::Erreur(0, "failed to begin recording command buffer!", 1);
+                        }
+                        if (vkBeginCommandBuffer(copyDrawBufferCommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
+
+                            throw core::Erreur(0, "failed to begin recording command buffer!", 1);
+                        }
+                        if (vkBeginCommandBuffer(copyVbBufferCommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
+
+                            throw core::Erreur(0, "failed to begin recording command buffer!", 1);
+                        }
+                        if (vkBeginCommandBuffer(copyDrawIndexedBufferCommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
+
+                            throw core::Erreur(0, "failed to begin recording command buffer!", 1);
+                        }
+                        if (vkBeginCommandBuffer(copyVbIndexedBufferCommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
+
+                            throw core::Erreur(0, "failed to begin recording command buffer!", 1);
+                        }
+                        for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
+                            VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
+                            if (bufferSize > 0)
+                                copyBuffer(modelDataStagingBufferMT[p][currentFrame], modelDataBufferMT[p][currentFrame], bufferSize, copyModelDataBufferCommandBuffer[currentFrame]);
+                            bufferSize = sizeof(MaterialData) * materialDatas[p].size();
+                            if (bufferSize > 0)
+                                copyBuffer(materialDataStagingBufferMT[p][currentFrame],materialDataBufferMT[p][currentFrame], bufferSize, copyMaterialDataBufferCommandBuffer[currentFrame]);
+                            bufferSize = sizeof(DrawArraysIndirectCommand) * drawArraysIndirectCommands[p].size();
+
+                            if (bufferSize > 0)
+                                copyBuffer(vboIndirectStagingBufferMT[p][currentFrame], drawCommandBufferMT[p][currentFrame], totalBufferSizeDrawCommand[p], copyDrawBufferCommandBuffer[currentFrame]);
+
+                            bufferSize = sizeof(DrawElementsIndirectCommand) * drawElementsIndirectCommands[p].size();
+                            if (bufferSize > 0)
+                                copyBuffer(vboIndexedIndirectStagingBufferMT[p][currentFrame], drawCommandBufferIndexedMT[p][currentFrame], bufferSize, copyDrawIndexedBufferCommandBuffer[currentFrame]);
+
+                            if (vbBindlessTex[p].getVertexCount() > 0)
+                                vbBindlessTex[p].registerCopyCmdBuffers(currentFrame, copyVbBufferCommandBuffer[currentFrame]);
+                            if (vbBindlessTexIndexed[p].getVertexCount() > 0)
+                                vbBindlessTexIndexed[p].registerCopyCmdBuffers(currentFrame, copyVbIndexedBufferCommandBuffer[currentFrame]);
+
+                        }
+                        if (vkEndCommandBuffer(copyModelDataBufferCommandBuffer[currentFrame]) != VK_SUCCESS) {
+                            throw core::Erreur(0, "failed to record command buffer!", 1);
+                        }
+                        if (vkEndCommandBuffer(copyMaterialDataBufferCommandBuffer[currentFrame]) != VK_SUCCESS) {
+                            throw core::Erreur(0, "failed to record command buffer!", 1);
+                        }
+                        if (vkEndCommandBuffer(copyDrawBufferCommandBuffer[currentFrame]) != VK_SUCCESS) {
+                            throw core::Erreur(0, "failed to record command buffer!", 1);
+                        }
+                        if (vkEndCommandBuffer(copyVbBufferCommandBuffer[currentFrame]) != VK_SUCCESS) {
+                            throw core::Erreur(0, "failed to record command buffer!", 1);
+                        }
+                        if (vkEndCommandBuffer(copyDrawIndexedBufferCommandBuffer[currentFrame]) != VK_SUCCESS) {
+                            throw core::Erreur(0, "failed to record command buffer!", 1);
+                        }
+                        if (vkEndCommandBuffer(copyVbIndexedBufferCommandBuffer[currentFrame]) != VK_SUCCESS) {
+                            throw core::Erreur(0, "failed to record command buffer!", 1);
+                        }
+
+                        if (skybox != nullptr) {
+
+
+                            inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+                            inheritanceInfo.renderPass = VK_NULL_HANDLE; // pas de render pass
+                            inheritanceInfo.subpass = 0;
+                            inheritanceInfo.framebuffer = VK_NULL_HANDLE;
+                            inheritanceInfo.occlusionQueryEnable = VK_FALSE;
+                            inheritanceInfo.queryFlags = 0;
+                            inheritanceInfo.pipelineStatistics = 0;
+
+                            beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+                            beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+                            beginInfo.pInheritanceInfo = &inheritanceInfo; // obligatoire pour secondaire
+
+                            vkResetCommandBuffer(copySkyboxCommandBuffer[currentFrame], 0);
+                            if (vkBeginCommandBuffer(copySkyboxCommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
+
+                                throw core::Erreur(0, "failed to begin recording command buffer!", 1);
+                            }
+                            //std::cout<<"copy skybox vb"<<std::endl;
+                            skyboxVB.registerCopyCmdBuffers(currentFrame, copySkyboxCommandBuffer[currentFrame]);
+                            if (vkEndCommandBuffer(copySkyboxCommandBuffer[currentFrame]) != VK_SUCCESS) {
+                                throw core::Erreur(0, "failed to record command buffer!", 1);
+                            }
+                        }
 
                         inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
                         inheritanceInfo.renderPass = VK_NULL_HANDLE; // pas de render pass
@@ -4861,98 +4897,64 @@ namespace odfaeg {
                         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
                         beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
                         beginInfo.pInheritanceInfo = &inheritanceInfo; // obligatoire pour secondaire
-
-                        vkResetCommandBuffer(copySkyboxCommandBuffer[currentFrame], 0);
-                        if (vkBeginCommandBuffer(copySkyboxCommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
+                        unsigned int currentFrame = frameBuffer.getCurrentFrame();
+                        vkResetCommandBuffer(copyVbPpllPass2CommandBuffer[currentFrame], 0);
+                        if (vkBeginCommandBuffer(copyVbPpllPass2CommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
 
                             throw core::Erreur(0, "failed to begin recording command buffer!", 1);
                         }
-                        //std::cout<<"copy skybox vb"<<std::endl;
-                        skyboxVB.registerCopyCmdBuffers(currentFrame, copySkyboxCommandBuffer[currentFrame]);
-                        if (vkEndCommandBuffer(copySkyboxCommandBuffer[currentFrame]) != VK_SUCCESS) {
+                        vb.registerCopyCmdBuffers(currentFrame, copyVbPpllPass2CommandBuffer[currentFrame]);
+                        if (vkEndCommandBuffer(copyVbPpllPass2CommandBuffer[currentFrame]) != VK_SUCCESS) {
                             throw core::Erreur(0, "failed to record command buffer!", 1);
                         }
-                    }
+                        jobFence[currentFrame].jobDone();
+                    });
+                    drawBuffers();
+                    jobFence[currentFrame].wait();
 
-                    inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
-                    inheritanceInfo.renderPass = VK_NULL_HANDLE; // pas de render pass
-                    inheritanceInfo.subpass = 0;
-                    inheritanceInfo.framebuffer = VK_NULL_HANDLE;
-                    inheritanceInfo.occlusionQueryEnable = VK_FALSE;
-                    inheritanceInfo.queryFlags = 0;
-                    inheritanceInfo.pipelineStatistics = 0;
+                    frameBuffer.beginRecordCommandBuffers();
 
-                    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-                    beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-                    beginInfo.pInheritanceInfo = &inheritanceInfo; // obligatoire pour secondaire
-                    unsigned int currentFrame = frameBuffer.getCurrentFrame();
-                    vkResetCommandBuffer(copyVbPpllPass2CommandBuffer[currentFrame], 0);
-                    if (vkBeginCommandBuffer(copyVbPpllPass2CommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
+                    frameBuffer.clear(Color::Transparent);
 
-                        throw core::Erreur(0, "failed to begin recording command buffer!", 1);
-                    }
-                    vb.registerCopyCmdBuffers(currentFrame, copyVbPpllPass2CommandBuffer[currentFrame]);
-                    if (vkEndCommandBuffer(copyVbPpllPass2CommandBuffer[currentFrame]) != VK_SUCCESS) {
-                        throw core::Erreur(0, "failed to record command buffer!", 1);
-                    }
-                    jobFence[currentFrame].jobDone();
-                });
-                drawBuffers();
-                jobFence[currentFrame].wait();
-                frameBuffer.beginRecordCommandBuffers();
+                    VkClearColorValue clearColor;
+                    clearColor.uint32[0] = 0xffffffff;
+                    VkImageSubresourceRange subresRange = {};
+                    subresRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                    subresRange.levelCount = 1;
+                    subresRange.layerCount = 1;
+                    vkCmdClearColorImage(frameBuffer.getCommandBuffers()[currentFrame], headPtrTextureImage[currentFrame], VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
+                    vkCmdFillBuffer(frameBuffer.getCommandBuffers()[currentFrame], counterShaderStorageBuffers[currentFrame], 0, sizeof(uint32_t), 0);
+                    VkMemoryBarrier memoryBarrier0;
+                    memoryBarrier0.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+                    memoryBarrier0.pNext = VK_NULL_HANDLE;
+                    memoryBarrier0.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                    memoryBarrier0.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+                    vkCmdPipelineBarrier(frameBuffer.getCommandBuffers()[currentFrame], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier0, 0, nullptr, 0, nullptr);
 
-                frameBuffer.clear(Color::Transparent);
+                    frameBuffer.beginRecordCommandBuffers();
+                    std::vector<VkCommandBuffer> commandBuffers = frameBuffer.getCommandBuffers();
 
-                VkClearColorValue clearColor;
-                clearColor.uint32[0] = 0xffffffff;
-                VkImageSubresourceRange subresRange = {};
-                subresRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-                subresRange.levelCount = 1;
-                subresRange.layerCount = 1;
-                vkCmdClearColorImage(frameBuffer.getCommandBuffers()[currentFrame], headPtrTextureImage[currentFrame], VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
-                vkCmdFillBuffer(frameBuffer.getCommandBuffers()[currentFrame], counterShaderStorageBuffers[currentFrame], 0, sizeof(uint32_t), 0);
-                VkMemoryBarrier memoryBarrier0;
-                memoryBarrier0.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-                memoryBarrier0.pNext = VK_NULL_HANDLE;
-                memoryBarrier0.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-                memoryBarrier0.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-                vkCmdPipelineBarrier(frameBuffer.getCommandBuffers()[currentFrame], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier0, 0, nullptr, 0, nullptr);
+                    vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyModelDataBufferCommandBuffer[currentFrame]);
 
-                frameBuffer.beginRecordCommandBuffers();
-                std::vector<VkCommandBuffer> commandBuffers = frameBuffer.getCommandBuffers();
+                    vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyMaterialDataBufferCommandBuffer[currentFrame]);
 
-                vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyModelDataBufferCommandBuffer[currentFrame]);
+                    vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyDrawBufferCommandBuffer[currentFrame]);
+                    vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyVbBufferCommandBuffer[currentFrame]);
 
-                vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyMaterialDataBufferCommandBuffer[currentFrame]);
-
-                vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyDrawBufferCommandBuffer[currentFrame]);
-                vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyVbBufferCommandBuffer[currentFrame]);
-
-                vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyDrawIndexedBufferCommandBuffer[currentFrame]);
-                vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyVbIndexedBufferCommandBuffer[currentFrame]);
-                vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyVbPpllPass2CommandBuffer[currentFrame]);
-                if (skybox != nullptr)
-                    vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copySkyboxCommandBuffer[currentFrame]);
-                VkBufferMemoryBarrier bufferMemoryBarrier{};
-                bufferMemoryBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-                bufferMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-                bufferMemoryBarrier.dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
-                bufferMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-                bufferMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-                bufferMemoryBarrier.offset = 0;
-                bufferMemoryBarrier.size = VK_WHOLE_SIZE;
-                bufferMemoryBarrier.buffer = vb.getVertexBuffer(currentFrame);
-                vkCmdPipelineBarrier(
-                commandBuffers[currentFrame],
-                VK_PIPELINE_STAGE_TRANSFER_BIT,
-                VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
-                0,
-                0, nullptr,
-                1, &bufferMemoryBarrier,
-                0, nullptr
-                );
-                if (skybox != nullptr) {
-                    bufferMemoryBarrier.buffer = skyboxVB.getVertexBuffer(currentFrame);
+                    vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyDrawIndexedBufferCommandBuffer[currentFrame]);
+                    vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyVbIndexedBufferCommandBuffer[currentFrame]);
+                    vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyVbPpllPass2CommandBuffer[currentFrame]);
+                    if (skybox != nullptr)
+                        vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copySkyboxCommandBuffer[currentFrame]);
+                    VkBufferMemoryBarrier bufferMemoryBarrier{};
+                    bufferMemoryBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+                    bufferMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                    bufferMemoryBarrier.dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+                    bufferMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                    bufferMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                    bufferMemoryBarrier.offset = 0;
+                    bufferMemoryBarrier.size = VK_WHOLE_SIZE;
+                    bufferMemoryBarrier.buffer = vb.getVertexBuffer(currentFrame);
                     vkCmdPipelineBarrier(
                     commandBuffers[currentFrame],
                     VK_PIPELINE_STAGE_TRANSFER_BIT,
@@ -4962,121 +4964,157 @@ namespace odfaeg {
                     1, &bufferMemoryBarrier,
                     0, nullptr
                     );
-                }
-                for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
+                    if (skybox != nullptr) {
+                        bufferMemoryBarrier.buffer = skyboxVB.getVertexBuffer(currentFrame);
+                        vkCmdPipelineBarrier(
+                        commandBuffers[currentFrame],
+                        VK_PIPELINE_STAGE_TRANSFER_BIT,
+                        VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
+                        0,
+                        0, nullptr,
+                        1, &bufferMemoryBarrier,
+                        0, nullptr
+                        );
+                    }
+                    for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
 
-                    VkBufferMemoryBarrier buffersMemoryBarrier{};
-                    buffersMemoryBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-                    buffersMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-                    buffersMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-                    buffersMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-                    buffersMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-                    buffersMemoryBarrier.offset = 0;
-                    buffersMemoryBarrier.size = VK_WHOLE_SIZE;
-                    if (vbBindlessTex[p].getVertexBuffer(currentFrame) != nullptr) {
-                        buffersMemoryBarrier.buffer = vbBindlessTex[p].getVertexBuffer(currentFrame);
-                        vkCmdPipelineBarrier(
-                        commandBuffers[currentFrame],
-                        VK_PIPELINE_STAGE_TRANSFER_BIT,
-                        VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-                        0,
-                        0, nullptr,
-                        1, &buffersMemoryBarrier,
-                        0, nullptr
-                        );
-                    }
-                    if (vbBindlessTexIndexed[p].getVertexBuffer(currentFrame) != nullptr && vbBindlessTexIndexed[p].getIndexBuffer(currentFrame) != nullptr) {
+                        VkBufferMemoryBarrier buffersMemoryBarrier{};
+                        buffersMemoryBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+                        buffersMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                        buffersMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+                        buffersMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                        buffersMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                        buffersMemoryBarrier.offset = 0;
+                        buffersMemoryBarrier.size = VK_WHOLE_SIZE;
+                        if (vbBindlessTex[p].getVertexBuffer(currentFrame) != nullptr) {
+                            buffersMemoryBarrier.buffer = vbBindlessTex[p].getVertexBuffer(currentFrame);
+                            vkCmdPipelineBarrier(
+                            commandBuffers[currentFrame],
+                            VK_PIPELINE_STAGE_TRANSFER_BIT,
+                            VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+                            0,
+                            0, nullptr,
+                            1, &buffersMemoryBarrier,
+                            0, nullptr
+                            );
+                        }
+                        if (vbBindlessTexIndexed[p].getVertexBuffer(currentFrame) != nullptr && vbBindlessTexIndexed[p].getIndexBuffer(currentFrame) != nullptr) {
 
-                        buffersMemoryBarrier.buffer = vbBindlessTexIndexed[p].getVertexBuffer(currentFrame);
-                        vkCmdPipelineBarrier(
-                        commandBuffers[currentFrame],
-                        VK_PIPELINE_STAGE_TRANSFER_BIT,
-                        VK_PIPELINE_STAGE_VERTEX_SHADER_BIT,
-                        0,
-                        0, nullptr,
-                        1, &buffersMemoryBarrier,
-                        0, nullptr
-                        );
-                        buffersMemoryBarrier.buffer = vbBindlessTexIndexed[p].getIndexBuffer(currentFrame);
-                        vkCmdPipelineBarrier(
-                        commandBuffers[currentFrame],
-                        VK_PIPELINE_STAGE_TRANSFER_BIT,
-                        VK_PIPELINE_STAGE_VERTEX_SHADER_BIT,
-                        0,
-                        0, nullptr,
-                        1, &buffersMemoryBarrier,
-                        0, nullptr
-                        );
+                            buffersMemoryBarrier.buffer = vbBindlessTexIndexed[p].getVertexBuffer(currentFrame);
+                            vkCmdPipelineBarrier(
+                            commandBuffers[currentFrame],
+                            VK_PIPELINE_STAGE_TRANSFER_BIT,
+                            VK_PIPELINE_STAGE_VERTEX_SHADER_BIT,
+                            0,
+                            0, nullptr,
+                            1, &buffersMemoryBarrier,
+                            0, nullptr
+                            );
+                            buffersMemoryBarrier.buffer = vbBindlessTexIndexed[p].getIndexBuffer(currentFrame);
+                            vkCmdPipelineBarrier(
+                            commandBuffers[currentFrame],
+                            VK_PIPELINE_STAGE_TRANSFER_BIT,
+                            VK_PIPELINE_STAGE_VERTEX_SHADER_BIT,
+                            0,
+                            0, nullptr,
+                            1, &buffersMemoryBarrier,
+                            0, nullptr
+                            );
+                        }
+                        buffersMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+                        if (modelDataBufferMT[p][currentFrame] != nullptr) {
+                            buffersMemoryBarrier.buffer = modelDataBufferMT[p][currentFrame];
+                            vkCmdPipelineBarrier(
+                            commandBuffers[currentFrame],
+                            VK_PIPELINE_STAGE_TRANSFER_BIT,
+                            VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                            0,
+                            0, nullptr,
+                            1, &buffersMemoryBarrier,
+                            0, nullptr
+                            );
+                        }
+                        if (materialDataBufferMT[p][currentFrame] != nullptr) {
+                            buffersMemoryBarrier.buffer = materialDataBufferMT[p][currentFrame];
+                            vkCmdPipelineBarrier(
+                            commandBuffers[currentFrame],
+                            VK_PIPELINE_STAGE_TRANSFER_BIT,
+                            VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                            0,
+                            0, nullptr,
+                            1, &buffersMemoryBarrier,
+                            0, nullptr
+                            );
+                        }
+                        buffersMemoryBarrier.dstAccessMask = VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
+                        if (drawCommandBufferMT[p][currentFrame] != nullptr) {
+                            buffersMemoryBarrier.buffer = drawCommandBufferMT[p][currentFrame];
+                            vkCmdPipelineBarrier(
+                            commandBuffers[currentFrame],
+                            VK_PIPELINE_STAGE_TRANSFER_BIT,
+                            VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT,
+                            0,
+                            0, nullptr,
+                            1, &buffersMemoryBarrier,
+                            0, nullptr
+                            );
+                        }
+                        if (drawCommandBufferIndexedMT[p][currentFrame] != nullptr) {
+                            buffersMemoryBarrier.buffer = drawCommandBufferIndexedMT[p][currentFrame];
+                            vkCmdPipelineBarrier(
+                            commandBuffers[currentFrame],
+                            VK_PIPELINE_STAGE_TRANSFER_BIT,
+                            VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT,
+                            0,
+                            0, nullptr,
+                            1, &buffersMemoryBarrier,
+                            0, nullptr
+                            );
+                        }
                     }
-                    buffersMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-                    if (modelDataBufferMT[p][currentFrame] != nullptr) {
-                        buffersMemoryBarrier.buffer = modelDataBufferMT[p][currentFrame];
-                        vkCmdPipelineBarrier(
-                        commandBuffers[currentFrame],
-                        VK_PIPELINE_STAGE_TRANSFER_BIT,
-                        VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-                        0,
-                        0, nullptr,
-                        1, &buffersMemoryBarrier,
-                        0, nullptr
-                        );
+                    std::vector<VkSemaphore> signalSemaphores;
+                    signalSemaphores.push_back(offscreenFinishedSemaphore[currentFrame]);
+                    std::vector<VkSemaphore> waitSemaphores;
+                    waitSemaphores.push_back(offscreenFinishedSemaphore[currentFrame]);
+                    std::vector<VkPipelineStageFlags> waitStages;
+                    waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+                    std::vector<uint64_t> signalValues;
+                    std::vector<uint64_t> waitValues;
+                    waitValues.push_back(values[currentFrame]);
+                    values[currentFrame]++;
+                    signalValues.push_back(values[currentFrame]);
+                    std::vector<VkFence> windowInFlightFence = {/*windowFences[frameBuffer.getCurrentFrame()]*/};
+                    //std::cout<<"frame buffer submit : "<<frameBuffer.getCurrentFrame()<<std::endl;
+                    frameBuffer.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, windowInFlightFence, getLayer()+2);
+                    //std::cout<<"frame buffer submit!"<<std::endl;
+                    //std::cout<<"skybox"<<std::endl;
+                    if (skybox != nullptr) {
+                        frameBuffer.beginRecordCommandBuffers();
+                        frameBuffer.beginRenderPass();
+                        vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &skyboxCommandBuffer[currentFrame]);
+                        frameBuffer.endRenderPass();
+                        signalSemaphores.clear();
+                        signalSemaphores.push_back(offscreenFinishedSemaphore[currentFrame]);
+                        signalValues.clear();
+                        waitSemaphores.clear();
+                        waitSemaphores.push_back(offscreenFinishedSemaphore[currentFrame]);
+                        waitStages.clear();
+                        waitStages.push_back(VK_PIPELINE_STAGE_VERTEX_SHADER_BIT);
+                        waitValues.clear();
+                        waitValues.push_back(values[currentFrame]);
+                        values[currentFrame]++;
+                        signalValues.push_back(values[currentFrame]);
+                        frameBuffer.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, std::vector<VkFence>(), getLayer()+2);
                     }
-                    if (materialDataBufferMT[p][currentFrame] != nullptr) {
-                        buffersMemoryBarrier.buffer = materialDataBufferMT[p][currentFrame];
-                        vkCmdPipelineBarrier(
-                        commandBuffers[currentFrame],
-                        VK_PIPELINE_STAGE_TRANSFER_BIT,
-                        VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-                        0,
-                        0, nullptr,
-                        1, &buffersMemoryBarrier,
-                        0, nullptr
-                        );
-                    }
-                    buffersMemoryBarrier.dstAccessMask = VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
-                    if (drawCommandBufferMT[p][currentFrame] != nullptr) {
-                        buffersMemoryBarrier.buffer = drawCommandBufferMT[p][currentFrame];
-                        vkCmdPipelineBarrier(
-                        commandBuffers[currentFrame],
-                        VK_PIPELINE_STAGE_TRANSFER_BIT,
-                        VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT,
-                        0,
-                        0, nullptr,
-                        1, &buffersMemoryBarrier,
-                        0, nullptr
-                        );
-                    }
-                    if (drawCommandBufferIndexedMT[p][currentFrame] != nullptr) {
-                        buffersMemoryBarrier.buffer = drawCommandBufferIndexedMT[p][currentFrame];
-                        vkCmdPipelineBarrier(
-                        commandBuffers[currentFrame],
-                        VK_PIPELINE_STAGE_TRANSFER_BIT,
-                        VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT,
-                        0,
-                        0, nullptr,
-                        1, &buffersMemoryBarrier,
-                        0, nullptr
-                        );
-                    }
-                }
-                std::vector<VkSemaphore> signalSemaphores;
-                signalSemaphores.push_back(offscreenFinishedSemaphore[currentFrame]);
-                std::vector<VkSemaphore> waitSemaphores;
-                waitSemaphores.push_back(offscreenFinishedSemaphore[currentFrame]);
-                std::vector<VkPipelineStageFlags> waitStages;
-                waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-                std::vector<uint64_t> signalValues;
-                std::vector<uint64_t> waitValues;
-                waitValues.push_back(values[currentFrame]);
-                values[currentFrame]++;
-                signalValues.push_back(values[currentFrame]);
+                    RenderStates states;
+                    states.shader = &indirectRenderingShader;
 
-                frameBuffer.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, std::vector<VkFence>(), getLayer()+2);
-                //std::cout<<"skybox"<<std::endl;
-                if (skybox != nullptr) {
+
+                    //std::cout<<"copies ok"<<std::endl;
                     frameBuffer.beginRecordCommandBuffers();
                     frameBuffer.beginRenderPass();
-                    vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &skyboxCommandBuffer[currentFrame]);
+                    vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &ppllCommandBuffer[currentFrame]);
+                    vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &ppllSelectedCommandBuffer[currentFrame]);
                     frameBuffer.endRenderPass();
                     signalSemaphores.clear();
                     signalSemaphores.push_back(offscreenFinishedSemaphore[currentFrame]);
@@ -5089,158 +5127,136 @@ namespace odfaeg {
                     waitValues.push_back(values[currentFrame]);
                     values[currentFrame]++;
                     signalValues.push_back(values[currentFrame]);
-                    frameBuffer.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, std::vector<VkFence>(), getLayer()+2);
-                }
-                RenderStates states;
-                states.shader = &indirectRenderingShader;
 
+                    //std::cout<<"compute"<<std::endl;
 
-                //std::cout<<"copies ok"<<std::endl;
-                frameBuffer.beginRecordCommandBuffers();
-                frameBuffer.beginRenderPass();
-                vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &ppllCommandBuffer[currentFrame]);
-                vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &ppllSelectedCommandBuffer[currentFrame]);
-                frameBuffer.endRenderPass();
-                signalSemaphores.clear();
-                signalSemaphores.push_back(offscreenFinishedSemaphore[currentFrame]);
-                signalValues.clear();
-                waitSemaphores.clear();
-                waitSemaphores.push_back(offscreenFinishedSemaphore[currentFrame]);
-                waitStages.clear();
-                waitStages.push_back(VK_PIPELINE_STAGE_VERTEX_SHADER_BIT);
-                waitValues.clear();
-                waitValues.push_back(values[currentFrame]);
-                values[currentFrame]++;
-                signalValues.push_back(values[currentFrame]);
+                    if (visibleEntities.size() > computeSemaphores.size()) {
+                        computeSemaphores.resize(visibleEntities.size());
+                        computeFences.resize(visibleEntities.size());
+                        for (unsigned int i = 0; i < visibleEntities.size(); i++) {
+                            for (unsigned int j = 0; j < MAX_FRAMES_IN_FLIGHT; j++) {
+                                VkSemaphoreCreateInfo semaphoreInfo{};
+                                semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+                                VkFenceCreateInfo fenceInfo{};
+                                fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 
-                //std::cout<<"compute"<<std::endl;
-
-                if (visibleEntities.size() > computeSemaphores.size()) {
-                    computeSemaphores.resize(visibleEntities.size());
-                    computeFences.resize(visibleEntities.size());
-                    for (unsigned int i = 0; i < visibleEntities.size(); i++) {
-                        for (unsigned int j = 0; j < MAX_FRAMES_IN_FLIGHT; j++) {
-                            VkSemaphoreCreateInfo semaphoreInfo{};
-                            semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-                            VkFenceCreateInfo fenceInfo{};
-                            fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-
-                            if (!computeFences[i][j]) {
-                                VkFence fence;
-                                if (vkCreateFence(vkDevice.getDevice(), &fenceInfo, nullptr, &fence) != VK_SUCCESS) {
-                                    throw core::Erreur(0, "échec de la création des objets de synchronisation pour une entité!", 1);
+                                if (!computeFences[i][j]) {
+                                    VkFence fence;
+                                    if (vkCreateFence(vkDevice.getDevice(), &fenceInfo, nullptr, &fence) != VK_SUCCESS) {
+                                        throw core::Erreur(0, "échec de la création des objets de synchronisation pour une entité!", 1);
+                                    }
+                                    computeFences[i][j] = std::make_unique<VkFence>(fence);
                                 }
-                                computeFences[i][j] = std::make_unique<VkFence>(fence);
-                            }
-                            if(!computeSemaphores[i][j]) {
-                                VkSemaphore semaphore;
-                                if(vkCreateSemaphore(vkDevice.getDevice(), &semaphoreInfo, nullptr, &semaphore) != VK_SUCCESS) {
-                                    throw core::Erreur(0, "échec de la création des objets de synchronisation pour une entité!", 1);
+                                if(!computeSemaphores[i][j]) {
+                                    VkSemaphore semaphore;
+                                    if(vkCreateSemaphore(vkDevice.getDevice(), &semaphoreInfo, nullptr, &semaphore) != VK_SUCCESS) {
+                                        throw core::Erreur(0, "échec de la création des objets de synchronisation pour une entité!", 1);
+                                    }
+                                    computeSemaphores[i][j] = std::make_unique<VkSemaphore>(semaphore);
                                 }
-                                computeSemaphores[i][j] = std::make_unique<VkSemaphore>(semaphore);
                             }
                         }
                     }
-                }
-                std::vector<VkFence> fencesToWait;
-                for (unsigned int i = 0; i < visibleEntities.size(); i++) {
-                    if (visibleEntities[i] != nullptr && visibleEntities[i]->isLeaf() && (visibleEntities[i]->getRootType() == "E_PARTICLES"
-                        || visibleEntities[i]->getRootType() == "E_BONE_ANIMATION")
-                        && visibleEntities[i]->getRootEntity()->isComputeFinished(frameBuffer.getCurrentFrame())) {
-                        std::unique_lock<std::mutex> lock2(mtx2);
+                    std::vector<VkFence> fencesToWait;
+                    for (unsigned int i = 0; i < visibleEntities.size(); i++) {
+                        if (visibleEntities[i] != nullptr && visibleEntities[i]->isLeaf() && (visibleEntities[i]->getRootType() == "E_PARTICLES"
+                            || visibleEntities[i]->getRootType() == "E_BONE_ANIMATION")
+                            && visibleEntities[i]->getRootEntity()->isComputeFinished(frameBuffer.getCurrentFrame())) {
+                            std::unique_lock<std::mutex> lock2(mtx2);
 
-                        visibleEntities[i]->getRootEntity()->computeParticles(&mtx2, &cv2, vbBindlessTex[Triangles], frameBuffer.getCurrentFrame(),visibleEntities[i]->getTransform(), (visibleEntities[i]->getDrawMode() == Entity::INSTANCED) ? true : false, *computeSemaphores[i][frameBuffer.getCurrentFrame()].get(), *computeFences[i][frameBuffer.getCurrentFrame()].get());
+                            visibleEntities[i]->getRootEntity()->computeParticles(&mtx2, &cv2, vbBindlessTex[Triangles], frameBuffer.getCurrentFrame(),visibleEntities[i]->getTransform(), (visibleEntities[i]->getDrawMode() == Entity::INSTANCED) ? true : false, *computeSemaphores[i][frameBuffer.getCurrentFrame()].get(), *computeFences[i][frameBuffer.getCurrentFrame()].get());
 
-                        auto entity = visibleEntities[i]->getRootEntity();
-
-
-                        //std::cout<<"wait : "<<visibleEntities[i]<<" current frame : "<<frameBuffer.getCurrentFrame()<<std::endl;
-                        cv2.wait(lock2, [&, this, entity, currentFrame](){return entity->isComputeFinished(currentFrame) || (entity->isComputeFinished(currentFrame) && stop.load());});
-                        //std::cout<<"wait finished"<<std::endl;
-                        waitSemaphores.push_back(*computeSemaphores[i][frameBuffer.getCurrentFrame()].get());
+                            auto entity = visibleEntities[i]->getRootEntity();
 
 
-                        waitValues.push_back(0);
-                        waitStages.push_back(VK_PIPELINE_STAGE_VERTEX_INPUT_BIT);
-                        //if (!firstFrame[frameBuffer.getCurrentFrame()]) {
-                            if (vbBindlessTex[Triangles].getVertexBuffer(currentFrame) != nullptr) {
-                                bufferMemoryBarrier.buffer = vbBindlessTex[Triangles].getVertexBuffer(currentFrame);
-                                bufferMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
-                                bufferMemoryBarrier.dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
-                                vkCmdPipelineBarrier(
-                                commandBuffers[currentFrame],
-                                VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-                                VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
-                                0,
-                                0, nullptr,
-                                1, &bufferMemoryBarrier,
-                                0, nullptr
-                                );
-                            }
-                            firstFrame[frameBuffer.getCurrentFrame()] = false;
-                            fencesToWait.push_back(*computeFences[i][currentFrame].get());
-                        //}
+                            //std::cout<<"wait : "<<visibleEntities[i]<<" current frame : "<<frameBuffer.getCurrentFrame()<<std::endl;
+                            cv2.wait(lock2, [&, this, entity, currentFrame](){return entity->isComputeFinished(currentFrame) || (entity->isComputeFinished(currentFrame) && stop.load());});
+                            //std::cout<<"wait finished"<<std::endl;
+                            waitSemaphores.push_back(*computeSemaphores[i][frameBuffer.getCurrentFrame()].get());
+
+
+                            waitValues.push_back(0);
+                            waitStages.push_back(VK_PIPELINE_STAGE_VERTEX_INPUT_BIT);
+                            //if (!firstFrame[frameBuffer.getCurrentFrame()]) {
+                                if (vbBindlessTex[Triangles].getVertexBuffer(currentFrame) != nullptr) {
+                                    bufferMemoryBarrier.buffer = vbBindlessTex[Triangles].getVertexBuffer(currentFrame);
+                                    bufferMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+                                    bufferMemoryBarrier.dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+                                    vkCmdPipelineBarrier(
+                                    commandBuffers[currentFrame],
+                                    VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+                                    VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
+                                    0,
+                                    0, nullptr,
+                                    1, &bufferMemoryBarrier,
+                                    0, nullptr
+                                    );
+                                }
+                                firstFrame[frameBuffer.getCurrentFrame()] = false;
+                                fencesToWait.push_back(*computeFences[i][currentFrame].get());
+                            //}
+                        }
+
+
+
+                        //std::cout<<"wait for fence"<<std::endl;
+
+                        //std::cout<<"fence reseted"<<std::endl;
                     }
 
 
+                    frameBuffer.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, fencesToWait, getLayer()+2);
+                    //std::cout<<"ppll ok"<<std::endl;
 
-                    //std::cout<<"wait for fence"<<std::endl;
+                    //std::cout<<"draw"<<std::endl;
+                    frameBuffer.beginRecordCommandBuffers();
+                    frameBuffer.beginRenderPass();
+                    vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &ppllOutlineCommandBuffer[currentFrame]);
+                    frameBuffer.endRenderPass();
+                    signalSemaphores.clear();
+                    signalSemaphores.push_back(offscreenFinishedSemaphore[currentFrame]);
+                    signalValues.clear();
+                    waitSemaphores.clear();
+                    waitSemaphores.push_back(offscreenFinishedSemaphore[currentFrame]);
 
-                    //std::cout<<"fence reseted"<<std::endl;
+                    waitStages.clear();
+                    waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+                    waitValues.clear();
+                    waitValues.push_back(values[currentFrame]);
+
+
+
+                    values[currentFrame]++;
+                    signalValues.push_back(values[currentFrame]);
+                    frameBuffer.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, std::vector<VkFence>(), getLayer()+2);
+                    //std::cout<<"outline ok"<<std::endl;
+
+                    frameBuffer.beginRecordCommandBuffers();
+                    //vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 0, nullptr);
+                    VkMemoryBarrier memoryBarrier{};
+                    memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+                    memoryBarrier.pNext = VK_NULL_HANDLE;
+                    memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+                    memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+                    vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
+                    frameBuffer.beginRenderPass();
+                    vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &ppllPass2CommandBuffer[currentFrame]);
+                    frameBuffer.endRenderPass();
+                    signalSemaphores.clear();
+                    signalSemaphores.push_back(offscreenFinishedSemaphore[currentFrame]);
+                    signalValues.clear();
+                    waitSemaphores.clear();
+                    waitSemaphores.push_back(offscreenFinishedSemaphore[currentFrame]);
+                    waitStages.clear();
+                    waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+                    waitValues.clear();
+                    waitValues.push_back(values[currentFrame]);
+                    values[currentFrame]++;
+                    signalValues.push_back(values[currentFrame]);
+                    frameBuffer.submit(true, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, std::vector<VkFence>(), getLayer()+2, false);
                 }
 
-
-                frameBuffer.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, fencesToWait, getLayer()+2);
-                //std::cout<<"ppll ok"<<std::endl;
-
-                //std::cout<<"draw"<<std::endl;
-                frameBuffer.beginRecordCommandBuffers();
-                frameBuffer.beginRenderPass();
-                vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &ppllOutlineCommandBuffer[currentFrame]);
-                frameBuffer.endRenderPass();
-                signalSemaphores.clear();
-                signalSemaphores.push_back(offscreenFinishedSemaphore[currentFrame]);
-                signalValues.clear();
-                waitSemaphores.clear();
-                waitSemaphores.push_back(offscreenFinishedSemaphore[currentFrame]);
-
-                waitStages.clear();
-                waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-                waitValues.clear();
-                waitValues.push_back(values[currentFrame]);
-
-
-
-                values[currentFrame]++;
-                signalValues.push_back(values[currentFrame]);
-                frameBuffer.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, std::vector<VkFence>(), getLayer()+2);
-                //std::cout<<"outline ok"<<std::endl;
-
-                frameBuffer.beginRecordCommandBuffers();
-                //vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 0, nullptr);
-                VkMemoryBarrier memoryBarrier{};
-                memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-                memoryBarrier.pNext = VK_NULL_HANDLE;
-                memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-                memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-                vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
-                frameBuffer.beginRenderPass();
-                vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &ppllPass2CommandBuffer[currentFrame]);
-                frameBuffer.endRenderPass();
-                signalSemaphores.clear();
-                signalSemaphores.push_back(offscreenFinishedSemaphore[currentFrame]);
-                signalValues.clear();
-                waitSemaphores.clear();
-                waitSemaphores.push_back(offscreenFinishedSemaphore[currentFrame]);
-                waitStages.clear();
-                waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-                waitValues.clear();
-                waitValues.push_back(values[currentFrame]);
-                values[currentFrame]++;
-                signalValues.push_back(values[currentFrame]);
-                frameBuffer.submit(true, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, std::vector<VkFence>(), getLayer()+2, false);
-
-
+                //std::cout<<"drawn!"<<std::endl;
 
                 commandBufferReady[frameBuffer.getCurrentFrame()] = true;
                 cv.notify_one();
@@ -5882,7 +5898,9 @@ namespace odfaeg {
             values[frameBuffer.getCurrentFrame()]++;
             signalValues.push_back(values[frameBuffer.getCurrentFrame()]);
             target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
+            //std::cout<<"frame drawn : "<<frameBuffer.getCurrentFrame()<<std::endl;
             frameBuffer.display();
+
             registerFrameJob[frameBuffer.getCurrentFrame()] = true;
             cv.notify_one();
             //std::cout<<"next frame"<<std::endl;
@@ -5983,6 +6001,9 @@ namespace odfaeg {
                     VkFence fence = *computeFences[i][j].release();
                     vkDestroyFence(vkDevice.getDevice(), fence, nullptr);
                 }
+            }
+            for (unsigned int i = 0; i < windowFences.size(); i++) {
+                vkDestroyFence(vkDevice.getDevice(), windowFences[i], nullptr);
             }
             vkFreeCommandBuffers(vkDevice.getDevice(), secondaryBufferCommandPools[0], copyModelDataBufferCommandBuffer.size(), copyModelDataBufferCommandBuffer.data());
 
