@@ -38,6 +38,7 @@ namespace odfaeg {
                 bool disableScissor, moveComponents;
                 math::Vec3f mousePos, deltas;
                 bool scrollX, scrollY;
+                float delta;
                 RectangleShape rect;
                 RectangleShape vertScrollBar, horScrollBar, corner;
                 math::Vec3f maxSize;

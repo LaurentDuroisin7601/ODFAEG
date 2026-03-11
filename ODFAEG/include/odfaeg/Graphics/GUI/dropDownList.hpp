@@ -18,6 +18,7 @@ namespace odfaeg {
                     void clear();
                     void addItem(std::string t, unsigned int charSize);
                     void onDraw (RenderTarget& target, RenderStates states = RenderStates::Default);
+                    void drawOn(RenderTarget& target, RenderStates states = RenderStates::Default);
                     void onUpdate(RenderWindow* window, window::IEvent& event);
                     bool isMouseOnTriangle();
                     void onTriangleClicked();
@@ -32,8 +33,12 @@ namespace odfaeg {
                     void removeAllItems();
                     void setSelectedItem(std::string t);
                     void onTextChanged();
+                    void setScrollableSize(float size);
+                    bool isOnYScroll();
+                    void moveYItems();
                     ~DropDownList();
                 private :
+                    void updateScrolls();
                     math::Vec3f selectedItemPos;
                     bool dropDown, stateChanged;
                     const Font* font;
@@ -47,7 +52,12 @@ namespace odfaeg {
                     std::vector<Label*> filteredItems;
                     TextArea* selectedItem;
                     Color background;
-                    physic::BoundingBox scrollableSize;
+                    float scrollableSize;
+                    float totalSize;
+                    RectangleShape horScrollBar;
+                    bool scrollY;
+                    float delta;
+                    float oldMouseY, mouseDeltaY;
             };
         }
     }

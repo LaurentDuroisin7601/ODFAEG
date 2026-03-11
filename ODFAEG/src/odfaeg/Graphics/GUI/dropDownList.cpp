@@ -21,9 +21,12 @@ namespace odfaeg {
                     core::Command cmd2(core::FastDelegate<bool>(&TextArea::isTextChanged, selectedItem),core::FastDelegate<void>(&DropDownList::onTextChanged, this));
                     selectedItem->getListener().connect("DropDownTextChanged", cmd2);
                     selectedItem->setName("DropDownTA");
+                    totalSize = label->getSize().y();
+                    scrollableSize = totalSize;
                 } else {
                     nbItems = 0;
                     selectedItem = nullptr;
+                    totalSize = scrollableSize = 0;
                 }
                 rect = RectangleShape(math::Vec3f(size.x(), size.y(), 0));
                 shape = ConvexShape(3);
@@ -36,7 +39,10 @@ namespace odfaeg {
                 getListener().connect("ITEMSELECTED"+t, cmd);
 
                 dropDown = valueChanged = stateChanged = false;
-                scrollableSize = physic::BoundingBox(getPosition().x(), getPosition().y() + getSize().y(), getPosition().z()+150, size.x() - 50, size.y(), 0);
+                delta = 0;
+                scrollY = false;
+                core::Command cmd2(a, core::FastDelegate<bool>(&DropDownList::isOnYScroll, this),core::FastDelegate<void>(&DropDownList::moveYItems, this));
+                getListener().connect("scrollYMove", cmd2);
                 //getListener().launch();
             }
             bool DropDownList::isValueChanged() {
@@ -77,10 +83,28 @@ namespace odfaeg {
                 selectedItem->setPosition(selectedItemPos);
                 dropDown = true;
                 filteredItems.clear();
+                totalSize = 0;
                 for (unsigned int i = 0; i < items.size(); i++) {
                     items[i]->setEventContextActivated(true);
                     filteredItems.push_back(items[i]);
                     filteredItems[i]->setPosition(math::Vec3f(getPosition().x(), getPosition().y() + getSize().y() * (i+1), getPosition().z()));
+                    totalSize += filteredItems[i]->getSize().y();
+                }
+
+            }
+            void DropDownList::updateScrolls() {
+                if (totalSize > scrollableSize) {
+                    float oldScrollSize = horScrollBar.getSize().y();
+                    float scrollYSize = scrollableSize / totalSize * totalSize;
+                    horScrollBar = RectangleShape(math::Vec3f(10, scrollYSize, 0));
+                    float pScrollY = math::Math::clamp(delta / totalSize, 0.f, 1.f);
+
+                    float fhScrollY  = math::Math::clamp(pScrollY * scrollableSize, 0.f, scrollableSize);
+                    float d = (oldScrollSize == 0 || delta == 0) ? 0 : scrollYSize - oldScrollSize;
+                    horScrollBar.setPosition(math::Vec3f(getPosition().x() + getSize().x(), getPosition().y() + fhScrollY + delta, getPosition().z()+500));
+                    scrollY = true;
+                } else {
+                    scrollY = false;
                 }
             }
             void DropDownList::clear() {
@@ -106,7 +130,8 @@ namespace odfaeg {
                 core::Action a(core::Action::EVENT_TYPE::MOUSE_BUTTON_HELD_DOWN, window::IMouse::Left);
                 core::Command cmd (a, core::FastDelegate<bool>(&Label::isMouseInside, items.back()), core::FastDelegate<void>(&DropDownList::onItemSelected, this, items.back()));
                 label->getListener().connect(items.back()->getText().toAnsiString(), cmd);
-                scrollableSize.setSize(scrollableSize.getSize().x(), scrollableSize.getSize().y()+getSize().y(), 0);
+                totalSize += label->getSize().y();
+                scrollableSize = totalSize;
             }
             void DropDownList::setSelectedItem(std::string t) {
                 for (unsigned int i = 0; i < items.size(); i++) {
@@ -151,15 +176,40 @@ namespace odfaeg {
                     selectedItem->setPosition(math::Vec3f(getPosition().x(), getPosition().y(), getPosition().z()));
                     selectedItem->setSize(math::Vec3f(getSize().x() - 50, getSize().y(), getSize().z()));
                     target.draw(*selectedItem, states);
+                    #ifdef VULKAN
+                    target.submit(false);
+                    target.getScissors()[1].offset = {getPosition().x(), getPosition().y()+getSize().y()};
+                    //std::cout<<"offsets : "<<target.getScissors()[0].offset.x<<","<<target.getScissors()[0].offset.y<<std::endl;
+                    target.getScissors()[1].extent = {getSize().x(), scrollableSize};
+                    #endif
                     for (unsigned int i = 0; i < filteredItems.size(); i++) {
-                        /*filteredItems[i]->setPosition(math::Vec3f(getPosition().x(), getPosition().y() + getSize().y() * (i + 1), getPosition().z()+150));
-                        filteredItems[i]->setSize(math::Vec3f(getSize().x() - 50, getSize().y(), getSize().z()));*/
-                        target.draw(*filteredItems[i], states);
+
+                        if (filteredItems[i]->getPosition().y() > getPosition().y() + getSize().y()
+                            && filteredItems[i]->getPosition().y() < getPosition().y() + getSize().y() + scrollableSize) {
+                            target.draw(*filteredItems[i], states);
+                        }
                     }
                 }
                 target.draw(shape, states);
                 #ifdef VULKAN
                 target.submit(false);
+                #endif
+            }
+            void DropDownList::drawOn(RenderTarget& target, RenderStates states) {
+                #ifdef VULKAN
+                target.getScissors()[0].offset = {0, 0};
+                target.getScissors()[0].extent = {target.getSize().x(), target.getSize().y()};
+                #endif // VULKAN
+                if (scrollY) {
+                    horScrollBar.setFillColor(Color::Red);
+                    target.draw(horScrollBar, states);
+
+                }
+                #ifdef VULKAN
+                if (scrollY) {
+                    //std::cout<<"submit panel : "<<std::endl;
+                    target.submit(false);
+                }
                 #endif
             }
             void DropDownList::onEventPushed(window::IEvent event, RenderWindow& window) {
@@ -208,12 +258,42 @@ namespace odfaeg {
             void DropDownList::onTextChanged() {
                 filteredItems.clear();
                 unsigned int position = 1;
+                totalSize = 0;
                 for (unsigned int i = 0; i < items.size(); i++) {
                     if (items[i]->getText().find(selectedItem->getText()) != std::string::npos) {
                         filteredItems.push_back(items[i]);
                         filteredItems[i]->setPosition(math::Vec3f(getPosition().x(), getPosition().y() + getSize().y() * position, getPosition().z()));
                         position++;
+                        totalSize += filteredItems[i]->getSize().y();
                     }
+                }
+            }
+            void DropDownList::setScrollableSize(float size) {
+                scrollableSize = size;
+            }
+            bool DropDownList::isOnYScroll() {
+                math::Vec3f mousePos (window::IMouse::getPosition(getWindow()).x(), window::IMouse::getPosition(getWindow()).y(), 0);
+                mouseDeltaY = mousePos.y() - oldMouseY;
+                oldMouseY  = mousePos.y();
+                if (scrollY) {
+                    physic::BoundingBox bb(horScrollBar.getPosition().x(), horScrollBar.getPosition().y(), 0, horScrollBar.getSize().x(), horScrollBar.getSize().y(), 0);
+                    return bb.isPointInside(mousePos);
+                }
+                return false;
+            }
+            void DropDownList::moveYItems() {
+                if (mouseDeltaY > 0 && horScrollBar.getPosition().y() + horScrollBar.getSize().y() + mouseDeltaY <= getPosition().y() + getSize().y() + scrollableSize) {
+                    horScrollBar.move(math::Vec3f(0, mouseDeltaY, 0));
+                    for (unsigned int i = 0; i < filteredItems.size(); i++) {
+                        filteredItems[i]->move(math::Vec3f(0, -(totalSize / scrollableSize * mouseDeltaY), 0));
+                    }
+                    delta += (totalSize / scrollableSize * mouseDeltaY);
+                } else if (mouseDeltaY < 0 && horScrollBar.getPosition().y() +  mouseDeltaY >= getPosition().y() + getSize().y()) {
+                    horScrollBar.move(math::Vec3f(0, mouseDeltaY, 0));
+                    for (unsigned int i = 0; i < filteredItems.size(); i++) {
+                        filteredItems[i]->move(math::Vec3f(0, -(totalSize / scrollableSize * mouseDeltaY), 0));
+                    }
+                    delta += (totalSize / scrollableSize * mouseDeltaY);
                 }
             }
             DropDownList::~DropDownList() {
