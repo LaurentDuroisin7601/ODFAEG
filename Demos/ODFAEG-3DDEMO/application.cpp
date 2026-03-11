@@ -323,7 +323,7 @@ void MyAppli::onUpdate (RenderWindow* window, IEvent& event) {
 }
 void MyAppli::onExec() {
     if (IKeyboard::isKeyPressed(IKeyboard::Up)) {
-        view3D.move(view3D.getForward(), -speed * clock.getElapsedTime().asSeconds());
+        view3D.move(view3D.getForward(), speed * clock.getElapsedTime().asSeconds());
         float y;
         bool isOnHeightMap = heightmap->getHeight(Vec2f(view3D.getPosition().x(), view3D.getPosition().z()), y);
         view3D.setCenter(Vec3f(view3D.getPosition().x(), y + model->getSize().y(),view3D.getPosition().z()));
@@ -334,7 +334,7 @@ void MyAppli::onExec() {
             getRenderComponentManager().getRenderComponent(i)->setView(view3D);
         }
         View view = billboard->getView();
-        view.move(view.getForward(), -speed * clock.getElapsedTime().asSeconds());
+        view.move(view.getForward(), speed * clock.getElapsedTime().asSeconds());
 
         isOnHeightMap = heightmap->getHeight(Vec2f(view.getPosition().x(), view.getPosition().z()), y);
         view.setCenter(Vec3f(view.getPosition().x(), y + model->getSize().y(),view.getPosition().z()));
@@ -348,7 +348,7 @@ void MyAppli::onExec() {
     }
 
     if (IKeyboard::isKeyPressed(IKeyboard::Down)) {
-        view3D.move(view3D.getForward(), speed * clock.getElapsedTime().asSeconds());
+        view3D.move(view3D.getForward(), -speed * clock.getElapsedTime().asSeconds());
         float y;
         bool isOnHeightMap = heightmap->getHeight(Vec2f(view3D.getPosition().x(), view3D.getPosition().z()), y);
         view3D.setCenter(Vec3f(view3D.getPosition().x(), y + model->getSize().y(),view3D.getPosition().z()));
@@ -358,7 +358,7 @@ void MyAppli::onExec() {
             getRenderComponentManager().getRenderComponent(i)->setView(view3D);
         }
         View view = billboard->getView();
-        view.move(view.getForward(), speed * clock.getElapsedTime().asSeconds());
+        view.move(view.getForward(), -speed * clock.getElapsedTime().asSeconds());
 
         isOnHeightMap = heightmap->getHeight(Vec2f(view.getPosition().x(), view.getPosition().z()), y);
         view.setCenter(Vec3f(view.getPosition().x(), y + model->getSize().y(),view.getPosition().z()));
@@ -372,7 +372,7 @@ void MyAppli::onExec() {
     }
 
     if (IKeyboard::isKeyPressed(IKeyboard::Right)) {
-        view3D.move(view3D.getLeft(), speed * clock.getElapsedTime().asSeconds());
+        view3D.move(view3D.getLeft(), -speed * clock.getElapsedTime().asSeconds());
         float y;
         bool isOnHeightMap = heightmap->getHeight(Vec2f(view3D.getPosition().x(), view3D.getPosition().z()), y);
         view3D.setCenter(Vec3f(view3D.getPosition().x(), y + model->getSize().y(),view3D.getPosition().z()));
@@ -382,7 +382,7 @@ void MyAppli::onExec() {
             getRenderComponentManager().getRenderComponent(i)->setView(view3D);
         }
         View view = billboard->getView();
-        view.move(view.getLeft(), speed * clock.getElapsedTime().asSeconds());
+        view.move(view.getLeft(), -speed * clock.getElapsedTime().asSeconds());
 
         isOnHeightMap = heightmap->getHeight(Vec2f(view.getPosition().x(), view.getPosition().z()), y);
         view.setCenter(Vec3f(view.getPosition().x(), y + model->getSize().y(),view.getPosition().z()));
@@ -396,7 +396,7 @@ void MyAppli::onExec() {
     }
 
     if (IKeyboard::isKeyPressed(IKeyboard::Left)) {
-        view3D.move(view3D.getLeft(), -speed * clock.getElapsedTime().asSeconds());
+        view3D.move(view3D.getLeft(), speed * clock.getElapsedTime().asSeconds());
         float y;
         bool isOnHeightMap = heightmap->getHeight(Vec2f(view3D.getPosition().x(), view3D.getPosition().z()), y);
         view3D.setCenter(Vec3f(view3D.getPosition().x(), y + model->getSize().y(),view3D.getPosition().z()));
@@ -406,7 +406,7 @@ void MyAppli::onExec() {
             getRenderComponentManager().getRenderComponent(i)->setView(view3D);
         }
         View view = billboard->getView();
-        view.move(view.getLeft(), -speed * clock.getElapsedTime().asSeconds());
+        view.move(view.getLeft(), speed * clock.getElapsedTime().asSeconds());
 
         isOnHeightMap = heightmap->getHeight(Vec2f(view.getPosition().x(), view.getPosition().z()), y);
         view.setCenter(Vec3f(view.getPosition().x(), y + model->getSize().y(),view.getPosition().z()));

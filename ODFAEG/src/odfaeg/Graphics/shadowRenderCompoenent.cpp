@@ -313,6 +313,10 @@ namespace odfaeg {
                 resolutionPC.resolution = resolution;
                 layerPC.resolution = resolution;
                 update = true;
+                fences = shadowMap.getFences();
+                depthBufferFences = depthBuffer.getFences();
+                alphaBufferFences = alphaBuffer.getFences();
+                stencilBufferFences = stencilBuffer.getFences();
              }
              void ShadowRenderComponent::compileShaders() {
                 const std::string indirectRenderingVertexShader = R"(#version 460
@@ -5616,7 +5620,7 @@ namespace odfaeg {
                     values2[stencilBuffer.getCurrentFrame()]++;
                     signalValues.clear();
                     signalValues.push_back(values2[depthBuffer.getCurrentFrame()]);
-                    depthBuffer.submit(true, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, std::vector<VkFence>(), getLayer()+2);
+                    depthBuffer.submit(true, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, std::vector<VkFence>(), getLayer()+2, false);
 
 
 
@@ -5638,7 +5642,7 @@ namespace odfaeg {
                     waitStages.push_back(VK_PIPELINE_STAGE_VERTEX_SHADER_BIT);
                     waitValues.clear();
                     waitValues.push_back(copyValues[depthBuffer.getCurrentFrame()]);
-                    stencilBuffer.submit(true, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, std::vector<VkFence>(), getLayer()+2);
+                    stencilBuffer.submit(true, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, std::vector<VkFence>(), getLayer()+2, false);
 
 
 
@@ -5677,7 +5681,7 @@ namespace odfaeg {
                     signalSemaphores.clear();
                     signalSemaphores.push_back(offscreenAlphaFinishedSemaphore[alphaBuffer.getCurrentFrame()]);
                     signalValues.clear();
-                    alphaBuffer.submit(true, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, std::vector<VkFence>(), getLayer()+2);
+                    alphaBuffer.submit(true, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, std::vector<VkFence>(), getLayer()+2, false);
 
                     shadowMap.beginRecordCommandBuffers();
 
@@ -5728,7 +5732,7 @@ namespace odfaeg {
                     signalSemaphores.push_back(offscreenFinishedSemaphore[shadowMap.getCurrentFrame()]);
                     values[shadowMap.getCurrentFrame()]++;
                     signalValues.push_back(values[shadowMap.getCurrentFrame()]);
-                    shadowMap.submit(true, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, std::vector<VkFence>(), getLayer()+2);
+                    shadowMap.submit(true, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, std::vector<VkFence>(), getLayer()+2, false);
 
                     commandBufferReady[currentFrame] = true;
                     cv.notify_one();
@@ -5871,7 +5875,8 @@ namespace odfaeg {
                 waitValues.push_back(values[shadowMap.getCurrentFrame()]);
                 values[shadowMap.getCurrentFrame()]++;
                 signalValues.push_back(values[shadowMap.getCurrentFrame()]);
-                target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
+                std::vector<VkFence> inFlightFences = {fences[shadowMap.getCurrentFrame()], depthBufferFences[depthBuffer.getCurrentFrame()], alphaBufferFences[alphaBuffer.getCurrentFrame()],stencilBufferFences[stencilBuffer.getCurrentFrame()]};
+                target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, inFlightFences);
                 target.beginRecordCommandBuffers();
                 const_cast<Texture&>(shadowMap.getTexture(shadowMap.getImageIndex())).toColorAttachmentOptimal(target.getCommandBuffers()[target.getCurrentFrame()]);
 

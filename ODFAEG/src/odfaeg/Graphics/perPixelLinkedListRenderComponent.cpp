@@ -246,6 +246,7 @@ namespace odfaeg {
 
             update = true;
             datasReady = false;
+            fences = frameBuffer.getFences();
 
         }
         void PerPixelLinkedListRenderComponent::createDescriptorsAndPipelines() {
@@ -5237,7 +5238,9 @@ namespace odfaeg {
                 waitValues.push_back(values[currentFrame]);
                 values[currentFrame]++;
                 signalValues.push_back(values[currentFrame]);
-                frameBuffer.submit(true, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, std::vector<VkFence>(), getLayer()+2);
+                frameBuffer.submit(true, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, std::vector<VkFence>(), getLayer()+2, false);
+
+
 
                 commandBufferReady[frameBuffer.getCurrentFrame()] = true;
                 cv.notify_one();
@@ -5868,7 +5871,8 @@ namespace odfaeg {
             waitValues.push_back(values[frameBuffer.getCurrentFrame()]);
             values[frameBuffer.getCurrentFrame()]++;
             signalValues.push_back(values[frameBuffer.getCurrentFrame()]);
-            target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
+            std::vector<VkFence> inFligthFence = {fences[frameBuffer.getCurrentFrame()]};
+            target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, inFligthFence);
             target.beginRecordCommandBuffers();
             const_cast<Texture&>(frameBuffer.getTexture(frameBuffer.getImageIndex())).toColorAttachmentOptimal(target.getCommandBuffers()[target.getCurrentFrame()]);
 

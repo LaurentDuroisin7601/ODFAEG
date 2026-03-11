@@ -263,11 +263,12 @@ namespace odfaeg {
             virtual void submit (bool lastSubmit = false, std::vector<VkSemaphore> signalSemaphores = std::vector<VkSemaphore>(),
                         std::vector<VkSemaphore> waitSemaphores = std::vector<VkSemaphore>(), std::vector<VkPipelineStageFlags> waitStages = std::vector<VkPipelineStageFlags>(),
                         std::vector<uint64_t> signalValues = std::vector<uint64_t>(),
-                        std::vector<uint64_t> waitValues = std::vector<uint64_t>(), std::vector<VkFence> fences = std::vector<VkFence>(), unsigned int queueIndex = 0) = 0;
+                        std::vector<uint64_t> waitValues = std::vector<uint64_t>(), std::vector<VkFence> fences = std::vector<VkFence>(), unsigned int queueIndex = 0, bool resetFence = true) = 0;
             ViewportMatrix getViewportMatrix(View* view);
             void endRenderPass();
             std::array<VkRect2D, 2>& getScissors();
             void setCullMode(CULLMODE cm);
+            virtual std::vector<VkFence> getFences() = 0;
 
         protected :
             virtual bool isFirstSubmit() = 0;

@@ -412,7 +412,7 @@ namespace odfaeg {
                         std::vector<VkSemaphore> waitSemaphores, std::vector<VkPipelineStageFlags> waitStages,
                         std::vector<uint64_t> signalValues,
                         std::vector<uint64_t> waitValues,
-                        std::vector<VkFence> fences, unsigned int queueIndex) {
+                        std::vector<VkFence> fences, unsigned int queueIndex, bool resetFence) {
             if (getCommandBuffers().size() > 0) {
 
 
@@ -507,7 +507,8 @@ namespace odfaeg {
                     throw core::Erreur(0, "échec de l'envoi d'un command buffer!", 1);
                 }
                 vkWaitForFences(vkDevice.getDevice(), 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
-                vkResetFences(vkDevice.getDevice(), 1, &inFlightFences[currentFrame]);
+                if (resetFence)
+                    vkResetFences(vkDevice.getDevice(), 1, &inFlightFences[currentFrame]);
                 for (unsigned int i = 0; i < 7; i++)
                     vertexBuffer[i].clear();
                 drawableData.clear();
@@ -645,9 +646,13 @@ namespace odfaeg {
                 }
             }
         }
+        std::vector<VkFence> RenderWindow::getFences() {
+            return inFlightFences;
+        }
         window::Device& RenderWindow::getDevice() {
             return vkDevice;
         }
+
         #else
         ////////////////////////////////////////////////////////////
         RenderWindow::RenderWindow()

@@ -243,6 +243,7 @@ namespace odfaeg {
             core::ThreadPool threadPool;
             std::array<core::JobFence, MAX_FRAMES_IN_FLIGHT> jobFence;
             static const unsigned int numThreads = 6;
+            std::vector<VkFence> fences;
         };
         #else
         class ODFAEG_GRAPHICS_API PerPixelLinkedListRenderComponent : public HeavyComponent {
