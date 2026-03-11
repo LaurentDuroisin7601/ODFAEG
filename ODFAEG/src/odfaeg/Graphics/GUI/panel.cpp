@@ -212,8 +212,8 @@ namespace odfaeg {
 
                     float fhScrollY  = math::Math::clamp(pScrollY * getSize().y(), 0.f, (getSize().y() - 10 - horScrollBar.getSize().y()));*/
                     float p = math::Math::clamp(deltas.y() / ( maxSize.y() - getSize().y()), 0.f, 1.f);
-                    horScrollBar = RectangleShape(math::Vec3f(10, scrollYSize, 0));
                     float barPosY = getPosition().y() + p * ((getSize().y() - 10) - scrollYSize);
+                    horScrollBar = RectangleShape(math::Vec3f(10, scrollYSize, 0));
 
                     //std::cout<<"scroll y : "<<hScrollY<<" "<<getPosition().y() + fhScrollY<<std::endl;*/
                     horScrollBar.setPosition(math::Vec3f(getPosition().x() + getSize().x() - 10 - rect.getOutlineThickness(), barPosY, getPosition().z()+500));

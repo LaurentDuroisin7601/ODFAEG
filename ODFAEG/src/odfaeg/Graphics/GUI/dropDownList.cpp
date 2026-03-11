@@ -94,14 +94,12 @@ namespace odfaeg {
             }
             void DropDownList::updateScrolls() {
                 if (totalSize > scrollableSize) {
-                    float oldScrollSize = horScrollBar.getSize().y();
                     float scrollYSize = scrollableSize / totalSize * totalSize;
-                    horScrollBar = RectangleShape(math::Vec3f(10, scrollYSize, 0));
-                    float pScrollY = math::Math::clamp(delta / totalSize, 0.f, 1.f);
 
-                    float fhScrollY  = math::Math::clamp(pScrollY * scrollableSize, 0.f, scrollableSize);
-                    float d = (oldScrollSize == 0 || delta == 0) ? 0 : scrollYSize - oldScrollSize;
-                    horScrollBar.setPosition(math::Vec3f(getPosition().x() + getSize().x(), getPosition().y() + fhScrollY + delta, getPosition().z()+500));
+                    float p = math::Math::clamp(delta / (totalSize - scrollableSize), 0.f, 1.f);
+                    float barPosY = getPosition().y() + getSize().y() + p * (scrollableSize - scrollYSize);
+                    horScrollBar = RectangleShape(math::Vec3f(10, scrollYSize, 0));
+                    horScrollBar.setPosition(math::Vec3f(getPosition().x() + getSize().x(), barPosY, getPosition().z()+500));
                     scrollY = true;
                 } else {
                     scrollY = false;
