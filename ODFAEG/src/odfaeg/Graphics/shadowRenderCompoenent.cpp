@@ -652,7 +652,7 @@ namespace odfaeg {
                                                                         if (depth.z - bias > z) {
                                                                             shadowFactor = 1.0;
                                                                         } else {
-                                                                            shadowFactor = clamp(dot(normalize(n), normalize(lightDir)), 0.0, 1.0);
+                                                                            shadowFactor = 0.0;
                                                                         }
 
                                                                         vec4 litColor = vec4(1.0, 1.0, 1.0, alpha.a);
