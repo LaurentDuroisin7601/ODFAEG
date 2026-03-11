@@ -142,8 +142,6 @@ namespace odfaeg {
             virtual void processEvents() {
 
                 if (isEventContextActivated()) {
-                    /*if(name == "TSCRIPTEDIT")
-                        std::cout<<"t script edit"<<std::endl;*/
                     getListener().processEvents();
                     recomputeSize();
                 }

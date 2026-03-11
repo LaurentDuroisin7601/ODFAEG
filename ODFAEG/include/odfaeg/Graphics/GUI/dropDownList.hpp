@@ -7,6 +7,7 @@
 #include "../../Math/vec4.h"
 #include "../text.h"
 #include "label.hpp"
+#include "textArea.hpp"
 #include "../../../../include/odfaeg/Physics/boundingPolyhedron.h"
 namespace odfaeg {
     namespace graphic {
@@ -30,6 +31,7 @@ namespace odfaeg {
                     std::string getSelectedItem();
                     void removeAllItems();
                     void setSelectedItem(std::string t);
+                    void onTextChanged();
                     ~DropDownList();
                 private :
                     math::Vec3f selectedItemPos;
@@ -42,8 +44,10 @@ namespace odfaeg {
                     ConvexShape shape;
                     physic::BoundingPolyhedron bp;
                     std::vector<Label*> items;
-                    Label* selectedItem;
+                    std::vector<Label*> filteredItems;
+                    TextArea* selectedItem;
                     Color background;
+                    physic::BoundingBox scrollableSize;
             };
         }
     }

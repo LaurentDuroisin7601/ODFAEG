@@ -231,8 +231,8 @@ namespace odfaeg {
                         }
                     }
                     if (!found) {
-                        /*if (it->second.getName() == "IconMoved")
-                            //////std::cout<<"is icon moved triggered ? "<<std::endl;*/
+                        /*if (it->second.getName() == "DropDownTextChanged")
+                            std::cout<<"is icon moved triggered ? "<<std::endl;*/
                         if (it->second.isTriggered()) {
                             (it->second)();
                             if (removeListener) {
