@@ -8561,7 +8561,9 @@ void ODFAEGCreator::onTextEntered(TextArea* ta, char caracter) {
     if (textSize.y() > tScriptEdit->getSize().y())
         tScriptEdit->setSize(Vec3f(tScriptEdit->getSize().x(), textSize.y(), tScriptEdit->getSize().z()));
     pScriptsEdit->updateScrolls();
-    pScriptsEdit->setScrollPosition(tScriptEdit->getCursorPositionLocal());
+    //std::cout<<"position : "<<tScriptEdit->getCursorPositionLocal().y()<<","<<pScriptsEdit->getDeltas().y() + pScriptsEdit->getSize().y()<<std::endl;
+    if (tScriptEdit->getCursorPositionLocal().y() + tScriptEdit->getCharacterSize() > pScriptsEdit->getDeltas().y() + pScriptsEdit->getSize().y())
+        pScriptsEdit->setScrollPosition(tScriptEdit->getCursorPositionLocal());
     applySyntaxSuggar();
 }
 void ODFAEGCreator::onGoToFunctionSelected(DropDownList* dp) {
