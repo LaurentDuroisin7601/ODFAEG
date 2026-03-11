@@ -412,7 +412,7 @@ namespace odfaeg {
                         std::vector<VkSemaphore> waitSemaphores, std::vector<VkPipelineStageFlags> waitStages,
                         std::vector<uint64_t> signalValues,
                         std::vector<uint64_t> waitValues,
-                        std::vector<VkFence> fences, unsigned int queueIndex, bool resetFence, VkFence fenceToSubmit) {
+                        std::vector<VkFence> fences, unsigned int queueIndex, bool resetFence, bool resetFences, VkFence fenceToSubmit) {
             if (getCommandBuffers().size() > 0) {
 
 
@@ -500,7 +500,8 @@ namespace odfaeg {
 
                 if (fences.size() > 0) {
                     vkWaitForFences(vkDevice.getDevice(), fences.size(), fences.data(), VK_TRUE, UINT64_MAX);
-                    vkResetFences(vkDevice.getDevice(), fences.size(), fences.data());
+                    if (resetFences)
+                        vkResetFences(vkDevice.getDevice(), fences.size(), fences.data());
                 }
                 window::Device::QueueFamilyIndices indices = vkDevice.findQueueFamilies(vkDevice.getPhysicalDevice(), getSurface());
 

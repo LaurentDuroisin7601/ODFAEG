@@ -7764,7 +7764,7 @@ namespace odfaeg {
                         signalValues.push_back(valuesCopy[depthBuffer.getCurrentFrame()]);
                         //std::cout<<"value : "<<depthBuffer.getCurrentFrame()<<","<<valuesCopy[depthBuffer.getCurrentFrame()]<<std::endl;
                         std::vector<VkFence> windowInFlightFence = {windowFences[reflectRefractTex.getCurrentFrame()]};
-                        depthBuffer.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, windowInFlightFence, getLayer()+2);
+                        depthBuffer.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, windowInFlightFence, getLayer()+2, true, false);
                         //std::cout<<"copy ok"<<std::endl;
 
 
@@ -7815,7 +7815,7 @@ namespace odfaeg {
                         waitSemaphores.push_back(offscreenDepthPassFinishedSemaphore[currentFrame]);
                         waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
 
-                        alphaBuffer.submit(true, signalSemaphores, waitSemaphores, waitStages,std::vector<uint64_t>(), std::vector<uint64_t>(), std::vector<VkFence>(), getLayer()+2, false);
+                        alphaBuffer.submit(true, signalSemaphores, waitSemaphores, waitStages,std::vector<uint64_t>(), std::vector<uint64_t>(), windowInFlightFence, getLayer()+2, false, false);
                         //std::cout<<"alpha buffer current frame : "<<currentFrame<<std::endl;
 
                         for (unsigned int i = 0; i < environmentMapCommandBuffer.size(); i++) {
@@ -7858,7 +7858,7 @@ namespace odfaeg {
                                 waitValues.push_back(valuesCopy[currentFrame]);
                                 values[currentFrame]++;
                                 signalValues.push_back(values[currentFrame]);
-                                environmentMap.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, std::vector<VkFence>(), getLayer()+2);
+                                environmentMap.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, (i == 0) ? windowInFlightFence : std::vector<VkFence>(), getLayer()+2, true, false);
                             }
 
 
@@ -7882,7 +7882,7 @@ namespace odfaeg {
                             waitValues.push_back(valuesCopy[depthBuffer.getCurrentFrame()]);
                             values[reflectRefractTex.getCurrentFrame()]++;
                             signalValues.push_back(values[reflectRefractTex.getCurrentFrame()]);
-                            environmentMap.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, std::vector<VkFence>(),getLayer()+2);
+                            environmentMap.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, (i == 0 && skybox == nullptr) ? windowInFlightFence : std::vector<VkFence>(),getLayer()+2, true, false);
 
                             environmentMap.beginRecordCommandBuffers();
                             vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 0, nullptr);
@@ -7939,7 +7939,7 @@ namespace odfaeg {
                             values[currentFrame]++;
                             signalValues.clear();
                             signalValues.push_back(values[currentFrame]);
-                            reflectRefractTex.submit((i == nbReflRefrEntities - 1) ? true : false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, std::vector<VkFence>(),getLayer()+2, (i == nbReflRefrEntities - 1) ? false : true);
+                            reflectRefractTex.submit((i == nbReflRefrEntities - 1) ? true : false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, (i == 0) ? windowInFlightFence : std::vector<VkFence>(),getLayer()+2, (i == nbReflRefrEntities - 1) ? false : true, true);
 
                             isSomethingDrawn = true;
                         }
@@ -7960,7 +7960,7 @@ namespace odfaeg {
                             waitValues.push_back(valuesCopy[depthBuffer.getCurrentFrame()]);
                             values[reflectRefractTex.getCurrentFrame()]++;
                             signalValues.push_back(values[reflectRefractTex.getCurrentFrame()]);
-                            environmentMap.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, std::vector<VkFence>(),getLayer()+2, false);
+                            environmentMap.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues,windowInFlightFence,getLayer()+2, false, false);
 
                             reflectRefractTex.beginRecordCommandBuffers();
                             waitSemaphores.clear();
@@ -7973,7 +7973,7 @@ namespace odfaeg {
                             values[reflectRefractTex.getCurrentFrame()]++;
                             signalValues.clear();
                             signalValues.push_back(values[reflectRefractTex.getCurrentFrame()]);
-                            reflectRefractTex.submit(true, signalSemaphores, waitSemaphores, waitStages, signalValues, std::vector<uint64_t>(), std::vector<VkFence>(), getLayer()+2, false);
+                            reflectRefractTex.submit(true, signalSemaphores, waitSemaphores, waitStages, signalValues, std::vector<uint64_t>(), windowInFlightFence, getLayer()+2, false, true);
                             //std::cout<<"reflect refract current frame : "<<reflectRefractTex.getCurrentFrame()<<std::endl;
                         }
                         isSomethingDrawn  = false;
@@ -8184,7 +8184,7 @@ namespace odfaeg {
                 waitValues.push_back(values[reflectRefractTex.getCurrentFrame()]);
                 values[reflectRefractTex.getCurrentFrame()]++;
                 signalValues.push_back(values[reflectRefractTex.getCurrentFrame()]);
-                target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, std::vector<VkFence>(), 0, false, windowFences[reflectRefractTex.getCurrentFrame()]);
+                target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, std::vector<VkFence>(), 0, false, true, windowFences[reflectRefractTex.getCurrentFrame()]);
                 //std::cout<<"drawn"<<std::endl;
                 depthBuffer.display();
                 alphaBuffer.display();

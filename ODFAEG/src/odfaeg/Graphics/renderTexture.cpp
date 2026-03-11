@@ -435,7 +435,7 @@ namespace odfaeg
         void RenderTexture::submit(bool lastSubmit, std::vector<VkSemaphore> signalSemaphores,
                          std::vector<VkSemaphore> waitSemaphores, std::vector<VkPipelineStageFlags> waitStages,
                          std::vector<uint64_t> signalValues,
-                         std::vector<uint64_t> waitValues, std::vector<VkFence> fences, unsigned int queueIndex, bool resetFence, VkFence fenceToSubmit) {
+                         std::vector<uint64_t> waitValues, std::vector<VkFence> fences, unsigned int queueIndex, bool resetFence, bool resetFences, VkFence fenceToSubmit) {
             if (getCommandBuffers().size() > 0) {
 
                 ////////std::cout<<"render texture end command buffer"<<std::endl;
@@ -500,7 +500,8 @@ namespace odfaeg
                 submitInfo.pCommandBuffers = &getCommandBuffers()[currentFrame];
                 if (fences.size() > 0) {
                     vkWaitForFences(vkDevice.getDevice(), fences.size(), fences.data(), VK_TRUE, UINT64_MAX);
-                    vkResetFences(vkDevice.getDevice(), fences.size(), fences.data());
+                    if (resetFences)
+                        vkResetFences(vkDevice.getDevice(), fences.size(), fences.data());
                 }
                 window::Device::QueueFamilyIndices indices = vkDevice.findQueueFamilies(vkDevice.getPhysicalDevice(), nullptr);
                 if (vkQueueSubmit(vkDevice.getQueue(indices.graphicsFamily.value(), queueIndex), 1, &submitInfo, (fenceToSubmit == nullptr) ? inFlightFences[currentFrame] : fenceToSubmit) != VK_SUCCESS) {

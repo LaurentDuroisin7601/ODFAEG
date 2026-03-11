@@ -5897,7 +5897,7 @@ namespace odfaeg {
             waitValues.push_back(values[frameBuffer.getCurrentFrame()]);
             values[frameBuffer.getCurrentFrame()]++;
             signalValues.push_back(values[frameBuffer.getCurrentFrame()]);
-            target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, std::vector<VkFence>(), 0, false, windowFences[frameBuffer.getCurrentFrame()]);
+            target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, std::vector<VkFence>(), 0, false, true, windowFences[frameBuffer.getCurrentFrame()]);
             //std::cout<<"frame drawn : "<<frameBuffer.getCurrentFrame()<<std::endl;
             frameBuffer.display();
 
