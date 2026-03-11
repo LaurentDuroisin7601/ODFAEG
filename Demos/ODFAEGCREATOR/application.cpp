@@ -1219,6 +1219,10 @@ Vec3f ODFAEGCreator::getGridCellPos(Vec3f pos) {
 }
 void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
     if (&getRenderWindow() == window && !isGuiShown && event.mouseButton.type == IEvent::BUTTON_EVENT_PRESSED && event.mouseButton.button == IMouse::Right) {
+        std::vector<MenuItem*> items = floatingMenu.getItems();
+        for (unsigned int i = 0; i < items.size(); i++) {
+            getRenderComponentManager().removeComponent(items[i]);
+        }
         floatingMenu.clear();
         FontManager<Fonts>& fm = cache.resourceManager<Font, Fonts>("FontManager");
         MenuItem* miCp = new MenuItem(getRenderWindow(), fm.getResourceByAlias(Fonts::Serif),"Copy");

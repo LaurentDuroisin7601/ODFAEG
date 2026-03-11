@@ -204,13 +204,14 @@ namespace odfaeg {
 
 
                 if (maxSize.y() > getSize().y()) {
-                    float oldScrollSize = horScrollBar.getSize().y();
+
                     float scrollYSize = (getSize().y() - 10) / maxSize.y() * (getSize().y() - 10);
-                    horScrollBar = RectangleShape(math::Vec3f(10, scrollYSize, 0));
+
                     float pScrollY = math::Math::clamp(deltas.y() / maxSize.y(), 0.f, 1.f);
 
                     float fhScrollY  = math::Math::clamp(pScrollY * getSize().y(), 0.f, (getSize().y() - 10 - horScrollBar.getSize().y()));
-                    float delta = (oldScrollSize == 0 || deltas.y() == 0) ? 0 : scrollYSize - oldScrollSize;
+                    float delta = (horScrollBar.getSize().y() == 0 || deltas.y() == 0) ? 0 : scrollYSize - horScrollBar.getSize().y();
+                    horScrollBar = RectangleShape(math::Vec3f(10, scrollYSize, 0));
 
                     //std::cout<<"scroll y : "<<hScrollY<<" "<<getPosition().y() + fhScrollY<<std::endl;*/
                     horScrollBar.setPosition(math::Vec3f(getPosition().x() + getSize().x() - 10 - rect.getOutlineThickness(), getPosition().y() + fhScrollY + delta, getPosition().z()+500));
