@@ -183,16 +183,16 @@ namespace odfaeg {
                 }
                 ////////std::cout<<"vert scroll"<<std::endl;
                 if (maxSize.x() > getSize().x()) {
-                    float oldScrollSize = vertScrollBar.getSize().x();
                     float scrollXSize = (getSize().x() - 10) / maxSize.x() * (getSize().x() - 10);
-                    vertScrollBar = RectangleShape(math::Vec3f(scrollXSize, 10, 0));
+
                     ////////std::cout<<"horizontal scroll"<<std::endl;
-                    float pScrollX = math::Math::clamp(deltas.x() / maxSize.x(), 0.f, 1.f);
+                    /*float pScrollX = math::Math::clamp(deltas.x() / maxSize.x(), 0.f, 1.f);
 
                     //std::cout<<"maxs in % : "<<scrollX<<","<<scrollY<<","<<position.y() / maxY<<std::endl;
-                    float fvScrollX = math::Math::clamp(pScrollX * getSize().x(), 0.f, (getSize().x() - 10 - vertScrollBar.getSize().x()));
-                    float delta = (oldScrollSize == 0 || deltas.x() == 0) ? 0 : scrollXSize - oldScrollSize;
-                    vertScrollBar.setPosition(math::Vec3f(getPosition().x() + fvScrollX + delta, getPosition().y() + getSize().y() - 10 - rect.getOutlineThickness(), getPosition().z()+500));
+                    float fvScrollX = math::Math::clamp(pScrollX * getSize().x(), 0.f, (getSize().x() - 10 - vertScrollBar.getSize().x()));*/
+                    float delta = (vertScrollBar.getSize().x() == 0 || deltas.x() == 0) ? 0 : (horScrollBar.getPosition().x() - getPosition().x())  + (scrollXSize - horScrollBar.getSize().x());
+                    vertScrollBar = RectangleShape(math::Vec3f(scrollXSize, 10, 0));
+                    vertScrollBar.setPosition(math::Vec3f(getPosition().x() + delta, getPosition().y() + getSize().y() - 10 - rect.getOutlineThickness(), getPosition().z()+500));
                     /*deltas.x() = math::Math::clamp(pScrollX * maxSize.x(), 0.f, (maxSize.x()-getSize().x()));
                     for (auto* child : children) {
                         child->setPosition(child->getBasePosition() - deltas);
@@ -207,9 +207,9 @@ namespace odfaeg {
 
                     float scrollYSize = (getSize().y() - 10) / maxSize.y() * (getSize().y() - 10);
 
-                    float pScrollY = math::Math::clamp(deltas.y() / maxSize.y(), 0.f, 1.f);
+                    /*float pScrollY = math::Math::clamp(deltas.y() / maxSize.y(), 0.f, 1.f);
 
-                    float fhScrollY  = math::Math::clamp(pScrollY * getSize().y(), 0.f, (getSize().y() - 10 - horScrollBar.getSize().y()));
+                    float fhScrollY  = math::Math::clamp(pScrollY * getSize().y(), 0.f, (getSize().y() - 10 - horScrollBar.getSize().y()));*/
                     float delta = (horScrollBar.getSize().y() == 0 || deltas.y() == 0) ? 0 : (horScrollBar.getPosition().y() - getPosition().y())  + (scrollYSize - horScrollBar.getSize().y());
                     horScrollBar = RectangleShape(math::Vec3f(10, scrollYSize, 0));
 
