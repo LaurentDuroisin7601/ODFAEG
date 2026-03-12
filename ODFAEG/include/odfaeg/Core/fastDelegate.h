@@ -630,6 +630,18 @@ namespace odfaeg {
 
         template<typename ArgT, typename LateParamsT, bool defaultCopiable>
         using refval_t = typename refval_selector<ArgT, LateParamsT, defaultCopiable>::type;
+
+        template <typename T>
+        struct extractFromPh {
+            using type = T;
+        };
+        template <size_t I, typename T>
+        struct extractFromPh<ph<I, T>> {
+            using type = T;
+        };
+        template<class T>
+        using extractFromPh_t = typename
+            extractFromPh<T>::type;
         //Classe de trait pour déterminer le type à stocker
         /**
         *  \file  fastDelegate.h
@@ -916,7 +928,7 @@ namespace odfaeg {
             typename std::enable_if<(I < sizeof...(ArgT))>::type
             bindParams(void* params) {
                 auto&& v = std::get<I>(param).bind(params);            // référence universelle
-                std::get<I>(param) = std::forward<std::tuple_element_t<I, std::tuple<ArgT...>>>(v);     // copie si lvalue, move si rvalue
+                std::get<I>(param) = std::forward<std::tuple_element_t<I, std::tuple<extractFromPh_t<ArgT>...>>>(v);     // copie si lvalue, move si rvalue
 
                 bindParams<I+1>(params);
             }
@@ -930,7 +942,7 @@ namespace odfaeg {
             {
                 return func(std::get<I>(param).get()...);
             }
-            DynamicFunction<R(ArgT...)> func; /**> a functor whith hold the pointer to a callback function.*/
+            DynamicFunction<R(extractFromPh_t<ArgT>...)> func; /**> a functor whith hold the pointer to a callback function.*/
             /**
             * We need to remove every types which are not placeholders, we also need to remove same placeholder's types,
             * and finally we also need to sort them.
