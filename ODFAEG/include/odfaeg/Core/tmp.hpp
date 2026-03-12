@@ -3,15 +3,19 @@
 #include <tuple>
 namespace odfaeg {
     namespace core {
-            template < typename Tp, typename... List >
-            struct contains : std::true_type {};
+            template <typename T, typename Tuple>
+            struct contains;
 
-            template < typename Tp, typename Head, typename... Rest >
-            struct contains<Tp, Head, Rest...>
-            : std::conditional< std::is_same<Tp, Head>::value,
-                std::true_type,
-                contains<Tp, Rest...>
-            >::type {};
+            template <typename T>
+            struct contains<T, std::tuple<>> : std::false_type {};
+
+            template <typename T, typename U, typename... Rest>
+            struct contains<T, std::tuple<U, Rest...>>
+                : std::conditional_t<
+                      std::is_same<T, U>::value,
+                      std::true_type,
+                      contains<T, std::tuple<Rest...>>
+                  > {};
             template <typename T, typename Tuple>
             struct has_type;
 
@@ -23,8 +27,11 @@ namespace odfaeg {
 
             template <typename T, typename... Ts>
             struct has_type<T, std::tuple<T, Ts...>> : std::true_type {};
-            template < typename Tp >
-            struct contains<Tp> : std::false_type {};
+            template <typename T, typename Tuple>
+            struct has_type;
+
+
+
 
             template <typename T, typename U=void, typename... Types>
             constexpr std::size_t index() {
@@ -110,53 +117,38 @@ namespace odfaeg {
                     using f = std::tuple<>;
                 };
 
-                template <std::size_t NB, typename T, bool B, std::size_t IH, std::size_t IH2, std::size_t N>
-                struct remove_if_sames {
+                // Construit un tuple unique en accumulant
+                template <typename Acc, typename Tuple>
+                struct unique_impl;
 
-                };
-
-                template <std::size_t NB, typename T, std::size_t IH1, std::size_t IH2, std::size_t N>
-                struct remove_if_sames<NB, T, true, IH1, IH2, N> {
-                    using f = typename remove_if_sames<NB, typename get<IH2-NB, T, !std::is_same<std::tuple_element_t<IH1, T>, std::tuple_element_t<IH2-NB, T>>::value>::type, !std::is_same<std::tuple_element_t<IH1, T>, std::tuple_element_t<IH2-NB, T>>::value, IH1, IH2+1, N>::f;
-                };
-                template <std::size_t NB, typename T, std::size_t IH1, std::size_t IH2, std::size_t N>
-                struct remove_if_sames<NB, T, false, IH1, IH2, N> {
-                    using f = typename remove_if_sames<NB+1, typename get<IH2-NB, T, !std::is_same<std::tuple_element_t<IH1, T>, std::tuple_element_t<IH2-NB, T>>::value>::type, !std::is_same<std::tuple_element_t<IH1, T>, std::tuple_element_t<IH2-NB, T>>::value, IH1, IH2+1, N>::f;
-                };
-                template <std::size_t NB, typename T, std::size_t IH1, std::size_t N>
-                struct remove_if_sames<NB, T, true, IH1, N, N> {
-                    using f = typename get<N-NB, T, !std::is_same<std::tuple_element_t<IH1, T>, std::tuple_element_t<N-NB, T>>::value>::type;
-                };
-                template <std::size_t NB, typename T, std::size_t IH1, std::size_t N>
-                struct remove_if_sames<NB, T, false, IH1, N, N> {
-                    using f = typename get<N-NB-1, T, !std::is_same<std::tuple_element_t<IH1, T>, std::tuple_element_t<N-NB-1, T>>::value>::type;
+                template <typename Acc>
+                struct unique_impl<Acc, std::tuple<>> {
+                    using type = Acc;
                 };
 
+                template <typename Acc, typename T, typename... Rest>
+                struct unique_impl<Acc, std::tuple<T, Rest...>> {
+                    using type = std::conditional_t<
+                        contains<T, Acc>::value,
+                        // déjà présent : on ne l'ajoute pas
+                        typename unique_impl<Acc, std::tuple<Rest...>>::type,
+                        // pas présent : on l'ajoute à Acc
+                        typename unique_impl<
+                            decltype(std::tuple_cat(Acc{}, std::tuple<T>{})),
+                            std::tuple<Rest...>
+                        >::type
+                    >;
+                };
 
-
-
-                template <typename T, std::size_t IH, bool B, bool B2>
-                struct make_unique {
-                    using f = typename make_unique<typename remove_if_sames<0, T, true, IH, IH+1, std::tuple_size<T>::value-1>::f, IH+1, IH == std::tuple_size<T>::value - 2, (std::tuple_size<T>::value > 1)>::f;
-                };
-                template <typename T, std::size_t IH>
-                struct make_unique<T, IH, false, true> {
-                    using f = typename make_unique<typename remove_if_sames<0, T, true, IH, IH+1, std::tuple_size<T>::value-1>::f, IH+1, IH == std::tuple_size<T>::value - 2, (std::tuple_size<T>::value > 1)>::f;
-                };
-                template <typename T, std::size_t IH>
-                struct make_unique<T, IH, true, true> {
-                    using f = typename remove_if_sames<0, T, true, IH-1, IH, std::tuple_size<T>::value-1>::f;
-                };
-                template <typename T, std::size_t IH>
-                struct make_unique<T, IH, false, false> {
-                    using f = T;
-                };
-                template <typename T>
+                // Interface publique
+                template <typename Tuple>
                 struct unique {
-                    using f = typename make_unique<T, 0, false, (std::tuple_size<T>::value > 1)>::f;
+                    using f = typename unique_impl<std::tuple<>, Tuple>::type;
                 };
+
+                // Spécialisation vide (optionnelle, mais cohérente avec ton code)
                 template <>
-                struct unique <std::tuple<>> {
+                struct unique<std::tuple<>> {
                     using f = std::tuple<>;
                 };
                 template <std::size_t I, std::size_t J, class T, bool B>
@@ -201,7 +193,7 @@ namespace odfaeg {
                 };
                 template <typename Comp, typename T>
                 struct sort {
-                    using f = typename sort_impl<Comp, T, 0, false, (std::tuple_size<T>::value > 1)>::f;
+                    using f = typename sort_impl<Comp, T, 0, (std::tuple_size<T>::value-2 == 0), (std::tuple_size<T>::value > 1)>::f;
                 };
                 template <typename Comp>
                 struct sort <Comp, std::tuple<>> {
