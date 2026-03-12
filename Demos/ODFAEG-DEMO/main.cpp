@@ -27,19 +27,19 @@ using namespace odfaeg::window;
 using namespace odfaeg::audio;
 using namespace sorrok;
 
-void f(std::unique_ptr<int> test) {
+/*void f(std::unique_ptr<int> test) {
     std::cout<<"test : "<<*test<<std::endl;
 }
 void f2(int test, int test2, int test3, int test4, int test5) {
     std::cout<<"test : "<<test<<","<<test2<<","<<test3<<","<<test4<<","<<test2<<std::endl;
-}
+}*/
 int main(int argc, char *argv[]) {
-    std::unique_ptr<int> i = std::make_unique<int>(5);
+    /*std::unique_ptr<int> i = std::make_unique<int>(5);
     FastDelegate<void> fd(&f, std::move(i));
     FastDelegate<void> fd2(&f2, ph<0, int>(),ph<3, int>(),ph<2, int>(),ph<1, int>(),ph<0, int>());
     fd();
     fd2.bind(5, 6, 7, 8);
-    fd2();
+    fd2();*/
 
 
 
