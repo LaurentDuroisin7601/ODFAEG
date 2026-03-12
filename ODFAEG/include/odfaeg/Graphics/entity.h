@@ -438,7 +438,7 @@ namespace odfaeg {
                 std::map<std::string, Entity::BoneInfo>& getBoneInfoMap();
                 int& getBoneCount();
                 virtual Texture& getTexture();
-                virtual bool isComputeFinished(unsigned int currentFrame) {return true;}
+                virtual bool isComputeFinished(unsigned int currentFrame, unsigned int layer) {return true;}
                 virtual void setWaitComputeFinished() {};
                 EntityId getEnttID();
                 void setEnttID(EntityId enttID);
@@ -454,7 +454,7 @@ namespace odfaeg {
                 void setAssociatedThreadRunning(bool running);
                 bool isAssociatedThreadRunning();
                 #ifdef VULKAN
-                virtual void computeParticles(std::mutex* mtx, std::condition_variable* cv2, VertexBuffer& frameVertexBuffer, unsigned int currentRrame, TransformMatrix tm, bool instanced, VkSemaphore computeSemaphore, VkFence computeFence) {}
+                virtual void computeParticles(std::mutex* mtx, std::condition_variable* cv2, VertexBuffer& frameVertexBuffer, unsigned int currentRrame, TransformMatrix tm, bool instanced, std::array<VkSemaphore, MAX_FRAMES_IN_FLIGHT> computeSemaphore, std::array<VkFence, MAX_FRAMES_IN_FLIGHT> computeFence, unsigned int layer) {}
                 #endif
                 std::string currentScene;
             protected :

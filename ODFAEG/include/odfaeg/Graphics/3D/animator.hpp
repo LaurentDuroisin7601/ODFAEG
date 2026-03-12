@@ -9,7 +9,7 @@ namespace odfaeg {
                 struct ComputePC {
                     int entityId;
                     int instanced;
-                    int padding1;
+                    int layer;
                     int padding2;
                     math::Matrix4f transform;
                 };
@@ -64,8 +64,8 @@ namespace odfaeg {
                     return false;
                 }
                 Entity* getCurrentFrame() const;
-                void computeParticles(std::mutex* mtx, std::condition_variable* cv2, VertexBuffer& frameVertexBuffer, unsigned int currentFrame, TransformMatrix tm, bool instanced, VkSemaphore computeSemaphore, VkFence computeFence);
-                bool isComputeFinished(unsigned int currentFrame);
+                void computeParticles(std::mutex* mtx, std::condition_variable* cv2, VertexBuffer& frameVertexBuffer, unsigned int currentFrame, TransformMatrix tm, bool instanced, std::array<VkSemaphore, MAX_FRAMES_IN_FLIGHT> computeSemaphore, std::array<VkFence, MAX_FRAMES_IN_FLIGHT> computeFence, unsigned int layer);
+                bool isComputeFinished(unsigned int currentFrame, unsigned int layer);
                 void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
                 void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size, VkCommandBuffer cmd);
                 uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
@@ -73,7 +73,7 @@ namespace odfaeg {
                 private:
                 void compileComputeShader();
                 void createCommandPool();
-                void createCommandBuffers();
+                void createCommandBuffers(unsigned int oldSize);
                 void createDescriptorPool();
                 void createDescriptorSetLayout();
                 void allocateDescriptorSets();
@@ -83,28 +83,29 @@ namespace odfaeg {
                 Animation* m_CurrentAnimation;
                 float m_CurrentTime;
                 float m_DeltaTime;
-                unsigned int currentFrame=0, maxFinalBonesMatricesSize=0;
-                VkSemaphore computeSemaphores;
+                std::vector<unsigned int> currentFrame;
+                std::vector<std::array<unsigned int, MAX_FRAMES_IN_FLIGHT>> maxFinalBonesMatricesSize;
+                std::vector<std::array<VkSemaphore, MAX_FRAMES_IN_FLIGHT>> computeSemaphores;
                 window::Device& vkDevice;
-                std::optional<std::reference_wrapper<graphic::VertexBuffer>> vertexBuffer;
-                VkFence computeFences;
-                std::array<VkCommandBuffer, MAX_FRAMES_IN_FLIGHT> commandBuffers;
+                std::vector<std::optional<std::reference_wrapper<graphic::VertexBuffer>>> vertexBuffer;
+                std::vector<std::array<VkFence, MAX_FRAMES_IN_FLIGHT>> computeFences;
+                std::vector<std::array<VkCommandBuffer, MAX_FRAMES_IN_FLIGHT>> commandBuffers;
                 VkCommandPool commandPool=VK_NULL_HANDLE;
-                VkDescriptorPool computeDescriptorPool;
-                VkDescriptorSetLayout computeDescriptorSetLayout;
-                std::array<VkDescriptorSet, MAX_FRAMES_IN_FLIGHT> computeDescriptorSets;
+                std::array<VkDescriptorPool, 2> computeDescriptorPool;
+                std::array<VkDescriptorSetLayout, 2> computeDescriptorSetLayout;
+                std::array<std::array<VkDescriptorSet, MAX_FRAMES_IN_FLIGHT>, 2> computeDescriptorSets;
                 graphic::Shader computeShader;
                 ComputePC computeParams;
                 VkPipelineLayout computePipelineLayout;
                 VkPipeline computePipeline;
-                std::condition_variable *cv2;
-                std::mutex* mtx=nullptr;
-                std::array<std::atomic<bool>, MAX_FRAMES_IN_FLIGHT> computeFinished={true, true};
-                std::array<std::atomic<bool>, MAX_FRAMES_IN_FLIGHT> computeJob={};
-                std::array<VkBuffer, MAX_FRAMES_IN_FLIGHT> finalBonesMatrices={};
-                std::array<VkBuffer, MAX_FRAMES_IN_FLIGHT> stagingFinalBonesMatrices={};
-                std::array<VkDeviceMemory, MAX_FRAMES_IN_FLIGHT> finalBonesMatricesMemory={};
-                std::array<VkDeviceMemory, MAX_FRAMES_IN_FLIGHT> stagingFinalBonesMatricesMemory={};
+                std::vector<std::condition_variable*> cv2;
+                std::vector<std::mutex*> mtx;
+                std::deque<std::array<std::atomic<bool>, MAX_FRAMES_IN_FLIGHT>> computeFinished;
+                std::deque<std::array<std::atomic<bool>, MAX_FRAMES_IN_FLIGHT>> computeJob;
+                std::vector<std::array<VkBuffer, MAX_FRAMES_IN_FLIGHT>> finalBonesMatrices;
+                std::vector<std::array<VkBuffer, MAX_FRAMES_IN_FLIGHT>> stagingFinalBonesMatrices;
+                std::vector<std::array<VkDeviceMemory, MAX_FRAMES_IN_FLIGHT>> finalBonesMatricesMemory;
+                std::vector<std::array<VkDeviceMemory, MAX_FRAMES_IN_FLIGHT>> stagingFinalBonesMatricesMemory;
             };
         }
     }

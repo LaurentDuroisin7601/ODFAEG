@@ -101,7 +101,7 @@ namespace odfaeg
             float deltaTime;
             int entityId;
             int instanced;
-            int padding;
+            int layer;
             math::Matrix4f transform;
         };
 
@@ -227,8 +227,8 @@ namespace odfaeg
                 }
             }
         }
-        void computeParticles(std::mutex* mtx, std::condition_variable* cv2, graphic::VertexBuffer& frameVertexBuffer, unsigned int currentFrame, graphic::TransformMatrix tm, bool instanced, VkSemaphore computeSemaphore, VkFence computeFence);
-        bool isComputeFinished(unsigned int currentFrame);
+        void computeParticles(std::mutex* mtx, std::condition_variable* cv2, graphic::VertexBuffer& frameVertexBuffer, unsigned int currentFrame, graphic::TransformMatrix tm, bool instanced, std::array<VkSemaphore, MAX_FRAMES_IN_FLIGHT> computeSemaphore, std::array<VkFence, MAX_FRAMES_IN_FLIGHT> computeFence, unsigned int layer);
+        bool isComputeFinished(unsigned int currentFrame, unsigned int layer);
 
         ~ParticleSystem();
         // ---------------------------------------------------------------------------------------------------------------------------
@@ -267,7 +267,7 @@ namespace odfaeg
         private:
         void compileComputeShader();
         void createCommandPool();
-        void createCommandBuffers();
+        void createCommandBuffers(unsigned int oldSize);
         void createDescriptorPool();
         void createDescriptorSetLayout();
         void allocateDescriptorSets();
@@ -283,35 +283,36 @@ namespace odfaeg
         mutable bool	mNeedsVertexUpdate;
         mutable std::vector<Quad>	mQuads;
         mutable bool	mNeedsQuadUpdate;
-        unsigned int currentFrame=0, maxParticlesSize=0, maxQuadsSize=0;
-        VkSemaphore computeSemaphores;
+        std::vector<unsigned int> currentFrame;
+        std::vector<std::array<unsigned int, MAX_FRAMES_IN_FLIGHT>> maxParticlesSize, maxQuadsSize;
+        std::vector<std::array<VkSemaphore, MAX_FRAMES_IN_FLIGHT>> computeSemaphores;
 
-        std::array<VkBuffer, MAX_FRAMES_IN_FLIGHT> quads={};
-        std::array<VkBuffer, MAX_FRAMES_IN_FLIGHT> particles={};
-        std::array<VkDeviceMemory, MAX_FRAMES_IN_FLIGHT> quadsMemory={};
-        std::array<VkDeviceMemory, MAX_FRAMES_IN_FLIGHT> particlesMemory={};
-        std::array<VkBuffer, MAX_FRAMES_IN_FLIGHT> stagingQuads={};
-        std::array<VkBuffer, MAX_FRAMES_IN_FLIGHT> stagingParticles={};
-        std::array<VkDeviceMemory, MAX_FRAMES_IN_FLIGHT> stagingQuadsMemory={};
-        std::array<VkDeviceMemory, MAX_FRAMES_IN_FLIGHT> stagingParticlesMemory={};
+        std::vector<std::array<VkBuffer, MAX_FRAMES_IN_FLIGHT>> quads;
+        std::vector<std::array<VkBuffer, MAX_FRAMES_IN_FLIGHT>> particles;
+        std::vector<std::array<VkDeviceMemory, MAX_FRAMES_IN_FLIGHT>> quadsMemory;
+        std::vector<std::array<VkDeviceMemory, MAX_FRAMES_IN_FLIGHT>> particlesMemory;
+        std::vector<std::array<VkBuffer, MAX_FRAMES_IN_FLIGHT>> stagingQuads;
+        std::vector<std::array<VkBuffer, MAX_FRAMES_IN_FLIGHT>> stagingParticles;
+        std::vector<std::array<VkDeviceMemory, MAX_FRAMES_IN_FLIGHT>> stagingQuadsMemory;
+        std::vector<std::array<VkDeviceMemory, MAX_FRAMES_IN_FLIGHT>> stagingParticlesMemory;
 
 
         window::Device& vkDevice;
-        std::optional<std::reference_wrapper<graphic::VertexBuffer>> vertexBuffer;
-        VkFence computeFences;
-        std::array<VkCommandBuffer, MAX_FRAMES_IN_FLIGHT> commandBuffers;
+        std::vector<std::optional<std::reference_wrapper<graphic::VertexBuffer>>> vertexBuffer;
+        std::vector<std::array<VkFence, MAX_FRAMES_IN_FLIGHT>> computeFences;
+        std::vector<std::array<VkCommandBuffer, MAX_FRAMES_IN_FLIGHT>> commandBuffers;
         VkCommandPool commandPool=VK_NULL_HANDLE;
-        VkDescriptorPool computeDescriptorPool;
-        VkDescriptorSetLayout computeDescriptorSetLayout;
-        std::array<VkDescriptorSet, MAX_FRAMES_IN_FLIGHT> computeDescriptorSets;
+        std::array<VkDescriptorPool, 3> computeDescriptorPool;
+        std::array<VkDescriptorSetLayout, 3> computeDescriptorSetLayout;
+        std::array<std::array<VkDescriptorSet, MAX_FRAMES_IN_FLIGHT>, 3> computeDescriptorSets;
         graphic::Shader computeShader;
         ComputePC computeParams;
         VkPipelineLayout computePipelineLayout;
         VkPipeline computePipeline;
-        std::condition_variable *cv2;
-        std::mutex* mtx;
-        std::array<std::atomic<bool>, MAX_FRAMES_IN_FLIGHT> computeFinished={true, true};
-        std::array<std::atomic<bool>, MAX_FRAMES_IN_FLIGHT> computeJob={};
+        std::vector<std::condition_variable*> cv2;
+        std::vector<std::mutex*> mtx;
+        std::deque<std::array<std::atomic<bool>, MAX_FRAMES_IN_FLIGHT>> computeFinished;
+        std::deque<std::array<std::atomic<bool>, MAX_FRAMES_IN_FLIGHT>> computeJob;
 
 
         };

@@ -7960,6 +7960,7 @@ namespace odfaeg {
                             waitValues.push_back(valuesCopy[depthBuffer.getCurrentFrame()]);
                             values[reflectRefractTex.getCurrentFrame()]++;
                             signalValues.push_back(values[reflectRefractTex.getCurrentFrame()]);
+                            environmentMap.beginRecordCommandBuffers();
                             environmentMap.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues,windowInFlightFence,getLayer()+2, false, false);
 
                             reflectRefractTex.beginRecordCommandBuffers();
@@ -7973,6 +7974,7 @@ namespace odfaeg {
                             values[reflectRefractTex.getCurrentFrame()]++;
                             signalValues.clear();
                             signalValues.push_back(values[reflectRefractTex.getCurrentFrame()]);
+                            reflectRefractTex.beginRecordCommandBuffers();
                             reflectRefractTex.submit(true, signalSemaphores, waitSemaphores, waitStages, signalValues, std::vector<uint64_t>(), windowInFlightFence, getLayer()+2, false, true);
                             //std::cout<<"reflect refract current frame : "<<reflectRefractTex.getCurrentFrame()<<std::endl;
                         }
