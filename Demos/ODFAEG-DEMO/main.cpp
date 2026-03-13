@@ -31,7 +31,7 @@ using namespace sorrok;
     std::cout<<"test : "<<*test<<std::endl;
 }
 void f2(int test, int test2, int test3, int test4, int test5) {
-    std::cout<<"test : "<<test<<","<<test2<<","<<test3<<","<<test4<<","<<test2<<std::endl;
+    std::cout<<"test : "<<test<<","<<test2<<","<<test3<<","<<test4<<","<<test5<<std::endl;
 }*/
 int main(int argc, char *argv[]) {
     /*std::unique_ptr<int> i = std::make_unique<int>(5);

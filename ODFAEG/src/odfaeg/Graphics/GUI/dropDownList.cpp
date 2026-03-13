@@ -260,9 +260,9 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < items.size(); i++) {
                     if (items[i]->getText().find(selectedItem->getText()) != std::string::npos) {
                         filteredItems.push_back(items[i]);
-                        filteredItems[i]->setPosition(math::Vec3f(getPosition().x(), getPosition().y() + getSize().y() * position, getPosition().z()));
+                        filteredItems.back()->setPosition(math::Vec3f(getPosition().x(), getPosition().y() + getSize().y() * position, getPosition().z()));
                         position++;
-                        totalSize += filteredItems[i]->getSize().y();
+                        totalSize += filteredItems.back()->getSize().y();
                     }
                 }
             }
