@@ -3577,11 +3577,15 @@ void ODFAEGCreator::actionPerformed(Button* button) {
             dpSelectComponent->addItem(taComponentName->getText(), 15);
             dpSelectComponent->setSelectedItem(taComponentName->getText());
         }*/
+        //std::cout<<"nb render components : "<<getRenderComponentManager().getRenderComponents().size()<<std::endl;
         //std::cout<<"recreate descriptor and pipelines"<<std::endl;
         getRenderComponentManager().recreateDescriptorsAndPipelines();
         //std::cout<<"descriptor and pipelines created"<<std::endl;
+
         for (unsigned int i = 0; i < getRenderComponentManager().getRenderComponents().size(); i++) {
+            //std::cout<<"relaunch"<<std::endl;
             if (getRenderComponentManager().getRenderComponents()[i]->getName() == dpSelectComponent->getSelectedItem()) {
+
                 selectedComponentView = getRenderComponentManager().getRenderComponents()[i]->getView();
             }
         }

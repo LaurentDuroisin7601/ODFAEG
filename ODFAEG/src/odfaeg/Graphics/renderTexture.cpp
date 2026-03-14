@@ -531,13 +531,13 @@ namespace odfaeg
                 if (vkQueueSubmit(vkDevice.getQueue(indices.graphicsFamily.value(), queueIndex), 1, &submitInfo, (fenceToSubmit == nullptr) ? inFlightFences[currentFrame] : fenceToSubmit) != VK_SUCCESS) {
                     throw core::Erreur(0, "échec de l'envoi d'un command buffer!", 1);
                 }
-                std::cout<<"wait on fence : "<<inFlightFences[currentFrame]<<std::endl;
+                //std::cout<<"wait on fence : "<<inFlightFences[currentFrame]<<std::endl;
                 VkResult r = vkWaitForFences(vkDevice.getDevice(), 1, (fenceToSubmit == nullptr) ? &inFlightFences[currentFrame] : &fenceToSubmit, VK_TRUE, UINT64_MAX);
-                printf("wait for fence result : %d\n", r);
+                //printf("wait for fence result : %d\n", r);
                 if (resetFence) {
-                    std::cout<<"reset fence : "<<inFlightFences[currentFrame]<<std::endl;
+                    //std::cout<<"reset fence : "<<inFlightFences[currentFrame]<<std::endl;
                     auto status = vkGetFenceStatus(vkDevice.getDevice(), inFlightFences[currentFrame]);
-                    printf("Fence status before reset: %d\n", status);
+                    //printf("Fence status before reset: %d\n", status);
                     vkResetFences(vkDevice.getDevice(), 1, (fenceToSubmit == nullptr) ? &inFlightFences[currentFrame] : &fenceToSubmit);
                 }
                 for (unsigned int i = 0; i < 7; i++)

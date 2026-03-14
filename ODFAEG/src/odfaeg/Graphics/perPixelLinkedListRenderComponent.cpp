@@ -621,6 +621,7 @@ namespace odfaeg {
             window.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, std::vector<VkFence>(), 0, false, true, windowFences[frameBuffer.getCurrentFrame()]);
             frameBuffer.display();
             registerFrameJob[frameBuffer.getCurrentFrame()] = true;
+            vkDeviceWaitIdle(vkDevice.getDevice());
 
             //vkDeviceWaitIdle(vkDevice.getDevice());
             /*vkDestroyFence(vkDevice.getDevice(), windowFences[frameBuffer.getCurrentFrame()], nullptr);
@@ -633,7 +634,7 @@ namespace odfaeg {
                 throw std::runtime_error("failed to create fence");
             }
 
-            vkResetFences(vkDevice.getDevice(), 1, &fences[frameBuffer.getCurrentFrame()]);*/
+            /*vkResetFences(vkDevice.getDevice(), 1, &fences[frameBuffer.getCurrentFrame()]);*/
 
             /*unsigned int currentFrame = frameBuffer.getCurrentFrame();
             VkCommandBufferInheritanceInfo inheritanceInfo{};
@@ -777,10 +778,9 @@ namespace odfaeg {
         }
         void PerPixelLinkedListRenderComponent::clear() {
             ////std::cout<<"clear"<<std::endl;
-            /*frameBuffer.beginRecordCommandBuffers();
-            const_cast<Texture&>(frameBuffer.getTexture(frameBuffer.getImageIndex())).toColorAttachmentOptimal(frameBuffer.getCommandBuffers()[frameBuffer.getCurrentFrame()]);
-            frameBuffer.clear(Color::Transparent);
+            /*frameBuffer.clear(Color::Transparent);
             unsigned int currentFrame = frameBuffer.getCurrentFrame();
+
             VkClearColorValue clearColor;
             clearColor.uint32[0] = 0xffffffff;
             VkImageSubresourceRange subresRange = {};
@@ -789,12 +789,12 @@ namespace odfaeg {
             subresRange.layerCount = 1;
             vkCmdClearColorImage(frameBuffer.getCommandBuffers()[currentFrame], headPtrTextureImage[currentFrame], VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
             vkCmdFillBuffer(frameBuffer.getCommandBuffers()[currentFrame], counterShaderStorageBuffers[currentFrame], 0, sizeof(uint32_t), 0);
-            VkMemoryBarrier memoryBarrier;
-            memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-            memoryBarrier.pNext = VK_NULL_HANDLE;
-            memoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-            memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-            vkCmdPipelineBarrier(frameBuffer.getCommandBuffers()[currentFrame], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);*/
+            VkMemoryBarrier memoryBarrier0;
+            memoryBarrier0.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+            memoryBarrier0.pNext = VK_NULL_HANDLE;
+            memoryBarrier0.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            memoryBarrier0.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+            vkCmdPipelineBarrier(frameBuffer.getCommandBuffers()[currentFrame], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier0, 0, nullptr, 0, nullptr);*/
 
 
             ////std::cout<<"cleared"<<std::endl;
@@ -946,7 +946,6 @@ namespace odfaeg {
                 if (shader->getNbShaders() * (Batcher::nbPrimitiveTypes - 1) > descriptorPool.size())
                     descriptorPool.resize(shader->getNbShaders() * (Batcher::nbPrimitiveTypes - 1));
                 descriptorPool[descriptorId].resize(1);
-                std::vector<Texture*> allTextures = Texture::getAllTextures();
                 std::array<VkDescriptorPoolSize, 6> poolSizes;
                 poolSizes[0].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
                 poolSizes[0].descriptorCount = static_cast<uint32_t>(frameBuffer.getMaxFramesInFlight());
@@ -1229,7 +1228,7 @@ namespace odfaeg {
             }
         }
         void PerPixelLinkedListRenderComponent::allocateDescriptorSets(RenderStates states) {
-            std::vector<std::vector<std::vector<VkDescriptorSet>>>& descriptorSets = frameBuffer.getDescriptorSet();
+            /*std::vector<std::vector<std::vector<VkDescriptorSet>>>& descriptorSets = frameBuffer.getDescriptorSet();
             std::vector<std::vector<VkDescriptorPool>>& descriptorPool = frameBuffer.getDescriptorPool();
             std::vector<std::vector<VkDescriptorSetLayout>>& descriptorSetLayout = frameBuffer.getDescriptorSetLayout();
             Shader* shader = const_cast<Shader*>(states.shader);
@@ -1255,7 +1254,7 @@ namespace odfaeg {
             allocInfo.pSetLayouts = layouts.data();
             if (vkAllocateDescriptorSets(vkDevice.getDevice(), &allocInfo, descriptorSets[descriptorId][0].data()) != VK_SUCCESS) {
                 throw std::runtime_error("echec de l'allocation d'un set de descripteurs!");
-            }
+            }*/
         }
         void PerPixelLinkedListRenderComponent::updateDescriptorSets(unsigned int currentFrame, unsigned int p, RenderStates states) {
             std::vector<std::vector<std::vector<VkDescriptorSet>>>& descriptorSets = frameBuffer.getDescriptorSet();
@@ -1351,58 +1350,56 @@ namespace odfaeg {
 
             } else if (shader == &perPixelLinkedListP2) {
                 unsigned int descriptorId = p * shader->getNbShaders() + shader->getId();
-                for (size_t i = 0; i < frameBuffer.getMaxFramesInFlight(); i++) {
 
-                    std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
+                std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
 
-                    VkDescriptorImageInfo headPtrDescriptorImageInfo;
-                    headPtrDescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
-                    headPtrDescriptorImageInfo.imageView = headPtrTextureImageView[currentFrame];
-                    headPtrDescriptorImageInfo.sampler = headPtrTextureSampler[currentFrame];
+                VkDescriptorImageInfo headPtrDescriptorImageInfo;
+                headPtrDescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+                headPtrDescriptorImageInfo.imageView = headPtrTextureImageView[currentFrame];
+                headPtrDescriptorImageInfo.sampler = headPtrTextureSampler[currentFrame];
 
-                    descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                    descriptorWrites[0].dstSet = descriptorSets[descriptorId][0][currentFrame];
-                    descriptorWrites[0].dstBinding = 0;
-                    descriptorWrites[0].dstArrayElement = 0;
-                    descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-                    descriptorWrites[0].descriptorCount = 1;
-                    descriptorWrites[0].pImageInfo = &headPtrDescriptorImageInfo;
+                descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                descriptorWrites[0].dstSet = descriptorSets[descriptorId][0][currentFrame];
+                descriptorWrites[0].dstBinding = 0;
+                descriptorWrites[0].dstArrayElement = 0;
+                descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+                descriptorWrites[0].descriptorCount = 1;
+                descriptorWrites[0].pImageInfo = &headPtrDescriptorImageInfo;
 
-                    VkDescriptorBufferInfo linkedListStorageBufferInfoLastFrame{};
-                    linkedListStorageBufferInfoLastFrame.buffer = linkedListShaderStorageBuffers[currentFrame];
-                    linkedListStorageBufferInfoLastFrame.offset = 0;
-                    unsigned int nodeSize = 5 * sizeof(float) + sizeof(unsigned int);
-                    linkedListStorageBufferInfoLastFrame.range = maxNodes * nodeSize;
+                VkDescriptorBufferInfo linkedListStorageBufferInfoLastFrame{};
+                linkedListStorageBufferInfoLastFrame.buffer = linkedListShaderStorageBuffers[currentFrame];
+                linkedListStorageBufferInfoLastFrame.offset = 0;
+                unsigned int nodeSize = 5 * sizeof(float) + sizeof(unsigned int);
+                linkedListStorageBufferInfoLastFrame.range = maxNodes * nodeSize;
 
-                    descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                    descriptorWrites[1].dstSet = descriptorSets[descriptorId][0][currentFrame];
-                    descriptorWrites[1].dstBinding = 1;
-                    descriptorWrites[1].dstArrayElement = 0;
-                    descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-                    descriptorWrites[1].descriptorCount = 1;
-                    descriptorWrites[1].pBufferInfo = &linkedListStorageBufferInfoLastFrame;
+                descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                descriptorWrites[1].dstSet = descriptorSets[descriptorId][0][currentFrame];
+                descriptorWrites[1].dstBinding = 1;
+                descriptorWrites[1].dstArrayElement = 0;
+                descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                descriptorWrites[1].descriptorCount = 1;
+                descriptorWrites[1].pBufferInfo = &linkedListStorageBufferInfoLastFrame;
 
-                    vkUpdateDescriptorSets(vkDevice.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
-                }
+                vkUpdateDescriptorSets(vkDevice.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+
             } else {
                 unsigned int descriptorId = p * shader->getNbShaders() + shader->getId();
-                for (size_t i = 0; i < frameBuffer.getMaxFramesInFlight(); i++) {
-                    VkDescriptorImageInfo	descriptorImageInfo;
-                    std::array<VkWriteDescriptorSet, 1> descriptorWrites{};
-                    descriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                    descriptorImageInfo.imageView = skybox->getTexture().getImageView();
-                    descriptorImageInfo.sampler = skybox->getTexture().getSampler();
+                VkDescriptorImageInfo	descriptorImageInfo;
+                std::array<VkWriteDescriptorSet, 1> descriptorWrites{};
+                descriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                descriptorImageInfo.imageView = skybox->getTexture().getImageView();
+                descriptorImageInfo.sampler = skybox->getTexture().getSampler();
 
-                    descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                    descriptorWrites[0].dstSet = descriptorSets[descriptorId][0][i];
-                    descriptorWrites[0].dstBinding = 0;
-                    descriptorWrites[0].dstArrayElement = 0;
-                    descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                    descriptorWrites[0].descriptorCount = 1;
-                    descriptorWrites[0].pImageInfo = &descriptorImageInfo;
+                descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                descriptorWrites[0].dstSet = descriptorSets[descriptorId][0][currentFrame];
+                descriptorWrites[0].dstBinding = 0;
+                descriptorWrites[0].dstArrayElement = 0;
+                descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                descriptorWrites[0].descriptorCount = 1;
+                descriptorWrites[0].pImageInfo = &descriptorImageInfo;
 
-                    vkUpdateDescriptorSets(vkDevice.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
-                }
+                vkUpdateDescriptorSets(vkDevice.getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+
             }
         }
         void PerPixelLinkedListRenderComponent::createDescriptorSets(unsigned int p, RenderStates states) {
@@ -4773,7 +4770,7 @@ namespace odfaeg {
 
                 //std::unique_lock<std::mutex> lock2(mtx2);
                 cv.wait(lock, [this](){return registerFrameJob[frameBuffer.getCurrentFrame()].load() || stop.load();});
-                std::cout<<"register frame : "<<frameBuffer.getCurrentFrame()<<std::endl;
+                //std::cout<<"register frame : "<<frameBuffer.getCurrentFrame()<<std::endl;
                 registerFrameJob[frameBuffer.getCurrentFrame()] = false;
                 if (!stop.load()) {
                     RenderStates currentStates;
@@ -4968,8 +4965,6 @@ namespace odfaeg {
                     drawBuffers();
                     jobFence[currentFrame].wait();
 
-                    frameBuffer.beginRecordCommandBuffers();
-
 
                     frameBuffer.clear(Color::Transparent);
 
@@ -5014,12 +5009,13 @@ namespace odfaeg {
                     std::vector<uint64_t> signalValues;
                     std::vector<uint64_t> waitValues;
                     waitValues.push_back(values[currentFrame]);
-                    //values[currentFrame]++;
+                    values[currentFrame]++;
                     signalValues.push_back(values[currentFrame]);
                     std::vector<VkFence> windowInFlightFence = {windowFences[frameBuffer.getCurrentFrame()]};
                     //std::cout<<"wait on fence : "<<windowFences[frameBuffer.getCurrentFrame()]<<std::endl;
                     //std::cout<<"submit fence : "<<fences[frameBuffer.getCurrentFrame()]<<std::endl;
-                    //frameBuffer.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, windowInFlightFence, getLayer()+2);
+                    frameBuffer.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, windowInFlightFence, getLayer()+2);
+                    frameBuffer.beginRecordCommandBuffers();
                     //std::cout<<"reseted : "<<frameBuffer.getCurrentFrame()<<","<<stop.load()<<std::endl;
                     //std::cout<<"skybox"<<std::endl;
 
@@ -5155,7 +5151,7 @@ namespace odfaeg {
                         frameBuffer.beginRenderPass();
                         vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &skyboxCommandBuffer[currentFrame]);
                         frameBuffer.endRenderPass();
-                        /*signalSemaphores.clear();
+                        signalSemaphores.clear();
                         signalSemaphores.push_back(offscreenFinishedSemaphore[currentFrame]);
                         signalValues.clear();
                         waitSemaphores.clear();
@@ -5166,7 +5162,7 @@ namespace odfaeg {
                         waitValues.push_back(values[currentFrame]);
                         values[currentFrame]++;
                         signalValues.push_back(values[currentFrame]);
-                        frameBuffer.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, std::vector<VkFence>(), getLayer()+2);*/
+                        frameBuffer.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, std::vector<VkFence>(), getLayer()+2);
                     }
 
 
@@ -5176,7 +5172,7 @@ namespace odfaeg {
                     vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &ppllCommandBuffer[currentFrame]);
                     vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &ppllSelectedCommandBuffer[currentFrame]);
                     frameBuffer.endRenderPass();
-                    /*signalSemaphores.clear();
+                    signalSemaphores.clear();
                     signalSemaphores.push_back(offscreenFinishedSemaphore[currentFrame]);
                     signalValues.clear();
                     waitSemaphores.clear();
@@ -5186,7 +5182,7 @@ namespace odfaeg {
                     waitValues.clear();
                     waitValues.push_back(values[currentFrame]);
                     values[currentFrame]++;
-                    signalValues.push_back(values[currentFrame]);*/
+                    signalValues.push_back(values[currentFrame]);
 
                     //std::cout<<"compute"<<std::endl;
 
@@ -5259,8 +5255,8 @@ namespace odfaeg {
                         //std::cout<<"fence reseted"<<std::endl;
                     }
 
-                    /*std::cout<<"submit fence : "<<fences[frameBuffer.getCurrentFrame()]<<std::endl;
-                    frameBuffer.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, fencesToWait, getLayer()+2);*/
+                    //std::cout<<"submit fence : "<<fences[frameBuffer.getCurrentFrame()]<<std::endl;
+                    frameBuffer.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, fencesToWait, getLayer()+2);
                     //std::cout<<"ppll ok"<<std::endl;
 
                     //std::cout<<"draw"<<std::endl;
@@ -5268,7 +5264,7 @@ namespace odfaeg {
                     frameBuffer.beginRenderPass();
                     vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &ppllOutlineCommandBuffer[currentFrame]);
                     frameBuffer.endRenderPass();
-                    /*signalSemaphores.clear();
+                    signalSemaphores.clear();
                     signalSemaphores.push_back(offscreenFinishedSemaphore[currentFrame]);
                     signalValues.clear();
                     waitSemaphores.clear();
@@ -5283,7 +5279,7 @@ namespace odfaeg {
 
                     values[currentFrame]++;
                     signalValues.push_back(values[currentFrame]);
-                    frameBuffer.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, std::vector<VkFence>(), getLayer()+2);*/
+                    frameBuffer.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, std::vector<VkFence>(), getLayer()+2);
                     //std::cout<<"outline ok"<<std::endl;
 
                     frameBuffer.beginRecordCommandBuffers();
@@ -5308,7 +5304,7 @@ namespace odfaeg {
                     waitValues.push_back(values[currentFrame]);
                     values[currentFrame]++;
                     signalValues.push_back(values[currentFrame]);
-                    frameBuffer.submit(true, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, windowInFlightFence, getLayer()+2, false);
+                    frameBuffer.submit(true, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, std::vector<VkFence>(), getLayer()+2, false);
                 }
 
                 //std::cout<<"drawn : "<<frameBuffer.getCurrentFrame()<<std::endl;
@@ -5913,24 +5909,13 @@ namespace odfaeg {
 
             std::unique_lock<std::mutex> lock(mtx);
             if (useThread) {
-
-
-
                 cv.wait(lock, [this] {
 
                         //std::cout<<"draw frame : "<<frameBuffer.getCurrentFrame()<<std::endl;
                         return commandBufferReady[frameBuffer.getCurrentFrame()].load() || stop.load();
                 });
-                //std::cout<<"draw frame : "<<frameBuffer.getCurrentFrame()<<std::endl;
-
-
-                commandBufferReady[frameBuffer.getCurrentFrame()] = false;
-                //registerFrameJob[frameBuffer.getCurrentFrame()] = false;
-
-
-                //std::cout<<"second pass ok"<<std::endl;
             }
-            std::cout<<"draw : "<<frameBuffer.getCurrentFrame()<<std::endl;
+            //std::cout<<"draw : "<<frameBuffer.getCurrentFrame()<<std::endl;
             target.beginRecordCommandBuffers();
             const_cast<Texture&>(frameBuffer.getTexture(frameBuffer.getImageIndex())).toShaderReadOnlyOptimal(target.getCommandBuffers()[target.getCurrentFrame()]);
             frameBufferSprite.setCenter(target.getView().getPosition());

@@ -52,7 +52,7 @@ namespace odfaeg {
                                                                 VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT};
                     VkValidationFeaturesEXT features = {};
                     features.sType = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT;
-                    features.enabledValidationFeatureCount = 4;
+                    features.enabledValidationFeatureCount = 1;
                     features.pEnabledValidationFeatures = enables;
 
                     const VkLayerSettingsCreateInfoEXT layer_settings_create_info = {
