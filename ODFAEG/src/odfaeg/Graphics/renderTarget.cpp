@@ -254,6 +254,7 @@ namespace odfaeg {
              blendModes.push_back(add);
              blendModes.push_back(multiply);
              none.updateIds();
+             depthTestEnabled = false;
              for (unsigned int b = 0; b < blendModes.size(); b++) {
                  states.blendMode = blendModes[b];
                  /*////std::cout<<"blendmode id : "<<states.blendMode.id<<std::endl;
@@ -639,6 +640,9 @@ namespace odfaeg {
             samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
             samplerLayoutBinding.pImmutableSamplers = nullptr;
             samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+            if (descriptorSetLayout[shader->getId()][0] != nullptr) {
+                vkDestroyDescriptorSetLayout(vkDevice.getDevice(), descriptorSetLayout[shader->getId()][0], nullptr);
+            }
 
             std::array<VkDescriptorSetLayoutBinding, 2> bindings = {ssboLayoutBinding, samplerLayoutBinding};
 
@@ -691,6 +695,9 @@ namespace odfaeg {
             poolSizes[0].descriptorCount = static_cast<uint32_t>(getMaxFramesInFlight());
             poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
             poolSizes[1].descriptorCount = MAX_TEXTURES * static_cast<uint32_t>(getMaxFramesInFlight());
+            if (descriptorPool[descriptorId][0] != nullptr) {
+                vkDestroyDescriptorPool(vkDevice.getDevice(), descriptorPool[descriptorId][0], nullptr);
+            }
 
 
             VkDescriptorPoolCreateInfo poolInfo{};

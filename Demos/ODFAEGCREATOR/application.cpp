@@ -3584,6 +3584,9 @@ void ODFAEGCreator::actionPerformed(Button* button) {
 
         for (unsigned int i = 0; i < getRenderComponentManager().getRenderComponents().size(); i++) {
             //std::cout<<"relaunch"<<std::endl;
+            /*getRenderComponentManager().getRenderComponents()[i]->stopRenderer();
+            getRenderComponentManager().getRenderComponents()[i]->createDescriptorsAndPipelines();
+            getRenderComponentManager().getRenderComponents()[i]->launchRenderer();*/
             if (getRenderComponentManager().getRenderComponents()[i]->getName() == dpSelectComponent->getSelectedItem()) {
 
                 selectedComponentView = getRenderComponentManager().getRenderComponents()[i]->getView();
