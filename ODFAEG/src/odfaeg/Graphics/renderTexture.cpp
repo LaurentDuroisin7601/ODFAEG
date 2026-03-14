@@ -37,7 +37,7 @@
 #include "renderTextureImplFBO.h"
 #include "renderTextureImplDefault.h"
 #endif
-
+#include <atomic>
 namespace odfaeg
 {
     namespace graphic {
@@ -95,6 +95,20 @@ namespace odfaeg
 
 
             return true;
+        }
+        void RenderTexture::resetFrameIndex() {
+            currentFrame = 0;
+        }
+        void RenderTexture::recreateFences() {
+            for (size_t i = 0; i < getMaxFramesInFlight(); i++) {
+                vkDestroyFence(vkDevice.getDevice(), inFlightFences[i], nullptr);
+            }
+            VkFenceCreateInfo fenceInfo{};
+            fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+            for (size_t i = 0; i < getMaxFramesInFlight(); i++) {
+                if (vkCreateFence(vkDevice.getDevice(), &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS)
+                    throw core::Erreur(0, "échec de la création des objets de synchronisation pour une frame!", 1);
+            }
         }
         void RenderTexture::createSyncObjects() {
             inFlightFences.resize(getMaxFramesInFlight());
@@ -239,10 +253,12 @@ namespace odfaeg
                     VkSubpassDependency dependency{};
                     dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
                     dependency.dstSubpass = 0;
-                    dependency.srcStageMask =  VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-                    dependency.srcAccessMask = 0;
-                    dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-                    dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+                    dependency.srcStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+                    dependency.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+                    dependency.dstStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+                    dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
+                                        VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
                     renderPassInfo.dependencyCount = 1;
                     renderPassInfo.pDependencies = &dependency;
                     VkRenderPassMultiviewCreateInfo multiviewInfo{};
@@ -304,10 +320,18 @@ namespace odfaeg
                     VkSubpassDependency dependency{};
                     dependency.srcSubpass = (isCubeMap) ? 0 : VK_SUBPASS_EXTERNAL;
                     dependency.dstSubpass = 0;
-                    dependency.srcStageMask =  VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-                    dependency.srcAccessMask = 0;
-                    dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-                    dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+                    dependency.srcStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
+                                               VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+                    dependency.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
+                                               VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+
+                    // Ce que le subpass va faire : lire + écrire
+                    dependency.dstStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
+                                               VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+                    dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT  |
+                                               VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
+                                               VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
+                                               VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
                     dependency.dependencyFlags = (isCubeMap) ? VK_DEPENDENCY_BY_REGION_BIT | VK_DEPENDENCY_VIEW_LOCAL_BIT : 0;
                     renderPassInfo.dependencyCount = 1;
                     renderPassInfo.pDependencies = &dependency;
@@ -507,9 +531,15 @@ namespace odfaeg
                 if (vkQueueSubmit(vkDevice.getQueue(indices.graphicsFamily.value(), queueIndex), 1, &submitInfo, (fenceToSubmit == nullptr) ? inFlightFences[currentFrame] : fenceToSubmit) != VK_SUCCESS) {
                     throw core::Erreur(0, "échec de l'envoi d'un command buffer!", 1);
                 }
-                vkWaitForFences(vkDevice.getDevice(), 1, (fenceToSubmit == nullptr) ? &inFlightFences[currentFrame] : &fenceToSubmit, VK_TRUE, UINT64_MAX);
-                if (resetFence)
+                std::cout<<"wait on fence : "<<inFlightFences[currentFrame]<<std::endl;
+                VkResult r = vkWaitForFences(vkDevice.getDevice(), 1, (fenceToSubmit == nullptr) ? &inFlightFences[currentFrame] : &fenceToSubmit, VK_TRUE, UINT64_MAX);
+                printf("wait for fence result : %d\n", r);
+                if (resetFence) {
+                    std::cout<<"reset fence : "<<inFlightFences[currentFrame]<<std::endl;
+                    auto status = vkGetFenceStatus(vkDevice.getDevice(), inFlightFences[currentFrame]);
+                    printf("Fence status before reset: %d\n", status);
                     vkResetFences(vkDevice.getDevice(), 1, (fenceToSubmit == nullptr) ? &inFlightFences[currentFrame] : &fenceToSubmit);
+                }
                 for (unsigned int i = 0; i < 7; i++)
                     vertexBuffer[i].clear();
                 drawableData.clear();

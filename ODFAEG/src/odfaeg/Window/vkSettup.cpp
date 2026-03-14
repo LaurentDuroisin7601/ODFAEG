@@ -45,10 +45,14 @@ namespace odfaeg {
                         {"VK_LAYER_KHRONOS_validation", "report_flags", VK_LAYER_SETTING_TYPE_STRING_EXT, 1, &setting_debug_action_level}
                     };
 
-                    VkValidationFeatureEnableEXT enables[] = {VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT};
+                    VkValidationFeatureEnableEXT enables[] = {VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT,
+                                                                VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT,
+                                                                VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_RESERVE_BINDING_SLOT_EXT,
+                                                                /*VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT,*/
+                                                                VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT};
                     VkValidationFeaturesEXT features = {};
                     features.sType = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT;
-                    features.enabledValidationFeatureCount = 1;
+                    features.enabledValidationFeatureCount = 4;
                     features.pEnabledValidationFeatures = enables;
 
                     const VkLayerSettingsCreateInfoEXT layer_settings_create_info = {

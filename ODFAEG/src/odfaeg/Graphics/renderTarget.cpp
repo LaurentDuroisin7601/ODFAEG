@@ -443,17 +443,57 @@ namespace odfaeg {
                 }
              }
 
+
+
+             if(commandsOnRecordedState[getCurrentFrame()]) {
+                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
+                    if (vertexBuffer[p].getVertexBuffer(getCurrentFrame()) != nullptr) {
+                        VkBufferMemoryBarrier b{};
+                        b.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+                        b.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                        b.dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT; // ou INDEX_READ_BIT pour l’IB
+                        b.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                        b.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                        b.buffer = vertexBuffer[p].getVertexBuffer(getCurrentFrame());
+                        b.offset = 0;
+                        b.size = VK_WHOLE_SIZE;
+
+                        vkCmdPipelineBarrier(
+                            commandBuffers[getCurrentFrame()],
+                            VK_PIPELINE_STAGE_TRANSFER_BIT,
+                            VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
+                            0,
+                            0, nullptr,
+                            1, &b,
+                            0, nullptr
+                        );
+                        b.buffer = vertexBuffer[p].getIndexBuffer(getCurrentFrame());
+                        b.dstAccessMask = VK_ACCESS_INDEX_READ_BIT;
+                        vkCmdPipelineBarrier(
+                            commandBuffers[getCurrentFrame()],
+                            VK_PIPELINE_STAGE_TRANSFER_BIT,
+                            VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
+                            0,
+                            0, nullptr,
+                            1, &b,
+                            0, nullptr
+                        );
+
+                     }
+                 }
+             }
              if (!useSecondaryCmds)
                 beginRenderPass();
-
              if (secondaryCommandsOnRecordedState[getCurrentFrame()]) {
                 for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
+
                     if (vertexBuffer[p].getVertexCount() > 0)
                         recordCommandBuffers(secondaryCommandBuffers[getCurrentFrame()], vertexBuffer[p], static_cast<PrimitiveType>(p), states);
                 }
-             } else if(commandsOnRecordedState[getCurrentFrame()]) {
+             } else if (commandsOnRecordedState[getCurrentFrame()]) {
+
                  for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
-                    if (vertexBuffer[p].getVertexCount() > 0)
+                     if (vertexBuffer[p].getVertexCount() > 0)
                         recordCommandBuffers(commandBuffers[getCurrentFrame()], vertexBuffer[p], static_cast<PrimitiveType>(p), states);
                  }
              }
@@ -1054,9 +1094,9 @@ namespace odfaeg {
             renderPassInfo.renderArea.extent = getSwapchainExtents();
             ////////std::cout<<"render pass : "<<(m_view.getViewport().getSize().x == 800 && m_view.getViewport().getSize().y == 800)<<std::endl;
 
-            VkClearValue clrColor = {clearColor.r / 255.f,clearColor.g / 255.f, clearColor.b / 255.f, clearColor.a / 255.f};
-            renderPassInfo.clearValueCount = 1;
-            renderPassInfo.pClearValues = &clrColor;
+            //VkClearValue clrColor = {clearColor.r / 255.f,clearColor.g / 255.f, clearColor.b / 255.f, clearColor.a / 255.f};
+            renderPassInfo.clearValueCount = 0;
+            renderPassInfo.pClearValues = nullptr;
 
 
             vkCmdBeginRenderPass(getCommandBuffers()[getCurrentFrame()], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE_AND_SECONDARY_COMMAND_BUFFERS_KHR);

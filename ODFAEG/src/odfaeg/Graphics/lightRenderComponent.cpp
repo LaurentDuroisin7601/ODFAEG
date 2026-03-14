@@ -1525,7 +1525,7 @@ namespace odfaeg {
                 stop = true;
                 cv.notify_all();
                 getListener().stop();
-                unsigned int currentFrame = lightDepthBuffer.getCurrentFrame();
+                /*unsigned int currentFrame = lightDepthBuffer.getCurrentFrame();
                 VkCommandBufferInheritanceInfo inheritanceInfo{};
 
                 VkCommandBufferBeginInfo beginInfo{};
@@ -1631,7 +1631,7 @@ namespace odfaeg {
                 }
                 if (vkEndCommandBuffer(lightCommandBuffer[currentFrame]) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to record command buffer!", 1);
-                }
+                }*/
 
             }
             unsigned int LightRenderComponent::align(unsigned int offset) {

@@ -67,6 +67,7 @@ namespace odfaeg
             VkFormat getSwapchainImageFormat();
             std::vector<VkImage> getSwapchainImages();
             std::vector<VkFence> getFences();
+            void recreateFences();
 
         protected:
             bool isFirstSubmit();

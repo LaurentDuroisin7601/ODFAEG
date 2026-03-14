@@ -137,7 +137,9 @@ namespace odfaeg {
 
                     if (windows.size() != 0 && windows[0].first->isOpen()) {
                         update();
+                        //std::cout<<"update ok"<<std::endl;
                         render();
+                        //std::cout<<"render ok"<<std::endl;
                     }
                     if (network::Network::getCliInstance().isRunning()) {
                         network::Network::getCliInstance().checkMessages();
@@ -180,15 +182,17 @@ namespace odfaeg {
             */
             void render() {
                 if (windows.size() != 0 && windows[0].first->isOpen()) {
+
                     for (unsigned int i = 0; i < windows.size(); i++) {
                         windows[i].first->clear(clearColor);
                     }
+                    //std::cout<<"window cleared"<<std::endl;
                     static_cast<A*>(this)->onRender(componentManager.get());
                     componentManager->clearComponents();
 
-                    //componentManager->updateComponents();
+
                     componentManager->drawRenderComponents();
-                    ////std::cout<<"render components drawn"<<std::endl;
+                    //std::cout<<"render components drawn"<<std::endl;
                     static_cast<A*>(this)->onDisplay(windows[0].first);
                     componentManager->drawGuiComponents();
                     ////////std::cout<<"window size : "<<windows.size()<<std::endl;

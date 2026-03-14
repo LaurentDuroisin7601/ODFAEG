@@ -1077,7 +1077,7 @@ void ODFAEGCreator::updateScriptText(Tile* tile, const Texture* text) {
     }
 }*/
 void ODFAEGCreator::onRender(RenderComponentManager *cm) {
-
+    //std::cout<<"render!"<<std::endl;
 }
 void ODFAEGCreator::onDisplay(RenderWindow* window) {
     if (window == &getRenderWindow()) {
@@ -3542,7 +3542,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         wNewComponent->setVisible(false);
         getRenderComponentManager().setEventContextActivated(false, *wNewComponent);
         tScriptEdit->setEventContextActivated(true);
-        if (dpComponentType->getSelectedItem() == "LinkedList") {
+        /*if (dpComponentType->getSelectedItem() == "LinkedList") {
             PerPixelLinkedListRenderComponent* ppll = new PerPixelLinkedListRenderComponent(getRenderWindow(),conversionStringInt(taComponentLayer->getText()),taComponentExpression->getText(),ContextSettings(24, 8, 4, 4, 6));
             //std::cout<<"ppll component created"<<std::endl;
             getRenderComponentManager().addComponent(ppll);
@@ -3576,15 +3576,16 @@ void ODFAEGCreator::actionPerformed(Button* button) {
             rrrc->setName(taComponentName->getText());
             dpSelectComponent->addItem(taComponentName->getText(), 15);
             dpSelectComponent->setSelectedItem(taComponentName->getText());
-        }
-        std::cout<<"recreate descriptor and pipelines"<<std::endl;
+        }*/
+        //std::cout<<"recreate descriptor and pipelines"<<std::endl;
         getRenderComponentManager().recreateDescriptorsAndPipelines();
-        std::cout<<"descriptor and pipelines created"<<std::endl;
+        //std::cout<<"descriptor and pipelines created"<<std::endl;
         for (unsigned int i = 0; i < getRenderComponentManager().getRenderComponents().size(); i++) {
             if (getRenderComponentManager().getRenderComponents()[i]->getName() == dpSelectComponent->getSelectedItem()) {
                 selectedComponentView = getRenderComponentManager().getRenderComponents()[i]->getView();
             }
         }
+
     }
     if(button==bCreateEntitiesUpdater) {
         std::string name = taEntitiesUpdaterName->getText();

@@ -73,6 +73,7 @@ namespace odfaeg {
             void createDescriptorsAndPipelines();
             virtual void clear(const Color& color = Color(0, 0, 0, 255)) = 0;
 
+
             void clearDepth();
             void setView(View view);
 

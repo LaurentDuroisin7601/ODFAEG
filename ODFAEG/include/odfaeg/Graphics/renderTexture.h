@@ -70,6 +70,7 @@ namespace odfaeg {
         class ODFAEG_GRAPHICS_API RenderTexture : public RenderTarget
         {
         public :
+            void resetFrameIndex();
             static const unsigned int NB_SWAPCHAIN_IMAGES = 3;
             RenderTexture(window::Device& vkDevice);
             bool create(unsigned int width, unsigned int height);
@@ -95,6 +96,7 @@ namespace odfaeg {
                          std::vector<uint64_t> waitValues = std::vector<uint64_t>(), std::vector<VkFence> fences = std::vector<VkFence> (), unsigned int queueIndex = 0, bool resetFence = true, bool resetFences = true, VkFence fenceToSubmit = nullptr);
             void display();
             std::vector<VkFence> getFences();
+            void recreateFences();
             /*template<class... Args>
             void encode_checkpoint(Args&&... args)
             {

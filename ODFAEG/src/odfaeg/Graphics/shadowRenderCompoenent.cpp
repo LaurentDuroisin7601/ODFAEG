@@ -723,7 +723,7 @@ namespace odfaeg {
                 stop = true;
                 cv.notify_all();
                 getListener().stop();
-                unsigned int currentFrame = depthBuffer.getCurrentFrame();
+                /*unsigned int currentFrame = depthBuffer.getCurrentFrame();
                 VkCommandBufferInheritanceInfo inheritanceInfo{};
 
                 VkCommandBufferBeginInfo beginInfo{};
@@ -780,7 +780,7 @@ namespace odfaeg {
                 }
                 if (vkEndCommandBuffer(shadowCommandBuffer[currentFrame]) != VK_SUCCESS) {
                     throw core::Erreur(0, "failed to record command buffer!", 1);
-                }
+                }*/
              }
              unsigned int ShadowRenderComponent::align(unsigned int offset) {
             ////std::cout << "alignment = " << alignment << std::endl;

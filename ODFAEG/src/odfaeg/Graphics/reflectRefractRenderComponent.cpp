@@ -856,7 +856,7 @@ namespace odfaeg {
                 stop = true;
                 cv.notify_all();
                 getListener().stop();
-                unsigned int currentFrame = depthBuffer.getCurrentFrame();
+                /*unsigned int currentFrame = depthBuffer.getCurrentFrame();
                 VkCommandBufferInheritanceInfo inheritanceInfo{};
 
                 VkCommandBufferBeginInfo beginInfo{};
@@ -961,7 +961,7 @@ namespace odfaeg {
                     if (vkEndCommandBuffer(reflectRefractCommandBuffer[i][currentFrame]) != VK_SUCCESS) {
                         throw core::Erreur(0, "failed to record command buffer!", 1);
                     }
-                }
+                }*/
             }
             VkCommandBuffer ReflectRefractRenderComponent::beginSingleTimeCommands() {
                 VkCommandBufferAllocateInfo allocInfo{};

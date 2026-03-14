@@ -185,10 +185,12 @@ namespace odfaeg {
                     VkSubpassDependency dependency{};
                     dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
                     dependency.dstSubpass = 0;
-                    dependency.srcStageMask =  VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-                    dependency.srcAccessMask = 0;
-                    dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-                    dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+                    dependency.srcStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+                    dependency.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+                    dependency.dstStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+                    dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
+                                        VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
                     renderPassInfo.dependencyCount = 1;
                     renderPassInfo.pDependencies = &dependency;
                     VkRenderPass renderPass;
@@ -244,10 +246,19 @@ namespace odfaeg {
                     VkSubpassDependency dependency{};
                     dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
                     dependency.dstSubpass = 0;
-                    dependency.srcStageMask =  VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-                    dependency.srcAccessMask = 0;
-                    dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-                    dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+                    // Ce qui a écrit avant (par ex. ta clear / render pass précédente)
+                    dependency.srcStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
+                                               VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+                    dependency.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
+                                               VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+
+                    // Ce que le subpass va faire : lire + écrire
+                    dependency.dstStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
+                                               VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+                    dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT  |
+                                               VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
+                                               VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
+                                               VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
                     renderPassInfo.dependencyCount = 1;
                     renderPassInfo.pDependencies = &dependency;
                     VkRenderPass renderPass;
@@ -350,7 +361,7 @@ namespace odfaeg {
                 VkImageMemoryBarrier presentToClearBarrier {
                     .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
                     .pNext = nullptr,
-                    .srcAccessMask = VK_ACCESS_MEMORY_READ_BIT,
+                    .srcAccessMask = 0,
                     .dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
                     .oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
                     .newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
@@ -363,7 +374,7 @@ namespace odfaeg {
                     .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
                     .pNext = nullptr,
                     .srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
-                    .dstAccessMask = VK_ACCESS_MEMORY_READ_BIT,
+                    .dstAccessMask = 0,
                     .oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                     .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
                     .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
@@ -371,13 +382,14 @@ namespace odfaeg {
                     .image = getSwapchainImages()[imageIndex],
                     .subresourceRange = imageRange
                 };
-                vkCmdPipelineBarrier(getCommandBuffers()[currentFrame], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &presentToClearBarrier);
+                vkCmdPipelineBarrier(getCommandBuffers()[currentFrame], VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &presentToClearBarrier);
                 vkCmdClearColorImage(getCommandBuffers()[currentFrame], getSwapchainImages()[imageIndex], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearValue, 1, &imageRange);
                 vkCmdPipelineBarrier(getCommandBuffers()[currentFrame], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &clearToPresentBarrier);
                 VkImageMemoryBarrier depthStencilToClearBarrier {
                     .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
                     .pNext = nullptr,
-                    .srcAccessMask = VK_ACCESS_MEMORY_READ_BIT,
+                    .srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT |
+                                     VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT,
                     .dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
                     .oldLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
                     .newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
@@ -390,7 +402,8 @@ namespace odfaeg {
                     .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
                     .pNext = nullptr,
                     .srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
-                    .dstAccessMask = VK_ACCESS_MEMORY_READ_BIT,
+                    .dstAccessMask =  VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT |
+                                      VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT,
                     .oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                     .newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
                     .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
@@ -398,9 +411,12 @@ namespace odfaeg {
                     .image = getDepthTexture().getImage(),
                     .subresourceRange = imageRange2
                 };
-                vkCmdPipelineBarrier(getCommandBuffers()[currentFrame], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &depthStencilToClearBarrier);
+                vkCmdPipelineBarrier(getCommandBuffers()[currentFrame], VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT |
+                                                                        VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+                                                                        VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &depthStencilToClearBarrier);
                 vkCmdClearDepthStencilImage(getCommandBuffers()[currentFrame], getDepthTexture().getImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearDepthStencilValue, 1, &imageRange2);
-                vkCmdPipelineBarrier(getCommandBuffers()[currentFrame], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &clearToDepthStencilBarrier);
+                vkCmdPipelineBarrier(getCommandBuffers()[currentFrame], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT |
+                                                                        VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT, 0, 0, nullptr, 0, nullptr, 1, &clearToDepthStencilBarrier);
         }
         const uint32_t& RenderWindow::getImageIndex() {
             return imageIndex;
@@ -438,7 +454,7 @@ namespace odfaeg {
                 submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
                 if (firstSubmit) {
                     waitSemaphores.push_back(imageAvailableSemaphores[currentFrame]);
-                    waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+                    waitStages.push_back(VK_PIPELINE_STAGE_TRANSFER_BIT);
                     if (waitValues.size() > 0) {
                         ////////std::cout<<"wait semaphore : "<<semaphore[currentFrame]<<std::endl;
                         waitValues.push_back(0);
@@ -518,6 +534,8 @@ namespace odfaeg {
                 //firstDraw = false;
             }
         }
+        void RenderWindow::recreateFences() {
+        }
         void RenderWindow::drawVulkanFrame() {
             if (getCommandBuffers().size() > 0) {
                 //for (unsigned int i = 0; i < getCommandBuffers().size(); i++) {
@@ -525,19 +543,19 @@ namespace odfaeg {
                 //}
 
                 // Vérifier si une frame précédente est en train d'utiliser cette image (il y a une fence à attendre)
-                VkSemaphore signalSemaphores[] = {renderFinishedSemaphores[currentFrame]};
+                VkSemaphore waitSemaphores[] = {renderFinishedSemaphores[currentFrame]};
                 VkPresentInfoKHR presentInfo{};
                 presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
                 presentInfo.waitSemaphoreCount = 1;
-                presentInfo.pWaitSemaphores = signalSemaphores;
+                presentInfo.pWaitSemaphores = waitSemaphores;
                 VkSwapchainKHR swapChains[] = {swapChain};
                 presentInfo.swapchainCount = 1;
                 presentInfo.pSwapchains = swapChains;
                 presentInfo.pImageIndices = &imageIndex;
                 presentInfo.pResults = nullptr; // Optionnel
                 window::Device::QueueFamilyIndices indices = vkDevice.findQueueFamilies(vkDevice.getPhysicalDevice(), getSurface());
-                vkQueuePresentKHR(vkDevice.getQueue(indices.presentFamily.value(), 1), &presentInfo);
+                vkQueuePresentKHR(vkDevice.getQueue(indices.presentFamily.value(), 0), &presentInfo);
                 currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
                 //////std::cout<<"current frame : "<<currentFrame<<std::endl;
                 //vkDeviceWaitIdle(vkDevice.getDevice());

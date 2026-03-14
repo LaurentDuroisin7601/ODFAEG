@@ -29,7 +29,7 @@ namespace odfaeg {
             * \brief constructor.
             */
              std::string name;
-             Listener() : removeListener(false), useThread(false) {
+             Listener() : removeListener(false), useThread(false), running(false) {
              }
              void launch() {
                 if (!running) {
