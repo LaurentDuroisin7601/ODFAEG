@@ -582,7 +582,7 @@ namespace odfaeg {
                     commandBufferReady[i] = false;
                 }*/
                 //frameBuffer.resetFrameIndex();
-                std::cout<<"current frame : "<<frameBuffer.getCurrentFrame()<<std::endl;
+                //std::cout<<"current frame : "<<frameBuffer.getCurrentFrame()<<std::endl;
                 vkDeviceWaitIdle(vkDevice.getDevice());
                 getListener().launch();
 
@@ -622,6 +622,13 @@ namespace odfaeg {
             frameBuffer.display();
             registerFrameJob[frameBuffer.getCurrentFrame()] = true;
             vkDeviceWaitIdle(vkDevice.getDevice());
+            for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
+                if (modelDatas[i].size() > 0) {
+                    for (unsigned int j = 0; j < MAX_FRAMES_IN_FLIGHT; j++) {
+                        needToUpdateDSs[i][j] = true;
+                    }
+                }
+            }
 
             //vkDeviceWaitIdle(vkDevice.getDevice());
             /*vkDestroyFence(vkDevice.getDevice(), windowFences[frameBuffer.getCurrentFrame()], nullptr);
