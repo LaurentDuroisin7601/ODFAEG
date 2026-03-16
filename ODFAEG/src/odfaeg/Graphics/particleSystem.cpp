@@ -494,6 +494,7 @@ namespace odfaeg
 
             std::vector<VkDescriptorBufferInfo> verticesStorageBuffersInfoLastFrame;
             for (unsigned int i = 0; i < vertexBuffer.size(); i++) {
+                //std::cout<<"i : "<<i<<",buffer : "<<vertexBuffer[i].value().get().getVertexBuffer(currentFrame)<<","<<vertexBuffer[i].value().get().getVertexCount()<<std::endl;
                 VkDescriptorBufferInfo verticesStorageBufferInfoLastFrame{};
                 verticesStorageBufferInfoLastFrame.buffer = vertexBuffer[i].value().get().getVertexBuffer(currentFrame);
                 verticesStorageBufferInfoLastFrame.offset = 0;
@@ -698,7 +699,7 @@ namespace odfaeg
                         throw core::Erreur(0, "failed to begin recording command buffer!", 1);
                     }
                     if (vertexBuffer[layer].has_value() && vertexBuffer[layer].value().get().getVertexCount() > 0 && mParticles.size() > 0) {
-                        for (unsigned int l = 0; l < layer+1; l++) {
+                        for (unsigned int l = 0; l <= layer; l++) {
                             VkDeviceSize bufferSize = sizeof(Particle) * mParticles.size();
                             if (bufferSize > maxParticlesSize[l][currentFrame[layer]]) {
                                 if (stagingParticles[l][currentFrame[layer]] != nullptr) {

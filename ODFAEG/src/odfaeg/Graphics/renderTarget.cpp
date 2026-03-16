@@ -560,7 +560,7 @@ namespace odfaeg {
             vkCmdBindVertexBuffers(cmd, vertexOffset, 1, vertexBuffers, offsets);
             std::vector<VkDescriptorSet> shaderDescriptorSets;
             for (unsigned int i = 0; i < descriptorSets[descriptorId].size(); i++) {
-                shaderDescriptorSets.push_back(descriptorSets[descriptorId][i][getCurrentFrame()]);
+                shaderDescriptorSets.push_back(descriptorSets[descriptorId][i][currentFrame]);
             }
             vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout[shader->getId() * (Batcher::nbPrimitiveTypes - 1)+vertexBuffer.getPrimitiveType()][id][depthStencilId*nbBlendMode+blendModeId], 0, shaderDescriptorSets.size(), shaderDescriptorSets.data(), dynamicBufferOffsets.size(), dynamicBufferOffsets.data());
             ////std::cout<<"pipeline id draw : "<<depthStencilId*nbBlendMode+blendModeId<<std::endl;

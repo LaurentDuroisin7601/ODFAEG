@@ -527,6 +527,7 @@ namespace odfaeg
                     if (resetFences)
                         vkResetFences(vkDevice.getDevice(), fences.size(), fences.data());
                 }
+
                 window::Device::QueueFamilyIndices indices = vkDevice.findQueueFamilies(vkDevice.getPhysicalDevice(), nullptr);
                 if (vkQueueSubmit(vkDevice.getQueue(indices.graphicsFamily.value(), queueIndex), 1, &submitInfo, (fenceToSubmit == nullptr) ? inFlightFences[currentFrame] : fenceToSubmit) != VK_SUCCESS) {
                     throw core::Erreur(0, "échec de l'envoi d'un command buffer!", 1);
