@@ -245,7 +245,7 @@ namespace odfaeg {
             static const unsigned int numThreads = 6;
             std::vector<VkFence> fences;
             std::vector<VkFence> windowFences;
-
+            unsigned int windowCurrentFrame=0, windowCurrentImage=0;
         };
         #else
         class ODFAEG_GRAPHICS_API PerPixelLinkedListRenderComponent : public HeavyComponent {
