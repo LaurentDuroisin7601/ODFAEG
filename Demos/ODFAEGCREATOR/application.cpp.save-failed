@@ -45,16 +45,16 @@ Application (vm, title, Style::Resize|Style::Close, ContextSettings(0, 8, 4, 4, 
     rtc.addOption("std=c++20");
     rtc.addMacro("ODFAEG_STATIC");
     rtc.addIncludeDir("\"C:\\Program Files (x86)\\ODFAEG\\include\"");
-    rtc.addIncludeDir("..\\..\\ODFAEG-master2\\ODFAEG\\extlibs\\headers");
+    rtc.addIncludeDir("\"C:\\Program Files (x86)\\ODFAEG\\extlibs\\headers\"");
     rtc.addLibraryDir("\"C:\\Program Files (x86)\\ODFAEG\\lib\"");
-    rtc.addLibraryDir("..\\..\\ODFAEG-master2\\ODFAEG\\extlibs\\libs-mingw\\x64");
-    rtc.addLibrary("odfaeg-network-s-d");
-	rtc.addLibrary("odfaeg-audio-s-d");
-	rtc.addLibrary("odfaeg-graphics-s-d");
-	rtc.addLibrary("odfaeg-physics-s-d");
-	rtc.addLibrary("odfaeg-core-s-d");
-	rtc.addLibrary("odfaeg-window-s-d");
-	rtc.addLibrary("odfaeg-math-s-d");
+    rtc.addLibraryDir("\"C:\\Program Files (x86)\\ODFAEG\\extlibs\\libs-mingw\\x64\"");
+    rtc.addLibrary("odfaeg-network-s");
+	rtc.addLibrary("odfaeg-audio-s");
+	rtc.addLibrary("odfaeg-graphics-s");
+	rtc.addLibrary("odfaeg-physics-s");
+	rtc.addLibrary("odfaeg-core-s");
+	rtc.addLibrary("odfaeg-window-s");
+	rtc.addLibrary("odfaeg-math-s");
 	rtc.addLibrary("assimp");
 	rtc.addLibrary("FLAC");
 	rtc.addLibrary("vorbis");
@@ -835,7 +835,14 @@ void ODFAEGCreator::onInit() {
         getRenderComponentManager().addComponent(lScriptFileName);
         taScriptFileName = new TextArea(Vec3f(200, 0, 0), Vec3f(200, 50, 0), fm.getResourceByAlias(Fonts::Serif), "", *wCreateScript);
         getRenderComponentManager().addComponent(taScriptFileName);
-        bCreateScript = new Button(Vec3f(0, 50, 0), Vec3f(400, 50, 0), fm.getResourceByAlias(Fonts::Serif), "Create script file", 15, *wCreateScript);
+        Label* lScriptSelFileExt = new Label(*wCreateScript, Vec3f(0, 50, 0), Vec3f(200, 50, 0),fm.getResourceByAlias(Fonts::Serif), "Script file type : ", 15);
+        getRenderComponentManager().addComponent(lScriptSelFileExt);
+        dpSelectFileExtension = new DropDownList(*wCreateScript, Vec3f(200, 50, 0), Vec3f(200, 50, 0),fm.getResourceByAlias(Fonts::Serif), "File type", 15);
+        dpSelectFileExtension->addItem("Header file", 15);
+        dpSelectFileExtension->addItem("Source file", 15);
+        getRenderComponentManager().addComponent(dpSelectFileExtension);
+
+        bCreateScript = new Button(Vec3f(0, 100, 0), Vec3f(400, 50, 0), fm.getResourceByAlias(Fonts::Serif), "Create script file", 15, *wCreateScript);
         bCreateScript->addActionListener(this);
         getRenderComponentManager().addComponent(bCreateScript);
         wCreateScript->setVisible(false);
@@ -961,10 +968,10 @@ void ODFAEGCreator::onInit() {
         Command cmd5(FastDelegate<bool>(&TextArea::isTextChanged, tScriptEdit), FastDelegate<void>(&ODFAEGCreator::onTextEntered, this, tScriptEdit, '\0'));
         tScriptEdit->getListener().connect("CONTEXTENTERED", cmd5);
         tScriptEdit->setParent(pScriptsEdit);
-        tScriptEdit->setRelPosition(0.1f, 0.f);
-        tScriptEdit->setRelSize(0.8f, 0.8f);
-        /*tScriptEdit->recomputeSize();
-        tScriptEditSize = tScriptEdit->getSize();*/
+        tScriptEdit->setRelPosition(0.04f, 0.04f);
+        tScriptEdit->setRelSize(0.6f, 0.7f);
+        tScriptEdit->recomputeSize();
+        tScriptEditSize = tScriptEdit->getSize();
         pScriptsEdit->addChild(tScriptEdit);
         lLineNumbers = new Label(getRenderWindow(), Vec3f(150, 40, 0), Vec3f(790, 650, 0), fm.getResourceByAlias(Fonts::Serif), "1", 20);
         lLineNumbers->setOrigin(Vec3f(0, 0, 0));
@@ -973,6 +980,7 @@ void ODFAEGCreator::onInit() {
         tScriptEdit->setName("TSCRIPTEDIT");
         lLineNumbers->setRelPosition(0.0f, 0.f);
         lLineNumbers->setRelSize(0.1f, 1.f);
+        lLineNumbers->recomputeSize();
         pScriptsEdit->addChild(lLineNumbers);
 
         guiSize.x() = getRenderWindow().getSize().x() - pProjects->getSize().x() - pScriptsFiles->getSize().x();
@@ -1069,7 +1077,7 @@ void ODFAEGCreator::updateScriptText(Tile* tile, const Texture* text) {
     }
 }*/
 void ODFAEGCreator::onRender(RenderComponentManager *cm) {
-
+    //std::cout<<"render!"<<std::endl;
 }
 void ODFAEGCreator::onDisplay(RenderWindow* window) {
     if (window == &getRenderWindow()) {
@@ -1210,6 +1218,25 @@ Vec3f ODFAEGCreator::getGridCellPos(Vec3f pos) {
     return Vec3f (extends[0][0], extends[1][0], extends[2][0]);
 }
 void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
+    if (&getRenderWindow() == window && !isGuiShown && event.mouseButton.type == IEvent::BUTTON_EVENT_PRESSED && event.mouseButton.button == IMouse::Right) {
+        std::vector<MenuItem*> items = floatingMenu.getItems();
+        for (unsigned int i = 0; i < items.size(); i++) {
+            getRenderComponentManager().removeComponent(items[i]);
+        }
+        floatingMenu.clear();
+        FontManager<Fonts>& fm = cache.resourceManager<Font, Fonts>("FontManager");
+        MenuItem* miCp = new MenuItem(getRenderWindow(), fm.getResourceByAlias(Fonts::Serif),"Copy");
+        miCp->addMenuItemListener(this);
+        MenuItem* miPst = new MenuItem(getRenderWindow(), fm.getResourceByAlias(Fonts::Serif),"Paste");
+        miPst->addMenuItemListener(this);
+        floatingMenu.addMenuItem(miCp);
+        floatingMenu.addMenuItem(miPst);
+        getRenderComponentManager().addComponent(miCp);
+        getRenderComponentManager().addComponent(miPst);
+        floatingMenu.setPosition(Vec3f(event.mouseButton.x, event.mouseButton.y, 0));
+        floatingMenu.setVisible(true);
+
+    }
     if (&getRenderWindow() == window && event.type == IEvent::TEXT_INPUT_EVENT) {
         tScriptEdit->getListener().setCommandSlotParams("CONTEXTENTERED", this, tScriptEdit, static_cast<char>(event.text.unicode));
     }
@@ -1862,8 +1889,10 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
                 //std::cout<<"visible entities selected"<<std::endl;
             }
 
-            if (rectSelect.getItems().size() > 0)
+            if (rectSelect.getItems().size() > 0) {
                 selectedObject = rectSelect.getItems()[0];
+                std::cout<<"selected object type : "<<selectedObject->getType()<<std::endl;
+            }
             if (selectedObject != nullptr) {
                 selectedBoundingVolume = selectedObject->getCollisionVolume();
                 if (selectedObject->getType() == "E_TILE") {
@@ -2090,6 +2119,7 @@ void ODFAEGCreator::onExec() {
     }
     if (dpSelectComponent->getSelectedItem() == "MAIN WINDOW") {
         if (eu != nullptr) {
+            //std::cout<<"set main window view"<<std::endl;
             eu->setView(getView());
         }
     } else {
@@ -2097,6 +2127,7 @@ void ODFAEGCreator::onExec() {
             if (getRenderComponentManager().getRenderComponent(i) != nullptr && getRenderComponentManager().getRenderComponent(i)->getName() == dpSelectComponent->getSelectedItem()) {
                 selectedComponentView = getRenderComponentManager().getRenderComponent(i)->getView();
                 if (eu != nullptr) {
+                    //std::cout<<"set render component window view"<<std::endl;
                     eu->setView(selectedComponentView);
                 }
             }
@@ -2343,6 +2374,8 @@ void ODFAEGCreator::onExec() {
                 }
                 ifs2.close();
             }
+            //std::vector<Entity*> tiles = getWorld()->getEntities("E_BIGTILE");
+            //std::cout<<"nb entities : "<<tiles[0]->getChildren().size()<<std::endl;
             if (getWorld()->getCurrentSceneManager() != nullptr) {
                 cshapes.clear();
                 for (int i = 0; i < getRenderWindow().getSize().x(); i+=gridWidth*0.5) {
@@ -2524,6 +2557,7 @@ void ODFAEGCreator::onExec() {
                         EntitiesUpdater* eu = new EntitiesUpdater(factory, *getWorld());
                         eu->setName(name);
                         getWorld()->addWorker(eu);
+                        this->eu = eu;
                         //std::cout<<"entities updater added"<<std::endl;
                     }
                     if (type == "ParticleSystemUpdater") {
@@ -2669,18 +2703,38 @@ void ODFAEGCreator::onExec() {
                     }
                 }
             }
-            std::vector<std::string> classes = Class::getClasses(rtc.getIncludeDirs(), appliname+"\\Scripts", minAppliname);
+            std::vector<std::pair<std::string, std::string>> classes = Class::getClasses(rtc.getIncludeDirs(), appliname+"\\Scripts");
+            //std::cout<<"size : "<<classes.size()<<std::endl;
             for (unsigned int i = 0; i < classes.size(); i++) {
-                //std::cout<<"get class : "<<classes[i]<<std::endl;
-                Class cl = Class::getClass(rtc.getIncludeDirs(), classes[i], appliname+"\\Scripts", minAppliname);
-                //std::cout<<"class file path : "<<cl.getName()<<","<<cl.getImplFilePath()<<std::endl;
-                if (cl.getNamespace() == "") {
-                    dpSelectClass->addItem(classes[i], 15);
-                    dpSelectMClass->addItem(classes[i], 15);
+                //std::cout<<"class namespace : "<<classes[i].second<<std::endl;
+                if (classes[i].second == "") {
+                    dpSelectClass->addItem(classes[i].first, 15);
+                    dpSelectMClass->addItem(classes[i].first, 15);
                 } else {
-                    dpSelectClass->addItem(cl.getNamespace()+"::"+classes[i], 15);
-                    dpSelectMClass->addItem(classes[i], 15);
+                    dpSelectClass->addItem(classes[i].second+"::"+classes[i].first, 15);
+                    dpSelectMClass->addItem(classes[i].second+"::"+classes[i].first, 15);
                 }
+                /*std::cout<<"get class : "<<classes[i].first<<std::endl;
+                Class cl = Class::getClass(rtc.getIncludeDirs(), classes[i].first, appliname+"\\Scripts", classes[i].second);
+                std::cout<<"nb constructors : "<<cl.getConstructors().size()<<std::endl;
+                std::queue<Class> q;
+                std::vector<Class> superClasses;
+                for (auto& sc : cl.getSuperClasses()) {
+                    superClasses.push_back(sc);
+                    q.push(sc);
+                }
+                while (!q.empty()) {
+                    Class current = q.front();
+                    q.pop();
+                    // Ajouter ses super-classes dans la file
+                    for (auto& sc : current.getSuperClasses()) {
+                        superClasses.push_back(sc);
+                        q.push(sc);
+                    }
+                }
+                for (unsigned int c = 0; c < superClasses.size(); c++) {
+                    std::cout<<"super class : "<<superClasses[c].getName()<<","<<superClasses[c].getMembersFunctions().size()<<std::endl;
+                }*/
             }
             std::string startDir = getCurrentPath()+"\\"+appliname+"\\Scripts";
             std::vector<std::string> scriptSourceFiles;
@@ -2841,6 +2895,7 @@ void ODFAEGCreator::showProjectsFiles(Label* label) {
 void ODFAEGCreator::showHeadersFiles(Label* label) {
     //std::cout<<"show header files"<<std::endl;
     Node* node = rootNode->findNode(label);
+    rootHeadersNode = node;
     if (node->getNodes().size() == 0) {
         FontManager<Fonts>& fm = cache.resourceManager<Font, Fonts>("FontManager");
         std::vector<std::string> files;
@@ -2871,6 +2926,7 @@ void ODFAEGCreator::showHeadersFiles(Label* label) {
 }
 void ODFAEGCreator::showSourcesFiles(Label* label) {
      Node* node = rootNode->findNode(label);
+     rootSourcesNode = node;
      if (node->getNodes().size() == 0) {
         FontManager<Fonts>& fm = cache.resourceManager<Font, Fonts>("FontManager");
         std::vector<std::string> files;
@@ -2916,13 +2972,14 @@ void ODFAEGCreator::showFileContent(Label* lab) {
     virtualFile = getCurrentPath() + "\\" + files[0];
     //std::cout<<"virtual file : "<<virtualFile<<std::endl;
     if (it != cppAppliContent.end()) {
-        pScriptsEdit->setScrollPosition(Vec3f(0, 0, 0));
+
         tScriptEdit->setText(it->second);
+        std::string text = tScriptEdit->getText();
         tScriptEdit->getListener().setCommandSlotParams("CONTEXTENTERED", this, tScriptEdit, '\0');
         tScriptEdit->setTextSize(20);
         tScriptEdit->setEventContextActivated(true);
         Vec3f textSize = tScriptEdit->getTextSize();
-        tScriptEdit->setSize(pScriptsEdit->getSize());
+        tScriptEdit->setSize(tScriptEditSize);
         //std::cout<<"text size : "<<textSize<<std::endl;
         if (textSize.x() > tScriptEdit->getSize().x())
             tScriptEdit->setSize(Vec3f(textSize.x(), tScriptEdit->getSize().y(), tScriptEdit->getSize().z()));
@@ -2931,7 +2988,6 @@ void ODFAEGCreator::showFileContent(Label* lab) {
 
 
         std::string lines = "1";
-        std::string text = tScriptEdit->getText();
         unsigned int index = 0, currentLine = 1;
         while(index < text.size()) {
             unsigned char c = text[index];
@@ -2945,13 +3001,14 @@ void ODFAEGCreator::showFileContent(Label* lab) {
 
         lLineNumbers->setText(lines);
         lLineNumbers->setSize(Vec3f(lLineNumbers->getSize().x(), textSize.y(), 0));
+        pScriptsEdit->setScrollPosition(Vec3f(0, 0, 0));
         pScriptsEdit->updateScrolls();
     }
     dpGoToMFunc->removeAllItems();
-    std::vector<std::string> classes = Class::getClassesFromMemory(rtc.getIncludeDirs(), virtualFile, tScriptEdit->getText(), minAppliname);
+    std::vector<std::pair<std::string, std::string>> classes = Class::getClassesFromMemory(rtc.getIncludeDirs(), virtualFile, appliname, tScriptEdit->getText());
 
     for (unsigned int i = 0; i < classes.size(); i++) {
-        Class cl = Class::getClassFromMemory(rtc.getIncludeDirs(), virtualFile, classes[i], tScriptEdit->getText(), minAppliname);
+        Class cl = Class::getClassFromMemory(rtc.getIncludeDirs(), virtualFile, classes[i].first, tScriptEdit->getText(), classes[i].second);
         if (cl.getImplFilePath() == virtualFile || cl.getFilePath() == virtualFile) {
             std::vector<MemberFunction> mf = cl.getMembersFunctions();
             for (unsigned int f = 0; f < mf.size(); f++) {
@@ -3520,12 +3577,22 @@ void ODFAEGCreator::actionPerformed(Button* button) {
             dpSelectComponent->addItem(taComponentName->getText(), 15);
             dpSelectComponent->setSelectedItem(taComponentName->getText());
         }
+        //std::cout<<"nb render components : "<<getRenderComponentManager().getRenderComponents().size()<<std::endl;
+        //std::cout<<"recreate descriptor and pipelines"<<std::endl;
         getRenderComponentManager().recreateDescriptorsAndPipelines();
+        //std::cout<<"descriptor and pipelines created"<<std::endl;
+
         for (unsigned int i = 0; i < getRenderComponentManager().getRenderComponents().size(); i++) {
+            //std::cout<<"relaunch"<<std::endl;
+            /*getRenderComponentManager().getRenderComponents()[i]->stopRenderer();
+            getRenderComponentManager().getRenderComponents()[i]->createDescriptorsAndPipelines();
+            getRenderComponentManager().getRenderComponents()[i]->launchRenderer();*/
             if (getRenderComponentManager().getRenderComponents()[i]->getName() == dpSelectComponent->getSelectedItem()) {
+
                 selectedComponentView = getRenderComponentManager().getRenderComponents()[i]->getView();
             }
         }
+
     }
     if(button==bCreateEntitiesUpdater) {
         std::string name = taEntitiesUpdaterName->getText();
@@ -4086,7 +4153,30 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         getRenderComponentManager().setEventContextActivated(true, getRenderWindow());
     }
     if (button == bCreateScript) {
-        cppAppliContent.insert(std::make_pair(std::make_pair(appliname, taScriptFileName->getText()), ""));
+        FontManager<Fonts>& fm = cache.resourceManager<Font, Fonts>("FontManager");
+        if (dpSelectFileExtension->getSelectedItem() == "Header file") {
+            cppAppliContent.insert(std::make_pair(std::make_pair(appliname+"\\Scripts", taScriptFileName->getText()+".hpp"), "namespace "+minAppliname+" {\n}"));
+            Label* lab = new Label(getRenderWindow(), Vec3f(0, 0, 0), Vec3f(200, 17, 0),fm.getResourceByAlias(Fonts::Serif), taScriptFileName->getText()+".hpp", 15);
+            lab->setParent(pProjects);
+            lab->setBackgroundColor(Color::White);
+            lab->setForegroundColor(Color::Yellow);
+            Node* lnode = new Node("header files", lab, Vec2f(0, 0),Vec2f(1,0.025f),rootHeadersNode);
+            pProjects->addChild(lab);
+            Action a(Action::EVENT_TYPE::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
+            Command cmd(a, FastDelegate<bool>(&Label::isMouseInside, lab), FastDelegate<void>(&ODFAEGCreator::showFileContent, this, lab));
+            lab->getListener().connect("SHOWHFILECONTENT"+lab->getText(), cmd);
+        } else {
+            cppAppliContent.insert(std::make_pair(std::make_pair(appliname+"\\Scripts", taScriptFileName->getText()+".cpp"), "namespace "+minAppliname+" {\n}"));
+            Label* lab = new Label(getRenderWindow(), Vec3f(0, 0, 0), Vec3f(200, 17, 0),fm.getResourceByAlias(Fonts::Serif), taScriptFileName->getText()+".cpp", 15);
+            Node* lNode = new Node("source files", lab, Vec2f(0, 0), Vec2f(1.f, 0.025f), rootSourcesNode);
+            lab->setBackgroundColor(Color::White);
+            lab->setForegroundColor(Color::Yellow);
+            lab->setParent(pProjects);
+            pProjects->addChild(lab);
+            Action a(Action::EVENT_TYPE::MOUSE_BUTTON_PRESSED_ONCE, IMouse::Left);
+            Command cmd(a, FastDelegate<bool>(&Label::isMouseInside, lab), FastDelegate<void>(&ODFAEGCreator::showFileContent, this, lab));
+            lab->getListener().connect("SHOWHFILECONTENT"+lab->getText(), cmd);
+        }
     }
 }
 void ODFAEGCreator::updateNb(std::string name, unsigned int nb) {
@@ -4649,6 +4739,57 @@ void ODFAEGCreator::actionPerformed(MenuItem* item) {
                 displayExternalEntityInfo(selectedObject);
             }
         }
+     } else if (item == item19) {
+         wCreateScript->setVisible(true);
+         getRenderComponentManager().setEventContextActivated(true, *wCreateScript);
+         getRenderComponentManager().setEventContextActivated(false, getRenderWindow());
+     } else if (item->getText() == "Copy") {
+
+        if (!OpenClipboard(nullptr))
+            return;
+
+        EmptyClipboard();
+        std::string text = tScriptEdit->getSelectedText();
+
+        // Allouer un bloc global pour le texte
+        HGLOBAL hGlob = GlobalAlloc(GMEM_MOVEABLE, text.size() + 1);
+        if (!hGlob) {
+            CloseClipboard();
+            return;
+        }
+
+        // Copier le texte dans la mémoire allouée
+        memcpy(GlobalLock(hGlob), text.c_str(), text.size() + 1);
+        GlobalUnlock(hGlob);
+
+        // Mettre dans le presse-papier
+        SetClipboardData(CF_TEXT, hGlob);
+
+        CloseClipboard();
+        floatingMenu.setVisible(false);
+
+     } else if (item->getText() == "Paste") {
+        if (!OpenClipboard(nullptr))
+            return;
+
+        HANDLE hData = GetClipboardData(CF_TEXT);
+        if (!hData) {
+            CloseClipboard();
+            return;
+        }
+
+        char* pszText = static_cast<char*>(GlobalLock(hData));
+        if (!pszText) {
+            CloseClipboard();
+            return;
+        }
+
+        std::string text (pszText);
+        tScriptEdit->insert(text);
+        GlobalUnlock(hData);
+        CloseClipboard();
+        floatingMenu.setVisible(false);
+
      } else {
          strsearch="";
          tScriptEdit->getListener().setCommandSlotParams("CONTEXTENTERED", this, tScriptEdit, '\0');
@@ -5254,9 +5395,9 @@ void ODFAEGCreator::displayEntityInfos(Entity* tile) {
     pInfos->addChild(lSelectScriptLabel);
     Node* nSelectScript = new Node("SelectScript",lSelectScriptLabel,Vec2f(0, 0),Vec2f(0.25, 0.025),rootInfosNode.get());
     dpSelectScript = new DropDownList(getRenderWindow(),Vec3f(0, 0, 0), Vec3f(100, 50, 0),fm.getResourceByAlias(Fonts::Serif),"NONE", 15);
-    std::vector<std::string> classes = Class::getClasses(rtc.getIncludeDirs(), appliname+"\\Scripts", minAppliname);
+    std::vector<std::pair<std::string, std::string>> classes = Class::getClasses(rtc.getIncludeDirs(), appliname+"\\Scripts");
     for (unsigned int i = 0; i < classes.size(); i++) {
-        Class cl = Class::getClass(rtc.getIncludeDirs(), classes[i], appliname+"\\Scripts", minAppliname);
+        Class cl = Class::getClass(rtc.getIncludeDirs(), classes[i].first, appliname+"\\Scripts", classes[i].second);
         bool isMonoBehaviourScript = false;
         std::vector<Class> superClasses = cl.getSuperClasses();
         for (unsigned int j = 0; j < superClasses.size(); j++) {
@@ -5265,9 +5406,9 @@ void ODFAEGCreator::displayEntityInfos(Entity* tile) {
         }
         if (isMonoBehaviourScript) {
             if (cl.getNamespace() == "") {
-                dpSelectScript->addItem(classes[i], 15);
+                dpSelectScript->addItem(classes[i].first, 15);
             } else {
-                dpSelectScript->addItem(cl.getNamespace()+"::"+classes[i], 15);
+                dpSelectScript->addItem(cl.getNamespace()+"::"+classes[i].first, 15);
             }
         }
     }
@@ -5576,6 +5717,7 @@ void ODFAEGCreator::displayDecorInfos(Entity* decor) {
         pInfos->setEventContextActivated(false);
 }
 void ODFAEGCreator::displayBigtileInfos(Entity* bigTile) {
+    std::cout<<"display bigtile info"<<std::endl;
     displayTransformInfos(bigTile);
     displayEntityInfos(bigTile);
 }
@@ -7302,10 +7444,19 @@ void ODFAEGCreator::onSelectedClassChanged(DropDownList* dp) {
         dpSelectPointerType->removeAllItems();
         std::string selectedItem = dp->getSelectedItem();
         std::vector<std::string> parts = split(selectedItem, "::");
-        Class cl = Class::getClass(rtc.getIncludeDirs(), parts[parts.size() - 1],appliname+"\\Scripts","sorrok");
+        std::string ns;
+        for (unsigned int i = 0; i < parts.size()-1; i++) {
+            ns += parts[i];
+            if (i != parts.size()-2) {
+                ns += "::";
+            }
+        }
+        std::cout<<"namespace : "<<ns<<std::endl;
+        Class cl = Class::getClass(rtc.getIncludeDirs(), parts[parts.size() - 1],appliname+"\\Scripts",ns);
         //std::cout<<"class : "<<parts[parts.size() - 1]<<std::endl<<"found : "<<cl.getName()<<std::endl;
         //system("PAUSE");
         std::vector<Constructor> constructors = cl.getConstructors();
+        std::cout<<"nb constructors : "<<constructors.size()<<std::endl;
         dpSelectFunction->addItem("Select function", 15);
         //std::cout<<"size : "<<constructors.size()<<std::endl;
         for (unsigned int i = 0; i < constructors.size(); i++) {
@@ -7355,12 +7506,20 @@ void ODFAEGCreator::onSelectedClassChanged(DropDownList* dp) {
 }
 void ODFAEGCreator::onSelectedFunctionChanged(DropDownList* dp) {
     if (dp->getSelectedItem() != "Select function" && dpSelectClass->getSelectedItem() != "Select class") {
+
         rootObjectParams->deleteAllNodes();
         pObjectsParameters->removeAll();
         std::string selectedItem = dpSelectClass->getSelectedItem();
         std::vector<std::string> parts = split(selectedItem, "::");
-        //std::cout<<"parts : "<<parts[parts.size() - 1]<<std::endl;
-        Class cl = Class::getClass(rtc.getIncludeDirs(), parts[parts.size() - 1]);
+        std::string ns;
+        for (unsigned int i = 0; i < parts.size()-1; i++) {
+            ns += parts[i];
+            if (i != parts.size()-2) {
+                ns += "::";
+            }
+        }
+        Class cl = Class::getClass(rtc.getIncludeDirs(), parts[parts.size() - 1],appliname+"\\Scripts",ns);
+
         tmpTextAreas.clear();
         std::vector<Constructor> constructors = cl.getConstructors();
         bool found = false;
@@ -7420,23 +7579,49 @@ void ODFAEGCreator::onSelectedMClassChanged(DropDownList *dp) {
         dpSelectMFunction->removeAllItems();
         std::string selectedItem = dp->getSelectedItem();
         std::vector<std::string> parts = split(selectedItem, "::");
-        Class cl = Class::getClass(rtc.getIncludeDirs(), parts[parts.size() - 1]);
-        std::vector<MemberFunction> functions = cl.getMembersFunctions();
-        dpSelectMFunction->addItem("Select function", 15);
-        for (unsigned int i = 0; i < functions.size(); i++) {
-            std::string name = functions[i].getReturnType()+" "+functions[i].getName()+"(";
-            std::vector<std::string> argsTypes = functions[i].getArgsTypes();
-            for (unsigned int j = 0; j < argsTypes.size(); j++) {
-                //std::cout<<"add arg type : "<<argsTypes[j]<<std::endl;
-                name += argsTypes[j];
-                if (j != argsTypes.size() - 1) {
-                    name += ",";
-                }
+        std::string ns;
+        for (unsigned int i = 0; i < parts.size()-1; i++) {
+            ns += parts[i];
+            if (i != parts.size()-2) {
+                ns += "::";
             }
-            name += ")";
-            //std::cout<<"add function : "<<name<<std::endl;
-            dpSelectMFunction->addItem(name, 15);
-            //std::cout<<"add function : "<<i<<" : "<<name<<std::endl;
+        }
+        Class cl = Class::getClass(rtc.getIncludeDirs(), parts[parts.size() - 1],appliname+"\\Scripts",ns);
+        std::queue<Class> q;
+        std::vector<Class> superClasses;
+        for (auto& sc : cl.getSuperClasses()) {
+            superClasses.push_back(sc);
+            q.push(sc);
+        }
+        while (!q.empty()) {
+            Class current = q.front();
+            q.pop();
+            // Ajouter ses super-classes dans la file
+            for (auto& sc : current.getSuperClasses()) {
+                superClasses.push_back(sc);
+                q.push(sc);
+            }
+        }
+        superClasses.push_back(cl);
+        dpSelectMFunction->addItem("Select function", 15);
+        for (unsigned int c = 0; c < superClasses.size(); c++) {
+            std::vector<MemberFunction> functions = superClasses[c].getMembersFunctions();
+
+            for (unsigned int i = 0; i < functions.size(); i++) {
+                std::string name = functions[i].getReturnType()+" "+functions[i].getName()+"(";
+                std::vector<std::string> argsTypes = functions[i].getArgsTypes();
+                for (unsigned int j = 0; j < argsTypes.size(); j++) {
+                    //std::cout<<"add arg type : "<<argsTypes[j]<<std::endl;
+                    name += argsTypes[j];
+                    if (j != argsTypes.size() - 1) {
+                        name += ",";
+                    }
+                }
+                name += ")";
+                //std::cout<<"add function : "<<name<<std::endl;
+                dpSelectMFunction->addItem(name, 15);
+                //std::cout<<"add function : "<<i<<" : "<<name<<std::endl;
+            }
         }
     }
 }
@@ -7446,8 +7631,14 @@ void ODFAEGCreator::onSelectedMFunctionChanged(DropDownList *dp) {
         pMObjectsParameters->removeAll();
         std::string selectedItem = dpSelectMClass->getSelectedItem();
         std::vector<std::string> parts = split(selectedItem, "::");
-        //std::cout<<"parts : "<<parts[parts.size() - 1]<<std::endl;
-        Class cl = Class::getClass(rtc.getIncludeDirs(), parts[parts.size() - 1]);
+        std::string ns;
+        for (unsigned int i = 0; i < parts.size()-1; i++) {
+            ns += parts[i];
+            if (i != parts.size()-2) {
+                ns += "::";
+            }
+        }
+        Class cl = Class::getClass(rtc.getIncludeDirs(), parts[parts.size() - 1],appliname+"\\Scripts",ns);
         tmpTextAreas.clear();
         std::vector<MemberFunction> functions = cl.getMembersFunctions();
         bool found = false;
@@ -8379,7 +8570,10 @@ void ODFAEGCreator::onTextEntered(TextArea* ta, char caracter) {
         tScriptEdit->setSize(Vec3f(textSize.x(), tScriptEdit->getSize().y(), tScriptEdit->getSize().z()));
     if (textSize.y() > tScriptEdit->getSize().y())
         tScriptEdit->setSize(Vec3f(tScriptEdit->getSize().x(), textSize.y(), tScriptEdit->getSize().z()));
-    //pScriptsEdit->updateScrolls();
+    pScriptsEdit->updateScrolls();
+    //std::cout<<"position : "<<tScriptEdit->getCursorPositionLocal().y()<<","<<pScriptsEdit->getDeltas().y() + pScriptsEdit->getSize().y()<<std::endl;
+    if (tScriptEdit->getCursorPositionLocal().y() + tScriptEdit->getCharacterSize() > pScriptsEdit->getDeltas().y() + pScriptsEdit->getSize().y())
+        pScriptsEdit->setScrollPosition(tScriptEdit->getCursorPositionLocal());
     applySyntaxSuggar();
 }
 void ODFAEGCreator::onGoToFunctionSelected(DropDownList* dp) {
@@ -8415,7 +8609,7 @@ void ODFAEGCreator::onGoToFunctionSelected(DropDownList* dp) {
                 int index = lineColumnToIndex(tScriptEdit->getText(), mf[f].location.first, mf[f].location.second);
                 //std::cout<<"index : "<<index<<std::endl;
                 tScriptEdit->setCursorPosition(index);
-                Vec3f cursorPos = tScriptEdit->getCursorPositionLocal();
+                Vec3f cursorPos = Vec3f(tScriptEdit->getCursorPositionLocal().x() - 200, tScriptEdit->getCursorPositionLocal().y(), 0);
                 pScriptsEdit->setScrollPosition(cursorPos);
             }
         }
@@ -8423,7 +8617,7 @@ void ODFAEGCreator::onGoToFunctionSelected(DropDownList* dp) {
 }
 void ODFAEGCreator::onGoToFunctionNotDroppedDown(DropDownList* dp) {
     if (dp == dpGoToMFunc) {
-        std::cout<<"activate"<<std::endl;
+        //std::cout<<"activate"<<std::endl;
         tScriptEdit->setEventContextActivated(true);
         pProjects->setEventContextActivated(true);
         tScriptEdit->setFocus(true);

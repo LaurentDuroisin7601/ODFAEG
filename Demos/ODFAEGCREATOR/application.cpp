@@ -1503,6 +1503,7 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
         }
         if (isMovingXPos && translationGuismo.intersectsXArrow(ray, _near)) {
             float mx = _near.x() - prevObjectPos.x();
+            std::cout<<"move : "<<mx<<","<<mousePos<<std::endl;
             translationGuismo.move(Vec3f(mx, 0, 0));
             getWorld()->moveEntity(selectedObject, mx, 0, 0);
             prevObjectPos.x() = _near.x();
@@ -1611,9 +1612,10 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
             if (rotationGuismo.intersectsWhere(_near, ray)) {
                 firstInters = _near;
                 firstInters = rotationGuismo.getCenter() - firstInters;
-                std::cout<<"first inters : "<<firstInters<<"center : "<<rotationGuismo.getCenter()<<std::endl;
+
             }
             if (translationGuismo.intersectsXArrow(ray, prevObjectPos)) {
+                std::cout<<"first inters : "<<prevObjectPos<<std::endl<<"mouse pos : "<<mousePos;
                 isMovingXPos = true;
             }
             if (translationGuismo.intersectsYArrow(ray, prevObjectPos)) {
@@ -3542,7 +3544,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         wNewComponent->setVisible(false);
         getRenderComponentManager().setEventContextActivated(false, *wNewComponent);
         tScriptEdit->setEventContextActivated(true);
-        /*if (dpComponentType->getSelectedItem() == "LinkedList") {
+        if (dpComponentType->getSelectedItem() == "LinkedList") {
             PerPixelLinkedListRenderComponent* ppll = new PerPixelLinkedListRenderComponent(getRenderWindow(),conversionStringInt(taComponentLayer->getText()),taComponentExpression->getText(),ContextSettings(24, 8, 4, 4, 6));
             //std::cout<<"ppll component created"<<std::endl;
             getRenderComponentManager().addComponent(ppll);
@@ -3576,7 +3578,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
             rrrc->setName(taComponentName->getText());
             dpSelectComponent->addItem(taComponentName->getText(), 15);
             dpSelectComponent->setSelectedItem(taComponentName->getText());
-        }*/
+        }
         //std::cout<<"nb render components : "<<getRenderComponentManager().getRenderComponents().size()<<std::endl;
         //std::cout<<"recreate descriptor and pipelines"<<std::endl;
         getRenderComponentManager().recreateDescriptorsAndPipelines();

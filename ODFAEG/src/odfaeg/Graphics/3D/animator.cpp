@@ -180,8 +180,9 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < getChildren().size(); i++) {
                     if (getChildren()[i]->getAttachedBone() == bone->getBoneName()) {
                         TransformMatrix tm =  m_CurrentAnimation->getModel()->getTransform();
-                        tm.combine(m_FinalBoneGlobalMatrices[bone->getBoneID()]);
                         tm.update();
+                        tm.combine(m_FinalBoneGlobalMatrices[bone->getBoneID()]);
+
                         getChildren()[i]->setTransform(tm.getMatrix());
                     }
                 }

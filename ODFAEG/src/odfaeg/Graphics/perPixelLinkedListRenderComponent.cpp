@@ -5953,7 +5953,7 @@ namespace odfaeg {
             waitValues.push_back(values[windowCurrentFrame]);
             values[windowCurrentFrame]++;
             signalValues.push_back(values[windowCurrentFrame]);
-            std::vector<VkFence> inFligthFence = {fences[windowCurrentImage]};
+            std::vector<VkFence> inFligthFence = {fences[windowCurrentFrame]};
             target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, (stop.load()) ? std::vector<VkFence>() : inFligthFence, 0, true, false);
             if (!stop.load()) {
                 target.beginRecordCommandBuffers();
