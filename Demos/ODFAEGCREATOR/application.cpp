@@ -3665,7 +3665,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         emitterParams.push_back(taColor2->getText());
         Entity* ps = getWorld()->getEntity(psName);
         if (dynamic_cast<ParticleSystem*>(ps)) {
-            std::cout<<"add emitter to particles"<<std::endl;
+            //std::cout<<"add emitter to particles"<<std::endl;
             static_cast<ParticleSystem*>(ps)->addEmitter(emitter);
         }
         wNewEmitter->setVisible(false);
@@ -8169,17 +8169,31 @@ unsigned ODFAEGCreator::lineColumnToIndex(const std::string& text, unsigned line
 
     return index;
 }
-
+std::string ODFAEGCreator::stripQuotes(std::string s) {
+    if (!s.empty() && s.front() == '"')
+        s.erase(0, 1);
+    if (!s.empty() && s.back() == '"')
+        s.pop_back();
+    return s;
+}
 std::vector<std::string> ODFAEGCreator::checkCompletionNames(std::string strsearch, unsigned int posInFile) {
     //std::cout<<"check : "<<std::endl;
     std::vector<std::string> namesToPropose;
     CXIndex index = clang_createIndex(0, 0);
     std::vector<std::string> includePaths = rtc.getIncludeDirs();
-    const char* args[includePaths.size()+1];
-    for (unsigned int i = 0; i < includePaths.size(); i++) {
-        args[i] = includePaths[i].c_str();
+    std::vector<const char*> args;
+    args.reserve(includePaths.size() * 2 + 1);
+    std::vector<std::string> stableStrings;
+    for (auto& path : includePaths) {
+        std::filesystem::path p = std::filesystem::canonical(stripQuotes(std::string(path)));
+        std::string canonical = p.string();
+        std::replace(canonical.begin(), canonical.end(), '\\', '/');
+        stableStrings.push_back(canonical);
+        args.push_back("-I");
+        args.push_back(stableStrings.back().c_str());
     }
-    args[includePaths.size()] = "-std=c++20";
+    args.push_back("-std=c++20");
+
     CXUnsavedFile unsaved;
     unsaved.Filename = virtualFile.c_str();        // nom virtuel
     unsaved.Contents = tScriptEdit->getText().c_str();        // contenu de ta TextArea
@@ -8188,7 +8202,7 @@ std::vector<std::string> ODFAEGCreator::checkCompletionNames(std::string strsear
     CXTranslationUnit tu = clang_parseTranslationUnit(
         index,
         virtualFile.c_str(),            // ton fichier source
-        args, includePaths.size()+1,                 // options
+        args.data(), args.size(),                 // options
         &unsaved, 1,              // pas de fichiers précompilés
         CXTranslationUnit_None
     );

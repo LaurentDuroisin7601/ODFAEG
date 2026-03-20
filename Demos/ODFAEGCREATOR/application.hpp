@@ -39,6 +39,7 @@
 #include "translationGismo.hpp"
 #include "scaleGismo.hpp"
 #include "odfaeg/Physics/orientedBoundingBox.h"
+#include <filesystem>
 
 class ODFAEGCreator : public odfaeg::core::Application<ODFAEGCreator>,
                       public odfaeg::graphic::gui::MenuItemListener,
@@ -145,6 +146,7 @@ class ODFAEGCreator : public odfaeg::core::Application<ODFAEGCreator>,
         Serif
     };
     private :
+        std::string stripQuotes(std::string s);
         bool isWindowsPath(const std::string& s);
         bool isUnixPath(const std::string& s);
         bool isRelativePath(const std::string& s);
