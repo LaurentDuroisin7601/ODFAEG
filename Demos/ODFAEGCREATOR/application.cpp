@@ -3371,7 +3371,7 @@ void ODFAEGCreator::actionPerformed(Button* button) {
             std::ostringstream oss;
             oss<<"#ifndef "<<majAppliname<<"_HPP"<<std::endl;
             oss<<"#define "<<majAppliname<<"_HPP"<<std::endl;
-            oss<<"#include \"odfaeg/Core/application.h\""<<std::endl;
+            oss<<"#include \"odfaeg/Network/application.h\""<<std::endl;
             oss<<"namespace "+minAppliname+" {"<<std::endl;
             oss<<"  class "<<className<<" : public odfaeg::core::Application<"+className+"> {"<<std::endl;
             oss<<"  public : "<<std::endl;
