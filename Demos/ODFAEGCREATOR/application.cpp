@@ -1471,27 +1471,23 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
     if (&getRenderWindow() == window && event.type == IEvent::MOUSE_MOTION_EVENT && IMouse::isButtonPressed(IMouse::Left)) {
         Vec2f mousePos (event.mouseMotion.x, event.mouseMotion.y);
         Vec3f halfWSize(getRenderWindow().getView().getSize().x() * 0.5f, getRenderWindow().getView().getSize().y() * 0.5f, 0);
-        Vec3f ext(mousePos.x() - getRenderWindow().getView().getSize().x() * 0.5f, mousePos.y() - getRenderWindow().getView().getSize().y() * 0.5f, 0);
-        Vec3f orig (mousePos.x() - getRenderWindow().getView().getSize().x() * 0.5f, mousePos.y() - getRenderWindow().getView().getSize().y() * 0.5f, 1);
+        Vec3f ext(mousePos.x()-getRenderWindow().getView().getSize().x() * 0.5f, mousePos.y() - getRenderWindow().getView().getSize().y() * 0.5f, 0);
+        Vec3f orig = Vec3f(mousePos.x()-getRenderWindow().getView().getSize().x() * 0.5f, mousePos.y() - getRenderWindow().getView().getSize().y() * 0.5f, 1);
+        //std::cout<<"ray window coords : "<<orig<<ext<<std::endl;
         if (dpSelectComponent->getSelectedItem() == "MAIN WINDOW") {
             orig = getRenderWindow().mapPixelToCoords(Vec3f(orig.x(), /*getRenderWindow().getSize().y()-*/orig.y(), orig.z()))+halfWSize;
             ext = getRenderWindow().mapPixelToCoords(Vec3f(ext.x(), /*getRenderWindow().getSize().y()-*/ext.y(), ext.z()))+halfWSize;
         } else {
             for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
                 if (getRenderComponentManager().getRenderComponent(i) != nullptr && getRenderComponentManager().getRenderComponent(i)->getName() == dpSelectComponent->getSelectedItem()) {
-                    if(getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->getView().isOrtho()) {
-                        orig = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(orig.x(), /*getRenderWindow().getSize().y() -*/ orig.y(), orig.z()))+halfWSize;
-                        ext = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(ext.x(), /*getRenderWindow().getSize().y() -*/ ext.y(), ext.z()))+halfWSize;
-                    } else {
-                        orig = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(0, 0, orig.z()));
-                        ext += halfWSize;
-                        ext = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(ext.x(), /*getRenderWindow().getSize().y() -*/ ext.y(), ext.z()));
-                    }
+                    orig = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(orig.x(), /*getRenderWindow().getSize().y() -*/ orig.y(), orig.z()))+halfWSize;
+                    ext = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(ext.x(), /*getRenderWindow().getSize().y() -*/ ext.y(), ext.z()))+halfWSize;
                 }
             }
         }
         Ray ray(orig, ext);
         Vec3f _near;
+        //std::cout<<"ray : "<<ray.getOrig()<<ray.getExt()<<std::endl;
         if (rotationGuismo.intersectsWhere(_near, ray)) {
             Vec3f secondInters = _near;
             secondInters = rotationGuismo.getCenter() - secondInters;
@@ -1501,9 +1497,10 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
             getWorld()->rotateEntity(selectedObject, Math::toDegrees(angle));
             prevAngle = angle;
         }
+        //std::cout<<"intersect ? "<<translationGuismo.intersectsXArrow(ray, _near)<<std::endl;
         if (isMovingXPos && translationGuismo.intersectsXArrow(ray, _near)) {
             float mx = _near.x() - prevObjectPos.x();
-            std::cout<<"move : "<<mx<<","<<mousePos<<std::endl;
+            //std::cout<<"move : "<<mx<<","<<mousePos<<std::endl;
             translationGuismo.move(Vec3f(mx, 0, 0));
             getWorld()->moveEntity(selectedObject, mx, 0, 0);
             prevObjectPos.x() = _near.x();
@@ -1595,14 +1592,8 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
             } else {
                 for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
                     if (getRenderComponentManager().getRenderComponent(i) != nullptr && getRenderComponentManager().getRenderComponent(i)->getName() == dpSelectComponent->getSelectedItem()) {
-                        if(getRenderComponentManager().getRenderComponent(i)->getView().isOrtho()) {
-                            orig = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(orig.x(), /*getRenderWindow().getSize().y() -*/ orig.y(), orig.z()))+halfWSize;
-                            ext = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(ext.x(), /*getRenderWindow().getSize().y() -*/ ext.y(), ext.z()))+halfWSize;
-                        } else {
-                            orig = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(0, 0, orig.z()));
-                            ext += halfWSize;
-                            ext = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(ext.x(), /*getRenderWindow().getSize().y() -*/ ext.y(), ext.z()));
-                        }
+                        orig = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(orig.x(), /*getRenderWindow().getSize().y() -*/ orig.y(), orig.z()))+halfWSize;
+                        ext = getRenderComponentManager().getRenderComponent(i)->getFrameBuffer()->mapPixelToCoords(Vec3f(ext.x(), /*getRenderWindow().getSize().y() -*/ ext.y(), ext.z()))+halfWSize;
                     }
                 }
             }
@@ -1615,7 +1606,7 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
 
             }
             if (translationGuismo.intersectsXArrow(ray, prevObjectPos)) {
-                std::cout<<"first inters : "<<prevObjectPos<<std::endl<<"mouse pos : "<<mousePos;
+
                 isMovingXPos = true;
             }
             if (translationGuismo.intersectsYArrow(ray, prevObjectPos)) {
