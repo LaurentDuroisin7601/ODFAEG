@@ -5956,7 +5956,7 @@ namespace odfaeg {
             target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, (stop.load()) ? std::vector<VkFence>() : inFligthFence, 0, true, false);
             if (!stop.load()) {
                 target.beginRecordCommandBuffers();
-                const_cast<Texture&>(frameBuffer.getTexture(frameBuffer.getImageIndex())).toColorAttachmentOptimal(target.getCommandBuffers()[frameBuffer.getCurrentFrame()]);
+                const_cast<Texture&>(frameBuffer.getTexture(frameBuffer.getImageIndex())).toColorAttachmentOptimal(target.getCommandBuffers()[target.getCurrentFrame()]);
 
                 waitValues.clear();
                 signalValues.clear();
