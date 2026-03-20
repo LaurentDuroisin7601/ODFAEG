@@ -5924,14 +5924,13 @@ namespace odfaeg {
             }
             //std::cout<<"draw : "<<frameBuffer.getCurrentFrame()<<std::endl;
             commandBufferReady[frameBuffer.getCurrentFrame()]  = false;
-            frameBuffer.display();
-            registerFrameJob[frameBuffer.getCurrentFrame()] = true;
-            cv.notify_one();
+
+
 
             target.beginRecordCommandBuffers();
-            const_cast<Texture&>(frameBuffer.getTexture(windowCurrentImage)).toShaderReadOnlyOptimal(target.getCommandBuffers()[target.getCurrentFrame()]);
+            const_cast<Texture&>(frameBuffer.getTexture(frameBuffer.getImageIndex())).toShaderReadOnlyOptimal(target.getCommandBuffers()[frameBuffer.getCurrentFrame()]);
             frameBufferSprite.setCenter(target.getView().getPosition());
-            frameBufferSprite.setTexture(frameBuffer.getTexture(windowCurrentImage));
+            frameBufferSprite.setTexture(frameBuffer.getTexture(frameBuffer.getImageIndex()));
             ////////std::cout<<"view position : "<<view.getPosition()<<std::endl;
             ////////std::cout<<"sprite position : "<<frameBufferSprite.getCenter()<<std::endl;
             /*if (&target == &window)
@@ -5947,32 +5946,33 @@ namespace odfaeg {
             std::vector<VkSemaphore> waitSemaphores, signalSemaphores;
             std::vector<VkPipelineStageFlags> waitStages;
             std::vector<uint64_t> waitValues, signalValues;
-            waitSemaphores.push_back(offscreenFinishedSemaphore[windowCurrentFrame]);
+            waitSemaphores.push_back(offscreenFinishedSemaphore[frameBuffer.getCurrentFrame()]);
             waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-            signalSemaphores.push_back(offscreenFinishedSemaphore[windowCurrentFrame]);
-            waitValues.push_back(values[windowCurrentFrame]);
-            values[windowCurrentFrame]++;
-            signalValues.push_back(values[windowCurrentFrame]);
-            std::vector<VkFence> inFligthFence = {fences[windowCurrentFrame]};
+            signalSemaphores.push_back(offscreenFinishedSemaphore[frameBuffer.getCurrentFrame()]);
+            waitValues.push_back(values[frameBuffer.getCurrentFrame()]);
+            values[frameBuffer.getCurrentFrame()]++;
+            signalValues.push_back(values[frameBuffer.getCurrentFrame()]);
+            std::vector<VkFence> inFligthFence = {fences[frameBuffer.getCurrentFrame()]};
             target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, (stop.load()) ? std::vector<VkFence>() : inFligthFence, 0, true, false);
             if (!stop.load()) {
                 target.beginRecordCommandBuffers();
-                const_cast<Texture&>(frameBuffer.getTexture(windowCurrentImage)).toColorAttachmentOptimal(target.getCommandBuffers()[windowCurrentFrame]);
+                const_cast<Texture&>(frameBuffer.getTexture(frameBuffer.getImageIndex())).toColorAttachmentOptimal(target.getCommandBuffers()[frameBuffer.getCurrentFrame()]);
 
                 waitValues.clear();
                 signalValues.clear();
-                waitValues.push_back(values[windowCurrentFrame]);
-                values[windowCurrentFrame]++;
-                signalValues.push_back(values[windowCurrentFrame]);
-                target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, inFligthFence, 0, false, true, windowFences[windowCurrentFrame]);
+                waitValues.push_back(values[frameBuffer.getCurrentFrame()]);
+                values[frameBuffer.getCurrentFrame()]++;
+                signalValues.push_back(values[frameBuffer.getCurrentFrame()]);
+                target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, inFligthFence, 0, false, true, windowFences[frameBuffer.getCurrentFrame()]);
             }
             //std::cout<<"frame drawn : "<<frameBuffer.getCurrentFrame()<<std::endl;
             //std::cout<<"signaled : "<<frameBuffer.getCurrentFrame()<<std::endl;
 
 
 
-            windowCurrentFrame = (windowCurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
-            windowCurrentImage = (windowCurrentImage + 1) % MAX_FRAMES_IN_FLIGHT;
+            frameBuffer.display();
+            registerFrameJob[frameBuffer.getCurrentFrame()] = true;
+            cv.notify_one();
 
 
             //std::cout<<"next frame"<<std::endl;
