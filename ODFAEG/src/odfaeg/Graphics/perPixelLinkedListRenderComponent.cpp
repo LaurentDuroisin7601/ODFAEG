@@ -583,7 +583,7 @@ namespace odfaeg {
                 }*/
                 //frameBuffer.resetFrameIndex();
                 //std::cout<<"current frame : "<<frameBuffer.getCurrentFrame()<<std::endl;
-                vkDeviceWaitIdle(vkDevice.getDevice());
+                //vkDeviceWaitIdle(vkDevice.getDevice());
                 getListener().launch();
 
 
