@@ -41,6 +41,7 @@ namespace odfaeg {
             selected = false;
             behaviour = nullptr;
             running = true;
+            attachedBoneName = "";
         }
 
         EntityId Entity::getEnttID() {
@@ -432,6 +433,12 @@ namespace odfaeg {
         }
         bool Entity::isAssociatedThreadRunning() {
             return running;
+        }
+        void Entity::attachToBone(std::string name) {
+            attachedBoneName = name;
+        }
+        std::string Entity::getAttachedBone() {
+            return attachedBoneName;
         }
     }
 }

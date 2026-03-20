@@ -453,6 +453,8 @@ namespace odfaeg {
                 int getShadowId();
                 void setAssociatedThreadRunning(bool running);
                 bool isAssociatedThreadRunning();
+                void attachToBone(std::string boneName);
+                std::string getAttachedBone();
                 #ifdef VULKAN
                 virtual void computeParticles(std::mutex* mtx, std::condition_variable* cv2, VertexBuffer& frameVertexBuffer, unsigned int currentRrame, TransformMatrix tm, bool instanced, std::array<VkSemaphore, MAX_FRAMES_IN_FLIGHT> computeSemaphore, std::array<VkFence, MAX_FRAMES_IN_FLIGHT> computeFence, unsigned int layer) {}
                 #endif
@@ -475,7 +477,8 @@ namespace odfaeg {
                 std::string className;
                 static std::map<int, std::string> types; /** A list of the type's id and name's of the entities. */
                 std::pair<int, std::string> type; /** The type's id and the type's name of the entity.*/
-                int id, borderID, shadowID; /** the id of the entity.*/
+                int id, borderID, shadowID;
+                std::string attachedBoneName; /** the id of the entity.*/
                 bool selected, running;
                 core::State entityState;                                         /** the states of the entity.*/
                 Entity(const Entity& entity) = delete; /**> an entity if not copiable.*/

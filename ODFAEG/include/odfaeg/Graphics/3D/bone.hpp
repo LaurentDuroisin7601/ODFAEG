@@ -56,6 +56,7 @@ namespace odfaeg {
                 math::Matrix4f m_LocalTransform;
                 std::string m_Name;
                 int m_ID;
+
             };
         }
     }

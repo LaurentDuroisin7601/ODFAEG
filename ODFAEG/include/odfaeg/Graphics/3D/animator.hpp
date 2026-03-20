@@ -20,6 +20,7 @@ namespace odfaeg {
                 std::vector<math::Matrix4f> getFinalBoneMatrices();
                 void onDraw (RenderTarget &target, RenderStates states) {}
                 Entity* clone();
+                void attachEntityToBone(Entity* entity, std::string boneName);
                 bool isAnimated() const {
                     return true;
                 }
@@ -80,6 +81,7 @@ namespace odfaeg {
                 void updateDescriptorSets(unsigned int currentFrame);
                 void createComputePipeline();
                 std::vector<math::Matrix4f> m_FinalBoneMatrices;
+                std::vector<math::Matrix4f> m_FinalBoneGlobalMatrices;
                 Animation* m_CurrentAnimation;
                 float m_CurrentTime;
                 float m_DeltaTime;

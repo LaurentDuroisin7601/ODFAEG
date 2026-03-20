@@ -141,7 +141,14 @@ namespace odfaeg {
                 m_CurrentAnimation = pAnimation;
                 m_CurrentTime = 0.0f;
             }
-
+            void Animator::attachEntityToBone(Entity* entity, std::string boneName) {
+                entity->setParent(this);
+                addChild(entity);
+                Bone* bone = m_CurrentAnimation->findBone(boneName);
+                if (bone != nullptr) {
+                    entity->attachToBone(bone->getBoneName());
+                }
+            }
             void Animator::calculateBoneTransform(const Animation::AssimpNodeData* node, math::Matrix4f parentTransform)
             {
                 std::string nodeName = node->name;
@@ -167,10 +174,17 @@ namespace odfaeg {
                     int index = boneInfoMap[nodeName].id;
                     math::Matrix4f offset = boneInfoMap[nodeName].offset;
                     m_FinalBoneMatrices[index] = globalTransformation * offset;
+                    m_FinalBoneGlobalMatrices[index] = globalTransformation;
                     //std::cout<<"final bone transform : "<<m_FinalBoneMatrices[index]<<std::endl;
                 }
-
-
+                for (unsigned int i = 0; i < getChildren().size(); i++) {
+                    if (getChildren()[i]->getAttachedBone() == bone->getBoneName()) {
+                        TransformMatrix tm =  m_CurrentAnimation->getModel()->getTransform();
+                        tm.combine(m_FinalBoneGlobalMatrices[bone->getBoneID()]);
+                        tm.update();
+                        getChildren()[i]->setTransform(tm.getMatrix());
+                    }
+                }
                 for (int i = 0; i < node->childrenCount; i++)
                     calculateBoneTransform(&node->children[i], globalTransformation);
             }
