@@ -5928,7 +5928,7 @@ namespace odfaeg {
 
 
             target.beginRecordCommandBuffers();
-            const_cast<Texture&>(frameBuffer.getTexture(frameBuffer.getImageIndex())).toShaderReadOnlyOptimal(target.getCommandBuffers()[frameBuffer.getCurrentFrame()]);
+            const_cast<Texture&>(frameBuffer.getTexture(frameBuffer.getImageIndex())).toShaderReadOnlyOptimal(target.getCommandBuffers()[target.getCurrentFrame()]);
             frameBufferSprite.setCenter(target.getView().getPosition());
             frameBufferSprite.setTexture(frameBuffer.getTexture(frameBuffer.getImageIndex()));
             ////////std::cout<<"view position : "<<view.getPosition()<<std::endl;

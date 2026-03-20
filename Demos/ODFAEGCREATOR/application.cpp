@@ -3581,9 +3581,6 @@ void ODFAEGCreator::actionPerformed(Button* button) {
         }
         //std::cout<<"nb render components : "<<getRenderComponentManager().getRenderComponents().size()<<std::endl;
         //std::cout<<"recreate descriptor and pipelines"<<std::endl;
-        getRenderComponentManager().recreateDescriptorsAndPipelines();
-        //std::cout<<"descriptor and pipelines created"<<std::endl;
-
         for (unsigned int i = 0; i < getRenderComponentManager().getRenderComponents().size(); i++) {
             //std::cout<<"relaunch"<<std::endl;
             /*getRenderComponentManager().getRenderComponents()[i]->stopRenderer();
@@ -3594,6 +3591,10 @@ void ODFAEGCreator::actionPerformed(Button* button) {
                 selectedComponentView = getRenderComponentManager().getRenderComponents()[i]->getView();
             }
         }
+        getRenderComponentManager().recreateDescriptorsAndPipelines();
+        //std::cout<<"descriptor and pipelines created"<<std::endl;
+
+
 
     }
     if(button==bCreateEntitiesUpdater) {
