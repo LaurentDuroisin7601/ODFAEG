@@ -5859,6 +5859,7 @@ namespace odfaeg {
                 return getPosition().z();
             }
             void ShadowRenderComponent::draw(RenderTarget& target, RenderStates states) {
+
                 if (useThread) {
                     std::unique_lock<std::mutex> lock(mtx);
                     cv.wait(lock, [this] { return commandBufferReady[depthBuffer.getCurrentFrame()].load() || stop.load(); });
@@ -5889,7 +5890,7 @@ namespace odfaeg {
                 values[shadowMap.getCurrentFrame()]++;
                 signalValues.push_back(values[shadowMap.getCurrentFrame()]);
                 std::vector<VkFence> inFlightFences = {fences[shadowMap.getCurrentFrame()], depthBufferFences[depthBuffer.getCurrentFrame()], alphaBufferFences[alphaBuffer.getCurrentFrame()],stencilBufferFences[stencilBuffer.getCurrentFrame()]};
-                target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, inFlightFences);
+                target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, inFlightFences, 0, true, false);
                 target.beginRecordCommandBuffers();
                 const_cast<Texture&>(shadowMap.getTexture(shadowMap.getImageIndex())).toColorAttachmentOptimal(target.getCommandBuffers()[target.getCurrentFrame()]);
 
@@ -5899,7 +5900,7 @@ namespace odfaeg {
                 waitValues.push_back(values[shadowMap.getCurrentFrame()]);
                 values[shadowMap.getCurrentFrame()]++;
                 signalValues.push_back(values[shadowMap.getCurrentFrame()]);
-                target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, std::vector<VkFence>(), 0, false, true, windowFences[shadowMap.getCurrentFrame()]);
+                target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, inFlightFences, 0, false, true, windowFences[shadowMap.getCurrentFrame()]);
                 depthBuffer.display();
                 alphaBuffer.display();
                 stencilBuffer.display();

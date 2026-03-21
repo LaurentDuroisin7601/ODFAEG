@@ -8146,10 +8146,11 @@ namespace odfaeg {
                 }
             }
             void ReflectRefractRenderComponent::draw(RenderTarget& target, RenderStates states) {
+
                 if (useThread) {
                     //std::cout<<"current frame : "<<depthBuffer.getCurrentFrame()<<std::endl;
-                    std::unique_lock<std::mutex> lock(mtx);
 
+                    std::unique_lock<std::mutex> lock(mtx);
                     cv.wait(lock, [this] { return commandBufferReady[depthBuffer.getCurrentFrame()].load() || stop.load(); });
                     commandBufferReady[depthBuffer.getCurrentFrame()] = false;
                     // std::cout<<"wait command buffers : "<<depthBuffer.getCurrentFrame()<<std::endl;
@@ -8178,7 +8179,7 @@ namespace odfaeg {
                 values[reflectRefractTex.getCurrentFrame()]++;
                 signalValues.push_back(values[reflectRefractTex.getCurrentFrame()]);
                 std::vector<VkFence> inFlightFences = {fences[reflectRefractTex.getCurrentFrame()], depthBufferFences[depthBuffer.getCurrentFrame()], alphaBufferFences[alphaBuffer.getCurrentFrame()], environmentMapFences[environmentMap.getCurrentFrame()]};
-                target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, inFlightFences);
+                target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, inFlightFences, 0, true, false);
                 target.beginRecordCommandBuffers();
                 const_cast<Texture&>(reflectRefractTex.getTexture(reflectRefractTex.getImageIndex())).toColorAttachmentOptimal(target.getCommandBuffers()[target.getCurrentFrame()]);
                 waitValues.clear();
@@ -8186,7 +8187,7 @@ namespace odfaeg {
                 waitValues.push_back(values[reflectRefractTex.getCurrentFrame()]);
                 values[reflectRefractTex.getCurrentFrame()]++;
                 signalValues.push_back(values[reflectRefractTex.getCurrentFrame()]);
-                target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, std::vector<VkFence>(), 0, false, true, windowFences[reflectRefractTex.getCurrentFrame()]);
+                target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, inFlightFences, 0, false, true, windowFences[reflectRefractTex.getCurrentFrame()]);
                 //std::cout<<"drawn"<<std::endl;
                 depthBuffer.display();
                 alphaBuffer.display();

@@ -5934,8 +5934,9 @@ namespace odfaeg {
         }
         void PerPixelLinkedListRenderComponent::draw(RenderTarget& target, RenderStates states) {
 
-            std::unique_lock<std::mutex> lock(mtx);
+
             if (useThread) {
+                std::unique_lock<std::mutex> lock(mtx);
                 cv.wait(lock, [this] {
 
                         //std::cout<<"draw frame : "<<frameBuffer.getCurrentFrame()<<std::endl;

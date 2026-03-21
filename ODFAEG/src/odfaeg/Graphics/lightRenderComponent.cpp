@@ -7231,7 +7231,7 @@ namespace odfaeg {
             signalValues.push_back(valuesFinished[lightMap.getCurrentFrame()]);
             signalValues.push_back(valuesLightDepthAlpha[lightMap.getCurrentFrame()]);
             std::vector<VkFence> inFlightFences = {fences[lightMap.getCurrentFrame()], depthBufferFences[depthBuffer.getCurrentFrame()], lightDepthBufferFences[lightDepthBuffer.getCurrentFrame()], alphaBufferFences[alphaBuffer.getCurrentFrame()], specularTextureFences[specularTexture.getCurrentFrame()], bumpTextureFences[bumpTexture.getCurrentFrame()]};
-            target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, inFlightFences);
+            target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, inFlightFences, 0, true, false);
             target.beginRecordCommandBuffers();
             const_cast<Texture&>(lightMap.getTexture(lightMap.getImageIndex())).toColorAttachmentOptimal(target.getCommandBuffers()[target.getCurrentFrame()]);
             waitValues.clear();
@@ -7242,7 +7242,7 @@ namespace odfaeg {
             valuesLightDepthAlpha[lightMap.getCurrentFrame()]++;
             signalValues.push_back(valuesFinished[lightMap.getCurrentFrame()]);
             signalValues.push_back(valuesLightDepthAlpha[lightMap.getCurrentFrame()]);
-            target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, std::vector<VkFence>(), 0, false, true, windowFences[lightMap.getCurrentFrame()]);
+            target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, inFlightFences, 0, false, true, windowFences[lightMap.getCurrentFrame()]);
 
             lightDepthBuffer.display();
             depthBuffer.display();
