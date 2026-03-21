@@ -25,7 +25,7 @@ namespace odfaeg {
                     scrollableSize = totalSize;
                 } else {
                     nbItems = 0;
-                    selectedItem = nullptr;
+                    selectedItem = new TextArea(math::Vec3f(getPosition().x(), getPosition().y(), getPosition().z()), math::Vec3f(size.x() - 50, size.y(), 0), font, "", window);
                     totalSize = scrollableSize = 0;
                 }
                 rect = RectangleShape(math::Vec3f(size.x(), size.y(), 0));

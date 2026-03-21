@@ -8179,39 +8179,46 @@ std::string ODFAEGCreator::stripQuotes(std::string s) {
 std::vector<std::string> ODFAEGCreator::checkCompletionNames(std::string strsearch, unsigned int posInFile) {
     //std::cout<<"check : "<<std::endl;
     std::vector<std::string> namesToPropose;
-    CXIndex index = clang_createIndex(0, 0);
-    std::vector<std::string> includePaths = rtc.getIncludeDirs();
-    std::vector<const char*> args;
-    args.reserve(includePaths.size() * 2 + 1);
-    std::vector<std::string> stableStrings;
-    for (auto& path : includePaths) {
-        std::filesystem::path p = std::filesystem::canonical(stripQuotes(std::string(path)));
-        std::string canonical = p.string();
-        std::replace(canonical.begin(), canonical.end(), '\\', '/');
-        stableStrings.push_back(canonical);
-        args.push_back("-I");
-        args.push_back(stableStrings.back().c_str());
-    }
-    args.push_back("-std=c++20");
-
     CXUnsavedFile unsaved;
     unsaved.Filename = virtualFile.c_str();        // nom virtuel
     unsaved.Contents = tScriptEdit->getText().c_str();        // contenu de ta TextArea
     unsaved.Length   = tScriptEdit->getText().size();
+    if (!index)
+        index = clang_createIndex(0, 0);
+    if (!tu) {
+        std::vector<std::string> includePaths = rtc.getIncludeDirs();
+        std::vector<const char*> args;
+        args.reserve(includePaths.size() * 2 + 1);
+        std::vector<std::string> stableStrings;
+        for (auto& path : includePaths) {
+            std::filesystem::path p = std::filesystem::canonical(stripQuotes(std::string(path)));
+            std::string canonical = p.string();
+            std::replace(canonical.begin(), canonical.end(), '\\', '/');
+            stableStrings.push_back(canonical);
+            args.push_back("-I");
+            args.push_back(stableStrings.back().c_str());
+        }
+        args.push_back("-std=c++20");
 
-    CXTranslationUnit tu = clang_parseTranslationUnit(
-        index,
-        virtualFile.c_str(),            // ton fichier source
-        args.data(), args.size(),                 // options
-        &unsaved, 1,              // pas de fichiers précompilés
-        CXTranslationUnit_None
-    );
+        CXTranslationUnit tu = clang_parseTranslationUnit(
+            index,
+            virtualFile.c_str(),            // ton fichier source
+            args.data(), args.size(),                 // options
+            &unsaved, 1,              // pas de fichiers précompilés
+            CXTranslationUnit_PrecompiledPreamble |
+            CXTranslationUnit_CacheCompletionResults |
+            CXTranslationUnit_KeepGoing
+        );
+    } else {
+        clang_reparseTranslationUnit(tu, 1, &unsaved, clang_defaultReparseOptions(tu));
+    }
     std::pair<unsigned, unsigned> lineColumn = indexToLineColumn(tScriptEdit->getText(), posInFile);
     CXCodeCompleteResults* results = clang_codeCompleteAt(
         tu,
         virtualFile.c_str(), lineColumn.first, lineColumn.second,
-        nullptr, 0,
-        CXCodeComplete_IncludeMacros | CXCodeComplete_IncludeCodePatterns
+        &unsaved, 1,
+        CXCodeComplete_IncludeMacros |
+        CXCodeComplete_IncludeCodePatterns
     );
     if (results) {
         for (unsigned i = 0; i < results->NumResults; ++i) {

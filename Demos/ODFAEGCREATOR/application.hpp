@@ -146,6 +146,8 @@ class ODFAEGCreator : public odfaeg::core::Application<ODFAEGCreator>,
         Serif
     };
     private :
+        CXIndex index;
+        CXTranslationUnit tu;
         std::string stripQuotes(std::string s);
         bool isWindowsPath(const std::string& s);
         bool isUnixPath(const std::string& s);
