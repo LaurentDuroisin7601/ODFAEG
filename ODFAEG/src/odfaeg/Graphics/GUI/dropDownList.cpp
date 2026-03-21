@@ -168,7 +168,7 @@ namespace odfaeg {
                     selectedItem->setPosition(math::Vec3f(getPosition().x(), getPosition().y(), getPosition().z()));
                     selectedItem->setSize(math::Vec3f(getSize().x() - 50, getSize().y(), getSize().z()));
                     target.draw(*selectedItem, states);
-                } else {
+                } else if (selectedItem != nullptr) {
                     /*if (getName() == "FUNCTION")
                         //////std::cout<<"draw items"<<std::endl;*/
                     selectedItem->setPosition(math::Vec3f(getPosition().x(), getPosition().y(), getPosition().z()));
