@@ -2,7 +2,7 @@
 namespace odfaeg {
     namespace graphic {
         namespace g3d {
-            Animation::Animation(const std::string& animationPath, Entity* model) : model(model)
+            Animation::Animation(const std::string& animationPath, Entity* model, EntityFactory& factory) : model(model), factory(factory)
             {
                 Assimp::Importer importer;
                 const aiScene* scene = importer.ReadFile(animationPath, aiProcess_Triangulate);
@@ -20,14 +20,16 @@ namespace odfaeg {
 
             Bone* Animation::findBone(const std::string& name)
             {
+                //std::cout<<"begin find bone"<<std::endl;
                 auto iter = std::find_if(m_Bones.begin(), m_Bones.end(),
-                    [&](const Bone& Bone)
+                    [&](const std::unique_ptr<Bone>& Bone)
                     {
-                        return Bone.getBoneName() == name;
+                        return Bone->getBoneName() == name;
                     }
                 );
+                //std::cout<<"end find bone"<<std::endl;
                 if (iter == m_Bones.end()) return nullptr;
-                else return &(*iter);
+                else return (*iter).get();
             }
 
 
@@ -60,8 +62,11 @@ namespace odfaeg {
                         boneInfoMap[boneName].id = boneCount;
                         boneCount++;
                     }
-                    m_Bones.push_back(Bone(channel->mNodeName.data,
-                        boneInfoMap[channel->mNodeName.data].id, channel));
+                    Bone *b = factory.make_entity<Bone>(channel->mNodeName.data,
+                        boneInfoMap[channel->mNodeName.data].id, channel, factory);
+                    std::unique_ptr<Bone> ptr;
+                    ptr.reset(b);
+                    m_Bones.push_back(std::move(ptr));
                 }
 
                 m_BoneInfoMap = boneInfoMap;

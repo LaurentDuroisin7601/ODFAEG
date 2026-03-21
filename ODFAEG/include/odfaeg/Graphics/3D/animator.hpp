@@ -14,6 +14,7 @@ namespace odfaeg {
                     math::Matrix4f transform;
                 };
                 Animator(window::Device& vkDevice, Animation* animation, EntityFactory& factory);
+                void setBoneParent(const Animation::AssimpNodeData* node);
                 void updateAnimation(float dt);
                 void playAnimation(Animation* pAnimation);
                 void calculateBoneTransform(const Animation::AssimpNodeData* node, math::Matrix4f parentTransform);
@@ -108,6 +109,7 @@ namespace odfaeg {
                 std::vector<std::array<VkBuffer, MAX_FRAMES_IN_FLIGHT>> stagingFinalBonesMatrices;
                 std::vector<std::array<VkDeviceMemory, MAX_FRAMES_IN_FLIGHT>> finalBonesMatricesMemory;
                 std::vector<std::array<VkDeviceMemory, MAX_FRAMES_IN_FLIGHT>> stagingFinalBonesMatricesMemory;
+
             };
         }
     }

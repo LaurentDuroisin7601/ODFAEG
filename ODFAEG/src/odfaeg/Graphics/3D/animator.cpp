@@ -11,13 +11,18 @@ namespace odfaeg {
                 animation->getModel()->setParent(this);
                 addChild(animation->getModel());
 
+
+
                 m_CurrentTime = 0.0;
                 m_CurrentAnimation = animation;
+                setBoneParent(&m_CurrentAnimation->getRootNode());
 
                 m_FinalBoneMatrices.reserve(MAX_BONES);
 
                 for (int i = 0; i < MAX_BONES; i++)
                     m_FinalBoneMatrices.push_back(math::Matrix4f());
+                for (int i = 0; i < MAX_BONES; i++)
+                    m_FinalBoneGlobalMatrices.push_back(math::Matrix4f());
                 createCommandPool();
                 createDescriptorPool();
                 createDescriptorSetLayout();
@@ -26,7 +31,19 @@ namespace odfaeg {
                 createComputePipeline();
 
             }
+            void Animator::setBoneParent(const Animation::AssimpNodeData* node) {
+                std::string nodeName = node->name;
+                Bone* bone = m_CurrentAnimation->findBone(nodeName);
+                if (bone)
+                {
+                    ////////std::cout<<"update"<<std::endl;
+                    addChild(bone);
+                    bone->setParent(this);
 
+                }
+                for (int i = 0; i < node->childrenCount; i++)
+                    setBoneParent(&node->children[i]);
+            }
             void Animator::updateAnimation(float dt)
             {
                 ////////std::cout<<"update anim"<<std::endl;
@@ -141,14 +158,7 @@ namespace odfaeg {
                 m_CurrentAnimation = pAnimation;
                 m_CurrentTime = 0.0f;
             }
-            void Animator::attachEntityToBone(Entity* entity, std::string boneName) {
-                entity->setParent(this);
-                addChild(entity);
-                Bone* bone = m_CurrentAnimation->findBone(boneName);
-                if (bone != nullptr) {
-                    entity->attachToBone(bone->getBoneName());
-                }
-            }
+
             void Animator::calculateBoneTransform(const Animation::AssimpNodeData* node, math::Matrix4f parentTransform)
             {
                 std::string nodeName = node->name;
@@ -156,6 +166,7 @@ namespace odfaeg {
 
 
                 Bone* bone = m_CurrentAnimation->findBone(nodeName);
+                //std::cout<<"bone : "<<bone<<std::endl;
 
                 if (bone)
                 {
@@ -164,27 +175,33 @@ namespace odfaeg {
                     nodeTransform = bone->getLocalTransform();
 
                 }
-                //std::cout<<"node transform : "<<nodeTransform<<std::endl;
+                //std::cout<<"bone update done : "<<bone<<std::endl;
+
+                //std::cout<<"node transform : "<<std::endl;
                 math::Matrix4f globalTransformation = parentTransform * nodeTransform;
 
-
+                //std::cout<<"get bone info map : "<<m_CurrentAnimation<<std::endl;
                 auto boneInfoMap = m_CurrentAnimation->getBoneIDMap();
+                //std::cout<<"bone info map"<<std::endl;
                 if (boneInfoMap.find(nodeName) != boneInfoMap.end())
                 {
                     int index = boneInfoMap[nodeName].id;
+                    //std::cout<<"index : "<<index<<std::endl;
                     math::Matrix4f offset = boneInfoMap[nodeName].offset;
                     m_FinalBoneMatrices[index] = globalTransformation * offset;
                     m_FinalBoneGlobalMatrices[index] = globalTransformation;
                     //std::cout<<"final bone transform : "<<m_FinalBoneMatrices[index]<<std::endl;
                 }
-                for (unsigned int i = 0; i < getChildren().size(); i++) {
-                    if (getChildren()[i]->getAttachedBone() == bone->getBoneName()) {
+                //std::cout<<"bone info map done"<<std::endl;
+                if (bone) {
+                    //std::cout<<"bone children : "<<bone->getChildren().size()<<std::endl;
+                    for (unsigned int i = 0; i < bone->getChildren().size(); i++) {
                         TransformMatrix tm =  m_CurrentAnimation->getModel()->getTransform();
                         tm.update();
                         tm.combine(m_FinalBoneGlobalMatrices[bone->getBoneID()]);
-
-                        getChildren()[i]->setTransform(tm.getMatrix());
+                        bone->getChildren()[i]->setTransform(tm.getMatrix());
                     }
+                    //std::cout<<"bone children transform ok : "<<std::endl;
                 }
                 for (int i = 0; i < node->childrenCount; i++)
                     calculateBoneTransform(&node->children[i], globalTransformation);

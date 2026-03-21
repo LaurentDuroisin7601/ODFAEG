@@ -115,7 +115,7 @@ void MyAppli::onInit() {
     model->setSelected(true);
 
     animatedModel = loader.loadModel("tilesets\\vampire\\dancing_vampire.dae", factory);
-    g3d::Animation* danceAnimation = new g3d::Animation("tilesets\\vampire\\dancing_vampire.dae", animatedModel);
+    g3d::Animation* danceAnimation = new g3d::Animation("tilesets\\vampire\\dancing_vampire.dae", animatedModel, factory);
     Entity* animator = factory.make_entity<g3d::Animator>(getDevice(), danceAnimation, factory);
 
     //animator->setScale(Vec3f(0.1f, 0.1f, 0.1f));

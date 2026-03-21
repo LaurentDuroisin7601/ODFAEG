@@ -2,11 +2,14 @@
 namespace odfaeg {
     namespace graphic {
         namespace g3d {
-            Bone::Bone(const std::string& name, int ID, const aiNodeAnim* channel)
+            Bone::Bone(const std::string& name, int ID, const aiNodeAnim* channel, EntityFactory& factory)
                 :
+                GameObject (math::Vec3f(0, 0, 0), math::Vec3f(0, 0, 0),math::Vec3f(0, 0, 0),"E_BONE", factory),
                 m_Name(name),
                 m_ID(ID),
-                m_LocalTransform()
+                m_LocalTransform(),
+                channel(channel),
+                factory(factory)
             {
                 m_NumPositions = channel->mNumPositionKeys;
 
@@ -206,6 +209,13 @@ namespace odfaeg {
                 TransformMatrix tm;
                 tm.setScale(finalScale);
                 return tm.getMatrix();
+            }
+            void Bone::onDraw (RenderTarget &target, RenderStates states) {
+            }
+            Entity* Bone::clone() {
+                Bone* b = factory.make_entity<Bone>(m_Name, m_ID, channel, factory);
+                GameObject::copy(b);
+                return b;
             }
         }
     }

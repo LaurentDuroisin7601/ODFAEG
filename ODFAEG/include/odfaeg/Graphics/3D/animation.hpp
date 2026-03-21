@@ -14,8 +14,7 @@ namespace odfaeg {
                     int childrenCount;
                     std::vector<AssimpNodeData> children;
                 };
-                Animation() = default;
-                Animation(const std::string& animationPath, Entity* model);
+                Animation(const std::string& animationPath, Entity* model, EntityFactory& factory);
                 Bone* findBone(const std::string& name);
                 float getTicksPerSecond();
                 float getDuration();
@@ -29,11 +28,12 @@ namespace odfaeg {
                 void readHeirarchyData(AssimpNodeData& dest, const aiNode* src);
                 float m_Duration;
                 int m_TicksPerSecond;
-                std::vector<Bone> m_Bones;
+                std::vector<std::unique_ptr<Bone>> m_Bones;
                 AssimpNodeData m_RootNode;
                 std::map<std::string, Entity::BoneInfo> m_BoneInfoMap;
                 math::Vec3f size;
                 Entity* model;
+                EntityFactory& factory;
             };
         }
     }
