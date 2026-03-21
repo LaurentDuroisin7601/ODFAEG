@@ -1508,7 +1508,7 @@ void ODFAEGCreator::onUpdate(RenderWindow* window, IEvent& event) {
         if (isMovingYPos && translationGuismo.intersectsYArrow(ray, _near)) {
             float my = _near.y() - prevObjectPos.y();
             translationGuismo.move(Vec3f(0, my, 0));
-            getWorld()->moveEntity(selectedObject, my, 0, 0);
+            getWorld()->moveEntity(selectedObject, 0, my, 0);
             prevObjectPos.y() = _near.y();
         }
         if (isMovingZPos && translationGuismo.intersectsZArrow(ray, _near)) {
