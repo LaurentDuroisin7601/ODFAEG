@@ -8219,7 +8219,8 @@ std::vector<std::string> ODFAEGCreator::checkCompletionNames(std::string strsear
         virtualFile.c_str(), lineColumn.first, lineColumn.second,
         &unsaved, 1,
         CXCodeComplete_IncludeMacros |
-        CXCodeComplete_IncludeCodePatterns
+        CXCodeComplete_IncludeCodePatterns |
+        CXCodeComplete_IncludeBriefComments
     );
     if (results) {
         for (unsigned i = 0; i < results->NumResults; ++i) {

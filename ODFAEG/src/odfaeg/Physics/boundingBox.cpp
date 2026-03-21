@@ -727,6 +727,10 @@ namespace odfaeg {
             math::Vec3f t (x - this->x, y - this->y, z - this->z);
             move(t);
         }
+        void BoundingBox::setCenter(int x, int y, int z) {
+            math::Vec3f t (x - center.x(), y - center.y(), z - center.z());
+            move(t);
+        }
         void BoundingBox::setSize(int width, int height, int depth) {
             this->width = width;
             this->height = height;

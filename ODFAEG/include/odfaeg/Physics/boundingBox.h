@@ -140,6 +140,7 @@ namespace odfaeg {
                 *  \param the height of the bounding box.
                 *  \param the depth of the bounding box.
                 */
+                void setCenter(int x, int y, int z);
                 void setSize(int width, int height, int depth);
                 void move (math::Vec3f t);
                 void scale (math::Vec3f s);

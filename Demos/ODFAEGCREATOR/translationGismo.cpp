@@ -9,6 +9,9 @@ void TranslationGuismo::setCenterSize(Vec3f center, Vec3f size) {
     zRect = RectangleShape(Vec3f(0, size.y() + arrowSize - size.y(), size.z()));
     zRect.setCenter(Vec3f(center.x(), center.y() - arrowSize * 0.5f, center.z()));
     zRect.setFillColor(Color::Blue);
+    bbZArrow = BoundingBox(0, 0, 0, 0, size.y() + arrowSize - size.y(), size.z());
+    bbZArrow.setPosition(center.x(), center.y() - arrowSize * 0.5f, center.z());
+
     zArrow = ConvexShape(3);
     zArrow.setPoint(0, Vec3f(center.x(), center.y() + arrowSize, center.z() + size.z()));
     zArrow.setPoint(1, Vec3f(center.x(), center.y(), center.z() + size.z() + arrowSize));
@@ -26,6 +29,8 @@ void TranslationGuismo::setCenterSize(Vec3f center, Vec3f size) {
     xArrow.setPoint(1, Vec3f(center.x() + size.x() + arrowSize, center.y(), center.z()));
     xArrow.setPoint(2, Vec3f(center.x() + size.x(), center.y() - arrowSize, center.z()));
     xArrow.setFillColor(Color::Red);
+    bbXArrow = BoundingBox(0, 0, 0, size.x(), size.y() + arrowSize - size.y(), 0);
+    bbXArrow.setPosition(center.x(),  center.y() - arrowSize * 0.5f, center.z());
 
     bpXArrow = BoundingPolyhedron(Vec3f(center.x() + size.x(),  center.y() - arrowSize, center.z()),
                             Vec3f(center.x() + size.x() + arrowSize,  center.y(), center.z()),
@@ -39,6 +44,8 @@ void TranslationGuismo::setCenterSize(Vec3f center, Vec3f size) {
     yArrow.setPoint(1, Vec3f(center.x(), center.y() + size.y() + arrowSize, center.z()));
     yArrow.setPoint(2, Vec3f(center.x() - arrowSize, center.y() + size.y(), center.z()));
     yArrow.setFillColor(Color::Green);
+    bbYArrow = BoundingBox(0, 0, 0, size.x() + arrowSize - size.x(), size.y(), 0);
+    bbYArrow.setPosition(center.x() - arrowSize * 0.5f, center.y(), 0);
 
     bpYArrow = BoundingPolyhedron(Vec3f(center.x() + arrowSize,  center.y() + size.y(), center.z()),
                             Vec3f(center.x(),  center.y() + size.y() + arrowSize, center.z()),
@@ -58,7 +65,7 @@ bool TranslationGuismo::intersectsXArrow(Ray ray, Vec3f& i1) {
     if (visible) {
         CollisionResultSet::Info info;
         Vec3f i2;
-        return bpXArrow.intersectsWhere(ray, i1, i2, info);
+        return bbXArrow.intersectsWhere(ray, i1, i2, info) || bpXArrow.intersectsWhere(ray, i1, i2, info);
     }
     return false;
 }
@@ -66,7 +73,7 @@ bool TranslationGuismo::intersectsYArrow(Ray ray, Vec3f& i1) {
     if (visible) {
         CollisionResultSet::Info info;
         Vec3f i2;
-        return bpYArrow.intersectsWhere(ray, i1, i2, info);
+        return bbYArrow.intersectsWhere(ray, i1, i2, info) || bpYArrow.intersectsWhere(ray, i1, i2, info);
     }
     return false;
 }
@@ -74,7 +81,7 @@ bool TranslationGuismo::intersectsZArrow(Ray ray, Vec3f& i1) {
     if (visible) {
         CollisionResultSet::Info info;
         Vec3f i2;
-        return bpZArrow.intersectsWhere(ray, i1, i2, info);
+        return bbZArrow.intersectsWhere(ray, i1, i2, info) || bpZArrow.intersectsWhere(ray, i1, i2, info);
     }
     return false;
 }
@@ -88,8 +95,11 @@ void TranslationGuismo::move(Vec3f t) {
     xArrow.move(t);
     yRect.move(t);
     yArrow.move(t);
+    bbXArrow.move(t);
     bpXArrow.move(t);
     bpYArrow.move(t);
+    bbYArrow.move(t);
     bpZArrow.move(t);
+    bbZArrow.move(t);
 }
 

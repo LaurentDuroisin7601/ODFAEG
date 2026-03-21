@@ -1,6 +1,7 @@
 #ifndef TRANSLATION_GUISMO_HPP
 #define TRANSLATION_GUISMO_HPP
 #include "odfaeg/Physics/boundingPolyhedron.h"
+#include "odfaeg/Physics/boundingBox.h"
 #include "odfaeg/Graphics/convexShape.h"
 #include "odfaeg/Graphics/rectangleShape.h"
 #include "odfaeg/Graphics/renderTarget.h"
@@ -18,6 +19,7 @@ private :
     odfaeg::graphic::ConvexShape xArrow, yArrow, zArrow;
     odfaeg::graphic::RectangleShape xRect, yRect, zRect;
     odfaeg::physic::BoundingPolyhedron bpXArrow, bpYArrow, bpZArrow;
+    odfaeg::physic::BoundingBox bbXArrow, bbYArrow, bbZArrow;
     float arrowSize;
     bool visible;
 };
