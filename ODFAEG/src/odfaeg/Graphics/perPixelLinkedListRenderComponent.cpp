@@ -5738,6 +5738,24 @@ namespace odfaeg {
         Entity* PerPixelLinkedListRenderComponent::getBorder(Entity* entity) {
             for (unsigned int i = 0; i < visibleSelectedScaleEntities.size(); i++) {
                 if (visibleSelectedScaleEntities[i]->getBorderId() == entity->getId()) {
+                    visibleSelectedScaleEntities[i]->setTransform(entity->getTransform().getMatrix());
+                    Entity* root = (entity->getRootEntity()->isAnimated()) ? entity->getRootEntity() : entity;
+                    math::Vec3f oldSize = root->getSize();
+                    visibleSelectedScaleEntities[i]->setOrigin(root->getSize() * 0.5f);
+                    visibleSelectedScaleEntities[i]->setSize(root->getSize() * 1.1f);
+                    math::Vec3f offset =  root->getSize() - oldSize;
+                    if (visibleSelectedScaleEntities[i]->getSize().z() > 0) {
+                        visibleSelectedScaleEntities[i]->setPosition(root->getPosition() - offset * 0.5f);
+                    }
+                    for (unsigned int f = 0; f < entity->getFaces().size(); f++) {
+                        visibleSelectedScaleEntities[i]->getFaces()[f].setVertexArray(entity->getFaces()[f].getVertexArray());
+                        visibleSelectedScaleEntities[i]->getFaces()[f].setMaterial(entity->getFaces()[f].getMaterial());
+                        VertexArray& va = visibleSelectedScaleEntities[i]->getFace(f)->getVertexArray();
+                        for (unsigned int j = 0; j < va.getVertexCount(); j++) {
+
+                            va[j].color = Color::Cyan;
+                        }
+                    }
                     return visibleSelectedScaleEntities[i].get();
                 }
             }
@@ -5790,9 +5808,11 @@ namespace odfaeg {
                     skyboxBatcher.addFace(skybox->getFace(i));
                 }
             }
+            //std::cout<<"component expression : "<<expression<<std::endl;
             for (unsigned int i = 0; i < vEntities.size(); i++) {
 
                 if ( vEntities[i] != nullptr && vEntities[i]->isLeaf()) {
+                    //std::cout<<"draw something"<<std::endl;
                     Entity* border;
                     if (vEntities[i]->isSelected()) {
                         border = getBorder(vEntities[i]);
