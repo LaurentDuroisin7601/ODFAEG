@@ -148,6 +148,8 @@ class ODFAEGCreator : public odfaeg::core::Application<ODFAEGCreator>,
     private :
         CXIndex index;
         CXTranslationUnit tu;
+        std::vector<std::string> stableStrings;
+        std::vector<const char*> args;
         std::string stripQuotes(std::string s);
         bool isWindowsPath(const std::string& s);
         bool isUnixPath(const std::string& s);

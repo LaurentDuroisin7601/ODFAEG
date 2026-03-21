@@ -8187,9 +8187,9 @@ std::vector<std::string> ODFAEGCreator::checkCompletionNames(std::string strsear
         index = clang_createIndex(0, 0);
     if (!tu) {
         std::vector<std::string> includePaths = rtc.getIncludeDirs();
-        std::vector<const char*> args;
         args.reserve(includePaths.size() * 2 + 1);
-        std::vector<std::string> stableStrings;
+        stableStrings.clear();
+        args.clear();
         for (auto& path : includePaths) {
             std::filesystem::path p = std::filesystem::canonical(stripQuotes(std::string(path)));
             std::string canonical = p.string();
@@ -8200,14 +8200,15 @@ std::vector<std::string> ODFAEGCreator::checkCompletionNames(std::string strsear
         }
         args.push_back("-std=c++20");
 
-        CXTranslationUnit tu = clang_parseTranslationUnit(
+        tu = clang_parseTranslationUnit(
             index,
             virtualFile.c_str(),            // ton fichier source
             args.data(), args.size(),                 // options
             &unsaved, 1,              // pas de fichiers précompilés
             CXTranslationUnit_PrecompiledPreamble |
             CXTranslationUnit_CacheCompletionResults |
-            CXTranslationUnit_KeepGoing
+            CXTranslationUnit_KeepGoing |
+            CXTranslationUnit_Incomplete
         );
     } else {
         clang_reparseTranslationUnit(tu, 1, &unsaved, clang_defaultReparseOptions(tu));
