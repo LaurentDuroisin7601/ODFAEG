@@ -99,7 +99,7 @@ void MyAppli::onInit() {
     emitter.setEmissionRate(30);
     emitter.setParticleLifetime(Distributions::uniform(seconds(5), seconds(7)));
     emitter.setParticlePosition(Distributions::rect(Vec3f(0, 0, 50), Vec3f(10, 0, 100)));   // Emit particles in given circle
-    emitter.setParticleVelocity(Distributions::deflect(Vec3f(0, 0, 10),  0)); // Emit towards direction with deviation of 15Â°
+    emitter.setParticleVelocity(Distributions::deflect(Vec3f(0, 0, 10),  0)); // Emit towards direction with deviation of 15°
     emitter.setParticleRotation(Distributions::uniform(0.f, 0.f));
     emitter.setParticleTextureIndex(Distributions::uniformui(0, 9));
     emitter.setParticleScale(Distributions::rect(Vec3f(2.1f, 2.1f, 2.f), Vec3f(2.f, 2.f, 2.f)));
@@ -323,7 +323,7 @@ void MyAppli::onUpdate (RenderWindow* window, IEvent& event) {
 }
 void MyAppli::onExec() {
     if (IKeyboard::isKeyPressed(IKeyboard::Up)) {
-        view3D.move(view3D.getForward(), speed * clock.getElapsedTime().asSeconds());
+        view3D.move(view3D.getForward(), -speed * clock.getElapsedTime().asSeconds());
         float y;
         bool isOnHeightMap = heightmap->getHeight(Vec2f(view3D.getPosition().x(), view3D.getPosition().z()), y);
         view3D.setCenter(Vec3f(view3D.getPosition().x(), y + model->getSize().y(),view3D.getPosition().z()));
@@ -334,7 +334,7 @@ void MyAppli::onExec() {
             getRenderComponentManager().getRenderComponent(i)->setView(view3D);
         }
         View view = billboard->getView();
-        view.move(view.getForward(), speed * clock.getElapsedTime().asSeconds());
+        view.move(view.getForward(), -speed * clock.getElapsedTime().asSeconds());
 
         isOnHeightMap = heightmap->getHeight(Vec2f(view.getPosition().x(), view.getPosition().z()), y);
         view.setCenter(Vec3f(view.getPosition().x(), y + model->getSize().y(),view.getPosition().z()));
@@ -348,7 +348,7 @@ void MyAppli::onExec() {
     }
 
     if (IKeyboard::isKeyPressed(IKeyboard::Down)) {
-        view3D.move(view3D.getForward(), -speed * clock.getElapsedTime().asSeconds());
+        view3D.move(view3D.getForward(), speed * clock.getElapsedTime().asSeconds());
         float y;
         bool isOnHeightMap = heightmap->getHeight(Vec2f(view3D.getPosition().x(), view3D.getPosition().z()), y);
         view3D.setCenter(Vec3f(view3D.getPosition().x(), y + model->getSize().y(),view3D.getPosition().z()));
@@ -358,7 +358,7 @@ void MyAppli::onExec() {
             getRenderComponentManager().getRenderComponent(i)->setView(view3D);
         }
         View view = billboard->getView();
-        view.move(view.getForward(), -speed * clock.getElapsedTime().asSeconds());
+        view.move(view.getForward(), speed * clock.getElapsedTime().asSeconds());
 
         isOnHeightMap = heightmap->getHeight(Vec2f(view.getPosition().x(), view.getPosition().z()), y);
         view.setCenter(Vec3f(view.getPosition().x(), y + model->getSize().y(),view.getPosition().z()));
