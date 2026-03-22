@@ -5747,7 +5747,7 @@ namespace odfaeg {
                     waitValues.push_back(values[currentFrame]);
                     values[currentFrame]++;
                     signalValues.push_back(values[currentFrame]);
-                    frameBuffer.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, windowInFlightFence);
+                    frameBuffer.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
                 }
 
 
