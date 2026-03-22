@@ -723,6 +723,47 @@ namespace odfaeg {
                 stop = true;
                 cv.notify_all();
                 getListener().stop();
+                window.beginRecordCommandBuffers();
+                const_cast<Texture&>(shadowMap.getTexture(shadowMap.getImageIndex())).toShaderReadOnlyOptimal(window.getCommandBuffers()[window.getCurrentFrame()]);
+
+                shadowTile.setCenter(window.getView().getPosition());
+
+
+                stencilBufferTile.setTexture(shadowMap.getTexture(shadowMap.getImageIndex()));
+                RenderStates states;
+                states.blendMode = BlendMultiply;
+                window.draw(shadowTile, states);
+                /*if (&target == &window)
+                    window.endRenderPass();*/
+                std::vector<VkSemaphore> waitSemaphores, signalSemaphores;
+                std::vector<VkPipelineStageFlags> waitStages;
+                std::vector<uint64_t> waitValues, signalValues;
+                waitSemaphores.push_back(offscreenFinishedSemaphore[shadowMap.getCurrentFrame()]);
+                waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+                signalSemaphores.push_back(offscreenFinishedSemaphore[shadowMap.getCurrentFrame()]);
+                waitValues.push_back(values[shadowMap.getCurrentFrame()]);
+                values[shadowMap.getCurrentFrame()]++;
+                signalValues.push_back(values[shadowMap.getCurrentFrame()]);
+                std::vector<VkFence> inFlightFences = {fences[shadowMap.getCurrentFrame()], depthBufferFences[depthBuffer.getCurrentFrame()], alphaBufferFences[alphaBuffer.getCurrentFrame()],stencilBufferFences[stencilBuffer.getCurrentFrame()]};
+                window.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, inFlightFences, 0, true, false);
+                window.beginRecordCommandBuffers();
+                const_cast<Texture&>(shadowMap.getTexture(shadowMap.getImageIndex())).toColorAttachmentOptimal(window.getCommandBuffers()[window.getCurrentFrame()]);
+
+
+                waitValues.clear();
+                signalValues.clear();
+                waitValues.push_back(values[shadowMap.getCurrentFrame()]);
+                values[shadowMap.getCurrentFrame()]++;
+                signalValues.push_back(values[shadowMap.getCurrentFrame()]);
+                window.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, inFlightFences, 0, false, true, windowFences[shadowMap.getCurrentFrame()]);
+                vkDeviceWaitIdle(vkDevice.getDevice());
+                for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
+                    if (modelDatas[i].size() > 0) {
+                        for (unsigned int j = 0; j < MAX_FRAMES_IN_FLIGHT; j++) {
+                            needToUpdateDSs[i][j] = true;
+                        }
+                    }
+                }
                 /*unsigned int currentFrame = depthBuffer.getCurrentFrame();
                 VkCommandBufferInheritanceInfo inheritanceInfo{};
 

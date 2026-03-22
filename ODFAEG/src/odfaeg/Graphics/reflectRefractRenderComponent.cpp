@@ -856,6 +856,46 @@ namespace odfaeg {
                 stop = true;
                 cv.notify_all();
                 getListener().stop();
+                window.beginRecordCommandBuffers();
+                const_cast<Texture&>(reflectRefractTex.getTexture(reflectRefractTex.getImageIndex())).toShaderReadOnlyOptimal(window.getCommandBuffers()[window.getCurrentFrame()]);
+                reflectRefractTexSprite.setCenter(window.getView().getPosition());
+                reflectRefractTexSprite.setTexture(reflectRefractTex.getTexture(reflectRefractTex.getImageIndex()));
+                /*if (&target == &window)
+                    window.beginRenderPass();*/
+                RenderStates states;
+                states.blendMode = BlendAlpha;
+                window.draw(reflectRefractTexSprite, states);
+
+                /*if (&target == &window)
+                    window.endRenderPass();*/
+                std::vector<VkSemaphore> signalSemaphores;
+                std::vector<VkSemaphore> waitSemaphores;
+                std::vector<VkPipelineStageFlags> waitStages;
+                std::vector<uint64_t> waitValues, signalValues;
+                waitSemaphores.push_back(offscreenRenderingFinishedSemaphore[reflectRefractTex.getCurrentFrame()]);
+                waitStages.push_back(VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
+                waitValues.push_back(values[reflectRefractTex.getCurrentFrame()]);
+                signalSemaphores.push_back(offscreenRenderingFinishedSemaphore[reflectRefractTex.getCurrentFrame()]);
+                values[reflectRefractTex.getCurrentFrame()]++;
+                signalValues.push_back(values[reflectRefractTex.getCurrentFrame()]);
+                std::vector<VkFence> inFlightFences = {fences[reflectRefractTex.getCurrentFrame()], depthBufferFences[depthBuffer.getCurrentFrame()], alphaBufferFences[alphaBuffer.getCurrentFrame()], environmentMapFences[environmentMap.getCurrentFrame()]};
+                window.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, inFlightFences, 0, true, false);
+                window.beginRecordCommandBuffers();
+                const_cast<Texture&>(reflectRefractTex.getTexture(reflectRefractTex.getImageIndex())).toColorAttachmentOptimal(window.getCommandBuffers()[window.getCurrentFrame()]);
+                waitValues.clear();
+                signalValues.clear();
+                waitValues.push_back(values[reflectRefractTex.getCurrentFrame()]);
+                values[reflectRefractTex.getCurrentFrame()]++;
+                signalValues.push_back(values[reflectRefractTex.getCurrentFrame()]);
+                window.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, inFlightFences, 0, false, true, windowFences[reflectRefractTex.getCurrentFrame()]);
+                vkDeviceWaitIdle(vkDevice.getDevice());
+                for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
+                    if (modelDatas[i].size() > 0) {
+                        for (unsigned int j = 0; j < MAX_FRAMES_IN_FLIGHT; j++) {
+                            needToUpdateDSs[i][j] = true;
+                        }
+                    }
+                }
                 /*unsigned int currentFrame = depthBuffer.getCurrentFrame();
                 VkCommandBufferInheritanceInfo inheritanceInfo{};
 
