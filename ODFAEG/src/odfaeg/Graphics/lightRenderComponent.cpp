@@ -921,9 +921,10 @@ namespace odfaeg {
                 vkFreeCommandBuffers(vkDevice.getDevice(), commandPool, 1, &commandBuffer);
             }
             void LightRenderComponent::clear() {
-                /*lightDepthBuffer.clear(Color::Transparent);
+                lightDepthBuffer.clear(Color::Transparent);
                 std::vector<VkCommandBuffer> commandBuffers = lightDepthBuffer.getCommandBuffers();
                 unsigned int currentFrame = lightDepthBuffer.getCurrentFrame();
+
                 VkClearColorValue clearColor = {0.f, 0.f, 0.f, 0.f};
                 VkImageSubresourceRange subresRange = {};
                 subresRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -931,12 +932,12 @@ namespace odfaeg {
                 subresRange.layerCount = 1;
 
                 vkCmdClearColorImage(commandBuffers[currentFrame], depthTextureImage[currentFrame], VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
-                VkMemoryBarrier memoryBarrier{};
-                memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-                memoryBarrier.pNext = VK_NULL_HANDLE;
-                memoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-                memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-                vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
+                VkMemoryBarrier memoryBarrier0{};
+                memoryBarrier0.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+                memoryBarrier0.pNext = VK_NULL_HANDLE;
+                memoryBarrier0.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                memoryBarrier0.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+                vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier0, 0, nullptr, 0, nullptr);
 
                 depthBuffer.clear(Color::Transparent);
                 commandBuffers = depthBuffer.getCommandBuffers();
@@ -944,11 +945,11 @@ namespace odfaeg {
 
                 vkCmdClearColorImage(commandBuffers[currentFrame], depthTextureImage[currentFrame], VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
 
-                memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-                memoryBarrier.pNext = VK_NULL_HANDLE;
-                memoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-                memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-                vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
+                memoryBarrier0.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+                memoryBarrier0.pNext = VK_NULL_HANDLE;
+                memoryBarrier0.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                memoryBarrier0.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+                vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier0, 0, nullptr, 0, nullptr);
 
                 alphaBuffer.clear(Color::Transparent);
                 commandBuffers = alphaBuffer.getCommandBuffers();
@@ -956,18 +957,17 @@ namespace odfaeg {
 
                 vkCmdClearColorImage(commandBuffers[currentFrame], alphaTextureImage[currentFrame], VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
 
-                memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-                memoryBarrier.pNext = VK_NULL_HANDLE;
-                memoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-                memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-                vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
+                memoryBarrier0.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+                memoryBarrier0.pNext = VK_NULL_HANDLE;
+                memoryBarrier0.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                memoryBarrier0.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+                vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier0, 0, nullptr, 0, nullptr);
 
                 specularTexture.clear(Color::Transparent);
                 bumpTexture.clear(Color::Transparent);
                 Color ambientColor = g2d::AmbientLight::getAmbientLight().getColor();
-                lightMap.beginRecordCommandBuffers();
-                const_cast<Texture&>(lightMap.getTexture(lightMap.getImageIndex())).toColorAttachmentOptimal(lightMap.getCommandBuffers()[lightMap.getCurrentFrame()]);
-                lightMap.clear(ambientColor);*/
+
+                lightMap.clear(ambientColor);
 
             }
             void LightRenderComponent::resetBuffers() {
@@ -1518,6 +1518,8 @@ namespace odfaeg {
             void LightRenderComponent::launchRenderer() {
                 if (useThread) {
                     stop = false;
+                    registerFrameJob[lightMap.getCurrentFrame()] = true;
+                    commandBufferReady[lightMap.getCurrentFrame()] = false;
                     getListener().launch();
                 }
             }
@@ -1525,42 +1527,6 @@ namespace odfaeg {
                 stop = true;
                 cv.notify_all();
                 getListener().stop();
-                window.beginRecordCommandBuffers();
-                const_cast<Texture&>(lightMap.getTexture(lightMap.getImageIndex())).toShaderReadOnlyOptimal(window.getCommandBuffers()[window.getCurrentFrame()]);
-                lightMapTile.setCenter(window.getView().getPosition());
-                lightMapTile.setTexture(lightMap.getTexture(lightMap.getImageIndex()));
-                RenderStates states;
-                states.blendMode = BlendMultiply;
-                window.draw(lightMapTile, states);
-
-                std::vector<VkSemaphore> signalSemaphores, waitSemaphores;
-                std::vector<VkPipelineStageFlags> waitStages;
-                std::vector<uint64_t> signalValues, waitValues;
-                signalSemaphores.push_back(offscreenFinishedSemaphore[lightMap.getCurrentFrame()]);
-                signalSemaphores.push_back(offscreenLightDepthAlphaFinishedSemaphore[lightMap.getCurrentFrame()]);
-                waitSemaphores.push_back(offscreenFinishedSemaphore[lightMap.getCurrentFrame()]);
-                waitSemaphores.push_back(offscreenLightDepthAlphaFinishedSemaphore[lightMap.getCurrentFrame()]);
-                waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-                waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-                waitValues.push_back(valuesFinished[lightMap.getCurrentFrame()]);
-                waitValues.push_back(valuesLightDepthAlpha[lightMap.getCurrentFrame()]);
-                valuesFinished[lightMap.getCurrentFrame()]++;
-                valuesLightDepthAlpha[lightMap.getCurrentFrame()]++;
-                signalValues.push_back(valuesFinished[lightMap.getCurrentFrame()]);
-                signalValues.push_back(valuesLightDepthAlpha[lightMap.getCurrentFrame()]);
-                std::vector<VkFence> inFlightFences = {fences[lightMap.getCurrentFrame()], depthBufferFences[depthBuffer.getCurrentFrame()], lightDepthBufferFences[lightDepthBuffer.getCurrentFrame()], alphaBufferFences[alphaBuffer.getCurrentFrame()], specularTextureFences[specularTexture.getCurrentFrame()], bumpTextureFences[bumpTexture.getCurrentFrame()]};
-                window.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, inFlightFences, 0, true, false);
-                window.beginRecordCommandBuffers();
-                const_cast<Texture&>(lightMap.getTexture(lightMap.getImageIndex())).toColorAttachmentOptimal(window.getCommandBuffers()[window.getCurrentFrame()]);
-                waitValues.clear();
-                signalValues.clear();
-                waitValues.push_back(valuesFinished[lightMap.getCurrentFrame()]);
-                waitValues.push_back(valuesLightDepthAlpha[lightMap.getCurrentFrame()]);
-                valuesFinished[lightMap.getCurrentFrame()]++;
-                valuesLightDepthAlpha[lightMap.getCurrentFrame()]++;
-                signalValues.push_back(valuesFinished[lightMap.getCurrentFrame()]);
-                signalValues.push_back(valuesLightDepthAlpha[lightMap.getCurrentFrame()]);
-                window.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, inFlightFences, 0, false, true, windowFences[lightMap.getCurrentFrame()]);
                 vkDeviceWaitIdle(vkDevice.getDevice());
                 for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
                     if (modelDatas[i].size() > 0) {
@@ -5569,393 +5535,6 @@ namespace odfaeg {
 
                     drawBuffers();
                     jobFence[currentFrame].wait();
-                    lightDepthBuffer.clear(Color::Transparent);
-                    std::vector<VkCommandBuffer> commandBuffers = lightDepthBuffer.getCommandBuffers();
-
-                    VkClearColorValue clearColor = {0.f, 0.f, 0.f, 0.f};
-                    VkImageSubresourceRange subresRange = {};
-                    subresRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-                    subresRange.levelCount = 1;
-                    subresRange.layerCount = 1;
-
-                    vkCmdClearColorImage(commandBuffers[currentFrame], depthTextureImage[currentFrame], VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
-                    VkMemoryBarrier memoryBarrier0{};
-                    memoryBarrier0.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-                    memoryBarrier0.pNext = VK_NULL_HANDLE;
-                    memoryBarrier0.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-                    memoryBarrier0.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-                    vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier0, 0, nullptr, 0, nullptr);
-
-                    depthBuffer.clear(Color::Transparent);
-                    commandBuffers = depthBuffer.getCommandBuffers();
-                    currentFrame = depthBuffer.getCurrentFrame();
-
-                    vkCmdClearColorImage(commandBuffers[currentFrame], depthTextureImage[currentFrame], VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
-
-                    memoryBarrier0.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-                    memoryBarrier0.pNext = VK_NULL_HANDLE;
-                    memoryBarrier0.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-                    memoryBarrier0.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-                    vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier0, 0, nullptr, 0, nullptr);
-
-                    alphaBuffer.clear(Color::Transparent);
-                    commandBuffers = alphaBuffer.getCommandBuffers();
-                    currentFrame = alphaBuffer.getCurrentFrame();
-
-                    vkCmdClearColorImage(commandBuffers[currentFrame], alphaTextureImage[currentFrame], VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &subresRange);
-
-                    memoryBarrier0.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-                    memoryBarrier0.pNext = VK_NULL_HANDLE;
-                    memoryBarrier0.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-                    memoryBarrier0.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-                    vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier0, 0, nullptr, 0, nullptr);
-
-                    specularTexture.clear(Color::Transparent);
-                    bumpTexture.clear(Color::Transparent);
-                    Color ambientColor = g2d::AmbientLight::getAmbientLight().getColor();
-
-                    lightMap.clear(ambientColor);
-                    lightDepthBuffer.beginRecordCommandBuffers();
-                    commandBuffers = lightDepthBuffer.getCommandBuffers();
-                    currentFrame = lightDepthBuffer.getCurrentFrame();
-                    vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyModelDataBufferCommandBuffer[currentFrame]);
-
-                    vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyMaterialDataBufferCommandBuffer[currentFrame]);
-
-                    vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyDrawBufferCommandBuffer[currentFrame]);
-                    vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyVbBufferCommandBuffer[currentFrame]);
-
-                    vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyDrawIndexedBufferCommandBuffer[currentFrame]);
-                    vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyVbIndexedBufferCommandBuffer[currentFrame]);
-                    for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
-                        VkBufferMemoryBarrier buffersMemoryBarrier{};
-                        buffersMemoryBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-                        buffersMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-                        buffersMemoryBarrier.dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
-                        buffersMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-                        buffersMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-                        buffersMemoryBarrier.offset = 0;
-                        buffersMemoryBarrier.size = VK_WHOLE_SIZE;
-                        if (vbBindlessTex[p].getVertexBuffer(currentFrame) != nullptr) {
-                            buffersMemoryBarrier.buffer = vbBindlessTex[p].getVertexBuffer(currentFrame);
-                            vkCmdPipelineBarrier(
-                            commandBuffers[currentFrame],
-                            VK_PIPELINE_STAGE_TRANSFER_BIT,
-                            VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
-                            0,
-                            0, nullptr,
-                            1, &buffersMemoryBarrier,
-                            0, nullptr
-                            );
-                        }
-                        if (vbBindlessTexIndexed[p].getVertexBuffer(currentFrame) != nullptr && vbBindlessTexIndexed[p].getIndexBuffer(currentFrame) != nullptr) {
-
-                            buffersMemoryBarrier.buffer = vbBindlessTexIndexed[p].getVertexBuffer(currentFrame);
-                            vkCmdPipelineBarrier(
-                            commandBuffers[currentFrame],
-                            VK_PIPELINE_STAGE_TRANSFER_BIT,
-                            VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
-                            0,
-                            0, nullptr,
-                            1, &buffersMemoryBarrier,
-                            0, nullptr
-                            );
-                            buffersMemoryBarrier.buffer = vbBindlessTexIndexed[p].getIndexBuffer(currentFrame);
-                            vkCmdPipelineBarrier(
-                            commandBuffers[currentFrame],
-                            VK_PIPELINE_STAGE_TRANSFER_BIT,
-                            VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
-                            0,
-                            0, nullptr,
-                            1, &buffersMemoryBarrier,
-                            0, nullptr
-                            );
-                        }
-                        buffersMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-                        if (modelDataBufferMT[p][currentFrame] != nullptr) {
-                            buffersMemoryBarrier.buffer = modelDataBufferMT[p][currentFrame];
-                            vkCmdPipelineBarrier(
-                            commandBuffers[currentFrame],
-                            VK_PIPELINE_STAGE_TRANSFER_BIT,
-                            VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-                            0,
-                            0, nullptr,
-                            1, &buffersMemoryBarrier,
-                            0, nullptr
-                            );
-                        }
-                        if (materialDataBufferMT[p][currentFrame] != nullptr) {
-                            buffersMemoryBarrier.buffer = materialDataBufferMT[p][currentFrame];
-                            vkCmdPipelineBarrier(
-                            commandBuffers[currentFrame],
-                            VK_PIPELINE_STAGE_TRANSFER_BIT,
-                            VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-                            0,
-                            0, nullptr,
-                            1, &buffersMemoryBarrier,
-                            0, nullptr
-                            );
-                        }
-                        buffersMemoryBarrier.dstAccessMask = VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
-                        if (drawCommandBufferMT[p][currentFrame] != nullptr) {
-                            buffersMemoryBarrier.buffer = drawCommandBufferMT[p][currentFrame];
-                            vkCmdPipelineBarrier(
-                            commandBuffers[currentFrame],
-                            VK_PIPELINE_STAGE_TRANSFER_BIT,
-                            VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT,
-                            0,
-                            0, nullptr,
-                            1, &buffersMemoryBarrier,
-                            0, nullptr
-                            );
-                        }
-                        if (drawCommandBufferIndexedMT[p][currentFrame] != nullptr) {
-                            buffersMemoryBarrier.buffer = drawCommandBufferIndexedMT[p][currentFrame];
-                            vkCmdPipelineBarrier(
-                            commandBuffers[currentFrame],
-                            VK_PIPELINE_STAGE_TRANSFER_BIT,
-                            VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT,
-                            0,
-                            0, nullptr,
-                            1, &buffersMemoryBarrier,
-                            0, nullptr
-                            );
-                        }
-                    }
-
-                    std::vector<VkSemaphore> signalSemaphores;
-                    signalSemaphores.push_back(copyFinishedSemaphore[currentFrame]);
-                    std::vector<VkSemaphore> waitSemaphores;
-                    waitSemaphores.push_back(offscreenLightDepthAlphaFinishedSemaphore[lightMap.getCurrentFrame()]);
-                    std::vector<VkPipelineStageFlags> waitStages;
-                    waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-                    std::vector<uint64_t> signalValues;
-                    std::vector<uint64_t> waitValues;
-                    waitValues.push_back(valuesLightDepthAlpha[lightMap.getCurrentFrame()]);
-                    copyValues[currentFrame]++;
-                    signalValues.push_back(copyValues[currentFrame]);
-                    std::vector<VkFence> windowInFlightFence = {windowFences[lightMap.getCurrentFrame()]};
-                    lightDepthBuffer.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, windowInFlightFence, getLayer() + 2, true, false);
-                    //std::cout<<"draw"<<std::endl;
-
-                    lightDepthBuffer.beginRecordCommandBuffers();
-                    lightDepthBuffer.beginRenderPass();
-                    vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &lightDepthCommandBuffer[currentFrame]);
-                    lightDepthBuffer.endRenderPass();
-                    signalSemaphores.clear();
-                    waitSemaphores.clear();
-                    signalSemaphores.push_back(offscreenLightDepthAlphaFinishedSemaphore[depthBuffer.getCurrentFrame()]);
-                    waitSemaphores.push_back(copyFinishedSemaphore[depthBuffer.getCurrentFrame()]);
-                    waitStages.clear();
-                    waitStages.push_back(VK_PIPELINE_STAGE_VERTEX_SHADER_BIT);
-                    waitValues.clear();
-                    signalValues.clear();
-                    waitValues.push_back(copyValues[lightDepthBuffer.getCurrentFrame()]);
-                    valuesLightDepthAlpha[lightDepthBuffer.getCurrentFrame()]++;
-                    signalValues.push_back(valuesLightDepthAlpha[lightDepthBuffer.getCurrentFrame()]);
-                    lightDepthBuffer.submit(true, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, windowInFlightFence, getLayer() + 2, false, false);
-
-
-                    depthBuffer.beginRecordCommandBuffers();
-                    commandBuffers = depthBuffer.getCommandBuffers();
-                    currentFrame = depthBuffer.getCurrentFrame();
-                    depthBuffer.beginRenderPass();
-                    vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &depthCommandBuffer[currentFrame]);
-                    depthBuffer.endRenderPass();
-                    waitSemaphores.clear();
-                    signalSemaphores.clear();
-                    waitStages.clear();
-                    signalValues.clear();
-                    waitValues.clear();
-                    waitSemaphores.push_back(offscreenFinishedSemaphore[depthBuffer.getCurrentFrame()]);
-                    waitSemaphores.push_back(copyFinishedSemaphore[lightDepthBuffer.getCurrentFrame()]);
-                    waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-                    waitStages.push_back(VK_PIPELINE_STAGE_VERTEX_SHADER_BIT);
-                    waitValues.push_back(valuesFinished[lightDepthBuffer.getCurrentFrame()]);
-                    waitValues.push_back(copyValues[lightDepthBuffer.getCurrentFrame()]);
-                    signalSemaphores.push_back(offscreenFinishedSemaphore[lightDepthBuffer.getCurrentFrame()]);
-                    valuesFinished[lightDepthBuffer.getCurrentFrame()]++;
-                    signalValues.push_back(valuesFinished[depthBuffer.getCurrentFrame()]);
-                    depthBuffer.submit(true, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, std::vector<VkFence>(), getLayer() + 2, false);
-
-
-                    alphaBuffer.beginRecordCommandBuffers();
-
-                    const_cast<Texture&>(lightDepthBuffer.getTexture(lightDepthBuffer.getImageIndex())).toShaderReadOnlyOptimal(alphaBuffer.getCommandBuffers()[alphaBuffer.getCurrentFrame()]);
-
-
-                    commandBuffers = alphaBuffer.getCommandBuffers();
-                    currentFrame = alphaBuffer.getCurrentFrame();
-                    BlendMode blendNone = BlendNone;
-                    blendNone.updateIds();
-                    for (unsigned int p = 0; p < (Batcher::nbPrimitiveTypes -1); p++) {
-                        if (nbDrawCommandBuffer[p][0] > 0 || nbIndexedDrawCommandBuffer[p][0] > 0) {
-                            vkCmdBindPipeline(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS,alphaBuffer.getGraphicPipeline()[buildAlphaBufferGenerator.getId() * (Batcher::nbPrimitiveTypes - 1) + p][0][LIGHTNODEPTHNOSTENCIL*blendNone.nbBlendModes+blendNone.id]);
-                            vkCmdPushConstants(commandBuffers[currentFrame], alphaBuffer.getPipelineLayout()[buildAlphaBufferGenerator.getId() * (Batcher::nbPrimitiveTypes - 1) + p][0][LIGHTNODEPTHNOSTENCIL*blendNone.nbBlendModes+blendNone.id], VK_SHADER_STAGE_FRAGMENT_BIT, 148, sizeof(unsigned int), &alphaBuffer.getImageIndex());
-                        }
-
-
-                    }
-
-
-                    VkMemoryBarrier memoryBarrier{};
-                    memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-                    memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
-                    memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-                    //vkCmdWaitEvents(commandBuffers[currentFrame], 1, &events[currentFrame], VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
-                    vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
-                    alphaBuffer.beginRenderPass();
-                    vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &alphaCommandBuffer[currentFrame]);
-                    alphaBuffer.endRenderPass();
-                    const_cast<Texture&>(lightDepthBuffer.getTexture(lightDepthBuffer.getImageIndex())).toColorAttachmentOptimal(alphaBuffer.getCommandBuffers()[alphaBuffer.getCurrentFrame()]);
-                    waitValues.clear();
-                    signalValues.clear();
-                    waitSemaphores.clear();
-                    signalSemaphores.clear();
-                    waitStages.clear();
-                    waitSemaphores.push_back(offscreenLightDepthAlphaFinishedSemaphore[lightDepthBuffer.getCurrentFrame()]);
-                    waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-                    signalSemaphores.push_back(offscreenLightDepthAlphaFinishedSemaphore[lightDepthBuffer.getCurrentFrame()]);
-                    waitValues.push_back(valuesLightDepthAlpha[alphaBuffer.getCurrentFrame()]);
-                    valuesLightDepthAlpha[alphaBuffer.getCurrentFrame()]++;
-                    signalValues.push_back(valuesLightDepthAlpha[alphaBuffer.getCurrentFrame()]);
-                    alphaBuffer.submit(true, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, windowInFlightFence, getLayer() + 2, false, false);
-
-
-                    specularTexture.beginRecordCommandBuffers();
-
-                    const_cast<Texture&>(depthBuffer.getTexture(depthBuffer.getImageIndex())).toShaderReadOnlyOptimal(specularTexture.getCommandBuffers()[specularTexture.getCurrentFrame()]);
-                    commandBuffers = specularTexture.getCommandBuffers();
-                    currentFrame = specularTexture.getCurrentFrame();
-                    for (unsigned int p = 0; p < (Batcher::nbPrimitiveTypes -1); p++) {
-
-                        if (nbDrawCommandBuffer[p][0] > 0 || nbIndexedDrawCommandBuffer[p][0] > 0) {
-                            vkCmdBindPipeline(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS,specularTexture.getGraphicPipeline()[specularTextureGenerator.getId() * (Batcher::nbPrimitiveTypes - 1) + p][0][LIGHTNODEPTHNOSTENCIL*blendNone.nbBlendModes+blendNone.id]);
-                            vkCmdPushConstants(commandBuffers[currentFrame], specularTexture.getPipelineLayout()[specularTextureGenerator.getId() * (Batcher::nbPrimitiveTypes - 1) + p][0][LIGHTNODEPTHNOSTENCIL*blendNone.nbBlendModes+blendNone.id], VK_SHADER_STAGE_FRAGMENT_BIT, 152, sizeof(unsigned int), &specularTexture.getImageIndex());
-                        }
-
-
-                    }
-
-                    memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-                    memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
-                    memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-
-                    vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
-                    specularTexture.beginRenderPass();
-                    vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &specularCommandBuffer[currentFrame]);
-                    specularTexture.endRenderPass();
-                    const_cast<Texture&>(depthBuffer.getTexture(depthBuffer.getImageIndex())).toColorAttachmentOptimal(specularTexture.getCommandBuffers()[specularTexture.getCurrentFrame()]);
-                    waitSemaphores.clear();
-                    waitSemaphores.push_back(offscreenFinishedSemaphore[specularTexture.getCurrentFrame()]);
-                    waitValues.clear();
-                    waitValues.push_back(valuesFinished[bumpTexture.getCurrentFrame()]);
-                    valuesFinished[bumpTexture.getCurrentFrame()]++;
-                    signalSemaphores.clear();
-                    signalSemaphores.push_back(offscreenFinishedSemaphore[specularTexture.getCurrentFrame()]);
-                    signalValues.clear();
-                    signalValues.push_back(valuesFinished[bumpTexture.getCurrentFrame()]);
-                    specularTexture.submit(true, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, windowInFlightFence, getLayer() + 2, false, false);
-
-
-                    bumpTexture.beginRecordCommandBuffers();
-
-                    const_cast<Texture&>(depthBuffer.getTexture(depthBuffer.getImageIndex())).toShaderReadOnlyOptimal(bumpTexture.getCommandBuffers()[bumpTexture.getCurrentFrame()]);
-                    commandBuffers = bumpTexture.getCommandBuffers();
-                    currentFrame = bumpTexture.getCurrentFrame();
-
-                    for (unsigned int p = 0; p < (Batcher::nbPrimitiveTypes -1); p++) {
-
-                        if (nbDrawCommandBuffer[p][0] > 0 || nbIndexedDrawCommandBuffer[p][0] > 0) {
-                            vkCmdBindPipeline(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS,bumpTexture.getGraphicPipeline()[bumpTextureGenerator.getId() * (Batcher::nbPrimitiveTypes - 1) + p][0][LIGHTNODEPTHNOSTENCIL*blendNone.nbBlendModes+blendNone.id]);
-                            vkCmdPushConstants(commandBuffers[currentFrame], bumpTexture.getPipelineLayout()[bumpTextureGenerator.getId() * (Batcher::nbPrimitiveTypes - 1) + p][0][LIGHTNODEPTHNOSTENCIL*blendNone.nbBlendModes+blendNone.id], VK_SHADER_STAGE_FRAGMENT_BIT, 148, sizeof(unsigned int), &bumpTexture.getImageIndex());
-                        }
-
-
-                    }
-
-
-
-                    vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 0, nullptr);
-
-                    memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-                    memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
-                    memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-
-
-                    vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
-                    bumpTexture.beginRenderPass();
-                    vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &bumpCommandBuffer[currentFrame]);
-                    bumpTexture.endRenderPass();
-
-                    const_cast<Texture&>(depthBuffer.getTexture(depthBuffer.getImageIndex())).toColorAttachmentOptimal(bumpTexture.getCommandBuffers()[bumpTexture.getCurrentFrame()]);
-
-                    signalValues.clear();
-                    valuesFinished[bumpTexture.getCurrentFrame()]++;
-                    signalValues.push_back(valuesFinished[bumpTexture.getCurrentFrame()]);
-                    bumpTexture.submit(true, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, windowInFlightFence, getLayer() + 2, false, false);
-
-
-                    lightMap.beginRecordCommandBuffers();
-
-                    const_cast<Texture&>(specularTexture.getTexture(specularTexture.getImageIndex())).toShaderReadOnlyOptimal(lightMap.getCommandBuffers()[lightMap.getCurrentFrame()]);
-                    const_cast<Texture&>(bumpTexture.getTexture(bumpTexture.getImageIndex())).toShaderReadOnlyOptimal(lightMap.getCommandBuffers()[lightMap.getCurrentFrame()]);
-                    const_cast<Texture&>(alphaBuffer.getTexture(alphaBuffer.getImageIndex())).toShaderReadOnlyOptimal(lightMap.getCommandBuffers()[lightMap.getCurrentFrame()]);
-                    const_cast<Texture&>(depthBuffer.getTexture(depthBuffer.getImageIndex())).toShaderReadOnlyOptimal(lightMap.getCommandBuffers()[lightMap.getCurrentFrame()]);
-
-
-                    commandBuffers = lightMap.getCommandBuffers();
-                    currentFrame = lightMap.getCurrentFrame();
-                    BlendMode blendAdd = BlendAdd;
-                    blendAdd.updateIds();
-
-                    for (unsigned int p = 0; p < (Batcher::nbPrimitiveTypes -1); p++) {
-
-                        if (nbDrawCommandBuffer[p][1] > 0) {
-                            vkCmdBindPipeline(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS,lightMap.getGraphicPipeline()[lightMapGenerator.getId() * (Batcher::nbPrimitiveTypes - 1) + p][0][LIGHTNODEPTHNOSTENCIL*blendAdd.nbBlendModes+blendAdd.id]);
-                            vkCmdPushConstants(commandBuffers[currentFrame], lightMap.getPipelineLayout()[lightMapGenerator.getId() * (Batcher::nbPrimitiveTypes - 1) + p][0][LIGHTNODEPTHNOSTENCIL*blendAdd.nbBlendModes+blendAdd.id], VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 216, sizeof(unsigned int), &lightMap.getImageIndex());
-                        }
-
-
-                    }
-
-
-                    vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 0, nullptr);
-
-                    memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-                    memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
-                    memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-
-
-                    vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
-
-                    lightMap.beginRenderPass();
-                    vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &lightCommandBuffer[currentFrame]);
-                    lightMap.endRenderPass();
-
-
-                    const_cast<Texture&>(alphaBuffer.getTexture(alphaBuffer.getImageIndex())).toColorAttachmentOptimal(lightMap.getCommandBuffers()[lightMap.getCurrentFrame()]);
-                    const_cast<Texture&>(bumpTexture.getTexture(bumpTexture.getImageIndex())).toColorAttachmentOptimal(lightMap.getCommandBuffers()[lightMap.getCurrentFrame()]);
-                    const_cast<Texture&>(depthBuffer.getTexture(depthBuffer.getImageIndex())).toColorAttachmentOptimal(lightMap.getCommandBuffers()[lightMap.getCurrentFrame()]);
-                    const_cast<Texture&>(specularTexture.getTexture(specularTexture.getImageIndex())).toColorAttachmentOptimal(lightMap.getCommandBuffers()[lightMap.getCurrentFrame()]);
-                    waitSemaphores.clear();
-                    waitSemaphores.push_back(offscreenLightDepthAlphaFinishedSemaphore[lightMap.getCurrentFrame()]);
-                    waitSemaphores.push_back(offscreenFinishedSemaphore[lightMap.getCurrentFrame()]);
-                    waitStages.clear();
-                    waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-                    waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-                    signalSemaphores.clear();
-                    signalSemaphores.push_back(offscreenLightDepthAlphaFinishedSemaphore[lightMap.getCurrentFrame()]);
-                    signalSemaphores.push_back(offscreenFinishedSemaphore[lightMap.getCurrentFrame()]);
-                    waitValues.clear();
-                    signalValues.clear();
-                    waitValues.push_back(valuesLightDepthAlpha[lightMap.getCurrentFrame()]);
-                    waitValues.push_back(valuesFinished[lightMap.getCurrentFrame()]);
-                    valuesFinished[lightMap.getCurrentFrame()]++;
-                    valuesLightDepthAlpha[lightMap.getCurrentFrame()]++;
-                    signalValues.push_back(valuesLightDepthAlpha[lightMap.getCurrentFrame()]);
-                    signalValues.push_back(valuesFinished[lightMap.getCurrentFrame()]);
-                    lightMap.submit(true, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, windowInFlightFence, getLayer() + 2, false, true);
                 }
                 //std::cout<<"draw buffer ok"<<std::endl;
                 //std::cout<<"current frame : "<<lightDepthBuffer.getCurrentFrame()<<std::endl;
@@ -7249,6 +6828,347 @@ namespace odfaeg {
                 cv.wait(lock, [this] { return commandBufferReady[lightDepthBuffer.getCurrentFrame()].load() || stop.load(); });
                 //std::cout<<"copy"<<std::endl;
                 commandBufferReady[lightDepthBuffer.getCurrentFrame()] = false;
+                lightDepthBuffer.beginRecordCommandBuffers();
+                std::vector<VkCommandBuffer> commandBuffers = lightDepthBuffer.getCommandBuffers();
+                unsigned int currentFrame = lightDepthBuffer.getCurrentFrame();
+                vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyModelDataBufferCommandBuffer[currentFrame]);
+
+                vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyMaterialDataBufferCommandBuffer[currentFrame]);
+
+                vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyDrawBufferCommandBuffer[currentFrame]);
+                vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyVbBufferCommandBuffer[currentFrame]);
+
+                vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyDrawIndexedBufferCommandBuffer[currentFrame]);
+                vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &copyVbIndexedBufferCommandBuffer[currentFrame]);
+                for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
+                    VkBufferMemoryBarrier buffersMemoryBarrier{};
+                    buffersMemoryBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+                    buffersMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                    buffersMemoryBarrier.dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+                    buffersMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                    buffersMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                    buffersMemoryBarrier.offset = 0;
+                    buffersMemoryBarrier.size = VK_WHOLE_SIZE;
+                    if (vbBindlessTex[p].getVertexBuffer(currentFrame) != nullptr) {
+                        buffersMemoryBarrier.buffer = vbBindlessTex[p].getVertexBuffer(currentFrame);
+                        vkCmdPipelineBarrier(
+                        commandBuffers[currentFrame],
+                        VK_PIPELINE_STAGE_TRANSFER_BIT,
+                        VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
+                        0,
+                        0, nullptr,
+                        1, &buffersMemoryBarrier,
+                        0, nullptr
+                        );
+                    }
+                    if (vbBindlessTexIndexed[p].getVertexBuffer(currentFrame) != nullptr && vbBindlessTexIndexed[p].getIndexBuffer(currentFrame) != nullptr) {
+
+                        buffersMemoryBarrier.buffer = vbBindlessTexIndexed[p].getVertexBuffer(currentFrame);
+                        vkCmdPipelineBarrier(
+                        commandBuffers[currentFrame],
+                        VK_PIPELINE_STAGE_TRANSFER_BIT,
+                        VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
+                        0,
+                        0, nullptr,
+                        1, &buffersMemoryBarrier,
+                        0, nullptr
+                        );
+                        buffersMemoryBarrier.buffer = vbBindlessTexIndexed[p].getIndexBuffer(currentFrame);
+                        vkCmdPipelineBarrier(
+                        commandBuffers[currentFrame],
+                        VK_PIPELINE_STAGE_TRANSFER_BIT,
+                        VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
+                        0,
+                        0, nullptr,
+                        1, &buffersMemoryBarrier,
+                        0, nullptr
+                        );
+                    }
+                    buffersMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+                    if (modelDataBufferMT[p][currentFrame] != nullptr) {
+                        buffersMemoryBarrier.buffer = modelDataBufferMT[p][currentFrame];
+                        vkCmdPipelineBarrier(
+                        commandBuffers[currentFrame],
+                        VK_PIPELINE_STAGE_TRANSFER_BIT,
+                        VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                        0,
+                        0, nullptr,
+                        1, &buffersMemoryBarrier,
+                        0, nullptr
+                        );
+                    }
+                    if (materialDataBufferMT[p][currentFrame] != nullptr) {
+                        buffersMemoryBarrier.buffer = materialDataBufferMT[p][currentFrame];
+                        vkCmdPipelineBarrier(
+                        commandBuffers[currentFrame],
+                        VK_PIPELINE_STAGE_TRANSFER_BIT,
+                        VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                        0,
+                        0, nullptr,
+                        1, &buffersMemoryBarrier,
+                        0, nullptr
+                        );
+                    }
+                    buffersMemoryBarrier.dstAccessMask = VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
+                    if (drawCommandBufferMT[p][currentFrame] != nullptr) {
+                        buffersMemoryBarrier.buffer = drawCommandBufferMT[p][currentFrame];
+                        vkCmdPipelineBarrier(
+                        commandBuffers[currentFrame],
+                        VK_PIPELINE_STAGE_TRANSFER_BIT,
+                        VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT,
+                        0,
+                        0, nullptr,
+                        1, &buffersMemoryBarrier,
+                        0, nullptr
+                        );
+                    }
+                    if (drawCommandBufferIndexedMT[p][currentFrame] != nullptr) {
+                        buffersMemoryBarrier.buffer = drawCommandBufferIndexedMT[p][currentFrame];
+                        vkCmdPipelineBarrier(
+                        commandBuffers[currentFrame],
+                        VK_PIPELINE_STAGE_TRANSFER_BIT,
+                        VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT,
+                        0,
+                        0, nullptr,
+                        1, &buffersMemoryBarrier,
+                        0, nullptr
+                        );
+                    }
+                }
+
+                std::vector<VkSemaphore> signalSemaphores;
+                signalSemaphores.push_back(copyFinishedSemaphore[currentFrame]);
+                std::vector<VkSemaphore> waitSemaphores;
+                waitSemaphores.push_back(offscreenLightDepthAlphaFinishedSemaphore[lightMap.getCurrentFrame()]);
+                std::vector<VkPipelineStageFlags> waitStages;
+                waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+                std::vector<uint64_t> signalValues;
+                std::vector<uint64_t> waitValues;
+                waitValues.push_back(valuesLightDepthAlpha[lightMap.getCurrentFrame()]);
+                copyValues[currentFrame]++;
+                signalValues.push_back(copyValues[currentFrame]);
+                std::vector<VkFence> windowInFlightFence = {windowFences[lightMap.getCurrentFrame()]};
+                lightDepthBuffer.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
+                //std::cout<<"draw"<<std::endl;
+
+                lightDepthBuffer.beginRecordCommandBuffers();
+                lightDepthBuffer.beginRenderPass();
+                vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &lightDepthCommandBuffer[currentFrame]);
+                lightDepthBuffer.endRenderPass();
+                signalSemaphores.clear();
+                waitSemaphores.clear();
+                signalSemaphores.push_back(offscreenLightDepthAlphaFinishedSemaphore[depthBuffer.getCurrentFrame()]);
+                waitSemaphores.push_back(copyFinishedSemaphore[depthBuffer.getCurrentFrame()]);
+                waitStages.clear();
+                waitStages.push_back(VK_PIPELINE_STAGE_VERTEX_SHADER_BIT);
+                waitValues.clear();
+                signalValues.clear();
+                waitValues.push_back(copyValues[lightDepthBuffer.getCurrentFrame()]);
+                valuesLightDepthAlpha[lightDepthBuffer.getCurrentFrame()]++;
+                signalValues.push_back(valuesLightDepthAlpha[lightDepthBuffer.getCurrentFrame()]);
+                lightDepthBuffer.submit(true, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
+
+
+                depthBuffer.beginRecordCommandBuffers();
+                commandBuffers = depthBuffer.getCommandBuffers();
+                currentFrame = depthBuffer.getCurrentFrame();
+                depthBuffer.beginRenderPass();
+                vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &depthCommandBuffer[currentFrame]);
+                depthBuffer.endRenderPass();
+                waitSemaphores.clear();
+                signalSemaphores.clear();
+                waitStages.clear();
+                signalValues.clear();
+                waitValues.clear();
+                waitSemaphores.push_back(offscreenFinishedSemaphore[depthBuffer.getCurrentFrame()]);
+                waitSemaphores.push_back(copyFinishedSemaphore[lightDepthBuffer.getCurrentFrame()]);
+                waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+                waitStages.push_back(VK_PIPELINE_STAGE_VERTEX_SHADER_BIT);
+                waitValues.push_back(valuesFinished[lightDepthBuffer.getCurrentFrame()]);
+                waitValues.push_back(copyValues[lightDepthBuffer.getCurrentFrame()]);
+                signalSemaphores.push_back(offscreenFinishedSemaphore[lightDepthBuffer.getCurrentFrame()]);
+                valuesFinished[lightDepthBuffer.getCurrentFrame()]++;
+                signalValues.push_back(valuesFinished[depthBuffer.getCurrentFrame()]);
+                depthBuffer.submit(true, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
+
+
+                alphaBuffer.beginRecordCommandBuffers();
+
+                const_cast<Texture&>(lightDepthBuffer.getTexture(lightDepthBuffer.getImageIndex())).toShaderReadOnlyOptimal(alphaBuffer.getCommandBuffers()[alphaBuffer.getCurrentFrame()]);
+
+
+                commandBuffers = alphaBuffer.getCommandBuffers();
+                currentFrame = alphaBuffer.getCurrentFrame();
+                BlendMode blendNone = BlendNone;
+                blendNone.updateIds();
+                for (unsigned int p = 0; p < (Batcher::nbPrimitiveTypes -1); p++) {
+                    if (nbDrawCommandBuffer[p][0] > 0 || nbIndexedDrawCommandBuffer[p][0] > 0) {
+                        vkCmdBindPipeline(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS,alphaBuffer.getGraphicPipeline()[buildAlphaBufferGenerator.getId() * (Batcher::nbPrimitiveTypes - 1) + p][0][LIGHTNODEPTHNOSTENCIL*blendNone.nbBlendModes+blendNone.id]);
+                        vkCmdPushConstants(commandBuffers[currentFrame], alphaBuffer.getPipelineLayout()[buildAlphaBufferGenerator.getId() * (Batcher::nbPrimitiveTypes - 1) + p][0][LIGHTNODEPTHNOSTENCIL*blendNone.nbBlendModes+blendNone.id], VK_SHADER_STAGE_FRAGMENT_BIT, 148, sizeof(unsigned int), &alphaBuffer.getImageIndex());
+                    }
+
+
+                }
+
+
+                VkMemoryBarrier memoryBarrier{};
+                memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+                memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+                memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+                //vkCmdWaitEvents(commandBuffers[currentFrame], 1, &events[currentFrame], VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
+                vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
+                alphaBuffer.beginRenderPass();
+                vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &alphaCommandBuffer[currentFrame]);
+                alphaBuffer.endRenderPass();
+                const_cast<Texture&>(lightDepthBuffer.getTexture(lightDepthBuffer.getImageIndex())).toColorAttachmentOptimal(alphaBuffer.getCommandBuffers()[alphaBuffer.getCurrentFrame()]);
+                waitValues.clear();
+                signalValues.clear();
+                waitSemaphores.clear();
+                signalSemaphores.clear();
+                waitStages.clear();
+                waitSemaphores.push_back(offscreenLightDepthAlphaFinishedSemaphore[lightDepthBuffer.getCurrentFrame()]);
+                waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+                signalSemaphores.push_back(offscreenLightDepthAlphaFinishedSemaphore[lightDepthBuffer.getCurrentFrame()]);
+                waitValues.push_back(valuesLightDepthAlpha[alphaBuffer.getCurrentFrame()]);
+                valuesLightDepthAlpha[alphaBuffer.getCurrentFrame()]++;
+                signalValues.push_back(valuesLightDepthAlpha[alphaBuffer.getCurrentFrame()]);
+                alphaBuffer.submit(true, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
+
+
+                specularTexture.beginRecordCommandBuffers();
+
+                const_cast<Texture&>(depthBuffer.getTexture(depthBuffer.getImageIndex())).toShaderReadOnlyOptimal(specularTexture.getCommandBuffers()[specularTexture.getCurrentFrame()]);
+                commandBuffers = specularTexture.getCommandBuffers();
+                currentFrame = specularTexture.getCurrentFrame();
+                for (unsigned int p = 0; p < (Batcher::nbPrimitiveTypes -1); p++) {
+
+                    if (nbDrawCommandBuffer[p][0] > 0 || nbIndexedDrawCommandBuffer[p][0] > 0) {
+                        vkCmdBindPipeline(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS,specularTexture.getGraphicPipeline()[specularTextureGenerator.getId() * (Batcher::nbPrimitiveTypes - 1) + p][0][LIGHTNODEPTHNOSTENCIL*blendNone.nbBlendModes+blendNone.id]);
+                        vkCmdPushConstants(commandBuffers[currentFrame], specularTexture.getPipelineLayout()[specularTextureGenerator.getId() * (Batcher::nbPrimitiveTypes - 1) + p][0][LIGHTNODEPTHNOSTENCIL*blendNone.nbBlendModes+blendNone.id], VK_SHADER_STAGE_FRAGMENT_BIT, 152, sizeof(unsigned int), &specularTexture.getImageIndex());
+                    }
+
+
+                }
+
+                memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+                memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+                memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+                vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
+                specularTexture.beginRenderPass();
+                vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &specularCommandBuffer[currentFrame]);
+                specularTexture.endRenderPass();
+                const_cast<Texture&>(depthBuffer.getTexture(depthBuffer.getImageIndex())).toColorAttachmentOptimal(specularTexture.getCommandBuffers()[specularTexture.getCurrentFrame()]);
+                waitSemaphores.clear();
+                waitSemaphores.push_back(offscreenFinishedSemaphore[specularTexture.getCurrentFrame()]);
+                waitValues.clear();
+                waitValues.push_back(valuesFinished[bumpTexture.getCurrentFrame()]);
+                valuesFinished[bumpTexture.getCurrentFrame()]++;
+                signalSemaphores.clear();
+                signalSemaphores.push_back(offscreenFinishedSemaphore[specularTexture.getCurrentFrame()]);
+                signalValues.clear();
+                signalValues.push_back(valuesFinished[bumpTexture.getCurrentFrame()]);
+                specularTexture.submit(true, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
+
+
+                bumpTexture.beginRecordCommandBuffers();
+
+                const_cast<Texture&>(depthBuffer.getTexture(depthBuffer.getImageIndex())).toShaderReadOnlyOptimal(bumpTexture.getCommandBuffers()[bumpTexture.getCurrentFrame()]);
+                commandBuffers = bumpTexture.getCommandBuffers();
+                currentFrame = bumpTexture.getCurrentFrame();
+
+                for (unsigned int p = 0; p < (Batcher::nbPrimitiveTypes -1); p++) {
+
+                    if (nbDrawCommandBuffer[p][0] > 0 || nbIndexedDrawCommandBuffer[p][0] > 0) {
+                        vkCmdBindPipeline(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS,bumpTexture.getGraphicPipeline()[bumpTextureGenerator.getId() * (Batcher::nbPrimitiveTypes - 1) + p][0][LIGHTNODEPTHNOSTENCIL*blendNone.nbBlendModes+blendNone.id]);
+                        vkCmdPushConstants(commandBuffers[currentFrame], bumpTexture.getPipelineLayout()[bumpTextureGenerator.getId() * (Batcher::nbPrimitiveTypes - 1) + p][0][LIGHTNODEPTHNOSTENCIL*blendNone.nbBlendModes+blendNone.id], VK_SHADER_STAGE_FRAGMENT_BIT, 148, sizeof(unsigned int), &bumpTexture.getImageIndex());
+                    }
+
+
+                }
+
+
+
+                vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 0, nullptr);
+
+                memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+                memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+                memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+
+                vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
+                bumpTexture.beginRenderPass();
+                vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &bumpCommandBuffer[currentFrame]);
+                bumpTexture.endRenderPass();
+
+                const_cast<Texture&>(depthBuffer.getTexture(depthBuffer.getImageIndex())).toColorAttachmentOptimal(bumpTexture.getCommandBuffers()[bumpTexture.getCurrentFrame()]);
+
+                signalValues.clear();
+                valuesFinished[bumpTexture.getCurrentFrame()]++;
+                signalValues.push_back(valuesFinished[bumpTexture.getCurrentFrame()]);
+                bumpTexture.submit(true, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
+
+
+                lightMap.beginRecordCommandBuffers();
+
+                const_cast<Texture&>(specularTexture.getTexture(specularTexture.getImageIndex())).toShaderReadOnlyOptimal(lightMap.getCommandBuffers()[lightMap.getCurrentFrame()]);
+                const_cast<Texture&>(bumpTexture.getTexture(bumpTexture.getImageIndex())).toShaderReadOnlyOptimal(lightMap.getCommandBuffers()[lightMap.getCurrentFrame()]);
+                const_cast<Texture&>(alphaBuffer.getTexture(alphaBuffer.getImageIndex())).toShaderReadOnlyOptimal(lightMap.getCommandBuffers()[lightMap.getCurrentFrame()]);
+                const_cast<Texture&>(depthBuffer.getTexture(depthBuffer.getImageIndex())).toShaderReadOnlyOptimal(lightMap.getCommandBuffers()[lightMap.getCurrentFrame()]);
+
+
+                commandBuffers = lightMap.getCommandBuffers();
+                currentFrame = lightMap.getCurrentFrame();
+                BlendMode blendAdd = BlendAdd;
+                blendAdd.updateIds();
+
+                for (unsigned int p = 0; p < (Batcher::nbPrimitiveTypes -1); p++) {
+
+                    if (nbDrawCommandBuffer[p][1] > 0) {
+                        vkCmdBindPipeline(commandBuffers[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS,lightMap.getGraphicPipeline()[lightMapGenerator.getId() * (Batcher::nbPrimitiveTypes - 1) + p][0][LIGHTNODEPTHNOSTENCIL*blendAdd.nbBlendModes+blendAdd.id]);
+                        vkCmdPushConstants(commandBuffers[currentFrame], lightMap.getPipelineLayout()[lightMapGenerator.getId() * (Batcher::nbPrimitiveTypes - 1) + p][0][LIGHTNODEPTHNOSTENCIL*blendAdd.nbBlendModes+blendAdd.id], VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 216, sizeof(unsigned int), &lightMap.getImageIndex());
+                    }
+
+
+                }
+
+
+                vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 0, nullptr);
+
+                memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+                memoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+                memoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+
+                vkCmdPipelineBarrier(commandBuffers[currentFrame], VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 1, &memoryBarrier, 0, nullptr, 0, nullptr);
+
+                lightMap.beginRenderPass();
+                vkCmdExecuteCommands(commandBuffers[currentFrame], 1, &lightCommandBuffer[currentFrame]);
+                lightMap.endRenderPass();
+
+
+                const_cast<Texture&>(alphaBuffer.getTexture(alphaBuffer.getImageIndex())).toColorAttachmentOptimal(lightMap.getCommandBuffers()[lightMap.getCurrentFrame()]);
+                const_cast<Texture&>(bumpTexture.getTexture(bumpTexture.getImageIndex())).toColorAttachmentOptimal(lightMap.getCommandBuffers()[lightMap.getCurrentFrame()]);
+                const_cast<Texture&>(depthBuffer.getTexture(depthBuffer.getImageIndex())).toColorAttachmentOptimal(lightMap.getCommandBuffers()[lightMap.getCurrentFrame()]);
+                const_cast<Texture&>(specularTexture.getTexture(specularTexture.getImageIndex())).toColorAttachmentOptimal(lightMap.getCommandBuffers()[lightMap.getCurrentFrame()]);
+                waitSemaphores.clear();
+                waitSemaphores.push_back(offscreenLightDepthAlphaFinishedSemaphore[lightMap.getCurrentFrame()]);
+                waitSemaphores.push_back(offscreenFinishedSemaphore[lightMap.getCurrentFrame()]);
+                waitStages.clear();
+                waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+                waitStages.push_back(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+                signalSemaphores.clear();
+                signalSemaphores.push_back(offscreenLightDepthAlphaFinishedSemaphore[lightMap.getCurrentFrame()]);
+                signalSemaphores.push_back(offscreenFinishedSemaphore[lightMap.getCurrentFrame()]);
+                waitValues.clear();
+                signalValues.clear();
+                waitValues.push_back(valuesLightDepthAlpha[lightMap.getCurrentFrame()]);
+                waitValues.push_back(valuesFinished[lightMap.getCurrentFrame()]);
+                valuesFinished[lightMap.getCurrentFrame()]++;
+                valuesLightDepthAlpha[lightMap.getCurrentFrame()]++;
+                signalValues.push_back(valuesLightDepthAlpha[lightMap.getCurrentFrame()]);
+                signalValues.push_back(valuesFinished[lightMap.getCurrentFrame()]);
+                lightMap.submit(true, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
 
             }
             target.beginRecordCommandBuffers();
@@ -7275,7 +7195,7 @@ namespace odfaeg {
             signalValues.push_back(valuesFinished[lightMap.getCurrentFrame()]);
             signalValues.push_back(valuesLightDepthAlpha[lightMap.getCurrentFrame()]);
             std::vector<VkFence> inFlightFences = {fences[lightMap.getCurrentFrame()], depthBufferFences[depthBuffer.getCurrentFrame()], lightDepthBufferFences[lightDepthBuffer.getCurrentFrame()], alphaBufferFences[alphaBuffer.getCurrentFrame()], specularTextureFences[specularTexture.getCurrentFrame()], bumpTextureFences[bumpTexture.getCurrentFrame()]};
-            target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, inFlightFences, 0, true, false);
+            target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
             target.beginRecordCommandBuffers();
             const_cast<Texture&>(lightMap.getTexture(lightMap.getImageIndex())).toColorAttachmentOptimal(target.getCommandBuffers()[target.getCurrentFrame()]);
             waitValues.clear();
@@ -7286,7 +7206,7 @@ namespace odfaeg {
             valuesLightDepthAlpha[lightMap.getCurrentFrame()]++;
             signalValues.push_back(valuesFinished[lightMap.getCurrentFrame()]);
             signalValues.push_back(valuesLightDepthAlpha[lightMap.getCurrentFrame()]);
-            target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, inFlightFences, 0, false, true, windowFences[lightMap.getCurrentFrame()]);
+            target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
 
             lightDepthBuffer.display();
             depthBuffer.display();
