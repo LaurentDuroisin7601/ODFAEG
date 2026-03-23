@@ -243,7 +243,7 @@ namespace odfaeg {
         bool Image::isCompressed() const {
             return compressed;
         }
-        gli::format Image::getFormat() {
+        gli::format Image::getFormat() const {
             return mFormat;
         }
         size_t Image::getDataSize() const {

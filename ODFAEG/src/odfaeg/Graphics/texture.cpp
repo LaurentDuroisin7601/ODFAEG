@@ -232,15 +232,16 @@ namespace odfaeg {
         }
         bool Texture::loadFromFile(const std::string& filename, const IntRect& area) {
             Image image;
+            return  image.loadFromFile(filename) && loadFromImage(image, area);
+        }
+        bool Texture::loadFromImage(const Image& image, const IntRect& area) {
+            m_DataSize = image.getDataSize();
+
             if (image.isCompressed()) {
                 m_format = toVkFormat(image.getFormat());
             } else {
                 m_format = VK_FORMAT_R8G8B8A8_SRGB;
             }
-            return  image.loadFromFile(filename) && loadFromImage(image, area);
-        }
-        bool Texture::loadFromImage(const Image& image, const IntRect& area) {
-            m_DataSize = image.getDataSize();
             update(image.getPixelsPtr(), image.getSize().x(), image.getSize().y(), 0, 0);
             allTextures.push_back(this);
             id = nbTextures + 1;
@@ -1040,7 +1041,7 @@ namespace odfaeg {
         VkSampler Texture::getSampler() const {
             return textureSampler;
         }
-        VkFormat Texture::getFormat() {
+        VkFormat Texture::getFormat()  {
             return m_format;
         }
         math::Vector2u Texture::getSize() {

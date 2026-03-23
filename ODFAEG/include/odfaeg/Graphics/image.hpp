@@ -230,7 +230,7 @@ namespace odfaeg {
             ////////////////////////////////////////////////////////////
             void flipVertically();
             bool isCompressed() const;
-            gli::format getFormat();
+            gli::format getFormat() const;
             void* getCompressedDatas();
             size_t getDataSize() const;
         private:
