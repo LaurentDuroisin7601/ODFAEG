@@ -159,7 +159,7 @@ namespace odfaeg {
             if (FBOAttachment) {
                 m_format = VK_FORMAT_R8G8B8A8_UNORM;
             }
-            createImage(texWidth, texHeight, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
+            createImage(texWidth, texHeight, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
             if (FBOAttachment) {
                 VkCommandBuffer cmd = beginSingleTimeCommands();
                 transitionImageLayout(cmd, textureImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
@@ -174,7 +174,7 @@ namespace odfaeg {
         bool Texture::createDepthTexture(uint32_t texWidth, uint32_t texHeight) {
             VkFormat depthFormat = findDepthFormat();
             m_format = depthFormat;
-            createImage(texWidth, texHeight, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT /*| VK_IMAGE_USAGE_SAMPLED_BIT*/, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
+            createImage(texWidth, texHeight, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT /*| VK_IMAGE_USAGE_SAMPLED_BIT*/, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
             ////////std::cout<<"dt address : "<<textureImage<<std::endl;
             VkCommandBuffer cmd = beginSingleTimeCommands();
             transitionImageLayout(cmd, textureImage, VK_IMAGE_LAYOUT_UNDEFINED,  VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
@@ -186,7 +186,7 @@ namespace odfaeg {
         bool Texture::createDepthTextureCM(uint32_t texWidth, uint32_t texHeight) {
             isCubeMap = true;
             m_format = findDepthFormat();
-            createImage(texWidth, texHeight, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT /*| VK_IMAGE_USAGE_SAMPLED_BIT*/, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
+            createImage(texWidth, texHeight, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT /*| VK_IMAGE_USAGE_SAMPLED_BIT*/, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
             ////////std::cout<<"dt address : "<<textureImage<<std::endl;
             VkCommandBuffer cmd = beginSingleTimeCommands();
             transitionImageLayout(cmd, textureImage, VK_IMAGE_LAYOUT_UNDEFINED,  VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
@@ -207,7 +207,7 @@ namespace odfaeg {
                     } else {
                         m_format = VK_FORMAT_R8G8B8A8_SRGB;
                     }
-                    createCubeMapImage(image.getSize().x(), image.getSize().y(), VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
+                    createCubeMapImage(image.getSize().x(), image.getSize().y(), VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
                 }
                 VkCommandBuffer cmd = beginSingleTimeCommands();
                 transitionImageLayout(cmd, textureImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
@@ -279,7 +279,7 @@ namespace odfaeg {
             VkBuffer stagingBuffer;
             VkDeviceMemory stagingBufferMemory;
             if (textureImage == nullptr) {
-                createImage(texWidth, texHeight, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
+                createImage(texWidth, texHeight, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
             }
 
             createBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
@@ -303,7 +303,7 @@ namespace odfaeg {
                 createTextureSampler();
             }
         }
-        void Texture::createImage(uint32_t texWidth, uint32_t texHeight, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory) {
+        void Texture::createImage(uint32_t texWidth, uint32_t texHeight, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties) {
             if (textureImage != nullptr) {
                 vkDestroySampler(vkDevice.getDevice(), textureSampler, nullptr);
                 vkDestroyImageView(vkDevice.getDevice(), textureImageView, nullptr);
@@ -329,18 +329,18 @@ namespace odfaeg {
                 throw std::runtime_error("echec de la creation d'une image!");
             }
             VkMemoryRequirements memRequirements;
-            vkGetImageMemoryRequirements(vkDevice.getDevice(), image, &memRequirements);
+            vkGetImageMemoryRequirements(vkDevice.getDevice(), textureImage, &memRequirements);
 
             VkMemoryAllocateInfo allocInfo{};
             allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
             allocInfo.allocationSize = memRequirements.size;
             allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
 
-            if (vkAllocateMemory(vkDevice.getDevice(), &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
+            if (vkAllocateMemory(vkDevice.getDevice(), &allocInfo, nullptr, &textureImageMemory) != VK_SUCCESS) {
                 throw std::runtime_error("echec de l'allocation de la memoire d'une image!");
             }
 
-            vkBindImageMemory(vkDevice.getDevice(), image, imageMemory, 0);
+            vkBindImageMemory(vkDevice.getDevice(), textureImage, textureImageMemory, 0);
             m_size[0] = texWidth;
             m_size[1] = texHeight;
         }
@@ -869,7 +869,7 @@ namespace odfaeg {
             if (FBOAttachment) {
                 m_format = VK_FORMAT_R8G8B8A8_UNORM;
             }
-            createCubeMapImage(width, height, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
+            createCubeMapImage(width, height, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
             if (FBOAttachment) {
                 VkCommandBuffer cmd = beginSingleTimeCommands();
                 transitionImageLayout(cmd, textureImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
@@ -881,7 +881,7 @@ namespace odfaeg {
             isFBOTexture = FBOAttachment;
             return true;
         }
-        void Texture::createCubeMapImage (uint32_t width, uint32_t height, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage image, VkDeviceMemory device) {
+        void Texture::createCubeMapImage (uint32_t width, uint32_t height, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties) {
             VkImageCreateInfo imageCreateInfo = {};
             imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
             imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
