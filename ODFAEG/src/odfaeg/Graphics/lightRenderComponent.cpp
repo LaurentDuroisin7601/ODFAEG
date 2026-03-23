@@ -28,7 +28,8 @@ namespace odfaeg {
                 lightMap(window.getDevice()),
                 lightDepthBuffer(window.getDevice()),
                 window(window),
-                threadPool(numThreads) {
+                threadPool(numThreads),
+                jobFence {core::JobFence(mtx, cv), core::JobFence(mtx, cv)} {
                     vboIndirect = vboIndirectStagingBuffer = vboIndexedIndirectStagingBuffer = modelDataStagingBuffer = materialDataStagingBuffer = nullptr;
                 maxVboIndirectSize = maxModelDataSize = maxMaterialDataSize = 0;
                 needToUpdateDS = false;
@@ -5386,6 +5387,7 @@ namespace odfaeg {
                 needToUpdateDSs[p][currentFrame] = false;
         }
         void LightRenderComponent::drawNextFrame() {
+            std::unique_lock<std::mutex> lock(mtx);
             update = false;
             physic::BoundingBox viewArea = view.getViewVolume();
             math::Vec3f position (viewArea.getPosition().x(),viewArea.getPosition().y(), view.getPosition().z());
@@ -5411,7 +5413,7 @@ namespace odfaeg {
             //glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo));
             /*if (!view.isOrtho())
                 view.setPerspective(80, view.getViewport().getSize().x() / view.getViewport().getSize().y(), 0.1, view.getViewport().getSize().z());*/
-            std::unique_lock<std::mutex> lock(mtx);
+
             if (useThread) {
 
                 cv.wait(lock, [this](){return registerFrameJob[lightDepthBuffer.getCurrentFrame()].load() || stop.load();});

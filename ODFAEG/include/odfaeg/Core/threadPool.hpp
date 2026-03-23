@@ -23,8 +23,11 @@ namespace odfaeg {
         };
         struct JobFence {
             std::atomic<int> remaining = 0;
-            std::mutex mtx;
-            std::condition_variable cv;
+            std::mutex& mtx, mtx2;
+            std::condition_variable& cv, cv2;
+            JobFence(std::mutex& mtx, std::condition_variable& vc) :
+                mtx(mtx), cv(cv) {
+            }
 
             void reset(int count) {
                 remaining.store(count, std::memory_order_relaxed);
@@ -34,13 +37,13 @@ namespace odfaeg {
                 //std::cout<<"remaining : "<<remaining.load()<<std::endl;
                 if (remaining.fetch_sub(1, std::memory_order_acq_rel) == 1) {
 
-                    std::lock_guard<std::mutex> lock(mtx);
-                    cv.notify_one();
+                    std::lock_guard<std::mutex> lock(mtx2);
+                    cv2.notify_one();
                 }
             }
             void wait() {
-                std::unique_lock<std::mutex> lock(mtx);
-                cv.wait(lock, [&] {return remaining.load() == 0;});
+                std::unique_lock<std::mutex> lock(mtx2);
+                cv2.wait(lock, [&] {return remaining.load() == 0;});
             }
         };
     }

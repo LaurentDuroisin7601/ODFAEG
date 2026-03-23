@@ -29,7 +29,8 @@ namespace odfaeg {
             vbBindlessTex {VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice())},
             vbBindlessTexIndexed {VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice())},
             vboIndirect(nullptr),
-            threadPool(numThreads) {
+            threadPool(numThreads),
+            jobFence {core::JobFence(mtx, cv), core::JobFence(mtx, cv)}{
             needToUpdateDS = false;
             maxVboIndirectSize = maxModelDataSize = maxMaterialDataSize = 0;
             vboIndirectStagingBuffer = vboIndexedIndirectStagingBuffer = modelDataStagingBuffer = materialDataStagingBuffer = nullptr;
@@ -4690,6 +4691,7 @@ namespace odfaeg {
             }
         }
         void PerPixelLinkedListRenderComponent::drawNextFrame() {
+            std::unique_lock<std::mutex> lock(mtx);
             {
 
 
@@ -4697,7 +4699,6 @@ namespace odfaeg {
                 if (datasReady.load()) {
 
                     datasReady = false;
-                    std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                     m_instances = batcher.getInstances();
                     m_normals = normalBatcher.getInstances();
                     m_instancesIndexed = batcherIndexed.getInstances();
@@ -4738,7 +4739,7 @@ namespace odfaeg {
             vb.clear();*/
 
             //indirectDrawPushConsts.projMatrix.m22 *= -1;
-            std::unique_lock<std::mutex> lock(mtx);
+
             if (useThread) {
 
 

@@ -23,7 +23,8 @@ namespace odfaeg {
              sLinkedList2(window.getDevice()), skyboxShader(window.getDevice()),
              clearHeadptrComputeShader(window.getDevice()),
              vkDevice(window.getDevice()),
-             threadPool(numThreads)
+             threadPool(numThreads),
+              jobFence {core::JobFence(mtx, cv), core::JobFence(mtx, cv)}
              {
                 vboIndirect = vboIndirectStagingBuffer = vboIndexedIndirectStagingBuffer = modelDataStagingBuffer = materialDataStagingBuffer = nullptr;
                 maxVboIndirectSize = maxModelDataSize = maxMaterialDataSize = 0;
@@ -7248,6 +7249,7 @@ namespace odfaeg {
 
             void ReflectRefractRenderComponent::drawNextFrame() {
                 ////////std::cout<<"draw next frame"<<std::endl;
+                std::unique_lock<std::mutex> lock(mtx);
                 {
                     std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                     if (datasReady.load()) {
@@ -7263,7 +7265,7 @@ namespace odfaeg {
                         m_reflNormalIndexed = reflNormalIndexedBatcher.getInstances();
                     }
                 }
-                std::unique_lock<std::mutex> lock(mtx);
+
                 ////std::cout<<"view matrix : "<<viewMatrix<<std::endl;
                 if (useThread) {
                     //commandBufferReady = false;

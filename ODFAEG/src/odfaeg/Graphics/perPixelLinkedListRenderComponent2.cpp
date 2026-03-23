@@ -29,7 +29,8 @@ namespace odfaeg {
             vbBindlessTex {VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice())},
             vbBindlessTexIndexed {VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice()), VertexBuffer(window.getDevice())},
             vboIndirect(nullptr),
-            threadPool(numThreads) {
+            threadPool(numThreads),
+            jobFence {core::JobFence(mtx, cv), core::JobFence(mtx, cv)} {
             needToUpdateDS = false;
             maxVboIndirectSize = maxModelDataSize = maxMaterialDataSize = 0;
             vboIndirectStagingBuffer = vboIndexedIndirectStagingBuffer = modelDataStagingBuffer = materialDataStagingBuffer = nullptr;

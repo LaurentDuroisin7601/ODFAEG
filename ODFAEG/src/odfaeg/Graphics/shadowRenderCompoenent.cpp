@@ -28,7 +28,8 @@ namespace odfaeg {
              stencilBuffer(window.getDevice()),
              shadowMap(window.getDevice()),
              window(window),
-             threadPool(numThreads)
+             threadPool(numThreads),
+             jobFence {core::JobFence(mtx, cv), core::JobFence(mtx, cv)}
              {
                 vboIndirect = vboIndirectStagingBuffer = vboIndexedIndirectStagingBuffer = modelDataStagingBuffer = materialDataStagingBuffer = nullptr;
                 maxVboIndirectSize = maxModelDataSize = maxMaterialDataSize = 0;
@@ -5292,7 +5293,7 @@ namespace odfaeg {
             }
             void ShadowRenderComponent::drawNextFrame() {
                 //glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo));
-
+                 std::unique_lock<std::mutex> lock(mtx);
                 {
                     std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                     if (datasReady) {
@@ -5310,7 +5311,7 @@ namespace odfaeg {
                 }
 
 
-                std::unique_lock<std::mutex> lock(mtx);
+
 
                 if (useThread) {
 
