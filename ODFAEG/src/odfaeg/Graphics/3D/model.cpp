@@ -32,10 +32,10 @@ namespace odfaeg {
                 else
                     directory = "";
                 #endif
-                processNode(scene->mRootNode, scene, emesh, factory);
+                processNode(scene->mRootNode, scene, emesh);
                 return emesh;
             }
-            void Model::processNode(aiNode *node, const aiScene *scene, Mesh* emesh, EntityFactory& factory)
+            void Model::processNode(aiNode *node, const aiScene *scene, Mesh* emesh)
             {
                 //std::cout<<"process node"<<std::endl;
                 // process all the node's meshes (if any)
@@ -47,7 +47,7 @@ namespace odfaeg {
                 // then do the same for each of its children
                 for(unsigned int i = 0; i < node->mNumChildren; i++)
                 {
-                    processNode(node->mChildren[i], scene, emesh, factory);
+                    processNode(node->mChildren[i], scene, emesh);
                 }
             }
             void Model::processMesh(aiMesh *mesh, const aiScene *scene, Mesh* emesh) {
@@ -101,7 +101,7 @@ namespace odfaeg {
                 vas.resize(mesh->mNumFaces);
                 std::vector<Face> faces;
                 faces.resize(mesh->mNumFaces);*/
-                std::cout<<"num faces : "<<mesh->mNumFaces<<std::endl;
+                //std::cout<<"num faces : "<<mesh->mNumFaces<<std::endl;
                 for(unsigned int i = 0; i < mesh->mNumFaces; i++)
                 {
                     /*vas[i].setPrimitiveType(Triangles);
@@ -122,7 +122,7 @@ namespace odfaeg {
                 }
                 Face f(va, mat, emesh->getTransform());
                 emesh->addFace(f);
-                std::cout<<"face loaded"<<std::endl;
+                //std::cout<<"face loaded"<<std::endl;
                 std::array<std::array<float, 2>, 3> exts = math::Computer::getExtends(verts);
                 emesh->setSize(math::Vec3f(exts[0][1] - exts[0][0], exts[1][1] - exts[1][0], exts[2][1] - exts[2][0]));
                 //emesh->setOrigin(math::Vec3f(emesh->getSize()*0.5));

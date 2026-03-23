@@ -147,6 +147,7 @@ namespace odfaeg
             VkCommandPool commandPool;
             CoordinateType ct;
             bool isCubeMap, isFBOTexture;
+            size_t m_DataSize;
         };
         #else
         ////////////////////////////////////////////////////////////

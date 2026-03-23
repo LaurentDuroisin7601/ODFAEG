@@ -240,16 +240,8 @@ namespace odfaeg {
             return  image.loadFromFile(filename) && loadFromImage(image, area);
         }
         bool Texture::loadFromImage(const Image& image, const IntRect& area) {
-
-            int texWidth = 0;
-            int texHeight = 0;
-            if (image.isCompressed()) {
-                texWidth = image.getDataSize();
-            } else {
-                texWidth = image.getSize().x();
-                texHeight = image.getSize().y();
-            }
-            update(image.getPixelsPtr(), texWidth, texHeight, 0, 0);
+            m_DataSize = image.getDataSize();
+            update(image.getPixelsPtr(), image.getSize().x(), image.getSize().y(), 0, 0);
             allTextures.push_back(this);
             id = nbTextures + 1;
             nbTextures++;
@@ -280,7 +272,7 @@ namespace odfaeg {
             }
         }
         void Texture::update(const std::uint8_t* pixels, unsigned int texWidth, unsigned int texHeight, unsigned int x, unsigned int y) {
-            VkDeviceSize imageSize = (texHeight == 0) ? texWidth : texWidth * texHeight * 4;
+            VkDeviceSize imageSize = m_DataSize;
             if (!pixels) {
                 throw std::runtime_error("échec du chargement d'une image!");
             }
