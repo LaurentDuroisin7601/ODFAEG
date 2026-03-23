@@ -757,7 +757,7 @@ namespace odfaeg {
                     int endX = viewVolume.getPosition().x() + viewVolume.getWidth();
                     int endY = viewVolume.getPosition().y() + viewVolume.getHeight()+100;
                     int endZ = (gridMap->getCellDepth() > 0) ? viewVolume.getPosition().z() + viewVolume.getDepth()+100 : z;
-                    //physic::BoundingBox bx (x, y, z, endX-viewVolume.getPosition().x(), endY-viewVolume.getPosition().y(), endZ-viewVolume.getPosition().z());
+
 
                     for (int i = x; i <= endX; i+=gridMap->getOffsetX()) {
                         for (int j = y; j <= endY; j+=gridMap->getOffsetY()) {
@@ -765,12 +765,18 @@ namespace odfaeg {
                                 math::Vec3f point(i, j, k);
                                 CellMap* cell = getGridCellAt(point);
                                 if (cell != nullptr) {
+
                                     for (unsigned int n = 0; n < cell->getNbEntitiesInside(); n++) {
                                        std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                                        Entity* entity = cell->getEntityInside(n);
+                                       math::Vec3f toEntity = (entity->getCenter() - view.getPosition()).normalize();
                                        if (visibleEntities[entity->getRootTypeInt()][entity->getId()] == nullptr) {
-                                            visibleEntities[entity->getRootTypeInt()][entity->getId()] = entity;
-                                        }
+
+                                            if (toEntity.dot(view.getForward()) <= 0.0f
+                                                && viewVolume.intersects(entity->getGlobalBounds())) {
+                                                visibleEntities[entity->getRootTypeInt()][entity->getId()] = entity;
+                                            }
+                                       }
 
                                     }
                                 }
