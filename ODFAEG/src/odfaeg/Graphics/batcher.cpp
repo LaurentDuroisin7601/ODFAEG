@@ -42,6 +42,7 @@ namespace odfaeg {
                 return !(*this == info);
             }
             const Texture* Material::TextureInfo::getTexture() const {
+                std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                 return texture;
             }
             Material::Material() {
@@ -189,7 +190,7 @@ namespace odfaeg {
                     texInfos[texUnit]->setTexRect(texRect);
             }
             const Texture* Material::getTexture(int texUnit) {
-                std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                //std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                 return (texInfos.size() > 0) ? texInfos[texUnit]->getTexture() : nullptr;
             }
             IntRect Material::getTexRect(int texUnit) {
@@ -591,7 +592,7 @@ namespace odfaeg {
                 }*/
             }
             void Batcher::addShadowFace(Face* face, ViewMatrix viewMatrix, TransformMatrix shadowProjMatrix) {
-
+                std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                 Instance& instance = instances[face->getMaterial().getId() * nbPrimitiveTypes + face->getVertexArray().getPrimitiveType()];
                 instance.setPrimitiveType(face->getVertexArray().getPrimitiveType());
                 instance.setMaterial(face->getMaterial());
@@ -629,10 +630,11 @@ namespace odfaeg {
                 return nbLayers;
             }
             void Batcher::resize() {
-
+                std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                 instances.resize(nbPrimitiveTypes * Material::getNbMaterials());
             }
             void Batcher::clear() {
+                std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                 instances.clear();
                 ////////std::cout<<"nb instances : "<<nbPrimitiveTypes * Material::getNbMaterials()<<std::endl;
 
