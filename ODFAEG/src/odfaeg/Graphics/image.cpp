@@ -39,7 +39,8 @@ namespace odfaeg {
 
         ////////////////////////////////////////////////////////////
         Image::Image() :
-        m_size(0, 0)
+        m_size(0, 0),
+        dataSize(0)
         {
 
         }
@@ -60,6 +61,7 @@ namespace odfaeg {
                 // Create a new pixel buffer first for exception safety's sake
                 std::vector<std::uint8_t> newPixels(width * height * 4);
 
+
                 // Fill it with the specified color
                 std::uint8_t* ptr = &newPixels[0];
                 std::uint8_t* end = ptr + newPixels.size();
@@ -73,6 +75,7 @@ namespace odfaeg {
 
                 // Commit the new pixel buffer
                 m_pixels.swap(newPixels);
+                dataSize = m_pixels.size();
 
                 // Assign the new size
                 m_size[0] = width;
@@ -102,6 +105,7 @@ namespace odfaeg {
 
                 // Commit the new pixel buffer
                 m_pixels.swap(newPixels);
+                dataSize = m_pixels.size();
 
                 // Assign the new size
                 m_size[0] = width;
@@ -275,6 +279,7 @@ namespace odfaeg {
                     {
                         // Copy the loaded pixels to the pixel buffer
                         m_pixels.resize(width * height * 4);
+                        dataSize = m_pixels.size();
                         memcpy(&m_pixels[0], ptr, m_pixels.size());
                     }
 
@@ -331,6 +336,7 @@ namespace odfaeg {
                     // Copy the loaded pixels to the pixel buffer
                     m_pixels.resize(width * height * 4);
                     memcpy(&m_pixels[0], ptr, m_pixels.size());
+                    dataSize = m_pixels.size();
                 }
 
                 // Free the loaded pixels (they are now in our own pixel buffer)
@@ -493,6 +499,7 @@ namespace odfaeg {
                     dstPixels += dstStride;
                 }
             }
+            dataSize = m_pixels.size();
         }
 
 
