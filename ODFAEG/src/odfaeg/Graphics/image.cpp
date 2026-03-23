@@ -3,7 +3,10 @@
 #include <stb_image.h>
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb_image_write.h>
+
 #include <cstring>
+#include <filesystem>
+#include <fstream>
 namespace odfaeg {
     namespace graphic {
         std::string toLower(std::string str)
@@ -115,7 +118,19 @@ namespace odfaeg {
             }
         }
 
+        std::string Image::getExtension(const std::string& filename) {
+            std::filesystem::path p(filename);
+            std::string ext = p.extension().string();
 
+            // enlever le point ".dds"  "dds"
+            if (!ext.empty() && ext[0] == '.')
+                ext.erase(0, 1);
+
+            // mettre en minuscule
+            std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+
+            return ext;
+        }
         ////////////////////////////////////////////////////////////
         bool Image::loadFromFile(const std::string& filename)
         {
@@ -128,46 +143,112 @@ namespace odfaeg {
                 int width = 0;
                 int height = 0;
                 int channels = 0;
-                unsigned char* ptr = stbi_load(filename.c_str(), &width, &height, &channels, STBI_rgb_alpha);
+                unsigned char* ptr = nullptr;
 
-                if (ptr)
-                {
-                    // Assign the image properties
-                    m_size[0] = width;
-                    m_size[1] = height;
+                if (getExtension(filename) == "dds") {
+                    //std::cout<<"load image"<<std::endl;
+                    gli::texture texture = gli::load(filename);
+                    gli::format format = texture.format();
 
-                    if (width && height)
+                    if (texture.empty()) {
+                        //std::cout << "Detected DDS format: " <<gli::detail::format_dds(filename)<< std::endl;
+                        throw std::runtime_error("Failed to load DDS");
+                    }
+                    ptr = reinterpret_cast<unsigned char*>(texture.data(0, 0, 0));
+                    if (ptr) {
+
+                        width = texture.extent().x;
+                        height = texture.extent().y;
+                        m_size[0] = width;
+                        m_size[1] = height;
+                        //std::cout<<"w : "<<width<<", h : "<<height<<std::endl;
+
+                        mFormat = format;
+
+                        switch(format) {
+                            case gli::FORMAT_RGBA_DXT1_UNORM_BLOCK8:
+                            case gli::FORMAT_RGBA_DXT1_SRGB_BLOCK8:
+                                channels = 3; // BC1 = RGB + alpha optionnel
+
+                            case gli::FORMAT_RGBA_DXT5_UNORM_BLOCK16:
+                            case gli::FORMAT_RGBA_DXT5_SRGB_BLOCK16:
+                                channels = 4; // BC3 = RGBA
+
+                            case gli::FORMAT_RGBA_BP_UNORM_BLOCK16:
+                            case gli::FORMAT_RGBA_BP_SRGB_BLOCK16:
+                                channels = 4; // BC7 = RGBA
+
+                            default:
+                                channels = gli::detail::bits_per_pixel(format) / 8;
+                        }
+                        compressed = true;
+                        dataSize = texture.size(0);
+                        //std::cout<<"dataSize : "<<dataSize<<std::endl;
+                        if (width && height)
+                        {
+                            // Copy the loaded pixels to the pixel buffer
+                            m_pixels.resize(dataSize);
+                            memcpy(&m_pixels[0], ptr, m_pixels.size());
+                        }
+                        //std::cout<<"compressed image loaded"<<std::endl;
+                        return true;
+                    } else {
+                        std::cerr << "Failed to load compressed image \""<<std::endl;
+                        return false;
+                    }
+
+
+                } else {
+                    ptr = stbi_load(filename.c_str(), &width, &height, &channels, STBI_rgb_alpha);
+                    if (ptr)
                     {
-                        // Copy the loaded pixels to the pixel buffer
-                        m_pixels.resize(width * height * 4);
-                        memcpy(&m_pixels[0], ptr, m_pixels.size());
-                    }
-                    /*bool empty = true;
-                    for (unsigned int i = 0; i < width * height; i++) {
-                        if (m_pixels[i*4] != 0 || m_pixels[i*4+1] != 0 || m_pixels[i*4+2] != 0 || m_pixels[i*4+3]!=0)
-                            empty = false;
+                        // Assign the image properties
+                        m_size[0] = width;
+                        m_size[1] = height;
 
-                    }
-                    //////std::cout<<"empty : "<<empty<<std::endl;*/
-                    // Free the loaded pixels (they are now in our own pixel buffer)
-                    stbi_image_free(ptr);
-                    //saveToFile(filename);
-                    return true;
-                }
-                else
-                {
-                    // Error, failed to load the image
-                    std::cerr << "Failed to load image \"" << filename << "\". Reason: " << stbi_failure_reason() << std::endl;
+                        if (width && height)
+                        {
+                            // Copy the loaded pixels to the pixel buffer
+                            m_pixels.resize(width * height * 4);
+                            memcpy(&m_pixels[0], ptr, m_pixels.size());
+                        }
+                        dataSize = m_pixels.size();
+                        /*bool empty = true;
+                        for (unsigned int i = 0; i < width * height; i++) {
+                            if (m_pixels[i*4] != 0 || m_pixels[i*4+1] != 0 || m_pixels[i*4+2] != 0 || m_pixels[i*4+3]!=0)
+                                empty = false;
 
-                    return false;
+                        }
+                        //////std::cout<<"empty : "<<empty<<std::endl;*/
+                        // Free the loaded pixels (they are now in our own pixel buffer)
+                        stbi_image_free(ptr);
+                        //saveToFile(filename);
+                        return true;
+                    }
+                    else
+                    {
+                        // Error, failed to load the image
+                        std::cerr << "Failed to load image \"" << filename << "\". Reason: " << stbi_failure_reason() << std::endl;
+
+                        return false;
+                    }
                 }
+
 
             #else
 
             #endif
         }
 
-
+        bool Image::isCompressed() const {
+            return compressed;
+        }
+        gli::format Image::getFormat() {
+            return mFormat;
+        }
+        size_t Image::getDataSize() const {
+            return dataSize;
+        }
         ////////////////////////////////////////////////////////////
         bool Image::loadFromMemory(const void* data, std::size_t size)
         {
@@ -446,6 +527,9 @@ namespace odfaeg {
                 std::cerr << "Trying to access the pixels of an empty image" << std::endl;
                 return NULL;
             }
+        }
+        void* Image::getCompressedDatas() {
+            return compressedDatas;
         }
 
 

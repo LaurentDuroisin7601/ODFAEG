@@ -5,7 +5,7 @@
 #include "rect.hpp"
 #include <string>
 #include <vector>
-
+#include <gli/gli.hpp>
 #include <cctype>
 namespace odfaeg {
     namespace graphic {
@@ -108,6 +108,7 @@ namespace odfaeg {
             ////////////////////////////////////////////////////////////
             bool loadFromStream(std::istream& stream);
 
+
             ////////////////////////////////////////////////////////////
             /// \brief Save the image to a file on disk
             ///
@@ -124,6 +125,7 @@ namespace odfaeg {
             ///
             ////////////////////////////////////////////////////////////
             bool saveToFile(const std::string& filename) const;
+            std::string getExtension(const std::string& filename);
 
             ////////////////////////////////////////////////////////////
             /// \brief Return the size (width and height) of the image
@@ -227,7 +229,10 @@ namespace odfaeg {
             ///
             ////////////////////////////////////////////////////////////
             void flipVertically();
-
+            bool isCompressed() const;
+            gli::format getFormat();
+            void* getCompressedDatas();
+            size_t getDataSize() const;
         private:
 
             ////////////////////////////////////////////////////////////
@@ -235,6 +240,10 @@ namespace odfaeg {
             ////////////////////////////////////////////////////////////
             math::Vector2u           m_size;   ///< Image size
             std::vector<std::uint8_t> m_pixels; ///< Pixels of the image
+            bool compressed = false;
+            gli::format mFormat;
+            void* compressedDatas;
+            size_t dataSize;
         };
     }
 }

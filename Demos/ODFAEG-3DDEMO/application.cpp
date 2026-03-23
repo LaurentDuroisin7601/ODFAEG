@@ -240,12 +240,7 @@ void MyAppli::onRender(RenderComponentManager* frcm) {
     getWorld()->drawOnComponents("E_BIGTILE+E_MESH", 2);
 
     getWorld()->drawOnComponents("E_PONCTUAL_LIGHT+E_BIGTILE", 3);
-    fpsCounter++;
-    if (getClock("FPS").getElapsedTime() >= seconds(1.f)) {
-        std::cout<<"FPS : "<<fpsCounter<<std::endl;
-        fpsCounter = 0;
-        getClock("FPS").restart();
-    }
+
     /*Entity& lightMap = World::getLightMap("E_PONCTUAL_LIGHT", 1, 0);
     World::drawOnComponents(lightMap, 0, sf::BlendMultiply);*/
     //World::drawOnComponents(*billboard, 0);
@@ -435,6 +430,11 @@ void MyAppli::onExec() {
         getRenderComponentManager().getRenderComponent(i)->setView(view);
     }*/
     //std::this_thread::sleep_for(std::chrono::milliseconds(10));
-
+    fpsCounter++;
+    if (getClock("FPS").getElapsedTime() >= seconds(1.f)) {
+        std::cout<<"FPS : "<<fpsCounter<<std::endl;
+        fpsCounter = 0;
+        getClock("FPS").restart();
+    }
     clock.restart();
 }

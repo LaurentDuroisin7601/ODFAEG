@@ -103,7 +103,7 @@ namespace odfaeg
             ~Texture();
         private :
 
-
+            VkFormat toVkFormat(gli::format format);
             VkFormat findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 
             bool hasStencilComponent(VkFormat format);
@@ -111,14 +111,14 @@ namespace odfaeg
             VkCommandBuffer beginSingleTimeCommands();
             void endSingleTimeCommands(VkCommandBuffer commandBuffer);
             void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
-            void transitionImageLayout(VkCommandBuffer cmd, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+            void transitionImageLayout(VkCommandBuffer cmd, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout);
             void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t x, uint32_t y, uint32_t face=0);
             void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
-            void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
-            void createCubeMapImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage image, VkDeviceMemory device);
+            void createImage(uint32_t width, uint32_t height, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+            void createCubeMapImage(uint32_t width, uint32_t height, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage image, VkDeviceMemory device);
             uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
-            void createTextureImageView(VkFormat format, VkImageAspectFlags aspectFlags);
-            void createCubeMapTextureImageView(VkFormat format, VkImageAspectFlags aspectFlags);
+            void createTextureImageView(VkImageAspectFlags aspectFlags);
+            void createCubeMapTextureImageView(VkImageAspectFlags aspectFlags);
             void createCubeMapTextureImageSampler();
             void createTextureSampler();
             bool loadCubeMapFromImage(const Image& image, const IntRect& area, uint32_t face);

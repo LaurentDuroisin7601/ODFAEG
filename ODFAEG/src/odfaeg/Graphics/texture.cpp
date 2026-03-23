@@ -125,39 +125,73 @@ namespace odfaeg {
             m_size = std::move(tex.m_size);
             ct = std::move(tex.ct);
         }
+        VkFormat Texture::toVkFormat(gli::format format) {
+            switch(format) {
+            // BC1
+            case gli::FORMAT_RGBA_DXT1_UNORM_BLOCK8:
+                return VK_FORMAT_BC1_RGBA_UNORM_BLOCK;
+            case gli::FORMAT_RGBA_DXT1_SRGB_BLOCK8:
+                return VK_FORMAT_BC1_RGBA_SRGB_BLOCK;
+
+            // BC3
+            case gli::FORMAT_RGBA_DXT5_UNORM_BLOCK16:
+                return VK_FORMAT_BC3_UNORM_BLOCK;
+            case gli::FORMAT_RGBA_DXT5_SRGB_BLOCK16:
+                return VK_FORMAT_BC3_SRGB_BLOCK;
+
+            // BC7
+            case gli::FORMAT_RGBA_BP_UNORM_BLOCK16:
+                return VK_FORMAT_BC7_UNORM_BLOCK;
+            case gli::FORMAT_RGBA_BP_SRGB_BLOCK16:
+                return VK_FORMAT_BC7_SRGB_BLOCK;
+
+            // RGBA8
+            case gli::FORMAT_RGBA8_UNORM_PACK8:
+                return VK_FORMAT_R8G8B8A8_UNORM;
+            case gli::FORMAT_RGBA8_SRGB_PACK8:
+                return VK_FORMAT_R8G8B8A8_SRGB;
+
+            default:
+                throw std::runtime_error("Unsupported DDS format");
+            }
+        }
         bool Texture::create(uint32_t texWidth, uint32_t texHeight, bool FBOAttachment) {
-            createImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
+            if (FBOAttachment) {
+                m_format = VK_FORMAT_R8G8B8A8_UNORM;
+            }
+            createImage(texWidth, texHeight, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
             if (FBOAttachment) {
                 VkCommandBuffer cmd = beginSingleTimeCommands();
-                transitionImageLayout(cmd, textureImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+                transitionImageLayout(cmd, textureImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
                 endSingleTimeCommands(cmd);
                 allTextures.push_back(this);
             }
-            createTextureImageView(VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
+            createTextureImageView(VK_IMAGE_ASPECT_COLOR_BIT);
             createTextureSampler();
             isFBOTexture = FBOAttachment;
             return true;
         }
         bool Texture::createDepthTexture(uint32_t texWidth, uint32_t texHeight) {
             VkFormat depthFormat = findDepthFormat();
-            createImage(texWidth, texHeight, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT /*| VK_IMAGE_USAGE_SAMPLED_BIT*/, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
+            m_format = depthFormat;
+            createImage(texWidth, texHeight, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT /*| VK_IMAGE_USAGE_SAMPLED_BIT*/, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
             ////////std::cout<<"dt address : "<<textureImage<<std::endl;
             VkCommandBuffer cmd = beginSingleTimeCommands();
-            transitionImageLayout(cmd, textureImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED,  VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+            transitionImageLayout(cmd, textureImage, VK_IMAGE_LAYOUT_UNDEFINED,  VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
             endSingleTimeCommands(cmd);
-            createTextureImageView(depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT);
+            createTextureImageView(VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT);
             createTextureSampler();
             return true;
         }
         bool Texture::createDepthTextureCM(uint32_t texWidth, uint32_t texHeight) {
             isCubeMap = true;
-            VkFormat depthFormat = findDepthFormat();
-            createImage(texWidth, texHeight, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT /*| VK_IMAGE_USAGE_SAMPLED_BIT*/, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
+            m_format = findDepthFormat();
+            createImage(texWidth, texHeight, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT /*| VK_IMAGE_USAGE_SAMPLED_BIT*/, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
             ////////std::cout<<"dt address : "<<textureImage<<std::endl;
             VkCommandBuffer cmd = beginSingleTimeCommands();
-            transitionImageLayout(cmd, textureImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED,  VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+            transitionImageLayout(cmd, textureImage, VK_IMAGE_LAYOUT_UNDEFINED,  VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
             endSingleTimeCommands(cmd);
-            createTextureImageView(depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT);
+            createTextureImageView(VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT);
             createTextureSampler();
             return true;
         }
@@ -168,15 +202,20 @@ namespace odfaeg {
                 if (!image.loadFromFile(filenames[i]))
                     return false;
                 if (textureImage == nullptr) {
-                    createCubeMapImage(image.getSize().x(), image.getSize().y(), VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
+                    if (image.isCompressed()) {
+                        m_format = toVkFormat(image.getFormat());
+                    } else {
+                        m_format = VK_FORMAT_R8G8B8A8_SRGB;
+                    }
+                    createCubeMapImage(image.getSize().x(), image.getSize().y(), VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
                 }
                 VkCommandBuffer cmd = beginSingleTimeCommands();
-                transitionImageLayout(cmd, textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+                transitionImageLayout(cmd, textureImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
                 endSingleTimeCommands(cmd);
                 if (!loadCubeMapFromImage(image, area, i))
                     return false;
                 cmd = beginSingleTimeCommands();
-                transitionImageLayout(cmd, textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+                transitionImageLayout(cmd, textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
                 endSingleTimeCommands(cmd);
             }
             return true;
@@ -193,12 +232,23 @@ namespace odfaeg {
         }
         bool Texture::loadFromFile(const std::string& filename, const IntRect& area) {
             Image image;
+            if (image.isCompressed()) {
+                m_format = toVkFormat(image.getFormat());
+            } else {
+                m_format = VK_FORMAT_R8G8B8A8_SRGB;
+            }
             return  image.loadFromFile(filename) && loadFromImage(image, area);
         }
         bool Texture::loadFromImage(const Image& image, const IntRect& area) {
 
-            int texWidth = image.getSize().x();
-            int texHeight = image.getSize().y();
+            int texWidth = 0;
+            int texHeight = 0;
+            if (image.isCompressed()) {
+                texWidth = image.getDataSize();
+            } else {
+                texWidth = image.getSize().x();
+                texHeight = image.getSize().y();
+            }
             update(image.getPixelsPtr(), texWidth, texHeight, 0, 0);
             allTextures.push_back(this);
             id = nbTextures + 1;
@@ -225,19 +275,19 @@ namespace odfaeg {
             vkDestroyBuffer(vkDevice.getDevice(), stagingBuffer, nullptr);
             vkFreeMemory(vkDevice.getDevice(), stagingBufferMemory, nullptr);
             if (textureImageView == nullptr) {
-                createCubeMapTextureImageView(VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
+                createCubeMapTextureImageView(VK_IMAGE_ASPECT_COLOR_BIT);
                 createCubeMapTextureImageSampler();
             }
         }
         void Texture::update(const std::uint8_t* pixels, unsigned int texWidth, unsigned int texHeight, unsigned int x, unsigned int y) {
-            VkDeviceSize imageSize = texWidth * texHeight * 4;
+            VkDeviceSize imageSize = (texHeight == 0) ? texWidth : texWidth * texHeight * 4;
             if (!pixels) {
                 throw std::runtime_error("échec du chargement d'une image!");
             }
             VkBuffer stagingBuffer;
             VkDeviceMemory stagingBufferMemory;
             if (textureImage == nullptr) {
-                createImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
+                createImage(texWidth, texHeight, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
             }
 
             createBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
@@ -246,22 +296,22 @@ namespace odfaeg {
             memcpy(data, pixels, static_cast<size_t>(imageSize));
             vkUnmapMemory(vkDevice.getDevice(), stagingBufferMemory);
             VkCommandBuffer cmd = beginSingleTimeCommands();
-            transitionImageLayout(cmd, textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+            transitionImageLayout(cmd, textureImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
             endSingleTimeCommands(cmd);
             copyBufferToImage(stagingBuffer, textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight),static_cast<uint32_t>(x), static_cast<uint32_t>(y));
             cmd = beginSingleTimeCommands();
-            transitionImageLayout(cmd, textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+            transitionImageLayout(cmd, textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
             endSingleTimeCommands(cmd);
 
 
             vkDestroyBuffer(vkDevice.getDevice(), stagingBuffer, nullptr);
             vkFreeMemory(vkDevice.getDevice(), stagingBufferMemory, nullptr);
             if (textureImageView == nullptr) {
-                createTextureImageView(VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
+                createTextureImageView(VK_IMAGE_ASPECT_COLOR_BIT);
                 createTextureSampler();
             }
         }
-        void Texture::createImage(uint32_t texWidth, uint32_t texHeight, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory) {
+        void Texture::createImage(uint32_t texWidth, uint32_t texHeight, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory) {
             if (textureImage != nullptr) {
                 vkDestroySampler(vkDevice.getDevice(), textureSampler, nullptr);
                 vkDestroyImageView(vkDevice.getDevice(), textureImageView, nullptr);
@@ -276,7 +326,7 @@ namespace odfaeg {
             imageInfo.extent.depth = 1;
             imageInfo.mipLevels = 1;
             imageInfo.arrayLayers = (isCubeMap) ? 6 : 1;
-            imageInfo.format = format;
+            imageInfo.format = m_format;
             imageInfo.tiling = tiling;
             imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
             imageInfo.usage = usage;
@@ -301,7 +351,6 @@ namespace odfaeg {
             vkBindImageMemory(vkDevice.getDevice(), image, imageMemory, 0);
             m_size[0] = texWidth;
             m_size[1] = texHeight;
-            m_format = format;
         }
         void Texture::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory) {
             VkBufferCreateInfo bufferInfo{};
@@ -403,18 +452,18 @@ namespace odfaeg {
         void Texture::toShaderReadOnlyOptimal(VkCommandBuffer cmd) {
             ////std::cout<<"is on color attachment optimal : "<<isOnColorAttachmentOptimal<<std::endl;
             if (isFBOTexture) {
-                transitionImageLayout(cmd, textureImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+                transitionImageLayout(cmd, textureImage, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
             }
         }
         void Texture::toColorAttachmentOptimal(VkCommandBuffer cmd) {
             ////std::cout<<"is on color attachment optimal : "<<isOnColorAttachmentOptimal<<std::endl;
             if (isFBOTexture) {
-                transitionImageLayout(cmd, textureImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+                transitionImageLayout(cmd, textureImage, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
             }
         }
-        void Texture::transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout) {
+        void Texture::transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout) {
             imageLayout = newLayout;
             VkImageMemoryBarrier barrier{};
             barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -426,7 +475,7 @@ namespace odfaeg {
             if (newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
                 barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 
-                if (hasStencilComponent(format)) {
+                if (hasStencilComponent(m_format)) {
                     barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
                 }
             } else {
@@ -537,12 +586,12 @@ namespace odfaeg {
 
             endSingleTimeCommands(commandBuffer);
         }
-        void Texture::createTextureImageView(VkFormat format, VkImageAspectFlags aspectFlags) {
+        void Texture::createTextureImageView(VkImageAspectFlags aspectFlags) {
             VkImageViewCreateInfo viewInfo{};
             viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
             viewInfo.image = textureImage;
             viewInfo.viewType = (isCubeMap) ? VK_IMAGE_VIEW_TYPE_2D_ARRAY : VK_IMAGE_VIEW_TYPE_2D;
-            viewInfo.format = format;
+            viewInfo.format = m_format;
             viewInfo.subresourceRange.aspectMask = aspectFlags;
             viewInfo.subresourceRange.baseMipLevel = 0;
             viewInfo.subresourceRange.levelCount = 1;
@@ -679,12 +728,12 @@ namespace odfaeg {
             blitInfo.regionCount = 1;
             blitInfo.pRegions = &blitRegion;
             VkCommandBuffer cmd = beginSingleTimeCommands();
-            transitionImageLayout(cmd, texture.textureImage, m_format, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-            transitionImageLayout(cmd, textureImage, m_format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+            transitionImageLayout(cmd, texture.textureImage, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+            transitionImageLayout(cmd, textureImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
             vkCmdBlitImage2(cmd, &blitInfo);
-            transitionImageLayout(cmd, texture.textureImage, m_format, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-            transitionImageLayout(cmd, textureImage, m_format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+            transitionImageLayout(cmd, texture.textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+            transitionImageLayout(cmd, textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
             endSingleTimeCommands(cmd);
         }
         void Texture::updateCubeMap(const Texture& texture, unsigned int x, unsigned int y) {
@@ -729,12 +778,12 @@ namespace odfaeg {
             blitInfo.regionCount = 1;
             blitInfo.pRegions = &blitRegion;
             VkCommandBuffer cmd = beginSingleTimeCommands();
-            transitionImageLayout(cmd, texture.textureImage, m_format, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-            transitionImageLayout(cmd, textureImage, m_format, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+            transitionImageLayout(cmd, texture.textureImage, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+            transitionImageLayout(cmd, textureImage, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
             vkCmdBlitImage2(cmd, &blitInfo);
-            transitionImageLayout(cmd, texture.textureImage, m_format, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-            transitionImageLayout(cmd, textureImage, m_format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+            transitionImageLayout(cmd, texture.textureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+            transitionImageLayout(cmd, textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
             endSingleTimeCommands(cmd);
         }
         void Texture::setSmooth(bool smooth) {
@@ -825,23 +874,26 @@ namespace odfaeg {
         }
         bool Texture::createCubeMap (unsigned int width, unsigned int height, bool FBOAttachment) {
             isCubeMap = true;
-            createCubeMapImage(width, height, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
+            if (FBOAttachment) {
+                m_format = VK_FORMAT_R8G8B8A8_UNORM;
+            }
+            createCubeMapImage(width, height, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
             if (FBOAttachment) {
                 VkCommandBuffer cmd = beginSingleTimeCommands();
-                transitionImageLayout(cmd, textureImage, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+                transitionImageLayout(cmd, textureImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
                 endSingleTimeCommands(cmd);
                 allTextures.push_back(this);
             }
-            createCubeMapTextureImageView(VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
+            createCubeMapTextureImageView(VK_IMAGE_ASPECT_COLOR_BIT);
             createCubeMapTextureImageSampler();
             isFBOTexture = FBOAttachment;
             return true;
         }
-        void Texture::createCubeMapImage (uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage image, VkDeviceMemory device) {
+        void Texture::createCubeMapImage (uint32_t width, uint32_t height, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage image, VkDeviceMemory device) {
             VkImageCreateInfo imageCreateInfo = {};
             imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
             imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
-            imageCreateInfo.format = format;
+            imageCreateInfo.format = m_format;
             imageCreateInfo.mipLevels = 1;
             imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
             imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
@@ -871,14 +923,13 @@ namespace odfaeg {
             vkBindImageMemory(vkDevice.getDevice(), textureImage, textureImageMemory, 0);
             m_size[0] = width;
             m_size[1] = height;
-            m_format = format;
         }
-        void Texture::createCubeMapTextureImageView(VkFormat format, VkImageAspectFlags aspectFlags) {
+        void Texture::createCubeMapTextureImageView(VkImageAspectFlags aspectFlags) {
             VkImageViewCreateInfo view = {};
             view.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
             view.viewType = VK_IMAGE_VIEW_TYPE_CUBE;
             // Cube map view type
-            view.format = format;
+            view.format = m_format;
             view.subresourceRange.aspectMask = aspectFlags;
             // 6 array layers (faces)
             view.subresourceRange.baseMipLevel = 0;

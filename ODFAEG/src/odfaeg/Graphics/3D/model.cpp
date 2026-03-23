@@ -10,25 +10,34 @@ namespace odfaeg {
                 max = math::Vec3f(minF, minF, minF);
             }
             Entity* Model::loadModel(std::string path, EntityFactory& factory) {
+                //std::cout<<"load model : "<<path<<std::endl;
                 Mesh* emesh = factory.make_entity<Mesh>(math::Vec3f(0, 0, 0), math::Vec3f(0, 0, 0),"E_MESH", factory);
                 Assimp::Importer importer;
+                //std::cout<<"import"<<std::endl;
                 const aiScene *scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
+                //std::cout<<"imported"<<std::endl;
                 if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
                 {
                     std::cerr << "ERROR::ASSIMP::" << importer.GetErrorString() << std::endl;
                     return emesh;
                 }
                 #ifdef ODFAEG_SYSTEM_WINDOWS
-                directory = path.substr(0, path.find_last_of('\\'));
+                if(path.find("\\") != std::string::npos)
+                    directory = path.substr(0, path.find_last_of('\\'));
+                else
+                    directory = "";
                 #else
-                directory = path.substr(0, path.find_last_of('/'));
+                if(path.find("/") != std::string::npos)
+                    directory = path.substr(0, path.find_last_of('/'));
+                else
+                    directory = "";
                 #endif
                 processNode(scene->mRootNode, scene, emesh);
                 return emesh;
             }
             void Model::processNode(aiNode *node, const aiScene *scene, Mesh* emesh)
             {
-
+                //std::cout<<"process node"<<std::endl;
                 // process all the node's meshes (if any)
                 for(unsigned int i = 0; i < node->mNumMeshes; i++)
                 {
@@ -45,6 +54,7 @@ namespace odfaeg {
 
                 Material mat;
                 mat.clearTextures();
+                //std::cout<<"load materials"<<std::endl;
                 if(mesh->mMaterialIndex >= 0) {
                     aiMaterial *material = scene->mMaterials[mesh->mMaterialIndex];
                     std::vector<const Texture*> diffuseMaps = loadMaterialTextures(material,
@@ -58,39 +68,52 @@ namespace odfaeg {
                         mat.addTexture(specularMaps[i], IntRect(0, 0, 0, 0));
                     }
                 }
+                //std::cout<<"materials loaded"<<std::endl;
                 std::vector<Vertex> vertices;
                 std::vector<math::Vec3f> verts;
+                vertices.resize(mesh->mNumVertices);
+                verts.resize(mesh->mNumVertices);
                 for (unsigned int i = 0; i < mesh->mNumVertices; i++)
                 {
-                    Vertex vertex;
-                    vertex.position[0] = mesh->mVertices[i].x;
-                    vertex.position[1] = mesh->mVertices[i].y;
-                    vertex.position[2] = mesh->mVertices[i].z;
+                    vertices[i].position[0] = mesh->mVertices[i].x;
+                    vertices[i].position[1] = mesh->mVertices[i].y;
+                    vertices[i].position[2] = mesh->mVertices[i].z;
                     if (mesh->mTextureCoords[0])
                     {
-                        vertex.texCoords[0] = mesh->mTextureCoords[0][i].x * mat.getTexture()->getSize().x();
-                        vertex.texCoords[1] = mesh->mTextureCoords[0][i].y * mat.getTexture()->getSize().y();
+                        vertices[i].texCoords[0] = mesh->mTextureCoords[0][i].x * mat.getTexture()->getSize().x();
+                        vertices[i].texCoords[1] = mesh->mTextureCoords[0][i].y * mat.getTexture()->getSize().y();
                     } else {
-                        vertex.texCoords = math::Vec2f(0, 0);
+                        vertices[i].texCoords = math::Vec2f(0, 0);
                     }
-                    vertices.push_back(vertex);
-                    verts.push_back(math::Vec3f(vertex.position.x(), vertex.position.y(), vertex.position.z()));
+                    verts[i]  = math::Vec3f(vertices[i].position.x(), vertices[i].position.y(), vertices[i].position.z());
                 }
+                //std::cout<<"vertices loaded"<<std::endl;
                 extractBoneWeightForVertices(vertices, mesh, scene, emesh);
+                //std::cout<<"bone loaded"<<std::endl;
 
-                ////////std::cout<<"num bones : "<<mesh->mNumBones<<std::endl;
 
+                std::vector<VertexArray> vas;
+                vas.resize(mesh->mNumFaces);
+                std::vector<Face> faces;
+                faces.resize(mesh->mNumFaces);
+                std::cout<<"num faces : "<<mesh->mNumFaces<<std::endl;
                 for(unsigned int i = 0; i < mesh->mNumFaces; i++)
                 {
-                    VertexArray va(Triangles, 0, emesh);
-                    //std::cout<<"EMESH ID : "<<emesh->getId()<<std::endl;
+                    vas[i].setPrimitiveType(Triangles);
+                    vas[i].setEntity(emesh);
+
                     aiFace face = mesh->mFaces[i];
+                    //std::cout<<"add face : "<<face.mNumIndices<<std::endl;
                     for(unsigned int j = 0; j < face.mNumIndices; j++) {
-                        va.append(vertices[face.mIndices[j]]);
+                        vas[i].append(vertices[face.mIndices[j]]);
                     }
-                    Face f(va,mat,emesh->getTransform());
-                    emesh->addFace(f);
+                    faces[i].setVertexArray(vas[i]);
+                    faces[i].setMaterial(mat);
+                    faces[i].setTransformMatrix(emesh->getTransform());
+                    emesh->addFace(faces[i]);
+                    //std::cout<<"face added"<<std::endl;
                 }
+                std::cout<<"face loaded"<<std::endl;
                 std::array<std::array<float, 2>, 3> exts = math::Computer::getExtends(verts);
                 emesh->setSize(math::Vec3f(exts[0][1] - exts[0][0], exts[1][1] - exts[1][0], exts[2][1] - exts[2][0]));
                 //emesh->setOrigin(math::Vec3f(emesh->getSize()*0.5));
@@ -155,10 +178,17 @@ namespace odfaeg {
                     aiString str;
                     mat->GetTexture(type, i, &str);
                     bool skip = false;
+                    std::string path;
                     #ifdef ODFAEG_SYSTEM_WINDOWS
-                    std::string path = directory + "\\" + std::string (str.C_Str());
+                    if (directory == "")
+                        path = std::string (str.C_Str());
+                    else
+                        path = directory + "\\" + std::string (str.C_Str());
                     #else
-                    std::string path = directory + "/" + std::string (str.C_Str());
+                    if (directory == "")
+                        path = std::string (str.C_Str());
+                    else
+                        path = directory + "/" + std::string (str.C_Str());
                     #endif
                     for(unsigned int j = 0; j < tm.getPaths().size(); j++)
                     {
@@ -330,10 +360,12 @@ namespace odfaeg {
                     aiString str;
                     mat->GetTexture(type, i, &str);
                     bool skip = false;
+
                     #ifdef ODFAEG_SYSTEM_WINDOWS
-                    std::string path = directory + "\\" + std::string (str.C_Str());
+
+                    std::string path = (directory == "") ? std::string (str.C_Str()) : "\\" + std::string (str.C_Str());
                     #else
-                    std::string path = directory + "/" + std::string (str.C_Str());
+                    std::string path = (directory == "") ? std::string (str.C_Str()) : "/" + std::string (str.C_Str());
                     #endif
                     for(unsigned int j = 0; j < tm.getPaths().size(); j++)
                     {
