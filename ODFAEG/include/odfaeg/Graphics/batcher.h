@@ -267,7 +267,7 @@ namespace odfaeg {
             * \param tm : the material.
             * \param the transform matrix.
             */
-            Face(VertexArray va, Material mat, TransformMatrix tm);
+            Face(VertexArray va, Material& mat, TransformMatrix tm);
             //Face(const Face& face);
             /**
             * \fn TransformMatrix& getTransformMatrix() const
@@ -370,8 +370,8 @@ namespace odfaeg {
             *  \brief add a vertex array to the instance.
             *
             */
-            void addVertexArray(VertexArray& va, TransformMatrix& tm);
-            void addVertexShadowArray(VertexArray& va, TransformMatrix& tm, ViewMatrix& viewMatrix, TransformMatrix shadowProjMatrix);
+            void addVertexArray(VertexArray& va, TransformMatrix tm);
+            void addVertexShadowArray(VertexArray& va, TransformMatrix tm, ViewMatrix& viewMatrix, TransformMatrix shadowProjMatrix);
             void sortVertexArrays(View& view);
             /**
             * \fn std::vector<VertexArray*> getVertexArrays()
@@ -391,7 +391,7 @@ namespace odfaeg {
             * \brief get the transformations of every vertex arrays of the instances.
             * \return the transforms.
             */
-            std::vector<TransformMatrix*> getTransforms();
+            std::vector<TransformMatrix> getTransforms();
             std::vector<TransformMatrix> getShadowProjMatrix();
 
             /** \fn Material& getMaterial()
@@ -425,7 +425,7 @@ namespace odfaeg {
         private:
             Material* material; /**> the material of the instance.*/
             std::vector<VertexArray*> m_vertexArrays; /**> the vertex arrays of the instance.*/
-            std::vector<TransformMatrix*> m_transforms; /**> the transformations of the instance.*/
+            std::vector<TransformMatrix> m_transforms; /**> the transformations of the instance.*/
             std::vector<TransformMatrix> m_shadowProjMatrix;
             PrimitiveType primType; /**>The primitive type of the instance.*/
             unsigned int numInstances; /**>The number of instances.*/

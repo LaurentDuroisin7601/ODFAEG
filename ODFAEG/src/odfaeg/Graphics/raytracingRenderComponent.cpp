@@ -978,9 +978,9 @@ namespace odfaeg {
             }
             for (unsigned int i = 0; i < m_instances.size(); i++) {
                 if (m_instances[i].getAllVertices().getVertexCount() > 0) {
-                    std::vector<TransformMatrix*> tm = m_instances[i].getTransforms();
+                    std::vector<TransformMatrix> tm = m_instances[i].getTransforms();
                     for (unsigned int t = 0; t < tm.size(); t++) {
-                        VkTransformMatrixKHR transformMatrix = toVkTransformMatrixKHR(tm[t]->getMatrix().transpose());
+                        VkTransformMatrixKHR transformMatrix = toVkTransformMatrixKHR(tm[t].getMatrix().transpose());
 
                         VkAccelerationStructureInstanceKHR instance{};
                         instance.transform = transformMatrix;

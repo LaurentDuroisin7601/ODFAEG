@@ -291,7 +291,7 @@ namespace odfaeg {
                 m_material = Material();
                 m_material.addTexture(nullptr);
             }
-            Face::Face(VertexArray va, Material mat, TransformMatrix tm) {
+            Face::Face(VertexArray va, Material& mat, TransformMatrix tm) {
                 transform = tm;
                 m_vertices = va;
                 m_material = mat;
@@ -352,7 +352,7 @@ namespace odfaeg {
             }
             Instance::Instance () {
                 numInstances = 0;
-                material = nullptr;
+
             }
             Instance::Instance (Material& material, PrimitiveType pType) {
                 primType = pType;
@@ -367,13 +367,13 @@ namespace odfaeg {
             void Instance::setMaterial (Material& mat) {
                 material = &mat;
             }
-            void Instance::addVertexArray(VertexArray& va, TransformMatrix& tm) {
+            void Instance::addVertexArray(VertexArray& va, TransformMatrix tm) {
                 std::lock_guard<std::recursive_mutex> lock(rec_mutex);              ////////std::cout<<"push transform"<<std::endl;
                 va.computeNormals();
                 if (va.getEntity() != nullptr && !containsEntity(va.getEntity())) {
                     /*if (va.getEntity()->getRootType() == "E_BONE_ANIMATION")
                         std::cout<<"transform : "<<tm.getMatrix()<<std::endl;*/
-                    m_transforms.push_back(&tm);
+                    m_transforms.push_back(tm);
                     //m_shadowProjMatrix.push_back(tm);
                     //if (va.getEntity() != nullptr) {
                     m_entities.push_back(va.getEntity());
@@ -418,10 +418,10 @@ namespace odfaeg {
 
                 ////////std::cout<<"vertices transformed"<<std::endl;
             }
-            void Instance::addVertexShadowArray (VertexArray& va, TransformMatrix& tm, ViewMatrix& viewMatrix, TransformMatrix shadowProjMatrix) {
+            void Instance::addVertexShadowArray (VertexArray& va, TransformMatrix tm, ViewMatrix& viewMatrix, TransformMatrix shadowProjMatrix) {
                 va.computeNormals();
                 if (!containsEntity(va.getEntity())) {
-                    m_transforms.push_back(&tm);
+                    m_transforms.push_back(tm);
                     m_shadowProjMatrix.push_back(shadowProjMatrix);
                     if (va.getEntity() != nullptr)
                         m_entities.push_back(va.getEntity());
@@ -510,7 +510,7 @@ namespace odfaeg {
                 m_shadowProjMatrix.clear();
                 vertices.clear();
             }
-            std::vector<TransformMatrix*> Instance::getTransforms() {
+            std::vector<TransformMatrix> Instance::getTransforms() {
                  return m_transforms;
             }
             std::vector<TransformMatrix> Instance::getShadowProjMatrix() {

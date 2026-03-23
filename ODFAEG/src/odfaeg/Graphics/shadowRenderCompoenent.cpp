@@ -2722,11 +2722,11 @@ namespace odfaeg {
                         material.uvScale = (m_instances[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_instances[i].getMaterial().getTexture()->getSize().x(), 1.f / m_instances[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
                         material.uvOffset = math::Vec2f(0, 0);
                         materialDatas[p].push_back(material);
-                        std::vector<TransformMatrix*> tm = m_instances[i].getTransforms();
+                        std::vector<TransformMatrix> tm = m_instances[i].getTransforms();
                         for (unsigned int j = 0; j < tm.size(); j++) {
-                            tm[j]->update();
+                            tm[j].update();
                             ModelData model;
-                            model.worldMat = tm[j]->getMatrix()/*.transpose()*/;
+                            model.worldMat = tm[j].getMatrix()/*.transpose()*/;
                             TransformMatrix tm;
                             model.shadowProjMat = tm.getMatrix()/*.transpose()*/;
                             modelDatas[p].push_back(model);
@@ -2979,13 +2979,13 @@ namespace odfaeg {
                         material.uvScale = (m_shadow_instances[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_shadow_instances[i].getMaterial().getTexture()->getSize().x(), 1.f / m_shadow_instances[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
                         material.uvOffset = math::Vec2f(0, 0);
                         materialDatas[p].push_back(material);
-                        std::vector<TransformMatrix*> tm = m_shadow_instances[i].getTransforms();
+                        std::vector<TransformMatrix> tm = m_shadow_instances[i].getTransforms();
                         std::vector<TransformMatrix> tm2 = m_shadow_instances[i].getShadowProjMatrix();
                         for (unsigned int j = 0; j < tm.size(); j++) {
-                            tm[j]->update();
+                            tm[j].update();
                             tm2[j].update();
                             ModelData model;
-                            model.worldMat = tm[j]->getMatrix()/*.transpose()*/;
+                            model.worldMat = tm[j].getMatrix()/*.transpose()*/;
                             model.shadowProjMat = tm2[j].getMatrix()/*.transpose()*/;
                             modelDatas[p].push_back(model);
                         }
@@ -3244,11 +3244,11 @@ namespace odfaeg {
                         material.uvOffset = math::Vec2f(0, 0);
                         material.layer = m_instancesIndexed[i].getMaterial().getLayer();
                         materialDatas[p].push_back(material);
-                        std::vector<TransformMatrix*> tm = m_instancesIndexed[i].getTransforms();
+                        std::vector<TransformMatrix> tm = m_instancesIndexed[i].getTransforms();
                         for (unsigned int j = 0; j < tm.size(); j++) {
-                            tm[j]->update();
+                            tm[j].update();
                             ModelData model;
-                            model.worldMat = tm[j]->getMatrix().transpose();
+                            model.worldMat = tm[j].getMatrix().transpose();
                             TransformMatrix tm;
                             model.shadowProjMat = tm.getMatrix().transpose();
                             modelDatas[p].push_back(model);
@@ -3516,13 +3516,13 @@ namespace odfaeg {
                         material.uvScale = (m_shadow_instances_indexed[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_shadow_instances[i].getMaterial().getTexture()->getSize().x(), 1.f / m_shadow_instances_indexed[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
                         material.uvOffset = math::Vec2f(0, 0);
                         materialDatas[p].push_back(material);
-                        std::vector<TransformMatrix*> tm = m_shadow_instances_indexed[i].getTransforms();
+                        std::vector<TransformMatrix> tm = m_shadow_instances_indexed[i].getTransforms();
                         std::vector<TransformMatrix> tm2 = m_shadow_instances_indexed[i].getShadowProjMatrix();
                         for (unsigned int j = 0; j < tm.size(); j++) {
-                            tm[j]->update();
+                            tm[j].update();
                             tm2[j].update();
                             ModelData model;
-                            model.worldMat = tm[j]->getMatrix().transpose();
+                            model.worldMat = tm[j].getMatrix().transpose();
                             model.shadowProjMat = tm2[j].getMatrix().transpose();
                             modelDatas[p].push_back(model);
                         }
@@ -4018,11 +4018,11 @@ namespace odfaeg {
                             material.uvOffset = math::Vec2f(0, 0);
                         }
                         materialDatas[p].push_back(material);
-                        std::vector<TransformMatrix*> tm = m_instances[i].getTransforms();
+                        std::vector<TransformMatrix> tm = m_instances[i].getTransforms();
                         for (unsigned int j = 0; j < tm.size(); j++) {
-                            tm[j]->update();
+                            tm[j].update();
                             ModelData model;
-                            model.worldMat = tm[j]->getMatrix()/*.transpose()*/;
+                            model.worldMat = tm[j].getMatrix()/*.transpose()*/;
                             TransformMatrix tm;
                             model.shadowProjMat = tm.getMatrix()/*.transpose()*/;
 
@@ -4283,11 +4283,11 @@ namespace odfaeg {
                             material.layer = m_instancesIndexed[i].getMaterial().getLayer();
                         }
                         materialDatas[p].push_back(material);
-                        std::vector<TransformMatrix*> tm = m_instancesIndexed[i].getTransforms();
+                        std::vector<TransformMatrix> tm = m_instancesIndexed[i].getTransforms();
                         for (unsigned int j = 0; j < tm.size(); j++) {
-                            tm[j]->update();
+                            tm[j].update();
                             ModelData model;
-                            model.worldMat = tm[j]->getMatrix().transpose();
+                            model.worldMat = tm[j].getMatrix().transpose();
                             TransformMatrix tm;
                             model.shadowProjMat = tm.getMatrix().transpose();
 
@@ -4547,13 +4547,13 @@ namespace odfaeg {
                             material.uvOffset = math::Vec2f(0, 0);
                         }
                         materialDatas[p].push_back(material);
-                        std::vector<TransformMatrix*> tm = m_shadow_instances[i].getTransforms();
+                        std::vector<TransformMatrix> tm = m_shadow_instances[i].getTransforms();
                         std::vector<TransformMatrix> tm2 = m_shadow_instances[i].getShadowProjMatrix();
                         for (unsigned int j = 0; j < tm.size(); j++) {
-                            tm[j]->update();
+                            tm[j].update();
                             tm2[j].update();
                             ModelData model;
-                            model.worldMat = tm[j]->getMatrix()/*.transpose()*/;
+                            model.worldMat = tm[j].getMatrix()/*.transpose()*/;
                             model.shadowProjMat = tm2[j].getMatrix()/*.transpose()*/;
 
                             modelDatas[p].push_back(model);
@@ -4815,13 +4815,13 @@ namespace odfaeg {
                             material.uvOffset = math::Vec2f(0, 0);
                         }
                         materialDatas[p].push_back(material);
-                        std::vector<TransformMatrix*> tm = m_shadow_instances_indexed[i].getTransforms();
+                        std::vector<TransformMatrix> tm = m_shadow_instances_indexed[i].getTransforms();
                         std::vector<TransformMatrix> tm2 = m_shadow_instances_indexed[i].getShadowProjMatrix();
                         for (unsigned int j = 0; j < tm.size(); j++) {
-                            tm[j]->update();
+                            tm[j].update();
                             tm2[j].update();
                             ModelData model;
-                            model.worldMat = tm[j]->getMatrix().transpose();
+                            model.worldMat = tm[j].getMatrix().transpose();
                             model.shadowProjMat = tm2[j].getMatrix().transpose();
 
                             modelDatas[p].push_back(model);
