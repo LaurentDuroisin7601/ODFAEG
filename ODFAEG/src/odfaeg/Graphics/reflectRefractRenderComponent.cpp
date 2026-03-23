@@ -326,6 +326,7 @@ namespace odfaeg {
                 }
                 for (unsigned int i = 0; i < values.size(); i++) {
                     values[i] = 0;
+                    values2[i] = 0;
                 }
                 offscreenRenderingFinishedSemaphore.resize(reflectRefractTex.getMaxFramesInFlight());
                 for (unsigned int i = 0; i < reflectRefractTex.getMaxFramesInFlight(); i++) {
@@ -7270,6 +7271,15 @@ namespace odfaeg {
                     std::unique_lock<std::mutex> lock(mtx);
                     cv.wait(lock, [this] { return registerFrameJob[depthBuffer.getCurrentFrame()].load() || stop.load(); });
                     registerFrameJob[depthBuffer.getCurrentFrame()] = false;
+                    uint64_t waitValue = values2[reflectRefractTex.getCurrentFrame()];
+
+                    VkSemaphoreWaitInfo waitInfo{};
+                    waitInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO;
+                    waitInfo.semaphoreCount = 1;
+                    waitInfo.pSemaphores = &offscreenRenderingFinishedSemaphore[reflectRefractTex.getCurrentFrame()];
+                    waitInfo.pValues = &waitValue;
+
+                    vkWaitSemaphores(vkDevice.getDevice(), &waitInfo, UINT64_MAX);
                     if (!stop.load()) {
                         RenderStates currentStates;
                         math::Matrix4f viewMatrix = view.getViewMatrix().getMatrix();
@@ -8103,6 +8113,7 @@ namespace odfaeg {
 
                         isSomethingDrawn = true;
                     }
+
                     if (!isSomethingDrawn) {
                         signalSemaphores.clear();
                         waitSemaphores.clear();
@@ -8139,6 +8150,7 @@ namespace odfaeg {
                         //std::cout<<"reflect refract current frame : "<<reflectRefractTex.getCurrentFrame()<<std::endl;
                     }
                     isSomethingDrawn  = false;
+                    values2[reflectRefractTex.getCurrentFrame()] = values[reflectRefractTex.getCurrentFrame()];
                 }
 
                 target.beginRecordCommandBuffers();
@@ -8170,6 +8182,7 @@ namespace odfaeg {
                 signalValues.clear();
                 waitValues.push_back(values[reflectRefractTex.getCurrentFrame()]);
                 values[reflectRefractTex.getCurrentFrame()]++;
+
                 signalValues.push_back(values[reflectRefractTex.getCurrentFrame()]);
                 target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
                 //std::cout<<"drawn"<<std::endl;

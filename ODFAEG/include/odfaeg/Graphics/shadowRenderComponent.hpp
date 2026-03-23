@@ -113,7 +113,7 @@ namespace odfaeg {
                 }
                 Entity* getShadow(Entity* entity);
                 std::vector<VkSemaphore> offscreenFinishedSemaphore, offscreenDepthFinishedSemaphore, offscreenAlphaFinishedSemaphore, copyFinishedSemaphore;
-                std::array<unsigned int, MAX_FRAMES_IN_FLIGHT> values, values2, copyValues;
+                std::array<unsigned int, MAX_FRAMES_IN_FLIGHT> values, values2, copyValues, values3;
                 RenderWindow& window;
                 LayerPC layerPC;
                 ResolutionPC resolutionPC;

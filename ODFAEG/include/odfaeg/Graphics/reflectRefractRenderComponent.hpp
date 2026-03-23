@@ -274,7 +274,7 @@ namespace odfaeg {
             bool isSomethingDrawn;
             std::array<unsigned int, Batcher::nbPrimitiveTypes> currentModelOffset, currentMaterialOffset, previousModelOffset, previousMaterialOffset;
             unsigned int nbReflRefrEntities, alignment, uboAlignment;
-            std::array<unsigned int, MAX_FRAMES_IN_FLIGHT> values, valuesCopy;
+            std::array<unsigned int, MAX_FRAMES_IN_FLIGHT> values, valuesCopy, values2;
             bool useThread;
             std::array<unsigned int, Batcher::nbPrimitiveTypes> totalBufferSizeModelData, maxAlignedSizeModelData, oldTotalBufferSizeModelData;
             std::array<std::array<unsigned int, MAX_FRAMES_IN_FLIGHT>, Batcher::nbPrimitiveTypes> maxBufferSizeModelData;

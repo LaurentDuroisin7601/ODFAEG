@@ -4744,9 +4744,10 @@ namespace odfaeg {
 
                 //std::unique_lock<std::mutex> lock2(mtx2);
                 cv.wait(lock, [this](){return registerFrameJob[frameBuffer.getCurrentFrame()].load() || stop.load();});
+                registerFrameJob[frameBuffer.getCurrentFrame()] = false;
                 //std::cout<<"register frame : "<<frameBuffer.getCurrentFrame()<<std::endl;
                 uint64_t waitValue = values2[frameBuffer.getCurrentFrame()];
-                registerFrameJob[frameBuffer.getCurrentFrame()] = false;
+
                 VkSemaphoreWaitInfo waitInfo{};
                 waitInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO;
                 waitInfo.semaphoreCount = 1;
@@ -5850,7 +5851,7 @@ namespace odfaeg {
 
                     //std::cout<<"fence reseted"<<std::endl;
                 }
-                vkWaitForFences(vkDevice.getDevice(), 1, &windowFences[frameBuffer.getCurrentFrame()], VK_TRUE, UINT64_MAX);
+                //vkWaitForFences(vkDevice.getDevice(), 1, &windowFences[frameBuffer.getCurrentFrame()], VK_TRUE, UINT64_MAX);
 
 
                 //std::cout<<"submit fence : "<<fences[frameBuffer.getCurrentFrame()]<<std::endl;
@@ -5937,7 +5938,7 @@ namespace odfaeg {
             values[frameBuffer.getCurrentFrame()]++;
             signalValues.push_back(values[frameBuffer.getCurrentFrame()]);
             std::vector<VkFence> inFligthFence = {fences[frameBuffer.getCurrentFrame()]};
-            target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, inFligthFence, 0, true, false);
+            target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues/*, inFligthFence, 0, true, false*/);
 
             target.beginRecordCommandBuffers();
             const_cast<Texture&>(frameBuffer.getTexture(frameBuffer.getImageIndex())).toColorAttachmentOptimal(target.getCommandBuffers()[target.getCurrentFrame()]);

@@ -237,6 +237,7 @@ namespace odfaeg {
                 }
                 for (unsigned int i = 0; i < values2.size(); i++) {
                     values2[i] = 0;
+                    values3[i] = 0;
                 }
                 offscreenDepthFinishedSemaphore.resize(depthBuffer.getMaxFramesInFlight());
                 for (unsigned int i = 0; i < depthBuffer.getMaxFramesInFlight(); i++) {
@@ -5316,6 +5317,15 @@ namespace odfaeg {
                     cv.wait(lock, [this](){return registerFrameJob[depthBuffer.getCurrentFrame()].load() || stop.load();});
                     unsigned int currentFrame = depthBuffer.getCurrentFrame();
                     registerFrameJob[currentFrame] = false;
+                    uint64_t waitValue = values3[shadowMap.getCurrentFrame()];
+
+                    VkSemaphoreWaitInfo waitInfo{};
+                    waitInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO;
+                    waitInfo.semaphoreCount = 1;
+                    waitInfo.pSemaphores = &offscreenFinishedSemaphore[shadowMap.getCurrentFrame()];
+                    waitInfo.pValues = &waitValue;
+
+                    vkWaitSemaphores(vkDevice.getDevice(), &waitInfo, UINT64_MAX);
                     if (!stop.load()) {
                         math::Vec3f centerLight = g2d::AmbientLight::getAmbientLight().getLightCenter();
                         lightView = View(g2d::AmbientLight::getAmbientLight().getRadius(), g2d::AmbientLight::getAmbientLight().getRadius(), 1.0f, g2d::AmbientLight::getAmbientLight().getHeight());
@@ -5832,6 +5842,7 @@ namespace odfaeg {
                     signalSemaphores.clear();
                     signalSemaphores.push_back(offscreenFinishedSemaphore[shadowMap.getCurrentFrame()]);
                     values[shadowMap.getCurrentFrame()]++;
+                    values3[shadowMap.getCurrentFrame()] = values[shadowMap.getCurrentFrame()];
                     signalValues.push_back(values[shadowMap.getCurrentFrame()]);
                     shadowMap.submit(true, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
 
