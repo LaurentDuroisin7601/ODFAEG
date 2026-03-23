@@ -4755,6 +4755,8 @@ namespace odfaeg {
                 waitInfo.pValues = &waitValue;
 
                 vkWaitSemaphores(vkDevice.getDevice(), &waitInfo, UINT64_MAX);
+                //std::cout<<"draw next frame"<<std::endl;
+
                 if (!stop.load()) {
                     RenderStates currentStates;
                     math::Matrix4f projMatrix = view.getProjMatrix().getMatrix()/*.transpose()*/;
@@ -5759,7 +5761,7 @@ namespace odfaeg {
                     waitValues.push_back(values[currentFrame]);
                     values[currentFrame]++;
                     signalValues.push_back(values[currentFrame]);
-                    frameBuffer.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, windowInFlightFence/*, 0, false, false*/);
+                    frameBuffer.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues/*, windowInFlightFence, 0, false, false*/);
                 }
 
 

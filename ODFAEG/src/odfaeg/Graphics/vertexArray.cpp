@@ -183,7 +183,7 @@ namespace odfaeg {
             m_baseVertices.push_back(baseVertex);
             m_baseIndexes.push_back(baseIndex);
         }
-        void VertexArray::addIndex(unsigned int index) {
+        void VertexArray::addIndex(uint32_t index) {
             m_indexes.push_back(index);
             ////////std::cout<<"va index : "<<index<<"size : "<<m_indexes.size()<<std::endl;
 
@@ -191,7 +191,7 @@ namespace odfaeg {
         std::vector<unsigned int> VertexArray::getBaseIndexes() {
             return m_baseIndexes;
         }
-        std::vector<unsigned int> VertexArray::getIndexes() {
+        std::vector<uint32_t> VertexArray::getIndexes() {
             return m_indexes;
         }
         void VertexArray::computeNormals() {

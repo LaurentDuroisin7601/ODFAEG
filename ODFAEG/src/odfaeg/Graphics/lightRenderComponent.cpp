@@ -5424,7 +5424,7 @@ namespace odfaeg {
                 waitInfo.pSemaphores = &offscreenFinishedSemaphore[lightMap.getCurrentFrame()];
                 waitInfo.pValues = &waitValue;
 
-                    vkWaitSemaphores(vkDevice.getDevice(), &waitInfo, UINT64_MAX);
+                vkWaitSemaphores(vkDevice.getDevice(), &waitInfo, UINT64_MAX);
                 if (!stop.load()) {
                     math::Matrix4f viewMatrix = view.getViewMatrix().getMatrix().transpose();
                     math::Matrix4f projMatrix = view.getProjMatrix().getMatrix().transpose();

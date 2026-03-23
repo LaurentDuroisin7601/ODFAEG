@@ -117,6 +117,7 @@ void MyAppli::onInit() {
     animatedModel = loader.loadModel("tilesets\\vampire\\dancing_vampire.dae", factory);
     g3d::Animation* danceAnimation = new g3d::Animation("tilesets\\vampire\\dancing_vampire.dae", animatedModel, factory);
     Entity* animator = factory.make_entity<g3d::Animator>(getDevice(), danceAnimation, factory);
+    //std::cout<<"model loaded"<<std::endl;
 
     //animator->setScale(Vec3f(0.1f, 0.1f, 0.1f));
     //std::cout<<"matrix : "<<animator->getCurrentFrame()->getTransform().getMatrix()<<std::endl;
@@ -155,6 +156,7 @@ void MyAppli::onInit() {
     animator->scale(Vec3f(10.f, 10.f, 10.f));
     animator->move(Vec3f(0, z, 0));
     getWorld()->addEntity(animator);
+    std::cout<<"animation loaded"<<std::endl;
 
 
     //std::cout<<model->getPosition()<<model->getCenter()<<std::endl;
@@ -177,9 +179,7 @@ void MyAppli::onInit() {
     ReflectRefractRenderComponent* rrrc = new ReflectRefractRenderComponent(getRenderWindow(), 1, "E_CUBE+E_BIGTILE+E_MESH", ContextSettings(0, 0, 4, 4, 6));
     rrrc->setView(view3D);
     rrrc->loadSkybox(skybox.get());
-    /*std::vector<Entity*> tiles = heightmap->getChildren();
-    for (unsigned int i = 0; i < tiles.size(); i++)
-        std::cout<<"window coords : "<<frc2->getFrameBuffer()->mapCoordsToPixel(tiles[i]->getPosition())<<std::endl;*/
+
     LightRenderComponent* lrc = new LightRenderComponent(getRenderWindow(), 3, "E_PONCTUAL_LIGHT+E_BIGTILE",ContextSettings(0, 0, 4, 4, 6));
     //std::cout<<"light render component created"<<std::endl;
     lrc->setView(view3D);

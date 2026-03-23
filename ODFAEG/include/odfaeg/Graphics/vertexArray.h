@@ -41,7 +41,7 @@ namespace odfaeg {
             VertexArray& operator= (const VertexArray&& va);
             void computeNormals();
             void addInstancedRenderingInfos(unsigned int numIndexes, unsigned int baseVertex, unsigned int baseIndice);
-            void addIndex(unsigned int index);
+            void addIndex(uint32_t index);
             std::vector<unsigned int> getIndexes();
             std::vector<math::Vec3f> getLocals() {
                 return m_locals;
