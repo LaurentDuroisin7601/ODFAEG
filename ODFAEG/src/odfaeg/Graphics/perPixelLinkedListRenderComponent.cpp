@@ -4813,92 +4813,117 @@ namespace odfaeg {
                     }
 
                     jobFence[currentFrame].reset(numThreads);
-                    threadPool.enqueue([this, currentFrame, currentStates]{
-                        VkCommandBufferInheritanceInfo inheritanceInfo{};
-                        inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
-                        inheritanceInfo.renderPass = VK_NULL_HANDLE; // pas de render pass
-                        inheritanceInfo.subpass = 0;
-                        inheritanceInfo.framebuffer = VK_NULL_HANDLE;
-                        inheritanceInfo.occlusionQueryEnable = VK_FALSE;
-                        inheritanceInfo.queryFlags = 0;
-                        inheritanceInfo.pipelineStatistics = 0;
-                        VkCommandBufferBeginInfo beginInfo{};
-                        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-                        beginInfo.pInheritanceInfo = &inheritanceInfo; // obligatoire pour secondaire
+                    try {
+                        threadPool.enqueue([this, currentFrame, currentStates]{
+                            VkCommandBufferInheritanceInfo inheritanceInfo{};
+                            inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+                            inheritanceInfo.renderPass = VK_NULL_HANDLE; // pas de render pass
+                            inheritanceInfo.subpass = 0;
+                            inheritanceInfo.framebuffer = VK_NULL_HANDLE;
+                            inheritanceInfo.occlusionQueryEnable = VK_FALSE;
+                            inheritanceInfo.queryFlags = 0;
+                            inheritanceInfo.pipelineStatistics = 0;
+                            VkCommandBufferBeginInfo beginInfo{};
+                            beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+                            beginInfo.pInheritanceInfo = &inheritanceInfo; // obligatoire pour secondaire
 
-                        vkResetCommandBuffer(copyModelDataBufferCommandBuffer[currentFrame], 0);
-                        vkResetCommandBuffer(copyMaterialDataBufferCommandBuffer[currentFrame], 0);
-                        vkResetCommandBuffer(copyDrawBufferCommandBuffer[currentFrame], 0);
-                        vkResetCommandBuffer(copyVbBufferCommandBuffer[currentFrame], 0);
-                        vkResetCommandBuffer(copyDrawIndexedBufferCommandBuffer[currentFrame], 0);
-                        vkResetCommandBuffer(copyVbIndexedBufferCommandBuffer[currentFrame], 0);
-                        if (vkBeginCommandBuffer(copyModelDataBufferCommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
+                            vkResetCommandBuffer(copyModelDataBufferCommandBuffer[currentFrame], 0);
+                            vkResetCommandBuffer(copyMaterialDataBufferCommandBuffer[currentFrame], 0);
+                            vkResetCommandBuffer(copyDrawBufferCommandBuffer[currentFrame], 0);
+                            vkResetCommandBuffer(copyVbBufferCommandBuffer[currentFrame], 0);
+                            vkResetCommandBuffer(copyDrawIndexedBufferCommandBuffer[currentFrame], 0);
+                            vkResetCommandBuffer(copyVbIndexedBufferCommandBuffer[currentFrame], 0);
+                            if (vkBeginCommandBuffer(copyModelDataBufferCommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
 
-                            throw core::Erreur(0, "failed to begin recording command buffer!", 1);
-                        }
-                        if (vkBeginCommandBuffer(copyMaterialDataBufferCommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
+                                throw core::Erreur(0, "failed to begin recording command buffer!", 1);
+                            }
+                            if (vkBeginCommandBuffer(copyMaterialDataBufferCommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
 
-                            throw core::Erreur(0, "failed to begin recording command buffer!", 1);
-                        }
-                        if (vkBeginCommandBuffer(copyDrawBufferCommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
+                                throw core::Erreur(0, "failed to begin recording command buffer!", 1);
+                            }
+                            if (vkBeginCommandBuffer(copyDrawBufferCommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
 
-                            throw core::Erreur(0, "failed to begin recording command buffer!", 1);
-                        }
-                        if (vkBeginCommandBuffer(copyVbBufferCommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
+                                throw core::Erreur(0, "failed to begin recording command buffer!", 1);
+                            }
+                            if (vkBeginCommandBuffer(copyVbBufferCommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
 
-                            throw core::Erreur(0, "failed to begin recording command buffer!", 1);
-                        }
-                        if (vkBeginCommandBuffer(copyDrawIndexedBufferCommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
+                                throw core::Erreur(0, "failed to begin recording command buffer!", 1);
+                            }
+                            if (vkBeginCommandBuffer(copyDrawIndexedBufferCommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
 
-                            throw core::Erreur(0, "failed to begin recording command buffer!", 1);
-                        }
-                        if (vkBeginCommandBuffer(copyVbIndexedBufferCommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
+                                throw core::Erreur(0, "failed to begin recording command buffer!", 1);
+                            }
+                            if (vkBeginCommandBuffer(copyVbIndexedBufferCommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
 
-                            throw core::Erreur(0, "failed to begin recording command buffer!", 1);
-                        }
-                        for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
-                            VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
-                            if (bufferSize > 0)
-                                copyBuffer(modelDataStagingBufferMT[p][currentFrame], modelDataBufferMT[p][currentFrame], bufferSize, copyModelDataBufferCommandBuffer[currentFrame]);
-                            bufferSize = sizeof(MaterialData) * materialDatas[p].size();
-                            if (bufferSize > 0)
-                                copyBuffer(materialDataStagingBufferMT[p][currentFrame],materialDataBufferMT[p][currentFrame], bufferSize, copyMaterialDataBufferCommandBuffer[currentFrame]);
-                            bufferSize = sizeof(DrawArraysIndirectCommand) * drawArraysIndirectCommands[p].size();
+                                throw core::Erreur(0, "failed to begin recording command buffer!", 1);
+                            }
+                            for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
+                                VkDeviceSize bufferSize = sizeof(ModelData) * modelDatas[p].size();
+                                if (bufferSize > 0)
+                                    copyBuffer(modelDataStagingBufferMT[p][currentFrame], modelDataBufferMT[p][currentFrame], bufferSize, copyModelDataBufferCommandBuffer[currentFrame]);
+                                bufferSize = sizeof(MaterialData) * materialDatas[p].size();
+                                if (bufferSize > 0)
+                                    copyBuffer(materialDataStagingBufferMT[p][currentFrame],materialDataBufferMT[p][currentFrame], bufferSize, copyMaterialDataBufferCommandBuffer[currentFrame]);
+                                bufferSize = sizeof(DrawArraysIndirectCommand) * drawArraysIndirectCommands[p].size();
 
-                            if (bufferSize > 0)
-                                copyBuffer(vboIndirectStagingBufferMT[p][currentFrame], drawCommandBufferMT[p][currentFrame], totalBufferSizeDrawCommand[p], copyDrawBufferCommandBuffer[currentFrame]);
+                                if (bufferSize > 0)
+                                    copyBuffer(vboIndirectStagingBufferMT[p][currentFrame], drawCommandBufferMT[p][currentFrame], totalBufferSizeDrawCommand[p], copyDrawBufferCommandBuffer[currentFrame]);
 
-                            bufferSize = sizeof(DrawElementsIndirectCommand) * drawElementsIndirectCommands[p].size();
-                            if (bufferSize > 0)
-                                copyBuffer(vboIndexedIndirectStagingBufferMT[p][currentFrame], drawCommandBufferIndexedMT[p][currentFrame], bufferSize, copyDrawIndexedBufferCommandBuffer[currentFrame]);
+                                bufferSize = sizeof(DrawElementsIndirectCommand) * drawElementsIndirectCommands[p].size();
+                                if (bufferSize > 0)
+                                    copyBuffer(vboIndexedIndirectStagingBufferMT[p][currentFrame], drawCommandBufferIndexedMT[p][currentFrame], bufferSize, copyDrawIndexedBufferCommandBuffer[currentFrame]);
 
-                            if (vbBindlessTex[p].getVertexCount() > 0)
-                                vbBindlessTex[p].registerCopyCmdBuffers(currentFrame, copyVbBufferCommandBuffer[currentFrame]);
-                            if (vbBindlessTexIndexed[p].getVertexCount() > 0)
-                                vbBindlessTexIndexed[p].registerCopyCmdBuffers(currentFrame, copyVbIndexedBufferCommandBuffer[currentFrame]);
+                                if (vbBindlessTex[p].getVertexCount() > 0)
+                                    vbBindlessTex[p].registerCopyCmdBuffers(currentFrame, copyVbBufferCommandBuffer[currentFrame]);
+                                if (vbBindlessTexIndexed[p].getVertexCount() > 0)
+                                    vbBindlessTexIndexed[p].registerCopyCmdBuffers(currentFrame, copyVbIndexedBufferCommandBuffer[currentFrame]);
 
-                        }
-                        if (vkEndCommandBuffer(copyModelDataBufferCommandBuffer[currentFrame]) != VK_SUCCESS) {
-                            throw core::Erreur(0, "failed to record command buffer!", 1);
-                        }
-                        if (vkEndCommandBuffer(copyMaterialDataBufferCommandBuffer[currentFrame]) != VK_SUCCESS) {
-                            throw core::Erreur(0, "failed to record command buffer!", 1);
-                        }
-                        if (vkEndCommandBuffer(copyDrawBufferCommandBuffer[currentFrame]) != VK_SUCCESS) {
-                            throw core::Erreur(0, "failed to record command buffer!", 1);
-                        }
-                        if (vkEndCommandBuffer(copyVbBufferCommandBuffer[currentFrame]) != VK_SUCCESS) {
-                            throw core::Erreur(0, "failed to record command buffer!", 1);
-                        }
-                        if (vkEndCommandBuffer(copyDrawIndexedBufferCommandBuffer[currentFrame]) != VK_SUCCESS) {
-                            throw core::Erreur(0, "failed to record command buffer!", 1);
-                        }
-                        if (vkEndCommandBuffer(copyVbIndexedBufferCommandBuffer[currentFrame]) != VK_SUCCESS) {
-                            throw core::Erreur(0, "failed to record command buffer!", 1);
-                        }
+                            }
+                            if (vkEndCommandBuffer(copyModelDataBufferCommandBuffer[currentFrame]) != VK_SUCCESS) {
+                                throw core::Erreur(0, "failed to record command buffer!", 1);
+                            }
+                            if (vkEndCommandBuffer(copyMaterialDataBufferCommandBuffer[currentFrame]) != VK_SUCCESS) {
+                                throw core::Erreur(0, "failed to record command buffer!", 1);
+                            }
+                            if (vkEndCommandBuffer(copyDrawBufferCommandBuffer[currentFrame]) != VK_SUCCESS) {
+                                throw core::Erreur(0, "failed to record command buffer!", 1);
+                            }
+                            if (vkEndCommandBuffer(copyVbBufferCommandBuffer[currentFrame]) != VK_SUCCESS) {
+                                throw core::Erreur(0, "failed to record command buffer!", 1);
+                            }
+                            if (vkEndCommandBuffer(copyDrawIndexedBufferCommandBuffer[currentFrame]) != VK_SUCCESS) {
+                                throw core::Erreur(0, "failed to record command buffer!", 1);
+                            }
+                            if (vkEndCommandBuffer(copyVbIndexedBufferCommandBuffer[currentFrame]) != VK_SUCCESS) {
+                                throw core::Erreur(0, "failed to record command buffer!", 1);
+                            }
 
-                        if (skybox != nullptr) {
+                            if (skybox != nullptr) {
 
+
+                                inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+                                inheritanceInfo.renderPass = VK_NULL_HANDLE; // pas de render pass
+                                inheritanceInfo.subpass = 0;
+                                inheritanceInfo.framebuffer = VK_NULL_HANDLE;
+                                inheritanceInfo.occlusionQueryEnable = VK_FALSE;
+                                inheritanceInfo.queryFlags = 0;
+                                inheritanceInfo.pipelineStatistics = 0;
+
+                                beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+                                beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+                                beginInfo.pInheritanceInfo = &inheritanceInfo; // obligatoire pour secondaire
+
+                                vkResetCommandBuffer(copySkyboxCommandBuffer[currentFrame], 0);
+                                if (vkBeginCommandBuffer(copySkyboxCommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
+
+                                    throw core::Erreur(0, "failed to begin recording command buffer!", 1);
+                                }
+                                //std::cout<<"copy skybox vb"<<std::endl;
+                                skyboxVB.registerCopyCmdBuffers(currentFrame, copySkyboxCommandBuffer[currentFrame]);
+                                if (vkEndCommandBuffer(copySkyboxCommandBuffer[currentFrame]) != VK_SUCCESS) {
+                                    throw core::Erreur(0, "failed to record command buffer!", 1);
+                                }
+                            }
 
                             inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
                             inheritanceInfo.renderPass = VK_NULL_HANDLE; // pas de render pass
@@ -4911,42 +4936,23 @@ namespace odfaeg {
                             beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
                             beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
                             beginInfo.pInheritanceInfo = &inheritanceInfo; // obligatoire pour secondaire
-
-                            vkResetCommandBuffer(copySkyboxCommandBuffer[currentFrame], 0);
-                            if (vkBeginCommandBuffer(copySkyboxCommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
+                            unsigned int currentFrame = frameBuffer.getCurrentFrame();
+                            vkResetCommandBuffer(copyVbPpllPass2CommandBuffer[currentFrame], 0);
+                            if (vkBeginCommandBuffer(copyVbPpllPass2CommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
 
                                 throw core::Erreur(0, "failed to begin recording command buffer!", 1);
                             }
-                            //std::cout<<"copy skybox vb"<<std::endl;
-                            skyboxVB.registerCopyCmdBuffers(currentFrame, copySkyboxCommandBuffer[currentFrame]);
-                            if (vkEndCommandBuffer(copySkyboxCommandBuffer[currentFrame]) != VK_SUCCESS) {
+                            vb.registerCopyCmdBuffers(currentFrame, copyVbPpllPass2CommandBuffer[currentFrame]);
+                            if (vkEndCommandBuffer(copyVbPpllPass2CommandBuffer[currentFrame]) != VK_SUCCESS) {
                                 throw core::Erreur(0, "failed to record command buffer!", 1);
                             }
-                        }
-
-                        inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
-                        inheritanceInfo.renderPass = VK_NULL_HANDLE; // pas de render pass
-                        inheritanceInfo.subpass = 0;
-                        inheritanceInfo.framebuffer = VK_NULL_HANDLE;
-                        inheritanceInfo.occlusionQueryEnable = VK_FALSE;
-                        inheritanceInfo.queryFlags = 0;
-                        inheritanceInfo.pipelineStatistics = 0;
-
-                        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-                        beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-                        beginInfo.pInheritanceInfo = &inheritanceInfo; // obligatoire pour secondaire
-                        unsigned int currentFrame = frameBuffer.getCurrentFrame();
-                        vkResetCommandBuffer(copyVbPpllPass2CommandBuffer[currentFrame], 0);
-                        if (vkBeginCommandBuffer(copyVbPpllPass2CommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
-
-                            throw core::Erreur(0, "failed to begin recording command buffer!", 1);
-                        }
-                        vb.registerCopyCmdBuffers(currentFrame, copyVbPpllPass2CommandBuffer[currentFrame]);
-                        if (vkEndCommandBuffer(copyVbPpllPass2CommandBuffer[currentFrame]) != VK_SUCCESS) {
-                            throw core::Erreur(0, "failed to record command buffer!", 1);
-                        }
-                        jobFence[currentFrame].jobDone();
-                    });
+                            jobFence[currentFrame].jobDone();
+                        });
+                    } catch (const std::exception& e) {
+                        std::cerr << "Worker exception: " << e.what() << std::endl;
+                    } catch (...) {
+                        std::cerr << "Worker unknown exception" << std::endl;
+                    }
                     drawBuffers();
                     jobFence[currentFrame].wait();
                 }
@@ -5108,11 +5114,47 @@ namespace odfaeg {
             currentStates.blendMode = BlendNone;
             currentStates.shader = &skyboxShader;
 
+            try {
+                threadPool.enqueue([this, currentFrame, currentStates] {
 
-            threadPool.enqueue([this, currentFrame, currentStates] {
+
+                    if (skybox != nullptr) {
+                        VkCommandBufferInheritanceInfo inheritanceInfo{};
+
+                        VkCommandBufferBeginInfo beginInfo{};
+                        inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+                        inheritanceInfo.renderPass = frameBuffer.getRenderPass(1);
+                        inheritanceInfo.framebuffer = VK_NULL_HANDLE;
+                        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+                        beginInfo.pInheritanceInfo = &inheritanceInfo;
+                        beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT | VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+                        vkResetCommandBuffer(skyboxCommandBuffer[currentFrame], 0);
+                        if (vkBeginCommandBuffer(skyboxCommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
+
+                            throw core::Erreur(0, "failed to begin recording command buffer!", 1);
+                        }
 
 
-                if (skybox != nullptr) {
+                        recordCommandBufferVertexBuffer(currentFrame, currentStates, skyboxCommandBuffer[currentFrame]);
+                        if (vkEndCommandBuffer(skyboxCommandBuffer[currentFrame]) != VK_SUCCESS) {
+                            throw core::Erreur(0, "failed to record command buffer!", 1);
+                        }
+                    }
+                    jobFence[currentFrame].jobDone();
+                });
+            } catch (const std::exception& e) {
+                std::cerr << "Worker exception: " << e.what() << std::endl;
+            } catch (...) {
+                std::cerr << "Worker unknown exception" << std::endl;
+            }
+            currentStates.blendMode = BlendNone;
+            currentStates.shader = &indirectRenderingShader;
+            for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes-1; p++) {
+                if (needToUpdateDSs[p][currentFrame])
+                    updateDescriptorSets(currentFrame, p, currentStates);
+            }
+            try {
+                threadPool.enqueue([this, currentFrame, currentStates] {
                     VkCommandBufferInheritanceInfo inheritanceInfo{};
 
                     VkCommandBufferBeginInfo beginInfo{};
@@ -5122,141 +5164,132 @@ namespace odfaeg {
                     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
                     beginInfo.pInheritanceInfo = &inheritanceInfo;
                     beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT | VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
-                    vkResetCommandBuffer(skyboxCommandBuffer[currentFrame], 0);
-                    if (vkBeginCommandBuffer(skyboxCommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
+                    vkResetCommandBuffer(ppllCommandBuffer[currentFrame], 0);
+                    if (vkBeginCommandBuffer(ppllCommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
 
                         throw core::Erreur(0, "failed to begin recording command buffer!", 1);
                     }
 
 
-                    recordCommandBufferVertexBuffer(currentFrame, currentStates, skyboxCommandBuffer[currentFrame]);
-                    if (vkEndCommandBuffer(skyboxCommandBuffer[currentFrame]) != VK_SUCCESS) {
+
+
+                    for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes-1; p++) {
+                        if (nbDrawCommandBuffer[p][0] > 0) {
+                            recordCommandBufferIndirect(currentFrame, p, nbDrawCommandBuffer[p][0], sizeof(DrawArraysIndirectCommand), PPLLNODEPTHNOSTENCIL, 0, -1, -1, modelDataOffsets[p][0], materialDataOffsets[p][0],drawCommandBufferOffsets[p][0], currentStates, ppllCommandBuffer[currentFrame]);
+                        }
+                        if (nbIndexedDrawCommandBuffer[p][0] > 0) {
+                            //std::cout<<"register indexed"<<std::endl;
+                            recordCommandBufferIndirect(currentFrame, p, nbIndexedDrawCommandBuffer[p][0], sizeof(DrawElementsIndirectCommand), PPLLNODEPTHNOSTENCIL, 0, 0, -1, modelDataOffsets[p][1], materialDataOffsets[p][1],drawIndexedCommandBufferOffsets[p][0], currentStates, ppllCommandBuffer[currentFrame]);
+                        }
+                    }
+                    if (vkEndCommandBuffer(ppllCommandBuffer[currentFrame]) != VK_SUCCESS) {
                         throw core::Erreur(0, "failed to record command buffer!", 1);
                     }
-                }
-                jobFence[currentFrame].jobDone();
-            });
-            currentStates.blendMode = BlendNone;
-            currentStates.shader = &indirectRenderingShader;
-            for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes-1; p++) {
-                if (needToUpdateDSs[p][currentFrame])
-                    updateDescriptorSets(currentFrame, p, currentStates);
+                    jobFence[currentFrame].jobDone();
+                });
+            } catch (const std::exception& e) {
+                std::cerr << "Worker exception: " << e.what() << std::endl;
+            } catch (...) {
+                std::cerr << "Worker unknown exception" << std::endl;
+            }
+            try {
+                threadPool.enqueue([this, currentFrame, currentStates]{
+                    VkCommandBufferInheritanceInfo inheritanceInfo{};
+
+                    VkCommandBufferBeginInfo beginInfo{};
+                    inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+                    inheritanceInfo.renderPass = frameBuffer.getRenderPass(1);
+                    inheritanceInfo.framebuffer = VK_NULL_HANDLE;
+                    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+                    beginInfo.pInheritanceInfo = &inheritanceInfo;
+                    beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT | VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+                    vkResetCommandBuffer(ppllSelectedCommandBuffer[currentFrame], 0);
+                    if (vkBeginCommandBuffer(ppllSelectedCommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
+
+                        throw core::Erreur(0, "failed to begin recording command buffer!", 1);
+                    }
+                    for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes-1; p++) {
+                        if (nbDrawCommandBuffer[p][1] > 0) {
+                            recordCommandBufferIndirect(currentFrame, p, nbDrawCommandBuffer[p][1], sizeof(DrawArraysIndirectCommand), PPLLNODEPTHSTENCIL, 0, -1, -1, modelDataOffsets[p][2], materialDataOffsets[p][2],drawCommandBufferOffsets[p][1], currentStates, ppllSelectedCommandBuffer[currentFrame]);
+                        }
+                        if (nbIndexedDrawCommandBuffer[p][1] > 0) {
+                            recordCommandBufferIndirect(currentFrame, p, nbIndexedDrawCommandBuffer[p][1], sizeof(DrawElementsIndirectCommand), PPLLNODEPTHSTENCIL, 0, 0, -1, modelDataOffsets[p][3], materialDataOffsets[p][3],drawIndexedCommandBufferOffsets[p][1], currentStates, ppllSelectedCommandBuffer[currentFrame]);
+                        }
+                    }
+                    if (vkEndCommandBuffer(ppllSelectedCommandBuffer[currentFrame]) != VK_SUCCESS) {
+                        throw core::Erreur(0, "failed to record command buffer!", 1);
+                    }
+                    jobFence[currentFrame].jobDone();
+                });
+            } catch (const std::exception& e) {
+                std::cerr << "Worker exception: " << e.what() << std::endl;
+            } catch (...) {
+                std::cerr << "Worker unknown exception" << std::endl;
             }
 
-            threadPool.enqueue([this, currentFrame, currentStates] {
-                VkCommandBufferInheritanceInfo inheritanceInfo{};
+            try {
+                threadPool.enqueue([this, currentFrame, currentStates]{
+                    VkCommandBufferInheritanceInfo inheritanceInfo{};
 
-                VkCommandBufferBeginInfo beginInfo{};
-                inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
-                inheritanceInfo.renderPass = frameBuffer.getRenderPass(1);
-                inheritanceInfo.framebuffer = VK_NULL_HANDLE;
-                beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-                beginInfo.pInheritanceInfo = &inheritanceInfo;
-                beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT | VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
-                vkResetCommandBuffer(ppllCommandBuffer[currentFrame], 0);
-                if (vkBeginCommandBuffer(ppllCommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
+                    VkCommandBufferBeginInfo beginInfo{};
+                    inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+                    inheritanceInfo.renderPass = frameBuffer.getRenderPass(1);
+                    inheritanceInfo.framebuffer = VK_NULL_HANDLE;
+                    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+                    beginInfo.pInheritanceInfo = &inheritanceInfo;
+                    beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT | VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+                    vkResetCommandBuffer(ppllOutlineCommandBuffer[currentFrame], 0);
+                    if (vkBeginCommandBuffer(ppllOutlineCommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
 
-                    throw core::Erreur(0, "failed to begin recording command buffer!", 1);
-                }
-
-
-
-
-                for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes-1; p++) {
-                    if (nbDrawCommandBuffer[p][0] > 0) {
-                        recordCommandBufferIndirect(currentFrame, p, nbDrawCommandBuffer[p][0], sizeof(DrawArraysIndirectCommand), PPLLNODEPTHNOSTENCIL, 0, -1, -1, modelDataOffsets[p][0], materialDataOffsets[p][0],drawCommandBufferOffsets[p][0], currentStates, ppllCommandBuffer[currentFrame]);
+                        throw core::Erreur(0, "failed to begin recording command buffer!", 1);
                     }
-                    if (nbIndexedDrawCommandBuffer[p][0] > 0) {
-                        //std::cout<<"register indexed"<<std::endl;
-                        recordCommandBufferIndirect(currentFrame, p, nbIndexedDrawCommandBuffer[p][0], sizeof(DrawElementsIndirectCommand), PPLLNODEPTHNOSTENCIL, 0, 0, -1, modelDataOffsets[p][1], materialDataOffsets[p][1],drawIndexedCommandBufferOffsets[p][0], currentStates, ppllCommandBuffer[currentFrame]);
+                    for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes-1; p++) {
+                        if (nbDrawCommandBuffer[p][2] > 0) {
+                            recordCommandBufferIndirect(currentFrame, p, nbDrawCommandBuffer[p][2], sizeof(DrawArraysIndirectCommand), PPLLNODEPTHSTENCILOUTLINE, 0, -1, -1, modelDataOffsets[p][4], materialDataOffsets[p][4],drawCommandBufferOffsets[p][2], currentStates, ppllOutlineCommandBuffer[currentFrame]);
+                        }
+                        if (nbIndexedDrawCommandBuffer[p][2] > 0) {
+                            recordCommandBufferIndirect(currentFrame, p, nbIndexedDrawCommandBuffer[p][2], sizeof(DrawElementsIndirectCommand), PPLLNODEPTHSTENCILOUTLINE, 0, 0, -1, modelDataOffsets[p][5], materialDataOffsets[p][5],drawIndexedCommandBufferOffsets[p][2], currentStates, ppllOutlineCommandBuffer[currentFrame]);
+                        }
                     }
-                }
-                if (vkEndCommandBuffer(ppllCommandBuffer[currentFrame]) != VK_SUCCESS) {
-                    throw core::Erreur(0, "failed to record command buffer!", 1);
-                }
-                jobFence[currentFrame].jobDone();
-            });
-            threadPool.enqueue([this, currentFrame, currentStates]{
-                VkCommandBufferInheritanceInfo inheritanceInfo{};
 
-                VkCommandBufferBeginInfo beginInfo{};
-                inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
-                inheritanceInfo.renderPass = frameBuffer.getRenderPass(1);
-                inheritanceInfo.framebuffer = VK_NULL_HANDLE;
-                beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-                beginInfo.pInheritanceInfo = &inheritanceInfo;
-                beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT | VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
-                vkResetCommandBuffer(ppllSelectedCommandBuffer[currentFrame], 0);
-                if (vkBeginCommandBuffer(ppllSelectedCommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
-
-                    throw core::Erreur(0, "failed to begin recording command buffer!", 1);
-                }
-                for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes-1; p++) {
-                    if (nbDrawCommandBuffer[p][1] > 0) {
-                        recordCommandBufferIndirect(currentFrame, p, nbDrawCommandBuffer[p][1], sizeof(DrawArraysIndirectCommand), PPLLNODEPTHSTENCIL, 0, -1, -1, modelDataOffsets[p][2], materialDataOffsets[p][2],drawCommandBufferOffsets[p][1], currentStates, ppllSelectedCommandBuffer[currentFrame]);
+                    if (vkEndCommandBuffer(ppllOutlineCommandBuffer[currentFrame]) != VK_SUCCESS) {
+                        throw core::Erreur(0, "failed to record command buffer!", 1);
                     }
-                    if (nbIndexedDrawCommandBuffer[p][1] > 0) {
-                        recordCommandBufferIndirect(currentFrame, p, nbIndexedDrawCommandBuffer[p][1], sizeof(DrawElementsIndirectCommand), PPLLNODEPTHSTENCIL, 0, 0, -1, modelDataOffsets[p][3], materialDataOffsets[p][3],drawIndexedCommandBufferOffsets[p][1], currentStates, ppllSelectedCommandBuffer[currentFrame]);
-                    }
-                }
-                if (vkEndCommandBuffer(ppllSelectedCommandBuffer[currentFrame]) != VK_SUCCESS) {
-                    throw core::Erreur(0, "failed to record command buffer!", 1);
-                }
-                jobFence[currentFrame].jobDone();
-            });
-
-
-            threadPool.enqueue([this, currentFrame, currentStates]{
-                VkCommandBufferInheritanceInfo inheritanceInfo{};
-
-                VkCommandBufferBeginInfo beginInfo{};
-                inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
-                inheritanceInfo.renderPass = frameBuffer.getRenderPass(1);
-                inheritanceInfo.framebuffer = VK_NULL_HANDLE;
-                beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-                beginInfo.pInheritanceInfo = &inheritanceInfo;
-                beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT | VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
-                vkResetCommandBuffer(ppllOutlineCommandBuffer[currentFrame], 0);
-                if (vkBeginCommandBuffer(ppllOutlineCommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
-
-                    throw core::Erreur(0, "failed to begin recording command buffer!", 1);
-                }
-                for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes-1; p++) {
-                    if (nbDrawCommandBuffer[p][2] > 0) {
-                        recordCommandBufferIndirect(currentFrame, p, nbDrawCommandBuffer[p][2], sizeof(DrawArraysIndirectCommand), PPLLNODEPTHSTENCILOUTLINE, 0, -1, -1, modelDataOffsets[p][4], materialDataOffsets[p][4],drawCommandBufferOffsets[p][2], currentStates, ppllOutlineCommandBuffer[currentFrame]);
-                    }
-                    if (nbIndexedDrawCommandBuffer[p][2] > 0) {
-                        recordCommandBufferIndirect(currentFrame, p, nbIndexedDrawCommandBuffer[p][2], sizeof(DrawElementsIndirectCommand), PPLLNODEPTHSTENCILOUTLINE, 0, 0, -1, modelDataOffsets[p][5], materialDataOffsets[p][5],drawIndexedCommandBufferOffsets[p][2], currentStates, ppllOutlineCommandBuffer[currentFrame]);
-                    }
-                }
-
-                if (vkEndCommandBuffer(ppllOutlineCommandBuffer[currentFrame]) != VK_SUCCESS) {
-                    throw core::Erreur(0, "failed to record command buffer!", 1);
-                }
-                jobFence[currentFrame].jobDone();
-            });
+                    jobFence[currentFrame].jobDone();
+                });
+            } catch (const std::exception& e) {
+                std::cerr << "Worker exception: " << e.what() << std::endl;
+            } catch (...) {
+                std::cerr << "Worker unknown exception" << std::endl;
+            }
             currentStates.blendMode = BlendAlpha;
             currentStates.shader = &perPixelLinkedListP2;
-            threadPool.enqueue([this, currentFrame, currentStates] {
-                VkCommandBufferInheritanceInfo inheritanceInfo{};
+            try {
+                threadPool.enqueue([this, currentFrame, currentStates] {
+                    VkCommandBufferInheritanceInfo inheritanceInfo{};
 
-                VkCommandBufferBeginInfo beginInfo{};
-                inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
-                inheritanceInfo.renderPass = frameBuffer.getRenderPass(1);
-                inheritanceInfo.framebuffer = VK_NULL_HANDLE;
-                beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-                beginInfo.pInheritanceInfo = &inheritanceInfo;
-                beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT | VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
-                if (vkBeginCommandBuffer(ppllPass2CommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
-                    throw core::Erreur(0, "failed to begin recording command buffer!", 1);
-                }
+                    VkCommandBufferBeginInfo beginInfo{};
+                    inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+                    inheritanceInfo.renderPass = frameBuffer.getRenderPass(1);
+                    inheritanceInfo.framebuffer = VK_NULL_HANDLE;
+                    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+                    beginInfo.pInheritanceInfo = &inheritanceInfo;
+                    beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT | VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+                    if (vkBeginCommandBuffer(ppllPass2CommandBuffer[currentFrame], &beginInfo) != VK_SUCCESS) {
+                        throw core::Erreur(0, "failed to begin recording command buffer!", 1);
+                    }
 
-                recordCommandBufferVertexBuffer(currentFrame, currentStates, ppllPass2CommandBuffer[currentFrame]);
-                if (vkEndCommandBuffer(ppllPass2CommandBuffer[currentFrame]) != VK_SUCCESS) {
-                    throw core::Erreur(0, "failed to record command buffer!", 1);
-                }
-                jobFence[currentFrame].jobDone();
-            });
+                    recordCommandBufferVertexBuffer(currentFrame, currentStates, ppllPass2CommandBuffer[currentFrame]);
+                    if (vkEndCommandBuffer(ppllPass2CommandBuffer[currentFrame]) != VK_SUCCESS) {
+                        throw core::Erreur(0, "failed to record command buffer!", 1);
+                    }
+                    jobFence[currentFrame].jobDone();
+                });
+            } catch (const std::exception& e) {
+                std::cerr << "Worker exception: " << e.what() << std::endl;
+            } catch (...) {
+                std::cerr << "Worker unknown exception" << std::endl;
+            }
 
             for (unsigned int p = 0; p < (Batcher::nbPrimitiveTypes - 1); p++)
                 needToUpdateDSs[p][currentFrame] = false;
@@ -5857,7 +5890,7 @@ namespace odfaeg {
 
 
                 //std::cout<<"submit fence : "<<fences[frameBuffer.getCurrentFrame()]<<std::endl;
-                frameBuffer.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues/*, fencesToWait, 0, false*/);
+                frameBuffer.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, fencesToWait/*, 0, false*/);
                 //std::cout<<"ppll ok"<<std::endl;
 
 
