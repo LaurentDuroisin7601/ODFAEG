@@ -55,21 +55,29 @@ namespace odfaeg {
 
                 Material mat;
                 mat.clearTextures();
-                //std::cout<<"load materials"<<std::endl;
+                mat.addTexture(nullptr);
+
                 if(mesh->mMaterialIndex >= 0) {
+                    //std::cout<<"load materials"<<std::endl;
+
                     aiMaterial *material = scene->mMaterials[mesh->mMaterialIndex];
                     std::vector<const Texture*> diffuseMaps = loadMaterialTextures(material,
                                                         aiTextureType_DIFFUSE, "texture_diffuse");
                     std::vector<const Texture*> specularMaps = loadMaterialTextures(material,
                                                         aiTextureType_SPECULAR, "texture_specular");
+                    if (diffuseMaps.size() > 0 || specularMaps.size() > 0) {
+                        mat.clearTextures();
+                    }
                     for (unsigned int i = 0; i < diffuseMaps.size(); i++) {
+                        //std::cout<<"load materials diffuse "<<diffuseMaps[i]<<std::endl;
                         mat.addTexture(diffuseMaps[i], IntRect(0, 0, 0, 0));
                     }
                     for (unsigned int i = 0; i < specularMaps.size(); i++) {
+                        //std::cout<<"load materials speculars "<<specularMaps[i]<<std::endl;
                         mat.addTexture(specularMaps[i], IntRect(0, 0, 0, 0));
                     }
                 }
-                //std::cout<<"materials loaded"<<std::endl;
+                //std::cout<<"materials loaded : "<<mat.getTexture()<<std::endl;
                 std::vector<Vertex> vertices;
                 std::vector<math::Vec3f> verts;
                 vertices.resize(mesh->mNumVertices);
@@ -79,7 +87,7 @@ namespace odfaeg {
                     vertices[i].position[0] = mesh->mVertices[i].x;
                     vertices[i].position[1] = mesh->mVertices[i].y;
                     vertices[i].position[2] = mesh->mVertices[i].z;
-                    if (mesh->mTextureCoords[0])
+                    if (mesh->mTextureCoords[0] && mat.getTexture() != nullptr)
                     {
                         vertices[i].texCoords[0] = mesh->mTextureCoords[0][i].x * mat.getTexture()->getSize().x();
                         vertices[i].texCoords[1] = mesh->mTextureCoords[0][i].y * mat.getTexture()->getSize().y();
@@ -101,9 +109,9 @@ namespace odfaeg {
                 vas.resize(mesh->mNumFaces);
                 std::vector<Face> faces;
                 faces.resize(mesh->mNumFaces);*/
-                #ifdef ODFAEG_DEBUG
+                /*#ifdef ODFAEG_DEBUG
                 std::cout<<"num faces : "<<mesh->mNumFaces<<std::endl;
-                #endif
+                #endif*/
                 for(unsigned int i = 0; i < mesh->mNumFaces; i++)
                 {
                     /*vas[i].setPrimitiveType(Triangles);
@@ -124,9 +132,9 @@ namespace odfaeg {
                 }
                 Face f(va, mat, emesh->getTransform());
                 emesh->addFace(f);
-                #ifdef ODFAEG_DEBUG
+                /*#ifdef ODFAEG_DEBUG
                 //std::cout<<"face loaded"<<std::endl;
-                #endif
+                #endif*/
                 std::array<std::array<float, 2>, 3> exts = math::Computer::getExtends(verts);
                 emesh->setSize(math::Vec3f(exts[0][1] - exts[0][0], exts[1][1] - exts[1][0], exts[2][1] - exts[2][0]));
                 //emesh->setOrigin(math::Vec3f(emesh->getSize()*0.5));
@@ -208,6 +216,7 @@ namespace odfaeg {
                         if(tm.getPaths()[j] == path)
                         {
                             textures.push_back(tm.getResourceByAlias(path));
+                            //std::cout<<"get texture : "<<textures.back()<<std::endl;
                             skip = true;
                             break;
                         }
@@ -217,6 +226,7 @@ namespace odfaeg {
                         std::tuple<std::reference_wrapper<window::Device>> rArgs = std::make_tuple(std::ref(vkDevice));
                         tm.fromFileWithAlias(path, path, rArgs);
                         const Texture* texture = tm.getResourceByAlias(path);
+                        //std::cout<<"new texture : "<<texture<<std::endl;
                         textures.push_back(texture);
                     }
                 }
