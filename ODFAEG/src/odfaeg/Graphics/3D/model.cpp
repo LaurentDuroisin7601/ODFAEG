@@ -32,10 +32,10 @@ namespace odfaeg {
                 else
                     directory = "";
                 #endif
-                processNode(scene->mRootNode, scene, emesh);
+                processNode(scene->mRootNode, scene, emesh, factory);
                 return emesh;
             }
-            void Model::processNode(aiNode *node, const aiScene *scene, Mesh* emesh)
+            void Model::processNode(aiNode *node, const aiScene *scene, Mesh* emesh, EntityFactory& factory)
             {
                 //std::cout<<"process node"<<std::endl;
                 // process all the node's meshes (if any)
@@ -47,10 +47,11 @@ namespace odfaeg {
                 // then do the same for each of its children
                 for(unsigned int i = 0; i < node->mNumChildren; i++)
                 {
-                    processNode(node->mChildren[i], scene, emesh);
+                    processNode(node->mChildren[i], scene, emesh, factory);
                 }
             }
             void Model::processMesh(aiMesh *mesh, const aiScene *scene, Mesh* emesh) {
+
 
                 Material mat;
                 mat.clearTextures();
@@ -89,30 +90,38 @@ namespace odfaeg {
                 }
                 //std::cout<<"vertices loaded"<<std::endl;
                 extractBoneWeightForVertices(vertices, mesh, scene, emesh);
+                VertexArray va(Triangles, 0, emesh);
+                /*va.setPrimitiveType(Triangles);
+                va.setEntity(emesh);*/
+
                 //std::cout<<"bone loaded"<<std::endl;
 
 
-                std::vector<VertexArray> vas;
+               /* std::vector<VertexArray> vas;
                 vas.resize(mesh->mNumFaces);
                 std::vector<Face> faces;
-                faces.resize(mesh->mNumFaces);
+                faces.resize(mesh->mNumFaces);*/
                 std::cout<<"num faces : "<<mesh->mNumFaces<<std::endl;
                 for(unsigned int i = 0; i < mesh->mNumFaces; i++)
                 {
-                    vas[i].setPrimitiveType(Triangles);
-                    vas[i].setEntity(emesh);
+                    /*vas[i].setPrimitiveType(Triangles);
+                    vas[i].setEntity(emesh);*/
+
 
                     aiFace face = mesh->mFaces[i];
                     //std::cout<<"add face : "<<face.mNumIndices<<std::endl;
                     for(unsigned int j = 0; j < face.mNumIndices; j++) {
-                        vas[i].append(vertices[face.mIndices[j]]);
+                        //vas[i].append(vertices[face.mIndices[j]]);
+                        va.append(vertices[face.mIndices[j]]);
                     }
-                    faces[i].setVertexArray(vas[i]);
+                    /*faces[i].setVertexArray(vas[i]);
                     faces[i].setMaterial(mat);
                     faces[i].setTransformMatrix(emesh->getTransform());
-                    emesh->addFace(faces[i]);
+                    emesh->addFace(faces[i]);*/
                     //std::cout<<"face added"<<std::endl;
                 }
+                Face f(va, mat, emesh->getTransform());
+                emesh->addFace(f);
                 std::cout<<"face loaded"<<std::endl;
                 std::array<std::array<float, 2>, 3> exts = math::Computer::getExtends(verts);
                 emesh->setSize(math::Vec3f(exts[0][1] - exts[0][0], exts[1][1] - exts[1][0], exts[2][1] - exts[2][0]));

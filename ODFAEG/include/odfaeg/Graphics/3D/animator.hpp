@@ -73,6 +73,7 @@ namespace odfaeg {
                 uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
                 ~Animator();
                 private:
+                void remapEntityId(Entity* entity);
                 void compileComputeShader();
                 void createCommandPool();
                 void createCommandBuffers(unsigned int oldSize);

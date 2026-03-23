@@ -393,7 +393,7 @@ namespace odfaeg {
                  }
              }
              if (type == TriangleFan || type == TriangleStrip || type == LineStrip)
-                vertexBuffer[type].addIndex(0xFFFF);
+                vertexBuffer[type].addIndex(0xFFFFFFFF);
 
 
              VkDeviceSize bufferSize = sizeof(DrawableData) * drawableData.size();
@@ -568,7 +568,7 @@ namespace odfaeg {
                 //std::cout<<"not equale"<<std::endl;*/
             applyViewportAndScissor(cmd);
             if(vertexBuffer.getIndicesSize() > 0) {
-                vkCmdBindIndexBuffer(cmd, vertexBuffer.getIndexBuffer(currentFrame), indexOffset, VK_INDEX_TYPE_UINT16);
+                vkCmdBindIndexBuffer(cmd, vertexBuffer.getIndexBuffer(currentFrame), indexOffset, VK_INDEX_TYPE_UINT32);
             }
             if(vertexBuffer.getIndicesSize() > 0) {
                 //std::cout<<"draw indexed indirect"<<std::endl;
@@ -603,7 +603,7 @@ namespace odfaeg {
 
             applyViewportAndScissor(cmd);
             if(vertexBuffer.getIndicesSize() > 0) {
-                vkCmdBindIndexBuffer(cmd, vertexBuffer.getIndexBuffer(currentFrame), 0, VK_INDEX_TYPE_UINT16);
+                vkCmdBindIndexBuffer(cmd, vertexBuffer.getIndexBuffer(currentFrame), 0, VK_INDEX_TYPE_UINT32);
             }
             if(vertexBuffer.getIndicesSize() > 0) {
                 vkCmdDrawIndexed(cmd, static_cast<uint32_t>(vertexBuffer.getIndicesSize()), instanceCount, 0, 0, 0);
@@ -1151,7 +1151,7 @@ namespace odfaeg {
 
             applyViewportAndScissor(cmd);
             if(vb.getIndicesSize() > 0) {
-                vkCmdBindIndexBuffer(cmd, vb.getIndexBuffer(getCurrentFrame()), 0, VK_INDEX_TYPE_UINT16);
+                vkCmdBindIndexBuffer(cmd, vb.getIndexBuffer(getCurrentFrame()), 0, VK_INDEX_TYPE_UINT32);
             }
             if(vb.getIndicesSize() > 0) {
                 vkCmdDrawIndexed(cmd, static_cast<uint32_t>(vb.getIndicesSize()), 1, 0, 0, 0);

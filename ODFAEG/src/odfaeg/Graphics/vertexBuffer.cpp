@@ -255,7 +255,7 @@ namespace odfaeg {
                     ////////std::cout<<"vertex buffer : "<<indexBuffer<<std::endl;
                 }
                 copyBuffer(vertexStagingBuffer[currentFrame], vertexBuffer[currentFrame], bufferSize, cmd);
-                bufferSize = sizeof(uint16_t) * indices.size();
+                bufferSize = sizeof(uint32_t) * indices.size();
                 if (needToUpdateIndexBuffer[currentFrame]) {
 
                     if (bufferSize > maxIndexSize[currentFrame]) {
@@ -312,7 +312,7 @@ namespace odfaeg {
                     needToUpdateVertexBuffer[currentFrame] = false;
                     ////////std::cout<<"vertex buffer : "<<indexBuffer<<std::endl;
                 }
-                bufferSize = sizeof(uint16_t) * indices.size();
+                bufferSize = sizeof(uint32_t) * indices.size();
                 if (needToUpdateIndexBuffer[currentFrame]) {
 
                     if (bufferSize > maxIndexSize[currentFrame]) {
@@ -336,7 +336,7 @@ namespace odfaeg {
             void VertexBuffer::registerCopyCmdBuffers(unsigned int currentFrame, VkCommandBuffer cmd) {
                 VkDeviceSize bufferSize = sizeof(Vertex) * m_vertices.size();
                 copyBuffer(vertexStagingBuffer[currentFrame], vertexBuffer[currentFrame], bufferSize, cmd);
-                bufferSize = sizeof(uint16_t) * indices.size();
+                bufferSize = sizeof(uint32_t) * indices.size();
                 copyBuffer(indexStagingBuffer[currentFrame], indexBuffer[currentFrame], bufferSize, cmd);
             }
 
@@ -354,7 +354,7 @@ namespace odfaeg {
                     }
                 }
                 if (indexStagingBufferMemory[currentFrame] != nullptr) {
-                    VkDeviceSize bufferSize = sizeof(uint16_t) * indices.size();
+                    VkDeviceSize bufferSize = sizeof(uint32_t) * indices.size();
                     if (bufferSize > 0) {
                         void* data;
                         vkMapMemory(vkDevice.getDevice(), indexStagingBufferMemory[currentFrame], 0, bufferSize, 0, &data);
@@ -399,7 +399,7 @@ namespace odfaeg {
                     }
                     copyBuffer(vertexStagingBuffer[i], vertexBuffer[i], bufferSize);
                 }
-                bufferSize = sizeof(indices[0]) * indices.size();
+                bufferSize = sizeof(uint32_t) * indices.size();
 
                 for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
                     if (needToUpdateIndexBuffer[i]) {

@@ -21,7 +21,7 @@ namespace odfaeg {
                 private :
                     void setVertexBoneData(Vertex& vertex, int boneID, float weight);
                     void extractBoneWeightForVertices(std::vector<Vertex>& vertices, aiMesh* mesh, const aiScene* scene, Mesh* eMesh);
-                    void processNode(aiNode *node, const aiScene *scene, Mesh* emesh);
+                    void processNode(aiNode *node, const aiScene *scene, Mesh* emesh, EntityFactory& factory);
                     void processMesh(aiMesh *mesh, const aiScene *scene, Mesh* emesh);
                     std::vector<const Texture*> loadMaterialTextures(aiMaterial *mat, aiTextureType type,
                                              std::string typeName);

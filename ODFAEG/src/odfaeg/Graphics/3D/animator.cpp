@@ -7,10 +7,11 @@ namespace odfaeg {
                 vkDevice(vkDevice),
                 computeShader(vkDevice)
             {
-                computeParams.entityId = animation->getModel()->getId();
+                computeParams.entityId = getId();
+                std::cout<<"animator id  : "<<getId()<<std::endl;
                 animation->getModel()->setParent(this);
                 addChild(animation->getModel());
-
+                remapEntityId(this);
 
 
                 m_CurrentTime = 0.0;
@@ -30,6 +31,14 @@ namespace odfaeg {
                 compileComputeShader();
                 createComputePipeline();
 
+            }
+            void Animator::remapEntityId(Entity* entity) {
+                for (unsigned int f = 0; f < entity->getFaces().size(); f++) {
+                    entity->getFaces()[f].getVertexArray().setEntity(this);
+                }
+                for (unsigned int i = 0; i < entity->getChildren().size(); i++) {
+                    remapEntityId(entity->getChildren()[i]);
+                }
             }
             void Animator::setBoneParent(const Animation::AssimpNodeData* node) {
                 std::string nodeName = node->name;
@@ -258,6 +267,13 @@ namespace odfaeg {
                     if (!this->vertexBuffer[i].has_value())
                         this->vertexBuffer[i] = std::ref(frameVertexBuffer);
                 }
+                /*for (unsigned int i = 0; i < vertexBuffer[layer].value().get().getVertexCount(); i++) {
+                    std::cout<<"entity id : "<<vertexBuffer[layer].value().get()[i].entityId<<std::endl;
+                    for (unsigned int j = 0; j < MAX_BONE_INFLUENCE; j++) {
+                        if (vertexBuffer[layer].value().get()[i].m_BoneIDs[j] != -1)
+                            std::cout<<"bones : "<<vertexBuffer[layer].value().get()[i].m_BoneIDs[j]<<std::endl;
+                    }
+                }*/
                 this->currentFrame[layer] = currentFrame;
                 this->computeSemaphores[layer] = computeSemaphore;
                 this->computeFences[layer] = computeFence;
@@ -352,6 +368,7 @@ namespace odfaeg {
                                                            vec4 totalPosition = vec4(0.0f);
                                                            for(int i = 0 ; i < MAX_BONE_INFLUENCE ; i++)
                                                            {
+                                                              debugPrintfEXT("Bone id : %i", verticesBuffers[pushConsts.layer].vertices[vertexIndex].boneIds[i]);
                                                               if(verticesBuffers[pushConsts.layer].vertices[vertexIndex].boneIds[i] == -1)
                                                                  continue;
                                                               if(verticesBuffers[pushConsts.layer].vertices[vertexIndex].boneIds[i] >=MAX_BONES)

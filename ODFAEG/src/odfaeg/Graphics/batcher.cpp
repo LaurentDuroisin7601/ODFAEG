@@ -505,6 +505,7 @@ namespace odfaeg {
                 m_transforms.clear();
                 m_vertexArrays.clear();
                 m_shadowProjMatrix.clear();
+                vertices.clear();
             }
             std::vector<TransformMatrix*> Instance::getTransforms() {
                  return m_transforms;

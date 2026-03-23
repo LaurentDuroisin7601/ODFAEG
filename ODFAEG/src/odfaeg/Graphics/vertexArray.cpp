@@ -170,7 +170,7 @@ namespace odfaeg {
         void VertexArray::setEntity(Entity* entity) {
             m_entity = entity;
             for (unsigned int i = 0; i < m_vertices.size(); i++) {
-                m_vertices[i].entityId = entity->getId();
+                m_vertices[i].entityId = entity->getRootEntity()->getId();
             }
         }
         Entity* VertexArray::getEntity() {
@@ -325,6 +325,9 @@ namespace odfaeg {
         ////////////////////////////////////////////////////////////
         Vertex& VertexArray::operator [](unsigned int index)
         {
+            if (m_vertices[index].entityId == -1) {
+                m_vertices[index].entityId = (m_entity != nullptr) ? m_entity->getRootEntity()->getId() : -1;
+            }
             needToUpdateNormals = true;
             ////////std::cout<<"vertex position : "<<m_vertices[index].position.x<<" "<<m_vertices[index].position.y<<std::endl;
             return m_vertices[index];
@@ -372,7 +375,7 @@ namespace odfaeg {
 
                 m_vertices.push_back(vertex);
                 if (m_vertices.back().entityId == -1) {
-                    m_vertices.back().entityId = (m_entity != nullptr) ? m_entity->getId() : -1;
+                    m_vertices.back().entityId = (m_entity != nullptr) ? m_entity->getRootEntity()->getId() : -1;
                 }
 
                 needToUpdateNormals = true;

@@ -5436,12 +5436,13 @@ namespace odfaeg {
             for (unsigned int i = 0; i < vEntities.size(); i++) {
 
                 if ( vEntities[i] != nullptr && vEntities[i]->isLeaf()) {
-                    //std::cout<<"draw something"<<std::endl;
+
                     Entity* border;
                     if (vEntities[i]->isSelected()) {
                         border = getBorder(vEntities[i]);
                     }
                     for (unsigned int j = 0; j <  vEntities[i]->getNbFaces(); j++) {
+
                          std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                          if (vEntities[i]->getDrawMode() == Entity::INSTANCED && !vEntities[i]->isSelected()) {
                             if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0) {

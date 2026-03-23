@@ -82,7 +82,7 @@ namespace odfaeg {
             std::array<VkDeviceMemory, MAX_FRAMES_IN_FLIGHT> vertexBufferMemory={}, indexBufferMemory={};
             std::array<VkBuffer, MAX_FRAMES_IN_FLIGHT> indexStagingBuffer={};
             std::array<VkDeviceMemory, MAX_FRAMES_IN_FLIGHT> indexStagingBufferMemory={}, vertexStagingBufferMemory={};
-            std::vector<uint16_t> indices;
+            std::vector<uint32_t> indices;
             PrimitiveType       m_primitiveType; ///< Type of primitives to draw
             std::array<bool, MAX_FRAMES_IN_FLIGHT> needToUpdateVertexBuffer={false, false}, needToUpdateIndexBuffer={false, false};
             VkCommandPool commandPool;

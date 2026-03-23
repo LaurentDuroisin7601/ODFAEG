@@ -209,7 +209,7 @@ namespace odfaeg {
             std::vector<unsigned int> m_numIndexes;
             std::vector<unsigned int> m_baseVertices;
             std::vector<unsigned int> m_baseIndexes;
-            std::vector<unsigned int> m_indexes;
+            std::vector<uint32_t> m_indexes;
             std::vector<float> m_vPosX, m_vPosY, m_vPosZ, m_vPosW;
             std::vector<unsigned char> m_vcRed, m_vcBlue, m_vcGreen, m_vcAlpha;
             std::vector<unsigned int> m_ctX, m_ctY;
