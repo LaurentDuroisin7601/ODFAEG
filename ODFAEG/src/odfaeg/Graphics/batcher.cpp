@@ -537,7 +537,7 @@ namespace odfaeg {
                 /*if (face->getVertexArray().getEntity() != nullptr && face->getVertexArray().getEntity()->getRootType() == "E_PONCTUAL_LIGHT")
                     std::cout<<"primitive type :"<<face->getVertexArray().getPrimitiveType()<<std::endl;*/
 
-
+                std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                 Instance& instance = instances[face->getMaterial().getId() * nbPrimitiveTypes + face->getVertexArray().getPrimitiveType()];
                 ////////std::cout<<"set primitive type : "<<std::endl;
                 instance.setPrimitiveType(face->getVertexArray().getPrimitiveType());
