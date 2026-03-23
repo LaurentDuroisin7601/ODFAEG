@@ -5411,9 +5411,9 @@ namespace odfaeg {
             //glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo));
             /*if (!view.isOrtho())
                 view.setPerspective(80, view.getViewport().getSize().x() / view.getViewport().getSize().y(), 0.1, view.getViewport().getSize().z());*/
-
+            std::unique_lock<std::mutex> lock(mtx);
             if (useThread) {
-                std::unique_lock<std::mutex> lock(mtx);
+
                 cv.wait(lock, [this](){return registerFrameJob[lightDepthBuffer.getCurrentFrame()].load() || stop.load();});
                 registerFrameJob[lightDepthBuffer.getCurrentFrame()] = false;
                 uint64_t waitValue = values2[lightMap.getCurrentFrame()];
@@ -6831,10 +6831,10 @@ namespace odfaeg {
             }
         }
         void LightRenderComponent::draw(RenderTarget& target, RenderStates states) {
-
+            std::unique_lock<std::mutex> lock(mtx);
             if (useThread) {
                 //std::cout<<"draw current frame : "<<lightDepthBuffer.getCurrentFrame()<<std::endl;
-                std::unique_lock<std::mutex> lock(mtx);
+
                 cv.wait(lock, [this] { return commandBufferReady[lightDepthBuffer.getCurrentFrame()].load() || stop.load(); });
                 //std::cout<<"copy"<<std::endl;
                 commandBufferReady[lightDepthBuffer.getCurrentFrame()] = false;

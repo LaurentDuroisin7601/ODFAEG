@@ -5310,10 +5310,10 @@ namespace odfaeg {
                 }
 
 
-
+                std::unique_lock<std::mutex> lock(mtx);
 
                 if (useThread) {
-                    std::unique_lock<std::mutex> lock(mtx);
+
                     cv.wait(lock, [this](){return registerFrameJob[depthBuffer.getCurrentFrame()].load() || stop.load();});
                     unsigned int currentFrame = depthBuffer.getCurrentFrame();
                     registerFrameJob[currentFrame] = false;
@@ -5587,9 +5587,9 @@ namespace odfaeg {
                 return getPosition().z();
             }
             void ShadowRenderComponent::draw(RenderTarget& target, RenderStates states) {
-
+                std::unique_lock<std::mutex> lock(mtx);
                 if (useThread) {
-                    std::unique_lock<std::mutex> lock(mtx);
+
                     cv.wait(lock, [this] { return commandBufferReady[depthBuffer.getCurrentFrame()].load() || stop.load(); });
 
                     commandBufferReady[depthBuffer.getCurrentFrame()] = false;

@@ -7263,12 +7263,12 @@ namespace odfaeg {
                         m_reflNormalIndexed = reflNormalIndexedBatcher.getInstances();
                     }
                 }
-
+                std::unique_lock<std::mutex> lock(mtx);
                 ////std::cout<<"view matrix : "<<viewMatrix<<std::endl;
                 if (useThread) {
                     //commandBufferReady = false;
 
-                    std::unique_lock<std::mutex> lock(mtx);
+
                     cv.wait(lock, [this] { return registerFrameJob[depthBuffer.getCurrentFrame()].load() || stop.load(); });
                     registerFrameJob[depthBuffer.getCurrentFrame()] = false;
                     uint64_t waitValue = values2[reflectRefractTex.getCurrentFrame()];
@@ -7752,11 +7752,11 @@ namespace odfaeg {
                 }
             }
             void ReflectRefractRenderComponent::draw(RenderTarget& target, RenderStates states) {
-
+                std::unique_lock<std::mutex> lock(mtx);
                 if (useThread) {
                     //std::cout<<"current frame : "<<depthBuffer.getCurrentFrame()<<std::endl;
 
-                    std::unique_lock<std::mutex> lock(mtx);
+
                     cv.wait(lock, [this] { return commandBufferReady[depthBuffer.getCurrentFrame()].load() || stop.load(); });
                     commandBufferReady[depthBuffer.getCurrentFrame()] = false;
                     // std::cout<<"wait command buffers : "<<depthBuffer.getCurrentFrame()<<std::endl;

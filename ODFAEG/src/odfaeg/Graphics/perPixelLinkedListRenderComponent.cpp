@@ -4738,9 +4738,9 @@ namespace odfaeg {
             vb.clear();*/
 
             //indirectDrawPushConsts.projMatrix.m22 *= -1;
-
+            std::unique_lock<std::mutex> lock(mtx);
             if (useThread) {
-                std::unique_lock<std::mutex> lock(mtx);
+
 
                 //std::unique_lock<std::mutex> lock2(mtx2);
                 cv.wait(lock, [this](){return registerFrameJob[frameBuffer.getCurrentFrame()].load() || stop.load();});
@@ -5572,9 +5572,9 @@ namespace odfaeg {
         }
         void PerPixelLinkedListRenderComponent::draw(RenderTarget& target, RenderStates states) {
 
-
+            std::unique_lock<std::mutex> lock(mtx);
             if (useThread) {
-                std::unique_lock<std::mutex> lock(mtx);
+
                 cv.wait(lock, [this] {
 
                         //std::cout<<"draw frame : "<<frameBuffer.getCurrentFrame()<<std::endl;
