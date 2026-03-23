@@ -36,6 +36,7 @@ namespace odfaeg {
                 return texId;
             }
             bool Material::TextureInfo::operator== (TextureInfo& info) {
+                std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                 return texture == info.texture;
             }
             bool Material::TextureInfo::operator!= (TextureInfo& info) {
@@ -366,7 +367,8 @@ namespace odfaeg {
             void Instance::setMaterial (Material& mat) {
                 material = &mat;
             }
-            void Instance::addVertexArray(VertexArray& va, TransformMatrix& tm) {                ////////std::cout<<"push transform"<<std::endl;
+            void Instance::addVertexArray(VertexArray& va, TransformMatrix& tm) {
+                std::lock_guard<std::recursive_mutex> lock(rec_mutex);              ////////std::cout<<"push transform"<<std::endl;
                 va.computeNormals();
                 if (va.getEntity() != nullptr && !containsEntity(va.getEntity())) {
                     /*if (va.getEntity()->getRootType() == "E_BONE_ANIMATION")
