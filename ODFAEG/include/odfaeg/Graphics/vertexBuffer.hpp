@@ -36,7 +36,7 @@ namespace odfaeg {
 
             VertexBuffer& operator= (VertexBuffer&& vb);
             void append(const Vertex& vertex);
-            void addIndex(uint16_t index);
+            void addIndex(uint32_t index);
             size_t getIndicesSize();
 
             void clear();

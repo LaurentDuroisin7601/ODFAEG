@@ -109,7 +109,7 @@ namespace odfaeg {
             void VertexBuffer::clearIndexes() {
                 indices.clear();
             }
-            void VertexBuffer::addIndex(uint16_t index) {
+            void VertexBuffer::addIndex(uint32_t index) {
                 indices.push_back(index);
                 needToUpdateIndexBuffer = {true, true};
             }
