@@ -534,8 +534,8 @@ namespace odfaeg
                 }
                 //std::cout<<"wait on fence : "<<inFlightFences[currentFrame]<<std::endl;
                 VkResult r = vkWaitForFences(vkDevice.getDevice(), 1, (fenceToSubmit == nullptr) ? &inFlightFences[currentFrame] : &fenceToSubmit, VK_TRUE, UINT64_MAX);
-                if (r == -4)
-                    printf("wait for fence result : %d\n", r);
+                /*if (r == -4)
+                    printf("wait for fence result : %d\n", r);*/
                 if (resetFence) {
                     //std::cout<<"reset fence : "<<inFlightFences[currentFrame]<<std::endl;
                     auto status = vkGetFenceStatus(vkDevice.getDevice(), inFlightFences[currentFrame]);

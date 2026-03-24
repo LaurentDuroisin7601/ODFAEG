@@ -211,7 +211,7 @@ namespace odfaeg {
             PFN_vkCmdPushDescriptorSetKHR vkCmdPushDescriptorSetKHR{ VK_NULL_HANDLE };
             core::Clock timeClock;
             std::vector<unsigned int> pipelineIds;
-            std::array<unsigned int, MAX_FRAMES_IN_FLIGHT> values, values2;
+            std::array<unsigned int, MAX_FRAMES_IN_FLIGHT> values, values2, values3;
             std::vector<VkEvent> events;
             std::vector<VkSemaphore> offscreenFinishedSemaphore;
             RenderWindow& window;

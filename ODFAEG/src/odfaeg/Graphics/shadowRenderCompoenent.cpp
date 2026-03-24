@@ -239,6 +239,7 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < values2.size(); i++) {
                     values2[i] = 0;
                     values3[i] = 0;
+                    values4[i] = 0;
                 }
                 offscreenDepthFinishedSemaphore.resize(depthBuffer.getMaxFramesInFlight());
                 for (unsigned int i = 0; i < depthBuffer.getMaxFramesInFlight(); i++) {
@@ -5594,6 +5595,15 @@ namespace odfaeg {
                     cv.wait(lock, [this] { return commandBufferReady[depthBuffer.getCurrentFrame()].load() || stop.load(); });
 
                     commandBufferReady[depthBuffer.getCurrentFrame()] = false;
+                    uint64_t waitValue = values4[shadowMap.getCurrentFrame()];
+
+                    VkSemaphoreWaitInfo waitInfo{};
+                    waitInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO;
+                    waitInfo.semaphoreCount = 1;
+                    waitInfo.pSemaphores = &offscreenFinishedSemaphore[shadowMap.getCurrentFrame()];
+                    waitInfo.pValues = &waitValue;
+
+                    vkWaitSemaphores(vkDevice.getDevice(), &waitInfo, UINT64_MAX);
                     depthBuffer.beginRecordCommandBuffers();
                     std::vector<VkCommandBuffer> commandBuffers = depthBuffer.getCommandBuffers();
                     unsigned int currentFrame = depthBuffer.getCurrentFrame();
@@ -5849,6 +5859,15 @@ namespace odfaeg {
 
                     //std::cout<<"drawn"<<std::endl;
                 }
+                uint64_t waitValue = values3[shadowMap.getCurrentFrame()];
+
+                VkSemaphoreWaitInfo waitInfo{};
+                waitInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO;
+                waitInfo.semaphoreCount = 1;
+                waitInfo.pSemaphores = &offscreenFinishedSemaphore[shadowMap.getCurrentFrame()];
+                waitInfo.pValues = &waitValue;
+
+                vkWaitSemaphores(vkDevice.getDevice(), &waitInfo, UINT64_MAX);
                 target.beginRecordCommandBuffers();
                 const_cast<Texture&>(shadowMap.getTexture(shadowMap.getImageIndex())).toShaderReadOnlyOptimal(target.getCommandBuffers()[target.getCurrentFrame()]);
 
@@ -5881,6 +5900,7 @@ namespace odfaeg {
                 waitValues.push_back(values[shadowMap.getCurrentFrame()]);
                 values[shadowMap.getCurrentFrame()]++;
                 signalValues.push_back(values[shadowMap.getCurrentFrame()]);
+                values4[shadowMap.getCurrentFrame()] = values[shadowMap.getCurrentFrame()];
                 target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
                 depthBuffer.display();
                 alphaBuffer.display();

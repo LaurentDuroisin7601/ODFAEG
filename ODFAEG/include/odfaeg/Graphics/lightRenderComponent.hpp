@@ -197,7 +197,7 @@ namespace odfaeg {
                 std::array<VertexBuffer ,Batcher::nbPrimitiveTypes> vbBindlessTex, vbBindlessTexIndexed;
                 VertexBuffer vb;
                 std::vector<VkSemaphore> offscreenLightDepthAlphaFinishedSemaphore, offscreenFinishedSemaphore, copyFinishedSemaphore;
-                std::array<unsigned int, MAX_FRAMES_IN_FLIGHT> valuesFinished, valuesLightDepthAlpha, copyValues, values2;
+                std::array<unsigned int, MAX_FRAMES_IN_FLIGHT> valuesFinished, valuesLightDepthAlpha, copyValues, values2, values3;
                 RenderWindow& window;
                 VkCommandPool commandPool;
                 std::vector<VkCommandPool> secondaryBufferCommandPools;

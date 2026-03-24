@@ -6840,6 +6840,15 @@ namespace odfaeg {
                 cv.wait(lock, [this] { return commandBufferReady[lightDepthBuffer.getCurrentFrame()].load() || stop.load(); });
                 //std::cout<<"copy"<<std::endl;
                 commandBufferReady[lightDepthBuffer.getCurrentFrame()] = false;
+                uint64_t waitValue = values3[lightMap.getCurrentFrame()];
+
+                VkSemaphoreWaitInfo waitInfo{};
+                waitInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO;
+                waitInfo.semaphoreCount = 1;
+                waitInfo.pSemaphores = &offscreenFinishedSemaphore[lightMap.getCurrentFrame()];
+                waitInfo.pValues = &waitValue;
+
+                vkWaitSemaphores(vkDevice.getDevice(), &waitInfo, UINT64_MAX);
                 lightDepthBuffer.beginRecordCommandBuffers();
                 std::vector<VkCommandBuffer> commandBuffers = lightDepthBuffer.getCommandBuffers();
                 unsigned int currentFrame = lightDepthBuffer.getCurrentFrame();
@@ -6947,6 +6956,7 @@ namespace odfaeg {
                         );
                     }
                 }
+
 
                 std::vector<VkSemaphore> signalSemaphores;
                 signalSemaphores.push_back(copyFinishedSemaphore[currentFrame]);
@@ -7184,6 +7194,15 @@ namespace odfaeg {
                 lightMap.submit(true, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
 
             }
+            uint64_t waitValue = values2[lightMap.getCurrentFrame()];
+
+            VkSemaphoreWaitInfo waitInfo{};
+            waitInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO;
+            waitInfo.semaphoreCount = 1;
+            waitInfo.pSemaphores = &offscreenFinishedSemaphore[lightMap.getCurrentFrame()];
+            waitInfo.pValues = &waitValue;
+
+            vkWaitSemaphores(vkDevice.getDevice(), &waitInfo, UINT64_MAX);
             target.beginRecordCommandBuffers();
             const_cast<Texture&>(lightMap.getTexture(lightMap.getImageIndex())).toShaderReadOnlyOptimal(target.getCommandBuffers()[target.getCurrentFrame()]);
             lightMapTile.setCenter(target.getView().getPosition());
@@ -7219,6 +7238,7 @@ namespace odfaeg {
             valuesLightDepthAlpha[lightMap.getCurrentFrame()]++;
             signalValues.push_back(valuesFinished[lightMap.getCurrentFrame()]);
             signalValues.push_back(valuesLightDepthAlpha[lightMap.getCurrentFrame()]);
+            values3[lightMap.getCurrentFrame()] = valuesFinished[lightMap.getCurrentFrame()];
             target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
 
             lightDepthBuffer.display();

@@ -328,6 +328,7 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < values.size(); i++) {
                     values[i] = 0;
                     values2[i] = 0;
+                    values3[i] = 0;
                 }
                 offscreenRenderingFinishedSemaphore.resize(reflectRefractTex.getMaxFramesInFlight());
                 for (unsigned int i = 0; i < reflectRefractTex.getMaxFramesInFlight(); i++) {
@@ -7761,6 +7762,15 @@ namespace odfaeg {
 
                     cv.wait(lock, [this] { return commandBufferReady[depthBuffer.getCurrentFrame()].load() || stop.load(); });
                     commandBufferReady[depthBuffer.getCurrentFrame()] = false;
+                    uint64_t waitValue = values3[reflectRefractTex.getCurrentFrame()];
+
+                    VkSemaphoreWaitInfo waitInfo{};
+                    waitInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO;
+                    waitInfo.semaphoreCount = 1;
+                    waitInfo.pSemaphores = &offscreenRenderingFinishedSemaphore[reflectRefractTex.getCurrentFrame()];
+                    waitInfo.pValues = &waitValue;
+
+                    vkWaitSemaphores(vkDevice.getDevice(), &waitInfo, UINT64_MAX);
                     // std::cout<<"wait command buffers : "<<depthBuffer.getCurrentFrame()<<std::endl;
                     //std::cout<<"soumission"<<std::endl;
                     depthBuffer.beginRecordCommandBuffers();
@@ -8154,6 +8164,15 @@ namespace odfaeg {
                     isSomethingDrawn  = false;
                     values2[reflectRefractTex.getCurrentFrame()] = values[reflectRefractTex.getCurrentFrame()];
                 }
+                uint64_t waitValue = values2[reflectRefractTex.getCurrentFrame()];
+
+                VkSemaphoreWaitInfo waitInfo{};
+                waitInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO;
+                waitInfo.semaphoreCount = 1;
+                waitInfo.pSemaphores = &offscreenRenderingFinishedSemaphore[reflectRefractTex.getCurrentFrame()];
+                waitInfo.pValues = &waitValue;
+
+                vkWaitSemaphores(vkDevice.getDevice(), &waitInfo, UINT64_MAX);
 
                 target.beginRecordCommandBuffers();
                 const_cast<Texture&>(reflectRefractTex.getTexture(reflectRefractTex.getImageIndex())).toShaderReadOnlyOptimal(target.getCommandBuffers()[target.getCurrentFrame()]);
@@ -8184,7 +8203,7 @@ namespace odfaeg {
                 signalValues.clear();
                 waitValues.push_back(values[reflectRefractTex.getCurrentFrame()]);
                 values[reflectRefractTex.getCurrentFrame()]++;
-
+                values3[reflectRefractTex.getCurrentFrame()] = values[reflectRefractTex.getCurrentFrame()];
                 signalValues.push_back(values[reflectRefractTex.getCurrentFrame()]);
                 target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
                 //std::cout<<"drawn"<<std::endl;
