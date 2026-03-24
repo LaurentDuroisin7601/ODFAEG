@@ -73,15 +73,14 @@ namespace odfaeg {
                         VkCommandBufferBeginInfo beginInfo{};
                         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
                         beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-                        /*if (m_name == "depthBuffer")
-                            //////std::cout<<"begin cmd : "<<commandBuffers.size()<<std::endl;*/
+
                         if (vkBeginCommandBuffer(commandBuffers[layer][currentFrame[layer]], &beginInfo) != VK_SUCCESS) {
 
                             throw core::Erreur(0, "failed to begin recording command buffer!", 1);
                         }
                         if (vertexBuffer[layer].has_value() && vertexBuffer[layer].value().get().getVertexCount() > 0) {
 
-                            for (unsigned int l = 0; l < layer+1; l++) {
+                            for (unsigned int l = 0; l <= layer; l++) {
 
                                 VkDeviceSize bufferSize = sizeof(math::Matrix4f) * m_FinalBoneMatrices.size();
 
@@ -261,6 +260,7 @@ namespace odfaeg {
                     createCommandBuffers(oldSize);
                     this->mtx[layer] = mtx;
                     this->cv2[layer] = cv2;
+
                 }
 
 
