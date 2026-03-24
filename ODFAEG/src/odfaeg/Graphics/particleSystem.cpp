@@ -646,7 +646,7 @@ namespace odfaeg
 
         void ParticleSystem::update(core::Time dt)
         {
-
+            std::lock_guard<std::recursive_mutex> lock(rec_mutex);
             mNeedsVertexUpdate = true;
             // Emit new particles and remove expiring emitters
             for (EmitterContainer::iterator itr = mEmitters.begin(); itr != mEmitters.end(); )
@@ -684,7 +684,7 @@ namespace odfaeg
                 incrementCheckExpiry(mAffectors, itr, dt);
             }
             update();
-            std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+
             for (unsigned int layer = 0; layer < computeJob.size(); layer++) {
 
                 if (computeJob[layer][currentFrame[layer]].load()) {
