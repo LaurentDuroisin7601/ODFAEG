@@ -230,6 +230,7 @@ namespace odfaeg {
                 return m_CurrentAnimation->getModel();
             }
             void Animator::computeParticles(std::mutex* mtx, std::condition_variable* cv2, VertexBuffer& frameVertexBuffer, unsigned int currentFrame, TransformMatrix tm, bool instanced, std::array<VkSemaphore, MAX_FRAMES_IN_FLIGHT> computeSemaphore, std::array<VkFence, MAX_FRAMES_IN_FLIGHT> computeFence, unsigned int layer) {
+                computeFinished[layer][currentFrame] = false;
                 if (layer >= computeFinished.size()) {
                     size_t oldSize = computeFinished.size();
                     computeFinished.resize(layer+1);
@@ -259,10 +260,12 @@ namespace odfaeg {
                     computeSemaphores.resize(layer + 1);
                     computeFences.resize(layer + 1);
                     createCommandBuffers(oldSize);
+                    this->mtx[layer] = mtx;
+                    this->cv2[layer] = cv2;
+
                 }
-                computeFinished[layer][currentFrame] = false;
-                this->mtx[layer] = mtx;
-                this->cv2[layer] = cv2;
+
+
                 this->vertexBuffer[layer] = std::ref(frameVertexBuffer);
                 for (unsigned int i = 0; i < layer; i++) {
                     if (!this->vertexBuffer[i].has_value())
@@ -275,9 +278,10 @@ namespace odfaeg {
                             std::cout<<"bones : "<<vertexBuffer[layer].value().get()[i].m_BoneIDs[j]<<std::endl;
                     }
                 }*/
-                this->currentFrame[layer] = currentFrame;
                 this->computeSemaphores[layer] = computeSemaphore;
                 this->computeFences[layer] = computeFence;
+                this->currentFrame[layer] = currentFrame;
+
                 computeParams.instanced = (instanced) ? 1 : 0;
                 tm.update();
                 computeParams.transform = tm.getMatrix();
