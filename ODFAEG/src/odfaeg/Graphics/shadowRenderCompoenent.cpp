@@ -663,7 +663,7 @@ namespace odfaeg {
                                                                     //debugPrintfEXT("normal : %v3f\nlightDir : %v3f\nlightView : %v3f", n, lightDir, lightCenter);
                                                                     if (stencil.z - bias  > projCoords.z) {
                                                                         if (depth.z - bias > z) {
-                                                                            shadowFactor = 1.0;
+                                                                            shadowFactor = max(0, dot(normalize(n), normalize(lightDir)));
                                                                         } else {
                                                                             shadowFactor = 0.0;
                                                                         }
