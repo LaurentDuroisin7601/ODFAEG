@@ -264,6 +264,7 @@ namespace odfaeg {
             datasReady = false;
             fences = frameBuffer.getFences();
 
+
         }
         void PerPixelLinkedListRenderComponent::createDescriptorsAndPipelines() {
             RenderStates states;
@@ -4748,7 +4749,7 @@ namespace odfaeg {
                 cv.wait(lock, [this](){return registerFrameJob[frameBuffer.getCurrentFrame()].load() || stop.load();});
                 registerFrameJob[frameBuffer.getCurrentFrame()] = false;
                 //std::cout<<"register frame : "<<frameBuffer.getCurrentFrame()<<std::endl;
-                uint64_t waitValue = values2[frameBuffer.getCurrentFrame()];
+                /*uint64_t waitValue = values2[frameBuffer.getCurrentFrame()];
 
                 VkSemaphoreWaitInfo waitInfo{};
                 waitInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO;
@@ -4756,7 +4757,7 @@ namespace odfaeg {
                 waitInfo.pSemaphores = &offscreenFinishedSemaphore[frameBuffer.getCurrentFrame()];
                 waitInfo.pValues = &waitValue;
 
-                vkWaitSemaphores(vkDevice.getDevice(), &waitInfo, UINT64_MAX);
+                vkWaitSemaphores(vkDevice.getDevice(), &waitInfo, UINT64_MAX);*/
                 //std::cout<<"draw next frame"<<std::endl;
 
                 if (!stop.load()) {
@@ -5616,14 +5617,14 @@ namespace odfaeg {
                         return commandBufferReady[frameBuffer.getCurrentFrame()].load() || stop.load();
                 });
                 commandBufferReady[frameBuffer.getCurrentFrame()]  = false;
-                uint64_t waitValue = values3[frameBuffer.getCurrentFrame()];
+                /*uint64_t waitValue = values3[frameBuffer.getCurrentFrame()];
                 VkSemaphoreWaitInfo waitInfo{};
                 waitInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO;
                 waitInfo.semaphoreCount = 1;
                 waitInfo.pSemaphores = &offscreenFinishedSemaphore[frameBuffer.getCurrentFrame()];
                 waitInfo.pValues = &waitValue;
 
-                vkWaitSemaphores(vkDevice.getDevice(), &waitInfo, UINT64_MAX);
+                vkWaitSemaphores(vkDevice.getDevice(), &waitInfo, UINT64_MAX);*/
                 frameBuffer.beginRecordCommandBuffers();
                 std::vector<VkCommandBuffer> commandBuffers = frameBuffer.getCommandBuffers();
                 unsigned int currentFrame = frameBuffer.getCurrentFrame();
@@ -5954,14 +5955,14 @@ namespace odfaeg {
                 frameBuffer.submit(true, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues/*, windowInFlightFence, 0, true, false*/);
             }
             //std::cout<<"draw : "<<frameBuffer.getCurrentFrame()<<std::endl;
-            uint64_t waitValue = values2[frameBuffer.getCurrentFrame()];
+            /*uint64_t waitValue = values2[frameBuffer.getCurrentFrame()];
             VkSemaphoreWaitInfo waitInfo{};
             waitInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO;
             waitInfo.semaphoreCount = 1;
             waitInfo.pSemaphores = &offscreenFinishedSemaphore[frameBuffer.getCurrentFrame()];
             waitInfo.pValues = &waitValue;
 
-            vkWaitSemaphores(vkDevice.getDevice(), &waitInfo, UINT64_MAX);
+            vkWaitSemaphores(vkDevice.getDevice(), &waitInfo, UINT64_MAX);*/
 
 
             target.beginRecordCommandBuffers();
