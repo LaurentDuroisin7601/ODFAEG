@@ -164,6 +164,7 @@ namespace odfaeg
             throw std::runtime_error("aucun type de memoire ne satisfait le buffer!");
         }
         void ParticleSystem::computeParticles(std::mutex* mtx, std::condition_variable* cv2, graphic::VertexBuffer& frameVertexBuffer, unsigned int currentFrame, graphic::TransformMatrix tm, bool instanced, std::array<VkSemaphore, MAX_FRAMES_IN_FLIGHT> computeSemaphore, std::array<VkFence, MAX_FRAMES_IN_FLIGHT> computeFence, unsigned int  layer) {
+            std::lock_guard<std::recursive_mutex> lock(rec_mutex);
             computeFinished[layer][currentFrame] = false;
             if (layer >= computeFinished.size()) {
                 size_t oldSize = computeFinished.size();
@@ -683,6 +684,7 @@ namespace odfaeg
                 incrementCheckExpiry(mAffectors, itr, dt);
             }
             update();
+            std::lock_guard<std::recursive_mutex> lock(rec_mutex);
             for (unsigned int layer = 0; layer < computeJob.size(); layer++) {
 
                 if (computeJob[layer][currentFrame[layer]].load()) {

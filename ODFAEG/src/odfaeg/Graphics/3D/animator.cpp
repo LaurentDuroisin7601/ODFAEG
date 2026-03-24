@@ -65,6 +65,7 @@ namespace odfaeg {
                     rootNodeTransform.identity();
                     calculateBoneTransform(&m_CurrentAnimation->getRootNode(), rootNodeTransform);
                 }
+                std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                 for (unsigned int layer = 0; layer < computeJob.size(); layer++) {
                     if (computeJob[layer][currentFrame[layer]].load()) {
                         std::unique_lock<std::mutex> lock(*mtx[layer]);
@@ -228,6 +229,7 @@ namespace odfaeg {
                 return m_CurrentAnimation->getModel();
             }
             void Animator::computeParticles(std::mutex* mtx, std::condition_variable* cv2, VertexBuffer& frameVertexBuffer, unsigned int currentFrame, TransformMatrix tm, bool instanced, std::array<VkSemaphore, MAX_FRAMES_IN_FLIGHT> computeSemaphore, std::array<VkFence, MAX_FRAMES_IN_FLIGHT> computeFence, unsigned int layer) {
+                std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                 computeFinished[layer][currentFrame] = false;
                 if (layer >= computeFinished.size()) {
                     size_t oldSize = computeFinished.size();
