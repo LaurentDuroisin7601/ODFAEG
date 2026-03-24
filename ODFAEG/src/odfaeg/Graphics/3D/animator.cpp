@@ -55,6 +55,7 @@ namespace odfaeg {
             }
             void Animator::updateAnimation(float dt)
             {
+                std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                 ////////std::cout<<"update anim"<<std::endl;
                 m_DeltaTime = dt;
                 if (m_CurrentAnimation)
@@ -65,7 +66,7 @@ namespace odfaeg {
                     rootNodeTransform.identity();
                     calculateBoneTransform(&m_CurrentAnimation->getRootNode(), rootNodeTransform);
                 }
-                std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+
                 for (unsigned int layer = 0; layer < computeJob.size(); layer++) {
                     if (computeJob[layer][currentFrame[layer]].load()) {
                         std::unique_lock<std::mutex> lock(*mtx[layer]);
