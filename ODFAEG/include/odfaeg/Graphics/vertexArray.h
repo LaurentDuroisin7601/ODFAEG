@@ -183,7 +183,7 @@ namespace odfaeg {
             }
             bool isLoop();
             void updateNormals();
-            ~VertexArray();
+
         private :
 
             ////////////////////////////////////////////////////////////

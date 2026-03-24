@@ -63,14 +63,14 @@ namespace odfaeg {
                 * \param the other texture info.
                 * \return if two textures infos are the same.
                 */
-                bool operator== (TextureInfo& info);
+                bool operator== (const TextureInfo& info);
                 /**
                 * \fn bool operator!= (TextureInfo& info)
                 * \param the other texture info.
                 * \brief compare a texture info with another one.
                 * \return if two textures infos are different.
                 */
-                bool operator!= (TextureInfo& info);
+                bool operator!= (const TextureInfo& info);
                 /**
                 * \fn const Texture* getTexture() const
                 * \brief return the texture.
@@ -152,7 +152,7 @@ namespace odfaeg {
             * \param material : the other material.
             * \return if the materials are using the same texture.
             */
-            bool useSameTextures (const Material& material) const;
+            bool useSameTextures (const Material& material);
             /**
             * \fn bool operator== (const Material& material)
             * \brief test of two material are equal.
@@ -224,7 +224,7 @@ namespace odfaeg {
             ~Material();
             std::string name;
             private :
-            std::vector<TextureInfo*> texInfos; /**> The informations about the textures. */
+            std::vector<TextureInfo> texInfos; /**> The informations about the textures. */
             float specularIntensity, specularPower, refractionFactor;
             static unsigned int nbMaterials;
             unsigned int id, instanceGroup, layer;

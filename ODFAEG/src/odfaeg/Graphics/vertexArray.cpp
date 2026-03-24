@@ -492,9 +492,7 @@ namespace odfaeg {
                 }
             }
         }
-        VertexArray::~VertexArray() {
 
-        }
     }
 } // namespace sf3
 

@@ -35,11 +35,11 @@ namespace odfaeg {
             std::string Material::TextureInfo::getTexId() const {
                 return texId;
             }
-            bool Material::TextureInfo::operator== (TextureInfo& info) {
+            bool Material::TextureInfo::operator== (const TextureInfo& info) {
                 std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                 return texture == info.texture;
             }
-            bool Material::TextureInfo::operator!= (TextureInfo& info) {
+            bool Material::TextureInfo::operator!= (const TextureInfo& info) {
                 return !(*this == info);
             }
             const Texture* Material::TextureInfo::getTexture() const {
@@ -179,7 +179,7 @@ namespace odfaeg {
                 return texInfos.size();
             }
             void Material::addTexture (const Texture* texture, IntRect texRect) {
-                texInfos.push_back(new TextureInfo(texture, texRect));
+                texInfos.push_back(TextureInfo(texture, texRect));
                 updateIds();
             }
             void Material::clearTextures() {
@@ -188,21 +188,21 @@ namespace odfaeg {
             }
             void Material::setTexRect(IntRect texRect, int texUnit) {
                 if (texUnit < texInfos.size())
-                    texInfos[texUnit]->setTexRect(texRect);
+                    texInfos[texUnit].setTexRect(texRect);
             }
             const Texture* Material::getTexture(int texUnit) {
                 //std::lock_guard<std::recursive_mutex> lock(rec_mutex);
-                return (texInfos.size() > 0) ? texInfos[texUnit]->getTexture() : nullptr;
+                return (texInfos.size() > 0) ? texInfos[texUnit].getTexture() : nullptr;
             }
             IntRect Material::getTexRect(int texUnit) {
-                return (texInfos.size() > 0) ? texInfos[texUnit]->getTexRect() : IntRect(0, 0, 0, 0);
+                return (texInfos.size() > 0) ? texInfos[texUnit].getTexRect() : IntRect(0, 0, 0, 0);
             }
             std::string Material::getTexId(int texUnit) {
-                return (texInfos.size() > 0) ? texInfos[texUnit]->getTexId() : "";
+                return (texInfos.size() > 0) ? texInfos[texUnit].getTexId() : "";
             }
             void Material::setTexId(std::string texId, int texUnit) {
                 if (texInfos.size() > 0) {
-                    texInfos[texUnit]->setTexId(texId);
+                    texInfos[texUnit].setTexId(texId);
                 }
             }
             void Material::setType(Type type) {
@@ -222,12 +222,12 @@ namespace odfaeg {
             Material::Type Material::getType() {
                 return type;
             }
-            bool Material::useSameTextures (const Material& material) const {
+            bool Material::useSameTextures (const Material& material) {
                 if (texInfos.size() != material.texInfos.size()) {
                     return false;
                 }
                 for (unsigned int i = 0; i < texInfos.size(); i++) {
-                    if (*texInfos[i] != *material.texInfos[i]) {
+                    if (texInfos[i] != material.texInfos[i]) {
                         return false;
                     }
                 }
