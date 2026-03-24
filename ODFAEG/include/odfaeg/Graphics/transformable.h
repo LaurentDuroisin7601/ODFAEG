@@ -90,6 +90,7 @@ namespace odfaeg {
             * \param angle : the rotation angle.
             */
             void setRotation (float angle, math::Vec3f axis = math::Vec3f(0, 0, 1)) {
+                std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                 m_rotation = angle;
                 m_rotationAxis = axis;
                 tm.setRotation(axis, angle);
@@ -111,7 +112,7 @@ namespace odfaeg {
             * \param the scale of the transformable object.
             */
             void setScale(math::Vec3f scale) {
-
+                std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                 math::Vec3f newSize = bounds.getSize() * scale;
 
                 if (m_size.x() == 0)
@@ -167,6 +168,7 @@ namespace odfaeg {
             * \param t : the translation vector.
             */
             void move (math::Vec3f t) {
+                std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                 m_center += t;
                 m_position += t;
                 /*if (getName() == "LFILE") {
@@ -183,7 +185,7 @@ namespace odfaeg {
             * \param Vec3f : the origin.
             */
             void setOrigin(math::Vec3f origin) {
-
+               std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                m_origin = origin;
                tm.setOrigin(origin);
                m_center = m_position + m_origin;
@@ -232,6 +234,7 @@ namespace odfaeg {
             * \param size : the size of the transformable object.
             */
             virtual void setSize (math::Vec3f size) {
+                std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                 math::Vec3f scale;
                 if (m_size.x() == 0 && size.x() == 0) {
                     scale[0] = 0;
@@ -280,6 +283,7 @@ namespace odfaeg {
             * \brief get the local bounding box of the transformable object (without its transformation)
             */
             void recomputeBounds() {
+                std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                 /*if (name == "TSCRIPTEDIT")
                     globalBounds.setName("TSCRIPTEDIT");*/
                 ////////std::cout<<"tranform : "<<getTransform().getMatrix()<<std::endl;
@@ -362,6 +366,7 @@ namespace odfaeg {
                 tm.combine(tm.getMatrix());
             }
             void setTransform (math::Matrix4f matrix) {
+                std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                 tm.setMatrix(matrix);
                 onSetTransform(matrix);
             }

@@ -354,18 +354,18 @@ namespace odfaeg {
                 numInstances = 0;
 
             }
-            Instance::Instance (Material& material, PrimitiveType pType) {
+            Instance::Instance (Material material, PrimitiveType pType) {
                 primType = pType;
                 numInstances = 0;
                 vertices = VertexArray(pType);
-                this->material = &material;
+                this->material = material;
             }
             void Instance::setPrimitiveType (PrimitiveType pType) {
                 primType = pType;
                 vertices.setPrimitiveType(pType);
             }
-            void Instance::setMaterial (Material& mat) {
-                material = &mat;
+            void Instance::setMaterial (Material mat) {
+                material = mat;
             }
             void Instance::addVertexArray(VertexArray& va, TransformMatrix& tm) {
                 std::lock_guard<std::recursive_mutex> lock(rec_mutex);              ////////std::cout<<"push transform"<<std::endl;
@@ -519,7 +519,7 @@ namespace odfaeg {
                 return m_shadowProjMatrix;
             }
             Material& Instance::getMaterial() {
-                return *material;
+                return material;
             }
             PrimitiveType Instance::getPrimitiveType() {
                 return primType;

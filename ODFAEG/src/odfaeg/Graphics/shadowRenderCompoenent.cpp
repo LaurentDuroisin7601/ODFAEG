@@ -5319,7 +5319,7 @@ namespace odfaeg {
                     cv.wait(lock, [this](){return registerFrameJob[depthBuffer.getCurrentFrame()].load() || stop.load();});
                     unsigned int currentFrame = depthBuffer.getCurrentFrame();
                     registerFrameJob[currentFrame] = false;
-                    /*uint64_t waitValue = values3[shadowMap.getCurrentFrame()];
+                    uint64_t waitValue = values3[shadowMap.getCurrentFrame()];
 
                     VkSemaphoreWaitInfo waitInfo{};
                     waitInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO;
@@ -5327,7 +5327,7 @@ namespace odfaeg {
                     waitInfo.pSemaphores = &offscreenFinishedSemaphore[shadowMap.getCurrentFrame()];
                     waitInfo.pValues = &waitValue;
 
-                    vkWaitSemaphores(vkDevice.getDevice(), &waitInfo, UINT64_MAX);*/
+                    vkWaitSemaphores(vkDevice.getDevice(), &waitInfo, UINT64_MAX);
                     if (!stop.load()) {
                         math::Vec3f centerLight = g2d::AmbientLight::getAmbientLight().getLightCenter();
                         lightView = View(g2d::AmbientLight::getAmbientLight().getRadius(), g2d::AmbientLight::getAmbientLight().getRadius(), 1.0f, g2d::AmbientLight::getAmbientLight().getHeight());

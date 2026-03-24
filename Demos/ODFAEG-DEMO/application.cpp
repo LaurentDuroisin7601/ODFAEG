@@ -351,9 +351,9 @@ namespace sorrok {
         //std::cout<<"component created"<<std::endl;
         //frc1->setVisible(false);
         //frc2->setVisible(false);
-        //rrrc->setVisible(false);
-        //src->setVisible(false);
-        //lrc->setVisible(false);
+        /*rrrc->setVisible(false);
+        src->setVisible(false);
+        lrc->setVisible(false);*/
         /*gui::TextArea* textArea = new gui::TextArea(Vec3f(350, 275, 0),Vec3f(100, 50, 0),fm.getResourceByAlias("FreeSerif"), "Test",getRenderWindow());
         textArea->addFocusListener(this);
         textArea->setVisible(false);

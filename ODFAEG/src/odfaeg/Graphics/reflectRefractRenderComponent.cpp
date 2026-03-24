@@ -7275,7 +7275,7 @@ namespace odfaeg {
 
                     cv.wait(lock, [this] { return registerFrameJob[depthBuffer.getCurrentFrame()].load() || stop.load(); });
                     registerFrameJob[depthBuffer.getCurrentFrame()] = false;
-                    /*uint64_t waitValue = values2[reflectRefractTex.getCurrentFrame()];
+                    uint64_t waitValue = values2[reflectRefractTex.getCurrentFrame()];
 
                     VkSemaphoreWaitInfo waitInfo{};
                     waitInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO;
@@ -7283,7 +7283,7 @@ namespace odfaeg {
                     waitInfo.pSemaphores = &offscreenRenderingFinishedSemaphore[reflectRefractTex.getCurrentFrame()];
                     waitInfo.pValues = &waitValue;
 
-                    vkWaitSemaphores(vkDevice.getDevice(), &waitInfo, UINT64_MAX);*/
+                    vkWaitSemaphores(vkDevice.getDevice(), &waitInfo, UINT64_MAX);
                     if (!stop.load()) {
                         RenderStates currentStates;
                         math::Matrix4f viewMatrix = view.getViewMatrix().getMatrix();
@@ -7763,9 +7763,9 @@ namespace odfaeg {
 
                     cv.wait(lock, [this] { return commandBufferReady[depthBuffer.getCurrentFrame()].load() || stop.load(); });
                     commandBufferReady[depthBuffer.getCurrentFrame()] = false;
-                    uint64_t waitValue = values3[reflectRefractTex.getCurrentFrame()];
+                    /*uint64_t waitValue = values3[reflectRefractTex.getCurrentFrame()];
 
-                    /*VkSemaphoreWaitInfo waitInfo{};
+                    VkSemaphoreWaitInfo waitInfo{};
                     waitInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO;
                     waitInfo.semaphoreCount = 1;
                     waitInfo.pSemaphores = &offscreenRenderingFinishedSemaphore[reflectRefractTex.getCurrentFrame()];

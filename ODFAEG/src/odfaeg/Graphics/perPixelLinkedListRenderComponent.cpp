@@ -4743,7 +4743,7 @@ namespace odfaeg {
                 cv.wait(lock, [this](){return registerFrameJob[frameBuffer.getCurrentFrame()].load() || stop.load();});
                 registerFrameJob[frameBuffer.getCurrentFrame()] = false;
                 //std::cout<<"register frame : "<<frameBuffer.getCurrentFrame()<<std::endl;
-                /*uint64_t waitValue = values2[frameBuffer.getCurrentFrame()];
+                uint64_t waitValue = values2[frameBuffer.getCurrentFrame()];
 
                 VkSemaphoreWaitInfo waitInfo{};
                 waitInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO;
@@ -4751,7 +4751,7 @@ namespace odfaeg {
                 waitInfo.pSemaphores = &offscreenFinishedSemaphore[frameBuffer.getCurrentFrame()];
                 waitInfo.pValues = &waitValue;
 
-                vkWaitSemaphores(vkDevice.getDevice(), &waitInfo, UINT64_MAX);*/
+                vkWaitSemaphores(vkDevice.getDevice(), &waitInfo, UINT64_MAX);
                 //std::cout<<"draw next frame"<<std::endl;
 
                 if (!stop.load()) {
@@ -5651,7 +5651,7 @@ namespace odfaeg {
                 std::vector<VkFence> windowInFlightFence = {windowFences[frameBuffer.getCurrentFrame()]};
                 //std::cout<<"wait on fence : "<<windowFences[frameBuffer.getCurrentFrame()]<<std::endl;
                 //std::cout<<"submit fence : "<<fences[frameBuffer.getCurrentFrame()]<<std::endl;
-                std::cout<<"submit copy"<<std::endl;
+                //std::cout<<"submit copy"<<std::endl;
                 frameBuffer.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues/*, windowInFlightFence, 0, false, false*/);
                 frameBuffer.beginRecordCommandBuffers();
                 //std::cout<<"reseted : "<<frameBuffer.getCurrentFrame()<<","<<stop.load()<<std::endl;
@@ -5800,7 +5800,7 @@ namespace odfaeg {
                     waitValues.push_back(values[currentFrame]);
                     values[currentFrame]++;
                     signalValues.push_back(values[currentFrame]);
-                    std::cout<<"submit skybox"<<std::endl;
+                    //std::cout<<"submit skybox"<<std::endl;
                     frameBuffer.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues/*, windowInFlightFence, 0, false, false*/);
                 }
 
@@ -5894,12 +5894,12 @@ namespace odfaeg {
 
                     //std::cout<<"fence reseted"<<std::endl;
                 }
-                //vkWaitForFences(vkDevice.getDevice(), 1, &windowFences[frameBuffer.getCurrentFrame()], VK_TRUE, UINT64_MAX);
+                vkWaitForFences(vkDevice.getDevice(), 1, &windowFences[frameBuffer.getCurrentFrame()], VK_TRUE, UINT64_MAX);
 
 
                 //std::cout<<"submit fence : "<<fences[frameBuffer.getCurrentFrame()]<<std::endl;
-                std::cout<<"submit ppll"<<std::endl;
-                frameBuffer.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, fencesToWait/*, 0, false*/);
+                //std::cout<<"submit ppll"<<std::endl;
+                frameBuffer.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, fencesToWait/*, 0, false, true*/);
                 //std::cout<<"ppll ok"<<std::endl;
 
 
@@ -5923,7 +5923,7 @@ namespace odfaeg {
 
                 values[currentFrame]++;
                 signalValues.push_back(values[currentFrame]);
-                std::cout<<"submit outline"<<std::endl;
+                //std::cout<<"submit outline"<<std::endl;
                 frameBuffer.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues/*, windowInFlightFence, 0, false, false*/);
                 //std::cout<<"outline ok"<<std::endl;
 
@@ -5950,8 +5950,8 @@ namespace odfaeg {
                 values[currentFrame]++;
                 values2[currentFrame] = values[currentFrame];
                 signalValues.push_back(values[currentFrame]);
-                std::cout<<"submit pass 2 "<<std::endl;
-                frameBuffer.submit(true, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues/*, windowInFlightFence, 0, true, false*/);
+                //std::cout<<"submit pass 2 "<<std::endl;
+                frameBuffer.submit(true, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues/*, windowInFlightFence, 0, false, true*/);
             }
             //std::cout<<"draw : "<<frameBuffer.getCurrentFrame()<<std::endl;
             /*uint64_t waitValue = values2[frameBuffer.getCurrentFrame()];
@@ -5991,6 +5991,7 @@ namespace odfaeg {
             signalValues.push_back(values[frameBuffer.getCurrentFrame()]);
             values3[frameBuffer.getCurrentFrame()] = values[frameBuffer.getCurrentFrame()];
             std::vector<VkFence> inFligthFence = {fences[frameBuffer.getCurrentFrame()]};
+            //std::cout<<"sumbit window 1 "<<std::endl;
             target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues/*, inFligthFence, 0, true, false*/);
 
             target.beginRecordCommandBuffers();
@@ -6001,6 +6002,7 @@ namespace odfaeg {
             waitValues.push_back(values[frameBuffer.getCurrentFrame()]);
             values[frameBuffer.getCurrentFrame()]++;
             signalValues.push_back(values[frameBuffer.getCurrentFrame()]);
+            //std::cout<<"submit window 2 "<<std::endl;
             target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues/*, inFligthFence, 0, false, true, windowFences[frameBuffer.getCurrentFrame()]*/);
 
             //std::cout<<"frame drawn : "<<frameBuffer.getCurrentFrame()<<std::endl;

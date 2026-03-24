@@ -364,7 +364,7 @@ namespace odfaeg {
             *   \param material : the material.
             *   \param pType : the primitive type.
             */
-            Instance (Material& material, PrimitiveType pType);
+            Instance (Material material, PrimitiveType pType);
             /**
             *  \fn void addVertexArray(VertexArray *va, TransformMatrix& tm, unsigned int baseVertex, unsigned int baseIndex)
             *  \brief add a vertex array to the instance.
@@ -406,7 +406,7 @@ namespace odfaeg {
             */
             PrimitiveType getPrimitiveType();
             void setPrimitiveType (PrimitiveType);
-            void setMaterial(Material& material);
+            void setMaterial(Material material);
             /**
             * \fn unsigned int getNumInstances()
             * \brief get the number of instances.
@@ -423,7 +423,7 @@ namespace odfaeg {
 
             ~Instance();
         private:
-            Material* material; /**> the material of the instance.*/
+            Material material; /**> the material of the instance.*/
             std::vector<VertexArray*> m_vertexArrays; /**> the vertex arrays of the instance.*/
             std::vector<TransformMatrix*> m_transforms; /**> the transformations of the instance.*/
             std::vector<TransformMatrix> m_shadowProjMatrix;
