@@ -5616,14 +5616,14 @@ namespace odfaeg {
                         return commandBufferReady[frameBuffer.getCurrentFrame()].load() || stop.load();
                 });
                 commandBufferReady[frameBuffer.getCurrentFrame()]  = false;
-                uint64_t waitValue = values3[frameBuffer.getCurrentFrame()];
+                /*uint64_t waitValue = values3[frameBuffer.getCurrentFrame()];
                 VkSemaphoreWaitInfo waitInfo{};
                 waitInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO;
                 waitInfo.semaphoreCount = 1;
                 waitInfo.pSemaphores = &offscreenFinishedSemaphore[frameBuffer.getCurrentFrame()];
                 waitInfo.pValues = &waitValue;
 
-                vkWaitSemaphores(vkDevice.getDevice(), &waitInfo, UINT64_MAX);
+                vkWaitSemaphores(vkDevice.getDevice(), &waitInfo, UINT64_MAX);*/
                 frameBuffer.beginRecordCommandBuffers();
                 std::vector<VkCommandBuffer> commandBuffers = frameBuffer.getCommandBuffers();
                 unsigned int currentFrame = frameBuffer.getCurrentFrame();
@@ -5854,7 +5854,7 @@ namespace odfaeg {
                 std::vector<VkFence> fencesToWait;
                 for (unsigned int i = 0; i < visibleEntities.size(); i++) {
                     if (visibleEntities[i] != nullptr && visibleEntities[i]->isLeaf() && (visibleEntities[i]->getRootType() == "E_PARTICLES"
-                        || visibleEntities[i]->getRootType() == "E_BONE_ANIMATION") && visibleEntities[i]->isComputeFinished(currentFrame, getLayer())) {
+                        || visibleEntities[i]->getRootType() == "E_BONE_ANIMATION")) {
                         std::unique_lock<std::mutex> lock2(mtx2);
 
                         visibleEntities[i]->getRootEntity()->computeParticles(&mtx2, &cv2, vbBindlessTex[Triangles], frameBuffer.getCurrentFrame(),visibleEntities[i]->getTransform(), (visibleEntities[i]->getDrawMode() == Entity::INSTANCED) ? true : false, computeSemaphores[i], computeFences[i], getLayer());
@@ -5953,14 +5953,14 @@ namespace odfaeg {
                 frameBuffer.submit(true, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues/*, windowInFlightFence, 0, true, false*/);
             }
             //std::cout<<"draw : "<<frameBuffer.getCurrentFrame()<<std::endl;
-            uint64_t waitValue = values2[frameBuffer.getCurrentFrame()];
+            /*uint64_t waitValue = values2[frameBuffer.getCurrentFrame()];
             VkSemaphoreWaitInfo waitInfo{};
             waitInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO;
             waitInfo.semaphoreCount = 1;
             waitInfo.pSemaphores = &offscreenFinishedSemaphore[frameBuffer.getCurrentFrame()];
             waitInfo.pValues = &waitValue;
 
-            vkWaitSemaphores(vkDevice.getDevice(), &waitInfo, UINT64_MAX);
+            vkWaitSemaphores(vkDevice.getDevice(), &waitInfo, UINT64_MAX);*/
 
 
             target.beginRecordCommandBuffers();

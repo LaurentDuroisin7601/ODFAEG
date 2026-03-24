@@ -164,7 +164,6 @@ namespace odfaeg
             throw std::runtime_error("aucun type de memoire ne satisfait le buffer!");
         }
         void ParticleSystem::computeParticles(std::mutex* mtx, std::condition_variable* cv2, graphic::VertexBuffer& frameVertexBuffer, unsigned int currentFrame, graphic::TransformMatrix tm, bool instanced, std::array<VkSemaphore, MAX_FRAMES_IN_FLIGHT> computeSemaphore, std::array<VkFence, MAX_FRAMES_IN_FLIGHT> computeFence, unsigned int  layer) {
-            computeFinished[layer][currentFrame] = false;
             if (layer >= computeFinished.size()) {
                 size_t oldSize = computeFinished.size();
                 computeFinished.resize(layer+1);
@@ -200,7 +199,7 @@ namespace odfaeg
                 computeFences.resize(layer + 1);
                 createCommandBuffers(oldSize);
             }
-
+            computeFinished[layer][currentFrame] = false;
             this->mtx[layer] = mtx;
             this->cv2[layer] = cv2;
             this->vertexBuffer[layer] = std::ref(frameVertexBuffer);
@@ -803,7 +802,6 @@ namespace odfaeg
                     if (vkQueueSubmit(vkDevice.getQueue(indices.computeFamily.value(), 0), 1, &submitInfo, computeFences[layer][currentFrame[layer]]) != VK_SUCCESS) {
                         throw core::Erreur(0, "échec de l'envoi d'un command buffer!", 1);
                     }
-                    vkWaitForFences(vkDevice.getDevice(), 1, &computeFences[layer][currentFrame[layer]], VK_TRUE, UINT64_MAX);
                     //std::cout<<"compute finished"<<std::endl;
                     computeFinished[layer][currentFrame[layer]] = true;
                     cv2[layer]->notify_one();
