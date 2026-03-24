@@ -4688,6 +4688,8 @@ namespace odfaeg {
         }
         void PerPixelLinkedListRenderComponent::drawNextFrame() {
             std::unique_lock<std::mutex> lock(mtx);
+
+
             {
 
 
@@ -4695,6 +4697,7 @@ namespace odfaeg {
                 if (datasReady.load()) {
 
                     datasReady = false;
+                    std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                     m_instances = batcher.getInstances();
                     m_normals = normalBatcher.getInstances();
                     m_instancesIndexed = batcherIndexed.getInstances();
@@ -4764,6 +4767,7 @@ namespace odfaeg {
                     skyboxPushConsts.projMatrix = toVulkanMatrix(projMatrix);
                     skyboxPushConsts.viewMatrix = toVulkanMatrix(viewMatrix);
                     resetBuffers();
+                    std::unique_lock<std::mutex> lock2(mtx2);
                     fillBuffersMT();
                     fillIndexedBuffersMT();
                     fillSelectedBuffersMT();
@@ -5603,7 +5607,8 @@ namespace odfaeg {
         void PerPixelLinkedListRenderComponent::draw(RenderTarget& target, RenderStates states) {
 
             std::unique_lock<std::mutex> lock(mtx);
-            std::unique_lock<std::mutex> lock2(mtx2);
+
+
             if (useThread) {
 
                 cv.wait(lock, [this] {
@@ -5855,7 +5860,7 @@ namespace odfaeg {
                     if (visibleEntities[i] != nullptr && visibleEntities[i]->isLeaf() && (visibleEntities[i]->getRootType() == "E_PARTICLES"
                         || visibleEntities[i]->getRootType() == "E_BONE_ANIMATION")) {
 
-
+                        std::unique_lock<std::mutex> lock2(mtx2);
                         visibleEntities[i]->getRootEntity()->computeParticles(&mtx2, &cv2, vbBindlessTex[Triangles], frameBuffer.getCurrentFrame(),visibleEntities[i]->getTransform(), (visibleEntities[i]->getDrawMode() == Entity::INSTANCED) ? true : false, computeSemaphores[i], computeFences[i], getLayer());
 
                         auto entity = visibleEntities[i]->getRootEntity();
