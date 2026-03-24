@@ -5591,10 +5591,12 @@ namespace odfaeg {
                 getView().reset(physic::BoundingBox(getView().getViewport().getPosition().x(), getView().getViewport().getPosition().y(), getView().getViewport().getPosition().z(), event.window.data1, event.window.data2, getView().getViewport().getDepth()));
             }
             if (&rw == &getWindow() && event.type == window::IEvent::WINDOW_EVENT && event.window.type == window::IEvent::WINDOW_EVENT_CLOSED) {
+
                 stop = true;
                 cv.notify_all();
                 cv2.notify_all();
                 getListener().stop();
+
             }
         }
         void PerPixelLinkedListRenderComponent::setView(View view) {

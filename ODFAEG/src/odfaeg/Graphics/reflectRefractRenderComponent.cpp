@@ -8246,6 +8246,7 @@ namespace odfaeg {
                     stop = true;
                     cv.notify_all();
                     getListener().stop();
+
                 }
             }
             bool ReflectRefractRenderComponent::loadEntitiesOnComponent(std::vector<Entity*> vEntities) {

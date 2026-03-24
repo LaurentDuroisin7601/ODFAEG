@@ -517,22 +517,28 @@ namespace sorrok {
         //std::lock_guard<std::recursive_mutex> lock(rec_mutex);
         // check all the window's events that were triggered since the last iteration of the loop
         if (rw == &getRenderWindow() && event.type == IEvent::WINDOW_EVENT && event.window.type == IEvent::WINDOW_EVENT_CLOSED) {
-            std::cout<<"close"<<std::endl;
 
 
-            stop();
+
+
+            //std::cout<<"close"<<std::endl;
             /*eu->stop();
             au->stop();*/
             pfire.stop();
+            //std::cout<<"pfire stopped"<<std::endl;
             psu->stop();
+            //std::cout<<"psu stopped"<<std::endl;
             au->stop();
+            //std::cout<<"au stopped"<<std::endl;
             eu->stop();
+            //std::cout<<"eu stopped"<<std::endl;
             std::vector<Entity*> entities = getWorld()->getRootEntities("E_BIGTILE+E_WALL+E_DECOR+E_ANIMATION");
             //std::cout<<"size : "<<entities.size()<<std::endl;
             std::ofstream ofs("FichierDeSerialisation");
             OTextArchive oa(ofs);
             oa(entities);
             ofs.close();
+            stop();
             //std::cout<<"serialized"<<std::endl;
         }
         if (event.type == IEvent::KEYBOARD_EVENT && event.keyboard.type == IEvent::KEY_EVENT_PRESSED) {
