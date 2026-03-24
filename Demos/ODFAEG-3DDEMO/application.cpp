@@ -271,9 +271,10 @@ void MyAppli::onUpdate (RenderWindow* window, IEvent& event) {
 
         if (event.type == IEvent::WINDOW_EVENT && event.window.type == IEvent::WINDOW_EVENT_CLOSED)
         {
+            animUpdater->stop();
+            eu->stop();
             stop();
-            /*animUpdater->stop();
-            eu->stop();*/
+
         }
         if (event.type == IEvent::WINDOW_EVENT && event.window.type == IEvent::WINDOW_EVENT_RESIZED)
         {
