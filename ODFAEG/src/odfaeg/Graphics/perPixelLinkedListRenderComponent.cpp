@@ -5854,7 +5854,7 @@ namespace odfaeg {
                 std::vector<VkFence> fencesToWait;
                 for (unsigned int i = 0; i < visibleEntities.size(); i++) {
                     if (visibleEntities[i] != nullptr && visibleEntities[i]->isLeaf() && (visibleEntities[i]->getRootType() == "E_PARTICLES"
-                        || visibleEntities[i]->getRootType() == "E_BONE_ANIMATION")) {
+                        || visibleEntities[i]->getRootType() == "E_BONE_ANIMATION") && visibleEntities[i]->isComputeFinished(currentFrame, getLayer())) {
                         std::unique_lock<std::mutex> lock2(mtx2);
 
                         visibleEntities[i]->getRootEntity()->computeParticles(&mtx2, &cv2, vbBindlessTex[Triangles], frameBuffer.getCurrentFrame(),visibleEntities[i]->getTransform(), (visibleEntities[i]->getDrawMode() == Entity::INSTANCED) ? true : false, computeSemaphores[i], computeFences[i], getLayer());
