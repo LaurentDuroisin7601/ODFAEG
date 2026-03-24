@@ -173,23 +173,27 @@ void MyAppli::onInit() {
     src->setView(view3D);
     PerPixelLinkedListRenderComponent* frc2 = new PerPixelLinkedListRenderComponent(getRenderWindow(), 0, "E_BIGTILE+E_MESH+E_BONE_ANIMATION",ContextSettings(24, 8, 4, 4, 6));
     //frc2->preloadEntitiesOnComponent(getWorld()->getEntities("*"), factory);
+
     frc2->setView(view3D);
+
 
 
     ReflectRefractRenderComponent* rrrc = new ReflectRefractRenderComponent(getRenderWindow(), 1, "E_CUBE+E_BIGTILE+E_MESH", ContextSettings(0, 0, 4, 4, 6));
     rrrc->setView(view3D);
-    rrrc->loadSkybox(skybox.get());
+
 
     LightRenderComponent* lrc = new LightRenderComponent(getRenderWindow(), 3, "E_PONCTUAL_LIGHT+E_BIGTILE",ContextSettings(0, 0, 4, 4, 6));
     //std::cout<<"light render component created"<<std::endl;
     lrc->setView(view3D);
     getRenderWindow().createDescriptorsAndPipelines();
     frc2->createDescriptorsAndPipelines();
-    frc2->loadSkybox(skybox.get());
+
     rrrc->createDescriptorsAndPipelines();
 
     src->createDescriptorsAndPipelines();
     lrc->createDescriptorsAndPipelines();
+    frc2->loadSkybox(skybox.get());
+    rrrc->loadSkybox(skybox.get());
 
     //getView().setPerspective(-size.x * 0.5f, size.x * 0.5f, -size.y * 0.5f, size.y * 0.5f,-1000, 1000);
     //getRenderComponentManager().addComponent(frc);

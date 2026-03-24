@@ -199,10 +199,11 @@ namespace odfaeg
                 computeSemaphores.resize(layer + 1);
                 computeFences.resize(layer + 1);
                 createCommandBuffers(oldSize);
+                this->mtx[layer] = mtx;
+                this->cv2[layer] = cv2;
             }
 
-            this->mtx[layer] = mtx;
-            this->cv2[layer] = cv2;
+
             this->vertexBuffer[layer] = std::ref(frameVertexBuffer);
             for (unsigned int i = 0; i < layer; i++) {
                 if (!this->vertexBuffer[i].has_value())

@@ -153,7 +153,7 @@ namespace odfaeg {
                         submitInfo.pCommandBuffers = &commandBuffers[layer][currentFrame[layer]];
                         window::Device::QueueFamilyIndices indices = vkDevice.findQueueFamilies(vkDevice.getPhysicalDevice(), nullptr);
                         if (vkQueueSubmit(vkDevice.getQueue(indices.computeFamily.value(), 1), 1, &submitInfo, computeFences[layer][currentFrame[layer]]) != VK_SUCCESS) {
-                            throw core::Erreur(0, "échec de l'envoi d'un command buffer!", 1);
+                            throw core::Erreur(0, "échec de l'envoi d'un compute command buffer!", 1);
                         }
                         //std::cout<<"compute finished"<<std::endl;
                         computeFinished[layer][currentFrame[layer]] = true;
