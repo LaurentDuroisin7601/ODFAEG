@@ -2666,7 +2666,7 @@ namespace odfaeg {
                 vkFreeCommandBuffers(vkDevice.getDevice(), commandPool, 1, &commandBuffer);
             }
             void ShadowRenderComponent::drawInstanced() {
-                for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
+                /*for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
                     vbBindlessTex[i].clear();
                     modelDatas[i].clear();
                     materialDatas[i].clear();
@@ -2696,8 +2696,8 @@ namespace odfaeg {
                         materialDatas[p].push_back(material);
                         TransformMatrix tm;
                         ModelData model;
-                        model.worldMat = tm.getMatrix()/*.transpose()*/;
-                        model.shadowProjMat = tm.getMatrix()/*.transpose()*/;
+                        model.worldMat = tm.getMatrix();
+                        model.shadowProjMat = tm.getMatrix();
                         modelDatas[p].push_back(model);
                         unsigned int vertexCount = 0;
                         for (unsigned int j = 0; j < m_normals[i].getAllVertices().getVertexCount(); j++) {
@@ -2727,9 +2727,9 @@ namespace odfaeg {
                         for (unsigned int j = 0; j < tm.size(); j++) {
                             tm[j].update();
                             ModelData model;
-                            model.worldMat = tm[j].getMatrix()/*.transpose()*/;
+                            model.worldMat = tm[j].getMatrix();
                             TransformMatrix tm;
-                            model.shadowProjMat = tm.getMatrix()/*.transpose()*/;
+                            model.shadowProjMat = tm.getMatrix();
                             modelDatas[p].push_back(model);
                         }
                         unsigned int vertexCount = 0;
@@ -2953,8 +2953,8 @@ namespace odfaeg {
                         materialDatas[p].push_back(material);
                         TransformMatrix tm;
                         ModelData model;
-                        model.worldMat = tm.getMatrix()/*.transpose()*/;
-                        model.shadowProjMat = tm.getMatrix()/*.transpose()*/;
+                        model.worldMat = tm.getMatrix();
+                        model.shadowProjMat = tm.getMatrix();
                         modelDatas[p].push_back(model);
                         unsigned int vertexCount = 0;
                         for (unsigned int j = 0; j < m_shadow_normals[i].getAllVertices().getVertexCount(); j++) {
@@ -2986,8 +2986,8 @@ namespace odfaeg {
                             tm[j].update();
                             tm2[j].update();
                             ModelData model;
-                            model.worldMat = tm[j].getMatrix()/*.transpose()*/;
-                            model.shadowProjMat = tm2[j].getMatrix()/*.transpose()*/;
+                            model.worldMat = tm[j].getMatrix();
+                            model.shadowProjMat = tm2[j].getMatrix();
                             modelDatas[p].push_back(model);
                         }
                         unsigned int vertexCount=0;
@@ -3179,10 +3179,10 @@ namespace odfaeg {
                         //createDescriptorSets(p, currentStates);
                         createCommandBuffersIndirect(p, drawArraysIndirectCommands[p].size(), sizeof(DrawArraysIndirectCommand), SHADOWNODEPTHNOSTENCIL, currentStates);
                     }
-                }
+                }*/
             }
             void ShadowRenderComponent::drawInstancedIndexed() {
-                for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
+                /*for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
                     modelDatas[i].clear();
                     materialDatas[i].clear();
                     vbBindlessTex[i].clear();
@@ -3723,7 +3723,7 @@ namespace odfaeg {
                         //createDescriptorSets(p, currentStates);
                         createCommandBuffersIndirect(p, drawElementsIndirectCommands[p].size(), sizeof(DrawElementsIndirectCommand), SHADOWNODEPTHNOSTENCIL, currentStates);
                     }
-                }
+                }*/
             }
             void ShadowRenderComponent::recordCommandBufferIndirect(unsigned int currentFrame, unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, ShadowDepthStencilID depthStencilID, unsigned int vertexOffset, unsigned int indexOffset, unsigned int uboOffset, unsigned int modelDataOffset, unsigned int materialDataOffset, unsigned int drawCommandOffset, RenderStates currentStates, VkCommandBuffer commandBuffer) {
                 currentStates.blendMode.updateIds();
@@ -4019,11 +4019,11 @@ namespace odfaeg {
                             material.uvOffset = math::Vec2f(0, 0);
                         }
                         materialDatas[p].push_back(material);
-                        std::vector<TransformMatrix> tm = m_instances[i].getTransforms();
+                        std::vector<TransformMatrix*> tm = m_instances[i].getTransforms();
                         for (unsigned int j = 0; j < tm.size(); j++) {
-                            tm[j].update();
+                            tm[j]->update();
                             ModelData model;
-                            model.worldMat = tm[j].getMatrix()/*.transpose()*/;
+                            model.worldMat = tm[j]->getMatrix()/*.transpose()*/;
                             TransformMatrix tm;
                             model.shadowProjMat = tm.getMatrix()/*.transpose()*/;
 
@@ -4284,11 +4284,11 @@ namespace odfaeg {
                             material.layer = m_instancesIndexed[i].getMaterial().getLayer();
                         }
                         materialDatas[p].push_back(material);
-                        std::vector<TransformMatrix> tm = m_instancesIndexed[i].getTransforms();
+                        std::vector<TransformMatrix*> tm = m_instancesIndexed[i].getTransforms();
                         for (unsigned int j = 0; j < tm.size(); j++) {
-                            tm[j].update();
+                            tm[j]->update();
                             ModelData model;
-                            model.worldMat = tm[j].getMatrix().transpose();
+                            model.worldMat = tm[j]->getMatrix().transpose();
                             TransformMatrix tm;
                             model.shadowProjMat = tm.getMatrix().transpose();
 
@@ -4548,13 +4548,13 @@ namespace odfaeg {
                             material.uvOffset = math::Vec2f(0, 0);
                         }
                         materialDatas[p].push_back(material);
-                        std::vector<TransformMatrix> tm = m_shadow_instances[i].getTransforms();
+                        std::vector<TransformMatrix*> tm = m_shadow_instances[i].getTransforms();
                         std::vector<TransformMatrix> tm2 = m_shadow_instances[i].getShadowProjMatrix();
                         for (unsigned int j = 0; j < tm.size(); j++) {
-                            tm[j].update();
+                            tm[j]->update();
                             tm2[j].update();
                             ModelData model;
-                            model.worldMat = tm[j].getMatrix()/*.transpose()*/;
+                            model.worldMat = tm[j]->getMatrix()/*.transpose()*/;
                             model.shadowProjMat = tm2[j].getMatrix()/*.transpose()*/;
 
                             modelDatas[p].push_back(model);
@@ -4816,13 +4816,13 @@ namespace odfaeg {
                             material.uvOffset = math::Vec2f(0, 0);
                         }
                         materialDatas[p].push_back(material);
-                        std::vector<TransformMatrix> tm = m_shadow_instances_indexed[i].getTransforms();
+                        std::vector<TransformMatrix*> tm = m_shadow_instances_indexed[i].getTransforms();
                         std::vector<TransformMatrix> tm2 = m_shadow_instances_indexed[i].getShadowProjMatrix();
                         for (unsigned int j = 0; j < tm.size(); j++) {
-                            tm[j].update();
+                            tm[j]->update();
                             tm2[j].update();
                             ModelData model;
-                            model.worldMat = tm[j].getMatrix().transpose();
+                            model.worldMat = tm[j]->getMatrix().transpose();
                             model.shadowProjMat = tm2[j].getMatrix().transpose();
 
                             modelDatas[p].push_back(model);
@@ -5298,7 +5298,7 @@ namespace odfaeg {
                 {
                     std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                     if (datasReady) {
-                        datasReady = false;
+
                         m_instances = batcher.getInstances();
                         m_normals = normalBatcher.getInstances();
                         m_shadow_instances = shadowBatcher.getInstances();
@@ -5378,12 +5378,15 @@ namespace odfaeg {
                         fillIndexedBuffersMT();
                         fillShadowBuffersMT();
                         fillShadowIndexedBuffersMT();
+                        datasReady = false;
+
                         for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                             if (vbBindlessTex[p].getVertexCount() > 0)
                                 vbBindlessTex[p].updateBuffers(currentFrame);
                             if (vbBindlessTexIndexed[p].getVertexCount() > 0)
                                 vbBindlessTexIndexed[p].updateBuffers(currentFrame);
                         }
+
                         //std::cout<<"reset"<<std::endl;
                         jobFence[currentFrame].reset(numThreads);
                         threadPool.enqueue([this, currentFrame]{

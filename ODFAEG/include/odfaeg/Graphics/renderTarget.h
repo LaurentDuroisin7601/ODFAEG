@@ -270,6 +270,7 @@ namespace odfaeg {
             std::array<VkRect2D, 2>& getScissors();
             void setCullMode(CULLMODE cm);
             virtual std::vector<VkFence> getFences() = 0;
+            std::string name;
 
         protected :
             virtual bool isFirstSubmit() = 0;

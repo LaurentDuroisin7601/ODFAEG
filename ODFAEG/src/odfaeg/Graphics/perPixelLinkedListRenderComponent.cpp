@@ -263,6 +263,7 @@ namespace odfaeg {
             update = true;
             datasReady = false;
             fences = frameBuffer.getFences();
+            frameBuffer.name = "ppllfb";
 
 
         }
@@ -1975,11 +1976,11 @@ namespace odfaeg {
                     float time = timeClock.getElapsedTime().asSeconds();
                     indirectDrawPushConsts.time = time;
 
-                    std::vector<TransformMatrix> tm = m_instances[i].getTransforms();
+                    std::vector<TransformMatrix*> tm = m_instances[i].getTransforms();
                     for (unsigned int j = 0; j < tm.size(); j++) {
-                        tm[j].update();
+                        tm[j]->update();
                         ModelData modelData;
-                        modelData.worldMat = toVulkanMatrix(tm[j].getMatrix());
+                        modelData.worldMat = toVulkanMatrix(tm[j]->getMatrix());
 
                         modelDatas[p].push_back(modelData);
                     }
@@ -2268,11 +2269,11 @@ namespace odfaeg {
                     }
                     materialDatas[p].push_back(material);
 
-                    std::vector<TransformMatrix> tm = m_instancesIndexed[i].getTransforms();
+                    std::vector<TransformMatrix*> tm = m_instancesIndexed[i].getTransforms();
                     for (unsigned int j = 0; j < tm.size(); j++) {
-                        tm[j].update();
+                        tm[j]->update();
                         ModelData model;
-                        model.worldMat = toVulkanMatrix(tm[j].getMatrix())/*.transpose()*/;
+                        model.worldMat = toVulkanMatrix(tm[j]->getMatrix())/*.transpose()*/;
 
                         modelDatas[p].push_back(model);
                     }
@@ -2536,11 +2537,11 @@ namespace odfaeg {
                     float time = timeClock.getElapsedTime().asSeconds();
                     indirectDrawPushConsts.time = time;
 
-                    std::vector<TransformMatrix> tm = m_selectedInstance[i].getTransforms();
+                    std::vector<TransformMatrix*> tm = m_selectedInstance[i].getTransforms();
                     for (unsigned int j = 0; j < tm.size(); j++) {
-                        tm[j].update();
+                        tm[j]->update();
                         ModelData modelData;
-                        modelData.worldMat = toVulkanMatrix(tm[j].getMatrix());
+                        modelData.worldMat = toVulkanMatrix(tm[j]->getMatrix());
 
                         modelDatas[p].push_back(modelData);
                     }
@@ -2808,11 +2809,11 @@ namespace odfaeg {
                     material.uvScale = (m_selectedInstanceIndexed[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_selectedInstanceIndexed[i].getMaterial().getTexture()->getSize().x(), 1.f / m_selectedInstanceIndexed[i].getMaterial().getTexture()->getSize().y()): math::Vec2f(0, 0);
                     material.uvOffset = math::Vec2f(0, 0);
                     materialDatas[p].push_back(material);
-                    std::vector<TransformMatrix> tm = m_selectedInstanceIndexed[i].getTransforms();
+                    std::vector<TransformMatrix*> tm = m_selectedInstanceIndexed[i].getTransforms();
                     for (unsigned int j = 0; j < tm.size(); j++) {
-                        tm[j].update();
+                        tm[j]->update();
                         ModelData model;
-                        model.worldMat = toVulkanMatrix(tm[j].getMatrix())/*.transpose()*/;
+                        model.worldMat = toVulkanMatrix(tm[j]->getMatrix())/*.transpose()*/;
 
                         modelDatas[p].push_back(model);
                     }
@@ -3067,11 +3068,11 @@ namespace odfaeg {
                     material.uvScale = math::Vec2f(0, 0);
                     material.uvOffset = math::Vec2f(0, 0);
                     materialDatas[p].push_back(material);
-                    std::vector<TransformMatrix> tm = m_selectedScaleInstance[i].getTransforms();
+                    std::vector<TransformMatrix*> tm = m_selectedScaleInstance[i].getTransforms();
                     for (unsigned int j = 0; j < tm.size(); j++) {
-                        tm[j].update();
+                        tm[j]->update();
                         ModelData model;
-                        model.worldMat = toVulkanMatrix(tm[j].getMatrix());
+                        model.worldMat = toVulkanMatrix(tm[j]->getMatrix());
 
                         modelDatas[p].push_back(model);
                     }
@@ -3333,11 +3334,11 @@ namespace odfaeg {
                     material.uvScale = (m_selectedScaleInstanceIndexed[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_selectedScaleInstanceIndexed[i].getMaterial().getTexture()->getSize().x(), 1.f / m_selectedScaleInstanceIndexed[i].getMaterial().getTexture()->getSize().y()): math::Vec2f(0, 0);
                     material.uvOffset = math::Vec2f(0, 0);
                     materialDatas[p].push_back(material);
-                    std::vector<TransformMatrix> tm = m_selectedScaleInstanceIndexed[i].getTransforms();
+                    std::vector<TransformMatrix*> tm = m_selectedScaleInstanceIndexed[i].getTransforms();
                     for (unsigned int j = 0; j < tm.size(); j++) {
-                        tm[j].update();
+                        tm[j]->update();
                         ModelData model;
-                        model.worldMat = toVulkanMatrix(tm[j].getMatrix())/*.transpose()*/;
+                        model.worldMat = toVulkanMatrix(tm[j]->getMatrix())/*.transpose()*/;
 
                         modelDatas[p].push_back(model);
                         ////std::cout<<modelDatas[p].size()<<std::endl;
@@ -3534,7 +3535,7 @@ namespace odfaeg {
             }*/
         }
         void PerPixelLinkedListRenderComponent::drawInstances() {
-            for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
+            /*for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
                 vbBindlessTex[i].clear();
                 materialDatas[i].clear();
                 modelDatas[i].clear();
@@ -3556,9 +3557,7 @@ namespace odfaeg {
 
                     unsigned int p = m_normals[i].getAllVertices().getPrimitiveType();
 
-                    /*if (m_normals[i].getVertexArrays()[0]->getEntity()->getRootType() == "E_MONSTER") {
-                            //////std::cout<<"tex coords : "<<(*m_normals[i].getVertexArrays()[0])[0].texCoords.x<<","<<(*m_normals[i].getVertexArrays()[0])[0].texCoords.y<<std::endl;
-                        }*/
+
                     unsigned int vertexCount = 0;
                     MaterialData material;
                     {
@@ -3578,7 +3577,7 @@ namespace odfaeg {
                     }
                     TransformMatrix tm;
                     ModelData modelData;
-                    modelData.worldMat = toVulkanMatrix(tm.getMatrix())/*.transpose()*/;
+                    modelData.worldMat = toVulkanMatrix(tm.getMatrix()).transpose();
 
                     modelDatas[p].push_back(modelData);
 
@@ -3589,12 +3588,7 @@ namespace odfaeg {
                     drawArraysIndirectCommands[p].push_back(drawArraysIndirectCommand);
                     firstIndex[p] += vertexCount;
                     baseInstance[p] += 1;
-                    /*for (unsigned int j = 0; j < m_normals[i].getVertexArrays().size(); j++) {
-                        if (m_normals[i].getVertexArrays()[j]->getEntity() != nullptr && m_normals[i].getVertexArrays()[j]->getEntity()->getRootType() == "E_HERO") {
-                            for (unsigned int n = 0; n < m_normals[i].getVertexArrays()[j]->getVertexCount(); n++)
-                                //////std::cout<<"position hero : "<<(*m_normals[i].getVertexArrays()[j])[n].position.x<<","<<(*m_normals[i].getVertexArrays()[j])[n].position.y<<","<<(*m_normals[i].getVertexArrays()[j])[n].position.z<<std::endl;
-                        }
-                    }*/
+
                 }
             }
             for (unsigned int i = 0; i < m_instances.size(); i++) {
@@ -3608,7 +3602,7 @@ namespace odfaeg {
                     for (unsigned int j = 0; j < tm.size(); j++) {
                         tm[j].update();
                         ModelData modelData;
-                        modelData.worldMat = toVulkanMatrix(tm[j].getMatrix())/*.transpose()*/;
+                        modelData.worldMat = toVulkanMatrix(tm[j].getMatrix());
                         modelDatas[p].push_back(modelData);
                     }
                     MaterialData material;
@@ -3733,10 +3727,10 @@ namespace odfaeg {
                     createCommandBuffersIndirect(p, drawArraysIndirectCommands[p].size(), sizeof(DrawArraysIndirectCommand), PPLLNODEPTHNOSTENCIL, currentStates);
 
                 }
-            }
+            }*/
         }
         void PerPixelLinkedListRenderComponent::drawInstancesIndexed() {
-            for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
+            /*for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
                 vbBindlessTex[i].clear();
                 materialDatas[i].clear();
                 modelDatas[i].clear();
@@ -3771,7 +3765,7 @@ namespace odfaeg {
 
                     TransformMatrix tm;
                     ModelData modelData;
-                    modelData.worldMat = toVulkanMatrix(tm.getMatrix())/*.transpose()*/;
+                    modelData.worldMat = toVulkanMatrix(tm.getMatrix());
                     modelDatas[p].push_back(modelData);
                     unsigned int indexCount = 0, vertexCount = 0;
                     for (unsigned int j = 0; j < m_normalsIndexed[i].getAllVertices().getVertexCount(); j++) {
@@ -3813,7 +3807,7 @@ namespace odfaeg {
                     for (unsigned int j = 0; j < tm.size(); j++) {
                         tm[j].update();
                         ModelData model;
-                        model.worldMat = toVulkanMatrix(tm[j].getMatrix())/*.transpose()*/;
+                        model.worldMat = toVulkanMatrix(tm[j].getMatrix());
                         modelDatas[p].push_back(model);
                     }
 
@@ -3936,10 +3930,10 @@ namespace odfaeg {
                     ////////std::cout<<"size : "<<sizeof(DrawElementsIndirectCommand)<<std::endl;
                     createCommandBuffersIndirect(p, drawElementsIndirectCommands[p].size(), sizeof(DrawElementsIndirectCommand), PPLLNODEPTHNOSTENCIL, currentStates);
                 }
-            }
+            }*/
         }
         void PerPixelLinkedListRenderComponent::drawSelectedInstances() {
-            for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
+            /*for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
                 vbBindlessTex[i].clear();
                 materialDatas[i].clear();
                 modelDatas[i].clear();
@@ -4299,10 +4293,10 @@ namespace odfaeg {
                     createCommandBuffersIndirect(p, drawArraysIndirectCommands[p].size(), sizeof(DrawArraysIndirectCommand), PPLLNODEPTHSTENCILOUTLINE, currentStates);
 
                 }
-            }
+            }*/
         }
         void PerPixelLinkedListRenderComponent::drawSelectedInstancesIndexed() {
-            for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
+            /*for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
                 vbBindlessTex[i].clear();
                 materialDatas[i].clear();
                 modelDatas[i].clear();
@@ -4337,7 +4331,7 @@ namespace odfaeg {
 
                     TransformMatrix tm;
                     ModelData model;
-                    model.worldMat = toVulkanMatrix(tm.getMatrix())/*.transpose()*/;
+                    model.worldMat = toVulkanMatrix(tm.getMatrix());
                     modelDatas[p].push_back(model);
                     unsigned int vertexCount = 0, indexCount = 0;
                     for (unsigned int j = 0; j < m_selectedIndexed[i].getAllVertices().getVertexCount(); j++) {
@@ -4375,7 +4369,7 @@ namespace odfaeg {
                     for (unsigned int j = 0; j < tm.size(); j++) {
                         tm[j].update();
                         ModelData model;
-                        model.worldMat = toVulkanMatrix(tm[j].getMatrix())/*.transpose()*/;
+                        model.worldMat = toVulkanMatrix(tm[j].getMatrix());
                         modelDatas[p].push_back(model);
                     }
                     unsigned int indexCount = 0, vertexCount = 0;
@@ -4533,7 +4527,7 @@ namespace odfaeg {
 
                     TransformMatrix tm;
                     ModelData model;
-                    model.worldMat = toVulkanMatrix(tm.getMatrix())/*.transpose()*/;
+                    model.worldMat = toVulkanMatrix(tm.getMatrix());
                     modelDatas[p].push_back(model);
 
                     unsigned int indexCount = 0, vertexCount = 0;
@@ -4572,7 +4566,7 @@ namespace odfaeg {
                     for (unsigned int j = 0; j < tm.size(); j++) {
                         tm[j].update();
                         ModelData model;
-                        model.worldMat = toVulkanMatrix(tm[j].getMatrix())/*.transpose()*/;
+                        model.worldMat = toVulkanMatrix(tm[j].getMatrix());
                         modelDatas[p].push_back(model);
                     }
                     unsigned int indexCount = 0, vertexCount = 0;
@@ -4690,7 +4684,7 @@ namespace odfaeg {
                     createCommandBuffersIndirect(p, drawElementsIndirectCommands[p].size(), sizeof(DrawElementsIndirectCommand), PPLLNODEPTHSTENCILOUTLINE, currentStates);
 
                 }
-            }
+            }*/
         }
         void PerPixelLinkedListRenderComponent::drawNextFrame() {
             std::unique_lock<std::mutex> lock(mtx);
@@ -5657,6 +5651,7 @@ namespace odfaeg {
                 std::vector<VkFence> windowInFlightFence = {windowFences[frameBuffer.getCurrentFrame()]};
                 //std::cout<<"wait on fence : "<<windowFences[frameBuffer.getCurrentFrame()]<<std::endl;
                 //std::cout<<"submit fence : "<<fences[frameBuffer.getCurrentFrame()]<<std::endl;
+                std::cout<<"submit copy"<<std::endl;
                 frameBuffer.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues/*, windowInFlightFence, 0, false, false*/);
                 frameBuffer.beginRecordCommandBuffers();
                 //std::cout<<"reseted : "<<frameBuffer.getCurrentFrame()<<","<<stop.load()<<std::endl;
@@ -5805,6 +5800,7 @@ namespace odfaeg {
                     waitValues.push_back(values[currentFrame]);
                     values[currentFrame]++;
                     signalValues.push_back(values[currentFrame]);
+                    std::cout<<"submit skybox"<<std::endl;
                     frameBuffer.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues/*, windowInFlightFence, 0, false, false*/);
                 }
 
@@ -5902,6 +5898,7 @@ namespace odfaeg {
 
 
                 //std::cout<<"submit fence : "<<fences[frameBuffer.getCurrentFrame()]<<std::endl;
+                std::cout<<"submit ppll"<<std::endl;
                 frameBuffer.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues, fencesToWait/*, 0, false*/);
                 //std::cout<<"ppll ok"<<std::endl;
 
@@ -5926,6 +5923,7 @@ namespace odfaeg {
 
                 values[currentFrame]++;
                 signalValues.push_back(values[currentFrame]);
+                std::cout<<"submit outline"<<std::endl;
                 frameBuffer.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues/*, windowInFlightFence, 0, false, false*/);
                 //std::cout<<"outline ok"<<std::endl;
 
@@ -5952,6 +5950,7 @@ namespace odfaeg {
                 values[currentFrame]++;
                 values2[currentFrame] = values[currentFrame];
                 signalValues.push_back(values[currentFrame]);
+                std::cout<<"submit pass 2 "<<std::endl;
                 frameBuffer.submit(true, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues/*, windowInFlightFence, 0, true, false*/);
             }
             //std::cout<<"draw : "<<frameBuffer.getCurrentFrame()<<std::endl;

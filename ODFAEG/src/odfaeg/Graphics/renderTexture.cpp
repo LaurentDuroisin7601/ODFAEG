@@ -532,7 +532,7 @@ namespace odfaeg
 
                 window::Device::QueueFamilyIndices indices = vkDevice.findQueueFamilies(vkDevice.getPhysicalDevice(), nullptr);
                 if (vkQueueSubmit(vkDevice.getQueue(indices.graphicsFamily.value(), queueIndex), 1, &submitInfo, (fenceToSubmit == nullptr) ? inFlightFences[currentFrame] : fenceToSubmit) != VK_SUCCESS) {
-                    throw core::Erreur(0, "échec de l'envoi d'un graphic command buffer!", 1);
+                    throw core::Erreur(0, "échec de l'envoi d'un graphic command buffer! "+name, 1);
                 }
                 //std::cout<<"wait on fence : "<<inFlightFences[currentFrame]<<std::endl;
                 VkResult r2 = vkWaitForFences(vkDevice.getDevice(), 1, (fenceToSubmit == nullptr) ? &inFlightFences[currentFrame] : &fenceToSubmit, VK_TRUE, UINT64_MAX);

@@ -3593,7 +3593,7 @@ namespace odfaeg {
             }
         }
         void LightRenderComponent::drawLightInstances() {
-            for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
+            /*for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
                 vbBindlessTex[i].clear();
                 modelDatas[i].clear();
                 materialDatas[i].clear();
@@ -3658,9 +3658,7 @@ namespace odfaeg {
                     material.layer = m_light_instances[i].getMaterial().getLayer();
                     material.lightCenter = m_light_instances[i].getMaterial().getLightCenter();
                     TransformMatrix modelMatrix;
-                    /*////std::cout<<"light center : "<<material.lightCenter<<std::endl;
-                    ////std::cout<<"light center screen : "<<lightMap.mapCoordsToPixel(modelMatrix.transform(material.lightCenter))<<std::endl;
-                    system("PAUSE");*/
+
 
                     Color c = m_light_instances[i].getMaterial().getLightColor();
                     material.lightColor = math::Vec4f(1.f / 255.f * c.r, 1.f / 255.f * c.g, 1.f / 255.f * c.b, 1.f / 255.f * c.a);
@@ -3768,7 +3766,7 @@ namespace odfaeg {
                     //createDescriptorSets(p, currentStates);
                     createCommandBuffersIndirect(p, drawArraysIndirectCommands[p].size(), sizeof(DrawArraysIndirectCommand), LIGHTNODEPTHNOSTENCIL, currentStates);
                 }
-            }
+            }*/
         }
         void LightRenderComponent::recordCommandBufferIndirect(unsigned int currentFrame, unsigned int p, unsigned int nbIndirectCommands, unsigned int stride, LightDepthStencilID depthStencilID, unsigned int vertexOffset, unsigned int indexOffset, unsigned int uboOffset, unsigned int modelDataOffset, unsigned int materialDataOffset, unsigned int drawCommandOffset, RenderStates currentStates, VkCommandBuffer commandBuffer, bool lightDepth) {
             currentStates.blendMode.updateIds();
@@ -4143,11 +4141,11 @@ namespace odfaeg {
                     material.uvScale = (m_instances[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_instances[i].getMaterial().getTexture()->getSize().x(), 1.f / m_instances[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
                     material.uvOffset = math::Vec2f(0, 0);
                     materialDatas[p].push_back(material);
-                    std::vector<TransformMatrix> tm = m_instances[i].getTransforms();
+                    std::vector<TransformMatrix*> tm = m_instances[i].getTransforms();
                     for (unsigned int j = 0; j < tm.size(); j++) {
-                        tm[j].update();
+                        tm[j]->update();
                         ModelData model;
-                        model.worldMat = tm[j].getMatrix().transpose();
+                        model.worldMat = tm[j]->getMatrix().transpose();
 
                         modelDatas[p].push_back(model);
                     }
@@ -4406,11 +4404,11 @@ namespace odfaeg {
                         material.uvOffset = math::Vec2f(0, 0);
                     }
                     materialDatas[p].push_back(material);
-                    std::vector<TransformMatrix> tm = m_instancesIndexed[i].getTransforms();
+                    std::vector<TransformMatrix*> tm = m_instancesIndexed[i].getTransforms();
                     for (unsigned int j = 0; j < tm.size(); j++) {
-                        tm[j].update();
+                        tm[j]->update();
                         ModelData model;
-                        model.worldMat = tm[j].getMatrix().transpose();
+                        model.worldMat = tm[j]->getMatrix().transpose();
 
                         modelDatas[p].push_back(model);
                     }
@@ -5398,7 +5396,7 @@ namespace odfaeg {
            {
 
                if (datasReady.load()) {
-                   datasReady = false;
+
                    std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                    m_instances = batcher.getInstances();
                    m_normals = normalBatcher.getInstances();
@@ -5442,6 +5440,7 @@ namespace odfaeg {
                     fillIndexedBuffersMT();
                     fillLightBuffersMT();
                     fillLightBuffersIndexedMT();
+                    datasReady = false;
                     //std::cout<<"fill buffer ok"<<std::endl;
                     //std::cout<<"buffer filled"<<std::endl;
                     lightIndirectRenderingPC.projMatrix = projMatrix;
@@ -5592,7 +5591,7 @@ namespace odfaeg {
 
         }
         void LightRenderComponent::drawInstances() {
-            for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
+            /*for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
                 vbBindlessTex[i].clear();
                 modelDatas[i].clear();
                 materialDatas[i].clear();
@@ -6182,10 +6181,10 @@ namespace odfaeg {
                     //createDescriptorSets(p, currentStates);
                     createCommandBuffersIndirect(p, drawArraysIndirectCommands[p].size(), sizeof(DrawArraysIndirectCommand), LIGHTNODEPTHNOSTENCIL, currentStates);
                 }
-            }
+            }*/
         }
         void LightRenderComponent::drawIndexedInstances() {
-            for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
+            /*for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
                 vbBindlessTex[i].clear();
                 modelDatas[i].clear();
                 materialDatas[i].clear();
@@ -6830,7 +6829,7 @@ namespace odfaeg {
                     //createDescriptorSets(p, currentStates);
                     createCommandBuffersIndirect(p, drawElementsIndirectCommands[p].size(), sizeof(DrawElementsIndirectCommand), LIGHTNODEPTHNOSTENCIL, currentStates);
                 }
-            }
+            }*/
         }
         void LightRenderComponent::draw(RenderTarget& target, RenderStates states) {
             std::unique_lock<std::mutex> lock(mtx);
@@ -7254,51 +7253,51 @@ namespace odfaeg {
         }
         bool LightRenderComponent::loadEntitiesOnComponent(std::vector<Entity*> vEntities)
         {
-            {
+            if (!datasReady.load()) {
                 std::lock_guard<std::recursive_mutex> lock(rec_mutex);
-                datasReady = false;
                 batcher.clear();
                 normalBatcher.clear();
                 lightBatcher.clear();
                 indexedBatcher.clear();
                 normalIndexedBatcher.clear();
                 lightIndexedBatcher.clear();
-            }
 
-            for (unsigned int i = 0; i < vEntities.size(); i++) {
 
-                if (vEntities[i] != nullptr && vEntities[i]->isLeaf()) {
-                    std::lock_guard<std::recursive_mutex> lock(rec_mutex);
-                    if (vEntities[i]->isLight()) {
-                        for (unsigned int j = 0; j <  vEntities[i]->getNbFaces(); j++) {
-                            if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0)
-                                lightBatcher.addFace(vEntities[i]->getFace(j));
-                            else
-                                lightIndexedBatcher.addFace(vEntities[i]->getFace(j));
-                        }
-                    } else {
-                        for (unsigned int j = 0; j <  vEntities[i]->getNbFaces(); j++) {
-                            if (vEntities[i]->getDrawMode() == Entity::INSTANCED) {
+                for (unsigned int i = 0; i < vEntities.size(); i++) {
+
+                    if (vEntities[i] != nullptr && vEntities[i]->isLeaf()) {
+
+                        if (vEntities[i]->isLight()) {
+                            for (unsigned int j = 0; j <  vEntities[i]->getNbFaces(); j++) {
                                 if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0)
-                                    batcher.addFace(vEntities[i]->getFace(j));
+                                    lightBatcher.addFace(vEntities[i]->getFace(j));
                                 else
-                                    indexedBatcher.addFace(vEntities[i]->getFace(j));
-                            } else {
-                                if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0)
-                                    normalBatcher.addFace(vEntities[i]->getFace(j));
-                                else
-                                    normalIndexedBatcher.addFace(vEntities[i]->getFace(j));
+                                    lightIndexedBatcher.addFace(vEntities[i]->getFace(j));
+                            }
+                        } else {
+                            for (unsigned int j = 0; j <  vEntities[i]->getNbFaces(); j++) {
+                                if (vEntities[i]->getDrawMode() == Entity::INSTANCED) {
+                                    if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0)
+                                        batcher.addFace(vEntities[i]->getFace(j));
+                                    else
+                                        indexedBatcher.addFace(vEntities[i]->getFace(j));
+                                } else {
+                                    if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0)
+                                        normalBatcher.addFace(vEntities[i]->getFace(j));
+                                    else
+                                        normalIndexedBatcher.addFace(vEntities[i]->getFace(j));
+                                }
                             }
                         }
                     }
                 }
+
+
+
+
+                visibleEntities = vEntities;
+                datasReady = true;
             }
-
-
-
-            std::lock_guard<std::recursive_mutex> lock(rec_mutex);
-            visibleEntities = vEntities;
-            datasReady = true;
             return true;
         }
         void LightRenderComponent::setView(View view){

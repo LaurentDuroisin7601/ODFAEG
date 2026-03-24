@@ -407,6 +407,7 @@ namespace odfaeg {
                 depthBufferFences = depthBuffer.getFences();
                 alphaBufferFences = alphaBuffer.getFences();
                 environmentMapFences = environmentMap.getFences();
+
             }
             void ReflectRefractRenderComponent::createDescriptorsAndPipelines() {
 
@@ -4179,11 +4180,11 @@ namespace odfaeg {
                         material.uvScale = (m_reflInstances[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_reflInstances[i].getMaterial().getTexture()->getSize().x(), 1.f / m_reflInstances[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
                         material.uvOffset = math::Vec2f(0, 0);
                         materialDatas[p].push_back(material);
-                        std::vector<TransformMatrix> tm = m_reflInstances[i].getTransforms();
+                        std::vector<TransformMatrix*> tm = m_reflInstances[i].getTransforms();
                         for (unsigned int j = 0; j < tm.size(); j++) {
-                            tm[j].update();
+                            tm[j]->update();
                             ModelData model;
-                            model.worldMat = toVulkanMatrix(tm[j].getMatrix())/*.transpose()*/;
+                            model.worldMat = toVulkanMatrix(tm[j]->getMatrix())/*.transpose()*/;
 
                             modelDatas[p].push_back(model);
                         }
@@ -4447,11 +4448,11 @@ namespace odfaeg {
                             material.uvOffset = math::Vec2f(0, 0);
                         }
                         materialDatas[p].push_back(material);
-                        std::vector<TransformMatrix> tm = m_reflIndexed[i].getTransforms();
+                        std::vector<TransformMatrix*> tm = m_reflIndexed[i].getTransforms();
                         for (unsigned int j = 0; j < tm.size(); j++) {
-                            tm[j].update();
+                            tm[j]->update();
                             ModelData model;
-                            model.worldMat = toVulkanMatrix(tm[j].getMatrix())/*.transpose()*/;
+                            model.worldMat = toVulkanMatrix(tm[j]->getMatrix())/*.transpose()*/;
 
                             modelDatas[p].push_back(model);
                         }
@@ -4710,11 +4711,11 @@ namespace odfaeg {
                         material.uvScale = (m_instances[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_instances[i].getMaterial().getTexture()->getSize().x(), 1.f / m_instances[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
                         material.uvOffset = math::Vec2f(0, 0);
                         materialDatas[p].push_back(material);
-                        std::vector<TransformMatrix> tm = m_instances[i].getTransforms();
+                        std::vector<TransformMatrix*> tm = m_instances[i].getTransforms();
                         for (unsigned int j = 0; j < tm.size(); j++) {
-                            tm[j].update();
+                            tm[j]->update();
                             ModelData model;
-                            model.worldMat = toVulkanMatrix(tm[j].getMatrix())/*.transpose()*/;
+                            model.worldMat = toVulkanMatrix(tm[j]->getMatrix())/*.transpose()*/;
 
                             modelDatas[p].push_back(model);
                         }
@@ -4978,11 +4979,11 @@ namespace odfaeg {
                             material.uvOffset = math::Vec2f(0, 0);
                         }
                         materialDatas[p].push_back(material);
-                        std::vector<TransformMatrix> tm = m_indexed[i].getTransforms();
+                        std::vector<TransformMatrix*> tm = m_indexed[i].getTransforms();
                         for (unsigned int j = 0; j < tm.size(); j++) {
-                            tm[j].update();
+                            tm[j]->update();
                             ModelData model;
-                            model.worldMat = toVulkanMatrix(tm[j].getMatrix())/*.transpose()*/;
+                            model.worldMat = toVulkanMatrix(tm[j]->getMatrix())/*.transpose()*/;
 
                             modelDatas[p].push_back(model);
                         }
@@ -5258,11 +5259,11 @@ namespace odfaeg {
                         material.uvScale = (m_reflInstances[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_reflInstances[i].getMaterial().getTexture()->getSize().x(), 1.f / m_reflInstances[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
                         material.uvOffset = math::Vec2f(0, 0);
                         materialDatas[p].push_back(material);
-                        std::vector<TransformMatrix> tm = m_reflInstances[i].getTransforms();
+                        std::vector<TransformMatrix*> tm = m_reflInstances[i].getTransforms();
                         for (unsigned int j = 0; j < tm.size(); j++) {
-                            tm[j].update();
+                            tm[j]->update();
                             ModelData model;
-                            model.worldMat = toVulkanMatrix(tm[j].getMatrix())/*.transpose()*/;
+                            model.worldMat = toVulkanMatrix(tm[j]->getMatrix())/*.transpose()*/;
 
                             modelDatas[p].push_back(model);
                         }
@@ -5543,11 +5544,11 @@ namespace odfaeg {
                             material.uvOffset = math::Vec2f(0, 0);
                         }
                         materialDatas[p].push_back(material);
-                        std::vector<TransformMatrix> tm = m_reflIndexed[i].getTransforms();
+                        std::vector<TransformMatrix*> tm = m_reflIndexed[i].getTransforms();
                         for (unsigned int j = 0; j < tm.size(); j++) {
-                            tm[j].update();
+                            tm[j]->update();
                             ModelData model;
-                            model.worldMat = toVulkanMatrix(tm[j].getMatrix())/*.transpose()*/;
+                            model.worldMat = toVulkanMatrix(tm[j]->getMatrix())/*.transpose()*/;
 
                             modelDatas[p].push_back(model);
                         }
@@ -5746,7 +5747,7 @@ namespace odfaeg {
             }
             void ReflectRefractRenderComponent::drawDepthReflInst() {
 
-                for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
+                /*for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                     vbBindlessTex[p].clear();
                     materialDatas[p].clear();
                     modelDatas[p].clear();
@@ -5771,7 +5772,7 @@ namespace odfaeg {
                         materialDatas[p].push_back(material);
                         ModelData model;
                         TransformMatrix tm;
-                        model.worldMat = toVulkanMatrix(tm.getMatrix())/*.transpose()*/;
+                        model.worldMat = toVulkanMatrix(tm.getMatrix());
                         modelDatas[p].push_back(model);
                         unsigned int vertexCount = 0;
                         for (unsigned int j = 0; j < m_reflNormals[i].getAllVertices().getVertexCount(); j++) {
@@ -5801,7 +5802,7 @@ namespace odfaeg {
                         for (unsigned int j = 0; j < tm.size(); j++) {
                             tm[j].update();
                             ModelData model;
-                            model.worldMat = toVulkanMatrix(tm[j].getMatrix())/*.transpose()*/;
+                            model.worldMat = toVulkanMatrix(tm[j].getMatrix());
                             modelDatas[p].push_back(model);
                         }
                         ////////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
@@ -5920,11 +5921,11 @@ namespace odfaeg {
 
                         createCommandBuffersIndirect(p, drawArraysIndirectCommands[p].size(), sizeof(DrawArraysIndirectCommand), RRRCNODEPTHNOSTENCIL, currentStates);
                     }
-                }
+                }*/
             }
             void ReflectRefractRenderComponent::drawDepthReflIndexedInst() {
 
-                for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
+                /*for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                     vbBindlessTex[p].clear();
                     materialDatas[p].clear();
                     modelDatas[p].clear();
@@ -5957,7 +5958,7 @@ namespace odfaeg {
                         materialDatas[p].push_back(material);
                         ModelData model;
                         TransformMatrix tm;
-                        model.worldMat = toVulkanMatrix(tm.getMatrix())/*.transpose()*/;
+                        model.worldMat = toVulkanMatrix(tm.getMatrix());
                         modelDatas[p].push_back(model);
                         unsigned int vertexCount = 0, indexCount = 0;
                         for (unsigned int j = 0; j < m_reflNormalIndexed[i].getAllVertices().getVertexCount(); j++) {
@@ -5993,7 +5994,7 @@ namespace odfaeg {
                         for (unsigned int j = 0; j < tm.size(); j++) {
                             tm[j].update();
                             ModelData model;
-                            model.worldMat = toVulkanMatrix(tm[j].getMatrix())/*.transpose()*/;
+                            model.worldMat = toVulkanMatrix(tm[j].getMatrix());
                             modelDatas[p].push_back(model);
                         }
                         ////////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
@@ -6119,10 +6120,10 @@ namespace odfaeg {
 
                         createCommandBuffersIndirect(p, drawElementsIndirectCommands[p].size(), sizeof(DrawElementsIndirectCommand), RRRCNODEPTHNOSTENCIL, currentStates);
                     }
-                }
+                }*/
             }
             void ReflectRefractRenderComponent::drawAlphaInst() {
-                for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
+                /*for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                     vbBindlessTex[p].clear();
                     materialDatas[p].clear();
                     modelDatas[p].clear();
@@ -6148,7 +6149,7 @@ namespace odfaeg {
                         materialDatas[p].push_back(material);
                         ModelData model;
                         TransformMatrix tm;
-                        model.worldMat = toVulkanMatrix(tm.getMatrix())/*.transpose()*/;
+                        model.worldMat = toVulkanMatrix(tm.getMatrix());
                         modelDatas[p].push_back(model);
                         unsigned int vertexCount = 0;
                         for (unsigned int j = 0; j < m_normals[i].getAllVertices().getVertexCount(); j++) {
@@ -6179,7 +6180,7 @@ namespace odfaeg {
                         for (unsigned int j = 0; j < tm.size(); j++) {
                             tm[j].update();
                             ModelData model;
-                            model.worldMat = toVulkanMatrix(tm[j].getMatrix())/*.transpose()*/;
+                            model.worldMat = toVulkanMatrix(tm[j].getMatrix());
                             modelDatas[p].push_back(model);
                         }
                         unsigned int vertexCount = 0;
@@ -6288,10 +6289,10 @@ namespace odfaeg {
                         //createDescriptorSets(p, currentStates);
                         createCommandBuffersIndirect(p, drawArraysIndirectCommands[p].size(), sizeof(DrawArraysIndirectCommand), RRRCNODEPTHNOSTENCIL, currentStates);
                     }
-                }
+                }*/
             }
             void ReflectRefractRenderComponent::drawAlphaIndexedInst() {
-                for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
+                /*for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                     vbBindlessTex[p].clear();
                     materialDatas[p].clear();
                     modelDatas[p].clear();
@@ -6319,7 +6320,7 @@ namespace odfaeg {
                         materialDatas[p].push_back(material);
                         ModelData model;
                         TransformMatrix tm;
-                        model.worldMat = toVulkanMatrix(tm.getMatrix())/*.transpose()*/;
+                        model.worldMat = toVulkanMatrix(tm.getMatrix());
                         modelDatas[p].push_back(model);
                         unsigned int vertexCount = 0, indexCount = 0;
                         for (unsigned int j = 0; j < m_normalIndexed[i].getAllVertices().getVertexCount(); j++) {
@@ -6356,7 +6357,7 @@ namespace odfaeg {
                         for (unsigned int j = 0; j < tm.size(); j++) {
                             tm[j].update();
                             ModelData model;
-                            model.worldMat = toVulkanMatrix(tm[j].getMatrix())/*.transpose()*/;
+                            model.worldMat = toVulkanMatrix(tm[j].getMatrix());
                             modelDatas[p].push_back(model);
                         }
                         ////////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
@@ -6482,10 +6483,10 @@ namespace odfaeg {
 
                         createCommandBuffersIndirect(p, drawElementsIndirectCommands[p].size(), sizeof(DrawElementsIndirectCommand), RRRCNODEPTHNOSTENCIL, currentStates);
                     }
-                }
+                }*/
             }
             void ReflectRefractRenderComponent::drawEnvReflInst() {
-                for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
+                /*for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
                     vbBindlessTex[i].clear();
                     modelDatas[i].clear();
                     materialDatas[i].clear();
@@ -6548,7 +6549,7 @@ namespace odfaeg {
                         for (unsigned int j = 0; j < tm.size(); j++) {
                             tm[j].update();
                             ModelData model;
-                            model.worldMat = toVulkanMatrix(tm[j].getMatrix())/*.transpose()*/;
+                            model.worldMat = toVulkanMatrix(tm[j].getMatrix());
                             modelDatas[p].push_back(model);
                         }
 
@@ -6660,10 +6661,10 @@ namespace odfaeg {
                         //createDescriptorSets(p, currentStates);
                         createCommandBuffersIndirect(p, drawArraysIndirectCommands[p].size(), sizeof(DrawArraysIndirectCommand), RRRCNODEPTHNOSTENCIL, currentStates);
                     }
-                }
+                }*/
             }
             void ReflectRefractRenderComponent::drawEnvReflIndexedInst() {
-                for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
+                /*for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                     vbBindlessTex[p].clear();
                     materialDatas[p].clear();
                     modelDatas[p].clear();
@@ -6698,7 +6699,7 @@ namespace odfaeg {
                         materialDatas[p].push_back(material);
                         ModelData model;
                         TransformMatrix tm;
-                        model.worldMat = toVulkanMatrix(tm.getMatrix())/*.transpose()*/;
+                        model.worldMat = toVulkanMatrix(tm.getMatrix());
                         modelDatas[p].push_back(model);
                         unsigned int vertexCount = 0, indexCount = 0;
                         for (unsigned int j = 0; j < m_normalIndexed[i].getAllVertices().getVertexCount(); j++) {
@@ -6736,7 +6737,7 @@ namespace odfaeg {
                         for (unsigned int j = 0; j < tm.size(); j++) {
                             tm[j].update();
                             ModelData model;
-                            model.worldMat = toVulkanMatrix(tm[j].getMatrix())/*.transpose()*/;
+                            model.worldMat = toVulkanMatrix(tm[j].getMatrix());
                             modelDatas[p].push_back(model);
                         }
                         ////////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
@@ -6862,10 +6863,10 @@ namespace odfaeg {
 
                         createCommandBuffersIndirect(p, drawElementsIndirectCommands[p].size(), sizeof(DrawElementsIndirectCommand), RRRCNODEPTHNOSTENCIL, currentStates);
                     }
-                }
+                }*/
             }
             void ReflectRefractRenderComponent::drawReflInst(Entity* reflectEntity) {
-                for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
+                /*for (unsigned int i = 0; i < Batcher::nbPrimitiveTypes; i++) {
                     vbBindlessTex[i].clear();
                     modelDatas[i].clear();
                     materialDatas[i].clear();
@@ -6891,7 +6892,7 @@ namespace odfaeg {
                         materialDatas[p].push_back(material);
                         ModelData model;
                         TransformMatrix tm;
-                        model.worldMat = toVulkanMatrix(tm.getMatrix())/*.transpose()*/;
+                        model.worldMat = toVulkanMatrix(tm.getMatrix();
                         modelDatas[p].push_back(model);
                         unsigned int vertexCount = 0;
                         for (unsigned int j = 0; j < m_reflNormals[i].getVertexArrays().size(); j++) {
@@ -6929,7 +6930,7 @@ namespace odfaeg {
                         for (unsigned int j = 0; j < tm.size(); j++) {
                             tm[j].update();
                             ModelData model;
-                            model.worldMat = toVulkanMatrix(tm[j].getMatrix())/*.transpose()*/;
+                            model.worldMat = toVulkanMatrix(tm[j].getMatrix());
                             modelDatas[p].push_back(model);
                         }
                         unsigned int vertexCount = 0;
@@ -7038,10 +7039,10 @@ namespace odfaeg {
                         //createDescriptorSets(p, currentStates);
                         createCommandBuffersIndirect(p, drawArraysIndirectCommands[p].size(), sizeof(DrawArraysIndirectCommand), RRRCDEPTHNOSTENCIL, currentStates);
                     }
-                }
+                }*/
             }
             void ReflectRefractRenderComponent::drawReflIndexedInst(Entity* reflectEntity) {
-                for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
+                /*for (unsigned int p = 0; p < Batcher::nbPrimitiveTypes; p++) {
                     vbBindlessTex[p].clear();
                     materialDatas[p].clear();
                     modelDatas[p].clear();
@@ -7073,7 +7074,7 @@ namespace odfaeg {
                         materialDatas[p].push_back(material);
                         ModelData model;
                         TransformMatrix tm;
-                        model.worldMat = toVulkanMatrix(tm.getMatrix())/*.transpose()*/;
+                        model.worldMat = toVulkanMatrix(tm.getMatrix());
                         modelDatas[p].push_back(model);
                         unsigned int vertexCount = 0, indexCount = 0;
                         for (unsigned int j = 0; j < m_reflNormalIndexed[i].getVertexArrays().size(); j++) {
@@ -7118,7 +7119,7 @@ namespace odfaeg {
                         for (unsigned int j = 0; j < tm.size(); j++) {
                             tm[j].update();
                             ModelData model;
-                            model.worldMat = toVulkanMatrix(tm[j].getMatrix())/*.transpose()*/;
+                            model.worldMat = toVulkanMatrix(tm[j].getMatrix());
                             modelDatas[p].push_back(model);
                         }
                         ////////std::cout<<"prim type : "<<p<<std::endl<<"model datas size : "<<modelDatas[p].size()<<std::endl;
@@ -7245,7 +7246,7 @@ namespace odfaeg {
 
                         createCommandBuffersIndirect(p, drawElementsIndirectCommands[p].size(), sizeof(DrawElementsIndirectCommand), RRRCNODEPTHNOSTENCIL, currentStates);
                     }
-                }
+                }*/
             }
 
             void ReflectRefractRenderComponent::drawNextFrame() {

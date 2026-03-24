@@ -164,7 +164,8 @@ namespace odfaeg {
                 Shader sBuildAlphaBufferShader;
                 View view; /**> the view of the component.*/
                 std::string expression;
-                bool update, datasReady, needToUpdateDS;
+                bool update, needToUpdateDS;
+                std::atomic<bool> datasReady;
                 VkBuffer modelDataBuffer, materialDataBuffer, modelDataStagingBuffer, materialDataStagingBuffer;
                 VkDeviceMemory modelDataStagingBufferMemory, materialDataStagingBufferMemory;
                 VkDeviceSize maxVboIndirectSize, maxModelDataSize, maxMaterialDataSize;
