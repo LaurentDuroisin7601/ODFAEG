@@ -5616,14 +5616,14 @@ namespace odfaeg {
                         return commandBufferReady[frameBuffer.getCurrentFrame()].load() || stop.load();
                 });
                 commandBufferReady[frameBuffer.getCurrentFrame()]  = false;
-                /*uint64_t waitValue = values3[frameBuffer.getCurrentFrame()];
+                uint64_t waitValue = values3[frameBuffer.getCurrentFrame()];
                 VkSemaphoreWaitInfo waitInfo{};
                 waitInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO;
                 waitInfo.semaphoreCount = 1;
                 waitInfo.pSemaphores = &offscreenFinishedSemaphore[frameBuffer.getCurrentFrame()];
                 waitInfo.pValues = &waitValue;
 
-                vkWaitSemaphores(vkDevice.getDevice(), &waitInfo, UINT64_MAX);*/
+                vkWaitSemaphores(vkDevice.getDevice(), &waitInfo, UINT64_MAX);
                 frameBuffer.beginRecordCommandBuffers();
                 std::vector<VkCommandBuffer> commandBuffers = frameBuffer.getCommandBuffers();
                 unsigned int currentFrame = frameBuffer.getCurrentFrame();
@@ -5829,6 +5829,7 @@ namespace odfaeg {
                 //std::cout<<"compute"<<std::endl;
 
                 if (visibleEntities.size() > computeSemaphores.size()) {
+
                     computeSemaphores.resize(visibleEntities.size());
                     computeFences.resize(visibleEntities.size());
                     for (unsigned int i = 0; i < visibleEntities.size(); i++) {
@@ -5953,14 +5954,14 @@ namespace odfaeg {
                 frameBuffer.submit(true, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues/*, windowInFlightFence, 0, true, false*/);
             }
             //std::cout<<"draw : "<<frameBuffer.getCurrentFrame()<<std::endl;
-            /*uint64_t waitValue = values2[frameBuffer.getCurrentFrame()];
+            uint64_t waitValue = values2[frameBuffer.getCurrentFrame()];
             VkSemaphoreWaitInfo waitInfo{};
             waitInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO;
             waitInfo.semaphoreCount = 1;
             waitInfo.pSemaphores = &offscreenFinishedSemaphore[frameBuffer.getCurrentFrame()];
             waitInfo.pValues = &waitValue;
 
-            vkWaitSemaphores(vkDevice.getDevice(), &waitInfo, UINT64_MAX);*/
+            vkWaitSemaphores(vkDevice.getDevice(), &waitInfo, UINT64_MAX);
 
 
             target.beginRecordCommandBuffers();

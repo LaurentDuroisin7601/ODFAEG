@@ -523,7 +523,9 @@ namespace odfaeg
                 submitInfo.commandBufferCount = 1;
                 submitInfo.pCommandBuffers = &getCommandBuffers()[currentFrame];
                 if (fences.size() > 0) {
-                    vkWaitForFences(vkDevice.getDevice(), fences.size(), fences.data(), VK_TRUE, UINT64_MAX);
+                    VkResult r = vkWaitForFences(vkDevice.getDevice(), fences.size(), fences.data(), VK_TRUE, UINT64_MAX);
+                    if (r == -4)
+                        printf("wait for fences result : %d\n", r);
                     if (resetFences)
                         vkResetFences(vkDevice.getDevice(), fences.size(), fences.data());
                 }
@@ -533,9 +535,9 @@ namespace odfaeg
                     throw core::Erreur(0, "échec de l'envoi d'un command buffer!", 1);
                 }
                 //std::cout<<"wait on fence : "<<inFlightFences[currentFrame]<<std::endl;
-                VkResult r = vkWaitForFences(vkDevice.getDevice(), 1, (fenceToSubmit == nullptr) ? &inFlightFences[currentFrame] : &fenceToSubmit, VK_TRUE, UINT64_MAX);
-                /*if (r == -4)
-                    printf("wait for fence result : %d\n", r);*/
+                VkResult r2 = vkWaitForFences(vkDevice.getDevice(), 1, (fenceToSubmit == nullptr) ? &inFlightFences[currentFrame] : &fenceToSubmit, VK_TRUE, UINT64_MAX);
+                if (r2 == -4)
+                    printf("wait for fence result : %d\n", r2);
                 if (resetFence) {
                     //std::cout<<"reset fence : "<<inFlightFences[currentFrame]<<std::endl;
                     auto status = vkGetFenceStatus(vkDevice.getDevice(), inFlightFences[currentFrame]);
