@@ -5294,11 +5294,11 @@ namespace odfaeg {
             }
             void ShadowRenderComponent::drawNextFrame() {
                 //glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo));
-                 std::unique_lock<std::mutex> lock(mtx);
-                {
-                    std::lock_guard<std::recursive_mutex> lock(rec_mutex);
-                    if (datasReady) {
 
+                {
+
+                    if (datasReady.load()) {
+                        std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                         m_instances = batcher.getInstances();
                         m_normals = normalBatcher.getInstances();
                         m_shadow_instances = shadowBatcher.getInstances();
@@ -5315,10 +5315,14 @@ namespace odfaeg {
 
 
                 if (useThread) {
+                    {
+                        std::unique_lock<std::mutex> lock(mtx);
+                        cv.wait(lock, [this](){return registerFrameJob[depthBuffer.getCurrentFrame()].load() || stop.load();});
 
-                    cv.wait(lock, [this](){return registerFrameJob[depthBuffer.getCurrentFrame()].load() || stop.load();});
+                        registerFrameJob[depthBuffer.getCurrentFrame()] = false;
+                    }
                     unsigned int currentFrame = depthBuffer.getCurrentFrame();
-                    registerFrameJob[currentFrame] = false;
+
                     uint64_t waitValue = values3[shadowMap.getCurrentFrame()];
 
                     VkSemaphoreWaitInfo waitInfo{};
@@ -5592,12 +5596,15 @@ namespace odfaeg {
                 return getPosition().z();
             }
             void ShadowRenderComponent::draw(RenderTarget& target, RenderStates states) {
-                std::unique_lock<std::mutex> lock(mtx);
+
                 if (useThread) {
+                    {
+                        std::unique_lock<std::mutex> lock(mtx);
 
-                    cv.wait(lock, [this] { return commandBufferReady[depthBuffer.getCurrentFrame()].load() || stop.load(); });
+                        cv.wait(lock, [this] { return commandBufferReady[depthBuffer.getCurrentFrame()].load() || stop.load(); });
 
-                    commandBufferReady[depthBuffer.getCurrentFrame()] = false;
+                        commandBufferReady[depthBuffer.getCurrentFrame()] = false;
+                    }
                     /*uint64_t waitValue = values4[shadowMap.getCurrentFrame()];
 
                     VkSemaphoreWaitInfo waitInfo{};

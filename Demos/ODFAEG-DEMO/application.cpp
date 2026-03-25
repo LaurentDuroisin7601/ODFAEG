@@ -18,6 +18,7 @@ namespace sorrok {
         previousKey = IKeyboard::Key::Unknown;
         fpsCounter = 0;
         getView().move(0, 300, 0);
+
         addClock(Clock(), "FPS");
         day = false;
         audio::Listener::setUpVector(0.f, 0.f, 1.f);
@@ -142,6 +143,8 @@ namespace sorrok {
         rc.addResourceManager(fm, "FontManager");
     }
     void MyAppli::onInit () {
+        view = getView();
+
         g2d::AmbientLight::getAmbientLight().setHeight(-7.5f);
         if (day)
             g2d::AmbientLight::getAmbientLight().setColor(Color::White);
@@ -320,19 +323,23 @@ namespace sorrok {
         //ps->move(Vec3f(0, -125, 0));
         getWorld()->addEntity(ps);
         std::cout<<"entity added to the world"<<std::endl;
-        View view = getView();
+
         //view.rotate(0, 0, 20);
 
         PerPixelLinkedListRenderComponent *frc1 = new PerPixelLinkedListRenderComponent(getRenderWindow(),0, "E_BIGTILE", ContextSettings(0, 0, 4, 4, 6));
+        frc1->setView(view);
         std::cout<<"ppll1 component created"<<std::endl;
         PerPixelLinkedListRenderComponent *frc2 = new PerPixelLinkedListRenderComponent(getRenderWindow(), 1, "E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PARTICLES", ContextSettings(24, 8, 4, 4, 6));
+        frc2->setView(view);
         std::cout<<"ppll2 component created"<<std::endl;
         ReflectRefractRenderComponent *rrrc = new ReflectRefractRenderComponent(getRenderWindow(), 2, "E_BIGTILE+E_WALL+E_DECOR+E_ANIMATION+E_HERO", ContextSettings(0, 0, 4, 4, 6));
         std::cout<<"reflect refract component created"<<std::endl;
-
+        rrrc->setView(view);
         ShadowRenderComponent *src = new ShadowRenderComponent(getRenderWindow(), 3, "E_WALL+E_DECOR+E_ANIMATION+E_HERO", ContextSettings(0, 0, 4, 4, 6));
+        src->setView(view);
         std::cout<<"shadow component created"<<std::endl;
         LightRenderComponent *lrc = new LightRenderComponent(getRenderWindow(), 4, "E_WALL+E_DECOR+E_ANIMATION+E_HERO+E_PONCTUAL_LIGHT", ContextSettings(0, 0, 4, 4, 6));
+        lrc->setView(view);
         std::cout<<"light component created"<<std::endl;
         getRenderWindow().createDescriptorsAndPipelines();
         frc1->createDescriptorsAndPipelines();
@@ -418,7 +425,7 @@ namespace sorrok {
         getWorld()->addEntity(light2);
         //getView().move(d.x() * 0.5f, d.y() * 0.5f, 0);
         getWorld()->addEntity(caracter);
-        eu->needToUpdate();
+        //eu->needToUpdate();
 
         //World::computeIntersectionsWithWalls();
         //getWorld()->update();
@@ -452,7 +459,8 @@ namespace sorrok {
         src->launchRenderer();
         lrc->launchRenderer();
         //getRenderWindow().setFramerateLimit(60);
-
+        eu->setView(view);
+        getWorld()->update();
         std::cout<<"appli initialised"<<std::endl;
     }
     void MyAppli::onRender(RenderComponentManager *cm) {
@@ -585,18 +593,19 @@ namespace sorrok {
                 if (getWorld()->collide(caracter, r, cinfos)) {
                     newPos = actualPos;
                 }
+                Vec3f d = newPos - view.getPosition();
+                view.move(d.x(), d.y(), d.y());
                 for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
                     if (getRenderComponentManager().getRenderComponent(i) != nullptr) {
-                        View view = getRenderComponentManager().getRenderComponent(i)->getView();
-                        Vec3f d = newPos - view.getPosition();
-                        view.move(d.x(), d.y(), d.y());
                         getRenderComponentManager().getRenderComponent(i)->setView(view);
+
                     }
                 }
-                Vec3f d = newPos - caracter->getCenter();
-                getView().move(d.x(), d.y(), d.y());
+
+                //getView().move(d.x(), d.y(), d.y());
                 getWorld()->moveEntity(caracter, d.x(), d.y(), d.y());
                 audio::Listener::setPosition(newPos.x(), newPos.y(), 0);
+                //eu->setView(view);
                 //World::update("EntitiesUpdater");
             } else {
                 Vec3f actualPos = caracter->getCenter();
@@ -606,17 +615,17 @@ namespace sorrok {
                 Vec2f dir = d.normalize();
                 //std::cout<<"position : "<<caracter->getPosition().z<<" dy : "<<d.y()<<std::endl;
                 getWorld()->moveEntity(caracter, d.x(), d.y(), d.y());
+                view.move(d.x(), d.y(), d.y());
                 //std::cout<<"position : "<<caracter->getPosition().z<<std::endl;
                 if (dir != caracter->getDir())
                     caracter->setDir(dir);
                 for (unsigned int i = 0; i < getRenderComponentManager().getNbComponents(); i++) {
                     if (getRenderComponentManager().getRenderComponent(i) != nullptr) {
-                        View view = getRenderComponentManager().getRenderComponent(i)->getView();
-                        view.move(d.x(), d.y(), d.y());
                         getRenderComponentManager().getRenderComponent(i)->setView(view);
+
                     }
                 }
-                getView().move(d.x(), d.y(), d.y());
+                //getView().move(d.x(), d.y(), d.y());
                 Vec2f actualPos2 = Vec2f(caracter->getCenter().x(), caracter->getCenter().y());
                 audio::Listener::setDirection(dir.x(), dir.y(), 0);
                 audio::Listener::setPosition(actualPos.x(), actualPos.y(), 0);
@@ -626,6 +635,7 @@ namespace sorrok {
                     if (player.isPlaying())
                         player.stop();
                 }
+                //eu->setView(view);
 
                 //World::update("EntitiesUpdater");
             }
@@ -637,7 +647,7 @@ namespace sorrok {
             fpsCounter = 0;
             getClock("FPS").restart();
         }
-        eu->setView(getView());
+        eu->setView(view);
         getWorld()->update();
         /*getWorld()->updateTimers();*/
         //ps->update(getClock("LoopTime").getElapsedTime());
