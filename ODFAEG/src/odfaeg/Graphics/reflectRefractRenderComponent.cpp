@@ -7275,13 +7275,14 @@ namespace odfaeg {
 
                     cv.wait(lock, [this] { return registerFrameJob[depthBuffer.getCurrentFrame()].load() || stop.load(); });
                     registerFrameJob[depthBuffer.getCurrentFrame()] = false;
-                    uint64_t waitValue = values2[reflectRefractTex.getCurrentFrame()];
+                    std::array<uint64_t, 2> waitValues = {values2[reflectRefractTex.getCurrentFrame()], HeavyComponent::getValueToWait(reflectRefractTex.getCurrentFrame())};
+                    std::array<VkSemaphore, 2> waitSemaphores = {offscreenRenderingFinishedSemaphore[reflectRefractTex.getCurrentFrame()], HeavyComponent::getSharedTimeline(reflectRefractTex.getCurrentFrame())};
 
                     VkSemaphoreWaitInfo waitInfo{};
                     waitInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO;
-                    waitInfo.semaphoreCount = 1;
-                    waitInfo.pSemaphores = &offscreenRenderingFinishedSemaphore[reflectRefractTex.getCurrentFrame()];
-                    waitInfo.pValues = &waitValue;
+                    waitInfo.semaphoreCount = waitSemaphores.size();
+                    waitInfo.pSemaphores = waitSemaphores.data();
+                    waitInfo.pValues = waitValues.data();
 
                     vkWaitSemaphores(vkDevice.getDevice(), &waitInfo, UINT64_MAX);
                     if (!stop.load()) {
@@ -8200,12 +8201,15 @@ namespace odfaeg {
                 target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
                 target.beginRecordCommandBuffers();
                 const_cast<Texture&>(reflectRefractTex.getTexture(reflectRefractTex.getImageIndex())).toColorAttachmentOptimal(target.getCommandBuffers()[target.getCurrentFrame()]);
+                signalSemaphores.push_back(HeavyComponent::getSharedTimeline(reflectRefractTex.getCurrentFrame()));
                 waitValues.clear();
                 signalValues.clear();
                 waitValues.push_back(values[reflectRefractTex.getCurrentFrame()]);
                 values[reflectRefractTex.getCurrentFrame()]++;
                 values3[reflectRefractTex.getCurrentFrame()] = values[reflectRefractTex.getCurrentFrame()];
                 signalValues.push_back(values[reflectRefractTex.getCurrentFrame()]);
+                HeavyComponent::increaseSharedValue(reflectRefractTex.getCurrentFrame());
+                signalValues.push_back(HeavyComponent::getSharedValue(reflectRefractTex.getCurrentFrame()));
                 target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
                 //std::cout<<"drawn"<<std::endl;
                 depthBuffer.display();

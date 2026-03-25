@@ -4746,13 +4746,14 @@ namespace odfaeg {
                 cv.wait(lock, [this](){return registerFrameJob[frameBuffer.getCurrentFrame()].load() || stop.load();});
                 registerFrameJob[frameBuffer.getCurrentFrame()] = false;
                 //std::cout<<"register frame : "<<frameBuffer.getCurrentFrame()<<std::endl;
-                uint64_t waitValue = values2[frameBuffer.getCurrentFrame()];
+                std::array<uint64_t, 2> waitValues = {values2[frameBuffer.getCurrentFrame()], HeavyComponent::getValueToWait(frameBuffer.getCurrentFrame())};
+                std::array<VkSemaphore, 2> waitSemaphores = {offscreenFinishedSemaphore[frameBuffer.getCurrentFrame()], HeavyComponent::getSharedTimeline(frameBuffer.getCurrentFrame())};
 
                 VkSemaphoreWaitInfo waitInfo{};
                 waitInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO;
-                waitInfo.semaphoreCount = 1;
-                waitInfo.pSemaphores = &offscreenFinishedSemaphore[frameBuffer.getCurrentFrame()];
-                waitInfo.pValues = &waitValue;
+                waitInfo.semaphoreCount = waitSemaphores.size();
+                waitInfo.pSemaphores = waitSemaphores.data();
+                waitInfo.pValues = waitValues.data();
 
                 vkWaitSemaphores(vkDevice.getDevice(), &waitInfo, UINT64_MAX);
                 //std::cout<<"draw next frame"<<std::endl;
@@ -6004,12 +6005,14 @@ namespace odfaeg {
 
             target.beginRecordCommandBuffers();
             const_cast<Texture&>(frameBuffer.getTexture(frameBuffer.getImageIndex())).toColorAttachmentOptimal(target.getCommandBuffers()[target.getCurrentFrame()]);
-
+            signalSemaphores.push_back(HeavyComponent::getSharedTimeline(frameBuffer.getCurrentFrame()));
             waitValues.clear();
             signalValues.clear();
             waitValues.push_back(values[frameBuffer.getCurrentFrame()]);
             values[frameBuffer.getCurrentFrame()]++;
             signalValues.push_back(values[frameBuffer.getCurrentFrame()]);
+            HeavyComponent::increaseSharedValue(frameBuffer.getCurrentFrame());
+            signalValues.push_back(HeavyComponent::getSharedValue(frameBuffer.getCurrentFrame()));
             //std::cout<<"submit window 2 "<<std::endl;
             target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues/*, inFligthFence, 0, false, true, windowFences[frameBuffer.getCurrentFrame()]*/);
 

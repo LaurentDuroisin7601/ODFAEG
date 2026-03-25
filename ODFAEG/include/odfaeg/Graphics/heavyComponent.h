@@ -9,8 +9,34 @@ namespace odfaeg {
             public :
             HeavyComponent(RenderWindow& window, math::Vec3f position, math::Vec3f size, math::Vec3f origin) :
                 Component(window, position, size, origin, position.z()) {
-                    ////////std::cout<<"create heavy component"<<std::endl;
+                for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+                    if (!sharedValues[i].has_value()) {
+                        sharedValues[i] = 0;
+                    }
                 }
+                for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+                    if (!valuesToWait[i].has_value()) {
+                        valuesToWait[i] = 0;
+                    }
+                }
+                VkSemaphoreCreateInfo semaphoreInfo{};
+                semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+                VkSemaphoreTypeCreateInfo timelineCreateInfo{};
+                timelineCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO;
+                timelineCreateInfo.pNext = nullptr;
+                timelineCreateInfo.semaphoreType = VK_SEMAPHORE_TYPE_TIMELINE;
+
+                semaphoreInfo.pNext = &timelineCreateInfo;
+                for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+                    if (sharedTimeline[i] == VK_NULL_HANDLE) {
+                        timelineCreateInfo.initialValue = sharedValues[i].value();
+                        if (vkCreateSemaphore(window.getDevice().getDevice(), &semaphoreInfo, nullptr, &sharedTimeline[i]) != VK_SUCCESS) {
+                            throw std::runtime_error("failed to create semaphore");
+                        }
+                    }
+                }
+                nbHeavyComponents++;
+            }
             void recomputeSize() {
                 float sx, sy, npx, npy, nsx, nsy;
                 sx = getSize().x();
@@ -36,10 +62,27 @@ namespace odfaeg {
             virtual View& getView() = 0;
             virtual void loadTextureIndexes() = 0;
             unsigned int getComponentType() const;
+            ~HeavyComponent() {
+                nbHeavyComponents--;
+                if (nbHeavyComponents == 0) {
+                    for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+                        vkDestroySemaphore(getWindow().getDevice().getDevice(), sharedTimeline[i], nullptr);
+                    }
+                }
+            }
             static void addSharedRenderTexture (RenderTexture* rt);
             static bool containsSharedRenderTexture (RenderTexture* rt);
+            static VkSemaphore getSharedTimeline(unsigned int currentFrame);
+            static unsigned int getSharedValue(unsigned int currentFrame);
+            static void increaseSharedValue(unsigned int currentFrame);
+            static void increaseValueToWait(unsigned int currentFrame, unsigned int value);
+            static unsigned int getValueToWait(unsigned int currentFrame);
             private :
                 static std::vector<RenderTexture*> sharedRenderTextures;
+                static std::array<VkSemaphore, MAX_FRAMES_IN_FLIGHT> sharedTimeline;
+                static std::array<std::optional<unsigned int>, MAX_FRAMES_IN_FLIGHT> sharedValues;
+                static std::array<std::optional<unsigned int>, MAX_FRAMES_IN_FLIGHT> valuesToWait;
+                static unsigned int nbHeavyComponents;
         };
     }
 }

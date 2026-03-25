@@ -663,7 +663,7 @@ namespace odfaeg {
                                                                     //debugPrintfEXT("normal : %v3f\nlightDir : %v3f\nlightView : %v3f", n, lightDir, lightCenter);
                                                                     if (stencil.z - bias  > projCoords.z) {
                                                                         if (depth.z - bias > z) {
-                                                                            shadowFactor = max(0, dot(normalize(n), normalize(lightDir)));
+                                                                            shadowFactor = 1.0/*max(0, dot(normalize(n), normalize(lightDir)))*/;
                                                                         } else {
                                                                             shadowFactor = 0.0;
                                                                         }
@@ -5323,13 +5323,14 @@ namespace odfaeg {
                     }
                     unsigned int currentFrame = depthBuffer.getCurrentFrame();
 
-                    uint64_t waitValue = values3[shadowMap.getCurrentFrame()];
+                    std::array<uint64_t, 2> waitValues = {values3[shadowMap.getCurrentFrame()], HeavyComponent::getValueToWait(shadowMap.getCurrentFrame())};
+                    std::array<VkSemaphore, 2> waitSemaphores = {offscreenFinishedSemaphore[shadowMap.getCurrentFrame()], HeavyComponent::getSharedTimeline(shadowMap.getCurrentFrame())};
 
                     VkSemaphoreWaitInfo waitInfo{};
                     waitInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO;
-                    waitInfo.semaphoreCount = 1;
-                    waitInfo.pSemaphores = &offscreenFinishedSemaphore[shadowMap.getCurrentFrame()];
-                    waitInfo.pValues = &waitValue;
+                    waitInfo.semaphoreCount = waitSemaphores.size();
+                    waitInfo.pSemaphores = waitSemaphores.data();
+                    waitInfo.pValues = waitValues.data();
 
                     vkWaitSemaphores(vkDevice.getDevice(), &waitInfo, UINT64_MAX);
                     if (!stop.load()) {
@@ -5903,13 +5904,14 @@ namespace odfaeg {
                 target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
                 target.beginRecordCommandBuffers();
                 const_cast<Texture&>(shadowMap.getTexture(shadowMap.getImageIndex())).toColorAttachmentOptimal(target.getCommandBuffers()[target.getCurrentFrame()]);
-
-
+                signalSemaphores.push_back(HeavyComponent::getSharedTimeline(shadowMap.getCurrentFrame()));
                 waitValues.clear();
                 signalValues.clear();
                 waitValues.push_back(values[shadowMap.getCurrentFrame()]);
                 values[shadowMap.getCurrentFrame()]++;
                 signalValues.push_back(values[shadowMap.getCurrentFrame()]);
+                HeavyComponent::increaseSharedValue(shadowMap.getCurrentFrame());
+                signalValues.push_back(HeavyComponent::getSharedValue(shadowMap.getCurrentFrame()));
                 values4[shadowMap.getCurrentFrame()] = values[shadowMap.getCurrentFrame()];
                 target.submit(false, signalSemaphores, waitSemaphores, waitStages, signalValues, waitValues);
                 depthBuffer.display();

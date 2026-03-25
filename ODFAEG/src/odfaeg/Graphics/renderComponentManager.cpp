@@ -63,13 +63,16 @@ namespace odfaeg {
         void RenderComponentManager::drawRenderComponents() {
             std::multimap<int, std::unique_ptr<Component>, std::greater<int>>::reverse_iterator it;
             unsigned int i = 0;
+            unsigned int nbVisibleRenderComponents = 0, currentFrame = 0;
             for (it = components.rbegin(); it != components.rend(); it++) {
                 if (it->second->getComponentType() == 0 && it->second->isVisible()) {
+                    nbVisibleRenderComponents++;
                     for (unsigned int i = 0; i < windows.size(); i++) {
                         if (windows[i] == &it->second->getWindow()) {
                             it->second->getWindow().enableDepthTest(false);
                             //std::cout<<"draw on window : "<<i<<std::endl;
                             it->second->getWindow().draw(*it->second.get());
+                            currentFrame = it->second->getWindow().getCurrentFrame();
 
                             /*#ifdef VULKAN
                             //it->second->getWindow().submit();
@@ -80,6 +83,8 @@ namespace odfaeg {
                     }
                 }
             }
+            //std::cout<<"set wait value : "<<nbVisibleRenderComponents<<std::endl;
+            HeavyComponent::increaseValueToWait(currentFrame, nbVisibleRenderComponents);
         }
         void RenderComponentManager::drawGuiComponents() {
             std::multimap<int, std::unique_ptr<Component>, std::greater<int>>::iterator it;
