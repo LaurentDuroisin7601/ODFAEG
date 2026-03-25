@@ -283,8 +283,8 @@ namespace odfaeg {
             std::array<unsigned int, Batcher::nbPrimitiveTypes> totalVertexCount, totalVertexIndexCount, totalIndexCount, totalBufferSizeDrawCommand, totalBufferSizeIndexedDrawCommand;
             std::array<std::array<unsigned int, MAX_FRAMES_IN_FLIGHT>, Batcher::nbPrimitiveTypes> maxBufferSizeDrawCommand, maxBufferSizeIndexedDrawCommand;
             std::array<std::vector<unsigned int>, Batcher::nbPrimitiveTypes> vertexOffsets, vertexIndexOffsets, indexOffsets, modelDataOffsets, materialDataOffsets, drawCommandBufferOffsets, nbDrawCommandBuffer, drawIndexedCommandBufferOffsets, nbIndexedDrawCommandBuffer;
-            std::mutex mtx;
-            std::condition_variable cv;
+            std::mutex mtx, mtx2;
+            std::condition_variable cv, cv2;
             std::array<std::atomic<bool>, MAX_FRAMES_IN_FLIGHT> commandBufferReady = {};
             std::array<std::atomic<bool>, MAX_FRAMES_IN_FLIGHT> registerFrameJob = {true, false};
             std::atomic<bool> stop = false;

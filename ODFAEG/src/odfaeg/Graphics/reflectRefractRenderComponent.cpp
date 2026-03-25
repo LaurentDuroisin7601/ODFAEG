@@ -7251,29 +7251,34 @@ namespace odfaeg {
 
             void ReflectRefractRenderComponent::drawNextFrame() {
                 ////////std::cout<<"draw next frame"<<std::endl;
-                std::unique_lock<std::mutex> lock(mtx);
+
+
+
                 {
-                    std::lock_guard<std::recursive_mutex> lock(rec_mutex);
-                    if (datasReady.load()) {
-                        datasReady = false;
-                        m_instances = batcher.getInstances();
-                        m_normals = normalBatcher.getInstances();
-                        m_reflInstances = reflBatcher.getInstances();
-                        m_reflNormals = reflNormalBatcher.getInstances();
-                        m_skyboxInstance = skyboxBatcher.getInstances();
-                        m_indexed = indexedBatcher.getInstances();
-                        m_normalIndexed = normalIndexedBatcher.getInstances();
-                        m_reflIndexed = reflIndexedBatcher.getInstances();
-                        m_reflNormalIndexed = reflNormalIndexedBatcher.getInstances();
-                    }
+                    std::unique_lock<std::mutex> lock(mtx2);
+                    cv2.wait(lock, [this]{return datasReady.load() || stop.load();});
+                    m_instances = batcher.getInstances();
+                    m_normals = normalBatcher.getInstances();
+                    m_reflInstances = reflBatcher.getInstances();
+                    m_reflNormals = reflNormalBatcher.getInstances();
+                    m_skyboxInstance = skyboxBatcher.getInstances();
+                    m_indexed = indexedBatcher.getInstances();
+                    m_normalIndexed = normalIndexedBatcher.getInstances();
+                    m_reflIndexed = reflIndexedBatcher.getInstances();
+                    m_reflNormalIndexed = reflNormalIndexedBatcher.getInstances();
+                    datasReady = false;
                 }
+
 
                 ////std::cout<<"view matrix : "<<viewMatrix<<std::endl;
                 if (useThread) {
                     //commandBufferReady = false;
 
+                    {
+                        std::unique_lock<std::mutex> lock(mtx);
+                        cv.wait(lock, [this] { return registerFrameJob[depthBuffer.getCurrentFrame()].load() || stop.load(); });
+                    }
 
-                    cv.wait(lock, [this] { return registerFrameJob[depthBuffer.getCurrentFrame()].load() || stop.load(); });
                     registerFrameJob[depthBuffer.getCurrentFrame()] = false;
                     std::array<uint64_t, 2> waitValues = {values2[reflectRefractTex.getCurrentFrame()], HeavyComponent::getValueToWait(reflectRefractTex.getCurrentFrame())};
                     std::array<VkSemaphore, 2> waitSemaphores = {offscreenRenderingFinishedSemaphore[reflectRefractTex.getCurrentFrame()], HeavyComponent::getSharedTimeline(reflectRefractTex.getCurrentFrame())};
@@ -7757,14 +7762,16 @@ namespace odfaeg {
                 }
             }
             void ReflectRefractRenderComponent::draw(RenderTarget& target, RenderStates states) {
-                std::unique_lock<std::mutex> lock(mtx);
+
                 if (useThread) {
                     //std::cout<<"current frame : "<<depthBuffer.getCurrentFrame()<<std::endl;
 
-
-                    cv.wait(lock, [this] { return commandBufferReady[depthBuffer.getCurrentFrame()].load() || stop.load(); });
+                    {
+                        std::unique_lock<std::mutex> lock(mtx);
+                        cv.wait(lock, [this] { return commandBufferReady[depthBuffer.getCurrentFrame()].load() || stop.load(); });
+                    }
                     commandBufferReady[depthBuffer.getCurrentFrame()] = false;
-                    /*uint64_t waitValue = values3[reflectRefractTex.getCurrentFrame()];
+                    uint64_t waitValue = values3[reflectRefractTex.getCurrentFrame()];
 
                     VkSemaphoreWaitInfo waitInfo{};
                     waitInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO;
@@ -7772,7 +7779,7 @@ namespace odfaeg {
                     waitInfo.pSemaphores = &offscreenRenderingFinishedSemaphore[reflectRefractTex.getCurrentFrame()];
                     waitInfo.pValues = &waitValue;
 
-                    vkWaitSemaphores(vkDevice.getDevice(), &waitInfo, UINT64_MAX);*/
+                    vkWaitSemaphores(vkDevice.getDevice(), &waitInfo, UINT64_MAX);
                     // std::cout<<"wait command buffers : "<<depthBuffer.getCurrentFrame()<<std::endl;
                     //std::cout<<"soumission"<<std::endl;
                     depthBuffer.beginRecordCommandBuffers();
@@ -8249,72 +8256,76 @@ namespace odfaeg {
                 if (&rw == &window && event.type == window::IEvent::WINDOW_EVENT && event.window.type == window::IEvent::WINDOW_EVENT_CLOSED) {
                     stop = true;
                     cv.notify_all();
+                    cv2.notify_all();
                     getListener().stop();
 
                 }
             }
             bool ReflectRefractRenderComponent::loadEntitiesOnComponent(std::vector<Entity*> vEntities) {
-                {
-                    std::lock_guard<std::recursive_mutex> lock(rec_mutex);
-                    datasReady = false;
-                    batcher.clear();
-                    normalBatcher.clear();
-                    reflBatcher.clear();
-                    reflNormalBatcher.clear();
-                    indexedBatcher.clear();
-                    normalIndexedBatcher.clear();
-                    reflIndexedBatcher.clear();
-                    reflNormalIndexedBatcher.clear();
-                    skyboxBatcher.clear();
-                }
-                if (skybox != nullptr) {
-                    for (unsigned int i = 0; i < skybox->getFaces().size(); i++) {
-                        skyboxBatcher.addFace(skybox->getFace(i));
+                if (!datasReady.load()) {
+                    {
+                        std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                        batcher.clear();
+                        normalBatcher.clear();
+                        reflBatcher.clear();
+                        reflNormalBatcher.clear();
+                        indexedBatcher.clear();
+                        normalIndexedBatcher.clear();
+                        reflIndexedBatcher.clear();
+                        reflNormalIndexedBatcher.clear();
+                        skyboxBatcher.clear();
                     }
-                }
 
-                for (unsigned int i = 0; i < vEntities.size(); i++) {
-                    if ( vEntities[i] != nullptr && vEntities[i]->isLeaf()) {
-                        ////////std::cout<<"add entity"<<std::endl;
-                        for (unsigned int j = 0; j <  vEntities[i]->getNbFaces(); j++) {
-                            std::lock_guard<std::recursive_mutex> lock(rec_mutex);
-                            if (vEntities[i]->getFace(j)->getMaterial().isReflectable() || vEntities[i]->getFace(j)->getMaterial().isRefractable()) {
-                                if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0) {
-                                    if (vEntities[i]->getDrawMode() == Entity::INSTANCED) {
-                                        ////////std::cout<<"add refl face"<<std::endl;
-                                        reflBatcher.addFace( vEntities[i]->getFace(j));
+                    if (skybox != nullptr) {
+                        for (unsigned int i = 0; i < skybox->getFaces().size(); i++) {
+                            skyboxBatcher.addFace(skybox->getFace(i));
+                        }
+                    }
+
+                    for (unsigned int i = 0; i < vEntities.size(); i++) {
+                        if ( vEntities[i] != nullptr && vEntities[i]->isLeaf()) {
+                            ////////std::cout<<"add entity"<<std::endl;
+                            for (unsigned int j = 0; j <  vEntities[i]->getNbFaces(); j++) {
+                                std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                                if (vEntities[i]->getFace(j)->getMaterial().isReflectable() || vEntities[i]->getFace(j)->getMaterial().isRefractable()) {
+                                    if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0) {
+                                        if (vEntities[i]->getDrawMode() == Entity::INSTANCED) {
+                                            ////////std::cout<<"add refl face"<<std::endl;
+                                            reflBatcher.addFace( vEntities[i]->getFace(j));
+                                        } else {
+                                            reflNormalBatcher.addFace(vEntities[i]->getFace(j));
+                                        }
                                     } else {
-                                        reflNormalBatcher.addFace(vEntities[i]->getFace(j));
+                                       if (vEntities[i]->getDrawMode() == Entity::INSTANCED) {
+                                            ////////std::cout<<"add refl face"<<std::endl;
+                                            reflIndexedBatcher.addFace( vEntities[i]->getFace(j));
+                                        } else {
+                                            reflNormalIndexedBatcher.addFace(vEntities[i]->getFace(j));
+                                        }
                                     }
                                 } else {
-                                   if (vEntities[i]->getDrawMode() == Entity::INSTANCED) {
-                                        ////////std::cout<<"add refl face"<<std::endl;
-                                        reflIndexedBatcher.addFace( vEntities[i]->getFace(j));
+                                    if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0) {
+                                        if (vEntities[i]->getDrawMode() == Entity::INSTANCED) {
+                                            batcher.addFace( vEntities[i]->getFace(j));
+                                        } else {
+                                            normalBatcher.addFace(vEntities[i]->getFace(j));
+                                        }
                                     } else {
-                                        reflNormalIndexedBatcher.addFace(vEntities[i]->getFace(j));
-                                    }
-                                }
-                            } else {
-                                if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0) {
-                                    if (vEntities[i]->getDrawMode() == Entity::INSTANCED) {
-                                        batcher.addFace( vEntities[i]->getFace(j));
-                                    } else {
-                                        normalBatcher.addFace(vEntities[i]->getFace(j));
-                                    }
-                                } else {
-                                    if (vEntities[i]->getDrawMode() == Entity::INSTANCED) {
-                                        indexedBatcher.addFace( vEntities[i]->getFace(j));
-                                    } else {
-                                        normalIndexedBatcher.addFace(vEntities[i]->getFace(j));
+                                        if (vEntities[i]->getDrawMode() == Entity::INSTANCED) {
+                                            indexedBatcher.addFace( vEntities[i]->getFace(j));
+                                        } else {
+                                            normalIndexedBatcher.addFace(vEntities[i]->getFace(j));
+                                        }
                                     }
                                 }
                             }
                         }
                     }
+                    std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                    visibleEntities = vEntities;
+                    datasReady = true;
+                    cv2.notify_one();
                 }
-                std::lock_guard<std::recursive_mutex> lock(rec_mutex);
-                visibleEntities = vEntities;
-                datasReady = true;
                 return true;
             }
             ReflectRefractRenderComponent::~ReflectRefractRenderComponent() {

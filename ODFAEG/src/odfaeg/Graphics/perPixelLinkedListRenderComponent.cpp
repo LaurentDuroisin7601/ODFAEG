@@ -4687,32 +4687,33 @@ namespace odfaeg {
             }*/
         }
         void PerPixelLinkedListRenderComponent::drawNextFrame() {
-            std::unique_lock<std::mutex> lock(mtx);
 
 
-            {
+
+
 
 
                 ////std::cout<<"next frame datasReady"<<datasReady<<std::endl;
-                if (datasReady.load()) {
+            {
 
-                    datasReady = false;
-                    std::lock_guard<std::recursive_mutex> lock(rec_mutex);
-                    m_instances = batcher.getInstances();
-                    m_normals = normalBatcher.getInstances();
-                    m_instancesIndexed = batcherIndexed.getInstances();
-                    m_normalsIndexed = normalBatcherIndexed.getInstances();
-                    m_selected = selectedBatcher.getInstances();
-                    m_selectedScale = selectedScaleBatcher.getInstances();
-                    m_selectedIndexed = selectedIndexBatcher.getInstances();
-                    m_selectedScaleIndexed = selectedIndexScaleBatcher.getInstances();
-                    m_selectedInstance = selectedInstanceBatcher.getInstances();
-                    m_selectedScaleInstance = selectedInstanceScaleBatcher.getInstances();
-                    m_selectedInstanceIndexed = selectedInstanceIndexBatcher.getInstances();
-                    m_selectedScaleInstanceIndexed = selectedInstanceIndexScaleBatcher.getInstances();
-                    m_skyboxInstance = skyboxBatcher.getInstances();
-                }
+                std::unique_lock<std::mutex> lock(mtx3);
+                cv3.wait(lock, [this]{return datasReady.load() || stop.load();});
+                m_instances = batcher.getInstances();
+                m_normals = normalBatcher.getInstances();
+                m_instancesIndexed = batcherIndexed.getInstances();
+                m_normalsIndexed = normalBatcherIndexed.getInstances();
+                m_selected = selectedBatcher.getInstances();
+                m_selectedScale = selectedScaleBatcher.getInstances();
+                m_selectedIndexed = selectedIndexBatcher.getInstances();
+                m_selectedScaleIndexed = selectedIndexScaleBatcher.getInstances();
+                m_selectedInstance = selectedInstanceBatcher.getInstances();
+                m_selectedScaleInstance = selectedInstanceScaleBatcher.getInstances();
+                m_selectedInstanceIndexed = selectedInstanceIndexBatcher.getInstances();
+                m_selectedScaleInstanceIndexed = selectedInstanceIndexScaleBatcher.getInstances();
+                m_skyboxInstance = skyboxBatcher.getInstances();
+                datasReady = false;
             }
+
 
             /*math::Matrix4f viewMatrix = view.getViewMatrix().getMatrix().transpose();
             math::Matrix4f projMatrix = view.getProjMatrix().getMatrix().transpose();
@@ -4741,10 +4742,15 @@ namespace odfaeg {
 
             if (useThread) {
 
+                {
+                    std::unique_lock<std::mutex> lock(mtx);
+                    //std::unique_lock<std::mutex> lock2(mtx2);
+                    cv.wait(lock, [this](){return registerFrameJob[frameBuffer.getCurrentFrame()].load() || stop.load();});
 
-                //std::unique_lock<std::mutex> lock2(mtx2);
-                cv.wait(lock, [this](){return registerFrameJob[frameBuffer.getCurrentFrame()].load() || stop.load();});
+
+                }
                 registerFrameJob[frameBuffer.getCurrentFrame()] = false;
+
                 //std::cout<<"register frame : "<<frameBuffer.getCurrentFrame()<<std::endl;
                 std::array<uint64_t, 2> waitValues = {values2[frameBuffer.getCurrentFrame()], HeavyComponent::getValueToWait(frameBuffer.getCurrentFrame())};
                 std::array<VkSemaphore, 2> waitSemaphores = {offscreenFinishedSemaphore[frameBuffer.getCurrentFrame()], HeavyComponent::getSharedTimeline(frameBuffer.getCurrentFrame())};
@@ -5456,119 +5462,119 @@ namespace odfaeg {
             return border;
         }
         bool PerPixelLinkedListRenderComponent::loadEntitiesOnComponent(std::vector<Entity*> vEntities) {
-            {
-
-                datasReady = false;
-                std::lock_guard<std::recursive_mutex> lock(rec_mutex);
-                batcher.clear();
-                normalBatcher.clear();
-                batcherIndexed.clear();
-                normalBatcherIndexed.clear();
-                selectedBatcher.clear();
-                selectedScaleBatcher.clear();
-                selectedIndexBatcher.clear();
-                selectedIndexScaleBatcher.clear();
-                selectedInstanceBatcher.clear();
-                selectedInstanceScaleBatcher.clear();
-                selectedInstanceIndexBatcher.clear();
-                selectedInstanceIndexScaleBatcher.clear();
-                skyboxBatcher.clear();
-            }
-            //std::cout<<"load entities on component"<<std::endl;
-            if (skybox != nullptr) {
-                for (unsigned int i = 0; i <  skybox->getNbFaces(); i++) {
-                    skyboxBatcher.addFace(skybox->getFace(i));
+            if (!datasReady.load()) {
+                {
+                    std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                    batcher.clear();
+                    normalBatcher.clear();
+                    batcherIndexed.clear();
+                    normalBatcherIndexed.clear();
+                    selectedBatcher.clear();
+                    selectedScaleBatcher.clear();
+                    selectedIndexBatcher.clear();
+                    selectedIndexScaleBatcher.clear();
+                    selectedInstanceBatcher.clear();
+                    selectedInstanceScaleBatcher.clear();
+                    selectedInstanceIndexBatcher.clear();
+                    selectedInstanceIndexScaleBatcher.clear();
+                    skyboxBatcher.clear();
                 }
-            }
-            //std::cout<<"component expression : "<<expression<<std::endl;
-            for (unsigned int i = 0; i < vEntities.size(); i++) {
-
-                if ( vEntities[i] != nullptr && vEntities[i]->isLeaf()) {
-
-                    Entity* border;
-                    if (vEntities[i]->isSelected()) {
-                        border = getBorder(vEntities[i]);
+                //std::cout<<"load entities on component"<<std::endl;
+                if (skybox != nullptr) {
+                    for (unsigned int i = 0; i <  skybox->getNbFaces(); i++) {
+                        skyboxBatcher.addFace(skybox->getFace(i));
                     }
-                    for (unsigned int j = 0; j <  vEntities[i]->getNbFaces(); j++) {
+                }
+                //std::cout<<"component expression : "<<expression<<std::endl;
+                for (unsigned int i = 0; i < vEntities.size(); i++) {
 
-                         std::lock_guard<std::recursive_mutex> lock(rec_mutex);
-                         if (vEntities[i]->getDrawMode() == Entity::INSTANCED && !vEntities[i]->isSelected()) {
-                            if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0) {
+                    if ( vEntities[i] != nullptr && vEntities[i]->isLeaf()) {
 
-                                batcher.addFace( vEntities[i]->getFace(j));
-                            } else {
-
-                                batcherIndexed.addFace(vEntities[i]->getFace(j));
-                            }
-                         } else if (vEntities[i]->getDrawMode() == Entity::NORMAL && !vEntities[i]->isSelected()) {
-                             if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0) {
-                                normalBatcher.addFace( vEntities[i]->getFace(j));
-                             } else {
-                                ////std::cout<<"add face"<<std::endl;
-                                normalBatcherIndexed.addFace( vEntities[i]->getFace(j));
-                             }
-                        } else if (vEntities[i]->getDrawMode() == Entity::INSTANCED && vEntities[i]->isSelected()) {
-
-                            if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0) {
-                                selectedInstanceBatcher.addFace(vEntities[i]->getFace(j));
-                           // //////std::cout<<"remove texture"<<std::endl;
-
-                            ////////std::cout<<"get va"<<std::endl;
-
-
-                               // //////std::cout<<"add to batcher"<<std::endl;
-                                selectedInstanceScaleBatcher.addFace(border->getFace(j));
-                           // //////std::cout<<"face added"<<std::endl;
-                             } else {
-                                 selectedInstanceIndexBatcher.addFace(vEntities[i]->getFace(j));
-                               // //////std::cout<<"remove texture"<<std::endl;
-
-                            ////////std::cout<<"get va"<<std::endl;
-
-
-                               // //////std::cout<<"add to batcher"<<std::endl;
-
-                               // //////std::cout<<"add to batcher"<<std::endl;
-                                selectedInstanceIndexScaleBatcher.addFace(border->getFace(j));
-                             }
-                        } else {
-                            if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0) {
-
-                                selectedBatcher.addFace(vEntities[i]->getFace(j));
-                           // //////std::cout<<"remove texture"<<std::endl;
-
-                            ////////std::cout<<"get va"<<std::endl;
-
-
-                                selectedScaleBatcher.addFace(border->getFace(j));
-
-                                ////std::cout<<"face added"<<std::endl;
-                             } else {
-                                 selectedIndexBatcher.addFace(vEntities[i]->getFace(j));
-                               // //////std::cout<<"remove texture"<<std::endl;
-
-                            ////////std::cout<<"get va"<<std::endl;
-
-
-                                ////std::cout<<"add to batcher"<<std::endl;
-                                selectedIndexScaleBatcher.addFace(border->getFace(j));
-                             }
+                        Entity* border;
+                        if (vEntities[i]->isSelected()) {
+                            border = getBorder(vEntities[i]);
                         }
-                    }
-                    /*if (vEntities[i]->isSelected()) {
-                        std::unique_ptr<Entity> ptr;
-                        ptr.reset(border);
-                        visibleSelectedScaleEntities.push_back(std::move(ptr));
-                    }*/
-                }
+                        for (unsigned int j = 0; j <  vEntities[i]->getNbFaces(); j++) {
 
+                             std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                             if (vEntities[i]->getDrawMode() == Entity::INSTANCED && !vEntities[i]->isSelected()) {
+                                if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0) {
+
+                                    batcher.addFace( vEntities[i]->getFace(j));
+                                } else {
+
+                                    batcherIndexed.addFace(vEntities[i]->getFace(j));
+                                }
+                             } else if (vEntities[i]->getDrawMode() == Entity::NORMAL && !vEntities[i]->isSelected()) {
+                                 if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0) {
+                                    normalBatcher.addFace( vEntities[i]->getFace(j));
+                                 } else {
+                                    ////std::cout<<"add face"<<std::endl;
+                                    normalBatcherIndexed.addFace( vEntities[i]->getFace(j));
+                                 }
+                            } else if (vEntities[i]->getDrawMode() == Entity::INSTANCED && vEntities[i]->isSelected()) {
+
+                                if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0) {
+                                    selectedInstanceBatcher.addFace(vEntities[i]->getFace(j));
+                               // //////std::cout<<"remove texture"<<std::endl;
+
+                                ////////std::cout<<"get va"<<std::endl;
+
+
+                                   // //////std::cout<<"add to batcher"<<std::endl;
+                                    selectedInstanceScaleBatcher.addFace(border->getFace(j));
+                               // //////std::cout<<"face added"<<std::endl;
+                                 } else {
+                                     selectedInstanceIndexBatcher.addFace(vEntities[i]->getFace(j));
+                                   // //////std::cout<<"remove texture"<<std::endl;
+
+                                ////////std::cout<<"get va"<<std::endl;
+
+
+                                   // //////std::cout<<"add to batcher"<<std::endl;
+
+                                   // //////std::cout<<"add to batcher"<<std::endl;
+                                    selectedInstanceIndexScaleBatcher.addFace(border->getFace(j));
+                                 }
+                            } else {
+                                if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0) {
+
+                                    selectedBatcher.addFace(vEntities[i]->getFace(j));
+                               // //////std::cout<<"remove texture"<<std::endl;
+
+                                ////////std::cout<<"get va"<<std::endl;
+
+
+                                    selectedScaleBatcher.addFace(border->getFace(j));
+
+                                    ////std::cout<<"face added"<<std::endl;
+                                 } else {
+                                     selectedIndexBatcher.addFace(vEntities[i]->getFace(j));
+                                   // //////std::cout<<"remove texture"<<std::endl;
+
+                                ////////std::cout<<"get va"<<std::endl;
+
+
+                                    ////std::cout<<"add to batcher"<<std::endl;
+                                    selectedIndexScaleBatcher.addFace(border->getFace(j));
+                                 }
+                            }
+                        }
+                        /*if (vEntities[i]->isSelected()) {
+                            std::unique_ptr<Entity> ptr;
+                            ptr.reset(border);
+                            visibleSelectedScaleEntities.push_back(std::move(ptr));
+                        }*/
+                    }
+
+                }                ////////std::cout<<"instances added"<<std::endl;
+
+                std::lock_guard<std::mutex> lock(mtx);
+                visibleEntities = vEntities;
+                datasReady = true;
+                cv3.notify_one();
             }
 
-            ////////std::cout<<"instances added"<<std::endl;
-
-            std::lock_guard<std::mutex> lock(mtx);
-            visibleEntities = vEntities;
-            datasReady = true;
             //std::cout<<"data ready"<<std::endl;
             //cv.notify_one();
             //std::cout<<"load entities data ready : "<<datasReady<<std::endl;
@@ -5596,6 +5602,7 @@ namespace odfaeg {
                 stop = true;
                 cv.notify_all();
                 cv2.notify_all();
+                cv3.notify_all();
                 getListener().stop();
 
             }
@@ -5609,17 +5616,21 @@ namespace odfaeg {
         }
         void PerPixelLinkedListRenderComponent::draw(RenderTarget& target, RenderStates states) {
 
-            std::unique_lock<std::mutex> lock(mtx);
+
 
 
             if (useThread) {
+                {
+                    std::unique_lock<std::mutex> lock(mtx);
+                    cv.wait(lock, [this] {
 
-                cv.wait(lock, [this] {
-
-                        //std::cout<<"draw frame : "<<frameBuffer.getCurrentFrame()<<std::endl;
+                            //std::cout<<"draw frame : "<<frameBuffer.getCurrentFrame()<<std::endl;
                         return commandBufferReady[frameBuffer.getCurrentFrame()].load() || stop.load();
-                });
+                    });
+
+                }
                 commandBufferReady[frameBuffer.getCurrentFrame()]  = false;
+
                 /*uint64_t waitValue = values3[frameBuffer.getCurrentFrame()];
                 VkSemaphoreWaitInfo waitInfo{};
                 waitInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO;

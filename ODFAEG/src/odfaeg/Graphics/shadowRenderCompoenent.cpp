@@ -4780,12 +4780,12 @@ namespace odfaeg {
                         modelDatas[p].push_back(model);
                         unsigned int indexCount = 0, vertexCount = 0;
                         for (unsigned int j = 0; j < m_shadow_normalsIndexed[i].getAllVertices().getVertexCount(); j++) {
-                            ////std::cout<<"add shadow norm vert"<<std::endl;
+                            //std::cout<<"add shadow norm vert"<<std::endl;
                             vertexCount++;
                             vbBindlessTexIndexed[p].append(m_shadow_normalsIndexed[i].getAllVertices()[j]);
                         }
                         for (unsigned int j = 0; j < m_shadow_normalsIndexed[i].getAllVertices().getIndexes().size(); j++) {
-                            ////std::cout<<"add shadow norm index"<<std::endl;
+                            //std::cout<<"add shadow norm index"<<std::endl;
                             indexCount++;
                             vbBindlessTexIndexed[p].addIndex(m_shadow_normalsIndexed[i].getAllVertices().getIndexes()[j]);
                         }
@@ -5295,21 +5295,24 @@ namespace odfaeg {
             void ShadowRenderComponent::drawNextFrame() {
                 //glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo));
 
-                {
 
-                    if (datasReady.load()) {
-                        std::lock_guard<std::recursive_mutex> lock(rec_mutex);
-                        m_instances = batcher.getInstances();
-                        m_normals = normalBatcher.getInstances();
-                        m_shadow_instances = shadowBatcher.getInstances();
-                        m_shadow_normals = normalShadowBatcher.getInstances();
-                        m_instancesIndexed = batcherIndexed.getInstances();
-                        m_shadow_instances_indexed = shadowBatcherIndexed.getInstances();
-                        m_normalsIndexed = normalBatcherIndexed.getInstances();
-                        m_shadow_normalsIndexed = normalShadowBatcherIndexed.getInstances();
-                        /*m_stencil_buffer = normalStencilBuffer.getInstances();*/
-                    }
+
+                {
+                    std::unique_lock<std::mutex> lock(mtx2);
+                    cv2.wait(lock, [this]() {return datasReady.load() || stop.load();});
+                    m_instances = batcher.getInstances();
+                    m_normals = normalBatcher.getInstances();
+                    m_shadow_instances = shadowBatcher.getInstances();
+                    m_shadow_normals = normalShadowBatcher.getInstances();
+                    m_instancesIndexed = batcherIndexed.getInstances();
+                    m_shadow_instances_indexed = shadowBatcherIndexed.getInstances();
+                    m_normalsIndexed = normalBatcherIndexed.getInstances();
+                    m_shadow_normalsIndexed = normalShadowBatcherIndexed.getInstances();
+                    datasReady = false;
                 }
+                    /*m_stencil_buffer = normalStencilBuffer.getInstances();*/
+
+
 
 
 
@@ -5319,8 +5322,8 @@ namespace odfaeg {
                         std::unique_lock<std::mutex> lock(mtx);
                         cv.wait(lock, [this](){return registerFrameJob[depthBuffer.getCurrentFrame()].load() || stop.load();});
 
-                        registerFrameJob[depthBuffer.getCurrentFrame()] = false;
                     }
+                    registerFrameJob[depthBuffer.getCurrentFrame()] = false;
                     unsigned int currentFrame = depthBuffer.getCurrentFrame();
 
                     std::array<uint64_t, 2> waitValues = {values3[shadowMap.getCurrentFrame()], HeavyComponent::getValueToWait(shadowMap.getCurrentFrame())};
@@ -5378,6 +5381,7 @@ namespace odfaeg {
                         vkMapMemory(vkDevice.getDevice(), shadowUBOMemory[currentFrame], 0, bufferSize, 0, &data);
                         memcpy(data, &shadowUBODatas, (size_t)bufferSize);
                         vkUnmapMemory(vkDevice.getDevice(), shadowUBOMemory[currentFrame]);
+                        //std::cout<<"fill"<<std::endl;
                         resetBuffers();
                         fillBuffersMT();
                         fillIndexedBuffersMT();
@@ -5569,6 +5573,7 @@ namespace odfaeg {
                 if (&rw == &window && event.type == window::IEvent::WINDOW_EVENT && event.window.type == window::IEvent::WINDOW_EVENT_CLOSED) {
                     stop = true;
                     cv.notify_all();
+                    cv2.notify_all();
                     getListener().stop();
                 }
             }
@@ -5604,9 +5609,10 @@ namespace odfaeg {
 
                         cv.wait(lock, [this] { return commandBufferReady[depthBuffer.getCurrentFrame()].load() || stop.load(); });
 
-                        commandBufferReady[depthBuffer.getCurrentFrame()] = false;
+
                     }
-                    /*uint64_t waitValue = values4[shadowMap.getCurrentFrame()];
+                    commandBufferReady[depthBuffer.getCurrentFrame()] = false;
+                    uint64_t waitValue = values4[shadowMap.getCurrentFrame()];
 
                     VkSemaphoreWaitInfo waitInfo{};
                     waitInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO;
@@ -5614,7 +5620,7 @@ namespace odfaeg {
                     waitInfo.pSemaphores = &offscreenFinishedSemaphore[shadowMap.getCurrentFrame()];
                     waitInfo.pValues = &waitValue;
 
-                    vkWaitSemaphores(vkDevice.getDevice(), &waitInfo, UINT64_MAX);*/
+                    vkWaitSemaphores(vkDevice.getDevice(), &waitInfo, UINT64_MAX);
                     depthBuffer.beginRecordCommandBuffers();
                     std::vector<VkCommandBuffer> commandBuffers = depthBuffer.getCommandBuffers();
                     unsigned int currentFrame = depthBuffer.getCurrentFrame();
@@ -5968,89 +5974,95 @@ namespace odfaeg {
             }
             bool ShadowRenderComponent::loadEntitiesOnComponent(std::vector<Entity*> vEntities)
             {
-                {
-                    std::lock_guard<std::recursive_mutex> lock(rec_mutex);
-                    datasReady = false;
-                    batcher.clear();
-                    normalBatcher.clear();
-                    shadowBatcher.clear();
-                    normalShadowBatcher.clear();
-                    batcherIndexed.clear();
-                    shadowBatcherIndexed.clear();
-                    normalBatcherIndexed.clear();
-                    normalShadowBatcherIndexed.clear();
+
+                if (!datasReady.load()) {
+                    {
+                        std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                        batcher.clear();
+                        normalBatcher.clear();
+                        shadowBatcher.clear();
+                        normalShadowBatcher.clear();
+                        batcherIndexed.clear();
+                        shadowBatcherIndexed.clear();
+                        normalBatcherIndexed.clear();
+                        normalShadowBatcherIndexed.clear();
+
+                    }
+
                     //normalStencilBuffer.clear();
 
-                }
 
 
 
-                for (unsigned int i = 0; i < vEntities.size(); i++) {
-                    std::lock_guard<std::recursive_mutex> lock(rec_mutex);
-                    if ( vEntities[i] != nullptr && vEntities[i]->isLeaf()) {
+                    for (unsigned int i = 0; i < vEntities.size(); i++) {
+                        std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                        if ( vEntities[i] != nullptr && vEntities[i]->isLeaf()) {
 
-                        Entity* shadow = getShadow(vEntities[i]);
-                        //std::cout<<"shadow get"<<std::endl;
-                        Entity* entity = vEntities[i]->getRootEntity();
-                        math::Vec3f shadowOrigin, shadowCenter, shadowScale(1.f, 1.f, 1.f), shadowRotationAxis, shadowTranslation;
-                        float shadowRotationAngle = 0;
-                        //if (entity != nullptr && entity->isModel()) {
-                            shadowCenter = entity->getShadowCenter();
-                            shadowScale = entity->getShadowScale();
-                            shadowRotationAxis = entity->getShadowRotationAxis();
-                            shadowRotationAngle = entity->getShadowRotationAngle();
-                            shadowOrigin = entity->getPosition();
-                            shadowTranslation = entity->getPosition() + shadowCenter;
-                            //if (entity->getType() == "E_WALL") {
-                                //////std::cout<<"shadow center : "<<shadowCenter<<std::endl;
-                                //////std::cout<<"shadow scale : "<<shadowScale<<std::endl;
-                                //////std::cout<<"shadow rotation axis : "<<shadowRotationAxis<<std::endl;
-                                //////std::cout<<"shadow rotation angle : "<<shadowRotationAngle<<std::endl;
-                                //////std::cout<<"shadow origin : "<<shadowOrigin<<std::endl;
-                                //////std::cout<<"shadow translation : "<<shadowTranslation<<std::endl;
+                            Entity* shadow = getShadow(vEntities[i]);
+                            //std::cout<<"shadow get"<<std::endl;
+                            Entity* entity = vEntities[i]->getRootEntity();
+                            math::Vec3f shadowOrigin, shadowCenter, shadowScale(1.f, 1.f, 1.f), shadowRotationAxis, shadowTranslation;
+                            float shadowRotationAngle = 0;
+                            //if (entity != nullptr && entity->isModel()) {
+                                shadowCenter = entity->getShadowCenter();
+                                shadowScale = entity->getShadowScale();
+                                shadowRotationAxis = entity->getShadowRotationAxis();
+                                shadowRotationAngle = entity->getShadowRotationAngle();
+                                shadowOrigin = entity->getPosition();
+                                shadowTranslation = entity->getPosition() + shadowCenter;
+                                //if (entity->getType() == "E_WALL") {
+                                    //////std::cout<<"shadow center : "<<shadowCenter<<std::endl;
+                                    //////std::cout<<"shadow scale : "<<shadowScale<<std::endl;
+                                    //////std::cout<<"shadow rotation axis : "<<shadowRotationAxis<<std::endl;
+                                    //////std::cout<<"shadow rotation angle : "<<shadowRotationAngle<<std::endl;
+                                    //////std::cout<<"shadow origin : "<<shadowOrigin<<std::endl;
+                                    //////std::cout<<"shadow translation : "<<shadowTranslation<<std::endl;
+                                //}
                             //}
-                        //}
-                        TransformMatrix tm;
-                        tm.setOrigin(shadowOrigin);
-                        tm.setScale(shadowScale);
-                        tm.setRotation(shadowRotationAxis, shadowRotationAngle);
-                        tm.setTranslation(shadowTranslation);
+                            TransformMatrix tm;
+                            tm.setOrigin(shadowOrigin);
+                            tm.setScale(shadowScale);
+                            tm.setRotation(shadowRotationAxis, shadowRotationAngle);
+                            tm.setTranslation(shadowTranslation);
 
-                        for (unsigned int j = 0; j <  vEntities[i]->getNbFaces(); j++) {
+                            for (unsigned int j = 0; j <  vEntities[i]->getNbFaces(); j++) {
 
-                             if(vEntities[i]->getDrawMode() == Entity::INSTANCED) {
-                                if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0) {
+                                 if(vEntities[i]->getDrawMode() == Entity::INSTANCED) {
+                                    if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0) {
 
-                                    batcher.addFace( vEntities[i]->getFace(j));
-                                    shadowBatcher.addShadowFace(shadow->getFace(j), view.getViewMatrix(), tm);
-                                } else {
+                                        batcher.addFace( vEntities[i]->getFace(j));
+                                        shadowBatcher.addShadowFace(shadow->getFace(j), view.getViewMatrix(), tm);
+                                    } else {
 
-                                    batcherIndexed.addFace( vEntities[i]->getFace(j));
-                                    shadowBatcherIndexed.addShadowFace(shadow->getFace(j), view.getViewMatrix(), tm);
-                                }
-                             } else {
-                                 if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0) {
-
-                                    normalBatcher.addFace( vEntities[i]->getFace(j));
-                                    normalShadowBatcher.addShadowFace(shadow->getFace(j), view.getViewMatrix(), tm);
-                                    /*if (vEntities[i]->getRootEntity()->getType() != "E_BIGTILE") {
-                                        std::lock_guard<std::recursive_mutex> lock(rec_mutex);
-
-                                        normalStencilBuffer.addFace(vEntities[i]->getFace(j));
-                                    }*/
+                                        batcherIndexed.addFace( vEntities[i]->getFace(j));
+                                        shadowBatcherIndexed.addShadowFace(shadow->getFace(j), view.getViewMatrix(), tm);
+                                    }
                                  } else {
-                                    ////std::cout<<"add shadow indexes"<<std::endl;
+                                     if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0) {
 
-                                    normalBatcherIndexed.addFace( vEntities[i]->getFace(j));
-                                    normalShadowBatcherIndexed.addShadowFace(shadow->getFace(j), view.getViewMatrix(), tm);
+                                        normalBatcher.addFace( vEntities[i]->getFace(j));
+                                        normalShadowBatcher.addShadowFace(shadow->getFace(j), view.getViewMatrix(), tm);
+                                        /*if (vEntities[i]->getRootEntity()->getType() != "E_BIGTILE") {
+                                            std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+
+                                            normalStencilBuffer.addFace(vEntities[i]->getFace(j));
+                                        }*/
+                                     } else {
+                                        ////std::cout<<"add shadow indexes"<<std::endl;
+
+                                        normalBatcherIndexed.addFace( vEntities[i]->getFace(j));
+                                        normalShadowBatcherIndexed.addShadowFace(shadow->getFace(j), view.getViewMatrix(), tm);
+                                     }
                                  }
-                             }
+                            }
                         }
                     }
+
+                    std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                    visibleEntities = vEntities;
+                    datasReady = true;
+                    cv2.notify_one();
                 }
-                std::lock_guard<std::recursive_mutex> lock(rec_mutex);
-                visibleEntities = vEntities;
-                datasReady = true;
                 return true;
             }
             std::vector<Entity*> ShadowRenderComponent::getEntities() {

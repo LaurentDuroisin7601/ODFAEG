@@ -231,10 +231,10 @@ namespace odfaeg {
             std::array<std::atomic<bool>, MAX_FRAMES_IN_FLIGHT> commandBufferReady = {};
             std::array<std::atomic<bool>, MAX_FRAMES_IN_FLIGHT> registerFrameJob = {true, false};
 
-            std::condition_variable cv, cv2;
+            std::condition_variable cv, cv2, cv3;
             std::array<std::array<bool, MAX_FRAMES_IN_FLIGHT>, Batcher::nbPrimitiveTypes> needToUpdateDSs;
             unsigned int alignment;
-            std::mutex mtx, mtx2;
+            std::mutex mtx, mtx2, mtx3;
             std::deque<std::array<VkSemaphore, MAX_FRAMES_IN_FLIGHT>> computeSemaphores;
             std::deque<std::array<VkFence, MAX_FRAMES_IN_FLIGHT>> computeFences;
             std::atomic<bool> stop = false;

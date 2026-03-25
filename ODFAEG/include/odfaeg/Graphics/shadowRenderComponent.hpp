@@ -221,10 +221,10 @@ namespace odfaeg {
                 std::array<std::vector<unsigned int>, Batcher::nbPrimitiveTypes> modelDataOffsets, materialDataOffsets, drawCommandBufferOffsets, nbDrawCommandBuffer, drawIndexedCommandBufferOffsets, nbIndexedDrawCommandBuffer;
                 std::array<std::atomic<bool>, MAX_FRAMES_IN_FLIGHT> commandBufferReady = {};
                 std::array<std::atomic<bool>, MAX_FRAMES_IN_FLIGHT> registerFrameJob = {true, false};
-                std::condition_variable cv;
+                std::condition_variable cv, cv2;
                 std::array<std::array<bool, MAX_FRAMES_IN_FLIGHT>, Batcher::nbPrimitiveTypes> needToUpdateDSs;
                 unsigned int alignment;
-                std::mutex mtx;
+                std::mutex mtx, mtx2;
                 bool useThread;
                 std::atomic<bool> stop = false;
                 std::array<unsigned int, MAX_FRAMES_IN_FLIGHT> maxTexturesInUse={0, 0};

@@ -5393,20 +5393,21 @@ namespace odfaeg {
 
 
 
+
+
            {
-
-               if (datasReady.load()) {
-
-                   std::lock_guard<std::recursive_mutex> lock(rec_mutex);
-                   m_instances = batcher.getInstances();
-                   m_normals = normalBatcher.getInstances();
-                   m_instancesIndexed = indexedBatcher.getInstances();
-                   m_normalsIndexed = normalIndexedBatcher.getInstances();
-                   m_light_instances = lightBatcher.getInstances();
-                   m_light_instances_indexed = lightIndexedBatcher.getInstances();
-               }
-
+               std::unique_lock<std::mutex> lock(mtx2);
+               cv2.wait(lock, [this]{return datasReady.load() || stop.load();});
+               m_instances = batcher.getInstances();
+               m_normals = normalBatcher.getInstances();
+               m_instancesIndexed = indexedBatcher.getInstances();
+               m_normalsIndexed = normalIndexedBatcher.getInstances();
+               m_light_instances = lightBatcher.getInstances();
+               m_light_instances_indexed = lightIndexedBatcher.getInstances();
+               datasReady = false;
            }
+
+
             //std::cout<<"data ready ok"<<std::endl;
             //glCheck(glBindBufferBase(GL_UNIFORM_BUFFER, 0, ubo));
             /*if (!view.isOrtho())
@@ -5416,9 +5417,10 @@ namespace odfaeg {
                 {
                     std::unique_lock<std::mutex> lock(mtx);
                     cv.wait(lock, [this](){return registerFrameJob[lightDepthBuffer.getCurrentFrame()].load() || stop.load();});
-                    registerFrameJob[lightDepthBuffer.getCurrentFrame()] = false;
+
 
                 }
+                registerFrameJob[lightDepthBuffer.getCurrentFrame()] = false;
 
                 std::array<uint64_t, 2> waitValues = {values2[lightMap.getCurrentFrame()], HeavyComponent::getValueToWait(lightMap.getCurrentFrame())};
                 std::array<VkSemaphore, 2> waitSemaphores = {offscreenFinishedSemaphore[lightMap.getCurrentFrame()], HeavyComponent::getSharedTimeline(lightMap.getCurrentFrame())};
@@ -7265,19 +7267,22 @@ namespace odfaeg {
         bool LightRenderComponent::loadEntitiesOnComponent(std::vector<Entity*> vEntities)
         {
             if (!datasReady.load()) {
-                std::lock_guard<std::recursive_mutex> lock(rec_mutex);
-                batcher.clear();
-                normalBatcher.clear();
-                lightBatcher.clear();
-                indexedBatcher.clear();
-                normalIndexedBatcher.clear();
-                lightIndexedBatcher.clear();
+                {
+                    std::lock_guard<std::recursive_mutex> lock(rec_mutex);
+                    batcher.clear();
+                    normalBatcher.clear();
+                    lightBatcher.clear();
+                    indexedBatcher.clear();
+                    normalIndexedBatcher.clear();
+                    lightIndexedBatcher.clear();
+                }
+
 
 
                 for (unsigned int i = 0; i < vEntities.size(); i++) {
 
                     if (vEntities[i] != nullptr && vEntities[i]->isLeaf()) {
-
+                        std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                         if (vEntities[i]->isLight()) {
                             for (unsigned int j = 0; j <  vEntities[i]->getNbFaces(); j++) {
                                 if (vEntities[i]->getFace(j)->getVertexArray().getIndexes().size() == 0)
@@ -7302,12 +7307,10 @@ namespace odfaeg {
                         }
                     }
                 }
-
-
-
-
+                std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                 visibleEntities = vEntities;
                 datasReady = true;
+                cv2.notify_one();
             }
             return true;
         }
@@ -7349,6 +7352,7 @@ namespace odfaeg {
             if (&rw == &window && event.type == window::IEvent::WINDOW_EVENT && event.window.type == window::IEvent::WINDOW_EVENT_CLOSED) {
                 stop = true;
                 cv.notify_all();
+                cv2.notify_all();
                 getListener().stop();
             }
         }
