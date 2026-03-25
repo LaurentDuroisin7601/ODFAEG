@@ -4180,11 +4180,11 @@ namespace odfaeg {
                         material.uvScale = (m_reflInstances[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_reflInstances[i].getMaterial().getTexture()->getSize().x(), 1.f / m_reflInstances[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
                         material.uvOffset = math::Vec2f(0, 0);
                         materialDatas[p].push_back(material);
-                        std::vector<TransformMatrix> tm = m_reflInstances[i].getTransforms();
+                        std::vector<TransformMatrix*> tm = m_reflInstances[i].getTransforms();
                         for (unsigned int j = 0; j < tm.size(); j++) {
-                            tm[j].update();
+                            tm[j]->update();
                             ModelData model;
-                            model.worldMat = toVulkanMatrix(tm[j].getMatrix())/*.transpose()*/;
+                            model.worldMat = toVulkanMatrix(tm[j]->getMatrix())/*.transpose()*/;
 
                             modelDatas[p].push_back(model);
                         }
@@ -4448,11 +4448,11 @@ namespace odfaeg {
                             material.uvOffset = math::Vec2f(0, 0);
                         }
                         materialDatas[p].push_back(material);
-                        std::vector<TransformMatrix> tm = m_reflIndexed[i].getTransforms();
+                        std::vector<TransformMatrix*> tm = m_reflIndexed[i].getTransforms();
                         for (unsigned int j = 0; j < tm.size(); j++) {
-                            tm[j].update();
+                            tm[j]->update();
                             ModelData model;
-                            model.worldMat = toVulkanMatrix(tm[j].getMatrix())/*.transpose()*/;
+                            model.worldMat = toVulkanMatrix(tm[j]->getMatrix())/*.transpose()*/;
 
                             modelDatas[p].push_back(model);
                         }
@@ -4711,11 +4711,11 @@ namespace odfaeg {
                         material.uvScale = (m_instances[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_instances[i].getMaterial().getTexture()->getSize().x(), 1.f / m_instances[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
                         material.uvOffset = math::Vec2f(0, 0);
                         materialDatas[p].push_back(material);
-                        std::vector<TransformMatrix> tm = m_instances[i].getTransforms();
+                        std::vector<TransformMatrix*> tm = m_instances[i].getTransforms();
                         for (unsigned int j = 0; j < tm.size(); j++) {
-                            tm[j].update();
+                            tm[j]->update();
                             ModelData model;
-                            model.worldMat = toVulkanMatrix(tm[j].getMatrix())/*.transpose()*/;
+                            model.worldMat = toVulkanMatrix(tm[j]->getMatrix())/*.transpose()*/;
 
                             modelDatas[p].push_back(model);
                         }
@@ -4979,11 +4979,11 @@ namespace odfaeg {
                             material.uvOffset = math::Vec2f(0, 0);
                         }
                         materialDatas[p].push_back(material);
-                        std::vector<TransformMatrix> tm = m_indexed[i].getTransforms();
+                        std::vector<TransformMatrix*> tm = m_indexed[i].getTransforms();
                         for (unsigned int j = 0; j < tm.size(); j++) {
-                            tm[j].update();
+                            tm[j]->update();
                             ModelData model;
-                            model.worldMat = toVulkanMatrix(tm[j].getMatrix())/*.transpose()*/;
+                            model.worldMat = toVulkanMatrix(tm[j]->getMatrix())/*.transpose()*/;
 
                             modelDatas[p].push_back(model);
                         }
@@ -5259,11 +5259,11 @@ namespace odfaeg {
                         material.uvScale = (m_reflInstances[i].getMaterial().getTexture() != nullptr) ? math::Vec2f(1.f / m_reflInstances[i].getMaterial().getTexture()->getSize().x(), 1.f / m_reflInstances[i].getMaterial().getTexture()->getSize().y()) : math::Vec2f(0, 0);
                         material.uvOffset = math::Vec2f(0, 0);
                         materialDatas[p].push_back(material);
-                        std::vector<TransformMatrix> tm = m_reflInstances[i].getTransforms();
+                        std::vector<TransformMatrix*> tm = m_reflInstances[i].getTransforms();
                         for (unsigned int j = 0; j < tm.size(); j++) {
-                            tm[j].update();
+                            tm[j]->update();
                             ModelData model;
-                            model.worldMat = toVulkanMatrix(tm[j].getMatrix())/*.transpose()*/;
+                            model.worldMat = toVulkanMatrix(tm[j]->getMatrix())/*.transpose()*/;
 
                             modelDatas[p].push_back(model);
                         }
@@ -5544,11 +5544,11 @@ namespace odfaeg {
                             material.uvOffset = math::Vec2f(0, 0);
                         }
                         materialDatas[p].push_back(material);
-                        std::vector<TransformMatrix> tm = m_reflIndexed[i].getTransforms();
+                        std::vector<TransformMatrix*> tm = m_reflIndexed[i].getTransforms();
                         for (unsigned int j = 0; j < tm.size(); j++) {
-                            tm[j].update();
+                            tm[j]->update();
                             ModelData model;
-                            model.worldMat = toVulkanMatrix(tm[j].getMatrix())/*.transpose()*/;
+                            model.worldMat = toVulkanMatrix(tm[j]->getMatrix())/*.transpose()*/;
 
                             modelDatas[p].push_back(model);
                         }

@@ -13,7 +13,7 @@ namespace odfaeg {
             this->up = left.cross(forward).normalize();   // recalcule up pour ortho
             this->target = position + forward;
 
-            viewMatrix.setAxis(left, up, forward);
+            viewMatrix.setAxis(left, up, -forward);
             viewMatrix.setOrigin(position);
             teta = math::Math::toDegrees(math::Math::atang2(forward.x(), forward.z()));         // rotation horizontale autour de Y
             phi  = math::Math::toDegrees(math::Math::asinus(forward.y()));
