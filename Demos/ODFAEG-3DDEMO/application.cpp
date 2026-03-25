@@ -197,9 +197,9 @@ void MyAppli::onInit() {
 
     //getView().setPerspective(-size.x * 0.5f, size.x * 0.5f, -size.y * 0.5f, size.y * 0.5f,-1000, 1000);
     //getRenderComponentManager().addComponent(frc);
-    rrrc->setVisible(false);
-    src->setVisible(false);
-    lrc->setVisible(false);
+    //rrrc->setVisible(false);
+    //src->setVisible(false);
+    //lrc->setVisible(false);
 
     getRenderComponentManager().addComponent(frc2);
     getRenderComponentManager().addComponent(rrrc);

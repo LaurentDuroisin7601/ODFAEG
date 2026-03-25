@@ -7255,8 +7255,10 @@ namespace odfaeg {
 
 
                 {
+
                     std::unique_lock<std::mutex> lock(mtx2);
                     cv2.wait(lock, [this]{return datasReady.load() || stop.load();});
+                    //std::cout<<"datas ready"<<std::endl;
                     m_instances = batcher.getInstances();
                     m_normals = normalBatcher.getInstances();
                     m_reflInstances = reflBatcher.getInstances();
