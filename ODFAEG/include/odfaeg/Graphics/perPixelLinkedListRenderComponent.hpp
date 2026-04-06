@@ -31,11 +31,11 @@ namespace odfaeg {
                 unsigned int  baseInstance;
             };
             struct DrawElementsIndirectCommand {
-                    unsigned index_count;
-                    unsigned instance_count;
-                    unsigned first_index;       // cf parametre offset de glDrawElements()
-                    unsigned vertex_base;
-                    unsigned instance_base;
+                unsigned index_count;
+                unsigned instance_count;
+                unsigned first_index;       // cf parametre offset de glDrawElements()
+                unsigned vertex_base;
+                unsigned instance_base;
             };
             struct ModelData {
                 alignas(16) GLMatrix4f worldMat;
@@ -45,7 +45,7 @@ namespace odfaeg {
                 math::Vec2f uvOffset;
                 unsigned int textureIndex;
                 unsigned int materialType;
-                uint32_t padding1;
+                uint32_t instanced;
                 uint32_t padding2;
             };
             struct alignas(8) AtomicCounterSSBO {
@@ -160,6 +160,8 @@ namespace odfaeg {
             std::vector<VkDeviceMemory> modelDataShaderStorageBuffersMemory;
             std::vector<VkBuffer> materialDataShaderStorageBuffers;
             std::vector<VkDeviceMemory> materialDataShaderStorageBuffersMemory;
+            std::array<std::array<VkBuffer, MAX_FRAMES_IN_FLIGHT>, Batcher::nbPrimitiveTypes> objectDataBufferMT = {};
+            std::array<std::array<VkDeviceMemory, MAX_FRAMES_IN_FLIGHT>, Batcher::nbPrimitiveTypes> objectDataBufferMemoryMT = {};
             std::array<std::array<VkBuffer, MAX_FRAMES_IN_FLIGHT>, Batcher::nbPrimitiveTypes> modelDataBufferMT = {};
             std::array<std::array<VkDeviceMemory, MAX_FRAMES_IN_FLIGHT>, Batcher::nbPrimitiveTypes> modelDataBufferMemoryMT = {};
             std::array<std::array<VkBuffer, MAX_FRAMES_IN_FLIGHT>, Batcher::nbPrimitiveTypes> materialDataBufferMT = {};
@@ -170,9 +172,9 @@ namespace odfaeg {
             std::array<std::array<VkDeviceMemory, MAX_FRAMES_IN_FLIGHT>, Batcher::nbPrimitiveTypes> drawCommandBufferIndexedMemoryMT = {};
             std::array<std::vector<DrawArraysIndirectCommand>, Batcher::nbPrimitiveTypes> drawArraysIndirectCommands = {};
             std::array<std::vector<DrawElementsIndirectCommand>, Batcher::nbPrimitiveTypes> drawElementsIndirectCommands = {};
-            std::array<std::array<VkBuffer, MAX_FRAMES_IN_FLIGHT>, Batcher::nbPrimitiveTypes>  materialDataStagingBufferMT={}, modelDataStagingBufferMT={}, vboIndirectStagingBufferMT={},
+            std::array<std::array<VkBuffer, MAX_FRAMES_IN_FLIGHT>, Batcher::nbPrimitiveTypes>  materialDataStagingBufferMT={}, modelDataStagingBufferMT={}, objectDataStagingBufferMT={}, vboIndirectStagingBufferMT={},
             vboIndexedIndirectStagingBufferMT={};
-            std::array<std::array<VkDeviceMemory, MAX_FRAMES_IN_FLIGHT>, Batcher::nbPrimitiveTypes> materialDataStagingBufferMemoryMT={}, modelDataStagingBufferMemoryMT={}, vboIndirectStagingBufferMemoryMT={},
+            std::array<std::array<VkDeviceMemory, MAX_FRAMES_IN_FLIGHT>, Batcher::nbPrimitiveTypes> materialDataStagingBufferMemoryMT={}, modelDataStagingBufferMemoryMT={}, objectDataStagingBufferMemoryMT={}, vboIndirectStagingBufferMemoryMT={},
             vboIndexedIndirectStagingBufferMemoryMT={};
             VkBuffer modelDataStagingBuffer, materialDataStagingBuffer;
             VkDeviceMemory modelDataStagingBufferMemory, materialDataStagingBufferMemory;
@@ -182,7 +184,7 @@ namespace odfaeg {
             std::array<VkImageView, MAX_FRAMES_IN_FLIGHT> headPtrTextureImageView;
             std::array<VkSampler, MAX_FRAMES_IN_FLIGHT> headPtrTextureSampler;
             std::array<VkDeviceMemory, MAX_FRAMES_IN_FLIGHT> headPtrTextureImageMemory;
-            std::array<std::vector<ModelData>, Batcher::nbPrimitiveTypes> modelDatas;
+            std::array<std::vector<ModelData>, Batcher::nbPrimitiveTypes> modelDatas, objectDatas;
             std::array<std::vector<MaterialData>, Batcher::nbPrimitiveTypes> materialDatas;
 
             Shader indirectRenderingShader, perPixelLinkedListP2, skyboxShader;
@@ -218,18 +220,19 @@ namespace odfaeg {
             std::array<bool, MAX_FRAMES_IN_FLIGHT> firstFrame={true, true};
             bool useThread;
             std::array<VkCommandBuffer, MAX_FRAMES_IN_FLIGHT> ppllCommandBuffer, ppllSelectedCommandBuffer, ppllOutlineCommandBuffer, ppllPass2CommandBuffer, skyboxCommandBuffer,
-            copyModelDataBufferCommandBuffer, copyMaterialDataBufferCommandBuffer, copyDrawBufferCommandBuffer, copyDrawIndexedBufferCommandBuffer,
+            copyModelDataBufferCommandBuffer, copyObjectDataBufferCommandBuffer, copyMaterialDataBufferCommandBuffer, copyDrawBufferCommandBuffer, copyDrawIndexedBufferCommandBuffer,
             copyVbBufferCommandBuffer, copyVbIndexedBufferCommandBuffer, copyVbPpllPass2CommandBuffer, copySkyboxCommandBuffer;
-            std::array<unsigned int, Batcher::nbPrimitiveTypes> totalBufferSizeModelData, maxAlignedSizeModelData, oldTotalBufferSizeModelData;
-            std::array<std::array<unsigned int, MAX_FRAMES_IN_FLIGHT>, Batcher::nbPrimitiveTypes> maxBufferSizeModelData;
+            std::array<unsigned int, Batcher::nbPrimitiveTypes> totalBufferSizeModelData, totalBufferSizeObjectData, maxAlignedSizeModelData, maxAlignedSizeObjectData, oldTotalBufferSizeModelData, oldTotalBufferSizeObjectData;
+            std::array<std::array<unsigned int, MAX_FRAMES_IN_FLIGHT>, Batcher::nbPrimitiveTypes> maxBufferSizeModelData, maxBufferSizeObjectData;
             std::array<unsigned int, Batcher::nbPrimitiveTypes> totalBufferSizeMaterialData, maxAlignedSizeMaterialData, oldTotalBufferSizeMaterialData;
             std::array<std::array<unsigned int, MAX_FRAMES_IN_FLIGHT>, Batcher::nbPrimitiveTypes> maxBufferSizeMaterialData;
             std::array<unsigned int, Batcher::nbPrimitiveTypes> totalVertexCount, totalVertexIndexCount, totalIndexCount, totalBufferSizeDrawCommand, totalBufferSizeIndexedDrawCommand;
             std::array<std::array<unsigned int, MAX_FRAMES_IN_FLIGHT>, Batcher::nbPrimitiveTypes> maxBufferSizeDrawCommand, maxBufferSizeIndexedDrawCommand;
-            std::array<unsigned int, Batcher::nbPrimitiveTypes> currentModelOffset, currentMaterialOffset;
-            std::array<std::vector<unsigned int>, Batcher::nbPrimitiveTypes> modelDataOffsets, materialDataOffsets, drawCommandBufferOffsets, nbDrawCommandBuffer, drawIndexedCommandBufferOffsets, nbIndexedDrawCommandBuffer;
+            std::array<unsigned int, Batcher::nbPrimitiveTypes> currentModelOffset, currentObjectOffset, currentMaterialOffset;
+            std::array<std::vector<unsigned int>, Batcher::nbPrimitiveTypes> modelDataOffsets, objectDataOffsets, materialDataOffsets, drawCommandBufferOffsets, nbDrawCommandBuffer, drawIndexedCommandBufferOffsets, nbIndexedDrawCommandBuffer;
             std::array<std::atomic<bool>, MAX_FRAMES_IN_FLIGHT> commandBufferReady = {};
-            std::array<std::atomic<bool>, MAX_FRAMES_IN_FLIGHT> registerFrameJob = {true, false};
+            std::array<std::atomic<bool>, MAX_FRAMES_IN_FLIGHT> registerFrameJob = {};
+            std::array<unsigned int, Batcher::nbPrimitiveTypes> baseObjectVertex={};
 
             std::condition_variable cv, cv2, cv3;
             std::array<std::array<bool, MAX_FRAMES_IN_FLIGHT>, Batcher::nbPrimitiveTypes> needToUpdateDSs;

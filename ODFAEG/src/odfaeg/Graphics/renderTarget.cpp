@@ -371,7 +371,7 @@ namespace odfaeg {
                 //vertexBuffer[type].reserve(vertexBuffer[type].getVertexCount()+vertexCount);
                 for (unsigned int i = 0; i < vertexCount; i++) {
                     vertexBuffer[type].append(vertices[i]);
-                    vertexBuffer[type][vertexBuffer[type].getVertexCount()-1].padding = drawableData.size() - 1;
+                    vertexBuffer[type][vertexBuffer[type].getVertexCount()-1].drawableDataID = drawableData.size() - 1;
                 }
                 //vertexBuffer[type].reserveIdx(vertexBuffer[type].getIndicesSize()+6);
                 vertexBuffer[type].addIndex(vertexBuffer[type].getVertexCount()-4);
@@ -389,7 +389,7 @@ namespace odfaeg {
                  for (unsigned int i = 0; i < vertexCount; i++) {
                     vertexBuffer[type].append(vertices[i]);
                     vertexBuffer[type].addIndex(vertexBuffer[type].getVertexCount()-1);
-                    vertexBuffer[type][vertexBuffer[type].getVertexCount()-1].padding = drawableData.size() - 1;
+                    vertexBuffer[type][vertexBuffer[type].getVertexCount()-1].drawableDataID = drawableData.size() - 1;
                  }
              }
              if (type == TriangleFan || type == TriangleStrip || type == LineStrip)

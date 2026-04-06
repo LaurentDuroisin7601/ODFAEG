@@ -279,7 +279,9 @@ namespace odfaeg {
         bool Shader::compile(const char* vertexShaderCode, const char* fragmentShaderCode, const char* geometryShaderCode) {
             shaderc::Compiler compiler;
             shaderc::CompileOptions options;
-            options.SetOptimizationLevel(shaderc_optimization_level_size);
+            options.SetGenerateDebugInfo();
+            options.SetOptimizationLevel(shaderc_optimization_level_zero);
+            //options.SetOptimizationLevel(shaderc_optimization_level_size);
             shaderc::SpvCompilationResult module =
             compiler.CompileGlslToSpv(vertexShaderCode, shaderc_glsl_vertex_shader, "shader_src", options);
             if (module.GetCompilationStatus() != shaderc_compilation_status_success) {

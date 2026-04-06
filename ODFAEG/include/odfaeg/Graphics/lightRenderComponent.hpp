@@ -62,7 +62,7 @@ namespace odfaeg {
                     unsigned int layer;
                     float specularIntensity;
                     float specularPower;
-                    unsigned int padding1;
+                    unsigned int instanced;
                     unsigned int padding2;
                     unsigned int padding3;
                     math::Vec4f lightCenter;
@@ -156,6 +156,8 @@ namespace odfaeg {
 
                 std::array<std::array<VkBuffer, MAX_FRAMES_IN_FLIGHT>, Batcher::nbPrimitiveTypes> modelDataBufferMT = {};
                 std::array<std::array<VkDeviceMemory, MAX_FRAMES_IN_FLIGHT>, Batcher::nbPrimitiveTypes> modelDataBufferMemoryMT = {};
+                std::array<std::array<VkBuffer, MAX_FRAMES_IN_FLIGHT>, Batcher::nbPrimitiveTypes> objectDataBufferMT = {};
+                std::array<std::array<VkDeviceMemory, MAX_FRAMES_IN_FLIGHT>, Batcher::nbPrimitiveTypes> objectDataBufferMemoryMT = {};
                 std::array<std::array<VkBuffer, MAX_FRAMES_IN_FLIGHT>, Batcher::nbPrimitiveTypes> materialDataBufferMT = {};
                 std::array<std::array<VkDeviceMemory, MAX_FRAMES_IN_FLIGHT>, Batcher::nbPrimitiveTypes> materialDataBufferMemoryMT = {};
                 std::array<std::array<VkBuffer, MAX_FRAMES_IN_FLIGHT>, Batcher::nbPrimitiveTypes> drawCommandBufferMT = {};
@@ -164,9 +166,9 @@ namespace odfaeg {
                 std::array<std::array<VkDeviceMemory, MAX_FRAMES_IN_FLIGHT>, Batcher::nbPrimitiveTypes> drawCommandBufferIndexedMemoryMT = {};
                 std::array<std::vector<DrawArraysIndirectCommand>, Batcher::nbPrimitiveTypes> drawArraysIndirectCommands = {};
                 std::array<std::vector<DrawElementsIndirectCommand>, Batcher::nbPrimitiveTypes> drawElementsIndirectCommands = {};
-                std::array<std::array<VkBuffer, MAX_FRAMES_IN_FLIGHT>, Batcher::nbPrimitiveTypes>  materialDataStagingBufferMT={}, modelDataStagingBufferMT={}, vboIndirectStagingBufferMT={},
+                std::array<std::array<VkBuffer, MAX_FRAMES_IN_FLIGHT>, Batcher::nbPrimitiveTypes>  materialDataStagingBufferMT={}, modelDataStagingBufferMT={}, objectDataStagingBufferMT={}, vboIndirectStagingBufferMT={},
                 vboIndexedIndirectStagingBufferMT={};
-                std::array<std::array<VkDeviceMemory, MAX_FRAMES_IN_FLIGHT>, Batcher::nbPrimitiveTypes> materialDataStagingBufferMemoryMT={}, modelDataStagingBufferMemoryMT={}, vboIndirectStagingBufferMemoryMT={},
+                std::array<std::array<VkDeviceMemory, MAX_FRAMES_IN_FLIGHT>, Batcher::nbPrimitiveTypes> materialDataStagingBufferMemoryMT={}, modelDataStagingBufferMemoryMT={}, objectDataStagingBufferMemoryMT={}, vboIndirectStagingBufferMemoryMT={},
                 vboIndexedIndirectStagingBufferMemoryMT={};
 
                 std::vector<VkBuffer> modelDataShaderStorageBuffers;
@@ -201,7 +203,7 @@ namespace odfaeg {
                 RenderWindow& window;
                 VkCommandPool commandPool;
                 std::vector<VkCommandPool> secondaryBufferCommandPools;
-                std::array<VkCommandBuffer, MAX_FRAMES_IN_FLIGHT> copyModelDataBufferCommandBuffer, copyMaterialDataBufferCommandBuffer, copyDrawBufferCommandBuffer, copyDrawIndexedBufferCommandBuffer,
+                std::array<VkCommandBuffer, MAX_FRAMES_IN_FLIGHT> copyModelDataBufferCommandBuffer, copyMaterialDataBufferCommandBuffer, copyObjectDataBufferCommandBuffer, copyDrawBufferCommandBuffer, copyDrawIndexedBufferCommandBuffer,
                 copyVbBufferCommandBuffer, copyVbIndexedBufferCommandBuffer, lightDepthCommandBuffer,depthCommandBuffer, alphaCommandBuffer, specularCommandBuffer,
                 bumpCommandBuffer, lightCommandBuffer;
                 std::array<VkImage, MAX_FRAMES_IN_FLIGHT> lightDepthTextureImage;
@@ -217,6 +219,7 @@ namespace odfaeg {
                 std::array<VkSampler, MAX_FRAMES_IN_FLIGHT> alphaTextureSampler;
                 std::array<VkDeviceMemory, MAX_FRAMES_IN_FLIGHT> alphaTextureImageMemory;
                 std::array<std::vector<ModelData>, Batcher::nbPrimitiveTypes> modelDatas;
+                std::array<std::vector<ModelData>, Batcher::nbPrimitiveTypes> objectDatas;
                 std::array<std::vector<MaterialData>, Batcher::nbPrimitiveTypes> materialDatas;
                 window::Device& vkDevice;
                 IndirectRenderingPC indirectRenderingPC;
@@ -225,12 +228,14 @@ namespace odfaeg {
                 MaxSpecPC maxSpecPC;
                 std::array<unsigned int, Batcher::nbPrimitiveTypes> totalBufferSizeModelData, maxAlignedSizeModelData, oldTotalBufferSizeModelData;
                 std::array<std::array<unsigned int, MAX_FRAMES_IN_FLIGHT>, Batcher::nbPrimitiveTypes> maxBufferSizeModelData;
+                std::array<std::array<unsigned int, MAX_FRAMES_IN_FLIGHT>, Batcher::nbPrimitiveTypes> maxBufferSizeObjectData;
                 std::array<unsigned int, Batcher::nbPrimitiveTypes> totalBufferSizeMaterialData, maxAlignedSizeMaterialData, oldTotalBufferSizeMaterialData;
                 std::array<std::array<unsigned int, MAX_FRAMES_IN_FLIGHT>, Batcher::nbPrimitiveTypes> maxBufferSizeMaterialData;
                 std::array<unsigned int, Batcher::nbPrimitiveTypes> totalVertexCount, totalVertexIndexCount, totalIndexCount, totalBufferSizeDrawCommand, totalBufferSizeIndexedDrawCommand;
                 std::array<std::array<unsigned int, MAX_FRAMES_IN_FLIGHT>, Batcher::nbPrimitiveTypes> maxBufferSizeDrawCommand, maxBufferSizeIndexedDrawCommand;
                 std::array<unsigned int, Batcher::nbPrimitiveTypes> currentModelOffset, currentMaterialOffset;
                 std::array<std::vector<unsigned int>, Batcher::nbPrimitiveTypes> modelDataOffsets, materialDataOffsets, drawCommandBufferOffsets, nbDrawCommandBuffer, drawIndexedCommandBufferOffsets, nbIndexedDrawCommandBuffer;
+                std::array<unsigned int, Batcher::nbPrimitiveTypes> baseObjectVertex={};
                 std::array<std::atomic<bool>, MAX_FRAMES_IN_FLIGHT> commandBufferReady = {};
                 std::array<std::atomic<bool>, MAX_FRAMES_IN_FLIGHT> registerFrameJob = {true, false};
                 std::condition_variable cv, cv2;

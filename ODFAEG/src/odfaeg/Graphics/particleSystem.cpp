@@ -289,8 +289,8 @@ namespace odfaeg
                                                             vec4 transformed = transpose(transformMatrix) * vec4(quad.quad[vertexIndex%6].position, 1);
 
                                                             verticesBuffers[pushConsts.layer].vertices[vertexIndex].position = verticesBuffers[pushConsts.layer].vertices[vertexIndex].position + vec3(transformed.xyz);
-                                                            if (pushConsts.instanced == 0)
-                                                                verticesBuffers[pushConsts.layer].vertices[vertexIndex].position = (vec4(verticesBuffers[pushConsts.layer].vertices[vertexIndex].position.xyz, 1) * pushConsts.transform).xyz;
+                                                            /*if (pushConsts.instanced == 0)
+                                                                verticesBuffers[pushConsts.layer].vertices[vertexIndex].position = (vec4(verticesBuffers[pushConsts.layer].vertices[vertexIndex].position.xyz, 1) * pushConsts.transform).xyz;*/
                                                             //debugPrintfEXT("position : %v3f", vertices[vertexIndex].position);
                                                             verticesBuffers[pushConsts.layer].vertices[vertexIndex].texCoords = quad.quad[vertexIndex%6].texCoords;
                                                             verticesBuffers[pushConsts.layer].vertices[vertexIndex].color = particlesBuffers[pushConsts.layer].particles[particleIndex].color;

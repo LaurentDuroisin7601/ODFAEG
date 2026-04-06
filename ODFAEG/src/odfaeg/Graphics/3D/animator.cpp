@@ -385,10 +385,10 @@ namespace odfaeg {
 
                                                             }
                                                             verticesBuffers[pushConsts.layer].vertices[vertexIndex].position = vec3(totalPosition.xyz);
-                                                            if (pushConsts.instanced == 0) {
+                                                            /*if (pushConsts.instanced == 0) {
                                                                 //debugPrintfEXT("m1 : %v4f\nm2 : %v4f\nm3 : %v4f\nm4 : %v4f\n", pushConsts.transform[0],pushConsts.transform[1],pushConsts.transform[2],pushConsts.transform[3]);
                                                                 verticesBuffers[pushConsts.layer].vertices[vertexIndex].position = (vec4(verticesBuffers[pushConsts.layer].vertices[vertexIndex].position.xyz, 1) * pushConsts.transform).xyz;
-                                                            }
+                                                            }*/
                                                        }
                                                    })";
                 if (!computeShader.loadFromMemory(computeShaderCode)) {

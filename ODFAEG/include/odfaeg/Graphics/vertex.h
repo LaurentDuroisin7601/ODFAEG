@@ -137,9 +137,7 @@ namespace odfaeg {
             Color color; ///< Color of the vertex
             int entityId;
             int particleId;
-            int padding;
-
-
+            int drawableDataID;
             #ifdef VULKAN
             static VkVertexInputBindingDescription getBindingDescription() {
                 VkVertexInputBindingDescription bindingDescription{};
@@ -173,7 +171,7 @@ namespace odfaeg {
                 attributeDescriptions[4].binding = 0;
                 attributeDescriptions[4].location = 4;
                 attributeDescriptions[4].format = VK_FORMAT_R32_SINT;
-                attributeDescriptions[4].offset = offsetof(Vertex, padding);
+                attributeDescriptions[4].offset = offsetof(Vertex, drawableDataID);
 
                 return attributeDescriptions;
             }

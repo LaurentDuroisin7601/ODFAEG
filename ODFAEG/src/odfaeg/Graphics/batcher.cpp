@@ -370,9 +370,14 @@ namespace odfaeg {
             void Instance::addVertexArray(VertexArray& va, TransformMatrix& tm) {
                 std::lock_guard<std::recursive_mutex> lock(rec_mutex);              ////////std::cout<<"push transform"<<std::endl;
                 va.computeNormals();
+
+
                 if (va.getEntity() != nullptr && !containsEntity(va.getEntity())) {
-                    /*if (va.getEntity()->getRootType() == "E_BONE_ANIMATION")
-                        std::cout<<"transform : "<<tm.getMatrix()<<std::endl;*/
+                    /*if (va.getEntity()->getRootType() == "E_BIGTILE") {
+                        std::cout<<"tm : "<<tm.getMatrix()<<std::endl;
+                    }*/
+                    //if (va.getEntity()->getRootType() == "E_BONE_ANIMATION")
+
                     m_transforms.push_back(&tm);
                     //m_shadowProjMatrix.push_back(tm);
                     //if (va.getEntity() != nullptr) {
@@ -393,7 +398,7 @@ namespace odfaeg {
 
                     /*va[i].padding = m_transforms.size() - 1;
                     vertices.append(va[i]);*/
-                    math::Vec3f t;
+                    /*math::Vec3f t;
                     if (va.getEntity() != nullptr && va.getEntity()->getDrawMode() == Entity::NORMAL
                         && (va.getEntity()->getRootType() == "E_BONE_ANIMATION" || va.getEntity()->getRootType() == "E_PARTICLES")) {
                         //std::cout<<"don't transform"<<std::endl;
@@ -409,8 +414,9 @@ namespace odfaeg {
                         v.m_Weights[b] = va[i].m_Weights[b];
                     }
                     v.entityId = va[i].entityId;
-                    v.particleId = va[i].particleId;
-                    vertices.append(v);
+                    v.particleId = va[i].particleId;*/
+                    va[i].drawableDataID = m_transforms.size()-1;
+                    vertices.append(va[i]);
                 }
                 for (unsigned int i = 0; i < va.getIndexes().size(); i++) {
                     vertices.addIndex(baseVertex + va.getIndexes()[i]);
@@ -427,12 +433,12 @@ namespace odfaeg {
                     if (va.getEntity() != nullptr)
                         m_entities.push_back(va.getEntity());
                 }
-                m_vertexArrays.push_back(&va);
+                //m_vertexArrays.push_back(&va);
                 //shadowProjMatrix.combine(viewMatrix.getMatrix());
                 //shadowProjMatrix.combine(tm.getMatrix());
                 unsigned int baseVertex = vertices.getVertexCount();
                 for (unsigned int i = 0; i < va.getVertexCount(); i++) {
-                    math::Vec3f t = tm.transform(va[i].position);
+                    /*math::Vec3f t = tm.transform(va[i].position);
                     Vertex v (t, va[i].color, va[i].texCoords);
                     v.normal = va[i].normal;
                     for (unsigned int b = 0; b < MAX_BONE_INFLUENCE; b++) {
@@ -440,8 +446,9 @@ namespace odfaeg {
                         v.m_Weights[b] = va[i].m_Weights[b];
                     }
                     v.entityId = va[i].entityId;
-                    v.particleId = va[i].particleId;
-                    vertices.append(v);
+                    v.particleId = va[i].particleId;*/
+                    va[i].drawableDataID = m_transforms.size() - 1;
+                    vertices.append(va[i]);
                 }
                 for (unsigned int i = 0; i < va.getIndexes().size(); i++) {
                     vertices.addIndex(baseVertex + va.getIndexes()[i]);
