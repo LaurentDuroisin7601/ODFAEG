@@ -94,7 +94,7 @@ namespace odfaeg {
                 }
                 return *this;
             }
-             /**\fn swap (any& other)
+            /**\fn swap (any& other)
             *  \brief exchange the content of two any objects.
             *  \param any& other : the object to swap content which.
             */

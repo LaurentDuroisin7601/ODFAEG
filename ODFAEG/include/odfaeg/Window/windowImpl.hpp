@@ -1,8 +1,6 @@
 #ifndef ODFAEG_WINDOWIMPL_HPP
 #define ODFAEG_WINDOWIMPL_HPP
 #include "iEvent.hpp"
-#include "contextImpl.hpp"
-#include "glResource.hpp"
 #if defined (ODFAEG_SYSTEM_LINUX)
 #include "../../../include/odfaeg/Window/Linux/x11Window.hpp"
 typedef odfaeg::window::X11Window WindowImplType;

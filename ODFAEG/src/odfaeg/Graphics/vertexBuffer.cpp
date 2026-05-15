@@ -459,6 +459,12 @@ namespace odfaeg {
             void VertexBuffer::reserveIdx(unsigned int size) {
                 indices.reserve(size);
             }
+            void VertexBuffer::resize(unsigned int size) {
+                m_vertices.resize(size);
+            }
+            void VertexBuffer::resizeIdx(unsigned int size) {
+                indices.resize(size);
+            }
             void VertexBuffer::cleanup() {
                 vkDestroyCommandPool(vkDevice.getDevice(), commandPool, nullptr);
                 for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {

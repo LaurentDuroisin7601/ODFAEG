@@ -4279,6 +4279,7 @@ namespace odfaeg {
                         modelDatas[p].push_back(model);
 
                         std::vector<TransformMatrix*> tms = m_reflNormals[i].getTransforms();
+                        objectDatas[p].reserve(objectDatas[p].size()+tms.size());
                         for (unsigned int j = 0; j < tms.size(); j++) {
                             tms[j]->update();
                             ModelData objectData;
@@ -4323,6 +4324,7 @@ namespace odfaeg {
 
                             modelDatas[p].push_back(model);
                         }
+                        objectDatas[p].reserve(objectDatas[p].size()+1);
                         TransformMatrix tmi;
                         ModelData objectData;
                         objectData.worldMat = toVulkanMatrix(tmi.getMatrix());
@@ -4579,6 +4581,7 @@ namespace odfaeg {
                         modelDatas[p].push_back(model);
 
                         std::vector<TransformMatrix*> tms = m_reflNormalIndexed[i].getTransforms();
+                        objectDatas[p].reserve(objectDatas[p].size()+tms.size());
                         for (unsigned int j = 0; j < tms.size(); j++) {
                             tms[j]->update();
                             ModelData objectData;
@@ -4628,6 +4631,7 @@ namespace odfaeg {
                             material.instanced = 1;
                         }
                         materialDatas[p].push_back(material);
+                        objectDatas[p].reserve(objectDatas[p].size()+1);
                         TransformMatrix tmi;
                         ModelData objectData;
                         objectData.worldMat = toVulkanMatrix(tmi.getMatrix());
@@ -4895,6 +4899,7 @@ namespace odfaeg {
                         modelDatas[p].push_back(model);
 
                         std::vector<TransformMatrix*> tms = m_normals[i].getTransforms();
+                        objectDatas[p].reserve(objectDatas[p].size()+tms.size());
                         for (unsigned int j = 0; j < tms.size(); j++) {
                             tms[j]->update();
                             ModelData objectData;
@@ -4940,6 +4945,7 @@ namespace odfaeg {
 
                             modelDatas[p].push_back(model);
                         }
+                        objectDatas[p].reserve(objectDatas[p].size()+1);
                         TransformMatrix tmi;
                         ModelData objectData;
                         objectData.worldMat = toVulkanMatrix(tmi.getMatrix());
@@ -5194,6 +5200,7 @@ namespace odfaeg {
                         modelDatas[p].push_back(model);
 
                         std::vector<TransformMatrix*> tms = m_normalIndexed[i].getTransforms();
+                        objectDatas[p].reserve(objectDatas[p].size()+tms.size());
                         for (unsigned int j = 0; j < tms.size(); j++) {
                             tms[j]->update();
                             ModelData objectData;
@@ -5249,6 +5256,7 @@ namespace odfaeg {
 
                             modelDatas[p].push_back(model);
                         }
+                        objectDatas[p].reserve(objectDatas[p].size()+1);
                         TransformMatrix tmi;
                         ModelData objectData;
                         objectData.worldMat = toVulkanMatrix(tmi.getMatrix());
@@ -5789,7 +5797,7 @@ namespace odfaeg {
                         model.worldMat = toVulkanMatrix(tm.getMatrix())/*.transpose()*/;
 
                         modelDatas[p].push_back(model);
-                        unsigned int vertexCount = 0, indexCount = 0, baseIndex = vbBindlessTexIndexed[p].getVertexCount();
+                        unsigned int vertexCount = 0, indexCount = 0, baseIndex = 0;
                         if (m_reflNormalIndexed[i].getEntities().size() > 0){
                             for (unsigned int j = 0; j < m_reflNormalIndexed[i].getEntities().size(); j++) {
                                 Entity* entity = m_reflNormalIndexed[i].getEntities()[j]->getRootEntity();

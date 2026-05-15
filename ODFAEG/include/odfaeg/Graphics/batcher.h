@@ -370,8 +370,8 @@ namespace odfaeg {
             *  \brief add a vertex array to the instance.
             *
             */
-            void addVertexArray(VertexArray& va, TransformMatrix& tm);
-            void addVertexShadowArray(VertexArray& va, TransformMatrix& tm, ViewMatrix& viewMatrix, TransformMatrix shadowProjMatrix);
+            void addVertexArray(Face* face, VertexArray& va, TransformMatrix& tm);
+            void addVertexShadowArray(Face* face, VertexArray& va, TransformMatrix& tm, ViewMatrix& viewMatrix, TransformMatrix shadowProjMatrix);
             void sortVertexArrays(View& view);
             /**
             * \fn std::vector<VertexArray*> getVertexArrays()
@@ -379,6 +379,7 @@ namespace odfaeg {
             * \return the vertex arrays.
             */
             std::vector<VertexArray*> getVertexArrays();
+            std::vector<Face*> getAllFaces();
             std::vector<unsigned int> getAllIndexes();
             std::vector<std::vector<unsigned int>> getIndexes();
             /**
@@ -433,6 +434,7 @@ namespace odfaeg {
             std::vector<unsigned int> allIndexes;
             std::vector<std::vector<unsigned int>> m_indexes;
             std::vector<Entity*> m_entities;
+            std::vector<Face*> m_faces;
         };
         /**
           * \file face.h

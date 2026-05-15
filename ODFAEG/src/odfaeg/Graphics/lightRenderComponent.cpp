@@ -4257,6 +4257,7 @@ namespace odfaeg {
                     modelDatas[p].push_back(model);
 
                     std::vector<TransformMatrix*> tms = m_normals[i].getTransforms();
+                    objectDatas[p].reserve(objectDatas[p].size()+tms.size());
                     for (unsigned int j = 0; j < tms.size(); j++) {
                         tms[j]->update();
                         ModelData objectData;
@@ -4304,6 +4305,7 @@ namespace odfaeg {
 
                         modelDatas[p].push_back(model);
                     }
+                    objectDatas[p].reserve(objectDatas[p].size()+1);
                     TransformMatrix tmi;
                     ModelData objectData;
                     objectData.worldMat = tmi.getMatrix();
@@ -4551,6 +4553,7 @@ namespace odfaeg {
 
                     modelDatas[p].push_back(model);
                     std::vector<TransformMatrix*> tms = m_normalsIndexed[i].getTransforms();
+                    objectDatas[p].reserve(objectDatas[p].size()+tms.size());
                     for (unsigned int j = 0; j < tms.size(); j++) {
                         tms[j]->update();
                         ModelData objectData;
@@ -4606,6 +4609,7 @@ namespace odfaeg {
 
                         modelDatas[p].push_back(model);
                     }
+                    objectDatas[p].reserve(objectDatas[p].size()+1);
                     TransformMatrix tmi;
                     ModelData objectData;
                     objectData.worldMat = tmi.getMatrix();
@@ -4870,6 +4874,7 @@ namespace odfaeg {
 
                     modelDatas[p].push_back(model);
                     std::vector<TransformMatrix*> tms = m_light_instances[i].getTransforms();
+                    objectDatas[p].reserve(objectDatas[p].size()+tms.size());
                     for (unsigned int j = 0; j < tms.size(); j++) {
                         tms[j]->update();
                         ModelData objectData;
@@ -5130,6 +5135,7 @@ namespace odfaeg {
 
                     modelDatas[p].push_back(modelData);
                     std::vector<TransformMatrix*> tms = m_light_instances_indexed[i].getTransforms();
+                    objectDatas[p].reserve(objectDatas[p].size()+tms.size());
                     for (unsigned int j = 0; j < tms.size(); j++) {
                         tms[j]->update();
                         ModelData objectData;

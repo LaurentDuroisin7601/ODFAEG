@@ -4099,6 +4099,7 @@ namespace odfaeg {
                         modelDatas[p].push_back(model);
 
                         std::vector<TransformMatrix*> tms = m_normals[i].getTransforms();
+                        objectDatas[p].reserve(objectDatas[p].size()+tms.size());
                         for (unsigned int j = 0; j < tms.size(); j++) {
                             tms[j]->update();
                             ModelData objectData;
@@ -4150,6 +4151,7 @@ namespace odfaeg {
 
                             modelDatas[p].push_back(model);
                         }
+                        objectDatas[p].reserve(objectDatas[p].size()+1);
                         TransformMatrix tmi;
                         ModelData objectData;
                         objectData.worldMat = tmi.getMatrix();
@@ -4399,6 +4401,7 @@ namespace odfaeg {
                         modelDatas[p].push_back(model);
 
                         std::vector<TransformMatrix*> tms = m_normalsIndexed[i].getTransforms();
+                        objectDatas[p].reserve(objectDatas[p].size()+tms.size());
                         for (unsigned int j = 0; j <tms.size(); j++) {
                             tms[j]->update();
                             ModelData objectData;
@@ -4458,6 +4461,7 @@ namespace odfaeg {
 
                             modelDatas[p].push_back(model);
                         }
+                        objectDatas[p].reserve(objectDatas[p].size()+1);
                         TransformMatrix tmi;
                         ModelData objectData;
                         objectData.worldMat = tmi.getMatrix();
@@ -4715,6 +4719,7 @@ namespace odfaeg {
                         modelDatas[p].push_back(model);
                         std::vector<TransformMatrix*> tms = m_shadow_normals[i].getTransforms();
                         std::vector<TransformMatrix> tm2 = m_shadow_normals[i].getShadowProjMatrix();
+                        objectDatas[p].reserve(objectDatas[p].size()+tms.size());
                         for (unsigned int j = 0; j < tms.size(); j++) {
                             tms[j]->update();
                             tm2[j].update();
@@ -4767,6 +4772,7 @@ namespace odfaeg {
 
                             modelDatas[p].push_back(model);
                         }
+                        objectDatas[p].reserve(objectDatas[p].size()+1);
                         TransformMatrix tmi;
                         ModelData objectData;
                         objectData.worldMat = tmi.getMatrix();
@@ -5021,6 +5027,7 @@ namespace odfaeg {
 
                         std::vector<TransformMatrix*> tms = m_shadow_normalsIndexed[i].getTransforms();
                         std::vector<TransformMatrix> tm2 = m_shadow_normalsIndexed[i].getShadowProjMatrix();
+                        objectDatas[p].reserve(objectDatas[p].size()+tms.size());
                         for (unsigned int j = 0; j < tms.size(); j++) {
                             tms[j]->update();
                             tm2[j].update();
@@ -5082,6 +5089,7 @@ namespace odfaeg {
 
                             modelDatas[p].push_back(model);
                         }
+                        objectDatas[p].reserve(objectDatas[p].size()+1);
                         TransformMatrix tmi;
                         ModelData objectData;
                         objectData.worldMat = tmi.getMatrix();

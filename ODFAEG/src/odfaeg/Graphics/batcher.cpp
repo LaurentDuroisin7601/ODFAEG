@@ -367,7 +367,7 @@ namespace odfaeg {
             void Instance::setMaterial (Material& mat) {
                 material = &mat;
             }
-            void Instance::addVertexArray(VertexArray& va, TransformMatrix& tm) {
+            void Instance::addVertexArray(Face* face, VertexArray& va, TransformMatrix& tm) {
                 std::lock_guard<std::recursive_mutex> lock(rec_mutex);              ////////std::cout<<"push transform"<<std::endl;
                 va.computeNormals();
 
@@ -421,10 +421,11 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < va.getIndexes().size(); i++) {
                     vertices.addIndex(baseVertex + va.getIndexes()[i]);
                 }
+                //m_faces.push_back(face);
 
                 ////////std::cout<<"vertices transformed"<<std::endl;
             }
-            void Instance::addVertexShadowArray (VertexArray& va, TransformMatrix& tm, ViewMatrix& viewMatrix, TransformMatrix shadowProjMatrix) {
+            void Instance::addVertexShadowArray (Face* face, VertexArray& va, TransformMatrix& tm, ViewMatrix& viewMatrix, TransformMatrix shadowProjMatrix) {
                 std::lock_guard<std::recursive_mutex> lock(rec_mutex);
                 va.computeNormals();
                 if (!containsEntity(va.getEntity())) {
@@ -453,6 +454,7 @@ namespace odfaeg {
                 for (unsigned int i = 0; i < va.getIndexes().size(); i++) {
                     vertices.addIndex(baseVertex + va.getIndexes()[i]);
                 }
+                //m_faces.push_back(face);
             }
             bool Instance::containsEntity(Entity* entity) {
                 for (unsigned int i = 0; i < m_entities.size(); i++) {
@@ -503,6 +505,9 @@ namespace odfaeg {
             VertexArray& Instance::getAllVertices() {
                 return vertices;
             }
+            std::vector<Face*> Instance::getAllFaces() {
+                return m_faces;
+            }
             std::vector<VertexArray*> Instance::getVertexArrays() {
                 return m_vertexArrays;
             }
@@ -517,6 +522,7 @@ namespace odfaeg {
                 m_vertexArrays.clear();
                 m_shadowProjMatrix.clear();
                 vertices.clear();
+                m_faces.clear();
             }
             std::vector<TransformMatrix*> Instance::getTransforms() {
                  std::lock_guard<std::recursive_mutex> lock(rec_mutex);
@@ -556,7 +562,7 @@ namespace odfaeg {
                 instance.setPrimitiveType(face->getVertexArray().getPrimitiveType());
                 instance.setMaterial(face->getMaterial());
                 ////////std::cout<<"add vertex array"<<std::endl;
-                instance.addVertexArray(face->getVertexArray(),face->getTransformMatrix());
+                instance.addVertexArray(face, face->getVertexArray(),face->getTransformMatrix());
 
                 ////////std::cout<<"vertex array added"<<std::endl;
                 ////////std::cout<<"size : "<<instances.size()<<" id : "<<face->getVertexArray().getPrimitiveType() * core::Application::app->getNbMaterials() + face->getMaterial().getId()<<std::endl;
@@ -608,7 +614,7 @@ namespace odfaeg {
                 Instance& instance = instances[face->getMaterial().getId() * nbPrimitiveTypes + face->getVertexArray().getPrimitiveType()];
                 instance.setPrimitiveType(face->getVertexArray().getPrimitiveType());
                 instance.setMaterial(face->getMaterial());
-                instance.addVertexShadowArray(face->getVertexArray(),face->getTransformMatrix(), viewMatrix, shadowProjMatrix);
+                instance.addVertexShadowArray(face, face->getVertexArray(),face->getTransformMatrix(), viewMatrix, shadowProjMatrix);
                 ////////std::cout<<"size : "
                 /*bool added = false;
                 for (unsigned int i = 0; i < instances.size() && !added; i++) {

@@ -63,6 +63,8 @@ namespace odfaeg {
             void draw(RenderTarget& target, RenderStates states);
             void reserve(unsigned int size);
             void reserveIdx(unsigned int size);
+            void resize(unsigned int size);
+            void resizeIdx(unsigned int size);
             void cleanup();
             ~VertexBuffer();
             std::string name;
