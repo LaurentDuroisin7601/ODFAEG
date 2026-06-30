@@ -1,0 +1,21 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/string.ixx.o",
+      "provides": [
+        {
+          "is-interface": true,
+          "logical-name": "odfaeg.core.string",
+          "source-path": "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Core/string.ixx"
+        }
+      ],
+      "requires": [
+        {
+          "logical-name": "odfaeg.core.utf"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

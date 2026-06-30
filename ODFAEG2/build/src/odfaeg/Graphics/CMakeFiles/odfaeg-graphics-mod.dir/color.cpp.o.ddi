@@ -1,0 +1,14 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/color.cpp.o",
+      "requires": [
+        {
+          "logical-name": "odfaeg.graphic.color"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

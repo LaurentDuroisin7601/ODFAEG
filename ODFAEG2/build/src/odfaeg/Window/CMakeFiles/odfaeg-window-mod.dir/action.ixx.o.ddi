@@ -1,0 +1,27 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/action.ixx.o",
+      "provides": [
+        {
+          "is-interface": true,
+          "logical-name": "odfaeg.window.action",
+          "source-path": "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Window/action.ixx"
+        }
+      ],
+      "requires": [
+        {
+          "logical-name": "odfaeg.window.iEvent"
+        },
+        {
+          "logical-name": "odfaeg.window.iKeyboard"
+        },
+        {
+          "logical-name": "odfaeg.window.iMouse"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

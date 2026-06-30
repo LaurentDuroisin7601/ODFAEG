@@ -1,0 +1,24 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Entity/CMakeFiles/odfaeg-entity-mod.dir/entity.ixx.o",
+      "provides": [
+        {
+          "is-interface": true,
+          "logical-name": "odfaeg.entity.entity",
+          "source-path": "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Entity/entity.ixx"
+        }
+      ],
+      "requires": [
+        {
+          "logical-name": "odfaeg.core.serialization"
+        },
+        {
+          "logical-name": "odfaeg.core.stateManager"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

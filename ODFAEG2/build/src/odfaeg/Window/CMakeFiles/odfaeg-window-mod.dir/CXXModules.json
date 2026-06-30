@@ -1,0 +1,697 @@
+{
+	"modules" : 
+	{
+		"odfaeg.window.action" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build/src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.action.pcm",
+			"is-private" : false
+		},
+		"odfaeg.window.command" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build/src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.command.pcm",
+			"is-private" : false
+		},
+		"odfaeg.window.cursor" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build/src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.cursor.pcm",
+			"is-private" : false
+		},
+		"odfaeg.window.cursorImpl" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build/src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.cursorImpl.pcm",
+			"is-private" : false
+		},
+		"odfaeg.window.display" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build/src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.display.pcm",
+			"is-private" : false
+		},
+		"odfaeg.window.iCursorType" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build/src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iCursorType.pcm",
+			"is-private" : false
+		},
+		"odfaeg.window.iEvent" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build/src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iEvent.pcm",
+			"is-private" : false
+		},
+		"odfaeg.window.iKeyboard" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build/src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iKeyboard.pcm",
+			"is-private" : false
+		},
+		"odfaeg.window.iMouse" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build/src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iMouse.pcm",
+			"is-private" : false
+		},
+		"odfaeg.window.listener" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build/src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.listener.pcm",
+			"is-private" : false
+		},
+		"odfaeg.window.videoMode" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build/src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.videoMode.pcm",
+			"is-private" : false
+		},
+		"odfaeg.window.videoModeImpl" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build/src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.videoModeImpl.pcm",
+			"is-private" : false
+		},
+		"odfaeg.window.window" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build/src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.window.pcm",
+			"is-private" : false
+		},
+		"odfaeg.window.windowImpl" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build/src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.windowImpl.pcm",
+			"is-private" : false
+		},
+		"odfaeg.window.windowStyle" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build/src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.windowStyle.pcm",
+			"is-private" : false
+		},
+		"odfaeg.window.x11Cursor" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build/src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.x11Cursor.pcm",
+			"is-private" : false
+		},
+		"odfaeg.window.x11Keyboard" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build/src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.x11Keyboard.pcm",
+			"is-private" : false
+		},
+		"odfaeg.window.x11Mouse" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build/src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.x11Mouse.pcm",
+			"is-private" : false
+		},
+		"odfaeg.window.x11VideoMode" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build/src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.x11VideoMode.pcm",
+			"is-private" : false
+		},
+		"odfaeg.window.x11Window" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build/src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.x11Window.pcm",
+			"is-private" : false
+		}
+	},
+	"references" : 
+	{
+		"odfaeg.core.any" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.any.pcm"
+		},
+		"odfaeg.core.archive" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.archive.pcm"
+		},
+		"odfaeg.core.clock" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.clock.pcm"
+		},
+		"odfaeg.core.delegate" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.delegate.pcm"
+		},
+		"odfaeg.core.factory" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.factory.pcm"
+		},
+		"odfaeg.core.inputStream" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.inputStream.pcm"
+		},
+		"odfaeg.core.metaprog" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.metaprog.pcm"
+		},
+		"odfaeg.core.nonCopyable" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.nonCopyable.pcm"
+		},
+		"odfaeg.core.reflexibility" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.reflexibility.pcm"
+		},
+		"odfaeg.core.resourceCache" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.resourceCache.pcm"
+		},
+		"odfaeg.core.resourceManager" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.resourceManager.pcm"
+		},
+		"odfaeg.core.runtimeCompiler" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.runtimeCompiler.pcm"
+		},
+		"odfaeg.core.serialization" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.serialization.pcm"
+		},
+		"odfaeg.core.stateManager" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.stateManager.pcm"
+		},
+		"odfaeg.core.string" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.string.pcm"
+		},
+		"odfaeg.core.threadPool" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.threadPool.pcm"
+		},
+		"odfaeg.core.timer" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.timer.pcm"
+		},
+		"odfaeg.core.utf" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.utf.pcm"
+		},
+		"odfaeg.core.utilities" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.utilities.pcm"
+		},
+		"odfaeg.core.variant" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.variant.pcm"
+		},
+		"odfaeg.core.worker" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.worker.pcm"
+		},
+		"odfaeg.entity.entity" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Entity/CMakeFiles/odfaeg-entity-mod.dir/odfaeg.entity.entity.pcm"
+		},
+		"odfaeg.entity.impl" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Entity/CMakeFiles/odfaeg-entity-mod.dir/odfaeg.entity.impl.pcm"
+		},
+		"odfaeg.entity.transformMatrix" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Entity/CMakeFiles/odfaeg-entity-mod.dir/odfaeg.entity.transformMatrix.pcm"
+		},
+		"odfaeg.math.computer" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.computer.pcm"
+		},
+		"odfaeg.math.distribution" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.distribution.pcm"
+		},
+		"odfaeg.math.maths" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.maths.pcm"
+		},
+		"odfaeg.math.matrix" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.matrix.pcm"
+		},
+		"odfaeg.math.plane" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.plane.pcm"
+		},
+		"odfaeg.math.quaternion" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.quaternion.pcm"
+		},
+		"odfaeg.math.ray" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.ray.pcm"
+		},
+		"odfaeg.math.triangle" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.triangle.pcm"
+		},
+		"odfaeg.math.vec" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.vec.pcm"
+		},
+		"odfaeg.physic.boundingBox" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Physics/CMakeFiles/odfaeg-physics-mod.dir/odfaeg.physic.boundingBox.pcm"
+		},
+		"odfaeg.window.action" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.action.pcm"
+		},
+		"odfaeg.window.command" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.command.pcm"
+		},
+		"odfaeg.window.cursor" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.cursor.pcm"
+		},
+		"odfaeg.window.cursorImpl" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.cursorImpl.pcm"
+		},
+		"odfaeg.window.display" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.display.pcm"
+		},
+		"odfaeg.window.iCursorType" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iCursorType.pcm"
+		},
+		"odfaeg.window.iEvent" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iEvent.pcm"
+		},
+		"odfaeg.window.iKeyboard" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iKeyboard.pcm"
+		},
+		"odfaeg.window.iMouse" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iMouse.pcm"
+		},
+		"odfaeg.window.listener" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.listener.pcm"
+		},
+		"odfaeg.window.videoMode" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.videoMode.pcm"
+		},
+		"odfaeg.window.videoModeImpl" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.videoModeImpl.pcm"
+		},
+		"odfaeg.window.window" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.window.pcm"
+		},
+		"odfaeg.window.windowImpl" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.windowImpl.pcm"
+		},
+		"odfaeg.window.windowStyle" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.windowStyle.pcm"
+		},
+		"odfaeg.window.x11Cursor" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.x11Cursor.pcm"
+		},
+		"odfaeg.window.x11Keyboard" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.x11Keyboard.pcm"
+		},
+		"odfaeg.window.x11Mouse" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.x11Mouse.pcm"
+		},
+		"odfaeg.window.x11VideoMode" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.x11VideoMode.pcm"
+		},
+		"odfaeg.window.x11Window" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.x11Window.pcm"
+		}
+	},
+	"usages" : 
+	{
+		"odfaeg.core.archive" : 
+		[
+			"odfaeg.core.delegate",
+			"odfaeg.core.factory",
+			"odfaeg.core.metaprog",
+			"odfaeg.core.utilities"
+		],
+		"odfaeg.core.delegate" : 
+		[
+			"odfaeg.core.metaprog"
+		],
+		"odfaeg.core.factory" : 
+		[
+			"odfaeg.core.delegate",
+			"odfaeg.core.metaprog"
+		],
+		"odfaeg.core.reflexibility" : 
+		[
+			"odfaeg.core.utilities"
+		],
+		"odfaeg.core.resourceCache" : 
+		[
+			"odfaeg.core.resourceManager",
+			"odfaeg.core.utilities"
+		],
+		"odfaeg.core.resourceManager" : 
+		[
+			"odfaeg.core.utilities"
+		],
+		"odfaeg.core.serialization" : 
+		[
+			"odfaeg.core.archive",
+			"odfaeg.core.delegate",
+			"odfaeg.core.factory",
+			"odfaeg.core.metaprog",
+			"odfaeg.core.utilities"
+		],
+		"odfaeg.core.stateManager" : 
+		[
+			"odfaeg.core.any"
+		],
+		"odfaeg.core.string" : 
+		[
+			"odfaeg.core.utf"
+		],
+		"odfaeg.core.timer" : 
+		[
+			"odfaeg.core.clock"
+		],
+		"odfaeg.core.variant" : 
+		[
+			"odfaeg.core.metaprog"
+		],
+		"odfaeg.entity.entity" : 
+		[
+			"odfaeg.core.any",
+			"odfaeg.core.archive",
+			"odfaeg.core.delegate",
+			"odfaeg.core.factory",
+			"odfaeg.core.metaprog",
+			"odfaeg.core.serialization",
+			"odfaeg.core.stateManager",
+			"odfaeg.core.utilities"
+		],
+		"odfaeg.entity.impl" : 
+		[
+			"odfaeg.core.any",
+			"odfaeg.core.archive",
+			"odfaeg.core.delegate",
+			"odfaeg.core.factory",
+			"odfaeg.core.metaprog",
+			"odfaeg.core.serialization",
+			"odfaeg.core.stateManager",
+			"odfaeg.core.utilities",
+			"odfaeg.entity.entity"
+		],
+		"odfaeg.entity.transformMatrix" : 
+		[
+			"odfaeg.math.matrix",
+			"odfaeg.math.vec"
+		],
+		"odfaeg.math.computer" : 
+		[
+			"odfaeg.math.maths",
+			"odfaeg.math.matrix",
+			"odfaeg.math.plane",
+			"odfaeg.math.ray",
+			"odfaeg.math.vec"
+		],
+		"odfaeg.math.maths" : 
+		[
+			"odfaeg.math.vec"
+		],
+		"odfaeg.math.matrix" : 
+		[
+			"odfaeg.math.vec"
+		],
+		"odfaeg.math.plane" : 
+		[
+			"odfaeg.math.maths",
+			"odfaeg.math.matrix",
+			"odfaeg.math.ray",
+			"odfaeg.math.vec"
+		],
+		"odfaeg.math.quaternion" : 
+		[
+			"odfaeg.math.maths",
+			"odfaeg.math.matrix",
+			"odfaeg.math.vec"
+		],
+		"odfaeg.math.ray" : 
+		[
+			"odfaeg.math.matrix",
+			"odfaeg.math.vec"
+		],
+		"odfaeg.math.triangle" : 
+		[
+			"odfaeg.math.maths",
+			"odfaeg.math.matrix",
+			"odfaeg.math.plane",
+			"odfaeg.math.ray",
+			"odfaeg.math.vec"
+		],
+		"odfaeg.physic.boundingBox" : 
+		[
+			"odfaeg.entity.transformMatrix",
+			"odfaeg.math.matrix",
+			"odfaeg.math.vec"
+		],
+		"odfaeg.window.action" : 
+		[
+			"odfaeg.core.clock",
+			"odfaeg.core.string",
+			"odfaeg.core.utf",
+			"odfaeg.math.vec",
+			"odfaeg.window.cursor",
+			"odfaeg.window.cursorImpl",
+			"odfaeg.window.display",
+			"odfaeg.window.iCursorType",
+			"odfaeg.window.iEvent",
+			"odfaeg.window.iKeyboard",
+			"odfaeg.window.iMouse",
+			"odfaeg.window.videoMode",
+			"odfaeg.window.window",
+			"odfaeg.window.windowImpl",
+			"odfaeg.window.windowStyle",
+			"odfaeg.window.x11Cursor",
+			"odfaeg.window.x11Window"
+		],
+		"odfaeg.window.command" : 
+		[
+			"odfaeg.core.clock",
+			"odfaeg.core.delegate",
+			"odfaeg.core.metaprog",
+			"odfaeg.core.string",
+			"odfaeg.core.utf",
+			"odfaeg.math.vec",
+			"odfaeg.window.action",
+			"odfaeg.window.cursor",
+			"odfaeg.window.cursorImpl",
+			"odfaeg.window.display",
+			"odfaeg.window.iCursorType",
+			"odfaeg.window.iEvent",
+			"odfaeg.window.iKeyboard",
+			"odfaeg.window.iMouse",
+			"odfaeg.window.videoMode",
+			"odfaeg.window.window",
+			"odfaeg.window.windowImpl",
+			"odfaeg.window.windowStyle",
+			"odfaeg.window.x11Cursor",
+			"odfaeg.window.x11Window"
+		],
+		"odfaeg.window.cursor" : 
+		[
+			"odfaeg.math.vec",
+			"odfaeg.window.cursorImpl",
+			"odfaeg.window.display",
+			"odfaeg.window.iCursorType",
+			"odfaeg.window.x11Cursor"
+		],
+		"odfaeg.window.cursorImpl" : 
+		[
+			"odfaeg.math.vec",
+			"odfaeg.window.display",
+			"odfaeg.window.iCursorType",
+			"odfaeg.window.x11Cursor"
+		],
+		"odfaeg.window.iMouse" : 
+		[
+			"odfaeg.core.clock",
+			"odfaeg.core.string",
+			"odfaeg.core.utf",
+			"odfaeg.math.vec",
+			"odfaeg.window.cursor",
+			"odfaeg.window.cursorImpl",
+			"odfaeg.window.display",
+			"odfaeg.window.iCursorType",
+			"odfaeg.window.iEvent",
+			"odfaeg.window.iKeyboard",
+			"odfaeg.window.videoMode",
+			"odfaeg.window.window",
+			"odfaeg.window.windowImpl",
+			"odfaeg.window.windowStyle",
+			"odfaeg.window.x11Cursor",
+			"odfaeg.window.x11Window"
+		],
+		"odfaeg.window.listener" : 
+		[
+			"odfaeg.core.clock",
+			"odfaeg.core.delegate",
+			"odfaeg.core.metaprog",
+			"odfaeg.core.string",
+			"odfaeg.core.utf",
+			"odfaeg.math.vec",
+			"odfaeg.window.action",
+			"odfaeg.window.command",
+			"odfaeg.window.cursor",
+			"odfaeg.window.cursorImpl",
+			"odfaeg.window.display",
+			"odfaeg.window.iCursorType",
+			"odfaeg.window.iEvent",
+			"odfaeg.window.iKeyboard",
+			"odfaeg.window.iMouse",
+			"odfaeg.window.videoMode",
+			"odfaeg.window.window",
+			"odfaeg.window.windowImpl",
+			"odfaeg.window.windowStyle",
+			"odfaeg.window.x11Cursor",
+			"odfaeg.window.x11Window"
+		],
+		"odfaeg.window.videoModeImpl" : 
+		[
+			"odfaeg.window.videoMode"
+		],
+		"odfaeg.window.window" : 
+		[
+			"odfaeg.core.clock",
+			"odfaeg.core.string",
+			"odfaeg.core.utf",
+			"odfaeg.math.vec",
+			"odfaeg.window.cursor",
+			"odfaeg.window.cursorImpl",
+			"odfaeg.window.display",
+			"odfaeg.window.iCursorType",
+			"odfaeg.window.iEvent",
+			"odfaeg.window.iKeyboard",
+			"odfaeg.window.videoMode",
+			"odfaeg.window.windowImpl",
+			"odfaeg.window.windowStyle",
+			"odfaeg.window.x11Cursor",
+			"odfaeg.window.x11Window"
+		],
+		"odfaeg.window.windowImpl" : 
+		[
+			"odfaeg.core.clock",
+			"odfaeg.core.string",
+			"odfaeg.core.utf",
+			"odfaeg.math.vec",
+			"odfaeg.window.cursor",
+			"odfaeg.window.cursorImpl",
+			"odfaeg.window.display",
+			"odfaeg.window.iCursorType",
+			"odfaeg.window.iEvent",
+			"odfaeg.window.iKeyboard",
+			"odfaeg.window.videoMode",
+			"odfaeg.window.windowStyle",
+			"odfaeg.window.x11Cursor",
+			"odfaeg.window.x11Window"
+		],
+		"odfaeg.window.x11Cursor" : 
+		[
+			"odfaeg.math.vec",
+			"odfaeg.window.display",
+			"odfaeg.window.iCursorType"
+		],
+		"odfaeg.window.x11Keyboard" : 
+		[
+			"odfaeg.window.iKeyboard"
+		],
+		"odfaeg.window.x11Mouse" : 
+		[
+			"odfaeg.core.clock",
+			"odfaeg.core.string",
+			"odfaeg.core.utf",
+			"odfaeg.math.vec",
+			"odfaeg.window.cursor",
+			"odfaeg.window.cursorImpl",
+			"odfaeg.window.display",
+			"odfaeg.window.iCursorType",
+			"odfaeg.window.iEvent",
+			"odfaeg.window.iKeyboard",
+			"odfaeg.window.iMouse",
+			"odfaeg.window.videoMode",
+			"odfaeg.window.window",
+			"odfaeg.window.windowImpl",
+			"odfaeg.window.windowStyle",
+			"odfaeg.window.x11Cursor",
+			"odfaeg.window.x11Window"
+		],
+		"odfaeg.window.x11VideoMode" : 
+		[
+			"odfaeg.window.videoMode"
+		],
+		"odfaeg.window.x11Window" : 
+		[
+			"odfaeg.core.string",
+			"odfaeg.core.utf",
+			"odfaeg.math.vec",
+			"odfaeg.window.display",
+			"odfaeg.window.iCursorType",
+			"odfaeg.window.iEvent",
+			"odfaeg.window.iKeyboard",
+			"odfaeg.window.videoMode",
+			"odfaeg.window.windowStyle",
+			"odfaeg.window.x11Cursor"
+		]
+	}
+}

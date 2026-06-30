@@ -1,0 +1,21 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/matrix.ixx.o",
+      "provides": [
+        {
+          "is-interface": true,
+          "logical-name": "odfaeg.math.matrix",
+          "source-path": "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Math/matrix.ixx"
+        }
+      ],
+      "requires": [
+        {
+          "logical-name": "odfaeg.math.vec"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

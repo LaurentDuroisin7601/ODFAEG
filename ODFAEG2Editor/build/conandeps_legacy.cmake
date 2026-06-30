@@ -1,0 +1,16 @@
+message(STATUS "Conan: Using CMakeDeps conandeps_legacy.cmake aggregator via include()")
+message(STATUS "Conan: It is recommended to use explicit find_package() per dependency instead")
+
+find_package(assimp)
+find_package(freetype)
+find_package(OpenAL)
+find_package(SndFile)
+find_package(OpenSSL)
+find_package(EnTT)
+find_package(Boost)
+find_package(shaderc)
+find_package(stb)
+find_package(imgui)
+find_package(glfw3)
+
+set(CONANDEPS_LEGACY  assimp::assimp  Freetype::Freetype  OpenAL::OpenAL  SndFile::sndfile  openssl::openssl  EnTT::EnTT  boost::boost  shaderc::shaderc  stb::stb  imgui::imgui  glfw )

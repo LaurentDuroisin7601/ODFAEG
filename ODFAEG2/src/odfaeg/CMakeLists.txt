@@ -1,0 +1,8 @@
+add_subdirectory(Core)
+add_subdirectory(Math)
+add_subdirectory(Entity)
+add_subdirectory(Physics)
+add_subdirectory(Window)
+add_subdirectory(Graphics)
+#add_subdirectory(Network)
+#add_subdirectory(Audio)

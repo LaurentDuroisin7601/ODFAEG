@@ -1,0 +1,51 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/shadowRenderer.ixx.o",
+      "provides": [
+        {
+          "is-interface": true,
+          "logical-name": "odfaeg.graphic.shadowRenderer",
+          "source-path": "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Graphics/shadowRenderer.ixx"
+        }
+      ],
+      "requires": [
+        {
+          "logical-name": "odfaeg.graphic.renderTarget"
+        },
+        {
+          "logical-name": "odfaeg.math.matrix"
+        },
+        {
+          "logical-name": "odfaeg.math.vec"
+        },
+        {
+          "logical-name": "odfaeg.graphic.renderTexture"
+        },
+        {
+          "logical-name": "odfaeg.graphic.shader"
+        },
+        {
+          "logical-name": "odfaeg.graphic.pipeline"
+        },
+        {
+          "logical-name": "odfaeg.graphic.descriptor"
+        },
+        {
+          "logical-name": "odfaeg.graphic.commandPool"
+        },
+        {
+          "logical-name": "odfaeg.graphic.buffer"
+        },
+        {
+          "logical-name": "odfaeg.core.threadPool"
+        },
+        {
+          "logical-name": "odfaeg.window.listener"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

@@ -1,0 +1,29 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/vertexBuffer.cpp.o",
+      "requires": [
+        {
+          "logical-name": "odfaeg.graphic.vertexBuffer"
+        },
+        {
+          "logical-name": "odfaeg.math.vec"
+        },
+        {
+          "logical-name": "odfaeg.graphic.gpuContext"
+        },
+        {
+          "logical-name": "odfaeg.graphic.renderTarget"
+        },
+        {
+          "logical-name": "odfaeg.graphic.renderStates"
+        },
+        {
+          "logical-name": "odfaeg.graphic.vertexBuffer"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

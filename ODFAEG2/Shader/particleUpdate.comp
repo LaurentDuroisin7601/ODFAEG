@@ -1,0 +1,70 @@
+#version 460
+#extension GL_EXT_debug_printf : enable
+struct ParticleSystem {
+    uint id;
+    uint offsetInAliveCountBuffer;
+    uint offsetInSubMeshBuffer;
+    uint offsetInParticleBuffer;
+    uint offsetInQuadBuffer;
+    uint subMeshCount;
+};
+struct Particle {
+    vec3 position;
+    vec3 velocity;
+    vec3 scale;
+    uint color;
+    uint id;
+    uint textureId;
+    float rotation;
+    float rotationSpeed;
+    float passedLifeTime;
+    float totalLifeTime;
+    uint alive;
+    uint particleSystemId;
+};
+layout (push_constant) uniform PushConstant {
+    float dt;
+} pc;
+layout (std430, binding = 0, set = 0) buffer ParticleSSBO {
+    Particle particles[];
+} particleData;
+layout (std430, binding = 1, set = 0) buffer AliveCountBuffer {
+    uint aliveCounts[];
+} aliveCountData;
+layout (std430, binding = 2, set = 0) buffer ParticleSystemSSBO {
+    ParticleSystem particleSystems[];
+} particleSystemData;
+layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+void main() {
+    uint particleSystemId = gl_GlobalInvocationID.x;
+    uint particleId = gl_GlobalInvocationID.y;
+    ParticleSystem particleSystem = particleSystemData.particleSystems[particleSystemId];
+    Particle particle = particleData.particles[particleId];
+    uint aliveCount = aliveCountData.aliveCounts[particleSystem.offsetInAliveCountBuffer];
+    //debugPrintfEXT("particle id : %i, aliveCount : %i, passedLifeTime %f, total life time : %f", particle.id, aliveCount, particle.passedLifeTime, particle.totalLifeTime);
+    if (particleSystem.id == particle.particleSystemId && particle.alive == 1) {
+        if (particle.passedLifeTime < particle.totalLifeTime) {
+            //debugPrintfEXT("update particle id : %i, aliveCount : %i, passedLifeTime %f, total life time : %f", particle.id, aliveCount, particle.passedLifeTime, particle.totalLifeTime);
+            particle.passedLifeTime += pc.dt;
+            particle.position += particle.velocity * pc.dt;
+            particle.rotation += particle.rotationSpeed * pc.dt;
+            //debugPrintfEXT("update particle pos : %v3f", particle.position);
+            particleData.particles[particleId] = particle;
+        } else {
+
+            uint newAliveCount = atomicAdd(aliveCountData.aliveCounts[particleSystem.offsetInAliveCountBuffer], -1) -1;
+            //debugPrintfEXT("remove particle id : %i, aliveCount : %i, passedLifeTime %f, total life time : %f", particle.id, newAliveCount, particle.passedLifeTime, particle.totalLifeTime);
+            uint lastIndex = particleSystem.offsetInParticleBuffer + newAliveCount;
+            // swap
+            Particle last = particleData.particles[lastIndex];
+            Particle dead = particleData.particles[particleId];
+            uint tmp = last.id;
+            last.id = dead.id; // mettre à jour l'id
+            dead.id = tmp;
+            particleData.particles[particleId] = last;
+            // marquer la dernière comme morte
+            dead.alive = 0;
+            particleData.particles[lastIndex] = dead;
+        }
+    }
+}

@@ -1,0 +1,26 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/modelLoader.cpp.o",
+      "requires": [
+        {
+          "logical-name": "odfaeg.graphic.modelLoader"
+        },
+        {
+          "logical-name": "odfaeg.graphic.assimpHelper"
+        },
+        {
+          "logical-name": "odfaeg.entity.transformMatrix"
+        },
+        {
+          "logical-name": "odfaeg.physic.boundingBox"
+        },
+        {
+          "logical-name": "odfaeg.graphic.modelLoader"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

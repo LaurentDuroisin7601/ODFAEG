@@ -1,0 +1,30 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/camera.ixx.o",
+      "provides": [
+        {
+          "is-interface": true,
+          "logical-name": "odfaeg.graphic.camera",
+          "source-path": "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Graphics/camera.ixx"
+        }
+      ],
+      "requires": [
+        {
+          "logical-name": "odfaeg.graphic.projMatrix"
+        },
+        {
+          "logical-name": "odfaeg.graphic.viewMatrix"
+        },
+        {
+          "logical-name": "odfaeg.physic.boundingBox"
+        },
+        {
+          "logical-name": "odfaeg.math.vec"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

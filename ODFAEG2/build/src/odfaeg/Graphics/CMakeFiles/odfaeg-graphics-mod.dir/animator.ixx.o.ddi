@@ -1,0 +1,27 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/animator.ixx.o",
+      "provides": [
+        {
+          "is-interface": true,
+          "logical-name": "odfaeg.graphic.animator",
+          "source-path": "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Graphics/animator.ixx"
+        }
+      ],
+      "requires": [
+        {
+          "logical-name": "odfaeg.graphic.animation"
+        },
+        {
+          "logical-name": "odfaeg.math.matrix"
+        },
+        {
+          "logical-name": "odfaeg.graphic.gameObject"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

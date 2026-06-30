@@ -1,0 +1,20 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/imageLoader.cpp.o",
+      "requires": [
+        {
+          "logical-name": "odfaeg.graphic.imageLoader"
+        },
+        {
+          "logical-name": "odfaeg.core.inputStream"
+        },
+        {
+          "logical-name": "odfaeg.graphic.imageLoader"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

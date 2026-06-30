@@ -1,0 +1,29 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/command.cpp.o",
+      "requires": [
+        {
+          "logical-name": "odfaeg.window.command"
+        },
+        {
+          "logical-name": "odfaeg.core.delegate"
+        },
+        {
+          "logical-name": "odfaeg.window.action"
+        },
+        {
+          "logical-name": "odfaeg.window.iEvent"
+        },
+        {
+          "logical-name": "odfaeg.window.iKeyboard"
+        },
+        {
+          "logical-name": "odfaeg.window.command"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

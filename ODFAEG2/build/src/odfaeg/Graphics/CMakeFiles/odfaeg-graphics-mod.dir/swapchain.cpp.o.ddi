@@ -1,0 +1,17 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/swapchain.cpp.o",
+      "requires": [
+        {
+          "logical-name": "odfaeg.graphic.swapchain"
+        },
+        {
+          "logical-name": "odfaeg.graphic.swapchain"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

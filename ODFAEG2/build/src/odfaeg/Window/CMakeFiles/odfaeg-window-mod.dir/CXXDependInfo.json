@@ -1,0 +1,241 @@
+{
+	"bmi-installation" : null,
+	"compiler-frontend-variant" : "GNU",
+	"compiler-id" : "Clang",
+	"compiler-simulate-id" : "",
+	"config" : "Release",
+	"cxx-modules" : 
+	{
+		"src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/Linux/display.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Window",
+			"name" : "cxx_modules",
+			"relative-directory" : "Linux",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Window/Linux/display.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		},
+		"src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/Linux/x11Cursor.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Window",
+			"name" : "cxx_modules",
+			"relative-directory" : "Linux",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Window/Linux/x11Cursor.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		},
+		"src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/Linux/x11Keyboard.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Window",
+			"name" : "cxx_modules",
+			"relative-directory" : "Linux",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Window/Linux/x11Keyboard.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		},
+		"src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/Linux/x11Mouse.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Window",
+			"name" : "cxx_modules",
+			"relative-directory" : "Linux",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Window/Linux/x11Mouse.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		},
+		"src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/Linux/x11VideoMode.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Window",
+			"name" : "cxx_modules",
+			"relative-directory" : "Linux",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Window/Linux/x11VideoMode.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		},
+		"src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/Linux/x11Window.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Window",
+			"name" : "cxx_modules",
+			"relative-directory" : "Linux",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Window/Linux/x11Window.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		},
+		"src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/action.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Window",
+			"name" : "cxx_modules",
+			"relative-directory" : "",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Window/action.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		},
+		"src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/command.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Window",
+			"name" : "cxx_modules",
+			"relative-directory" : "",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Window/command.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		},
+		"src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/cursor.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Window",
+			"name" : "cxx_modules",
+			"relative-directory" : "",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Window/cursor.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		},
+		"src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/cursorImpl.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Window",
+			"name" : "cxx_modules",
+			"relative-directory" : "",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Window/cursorImpl.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		},
+		"src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/iCursorType.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Window",
+			"name" : "cxx_modules",
+			"relative-directory" : "",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Window/iCursorType.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		},
+		"src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/iEvent.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Window",
+			"name" : "cxx_modules",
+			"relative-directory" : "",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Window/iEvent.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		},
+		"src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/iKeyboard.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Window",
+			"name" : "cxx_modules",
+			"relative-directory" : "",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Window/iKeyboard.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		},
+		"src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/iMouse.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Window",
+			"name" : "cxx_modules",
+			"relative-directory" : "",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Window/iMouse.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		},
+		"src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/listener.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Window",
+			"name" : "cxx_modules",
+			"relative-directory" : "",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Window/listener.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		},
+		"src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/videoMode.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Window",
+			"name" : "cxx_modules",
+			"relative-directory" : "",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Window/videoMode.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		},
+		"src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/videoModeImpl.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Window",
+			"name" : "cxx_modules",
+			"relative-directory" : "",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Window/videoModeImpl.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		},
+		"src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/window.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Window",
+			"name" : "cxx_modules",
+			"relative-directory" : "",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Window/window.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		},
+		"src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/windowImpl.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Window",
+			"name" : "cxx_modules",
+			"relative-directory" : "",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Window/windowImpl.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		},
+		"src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/windowStyle.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Window",
+			"name" : "cxx_modules",
+			"relative-directory" : "",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Window/windowStyle.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		}
+	},
+	"dir-cur-bld" : "/home/laurent/ODFAEG-master/ODFAEG2/build/src/odfaeg/Window",
+	"dir-cur-src" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Window",
+	"dir-top-bld" : "/home/laurent/ODFAEG-master/ODFAEG2/build",
+	"dir-top-src" : "/home/laurent/ODFAEG-master/ODFAEG2",
+	"exports" : 
+	[
+		{
+			"cxx-module-info-dir" : "",
+			"destination" : "lib/cmake/odfaeg",
+			"export-name" : "odfaeg-window-mod",
+			"export-prefix" : "/home/laurent/ODFAEG-master/ODFAEG2/build/CMakeFiles/Export/2392b34739d6e993753a335661218280",
+			"install" : true,
+			"namespace" : "odfaeg::"
+		}
+	],
+	"forward-modules-from-target-dirs" : [],
+	"include-dirs" : 
+	[
+		"/home/laurent/ODFAEG-master/ODFAEG2/include",
+		"/home/laurent/ODFAEG-master/ODFAEG2/external",
+		"/usr/lib/llvm-18/include"
+	],
+	"language" : "CXX",
+	"linked-target-dirs" : 
+	[
+		"/home/laurent/ODFAEG-master/ODFAEG2/build/src/odfaeg/Physics/CMakeFiles/odfaeg-physics-mod.dir",
+		"/home/laurent/ODFAEG-master/ODFAEG2/build/src/odfaeg/Entity/CMakeFiles/odfaeg-entity-mod.dir",
+		"/home/laurent/ODFAEG-master/ODFAEG2/build/src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir",
+		"/home/laurent/ODFAEG-master/ODFAEG2/build/src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir"
+	],
+	"module-dir" : "/home/laurent/ODFAEG-master/ODFAEG2/build/src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir"
+}

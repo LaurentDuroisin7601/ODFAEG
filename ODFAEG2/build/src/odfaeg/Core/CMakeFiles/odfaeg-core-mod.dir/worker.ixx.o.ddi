@@ -1,0 +1,16 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/worker.ixx.o",
+      "provides": [
+        {
+          "is-interface": true,
+          "logical-name": "odfaeg.core.worker",
+          "source-path": "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Core/worker.ixx"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

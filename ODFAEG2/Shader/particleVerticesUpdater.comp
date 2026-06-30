@@ -1,0 +1,163 @@
+#version 460
+#extension GL_EXT_debug_printf : enable
+#define MAX_BONES_INFLUENCE 4
+#define MAX_BONES 100
+#define NB_PRIMITIVE_TYPES 6
+struct ParticleSystem {
+    uint id;
+    uint offsetInAliveCountBuffer;
+    uint offsetInSubMeshBuffer;
+    uint offsetInParticleBuffer;
+    uint offsetInQuadBuffer;
+    uint subMeshCount;
+};
+struct AABB {
+	vec3 center;
+	vec3 size;
+};
+struct SubMesh {
+    AABB globalBounds;
+    int vertexOffset;
+    int indexOffset;
+    int primitiveType;
+    int materialId;
+    int nbVertices;
+    int nbIndexes;
+    int padding[2];
+};
+struct Vertex {
+    vec3 position; ///< 3D position of the vertex
+    uint color; ///< Color of the vertex
+    vec2 texCoords; ///< Coordinates of the texture's pixel to map to the vertex
+    vec3 normal;
+    //bone indexes which will influence this vertex
+    int m_BoneIDs[MAX_BONES_INFLUENCE];
+    //weights from each bone
+    float m_Weights[MAX_BONES_INFLUENCE];
+    int submeshId;
+};
+struct Particle {
+    vec3 position;
+    vec3 velocity;
+    vec3 scale;
+    uint color;
+    uint id;
+    uint textureId;
+    float rotation;
+    float rotationSpeed;
+    float passedLifeTime;
+    float totalLifeTime;
+    uint alive;
+    int particleSystemId;
+};
+struct Quad {
+    Vertex vertices[4];
+};
+layout (std430, binding = 0, set = 0) buffer QuadsSSBO {
+    Quad quads[];
+} quadData;
+layout (std430, binding = 1, set = 0) buffer ParticleSSBO {
+    Particle particles[];
+} particleData;
+layout (std430, binding = 2, set = 0) buffer ParticleSystemSSBO {
+    ParticleSystem particleSystem[];
+} particleSystemData;
+layout (std430, binding = 3, set = 0) buffer submeshSSBO {
+    SubMesh subMeshes[];
+} subMeshData;
+layout (std430, binding = 4, set = 0) buffer AliveCountBuffer {
+    uint aliveCounts[];
+} aliveCountData;
+layout (std430, binding = 5, set = 0) buffer VerticesSSBO {
+    Vertex vertices[];
+} vertexData[NB_PRIMITIVE_TYPES ];
+layout (std140, binding = 6, set = 0) uniform UniformBufferObject {
+	AABB frustrum;
+} ubo;
+bool intersects (AABB first, AABB second) {
+    float hx1 = first.size.x * 0.5;
+    float hy1 = first.size.y * 0.5;
+    float hz1 = first.size.z * 0.5;
+    float hx2 = second.size.x * 0.5;
+    float hy2 = second.size.y * 0.5;
+    float hz2 = second.size.z * 0.5;
+    //Check the mins and max medians positions.
+    float minX1 = first.center.x - hx1;
+    float minX2 = second.center.x - hx2;
+    float minY1 = first.center.y - hy1;
+    float minY2 = second.center.y - hy2;
+    float minZ1 = first.center.z - hz1;
+    float minZ2 = second.center.z - hz2;
+    float maxX1 = first.center.x + hx1;
+    float maxX2 = second.center.x + hx2;
+    float maxY1 = first.center.y + hy1;
+    float maxY2 = second.center.y + hy2;
+    float maxZ1 = first.center.z + hz1;
+    float maxZ2 = second.center.z + hz2;
+    //If the medians overlap, our two boxes intersects.
+    for (int i = 0; i < 3; i++) {
+        if (i == 0) {
+            if (minX1 > maxX2 || maxX1 < minX2)
+                return false;
+        } else if (i == 1) {
+            if (minY1 > maxY2 || maxY1 < minY2)
+                return false;
+        } else {
+            if (minZ1 > maxZ2 || maxZ1 < minZ2)
+                return false;
+        }
+    }
+    return true;
+}
+layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+void main() {
+    uint particleSystemIndex = gl_GlobalInvocationID.x;
+    uint particleIndex = gl_GlobalInvocationID.y;
+    ParticleSystem ps = particleSystemData.particleSystem[particleSystemIndex];
+    Particle particle = particleData.particles[particleIndex];
+    uint aliveCount = aliveCountData.aliveCounts[ps.offsetInAliveCountBuffer];
+
+    if (particle.particleSystemId == ps.id && particle.alive == 1) {
+        //debugPrintfEXT("particle id : %i, alive count %i", particle.id, aliveCount);
+        for (uint i = 0; i < ps.subMeshCount; i++) {
+
+            SubMesh subMesh = subMeshData.subMeshes[ps.offsetInSubMeshBuffer+i];
+            uint alive = aliveCountData.aliveCounts[ps.offsetInAliveCountBuffer];
+            subMesh.nbVertices = int(alive*4);
+            subMesh.nbIndexes = int(alive*6);
+            subMeshData.subMeshes[ps.offsetInSubMeshBuffer+i] = subMesh;
+            if (intersects(ubo.frustrum, subMesh.globalBounds)) {
+                float angle = radians(particle.rotation);
+                vec3 scale = particle.scale;
+                //debugPrintfEXT("scale : %v3f", scale);
+                vec3 translation = particle.position;
+                mat4 transformMatrix = mat4 (cos(angle)*scale.x, -sin(angle)*scale.y, 0,       translation.x,
+                                             sin(angle)*scale.x, cos(angle)*scale.y , 0,       translation.y,
+                                             0                 , 0                  , scale.z, translation.z,
+                                             0                 , 0                  , 0      , 1);
+                /*debugPrintfEXT("transform matricle matrix : \n0 %v4f\n1 : %v4f\n2 %v4f\n3 : %v4f",
+                transformMatrix[0], transformMatrix[1], transformMatrix[2], transformMatrix[3]);*/
+                //debugPrintfEXT("particle id %i, particle position : %v3f", particle.id, particle.position);
+                //debugPrintfEXT("texture id : %i", particle.textureId);
+                Quad quad = quadData.quads[ps.offsetInQuadBuffer+particle.textureId];
+                uint base = subMesh.vertexOffset + particle.id * 4;
+                for (uint j = 0; j < 4; j++) {
+                    //debugPrintfEXT("quad position : %v3f, texCoord %v2f", quad.vertices[j].position, quad.vertices[j].texCoords);
+                    /*if (subMesh.vertexOffset+particle.id+j >= 840)*/
+                        //debugPrintfEXT("update vertex : %i, nbVertices %i", subMesh.vertexOffset+particle.id+j, subMesh.nbVertices);
+                    //debugPrintfEXT("Primitive type : %i", subMesh.primitiveType);
+                    vertexData[subMesh.primitiveType].vertices[base+j].position = (transpose(transformMatrix) * vec4(quad.vertices[j].position, 1)).xyz;
+                    vertexData[subMesh.primitiveType].vertices[base+j].texCoords = quad.vertices[j].texCoords;
+                    vertexData[subMesh.primitiveType].vertices[base+j].color = particle.color;
+                    vertexData[subMesh.primitiveType].vertices[base+j].normal = quad.vertices[j].normal;
+                }
+                /*debugPrintfEXT("Particle id : %i, vertices position \n0 : %v3f\n1 : %v3f\n2 : %v3f\n3 : %v3f",
+                particle.id,
+                vertexData[subMesh.primitiveType].vertices[base+0].position,
+                vertexData[subMesh.primitiveType].vertices[base+1].position,
+                vertexData[subMesh.primitiveType].vertices[base+2].position,
+                vertexData[subMesh.primitiveType].vertices[base+3].position);*/
+            }
+        }
+    }
+}

@@ -1,0 +1,47 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/Linux/x11Window.cpp.o",
+      "requires": [
+        {
+          "logical-name": "odfaeg.window.x11Window"
+        },
+        {
+          "logical-name": "odfaeg.core.string"
+        },
+        {
+          "logical-name": "odfaeg.core.utf"
+        },
+        {
+          "logical-name": "odfaeg.window.display"
+        },
+        {
+          "logical-name": "odfaeg.window.windowStyle"
+        },
+        {
+          "logical-name": "odfaeg.window.iKeyboard"
+        },
+        {
+          "logical-name": "odfaeg.math.vec"
+        },
+        {
+          "logical-name": "odfaeg.window.x11Cursor"
+        },
+        {
+          "logical-name": "odfaeg.window.videoMode"
+        },
+        {
+          "logical-name": "odfaeg.window.iEvent"
+        },
+        {
+          "logical-name": "odfaeg.window.iMouse"
+        },
+        {
+          "logical-name": "odfaeg.window.x11Window"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

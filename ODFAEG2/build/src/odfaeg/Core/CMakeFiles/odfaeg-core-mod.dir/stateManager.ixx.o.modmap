@@ -1,0 +1,3 @@
+-x c++-module
+-fmodule-output=src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.stateManager.pcm
+-fmodule-file=odfaeg.core.any=src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.any.pcm

@@ -1,0 +1,16 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/videoMode.ixx.o",
+      "provides": [
+        {
+          "is-interface": true,
+          "logical-name": "odfaeg.window.videoMode",
+          "source-path": "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Window/videoMode.ixx"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

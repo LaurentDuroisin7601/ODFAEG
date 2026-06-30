@@ -1,0 +1,41 @@
+ninja_dyndep_version = 1.0
+build src/odfaeg/Graphics/CMakeFiles/meshoptimizer.dir/__/__/__/external/meshoptimizer/src/allocator.cpp.o: dyndep
+
+build src/odfaeg/Graphics/CMakeFiles/meshoptimizer.dir/__/__/__/external/meshoptimizer/src/clusterizer.cpp.o: dyndep
+
+build src/odfaeg/Graphics/CMakeFiles/meshoptimizer.dir/__/__/__/external/meshoptimizer/src/indexanalyzer.cpp.o: dyndep
+
+build src/odfaeg/Graphics/CMakeFiles/meshoptimizer.dir/__/__/__/external/meshoptimizer/src/indexcodec.cpp.o: dyndep
+
+build src/odfaeg/Graphics/CMakeFiles/meshoptimizer.dir/__/__/__/external/meshoptimizer/src/indexgenerator.cpp.o: dyndep
+
+build src/odfaeg/Graphics/CMakeFiles/meshoptimizer.dir/__/__/__/external/meshoptimizer/src/meshletcodec.cpp.o: dyndep
+
+build src/odfaeg/Graphics/CMakeFiles/meshoptimizer.dir/__/__/__/external/meshoptimizer/src/meshletutils.cpp.o: dyndep
+
+build src/odfaeg/Graphics/CMakeFiles/meshoptimizer.dir/__/__/__/external/meshoptimizer/src/opacitymap.cpp.o: dyndep
+
+build src/odfaeg/Graphics/CMakeFiles/meshoptimizer.dir/__/__/__/external/meshoptimizer/src/overdrawoptimizer.cpp.o: dyndep
+
+build src/odfaeg/Graphics/CMakeFiles/meshoptimizer.dir/__/__/__/external/meshoptimizer/src/partition.cpp.o: dyndep
+
+build src/odfaeg/Graphics/CMakeFiles/meshoptimizer.dir/__/__/__/external/meshoptimizer/src/quantization.cpp.o: dyndep
+
+build src/odfaeg/Graphics/CMakeFiles/meshoptimizer.dir/__/__/__/external/meshoptimizer/src/rasterizer.cpp.o: dyndep
+
+build src/odfaeg/Graphics/CMakeFiles/meshoptimizer.dir/__/__/__/external/meshoptimizer/src/simplifier.cpp.o: dyndep
+
+build src/odfaeg/Graphics/CMakeFiles/meshoptimizer.dir/__/__/__/external/meshoptimizer/src/spatialorder.cpp.o: dyndep
+
+build src/odfaeg/Graphics/CMakeFiles/meshoptimizer.dir/__/__/__/external/meshoptimizer/src/stripifier.cpp.o: dyndep
+
+build src/odfaeg/Graphics/CMakeFiles/meshoptimizer.dir/__/__/__/external/meshoptimizer/src/tangentspace.cpp.o: dyndep
+
+build src/odfaeg/Graphics/CMakeFiles/meshoptimizer.dir/__/__/__/external/meshoptimizer/src/vcacheoptimizer.cpp.o: dyndep
+
+build src/odfaeg/Graphics/CMakeFiles/meshoptimizer.dir/__/__/__/external/meshoptimizer/src/vertexcodec.cpp.o: dyndep
+
+build src/odfaeg/Graphics/CMakeFiles/meshoptimizer.dir/__/__/__/external/meshoptimizer/src/vertexfilter.cpp.o: dyndep
+
+build src/odfaeg/Graphics/CMakeFiles/meshoptimizer.dir/__/__/__/external/meshoptimizer/src/vfetchoptimizer.cpp.o: dyndep
+

@@ -1,0 +1,3 @@
+-x c++-module
+-fmodule-output=src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.timer.pcm
+-fmodule-file=odfaeg.core.clock=src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.clock.pcm

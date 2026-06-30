@@ -1,0 +1,97 @@
+#version 460
+#extension GL_EXT_debug_printf : enable
+#define NB_PRIMITIVE_TYPES 6
+#define MAX_BONES_INFLUENCE 4
+#define MAX_BONES 100
+struct AABB {
+	vec3 center;
+	vec3 size;
+};
+struct MorphAnim {
+	int subMeshesOffset;
+	int nbSubMeshes;
+	int offsetInFramesBuffer;
+	int nbFrames;
+	int interPerc;
+	int interLevels;
+	int currentFrameIndex;
+	float passedTime;
+};
+struct Frame {
+    int submeshOffset;
+};
+struct SubMesh {
+    AABB globalBounds;
+    int vertexOffset;
+    int indexOffset;
+    int primitiveType;
+    int materialId;
+    int nbVertices;
+    int nbIndexes;
+    int lodOffset;
+    int id;
+};
+struct Vertex {
+    vec3 position; ///< 3D position of the vertex
+    uint color; ///< Color of the vertex
+    vec2 texCoords; ///< Coordinates of the texture's pixel to map to the vertex
+    vec3 normal;
+    //bone indexes which will influence this vertex
+    int m_BoneIDs[MAX_BONES_INFLUENCE];
+    //weights from each bone
+    float m_Weights[MAX_BONES_INFLUENCE];
+    int submeshId;
+};
+layout(std430, binding = 0, set = 0) buffer MorphAnimSSBO {
+    MorphAnim morphAnims[];
+} morphAnimsData;
+layout(std430, binding = 1, set = 0) buffer FrameSSBO {
+    Frame frames[];
+} framesData;
+layout(std430, binding = 2, set = 0) buffer submeshFrameSSBO {
+    SubMesh subMeshes[];
+} submeshFramesData;
+layout(std430, binding = 3, set = 0) buffer submeshSSOB {
+    SubMesh subMeshes[];
+} subMeshData;
+layout(std430, binding = 4, set = 0) buffer verticeFrameSSBO {
+    Vertex vertices[];
+} verticesFrameData[NB_PRIMITIVE_TYPES];
+layout(std430, binding = 5, set = 0) buffer verticesSSBO {
+    Vertex vertices[];
+} vertexData[NB_PRIMITIVE_TYPES];
+layout(std140, binding = 6, set = 0) uniform UniformBufferObject {
+    AABB frustrum;
+} ubo;
+layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+void interpolate(MorphAnim morphAnim, uint currentFrame, uint nextFrame) {
+    uint vertexFrameIndex = gl_GlobalInvocationID.y;
+    //memoryBarrier();
+    for (uint i = 0; i < morphAnim.nbSubMeshes; i++) {
+        SubMesh subMesh = subMeshData.subMeshes[morphAnim.subMeshesOffset+i];
+        SubMesh sb1 = submeshFramesData.subMeshes[framesData.frames[morphAnim.offsetInFramesBuffer+currentFrame].submeshOffset+i];
+        SubMesh sb2 = submeshFramesData.subMeshes[framesData.frames[morphAnim.offsetInFramesBuffer+nextFrame].submeshOffset+i];
+        //debugPrintfEXT("%i", (currentFrame >= morphAnim.nbFrames-1) ? vertexFrameIndex : sb1.nbVertices+vertexFrameIndex);
+        Vertex v1 = verticesFrameData[sb1.primitiveType].vertices[vertexFrameIndex];
+        if (subMesh.id == vertexData[subMesh.primitiveType].vertices[subMesh.vertexOffset].submeshId &&  sb1.id == v1.submeshId) {
+            Vertex v2 = verticesFrameData[sb2.primitiveType].vertices[(currentFrame >= morphAnim.nbFrames-1) ? vertexFrameIndex : sb1.nbVertices+vertexFrameIndex];
+
+            if (sb2.id == v2.submeshId) {
+                //debugPrintfEXT("Index : %i, %i, %i", morphAnim.nbFrames, currentFrame, v2.submeshId);
+                vertexData[subMesh.primitiveType].vertices[subMesh.vertexOffset+vertexFrameIndex-sb1.vertexOffset].position = v1.position + (v2.position - v1.position) * (morphAnim.interPerc / morphAnim.interLevels);
+                vertexData[subMesh.primitiveType].vertices[subMesh.vertexOffset+vertexFrameIndex-sb1.vertexOffset].color = v1.color;
+                vertexData[subMesh.primitiveType].vertices[subMesh.vertexOffset+vertexFrameIndex-sb1.vertexOffset].texCoords = v1.texCoords;
+                vertexData[subMesh.primitiveType].vertices[subMesh.vertexOffset+vertexFrameIndex-sb1.vertexOffset].normal = v1.normal;
+                //debugPrintfEXT("offset frame : %i",sb1.vertexOffset);
+            }
+        }
+        //debugPrintfEXT("material id  : %i", sb1.materialId);
+        subMesh.materialId = sb1.materialId;
+        subMeshData.subMeshes[morphAnim.subMeshesOffset+i] = subMesh;
+    }
+}
+void main() {
+    uint morphAnimIndex = gl_GlobalInvocationID.x;
+    MorphAnim morphAnim = morphAnimsData.morphAnims[morphAnimIndex];
+    interpolate(morphAnim, morphAnim.currentFrameIndex, (morphAnim.currentFrameIndex+1 >= morphAnim.nbFrames) ? 0 : morphAnim.currentFrameIndex+1);
+}

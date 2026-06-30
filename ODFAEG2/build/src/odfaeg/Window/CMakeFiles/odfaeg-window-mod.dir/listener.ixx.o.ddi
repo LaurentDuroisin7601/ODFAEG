@@ -1,0 +1,27 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/listener.ixx.o",
+      "provides": [
+        {
+          "is-interface": true,
+          "logical-name": "odfaeg.window.listener",
+          "source-path": "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Window/listener.ixx"
+        }
+      ],
+      "requires": [
+        {
+          "logical-name": "odfaeg.window.iEvent"
+        },
+        {
+          "logical-name": "odfaeg.window.command"
+        },
+        {
+          "logical-name": "odfaeg.window.action"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

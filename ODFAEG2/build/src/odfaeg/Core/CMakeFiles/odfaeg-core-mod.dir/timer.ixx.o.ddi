@@ -1,0 +1,21 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/timer.ixx.o",
+      "provides": [
+        {
+          "is-interface": true,
+          "logical-name": "odfaeg.core.timer",
+          "source-path": "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Core/timer.ixx"
+        }
+      ],
+      "requires": [
+        {
+          "logical-name": "odfaeg.core.clock"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

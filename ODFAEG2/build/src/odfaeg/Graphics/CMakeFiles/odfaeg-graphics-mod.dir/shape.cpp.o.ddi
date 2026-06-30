@@ -1,0 +1,29 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/shape.cpp.o",
+      "requires": [
+        {
+          "logical-name": "odfaeg.graphic.shape"
+        },
+        {
+          "logical-name": "odfaeg.math.maths"
+        },
+        {
+          "logical-name": "odfaeg.graphic.primitiveType"
+        },
+        {
+          "logical-name": "odfaeg.graphic.renderStates"
+        },
+        {
+          "logical-name": "odfaeg.graphic.renderTarget"
+        },
+        {
+          "logical-name": "odfaeg.graphic.shape"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

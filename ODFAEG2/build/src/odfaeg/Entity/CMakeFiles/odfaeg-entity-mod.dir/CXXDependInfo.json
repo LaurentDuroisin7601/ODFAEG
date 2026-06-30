@@ -1,0 +1,68 @@
+{
+	"bmi-installation" : null,
+	"compiler-frontend-variant" : "GNU",
+	"compiler-id" : "Clang",
+	"compiler-simulate-id" : "",
+	"config" : "Release",
+	"cxx-modules" : 
+	{
+		"src/odfaeg/Entity/CMakeFiles/odfaeg-entity-mod.dir/entity.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Entity",
+			"name" : "cxx_modules",
+			"relative-directory" : "",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Entity/entity.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		},
+		"src/odfaeg/Entity/CMakeFiles/odfaeg-entity-mod.dir/impl.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Entity",
+			"name" : "cxx_modules",
+			"relative-directory" : "",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Entity/impl.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		},
+		"src/odfaeg/Entity/CMakeFiles/odfaeg-entity-mod.dir/transformMatrix.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Entity",
+			"name" : "cxx_modules",
+			"relative-directory" : "",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Entity/transformMatrix.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		}
+	},
+	"dir-cur-bld" : "/home/laurent/ODFAEG-master/ODFAEG2/build/src/odfaeg/Entity",
+	"dir-cur-src" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Entity",
+	"dir-top-bld" : "/home/laurent/ODFAEG-master/ODFAEG2/build",
+	"dir-top-src" : "/home/laurent/ODFAEG-master/ODFAEG2",
+	"exports" : 
+	[
+		{
+			"cxx-module-info-dir" : "",
+			"destination" : "lib/cmake/odfaeg",
+			"export-name" : "odfaeg-entity-mod",
+			"export-prefix" : "/home/laurent/ODFAEG-master/ODFAEG2/build/CMakeFiles/Export/2392b34739d6e993753a335661218280",
+			"install" : true,
+			"namespace" : "odfaeg::"
+		}
+	],
+	"forward-modules-from-target-dirs" : [],
+	"include-dirs" : 
+	[
+		"/home/laurent/ODFAEG-master/ODFAEG2/external/entt",
+		"/usr/lib/llvm-18/include"
+	],
+	"language" : "CXX",
+	"linked-target-dirs" : 
+	[
+		"/home/laurent/ODFAEG-master/ODFAEG2/build/src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir",
+		"/home/laurent/ODFAEG-master/ODFAEG2/build/src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir"
+	],
+	"module-dir" : "/home/laurent/ODFAEG-master/ODFAEG2/build/src/odfaeg/Entity/CMakeFiles/odfaeg-entity-mod.dir"
+}

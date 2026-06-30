@@ -1,0 +1,24 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/serialization.ixx.o",
+      "provides": [
+        {
+          "is-interface": true,
+          "logical-name": "odfaeg.core.serialization",
+          "source-path": "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Core/serialization.ixx"
+        }
+      ],
+      "requires": [
+        {
+          "logical-name": "odfaeg.core.factory"
+        },
+        {
+          "logical-name": "odfaeg.core.archive"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

@@ -1,0 +1,23 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Physics/CMakeFiles/odfaeg-physics-mod.dir/boundingBox.cpp.o",
+      "requires": [
+        {
+          "logical-name": "odfaeg.physic.boundingBox"
+        },
+        {
+          "logical-name": "odfaeg.math.computer"
+        },
+        {
+          "logical-name": "odfaeg.entity.transformMatrix"
+        },
+        {
+          "logical-name": "odfaeg.physic.boundingBox"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

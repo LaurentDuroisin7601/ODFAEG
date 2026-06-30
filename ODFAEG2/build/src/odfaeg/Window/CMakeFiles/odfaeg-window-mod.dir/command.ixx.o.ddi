@@ -1,0 +1,27 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/command.ixx.o",
+      "provides": [
+        {
+          "is-interface": true,
+          "logical-name": "odfaeg.window.command",
+          "source-path": "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Window/command.ixx"
+        }
+      ],
+      "requires": [
+        {
+          "logical-name": "odfaeg.core.delegate"
+        },
+        {
+          "logical-name": "odfaeg.window.action"
+        },
+        {
+          "logical-name": "odfaeg.window.iEvent"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

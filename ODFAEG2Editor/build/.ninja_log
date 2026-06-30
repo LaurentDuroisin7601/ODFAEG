@@ -1,0 +1,13 @@
+# ninja log v5
+2	571	1782808564014145184	CMakeFiles/imgui.dir/external/imgui/backends/imgui_impl_glfw.cpp.o	2557549eab8211d9
+3	491	1782808563931142588	CMakeFiles/odfaeg-editor.dir/imgui_impl_glfw.cpp.o	d4ead046c7310a94
+7443	7476	1782808570921361225	libimgui.a	2410c5df97a87bf3
+1	7443	1782808570876359818	CMakeFiles/imgui.dir/external/imgui/imgui_draw.cpp.o	c2e4593a66e10579
+1	7421	1782808570851359036	CMakeFiles/imgui.dir/external/imgui/imgui.cpp.o	e691b31ac91fde10
+1	3543	1782808566980237952	CMakeFiles/imgui.dir/external/imgui/imgui_widgets.cpp.o	71e01ba5e37fcc98
+1	1784	1782808565224183029	CMakeFiles/imgui.dir/external/imgui/imgui_tables.cpp.o	4425f57893de5e4f
+1	730	1782808564173150157	CMakeFiles/imgui.dir/external/imgui/backends/imgui_impl_vulkan.cpp.o	bf20567597354f8d
+25	546	1782808563989144401	CMakeFiles/odfaeg-editor.dir/imgui_impl_vulkan.cpp.o	6e751687c3cbfd72
+2	96	1782808997741491586	build.ninja	ed1bd57102d5b0f0
+2	25	1782808563469128138	CMakeFiles/odfaeg-editor.dir/main.cpp.o	ffde735906a7e491
+2	96	1782808997741491586	build.ninja	ed1bd57102d5b0f0

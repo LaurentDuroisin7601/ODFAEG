@@ -1,0 +1,27 @@
+-x c++-module
+-fmodule-output=src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.gpuContext.pcm
+-fmodule-file=odfaeg.graphic.pipeline=src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.pipeline.pcm
+-fmodule-file=odfaeg.graphic.descriptor=src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.descriptor.pcm
+-fmodule-file=odfaeg.graphic.image=src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.image.pcm
+-fmodule-file=odfaeg.graphic.buffer=src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.buffer.pcm
+-fmodule-file=odfaeg.graphic.vertexBuffer=src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.vertexBuffer.pcm
+-fmodule-file=odfaeg.graphic.texture=src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.texture.pcm
+-fmodule-file=odfaeg.graphic.instance=src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.instance.pcm
+-fmodule-file=odfaeg.graphic.device=src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.device.pcm
+-fmodule-file=odfaeg.graphic.primitiveType=src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.primitiveType.pcm
+-fmodule-file=odfaeg.graphic.shader=src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.shader.pcm
+-fmodule-file=odfaeg.graphic.blendMode=src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.blendMode.pcm
+-fmodule-file=odfaeg.graphic.fence=src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.fence.pcm
+-fmodule-file=odfaeg.graphic.semaphore=src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.semaphore.pcm
+-fmodule-file=odfaeg.core.inputStream=src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.inputStream.pcm
+-fmodule-file=odfaeg.core.nonCopyable=src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.nonCopyable.pcm
+-fmodule-file=odfaeg.entity.transformMatrix=src/odfaeg/Entity/CMakeFiles/odfaeg-entity-mod.dir/odfaeg.entity.transformMatrix.pcm
+-fmodule-file=odfaeg.graphic.color=src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.color.pcm
+-fmodule-file=odfaeg.graphic.commandPool=src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.commandPool.pcm
+-fmodule-file=odfaeg.graphic.imageLoader=src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.imageLoader.pcm
+-fmodule-file=odfaeg.graphic.rect=src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.rect.pcm
+-fmodule-file=odfaeg.graphic.renderPass=src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.renderPass.pcm
+-fmodule-file=odfaeg.graphic.vertex=src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.vertex.pcm
+-fmodule-file=odfaeg.math.matrix=src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.matrix.pcm
+-fmodule-file=odfaeg.math.vec=src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.vec.pcm
+-fmodule-file=odfaeg.physic.boundingBox=src/odfaeg/Physics/CMakeFiles/odfaeg-physics-mod.dir/odfaeg.physic.boundingBox.pcm

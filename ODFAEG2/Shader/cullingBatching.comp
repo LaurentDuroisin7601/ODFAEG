@@ -1,0 +1,266 @@
+#version 460
+#extension GL_EXT_debug_printf : enable
+#define MAX_BONE_INFLUENCE 4
+#define MAX_BONES 100 
+#define NB_PRIMITIVE_TYPES 6
+#define MAX_FRAMES_IN_FLIGHT 2
+/*Boîtes englobantes des objets*/
+struct AABB {
+	vec3 center;
+	vec3 size;
+};
+/*Objets*/
+struct Object {
+	AABB globalBounds;
+	int id;	
+	int type;                             
+	int subMeshesOffset;
+	int modelDataOffset;		   
+	int nbSubMeshes;
+	int paddings[3];
+};
+struct LODLevel {
+    uint index_offset;
+    uint index_count;
+};
+/*subMesh*/
+struct SubMesh {
+	AABB globalBounds;
+	int vertexOffset;
+	int indexOffset;
+	int primitiveType;
+	int materialId;
+	int nbVertices;
+	int nbIndexes;
+	int lodOffset;
+	int id;
+};
+/*Matrices*/
+struct ModelData {
+	mat4 modelMatrix;
+	mat4 shadowProjMatrix;
+	mat4 borderMatrices;
+};        
+/*Matériaux*/
+struct MaterialData {   
+    vec2 uvScale;
+    vec2 uvOffset;
+    uint diffuseTextureIndex;
+    uint specularTextureIndex;
+    uint normalTextureIndex;
+    uint metalnessTextureIndex;
+    uint roughnessTextureIndex;
+    uint aoTextureIndex;
+    uint emissiveTextureIndex;
+    uint materialType;
+    uint materialSet;   
+    uint nbVertices;
+    uint nbIndexes;
+    int instanceGroupId;
+    uint vertsInstanceSet;
+    uint materialId;
+    uint nbBuffers;
+    uint padding;
+};
+struct IndirectElementsDrawCommand {
+    uint index_count;
+    uint instance_count;
+    uint first_index;       // cf parametre offset de glDrawElements()
+    uint vertex_base;
+    uint instance_base;
+};
+/*objets en entrée.*/
+layout(push_constant) uniform PushConstant {
+    /*mat4 viewMatrix;
+    mat4 projMatrix;*/
+    uint currentFrame;
+    //uint totalSubMeshesCount;
+} pc;
+layout (set = 0, binding = 0) buffer ObjectTypesSSBO {
+	int types[];
+} objectTypes[MAX_FRAMES_IN_FLIGHT];
+layout (std430, set = 0, binding = 1) buffer inputObjectSSBO {
+	Object objects[];
+} inputObjectBuffer;
+/*SubMeshes en entrée.*/
+layout (std430, set = 0, binding = 2) buffer inputSubmeshesSSBO {
+	SubMesh subMeshes[];
+} inputSubmeshesBuffer;
+/*matrices en entrée.*/
+layout (std430, set = 0, binding = 3) buffer inputModelDataSSBO {
+	ModelData modelData[];
+} inputModelData;
+/*matériaux en entrée.*/
+layout (std430, set = 0, binding = 4) buffer inputMaterialDataSSBO {
+	MaterialData materialData[];
+} inputMaterialData[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
+/*matériaux en sortie.*/
+layout (std430, set = 0, binding = 5) buffer outputMaterialDataSSBO {
+	MaterialData materialData[];
+} outputMaterialData[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
+/*matrices des objets visibles pour les instances en sortie.*/
+layout (std430, set = 0, binding = 6) buffer outputModelDataSSBO {
+	ModelData modelData[];
+} outputModelData[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
+/*Matrices des objets visible en sortie pour les non instances*/
+layout (std430, set = 0, binding = 7) buffer outputObjectDataSSBO {
+	SubMesh meshData[];
+} outputMeshesData[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
+/*position dans le buffer de matrices de sortie pour les instance*/
+layout (std430, set = 0, binding = 8) buffer offsetInOutputModelDataSSBO {
+	uint modelDataOffset;
+} offsetInOutputModelData[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
+/*position dans le buffer des matrices de sortie*/
+layout (std430, set = 0, binding = 9) buffer offsetInOutputMeshDataSSBO {
+	uint meshDataOffset;
+} offsetInOutputMeshData[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
+/*Nombre de commandes pour le rendu indirect.*/
+layout (std430, set = 0, binding = 10) buffer outputIndirectDrawCountSSBO {
+	uint drawCount;
+} outputDrawCount[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
+layout (std430, set = 0, binding = 11) buffer outputIndirectElementCommandSSBO {
+	IndirectElementsDrawCommand indirectElementsDrawCommands[];
+} outputIndirectElementsDrawCommands[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
+/*position dans le buffer de commandes pour le rendu indirect.*/
+layout (std430, set = 0, binding = 12) buffer offsetInOutputElementsIndirectCommandSSBO {
+	uint offsetIndirectElementsDrawCommand;
+} offsetInOutputIndirectElementsDrawCommand[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
+/*Buffer pour données de la frame*/
+layout (std430, set = 0, binding = 13) buffer offsetOutputMaterialSSBO {
+	uint materialOffset;
+} offsetInOutputMaterial[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
+layout (std430, set = 0, binding = 14) buffer outputInstanceBaseSSBO {
+	uint instanceBase;
+} outputInstanceBase[NB_PRIMITIVE_TYPES*MAX_FRAMES_IN_FLIGHT];
+layout (std140, set = 0, binding = 15) uniform UniformBufferObject {
+	AABB frustrum;			
+	uint nbObjectTypes;
+	uint paddings[3];
+} ubo[MAX_FRAMES_IN_FLIGHT];
+layout (std430, set=0, binding = 16) buffer LodLevelBuffer {
+    LODLevel lodLevel[];
+} lodLevelData;
+layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+bool intersects (AABB first, AABB second) {
+    float hx1 = first.size.x * 0.5;
+    float hy1 = first.size.y * 0.5;
+    float hz1 = first.size.z * 0.5;
+    float hx2 = second.size.x * 0.5;
+    float hy2 = second.size.y * 0.5;
+    float hz2 = second.size.z * 0.5;
+    //Check the mins and max medians positions.
+    float minX1 = first.center.x - hx1;
+    float minX2 = second.center.x - hx2;
+    float minY1 = first.center.y - hy1;
+    float minY2 = second.center.y - hy2;
+    float minZ1 = first.center.z - hz1;
+    float minZ2 = second.center.z - hz2;
+    float maxX1 = first.center.x + hx1;
+    float maxX2 = second.center.x + hx2;
+    float maxY1 = first.center.y + hy1;
+    float maxY2 = second.center.y + hy2;
+    float maxZ1 = first.center.z + hz1;
+    float maxZ2 = second.center.z + hz2;
+    //If the medians overlap, our two boxes intersects.
+    for (int i = 0; i < 3; i++) {
+        if (i == 0) {
+            if (minX1 > maxX2 || maxX1 < minX2)
+                return false;
+        } else if (i == 1) {
+            if (minY1 > maxY2 || maxY1 < minY2)
+                return false;
+        } else {
+            if (minZ1 > maxZ2 || maxZ1 < minZ2)
+                return false;
+        }
+    }
+    return true;
+}
+void main() {
+    //debugPrintfEXT("nb object types : %i, %i, %i",gl_GlobalInvocationID.x, gl_GlobalInvocationID.y, gl_GlobalInvocationID.z);
+    Object object = inputObjectBuffer.objects[gl_GlobalInvocationID.x];
+	uint materialId = gl_GlobalInvocationID.y;
+	uint primitiveType = gl_GlobalInvocationID.z;
+
+	//debugPrintfEXT("nb object types : %v3f, %v3f, %i",ubo[pc.currentFrame].frustrum.center, ubo[pc.currentFrame].frustrum.size, ubo[pc.currentFrame].nbObjectTypes);
+	memoryBarrier();
+	for (uint t = 0; t < ubo[pc.currentFrame].nbObjectTypes; t++) {
+	    //debugPrintfEXT("type : %i,%i", t, object.type );
+		if (object.type == objectTypes[pc.currentFrame].types[t] && intersects(object.globalBounds, ubo[pc.currentFrame].frustrum)) {
+		    //debugPrintfEXT("Object in frustrum");
+			for (uint s = 0; s < object.nbSubMeshes; s++) {
+
+				SubMesh subMesh = inputSubmeshesBuffer.subMeshes[object.subMeshesOffset+s];
+				//Regroupement des données par matériaux et par type de primitive. (Batching)
+				if (subMesh.materialId == materialId && subMesh.primitiveType == primitiveType && intersects(subMesh.globalBounds, ubo[pc.currentFrame].frustrum)) {
+                    //debugPrintfEXT("submesh in frustrum %i", s);
+                    float dist = distance(ubo[pc.currentFrame].frustrum.center, subMesh.globalBounds.center);
+                    float lodStep = 20.0;
+                    int lod = clamp(int(dist / lodStep), 0, 4);
+                    //debugPrintfEXT("primitiveType : %i", subMesh.primitiveType);
+                    //Vérifie si les sommets pour l'instance n'ont pas déjà été ajoutés. (Les instances sont regroupée par instanceGroupId dans matériaux)
+                    //Si le matériel est instancé.
+                    if (inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].instanceGroupId != -1) {
+                         //debugPrintfEXT("Instanced!");
+
+                         uint instanceBase = atomicAdd(outputInstanceBase[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].instanceBase, 1);
+                         uint indirectElementsDrawCommandOffset = 0;
+                         //Si la commande n'est pas encore ajoutée pour cette instance, on l'ajoute.
+                         if(inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].vertsInstanceSet == 0) {
+                            inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId].vertsInstanceSet = 1;
+                            indirectElementsDrawCommandOffset = atomicAdd(outputDrawCount[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].drawCount, 1);
+                            IndirectElementsDrawCommand indirectElementsDrawCommand;
+                            indirectElementsDrawCommand.index_count = lodLevelData.lodLevel[subMesh.lodOffset+lod].index_count;
+                            indirectElementsDrawCommand.first_index = subMesh.indexOffset + lodLevelData.lodLevel[subMesh.lodOffset+lod].index_offset;
+                            /*indirectElementsDrawCommand.index_count = subMesh.nbIndexes;
+                            indirectElementsDrawCommand.first_index = subMesh.indexOffset;*/
+                            indirectElementsDrawCommand.instance_base = instanceBase;
+                            indirectElementsDrawCommand.vertex_base = subMesh.vertexOffset;
+                            outputIndirectElementsDrawCommands[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].indirectElementsDrawCommands[indirectElementsDrawCommandOffset] = indirectElementsDrawCommand;
+                            MaterialData material = inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId];
+                            material.materialId = materialId;
+                            outputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[indirectElementsDrawCommandOffset] = material;
+                        }
+                        ModelData modelData = inputModelData.modelData[object.modelDataOffset];
+                        outputModelData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].modelData[instanceBase] = modelData;
+                        //nombre d'instances + 1.
+                        outputIndirectElementsDrawCommands[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].indirectElementsDrawCommands[indirectElementsDrawCommandOffset].instance_count++;
+                       //Matériel non instancé.
+                    } else {
+                        //debugPrintfEXT("Non instanced!");
+                        uint indirectElementsDrawCommandOffset = atomicAdd(outputDrawCount[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].drawCount, 1);
+                        uint instanceBase = atomicAdd(outputInstanceBase[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].instanceBase, 1);
+                        IndirectElementsDrawCommand indirectElementsDrawCommand;
+                        //debugPrintfEXT("submesh nb indexes : %i, index offset : %i, vertex offset : %i, nb vertices : %i", subMesh.nbIndexes,subMesh.indexOffset, subMesh.vertexOffset, subMesh.nbVertices);
+                        /*if (subMesh.lodOffset + lod >= 215)
+                            debugPrintfEXT("lodOffset=%d lod=%d\n", subMesh.lodOffset, lod);*/
+                        indirectElementsDrawCommand.index_count = lodLevelData.lodLevel[subMesh.lodOffset+lod].index_count;
+                        indirectElementsDrawCommand.first_index = subMesh.indexOffset + lodLevelData.lodLevel[subMesh.lodOffset+lod].index_offset;
+                        /*indirectElementsDrawCommand.index_count = subMesh.nbIndexes;
+                        indirectElementsDrawCommand.first_index = subMesh.indexOffset;*/
+                        indirectElementsDrawCommand.instance_base = instanceBase;
+                        indirectElementsDrawCommand.vertex_base = subMesh.vertexOffset;
+                        indirectElementsDrawCommand.instance_count = 1;
+                        //debugPrintfEXT("lod infos : %i, %i",subMesh.lodLevel[lod].index_offset,subMesh.lodLevel[lod].index_count);
+                        //debugPrintfEXT("instance base %i", instanceBase);
+
+                        outputIndirectElementsDrawCommands[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].indirectElementsDrawCommands[indirectElementsDrawCommandOffset] = indirectElementsDrawCommand;
+                        //debugPrintfEXT("indirect elements draw command offset : %i", indirectElementsDrawCommandOffset);
+                        ModelData modelData = inputModelData.modelData[object.modelDataOffset];
+                        //debugPrintfEXT("model data matrix : %v4f\n%v4f\n%v4f\n%v4f", modelData.modelMatrix[0], modelData.modelMatrix[1], modelData.modelMatrix[2], modelData.modelMatrix[3]);
+                        //debugPrintfEXT("object data offset : %i",objectDataOffset);
+                        outputModelData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].modelData[instanceBase] = modelData;
+                        //debugPrintfEXT("offsets : %i, %i, %i", objectDataOffset, offsetInOutputMaterial, indirectElementsDrawCommandOffset);
+                        MaterialData material = inputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[materialId];
+                        material.materialId = materialId;
+                        //debugPrintfEXT("culling shader draw id : %i, material id : %i", indirectElementsDrawCommandOffset, materialId);
+                        //debugPrintfEXT("instance base : %i", instanceBase);
+                        outputMaterialData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].materialData[indirectElementsDrawCommandOffset] = material;
+                        //debugPrintfEXT("material datas %v2f", material.uvScale);
+                        //debugPrintfEXT("Output Model Matrix : %i\n%v4f\n%v4f\n%v4f\n%v4f",objectDataOffset,outputObjectData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].objectData[objectDataOffset].modelMatrix[0], outputObjectData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].objectData[objectDataOffset].modelMatrix[1], outputObjectData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].objectData[objectDataOffset].modelMatrix[2], outputObjectData[primitiveType*MAX_FRAMES_IN_FLIGHT+pc.currentFrame].objectData[objectDataOffset].modelMatrix[3]);
+                    }
+                }
+           }
+		}
+	}
+}

@@ -1,0 +1,17 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/viewportMatrix.cpp.o",
+      "requires": [
+        {
+          "logical-name": "odfaeg.graphic.viewportMatrix"
+        },
+        {
+          "logical-name": "odfaeg.graphic.viewportMatrix"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

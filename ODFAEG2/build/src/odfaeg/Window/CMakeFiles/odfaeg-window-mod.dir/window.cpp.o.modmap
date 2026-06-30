@@ -1,0 +1,17 @@
+-fmodule-file=odfaeg.window.window=src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.window.pcm
+-fmodule-file=odfaeg.core.string=src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.string.pcm
+-fmodule-file=odfaeg.math.vec=src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.vec.pcm
+-fmodule-file=odfaeg.window.windowImpl=src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.windowImpl.pcm
+-fmodule-file=odfaeg.window.cursor=src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.cursor.pcm
+-fmodule-file=odfaeg.window.videoMode=src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.videoMode.pcm
+-fmodule-file=odfaeg.window.iEvent=src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iEvent.pcm
+-fmodule-file=odfaeg.window.window=src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.window.pcm
+-fmodule-file=odfaeg.core.clock=src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.clock.pcm
+-fmodule-file=odfaeg.core.utf=src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.utf.pcm
+-fmodule-file=odfaeg.window.cursorImpl=src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.cursorImpl.pcm
+-fmodule-file=odfaeg.window.display=src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.display.pcm
+-fmodule-file=odfaeg.window.iCursorType=src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iCursorType.pcm
+-fmodule-file=odfaeg.window.iKeyboard=src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iKeyboard.pcm
+-fmodule-file=odfaeg.window.windowStyle=src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.windowStyle.pcm
+-fmodule-file=odfaeg.window.x11Cursor=src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.x11Cursor.pcm
+-fmodule-file=odfaeg.window.x11Window=src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.x11Window.pcm

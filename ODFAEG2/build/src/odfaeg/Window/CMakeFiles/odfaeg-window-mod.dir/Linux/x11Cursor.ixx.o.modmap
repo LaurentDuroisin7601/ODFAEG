@@ -1,0 +1,5 @@
+-x c++-module
+-fmodule-output=src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.x11Cursor.pcm
+-fmodule-file=odfaeg.math.vec=src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.vec.pcm
+-fmodule-file=odfaeg.window.display=src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.display.pcm
+-fmodule-file=odfaeg.window.iCursorType=src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iCursorType.pcm

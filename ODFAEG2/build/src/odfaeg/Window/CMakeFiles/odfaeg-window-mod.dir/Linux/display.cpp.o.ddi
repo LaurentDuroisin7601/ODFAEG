@@ -1,0 +1,17 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/Linux/display.cpp.o",
+      "requires": [
+        {
+          "logical-name": "odfaeg.window.display"
+        },
+        {
+          "logical-name": "odfaeg.window.display"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

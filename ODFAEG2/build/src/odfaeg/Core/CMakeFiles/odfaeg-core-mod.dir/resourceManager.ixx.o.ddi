@@ -1,0 +1,21 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/resourceManager.ixx.o",
+      "provides": [
+        {
+          "is-interface": true,
+          "logical-name": "odfaeg.core.resourceManager",
+          "source-path": "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Core/resourceManager.ixx"
+        }
+      ],
+      "requires": [
+        {
+          "logical-name": "odfaeg.core.utilities"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

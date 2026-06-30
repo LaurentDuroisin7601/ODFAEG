@@ -1,0 +1,36 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/descriptor.ixx.o",
+      "provides": [
+        {
+          "is-interface": true,
+          "logical-name": "odfaeg.graphic.descriptor",
+          "source-path": "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Graphics/descriptor.ixx"
+        }
+      ],
+      "requires": [
+        {
+          "logical-name": "odfaeg.graphic.buffer"
+        },
+        {
+          "logical-name": "odfaeg.graphic.image"
+        },
+        {
+          "logical-name": "odfaeg.core.nonCopyable"
+        },
+        {
+          "logical-name": "odfaeg.graphic.device"
+        },
+        {
+          "logical-name": "odfaeg.graphic.texture"
+        },
+        {
+          "logical-name": "odfaeg.graphic.vertexBuffer"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

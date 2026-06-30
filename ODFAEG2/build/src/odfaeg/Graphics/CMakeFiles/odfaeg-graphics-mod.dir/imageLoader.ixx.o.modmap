@@ -1,0 +1,6 @@
+-x c++-module
+-fmodule-output=src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.imageLoader.pcm
+-fmodule-file=odfaeg.graphic.color=src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.color.pcm
+-fmodule-file=odfaeg.math.vec=src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.vec.pcm
+-fmodule-file=odfaeg.core.inputStream=src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.inputStream.pcm
+-fmodule-file=odfaeg.graphic.rect=src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.rect.pcm

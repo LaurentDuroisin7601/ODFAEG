@@ -1,0 +1,23 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/videoModeImpl.cpp.o",
+      "requires": [
+        {
+          "logical-name": "odfaeg.window.videoModeImpl"
+        },
+        {
+          "logical-name": "odfaeg.window.videoMode"
+        },
+        {
+          "logical-name": "odfaeg.window.x11VideoMode"
+        },
+        {
+          "logical-name": "odfaeg.window.videoModeImpl"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

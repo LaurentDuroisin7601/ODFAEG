@@ -1,0 +1,48 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/renderTexture.ixx.o",
+      "provides": [
+        {
+          "is-interface": true,
+          "logical-name": "odfaeg.graphic.renderTexture",
+          "source-path": "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Graphics/renderTexture.ixx"
+        }
+      ],
+      "requires": [
+        {
+          "logical-name": "odfaeg.graphic.device"
+        },
+        {
+          "logical-name": "odfaeg.graphic.image"
+        },
+        {
+          "logical-name": "odfaeg.graphic.texture"
+        },
+        {
+          "logical-name": "odfaeg.graphic.renderPass"
+        },
+        {
+          "logical-name": "odfaeg.graphic.frameBuffer"
+        },
+        {
+          "logical-name": "odfaeg.graphic.fence"
+        },
+        {
+          "logical-name": "odfaeg.graphic.semaphore"
+        },
+        {
+          "logical-name": "odfaeg.graphic.color"
+        },
+        {
+          "logical-name": "odfaeg.math.vec"
+        },
+        {
+          "logical-name": "odfaeg.graphic.renderTarget"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

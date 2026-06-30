@@ -1,0 +1,2 @@
+-x c++-module
+-fmodule-output=src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iEvent.pcm

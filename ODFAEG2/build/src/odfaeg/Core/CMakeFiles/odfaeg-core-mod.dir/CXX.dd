@@ -1,0 +1,64 @@
+ninja_dyndep_version = 1.0
+build src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/any.ixx.o | src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.any.pcm: dyndep
+  restat = 1
+
+build src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/archive.ixx.o | src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.archive.pcm: dyndep | src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.factory.pcm src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.utilities.pcm
+  restat = 1
+
+build src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/class.ixx.o | src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.reflexibility.pcm: dyndep | src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.utilities.pcm
+  restat = 1
+
+build src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/clock.ixx.o | src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.clock.pcm: dyndep
+  restat = 1
+
+build src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/delegate.ixx.o | src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.delegate.pcm: dyndep | src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.metaprog.pcm
+  restat = 1
+
+build src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/factory.ixx.o | src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.factory.pcm: dyndep | src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.delegate.pcm
+  restat = 1
+
+build src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/inputStream.ixx.o | src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.inputStream.pcm: dyndep
+  restat = 1
+
+build src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/metaprog.ixx.o | src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.metaprog.pcm: dyndep
+  restat = 1
+
+build src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/nonCopyable.ixx.o | src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.nonCopyable.pcm: dyndep
+  restat = 1
+
+build src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/resourceCache.ixx.o | src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.resourceCache.pcm: dyndep | src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.resourceManager.pcm
+  restat = 1
+
+build src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/resourceManager.ixx.o | src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.resourceManager.pcm: dyndep | src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.utilities.pcm
+  restat = 1
+
+build src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/runtime_compiler.ixx.o | src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.runtimeCompiler.pcm: dyndep
+  restat = 1
+
+build src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/serialization.ixx.o | src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.serialization.pcm: dyndep | src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.factory.pcm src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.archive.pcm
+  restat = 1
+
+build src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/stateManager.ixx.o | src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.stateManager.pcm: dyndep | src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.any.pcm
+  restat = 1
+
+build src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/string.ixx.o | src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.string.pcm: dyndep | src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.utf.pcm
+  restat = 1
+
+build src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/threadPool.ixx.o | src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.threadPool.pcm: dyndep
+  restat = 1
+
+build src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/timer.ixx.o | src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.timer.pcm: dyndep | src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.clock.pcm
+  restat = 1
+
+build src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/utf.ixx.o | src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.utf.pcm: dyndep
+  restat = 1
+
+build src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/utilities.ixx.o | src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.utilities.pcm: dyndep
+  restat = 1
+
+build src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/variant.ixx.o | src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.variant.pcm: dyndep | src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.metaprog.pcm
+  restat = 1
+
+build src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/worker.ixx.o | src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.worker.pcm: dyndep
+  restat = 1
+

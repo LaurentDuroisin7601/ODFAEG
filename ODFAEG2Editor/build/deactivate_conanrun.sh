@@ -1,0 +1,1 @@
+. "/home/laurent/ODFAEG-master/ODFAEG2Editor/build/deactivate_conanrunenv-release-x86_64.sh"

@@ -1,0 +1,20 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/iKeyboard.cpp.o",
+      "requires": [
+        {
+          "logical-name": "odfaeg.window.iKeyboard"
+        },
+        {
+          "logical-name": "odfaeg.window.x11Keyboard"
+        },
+        {
+          "logical-name": "odfaeg.window.iKeyboard"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}
