@@ -19,7 +19,7 @@ set(CMAKE_IMPORT_FILE_VERSION 1)
 set(_cmake_targets_defined "")
 set(_cmake_targets_not_defined "")
 set(_cmake_expected_targets "")
-foreach(_cmake_expected_target IN ITEMS odfaeg::odfaeg-core odfaeg::odfaeg-core-mod odfaeg::odfaeg-math odfaeg::odfaeg-math-mod odfaeg::odfaeg-entity odfaeg::odfaeg-entity-mod odfaeg::odfaeg-physics odfaeg::odfaeg-physics-mod odfaeg::odfaeg-window odfaeg::odfaeg-window-mod odfaeg::odfaeg-graphics odfaeg::odfaeg-graphics-mod odfaeg::meshoptimizer odfaeg::odfaeg-base)
+foreach(_cmake_expected_target IN ITEMS odfaeg::odfaeg-core odfaeg::odfaeg-core-mod odfaeg::odfaeg-math odfaeg::odfaeg-math-mod odfaeg::odfaeg-entity odfaeg::odfaeg-entity-mod odfaeg::odfaeg-physics odfaeg::odfaeg-physics-mod odfaeg::odfaeg-window odfaeg::odfaeg-window-mod odfaeg::odfaeg-graphics odfaeg::odfaeg-graphics-mod odfaeg::vma odfaeg::meshoptimizer odfaeg::odfaeg-base)
   list(APPEND _cmake_expected_targets "${_cmake_expected_target}")
   if(TARGET "${_cmake_expected_target}")
     list(APPEND _cmake_targets_defined "${_cmake_expected_target}")
@@ -335,11 +335,11 @@ set_target_properties(odfaeg::odfaeg-graphics-mod PROPERTIES
   IMPORTED_CXX_MODULES_COMPILE_DEFINITIONS "ODFAEG_INSTALL_DIR=\"/usr/local\";_GLIBCXX_USE_CXX11_ABI=0"
   IMPORTED_CXX_MODULES_COMPILE_FEATURES "cxx_std_20"
   IMPORTED_CXX_MODULES_INCLUDE_DIRECTORIES "/home/laurent/ODFAEG-master/ODFAEG2/external/meshoptimizer/src;/home/laurent/ODFAEG-master/ODFAEG2/external/vma;/usr/include;/home/laurent/.conan2/p/stb6342cecb318f5/p/include;/home/laurent/ODFAEG-master/ODFAEG2/external;/home/laurent/ODFAEG-master/ODFAEG2/external/entt;/home/laurent/ODFAEG-master/ODFAEG2/external/gli;${_IMPORT_PREFIX}/include"
-  IMPORTED_CXX_MODULES_LINK_LIBRARIES "\$<COMPILE_ONLY:odfaeg::meshoptimizer>;\$<COMPILE_ONLY:odfaeg::odfaeg-window-mod>;\$<COMPILE_ONLY:odfaeg::odfaeg-physics-mod>;\$<COMPILE_ONLY:odfaeg::odfaeg-entity-mod>;\$<COMPILE_ONLY:odfaeg::odfaeg-entity-mod>;\$<COMPILE_ONLY:odfaeg::odfaeg-math-mod>;\$<COMPILE_ONLY:odfaeg::odfaeg-core-mod>;\$<COMPILE_ONLY:assimp::assimp>;\$<COMPILE_ONLY:shaderc::shaderc>"
+  IMPORTED_CXX_MODULES_LINK_LIBRARIES "\$<COMPILE_ONLY:odfaeg::meshoptimizer>;\$<COMPILE_ONLY:odfaeg::vma>;\$<COMPILE_ONLY:odfaeg::odfaeg-window-mod>;\$<COMPILE_ONLY:odfaeg::odfaeg-physics-mod>;\$<COMPILE_ONLY:odfaeg::odfaeg-entity-mod>;\$<COMPILE_ONLY:odfaeg::odfaeg-entity-mod>;\$<COMPILE_ONLY:odfaeg::odfaeg-math-mod>;\$<COMPILE_ONLY:odfaeg::odfaeg-core-mod>;\$<COMPILE_ONLY:assimp::assimp>;\$<COMPILE_ONLY:shaderc::shaderc>"
   INTERFACE_COMPILE_DEFINITIONS "ODFAEG_INSTALL_DIR=\"/usr/local\""
   INTERFACE_COMPILE_FEATURES "cxx_std_20"
   INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include"
-  INTERFACE_LINK_LIBRARIES "\$<LINK_ONLY:odfaeg::meshoptimizer>;odfaeg::odfaeg-window-mod;odfaeg::odfaeg-physics-mod;odfaeg::odfaeg-entity-mod;odfaeg::odfaeg-entity-mod;odfaeg::odfaeg-math-mod;odfaeg::odfaeg-core-mod;\$<LINK_ONLY:assimp::assimp>;\$<LINK_ONLY:shaderc::shaderc>"
+  INTERFACE_LINK_LIBRARIES "\$<LINK_ONLY:odfaeg::meshoptimizer>;\$<LINK_ONLY:odfaeg::vma>;odfaeg::odfaeg-window-mod;odfaeg::odfaeg-physics-mod;odfaeg::odfaeg-entity-mod;odfaeg::odfaeg-entity-mod;odfaeg::odfaeg-math-mod;odfaeg::odfaeg-core-mod;\$<LINK_ONLY:assimp::assimp>;\$<LINK_ONLY:shaderc::shaderc>"
 )
 
 if(NOT CMAKE_VERSION VERSION_LESS "3.23.0")
@@ -356,6 +356,9 @@ else()
       "${_IMPORT_PREFIX}/share/odfaeg/modules/Graphics"
   )
 endif()
+
+# Create imported target odfaeg::vma
+add_library(odfaeg::vma STATIC IMPORTED)
 
 # Create imported target odfaeg::meshoptimizer
 add_library(odfaeg::meshoptimizer STATIC IMPORTED)

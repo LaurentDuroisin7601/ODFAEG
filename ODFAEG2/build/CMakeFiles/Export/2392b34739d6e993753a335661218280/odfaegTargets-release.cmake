@@ -119,6 +119,16 @@ set_target_properties(odfaeg::odfaeg-graphics-mod PROPERTIES
 list(APPEND _cmake_import_check_targets odfaeg::odfaeg-graphics-mod )
 list(APPEND _cmake_import_check_files_for_odfaeg::odfaeg-graphics-mod "${_IMPORT_PREFIX}/lib/libodfaeg-graphics-mod.a" )
 
+# Import target "odfaeg::vma" for configuration "Release"
+set_property(TARGET odfaeg::vma APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
+set_target_properties(odfaeg::vma PROPERTIES
+  IMPORTED_LINK_INTERFACE_LANGUAGES_RELEASE "CXX"
+  IMPORTED_LOCATION_RELEASE "${_IMPORT_PREFIX}/lib/libvma.a"
+  )
+
+list(APPEND _cmake_import_check_targets odfaeg::vma )
+list(APPEND _cmake_import_check_files_for_odfaeg::vma "${_IMPORT_PREFIX}/lib/libvma.a" )
+
 # Import target "odfaeg::meshoptimizer" for configuration "Release"
 set_property(TARGET odfaeg::meshoptimizer APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
 set_target_properties(odfaeg::meshoptimizer PROPERTIES

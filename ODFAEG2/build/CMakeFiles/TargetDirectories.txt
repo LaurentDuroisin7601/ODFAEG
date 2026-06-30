@@ -53,6 +53,7 @@
 /home/laurent/ODFAEG-master/ODFAEG2/build/src/odfaeg/Window/CMakeFiles/install/strip.dir
 /home/laurent/ODFAEG-master/ODFAEG2/build/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir
 /home/laurent/ODFAEG-master/ODFAEG2/build/src/odfaeg/Graphics/CMakeFiles/meshoptimizer.dir
+/home/laurent/ODFAEG-master/ODFAEG2/build/src/odfaeg/Graphics/CMakeFiles/vma.dir
 /home/laurent/ODFAEG-master/ODFAEG2/build/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics.dir
 /home/laurent/ODFAEG-master/ODFAEG2/build/src/odfaeg/Graphics/CMakeFiles/edit_cache.dir
 /home/laurent/ODFAEG-master/ODFAEG2/build/src/odfaeg/Graphics/CMakeFiles/rebuild_cache.dir

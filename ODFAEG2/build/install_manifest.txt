@@ -254,6 +254,7 @@
 /usr/local/share/odfaeg/modules/Graphics/shadowRenderer.ixx
 /usr/local/share/odfaeg/modules/Graphics/cube.ixx
 /usr/local/share/odfaeg/modules/Graphics/plane.ixx
+/usr/local/lib/libvma.a
 /usr/local/lib/libmeshoptimizer.a
 /usr/local/share/odfaeg/pcm/Graphics/odfaeg.graphic.cube.pcm
 /usr/local/share/odfaeg/pcm/Graphics/odfaeg.graphic.bone.pcm
