@@ -9,7 +9,6 @@ boost/1.84.0
 shaderc/2025.3
 stb/cci.20230920
 imgui/1.91.0-docking
-glfw/3.3.8
 [generators]
 CMakeDeps
 CMakeToolchain

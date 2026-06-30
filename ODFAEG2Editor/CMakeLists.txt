@@ -17,22 +17,16 @@ find_package(assimp REQUIRED)
 find_package(shaderc REQUIRED)
 find_package(imgui REQUIRED)
 find_package(Vulkan REQUIRED)
-find_package(glfw3 REQUIRED)
-set(IMGUI_BACKENDS
-    ${CMAKE_CURRENT_SOURCE_DIR}/imgui_impl_glfw.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/imgui_impl_vulkan.cpp
-)
 add_library(imgui STATIC
     external/imgui/imgui.cpp
     external/imgui/imgui_draw.cpp
     external/imgui/imgui_tables.cpp
     external/imgui/imgui_widgets.cpp
-    external/imgui/backends/imgui_impl_vulkan.cpp
-    external/imgui/backends/imgui_impl_glfw.cpp
+    external/imgui/backends/imgui_impl_vulkan.cpp    
 )
 target_include_directories(imgui PUBLIC external/imgui
 ${glfw3_INCLUDE_DIRS})
-add_executable(odfaeg-editor main.cpp ${IMGUI_BACKENDS})
+add_executable(odfaeg-editor main.cpp)
 target_link_libraries(odfaeg-editor
     PRIVATE
         odfaeg::odfaeg-core
@@ -44,8 +38,7 @@ target_link_libraries(odfaeg-editor
 )
 
 target_link_libraries(odfaeg-editor
-    PRIVATE        
-	glfw3
+    PRIVATE 
         imgui
     	Vulkan::Vulkan)
 target_include_directories(odfaeg-editor PRIVATE

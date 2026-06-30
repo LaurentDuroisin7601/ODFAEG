@@ -29,7 +29,7 @@
 			{
 				"command" : 0,
 				"file" : 0,
-				"line" : 25,
+				"line" : 20,
 				"parent" : 0
 			},
 			{
@@ -51,7 +51,7 @@
 			{
 				"command" : 3,
 				"file" : 0,
-				"line" : 33,
+				"line" : 27,
 				"parent" : 0
 			}
 		]
@@ -77,10 +77,6 @@
 				{
 					"backtrace" : 5,
 					"path" : "/home/laurent/ODFAEG-master/ODFAEG2Editor/external/imgui"
-				},
-				{
-					"backtrace" : 5,
-					"path" : "/home/laurent/.conan2/p/b/glfw61a8d675833bd/p/include"
 				}
 			],
 			"language" : "CXX",
@@ -98,8 +94,7 @@
 				1,
 				2,
 				3,
-				4,
-				5
+				4
 			]
 		}
 	],
@@ -121,8 +116,7 @@
 				1,
 				2,
 				3,
-				4,
-				5
+				4
 			]
 		}
 	],
@@ -156,12 +150,6 @@
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
 			"path" : "external/imgui/backends/imgui_impl_vulkan.cpp",
-			"sourceGroupIndex" : 0
-		},
-		{
-			"backtrace" : 1,
-			"compileGroupIndex" : 0,
-			"path" : "external/imgui/backends/imgui_impl_glfw.cpp",
 			"sourceGroupIndex" : 0
 		}
 	],

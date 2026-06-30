@@ -75,19 +75,19 @@
 			{
 				"command" : 0,
 				"file" : 0,
-				"line" : 35,
+				"line" : 29,
 				"parent" : 0
 			},
 			{
 				"command" : 1,
 				"file" : 0,
-				"line" : 36,
+				"line" : 30,
 				"parent" : 0
 			},
 			{
 				"command" : 1,
 				"file" : 0,
-				"line" : 46,
+				"line" : 40,
 				"parent" : 0
 			},
 			{
@@ -747,7 +747,7 @@
 			{
 				"command" : 8,
 				"file" : 0,
-				"line" : 51,
+				"line" : 44,
 				"parent" : 0
 			}
 		]
@@ -807,10 +807,6 @@
 					"path" : "/home/laurent/ODFAEG-master/ODFAEG2Editor/external/imgui"
 				},
 				{
-					"backtrace" : 3,
-					"path" : "/home/laurent/.conan2/p/b/glfw61a8d675833bd/p/include"
-				},
-				{
 					"backtrace" : 2,
 					"isSystem" : true,
 					"path" : "/usr/lib/llvm-18/include"
@@ -857,9 +853,7 @@
 			},
 			"sourceIndexes" : 
 			[
-				0,
-				1,
-				2
+				0
 			]
 		}
 	],
@@ -980,11 +974,6 @@
 			{
 				"backtrace" : 2,
 				"fragment" : "/usr/local/lib/libodfaeg-physics.a",
-				"role" : "libraries"
-			},
-			{
-				"backtrace" : 3,
-				"fragment" : "-lglfw3",
 				"role" : "libraries"
 			},
 			{
@@ -1213,9 +1202,7 @@
 			"name" : "Source Files",
 			"sourceIndexes" : 
 			[
-				0,
-				1,
-				2
+				0
 			]
 		}
 	],
@@ -1225,18 +1212,6 @@
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
 			"path" : "main.cpp",
-			"sourceGroupIndex" : 0
-		},
-		{
-			"backtrace" : 1,
-			"compileGroupIndex" : 0,
-			"path" : "imgui_impl_glfw.cpp",
-			"sourceGroupIndex" : 0
-		},
-		{
-			"backtrace" : 1,
-			"compileGroupIndex" : 0,
-			"path" : "imgui_impl_vulkan.cpp",
 			"sourceGroupIndex" : 0
 		}
 	],

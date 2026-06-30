@@ -1,56 +1,38 @@
 [
 {
   "directory": "/home/laurent/ODFAEG-master/ODFAEG2Editor/build",
-  "command": "clang++ -D_GLIBCXX_USE_CXX11_ABI=0 -I/home/laurent/ODFAEG-master/ODFAEG2Editor/external/imgui -I/home/laurent/.conan2/p/b/glfw61a8d675833bd/p/include -m64 -O3 -DNDEBUG -std=c++20 -o CMakeFiles/imgui.dir/external/imgui/imgui.cpp.o -c /home/laurent/ODFAEG-master/ODFAEG2Editor/external/imgui/imgui.cpp",
+  "command": "clang++ -D_GLIBCXX_USE_CXX11_ABI=0 -I/home/laurent/ODFAEG-master/ODFAEG2Editor/external/imgui -m64 -O3 -DNDEBUG -std=c++20 -o CMakeFiles/imgui.dir/external/imgui/imgui.cpp.o -c /home/laurent/ODFAEG-master/ODFAEG2Editor/external/imgui/imgui.cpp",
   "file": "/home/laurent/ODFAEG-master/ODFAEG2Editor/external/imgui/imgui.cpp",
   "output": "CMakeFiles/imgui.dir/external/imgui/imgui.cpp.o"
 },
 {
   "directory": "/home/laurent/ODFAEG-master/ODFAEG2Editor/build",
-  "command": "clang++ -D_GLIBCXX_USE_CXX11_ABI=0 -I/home/laurent/ODFAEG-master/ODFAEG2Editor/external/imgui -I/home/laurent/.conan2/p/b/glfw61a8d675833bd/p/include -m64 -O3 -DNDEBUG -std=c++20 -o CMakeFiles/imgui.dir/external/imgui/imgui_draw.cpp.o -c /home/laurent/ODFAEG-master/ODFAEG2Editor/external/imgui/imgui_draw.cpp",
+  "command": "clang++ -D_GLIBCXX_USE_CXX11_ABI=0 -I/home/laurent/ODFAEG-master/ODFAEG2Editor/external/imgui -m64 -O3 -DNDEBUG -std=c++20 -o CMakeFiles/imgui.dir/external/imgui/imgui_draw.cpp.o -c /home/laurent/ODFAEG-master/ODFAEG2Editor/external/imgui/imgui_draw.cpp",
   "file": "/home/laurent/ODFAEG-master/ODFAEG2Editor/external/imgui/imgui_draw.cpp",
   "output": "CMakeFiles/imgui.dir/external/imgui/imgui_draw.cpp.o"
 },
 {
   "directory": "/home/laurent/ODFAEG-master/ODFAEG2Editor/build",
-  "command": "clang++ -D_GLIBCXX_USE_CXX11_ABI=0 -I/home/laurent/ODFAEG-master/ODFAEG2Editor/external/imgui -I/home/laurent/.conan2/p/b/glfw61a8d675833bd/p/include -m64 -O3 -DNDEBUG -std=c++20 -o CMakeFiles/imgui.dir/external/imgui/imgui_tables.cpp.o -c /home/laurent/ODFAEG-master/ODFAEG2Editor/external/imgui/imgui_tables.cpp",
+  "command": "clang++ -D_GLIBCXX_USE_CXX11_ABI=0 -I/home/laurent/ODFAEG-master/ODFAEG2Editor/external/imgui -m64 -O3 -DNDEBUG -std=c++20 -o CMakeFiles/imgui.dir/external/imgui/imgui_tables.cpp.o -c /home/laurent/ODFAEG-master/ODFAEG2Editor/external/imgui/imgui_tables.cpp",
   "file": "/home/laurent/ODFAEG-master/ODFAEG2Editor/external/imgui/imgui_tables.cpp",
   "output": "CMakeFiles/imgui.dir/external/imgui/imgui_tables.cpp.o"
 },
 {
   "directory": "/home/laurent/ODFAEG-master/ODFAEG2Editor/build",
-  "command": "clang++ -D_GLIBCXX_USE_CXX11_ABI=0 -I/home/laurent/ODFAEG-master/ODFAEG2Editor/external/imgui -I/home/laurent/.conan2/p/b/glfw61a8d675833bd/p/include -m64 -O3 -DNDEBUG -std=c++20 -o CMakeFiles/imgui.dir/external/imgui/imgui_widgets.cpp.o -c /home/laurent/ODFAEG-master/ODFAEG2Editor/external/imgui/imgui_widgets.cpp",
+  "command": "clang++ -D_GLIBCXX_USE_CXX11_ABI=0 -I/home/laurent/ODFAEG-master/ODFAEG2Editor/external/imgui -m64 -O3 -DNDEBUG -std=c++20 -o CMakeFiles/imgui.dir/external/imgui/imgui_widgets.cpp.o -c /home/laurent/ODFAEG-master/ODFAEG2Editor/external/imgui/imgui_widgets.cpp",
   "file": "/home/laurent/ODFAEG-master/ODFAEG2Editor/external/imgui/imgui_widgets.cpp",
   "output": "CMakeFiles/imgui.dir/external/imgui/imgui_widgets.cpp.o"
 },
 {
   "directory": "/home/laurent/ODFAEG-master/ODFAEG2Editor/build",
-  "command": "clang++ -D_GLIBCXX_USE_CXX11_ABI=0 -I/home/laurent/ODFAEG-master/ODFAEG2Editor/external/imgui -I/home/laurent/.conan2/p/b/glfw61a8d675833bd/p/include -m64 -O3 -DNDEBUG -std=c++20 -o CMakeFiles/imgui.dir/external/imgui/backends/imgui_impl_vulkan.cpp.o -c /home/laurent/ODFAEG-master/ODFAEG2Editor/external/imgui/backends/imgui_impl_vulkan.cpp",
+  "command": "clang++ -D_GLIBCXX_USE_CXX11_ABI=0 -I/home/laurent/ODFAEG-master/ODFAEG2Editor/external/imgui -m64 -O3 -DNDEBUG -std=c++20 -o CMakeFiles/imgui.dir/external/imgui/backends/imgui_impl_vulkan.cpp.o -c /home/laurent/ODFAEG-master/ODFAEG2Editor/external/imgui/backends/imgui_impl_vulkan.cpp",
   "file": "/home/laurent/ODFAEG-master/ODFAEG2Editor/external/imgui/backends/imgui_impl_vulkan.cpp",
   "output": "CMakeFiles/imgui.dir/external/imgui/backends/imgui_impl_vulkan.cpp.o"
 },
 {
   "directory": "/home/laurent/ODFAEG-master/ODFAEG2Editor/build",
-  "command": "clang++ -D_GLIBCXX_USE_CXX11_ABI=0 -I/home/laurent/ODFAEG-master/ODFAEG2Editor/external/imgui -I/home/laurent/.conan2/p/b/glfw61a8d675833bd/p/include -m64 -O3 -DNDEBUG -std=c++20 -o CMakeFiles/imgui.dir/external/imgui/backends/imgui_impl_glfw.cpp.o -c /home/laurent/ODFAEG-master/ODFAEG2Editor/external/imgui/backends/imgui_impl_glfw.cpp",
-  "file": "/home/laurent/ODFAEG-master/ODFAEG2Editor/external/imgui/backends/imgui_impl_glfw.cpp",
-  "output": "CMakeFiles/imgui.dir/external/imgui/backends/imgui_impl_glfw.cpp.o"
-},
-{
-  "directory": "/home/laurent/ODFAEG-master/ODFAEG2Editor/build",
-  "command": "clang++ -DODFAEG_INSTALL_DIR=\\\"/usr/local\\\" -D_GLIBCXX_USE_CXX11_ABI=0 -I/home/laurent/ODFAEG-master/ODFAEG2Editor -I/home/laurent/ODFAEG-master/ODFAEG2Editor/external/imgui -I/home/laurent/.conan2/p/b/glfw61a8d675833bd/p/include -isystem /usr/lib/llvm-18/include -isystem /usr/local/share/odfaeg/modules/Core -isystem /usr/local/share/odfaeg/modules/Math -isystem /usr/local/share/odfaeg/modules/Window -isystem /usr/local/share/odfaeg/modules/Physics -isystem /usr/local/share/odfaeg/modules/Entity -isystem /usr/local/share/odfaeg/modules/Graphics -m64 -O3 -DNDEBUG -std=c++20 -fprebuilt-module-path=/usr/local/share/odfaeg/pcm/Core -fprebuilt-module-path=/usr/local/share/odfaeg/pcm/Math -fprebuilt-module-path=/usr/local/share/odfaeg/pcm/Window -fprebuilt-module-path=/usr/local/share/odfaeg/pcm/Physics -fprebuilt-module-path=/usr/local/share/odfaeg/pcm/Entity -fprebuilt-module-path=/usr/local/share/odfaeg/pcm/Graphics -o CMakeFiles/odfaeg-editor.dir/main.cpp.o -c /home/laurent/ODFAEG-master/ODFAEG2Editor/main.cpp",
+  "command": "clang++ -DODFAEG_INSTALL_DIR=\\\"/usr/local\\\" -D_GLIBCXX_USE_CXX11_ABI=0 -I/home/laurent/ODFAEG-master/ODFAEG2Editor -I/home/laurent/ODFAEG-master/ODFAEG2Editor/external/imgui -isystem /usr/lib/llvm-18/include -isystem /usr/local/share/odfaeg/modules/Core -isystem /usr/local/share/odfaeg/modules/Math -isystem /usr/local/share/odfaeg/modules/Window -isystem /usr/local/share/odfaeg/modules/Physics -isystem /usr/local/share/odfaeg/modules/Entity -isystem /usr/local/share/odfaeg/modules/Graphics -m64 -O3 -DNDEBUG -std=c++20 -fprebuilt-module-path=/usr/local/share/odfaeg/pcm/Core -fprebuilt-module-path=/usr/local/share/odfaeg/pcm/Math -fprebuilt-module-path=/usr/local/share/odfaeg/pcm/Window -fprebuilt-module-path=/usr/local/share/odfaeg/pcm/Physics -fprebuilt-module-path=/usr/local/share/odfaeg/pcm/Entity -fprebuilt-module-path=/usr/local/share/odfaeg/pcm/Graphics -o CMakeFiles/odfaeg-editor.dir/main.cpp.o -c /home/laurent/ODFAEG-master/ODFAEG2Editor/main.cpp",
   "file": "/home/laurent/ODFAEG-master/ODFAEG2Editor/main.cpp",
   "output": "CMakeFiles/odfaeg-editor.dir/main.cpp.o"
-},
-{
-  "directory": "/home/laurent/ODFAEG-master/ODFAEG2Editor/build",
-  "command": "clang++ -DODFAEG_INSTALL_DIR=\\\"/usr/local\\\" -D_GLIBCXX_USE_CXX11_ABI=0 -I/home/laurent/ODFAEG-master/ODFAEG2Editor -I/home/laurent/ODFAEG-master/ODFAEG2Editor/external/imgui -I/home/laurent/.conan2/p/b/glfw61a8d675833bd/p/include -isystem /usr/lib/llvm-18/include -isystem /usr/local/share/odfaeg/modules/Core -isystem /usr/local/share/odfaeg/modules/Math -isystem /usr/local/share/odfaeg/modules/Window -isystem /usr/local/share/odfaeg/modules/Physics -isystem /usr/local/share/odfaeg/modules/Entity -isystem /usr/local/share/odfaeg/modules/Graphics -m64 -O3 -DNDEBUG -std=c++20 -fprebuilt-module-path=/usr/local/share/odfaeg/pcm/Core -fprebuilt-module-path=/usr/local/share/odfaeg/pcm/Math -fprebuilt-module-path=/usr/local/share/odfaeg/pcm/Window -fprebuilt-module-path=/usr/local/share/odfaeg/pcm/Physics -fprebuilt-module-path=/usr/local/share/odfaeg/pcm/Entity -fprebuilt-module-path=/usr/local/share/odfaeg/pcm/Graphics -o CMakeFiles/odfaeg-editor.dir/imgui_impl_glfw.cpp.o -c /home/laurent/ODFAEG-master/ODFAEG2Editor/imgui_impl_glfw.cpp",
-  "file": "/home/laurent/ODFAEG-master/ODFAEG2Editor/imgui_impl_glfw.cpp",
-  "output": "CMakeFiles/odfaeg-editor.dir/imgui_impl_glfw.cpp.o"
-},
-{
-  "directory": "/home/laurent/ODFAEG-master/ODFAEG2Editor/build",
-  "command": "clang++ -DODFAEG_INSTALL_DIR=\\\"/usr/local\\\" -D_GLIBCXX_USE_CXX11_ABI=0 -I/home/laurent/ODFAEG-master/ODFAEG2Editor -I/home/laurent/ODFAEG-master/ODFAEG2Editor/external/imgui -I/home/laurent/.conan2/p/b/glfw61a8d675833bd/p/include -isystem /usr/lib/llvm-18/include -isystem /usr/local/share/odfaeg/modules/Core -isystem /usr/local/share/odfaeg/modules/Math -isystem /usr/local/share/odfaeg/modules/Window -isystem /usr/local/share/odfaeg/modules/Physics -isystem /usr/local/share/odfaeg/modules/Entity -isystem /usr/local/share/odfaeg/modules/Graphics -m64 -O3 -DNDEBUG -std=c++20 -fprebuilt-module-path=/usr/local/share/odfaeg/pcm/Core -fprebuilt-module-path=/usr/local/share/odfaeg/pcm/Math -fprebuilt-module-path=/usr/local/share/odfaeg/pcm/Window -fprebuilt-module-path=/usr/local/share/odfaeg/pcm/Physics -fprebuilt-module-path=/usr/local/share/odfaeg/pcm/Entity -fprebuilt-module-path=/usr/local/share/odfaeg/pcm/Graphics -o CMakeFiles/odfaeg-editor.dir/imgui_impl_vulkan.cpp.o -c /home/laurent/ODFAEG-master/ODFAEG2Editor/imgui_impl_vulkan.cpp",
-  "file": "/home/laurent/ODFAEG-master/ODFAEG2Editor/imgui_impl_vulkan.cpp",
-  "output": "CMakeFiles/odfaeg-editor.dir/imgui_impl_vulkan.cpp.o"
 }
 ]
