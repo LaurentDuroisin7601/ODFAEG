@@ -222,4 +222,43 @@ src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/morphAnimUpdater.cpp.o.dd
   /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/basic_ios.tcc \
   /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/ostream.tcc \
   /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/istream \
-  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/istream.tcc
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/istream.tcc \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/condition_variable \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/shared_ptr.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/shared_ptr_base.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/allocated_ptr.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/unique_ptr.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/ext/aligned_buffer.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/ext/concurrence.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/align.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/stop_token \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/atomic \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/atomic_base.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/atomic_lockfree_defines.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/atomic_wait.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/climits \
+  /usr/include/clang/18.1.3/include/limits.h /usr/include/limits.h \
+  /usr/include/x86_64-linux-gnu/bits/posix1_lim.h \
+  /usr/include/x86_64-linux-gnu/bits/local_lim.h \
+  /usr/include/linux/limits.h \
+  /usr/include/x86_64-linux-gnu/bits/posix2_lim.h \
+  /usr/include/x86_64-linux-gnu/bits/xopen_lim.h \
+  /usr/include/x86_64-linux-gnu/bits/uio_lim.h /usr/include/unistd.h \
+  /usr/include/x86_64-linux-gnu/bits/posix_opt.h \
+  /usr/include/x86_64-linux-gnu/bits/environments.h \
+  /usr/include/x86_64-linux-gnu/bits/confname.h \
+  /usr/include/x86_64-linux-gnu/bits/getopt_posix.h \
+  /usr/include/x86_64-linux-gnu/bits/getopt_core.h \
+  /usr/include/x86_64-linux-gnu/bits/unistd_ext.h \
+  /usr/include/linux/close_range.h /usr/include/syscall.h \
+  /usr/include/x86_64-linux-gnu/sys/syscall.h \
+  /usr/include/x86_64-linux-gnu/asm/unistd.h \
+  /usr/include/x86_64-linux-gnu/asm/unistd_64.h \
+  /usr/include/x86_64-linux-gnu/bits/syscall.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/std_thread.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/semaphore \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/semaphore_base.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/atomic_timed_wait.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/this_thread_sleep.h \
+  /usr/include/x86_64-linux-gnu/sys/time.h /usr/include/semaphore.h \
+  /usr/include/x86_64-linux-gnu/bits/semaphore.h

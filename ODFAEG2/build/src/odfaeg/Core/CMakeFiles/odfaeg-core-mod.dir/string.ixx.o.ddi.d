@@ -206,4 +206,12 @@ src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/string.ixx.o.ddi: \
   /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/cstdint \
   /usr/include/clang/18.1.3/include/stdint.h /usr/include/stdint.h \
   /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h \
-  /usr/include/x86_64-linux-gnu/bits/stdint-least.h
+  /usr/include/x86_64-linux-gnu/bits/stdint-least.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/iostream \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/ostream \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/ios \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/basic_ios.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/basic_ios.tcc \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/ostream.tcc \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/istream \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/istream.tcc
