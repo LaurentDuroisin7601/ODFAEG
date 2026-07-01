@@ -1,0 +1,16 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/utf.ixx.o",
+      "provides": [
+        {
+          "is-interface": true,
+          "logical-name": "odfaeg.core.utf",
+          "source-path": "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Core/utf.ixx"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

@@ -1,0 +1,6 @@
+ninja_dyndep_version = 1.0
+build src/odfaeg/Physics/CMakeFiles/odfaeg-physics-mod.dir/boundingBox.cpp.o: dyndep | src/odfaeg/Physics/CMakeFiles/odfaeg-physics-mod.dir/odfaeg.physic.boundingBox.pcm src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.computer.pcm src/odfaeg/Entity/CMakeFiles/odfaeg-entity-mod.dir/odfaeg.entity.transformMatrix.pcm src/odfaeg/Physics/CMakeFiles/odfaeg-physics-mod.dir/odfaeg.physic.boundingBox.pcm
+
+build src/odfaeg/Physics/CMakeFiles/odfaeg-physics-mod.dir/boundingBox.ixx.o | src/odfaeg/Physics/CMakeFiles/odfaeg-physics-mod.dir/odfaeg.physic.boundingBox.pcm: dyndep | src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.vec.pcm src/odfaeg/Entity/CMakeFiles/odfaeg-entity-mod.dir/odfaeg.entity.transformMatrix.pcm
+  restat = 1
+

@@ -1,0 +1,57 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/renderWindow.ixx.o",
+      "provides": [
+        {
+          "is-interface": true,
+          "logical-name": "odfaeg.graphic.renderWindow",
+          "source-path": "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Graphics/renderWindow.ixx"
+        }
+      ],
+      "requires": [
+        {
+          "logical-name": "odfaeg.window.window"
+        },
+        {
+          "logical-name": "odfaeg.window.windowStyle"
+        },
+        {
+          "logical-name": "odfaeg.window.videoMode"
+        },
+        {
+          "logical-name": "odfaeg.graphic.renderTarget"
+        },
+        {
+          "logical-name": "odfaeg.core.string"
+        },
+        {
+          "logical-name": "odfaeg.graphic.device"
+        },
+        {
+          "logical-name": "odfaeg.graphic.swapchain"
+        },
+        {
+          "logical-name": "odfaeg.graphic.frameBuffer"
+        },
+        {
+          "logical-name": "odfaeg.graphic.renderPass"
+        },
+        {
+          "logical-name": "odfaeg.math.vec"
+        },
+        {
+          "logical-name": "odfaeg.graphic.color"
+        },
+        {
+          "logical-name": "odfaeg.graphic.semaphore"
+        },
+        {
+          "logical-name": "odfaeg.graphic.fence"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

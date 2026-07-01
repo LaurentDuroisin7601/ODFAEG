@@ -1,0 +1,23 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/bone.cpp.o",
+      "requires": [
+        {
+          "logical-name": "odfaeg.graphic.bone"
+        },
+        {
+          "logical-name": "odfaeg.graphic.assimpHelper"
+        },
+        {
+          "logical-name": "odfaeg.entity.transformMatrix"
+        },
+        {
+          "logical-name": "odfaeg.graphic.bone"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

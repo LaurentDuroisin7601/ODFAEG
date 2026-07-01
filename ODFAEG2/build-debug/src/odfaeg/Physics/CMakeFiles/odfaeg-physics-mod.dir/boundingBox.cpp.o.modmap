@@ -1,0 +1,9 @@
+-fmodule-file=odfaeg.physic.boundingBox=src/odfaeg/Physics/CMakeFiles/odfaeg-physics-mod.dir/odfaeg.physic.boundingBox.pcm
+-fmodule-file=odfaeg.math.computer=src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.computer.pcm
+-fmodule-file=odfaeg.entity.transformMatrix=src/odfaeg/Entity/CMakeFiles/odfaeg-entity-mod.dir/odfaeg.entity.transformMatrix.pcm
+-fmodule-file=odfaeg.physic.boundingBox=src/odfaeg/Physics/CMakeFiles/odfaeg-physics-mod.dir/odfaeg.physic.boundingBox.pcm
+-fmodule-file=odfaeg.math.maths=src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.maths.pcm
+-fmodule-file=odfaeg.math.matrix=src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.matrix.pcm
+-fmodule-file=odfaeg.math.plane=src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.plane.pcm
+-fmodule-file=odfaeg.math.ray=src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.ray.pcm
+-fmodule-file=odfaeg.math.vec=src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.vec.pcm

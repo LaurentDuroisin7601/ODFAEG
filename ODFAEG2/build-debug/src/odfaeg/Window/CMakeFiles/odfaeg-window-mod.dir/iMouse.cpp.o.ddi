@@ -1,0 +1,20 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/iMouse.cpp.o",
+      "requires": [
+        {
+          "logical-name": "odfaeg.window.iMouse"
+        },
+        {
+          "logical-name": "odfaeg.window.x11Mouse"
+        },
+        {
+          "logical-name": "odfaeg.window.iMouse"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

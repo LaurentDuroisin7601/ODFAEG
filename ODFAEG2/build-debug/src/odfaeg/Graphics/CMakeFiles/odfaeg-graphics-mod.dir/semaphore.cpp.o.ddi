@@ -1,0 +1,17 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/semaphore.cpp.o",
+      "requires": [
+        {
+          "logical-name": "odfaeg.graphic.semaphore"
+        },
+        {
+          "logical-name": "odfaeg.graphic.semaphore"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

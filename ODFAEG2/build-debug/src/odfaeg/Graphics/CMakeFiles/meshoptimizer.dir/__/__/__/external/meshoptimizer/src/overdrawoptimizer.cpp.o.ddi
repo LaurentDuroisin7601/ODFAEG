@@ -1,0 +1,9 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Graphics/CMakeFiles/meshoptimizer.dir/__/__/__/external/meshoptimizer/src/overdrawoptimizer.cpp.o"
+    }
+  ],
+  "version": 1
+}

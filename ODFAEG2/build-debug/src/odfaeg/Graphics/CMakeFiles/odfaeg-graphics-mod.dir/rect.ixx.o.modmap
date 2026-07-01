@@ -1,0 +1,3 @@
+-x c++-module
+-fmodule-output=src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.rect.pcm
+-fmodule-file=odfaeg.math.vec=src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.vec.pcm

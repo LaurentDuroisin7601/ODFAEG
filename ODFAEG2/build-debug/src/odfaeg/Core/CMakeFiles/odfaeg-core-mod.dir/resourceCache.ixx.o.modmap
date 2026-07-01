@@ -1,0 +1,4 @@
+-x c++-module
+-fmodule-output=src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.resourceCache.pcm
+-fmodule-file=odfaeg.core.resourceManager=src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.resourceManager.pcm
+-fmodule-file=odfaeg.core.utilities=src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.utilities.pcm

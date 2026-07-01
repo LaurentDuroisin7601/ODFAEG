@@ -1,0 +1,16 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/any.ixx.o",
+      "provides": [
+        {
+          "is-interface": true,
+          "logical-name": "odfaeg.core.any",
+          "source-path": "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Core/any.ixx"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

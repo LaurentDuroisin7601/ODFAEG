@@ -1,0 +1,35 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/tile.cpp.o",
+      "requires": [
+        {
+          "logical-name": "odfaeg.graphic.tile"
+        },
+        {
+          "logical-name": "odfaeg.entity.impl"
+        },
+        {
+          "logical-name": "odfaeg.graphic.material"
+        },
+        {
+          "logical-name": "odfaeg.graphic.gameObject"
+        },
+        {
+          "logical-name": "odfaeg.graphic.vertexBuffer"
+        },
+        {
+          "logical-name": "odfaeg.graphic.vertex"
+        },
+        {
+          "logical-name": "odfaeg.graphic.color"
+        },
+        {
+          "logical-name": "odfaeg.graphic.tile"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

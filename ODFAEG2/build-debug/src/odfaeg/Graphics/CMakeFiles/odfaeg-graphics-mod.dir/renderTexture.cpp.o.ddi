@@ -1,0 +1,17 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/renderTexture.cpp.o",
+      "requires": [
+        {
+          "logical-name": "odfaeg.graphic.renderTexture"
+        },
+        {
+          "logical-name": "odfaeg.graphic.renderTexture"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

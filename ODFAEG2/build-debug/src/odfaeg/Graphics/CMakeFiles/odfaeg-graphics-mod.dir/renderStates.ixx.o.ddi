@@ -1,0 +1,30 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/renderStates.ixx.o",
+      "provides": [
+        {
+          "is-interface": true,
+          "logical-name": "odfaeg.graphic.renderStates",
+          "source-path": "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Graphics/renderStates.ixx"
+        }
+      ],
+      "requires": [
+        {
+          "logical-name": "odfaeg.graphic.blendMode"
+        },
+        {
+          "logical-name": "odfaeg.entity.transformMatrix"
+        },
+        {
+          "logical-name": "odfaeg.graphic.texture"
+        },
+        {
+          "logical-name": "odfaeg.graphic.shader"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

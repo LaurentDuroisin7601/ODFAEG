@@ -1,0 +1,24 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Entity/CMakeFiles/odfaeg-entity-mod.dir/transformMatrix.ixx.o",
+      "provides": [
+        {
+          "is-interface": true,
+          "logical-name": "odfaeg.entity.transformMatrix",
+          "source-path": "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Entity/transformMatrix.ixx"
+        }
+      ],
+      "requires": [
+        {
+          "logical-name": "odfaeg.math.vec"
+        },
+        {
+          "logical-name": "odfaeg.math.matrix"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

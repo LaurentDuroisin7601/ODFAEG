@@ -1,0 +1,27 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/cursor.ixx.o",
+      "provides": [
+        {
+          "is-interface": true,
+          "logical-name": "odfaeg.window.cursor",
+          "source-path": "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Window/cursor.ixx"
+        }
+      ],
+      "requires": [
+        {
+          "logical-name": "odfaeg.window.iCursorType"
+        },
+        {
+          "logical-name": "odfaeg.math.vec"
+        },
+        {
+          "logical-name": "odfaeg.window.cursorImpl"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

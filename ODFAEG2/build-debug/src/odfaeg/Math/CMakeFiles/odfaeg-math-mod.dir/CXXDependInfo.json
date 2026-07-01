@@ -1,0 +1,126 @@
+{
+	"bmi-installation" : null,
+	"compiler-frontend-variant" : "GNU",
+	"compiler-id" : "Clang",
+	"compiler-simulate-id" : "",
+	"config" : "DEBUG",
+	"cxx-modules" : 
+	{
+		"src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/computer.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Math",
+			"name" : "cxx_modules",
+			"relative-directory" : "",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Math/computer.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		},
+		"src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/distribution.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Math",
+			"name" : "cxx_modules",
+			"relative-directory" : "",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Math/distribution.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		},
+		"src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/maths.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Math",
+			"name" : "cxx_modules",
+			"relative-directory" : "",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Math/maths.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		},
+		"src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/matrix.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Math",
+			"name" : "cxx_modules",
+			"relative-directory" : "",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Math/matrix.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		},
+		"src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/plane.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Math",
+			"name" : "cxx_modules",
+			"relative-directory" : "",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Math/plane.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		},
+		"src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/quaternion.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Math",
+			"name" : "cxx_modules",
+			"relative-directory" : "",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Math/quaternion.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		},
+		"src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/ray.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Math",
+			"name" : "cxx_modules",
+			"relative-directory" : "",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Math/ray.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		},
+		"src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/triangle.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Math",
+			"name" : "cxx_modules",
+			"relative-directory" : "",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Math/triangle.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		},
+		"src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/vec.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Math",
+			"name" : "cxx_modules",
+			"relative-directory" : "",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Math/vec.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		}
+	},
+	"dir-cur-bld" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Math",
+	"dir-cur-src" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Math",
+	"dir-top-bld" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug",
+	"dir-top-src" : "/home/laurent/ODFAEG-master/ODFAEG2",
+	"exports" : 
+	[
+		{
+			"cxx-module-info-dir" : "",
+			"destination" : "lib/cmake/odfaeg",
+			"export-name" : "odfaeg-math-mod",
+			"export-prefix" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/CMakeFiles/Export/2392b34739d6e993753a335661218280",
+			"install" : true,
+			"namespace" : "odfaeg::"
+		}
+	],
+	"forward-modules-from-target-dirs" : [],
+	"include-dirs" : 
+	[
+		"/usr/lib/llvm-18/include"
+	],
+	"language" : "CXX",
+	"linked-target-dirs" : 
+	[
+		"/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir"
+	],
+	"module-dir" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir"
+}

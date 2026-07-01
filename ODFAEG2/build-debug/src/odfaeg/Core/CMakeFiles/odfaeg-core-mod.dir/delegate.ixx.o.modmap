@@ -1,0 +1,3 @@
+-x c++-module
+-fmodule-output=src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.delegate.pcm
+-fmodule-file=odfaeg.core.metaprog=src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.metaprog.pcm

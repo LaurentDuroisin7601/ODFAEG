@@ -1,0 +1,14 @@
+ninja_dyndep_version = 1.0
+build src/odfaeg/Entity/CMakeFiles/odfaeg-entity-mod.dir/transformMatrix.cpp.o: dyndep | src/odfaeg/Entity/CMakeFiles/odfaeg-entity-mod.dir/odfaeg.entity.transformMatrix.pcm src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.vec.pcm src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.maths.pcm src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.matrix.pcm src/odfaeg/Entity/CMakeFiles/odfaeg-entity-mod.dir/odfaeg.entity.transformMatrix.pcm
+
+build src/odfaeg/Entity/CMakeFiles/odfaeg-entity-mod.dir/impl.cpp.o: dyndep | src/odfaeg/Entity/CMakeFiles/odfaeg-entity-mod.dir/odfaeg.entity.impl.pcm src/odfaeg/Entity/CMakeFiles/odfaeg-entity-mod.dir/odfaeg.entity.impl.pcm
+
+build src/odfaeg/Entity/CMakeFiles/odfaeg-entity-mod.dir/transformMatrix.ixx.o | src/odfaeg/Entity/CMakeFiles/odfaeg-entity-mod.dir/odfaeg.entity.transformMatrix.pcm: dyndep | src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.vec.pcm src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.matrix.pcm
+  restat = 1
+
+build src/odfaeg/Entity/CMakeFiles/odfaeg-entity-mod.dir/entity.ixx.o | src/odfaeg/Entity/CMakeFiles/odfaeg-entity-mod.dir/odfaeg.entity.entity.pcm: dyndep | src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.serialization.pcm src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.stateManager.pcm
+  restat = 1
+
+build src/odfaeg/Entity/CMakeFiles/odfaeg-entity-mod.dir/impl.ixx.o | src/odfaeg/Entity/CMakeFiles/odfaeg-entity-mod.dir/odfaeg.entity.impl.pcm: dyndep | src/odfaeg/Entity/CMakeFiles/odfaeg-entity-mod.dir/odfaeg.entity.entity.pcm
+  restat = 1
+

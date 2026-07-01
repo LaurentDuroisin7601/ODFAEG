@@ -1,0 +1,53 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/shadowRenderer.cpp.o",
+      "requires": [
+        {
+          "logical-name": "odfaeg.graphic.shadowRenderer"
+        },
+        {
+          "logical-name": "odfaeg.graphic.camera"
+        },
+        {
+          "logical-name": "odfaeg.graphic.descriptor"
+        },
+        {
+          "logical-name": "odfaeg.math.maths"
+        },
+        {
+          "logical-name": "odfaeg.graphic.gpuContext"
+        },
+        {
+          "logical-name": "odfaeg.graphic.blendMode"
+        },
+        {
+          "logical-name": "odfaeg.graphic.primitiveType"
+        },
+        {
+          "logical-name": "odfaeg.graphic.device"
+        },
+        {
+          "logical-name": "odfaeg.graphic.material"
+        },
+        {
+          "logical-name": "odfaeg.core.delegate"
+        },
+        {
+          "logical-name": "odfaeg.window.command"
+        },
+        {
+          "logical-name": "odfaeg.graphic.renderStates"
+        },
+        {
+          "logical-name": "odfaeg.graphic.texture"
+        },
+        {
+          "logical-name": "odfaeg.graphic.shadowRenderer"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

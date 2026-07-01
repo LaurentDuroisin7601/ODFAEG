@@ -1,0 +1,35 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/particleSystemUpdater.cpp.o",
+      "requires": [
+        {
+          "logical-name": "odfaeg.graphic.particleSystemUpdater"
+        },
+        {
+          "logical-name": "odfaeg.graphic.gpuContext"
+        },
+        {
+          "logical-name": "odfaeg.graphic.descriptor"
+        },
+        {
+          "logical-name": "odfaeg.graphic.primitiveType"
+        },
+        {
+          "logical-name": "odfaeg.graphic.emittors"
+        },
+        {
+          "logical-name": "odfaeg.graphic.device"
+        },
+        {
+          "logical-name": "odfaeg.core.clock"
+        },
+        {
+          "logical-name": "odfaeg.graphic.particleSystemUpdater"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

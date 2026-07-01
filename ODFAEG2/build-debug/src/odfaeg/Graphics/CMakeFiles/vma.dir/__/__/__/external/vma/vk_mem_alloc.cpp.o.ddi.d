@@ -1,0 +1,196 @@
+src/odfaeg/Graphics/CMakeFiles/vma.dir/__/__/__/external/vma/vk_mem_alloc.cpp.o.ddi: \
+  /home/laurent/ODFAEG-master/ODFAEG2/external/vma/vk_mem_alloc.cpp \
+  /home/laurent/ODFAEG-master/ODFAEG2/external/vma/vk_mem_alloc.h \
+  /usr/include/vulkan/vulkan.h /usr/include/vulkan/vk_platform.h \
+  /usr/include/clang/18.1.3/include/stddef.h \
+  /usr/include/clang/18.1.3/include/__stddef_ptrdiff_t.h \
+  /usr/include/clang/18.1.3/include/__stddef_size_t.h \
+  /usr/include/clang/18.1.3/include/__stddef_wchar_t.h \
+  /usr/include/clang/18.1.3/include/__stddef_null.h \
+  /usr/include/clang/18.1.3/include/__stddef_nullptr_t.h \
+  /usr/include/clang/18.1.3/include/__stddef_max_align_t.h \
+  /usr/include/clang/18.1.3/include/__stddef_offsetof.h \
+  /usr/include/clang/18.1.3/include/stdint.h /usr/include/stdint.h \
+  /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
+  /usr/include/features.h /usr/include/features-time64.h \
+  /usr/include/x86_64-linux-gnu/bits/wordsize.h \
+  /usr/include/x86_64-linux-gnu/bits/timesize.h \
+  /usr/include/stdc-predef.h /usr/include/x86_64-linux-gnu/sys/cdefs.h \
+  /usr/include/x86_64-linux-gnu/bits/long-double.h \
+  /usr/include/x86_64-linux-gnu/gnu/stubs.h \
+  /usr/include/x86_64-linux-gnu/gnu/stubs-64.h \
+  /usr/include/x86_64-linux-gnu/bits/types.h \
+  /usr/include/x86_64-linux-gnu/bits/typesizes.h \
+  /usr/include/x86_64-linux-gnu/bits/time64.h \
+  /usr/include/x86_64-linux-gnu/bits/wchar.h \
+  /usr/include/x86_64-linux-gnu/bits/stdint-intn.h \
+  /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h \
+  /usr/include/x86_64-linux-gnu/bits/stdint-least.h \
+  /usr/include/vulkan/vulkan_core.h \
+  /usr/include/vk_video/vulkan_video_codec_h264std.h \
+  /usr/include/vk_video/vulkan_video_codecs_common.h \
+  /usr/include/vk_video/vulkan_video_codec_h264std_encode.h \
+  /usr/include/vk_video/vulkan_video_codec_h265std.h \
+  /usr/include/vk_video/vulkan_video_codec_h265std_encode.h \
+  /usr/include/vk_video/vulkan_video_codec_h264std_decode.h \
+  /usr/include/vk_video/vulkan_video_codec_h265std_decode.h \
+  /usr/include/vk_video/vulkan_video_codec_av1std.h \
+  /usr/include/vk_video/vulkan_video_codec_av1std_decode.h \
+  /usr/include/vk_video/vulkan_video_codec_av1std_encode.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/cstdint \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/x86_64-linux-gnu/c++/14/bits/c++config.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/x86_64-linux-gnu/c++/14/bits/os_defines.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/x86_64-linux-gnu/c++/14/bits/cpu_defines.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/pstl/pstl_config.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/cstdlib \
+  /usr/include/stdlib.h /usr/include/x86_64-linux-gnu/bits/waitflags.h \
+  /usr/include/x86_64-linux-gnu/bits/waitstatus.h \
+  /usr/include/x86_64-linux-gnu/bits/floatn.h \
+  /usr/include/x86_64-linux-gnu/bits/floatn-common.h \
+  /usr/include/x86_64-linux-gnu/bits/types/locale_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/__locale_t.h \
+  /usr/include/x86_64-linux-gnu/sys/types.h \
+  /usr/include/x86_64-linux-gnu/bits/types/clock_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/clockid_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/time_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/timer_t.h \
+  /usr/include/endian.h /usr/include/x86_64-linux-gnu/bits/endian.h \
+  /usr/include/x86_64-linux-gnu/bits/endianness.h \
+  /usr/include/x86_64-linux-gnu/bits/byteswap.h \
+  /usr/include/x86_64-linux-gnu/bits/uintn-identity.h \
+  /usr/include/x86_64-linux-gnu/sys/select.h \
+  /usr/include/x86_64-linux-gnu/bits/select.h \
+  /usr/include/x86_64-linux-gnu/bits/types/sigset_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/__sigset_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/struct_timeval.h \
+  /usr/include/x86_64-linux-gnu/bits/types/struct_timespec.h \
+  /usr/include/x86_64-linux-gnu/bits/pthreadtypes.h \
+  /usr/include/x86_64-linux-gnu/bits/thread-shared-types.h \
+  /usr/include/x86_64-linux-gnu/bits/pthreadtypes-arch.h \
+  /usr/include/x86_64-linux-gnu/bits/atomic_wide_counter.h \
+  /usr/include/x86_64-linux-gnu/bits/struct_mutex.h \
+  /usr/include/x86_64-linux-gnu/bits/struct_rwlock.h \
+  /usr/include/alloca.h \
+  /usr/include/x86_64-linux-gnu/bits/stdlib-float.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/std_abs.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/cstring \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/version.h \
+  /usr/include/string.h /usr/include/strings.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/cinttypes \
+  /usr/include/clang/18.1.3/include/inttypes.h /usr/include/inttypes.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/utility \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/stl_relops.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/stl_pair.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/type_traits \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/move.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/utility.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/compare \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/concepts \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/initializer_list \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/ext/numeric_traits.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/cpp_type_traits.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/ext/type_traits.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bit \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/cstdio \
+  /usr/include/stdio.h /usr/include/clang/18.1.3/include/stdarg.h \
+  /usr/include/clang/18.1.3/include/__stdarg___gnuc_va_list.h \
+  /usr/include/x86_64-linux-gnu/bits/types/__fpos_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/__mbstate_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/__fpos64_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/__FILE.h \
+  /usr/include/x86_64-linux-gnu/bits/types/FILE.h \
+  /usr/include/x86_64-linux-gnu/bits/types/struct_FILE.h \
+  /usr/include/x86_64-linux-gnu/bits/types/cookie_io_functions_t.h \
+  /usr/include/x86_64-linux-gnu/bits/stdio_lim.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/cassert \
+  /usr/include/assert.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/algorithm \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/stl_algobase.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/functexcept.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/exception_defines.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/stl_iterator_base_types.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/iterator_concepts.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/ptr_traits.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/ranges_cmp.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/stl_iterator_base_funcs.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/concept_check.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/debug/assertions.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/stl_iterator.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/new \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/exception.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/stl_construct.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/debug/debug.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/predefined_ops.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/stl_algo.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/algorithmfwd.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/stl_heap.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/uniform_int_dist.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/stl_tempbuf.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/ranges_algo.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/ranges_algobase.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/ranges_base.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/max_size_type.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/numbers \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/invoke.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/ranges_util.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/pstl/glue_algorithm_defs.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/pstl/execution_defs.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/mutex \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/requires_hosted.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/tuple \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/uses_allocator.h \
+  /usr/include/errno.h /usr/include/x86_64-linux-gnu/bits/errno.h \
+  /usr/include/linux/errno.h /usr/include/x86_64-linux-gnu/asm/errno.h \
+  /usr/include/asm-generic/errno.h /usr/include/asm-generic/errno-base.h \
+  /usr/include/x86_64-linux-gnu/bits/types/error_t.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/chrono.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/ratio \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/limits \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/ctime \
+  /usr/include/time.h /usr/include/x86_64-linux-gnu/bits/time.h \
+  /usr/include/x86_64-linux-gnu/bits/timex.h \
+  /usr/include/x86_64-linux-gnu/bits/types/struct_tm.h \
+  /usr/include/x86_64-linux-gnu/bits/types/struct_itimerspec.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/parse_numbers.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/std_mutex.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/x86_64-linux-gnu/c++/14/bits/gthr.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/x86_64-linux-gnu/c++/14/bits/gthr-default.h \
+  /usr/include/pthread.h /usr/include/sched.h \
+  /usr/include/x86_64-linux-gnu/bits/sched.h \
+  /usr/include/x86_64-linux-gnu/bits/types/struct_sched_param.h \
+  /usr/include/x86_64-linux-gnu/bits/cpu-set.h \
+  /usr/include/x86_64-linux-gnu/bits/setjmp.h \
+  /usr/include/x86_64-linux-gnu/bits/types/struct___jmp_buf_tag.h \
+  /usr/include/x86_64-linux-gnu/bits/pthread_stack_min-dynamic.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/unique_lock.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/x86_64-linux-gnu/c++/14/bits/error_constants.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/cerrno \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/ext/atomicity.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/x86_64-linux-gnu/c++/14/bits/atomic_word.h \
+  /usr/include/x86_64-linux-gnu/sys/single_threaded.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/shared_mutex \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/atomic \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/atomic_base.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/atomic_lockfree_defines.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/atomic_wait.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/functional_hash.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/hash_bytes.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/climits \
+  /usr/include/clang/18.1.3/include/limits.h /usr/include/limits.h \
+  /usr/include/x86_64-linux-gnu/bits/posix1_lim.h \
+  /usr/include/x86_64-linux-gnu/bits/local_lim.h \
+  /usr/include/linux/limits.h \
+  /usr/include/x86_64-linux-gnu/bits/posix2_lim.h \
+  /usr/include/x86_64-linux-gnu/bits/xopen_lim.h \
+  /usr/include/x86_64-linux-gnu/bits/uio_lim.h /usr/include/unistd.h \
+  /usr/include/x86_64-linux-gnu/bits/posix_opt.h \
+  /usr/include/x86_64-linux-gnu/bits/environments.h \
+  /usr/include/x86_64-linux-gnu/bits/confname.h \
+  /usr/include/x86_64-linux-gnu/bits/getopt_posix.h \
+  /usr/include/x86_64-linux-gnu/bits/getopt_core.h \
+  /usr/include/x86_64-linux-gnu/bits/unistd_ext.h \
+  /usr/include/linux/close_range.h /usr/include/syscall.h \
+  /usr/include/x86_64-linux-gnu/sys/syscall.h \
+  /usr/include/x86_64-linux-gnu/asm/unistd.h \
+  /usr/include/x86_64-linux-gnu/asm/unistd_64.h \
+  /usr/include/x86_64-linux-gnu/bits/syscall.h

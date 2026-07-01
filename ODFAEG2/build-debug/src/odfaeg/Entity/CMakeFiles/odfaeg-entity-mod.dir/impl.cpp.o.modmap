@@ -1,0 +1,11 @@
+-fmodule-file=odfaeg.entity.impl=src/odfaeg/Entity/CMakeFiles/odfaeg-entity-mod.dir/odfaeg.entity.impl.pcm
+-fmodule-file=odfaeg.entity.impl=src/odfaeg/Entity/CMakeFiles/odfaeg-entity-mod.dir/odfaeg.entity.impl.pcm
+-fmodule-file=odfaeg.core.any=src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.any.pcm
+-fmodule-file=odfaeg.core.archive=src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.archive.pcm
+-fmodule-file=odfaeg.core.delegate=src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.delegate.pcm
+-fmodule-file=odfaeg.core.factory=src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.factory.pcm
+-fmodule-file=odfaeg.core.metaprog=src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.metaprog.pcm
+-fmodule-file=odfaeg.core.serialization=src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.serialization.pcm
+-fmodule-file=odfaeg.core.stateManager=src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.stateManager.pcm
+-fmodule-file=odfaeg.core.utilities=src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.utilities.pcm
+-fmodule-file=odfaeg.entity.entity=src/odfaeg/Entity/CMakeFiles/odfaeg-entity-mod.dir/odfaeg.entity.entity.pcm

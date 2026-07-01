@@ -1,0 +1,93 @@
+ninja_dyndep_version = 1.0
+build src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/iKeyboard.cpp.o: dyndep | src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iKeyboard.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.x11Keyboard.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iKeyboard.pcm
+
+build src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/Linux/display.cpp.o: dyndep | src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.display.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.display.pcm
+
+build src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/Linux/x11Keyboard.cpp.o: dyndep | src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.x11Keyboard.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.display.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.x11Keyboard.pcm
+
+build src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/videoMode.cpp.o: dyndep | src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.videoMode.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.videoModeImpl.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.videoMode.pcm
+
+build src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/Linux/x11VideoMode.cpp.o: dyndep | src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.x11VideoMode.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.display.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.x11VideoMode.pcm
+
+build src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/videoModeImpl.cpp.o: dyndep | src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.videoModeImpl.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.videoMode.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.x11VideoMode.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.videoModeImpl.pcm
+
+build src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/Linux/x11Cursor.cpp.o: dyndep | src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.x11Cursor.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.display.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iCursorType.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.x11Cursor.pcm
+
+build src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/cursorImpl.cpp.o: dyndep | src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.cursorImpl.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iCursorType.pcm src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.vec.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.cursorImpl.pcm
+
+build src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/cursor.cpp.o: dyndep | src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.cursor.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iCursorType.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.cursorImpl.pcm src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.vec.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.cursor.pcm
+
+build src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/iMouse.cpp.o: dyndep | src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iMouse.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.x11Mouse.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iMouse.pcm
+
+build src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/Linux/x11Mouse.cpp.o: dyndep | src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.x11Mouse.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.display.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.x11Mouse.pcm
+
+build src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/Linux/x11Window.cpp.o: dyndep | src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.x11Window.pcm src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.string.pcm src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.utf.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.display.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.windowStyle.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iKeyboard.pcm src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.vec.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.x11Cursor.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.videoMode.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iEvent.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iMouse.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.x11Window.pcm
+
+build src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/windowImpl.cpp.o: dyndep | src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.windowImpl.pcm src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.clock.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iEvent.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.windowStyle.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.videoMode.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.cursor.pcm src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.string.pcm src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.vec.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.windowImpl.pcm
+
+build src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/window.cpp.o: dyndep | src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.window.pcm src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.string.pcm src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.vec.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.windowImpl.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.cursor.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.videoMode.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iEvent.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.window.pcm
+
+build src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/action.cpp.o: dyndep | src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.action.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iEvent.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iKeyboard.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iMouse.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.command.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.action.pcm
+
+build src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/command.cpp.o: dyndep | src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.command.pcm src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.delegate.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.action.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iEvent.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iKeyboard.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.command.pcm
+
+build src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/iCursorType.ixx.o | src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iCursorType.pcm: dyndep
+  restat = 1
+
+build src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/iEvent.ixx.o | src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iEvent.pcm: dyndep
+  restat = 1
+
+build src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/iKeyboard.ixx.o | src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iKeyboard.pcm: dyndep
+  restat = 1
+
+build src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/Linux/display.ixx.o | src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.display.pcm: dyndep
+  restat = 1
+
+build src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/Linux/x11Keyboard.ixx.o | src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.x11Keyboard.pcm: dyndep | src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iKeyboard.pcm
+  restat = 1
+
+build src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/windowStyle.ixx.o | src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.windowStyle.pcm: dyndep
+  restat = 1
+
+build src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/videoMode.ixx.o | src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.videoMode.pcm: dyndep
+  restat = 1
+
+build src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/Linux/x11VideoMode.ixx.o | src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.x11VideoMode.pcm: dyndep | src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.videoMode.pcm
+  restat = 1
+
+build src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/videoModeImpl.ixx.o | src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.videoModeImpl.pcm: dyndep | src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.videoMode.pcm
+  restat = 1
+
+build src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/Linux/x11Cursor.ixx.o | src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.x11Cursor.pcm: dyndep | src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.vec.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.display.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iCursorType.pcm
+  restat = 1
+
+build src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/cursorImpl.ixx.o | src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.cursorImpl.pcm: dyndep | src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iCursorType.pcm src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.vec.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.x11Cursor.pcm
+  restat = 1
+
+build src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/cursor.ixx.o | src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.cursor.pcm: dyndep | src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iCursorType.pcm src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.vec.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.cursorImpl.pcm
+  restat = 1
+
+build src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/iMouse.ixx.o | src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iMouse.pcm: dyndep | src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.vec.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.window.pcm
+  restat = 1
+
+build src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/Linux/x11Mouse.ixx.o | src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.x11Mouse.pcm: dyndep | src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iMouse.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.x11Window.pcm src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.vec.pcm
+  restat = 1
+
+build src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/Linux/x11Window.ixx.o | src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.x11Window.pcm: dyndep | src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.string.pcm src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.vec.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.x11Cursor.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iKeyboard.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iEvent.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.windowStyle.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.videoMode.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.display.pcm
+  restat = 1
+
+build src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/windowImpl.ixx.o | src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.windowImpl.pcm: dyndep | src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.clock.pcm src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.string.pcm src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.vec.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iEvent.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.videoMode.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.cursor.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.x11Window.pcm
+  restat = 1
+
+build src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/window.ixx.o | src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.window.pcm: dyndep | src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.vec.pcm src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.string.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iEvent.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.videoMode.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.cursor.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.windowImpl.pcm
+  restat = 1
+
+build src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/action.ixx.o | src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.action.pcm: dyndep | src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iEvent.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iKeyboard.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iMouse.pcm
+  restat = 1
+
+build src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/command.ixx.o | src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.command.pcm: dyndep | src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.delegate.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.action.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iEvent.pcm
+  restat = 1
+
+build src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/listener.ixx.o | src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.listener.pcm: dyndep | src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iEvent.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.command.pcm src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.action.pcm
+  restat = 1
+

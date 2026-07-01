@@ -1,0 +1,5 @@
+-x c++-module
+-fmodule-output=src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.emittors.pcm
+-fmodule-file=odfaeg.core.clock=src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.clock.pcm
+-fmodule-file=odfaeg.math.vec=src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.vec.pcm
+-fmodule-file=odfaeg.graphic.color=src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.color.pcm

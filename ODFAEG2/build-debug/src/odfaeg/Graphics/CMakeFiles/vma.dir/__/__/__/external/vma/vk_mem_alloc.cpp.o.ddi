@@ -1,0 +1,9 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Graphics/CMakeFiles/vma.dir/__/__/__/external/vma/vk_mem_alloc.cpp.o"
+    }
+  ],
+  "version": 1
+}

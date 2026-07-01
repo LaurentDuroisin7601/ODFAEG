@@ -1,0 +1,2 @@
+-x c++-module
+-fmodule-output=src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.blendMode.pcm

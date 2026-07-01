@@ -1,0 +1,32 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/plane.cpp.o",
+      "requires": [
+        {
+          "logical-name": "odfaeg.graphic.plane"
+        },
+        {
+          "logical-name": "odfaeg.graphic.vertex"
+        },
+        {
+          "logical-name": "odfaeg.graphic.vertexBuffer"
+        },
+        {
+          "logical-name": "odfaeg.graphic.gpuContext"
+        },
+        {
+          "logical-name": "odfaeg.graphic.primitiveType"
+        },
+        {
+          "logical-name": "odfaeg.graphic.material"
+        },
+        {
+          "logical-name": "odfaeg.graphic.plane"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

@@ -1,0 +1,43 @@
+src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/metaprog.ixx.o.ddi: \
+  /home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Core/metaprog.ixx \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/type_traits \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/x86_64-linux-gnu/c++/14/bits/c++config.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/x86_64-linux-gnu/c++/14/bits/os_defines.h \
+  /usr/include/features.h /usr/include/features-time64.h \
+  /usr/include/x86_64-linux-gnu/bits/wordsize.h \
+  /usr/include/x86_64-linux-gnu/bits/timesize.h \
+  /usr/include/stdc-predef.h /usr/include/x86_64-linux-gnu/sys/cdefs.h \
+  /usr/include/x86_64-linux-gnu/bits/long-double.h \
+  /usr/include/x86_64-linux-gnu/gnu/stubs.h \
+  /usr/include/x86_64-linux-gnu/gnu/stubs-64.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/x86_64-linux-gnu/c++/14/bits/cpu_defines.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/pstl/pstl_config.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/version.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/tuple \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/stl_pair.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/move.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/utility.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/compare \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/concepts \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/uses_allocator.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/invoke.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/ranges_util.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/ranges_base.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/initializer_list \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/stl_iterator.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/cpp_type_traits.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/stl_iterator_base_types.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/iterator_concepts.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/ptr_traits.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/ranges_cmp.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/ext/type_traits.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/new \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/exception.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/exception_defines.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/stl_construct.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/stl_iterator_base_funcs.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/concept_check.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/debug/assertions.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/ext/numeric_traits.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/max_size_type.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/numbers

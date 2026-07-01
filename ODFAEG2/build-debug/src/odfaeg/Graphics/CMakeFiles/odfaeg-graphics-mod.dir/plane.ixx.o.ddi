@@ -1,0 +1,30 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/plane.ixx.o",
+      "provides": [
+        {
+          "is-interface": true,
+          "logical-name": "odfaeg.graphic.plane",
+          "source-path": "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Graphics/plane.ixx"
+        }
+      ],
+      "requires": [
+        {
+          "logical-name": "odfaeg.graphic.gameObject"
+        },
+        {
+          "logical-name": "odfaeg.graphic.rect"
+        },
+        {
+          "logical-name": "odfaeg.math.vec"
+        },
+        {
+          "logical-name": "odfaeg.graphic.texture"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

@@ -1,0 +1,3 @@
+-x c++-module
+-fmodule-output=src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.instance.pcm
+-fmodule-file=odfaeg.core.nonCopyable=src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.nonCopyable.pcm

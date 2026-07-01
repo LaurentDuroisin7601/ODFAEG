@@ -1,0 +1,6 @@
+-x c++-module
+-fmodule-output=src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.assimpHelper.pcm
+-fmodule-file=odfaeg.math.vec=src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.vec.pcm
+-fmodule-file=odfaeg.math.quaternion=src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.quaternion.pcm
+-fmodule-file=odfaeg.math.matrix=src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.matrix.pcm
+-fmodule-file=odfaeg.math.maths=src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.maths.pcm

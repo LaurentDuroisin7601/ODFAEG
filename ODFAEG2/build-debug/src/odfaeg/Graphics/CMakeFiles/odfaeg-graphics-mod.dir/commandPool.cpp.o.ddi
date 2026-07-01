@@ -1,0 +1,17 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/commandPool.cpp.o",
+      "requires": [
+        {
+          "logical-name": "odfaeg.graphic.commandPool"
+        },
+        {
+          "logical-name": "odfaeg.graphic.commandPool"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

@@ -1,0 +1,8 @@
+-x c++-module
+-fmodule-output=src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.camera.pcm
+-fmodule-file=odfaeg.graphic.projMatrix=src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.projMatrix.pcm
+-fmodule-file=odfaeg.graphic.viewMatrix=src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.viewMatrix.pcm
+-fmodule-file=odfaeg.physic.boundingBox=src/odfaeg/Physics/CMakeFiles/odfaeg-physics-mod.dir/odfaeg.physic.boundingBox.pcm
+-fmodule-file=odfaeg.math.vec=src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.vec.pcm
+-fmodule-file=odfaeg.entity.transformMatrix=src/odfaeg/Entity/CMakeFiles/odfaeg-entity-mod.dir/odfaeg.entity.transformMatrix.pcm
+-fmodule-file=odfaeg.math.matrix=src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.matrix.pcm

@@ -1,0 +1,48 @@
+{
+	"bmi-installation" : null,
+	"compiler-frontend-variant" : "GNU",
+	"compiler-id" : "Clang",
+	"compiler-simulate-id" : "",
+	"config" : "DEBUG",
+	"cxx-modules" : 
+	{
+		"src/odfaeg/Physics/CMakeFiles/odfaeg-physics-mod.dir/boundingBox.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Physics",
+			"name" : "cxx_modules",
+			"relative-directory" : "",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Physics/boundingBox.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		}
+	},
+	"dir-cur-bld" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Physics",
+	"dir-cur-src" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Physics",
+	"dir-top-bld" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug",
+	"dir-top-src" : "/home/laurent/ODFAEG-master/ODFAEG2",
+	"exports" : 
+	[
+		{
+			"cxx-module-info-dir" : "",
+			"destination" : "lib/cmake/odfaeg",
+			"export-name" : "odfaeg-physics-mod",
+			"export-prefix" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/CMakeFiles/Export/2392b34739d6e993753a335661218280",
+			"install" : true,
+			"namespace" : "odfaeg::"
+		}
+	],
+	"forward-modules-from-target-dirs" : [],
+	"include-dirs" : 
+	[
+		"/usr/lib/llvm-18/include"
+	],
+	"language" : "CXX",
+	"linked-target-dirs" : 
+	[
+		"/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Entity/CMakeFiles/odfaeg-entity-mod.dir",
+		"/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir",
+		"/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir"
+	],
+	"module-dir" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Physics/CMakeFiles/odfaeg-physics-mod.dir"
+}

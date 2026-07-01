@@ -1,0 +1,28 @@
+{
+	"bmi-installation" : null,
+	"compiler-frontend-variant" : "GNU",
+	"compiler-id" : "Clang",
+	"compiler-simulate-id" : "",
+	"config" : "DEBUG",
+	"cxx-modules" : {},
+	"dir-cur-bld" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics",
+	"dir-cur-src" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Graphics",
+	"dir-top-bld" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug",
+	"dir-top-src" : "/home/laurent/ODFAEG-master/ODFAEG2",
+	"exports" : 
+	[
+		{
+			"cxx-module-info-dir" : "",
+			"destination" : "lib/cmake/odfaeg",
+			"export-name" : "meshoptimizer",
+			"export-prefix" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/CMakeFiles/Export/2392b34739d6e993753a335661218280",
+			"install" : true,
+			"namespace" : "odfaeg::"
+		}
+	],
+	"forward-modules-from-target-dirs" : [],
+	"include-dirs" : [],
+	"language" : "CXX",
+	"linked-target-dirs" : [],
+	"module-dir" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/meshoptimizer.dir"
+}

@@ -1,0 +1,5 @@
+-fmodule-file=odfaeg.graphic.semaphore=src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.semaphore.pcm
+-fmodule-file=odfaeg.graphic.semaphore=src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.semaphore.pcm
+-fmodule-file=odfaeg.core.nonCopyable=src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.nonCopyable.pcm
+-fmodule-file=odfaeg.graphic.device=src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.device.pcm
+-fmodule-file=odfaeg.graphic.instance=src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.instance.pcm

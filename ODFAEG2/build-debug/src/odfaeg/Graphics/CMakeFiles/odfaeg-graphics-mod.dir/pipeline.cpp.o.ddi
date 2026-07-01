@@ -1,0 +1,23 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/pipeline.cpp.o",
+      "requires": [
+        {
+          "logical-name": "odfaeg.graphic.pipeline"
+        },
+        {
+          "logical-name": "odfaeg.graphic.vertex"
+        },
+        {
+          "logical-name": "odfaeg.graphic.blendMode"
+        },
+        {
+          "logical-name": "odfaeg.graphic.pipeline"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

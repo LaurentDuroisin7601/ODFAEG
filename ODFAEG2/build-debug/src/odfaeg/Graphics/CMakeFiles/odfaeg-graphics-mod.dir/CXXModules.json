@@ -1,0 +1,2337 @@
+{
+	"modules" : 
+	{
+		"odfaeg.graphic.animation" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.animation.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.animator" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.animator.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.assimpHelper" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.assimpHelper.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.blendMode" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.blendMode.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.bone" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.bone.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.boneAnimUpdater" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.boneAnimUpdater.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.buffer" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.buffer.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.camera" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.camera.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.color" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.color.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.commandPool" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.commandPool.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.cube" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.cube.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.debug" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.debug.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.descriptor" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.descriptor.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.device" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.device.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.emittors" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.emittors.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.fence" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.fence.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.frameBuffer" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.frameBuffer.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.gameObject" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.gameObject.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.gpuContext" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.gpuContext.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.image" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.image.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.imageLoader" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.imageLoader.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.instance" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.instance.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.linkedListRenderer" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.linkedListRenderer.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.material" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.material.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.model" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.model.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.modelLoader" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.modelLoader.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.morphAnim" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.morphAnim.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.morphAnimUpdater" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.morphAnimUpdater.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.particle" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.particle.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.particleSystem" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.particleSystem.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.particleSystemUpdater" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.particleSystemUpdater.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.pipeline" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.pipeline.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.plane" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.plane.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.primitiveType" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.primitiveType.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.projMatrix" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.projMatrix.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.rect" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.rect.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.rectangleShape" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.rectangleShape.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.renderPass" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.renderPass.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.renderStates" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.renderStates.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.renderTarget" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.renderTarget.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.renderTexture" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.renderTexture.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.renderWindow" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.renderWindow.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.semaphore" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.semaphore.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.shader" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.shader.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.shadowRenderer" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.shadowRenderer.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.shape" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.shape.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.swapchain" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.swapchain.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.texture" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.texture.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.tile" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.tile.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.transformable" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.transformable.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.vertex" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.vertex.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.vertexBuffer" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.vertexBuffer.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.viewMatrix" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.viewMatrix.pcm",
+			"is-private" : false
+		},
+		"odfaeg.graphic.viewportMatrix" : 
+		{
+			"bmi" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.viewportMatrix.pcm",
+			"is-private" : false
+		}
+	},
+	"references" : 
+	{
+		"odfaeg.core.any" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.any.pcm"
+		},
+		"odfaeg.core.archive" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.archive.pcm"
+		},
+		"odfaeg.core.clock" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.clock.pcm"
+		},
+		"odfaeg.core.delegate" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.delegate.pcm"
+		},
+		"odfaeg.core.factory" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.factory.pcm"
+		},
+		"odfaeg.core.inputStream" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.inputStream.pcm"
+		},
+		"odfaeg.core.metaprog" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.metaprog.pcm"
+		},
+		"odfaeg.core.nonCopyable" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.nonCopyable.pcm"
+		},
+		"odfaeg.core.reflexibility" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.reflexibility.pcm"
+		},
+		"odfaeg.core.resourceCache" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.resourceCache.pcm"
+		},
+		"odfaeg.core.resourceManager" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.resourceManager.pcm"
+		},
+		"odfaeg.core.runtimeCompiler" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.runtimeCompiler.pcm"
+		},
+		"odfaeg.core.serialization" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.serialization.pcm"
+		},
+		"odfaeg.core.stateManager" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.stateManager.pcm"
+		},
+		"odfaeg.core.string" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.string.pcm"
+		},
+		"odfaeg.core.threadPool" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.threadPool.pcm"
+		},
+		"odfaeg.core.timer" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.timer.pcm"
+		},
+		"odfaeg.core.utf" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.utf.pcm"
+		},
+		"odfaeg.core.utilities" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.utilities.pcm"
+		},
+		"odfaeg.core.variant" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.variant.pcm"
+		},
+		"odfaeg.core.worker" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/odfaeg.core.worker.pcm"
+		},
+		"odfaeg.entity.entity" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Entity/CMakeFiles/odfaeg-entity-mod.dir/odfaeg.entity.entity.pcm"
+		},
+		"odfaeg.entity.impl" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Entity/CMakeFiles/odfaeg-entity-mod.dir/odfaeg.entity.impl.pcm"
+		},
+		"odfaeg.entity.transformMatrix" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Entity/CMakeFiles/odfaeg-entity-mod.dir/odfaeg.entity.transformMatrix.pcm"
+		},
+		"odfaeg.graphic.animation" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.animation.pcm"
+		},
+		"odfaeg.graphic.animator" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.animator.pcm"
+		},
+		"odfaeg.graphic.assimpHelper" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.assimpHelper.pcm"
+		},
+		"odfaeg.graphic.blendMode" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.blendMode.pcm"
+		},
+		"odfaeg.graphic.bone" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.bone.pcm"
+		},
+		"odfaeg.graphic.boneAnimUpdater" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.boneAnimUpdater.pcm"
+		},
+		"odfaeg.graphic.buffer" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.buffer.pcm"
+		},
+		"odfaeg.graphic.camera" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.camera.pcm"
+		},
+		"odfaeg.graphic.color" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.color.pcm"
+		},
+		"odfaeg.graphic.commandPool" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.commandPool.pcm"
+		},
+		"odfaeg.graphic.cube" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.cube.pcm"
+		},
+		"odfaeg.graphic.debug" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.debug.pcm"
+		},
+		"odfaeg.graphic.descriptor" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.descriptor.pcm"
+		},
+		"odfaeg.graphic.device" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.device.pcm"
+		},
+		"odfaeg.graphic.emittors" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.emittors.pcm"
+		},
+		"odfaeg.graphic.fence" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.fence.pcm"
+		},
+		"odfaeg.graphic.frameBuffer" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.frameBuffer.pcm"
+		},
+		"odfaeg.graphic.gameObject" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.gameObject.pcm"
+		},
+		"odfaeg.graphic.gpuContext" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.gpuContext.pcm"
+		},
+		"odfaeg.graphic.image" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.image.pcm"
+		},
+		"odfaeg.graphic.imageLoader" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.imageLoader.pcm"
+		},
+		"odfaeg.graphic.instance" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.instance.pcm"
+		},
+		"odfaeg.graphic.linkedListRenderer" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.linkedListRenderer.pcm"
+		},
+		"odfaeg.graphic.material" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.material.pcm"
+		},
+		"odfaeg.graphic.model" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.model.pcm"
+		},
+		"odfaeg.graphic.modelLoader" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.modelLoader.pcm"
+		},
+		"odfaeg.graphic.morphAnim" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.morphAnim.pcm"
+		},
+		"odfaeg.graphic.morphAnimUpdater" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.morphAnimUpdater.pcm"
+		},
+		"odfaeg.graphic.particle" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.particle.pcm"
+		},
+		"odfaeg.graphic.particleSystem" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.particleSystem.pcm"
+		},
+		"odfaeg.graphic.particleSystemUpdater" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.particleSystemUpdater.pcm"
+		},
+		"odfaeg.graphic.pipeline" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.pipeline.pcm"
+		},
+		"odfaeg.graphic.plane" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.plane.pcm"
+		},
+		"odfaeg.graphic.primitiveType" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.primitiveType.pcm"
+		},
+		"odfaeg.graphic.projMatrix" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.projMatrix.pcm"
+		},
+		"odfaeg.graphic.rect" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.rect.pcm"
+		},
+		"odfaeg.graphic.rectangleShape" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.rectangleShape.pcm"
+		},
+		"odfaeg.graphic.renderPass" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.renderPass.pcm"
+		},
+		"odfaeg.graphic.renderStates" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.renderStates.pcm"
+		},
+		"odfaeg.graphic.renderTarget" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.renderTarget.pcm"
+		},
+		"odfaeg.graphic.renderTexture" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.renderTexture.pcm"
+		},
+		"odfaeg.graphic.renderWindow" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.renderWindow.pcm"
+		},
+		"odfaeg.graphic.semaphore" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.semaphore.pcm"
+		},
+		"odfaeg.graphic.shader" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.shader.pcm"
+		},
+		"odfaeg.graphic.shadowRenderer" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.shadowRenderer.pcm"
+		},
+		"odfaeg.graphic.shape" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.shape.pcm"
+		},
+		"odfaeg.graphic.swapchain" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.swapchain.pcm"
+		},
+		"odfaeg.graphic.texture" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.texture.pcm"
+		},
+		"odfaeg.graphic.tile" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.tile.pcm"
+		},
+		"odfaeg.graphic.transformable" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.transformable.pcm"
+		},
+		"odfaeg.graphic.vertex" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.vertex.pcm"
+		},
+		"odfaeg.graphic.vertexBuffer" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.vertexBuffer.pcm"
+		},
+		"odfaeg.graphic.viewMatrix" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.viewMatrix.pcm"
+		},
+		"odfaeg.graphic.viewportMatrix" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/odfaeg.graphic.viewportMatrix.pcm"
+		},
+		"odfaeg.math.computer" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.computer.pcm"
+		},
+		"odfaeg.math.distribution" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.distribution.pcm"
+		},
+		"odfaeg.math.maths" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.maths.pcm"
+		},
+		"odfaeg.math.matrix" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.matrix.pcm"
+		},
+		"odfaeg.math.plane" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.plane.pcm"
+		},
+		"odfaeg.math.quaternion" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.quaternion.pcm"
+		},
+		"odfaeg.math.ray" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.ray.pcm"
+		},
+		"odfaeg.math.triangle" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.triangle.pcm"
+		},
+		"odfaeg.math.vec" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.vec.pcm"
+		},
+		"odfaeg.physic.boundingBox" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Physics/CMakeFiles/odfaeg-physics-mod.dir/odfaeg.physic.boundingBox.pcm"
+		},
+		"odfaeg.window.action" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.action.pcm"
+		},
+		"odfaeg.window.command" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.command.pcm"
+		},
+		"odfaeg.window.cursor" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.cursor.pcm"
+		},
+		"odfaeg.window.cursorImpl" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.cursorImpl.pcm"
+		},
+		"odfaeg.window.display" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.display.pcm"
+		},
+		"odfaeg.window.iCursorType" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iCursorType.pcm"
+		},
+		"odfaeg.window.iEvent" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iEvent.pcm"
+		},
+		"odfaeg.window.iKeyboard" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iKeyboard.pcm"
+		},
+		"odfaeg.window.iMouse" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.iMouse.pcm"
+		},
+		"odfaeg.window.listener" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.listener.pcm"
+		},
+		"odfaeg.window.videoMode" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.videoMode.pcm"
+		},
+		"odfaeg.window.videoModeImpl" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.videoModeImpl.pcm"
+		},
+		"odfaeg.window.window" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.window.pcm"
+		},
+		"odfaeg.window.windowImpl" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.windowImpl.pcm"
+		},
+		"odfaeg.window.windowStyle" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.windowStyle.pcm"
+		},
+		"odfaeg.window.x11Cursor" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.x11Cursor.pcm"
+		},
+		"odfaeg.window.x11Keyboard" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.x11Keyboard.pcm"
+		},
+		"odfaeg.window.x11Mouse" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.x11Mouse.pcm"
+		},
+		"odfaeg.window.x11VideoMode" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.x11VideoMode.pcm"
+		},
+		"odfaeg.window.x11Window" : 
+		{
+			"lookup-method" : "by-name",
+			"path" : "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/odfaeg.window.x11Window.pcm"
+		}
+	},
+	"usages" : 
+	{
+		"odfaeg.core.archive" : 
+		[
+			"odfaeg.core.delegate",
+			"odfaeg.core.factory",
+			"odfaeg.core.metaprog",
+			"odfaeg.core.utilities"
+		],
+		"odfaeg.core.delegate" : 
+		[
+			"odfaeg.core.metaprog"
+		],
+		"odfaeg.core.factory" : 
+		[
+			"odfaeg.core.delegate",
+			"odfaeg.core.metaprog"
+		],
+		"odfaeg.core.reflexibility" : 
+		[
+			"odfaeg.core.utilities"
+		],
+		"odfaeg.core.resourceCache" : 
+		[
+			"odfaeg.core.resourceManager",
+			"odfaeg.core.utilities"
+		],
+		"odfaeg.core.resourceManager" : 
+		[
+			"odfaeg.core.utilities"
+		],
+		"odfaeg.core.serialization" : 
+		[
+			"odfaeg.core.archive",
+			"odfaeg.core.delegate",
+			"odfaeg.core.factory",
+			"odfaeg.core.metaprog",
+			"odfaeg.core.utilities"
+		],
+		"odfaeg.core.stateManager" : 
+		[
+			"odfaeg.core.any"
+		],
+		"odfaeg.core.string" : 
+		[
+			"odfaeg.core.utf"
+		],
+		"odfaeg.core.timer" : 
+		[
+			"odfaeg.core.clock"
+		],
+		"odfaeg.core.variant" : 
+		[
+			"odfaeg.core.metaprog"
+		],
+		"odfaeg.entity.entity" : 
+		[
+			"odfaeg.core.any",
+			"odfaeg.core.archive",
+			"odfaeg.core.delegate",
+			"odfaeg.core.factory",
+			"odfaeg.core.metaprog",
+			"odfaeg.core.serialization",
+			"odfaeg.core.stateManager",
+			"odfaeg.core.utilities"
+		],
+		"odfaeg.entity.impl" : 
+		[
+			"odfaeg.core.any",
+			"odfaeg.core.archive",
+			"odfaeg.core.delegate",
+			"odfaeg.core.factory",
+			"odfaeg.core.metaprog",
+			"odfaeg.core.serialization",
+			"odfaeg.core.stateManager",
+			"odfaeg.core.utilities",
+			"odfaeg.entity.entity"
+		],
+		"odfaeg.entity.transformMatrix" : 
+		[
+			"odfaeg.math.matrix",
+			"odfaeg.math.vec"
+		],
+		"odfaeg.graphic.animation" : 
+		[
+			"odfaeg.core.any",
+			"odfaeg.core.archive",
+			"odfaeg.core.delegate",
+			"odfaeg.core.factory",
+			"odfaeg.core.inputStream",
+			"odfaeg.core.metaprog",
+			"odfaeg.core.nonCopyable",
+			"odfaeg.core.serialization",
+			"odfaeg.core.stateManager",
+			"odfaeg.core.utilities",
+			"odfaeg.entity.entity",
+			"odfaeg.entity.transformMatrix",
+			"odfaeg.graphic.bone",
+			"odfaeg.graphic.buffer",
+			"odfaeg.graphic.color",
+			"odfaeg.graphic.commandPool",
+			"odfaeg.graphic.device",
+			"odfaeg.graphic.gameObject",
+			"odfaeg.graphic.image",
+			"odfaeg.graphic.imageLoader",
+			"odfaeg.graphic.instance",
+			"odfaeg.graphic.material",
+			"odfaeg.graphic.primitiveType",
+			"odfaeg.graphic.rect",
+			"odfaeg.graphic.texture",
+			"odfaeg.graphic.transformable",
+			"odfaeg.graphic.vertex",
+			"odfaeg.graphic.vertexBuffer",
+			"odfaeg.math.maths",
+			"odfaeg.math.matrix",
+			"odfaeg.math.quaternion",
+			"odfaeg.math.vec",
+			"odfaeg.physic.boundingBox"
+		],
+		"odfaeg.graphic.animator" : 
+		[
+			"odfaeg.core.any",
+			"odfaeg.core.archive",
+			"odfaeg.core.delegate",
+			"odfaeg.core.factory",
+			"odfaeg.core.inputStream",
+			"odfaeg.core.metaprog",
+			"odfaeg.core.nonCopyable",
+			"odfaeg.core.serialization",
+			"odfaeg.core.stateManager",
+			"odfaeg.core.utilities",
+			"odfaeg.entity.entity",
+			"odfaeg.entity.transformMatrix",
+			"odfaeg.graphic.animation",
+			"odfaeg.graphic.bone",
+			"odfaeg.graphic.buffer",
+			"odfaeg.graphic.color",
+			"odfaeg.graphic.commandPool",
+			"odfaeg.graphic.device",
+			"odfaeg.graphic.gameObject",
+			"odfaeg.graphic.image",
+			"odfaeg.graphic.imageLoader",
+			"odfaeg.graphic.instance",
+			"odfaeg.graphic.material",
+			"odfaeg.graphic.primitiveType",
+			"odfaeg.graphic.rect",
+			"odfaeg.graphic.texture",
+			"odfaeg.graphic.transformable",
+			"odfaeg.graphic.vertex",
+			"odfaeg.graphic.vertexBuffer",
+			"odfaeg.math.maths",
+			"odfaeg.math.matrix",
+			"odfaeg.math.quaternion",
+			"odfaeg.math.vec",
+			"odfaeg.physic.boundingBox"
+		],
+		"odfaeg.graphic.assimpHelper" : 
+		[
+			"odfaeg.math.maths",
+			"odfaeg.math.matrix",
+			"odfaeg.math.quaternion",
+			"odfaeg.math.vec"
+		],
+		"odfaeg.graphic.bone" : 
+		[
+			"odfaeg.core.any",
+			"odfaeg.core.archive",
+			"odfaeg.core.delegate",
+			"odfaeg.core.factory",
+			"odfaeg.core.inputStream",
+			"odfaeg.core.metaprog",
+			"odfaeg.core.nonCopyable",
+			"odfaeg.core.serialization",
+			"odfaeg.core.stateManager",
+			"odfaeg.core.utilities",
+			"odfaeg.entity.entity",
+			"odfaeg.entity.transformMatrix",
+			"odfaeg.graphic.buffer",
+			"odfaeg.graphic.color",
+			"odfaeg.graphic.commandPool",
+			"odfaeg.graphic.device",
+			"odfaeg.graphic.gameObject",
+			"odfaeg.graphic.image",
+			"odfaeg.graphic.imageLoader",
+			"odfaeg.graphic.instance",
+			"odfaeg.graphic.material",
+			"odfaeg.graphic.primitiveType",
+			"odfaeg.graphic.rect",
+			"odfaeg.graphic.texture",
+			"odfaeg.graphic.transformable",
+			"odfaeg.graphic.vertex",
+			"odfaeg.graphic.vertexBuffer",
+			"odfaeg.math.maths",
+			"odfaeg.math.matrix",
+			"odfaeg.math.quaternion",
+			"odfaeg.math.vec",
+			"odfaeg.physic.boundingBox"
+		],
+		"odfaeg.graphic.boneAnimUpdater" : 
+		[
+			"odfaeg.core.any",
+			"odfaeg.core.archive",
+			"odfaeg.core.clock",
+			"odfaeg.core.delegate",
+			"odfaeg.core.factory",
+			"odfaeg.core.inputStream",
+			"odfaeg.core.metaprog",
+			"odfaeg.core.nonCopyable",
+			"odfaeg.core.serialization",
+			"odfaeg.core.stateManager",
+			"odfaeg.core.timer",
+			"odfaeg.core.utilities",
+			"odfaeg.entity.entity",
+			"odfaeg.entity.transformMatrix",
+			"odfaeg.graphic.animation",
+			"odfaeg.graphic.animator",
+			"odfaeg.graphic.bone",
+			"odfaeg.graphic.buffer",
+			"odfaeg.graphic.color",
+			"odfaeg.graphic.commandPool",
+			"odfaeg.graphic.device",
+			"odfaeg.graphic.gameObject",
+			"odfaeg.graphic.image",
+			"odfaeg.graphic.imageLoader",
+			"odfaeg.graphic.instance",
+			"odfaeg.graphic.material",
+			"odfaeg.graphic.primitiveType",
+			"odfaeg.graphic.rect",
+			"odfaeg.graphic.shader",
+			"odfaeg.graphic.texture",
+			"odfaeg.graphic.transformable",
+			"odfaeg.graphic.vertex",
+			"odfaeg.graphic.vertexBuffer",
+			"odfaeg.math.maths",
+			"odfaeg.math.matrix",
+			"odfaeg.math.quaternion",
+			"odfaeg.math.vec",
+			"odfaeg.physic.boundingBox"
+		],
+		"odfaeg.graphic.buffer" : 
+		[
+			"odfaeg.core.nonCopyable",
+			"odfaeg.graphic.device",
+			"odfaeg.graphic.instance"
+		],
+		"odfaeg.graphic.camera" : 
+		[
+			"odfaeg.entity.transformMatrix",
+			"odfaeg.graphic.projMatrix",
+			"odfaeg.graphic.viewMatrix",
+			"odfaeg.math.matrix",
+			"odfaeg.math.vec",
+			"odfaeg.physic.boundingBox"
+		],
+		"odfaeg.graphic.commandPool" : 
+		[
+			"odfaeg.core.nonCopyable",
+			"odfaeg.graphic.device",
+			"odfaeg.graphic.instance"
+		],
+		"odfaeg.graphic.cube" : 
+		[
+			"odfaeg.core.any",
+			"odfaeg.core.archive",
+			"odfaeg.core.delegate",
+			"odfaeg.core.factory",
+			"odfaeg.core.inputStream",
+			"odfaeg.core.metaprog",
+			"odfaeg.core.nonCopyable",
+			"odfaeg.core.serialization",
+			"odfaeg.core.stateManager",
+			"odfaeg.core.utilities",
+			"odfaeg.entity.entity",
+			"odfaeg.entity.transformMatrix",
+			"odfaeg.graphic.buffer",
+			"odfaeg.graphic.color",
+			"odfaeg.graphic.commandPool",
+			"odfaeg.graphic.device",
+			"odfaeg.graphic.gameObject",
+			"odfaeg.graphic.image",
+			"odfaeg.graphic.imageLoader",
+			"odfaeg.graphic.instance",
+			"odfaeg.graphic.material",
+			"odfaeg.graphic.primitiveType",
+			"odfaeg.graphic.rect",
+			"odfaeg.graphic.texture",
+			"odfaeg.graphic.transformable",
+			"odfaeg.graphic.vertex",
+			"odfaeg.graphic.vertexBuffer",
+			"odfaeg.math.matrix",
+			"odfaeg.math.vec",
+			"odfaeg.physic.boundingBox"
+		],
+		"odfaeg.graphic.descriptor" : 
+		[
+			"odfaeg.core.inputStream",
+			"odfaeg.core.nonCopyable",
+			"odfaeg.entity.transformMatrix",
+			"odfaeg.graphic.buffer",
+			"odfaeg.graphic.color",
+			"odfaeg.graphic.commandPool",
+			"odfaeg.graphic.device",
+			"odfaeg.graphic.image",
+			"odfaeg.graphic.imageLoader",
+			"odfaeg.graphic.instance",
+			"odfaeg.graphic.primitiveType",
+			"odfaeg.graphic.rect",
+			"odfaeg.graphic.texture",
+			"odfaeg.graphic.vertex",
+			"odfaeg.graphic.vertexBuffer",
+			"odfaeg.math.matrix",
+			"odfaeg.math.vec",
+			"odfaeg.physic.boundingBox"
+		],
+		"odfaeg.graphic.device" : 
+		[
+			"odfaeg.core.nonCopyable",
+			"odfaeg.graphic.instance"
+		],
+		"odfaeg.graphic.emittors" : 
+		[
+			"odfaeg.core.clock",
+			"odfaeg.graphic.color",
+			"odfaeg.math.vec"
+		],
+		"odfaeg.graphic.fence" : 
+		[
+			"odfaeg.core.nonCopyable",
+			"odfaeg.graphic.device",
+			"odfaeg.graphic.instance"
+		],
+		"odfaeg.graphic.frameBuffer" : 
+		[
+			"odfaeg.core.nonCopyable",
+			"odfaeg.graphic.buffer",
+			"odfaeg.graphic.device",
+			"odfaeg.graphic.image",
+			"odfaeg.graphic.instance",
+			"odfaeg.graphic.renderPass"
+		],
+		"odfaeg.graphic.gameObject" : 
+		[
+			"odfaeg.core.any",
+			"odfaeg.core.archive",
+			"odfaeg.core.delegate",
+			"odfaeg.core.factory",
+			"odfaeg.core.inputStream",
+			"odfaeg.core.metaprog",
+			"odfaeg.core.nonCopyable",
+			"odfaeg.core.serialization",
+			"odfaeg.core.stateManager",
+			"odfaeg.core.utilities",
+			"odfaeg.entity.entity",
+			"odfaeg.entity.transformMatrix",
+			"odfaeg.graphic.buffer",
+			"odfaeg.graphic.color",
+			"odfaeg.graphic.commandPool",
+			"odfaeg.graphic.device",
+			"odfaeg.graphic.image",
+			"odfaeg.graphic.imageLoader",
+			"odfaeg.graphic.instance",
+			"odfaeg.graphic.material",
+			"odfaeg.graphic.primitiveType",
+			"odfaeg.graphic.rect",
+			"odfaeg.graphic.texture",
+			"odfaeg.graphic.transformable",
+			"odfaeg.graphic.vertex",
+			"odfaeg.graphic.vertexBuffer",
+			"odfaeg.math.matrix",
+			"odfaeg.math.vec",
+			"odfaeg.physic.boundingBox"
+		],
+		"odfaeg.graphic.gpuContext" : 
+		[
+			"odfaeg.core.inputStream",
+			"odfaeg.core.nonCopyable",
+			"odfaeg.entity.transformMatrix",
+			"odfaeg.graphic.blendMode",
+			"odfaeg.graphic.buffer",
+			"odfaeg.graphic.color",
+			"odfaeg.graphic.commandPool",
+			"odfaeg.graphic.descriptor",
+			"odfaeg.graphic.device",
+			"odfaeg.graphic.fence",
+			"odfaeg.graphic.image",
+			"odfaeg.graphic.imageLoader",
+			"odfaeg.graphic.instance",
+			"odfaeg.graphic.pipeline",
+			"odfaeg.graphic.primitiveType",
+			"odfaeg.graphic.rect",
+			"odfaeg.graphic.renderPass",
+			"odfaeg.graphic.semaphore",
+			"odfaeg.graphic.shader",
+			"odfaeg.graphic.texture",
+			"odfaeg.graphic.vertex",
+			"odfaeg.graphic.vertexBuffer",
+			"odfaeg.math.matrix",
+			"odfaeg.math.vec",
+			"odfaeg.physic.boundingBox"
+		],
+		"odfaeg.graphic.image" : 
+		[
+			"odfaeg.core.nonCopyable",
+			"odfaeg.graphic.buffer",
+			"odfaeg.graphic.device",
+			"odfaeg.graphic.instance"
+		],
+		"odfaeg.graphic.imageLoader" : 
+		[
+			"odfaeg.core.inputStream",
+			"odfaeg.graphic.color",
+			"odfaeg.graphic.rect",
+			"odfaeg.math.vec"
+		],
+		"odfaeg.graphic.instance" : 
+		[
+			"odfaeg.core.nonCopyable"
+		],
+		"odfaeg.graphic.linkedListRenderer" : 
+		[
+			"odfaeg.core.any",
+			"odfaeg.core.archive",
+			"odfaeg.core.clock",
+			"odfaeg.core.delegate",
+			"odfaeg.core.factory",
+			"odfaeg.core.inputStream",
+			"odfaeg.core.metaprog",
+			"odfaeg.core.nonCopyable",
+			"odfaeg.core.serialization",
+			"odfaeg.core.stateManager",
+			"odfaeg.core.string",
+			"odfaeg.core.threadPool",
+			"odfaeg.core.timer",
+			"odfaeg.core.utf",
+			"odfaeg.core.utilities",
+			"odfaeg.entity.entity",
+			"odfaeg.entity.transformMatrix",
+			"odfaeg.graphic.blendMode",
+			"odfaeg.graphic.buffer",
+			"odfaeg.graphic.camera",
+			"odfaeg.graphic.color",
+			"odfaeg.graphic.commandPool",
+			"odfaeg.graphic.descriptor",
+			"odfaeg.graphic.device",
+			"odfaeg.graphic.emittors",
+			"odfaeg.graphic.fence",
+			"odfaeg.graphic.frameBuffer",
+			"odfaeg.graphic.gameObject",
+			"odfaeg.graphic.image",
+			"odfaeg.graphic.imageLoader",
+			"odfaeg.graphic.instance",
+			"odfaeg.graphic.material",
+			"odfaeg.graphic.particle",
+			"odfaeg.graphic.particleSystem",
+			"odfaeg.graphic.particleSystemUpdater",
+			"odfaeg.graphic.pipeline",
+			"odfaeg.graphic.primitiveType",
+			"odfaeg.graphic.projMatrix",
+			"odfaeg.graphic.rect",
+			"odfaeg.graphic.renderPass",
+			"odfaeg.graphic.renderStates",
+			"odfaeg.graphic.renderTarget",
+			"odfaeg.graphic.semaphore",
+			"odfaeg.graphic.shader",
+			"odfaeg.graphic.texture",
+			"odfaeg.graphic.transformable",
+			"odfaeg.graphic.vertex",
+			"odfaeg.graphic.vertexBuffer",
+			"odfaeg.graphic.viewMatrix",
+			"odfaeg.math.matrix",
+			"odfaeg.math.vec",
+			"odfaeg.physic.boundingBox",
+			"odfaeg.window.action",
+			"odfaeg.window.command",
+			"odfaeg.window.cursor",
+			"odfaeg.window.cursorImpl",
+			"odfaeg.window.display",
+			"odfaeg.window.iCursorType",
+			"odfaeg.window.iEvent",
+			"odfaeg.window.iKeyboard",
+			"odfaeg.window.iMouse",
+			"odfaeg.window.listener",
+			"odfaeg.window.videoMode",
+			"odfaeg.window.window",
+			"odfaeg.window.windowImpl",
+			"odfaeg.window.windowStyle",
+			"odfaeg.window.x11Cursor",
+			"odfaeg.window.x11Window"
+		],
+		"odfaeg.graphic.material" : 
+		[
+			"odfaeg.core.inputStream",
+			"odfaeg.core.nonCopyable",
+			"odfaeg.graphic.buffer",
+			"odfaeg.graphic.color",
+			"odfaeg.graphic.commandPool",
+			"odfaeg.graphic.device",
+			"odfaeg.graphic.image",
+			"odfaeg.graphic.imageLoader",
+			"odfaeg.graphic.instance",
+			"odfaeg.graphic.rect",
+			"odfaeg.graphic.texture",
+			"odfaeg.math.vec"
+		],
+		"odfaeg.graphic.model" : 
+		[
+			"odfaeg.core.any",
+			"odfaeg.core.archive",
+			"odfaeg.core.delegate",
+			"odfaeg.core.factory",
+			"odfaeg.core.inputStream",
+			"odfaeg.core.metaprog",
+			"odfaeg.core.nonCopyable",
+			"odfaeg.core.serialization",
+			"odfaeg.core.stateManager",
+			"odfaeg.core.utilities",
+			"odfaeg.entity.entity",
+			"odfaeg.entity.transformMatrix",
+			"odfaeg.graphic.buffer",
+			"odfaeg.graphic.color",
+			"odfaeg.graphic.commandPool",
+			"odfaeg.graphic.device",
+			"odfaeg.graphic.gameObject",
+			"odfaeg.graphic.image",
+			"odfaeg.graphic.imageLoader",
+			"odfaeg.graphic.instance",
+			"odfaeg.graphic.material",
+			"odfaeg.graphic.primitiveType",
+			"odfaeg.graphic.rect",
+			"odfaeg.graphic.texture",
+			"odfaeg.graphic.transformable",
+			"odfaeg.graphic.vertex",
+			"odfaeg.graphic.vertexBuffer",
+			"odfaeg.math.matrix",
+			"odfaeg.math.vec",
+			"odfaeg.physic.boundingBox"
+		],
+		"odfaeg.graphic.modelLoader" : 
+		[
+			"odfaeg.core.any",
+			"odfaeg.core.archive",
+			"odfaeg.core.clock",
+			"odfaeg.core.delegate",
+			"odfaeg.core.factory",
+			"odfaeg.core.inputStream",
+			"odfaeg.core.metaprog",
+			"odfaeg.core.nonCopyable",
+			"odfaeg.core.resourceManager",
+			"odfaeg.core.serialization",
+			"odfaeg.core.stateManager",
+			"odfaeg.core.threadPool",
+			"odfaeg.core.utilities",
+			"odfaeg.entity.entity",
+			"odfaeg.entity.transformMatrix",
+			"odfaeg.graphic.buffer",
+			"odfaeg.graphic.color",
+			"odfaeg.graphic.commandPool",
+			"odfaeg.graphic.device",
+			"odfaeg.graphic.gameObject",
+			"odfaeg.graphic.image",
+			"odfaeg.graphic.imageLoader",
+			"odfaeg.graphic.instance",
+			"odfaeg.graphic.material",
+			"odfaeg.graphic.model",
+			"odfaeg.graphic.primitiveType",
+			"odfaeg.graphic.rect",
+			"odfaeg.graphic.texture",
+			"odfaeg.graphic.transformable",
+			"odfaeg.graphic.vertex",
+			"odfaeg.graphic.vertexBuffer",
+			"odfaeg.math.matrix",
+			"odfaeg.math.vec",
+			"odfaeg.physic.boundingBox"
+		],
+		"odfaeg.graphic.morphAnim" : 
+		[
+			"odfaeg.core.any",
+			"odfaeg.core.archive",
+			"odfaeg.core.delegate",
+			"odfaeg.core.factory",
+			"odfaeg.core.inputStream",
+			"odfaeg.core.metaprog",
+			"odfaeg.core.nonCopyable",
+			"odfaeg.core.serialization",
+			"odfaeg.core.stateManager",
+			"odfaeg.core.utilities",
+			"odfaeg.entity.entity",
+			"odfaeg.entity.transformMatrix",
+			"odfaeg.graphic.buffer",
+			"odfaeg.graphic.color",
+			"odfaeg.graphic.commandPool",
+			"odfaeg.graphic.device",
+			"odfaeg.graphic.gameObject",
+			"odfaeg.graphic.image",
+			"odfaeg.graphic.imageLoader",
+			"odfaeg.graphic.instance",
+			"odfaeg.graphic.material",
+			"odfaeg.graphic.primitiveType",
+			"odfaeg.graphic.rect",
+			"odfaeg.graphic.texture",
+			"odfaeg.graphic.transformable",
+			"odfaeg.graphic.vertex",
+			"odfaeg.graphic.vertexBuffer",
+			"odfaeg.math.matrix",
+			"odfaeg.math.vec",
+			"odfaeg.physic.boundingBox"
+		],
+		"odfaeg.graphic.morphAnimUpdater" : 
+		[
+			"odfaeg.core.any",
+			"odfaeg.core.archive",
+			"odfaeg.core.clock",
+			"odfaeg.core.delegate",
+			"odfaeg.core.factory",
+			"odfaeg.core.inputStream",
+			"odfaeg.core.metaprog",
+			"odfaeg.core.nonCopyable",
+			"odfaeg.core.serialization",
+			"odfaeg.core.stateManager",
+			"odfaeg.core.timer",
+			"odfaeg.core.utilities",
+			"odfaeg.entity.entity",
+			"odfaeg.entity.transformMatrix",
+			"odfaeg.graphic.buffer",
+			"odfaeg.graphic.color",
+			"odfaeg.graphic.commandPool",
+			"odfaeg.graphic.device",
+			"odfaeg.graphic.gameObject",
+			"odfaeg.graphic.image",
+			"odfaeg.graphic.imageLoader",
+			"odfaeg.graphic.instance",
+			"odfaeg.graphic.material",
+			"odfaeg.graphic.morphAnim",
+			"odfaeg.graphic.primitiveType",
+			"odfaeg.graphic.rect",
+			"odfaeg.graphic.shader",
+			"odfaeg.graphic.texture",
+			"odfaeg.graphic.transformable",
+			"odfaeg.graphic.vertex",
+			"odfaeg.graphic.vertexBuffer",
+			"odfaeg.math.matrix",
+			"odfaeg.math.vec",
+			"odfaeg.physic.boundingBox"
+		],
+		"odfaeg.graphic.particle" : 
+		[
+			"odfaeg.core.clock",
+			"odfaeg.graphic.color",
+			"odfaeg.math.vec"
+		],
+		"odfaeg.graphic.particleSystem" : 
+		[
+			"odfaeg.core.any",
+			"odfaeg.core.archive",
+			"odfaeg.core.clock",
+			"odfaeg.core.delegate",
+			"odfaeg.core.factory",
+			"odfaeg.core.inputStream",
+			"odfaeg.core.metaprog",
+			"odfaeg.core.nonCopyable",
+			"odfaeg.core.serialization",
+			"odfaeg.core.stateManager",
+			"odfaeg.core.utilities",
+			"odfaeg.entity.entity",
+			"odfaeg.entity.transformMatrix",
+			"odfaeg.graphic.blendMode",
+			"odfaeg.graphic.buffer",
+			"odfaeg.graphic.color",
+			"odfaeg.graphic.commandPool",
+			"odfaeg.graphic.descriptor",
+			"odfaeg.graphic.device",
+			"odfaeg.graphic.emittors",
+			"odfaeg.graphic.gameObject",
+			"odfaeg.graphic.image",
+			"odfaeg.graphic.imageLoader",
+			"odfaeg.graphic.instance",
+			"odfaeg.graphic.material",
+			"odfaeg.graphic.particle",
+			"odfaeg.graphic.pipeline",
+			"odfaeg.graphic.primitiveType",
+			"odfaeg.graphic.rect",
+			"odfaeg.graphic.renderPass",
+			"odfaeg.graphic.shader",
+			"odfaeg.graphic.texture",
+			"odfaeg.graphic.transformable",
+			"odfaeg.graphic.vertex",
+			"odfaeg.graphic.vertexBuffer",
+			"odfaeg.math.matrix",
+			"odfaeg.math.vec",
+			"odfaeg.physic.boundingBox"
+		],
+		"odfaeg.graphic.particleSystemUpdater" : 
+		[
+			"odfaeg.core.any",
+			"odfaeg.core.archive",
+			"odfaeg.core.clock",
+			"odfaeg.core.delegate",
+			"odfaeg.core.factory",
+			"odfaeg.core.inputStream",
+			"odfaeg.core.metaprog",
+			"odfaeg.core.nonCopyable",
+			"odfaeg.core.serialization",
+			"odfaeg.core.stateManager",
+			"odfaeg.core.timer",
+			"odfaeg.core.utilities",
+			"odfaeg.entity.entity",
+			"odfaeg.entity.transformMatrix",
+			"odfaeg.graphic.blendMode",
+			"odfaeg.graphic.buffer",
+			"odfaeg.graphic.camera",
+			"odfaeg.graphic.color",
+			"odfaeg.graphic.commandPool",
+			"odfaeg.graphic.descriptor",
+			"odfaeg.graphic.device",
+			"odfaeg.graphic.emittors",
+			"odfaeg.graphic.fence",
+			"odfaeg.graphic.gameObject",
+			"odfaeg.graphic.image",
+			"odfaeg.graphic.imageLoader",
+			"odfaeg.graphic.instance",
+			"odfaeg.graphic.material",
+			"odfaeg.graphic.particle",
+			"odfaeg.graphic.particleSystem",
+			"odfaeg.graphic.pipeline",
+			"odfaeg.graphic.primitiveType",
+			"odfaeg.graphic.projMatrix",
+			"odfaeg.graphic.rect",
+			"odfaeg.graphic.renderPass",
+			"odfaeg.graphic.semaphore",
+			"odfaeg.graphic.shader",
+			"odfaeg.graphic.texture",
+			"odfaeg.graphic.transformable",
+			"odfaeg.graphic.vertex",
+			"odfaeg.graphic.vertexBuffer",
+			"odfaeg.graphic.viewMatrix",
+			"odfaeg.math.matrix",
+			"odfaeg.math.vec",
+			"odfaeg.physic.boundingBox"
+		],
+		"odfaeg.graphic.pipeline" : 
+		[
+			"odfaeg.core.inputStream",
+			"odfaeg.core.nonCopyable",
+			"odfaeg.entity.transformMatrix",
+			"odfaeg.graphic.blendMode",
+			"odfaeg.graphic.buffer",
+			"odfaeg.graphic.color",
+			"odfaeg.graphic.commandPool",
+			"odfaeg.graphic.descriptor",
+			"odfaeg.graphic.device",
+			"odfaeg.graphic.image",
+			"odfaeg.graphic.imageLoader",
+			"odfaeg.graphic.instance",
+			"odfaeg.graphic.primitiveType",
+			"odfaeg.graphic.rect",
+			"odfaeg.graphic.renderPass",
+			"odfaeg.graphic.shader",
+			"odfaeg.graphic.texture",
+			"odfaeg.graphic.vertex",
+			"odfaeg.graphic.vertexBuffer",
+			"odfaeg.math.matrix",
+			"odfaeg.math.vec",
+			"odfaeg.physic.boundingBox"
+		],
+		"odfaeg.graphic.plane" : 
+		[
+			"odfaeg.core.any",
+			"odfaeg.core.archive",
+			"odfaeg.core.delegate",
+			"odfaeg.core.factory",
+			"odfaeg.core.inputStream",
+			"odfaeg.core.metaprog",
+			"odfaeg.core.nonCopyable",
+			"odfaeg.core.serialization",
+			"odfaeg.core.stateManager",
+			"odfaeg.core.utilities",
+			"odfaeg.entity.entity",
+			"odfaeg.entity.transformMatrix",
+			"odfaeg.graphic.buffer",
+			"odfaeg.graphic.color",
+			"odfaeg.graphic.commandPool",
+			"odfaeg.graphic.device",
+			"odfaeg.graphic.gameObject",
+			"odfaeg.graphic.image",
+			"odfaeg.graphic.imageLoader",
+			"odfaeg.graphic.instance",
+			"odfaeg.graphic.material",
+			"odfaeg.graphic.primitiveType",
+			"odfaeg.graphic.rect",
+			"odfaeg.graphic.texture",
+			"odfaeg.graphic.transformable",
+			"odfaeg.graphic.vertex",
+			"odfaeg.graphic.vertexBuffer",
+			"odfaeg.math.matrix",
+			"odfaeg.math.vec",
+			"odfaeg.physic.boundingBox"
+		],
+		"odfaeg.graphic.projMatrix" : 
+		[
+			"odfaeg.math.matrix",
+			"odfaeg.math.vec"
+		],
+		"odfaeg.graphic.rect" : 
+		[
+			"odfaeg.math.vec"
+		],
+		"odfaeg.graphic.rectangleShape" : 
+		[
+			"odfaeg.core.any",
+			"odfaeg.core.archive",
+			"odfaeg.core.clock",
+			"odfaeg.core.delegate",
+			"odfaeg.core.factory",
+			"odfaeg.core.inputStream",
+			"odfaeg.core.metaprog",
+			"odfaeg.core.nonCopyable",
+			"odfaeg.core.serialization",
+			"odfaeg.core.stateManager",
+			"odfaeg.core.timer",
+			"odfaeg.core.utilities",
+			"odfaeg.entity.entity",
+			"odfaeg.entity.transformMatrix",
+			"odfaeg.graphic.blendMode",
+			"odfaeg.graphic.buffer",
+			"odfaeg.graphic.camera",
+			"odfaeg.graphic.color",
+			"odfaeg.graphic.commandPool",
+			"odfaeg.graphic.descriptor",
+			"odfaeg.graphic.device",
+			"odfaeg.graphic.emittors",
+			"odfaeg.graphic.fence",
+			"odfaeg.graphic.frameBuffer",
+			"odfaeg.graphic.gameObject",
+			"odfaeg.graphic.image",
+			"odfaeg.graphic.imageLoader",
+			"odfaeg.graphic.instance",
+			"odfaeg.graphic.material",
+			"odfaeg.graphic.particle",
+			"odfaeg.graphic.particleSystem",
+			"odfaeg.graphic.particleSystemUpdater",
+			"odfaeg.graphic.pipeline",
+			"odfaeg.graphic.primitiveType",
+			"odfaeg.graphic.projMatrix",
+			"odfaeg.graphic.rect",
+			"odfaeg.graphic.renderPass",
+			"odfaeg.graphic.renderStates",
+			"odfaeg.graphic.renderTarget",
+			"odfaeg.graphic.semaphore",
+			"odfaeg.graphic.shader",
+			"odfaeg.graphic.shape",
+			"odfaeg.graphic.texture",
+			"odfaeg.graphic.transformable",
+			"odfaeg.graphic.vertex",
+			"odfaeg.graphic.vertexBuffer",
+			"odfaeg.graphic.viewMatrix",
+			"odfaeg.math.matrix",
+			"odfaeg.math.vec",
+			"odfaeg.physic.boundingBox"
+		],
+		"odfaeg.graphic.renderPass" : 
+		[
+			"odfaeg.core.nonCopyable",
+			"odfaeg.graphic.device",
+			"odfaeg.graphic.instance"
+		],
+		"odfaeg.graphic.renderStates" : 
+		[
+			"odfaeg.core.inputStream",
+			"odfaeg.core.nonCopyable",
+			"odfaeg.entity.transformMatrix",
+			"odfaeg.graphic.blendMode",
+			"odfaeg.graphic.buffer",
+			"odfaeg.graphic.color",
+			"odfaeg.graphic.commandPool",
+			"odfaeg.graphic.device",
+			"odfaeg.graphic.image",
+			"odfaeg.graphic.imageLoader",
+			"odfaeg.graphic.instance",
+			"odfaeg.graphic.rect",
+			"odfaeg.graphic.shader",
+			"odfaeg.graphic.texture",
+			"odfaeg.math.matrix",
+			"odfaeg.math.vec"
+		],
+		"odfaeg.graphic.renderTarget" : 
+		[
+			"odfaeg.core.any",
+			"odfaeg.core.archive",
+			"odfaeg.core.clock",
+			"odfaeg.core.delegate",
+			"odfaeg.core.factory",
+			"odfaeg.core.inputStream",
+			"odfaeg.core.metaprog",
+			"odfaeg.core.nonCopyable",
+			"odfaeg.core.serialization",
+			"odfaeg.core.stateManager",
+			"odfaeg.core.timer",
+			"odfaeg.core.utilities",
+			"odfaeg.entity.entity",
+			"odfaeg.entity.transformMatrix",
+			"odfaeg.graphic.blendMode",
+			"odfaeg.graphic.buffer",
+			"odfaeg.graphic.camera",
+			"odfaeg.graphic.color",
+			"odfaeg.graphic.commandPool",
+			"odfaeg.graphic.descriptor",
+			"odfaeg.graphic.device",
+			"odfaeg.graphic.emittors",
+			"odfaeg.graphic.fence",
+			"odfaeg.graphic.frameBuffer",
+			"odfaeg.graphic.gameObject",
+			"odfaeg.graphic.image",
+			"odfaeg.graphic.imageLoader",
+			"odfaeg.graphic.instance",
+			"odfaeg.graphic.material",
+			"odfaeg.graphic.particle",
+			"odfaeg.graphic.particleSystem",
+			"odfaeg.graphic.particleSystemUpdater",
+			"odfaeg.graphic.pipeline",
+			"odfaeg.graphic.primitiveType",
+			"odfaeg.graphic.projMatrix",
+			"odfaeg.graphic.rect",
+			"odfaeg.graphic.renderPass",
+			"odfaeg.graphic.renderStates",
+			"odfaeg.graphic.semaphore",
+			"odfaeg.graphic.shader",
+			"odfaeg.graphic.texture",
+			"odfaeg.graphic.transformable",
+			"odfaeg.graphic.vertex",
+			"odfaeg.graphic.vertexBuffer",
+			"odfaeg.graphic.viewMatrix",
+			"odfaeg.math.matrix",
+			"odfaeg.math.vec",
+			"odfaeg.physic.boundingBox"
+		],
+		"odfaeg.graphic.renderTexture" : 
+		[
+			"odfaeg.core.any",
+			"odfaeg.core.archive",
+			"odfaeg.core.clock",
+			"odfaeg.core.delegate",
+			"odfaeg.core.factory",
+			"odfaeg.core.inputStream",
+			"odfaeg.core.metaprog",
+			"odfaeg.core.nonCopyable",
+			"odfaeg.core.serialization",
+			"odfaeg.core.stateManager",
+			"odfaeg.core.timer",
+			"odfaeg.core.utilities",
+			"odfaeg.entity.entity",
+			"odfaeg.entity.transformMatrix",
+			"odfaeg.graphic.blendMode",
+			"odfaeg.graphic.buffer",
+			"odfaeg.graphic.camera",
+			"odfaeg.graphic.color",
+			"odfaeg.graphic.commandPool",
+			"odfaeg.graphic.descriptor",
+			"odfaeg.graphic.device",
+			"odfaeg.graphic.emittors",
+			"odfaeg.graphic.fence",
+			"odfaeg.graphic.frameBuffer",
+			"odfaeg.graphic.gameObject",
+			"odfaeg.graphic.image",
+			"odfaeg.graphic.imageLoader",
+			"odfaeg.graphic.instance",
+			"odfaeg.graphic.material",
+			"odfaeg.graphic.particle",
+			"odfaeg.graphic.particleSystem",
+			"odfaeg.graphic.particleSystemUpdater",
+			"odfaeg.graphic.pipeline",
+			"odfaeg.graphic.primitiveType",
+			"odfaeg.graphic.projMatrix",
+			"odfaeg.graphic.rect",
+			"odfaeg.graphic.renderPass",
+			"odfaeg.graphic.renderStates",
+			"odfaeg.graphic.renderTarget",
+			"odfaeg.graphic.semaphore",
+			"odfaeg.graphic.shader",
+			"odfaeg.graphic.texture",
+			"odfaeg.graphic.transformable",
+			"odfaeg.graphic.vertex",
+			"odfaeg.graphic.vertexBuffer",
+			"odfaeg.graphic.viewMatrix",
+			"odfaeg.math.matrix",
+			"odfaeg.math.vec",
+			"odfaeg.physic.boundingBox"
+		],
+		"odfaeg.graphic.renderWindow" : 
+		[
+			"odfaeg.core.any",
+			"odfaeg.core.archive",
+			"odfaeg.core.clock",
+			"odfaeg.core.delegate",
+			"odfaeg.core.factory",
+			"odfaeg.core.inputStream",
+			"odfaeg.core.metaprog",
+			"odfaeg.core.nonCopyable",
+			"odfaeg.core.serialization",
+			"odfaeg.core.stateManager",
+			"odfaeg.core.string",
+			"odfaeg.core.timer",
+			"odfaeg.core.utf",
+			"odfaeg.core.utilities",
+			"odfaeg.entity.entity",
+			"odfaeg.entity.transformMatrix",
+			"odfaeg.graphic.blendMode",
+			"odfaeg.graphic.buffer",
+			"odfaeg.graphic.camera",
+			"odfaeg.graphic.color",
+			"odfaeg.graphic.commandPool",
+			"odfaeg.graphic.descriptor",
+			"odfaeg.graphic.device",
+			"odfaeg.graphic.emittors",
+			"odfaeg.graphic.fence",
+			"odfaeg.graphic.frameBuffer",
+			"odfaeg.graphic.gameObject",
+			"odfaeg.graphic.image",
+			"odfaeg.graphic.imageLoader",
+			"odfaeg.graphic.instance",
+			"odfaeg.graphic.material",
+			"odfaeg.graphic.particle",
+			"odfaeg.graphic.particleSystem",
+			"odfaeg.graphic.particleSystemUpdater",
+			"odfaeg.graphic.pipeline",
+			"odfaeg.graphic.primitiveType",
+			"odfaeg.graphic.projMatrix",
+			"odfaeg.graphic.rect",
+			"odfaeg.graphic.renderPass",
+			"odfaeg.graphic.renderStates",
+			"odfaeg.graphic.renderTarget",
+			"odfaeg.graphic.semaphore",
+			"odfaeg.graphic.shader",
+			"odfaeg.graphic.swapchain",
+			"odfaeg.graphic.texture",
+			"odfaeg.graphic.transformable",
+			"odfaeg.graphic.vertex",
+			"odfaeg.graphic.vertexBuffer",
+			"odfaeg.graphic.viewMatrix",
+			"odfaeg.math.matrix",
+			"odfaeg.math.vec",
+			"odfaeg.physic.boundingBox",
+			"odfaeg.window.cursor",
+			"odfaeg.window.cursorImpl",
+			"odfaeg.window.display",
+			"odfaeg.window.iCursorType",
+			"odfaeg.window.iEvent",
+			"odfaeg.window.iKeyboard",
+			"odfaeg.window.videoMode",
+			"odfaeg.window.window",
+			"odfaeg.window.windowImpl",
+			"odfaeg.window.windowStyle",
+			"odfaeg.window.x11Cursor",
+			"odfaeg.window.x11Window"
+		],
+		"odfaeg.graphic.semaphore" : 
+		[
+			"odfaeg.core.nonCopyable",
+			"odfaeg.graphic.device",
+			"odfaeg.graphic.instance"
+		],
+		"odfaeg.graphic.shader" : 
+		[
+			"odfaeg.core.inputStream",
+			"odfaeg.core.nonCopyable",
+			"odfaeg.graphic.device",
+			"odfaeg.graphic.instance"
+		],
+		"odfaeg.graphic.shadowRenderer" : 
+		[
+			"odfaeg.core.any",
+			"odfaeg.core.archive",
+			"odfaeg.core.clock",
+			"odfaeg.core.delegate",
+			"odfaeg.core.factory",
+			"odfaeg.core.inputStream",
+			"odfaeg.core.metaprog",
+			"odfaeg.core.nonCopyable",
+			"odfaeg.core.serialization",
+			"odfaeg.core.stateManager",
+			"odfaeg.core.string",
+			"odfaeg.core.threadPool",
+			"odfaeg.core.timer",
+			"odfaeg.core.utf",
+			"odfaeg.core.utilities",
+			"odfaeg.entity.entity",
+			"odfaeg.entity.transformMatrix",
+			"odfaeg.graphic.blendMode",
+			"odfaeg.graphic.buffer",
+			"odfaeg.graphic.camera",
+			"odfaeg.graphic.color",
+			"odfaeg.graphic.commandPool",
+			"odfaeg.graphic.descriptor",
+			"odfaeg.graphic.device",
+			"odfaeg.graphic.emittors",
+			"odfaeg.graphic.fence",
+			"odfaeg.graphic.frameBuffer",
+			"odfaeg.graphic.gameObject",
+			"odfaeg.graphic.image",
+			"odfaeg.graphic.imageLoader",
+			"odfaeg.graphic.instance",
+			"odfaeg.graphic.material",
+			"odfaeg.graphic.particle",
+			"odfaeg.graphic.particleSystem",
+			"odfaeg.graphic.particleSystemUpdater",
+			"odfaeg.graphic.pipeline",
+			"odfaeg.graphic.primitiveType",
+			"odfaeg.graphic.projMatrix",
+			"odfaeg.graphic.rect",
+			"odfaeg.graphic.renderPass",
+			"odfaeg.graphic.renderStates",
+			"odfaeg.graphic.renderTarget",
+			"odfaeg.graphic.renderTexture",
+			"odfaeg.graphic.semaphore",
+			"odfaeg.graphic.shader",
+			"odfaeg.graphic.texture",
+			"odfaeg.graphic.transformable",
+			"odfaeg.graphic.vertex",
+			"odfaeg.graphic.vertexBuffer",
+			"odfaeg.graphic.viewMatrix",
+			"odfaeg.math.matrix",
+			"odfaeg.math.vec",
+			"odfaeg.physic.boundingBox",
+			"odfaeg.window.action",
+			"odfaeg.window.command",
+			"odfaeg.window.cursor",
+			"odfaeg.window.cursorImpl",
+			"odfaeg.window.display",
+			"odfaeg.window.iCursorType",
+			"odfaeg.window.iEvent",
+			"odfaeg.window.iKeyboard",
+			"odfaeg.window.iMouse",
+			"odfaeg.window.listener",
+			"odfaeg.window.videoMode",
+			"odfaeg.window.window",
+			"odfaeg.window.windowImpl",
+			"odfaeg.window.windowStyle",
+			"odfaeg.window.x11Cursor",
+			"odfaeg.window.x11Window"
+		],
+		"odfaeg.graphic.shape" : 
+		[
+			"odfaeg.core.any",
+			"odfaeg.core.archive",
+			"odfaeg.core.clock",
+			"odfaeg.core.delegate",
+			"odfaeg.core.factory",
+			"odfaeg.core.inputStream",
+			"odfaeg.core.metaprog",
+			"odfaeg.core.nonCopyable",
+			"odfaeg.core.serialization",
+			"odfaeg.core.stateManager",
+			"odfaeg.core.timer",
+			"odfaeg.core.utilities",
+			"odfaeg.entity.entity",
+			"odfaeg.entity.transformMatrix",
+			"odfaeg.graphic.blendMode",
+			"odfaeg.graphic.buffer",
+			"odfaeg.graphic.camera",
+			"odfaeg.graphic.color",
+			"odfaeg.graphic.commandPool",
+			"odfaeg.graphic.descriptor",
+			"odfaeg.graphic.device",
+			"odfaeg.graphic.emittors",
+			"odfaeg.graphic.fence",
+			"odfaeg.graphic.frameBuffer",
+			"odfaeg.graphic.gameObject",
+			"odfaeg.graphic.image",
+			"odfaeg.graphic.imageLoader",
+			"odfaeg.graphic.instance",
+			"odfaeg.graphic.material",
+			"odfaeg.graphic.particle",
+			"odfaeg.graphic.particleSystem",
+			"odfaeg.graphic.particleSystemUpdater",
+			"odfaeg.graphic.pipeline",
+			"odfaeg.graphic.primitiveType",
+			"odfaeg.graphic.projMatrix",
+			"odfaeg.graphic.rect",
+			"odfaeg.graphic.renderPass",
+			"odfaeg.graphic.renderStates",
+			"odfaeg.graphic.renderTarget",
+			"odfaeg.graphic.semaphore",
+			"odfaeg.graphic.shader",
+			"odfaeg.graphic.texture",
+			"odfaeg.graphic.transformable",
+			"odfaeg.graphic.vertex",
+			"odfaeg.graphic.vertexBuffer",
+			"odfaeg.graphic.viewMatrix",
+			"odfaeg.math.matrix",
+			"odfaeg.math.vec",
+			"odfaeg.physic.boundingBox"
+		],
+		"odfaeg.graphic.swapchain" : 
+		[
+			"odfaeg.core.nonCopyable",
+			"odfaeg.graphic.buffer",
+			"odfaeg.graphic.device",
+			"odfaeg.graphic.image",
+			"odfaeg.graphic.instance"
+		],
+		"odfaeg.graphic.texture" : 
+		[
+			"odfaeg.core.inputStream",
+			"odfaeg.core.nonCopyable",
+			"odfaeg.graphic.buffer",
+			"odfaeg.graphic.color",
+			"odfaeg.graphic.commandPool",
+			"odfaeg.graphic.device",
+			"odfaeg.graphic.image",
+			"odfaeg.graphic.imageLoader",
+			"odfaeg.graphic.instance",
+			"odfaeg.graphic.rect",
+			"odfaeg.math.vec"
+		],
+		"odfaeg.graphic.tile" : 
+		[
+			"odfaeg.core.any",
+			"odfaeg.core.archive",
+			"odfaeg.core.delegate",
+			"odfaeg.core.factory",
+			"odfaeg.core.inputStream",
+			"odfaeg.core.metaprog",
+			"odfaeg.core.nonCopyable",
+			"odfaeg.core.serialization",
+			"odfaeg.core.stateManager",
+			"odfaeg.core.utilities",
+			"odfaeg.entity.entity",
+			"odfaeg.entity.transformMatrix",
+			"odfaeg.graphic.buffer",
+			"odfaeg.graphic.color",
+			"odfaeg.graphic.commandPool",
+			"odfaeg.graphic.device",
+			"odfaeg.graphic.gameObject",
+			"odfaeg.graphic.image",
+			"odfaeg.graphic.imageLoader",
+			"odfaeg.graphic.instance",
+			"odfaeg.graphic.material",
+			"odfaeg.graphic.primitiveType",
+			"odfaeg.graphic.rect",
+			"odfaeg.graphic.texture",
+			"odfaeg.graphic.transformable",
+			"odfaeg.graphic.vertex",
+			"odfaeg.graphic.vertexBuffer",
+			"odfaeg.math.matrix",
+			"odfaeg.math.vec",
+			"odfaeg.physic.boundingBox"
+		],
+		"odfaeg.graphic.transformable" : 
+		[
+			"odfaeg.entity.transformMatrix",
+			"odfaeg.math.matrix",
+			"odfaeg.math.vec",
+			"odfaeg.physic.boundingBox"
+		],
+		"odfaeg.graphic.vertex" : 
+		[
+			"odfaeg.graphic.color",
+			"odfaeg.math.vec"
+		],
+		"odfaeg.graphic.vertexBuffer" : 
+		[
+			"odfaeg.core.nonCopyable",
+			"odfaeg.entity.transformMatrix",
+			"odfaeg.graphic.buffer",
+			"odfaeg.graphic.color",
+			"odfaeg.graphic.commandPool",
+			"odfaeg.graphic.device",
+			"odfaeg.graphic.instance",
+			"odfaeg.graphic.primitiveType",
+			"odfaeg.graphic.vertex",
+			"odfaeg.math.matrix",
+			"odfaeg.math.vec",
+			"odfaeg.physic.boundingBox"
+		],
+		"odfaeg.graphic.viewMatrix" : 
+		[
+			"odfaeg.math.matrix",
+			"odfaeg.math.vec"
+		],
+		"odfaeg.graphic.viewportMatrix" : 
+		[
+			"odfaeg.math.matrix",
+			"odfaeg.math.vec"
+		],
+		"odfaeg.math.computer" : 
+		[
+			"odfaeg.math.maths",
+			"odfaeg.math.matrix",
+			"odfaeg.math.plane",
+			"odfaeg.math.ray",
+			"odfaeg.math.vec"
+		],
+		"odfaeg.math.maths" : 
+		[
+			"odfaeg.math.vec"
+		],
+		"odfaeg.math.matrix" : 
+		[
+			"odfaeg.math.vec"
+		],
+		"odfaeg.math.plane" : 
+		[
+			"odfaeg.math.maths",
+			"odfaeg.math.matrix",
+			"odfaeg.math.ray",
+			"odfaeg.math.vec"
+		],
+		"odfaeg.math.quaternion" : 
+		[
+			"odfaeg.math.maths",
+			"odfaeg.math.matrix",
+			"odfaeg.math.vec"
+		],
+		"odfaeg.math.ray" : 
+		[
+			"odfaeg.math.matrix",
+			"odfaeg.math.vec"
+		],
+		"odfaeg.math.triangle" : 
+		[
+			"odfaeg.math.maths",
+			"odfaeg.math.matrix",
+			"odfaeg.math.plane",
+			"odfaeg.math.ray",
+			"odfaeg.math.vec"
+		],
+		"odfaeg.physic.boundingBox" : 
+		[
+			"odfaeg.entity.transformMatrix",
+			"odfaeg.math.matrix",
+			"odfaeg.math.vec"
+		],
+		"odfaeg.window.action" : 
+		[
+			"odfaeg.core.clock",
+			"odfaeg.core.string",
+			"odfaeg.core.utf",
+			"odfaeg.math.vec",
+			"odfaeg.window.cursor",
+			"odfaeg.window.cursorImpl",
+			"odfaeg.window.display",
+			"odfaeg.window.iCursorType",
+			"odfaeg.window.iEvent",
+			"odfaeg.window.iKeyboard",
+			"odfaeg.window.iMouse",
+			"odfaeg.window.videoMode",
+			"odfaeg.window.window",
+			"odfaeg.window.windowImpl",
+			"odfaeg.window.windowStyle",
+			"odfaeg.window.x11Cursor",
+			"odfaeg.window.x11Window"
+		],
+		"odfaeg.window.command" : 
+		[
+			"odfaeg.core.clock",
+			"odfaeg.core.delegate",
+			"odfaeg.core.metaprog",
+			"odfaeg.core.string",
+			"odfaeg.core.utf",
+			"odfaeg.math.vec",
+			"odfaeg.window.action",
+			"odfaeg.window.cursor",
+			"odfaeg.window.cursorImpl",
+			"odfaeg.window.display",
+			"odfaeg.window.iCursorType",
+			"odfaeg.window.iEvent",
+			"odfaeg.window.iKeyboard",
+			"odfaeg.window.iMouse",
+			"odfaeg.window.videoMode",
+			"odfaeg.window.window",
+			"odfaeg.window.windowImpl",
+			"odfaeg.window.windowStyle",
+			"odfaeg.window.x11Cursor",
+			"odfaeg.window.x11Window"
+		],
+		"odfaeg.window.cursor" : 
+		[
+			"odfaeg.math.vec",
+			"odfaeg.window.cursorImpl",
+			"odfaeg.window.display",
+			"odfaeg.window.iCursorType",
+			"odfaeg.window.x11Cursor"
+		],
+		"odfaeg.window.cursorImpl" : 
+		[
+			"odfaeg.math.vec",
+			"odfaeg.window.display",
+			"odfaeg.window.iCursorType",
+			"odfaeg.window.x11Cursor"
+		],
+		"odfaeg.window.iMouse" : 
+		[
+			"odfaeg.core.clock",
+			"odfaeg.core.string",
+			"odfaeg.core.utf",
+			"odfaeg.math.vec",
+			"odfaeg.window.cursor",
+			"odfaeg.window.cursorImpl",
+			"odfaeg.window.display",
+			"odfaeg.window.iCursorType",
+			"odfaeg.window.iEvent",
+			"odfaeg.window.iKeyboard",
+			"odfaeg.window.videoMode",
+			"odfaeg.window.window",
+			"odfaeg.window.windowImpl",
+			"odfaeg.window.windowStyle",
+			"odfaeg.window.x11Cursor",
+			"odfaeg.window.x11Window"
+		],
+		"odfaeg.window.listener" : 
+		[
+			"odfaeg.core.clock",
+			"odfaeg.core.delegate",
+			"odfaeg.core.metaprog",
+			"odfaeg.core.string",
+			"odfaeg.core.utf",
+			"odfaeg.math.vec",
+			"odfaeg.window.action",
+			"odfaeg.window.command",
+			"odfaeg.window.cursor",
+			"odfaeg.window.cursorImpl",
+			"odfaeg.window.display",
+			"odfaeg.window.iCursorType",
+			"odfaeg.window.iEvent",
+			"odfaeg.window.iKeyboard",
+			"odfaeg.window.iMouse",
+			"odfaeg.window.videoMode",
+			"odfaeg.window.window",
+			"odfaeg.window.windowImpl",
+			"odfaeg.window.windowStyle",
+			"odfaeg.window.x11Cursor",
+			"odfaeg.window.x11Window"
+		],
+		"odfaeg.window.videoModeImpl" : 
+		[
+			"odfaeg.window.videoMode"
+		],
+		"odfaeg.window.window" : 
+		[
+			"odfaeg.core.clock",
+			"odfaeg.core.string",
+			"odfaeg.core.utf",
+			"odfaeg.math.vec",
+			"odfaeg.window.cursor",
+			"odfaeg.window.cursorImpl",
+			"odfaeg.window.display",
+			"odfaeg.window.iCursorType",
+			"odfaeg.window.iEvent",
+			"odfaeg.window.iKeyboard",
+			"odfaeg.window.videoMode",
+			"odfaeg.window.windowImpl",
+			"odfaeg.window.windowStyle",
+			"odfaeg.window.x11Cursor",
+			"odfaeg.window.x11Window"
+		],
+		"odfaeg.window.windowImpl" : 
+		[
+			"odfaeg.core.clock",
+			"odfaeg.core.string",
+			"odfaeg.core.utf",
+			"odfaeg.math.vec",
+			"odfaeg.window.cursor",
+			"odfaeg.window.cursorImpl",
+			"odfaeg.window.display",
+			"odfaeg.window.iCursorType",
+			"odfaeg.window.iEvent",
+			"odfaeg.window.iKeyboard",
+			"odfaeg.window.videoMode",
+			"odfaeg.window.windowStyle",
+			"odfaeg.window.x11Cursor",
+			"odfaeg.window.x11Window"
+		],
+		"odfaeg.window.x11Cursor" : 
+		[
+			"odfaeg.math.vec",
+			"odfaeg.window.display",
+			"odfaeg.window.iCursorType"
+		],
+		"odfaeg.window.x11Keyboard" : 
+		[
+			"odfaeg.window.iKeyboard"
+		],
+		"odfaeg.window.x11Mouse" : 
+		[
+			"odfaeg.core.clock",
+			"odfaeg.core.string",
+			"odfaeg.core.utf",
+			"odfaeg.math.vec",
+			"odfaeg.window.cursor",
+			"odfaeg.window.cursorImpl",
+			"odfaeg.window.display",
+			"odfaeg.window.iCursorType",
+			"odfaeg.window.iEvent",
+			"odfaeg.window.iKeyboard",
+			"odfaeg.window.iMouse",
+			"odfaeg.window.videoMode",
+			"odfaeg.window.window",
+			"odfaeg.window.windowImpl",
+			"odfaeg.window.windowStyle",
+			"odfaeg.window.x11Cursor",
+			"odfaeg.window.x11Window"
+		],
+		"odfaeg.window.x11VideoMode" : 
+		[
+			"odfaeg.window.videoMode"
+		],
+		"odfaeg.window.x11Window" : 
+		[
+			"odfaeg.core.string",
+			"odfaeg.core.utf",
+			"odfaeg.math.vec",
+			"odfaeg.window.display",
+			"odfaeg.window.iCursorType",
+			"odfaeg.window.iEvent",
+			"odfaeg.window.iKeyboard",
+			"odfaeg.window.videoMode",
+			"odfaeg.window.windowStyle",
+			"odfaeg.window.x11Cursor"
+		]
+	}
+}

@@ -1,0 +1,32 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/animator.cpp.o",
+      "requires": [
+        {
+          "logical-name": "odfaeg.graphic.animator"
+        },
+        {
+          "logical-name": "odfaeg.graphic.bone"
+        },
+        {
+          "logical-name": "odfaeg.entity.transformMatrix"
+        },
+        {
+          "logical-name": "odfaeg.graphic.gameObject"
+        },
+        {
+          "logical-name": "odfaeg.graphic.gpuContext"
+        },
+        {
+          "logical-name": "odfaeg.graphic.assimpHelper"
+        },
+        {
+          "logical-name": "odfaeg.graphic.animator"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

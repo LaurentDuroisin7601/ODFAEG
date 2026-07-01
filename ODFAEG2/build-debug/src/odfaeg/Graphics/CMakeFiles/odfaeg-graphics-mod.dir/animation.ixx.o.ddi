@@ -1,0 +1,30 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/animation.ixx.o",
+      "provides": [
+        {
+          "is-interface": true,
+          "logical-name": "odfaeg.graphic.animation",
+          "source-path": "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Graphics/animation.ixx"
+        }
+      ],
+      "requires": [
+        {
+          "logical-name": "odfaeg.graphic.bone"
+        },
+        {
+          "logical-name": "odfaeg.math.matrix"
+        },
+        {
+          "logical-name": "odfaeg.graphic.gameObject"
+        },
+        {
+          "logical-name": "odfaeg.math.vec"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

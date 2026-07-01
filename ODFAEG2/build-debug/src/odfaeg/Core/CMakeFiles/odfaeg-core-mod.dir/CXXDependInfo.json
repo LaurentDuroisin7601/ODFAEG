@@ -1,0 +1,245 @@
+{
+	"bmi-installation" : null,
+	"compiler-frontend-variant" : "GNU",
+	"compiler-id" : "Clang",
+	"compiler-simulate-id" : "",
+	"config" : "DEBUG",
+	"cxx-modules" : 
+	{
+		"src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/any.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Core",
+			"name" : "cxx_modules",
+			"relative-directory" : "",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Core/any.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		},
+		"src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/archive.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Core",
+			"name" : "cxx_modules",
+			"relative-directory" : "",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Core/archive.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		},
+		"src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/class.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Core",
+			"name" : "cxx_modules",
+			"relative-directory" : "",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Core/class.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		},
+		"src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/clock.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Core",
+			"name" : "cxx_modules",
+			"relative-directory" : "",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Core/clock.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		},
+		"src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/delegate.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Core",
+			"name" : "cxx_modules",
+			"relative-directory" : "",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Core/delegate.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		},
+		"src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/factory.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Core",
+			"name" : "cxx_modules",
+			"relative-directory" : "",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Core/factory.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		},
+		"src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/inputStream.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Core",
+			"name" : "cxx_modules",
+			"relative-directory" : "",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Core/inputStream.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		},
+		"src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/metaprog.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Core",
+			"name" : "cxx_modules",
+			"relative-directory" : "",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Core/metaprog.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		},
+		"src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/nonCopyable.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Core",
+			"name" : "cxx_modules",
+			"relative-directory" : "",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Core/nonCopyable.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		},
+		"src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/resourceCache.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Core",
+			"name" : "cxx_modules",
+			"relative-directory" : "",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Core/resourceCache.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		},
+		"src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/resourceManager.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Core",
+			"name" : "cxx_modules",
+			"relative-directory" : "",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Core/resourceManager.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		},
+		"src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/runtime_compiler.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Core",
+			"name" : "cxx_modules",
+			"relative-directory" : "",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Core/runtime_compiler.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		},
+		"src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/serialization.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Core",
+			"name" : "cxx_modules",
+			"relative-directory" : "",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Core/serialization.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		},
+		"src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/stateManager.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Core",
+			"name" : "cxx_modules",
+			"relative-directory" : "",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Core/stateManager.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		},
+		"src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/string.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Core",
+			"name" : "cxx_modules",
+			"relative-directory" : "",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Core/string.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		},
+		"src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/threadPool.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Core",
+			"name" : "cxx_modules",
+			"relative-directory" : "",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Core/threadPool.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		},
+		"src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/timer.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Core",
+			"name" : "cxx_modules",
+			"relative-directory" : "",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Core/timer.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		},
+		"src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/utf.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Core",
+			"name" : "cxx_modules",
+			"relative-directory" : "",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Core/utf.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		},
+		"src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/utilities.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Core",
+			"name" : "cxx_modules",
+			"relative-directory" : "",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Core/utilities.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		},
+		"src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/variant.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Core",
+			"name" : "cxx_modules",
+			"relative-directory" : "",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Core/variant.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		},
+		"src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/worker.ixx.o" : 
+		{
+			"bmi-only" : false,
+			"destination" : "share/odfaeg/modules/Core",
+			"name" : "cxx_modules",
+			"relative-directory" : "",
+			"source" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Core/worker.ixx",
+			"type" : "CXX_MODULES",
+			"visibility" : "PUBLIC"
+		}
+	},
+	"dir-cur-bld" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Core",
+	"dir-cur-src" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Core",
+	"dir-top-bld" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug",
+	"dir-top-src" : "/home/laurent/ODFAEG-master/ODFAEG2",
+	"exports" : 
+	[
+		{
+			"cxx-module-info-dir" : "",
+			"destination" : "lib/cmake/odfaeg",
+			"export-name" : "odfaeg-core-mod",
+			"export-prefix" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/CMakeFiles/Export/2392b34739d6e993753a335661218280",
+			"install" : true,
+			"namespace" : "odfaeg::"
+		}
+	],
+	"forward-modules-from-target-dirs" : [],
+	"include-dirs" : 
+	[
+		"/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Core/external/boost",
+		"/home/laurent/ODFAEG-master/ODFAEG2/include",
+		"/usr/lib/llvm-18/include"
+	],
+	"language" : "CXX",
+	"linked-target-dirs" : [],
+	"module-dir" : "/home/laurent/ODFAEG-master/ODFAEG2/build-debug/src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir"
+}

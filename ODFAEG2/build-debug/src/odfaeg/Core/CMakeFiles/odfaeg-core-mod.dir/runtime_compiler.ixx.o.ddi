@@ -1,0 +1,16 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/runtime_compiler.ixx.o",
+      "provides": [
+        {
+          "is-interface": true,
+          "logical-name": "odfaeg.core.runtimeCompiler",
+          "source-path": "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Core/runtime_compiler.ixx"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

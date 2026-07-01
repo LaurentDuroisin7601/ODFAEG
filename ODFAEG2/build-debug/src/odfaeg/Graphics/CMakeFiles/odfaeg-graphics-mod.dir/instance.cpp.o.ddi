@@ -1,0 +1,20 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/instance.cpp.o",
+      "requires": [
+        {
+          "logical-name": "odfaeg.graphic.instance"
+        },
+        {
+          "logical-name": "odfaeg.graphic.debug"
+        },
+        {
+          "logical-name": "odfaeg.graphic.instance"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

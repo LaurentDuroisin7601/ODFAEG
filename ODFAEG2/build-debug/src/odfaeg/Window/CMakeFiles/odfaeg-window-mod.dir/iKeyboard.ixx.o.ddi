@@ -1,0 +1,16 @@
+{
+  "revision": 0,
+  "rules": [
+    {
+      "primary-output": "src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/iKeyboard.ixx.o",
+      "provides": [
+        {
+          "is-interface": true,
+          "logical-name": "odfaeg.window.iKeyboard",
+          "source-path": "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Window/iKeyboard.ixx"
+        }
+      ]
+    }
+  ],
+  "version": 1
+}

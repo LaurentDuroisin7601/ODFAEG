@@ -1,0 +1,28 @@
+ninja_dyndep_version = 1.0
+build src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/computer.ixx.o | src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.computer.pcm: dyndep | src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.vec.pcm src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.matrix.pcm src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.plane.pcm src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.maths.pcm
+  restat = 1
+
+build src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/distribution.ixx.o | src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.distribution.pcm: dyndep
+  restat = 1
+
+build src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/maths.ixx.o | src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.maths.pcm: dyndep | src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.vec.pcm
+  restat = 1
+
+build src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/matrix.ixx.o | src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.matrix.pcm: dyndep | src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.vec.pcm
+  restat = 1
+
+build src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/plane.ixx.o | src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.plane.pcm: dyndep | src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.vec.pcm src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.ray.pcm src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.maths.pcm
+  restat = 1
+
+build src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/quaternion.ixx.o | src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.quaternion.pcm: dyndep | src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.matrix.pcm src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.maths.pcm
+  restat = 1
+
+build src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/ray.ixx.o | src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.ray.pcm: dyndep | src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.vec.pcm src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.matrix.pcm
+  restat = 1
+
+build src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/triangle.ixx.o | src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.triangle.pcm: dyndep | src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.plane.pcm src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.vec.pcm src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.ray.pcm
+  restat = 1
+
+build src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/vec.ixx.o | src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/odfaeg.math.vec.pcm: dyndep
+  restat = 1
+
