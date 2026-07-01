@@ -286,8 +286,15 @@ src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/Linux/x11Window.cpp.o.ddi: \
   /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/deque \
   /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/stl_deque.h \
   /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/deque.tcc \
-  /usr/include/vulkan/vulkan.hpp /usr/include/vulkan/vulkan.h \
-  /usr/include/vulkan/vk_platform.h /usr/include/vulkan/vulkan_core.h \
+  /usr/include/vulkan/vulkan.hpp \
+  /usr/include/vulkan/vulkan_hpp_macros.hpp \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/version \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/cassert \
+  /usr/include/assert.h \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/utility \
+  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/stl_relops.h \
+  /usr/include/vulkan/vulkan.h /usr/include/vulkan/vk_platform.h \
+  /usr/include/vulkan/vulkan_core.h \
   /usr/include/vk_video/vulkan_video_codec_h264std.h \
   /usr/include/vk_video/vulkan_video_codecs_common.h \
   /usr/include/vk_video/vulkan_video_codec_h264std_encode.h \
@@ -295,11 +302,10 @@ src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/Linux/x11Window.cpp.o.ddi: \
   /usr/include/vk_video/vulkan_video_codec_h265std_encode.h \
   /usr/include/vk_video/vulkan_video_codec_h264std_decode.h \
   /usr/include/vk_video/vulkan_video_codec_h265std_decode.h \
-  /usr/include/vulkan/vulkan_hpp_macros.hpp \
-  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/version \
-  /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/cassert \
-  /usr/include/assert.h /usr/include/dlfcn.h \
-  /usr/include/x86_64-linux-gnu/bits/dlfcn.h \
+  /usr/include/vk_video/vulkan_video_codec_av1std.h \
+  /usr/include/vk_video/vulkan_video_codec_av1std_decode.h \
+  /usr/include/vk_video/vulkan_video_codec_av1std_encode.h \
+  /usr/include/dlfcn.h /usr/include/x86_64-linux-gnu/bits/dlfcn.h \
   /usr/include/x86_64-linux-gnu/bits/dl_find_object.h \
   /usr/include/vulkan/vulkan_enums.hpp \
   /usr/include/vulkan/vulkan_to_string.hpp \

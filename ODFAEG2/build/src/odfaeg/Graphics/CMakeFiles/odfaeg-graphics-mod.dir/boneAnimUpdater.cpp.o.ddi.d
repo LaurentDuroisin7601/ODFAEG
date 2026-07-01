@@ -93,6 +93,9 @@ src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/boneAnimUpdater.cpp.o.ddi
   /usr/include/vk_video/vulkan_video_codec_h265std_encode.h \
   /usr/include/vk_video/vulkan_video_codec_h264std_decode.h \
   /usr/include/vk_video/vulkan_video_codec_h265std_decode.h \
+  /usr/include/vk_video/vulkan_video_codec_av1std.h \
+  /usr/include/vk_video/vulkan_video_codec_av1std_decode.h \
+  /usr/include/vk_video/vulkan_video_codec_av1std_encode.h \
   /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/string \
   /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/stringfwd.h \
   /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/bits/char_traits.h \

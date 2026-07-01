@@ -319,6 +319,9 @@ src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/modelLoader.cpp.o.ddi: \
   /usr/include/vk_video/vulkan_video_codec_h265std_encode.h \
   /usr/include/vk_video/vulkan_video_codec_h264std_decode.h \
   /usr/include/vk_video/vulkan_video_codec_h265std_decode.h \
+  /usr/include/vk_video/vulkan_video_codec_av1std.h \
+  /usr/include/vk_video/vulkan_video_codec_av1std_decode.h \
+  /usr/include/vk_video/vulkan_video_codec_av1std_encode.h \
   /home/laurent/ODFAEG-master/ODFAEG2/external/vma/vk_mem_alloc.h \
   /usr/include/vulkan/vulkan.h /usr/lib/llvm-18/include/clang-c/Index.h \
   /usr/lib/llvm-18/include/clang-c/BuildSystem.h \

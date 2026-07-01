@@ -34,6 +34,9 @@ src/odfaeg/Graphics/CMakeFiles/vma.dir/__/__/__/external/vma/vk_mem_alloc.cpp.o.
   /usr/include/vk_video/vulkan_video_codec_h265std_encode.h \
   /usr/include/vk_video/vulkan_video_codec_h264std_decode.h \
   /usr/include/vk_video/vulkan_video_codec_h265std_decode.h \
+  /usr/include/vk_video/vulkan_video_codec_av1std.h \
+  /usr/include/vk_video/vulkan_video_codec_av1std_decode.h \
+  /usr/include/vk_video/vulkan_video_codec_av1std_encode.h \
   /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/cstdint \
   /../lib/gcc/x86_64-linux-gnu/14/../../../../include/x86_64-linux-gnu/c++/14/bits/c++config.h \
   /../lib/gcc/x86_64-linux-gnu/14/../../../../include/x86_64-linux-gnu/c++/14/bits/os_defines.h \

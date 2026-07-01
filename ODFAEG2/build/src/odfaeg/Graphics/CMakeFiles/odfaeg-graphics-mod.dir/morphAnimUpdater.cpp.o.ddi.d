@@ -198,6 +198,9 @@ src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/morphAnimUpdater.cpp.o.dd
   /usr/include/vk_video/vulkan_video_codec_h265std_encode.h \
   /usr/include/vk_video/vulkan_video_codec_h264std_decode.h \
   /usr/include/vk_video/vulkan_video_codec_h265std_decode.h \
+  /usr/include/vk_video/vulkan_video_codec_av1std.h \
+  /usr/include/vk_video/vulkan_video_codec_av1std_decode.h \
+  /usr/include/vk_video/vulkan_video_codec_av1std_encode.h \
   /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/iostream \
   /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/ostream \
   /../lib/gcc/x86_64-linux-gnu/14/../../../../include/c++/14/ios \
