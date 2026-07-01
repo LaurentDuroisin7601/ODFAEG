@@ -3,7 +3,7 @@
 	"compiler-frontend-variant" : "GNU",
 	"compiler-id" : "Clang",
 	"compiler-simulate-id" : "",
-	"config" : "RELEASE",
+	"config" : "Release",
 	"cxx-modules" : {},
 	"dir-cur-bld" : "/home/laurent/ODFAEG-master/ODFAEG2/build/src/odfaeg/Graphics",
 	"dir-cur-src" : "/home/laurent/ODFAEG-master/ODFAEG2/src/odfaeg/Graphics",

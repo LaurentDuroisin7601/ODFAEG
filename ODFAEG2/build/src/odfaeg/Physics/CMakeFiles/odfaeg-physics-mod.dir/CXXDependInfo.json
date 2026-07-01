@@ -3,7 +3,7 @@
 	"compiler-frontend-variant" : "GNU",
 	"compiler-id" : "Clang",
 	"compiler-simulate-id" : "",
-	"config" : "RELEASE",
+	"config" : "Release",
 	"cxx-modules" : 
 	{
 		"src/odfaeg/Physics/CMakeFiles/odfaeg-physics-mod.dir/boundingBox.ixx.o" : 

@@ -7,7 +7,7 @@
 
 # =============================================================================
 # Project: ODFAEG
-# Configurations: RELEASE
+# Configurations: Release
 # =============================================================================
 # =============================================================================
 
@@ -22,7 +22,7 @@ rule CUSTOM_COMMAND
 #############################################
 # Rule for generating CXX dependencies.
 
-rule CXX_SCAN__odfaeg-core-mod_RELEASE
+rule CXX_SCAN__odfaeg-core-mod_Release
   depfile = $DEP_FILE
   command = "/usr/lib/llvm-18/bin/clang-scan-deps" -format=p1689 -- clang++ $DEFINES $INCLUDES $FLAGS -x c++ $in -c -o $OBJ_FILE -MT $DYNDEP_INTERMEDIATE_FILE -MD -MF $DEP_FILE > $DYNDEP_INTERMEDIATE_FILE.tmp && mv $DYNDEP_INTERMEDIATE_FILE.tmp $DYNDEP_INTERMEDIATE_FILE
   description = Scanning $in for CXX dependencies
@@ -31,7 +31,7 @@ rule CXX_SCAN__odfaeg-core-mod_RELEASE
 #############################################
 # Rule to generate ninja dyndep files for CXX.
 
-rule CXX_DYNDEP__odfaeg-core-mod_RELEASE
+rule CXX_DYNDEP__odfaeg-core-mod_Release
   command = /usr/bin/cmake -E cmake_ninja_dyndep --tdi=src/odfaeg/Core/CMakeFiles/odfaeg-core-mod.dir/CXXDependInfo.json --lang=CXX --modmapfmt=clang --dd=$out @$out.rsp
   description = Generating CXX dyndep file $out
   rspfile = $out.rsp
@@ -41,7 +41,7 @@ rule CXX_DYNDEP__odfaeg-core-mod_RELEASE
 #############################################
 # Rule for compiling CXX files.
 
-rule CXX_COMPILER__odfaeg-core-mod_scanned_RELEASE
+rule CXX_COMPILER__odfaeg-core-mod_scanned_Release
   depfile = $DEP_FILE
   deps = gcc
   command = ${LAUNCHER}${CODE_CHECK}clang++ $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE @$DYNDEP_MODULE_MAP_FILE -o $out -c $in
@@ -51,7 +51,7 @@ rule CXX_COMPILER__odfaeg-core-mod_scanned_RELEASE
 #############################################
 # Rule for compiling CXX files.
 
-rule CXX_COMPILER__odfaeg-core-mod_unscanned_RELEASE
+rule CXX_COMPILER__odfaeg-core-mod_unscanned_Release
   depfile = $DEP_FILE
   deps = gcc
   command = ${LAUNCHER}${CODE_CHECK}clang++ $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
@@ -61,7 +61,7 @@ rule CXX_COMPILER__odfaeg-core-mod_unscanned_RELEASE
 #############################################
 # Rule for linking CXX static library.
 
-rule CXX_STATIC_LIBRARY_LINKER__odfaeg-core-mod_RELEASE
+rule CXX_STATIC_LIBRARY_LINKER__odfaeg-core-mod_Release
   command = $PRE_LINK && /usr/bin/cmake -E rm -f $TARGET_FILE && /usr/bin/llvm-ar qc $TARGET_FILE $LINK_FLAGS $in && /usr/bin/llvm-ranlib $TARGET_FILE && $POST_BUILD
   description = Linking CXX static library $TARGET_FILE
   restat = $RESTAT
@@ -70,7 +70,7 @@ rule CXX_STATIC_LIBRARY_LINKER__odfaeg-core-mod_RELEASE
 #############################################
 # Rule for linking CXX static library.
 
-rule CXX_STATIC_LIBRARY_LINKER__odfaeg-core_RELEASE
+rule CXX_STATIC_LIBRARY_LINKER__odfaeg-core_Release
   command = $PRE_LINK && /usr/bin/cmake -E rm -f $TARGET_FILE && /usr/bin/llvm-ar qc $TARGET_FILE $LINK_FLAGS $in && /usr/bin/llvm-ranlib $TARGET_FILE && $POST_BUILD
   description = Linking CXX static library $TARGET_FILE
   restat = $RESTAT
@@ -79,7 +79,7 @@ rule CXX_STATIC_LIBRARY_LINKER__odfaeg-core_RELEASE
 #############################################
 # Rule for generating CXX dependencies.
 
-rule CXX_SCAN__odfaeg-math-mod_RELEASE
+rule CXX_SCAN__odfaeg-math-mod_Release
   depfile = $DEP_FILE
   command = "/usr/lib/llvm-18/bin/clang-scan-deps" -format=p1689 -- clang++ $DEFINES $INCLUDES $FLAGS -x c++ $in -c -o $OBJ_FILE -MT $DYNDEP_INTERMEDIATE_FILE -MD -MF $DEP_FILE > $DYNDEP_INTERMEDIATE_FILE.tmp && mv $DYNDEP_INTERMEDIATE_FILE.tmp $DYNDEP_INTERMEDIATE_FILE
   description = Scanning $in for CXX dependencies
@@ -88,7 +88,7 @@ rule CXX_SCAN__odfaeg-math-mod_RELEASE
 #############################################
 # Rule to generate ninja dyndep files for CXX.
 
-rule CXX_DYNDEP__odfaeg-math-mod_RELEASE
+rule CXX_DYNDEP__odfaeg-math-mod_Release
   command = /usr/bin/cmake -E cmake_ninja_dyndep --tdi=src/odfaeg/Math/CMakeFiles/odfaeg-math-mod.dir/CXXDependInfo.json --lang=CXX --modmapfmt=clang --dd=$out @$out.rsp
   description = Generating CXX dyndep file $out
   rspfile = $out.rsp
@@ -98,7 +98,7 @@ rule CXX_DYNDEP__odfaeg-math-mod_RELEASE
 #############################################
 # Rule for compiling CXX files.
 
-rule CXX_COMPILER__odfaeg-math-mod_scanned_RELEASE
+rule CXX_COMPILER__odfaeg-math-mod_scanned_Release
   depfile = $DEP_FILE
   deps = gcc
   command = ${LAUNCHER}${CODE_CHECK}clang++ $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE @$DYNDEP_MODULE_MAP_FILE -o $out -c $in
@@ -108,7 +108,7 @@ rule CXX_COMPILER__odfaeg-math-mod_scanned_RELEASE
 #############################################
 # Rule for compiling CXX files.
 
-rule CXX_COMPILER__odfaeg-math-mod_unscanned_RELEASE
+rule CXX_COMPILER__odfaeg-math-mod_unscanned_Release
   depfile = $DEP_FILE
   deps = gcc
   command = ${LAUNCHER}${CODE_CHECK}clang++ $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
@@ -118,7 +118,7 @@ rule CXX_COMPILER__odfaeg-math-mod_unscanned_RELEASE
 #############################################
 # Rule for linking CXX static library.
 
-rule CXX_STATIC_LIBRARY_LINKER__odfaeg-math-mod_RELEASE
+rule CXX_STATIC_LIBRARY_LINKER__odfaeg-math-mod_Release
   command = $PRE_LINK && /usr/bin/cmake -E rm -f $TARGET_FILE && /usr/bin/llvm-ar qc $TARGET_FILE $LINK_FLAGS $in && /usr/bin/llvm-ranlib $TARGET_FILE && $POST_BUILD
   description = Linking CXX static library $TARGET_FILE
   restat = $RESTAT
@@ -127,7 +127,7 @@ rule CXX_STATIC_LIBRARY_LINKER__odfaeg-math-mod_RELEASE
 #############################################
 # Rule for linking CXX static library.
 
-rule CXX_STATIC_LIBRARY_LINKER__odfaeg-math_RELEASE
+rule CXX_STATIC_LIBRARY_LINKER__odfaeg-math_Release
   command = $PRE_LINK && /usr/bin/cmake -E rm -f $TARGET_FILE && /usr/bin/llvm-ar qc $TARGET_FILE $LINK_FLAGS $in && /usr/bin/llvm-ranlib $TARGET_FILE && $POST_BUILD
   description = Linking CXX static library $TARGET_FILE
   restat = $RESTAT
@@ -136,7 +136,7 @@ rule CXX_STATIC_LIBRARY_LINKER__odfaeg-math_RELEASE
 #############################################
 # Rule for generating CXX dependencies.
 
-rule CXX_SCAN__odfaeg-entity-mod_RELEASE
+rule CXX_SCAN__odfaeg-entity-mod_Release
   depfile = $DEP_FILE
   command = "/usr/lib/llvm-18/bin/clang-scan-deps" -format=p1689 -- clang++ $DEFINES $INCLUDES $FLAGS -x c++ $in -c -o $OBJ_FILE -MT $DYNDEP_INTERMEDIATE_FILE -MD -MF $DEP_FILE > $DYNDEP_INTERMEDIATE_FILE.tmp && mv $DYNDEP_INTERMEDIATE_FILE.tmp $DYNDEP_INTERMEDIATE_FILE
   description = Scanning $in for CXX dependencies
@@ -145,7 +145,7 @@ rule CXX_SCAN__odfaeg-entity-mod_RELEASE
 #############################################
 # Rule to generate ninja dyndep files for CXX.
 
-rule CXX_DYNDEP__odfaeg-entity-mod_RELEASE
+rule CXX_DYNDEP__odfaeg-entity-mod_Release
   command = /usr/bin/cmake -E cmake_ninja_dyndep --tdi=src/odfaeg/Entity/CMakeFiles/odfaeg-entity-mod.dir/CXXDependInfo.json --lang=CXX --modmapfmt=clang --dd=$out @$out.rsp
   description = Generating CXX dyndep file $out
   rspfile = $out.rsp
@@ -155,7 +155,7 @@ rule CXX_DYNDEP__odfaeg-entity-mod_RELEASE
 #############################################
 # Rule for compiling CXX files.
 
-rule CXX_COMPILER__odfaeg-entity-mod_scanned_RELEASE
+rule CXX_COMPILER__odfaeg-entity-mod_scanned_Release
   depfile = $DEP_FILE
   deps = gcc
   command = ${LAUNCHER}${CODE_CHECK}clang++ $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE @$DYNDEP_MODULE_MAP_FILE -o $out -c $in
@@ -165,7 +165,7 @@ rule CXX_COMPILER__odfaeg-entity-mod_scanned_RELEASE
 #############################################
 # Rule for compiling CXX files.
 
-rule CXX_COMPILER__odfaeg-entity-mod_unscanned_RELEASE
+rule CXX_COMPILER__odfaeg-entity-mod_unscanned_Release
   depfile = $DEP_FILE
   deps = gcc
   command = ${LAUNCHER}${CODE_CHECK}clang++ $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
@@ -175,7 +175,7 @@ rule CXX_COMPILER__odfaeg-entity-mod_unscanned_RELEASE
 #############################################
 # Rule for linking CXX static library.
 
-rule CXX_STATIC_LIBRARY_LINKER__odfaeg-entity-mod_RELEASE
+rule CXX_STATIC_LIBRARY_LINKER__odfaeg-entity-mod_Release
   command = $PRE_LINK && /usr/bin/cmake -E rm -f $TARGET_FILE && /usr/bin/llvm-ar qc $TARGET_FILE $LINK_FLAGS $in && /usr/bin/llvm-ranlib $TARGET_FILE && $POST_BUILD
   description = Linking CXX static library $TARGET_FILE
   restat = $RESTAT
@@ -184,7 +184,7 @@ rule CXX_STATIC_LIBRARY_LINKER__odfaeg-entity-mod_RELEASE
 #############################################
 # Rule for linking CXX static library.
 
-rule CXX_STATIC_LIBRARY_LINKER__odfaeg-entity_RELEASE
+rule CXX_STATIC_LIBRARY_LINKER__odfaeg-entity_Release
   command = $PRE_LINK && /usr/bin/cmake -E rm -f $TARGET_FILE && /usr/bin/llvm-ar qc $TARGET_FILE $LINK_FLAGS $in && /usr/bin/llvm-ranlib $TARGET_FILE && $POST_BUILD
   description = Linking CXX static library $TARGET_FILE
   restat = $RESTAT
@@ -193,7 +193,7 @@ rule CXX_STATIC_LIBRARY_LINKER__odfaeg-entity_RELEASE
 #############################################
 # Rule for generating CXX dependencies.
 
-rule CXX_SCAN__odfaeg-physics-mod_RELEASE
+rule CXX_SCAN__odfaeg-physics-mod_Release
   depfile = $DEP_FILE
   command = "/usr/lib/llvm-18/bin/clang-scan-deps" -format=p1689 -- clang++ $DEFINES $INCLUDES $FLAGS -x c++ $in -c -o $OBJ_FILE -MT $DYNDEP_INTERMEDIATE_FILE -MD -MF $DEP_FILE > $DYNDEP_INTERMEDIATE_FILE.tmp && mv $DYNDEP_INTERMEDIATE_FILE.tmp $DYNDEP_INTERMEDIATE_FILE
   description = Scanning $in for CXX dependencies
@@ -202,7 +202,7 @@ rule CXX_SCAN__odfaeg-physics-mod_RELEASE
 #############################################
 # Rule to generate ninja dyndep files for CXX.
 
-rule CXX_DYNDEP__odfaeg-physics-mod_RELEASE
+rule CXX_DYNDEP__odfaeg-physics-mod_Release
   command = /usr/bin/cmake -E cmake_ninja_dyndep --tdi=src/odfaeg/Physics/CMakeFiles/odfaeg-physics-mod.dir/CXXDependInfo.json --lang=CXX --modmapfmt=clang --dd=$out @$out.rsp
   description = Generating CXX dyndep file $out
   rspfile = $out.rsp
@@ -212,7 +212,7 @@ rule CXX_DYNDEP__odfaeg-physics-mod_RELEASE
 #############################################
 # Rule for compiling CXX files.
 
-rule CXX_COMPILER__odfaeg-physics-mod_scanned_RELEASE
+rule CXX_COMPILER__odfaeg-physics-mod_scanned_Release
   depfile = $DEP_FILE
   deps = gcc
   command = ${LAUNCHER}${CODE_CHECK}clang++ $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE @$DYNDEP_MODULE_MAP_FILE -o $out -c $in
@@ -222,7 +222,7 @@ rule CXX_COMPILER__odfaeg-physics-mod_scanned_RELEASE
 #############################################
 # Rule for compiling CXX files.
 
-rule CXX_COMPILER__odfaeg-physics-mod_unscanned_RELEASE
+rule CXX_COMPILER__odfaeg-physics-mod_unscanned_Release
   depfile = $DEP_FILE
   deps = gcc
   command = ${LAUNCHER}${CODE_CHECK}clang++ $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
@@ -232,7 +232,7 @@ rule CXX_COMPILER__odfaeg-physics-mod_unscanned_RELEASE
 #############################################
 # Rule for linking CXX static library.
 
-rule CXX_STATIC_LIBRARY_LINKER__odfaeg-physics-mod_RELEASE
+rule CXX_STATIC_LIBRARY_LINKER__odfaeg-physics-mod_Release
   command = $PRE_LINK && /usr/bin/cmake -E rm -f $TARGET_FILE && /usr/bin/llvm-ar qc $TARGET_FILE $LINK_FLAGS $in && /usr/bin/llvm-ranlib $TARGET_FILE && $POST_BUILD
   description = Linking CXX static library $TARGET_FILE
   restat = $RESTAT
@@ -241,7 +241,7 @@ rule CXX_STATIC_LIBRARY_LINKER__odfaeg-physics-mod_RELEASE
 #############################################
 # Rule for linking CXX static library.
 
-rule CXX_STATIC_LIBRARY_LINKER__odfaeg-physics_RELEASE
+rule CXX_STATIC_LIBRARY_LINKER__odfaeg-physics_Release
   command = $PRE_LINK && /usr/bin/cmake -E rm -f $TARGET_FILE && /usr/bin/llvm-ar qc $TARGET_FILE $LINK_FLAGS $in && /usr/bin/llvm-ranlib $TARGET_FILE && $POST_BUILD
   description = Linking CXX static library $TARGET_FILE
   restat = $RESTAT
@@ -250,7 +250,7 @@ rule CXX_STATIC_LIBRARY_LINKER__odfaeg-physics_RELEASE
 #############################################
 # Rule for generating CXX dependencies.
 
-rule CXX_SCAN__odfaeg-window-mod_RELEASE
+rule CXX_SCAN__odfaeg-window-mod_Release
   depfile = $DEP_FILE
   command = "/usr/lib/llvm-18/bin/clang-scan-deps" -format=p1689 -- clang++ $DEFINES $INCLUDES $FLAGS -x c++ $in -c -o $OBJ_FILE -MT $DYNDEP_INTERMEDIATE_FILE -MD -MF $DEP_FILE > $DYNDEP_INTERMEDIATE_FILE.tmp && mv $DYNDEP_INTERMEDIATE_FILE.tmp $DYNDEP_INTERMEDIATE_FILE
   description = Scanning $in for CXX dependencies
@@ -259,7 +259,7 @@ rule CXX_SCAN__odfaeg-window-mod_RELEASE
 #############################################
 # Rule to generate ninja dyndep files for CXX.
 
-rule CXX_DYNDEP__odfaeg-window-mod_RELEASE
+rule CXX_DYNDEP__odfaeg-window-mod_Release
   command = /usr/bin/cmake -E cmake_ninja_dyndep --tdi=src/odfaeg/Window/CMakeFiles/odfaeg-window-mod.dir/CXXDependInfo.json --lang=CXX --modmapfmt=clang --dd=$out @$out.rsp
   description = Generating CXX dyndep file $out
   rspfile = $out.rsp
@@ -269,7 +269,7 @@ rule CXX_DYNDEP__odfaeg-window-mod_RELEASE
 #############################################
 # Rule for compiling CXX files.
 
-rule CXX_COMPILER__odfaeg-window-mod_scanned_RELEASE
+rule CXX_COMPILER__odfaeg-window-mod_scanned_Release
   depfile = $DEP_FILE
   deps = gcc
   command = ${LAUNCHER}${CODE_CHECK}clang++ $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE @$DYNDEP_MODULE_MAP_FILE -o $out -c $in
@@ -279,7 +279,7 @@ rule CXX_COMPILER__odfaeg-window-mod_scanned_RELEASE
 #############################################
 # Rule for compiling CXX files.
 
-rule CXX_COMPILER__odfaeg-window-mod_unscanned_RELEASE
+rule CXX_COMPILER__odfaeg-window-mod_unscanned_Release
   depfile = $DEP_FILE
   deps = gcc
   command = ${LAUNCHER}${CODE_CHECK}clang++ $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
@@ -289,7 +289,7 @@ rule CXX_COMPILER__odfaeg-window-mod_unscanned_RELEASE
 #############################################
 # Rule for linking CXX static library.
 
-rule CXX_STATIC_LIBRARY_LINKER__odfaeg-window-mod_RELEASE
+rule CXX_STATIC_LIBRARY_LINKER__odfaeg-window-mod_Release
   command = $PRE_LINK && /usr/bin/cmake -E rm -f $TARGET_FILE && /usr/bin/llvm-ar qc $TARGET_FILE $LINK_FLAGS $in && /usr/bin/llvm-ranlib $TARGET_FILE && $POST_BUILD
   description = Linking CXX static library $TARGET_FILE
   restat = $RESTAT
@@ -298,7 +298,7 @@ rule CXX_STATIC_LIBRARY_LINKER__odfaeg-window-mod_RELEASE
 #############################################
 # Rule for linking CXX static library.
 
-rule CXX_STATIC_LIBRARY_LINKER__odfaeg-window_RELEASE
+rule CXX_STATIC_LIBRARY_LINKER__odfaeg-window_Release
   command = $PRE_LINK && /usr/bin/cmake -E rm -f $TARGET_FILE && /usr/bin/llvm-ar qc $TARGET_FILE $LINK_FLAGS $in && /usr/bin/llvm-ranlib $TARGET_FILE && $POST_BUILD
   description = Linking CXX static library $TARGET_FILE
   restat = $RESTAT
@@ -307,7 +307,7 @@ rule CXX_STATIC_LIBRARY_LINKER__odfaeg-window_RELEASE
 #############################################
 # Rule for generating CXX dependencies.
 
-rule CXX_SCAN__odfaeg-graphics-mod_RELEASE
+rule CXX_SCAN__odfaeg-graphics-mod_Release
   depfile = $DEP_FILE
   command = "/usr/lib/llvm-18/bin/clang-scan-deps" -format=p1689 -- clang++ $DEFINES $INCLUDES $FLAGS -x c++ $in -c -o $OBJ_FILE -MT $DYNDEP_INTERMEDIATE_FILE -MD -MF $DEP_FILE > $DYNDEP_INTERMEDIATE_FILE.tmp && mv $DYNDEP_INTERMEDIATE_FILE.tmp $DYNDEP_INTERMEDIATE_FILE
   description = Scanning $in for CXX dependencies
@@ -316,7 +316,7 @@ rule CXX_SCAN__odfaeg-graphics-mod_RELEASE
 #############################################
 # Rule to generate ninja dyndep files for CXX.
 
-rule CXX_DYNDEP__odfaeg-graphics-mod_RELEASE
+rule CXX_DYNDEP__odfaeg-graphics-mod_Release
   command = /usr/bin/cmake -E cmake_ninja_dyndep --tdi=src/odfaeg/Graphics/CMakeFiles/odfaeg-graphics-mod.dir/CXXDependInfo.json --lang=CXX --modmapfmt=clang --dd=$out @$out.rsp
   description = Generating CXX dyndep file $out
   rspfile = $out.rsp
@@ -326,7 +326,7 @@ rule CXX_DYNDEP__odfaeg-graphics-mod_RELEASE
 #############################################
 # Rule for compiling CXX files.
 
-rule CXX_COMPILER__odfaeg-graphics-mod_scanned_RELEASE
+rule CXX_COMPILER__odfaeg-graphics-mod_scanned_Release
   depfile = $DEP_FILE
   deps = gcc
   command = ${LAUNCHER}${CODE_CHECK}clang++ $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE @$DYNDEP_MODULE_MAP_FILE -o $out -c $in
@@ -336,7 +336,7 @@ rule CXX_COMPILER__odfaeg-graphics-mod_scanned_RELEASE
 #############################################
 # Rule for compiling CXX files.
 
-rule CXX_COMPILER__odfaeg-graphics-mod_unscanned_RELEASE
+rule CXX_COMPILER__odfaeg-graphics-mod_unscanned_Release
   depfile = $DEP_FILE
   deps = gcc
   command = ${LAUNCHER}${CODE_CHECK}clang++ $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
@@ -346,7 +346,7 @@ rule CXX_COMPILER__odfaeg-graphics-mod_unscanned_RELEASE
 #############################################
 # Rule for linking CXX static library.
 
-rule CXX_STATIC_LIBRARY_LINKER__odfaeg-graphics-mod_RELEASE
+rule CXX_STATIC_LIBRARY_LINKER__odfaeg-graphics-mod_Release
   command = $PRE_LINK && /usr/bin/cmake -E rm -f $TARGET_FILE && /usr/bin/llvm-ar qc $TARGET_FILE $LINK_FLAGS $in && /usr/bin/llvm-ranlib $TARGET_FILE && $POST_BUILD
   description = Linking CXX static library $TARGET_FILE
   restat = $RESTAT
@@ -355,7 +355,7 @@ rule CXX_STATIC_LIBRARY_LINKER__odfaeg-graphics-mod_RELEASE
 #############################################
 # Rule for generating CXX dependencies.
 
-rule CXX_SCAN__meshoptimizer_RELEASE
+rule CXX_SCAN__meshoptimizer_Release
   depfile = $DEP_FILE
   command = "/usr/lib/llvm-18/bin/clang-scan-deps" -format=p1689 -- clang++ $DEFINES $INCLUDES $FLAGS -x c++ $in -c -o $OBJ_FILE -MT $DYNDEP_INTERMEDIATE_FILE -MD -MF $DEP_FILE > $DYNDEP_INTERMEDIATE_FILE.tmp && mv $DYNDEP_INTERMEDIATE_FILE.tmp $DYNDEP_INTERMEDIATE_FILE
   description = Scanning $in for CXX dependencies
@@ -364,7 +364,7 @@ rule CXX_SCAN__meshoptimizer_RELEASE
 #############################################
 # Rule to generate ninja dyndep files for CXX.
 
-rule CXX_DYNDEP__meshoptimizer_RELEASE
+rule CXX_DYNDEP__meshoptimizer_Release
   command = /usr/bin/cmake -E cmake_ninja_dyndep --tdi=src/odfaeg/Graphics/CMakeFiles/meshoptimizer.dir/CXXDependInfo.json --lang=CXX --modmapfmt=clang --dd=$out @$out.rsp
   description = Generating CXX dyndep file $out
   rspfile = $out.rsp
@@ -374,7 +374,7 @@ rule CXX_DYNDEP__meshoptimizer_RELEASE
 #############################################
 # Rule for compiling CXX files.
 
-rule CXX_COMPILER__meshoptimizer_scanned_RELEASE
+rule CXX_COMPILER__meshoptimizer_scanned_Release
   depfile = $DEP_FILE
   deps = gcc
   command = ${LAUNCHER}${CODE_CHECK}clang++ $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE @$DYNDEP_MODULE_MAP_FILE -o $out -c $in
@@ -384,7 +384,7 @@ rule CXX_COMPILER__meshoptimizer_scanned_RELEASE
 #############################################
 # Rule for compiling CXX files.
 
-rule CXX_COMPILER__meshoptimizer_unscanned_RELEASE
+rule CXX_COMPILER__meshoptimizer_unscanned_Release
   depfile = $DEP_FILE
   deps = gcc
   command = ${LAUNCHER}${CODE_CHECK}clang++ $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
@@ -394,7 +394,7 @@ rule CXX_COMPILER__meshoptimizer_unscanned_RELEASE
 #############################################
 # Rule for linking CXX static library.
 
-rule CXX_STATIC_LIBRARY_LINKER__meshoptimizer_RELEASE
+rule CXX_STATIC_LIBRARY_LINKER__meshoptimizer_Release
   command = $PRE_LINK && /usr/bin/cmake -E rm -f $TARGET_FILE && /usr/bin/llvm-ar qc $TARGET_FILE $LINK_FLAGS $in && /usr/bin/llvm-ranlib $TARGET_FILE && $POST_BUILD
   description = Linking CXX static library $TARGET_FILE
   restat = $RESTAT
@@ -403,7 +403,7 @@ rule CXX_STATIC_LIBRARY_LINKER__meshoptimizer_RELEASE
 #############################################
 # Rule for generating CXX dependencies.
 
-rule CXX_SCAN__vma_RELEASE
+rule CXX_SCAN__vma_Release
   depfile = $DEP_FILE
   command = "/usr/lib/llvm-18/bin/clang-scan-deps" -format=p1689 -- clang++ $DEFINES $INCLUDES $FLAGS -x c++ $in -c -o $OBJ_FILE -MT $DYNDEP_INTERMEDIATE_FILE -MD -MF $DEP_FILE > $DYNDEP_INTERMEDIATE_FILE.tmp && mv $DYNDEP_INTERMEDIATE_FILE.tmp $DYNDEP_INTERMEDIATE_FILE
   description = Scanning $in for CXX dependencies
@@ -412,7 +412,7 @@ rule CXX_SCAN__vma_RELEASE
 #############################################
 # Rule to generate ninja dyndep files for CXX.
 
-rule CXX_DYNDEP__vma_RELEASE
+rule CXX_DYNDEP__vma_Release
   command = /usr/bin/cmake -E cmake_ninja_dyndep --tdi=src/odfaeg/Graphics/CMakeFiles/vma.dir/CXXDependInfo.json --lang=CXX --modmapfmt=clang --dd=$out @$out.rsp
   description = Generating CXX dyndep file $out
   rspfile = $out.rsp
@@ -422,7 +422,7 @@ rule CXX_DYNDEP__vma_RELEASE
 #############################################
 # Rule for compiling CXX files.
 
-rule CXX_COMPILER__vma_scanned_RELEASE
+rule CXX_COMPILER__vma_scanned_Release
   depfile = $DEP_FILE
   deps = gcc
   command = ${LAUNCHER}${CODE_CHECK}clang++ $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE @$DYNDEP_MODULE_MAP_FILE -o $out -c $in
@@ -432,7 +432,7 @@ rule CXX_COMPILER__vma_scanned_RELEASE
 #############################################
 # Rule for compiling CXX files.
 
-rule CXX_COMPILER__vma_unscanned_RELEASE
+rule CXX_COMPILER__vma_unscanned_Release
   depfile = $DEP_FILE
   deps = gcc
   command = ${LAUNCHER}${CODE_CHECK}clang++ $DEFINES $INCLUDES $FLAGS -MD -MT $out -MF $DEP_FILE -o $out -c $in
@@ -442,7 +442,7 @@ rule CXX_COMPILER__vma_unscanned_RELEASE
 #############################################
 # Rule for linking CXX static library.
 
-rule CXX_STATIC_LIBRARY_LINKER__vma_RELEASE
+rule CXX_STATIC_LIBRARY_LINKER__vma_Release
   command = $PRE_LINK && /usr/bin/cmake -E rm -f $TARGET_FILE && /usr/bin/llvm-ar qc $TARGET_FILE $LINK_FLAGS $in && /usr/bin/llvm-ranlib $TARGET_FILE && $POST_BUILD
   description = Linking CXX static library $TARGET_FILE
   restat = $RESTAT
@@ -451,7 +451,7 @@ rule CXX_STATIC_LIBRARY_LINKER__vma_RELEASE
 #############################################
 # Rule for linking CXX static library.
 
-rule CXX_STATIC_LIBRARY_LINKER__odfaeg-graphics_RELEASE
+rule CXX_STATIC_LIBRARY_LINKER__odfaeg-graphics_Release
   command = $PRE_LINK && /usr/bin/cmake -E rm -f $TARGET_FILE && /usr/bin/llvm-ar qc $TARGET_FILE $LINK_FLAGS $in && /usr/bin/llvm-ranlib $TARGET_FILE && $POST_BUILD
   description = Linking CXX static library $TARGET_FILE
   restat = $RESTAT
