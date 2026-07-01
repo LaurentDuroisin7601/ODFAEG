@@ -3,7 +3,7 @@
 	"compiler-frontend-variant" : "GNU",
 	"compiler-id" : "Clang",
 	"compiler-simulate-id" : "",
-	"config" : "Release",
+	"config" : "RELEASE",
 	"cxx-modules" : 
 	{
 		"src/odfaeg/Entity/CMakeFiles/odfaeg-entity-mod.dir/entity.ixx.o" : 
