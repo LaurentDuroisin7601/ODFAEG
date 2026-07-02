@@ -426,8 +426,9 @@
 /usr/local/Shader/updateAnimCurrentFrame.comp
 /usr/local/Shader/particleUpdate.comp
 /usr/local/Shader/shadowPassPL.vert
-/usr/local/Shader/shadowMappingCSM.frag
+/usr/local/Shader/shadowMapping.vert
 /usr/local/Shader/morphAnim.comp
+/usr/local/Shader/shadowMapping.frag
 /usr/local/Shader/renderTarget.frag
 /usr/local/Shader/cullingBatching.comp
 /usr/local/Shader/particleVerticesUpdater.comp
@@ -436,16 +437,13 @@
 /usr/local/Shader/boneAnim.comp
 /usr/local/Shader/renderTarget.vert
 /usr/local/Shader/resetBuffers.comp
-/usr/local/Shader/shadowMappingPL.vert
 /usr/local/Shader/shadowPassCSM.vert
-/usr/local/Shader/shadowMappingPL.frag
 /usr/local/Shader/shadowPassCSM.frag
 /usr/local/Shader/vertexBuffer.frag
 /usr/local/Shader/particleEmission.comp
 /usr/local/Shader/vertexBuffer.vert
 /usr/local/Shader/linkedListQuad.vert
 /usr/local/Shader/linkedList.frag
-/usr/local/Shader/shadowMappingCSM.vert
 /usr/local/lib/cmake/odfaeg/odfaegTargets.cmake
 /usr/local/lib/cmake/odfaeg/odfaegTargets-debug.cmake
 /usr/local/lib/cmake/odfaeg/odfaegConfig.cmake
