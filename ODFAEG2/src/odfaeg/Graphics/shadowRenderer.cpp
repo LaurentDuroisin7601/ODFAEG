@@ -620,16 +620,16 @@ namespace odfaeg {
                     
                     //std::cout<<"begin record cmd : "<<renderFrame<<std::endl;
                     shadowPassPLCommandPool.beginRecordCommandBuffer(renderFrame, inheritanceInfo);
-                    shadowPassPLVertPC.currentFrame = renderFrame;
-                    shadowPassPLFragPC.lightPos = math::Vec3f(0, 0, 0);
-                    shadowPassPLFragPC.far_plane = shadowMapPL.getCamera().getViewport().getSize().z();
+                    shadowPassPLVertPC.currentFrame = renderFrame;  
                     VkPhysicalDeviceProperties props;
                     vkGetPhysicalDeviceProperties(GPUContext::instance().getDevice().getPhysicalDevice(), &props); 
                     uint32_t minAlign = props.limits.minStorageBufferOffsetAlignment;  
                     uint32_t lightViewPLMatrixAlignSize = (sizeof(ViewPLMatrix) + minAlign - 1) & ~(minAlign - 1); 
                     for (unsigned int l = 0; l < pointLights.size(); l++) { 
+                        shadowPassPLFragPC.lightPos = pointLights[l].pos;
+                        shadowPassPLFragPC.far_plane = pointLights[l].far_plane;
                         for (unsigned int i = 0; i < NB_PRIMITIVE_TYPES; i++) {
-                            shadowPassPLVertPC.primitiveType = i;
+                            shadowPassPLVertPC.primitiveType = i;                            
                             //std::cout<<"ids : "<<i<<","<<shadowPassPLShader.getId()<<","<<RenderTarget::DEPTHNOSTENCIL*blendMode.nbBlendModes+blendMode.id<<std::endl;
                             uint32_t offsetLightViewMatPL = l * lightViewPLMatrixAlignSize;
                             vkCmdBindPipeline(shadowPassPLCommandPool.getHandle(renderFrame), VK_PIPELINE_BIND_POINT_GRAPHICS, GPUContext::instance().getGraphicsPipeline(static_cast<PrimitiveType>(i), shadowPassPLShader, blendMode, RenderTarget::DEPTHNOSTENCIL).getHandle());
