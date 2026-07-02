@@ -534,6 +534,10 @@ namespace odfaeg {
                 semaphoreWaitInfo.pValues = waitValues.data();
                 vkWaitSemaphores(GPUContext::instance().getDevice().getDevice(), &semaphoreWaitInfo, UINT64_MAX);
                 //std::cout<<"frame : "<<renderFrame<<" ready!"<<std::endl;
+                if (needToUpdateLightMatrices) {
+                    computeLightMatrices();
+                    needToUpdateLightMatrices = false;
+                }
                 if (needToUpdateDescriptorSets) {
                     //std::cout<<"update ds"<<std::endl;
                     updateDescriptorSets();
