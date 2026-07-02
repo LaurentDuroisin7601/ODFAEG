@@ -18,11 +18,11 @@ struct LightSpaceMatrix {
 };
 struct DirLight {
     mat4 view;
-    vec3 dir;
+    vec3 lightDir;
     float far_plane;
 };
 struct PointLight {
-    vec3 pos;
+    vec3 lightPos;
     float far_plane;
 };
 struct MaterialData {
@@ -56,14 +56,14 @@ layout (std430, set = 0, binding = 1) buffer MaterialDataSSBO {
 layout (std430, set = 0, binding = 2) buffer LightSpaceMatricesSSBO {
     LightSpaceMatrix lightSpaceMatrices[];
 } lightSpaceMatricesData[MAX_FRAMES_IN_FLIGHT];
-layout (std430, set = 0, binding = 3) uniform cascadePlaneDistanceSSBO {
+layout (std140, set = 0, binding = 3) uniform cascadePlaneDistanceSSBO {
     float cascadePlaneDistances[NB_CASCADES+1];
     int cascadeCount;   // number of
 } cascadePlaneDistanceData[MAX_FRAMES_IN_FLIGHT];
-layout(set = 0, binding = 4) uniform buffer DirLightSSBO {
+layout(set = 0, binding = 4) buffer DirLightSSBO {
     DirLight dirLights[];
 } dirLightData[MAX_FRAMES_IN_FLIGHT];
-layout(set = 0, binding = 5) uniform buffer DirLightSSBO {
+layout(set = 0, binding = 5) buffer PointLightSSBO {
     PointLight pointLights[];
 } pointLightData[MAX_FRAMES_IN_FLIGHT];
 layout(set = 0, binding = 6) uniform sampler2DArray shadowMap;
@@ -134,16 +134,16 @@ float shadowCalculationPoint(vec3 fragPos)
     // get vector between fragment position and light position
     float shadow = 0.0;
     for(int l = 0; l < pc.nbPointLights; l++) {
-        vec3 fragToLight = fragPos - pointLightData[currentFrame].poointLights[l].lightPos;
+        vec3 fragToLight = fragPos - pointLightData[currentFrame].pointLights[l].lightPos;
         // use the light to fragment vector to sample from the depth map    
         float closestDepth = texture(depthMap, fragToLight).r;
         // it is currently in linear range between [0,1]. Re-transform back to original value
-        closestDepth *= pointLightData[currentFrame].poointLights[l].far_plane;
+        closestDepth *= pointLightData[currentFrame].pointLights[l].far_plane;
         // now get current linear depth as the length between the fragment and light position
         float currentDepth = length(fragToLight);
         // now test for shadows
         float bias = 0.05; 
-        vec3 lightDir = normalize(pc.lightPos - fragPos);
+        vec3 lightDir = normalize(pointLightData[currentFrame].pointLights[l].lightPos - fragPos);
         float diff = max(dot(lightDir, normalize(normal)), 0.0); 
         //debugPrintfEXT("diff : %f", diff);   
         float currentLightShadow = currentDepth -  bias > closestDepth ? min(1.0, 1.0 * diff) : 0.0; 

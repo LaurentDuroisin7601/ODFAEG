@@ -8,8 +8,8 @@ struct ModelData {
     mat4 shadowProjMatrix;
     mat4 borderMatrices;
 };
-struct ViewPLMatrix {
-    mat4 viewPLMatrices[6];
+struct LightSpaceMatrix {
+    mat4 lightSpaceMatrices[NB_CASCADES+1];
 };
 struct ViewPLMatrix {
     mat4 viewPLMatrices[6];

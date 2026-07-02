@@ -36,6 +36,7 @@ namespace odfaeg {
                 int _pad[2];             
 			}; 
             struct ShadowMappingFragPC  {
+               math::Matrix4f view; 
                unsigned int nbDirLights;
                unsigned int nbPointLights;
             }; 
@@ -50,7 +51,6 @@ namespace odfaeg {
                 int _pad[2];
             };
             struct ShadowPassPLFragPC {  
-                math::Matrix4f view;              
                 math::Vec3f lightPos;
                 float pad;                
                 float far_plane;
@@ -98,7 +98,7 @@ namespace odfaeg {
             std::deque<Buffer> lightSpaceMatricesBuffer, lightSpaceMatricesBufferFinal, cascadePlaneDistancesBuffer,
             lightViewsPLMatricesBuffer, dirLightsBufferFinal, pointLightsBufferFinal;
             Buffer lightSpaceMatricesStaggingBuffer, lightViewsPLMatricesStaggingBuffer,
-            dirLightsStaggingBufferFinal, pointLightStaggingBufferFinal, lightSpaceMatricesStaggingBufferFinal;
+            dirLightsStaggingBufferFinal, pointLightsStaggingBufferFinal, lightSpaceMatricesStaggingBufferFinal;
             window::Listener eventListener;
             CascadeData cascadeData;
             std::atomic<bool> rendererReady;
@@ -119,7 +119,8 @@ namespace odfaeg {
             std::vector<ViewPLMatrix> lightViewsPLMatrices;
             CommandPool commandPool;
             std::vector<DirLight> dirLights;
-            std::vector<PointLight> pointLights;                            
+            std::vector<PointLight> pointLights; 
+            std::vector<float> shadowCascadeLevels;                           
         };
     }
 }

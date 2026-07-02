@@ -15,6 +15,7 @@ namespace odfaeg {
 			void update(const void* srcData, size_t srcDataSize, size_t dstStart = 0);
 			void swap(Buffer& buffer);
 			size_t getRange();
+			void setRange(size_t range);
 			size_t getOffset();
 			void cleanup();
 			VkBuffer getHandle();
