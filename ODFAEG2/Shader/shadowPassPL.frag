@@ -1,4 +1,5 @@
 #version 460 core
+#extension GL_EXT_debug_printf : enable
 layout(location=0) in vec4 fragPos;
 layout (push_constant) uniform PushConstant {
     layout(offset=80) vec3 lightPos;    
@@ -11,5 +12,6 @@ void main()
     // map to [0;1] range by dividing by far_plane
     lightDistance = lightDistance / pc.far_plane;    
     // write this as modified depth
+    //debugPrintfEXT("far plane : %f", lightDistance);
     gl_FragDepth = lightDistance;
 }  

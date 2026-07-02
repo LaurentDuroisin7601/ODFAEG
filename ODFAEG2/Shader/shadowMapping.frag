@@ -145,6 +145,7 @@ float shadowCalculationPoint(vec3 fragPos)
         // now test for shadows
         float bias = 0.05; 
         vec3 lightDir = normalize(pointLightData[currentFrame].pointLights[l].lightPos - fragPos);
+        //debugPrintfEXT("lightpos: %f", pointLightData[currentFrame].pointLights[l].far_plane);
         float diff = max(dot(lightDir, normalize(normal)), 0.0); 
         //debugPrintfEXT("diff : %f", diff);   
         float currentLightShadow = currentDepth -  bias > closestDepth ? min(1.0, 1.0 * diff) : 0.0; 
@@ -163,9 +164,8 @@ void main()
     // calculate shadow
     float shadowDir = shadowCalculationDir(fragPos);
     float shadowPoint = shadowCalculationPoint(fragPos);
-    
     float shadow = max(shadowDir, shadowPoint);
-    /*if (shadowDir > 0 || shadowPoint > 0)
-        debugPrintfEXT("shadow dir %f", shadow); */     
+    if (shadowDir > 0 || shadowPoint > 0)
+        debugPrintfEXT("shadow dir %f", shadow);   
     frag_color = vec4(vec3(diffuse) * (1 - shadow), diffuse.a);
 }

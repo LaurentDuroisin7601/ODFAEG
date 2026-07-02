@@ -142,7 +142,7 @@ namespace odfaeg {
                 pointLightCamera.lookAt(0, 0, 1, math::Vec3f(0, -1, 0));
                 viewPLMatrices.viewsPLMatrices[5] = pointLightCamera.getViewMatrix().getMatrix().transpose(); 
                 lightViewsPLMatrices.push_back(viewPLMatrices);   
-                pointLights[l].far_plane = pointLightCamera.getViewport().getSize().z();             
+                pointLights[l].far_plane = 25;             
             }
             VkPhysicalDeviceProperties props;
             vkGetPhysicalDeviceProperties(GPUContext::instance().getDevice().getPhysicalDevice(), &props); 
@@ -150,7 +150,7 @@ namespace odfaeg {
             uint32_t lightViewPLMatrixAlignSize = (sizeof(ViewPLMatrix) + minAlign - 1) & ~(minAlign - 1);
             lightViewsPLMatricesStaggingBuffer.create(sizeof(ViewPLMatrix) * lightViewsPLMatrices.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
             for (unsigned int l = 0; l < pointLights.size(); l++) {
-                lightViewsPLMatricesStaggingBuffer.update(fLightSpaceMatrices.data(), sizeof(ViewPLMatrix), l * lightViewPLMatrixAlignSize);
+                lightViewsPLMatricesStaggingBuffer.update(lightViewsPLMatrices.data(), sizeof(ViewPLMatrix), l * lightViewPLMatrixAlignSize);
             }
             for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {                
                 lightViewsPLMatricesBuffer[i].create(sizeof(ViewPLMatrix) * lightViewsPLMatrices.size(), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_GPU_ONLY);                              
@@ -162,7 +162,7 @@ namespace odfaeg {
             }
             for (unsigned int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
                 commandPool.beginRecordCommandBuffer(i);                
-                Buffer::copyBuffer(lightViewsPLMatricesStaggingBuffer, lightViewsPLMatricesBuffer[i], sizeof(math::Matrix4f)*lightViewsPLMatrices.size(), commandPool.getHandle(i)); 
+                Buffer::copyBuffer(lightViewsPLMatricesStaggingBuffer, lightViewsPLMatricesBuffer[i], sizeof(ViewPLMatrix)*lightViewsPLMatrices.size(), commandPool.getHandle(i)); 
                 Buffer::copyBuffer(pointLightsStaggingBufferFinal, pointLightsBufferFinal[i], sizeof(PointLight)*pointLights.size(), commandPool.getHandle(i));
                 commandPool.endRecordCommandBuffer(i);
             }
@@ -657,6 +657,7 @@ namespace odfaeg {
                     for (unsigned int l = 0; l < pointLights.size(); l++) { 
                         shadowPassPLFragPC.lightPos = pointLights[l].pos;
                         shadowPassPLFragPC.far_plane = pointLights[l].far_plane;
+                        
                         for (unsigned int i = 0; i < NB_PRIMITIVE_TYPES; i++) {
                             shadowPassPLVertPC.primitiveType = i;                            
                             //std::cout<<"ids : "<<i<<","<<shadowPassPLShader.getId()<<","<<RenderTarget::DEPTHNOSTENCIL*blendMode.nbBlendModes+blendMode.id<<std::endl;
